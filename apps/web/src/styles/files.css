@@ -1,0 +1,632 @@
+/* ── Project files: tree and read-only viewer ─────────────────────────────── */
+.files {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr;
+}
+.files--stacked {
+  grid-template-columns: 1fr;
+}
+/* A chat's files: which folder on top, the tree below. */
+.chatfiles {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chatfiles__bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--apx-border);
+}
+/* In a project the bar lines up with its tabs, and the switch keeps its own width. */
+.chatfiles__bar--project {
+  align-items: flex-start;
+  padding: 10px 24px;
+}
+/* A project's widgets: their names in a list, the open one live in a panel on the right. */
+.projwidgets {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+/* Centered in the page like the tasks list; once a widget opens beside it, the list moves over to make room. */
+.projwidgets__list {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 16px max(24px, calc((100% - 1080px) / 2)) 24px;
+  overflow: auto;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.projwidgets.has-open .projwidgets__list {
+  padding-inline: 24px;
+}
+.projwidgets__panel {
+  position: relative;
+  flex: none;
+  /* The list keeps room for its names however far the edge is dragged. */
+  max-width: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--apx-border);
+  background: var(--apx-surface);
+}
+.projwidgets__head {
+  padding: 8px 10px 8px 14px;
+  border-bottom: 1px solid var(--apx-border);
+}
+.projwidgets__frame {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.chatfiles__note {
+  margin: 0;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+}
+.files__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 10px 0;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--apx-radius-sm);
+  background: none;
+  color: var(--apx-fg-muted);
+  font: inherit;
+  font-size: var(--apx-text-xs);
+  cursor: pointer;
+}
+.files__back:hover {
+  background: var(--apx-fill-hover);
+  color: var(--apx-fg);
+}
+.files--empty {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 24px;
+}
+.files__tree {
+  min-height: 0;
+  overflow: auto;
+  padding: 10px 6px;
+  border-right: 1px solid var(--apx-border);
+}
+.files--stacked .files__tree {
+  border-right: 0;
+}
+.files__root {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 8px;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-semibold);
+}
+.files__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.files__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 28px;
+  padding-right: 8px;
+  border: 0;
+  border-radius: var(--apx-radius-sm);
+  background: none;
+  color: var(--apx-fg);
+  font: inherit;
+  font-size: var(--apx-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.files__row:hover {
+  background: var(--apx-fill-hover);
+}
+.files__row.is-on {
+  background: var(--apx-fill);
+  font-weight: var(--apx-weight-semibold);
+}
+.files__row svg {
+  flex: none;
+  color: var(--apx-fg-muted);
+}
+.files__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.files__more,
+.files__error {
+  padding: 6px 10px;
+  color: var(--apx-fg-subtle);
+  font-size: var(--apx-text-xs);
+  list-style: none;
+}
+.files__error {
+  color: var(--apx-danger);
+}
+.files__loading {
+  margin: 4px 10px;
+}
+.files__view {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.files__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--apx-border);
+}
+.files__path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+}
+/* Narrow: the path takes its own line over the size and the view's controls. */
+.files--stacked .files__head {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.files--stacked .files__path {
+  flex-basis: 100%;
+}
+.files__size {
+  flex: none;
+  color: var(--apx-fg-subtle);
+  font-size: var(--apx-text-xs);
+}
+.files__spacer {
+  flex: 1;
+}
+/* The file fills the pane: its code (or page) scrolls inside, never the pane around it. */
+.files__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-rows: auto;
+}
+.files__body.is-split {
+  grid-template-columns: 1fr 1fr;
+}
+.files__source {
+  margin: 0;
+  padding: 16px;
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.files__body.is-split .files__source {
+  border-right: 1px solid var(--apx-border);
+}
+.files__md {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 24px;
+}
+.files__body.is-split .codeview {
+  border-right: 1px solid var(--apx-border);
+}
+.codeview {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.codeview .cm-editor {
+  height: 100%;
+}
+/* Editing reads as editing: the code sits on a field, with the app's focus color around it. */
+.codeview.is-editing {
+  background: var(--apx-fill);
+  box-shadow: inset 0 0 0 1px var(--apx-border);
+}
+
+/* Code colors, close to the app's own: muted in light, softer and brighter in dark. */
+:root {
+  --code-keyword: #8b3fd9;
+  --code-string: #1f7a3a;
+  --code-number: #b35900;
+  --code-comment: #8a8a85;
+  --code-function: #1e5fbf;
+  --code-type: #a1287a;
+  --code-property: #1c6f80;
+  --code-tag: #c0392b;
+  --code-definition: #1f2328;
+  --code-active-line: rgba(0, 0, 0, 0.035);
+  --code-selection: rgba(84, 132, 242, 0.22);
+}
+[data-apx-mode="dark"] {
+  --code-keyword: #c79bff;
+  --code-string: #8fd694;
+  --code-number: #f5a65b;
+  --code-comment: #7d7d78;
+  --code-function: #7ab4ff;
+  --code-type: #f39ccf;
+  --code-property: #72d1e2;
+  --code-tag: #ff8a7a;
+  --code-definition: #e8e6e1;
+  --code-active-line: rgba(255, 255, 255, 0.04);
+  --code-selection: rgba(122, 180, 255, 0.25);
+}
+
+@media (max-width: 760px) {
+  .files {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(140px, 40%) 1fr;
+  }
+  .files__tree {
+    border-right: 0;
+    border-bottom: 1px solid var(--apx-border);
+  }
+  .files__body.is-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Media preview: fits the pane, never wider */
+.files__media {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow: auto;
+}
+.files__media img,
+.files__media video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--apx-radius-md);
+}
+.files__media.is-image {
+  background: repeating-conic-gradient(var(--apx-fill) 0% 25%, transparent 0% 50%) 50% / 16px 16px;
+}
+.files__media audio {
+  width: min(480px, 100%);
+}
+.files__media.is-pdf {
+  padding: 0;
+  align-items: stretch;
+}
+.files__media iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 480px;
+  border: 0;
+}
+.files__confirm {
+  margin: 0;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-muted);
+  overflow-wrap: anywhere;
+}
+
+/* A project's repository: changes and history on the left, the picked diff on the right. */
+.git {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+}
+/* The history is a second column beside the changes, opened and closed from the bar. */
+.git.has-history {
+  grid-template-columns: minmax(260px, 340px) minmax(240px, 320px) 1fr;
+}
+.git__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 0 4px;
+}
+.git__branchbtn {
+  min-width: 0;
+  max-width: 60%;
+}
+.git__history {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 16px;
+  border-right: 1px solid var(--apx-border);
+}
+.git__historyhead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px 8px;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+}
+/* The magic button sits in the message box's corner. */
+.git__message {
+  position: relative;
+}
+.git__message textarea {
+  padding-right: 34px;
+}
+.git__magic {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+.git__side {
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 10px 16px;
+  border-right: 1px solid var(--apx-border);
+}
+.git__branchname {
+  overflow: hidden;
+  font-family: var(--apx-font-mono);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.git__sync,
+.git__sync > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.git__sync {
+  gap: 6px;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+}
+.git__commit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 4px 8px;
+}
+.git__commit .apx-button {
+  align-self: stretch;
+}
+.git__label {
+  margin-top: 6px;
+}
+.git__labelend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.git__count {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--apx-fill);
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  text-align: center;
+}
+.git__files,
+.git__log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.git__file {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--apx-radius-sm);
+}
+.git__file:hover,
+.git__file.is-on {
+  background: var(--apx-fill);
+}
+.git__filebtn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 0;
+  background: none;
+  color: var(--apx-fg);
+  font: inherit;
+  font-size: var(--apx-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.git__letter {
+  flex: none;
+  width: 12px;
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-semibold);
+  color: var(--apx-fg-muted);
+}
+.git__letter.is-M {
+  color: var(--apx-warning, #d4a72c);
+}
+.git__letter.is-A,
+.git__letter.is-U {
+  color: var(--apx-success, #3fb950);
+}
+.git__letter.is-D {
+  color: var(--apx-danger, #f85149);
+}
+.git__name {
+  flex: none;
+  max-width: 60%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.git__dir {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.git__counts {
+  flex: none;
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+}
+.git__counts .is-add {
+  color: var(--apx-success, #3fb950);
+}
+.git__counts .is-del {
+  color: var(--apx-danger, #f85149);
+}
+/* The stage/unstage button shows on hover or focus, so rows stay quiet. */
+.git__move {
+  flex: none;
+  opacity: 0;
+}
+.git__file:hover .git__move,
+.git__move:focus-visible {
+  opacity: 1;
+}
+.git__clean {
+  margin: 4px 6px;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+}
+.git__commitrow {
+  position: relative;
+  width: 100%;
+  display: flex;
+  padding: 0 6px 0 2px;
+  border: 0;
+  border-radius: var(--apx-radius-sm);
+  background: none;
+  color: var(--apx-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.git__commitrow:hover,
+.git__commitrow.is-on {
+  background: var(--apx-fill);
+}
+/* The history's graph sits in each row's own height, so its lines join from one row to the next. */
+.git__graph {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  height: 100%;
+  overflow: visible;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.git__commitmain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 0 7px;
+}
+.git__ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: calc(10.5px * var(--apx-text-scale, 1));
+  line-height: 16px;
+  white-space: nowrap;
+}
+.git__repo {
+  margin-bottom: 4px;
+}
+.git__subject {
+  overflow: hidden;
+  font-size: var(--apx-text-sm);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.git__meta {
+  margin: 0;
+  overflow: hidden;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.git__refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.git__view {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.git__view > .apx-empty {
+  margin: auto;
+}
+.git__diff {
+  padding: 8px 16px 24px;
+}
+.git__commitview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+.git__commithead h3 {
+  margin: 0 0 6px;
+  font-size: var(--apx-text-md, 15px);
+}
+.git__body {
+  margin: 0 0 6px;
+  color: var(--apx-fg-muted);
+  font: inherit;
+  font-size: var(--apx-text-sm);
+  white-space: pre-wrap;
+}
+.git__loading {
+  margin: 16px 24px;
+}

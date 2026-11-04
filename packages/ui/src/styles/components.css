@@ -1,0 +1,12 @@
+/* APX component styles, one sheet per area. The order is the cascade order: scripts/build.mjs concatenates
+   them as listed here, and the playground loads this file through Vite. */
+@import "./components/base.css";
+@import "./components/controls.css";
+@import "./components/forms.css";
+@import "./components/overlays.css";
+@import "./components/people-nav.css";
+@import "./components/conversation.css";
+@import "./components/content.css";
+@import "./components/extras.css";
+@import "./components/agent-node.css";
+@import "./components/master-detail.css";

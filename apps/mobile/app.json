@@ -1,0 +1,64 @@
+{
+  "expo": {
+    "name": "APX",
+    "slug": "apx",
+    "scheme": "apx",
+    "version": "2.0.10",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "../desktop/assets/icon.png",
+    "ios": {
+      "bundleIdentifier": "dev.apx.mobile",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "dev.apx.mobile"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "APX uses the camera to scan the QR that pairs it with your computer, and to take a picture you attach to a chat."
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "APX tells your agents where you are when they ask (only while the app is open)."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sounds/message.wav"]
+        }
+      ],
+      "./plugins/with-ios-scenes.js",
+      "./plugins/with-android-cleartext.js",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "APX records a voice note when you tap the mic in a chat, and turns it into text."
+        }
+      ],
+      "expo-video",
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "APX saves the pictures and videos you keep from a chat to your photos.",
+          "savePhotosPermission": "APX saves the pictures and videos you keep from a chat to your photos.",
+          "granularPermissions": ["photo", "video"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "APX attaches the photos you pick to a chat.",
+          "cameraPermission": "APX uses the camera to scan the QR that pairs it with your computer, and to take a picture you attach to a chat."
+        }
+      ]
+    ]
+  }
+}

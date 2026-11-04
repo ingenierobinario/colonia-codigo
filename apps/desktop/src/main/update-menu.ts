@@ -1,0 +1,125 @@
+// The update as the app menu says it ("Check for updates…", "Update to APX 2.3.0…", "Restart to update to APX 2.3.0")
+// and the native questions it asks when the owner started it there: restart now or later.
+import { type BaseWindow, dialog, type MenuItemConstructorOptions, Notification } from "electron";
+import type { DesktopUpdate, RestartAnswer } from "./updater.ts";
+
+type Updater = Omit<ReturnType<typeof import("./updater.ts").createDesktopUpdater>, "restart"> & {
+  restart(): RestartAnswer | Promise<RestartAnswer>;
+  automatic?(): boolean;
+};
+
+const words = (es: boolean, platform: string) => ({
+  check: es ? "Buscar actualizaciones…" : "Check for updates…",
+  update: (v: string) => (es ? `Actualizar a APX ${v}…` : `Update to APX ${v}…`),
+  downloading: (v: string) => (es ? `Descargando APX ${v}…` : `Downloading APX ${v}…`),
+  restart: (v: string) => (es ? `Reiniciar para actualizar a APX ${v}` : `Restart to update to APX ${v}`),
+  readyTitle: (v: string) => (es ? `APX ${v} está listo` : `APX ${v} is ready`),
+  readyDetail:
+    platform === "win32"
+      ? es
+        ? "Se instala al reiniciar APX. Si elegís más tarde, queda en el menú APX: Reiniciar para actualizar."
+        : "It goes in when APX restarts. If you choose later, it waits in the APX menu: Restart to update."
+      : es
+        ? "Se instala al reiniciar APX. Si elegís más tarde, se instala cuando salgas de APX."
+        : "It goes in when APX restarts. If you choose later, it goes in when you quit APX.",
+  remoteReady: es
+    ? "El servidor ya confirmó la versión. Se vuelve a verificar antes de aplicar esta app; salir de APX no la instala."
+    : "The server confirmed the target release. It is checked again before applying this app; quitting APX does not install it.",
+  openInstaller: es ? "Abrir instalador" : "Open installer",
+  manualReady: es
+    ? "El servidor se verifica antes de abrir el instalador. Reemplazá esta app manualmente y volvé a abrirla."
+    : "The server is checked before opening the installer. Replace this app manually, then open it again.",
+  restartNow: es ? "Reiniciar ahora" : "Restart now",
+  later: es ? "Más tarde" : "Later",
+  upToDate: es ? "APX está al día" : "APX is up to date",
+  version: (v: string) => (es ? `Tenés la versión ${v}.` : `You have version ${v}.`),
+  failed: es ? "No se pudo actualizar APX" : "APX could not update",
+  noFeed: es ? "No se pudo consultar si hay una versión nueva." : "Could not ask whether a newer version is out.",
+  dragged: (v: string) =>
+    es
+      ? `Se abrió APX ${v}: arrastralo a Aplicaciones, reemplazando este, y abrilo de nuevo.`
+      : `APX ${v} opened: drag it into Applications, replacing this one, and open it again.`,
+  readyNote: (v: string) =>
+    es ? `APX ${v} está listo. Reiniciá APX para usarlo.` : `APX ${v} is ready. Restart APX to use it.`,
+  outNote: (v: string) => (es ? `Salió APX ${v}. Abrí APX para actualizar.` : `APX ${v} is out. Open APX to update.`),
+  ok: es ? "Aceptar" : "OK",
+});
+
+export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; es: boolean; platform: string }) {
+  const { updater, window } = opts;
+  const t = words(opts.es, opts.platform);
+  let told: string | undefined;
+
+  async function askRestart(version: string): Promise<void> {
+    const { response } = await dialog.showMessageBox(window, {
+      type: "info",
+      message: t.readyTitle(version),
+      detail: updater.mode === "drag" ? t.manualReady : updater.automatic?.() === false ? t.remoteReady : t.readyDetail,
+      buttons: [updater.mode === "drag" ? t.openInstaller : t.restartNow, t.later],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    if (response === 0) await restart();
+  }
+
+  /** Restarting quits APX; an answer back means it could not, and the owner is told why. */
+  async function restart(): Promise<void> {
+    const r = await updater.restart();
+    if (!r.ok)
+      await dialog.showMessageBox(window, { type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
+  }
+
+  async function update(version: string): Promise<void> {
+    const r = await updater.install();
+    if (!r.ok) {
+      await dialog.showMessageBox(window, { type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
+      return;
+    }
+    if (r.ready) await askRestart(version);
+    else await dialog.showMessageBox(window, { type: "info", message: t.dragged(version), buttons: [t.ok] });
+  }
+
+  async function checkNow(): Promise<void> {
+    const s = await updater.check();
+    if (s.latest) return update(s.latest);
+    await dialog.showMessageBox(window, {
+      type: s.error ? "warning" : "info",
+      message: s.error ? t.failed : t.upToDate,
+      detail: s.error ? `${t.noFeed}\n${s.error}` : t.version(s.current),
+      buttons: [t.ok],
+    });
+  }
+
+  return {
+    /** The app menu's update entry, as things stand now; none where the app does not update itself (a checkout). */
+    item(s: DesktopUpdate): MenuItemConstructorOptions | undefined {
+      if (!updater.enabled) return undefined;
+      if (s.ready)
+        return {
+          id: "update",
+          label: updater.mode === "drag" ? `${t.openInstaller} (${s.ready})…` : t.restart(s.ready),
+          click: () => void restart(),
+        };
+      if (s.downloading && s.latest) return { id: "update", label: t.downloading(s.latest), enabled: false };
+      const latest = s.latest;
+      if (latest) return { id: "update", label: t.update(latest), click: () => void update(latest) };
+      return { id: "update", label: t.check, click: () => void checkNow() };
+    },
+    /** A background check found a newer APX: auto mode downloads it and says once it is ready; drag mode says it is out. */
+    found(s: DesktopUpdate) {
+      const latest = s.latest;
+      if (!latest || told === latest) return;
+      told = latest;
+      const notify = (body: string, click?: () => void) => {
+        if (!Notification.isSupported()) return;
+        const n = new Notification({ title: "APX", body });
+        if (click) n.on("click", click);
+        n.show();
+      };
+      if (updater.mode !== "auto" || updater.automatic?.() === false) return notify(t.outNote(latest));
+      void updater.install().then((r) => {
+        if (r.ok && r.ready) notify(t.readyNote(latest), () => void askRestart(latest));
+      });
+    },
+  };
+}

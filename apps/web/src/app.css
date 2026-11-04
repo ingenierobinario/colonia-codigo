@@ -1,0 +1,122 @@
+/* APX web shell. Colors/spacing come from --apx-* tokens (@apx/ui); layout sizes from --shell-* (shell/layout.ts). */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+/* The shell has a min-height, so a short window must clip it: a scrollable page would let focus or scrollIntoView
+ * (e.g. a list bringing its selected item into view) shift the whole app and show a band of background. */
+html {
+  overflow: hidden;
+}
+body {
+  overflow: clip;
+}
+:where(.apx) :where(button, input, textarea, select) {
+  font: inherit;
+  color: inherit;
+}
+:where(.apx) ::placeholder {
+  color: var(--apx-fg-subtle);
+}
+/* Thin thumbs with air around them: the transparent border is the padding (background-clip keeps it clear). */
+.apx ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.apx ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background: var(--apx-fill-strong);
+  background-clip: padding-box;
+}
+.apx ::-webkit-scrollbar-thumb:hover {
+  border-width: 2px;
+  background-color: var(--apx-fg-subtle);
+}
+.apx ::-webkit-scrollbar-track,
+.apx ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 620px;
+  overflow: hidden;
+  background: var(--apx-bg);
+  color: var(--apx-fg);
+  font-family: var(--apx-font-sans);
+  font-size: var(--apx-text-md);
+  line-height: var(--apx-leading);
+}
+.shell__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.shell__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  background: var(--apx-bg);
+}
+
+/* ── Offline banner / toasts ───────────────────────────────────────────────── */
+.offline {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: var(--apx-warning-soft);
+  color: var(--apx-warning-soft-fg);
+  font-size: var(--apx-text-sm);
+  border-bottom: 1px solid var(--apx-border);
+}
+.offline__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.offline__detail {
+  opacity: 0.75;
+}
+.toasts {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  z-index: 40;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(480px, calc(100% - 32px));
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px;
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-surface-raised);
+  border: 1px solid var(--apx-border);
+  box-shadow: var(--apx-shadow-md);
+  color: var(--apx-danger-soft-fg);
+  font-size: var(--apx-text-sm);
+}
+.toast.is-info {
+  color: var(--apx-brand-soft-fg);
+}
+.toast__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--apx-fg);
+}

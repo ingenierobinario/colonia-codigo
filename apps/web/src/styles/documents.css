@@ -1,0 +1,50 @@
+.filepart.documentpart {
+  height: auto;
+  padding: 12px;
+  width: min(100%, 440px);
+  max-width: 100%;
+  min-width: 220px;
+}
+.documentpart__info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+  text-align: left;
+}
+/* The card's actions show over its top right while it is pointed at or focused. */
+.documentpart__wrap {
+  position: relative;
+  width: min(100%, 440px);
+  min-width: 220px;
+}
+.documentpart__wrap .filepart.documentpart {
+  width: 100%;
+}
+.documentpart__actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-surface);
+  opacity: 0;
+  pointer-events: none;
+}
+.documentpart__wrap:hover .documentpart__actions,
+.documentpart__wrap:focus-within .documentpart__actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.documentpart__label,
+.documentpart__name {
+  font-size: calc(11px * var(--apx-text-scale, 1));
+  color: var(--apx-fg-muted);
+}
+.documentpart__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

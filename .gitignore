@@ -1,0 +1,52 @@
+# deps / builds
+node_modules/
+dist/
+out/
+*.tsbuildinfo
+.turbo/
+
+# workspace-only folders (never in the repo)
+_ref/
+_design/
+.scratch/
+
+# local-only
+apps/desktop/.dev/
+# APX's Google OAuth client: CI writes it into builds, a checkout keeps its own here (DECISIONS.md#d-130)
+/google-client.json
+.env
+.env.*
+!.env.example
+spec/private-terms.txt
+.DS_Store
+
+# design-sync machine state (see packages/ui/.design-sync)
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+playground/out/
+
+# e2e runs
+test-results/
+playwright-report/
+coverage/
+e2e/.out/
+
+# scratch scripts while developing e2e
+e2e/.*.ts
+
+# release files (pnpm package[:mac|:linux|:win]): installers, daemon bundles, install scripts — out/ above
+apps/desktop/.stage/
+apps/desktop/.bundle/
+apps/desktop/.node-*/
+apps/desktop/.npx-cache/
+apps/desktop/release/
+
+# Install-test servers: the key a test logs in with (e2e/install/servers.sh build)
+e2e/install/authorized_keys
+
+.apc
+
+*.log

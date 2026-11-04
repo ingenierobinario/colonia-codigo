@@ -1,0 +1,226 @@
+// The settings stored as JSON, each with its schema and the value it has when unset or unreadable. They are read
+// only through `store.settings.read`, so a bad stored value falls back here instead of reaching the code using it.
+import {
+  ActiveProfile,
+  AgentBudgets,
+  AgentLimits,
+  BaseProject,
+  CALENDAR_LEAD,
+  CHECK_EVERY,
+  ChannelInfo,
+  EmailSignatures,
+  EmailSignatureValue,
+  HookMode,
+  ImageDefaults,
+  MemorySettings,
+  ModelChoice,
+  NoticePrefs,
+  Organization,
+  ProviderInfo,
+  RouterConfig,
+  ServiceSettings,
+  TaskColumn,
+  TelemetryEvent,
+  TelemetryStage,
+} from "@apx/protocol";
+import { z } from "zod";
+import { DEFAULT_COLUMNS } from "./tasks.ts";
+
+export type Entry<T> = { schema: z.ZodType<T>; fallback: T };
+const entry = <T>(schema: z.ZodType<T>, fallback: NoInfer<T>): Entry<T> => ({ schema, fallback });
+
+/** A list whose items are checked one by one: an item that does not fit is dropped, not the whole list. */
+const listOf = <T>(item: z.ZodType<T>) =>
+  z.array(z.unknown()).transform((items) =>
+    items.flatMap((x) => {
+      const r = item.safeParse(x);
+      return r.success ? [r.data] : [];
+    }),
+  );
+
+/** Names turned off per project id ("*" = everywhere); a project's list may hold the "no globals" marker. */
+const OffLists = z.record(z.string(), z.array(z.string()));
+
+/** A model API as the owner set it; `removed` hides a built-in one. */
+const Provider = z.object({
+  id: z.string().regex(/^[a-z0-9][a-z0-9-]{0,31}$/),
+  transport: ProviderInfo.shape.transport,
+  base_url: z.string(),
+  key: z.string(),
+  models: z.array(z.string()),
+  label: z.string().optional(),
+  preset: z.string().optional(),
+  enabled: z.boolean().optional(),
+  removed: z.boolean().optional(),
+});
+
+/** An ACP CLI the owner added beside the known ones. */
+const AcpAgent = z.object({
+  id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+  label: z.string().optional(),
+  command: z.string().min(1),
+  args: z.array(z.string()),
+  login: z.string().optional(),
+  env: z.record(z.string(), z.string()).optional(),
+});
+
+/** A channel as configured; how it is doing and its token are not stored here. */
+const Channel = ChannelInfo.omit({ token_set: true, token_hint: true, status: true, error: true, account: true });
+
+export const SETTINGS = {
+  email_signatures: entry(EmailSignatures, []),
+  email_signature_default: entry(EmailSignatureValue.nullable(), null),
+  engine_usage: entry(z.record(z.string(), z.boolean()), {}),
+  project_helper: entry(
+    z.record(
+      z.string(),
+      z.object({
+        enabled: z.boolean().optional(),
+        goal: z.string().max(2000).optional(),
+        first_result: z.string().max(2000).optional(),
+        dismissed: z.array(z.string().max(64)).max(100).optional(),
+      }),
+    ),
+    {},
+  ),
+  task_columns: entry(z.array(TaskColumn).min(1), DEFAULT_COLUMNS),
+  notices: entry(NoticePrefs, NoticePrefs.parse({})),
+  /**
+   * The owner's limits on agents acting on their own; a field unset keeps engine/limits.ts's default. `agents` holds
+   * the budgets the owner gave single agents, inside those limits.
+   */
+  agent_limits: entry(AgentLimits.partial().extend({ agents: AgentBudgets.optional() }), {}),
+  /**
+   * The quick chat's shortcut, start at login (on: APX is meant to be always there) and whether agents may use this
+   * computer's screen (off until the owner turns it on); each field falls back alone.
+   */
+  desktop: entry(
+    z.object({
+      shortcut: z.string().catch("Alt+Space"),
+      launch_at_login: z.boolean().catch(true),
+      computer_use: z.boolean().catch(false),
+      keep_awake: z.boolean().catch(true),
+    }),
+    { shortcut: "Alt+Space", launch_at_login: true, computer_use: false, keep_awake: true },
+  ),
+  /** Saved without the auxiliary model, which keeps its own key ("model_aux", plain text). */
+  memory: entry(MemorySettings.omit({ aux_model: true }).partial(), {}),
+  /** About the owner and their time zone (their name is the owner's person; the language is "owner_language"). */
+  owner_profile: entry(z.object({ about: z.string().catch(""), timezone: z.string().catch("") }), {
+    about: "",
+    timezone: "",
+  }),
+  /** The base project's name, description and kind (it has no folder to keep them in). */
+  base_project: entry(BaseProject, { name: "Default" }),
+  /** The base project's areas and roles (a real project keeps them in its .apc/organization.json). */
+  base_org: entry(Organization, { areas: [], roles: [] }),
+  /**
+   * Google Calendar's event reminders: off, 30 minutes ahead and looked at every 5 minutes until the owner chooses;
+   * each field falls back alone.
+   */
+  calendar_reminders: entry(
+    z.object({
+      enabled: z.boolean().catch(false),
+      lead_min: z.number().int().min(CALENDAR_LEAD.min).max(CALENDAR_LEAD.max).catch(CALENDAR_LEAD.default),
+      every_min: z.number().int().min(CHECK_EVERY.min).max(CHECK_EVERY.max).catch(CHECK_EVERY.default),
+    }),
+    { enabled: false, lead_min: CALENDAR_LEAD.default, every_min: CHECK_EVERY.default },
+  ),
+  /** Gmail's mail check: off, every 5 minutes, any mail outside ads and social until the owner chooses. */
+  mail_check: entry(
+    z.object({
+      enabled: z.boolean().catch(false),
+      every_min: z.number().int().min(CHECK_EVERY.min).max(CHECK_EVERY.max).catch(CHECK_EVERY.default),
+      important_only: z.boolean().catch(false),
+    }),
+    { enabled: false, every_min: CHECK_EVERY.default, important_only: false },
+  ),
+  /** The profile the super-agent runs and the owner's values for it (none until the owner picks one). */
+  profile: entry(ActiveProfile, { id: null, values: {} }),
+  /**
+   * The isolated Linux computer: the owner's memory, CPUs and disk for it (unset: chosen from this host, see
+   * environments/resources.ts) and the idle minutes after which the watchdog stops it (0: never for idleness).
+   */
+  computer: entry(
+    z.object({
+      memory_gib: z.number().int().positive().optional().catch(undefined),
+      cpus: z.number().int().positive().optional().catch(undefined),
+      disk_gib: z.number().int().positive().optional().catch(undefined),
+      idle_minutes: z.number().int().min(0).max(1440).catch(30),
+    }),
+    { idle_minutes: 30 },
+  ),
+  /** The chats whose agent works on the shared computer instead of this Mac (DECISIONS.md#d-152). */
+  computer_chats: entry(z.array(z.string()).catch([]), []),
+  /** Each agent's screen number on the shared computer, given once and kept with its Linux user. */
+  computer_screens: entry(z.record(z.string(), z.number().int().min(1).max(999)).catch({}), {}),
+  /** Who holds which screen now: an agent's working run in one chat. Swept when the run is over. */
+  computer_claims: entry(
+    listOf(
+      z.object({
+        screen: z.number().int().min(1),
+        agent: z.string(),
+        thread: z.string(),
+        run: z.string(),
+        at: z.string(),
+      }),
+    ),
+    [],
+  ),
+  /** iMessage on this Mac as tools: off until the owner turns it on. */
+  imessage: entry(z.object({ on: z.boolean().catch(false) }), { on: false }),
+  skills_off: entry(OffLists, {}),
+  mcp_off: entry(OffLists, {}),
+  model_default: entry(ModelChoice.nullable(), null),
+  model_router: entry(RouterConfig, { rules: [], chain: [] }),
+  image_defaults: entry(ImageDefaults.partial(), {}),
+  providers: entry(listOf(Provider), []),
+  acp_agents: entry(listOf(AcpAgent), []),
+  /** The owner's media services, in the order they are tried. */
+  services: entry(listOf(ServiceSettings.extend({ id: z.string() })), []),
+  /** Services APX added on its own once (Codex's images): one the owner removed is not added again. */
+  services_offered: entry(z.array(z.string()).catch([]), []),
+  channels: entry(listOf(Channel), []),
+  /**
+   * The restricted public ingress address the owner chose (public-tunnel.ts), applied again at every start, and the
+   * last address ngrok gave (a new one is pointed out to the owner).
+   */
+  webhooks: entry(
+    z.object({
+      mode: HookMode,
+      url: z.string().optional(),
+      domain: z.string().optional(),
+      ngrok_last: z.string().optional(),
+    }),
+    { mode: "off" as const },
+  ),
+  /**
+   * Telemetry (telemetry.ts): the owner's answer on usage statistics (null: not asked yet), the lifecycle steps sent,
+   * the version and answer the install's record holds, where the next usage report starts, and the last thing sent.
+   */
+  telemetry: entry(
+    z.object({
+      usage: z.boolean().nullable().catch(null),
+      usage_reported: z.boolean().nullable().catch(null),
+      sent: z.partialRecord(TelemetryStage, z.string()).catch({}),
+      opened_at: z.string().nullable().catch(null),
+      reported_version: z.string().nullable().catch(null),
+      usage_from: z.string().nullable().catch(null),
+      usage_day: z.string().nullable().catch(null),
+      last: z.object({ at: z.string(), event: TelemetryEvent }).nullable().catch(null),
+    }),
+    {
+      usage: null,
+      usage_reported: null,
+      sent: {},
+      opened_at: null,
+      reported_version: null,
+      usage_from: null,
+      usage_day: null,
+      last: null,
+    },
+  ),
+};
+
+export type SettingKey = keyof typeof SETTINGS;
+export type SettingValue<K extends SettingKey> = (typeof SETTINGS)[K]["fallback"];

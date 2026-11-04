@@ -1,0 +1,81 @@
+// Media APX made (generated images, synthesized speech) or the owner attached (images, files): one row per file. The bytes stay on disk under the home,
+// never in the database or in messages; clients fetch them through media.get.
+import type { Part } from "@apx/protocol";
+import type { Selectable } from "kysely";
+import type { MediaTable } from "../db/schema.ts";
+import { newId, now, opt, qb, type Sql } from "./sql.ts";
+
+export type MediaRecord = {
+  id: string;
+  kind: "image" | "audio" | "file";
+  mime: string;
+  bytes: number;
+  path: string;
+  thread_id?: string | undefined;
+  service?: string | undefined;
+  prompt?: string | undefined;
+  created_at: string;
+};
+
+/** How a kept file shows in a message: a picture, a sound, or a file to play or download. */
+export function partOfMedia(m: MediaRecord): Part {
+  return m.kind === "image"
+    ? { type: "image", media_id: m.id, mime: m.mime, alt: m.prompt ?? "image" }
+    : m.kind === "audio"
+      ? { type: "audio", media_id: m.id, mime: m.mime }
+      : { type: "file", media_id: m.id, mime: m.mime, name: m.prompt ?? m.id, bytes: m.bytes };
+}
+
+const toMedia = (r: Selectable<MediaTable>): MediaRecord => ({
+  id: r.id,
+  kind: r.kind === "audio" ? "audio" : r.kind === "file" ? "file" : "image",
+  mime: r.mime,
+  bytes: r.bytes,
+  path: r.path,
+  ...opt("thread_id", r.thread_id),
+  ...opt("service", r.service),
+  ...opt("prompt", r.prompt),
+  created_at: r.created_at,
+});
+
+export function mediaRepo({ one, all, run }: Sql) {
+  const repo = {
+    get(id: string): MediaRecord | undefined {
+      const r = one(qb.selectFrom("media").selectAll().where("id", "=", id));
+      return r ? toMedia(r) : undefined;
+    },
+    add(m: Omit<MediaRecord, "id" | "created_at">): MediaRecord {
+      const id = newId("med");
+      run(
+        qb.insertInto("media").values({
+          id,
+          kind: m.kind,
+          mime: m.mime,
+          bytes: m.bytes,
+          path: m.path,
+          thread_id: m.thread_id ?? null,
+          service: m.service ?? null,
+          prompt: m.prompt?.slice(0, 2000) ?? null,
+          created_at: now(),
+        }),
+      );
+      return repo.get(id) as MediaRecord;
+    },
+    /** A thread's files kept under one name, newest first. */
+    named(thread: string, name: string): MediaRecord[] {
+      return all(
+        qb
+          .selectFrom("media")
+          .selectAll()
+          .where("thread_id", "=", thread)
+          .where("prompt", "=", name)
+          .orderBy("created_at", "desc"),
+      ).map(toMedia);
+    },
+    /** Forgets a row; its file is the caller's to delete. */
+    remove(id: string): void {
+      run(qb.deleteFrom("media").where("id", "=", id));
+    },
+  };
+  return repo;
+}

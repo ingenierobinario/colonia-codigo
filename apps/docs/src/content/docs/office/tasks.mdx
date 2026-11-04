@@ -1,0 +1,247 @@
+---
+title: Tasks
+description: A board your agents work from, with commitments for what you promised people and what they owe you.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps, CardGrid, LinkCard } from "@astrojs/starlight/components";
+import Shot from "../../../components/Shot.astro";
+import Terminal from "../../../components/Terminal.astro";
+
+Tasks are the office's to-do board, shared by you and your agents. You create them, agents create them, and giving one
+to an agent is enough for it to start. **Tasks** in the sidebar shows them from every project; each project has its
+own **Tasks** tab with **New task**.
+
+<Shot name="tasks" alt="The Tasks screen with groups In progress, Pending, In review and Needs your review, each listing tasks with assignee and due date" caption="Tasks, across every project" />
+
+Before creating another task, agents are instructed to check the open tasks and continue an existing task when
+it already covers the same or closely related work. This is not automatic duplicate detection. For a task that
+changes code, see [where the code work goes](/office/code/#where-a-task-changes-code).
+
+## Recording versus starting work
+
+Ask for an action and the agent should do it with its tools, or hand it once to the needed specialist—not substitute
+board updates for a result. Long work can use a task for internal tracking, but it must actually start and report a
+result or a concrete blocker.
+
+To record an idea without starting work, ask for a capture-only task and leave it **unassigned**. A task with an
+assignee and a description starts its own work session unless it is proposed, scheduled for later or paused by
+agent limits. Assignment and delegation are alternative ways to start work, not two steps to perform together.
+Within one turn (including a restart recovery), APX prevents mixing task execution and delegation for the same
+teammate and project, even when the wording differs. Genuinely different work can use the delegation tool's explicit
+`independent` flag and a brief naming the separate outcome; it is not for retries or the same goal. This distinction
+is recorded with the delegated run. The guard is not semantic duplicate detection across chats or later turns, and
+it cannot verify that an agent's claim of independent work is correct.
+
+## What a task has
+
+| Field | Values |
+|---|---|
+| **Type** | **Task** (work in a project), **Commitment** (something promised with someone) or **Errand** (something small to do on the way: buy, call, pick up). |
+| **Column** | **Backlog** (just arrived, new tasks land here), **To do** (decided, it is next), **Doing** (someone is on it now), **Review** (finished, waiting for a check). |
+| **Priority** | Urgent, High, Normal, Low. |
+| **Who does it** | An agent, or nobody. Picking a project's agent puts the task in that project. |
+| **Due date and reminder** | When it is due, 1 hour before, 1 day before, another time, or no reminder. |
+| **Tags** | Free words (`client`, `launch`…). |
+
+**Done** and **Drop** close a task; **Reopen** brings it back. The filter at the top switches between **All**,
+**Tasks**, **Commitments** and **Errands**. On the Tasks screen, the project picker beside it narrows the list to one
+project or shows **All projects**; this browser remembers the choice for the next visit.
+
+### How the list is grouped
+
+- **Proposed** (when there are any, on top): tasks an agent proposes and nothing starts until you accept them.
+  **Accept all** in its header, or **Accept** and **Drop** in each one's drawer. See
+  [Proposals](#proposals).
+- **Needs your review** (first): what is yours. An agent asked you something or needs your decision (it goes on when
+  you answer; you also mark it so with **Waits for your answer** from its menu), or a finished task you review to
+  close. Each row says which: **Asks you something** or **Reviews: You**.
+- **In progress**: its column is Doing, or an agent is working on it right now.
+- **Pending**: Backlog or To do, nobody started it yet.
+- **In review**: finished, and the agent you named reviews it (**Reviewed by** in the drawer, or an agent naming one).
+  It is asked to review at once: asking for changes sends it back to whoever did it; approving makes it yours.
+- **Closed recently**: done or dropped, newest first.
+
+## Attachments and task chat actions
+
+Tasks can keep selected screenshots and files as independent snapshots, when created or later. Preview or download
+them from the task. Each task holds up to 50 files, at most 20 MB each. Deleting the original chat does not delete
+the task's copy; removing the attachment deletes that copy, not copies already shared elsewhere. Authorized agents
+can inspect task attachments without gaining access to private contact chats. Sending a file outside APX remains
+a separate owner action.
+
+Use the task chat group's actions button or right-click menu to change its column, mark it waiting, close or reopen
+it, or archive its chats. Archiving preserves history: it does not close the task or restart work. Task status appears
+beside the chat header, and the opening task description preserves paragraphs and lists.
+
+## Assigning starts the work
+
+Give a task to an agent (when you create it, or later) and it starts working right away, in **its own chat for that
+task**. That chat is a normal chat listed in the Inbox: you can open it and watch, or talk to the agent there.
+
+<Steps>
+
+1. Lucía creates "Write the shipping rates page" in Acme Store and picks **Tomás** in **Who does it**.
+2. Tomás's chat for the task opens with the task's words and he starts: reads the project, drafts the page.
+3. His answers stay in his chat. He comments on the task when something is worth knowing: a step done and verified,
+   a block, something to review. The task keeps those comments; the chat keeps the work itself (every tool call,
+   every file). When he closes the task, his last answer is posted as his report.
+4. When he needs a decision, he asks you. The task moves to **Needs your review** until you answer.
+
+</Steps>
+
+Open a task and its drawer shows the description, the fields, the **Comments** and the **History** (who created,
+moved, assigned or closed it). **Sessions** at the top counts the chats the task was worked in and opens their list,
+to jump to where the work happens. If you reassign it, the new agent gets its own chat and is told who worked on it
+before, and where to read it.
+
+<Shot name="task-drawer" alt="A task open in its drawer: title, assignee, priority, and a conversation of comments from the owner and an agent" caption="A task's drawer: comments, fields and the work chat" />
+
+Assigned tasks that never started are picked up on their own: once an hour, the most pressing few get started, as
+whoever gave them: a task an agent gave counts against that agent's limits, never as your own request. To
+have one start later (tomorrow morning, after a release), set **Starts** in its drawer, or `apx tasks add … --start
+2026-10-23T09:00`: its agent starts then, not when you assign it.
+
+### Moving the current work into a task
+
+**Since 2.11.1**, when an agent immediately assigns its current work to itself as a new
+task, APX transfers execution to the task's chat. The originating turn stops executing tools; the task chat gets a
+bounded handoff of the request and recent findings so it can continue rather than repeat the investigation.
+This does not prohibit unrelated parallel chats. If the current turn already has helpers or other active work,
+or cannot transfer safely, APX refuses the handoff and the agent must continue there, not start a second executor.
+
+### Comments and @mentions
+
+Write in the task's **Comment** box. A comment that names no one waits a minute (so you can add another) and then
+goes to the task's agent, or to the super-agent when nobody has the task; its ticks show it sent, delivered and read.
+An `@name` asks that agent: it answers in its own chat for the task, and its
+answer comes back as a comment. Ask Vera from Lucía's task:
+
+> @Vera can you have the product photos by Thursday? This page needs them.
+
+An agent asks a teammate the same way: its `@name` in a comment opens a consult on the task, shown as a card with
+the question and the answer, and the answer comes back to the agent that asked, which goes on with its work. One
+comment asks two teammates at most, and the one answering a consult cannot ask anyone further. An agent can also
+mention you to get your attention.
+
+### An agent works a task until it is done
+
+When an agent's turn on a task ends with the task still in progress (it ran out of steps, or stopped at "I'll
+continue"), its next part starts at once, numbered, up to nine. It stops when the agent closes the task, marks it
+waiting on you with what you must do, says what blocks it, or when a part got nowhere. Closing its own work as done,
+an agent must say what it verified.
+
+### When an agent's task closes
+
+A task one agent created and gave to another reports back when it closes. Your main agent hears of every task its team
+closes, also the ones you or another agent gave, and tells you what came of it. Your main agent can hand a whole goal to a
+project's orchestrator as a task; when the orchestrator closes it, hours and restarts later, your main agent gets
+its report in the chat where it created the task and tells you what matters. Closing a task yourself, or an agent
+closing its own, wakes nobody. That turn counts toward the [turns agents start on their own without
+you](/concepts/agents/): past the limit, the report waits until you write in that chat.
+
+### Requesting corrections
+
+Reopening alone does not start work. To reject a delivery and ask the same assignee to correct it, an agent uses
+`task_close` with `state: "open"`, `rework: true`, and a `note` explaining the corrections. Protocol clients use the
+same fields on `tasks.close`.
+
+The task must be closed and assigned. The request keeps its identity, column, history and work chat, records the
+reason and new run, and reports back to the original coordinator when the assignee closes it again. Requests are
+refused without changing the task if work is still active or agent limits are paused; wait for work to finish or
+ask the owner to allow the chain to continue, then retry. Ordinary updates and administrative reopening never
+start a correction run.
+
+## Sub-tasks
+
+A task can name a parent task, so "Spring launch" can hold the photos for Vera and the rates page for Tomás.
+
+The list nests them under their parent. A task an agent creates while it works on a task is a sub-task of that one:
+the agent that owns a task carries it end to end, and hands a part to another agent through a sub-task, not a chat.
+
+### Proposals
+
+When an agent finishes, it may see more work: a QA pass, a review, something for another area. Work its own role
+hands out it creates and starts; the rest it **proposes**. A proposed task waits in **Proposed**, with who proposed
+it, until you accept it (it starts like any assigned task) or drop it. You get one notice per agent with how many it
+has waiting.
+
+Some tasks are proposals whatever the agent asks for. When you ask your super-agent for several things without saying how, it asks
+you first (a plan, one task each, or doing it itself); once you said how, it goes ahead.
+
+The proposals:
+
+- **A hand-off chain three deep.** A sub-task of a sub-task of a sub-task is proposed, so agents cannot keep passing
+  work down on their own.
+- **Work given back up the chain.** A sub-task for an agent that created one of the tasks above it is proposed, so two
+  agents cannot ping-pong the same work.
+
+The same goes when an agent hands an existing task to another agent: if giving it new would make it a proposal, the
+hand-off is proposed too, and it starts once you accept it.
+
+## Commitments
+
+A commitment is a task with **a person** (one of your [contacts](/channels/overview/)) and **who owes it**: **I owe it** (you promised something to someone) or
+**They owe me** (someone promised something to you). It has a due date like any task, so it is reminded and raised
+before it is late.
+
+<Shot name="commitments" alt="Tasks filtered to Commitments: what you owe each person and what each person owes you, with due dates" caption="The Commitments filter" />
+
+A commitment ends one of three ways, or gets a new date:
+
+| Action | What it records |
+|---|---|
+| **Kept** | Delivered. Closes it as done. |
+| **Missed** | Its date passed undelivered. Closes it. |
+| **Release** | Released by agreement. Closes it. |
+| **New date** | Renegotiated: it stays open with the new date, and a counter shows how many times it moved. |
+
+Only your word settles a commitment. Agents never mark one kept or missed on their own: the day-close routine asks you
+how they went, and the agent records your answer (see [Secretary](/office/secretary/)).
+
+## From the terminal
+
+<Terminal command="apx tasks help">{`apx tasks [--project p]                 Open tasks by column
+apx tasks add <title…> [--project p] [--agent a] [--person name --owed me|them] [--due 2026-10-05]
+apx tasks commitments                    What you owe and what you are owed
+apx tasks move <id> <column>
+apx tasks done|drop|reopen <id>
+apx tasks say <id> <text…>               Comment; @agent asks that agent there`}</Terminal>
+
+A few examples (agent and project ids are the ones `apx agents` and `apx projects` print):
+
+```bash
+# A task for Tomás in Acme Store: he starts on it at once
+apx tasks add Write the shipping rates page --project <acme-id> --agent <tomas-id>
+
+# You promised Marta (a contact at Northwind) a quote by Friday
+apx tasks add Send the wholesale quote --person Marta --owed me --due 2026-10-10
+
+# Move it, comment on it, close it
+apx tasks move <task-id> review
+apx tasks say <task-id> @Lucía please check the copy before Friday
+apx tasks done <task-id>
+```
+
+Columns for `move` are `backlog`, `todo`, `doing` and `review`.
+
+<Aside type="note">
+Agents can open, move, comment on and close tasks with their own tools, so "Lucía, put that on the board for Tomás"
+works in any chat.
+</Aside>
+
+## Agent tools
+
+- `task_list` lists the board; `task_get` reads one task by its `task` ID.
+- `task_get` includes task fields, history, work sessions, consults, subtasks, token usage and the latest 60 conversation messages. Saved evidence (file references, change patches and consult summaries) stays with its message; it does not fetch attachment bytes or invent missing proof.
+- Detail sections are bounded for the model, with omission markers for long content and older comments. Task and conversation content is returned as data, not instructions.
+- Project agents can read their project's and global tasks, not other projects' tasks or related work. Missing and out-of-scope IDs return the same safe error. The global secretary keeps its board-wide visibility.
+- `task_create`, `task_update`, `task_comment` and `task_close` create and maintain tasks; `commitment_settle` records an agreed commitment outcome.
+
+## Next
+
+<CardGrid>
+  <LinkCard title="Routines" href="/office/routines/" description="Work an agent does on its own, on a schedule." />
+  <LinkCard title="Secretary" href="/office/secretary/" description="Day open, day close and what reaches you unasked." />
+</CardGrid>

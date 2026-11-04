@@ -1,0 +1,112 @@
+{
+  "appId": "dev.apx.desktop",
+  "productName": "APX",
+  "extraMetadata": {
+    "name": "apx"
+  },
+  "artifactName": "APX-${version}-${os}-${arch}.${ext}",
+  "directories": {
+    "output": "../../out",
+    "buildResources": "assets"
+  },
+  "files": ["dist/**", "package.json", "!node_modules/**"],
+  "extraResources": [
+    {
+      "from": ".stage/apx",
+      "to": "apx",
+      "filter": ["**/*"]
+    },
+    {
+      "from": ".stage/apx/node_modules",
+      "to": "apx/node_modules",
+      "filter": ["**/*"]
+    }
+  ],
+  "npmRebuild": false,
+  "electronVersion": "44.5.1",
+  "publish": null,
+  "fileAssociations": [
+    {
+      "ext": "apxart",
+      "name": "APX artifact",
+      "description": "APX artifact",
+      "role": "Viewer",
+      "icon": "file-apxart",
+      "mimeType": "application/x-apx-artifact"
+    },
+    {
+      "ext": "apxapp",
+      "name": "APX app",
+      "description": "APX app",
+      "role": "Viewer",
+      "icon": "file-apxapp",
+      "mimeType": "application/x-apx-app"
+    },
+    {
+      "ext": "apxext",
+      "name": "APX extension",
+      "description": "APX extension",
+      "role": "Viewer",
+      "icon": "file-apxext",
+      "mimeType": "application/x-apx-extension"
+    }
+  ],
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "assets/icon.png",
+    "category": "public.app-category.productivity",
+    "identity": "-",
+    "hardenedRuntime": false,
+    "extendInfo": {
+      "UTExportedTypeDeclarations": [
+        {
+          "UTTypeIdentifier": "dev.apx.artifact",
+          "UTTypeDescription": "APX artifact",
+          "UTTypeConformsTo": ["public.json", "public.data"],
+          "UTTypeIconFile": "file-apxart.icns",
+          "UTTypeTagSpecification": {
+            "public.filename-extension": ["apxart"],
+            "public.mime-type": ["application/x-apx-artifact"]
+          }
+        },
+        {
+          "UTTypeIdentifier": "dev.apx.app",
+          "UTTypeDescription": "APX app",
+          "UTTypeConformsTo": ["public.json", "public.data"],
+          "UTTypeIconFile": "file-apxapp.icns",
+          "UTTypeTagSpecification": {
+            "public.filename-extension": ["apxapp"],
+            "public.mime-type": ["application/x-apx-app"]
+          }
+        },
+        {
+          "UTTypeIdentifier": "dev.apx.extension",
+          "UTTypeDescription": "APX extension",
+          "UTTypeConformsTo": ["public.json", "public.data"],
+          "UTTypeIconFile": "file-apxext.icns",
+          "UTTypeTagSpecification": {
+            "public.filename-extension": ["apxext"],
+            "public.mime-type": ["application/x-apx-extension"]
+          }
+        }
+      ]
+    }
+  },
+  "win": {
+    "target": ["nsis", "zip"],
+    "icon": "assets/icon.png"
+  },
+  "nsis": {
+    "oneClick": true,
+    "perMachine": false,
+    "runAfterFinish": true
+  },
+  "linux": {
+    "target": ["AppImage", "zip"],
+    "icon": "assets/icon.png",
+    "category": "Utility",
+    "maintainer": "APX",
+    "synopsis": "Your agents, your projects, one local core.",
+    "executableName": "apx"
+  }
+}

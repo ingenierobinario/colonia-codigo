@@ -1,0 +1,880 @@
+// Composition root: config → identity → db/store → providers → harnesses → engine → router → transports.
+// Only wiring lives here. Tests call createCore directly (with a temp home and fakes).
+
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { BROWSER_CAP, type HarnessId, TabInfo } from "@apx/protocol";
+import {
+  createDesktopInstaller,
+  type DesktopInstaller,
+  type DesktopInstallOptions,
+} from "../../../packages/install/src/desktop.ts";
+import { prepareLocalTarget } from "../../../packages/install/src/paths.ts";
+import { desktopSessionEnv } from "../../../packages/install/src/session.ts";
+import { createAccess, type TailscaleRun } from "./access.ts";
+import { createProjectReader, type ReadProjectFiles } from "./apc/project-reader.ts";
+import { createApcSync } from "./apc/sync.ts";
+import type { TemplateRoot } from "./apc/templates.ts";
+import { createBus } from "./bus.ts";
+import { discordAdapter } from "./channels/discord.ts";
+import { emailAdapter } from "./channels/email.ts";
+import { googlechatAdapter } from "./channels/googlechat.ts";
+import { imessageAdapter } from "./channels/imessage.ts";
+import { ircAdapter } from "./channels/irc.ts";
+import { lineAdapter } from "./channels/line.ts";
+import { createChannels } from "./channels/manager.ts";
+import { matrixAdapter } from "./channels/matrix.ts";
+import { mattermostAdapter } from "./channels/mattermost.ts";
+import { nextcloudAdapter } from "./channels/nextcloud.ts";
+import { ntfyAdapter } from "./channels/ntfy.ts";
+import { signalAdapter } from "./channels/signal.ts";
+import { slackAdapter } from "./channels/slack.ts";
+import { smsAdapter } from "./channels/sms.ts";
+import { teamsAdapter } from "./channels/teams.ts";
+import { telegramAdapter } from "./channels/telegram.ts";
+import { twitchAdapter } from "./channels/twitch.ts";
+import type { AdapterFactory } from "./channels/types.ts";
+import { whatsappAdapter } from "./channels/whatsapp.ts";
+import { type CoreConfig, OAUTH_CHATGPT } from "./config.ts";
+import { coreLogSink } from "./core-log.ts";
+import { openDb } from "./db/db.ts";
+import { type DesktopOps, systemDesktop } from "./desktop.ts";
+import { signatureFor } from "./domain/email-signature-settings.ts";
+import { cleanUpCapturedNotes } from "./domain/memory-capture-cleanup.ts";
+import { parseRef } from "./domain/refs.ts";
+import { TERMINAL } from "./domain/runs.ts";
+import { seed } from "./domain/seed.ts";
+import { createStore } from "./domain/store.ts";
+import { announceRelease } from "./domain/whats-new.ts";
+import { createAttention } from "./engine/attention.ts";
+import { keepAwake, sleepWatch } from "./engine/awake.ts";
+import { calendarReminders } from "./engine/calendar-reminders.ts";
+import { createEngine, type RunTimers } from "./engine/engine.ts";
+import type { InputWaits } from "./engine/inputs.ts";
+import { mailCheck } from "./engine/mail-check.ts";
+import { createMemoryIndex } from "./engine/memory-index.ts";
+import { createMemoryMaintenance } from "./engine/memory-maintenance.ts";
+import { createNoticePush } from "./engine/notice-push.ts";
+import { createPermissions } from "./engine/permissions.ts";
+import type { ProfileRoot } from "./engine/profiles.ts";
+import { createSkillPicker } from "./engine/skill-pick.ts";
+import { createDrafter } from "./engine/suggest.ts";
+import { afterWorkTurn } from "./engine/task-work.ts";
+import { wakeAfterCommand } from "./engine/terminal-wake.ts";
+import type { ToolCall } from "./engine/turn.ts";
+import { createUpkeep } from "./engine/upkeep.ts";
+import { type ComputerConfig, createComputer } from "./environments/computer.ts";
+import { managedVmConfig } from "./environments/managed.ts";
+import { computerWatchdog } from "./environments/watchdog.ts";
+import { errorMessage } from "./errors.ts";
+import { flowHttpPolicy } from "./flow-http.ts";
+import { notifyDestination } from "./flow-outward.ts";
+import { createFlows } from "./flows.ts";
+import { thisRunner, writeApxCommand } from "./harness/apx-command.ts";
+import type { CliStatus } from "./harness/detect.ts";
+import { which } from "./harness/detect.ts";
+import { harnessEnv, useApxCommand, useUsualDirs } from "./harness/env.ts";
+import { createHarnesses, type Harness } from "./harness/index.ts";
+import { readIdentity } from "./identity.ts";
+import { createIdleTrim } from "./idle-memory.ts";
+import { type IMessageOps, systemIMessage } from "./imessage.ts";
+import { createAsana } from "./integrations/asana.ts";
+import { calendarApi } from "./integrations/calendar.ts";
+import { gmailApi } from "./integrations/gmail.ts";
+import { createGoogle } from "./integrations/google.ts";
+import { apxGoogleClient, clientFromPair } from "./integrations/google-client.ts";
+import { GOOGLE, googleAt } from "./integrations/google-oauth.ts";
+import { createLog, type Log } from "./log.ts";
+import { mcpConfig } from "./mcp/config.ts";
+import { agentFiles } from "./mcp/file-args.ts";
+import { createMcp } from "./mcp/manager.ts";
+import { createCatalog } from "./models/catalog.ts";
+import { createNews } from "./news/news.ts";
+import { nodeChildEnv } from "./node-runtime.ts";
+import { createNodeBroker } from "./nodes/broker.ts";
+import { createHeadlessBrowser } from "./nodes/headless-browser.ts";
+import { officeScheduler } from "./office-wiring.ts";
+import { createChatgptLogin } from "./providers/chatgpt-login.ts";
+import { createLlm, type Llm, NO_KEY, type SignIn } from "./providers/llm.ts";
+import { providerRegistry } from "./providers/registry.ts";
+import { createPublicCredentials } from "./public-credentials.ts";
+import { nativePublicRoutes, publishedPublicRoutes } from "./public-routes.ts";
+import { createPublicTunnel, type NgrokStart } from "./public-tunnel.ts";
+import { localReleases, type ReleaseSource } from "./release-notes.ts";
+import { useLocalEmbedder } from "./rpc/embeddings.ts";
+import { internalCaller } from "./rpc/internal.ts";
+import { createRouter, type Dispatch } from "./rpc/router.ts";
+import { useLocalModel } from "./rpc/transcription.ts";
+import { createSecrets } from "./secrets.ts";
+import {
+  builtinTools,
+  coreHandlers,
+  extensionStack,
+  knownEngines,
+  listen,
+  panelEntry,
+  reachableAt,
+  servedPanel,
+} from "./server-wiring.ts";
+import { CODEX_IMAGE_SERVICE, CODEX_IMAGES, createCodexImages } from "./services/codex-images.ts";
+import { createLocalEmbeddings } from "./services/local-embed.ts";
+import { createModelInstaller } from "./services/local-whisper.ts";
+import { createPush } from "./services/push.ts";
+import { createServices } from "./services/registry.ts";
+import { mediaData } from "./services/uploads.ts";
+import { syncRuntimeSkills } from "./skills/runtimes.ts";
+import { skillsFor } from "./skills/skills.ts";
+import { createTelemetry } from "./telemetry.ts";
+import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
+import { createTerminals } from "./terminal/terminals.ts";
+import { asanaTools } from "./tools/asana.ts";
+import { scratchRoot } from "./tools/folders.ts";
+import { googleTools } from "./tools/google.ts";
+import { imessageTools } from "./tools/imessage.ts";
+import type { Tool } from "./tools/types.ts";
+import { listenHooks } from "./transport/hooks.ts";
+import { createUpdates, type Runner } from "./updates.ts";
+import { createUsage, type UsageOptions } from "./usage.ts";
+
+/** `apx mcp --run` (token in APX_RUN_TOKEN): how an external harness (Codex) reaches the tools of its run. */
+const TERMINAL_MAIN = path.resolve(import.meta.dirname, "../../terminal/src/main.ts");
+
+/** What tests swap: the model, harnesses, extra tools, channel adapters and the scheduler's clock. */
+export type CoreOptions = {
+  computer?: ComputerConfig;
+  /** Asana transport; tests record REST requests without contacting an account. */
+  asanaFetch?: typeof fetch;
+  /** What asks an integration's remote server whether it takes the owner's account; tests pass a fake. */
+  integrationFetch?: typeof fetch;
+  quiet?: boolean;
+  llm?: Llm;
+  harnesses?: Partial<Record<HarnessId, Harness>>;
+  /** Tests add tools of their own next to the built-in ones. */
+  extraTools?: Tool[];
+  /** Channel adapters by type; tests use a fake one instead of Telegram. */
+  channelAdapters?: Record<string, AdapterFactory>;
+  /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
+  tailscale?: TailscaleRun;
+  ngrok?: NgrokStart;
+  /** Waits before a channel that failed to start tries again; tests shorten them. */
+  channelRetryMs?: readonly number[];
+  /** How long a room waits for one person's quick messages to settle (tests shorten it). */
+  roomBurstMs?: number;
+  /** When a question waiting in the app follows the owner to their channel (tests move it). */
+  followUpTimers?: RunTimers;
+  /** How long a supervised contact's quick messages may keep coming before their draft (tests shorten it). */
+  suggestBurstMs?: number;
+  /** How long a turn waits for the owner's answer before it ends and the input stays open (tests shorten it). */
+  inputWaits?: InputWaits;
+  /** How long an outside engine may go without an event before its turn ends (tests shorten it). */
+  engineIdleMs?: number;
+  /** How long a turn on our own loop may go without progress before it ends (tests shorten it). */
+  turnIdleMs?: number;
+  /** The most a delegated run may work in all (tests shorten it). */
+  a2aCapMs?: number;
+  runTimers?: RunTimers;
+  /** Whether the Mac slept since a moment (tests decide); by default the core watches its own timers. */
+  sleptSince?: (since: number) => boolean;
+  /** How the core holds the Mac awake (tests count it); by default `caffeinate` on macOS. */
+  keepAwake?: Parameters<typeof keepAwake>[0]["spawn"];
+  /** The scheduler's clock; tests move it to make routines due. */
+  clock?: () => Date;
+  /** How long a finished turn's chat may stay unread before the tray notices it (tests shorten it). */
+  unseenAfterMs?: number;
+  /** Finder and the trash; tests record the calls instead. */
+  desktop?: DesktopOps;
+  desktopInstaller?: DesktopInstaller;
+  /** Messages on this Mac (by default only on macOS); tests pass their own, null for none. */
+  imessage?: IMessageOps | null;
+  /** Runs the update's commands (git, pnpm); tests answer them. */
+  updateRunner?: Runner;
+  /** Where telemetry goes instead of config.telemetry's sink (tests record it). */
+  telemetrySink?: TelemetrySink;
+  /** Closes the core and asks its supervisor to start it again (after an update). */
+  restart?: () => void;
+  /** What each release changed, instead of this APX's own (release-notes.ts); tests stand in a release. */
+  releases?: ReleaseSource;
+  /** The Linux VM's memory and disk for system.usage; none until a VM is set up. */
+  vmUsage?: UsageOptions["vm"];
+  /** Reads a project folder at start (by default in a worker thread); tests hold one or answer it. */
+  projectRead?: ReadProjectFiles;
+};
+
+export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
+  const log = createLog("core", opts.quiet, opts.quiet ? undefined : coreLogSink(config.home));
+  const identity = readIdentity(config.home);
+  const db = openDb(config.home);
+  const bus = createBus();
+  // The engine exists by the time a command ends.
+  const terminals = createTerminals({ bus, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
+  const store = createStore(db, bus);
+  const secrets = createSecrets(config.home, config.secrets);
+  seed(store, config.agentName);
+  const releases =
+    opts.releases ?? (config.whatsNew ? localReleases(path.resolve(import.meta.dirname, "../../..")) : undefined);
+  // The release this install was on before this start: news it already had are not told as new.
+  const previousRelease = store.settings.get("release_seen");
+  try {
+    if (releases) announceRelease(store, releases);
+  } catch (err) {
+    log.warn({ err: errorMessage(err) }, "release notes not told");
+  }
+  store.idempotency.prune();
+  store.nudges.prune();
+
+  const broker = createNodeBroker();
+  const push = createPush({ expoUrl: config.expoPushUrl, onError: (err) => log.warn({ err }, "push not delivered") });
+  broker.onEvent((node, event) => {
+    if (event.type !== "tabs.changed" || broker.withCap(BROWSER_CAP)?.session !== node.session) return;
+    // A node's tabs are checked here, once: operators trust what the core pushes.
+    const raw = (event.payload as { tabs?: unknown[] }).tabs ?? [];
+    const tabs = raw.flatMap((t) => {
+      const r = TabInfo.safeParse(t);
+      return r.success ? [r.data] : [];
+    });
+    bus.emit({ type: "browser.tabs", tabs });
+  });
+
+  // The core's own browser when no desktop app lends one; its tabs reach the panel like the desktop's.
+  const headless = config.headless
+    ? createHeadlessBrowser({
+        dir: path.join(config.home, "browser"),
+        chrome: typeof config.headless === "string" ? config.headless : undefined,
+        blockedPorts: () => new Set([String(listening)]),
+        onChange: (tabs) => {
+          if (!broker.withCap(BROWSER_CAP)) bus.emit({ type: "browser.tabs", tabs });
+        },
+      })
+    : undefined;
+
+  let selfUrl = "";
+  const providers = providerRegistry(store, config.providers);
+  const chatgpt = createChatgptLogin({ secrets });
+  const signIns = { [OAUTH_CHATGPT]: chatgpt };
+  const llm =
+    opts.llm ??
+    createLlm({
+      providers: providers.active,
+      secrets,
+      firstByteMs: config.llmTimeoutMs,
+      media: (id) => mediaData(store, id),
+      signIns,
+    });
+  // Bound once the services exist: what the engines' check finds about Codex decides its image service.
+  let codexSeen: ((codex: CliStatus) => void) | undefined;
+  const harnesses = createHarnesses({
+    store,
+    llm,
+    onDetected: ({ codex }) => codexSeen?.(codex),
+    home: config.home,
+    mcpProxy: () => ({
+      command: process.execPath,
+      args: [TERMINAL_MAIN, "mcp", "--run"],
+      env: {
+        APX_URL: selfUrl,
+        ...(config.token ? { APX_TOKEN: config.token } : {}),
+        // Each harness session starts this CLI: with the core's compile cache it skips stripping TypeScript again.
+        ...(process.env.NODE_COMPILE_CACHE ? { NODE_COMPILE_CACHE: process.env.NODE_COMPILE_CACHE } : {}),
+        ...nodeChildEnv(),
+      },
+    }),
+    ...(opts.harnesses ? { overrides: opts.harnesses } : {}),
+  });
+  const catalog = createCatalog({ store, secrets, providers: providers.active, home: config.home, signIns });
+  const engineIds = knownEngines(store, providers);
+  // Live: an ACP agent or a provider added later is recognized without a restart.
+  const projectReader = opts.projectRead ? undefined : createProjectReader();
+  // Folders are read after the core listens (load below): one macOS privacy prompt must not keep it from starting.
+  const apc = createApcSync({
+    store,
+    log,
+    engines: { has: (id) => engineIds.harness.has(id) || providers.has(id) },
+    read: opts.projectRead ?? projectReader?.read,
+    ...(opts.runTimers ? { timers: opts.runTimers } : {}),
+  });
+  // The port this core answers on: the configured one, or the one the OS gave (tests listen on 0).
+  let listening = config.port || 7440;
+  const imessage =
+    opts.imessage === undefined
+      ? process.platform === "darwin" && config.imessage
+        ? systemIMessage()
+        : undefined
+      : (opts.imessage ?? undefined);
+  const integrationsOff = mcpConfig(store);
+  const google = createGoogle({
+    store,
+    secrets,
+    endpoints: config.googleApi ? googleAt(config.googleApi) : GOOGLE,
+    origin: () => `http://127.0.0.1:${listening}`,
+    // An integration is off where the owner turned it off, and in a project that takes none of their globals.
+    offIn: (project, id) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes(id),
+    // A stand-in Google never takes APX's real client.
+    builtin: clientFromPair(config.googleClient) ?? (config.googleApi ? undefined : apxGoogleClient()),
+  });
+  const asana = createAsana({
+    secrets,
+    fetch: opts.asanaFetch,
+    offIn: (project) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes("asana"),
+  });
+  const vm = createComputer(
+    store,
+    opts.computer && !opts.computer.managed ? opts.computer : managedVmConfig(store, config.home, opts.computer),
+  );
+  // A screen is held for one run: once the run is over, the screen is free for another agent.
+  bus.on((e) => {
+    if (e.type === "run.updated" && TERMINAL.has(e.run.state)) {
+      vm.release(e.run.id);
+      if (e.run.state === "canceled") vm.forgetWait(e.run.thread_id);
+      else vm.afterTurn(e.run.thread_id, e.run.agent_id);
+    }
+  });
+  const watchdog = computerWatchdog({
+    store,
+    vm,
+    freeMemory: vm.freeMemory,
+    cancel: (thread) => {
+      engine.cancel(thread);
+    },
+    onError: (err) => log.warn({ err }, "computer watchdog check failed"),
+  });
+  // APX's own profiles, then the ones the owner installed (theirs win an id).
+  const profileRoots: ProfileRoot[] = [
+    { source: "apx", dir: path.resolve(import.meta.dirname, "../../../examples/profiles") },
+    { source: "owner", dir: path.join(config.home, "profiles") },
+  ];
+  // APX's own templates, then the owner's v1 vault (read-only).
+  const templateRoots: TemplateRoot[] = [
+    { source: "apx", dir: path.resolve(import.meta.dirname, "../../../examples/agents") },
+    { source: "v1", dir: path.join(config.v1.home, "agents") },
+  ];
+  const tools = builtinTools(
+    store,
+    config.home,
+    () => listening,
+    [...imessageTools(imessage), ...googleTools(google), ...asanaTools(asana, store), ...(opts.extraTools ?? [])],
+    config.runtimeSkills.homes,
+    { profiles: profileRoots, templates: templateRoots },
+    vm,
+  );
+  // Tools reach the core through the router like any client, as the agent (owner-only methods refuse them).
+  // The router exists only after the engine, hence the late binding.
+  let routed: Dispatch | undefined;
+  const internal = internalCaller(() => routed, log);
+  // Every permission question about an agent, from tools, outside agents and the methods tools call.
+  const permissions = createPermissions({ store, home: config.home });
+  const call: ToolCall = (method, params, as) =>
+    internal(
+      method,
+      params,
+      {
+        actor: as.owner ? "human" : "agent",
+        agent: { id: as.run.agent_id, run_id: as.run.id, thread_id: as.run.thread_id, call_id: as.callId },
+      },
+      `tool:${as.run.id}:${as.callId}:${randomUUID()}`,
+    );
+  const mcp = createMcp({
+    store,
+    secrets,
+    log,
+    workDir: path.join(scratchRoot(config.home), "mcp"),
+    files: (thread) => agentFiles(store, config.home, thread),
+  });
+  const { hooks, plugins, extensions } = extensionStack({ store, secrets, bus, log, home: config.home });
+  const upkeep = createUpkeep({ store, llm, log });
+  const services = createServices({
+    store,
+    secrets,
+    home: config.home,
+    log,
+    codexImages: createCodexImages({
+      codexPath: () => which("codex"),
+      signedIn: async () => (await harnesses.status()).some((e) => e.id === "codex" && e.logged_in),
+      env: harnessEnv,
+      workDir: path.join(config.home, "codex-images"),
+    }),
+  });
+  // Codex signed in here draws with the owner's ChatGPT plan: added once, first of the image services.
+  codexSeen = (codex) => {
+    if (codex.logged_in && services.offer(CODEX_IMAGES, CODEX_IMAGE_SERVICE))
+      log.info({ service: CODEX_IMAGES }, "Codex is signed in: it draws images first now");
+  };
+  const localModels = createModelInstaller({
+    dir: path.join(config.home, "models"),
+    onReady: (_id, file) => useLocalModel(services, file, store.settings.get("owner_language") || "es"),
+  });
+  const localEmbeds = createLocalEmbeddings({
+    url: config.ollamaUrl,
+    onReady: (model) => useLocalEmbedder(services, config.ollamaUrl, model),
+  });
+  const memory = createMemoryIndex({ store, services, log });
+  const memoryMaintenance = createMemoryMaintenance({ store, upkeep, call: internal, index: memory, log });
+  const skills = createSkillPicker({ store, services, log });
+  const attention = createAttention({
+    store,
+    bus,
+    ...(opts.clock ? { now: opts.clock } : {}),
+    ...(opts.unseenAfterMs !== undefined ? { unseenAfterMs: opts.unseenAfterMs } : {}),
+  });
+  const noticePush = createNoticePush({ store, bus, push });
+  let hooksPort = config.hooksPort;
+  const webhooks = createPublicTunnel({
+    store,
+    port: () => hooksPort,
+    log,
+    ...(opts.tailscale ? { tailscale: opts.tailscale } : {}),
+    ...(opts.ngrok ? { ngrok: opts.ngrok } : {}),
+  });
+  // A graph's model step names one exact model of an active provider that has its key (or sign-in).
+  const flowModel = (ref: string) => {
+    const { engine: id, model, effort } = parseRef(ref);
+    const provider = providers.active().find((p) => p.id === id);
+    return Boolean(
+      provider &&
+        model &&
+        !effort &&
+        (provider.key === NO_KEY ||
+          secrets.has(provider.key) ||
+          Boolean((signIns as Record<string, SignIn | undefined>)[provider.key]?.has())),
+    );
+  };
+  const flows = createFlows({
+    store,
+    dispatch: () => routed,
+    log,
+    llm,
+    model: flowModel,
+    cancelThread: (thread) => engine.cancel(thread),
+    timers: opts.runTimers,
+    clock: opts.clock,
+    // A notify step's destination is its revision's: channel and person or room by id (flow-outward.ts).
+    notifier: {
+      send(node, text, flow) {
+        const d = notifyDestination(store, node);
+        if (!d) throw new Error("destination unavailable");
+        const sent =
+          "room" in d && d.room
+            ? channels.postToRoom(d.channel.id, d.room.id, text)
+            : channels.messageContact((d as { person: { id: string } }).person.id, text, {
+                channel: d.channel.id,
+                exact: true,
+                flow,
+              });
+        return { outbox: sent.outbox };
+      },
+      // A channel that isn't running won't take it: no point waiting, it is withdrawn at once.
+      settled: (outbox, ms) => {
+        const item = store.channels.outbox.get(outbox);
+        const running = channels.info().find((c) => c.id === item?.channel)?.status === "running";
+        return running ? channels.settled(outbox, ms) : Promise.resolve({ state: item?.state ?? "failed" });
+      },
+      withdraw(outbox) {
+        const item = store.channels.outbox.get(outbox);
+        // Part of a long message already went out: that one is not taken back.
+        if (!item || item.body.skip) return false;
+        if (!store.channels.outbox.withdraw(outbox, "withdrawn: the channel was not running")) return false;
+        if (item.message_id) store.messages.setDelivery(item.message_id, "failed");
+        return true;
+      },
+    },
+    outside: {
+      secret: (ref, project) => secrets.resolveIn(ref, project) !== undefined,
+      allowHttp: config.flowHttpAllow,
+      home: config.home,
+    },
+    http: { policy: flowHttpPolicy(config.flowHttpAllow), secret: (ref, project) => secrets.resolveIn(ref, project) },
+    home: config.home,
+    tell: (event) => bus.emit(event),
+  });
+  const stopFlowEvents = bus.on((event) => {
+    if (event.type === "run.updated" && event.run.ended_at) flows.kick();
+  });
+  const publicCredentials = createPublicCredentials({ store, secrets, endpoints: flows.publicEndpoints });
+  const channels = createChannels({
+    store,
+    home: config.home,
+    hookBase: webhooks.base,
+    secrets,
+    bus,
+    log,
+    factories: opts.channelAdapters ?? {
+      telegram: (c, token) => telegramAdapter(c, token, config.telegramApi ?? "https://api.telegram.org"),
+      discord: (c, token) => discordAdapter(c, token, config.discord),
+      slack: (c, token) => slackAdapter(c, token, config.slackApi ?? "https://slack.com/api"),
+      // The server's address travels in the secret with the token: these run against the owner's own server.
+      matrix: (c, secret) => matrixAdapter(c, secret),
+      mattermost: (c, secret) => mattermostAdapter(c, secret),
+      signal: (c, secret) => signalAdapter(c, secret),
+      // The secret is the mailbox's password; the servers are in the channel's settings.
+      email: (c, password) =>
+        emailAdapter(c, password, {
+          dir: path.join(config.home, "channels", c.id),
+          signature: () => signatureFor(store, "smtp", c.id, c.email?.address),
+        }),
+      whatsapp: (c) =>
+        whatsappAdapter({ dir: path.join(config.home, "channels", c.id), selfOwner: c.self_owner === true, log }),
+      // Messages' database on this Mac: no secret; it refuses to start anywhere else.
+      imessage: (c, s) => imessageAdapter(c, s, { dir: path.join(config.home, "channels", c.id) }),
+      googlechat: (c, secret) => googlechatAdapter(c, secret),
+      sms: (c, secret) => smsAdapter(c, secret, { dir: path.join(config.home, "channels", c.id) }),
+      ntfy: (c, secret) => ntfyAdapter(c, secret, { dir: path.join(config.home, "channels", c.id) }),
+      nextcloud: (c, secret) => nextcloudAdapter(c, secret, { dir: path.join(config.home, "channels", c.id) }),
+      irc: (c, secret) => ircAdapter(c, secret),
+      twitch: (c, secret) => twitchAdapter(c, secret),
+      // These deliver signed webhooks through the shared public ingress address.
+      line: (c, secret) => lineAdapter(c, secret, { dir: path.join(config.home, "channels", c.id) }),
+      teams: (c, secret) => teamsAdapter(c, secret, { dir: path.join(config.home, "channels", c.id) }),
+    },
+    ...(opts.channelRetryMs ? { retryMs: opts.channelRetryMs } : {}),
+    call: internal,
+    services,
+    attention: attention.add,
+    judge: upkeep.judge,
+    see: upkeep.see,
+    ownerReplied: (messageId) => memoryMaintenance.ownerReplied(messageId),
+    draft: createDrafter({ store, llm, fallbackModels: upkeep.auxModels }).draft,
+    ...(opts.clock ? { now: opts.clock } : {}),
+    ...(opts.roomBurstMs !== undefined ? { roomBurstMs: opts.roomBurstMs } : {}),
+    ...(opts.followUpTimers ? { followUpTimers: opts.followUpTimers } : {}),
+    ...(opts.suggestBurstMs !== undefined ? { suggestBurstMs: opts.suggestBurstMs } : {}),
+  });
+  const news = createNews({
+    store,
+    llm,
+    models: upkeep.voiceModels,
+    notifyOwner: (body, threadId) => channels.notifyOwner(body, "notice", threadId),
+    log,
+  });
+  const sleep = opts.sleptSince ? undefined : sleepWatch(opts.runTimers);
+  const engine = createEngine({
+    sleptSince: opts.sleptSince ?? ((since) => sleep?.sleptSince(since) ?? false),
+    vm,
+    store,
+    harnesses,
+    tools,
+    log,
+    call,
+    permissions,
+    home: config.home,
+    skillApps: config.runtimeSkills.homes,
+    apxPort: () => listening,
+    memory,
+    skills,
+    profileRoots,
+    build: { version: identity.version, code_sha: identity.code_sha },
+    hooks,
+    ...(opts.inputWaits ? { inputWaits: opts.inputWaits } : {}),
+    ...(opts.engineIdleMs ? { engineIdleMs: opts.engineIdleMs } : {}),
+    ...(opts.turnIdleMs ? { turnIdleMs: opts.turnIdleMs } : {}),
+    ...(opts.a2aCapMs ? { a2aCapMs: opts.a2aCapMs } : {}),
+    ...(opts.runTimers ? { runTimers: opts.runTimers } : {}),
+    mcpTools: mcp.toolsFor,
+    mcpServers: mcp.serversFor,
+    hasCap: (cap) => Boolean(broker.withCap(cap)) || (cap === BROWSER_CAP && Boolean(headless?.available())),
+    desktopLinked: () => Boolean(broker.withCap(BROWSER_CAP)),
+    afterRun: (run) => {
+      upkeep.afterRun(run);
+      memoryMaintenance.afterRun(run);
+      channels.afterRun(run);
+      scheduler.afterRun(run);
+      scheduler.stalls.afterRun(run);
+      afterWorkTurn(store, engine.admit, run);
+    },
+  });
+  // The Mac stays awake while APX works for the owner: a turn, a command, or a computer coming up (engine/awake.ts).
+  const awake = keepAwake({
+    busy: () =>
+      store.runs.interrupted().some((r) => r.state === "working") || store.jobs.running().length > 0 || vm.starting(),
+    enabled: () => store.settings.read("desktop").keep_awake,
+    // A test's stand-in for caffeinate holds on any system, so the wiring is tested off macOS too.
+    ...(opts.keepAwake ? { spawn: opts.keepAwake, platform: "darwin" as const } : {}),
+  });
+  bus.on((e) => {
+    if (e.type === "run.updated" || e.type === "job.updated" || e.type === "computer.progress") awake.update();
+  });
+  // A computer's start and end come with no event of their own here: looked at now and then too.
+  const awakeTick = setInterval(() => awake.update(), 30_000);
+  awakeTick.unref();
+  // The agent that started the computer and ended its turn hears once it is up, or why not (environments/ready.ts).
+  vm.onReady(
+    (e) => {
+      engine.admit({
+        thread_id: e.thread,
+        agent_id: e.agent,
+        trigger: "system",
+        origin: { kind: "computer_ready", ready: e.ready, ...(e.error ? { error: e.error } : {}) },
+        text: "",
+      });
+    },
+    (thread, stage) => bus.emit({ type: "computer.progress", thread_id: thread, stage }),
+  );
+  const scheduler = officeScheduler({
+    store,
+    admit: (a) => engine.admit(a),
+    attention,
+    notifyOwner: (body, threadId) => channels.notifyOwner(body, "notice", threadId),
+    openHeld: () => channels.openHeld((a) => engine.admit(a)),
+    flowTick: (at) => flows.tick(at),
+    checks: (remind) => [
+      calendarReminders({
+        store,
+        source: {
+          readable: () => google.usable("google-calendar", undefined),
+          between: async (from, to) =>
+            // The lead can be days: enough events that a busy week is not cut short.
+            (await calendarApi(google).list({ from, to, max: 250, calendar: "primary" })).events,
+        },
+        remind: (texts, events) => remind(texts, `event:${events.map((e) => e.id).join(",")}`),
+      }),
+      mailCheck({
+        store,
+        admit: (a) => engine.admit(a),
+        // The inbox is read only with the owner's own Google client: APX's can only send.
+        source: {
+          readable: () => google.usable("gmail", undefined) && google.full("gmail"),
+          historyId: () => gmailApi(google).historyId(),
+          arrived: (from) => gmailApi(google).arrived(from),
+        },
+      }),
+    ],
+    log,
+    ...(opts.clock ? { now: opts.clock } : {}),
+  });
+
+  const updates = createUpdates({
+    root: path.resolve(import.meta.dirname, "../../.."),
+    log,
+    enabled: config.updates !== "off",
+    stateFile: path.join(config.home, "update-coordination.json"),
+    byApp: config.updates === "app",
+    supervised: config.supervised,
+    version: identity.version,
+    app: config.app,
+    feed: config.releases,
+    ...(opts.updateRunner ? { run: opts.updateRunner } : {}),
+    ...(opts.restart ? { restart: opts.restart } : {}),
+  });
+
+  const telemetry = createTelemetry({
+    home: config.home,
+    store,
+    log,
+    // A checkout's package.json holds a placeholder: its commit tells one checkout from another.
+    version: identity.version === "0.0.0" ? `0.0.0+${identity.code_sha.slice(0, 12)}` : identity.version,
+    channel: telemetryChannel(config),
+    sink: opts.telemetrySink ?? (config.telemetry ? telemetrySink(config.telemetry) : undefined),
+  });
+
+  const desktopInstaller =
+    opts.desktopInstaller ??
+    createDesktopInstaller({
+      platform: process.platform,
+      arch: process.arch,
+      userHome: os.homedir(),
+      env: { ...process.env },
+      feed: config.releases ?? "off",
+      session: () => desktopSessionEnv(process.platform, { ...process.env }),
+      target: () => prepareLocalTarget({ home: config.home, port: listening, home_id: identity.home_id }, config.token),
+    } satisfies DesktopInstallOptions);
+
+  const dispatch = createRouter(
+    coreHandlers({
+      vm,
+      internal,
+      permissions,
+      addresses: () => reachableAt(config.host, listening, config.publicUrl),
+      terminals,
+      webhooks,
+      publicCredentials,
+      flows,
+      flowModel,
+      integrationFetch: opts.integrationFetch,
+      access: createAccess({
+        home: config.home,
+        running: { host: config.host, publicUrl: config.publicUrl, token: config.token },
+        port: () => listening,
+        addresses: () => reachableAt(config.host, listening, config.publicUrl),
+        // Only a supervisor brings a stopped core back.
+        restart: config.supervised ? opts.restart : undefined,
+      }),
+      store,
+      log,
+      identity,
+      broker,
+      headless,
+      bus,
+      llmLabel: () => llm.label(),
+      engine,
+      upkeep,
+      memory,
+      memoryMaintenance,
+      channels,
+      services,
+      scheduler,
+      nudges: scheduler.nudges,
+      extensions,
+      mcp,
+      google,
+      asana,
+      providers,
+      secrets,
+      chatgpt: { login: chatgpt, v1Home: config.v1.home },
+      localModels,
+      localEmbeds,
+      app: {
+        harnesses,
+        v1: config.v1,
+        catalog,
+        apc,
+        engines: engineIds,
+        home: config.home,
+        imessage: imessage !== undefined,
+      },
+      apc,
+      engines: engineIds,
+      tools,
+      desktop: opts.desktop ?? systemDesktop,
+      desktopInstaller,
+      native: config.native,
+      runtimeHomes: config.runtimeSkills.homes,
+      updates,
+      telemetry,
+      news,
+      usage: createUsage({ home: config.home, vm: opts.vmUsage ?? (() => vm.monitored()) }),
+      panel: () => panelEntry(servedPanel(config)),
+      profileRoots,
+      templateRoots,
+    }),
+    store.idempotency,
+  );
+  routed = dispatch;
+  const cleanup = cleanUpCapturedNotes(store);
+  if (cleanup) log.info(cleanup, "captured memory cleanup: retired noisy automatic notes");
+  memoryMaintenance.start();
+
+  const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm });
+  listening = transport.port;
+  // Agents' shells and harnesses reach this core with `apx`, whatever the owner's PATH holds.
+  try {
+    useApxCommand(writeApxCommand(config.home, listening, thisRunner()));
+    useUsualDirs(config.supervised);
+  } catch (err) {
+    log.warn({ err: errorMessage(err) }, "apx command not written");
+  }
+  const url = transport.url;
+  selfUrl = url;
+  void apc.load().catch((err) => log.warn({ err: errorMessage(err) }, "projects not read"));
+  engine.start();
+  const nativeRoutes = nativePublicRoutes({ store, deliver: channels.webhook });
+  const publishedRoutes = publishedPublicRoutes(store);
+  const flowRoutes = publicCredentials.protect(flows.routes);
+  const flowTestRoutes = flows.tests.routes(publicCredentials);
+  const hookListener = await listenHooks({
+    port: config.hooksPort,
+    routes: (pathname) =>
+      nativeRoutes(pathname) ?? publishedRoutes(pathname) ?? flowRoutes(pathname) ?? flowTestRoutes(pathname),
+    log,
+  });
+  hooksPort = hookListener.port;
+  // Not awaited: ngrok may take 15 s, and a channel reads its public address when it needs it (hookBase).
+  void webhooks.start();
+  await channels.start();
+  // After the channels: the message goes out on one (it waits in the outbox until that one is up).
+  if (config.news)
+    void news
+      .atBoot(previousRelease)
+      .catch((err) => log.warn({ err: errorMessage(err, 200) }, "release news not told; the next start tries again"));
+  scheduler.start();
+  flows.kick();
+  updates.start();
+  telemetry.start();
+  const idleTrim = createIdleTrim();
+  idleTrim.start();
+  // The owner's skills get their vectors now, so the first message does not wait for them.
+  skills.warm(skillsFor(store, { home: config.home, apps: config.runtimeSkills.homes }, undefined));
+  if (config.runtimeSkills.auto) {
+    keepRuntimeSkills(config.runtimeSkills.homes, log);
+    // A core that looks after this machine's agent CLIs asks them once now, so a signed-in Codex can draw at once.
+    void harnesses.status().catch(() => {});
+  }
+  log.info({ url, code_sha: identity.code_sha, home: config.home, llm: llm.label() }, "apx core listening");
+
+  return {
+    url,
+    identity,
+    dispatch,
+    broker,
+    store,
+    bus,
+    engine,
+    harnesses,
+    secrets,
+    channels,
+    scheduler,
+    flows,
+    telemetry,
+    computer: vm,
+    async close() {
+      awake.close();
+      sleep?.close();
+      clearInterval(awakeTick);
+      await watchdog.stop();
+      await vm.close();
+      await desktopInstaller.close();
+      useApxCommand(undefined);
+      idleTrim.stop();
+      terminals.closeAll();
+      updates.stop();
+      telemetry.stop();
+      chatgpt.stop();
+      localModels.cancel();
+      headless?.close();
+      scheduler.stop();
+      stopFlowEvents();
+      await flows.close();
+      await news.stop();
+      attention.stop();
+      noticePush.stop();
+      plugins.close();
+      await channels.stop();
+      webhooks.close();
+      await hookListener.close();
+      await engine.stop();
+      await upkeep.stop();
+      await memoryMaintenance.stop();
+      await memory.stop();
+      services.close();
+      await mcp.close();
+      apc.close();
+      projectReader?.close();
+      await transport.close();
+      db.close();
+    },
+  };
+}
+
+/** Other agent apps get this version's skills for APX; a folder APX cannot write is only logged. */
+function keepRuntimeSkills(homes: Parameters<typeof syncRuntimeSkills>[0], log: Log): void {
+  setImmediate(() => {
+    try {
+      const changed = syncRuntimeSkills(homes).steps.filter(
+        (s) => s.action !== "unchanged" && s.action !== "skip-link",
+      );
+      if (changed.length)
+        log.info(
+          { skills: changed.map((s) => `${s.runtime.id}:${s.name}:${s.action}`) },
+          "skills for other agent apps updated",
+        );
+    } catch (err) {
+      log.warn({ err: errorMessage(err) }, "could not update the skills for other agent apps");
+    }
+  });
+}
+
+/** Where this APX came from, for telemetry: the desktop app's core, an install.sh/ps1 bundle, or a git checkout. */
+function telemetryChannel(config: CoreConfig): "source" | "bundle" | "app" | "other" {
+  if (config.updates === "app") return "app";
+  if (config.app) return "bundle";
+  return fs.existsSync(path.resolve(import.meta.dirname, "../../../.git")) ? "source" : "other";
+}

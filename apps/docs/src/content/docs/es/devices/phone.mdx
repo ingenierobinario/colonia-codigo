@@ -1,0 +1,228 @@
+---
+title: Tu teléfono
+description: Abrí APX en el teléfono, vinculalo con un código de un solo uso, revocalo cuando quieras y recibí avisos por push.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+import Shot from "../../../../components/Shot.astro";
+import Terminal from "../../../../components/Terminal.astro";
+
+Tu teléfono habla con el mismo core que el panel, por el mismo protocolo. Nunca recibe el token del core: cambia un
+código de un solo uso por una llave propia, que podés quitarle cuando quieras sin tocar nada más.
+
+<Aside type="caution" title="Primero, el teléfono tiene que llegar al core">
+Un core que solo escucha en su propia computadora (lo que viene por defecto) no es alcanzable desde un teléfono.
+Abrilo primero a tu red local o a tu red de Tailscale: en **Configuración › Conexiones › Dispositivos**, en **Quién
+puede llegar a este APX**; en el primer arranque de la app de escritorio; o con `apx expose` en un servidor
+([APX en un servidor](/es/devices/server/)).
+</Aside>
+
+## Abrir en el teléfono
+
+La forma más rápida: hacé clic en **Abrir en el teléfono** en la barra de arriba (también está en el menú de tu
+cuenta). Aparece un QR.
+
+<Shot name="phone-pair" alt="El diálogo Abrir en el teléfono con un código QR de vinculación y el código escrito debajo" caption="Abrir en el teléfono" />
+
+Escanealo con la cámara del teléfono. Abre la app de APX, vincula el teléfono si todavía no estaba vinculado y abre el
+chat que estabas mirando. Un teléfono ya vinculado con este core solo abre el chat.
+
+El código que aparece debajo del QR sirve una vez, por 10 minutos. Mientras el diálogo está abierto, APX lo renueva
+antes de que venza, y al cerrarlo lo anula. Si el core solo escucha en esta compu, en vez del QR el diálogo dice **Tu
+teléfono todavía no llega a este core**.
+
+### Desde el navegador del teléfono
+
+No necesitás la app para usar el panel en el teléfono. Abrí la dirección del core en el navegador del teléfono (la de
+Tailscale, o la de la red local, como `http://192.168.1.20:7440`). El panel te pide **Vinculá este dispositivo**:
+escribí un código de **Configuración › Conexiones › Dispositivos › Vincular un dispositivo** o de `apx pair`, y el
+navegador se guarda su propia llave. El panel se acomoda a la pantalla angosta.
+
+<Shot name="phone-home" alt="El panel de APX con ancho de teléfono y el chat Home abierto" frame="phone" />
+
+## Códigos de vinculación y llaves de dispositivo
+
+Toda vinculación funciona igual, sea un teléfono, un navegador u otra computadora:
+
+- El código tiene **8 caracteres**, sin los que se confunden (ni `0`/`O`, ni `1`/`I`), y vive **10 minutos** en la
+  memoria del core. Reiniciar el core anula los códigos pendientes.
+- Sirve **una vez**. El dispositivo lo cambia por una llave propia; el core guarda solo el hash de esa llave.
+- **Cinco códigos incorrectos** anulan todos los pendientes y pausan la vinculación por **cinco minutos**.
+- El QR lleva un enlace `apx://pair?…` con el código y las direcciones donde se puede llegar al core. Si configurás
+  `APX_PUBLIC_URL` (la dirección de un VPS o de Tailscale), va primera.
+
+Podés generar un código en tres lugares:
+
+- **Abrir en el teléfono**, en el panel (además abre el chat actual en el teléfono).
+- **Configuración › Conexiones › Dispositivos › Vincular un dispositivo**: un QR, el código y las direcciones.
+- La terminal, en la máquina donde corre el core:
+
+<Terminal command="apx pair">{`Pairing code: ABCD2345
+Expires at 10:40:00 (in about 10 min)
+
+Addresses a device may reach this core on:
+  https://<machine>.<tailnet>.ts.net
+
+In the APX app, open Pair and paste the link, or enter an address and the code:
+  apx://pair?c=ABCD2345&u=https%3A%2F%2F<machine>.<tailnet>.ts.net`}</Terminal>
+
+## Ver y revocar dispositivos
+
+<Shot name="settings-devices" alt="Configuración, sección Dispositivos: los dispositivos vinculados con su plataforma y la última vez que se vieron, y las opciones de conexión" caption="Configuración › Conexiones › Dispositivos" />
+
+**Configuración › Conexiones › Dispositivos** lista cada dispositivo vinculado con su plataforma y cuándo se vio por
+última vez. El botón de la papelera (**Quitar**) revoca ese dispositivo: su llave deja de funcionar al instante, y solo
+la suya. Un teléfono revocado vuelve a la pantalla de vinculación.
+
+Desde la terminal:
+
+```bash
+apx devices                 # lista los dispositivos vinculados
+apx devices pair            # un código nuevo (igual que apx pair)
+apx devices revoke <id>     # revoca un dispositivo
+```
+
+## La app de APX para teléfonos
+
+### Instalarla en Android
+
+La app de Android viene en cada versión v2. Todavía no está en Google Play, así que el archivo lo instalás vos:
+
+<Steps>
+
+1. En el teléfono, abrí las [versiones v2](https://github.com/agentprojectcontext/apx/releases?q=v2&expanded=true) y, en la más nueva, bajá `APX-<versión>-android.apk`.
+
+2. Abrí el archivo que bajaste. La primera vez, Android te pide permiso para instalar apps desde el navegador (o
+   desde Archivos): permitilo, volvé y tocá **Instalar**. Si Play Protect avisa que no conoce la app, tocá **Instalar
+   de todas formas**.
+
+3. Abrí APX y vinculalo, como en [Abrir en el teléfono](#abrir-en-el-teléfono).
+
+</Steps>
+
+Se instala al lado de la app de APX v1; una no toca a la otra.
+
+<Shot name="phone-app" alt="La app de APX en un teléfono, con el chat Home abierto" frame="phone" />
+
+**Actualizar.** La app todavía no se actualiza sola. Cuando sale una versión nueva, bajá su APK de la misma forma e
+instalalo encima del que tenés: la vinculación y la configuración quedan. Si Android dice que la app entra en
+conflicto con una ya instalada, esa es una versión que compilaste vos o una de prueba: desinstalala, instalá el APK de
+la versión y vinculá de nuevo. Desde ahí, cada versión se instala encima de la anterior.
+
+<Aside type="note" title="iPhone">
+La app de iOS todavía no está en la App Store. Para probarla la compilás desde el repositorio (`apps/mobile`), como
+se cuenta abajo.
+</Aside>
+
+Lo que hace una vez vinculada:
+
+- **Se vincula** escaneando el QR, abriendo un enlace `apx://pair` o escribiendo a mano la dirección y el código. Guarda
+  su llave en el almacenamiento seguro del sistema.
+- **Muestra tu chat Home en vivo**, por el mismo socket que usa el panel.
+- **Lista las superficies fijadas y todas las apps** (el botón Apps), incluso una app sin fijar. Abrí una a pantalla
+  completa. Consultá [Apps y artefactos](/es/apps/overview/) para entender su uso; la WebView nativa no promete todas
+  las integraciones ni funciones del bridge del panel web.
+- **Le presta el teléfono al core como nodo**: los agentes tienen `phone_location` y `phone_photo`, pero solo mientras
+  el teléfono está conectado. La foto siempre la sacás vos en el teléfono (la app te muestra para qué la pide el
+  agente). La ubicación pide el permiso del sistema una vez, y te pide el OK cada vez que hay contenido de afuera en el
+  turno.
+- **Recibe notificaciones**, como se cuenta abajo.
+
+Si no llega al core, la app conserva la vinculación para cuando pueda. Desvincularla (o revocarla en el panel) la
+devuelve a la pantalla de vinculación.
+
+Para correrla desde el código:
+
+```bash
+cd apps/mobile
+npm install
+npx expo start      # Expo Go o un dev build; el core tiene que ser alcanzable en la red
+```
+
+La configuración de release predeterminada compila para **ARM64 (`arm64-v8a`)**. Se pueden compilar otras
+arquitecturas, pero no asumas que cualquier APK admite un teléfono ARM32 viejo o un emulador x86: comprobá el
+artefacto de esa release. La configuración de build no prueba qué ABIs incluye un APK ya publicado.
+
+Vincular presta **ubicación y cámara** del teléfono conectado, no control general de apps Android, ADB ni acceso a
+todos sus archivos. La ubicación usa un permiso del sistema en primer plano; no implica seguimiento continuo en
+segundo plano. La cámara requiere que vos encuadres y tomes la foto. Si la app está desconectada o suspendida, no
+asumas que esas capacidades siguen disponibles porque conserva la llave de vinculación.
+
+## Navegá la app Android
+
+La app nativa no es solo Inicio. La navegación inferior ofrece **Chats**, **Bandeja**, **Tareas**, **Sesiones** y
+**Más**. En Más encontrás rutinas, agentes, proyectos, canales, memoria, apps, archivos y ajustes. Algunas secciones
+muestran resúmenes y pantallas de detalle, no todos los controles del escritorio; el mismo core conserva los datos.
+
+- **Chats** abre tus conversaciones. **Bandeja** reúne elementos que necesitan atención; **Sesiones** muestra las
+  sesiones de agentes y su estado real. Un turno encolado, en espera o interrumpido no es un resultado terminado.
+- **En Chats**, un chat se abre sobre la lista y **atrás** vuelve al mismo lugar de ella. El botón de filtro (muestra un
+  punto mientras oculta algo) prende o apaga las novedades de rutinas y los chats de tareas y deja solo los agentes que
+  marques; los chips de proyecto siguen arriba de la lista. **Mantené apretado** un chat para marcarlo como leído,
+  renombrarlo, fijarlo, archivarlo o borrarlo, y mantené apretada la pestaña **Chats** para marcar todo como leído.
+  **Archivados**, arriba de la lista, abre los chats guardados. El chat de un contacto en un canal muestra su foto con
+  la marca de la app (Telegram, WhatsApp…).
+- **En un chat**, el trabajo del agente se ve como en el escritorio: acciones y uso de la computadora, una imagen
+  generándose, páginas del navegador, archivos cambiados, las skills que usó, opciones y ofertas de conexión,
+  aprobaciones y preguntas, trabajo delegado y respuestas de otros agentes. Conectar una app se sigue haciendo en el
+  panel.
+- **Tareas:** tocá **+** para crear una tarea con título, descripción y los campos disponibles de proyecto/asignación.
+  Abrila para actualizar sus campos, comentar, ver historial o trabajo adjunto y usar sus acciones disponibles de
+  cierre/reapertura. Consultá [Tareas](/es/office/tasks/) para el modelo compartido.
+- **Más › Rutinas:** abrí una rutina existente para editar instrucciones, agente y horario; su tarjeta permite
+  activar/desactivar, ejecutar ahora y consultar ejecuciones recientes. Cambiar el horario no prueba que se ejecutó bien.
+- **Más › Proyectos:** recorré proyectos registrados, abrí sus conversaciones o creá un proyecto. **Archivos** recorre
+  carpetas de proyectos y previsualiza archivos compatibles; no es un editor general ni muestra todos los archivos del teléfono.
+- **Más › Archivos compartidos:** cada foto, video, audio y documento que se mandó en un chat, como tarjeta con su
+  proyecto, su chat, quién lo mandó y cuándo; los videos muestran su primer cuadro. Filtrá por tipo o buscá por
+  nombre. Tocá una tarjeta para verla en pantalla completa o reproducirla; **Ir al chat** abre el chat en el mensaje
+  donde se mandó, y los otros botones la guardan en la galería o la comparten.
+- **Más › Memoria:** filtrá notas por alcance, agregá una o borrala. **Agentes** abre el chat de un agente; **Canales**
+  lista conexiones configuradas y su estado, sin los controles completos de configuración de canales del panel.
+- **Más › Ajustes:** revisá permiso/registro de notificaciones, sonidos de avisos y de fin de audio, elegí apariencia
+  del sistema/clara/oscura y ajustá preferencias de avisos. **Desconectar** quita la vinculación de esta app tras
+  confirmar; no apaga el core ni desconecta todos los dispositivos.
+
+Crear o editar trabajo usa los mismos permisos y confirmaciones que otros clientes, no una cuenta móvil irrestricta
+aparte. Para ajustes que no ofrecen las pantallas nativas, usá el panel web.
+
+## Adjuntos, imágenes y voz
+
+En el chat usá los controles de adjuntos para elegir fotos o archivos, o grabar un mensaje de voz. Cuando un agente
+pide una foto, se muestra para qué y **vos** la tomás o rechazás; vincular no autoriza a usar la cámara en silencio.
+
+Abrí una imagen o video recibido/generado para verlo. Sus acciones ofrecen **Guardar en galería** para fotos y videos
+compatibles (con permiso multimedia de Android) y **Compartir o abrir** para pasarlo a otra app o guardarlo con el
+diálogo del sistema. Los documentos usan compartir/abrir, no la galería. Mantené presionado un texto para copiar,
+seleccionar o compartir. Estas acciones afectan la copia del teléfono, no el original del core.
+
+Si falla al guardar, revisá permisos y que el archivo haya terminado de descargar. Un error o un diálogo abierto
+no prueban que Android lo guardó. Comprobalo en la galería o app de destino. Si es privado, elegí deliberadamente
+el destinatario: compartir fuera de APX sale de los límites del chat.
+
+## Notificaciones push
+
+Cada aviso de la bandeja de la app llega también a tus teléfonos vinculados, así las novedades de las rutinas, las
+tareas terminadas, los recordatorios y las preguntas de los agentes te encuentran aunque la app esté cerrada. Una app de
+chat (Telegram, WhatsApp…) es un extra que podés elegir. El permiso de notificaciones de Android no alcanza con la app
+suspendida o cerrada: el teléfono también necesita un registro push operativo.
+
+<Steps>
+
+1. Dale al dispositivo una forma de recibir push. La app de APX se registra sola en Expo push cuando la compilación
+   tiene un id de proyecto de EAS. Si no, debajo del dispositivo en **Configuración › Conexiones › Dispositivos**, usá
+   **Configurar notificaciones** y pegá una dirección de ntfy o UnifiedPush.
+
+</Steps>
+
+En horas de silencio solo llegan al teléfono las preguntas que te esperan y los errores; lo demás queda en la bandeja
+([Secretaria](/es/office/secretary/)). Un dispositivo solo puede configurar su propia dirección de push, y el token de
+push nunca vuelve a ningún cliente.
+
+## Para seguir
+
+- [APX en un servidor](/es/devices/server/), para llegar desde cualquier lado
+- [App de escritorio](/es/devices/desktop/)
+- [Problemas frecuentes](/es/reference/troubleshooting/): códigos de vinculación que no andan

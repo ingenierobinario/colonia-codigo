@@ -1,0 +1,73 @@
+// What the bot adapters (Telegram, Discord, Slack) share: waiting that a stop cuts short, and which network failures
+// mean a request never left this machine.
+
+/** Failures before a request leaves this machine: the message surely did not go out. */
+export const NEVER_SENT = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "ENETUNREACH", "EHOSTUNREACH"]);
+
+/** The network error's code behind a failed fetch, if any. */
+export const causeCode = (err: unknown): string | undefined =>
+  (err as { cause?: { code?: string } } | undefined)?.cause?.code;
+
+/** Connect timeouts are retryable; a timeout after connecting may already have delivered the message. */
+export function neverSent(err: unknown, depth = 0): boolean {
+  if (!err || typeof err !== "object" || depth > 8) return false;
+  const e = err as { code?: string; syscall?: string; cause?: unknown; errors?: unknown[] };
+  if (Array.isArray(e.errors) && e.errors.length) return e.errors.every((x) => neverSent(x, depth + 1));
+  if (
+    e.code &&
+    (NEVER_SENT.has(e.code) ||
+      e.code === "UND_ERR_CONNECT_TIMEOUT" ||
+      (e.code === "ETIMEDOUT" && e.syscall === "connect"))
+  )
+    return true;
+  return neverSent(e.cause, depth + 1);
+}
+
+/** Waits, unless the adapter is stopped first. */
+export function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal.aborted) return resolve();
+    const t = setTimeout(done, ms);
+    function done() {
+      clearTimeout(t);
+      signal.removeEventListener("abort", done);
+      resolve();
+    }
+    signal.addEventListener("abort", done, { once: true });
+  });
+}
+
+/** Long text in parts of at most `max` characters, cut at a line or a space when there is one. */
+export function splitText(text: string, max: number): string[] {
+  const out: string[] = [];
+  let rest = text.trim();
+  while (rest.length > max) {
+    const cut = Math.max(rest.lastIndexOf("\n", max), rest.lastIndexOf(" ", max));
+    const at = cut > max / 2 ? cut : max;
+    out.push(rest.slice(0, at).trimEnd());
+    rest = rest.slice(at).trimStart();
+  }
+  if (rest) out.push(rest);
+  return out;
+}
+
+/**
+ * Buttons as numbered options, for channels without buttons: the options last offered in each conversation, and a
+ * reply that is only one of their numbers read as that button pressed.
+ */
+export function numberedOptions() {
+  const offered = new Map<string, Array<{ id: string; label: string }>>();
+  return {
+    /** The text with the options under it; remembers them for the conversation. */
+    text(conversation: string, text: string, buttons: Array<{ id: string; label: string }> | undefined): string {
+      if (!buttons?.length) return text;
+      offered.set(conversation, buttons);
+      return `${text}\n\n${buttons.map((b, i) => `${i + 1}. ${b.label}`).join("\n")}`;
+    },
+    /** The id of the option this reply picks, if it is only a number offered here. */
+    pick(conversation: string, reply: string): string | undefined {
+      const n = /^\s*(\d{1,2})\s*$/.exec(reply)?.[1];
+      return n ? offered.get(conversation)?.[Number(n) - 1]?.id : undefined;
+    },
+  };
+}

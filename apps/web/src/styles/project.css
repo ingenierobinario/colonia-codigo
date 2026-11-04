@@ -1,0 +1,865 @@
+/* Project screen (header, Overview, Team), placeholder pages. Tokens only; widths from --shell-*. */
+
+/* ── Project ───────────────────────────────────────────────────────────────── */
+.project {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--apx-bg);
+}
+.project--missing {
+  justify-content: center;
+}
+.project__head {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 24px 0;
+  border-bottom: 1px solid var(--apx-border);
+}
+.project__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.project__titles {
+  flex: 1;
+  min-width: 0;
+}
+.project__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.project__name h1 {
+  margin: 0;
+  font-size: var(--apx-text-xl);
+  font-weight: var(--apx-weight-semibold);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project__name .apx-badge {
+  gap: 4px;
+  flex: none;
+}
+.project__kind {
+  display: inline-flex;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.project__kind:hover .apx-badge {
+  color: var(--apx-fg);
+}
+.project__path {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project__tabs .apx-tabs__list {
+  border-bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.project__tabs .apx-tabs__tab[data-active] {
+  border-bottom-color: var(--apx-fg);
+}
+.project__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Overview ──────────────────────────────────────────────────────────────── */
+/* The whole overview scrolls as one page; the board may take the full width, the rest keeps the page's. */
+.overview {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.overview__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  align-content: start;
+  gap: 24px;
+  width: 100%;
+  max-width: var(--shell-project-max-w);
+  margin: 0 auto;
+}
+.overview__col,
+.overview__block {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.overview__block {
+  gap: 8px;
+}
+.overview__h {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-semibold);
+}
+.overview__hsub {
+  margin-left: auto;
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-regular);
+  color: var(--apx-fg-subtle);
+}
+.overview__link {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-regular);
+  color: var(--apx-fg-muted);
+}
+.overview__link:hover {
+  color: var(--apx-fg);
+}
+.overview__run {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--apx-border);
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-surface);
+  text-align: left;
+}
+.overview__run:hover {
+  border-color: var(--apx-border-strong);
+}
+.overview__runtext {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.overview__runtitle {
+  font-size: var(--apx-text-md);
+  font-weight: var(--apx-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview__runsub {
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.overview__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 4px 12px 4px 4px;
+  border: 0;
+  border-radius: var(--apx-radius-pill);
+  background: var(--apx-fill);
+}
+.overview__pill:hover {
+  background: var(--apx-fill-hover);
+}
+.overview__pillname {
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-medium);
+  white-space: nowrap;
+}
+.overview__pillrole {
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.overview__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-fill);
+  text-align: left;
+}
+.overview__stat:hover {
+  background: var(--apx-fill-hover);
+}
+.overview__statv {
+  font-size: calc(22px * var(--apx-text-scale, 1));
+  font-weight: var(--apx-weight-semibold);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.overview__statl {
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-muted);
+}
+.overview__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: var(--apx-fg-muted);
+}
+.overview__rowname {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg);
+}
+.overview__row:hover:not(:disabled) .overview__rowname {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.overview__rowwhen {
+  flex: none;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+.overview__unread {
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--apx-accent);
+  color: var(--apx-accent-fg);
+  font-size: var(--apx-text-2xs);
+  font-weight: var(--apx-weight-semibold);
+}
+
+/* ── Team ──────────────────────────────────────────────────────────────────── */
+.team {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.team__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 10px;
+  margin-bottom: -10px;
+}
+/* Title (or tab switcher) and actions share the first row; the note drops below, next to the content. */
+.team__titles {
+  display: contents;
+}
+.team__titles > :first-child {
+  margin-right: auto;
+}
+.team__title {
+  font-size: calc(15px * var(--apx-text-scale, 1));
+  font-weight: var(--apx-weight-semibold);
+}
+.team__count {
+  font-weight: var(--apx-weight-regular);
+  color: var(--apx-fg-subtle);
+}
+.team__note {
+  order: 1;
+  flex-basis: 100%;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-muted);
+}
+.team__note code {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+}
+.agentcard__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--apx-text-md);
+  font-weight: var(--apx-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agentcard__slug {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-2xs);
+  color: var(--apx-fg-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agentcard__lead {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: var(--apx-radius-pill);
+  background: var(--apx-brand-soft);
+  color: var(--apx-brand-soft-fg);
+  font-size: calc(10px * var(--apx-text-scale, 1));
+  font-weight: var(--apx-weight-regular);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 7px;
+  border-radius: var(--apx-radius-pill);
+  background: var(--apx-fill);
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-2xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip--mono {
+  font-family: var(--apx-font-mono);
+}
+.chip.is-own {
+  background: var(--apx-info-soft);
+  color: var(--apx-info-soft-fg);
+}
+.team__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.team__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1.1fr) minmax(0, 1.4fr) minmax(0, 1fr) 90px auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 8px;
+  border-top: 1px solid var(--apx-border);
+  font-size: var(--apx-text-sm);
+}
+.team__row:hover {
+  background: var(--apx-fill-hover);
+}
+.team__cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.team__cellname {
+  display: flex;
+  flex-direction: column;
+}
+.team__muted {
+  color: var(--apx-fg-muted);
+}
+.team__mono {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-2xs);
+  color: var(--apx-fg-muted);
+}
+.team__subtle {
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+
+/* A command or token to copy */
+.soon__code {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+  word-break: break-all;
+}
+.page {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.page__head {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 24px 0;
+  box-sizing: border-box;
+}
+.page__title {
+  margin: 0;
+  font-size: var(--apx-text-xl);
+  font-weight: var(--apx-weight-semibold);
+}
+.page__lead {
+  margin: 2px 0 0;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-muted);
+}
+
+/* ── Memory and resources ──────────────────────────────────────────────────── */
+.memory {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: var(--shell-team-max-w);
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+/* Only the list scrolls: the header, the search box and "Add note" stay in view. */
+.memory > * {
+  flex: none;
+}
+.memory > .memory__list {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.memory__file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-surface-2, var(--apx-surface));
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+}
+.memory__file code {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+}
+.memory__add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.memory__addbtn {
+  align-self: flex-start;
+}
+.memory__list,
+.res__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--apx-border);
+  border-radius: var(--apx-radius-lg);
+  overflow: hidden;
+}
+.memory__row,
+.res__row {
+  padding: 10px 14px;
+  border-top: 1px solid var(--apx-border);
+}
+.memory__row:first-child,
+.res__row:first-child {
+  border-top: 0;
+}
+.memory__text {
+  font-size: var(--apx-text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.memory__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+.memory__by {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.memory__spacer {
+  flex: 1;
+}
+.memory__edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.artifacts__title {
+  overflow-wrap: anywhere;
+}
+.artifacts__chat {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--apx-fg-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.artifacts__open {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--apx-fg);
+  font: inherit;
+  font-size: var(--apx-text-sm);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.artifacts__chat:hover {
+  color: var(--apx-fg);
+  text-decoration: underline;
+}
+.artifacts__open:hover .artifacts__title {
+  text-decoration: underline;
+}
+.artifacts__row.is-selected {
+  background: var(--apx-fill-strong);
+}
+/* An artifact beside the list: icon actions in its head, the widget filling the rest, a document scrolling. */
+.drawer.artifactpanel {
+  overflow: hidden;
+}
+.artifactpanel__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.artifactpanel > .artifactpanel__body {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+.artifactpanel__body--widget {
+  overflow: hidden;
+  border: 1px solid var(--apx-border);
+  border-radius: var(--apx-radius-lg);
+}
+.artifactpanel__file {
+  overflow: hidden;
+  color: var(--apx-fg-muted);
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.memory__editbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.res {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.res + .res {
+  margin-top: 12px;
+}
+.res__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.res__icon {
+  flex: none;
+  color: var(--apx-fg-subtle);
+}
+.res__main {
+  flex: 1;
+  min-width: 0;
+}
+.res__name {
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-medium);
+}
+.res__desc {
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.res__mono {
+  font-family: var(--apx-font-mono);
+}
+
+/* The project's board: pinned widgets as many columns as fit, each as tall as its widget; the overview scrolls. */
+.projboard {
+  width: 100%;
+  max-width: var(--shell-project-max-w);
+  margin: 0 auto;
+}
+.projboard.is-wide {
+  max-width: none;
+}
+.projboard__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.projboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* A widened tile pushes the next ones down; dense lets a later one fill the gap it leaves. */
+  grid-auto-flow: row dense;
+  gap: 16px;
+  align-items: start;
+}
+/* While a tile is dragged the widgets' frames must not swallow the pointer, or nothing could be dropped on them. */
+.projboard__grid.is-dragging iframe {
+  pointer-events: none;
+}
+.projboard__tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--apx-border);
+  border-radius: var(--apx-radius-lg);
+  background: var(--apx-surface);
+  transition:
+    opacity 0.15s,
+    box-shadow 0.15s;
+}
+.projboard__tile.is-dragged {
+  opacity: 0.45;
+}
+.projboard__tile.is-over {
+  box-shadow: 0 0 0 2px var(--apx-accent, var(--apx-border-strong, var(--apx-border)));
+}
+.projboard__frame {
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0 0 var(--apx-radius-lg) var(--apx-radius-lg);
+}
+/* The tile's bottom edge: a thin grip that turns into a bar while hovered or dragged. */
+.projboard__resize {
+  height: 8px;
+  margin-top: -4px;
+  cursor: row-resize;
+  touch-action: none;
+  position: relative;
+}
+.projboard__resize::after {
+  content: "";
+  position: absolute;
+  left: 40%;
+  right: 40%;
+  top: 2px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--apx-border);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+/* The right edge sits in the gap beside the tile, clear of the widget's own scrollbar. */
+.projboard__widen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -12px;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.projboard__widen::after {
+  content: "";
+  position: absolute;
+  top: 40%;
+  bottom: 40%;
+  left: 2px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--apx-border);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.projboard__tile:hover .projboard__resize::after,
+.projboard__resize:focus-visible::after,
+.projboard__tile:hover .projboard__widen::after,
+.projboard__widen:focus-visible::after {
+  opacity: 1;
+}
+/* The board's last place: make or load another widget. */
+.projboard__add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 200px;
+  padding: 20px;
+  border: 1px dashed var(--apx-border-strong);
+  border-radius: var(--apx-radius-lg);
+  text-align: center;
+  color: var(--apx-fg-muted);
+}
+.projboard__addicon {
+  color: var(--apx-fg-subtle);
+}
+.projboard__addtext {
+  margin: 0;
+  font-size: var(--apx-text-sm);
+}
+.projboard__addactions {
+  display: flex;
+  gap: 8px;
+}
+.projboard__askers {
+  justify-content: center;
+}
+.projboard__head {
+  padding: 8px 10px 8px 8px;
+  border-bottom: 1px solid var(--apx-border);
+  cursor: grab;
+}
+.projboard__head:active {
+  cursor: grabbing;
+}
+.projboard__grip {
+  flex: none;
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--apx-radius-sm);
+  background: none;
+  color: var(--apx-fg-subtle);
+  cursor: grab;
+}
+.projboard__grip:focus-visible {
+  outline: 2px solid var(--apx-focus, var(--apx-accent, currentColor));
+}
+
+/* The tabs' counts read as "Agents (10)". */
+.project__tabs .apx-tabs__count::before {
+  content: "(";
+}
+.project__tabs .apx-tabs__count::after {
+  content: ")";
+}
+
+.projsettings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apx-space-4);
+}
+.projsettings__path {
+  display: block;
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-muted);
+  overflow-wrap: anywhere;
+}
+.projsettings__note {
+  margin: 0;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-muted);
+}
+.projsettings__folders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apx-space-2);
+}
+.projsettings__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.projsettings__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--apx-space-2);
+}
+.projsettings__none {
+  margin: 0;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+}
+
+/* Areas and roles of a company project. */
+.org__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.org__aside {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.org__count {
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  white-space: nowrap;
+}
+.org__roles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.org__hint {
+  margin: 0;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+}

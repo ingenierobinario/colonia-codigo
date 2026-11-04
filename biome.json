@@ -1,0 +1,275 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/out",
+      "!packages/ui/playground",
+      "!plan",
+      "!**/*.html",
+      "!packages/surfaces/src/kit/apx-kit.js",
+      "!packages/ui/.design-sync",
+      "!apps/mobile/package-lock.json"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": ["error", "warn"]
+          }
+        }
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "useImportType": "error"
+      },
+      "correctness": {
+        "noUnusedImports": "error"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/terminal/**", "scripts/**", "**/scripts/**", "e2e/*.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/core/src/**", "apps/terminal/src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/packages/protocol/**"],
+                    "message": "Import @apx/protocol/<subpath> (add it to the package's exports): the installed core carries the protocol as a package, not its source files."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/core/src/domain/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/transport/**", "**/rpc/**", "**/channels/**"],
+                    "message": "domain never imports transport, rpc or channels (AGENTS.md rule 4)."
+                  },
+                  {
+                    "group": ["**/packages/protocol/**"],
+                    "message": "Import @apx/protocol/<subpath> (add it to the package's exports): the installed core carries the protocol as a package, not its source files."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/core/src/rpc/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/transport/**"],
+                    "message": "rpc never imports transport (AGENTS.md rule 4: transport \u2192 rpc \u2192 domain)."
+                  },
+                  {
+                    "group": ["**/packages/protocol/**"],
+                    "message": "Import @apx/protocol/<subpath> (add it to the package's exports): the installed core carries the protocol as a package, not its source files."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/apps/**", "@apx/core", "@apx/web", "@apx/desktop", "@apx/terminal"],
+                    "message": "packages never import apps (AGENTS.md rule 4)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "apps/web/src/App.tsx",
+        "apps/web/src/main.tsx",
+        "apps/web/src/shell/**",
+        "apps/web/src/inbox/**",
+        "apps/web/src/chat/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "**/AboutScreen.tsx",
+                      "**/AgentPanel.tsx",
+                      "**/AppScreen.tsx",
+                      "**/AppsDock.tsx",
+                      "**/ArtifactWindow.tsx",
+                      "**/AttachChips.tsx",
+                      "**/AudioPart.tsx",
+                      "**/BrowserPanel.tsx",
+                      "**/ChangesPanel.tsx",
+                      "**/ChannelScreen.tsx",
+                      "**/ChatFiles.tsx",
+                      "**/ChoicesPart.tsx",
+                      "**/CodeView.tsx",
+                      "**/CommandPalette.tsx",
+                      "**/ComputerPanel.tsx",
+                      "**/ComputerProgress.tsx",
+                      "**/ComputersScreen.tsx",
+                      "**/ConfigModal.tsx",
+                      "**/ConnectPart.tsx",
+                      "**/ConnectScreen.tsx",
+                      "**/ContactChat.tsx",
+                      "**/CoreBehind.tsx",
+                      "**/CornerCards.tsx",
+                      "**/WelcomeV2.tsx",
+                      "**/DelegationActions.tsx",
+                      "**/DesktopInstallNotice.tsx",
+                      "**/DocumentActions.tsx",
+                      "**/DocumentPanel.tsx",
+                      "**/EngineSessions.tsx",
+                      "**/GoOn.tsx",
+                      "**/ComputerNotice.tsx",
+                      "**/HandBack.tsx",
+                      "**/InputPart.tsx",
+                      "**/InstallArtifact.tsx",
+                      "**/JobList.tsx",
+                      "**/LiveLayer.tsx",
+                      "**/MediaGroup.tsx",
+                      "**/ModelList.tsx",
+                      "**/NewProjectDialog.tsx",
+                      "**/OAuthReturn.tsx",
+                      "**/PairScreen.tsx",
+                      "**/PhoneDialog.tsx",
+                      "**/ProcessesPanel.tsx",
+                      "**/ProjectScreen.tsx",
+                      "**/ProjectSettings.tsx",
+                      "**/QrSvg.tsx",
+                      "**/QuickChat.tsx",
+                      "**/ReceivedDialog.tsx",
+                      "**/ResourcesScreen.tsx",
+                      "**/RunnableCode.tsx",
+                      "**/ScreenLive.tsx",
+                      "**/FilesScreen.tsx",
+                      "**/FlowCard.tsx",
+                      "**/FlowDetail.tsx",
+                      "**/FlowEditor.tsx",
+                      "**/FlowViewer.tsx",
+                      "**/TablesView.tsx",
+                      "**/FlowsScreen.tsx",
+                      "**/SearchSelect.tsx",
+                      "**/SurfacePart.tsx",
+                      "**/TaskDescription.tsx",
+                      "**/AgentEvent.tsx",
+                      "**/SubthreadPart.tsx",
+                      "**/TaskBundle.tsx",
+                      "**/TaskStatus.tsx",
+                      "**/TaskPeek.tsx",
+                      "**/TasksScreen.tsx",
+                      "**/TerminalPanel.tsx",
+                      "**/TerminalView.tsx",
+                      "**/ThreadDialogs.tsx",
+                      "**/UnregisterProjectDialog.tsx",
+                      "**/UpdateDialog.tsx",
+                      "**/RunningIndicator.tsx",
+                      "**/UsageButton.tsx",
+                      "**/UsagePanel.tsx",
+                      "**/UsagePanels.tsx",
+                      "**/WidgetChat.tsx",
+                      "**/WidgetPanel.tsx",
+                      "**/Wizard.tsx",
+                      "**/osNotices.ts"
+                    ],
+                    "message": "Loaded late: import it from apps/web/src/lazy.ts, never statically from the first screen (AGENTS.md rule 27)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useConst": "off",
+            "useImportType": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ],
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

@@ -1,0 +1,278 @@
+/* What the first screen renders from the screens' sheets (styles/screens.css load with the screens): the chat list
+   column, a channel's marks, the QR placeholder, the composer's model picker. Tokens only. */
+
+.workspace {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+/* The chat list's column: its edge resizes it; folded, a strip that opens it again. */
+.listcol {
+  position: relative;
+  display: flex;
+  flex: none;
+  min-height: 0;
+}
+.apx-resize.listcol__resize {
+  right: -4px;
+}
+
+/* A channel's logo where a tile goes: same box, no frame. */
+.kindtile {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.chan__ticks {
+  display: inline-flex;
+  margin-left: 4px;
+  vertical-align: -2px;
+}
+.chan__ticks.is-read {
+  color: var(--apx-info);
+}
+.chan__ticks.is-failed {
+  color: var(--apx-danger);
+}
+/* A QR code's box, also while it loads. */
+.qrcode {
+  flex: none;
+  border-radius: 12px;
+}
+
+/* The select-like button a model picker opens from. */
+.selectbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  max-width: 190px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--apx-control-radius);
+  background: var(--apx-fill);
+  font-size: var(--apx-text-xs);
+}
+.selectbtn:hover,
+.selectbtn[data-popup-open] {
+  background: var(--apx-fill-hover);
+}
+.selectbtn__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The code the phone types to pair. */
+.devices__code {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-lg);
+  letter-spacing: 0.12em;
+}
+
+.selectbtn__warn {
+  flex: none;
+  color: var(--apx-warning);
+}
+
+/* Catalog list inside a picker */
+.mlist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mlist__catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.mlist__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+.mlist__empty {
+  margin: 8px 4px;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-muted);
+}
+.mlist__group {
+  display: flex;
+  flex-direction: column;
+}
+.mlist__engine {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 4px;
+  background: var(--apx-surface-raised);
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-medium);
+  color: var(--apx-fg-subtle);
+}
+.mlist__opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--apx-radius-sm);
+  background: transparent;
+  color: var(--apx-fg);
+  font: inherit;
+  font-size: var(--apx-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.mlist__opt:hover,
+.mlist__opt:focus-visible {
+  background: var(--apx-fill-hover);
+  outline: none;
+}
+.mlist__check {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  color: var(--apx-brand);
+}
+.mlist__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mlist__ref {
+  flex: none;
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-2xs);
+  color: var(--apx-fg-subtle);
+}
+
+/* Model choice popover */
+.mchoice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mchoice__current,
+.mchoice__title {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-sm);
+}
+.mchoice__title {
+  font-weight: var(--apx-weight-medium);
+}
+.mchoice__label {
+  padding: 10px 4px 0;
+  border-top: 1px solid var(--apx-border);
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+.mchoice__fallback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 0 4px;
+  font-size: var(--apx-text-sm);
+}
+.mchoice__fallback .mchoice__title {
+  flex: 1 1 auto;
+}
+.mchoice__fallback > button,
+.mchoice__inuse {
+  flex: none;
+  margin-left: auto;
+}
+.mchoice__inuse {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-brand);
+}
+.mlist__effort {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 4px 2px;
+  border-top: 1px solid var(--apx-border);
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+}
+.mlist__effort .apx-select {
+  width: 160px;
+}
+@media (max-width: 480px) {
+  .mlist__ref {
+    display: none;
+  }
+}
+.mlist__engine .apx-engine {
+  flex: none;
+}
+/* A chat's queued turns, nested under its working turn (running popover, chat processes). */
+.turns {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 24px;
+  padding-left: 10px;
+  border-left: 1px solid var(--apx-border);
+}
+.turns__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+  background: transparent;
+  color: var(--apx-fg);
+  font-size: var(--apx-text-sm);
+  text-align: left;
+}
+button.turns__row:hover {
+  background: var(--apx-fill-hover);
+}
+.turns__icon {
+  flex: none;
+  color: var(--apx-fg-subtle);
+}
+.turns__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.turns__state,
+.turns__time {
+  flex: none;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}

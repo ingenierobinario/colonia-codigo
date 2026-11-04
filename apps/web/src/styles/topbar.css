@@ -1,0 +1,276 @@
+/* Window controls (desktop app). A bar at the window's top edge takes the classes of useDesktopClass() (shell/desktop.ts)
+   and leaves this room: the traffic lights at the left on a Mac, none in native fullscreen; the overlay at the right on
+   Windows and Linux. A layer over the shell gets the same classes, so its bar clears them too. */
+.is-desktop.is-mac:not(.is-fullscreen) {
+  --window-controls-start: 64px;
+}
+.is-desktop.is-win,
+.is-desktop.is-linux {
+  --window-controls-end: 128px;
+}
+/* The bar moves the window, except where it has controls. Drag regions ignore what is drawn on top, so a layer over
+   the topbar marks its own bar and controls, and popups opt out. */
+.window-bar.is-desktop {
+  -webkit-app-region: drag;
+}
+.window-bar.is-desktop :is(button, a, input, textarea, [role="combobox"]),
+.apx-portal > * {
+  -webkit-app-region: no-drag;
+}
+/* Unified window bar. Tokens only; sizes from --shell-* (shell/layout.ts). */
+.topbar {
+  container: topbar / inline-size;
+  flex: none;
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  height: var(--shell-topbar-h);
+  background: var(--apx-sidebar);
+  border-bottom: 1px solid var(--apx-border);
+}
+.topbar__left,
+.topbar__right,
+.topbar__nav,
+.topbar__usage {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.topbar__left {
+  gap: 10px;
+  padding-left: 14px;
+}
+.topbar__activity {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.topbar__right {
+  justify-self: stretch;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-right: 12px;
+}
+.topbar__nav {
+  gap: 2px;
+  flex: none;
+}
+.topbar__usage {
+  flex: none;
+  gap: 4px;
+  margin-left: 12px;
+  padding-right: 12px;
+  border-right: 1px solid var(--apx-border);
+}
+.topbar__agent {
+  margin-left: 8px;
+}
+.topbar .running {
+  width: auto;
+}
+.topbar__nav .apx-iconbtn:disabled {
+  opacity: 0.35;
+}
+.topbar__logo {
+  display: block;
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+.topbar__crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--apx-text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.topbar__crumb {
+  color: var(--apx-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar__crumb.is-last {
+  color: var(--apx-fg);
+}
+.topbar__sep {
+  color: var(--apx-fg-subtle);
+}
+.topbar__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(100cqw - 1460px, 300px);
+  height: 30px;
+  padding: 0 8px 0 10px;
+  border: 0;
+  border-radius: var(--apx-control-radius);
+  background: var(--apx-fill);
+  color: var(--apx-fg-subtle);
+  font-size: var(--apx-text-sm);
+  cursor: default;
+}
+.topbar__search-label {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.topbar .topbar__icon {
+  width: var(--apx-control-h-sm);
+  height: var(--apx-control-h-sm);
+  flex: none;
+  border-radius: var(--apx-radius-sm);
+  color: var(--apx-fg-muted);
+}
+.topbar .topbar__agent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  width: auto;
+  height: 32px;
+  padding: 0 12px 0 4px;
+  border: 0;
+  border-radius: var(--apx-control-radius);
+  background: transparent;
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-medium);
+}
+.topbar__agent:hover:not(:disabled) {
+  background: var(--apx-fill-hover);
+}
+.topbar__agentkbd {
+  font-size: var(--apx-text-2xs);
+  font-weight: var(--apx-weight-regular);
+  color: var(--apx-fg-subtle);
+}
+html[data-shortcuts-active] [data-shortcut-modifier] {
+  color: var(--apx-fg);
+  border-color: var(--apx-fg-muted);
+}
+.topbar .topbar__more {
+  display: none;
+}
+.topbar.is-desktop {
+  -webkit-app-region: drag;
+  border-bottom-color: color-mix(in srgb, var(--apx-border) 80%, transparent);
+}
+.topbar.is-desktop .topbar__left {
+  padding-left: calc(14px + var(--window-controls-start, 0px));
+}
+.topbar.is-desktop .topbar__right {
+  padding-right: calc(12px + var(--window-controls-end, 0px));
+}
+.topbar.is-desktop button,
+.topbar.is-desktop a,
+.topbar.is-desktop input {
+  -webkit-app-region: no-drag;
+}
+/* Each step is applied only when the preceding layout does not fit. */
+.topbar__right:is([data-fit="1"], [data-fit="2"], [data-fit="3"], [data-fit="4"]) {
+  .topbar__agentkbd,
+  .topbar__agentname,
+  .updatepill__label {
+    display: none;
+  }
+  .topbar__agent {
+    padding: 0 4px;
+  }
+  .updatepill {
+    width: 26px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+.topbar__right:is([data-fit="2"], [data-fit="3"], [data-fit="4"]) .usage-btn__gauge {
+  display: none;
+}
+.topbar__right[data-fit="4"] {
+  .running {
+    width: 28px;
+    padding: 0;
+    justify-content: center;
+  }
+  .running > :not(.running__count:first-of-type),
+  .running__count:first-of-type > :not(svg) {
+    display: none;
+  }
+  .running__count:first-of-type {
+    font-size: 0;
+    gap: 0;
+  }
+}
+@container topbar (max-width: 1599px) {
+  .topbar__search-label,
+  .topbar__search .apx-kbd {
+    display: none;
+  }
+  .topbar__search {
+    width: var(--apx-control-h-sm);
+    padding: 0;
+    justify-content: center;
+  }
+  .topbar__usage {
+    margin-left: 4px;
+    padding-right: 4px;
+  }
+}
+/* Narrow windows keep the familiar icon shortcuts even with only one selected engine. */
+@container topbar (max-width: 1199px) {
+  .topbar__right {
+    --topbar-min-fit: 3;
+  }
+  .topbar__crumbs {
+    font-size: var(--apx-text-xs);
+  }
+}
+@container topbar (max-width: 1099px) {
+  .topbar__right {
+    --topbar-min-fit: 4;
+  }
+}
+@media (max-width: 899px) {
+  .topbar {
+    gap: 6px;
+  }
+  .topbar__crumb:not(.is-last),
+  .topbar__sep,
+  .topbar__logo {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .topbar__activity {
+    position: absolute;
+    left: 36px;
+    gap: 0;
+  }
+  .topbar__activity .updatepill {
+    width: 24px;
+  }
+  .topbar__nav,
+  .topbar__crumbs {
+    display: none;
+  }
+  .topbar .usage-btn {
+    display: none;
+  }
+  .topbar .topbar__more {
+    display: inline-grid;
+  }
+  .topbar__left {
+    padding-left: 4px;
+    gap: 2px;
+  }
+  .topbar__right {
+    padding-right: 4px;
+    gap: 2px;
+  }
+}

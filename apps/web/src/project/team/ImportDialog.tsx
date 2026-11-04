@@ -1,0 +1,290 @@
+import type { Agent, AgentTemplate, TeamTemplate } from "@apx/protocol";
+import { Badge, Button, Checkbox, Dialog, EmptyState, Icons, SegmentedControl, Skeleton, Switch } from "@apx/ui";
+import { useEffect, useMemo, useState } from "react";
+import { notify } from "../../data/notices.ts";
+import { cloneAgents, installTemplates, loadTemplates } from "../../data/team.ts";
+import { useT } from "../../i18n/index.ts";
+import { scheduleText } from "../../routines/Schedule.tsx";
+import { CloneFromProject } from "./CloneFromProject.tsx";
+
+type Templates = { teams: TeamTemplate[]; singles: AgentTemplate[] };
+
+/**
+ * Import into a project: APX's templates (teams or single agents), or copies of the agents of another project. When
+ * the project already has a top agent and the pick brings a lead of its own, the new lead hangs under the current one
+ * by default, so the project keeps one tree.
+ */
+export function ImportDialog({
+  projectId,
+  kind,
+  top,
+  team,
+  onClose,
+}: {
+  projectId: string;
+  /** The project's kind now: a team that makes it another one says so before installing. */
+  kind: string | undefined;
+  /** The project's current top agent (its orchestrator), if any. */
+  top: Agent | undefined;
+  team: Agent[];
+  onClose(): void;
+}) {
+  const t = useT();
+  const [data, setData] = useState<Templates>();
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [open, setOpen] = useState<string>();
+  const [hang, setHang] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [from, setFrom] = useState<"templates" | "projects">("templates");
+  const [copies, setCopies] = useState<Set<string>>(new Set());
+  const [rename, setRename] = useState(true);
+  // A global agent (the base project's) has no slug: its id is what a template's slug would take.
+  const taken = useMemo(() => new Set(team.map((a) => a.slug ?? a.id)), [team]);
+
+  useEffect(() => {
+    void loadTemplates().then((r) => setData(r ?? { teams: [], singles: [] }));
+  }, []);
+
+  const all = useMemo(
+    () => new Map([...(data?.teams.flatMap((x) => x.members) ?? []), ...(data?.singles ?? [])].map((m) => [m.id, m])),
+    [data],
+  );
+  const chosen = [...picked].flatMap((id) => (all.get(id) ? [all.get(id) as AgentTemplate] : []));
+  const bringsLead = chosen.some((m) => m.lead || !m.parent || !chosen.some((c) => c.slug === m.parent));
+  const makes = data?.teams.find((tm) => tm.kind && tm.kind !== kind && tm.members.some((m) => picked.has(m.id)))?.kind;
+  const toggle = (ids: string[], on: boolean) =>
+    setPicked((s) => {
+      const next = new Set(s);
+      for (const id of ids) on ? next.add(id) : next.delete(id);
+      return next;
+    });
+
+  const toggleCopies = (ids: string[], on: boolean) =>
+    setCopies((s) => {
+      const next = new Set(s);
+      for (const id of ids) on ? next.add(id) : next.delete(id);
+      return next;
+    });
+  const clone = async () => {
+    setBusy(true);
+    const r = await cloneAgents(projectId, [...copies], rename, hang ? top?.slug : undefined);
+    setBusy(false);
+    if (!r) return;
+    notify(
+      r.skipped.length
+        ? t("team.clone.doneSkipped", { n: r.cloned, skipped: r.skipped.map((x) => x.agent).join(", ") })
+        : t("team.clone.done", { n: r.cloned }),
+      "info",
+    );
+    onClose();
+  };
+  const cloning = from === "projects";
+  const count = cloning ? copies.size : picked.size;
+
+  const install = async () => {
+    setBusy(true);
+    const r = await installTemplates(projectId, [...picked], hang && bringsLead ? top?.slug : undefined);
+    setBusy(false);
+    if (!r) return;
+    const done = r.skipped.length
+      ? t("team.import.doneSkipped", { n: r.installed, skipped: r.skipped.length })
+      : t("team.import.done", { n: r.installed });
+    const routines =
+      r.routines === 1 ? t("team.import.doneRoutines.one") : t("team.import.doneRoutines.other", { n: r.routines });
+    notify(r.routines ? `${done} ${routines}` : done, "info");
+    onClose();
+  };
+
+  return (
+    <Dialog
+      open
+      size="xl"
+      onOpenChange={(o) => !o && onClose()}
+      title={t("team.import.title")}
+      description={from === "projects" ? t("team.clone.lead") : t("team.import.lead")}
+      footer={
+        <>
+          {top?.slug && (cloning ? copies.size > 0 : bringsLead && chosen.length > 0) && (
+            <div className="teamimport__hang">
+              <Switch
+                size="sm"
+                checked={hang}
+                onCheckedChange={setHang}
+                label={t("team.import.hang", { name: top.name })}
+              />
+            </div>
+          )}
+          <Button variant="secondary" onClick={onClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button disabled={!count} loading={busy} onClick={() => void (cloning ? clone() : install())}>
+            {cloning ? t("team.clone.copy", { n: count }) : t("team.import.install", { n: count })}
+          </Button>
+        </>
+      }
+    >
+      <SegmentedControl
+        className="teamimport__from"
+        label={t("team.import.from")}
+        value={from}
+        onValueChange={(v) => setFrom(v as typeof from)}
+        options={[
+          { value: "templates", label: t("team.import.fromTemplates") },
+          { value: "projects", label: t("team.import.fromProjects") },
+        ]}
+      />
+      {cloning ? (
+        <CloneFromProject
+          projectId={projectId}
+          picked={copies}
+          onToggle={toggleCopies}
+          rename={rename}
+          onRename={setRename}
+        />
+      ) : !data ? (
+        <div className="teamimport__loading">
+          <Skeleton height={72} />
+          <Skeleton height={72} />
+        </div>
+      ) : !data.teams.length && !data.singles.length ? (
+        <EmptyState variant="dashed" size="sm" icon={<Icons.Users />}>
+          {t("team.import.empty")}
+        </EmptyState>
+      ) : (
+        <div className="teamimport">
+          {makes === "company" && (
+            <div className="noticeline is-info" role="status">
+              <Icons.Building2 size={14} />
+              <span>{t("team.import.makesCompany")}</span>
+            </div>
+          )}
+          {data.teams.length > 0 && <h3 className="teamimport__label">{t("team.import.teams")}</h3>}
+          {data.teams.map((tm) => {
+            const free = tm.members.filter((m) => !taken.has(m.slug)).map((m) => m.id);
+            const on = free.filter((id) => picked.has(id)).length;
+            return (
+              <section key={tm.id} className="teamimport__team">
+                <header className="teamimport__teamhead">
+                  <Icons.Users size={16} />
+                  <div className="teamimport__teamtitles">
+                    <div className="teamimport__teamname">
+                      {tm.name}
+                      {tm.source === "v1" && <Badge>{t("team.import.fromV1")}</Badge>}
+                    </div>
+                    {tm.description && <p className="teamimport__teamdesc">{tm.description}</p>}
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => toggle(free, on < free.length)}>
+                    {on < free.length ? t("team.import.selectAll") : t("team.import.clear")}
+                  </Button>
+                </header>
+                <ul className="teamimport__members">
+                  {tm.members.map((m) => (
+                    <Member
+                      key={m.id}
+                      m={m}
+                      taken={taken.has(m.slug)}
+                      on={picked.has(m.id)}
+                      open={open === m.id}
+                      onOpen={() => setOpen(open === m.id ? undefined : m.id)}
+                      onToggle={(v) => toggle([m.id], v)}
+                    />
+                  ))}
+                </ul>
+                {top?.slug && tm.members.some((m) => m.lead && picked.has(m.id)) && (
+                  <p className="teamimport__warn">
+                    <Icons.TriangleAlert size={14} />
+                    {hang
+                      ? t("team.import.warnHang", { top: top.name })
+                      : t("team.import.warnRoots", { top: top.name })}
+                  </p>
+                )}
+              </section>
+            );
+          })}
+          {data.singles.length > 0 && <h3 className="teamimport__label">{t("team.import.singles")}</h3>}
+          <div className="teamimport__grid">
+            {data.singles.map((m) => {
+              const isTaken = taken.has(m.slug);
+              return (
+                <div
+                  key={m.id}
+                  className={`teamimport__card${picked.has(m.id) ? " is-on" : ""}${isTaken ? " is-taken" : ""}`}
+                >
+                  <Checkbox
+                    checked={picked.has(m.id)}
+                    disabled={isTaken}
+                    onCheckedChange={(v) => toggle([m.id], v)}
+                    label={
+                      <span className="teamimport__cardname">
+                        {m.name} <code>{m.slug}</code>
+                      </span>
+                    }
+                    description={
+                      <span className="teamimport__carddesc">
+                        {isTaken ? t("team.import.taken") : m.description || m.role}
+                      </span>
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </Dialog>
+  );
+}
+
+function Member(props: {
+  m: AgentTemplate;
+  taken: boolean;
+  on: boolean;
+  open: boolean;
+  onOpen(): void;
+  onToggle(on: boolean): void;
+}) {
+  const t = useT();
+  const { m } = props;
+  return (
+    <li className={props.taken ? "teamimport__member is-taken" : "teamimport__member"}>
+      <Checkbox checked={props.on} disabled={props.taken} onCheckedChange={props.onToggle} />
+      <button
+        type="button"
+        className="teamimport__eye"
+        aria-label={t("team.import.preview", { name: m.name })}
+        aria-expanded={props.open}
+        onClick={props.onOpen}
+      >
+        <Icons.Eye size={14} />
+      </button>
+      <span className="teamimport__membername">{m.name}</span>
+      <code className="teamimport__slug">{m.slug}</code>
+      {m.lead && (
+        <span className="teamimport__leadtag">
+          <Icons.Crown size={12} />
+          {t("team.orchestrator")}
+        </span>
+      )}
+      {m.routines.length > 0 && (
+        <span className="teamimport__leadtag" title={m.routines.map((r) => r.name).join(" · ")}>
+          <Icons.Repeat size={12} />
+          {m.routines.length === 1
+            ? t("team.import.routines.one")
+            : t("team.import.routines.other", { n: m.routines.length })}
+        </span>
+      )}
+      {props.taken && <span className="teamimport__muted">{t("team.import.taken")}</span>}
+      {props.open && (
+        <p className="teamimport__preview">
+          <strong>{m.role}</strong>
+          {m.description ? ` · ${m.description}` : ""}
+          {m.routines.map((r) => (
+            <span key={r.name} className="teamimport__routine">
+              <Icons.Repeat size={12} /> {r.name} · {scheduleText(r.schedule, t)}
+            </span>
+          ))}
+        </p>
+      )}
+    </li>
+  );
+}

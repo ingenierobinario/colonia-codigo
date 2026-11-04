@@ -1,0 +1,332 @@
+/* ── Look accents: classic ─────────────────────────────────────────────────
+ * Tokens carry almost everything; these are the few shape differences v1 had. */
+[data-apx-look="classic"] .apx-composer__send:not(.is-quiet) {
+  border-radius: 8px;
+}
+[data-apx-look="classic"] .apx-tag--role {
+  background: transparent;
+  border-color: var(--apx-brand);
+}
+[data-apx-look="classic"] .apx-activity__pill {
+  border-radius: 8px;
+}
+[data-apx-look="classic"] .apx-entity {
+  background: transparent;
+  padding: 0;
+}
+[data-apx-look="classic"] .apx-entity__sheet {
+  border-radius: var(--apx-radius-lg);
+}
+[data-apx-look="classic"] .apx-entity__actions {
+  padding: 0;
+}
+[data-apx-look="classic"] .apx-tooltip {
+  background: var(--apx-surface-raised);
+  color: var(--apx-fg);
+  border: 1px solid var(--apx-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apx-blob--anim .apx-blob__bob,
+  .apx-blob--anim .apx-blob__look,
+  .apx-blob--anim .apx-blob__blink,
+  .apx-activity__dots i,
+  .apx-skeleton {
+    animation: none;
+  }
+}
+
+/* ── ProjectTile ───────────────────────────────────────────────────────────── */
+.apx-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  overflow: hidden;
+  background: var(--apx-fill-strong);
+  color: var(--apx-fg-muted);
+  font-weight: var(--apx-weight-semibold);
+  line-height: 1;
+  user-select: none;
+}
+.apx-tile--brand {
+  background: var(--apx-brand-soft);
+  color: var(--apx-brand-soft-fg);
+}
+.apx-tile--violet {
+  background: var(--apx-violet-soft);
+  color: var(--apx-violet-soft-fg);
+}
+.apx-tile--info {
+  background: var(--apx-info-soft);
+  color: var(--apx-info-soft-fg);
+}
+.apx-tile--warning {
+  background: var(--apx-warning-soft);
+  color: var(--apx-warning-soft-fg);
+}
+.apx-tile--danger {
+  background: var(--apx-danger-soft);
+  color: var(--apx-danger-soft-fg);
+}
+.apx-tile--ink {
+  background: var(--apx-accent);
+  color: var(--apx-accent-fg);
+}
+.apx-tile svg {
+  width: 60%;
+  height: 60%;
+}
+.apx-tile__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Popover ───────────────────────────────────────────────────────────────── */
+.apx-popover {
+  max-width: calc(100vw - 24px);
+  padding: 8px;
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-surface-raised);
+  border: 1px solid var(--apx-border);
+  box-shadow: var(--apx-shadow-md);
+  font-family: var(--apx-font-sans);
+  font-size: var(--apx-text-md);
+  color: var(--apx-fg);
+  outline: 0;
+}
+
+/* ── Help: a "?" after a title, opening what each option is for ─────────── */
+.apx-help {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--apx-fg-subtle);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.apx-help:hover,
+.apx-help[data-popup-open] {
+  color: var(--apx-fg);
+  background: var(--apx-fill);
+}
+.apx-help__panel {
+  padding: 12px 14px;
+  font-size: var(--apx-text-sm);
+  line-height: 1.45;
+}
+/* It opens by growing out of the "?": its outline is uncovered (clip-path), never scaled, so the words keep their shape;
+   they fade in once there is room. Keyframes, since the popover turns transitions off for a click. The negative inset
+   keeps the shadow outside the clip. */
+@media (prefers-reduced-motion: no-preference) {
+  .apx-help__panel[data-open] {
+    animation: apx-help-grow 340ms cubic-bezier(0.34, 1.25, 0.64, 1) both;
+  }
+  .apx-help__panel[data-open] > * {
+    animation: apx-help-words 200ms ease 140ms both;
+  }
+}
+@keyframes apx-help-grow {
+  from {
+    clip-path: inset(0 calc(100% - 20px) calc(100% - 20px) 0 round 10px);
+    opacity: 0.4;
+  }
+  to {
+    clip-path: inset(-24px round var(--apx-radius-md));
+    opacity: 1;
+  }
+}
+@keyframes apx-help-words {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.apx-help__title {
+  margin-bottom: 8px;
+  font-weight: var(--apx-weight-semibold);
+}
+.apx-help__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+.apx-help__item dt {
+  font-weight: var(--apx-weight-medium);
+}
+.apx-help__item dd {
+  margin: 2px 0 0;
+  color: var(--apx-fg-muted);
+}
+.apx-help__body {
+  color: var(--apx-fg-muted);
+}
+.apx-help__items + .apx-help__body {
+  margin-top: 10px;
+}
+
+/* ── SettingRow ────────────────────────────────────────────────────────────── */
+.apx-setting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--apx-border);
+}
+/* The text keeps room to read: a control too wide to sit beside it on a narrow screen goes under it. */
+.apx-setting__text {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.apx-setting__title {
+  font-size: var(--apx-text-md);
+}
+.apx-setting__desc {
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-muted);
+  text-wrap: pretty;
+}
+.apx-setting__control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+/* Stacked: a control that needs the width (a paragraph to write) goes under the text. */
+.apx-setting--stacked {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 8px;
+}
+/* In a column the row's 180px basis would be a height: the text takes only what it needs. */
+.apx-setting--stacked > .apx-setting__text {
+  flex: none;
+}
+.apx-setting--stacked > .apx-setting__control {
+  flex: auto;
+}
+.apx-setting--stacked > .apx-setting__control > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── ChannelIcon ──────────────────────────────────────────────────────────── */
+.apx-chanicon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  line-height: 0;
+  color: var(--apx-fg);
+}
+.apx-chanicon--none {
+  color: var(--apx-fg-muted);
+}
+
+/* ── IntegrationIcon ───────────────────────────────────────────────────────── */
+/* One-colour marks (GitHub, Notion) in the text colour, not the tile's muted one. */
+.apx-tile.apx-intmark {
+  color: var(--apx-fg);
+}
+
+/* ── EngineIcon ────────────────────────────────────────────────────────────── */
+.apx-engine {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  line-height: 0;
+}
+.apx-engine--tile {
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--apx-border);
+}
+.apx-engine--tile.apx-engine--claude {
+  box-shadow: none;
+}
+.apx-engine--none {
+  color: var(--apx-fg-muted);
+}
+.apx-engine--none.apx-engine--tile {
+  background: var(--apx-fill);
+}
+/* An ACP agent's one-colour mark: the text colour, on the neutral tile when there is one. */
+.apx-engine--acp {
+  color: var(--apx-fg);
+}
+.apx-engine__tile {
+  fill: var(--apx-fill);
+}
+
+/* ── Meter ─────────────────────────────────────────────────────────────────── */
+.apx-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.apx-meter__track {
+  display: flex;
+  height: 8px;
+  border-radius: var(--apx-radius-pill);
+  background: var(--apx-fill);
+  overflow: hidden;
+}
+.apx-meter--sm .apx-meter__track {
+  height: 4px;
+}
+.apx-meter__fill {
+  height: 100%;
+  flex: none;
+  transition: width 0.3s ease;
+}
+.apx-meter__fill--brand {
+  background: var(--apx-brand);
+}
+.apx-meter__fill--violet {
+  background: var(--apx-violet);
+}
+.apx-meter__fill--info {
+  background: var(--apx-info);
+}
+.apx-meter__fill--warning {
+  background: var(--apx-warning);
+}
+.apx-meter__fill--danger {
+  background: var(--apx-danger);
+}
+.apx-meter__fill--muted {
+  background: var(--apx-fg-subtle);
+}
+.apx-meter__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: calc(12px * var(--apx-text-scale, 1));
+  color: var(--apx-fg-muted);
+}
+.apx-meter__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.apx-meter__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .apx-meter__fill {
+    transition: none;
+  }
+}

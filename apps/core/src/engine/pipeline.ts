@@ -1,0 +1,268 @@
+// A routine's commands around its agent: the pre-command runs first and its output reaches the prompt as outside
+// data; whether the model is called depends on that result; the post-command runs after with what came out. The
+// owner writes the commands (routines.set is human-only); they run in the project's folder with a deadline, a capped
+// output and no credentials in their environment.
+import fs from "node:fs";
+import path from "node:path";
+import type { CallModel, Routine } from "@apx/protocol";
+import { quietNow } from "../domain/notices.ts";
+import type { RunRecord } from "../domain/runs.ts";
+import { freshSignals, signalLines, watchSignals } from "../domain/signals.ts";
+import type { Store } from "../domain/store.ts";
+import { commandEnv } from "../harness/env.ts";
+import { MAX_STEPS } from "../harness/native.ts";
+import { spawnCommand, stopTree } from "../processes.ts";
+import { workDir } from "../tools/folders.ts";
+import { untrusted } from "../tools/result.ts";
+import type { Display } from "./display.ts";
+import { takeTeamNews } from "./team-news.ts";
+
+/** A step runs at most this long (and never past its run's own deadline). */
+export const STEP_TIMEOUT_MS = 120_000;
+/** The post-command's limit when the run already missed its deadline. */
+export const POST_AFTER_DEADLINE_MS = 15_000;
+/** The end of a step's output that is kept: the prompt, the environment and the transcript get at most this. */
+export const STEP_OUTPUT_CHARS = 8000;
+/** Where the owner's prompt takes the pre-command's output (its first one); without it, after the prompt. */
+const PRE_SLOT = "{{pre_output}}";
+
+/** `output` is both streams as they came; `stdout` and `stderr` each on its own, all tail-capped. */
+/** `signal`: it ran and a signal ended it (not when it could not start, nor when this stopped it). */
+export type StepResult = {
+  output: string;
+  exit: number | null;
+  timedOut: boolean;
+  stdout?: string;
+  stderr?: string;
+  signal?: string;
+};
+
+/**
+ * Runs one owner command in this system's shell in `cwd`; resolves with its (tail-capped) output whatever happens.
+ * `stdin`, when given, is what the command reads, then closed.
+ */
+export function runStep(
+  command: string,
+  o: { cwd: string; env: Record<string, string>; signal: AbortSignal; timeoutMs?: number; stdin?: string },
+): Promise<StepResult> {
+  return new Promise((resolve) => {
+    let out = "";
+    const streams = { stdout: "", stderr: "" };
+    let timedOut = false;
+    let settled = false;
+    let stopping = false;
+    // A NUL cannot travel in an environment variable (spawn would throw): it is dropped.
+    const env = Object.fromEntries(Object.entries(o.env).map(([k, v]) => [k, v.replaceAll("\0", "")]));
+    const done = (exit: number | null, extra = "", signal?: string) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      o.signal.removeEventListener("abort", stop);
+      resolve({
+        output: (out + extra).slice(-STEP_OUTPUT_CHARS),
+        exit,
+        timedOut,
+        stdout: streams.stdout.slice(-STEP_OUTPUT_CHARS),
+        stderr: streams.stderr.slice(-STEP_OUTPUT_CHARS),
+        ...(signal ? { signal } : {}),
+      });
+    };
+    let child: ReturnType<typeof spawnCommand>;
+    try {
+      child = spawnCommand(command, {
+        cwd: o.cwd,
+        env,
+        stdio: [o.stdin === undefined ? "ignore" : "pipe", "pipe", "pipe"],
+      });
+    } catch (err) {
+      const output = err instanceof Error ? err.message : String(err);
+      resolve({ output, exit: null, timedOut: false, stdout: "", stderr: output });
+      return;
+    }
+    const keep = (stream: "stdout" | "stderr") => (b: Buffer) => {
+      const text = b.toString("utf8");
+      out = (out + text).slice(-STEP_OUTPUT_CHARS * 2);
+      streams[stream] = (streams[stream] + text).slice(-STEP_OUTPUT_CHARS * 2);
+    };
+    child.stdout?.on("data", keep("stdout"));
+    child.stderr?.on("data", keep("stderr"));
+    if (o.stdin !== undefined) {
+      // A command that never reads its input, or stops early, closes the pipe: that is not its failure.
+      child.stdin?.on("error", () => {});
+      child.stdin?.end(o.stdin);
+    }
+    // Its own process group: stopping it also stops what it started. Something that left the group (setsid) may
+    // still hold the pipes, so the step ends now instead of waiting for them to close.
+    function stop() {
+      stopping = true;
+      child.stdout?.destroy();
+      child.stderr?.destroy();
+      const why = timedOut ? "\n[stopped: time limit]" : "\n[stopped]";
+      // The next step may use the same folder: it starts once this tree is gone.
+      if (child.pid) void stopTree(child.pid, { graceMs: 0 }).finally(() => done(null, why));
+      else done(null, why);
+    }
+    const timer = setTimeout(() => {
+      timedOut = true;
+      stop();
+    }, o.timeoutMs ?? STEP_TIMEOUT_MS);
+    if (o.signal.aborted) stop();
+    else o.signal.addEventListener("abort", stop, { once: true });
+    // Once stopping, the step ends when the whole tree is gone, with why, not when the shell closes.
+    child.on("error", (err) => !stopping && done(null, `\n${err.message}`));
+    child.on("close", (code, signal) => !stopping && done(code, "", signal ?? undefined));
+  });
+}
+
+/** Whether the model is called, from the pre-command's result. */
+export function callsModel(mode: CallModel, pre: StepResult): boolean {
+  if (mode === "never") return false;
+  if (mode === "output") return pre.output.trim() !== "";
+  if (mode === "succeeds") return pre.exit === 0;
+  if (mode === "fails") return pre.exit !== 0;
+  return true;
+}
+
+/** The owner's prompt with the pre-command's output in its slot (or after it), marked as outside data. */
+export function withPreOutput(prompt: string, pre: StepResult): string {
+  const block = untrusted(
+    "pre_output",
+    { exit: String(pre.exit ?? "none"), ...(pre.timedOut ? { timed_out: "yes" } : {}) },
+    pre.output || "(no output)",
+  );
+  // The first slot only: the output goes into the prompt once, however many times the slot is written.
+  const at = prompt.indexOf(PRE_SLOT);
+  return at < 0 ? `${prompt}\n\n${block}` : `${prompt.slice(0, at)}${block}${prompt.slice(at + PRE_SLOT.length)}`;
+}
+
+const label = (r: StepResult) => (r.timedOut ? "timed out" : r.exit === 0 ? "ok" : `exit ${r.exit ?? "?"}`);
+
+/** The routine behind a run, when it needs the pipeline: commands of its own, or an action other than its agent. */
+export function routineWithCommands(store: Store, run: RunRecord): Routine | undefined {
+  const origin = run.input?.origin;
+  if (run.trigger !== "routine" || origin?.kind !== "routine") return undefined;
+  const r = store.routines.get(origin.id);
+  return r && (r.pre_command || r.post_command || r.action !== "agent") ? r : undefined;
+}
+
+/** How many model calls a run may make on our own loop: its routine's own limit, else the default. */
+export function stepsFor(store: Store, run: RunRecord): number {
+  const origin = run.input?.origin;
+  const own =
+    run.trigger === "routine" && origin?.kind === "routine" ? store.routines.get(origin.id)?.max_steps : undefined;
+  return own ?? MAX_STEPS;
+}
+
+/** A message routine's text: the owner's words with the pre-command's output, as it is, in its slot. */
+export function messageText(text: string, pre: StepResult | undefined): string {
+  const out = pre?.output.trim() ?? "";
+  return text.includes(PRE_SLOT) ? text.replace(PRE_SLOT, out) : text;
+}
+
+/** One routine run's pipeline: the pre-step before the turn and the post-step after it, shown in the run's message. */
+export function routinePipeline(o: { store: Store; home: string; routine: Routine; run: RunRecord; display: Display }) {
+  const { routine, display } = o;
+  // The commands run where the routine's agent works in its chat.
+  const thread = o.store.threads.get(o.run.thread_id);
+  const cwd = thread ? workDir(o.store, o.home, thread) : path.join(o.home, "work");
+  let pre: StepResult | undefined;
+
+  const step = async (code: string, command: string, env: Record<string, string>, signal: AbortSignal) => {
+    fs.mkdirSync(cwd, { recursive: true });
+    const r = await runStep(command, { cwd, env: { ...commandEnv(), ...env }, signal });
+    const tail = r.output.trim().split("\n").slice(-12).join("\n");
+    const status = r.timedOut ? "timeout" : r.exit === 0 ? "ok" : "failed";
+    display.notice(
+      status === "ok" ? "info" : "warn",
+      `${code}.${status}`,
+      `${code === "routine.pre" ? "Pre-command" : "Post-command"}: ${label(r)}`,
+      { vars: { exit: r.exit ?? "?" }, ...(tail ? { detail: tail } : {}) },
+    );
+    return r;
+  };
+
+  /**
+   * A watch: its agent is called only with signals not told lately; they reach it as data, not instructions. In the
+   * owner's quiet hours it waits (nothing it says would reach them): the first run after sees what is new.
+   */
+  const watch = (result: StepResult | undefined) => {
+    const now = new Date();
+    if (quietNow(o.store, now)) {
+      o.store.routines.modelCalled(o.run.id, false);
+      return { call: false, prompt: (t: string) => t };
+    }
+    const key = `watch_seen:${routine.id}`;
+    let seen: Record<string, string> = {};
+    try {
+      seen = JSON.parse(o.store.settings.get(key) ?? "{}") as Record<string, string>;
+    } catch {}
+    const all = watchSignals(o.store, { projectId: routine.project_id, now });
+    const next = freshSignals(all, seen, now);
+    o.store.settings.set(key, JSON.stringify(next.seen));
+    o.store.routines.modelCalled(o.run.id, next.fresh.length > 0);
+    if (!next.fresh.length) return { call: false, prompt: (t: string) => t };
+    const block = untrusted("signals", { count: String(next.fresh.length) }, signalLines(next.fresh));
+    return {
+      call: true,
+      prompt: (t: string) => `${result ? withPreOutput(t, result) : t}\n\n${block}`,
+    };
+  };
+
+  /**
+   * A relay: its agent is called only when other agents' news waits for it; the news reaches it as data, not
+   * instructions. In the owner's quiet hours it waits, like a watch: the first run after tells all of it.
+   */
+  const relay = (result: StepResult | undefined) => {
+    const news = quietNow(o.store) ? undefined : takeTeamNews(o.store);
+    o.store.routines.modelCalled(o.run.id, Boolean(news));
+    if (!news) return { call: false, prompt: (t: string) => t };
+    const block = untrusted("team_news", { count: String(news.count) }, news.lines);
+    return {
+      call: true,
+      prompt: (t: string) => `${result ? withPreOutput(t, result) : t}\n\n${block}`,
+    };
+  };
+
+  return {
+    /**
+     * Runs the pre-command (if any) and says what comes next: the model (an agent routine), a message to send as it is
+     * (a message routine, when its condition holds), or nothing more (a shell routine, or a condition that said no).
+     */
+    async before(signal: AbortSignal): Promise<{ call: boolean; message?: string; prompt: (text: string) => string }> {
+      if (routine.pre_command) pre = await step("routine.pre", routine.pre_command, {}, signal);
+      const result = pre;
+      if (routine.action === "watch") return watch(result);
+      if (routine.action === "relay") return relay(result);
+      const goOn = result ? callsModel(routine.call_model, result) : true;
+      if (routine.action !== "agent") {
+        o.store.routines.modelCalled(o.run.id, false);
+        const message = routine.action === "message" && goOn ? messageText(routine.prompt, result) : undefined;
+        return { call: false, ...(message ? { message } : {}), prompt: (t) => t };
+      }
+      if (!result) return { call: true, prompt: (t) => t };
+      o.store.routines.modelCalled(o.run.id, goOn);
+      return { call: goOn, prompt: (t) => withPreOutput(t, result) };
+    },
+    /** Runs the post-command (if any) with what the run produced; `limitMs` is shorter after a missed deadline. */
+    async after(done: RunRecord, skipped: boolean, limitMs = STEP_TIMEOUT_MS): Promise<void> {
+      if (!routine.post_command) return;
+      const text = done.message_id
+        ? (o.store.messages.get(done.message_id)?.parts ?? [])
+            .flatMap((p) => (p.type === "text" ? [p.text] : []))
+            .join("\n")
+        : "";
+      await step(
+        "routine.post",
+        routine.post_command,
+        {
+          APX_LLM_OUTPUT: text.slice(-STEP_OUTPUT_CHARS),
+          APX_STATUS: skipped ? "skipped" : done.state,
+          APX_SKIPPED: skipped ? "1" : "0",
+          APX_PRE_OUTPUT: pre?.output ?? "",
+          APX_PRE_EXIT: String(pre?.exit ?? ""),
+        },
+        AbortSignal.timeout(limitMs),
+      );
+    },
+  };
+}

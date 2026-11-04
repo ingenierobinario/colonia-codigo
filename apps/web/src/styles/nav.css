@@ -1,0 +1,963 @@
+/* Sidebar, account row, running popover and phone dialog. */
+
+/* ── Running pill + popover ────────────────────────────────────────────────── */
+.running {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--apx-control-radius);
+  background: var(--apx-fill);
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-medium);
+  white-space: nowrap;
+}
+.running.is-active {
+  background: var(--apx-brand-soft);
+  color: var(--apx-brand-soft-fg);
+}
+.running__count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.running__count.is-light {
+  font-weight: var(--apx-weight-regular);
+}
+.running__count.is-waiting {
+  color: var(--apx-warning-soft-fg);
+}
+.running__div {
+  width: 1px;
+  height: 14px;
+  background: currentColor;
+  opacity: 0.25;
+}
+.running__tabs {
+  display: flex;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.running__tabs .apx-segmented__item {
+  flex: 1;
+  justify-content: center;
+}
+.running__tabn {
+  font-size: var(--apx-text-2xs);
+  color: var(--apx-fg-subtle);
+}
+.running__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.running__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+  background: transparent;
+  text-align: left;
+}
+.running__row:hover {
+  background: var(--apx-fill-hover);
+}
+/* A working agent's stop takes its time's place while the row is hovered. */
+.running__line {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.running__stop {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+.running__line:hover .running__stop,
+.running__stop:focus-visible {
+  opacity: 1;
+}
+.running__line:hover .running__elapsed {
+  visibility: hidden;
+}
+.running__item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.running__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-medium);
+}
+.running__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+.running__elapsed {
+  flex: none;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-brand-soft-fg);
+}
+.running__waiting {
+  flex: none;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-warning-soft-fg);
+}
+.running__empty {
+  margin: 0;
+  padding: 14px 10px;
+  font-size: var(--apx-text-sm);
+  color: var(--apx-fg-subtle);
+  text-align: center;
+}
+
+/* ── Attention tray ──────────────────────────────────────────────────────── */
+.attention {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--apx-control-radius);
+  background: transparent;
+  color: var(--apx-fg-muted);
+}
+.attention:hover {
+  background: var(--apx-fill-hover);
+}
+.attention.is-active {
+  color: var(--apx-fg);
+}
+.attention__count {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--apx-warning);
+  color: #fff;
+  font-size: var(--apx-text-2xs);
+  font-weight: var(--apx-weight-semibold);
+  line-height: 16px;
+  text-align: center;
+}
+.attention__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 8px 10px;
+}
+.attention__title {
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-semibold);
+}
+.attention__row {
+  align-items: flex-start;
+}
+.attention__row:not(.is-unread) {
+  opacity: 0.6;
+}
+.attention__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--apx-fill);
+  color: var(--apx-fg-muted);
+}
+.attention__icon.is-warn {
+  background: var(--apx-warning-soft);
+  color: var(--apx-warning-soft-fg);
+}
+.attention__icon.is-error {
+  background: var(--apx-danger-soft);
+  color: var(--apx-danger-soft-fg);
+}
+.attention__body {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-muted);
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────────────── */
+.sidebar {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: var(--shell-sidebar-w);
+  background: var(--apx-sidebar);
+  border-right: 1px solid var(--apx-border);
+  overflow: hidden;
+}
+/* Inbox, Tasks and Resources stay pinned on top, the account at the bottom; the middle scrolls between two fixed lines. */
+.sidebar__top {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 8px 8px;
+  border-bottom: 1px solid var(--apx-border);
+}
+.sidebar__scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 4px 12px 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+.sidebar__foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 10px;
+  border-top: 1px solid var(--apx-border);
+}
+.sidebar .apx-nav--collapsed {
+  justify-content: flex-start;
+  padding: 0 10px;
+}
+/* Lucide icons sit at 16px and tiles at 20px, so labels line up like the design (44 / 48px). */
+.sidebar .apx-nav__icon {
+  width: auto;
+  min-width: 16px;
+}
+.sidebar__divider {
+  flex: none;
+  width: calc(100% - 20px);
+  margin: 12px 10px 6px;
+  border: 0;
+  border-top: 1px solid var(--apx-border);
+}
+/* A section's bottom edge is the divider under it: drag the line to show more or fewer rows. */
+.sidebar__grip {
+  flex: none;
+  position: relative;
+  height: 13px;
+  margin: 6px 10px 0;
+  cursor: row-resize;
+  touch-action: none;
+}
+.sidebar__grip::after {
+  content: "";
+  position: absolute;
+  inset: 6px 0 auto;
+  height: 1px;
+  background: var(--apx-border);
+  transition:
+    background 0.12s,
+    height 0.12s,
+    top 0.12s;
+}
+.sidebar__grip + .sidebar__divider,
+.sidebar__scroll > .sidebar__divider:first-child {
+  display: none;
+}
+/* The last section has no divider under it: its edge shows only while used. */
+.sidebar__grip:last-child::after {
+  background: transparent;
+}
+.sidebar__grip:hover::after,
+.sidebar__grip:focus-visible::after,
+.sidebar__grip:active::after {
+  top: 5px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--apx-border-strong, var(--apx-border));
+}
+.sidebar__grip:focus-visible {
+  outline: none;
+}
+.sidebar__railaction {
+  display: flex;
+  padding: 0 0 6px 10px;
+}
+.sidebar__add {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: -4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--apx-fg-subtle);
+}
+.sidebar__add:hover:not(:disabled) {
+  background: var(--apx-fill-hover);
+}
+.sidebar__add:disabled {
+  cursor: default;
+}
+.sidebar__running {
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--apx-brand);
+}
+.sidebar__unread {
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--apx-fg);
+}
+.sidebar__soon {
+  font-size: var(--apx-text-2xs);
+  color: var(--apx-fg-subtle);
+}
+
+/* ── Account row ───────────────────────────────────────────────────────────── */
+/* Alone in the sidebar foot, whose top border already sets it apart. */
+.account {
+  flex: none;
+}
+.sidebar.is-rail .sidebar__scroll {
+  scrollbar-width: none;
+}
+.account__btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 38px;
+  padding: 0 6px 0 10px;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+  background: transparent;
+  text-align: left;
+}
+.account__btn:hover,
+.account__btn[data-popup-open] {
+  background: var(--apx-fill-hover);
+}
+.account__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--apx-fill-strong);
+  font-size: var(--apx-text-2xs);
+  font-weight: var(--apx-weight-semibold);
+}
+.account__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-sm);
+}
+.account__more {
+  flex: none;
+  color: var(--apx-fg-subtle);
+}
+.account.is-rail .account__btn {
+  padding: 0 0 0 9px;
+}
+
+/* ── Help ──────────────────────────────────────────────────────────────────── */
+/* Beside the account in the open sidebar; above it, like the other icons, in the rail. */
+.sidebar:not(.is-rail) .sidebar__foot {
+  flex-direction: row;
+  align-items: center;
+}
+.sidebar:not(.is-rail) .account {
+  flex: 1;
+  min-width: 0;
+}
+.help {
+  flex: none;
+}
+.sidebar:not(.is-rail) .help {
+  order: 1;
+}
+.help__btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+  background: transparent;
+  color: var(--apx-fg-muted);
+}
+.help.is-rail .help__btn {
+  width: 44px;
+}
+.help__btn:hover,
+.help__btn[data-popup-open] {
+  background: var(--apx-fill-hover);
+  color: var(--apx-fg);
+}
+.help__menu {
+  width: 300px;
+}
+/* The news lines have no icon of their own: no empty column before them. */
+.help__menu .apx-menu__icon:empty {
+  display: none;
+}
+.help__dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--apx-brand);
+  box-shadow: 0 0 0 2px var(--apx-sidebar);
+}
+
+/* ── Phone dialog ──────────────────────────────────────────────────────────── */
+.phone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 0;
+}
+.phone__hint {
+  margin: 0;
+  max-width: 360px;
+  text-align: center;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+
+/* ── Projects (collapsible, long lists fold into "N more") ─────────────────── */
+.sidebar__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.sidebar__chev {
+  transition: transform 0.15s ease;
+}
+.sidebar__toggle.is-closed .sidebar__chev {
+  transform: rotate(-90deg);
+}
+.sidebar__more {
+  color: var(--apx-fg-muted);
+}
+.sidebar__moretile {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--apx-fill);
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-2xs);
+  font-weight: var(--apx-weight-semibold);
+}
+.morelist__head {
+  padding: 4px 10px 6px;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+}
+.morelist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+/* ── Background jobs (compact cards) ───────────────────────────────────────── */
+.job {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  border-radius: var(--apx-row-radius);
+}
+.job:hover {
+  background: var(--apx-fill-hover);
+}
+.job__main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 10px;
+  padding: 8px 4px 8px 10px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.job__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 6px;
+  background: var(--apx-fill);
+  color: var(--apx-fg-muted);
+}
+.job.is-working .job__icon,
+.job.is-submitted .job__icon {
+  background: var(--apx-brand-soft);
+  color: var(--apx-brand-soft-fg);
+}
+.job.is-failed .job__icon {
+  color: var(--apx-danger-soft-fg);
+}
+.job__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.job__top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.job__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-sm);
+  font-weight: var(--apx-weight-medium);
+}
+.job__hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: min(320px, calc(100vw - 40px));
+  max-height: min(280px, 40dvh);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.job__details,
+.job__full-details {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.job__full-details {
+  width: 100%;
+  height: 60dvh;
+  overflow: auto;
+  resize: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--apx-text-sm);
+}
+.job__time {
+  flex: none;
+  font-size: var(--apx-text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--apx-fg-subtle);
+}
+.job.is-working .job__time {
+  color: var(--apx-brand-soft-fg);
+}
+.job__activity,
+.job__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-muted);
+}
+.job__meta {
+  color: var(--apx-fg-subtle);
+}
+.job.is-failed .job__activity {
+  color: var(--apx-danger-soft-fg);
+}
+.job__stop {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin: 6px 6px 0 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--apx-fg-muted);
+  cursor: pointer;
+}
+.job__stop:hover {
+  background: var(--apx-fill-strong);
+  color: var(--apx-fg);
+}
+.jobs__fold {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 0;
+  background: none;
+  font-size: var(--apx-text-xs);
+  color: var(--apx-fg-subtle);
+  cursor: pointer;
+}
+.jobs__chev {
+  transform: rotate(-90deg);
+  transition: transform 0.15s ease;
+}
+.jobs__fold.is-open .jobs__chev {
+  transform: none;
+}
+
+.job {
+  flex-direction: column;
+  align-items: stretch;
+}
+.job__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+}
+.job__title.is-mono {
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-xs);
+}
+.job__output {
+  max-height: 180px;
+  margin: 0 8px 8px 40px;
+  padding: 8px 10px;
+  overflow: auto;
+  border-radius: var(--apx-radius-md);
+  background: var(--apx-fill);
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-2xs);
+  line-height: 1.45;
+  color: var(--apx-fg-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
+}
+
+/* The sidebar's edge to drag (inside it: the sidebar clips what overflows). */
+.apx-resize.sidebar__resize {
+  right: 0;
+}
+
+/* New project dialog: where it lives, then its name, kind and description; a folder path has the picker beside it. */
+.newproject {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.newproject > .apx-segmented {
+  align-self: flex-start;
+}
+.newproject__hint {
+  margin: 0;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-sm);
+}
+.newproject__hint code {
+  overflow-wrap: anywhere;
+}
+.newproject__row {
+  display: flex;
+  gap: 8px;
+}
+.newproject__row > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ⌘K palette: the box, then results grouped by kind; the active row follows arrows and the pointer. */
+.palette.apx-dialog {
+  top: 14vh;
+  flex-direction: column;
+  max-height: 70vh;
+  transform: translateX(-50%);
+}
+.palette__box {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 56px 14px 16px;
+  border-bottom: 1px solid var(--apx-border);
+  color: var(--apx-fg-muted);
+}
+.palette__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--apx-fg);
+  font: inherit;
+  font-size: var(--apx-text-md);
+}
+.apx .palette__input:focus,
+.apx .palette__input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.palette .apx-dialog__close--float {
+  margin: 0;
+}
+.palette__list {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px 10px;
+}
+.palette__group {
+  padding: 10px 8px 4px;
+  color: var(--apx-fg-subtle);
+  font-size: var(--apx-text-2xs);
+  font-weight: var(--apx-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.palette__item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 7px 8px;
+  border-radius: var(--apx-radius-sm);
+  cursor: pointer;
+}
+.palette__item.is-on {
+  background: var(--apx-popup-hover, var(--apx-fill));
+}
+.palette__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  color: var(--apx-fg-muted);
+}
+.palette__title {
+  flex: none;
+  max-width: 60%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.palette__detail {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--apx-fg-subtle);
+  font-size: var(--apx-text-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.palette__empty {
+  padding: 24px 8px;
+  color: var(--apx-fg-muted);
+  text-align: center;
+}
+
+/* A newer APX or panel: a small pill in the top bar, only while there is one. */
+/* The command a core out of date needs, ready to copy. */
+.updatepill__cmd {
+  padding: 6px 10px;
+  border-radius: var(--apx-radius-sm);
+  background: var(--apx-fill-hover);
+  font-family: var(--apx-font-mono);
+  font-size: var(--apx-text-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.updatepill {
+  display: inline-flex;
+  flex: none;
+  gap: 6px;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--apx-brand) 40%, transparent);
+  border-radius: var(--apx-radius-pill);
+  background: var(--apx-brand-soft);
+  color: var(--apx-brand-soft-fg, var(--apx-brand));
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-medium);
+  white-space: nowrap;
+}
+.update__changes {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--apx-fg-muted);
+  line-height: 1.6;
+}
+.update__wait {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--apx-fg-muted);
+}
+.update__note {
+  margin: 0 0 8px;
+}
+.update__log {
+  max-height: 240px;
+  margin: 0;
+  overflow: auto;
+  padding: 10px;
+  border-radius: var(--apx-radius-sm);
+  background: var(--apx-fill);
+  font-size: var(--apx-text-2xs);
+  white-space: pre-wrap;
+}
+
+/* Row actions share the selection; the label fades before the overlay controls. */
+.sidebar-navrow {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+}
+.sidebar-navrow > .apx-nav {
+  width: 100%;
+  min-width: 0;
+  background: none;
+  box-shadow: none;
+}
+.sidebar-navrow:hover {
+  background: var(--apx-fill-hover);
+}
+.sidebar-navrow.is-active {
+  background: var(--apx-row-selected-bg);
+  box-shadow: inset 0 0 0 1px var(--apx-row-selected-border);
+}
+.sidebar-navrow__actions {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.sidebar-navrow:hover .sidebar-navrow__actions,
+.sidebar-navrow:focus-within .sidebar-navrow__actions,
+.sidebar-navrow:has([aria-expanded="true"]) .sidebar-navrow__actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sidebar-navrow:not(.is-rail):hover .apx-nav,
+.sidebar-navrow:not(.is-rail):focus-within .apx-nav,
+.sidebar-navrow:not(.is-rail):has([aria-expanded="true"]) .apx-nav {
+  padding-right: 36px;
+}
+.sidebar-navrow:not(.is-rail):hover .apx-nav__label,
+.sidebar-navrow:not(.is-rail):focus-within .apx-nav__label,
+.sidebar-navrow:not(.is-rail):has([aria-expanded="true"]) .apx-nav__label {
+  mask-image: linear-gradient(to right, #000 calc(100% - 10px), transparent);
+}
+.sidebar-navrow.is-dragging {
+  opacity: 0.5;
+}
+.sidebar-navrow.is-drop-before {
+  box-shadow: inset 0 2px var(--apx-fg-muted);
+}
+.sidebar-navrow.is-drop-after {
+  box-shadow: inset 0 -2px var(--apx-fg-muted);
+}
+@media (hover: none) {
+  .sidebar-navrow__actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar-navrow:not(.is-rail) > .apx-nav {
+    padding-right: 36px;
+  }
+}
+
+/* ── Usage gauge (topbar) ──────────────────────────────────────────────────── */
+.usage-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--apx-control-radius);
+  background: transparent;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+.usage-btn:hover {
+  background: var(--apx-fill-hover);
+  color: var(--apx-fg);
+}
+.usage-btn__gauge {
+  width: 22px;
+  height: 4px;
+  border-radius: var(--apx-radius-pill);
+  background: var(--apx-fill-strong);
+  overflow: hidden;
+}
+.usage-btn__gauge > span {
+  display: block;
+  height: 100%;
+  background: var(--apx-brand);
+}
+.usage-btn.is-warning .usage-btn__gauge > span {
+  background: var(--apx-warning);
+}
+.usage-btn.is-danger .usage-btn__gauge > span {
+  background: var(--apx-danger);
+}
+.usage-btn.is-danger {
+  color: var(--apx-danger-soft-fg);
+}

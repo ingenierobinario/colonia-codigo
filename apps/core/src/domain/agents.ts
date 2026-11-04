@@ -1,0 +1,319 @@
+// Agents are always addressed by id. Names are for people and models; turning a name into an id is an explicit,
+// scoped lookup (`resolve`) that refuses ambiguity instead of picking one.
+import { type Agent, type AgentRules, Autonomy, type ModelChoice, RulePolicy, ToolRisk } from "@apx/protocol";
+import type { Selectable } from "kysely";
+import type { AgentsTable } from "../db/schema.ts";
+import { harnessOf } from "./refs.ts";
+import { now, opt, qb, type Sql } from "./sql.ts";
+
+export type AgentRecord = Agent & { prompt: string };
+
+const toAgent = (r: Selectable<AgentsTable>): AgentRecord => ({
+  id: r.id,
+  name: r.name,
+  role: r.role,
+  kind: r.kind as Agent["kind"],
+  ...opt("blob", r.blob),
+  ...opt("project_id", r.project_id),
+  browser_profile: r.browser_profile as Agent["browser_profile"],
+  ...withChoice(r.model_choice ? (JSON.parse(r.model_choice) as ModelChoice) : undefined),
+  ...opt("slug", r.slug),
+  ...opt("parent", r.parent),
+  ...opt("description", r.description),
+  source: r.source === "apc" ? "apc" : "local",
+  ...policyOf(r.extra),
+  prompt: r.prompt,
+});
+
+type Policy = Pick<Agent, "tools" | "autonomy" | "skills" | "area" | "personality" | "orchestrator" | "rules">;
+
+/** `rules:` as `risk=policy` pairs ("write=ask"); unknown risks or policies are left out. */
+export function rulesOf(v: unknown): AgentRules | undefined {
+  const pairs = Array.isArray(v) ? v : typeof v === "string" ? v.split(",") : [];
+  const out: AgentRules = {};
+  for (const pair of pairs) {
+    const [k, p] = String(pair)
+      .split(/[=:]/)
+      .map((x) => x.trim().toLowerCase());
+    const risk = ToolRisk.safeParse(k);
+    const policy = RulePolicy.safeParse(p);
+    if (risk.success && policy.success) out[risk.data] = policy.data;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+/** `orchestrator:` true or false as written; anything else says nothing, and the team's head is guessed by role. */
+function orchestratorOf(v: unknown): Pick<Agent, "orchestrator"> {
+  const text = String(v ?? "").toLowerCase();
+  return v === true || text === "true"
+    ? { orchestrator: true }
+    : v === false || text === "false"
+      ? { orchestrator: false }
+      : {};
+}
+
+/** The pairs an agent's file writes for its rules. */
+export const rulesText = (r: AgentRules | null | undefined): string[] =>
+  Object.entries(r ?? {}).flatMap(([k, v]) => (v ? [`${k}=${v}`] : []));
+
+/** `tools:`, `autonomy:`, `skills:` and `area:` as the agent's file wrote them; unknown autonomy values mean the default. */
+function policyOf(extra: string | null): Policy {
+  let e: {
+    tools?: unknown;
+    autonomy?: unknown;
+    skills?: unknown;
+    area?: unknown;
+    personality?: unknown;
+    orchestrator?: unknown;
+    rules?: unknown;
+  } = {};
+  try {
+    e = extra ? JSON.parse(extra) : {};
+  } catch {}
+  const tools = Array.isArray(e.tools) ? e.tools.map(String).filter(Boolean) : [];
+  const autonomy = Autonomy.safeParse(String(e.autonomy ?? "").toLowerCase());
+  const skills = Array.isArray(e.skills) ? e.skills.map(String).filter(Boolean) : [];
+  return {
+    ...(tools.length ? { tools } : {}),
+    ...(autonomy.success ? { autonomy: autonomy.data } : {}),
+    ...(skills.length ? { skills } : {}),
+    ...(typeof e.area === "string" && e.area.trim() ? { area: e.area.trim().slice(0, 40) } : {}),
+    ...(typeof e.personality === "string" && e.personality.trim()
+      ? { personality: e.personality.trim().slice(0, 1000) }
+      : {}),
+    ...orchestratorOf(e.orchestrator),
+    ...(rulesOf(e.rules) ? { rules: rulesOf(e.rules) } : {}),
+  };
+}
+
+const withChoice = (c: ModelChoice | undefined): Pick<Agent, "model_choice" | "harness"> =>
+  c ? { model_choice: c, ...(c.model ? { harness: harnessOf(c.model) } : {}) } : {};
+
+export type Resolved = { agent: AgentRecord } | { error: string };
+
+/** `changed` is called after a write that changed a row (the store turns it into one `team.updated`). */
+export function agentsRepo({ one, all, run }: Sql, changed: () => void) {
+  const write = (q: Parameters<Sql["run"]>[0]) => {
+    if (run(q)) changed();
+  };
+  const repo = {
+    /** Active agents (an agent whose file was removed from its project is archived and not listed). */
+    list(): AgentRecord[] {
+      return all(
+        qb.selectFrom("agents").selectAll().where("archived", "=", 0).orderBy("kind", "desc").orderBy("name"),
+      ).map(toAgent);
+    },
+    get(id: string): AgentRecord | undefined {
+      const r = one(qb.selectFrom("agents").selectAll().where("id", "=", id));
+      return r ? toAgent(r) : undefined;
+    },
+    /**
+     * Id first; otherwise a case-insensitive name match among global agents and the given project's team.
+     * More than one match is an error that lists the ids, never a guess.
+     */
+    resolve(ref: string, projectId: string | undefined): Resolved {
+      const byId = repo.get(ref);
+      if (byId) return { agent: byId };
+      const matches = all(
+        qb
+          .selectFrom("agents")
+          .selectAll()
+          .where("archived", "=", 0)
+          .where((eb) => {
+            const lowerRef = eb.fn<string>("lower", [eb.val(ref)]);
+            return eb.or([eb(eb.fn<string>("lower", ["name"]), "=", lowerRef), eb("slug", "=", lowerRef)]);
+          })
+          .where((eb) => eb.or([eb("project_id", "is", null), eb("project_id", "=", projectId ?? "")])),
+      ).map(toAgent);
+      if (matches.length === 1 && matches[0]) return { agent: matches[0] };
+      if (matches.length > 1) return { error: `"${ref}" matches ${matches.map((a) => a.id).join(", ")}; use the id` };
+      return { error: `unknown agent "${ref}"; use list_agents to find its id` };
+    },
+    /**
+     * Mirrors an agent defined in a project file. The file owns name, role, prompt and hierarchy; what the owner set in
+     * APX (model choice, browser profile) is kept.
+     */
+    upsertApc(a: {
+      id: string;
+      project_id: string;
+      slug: string;
+      name: string;
+      role: string;
+      prompt: string;
+      description?: string | undefined;
+      parent?: string | undefined;
+      blob?: string | undefined;
+      model_choice?: ModelChoice | undefined;
+      extra: unknown;
+    }): void {
+      write(
+        qb
+          .insertInto("agents")
+          .values({
+            id: a.id,
+            name: a.name,
+            role: a.role,
+            kind: "agent",
+            blob: a.blob ?? null,
+            project_id: a.project_id,
+            browser_profile: "isolated",
+            prompt: a.prompt,
+            created_at: now(),
+            model_choice: a.model_choice ? JSON.stringify(a.model_choice) : null,
+            slug: a.slug,
+            source: "apc",
+            parent: a.parent ?? null,
+            description: a.description ?? null,
+            extra: JSON.stringify(a.extra ?? {}),
+            archived: 0,
+          })
+          .onConflict((c) =>
+            c
+              .column("id")
+              .doUpdateSet((eb) => ({
+                name: eb.ref("excluded.name"),
+                role: eb.ref("excluded.role"),
+                blob: eb.fn.coalesce(eb.ref("excluded.blob"), eb.ref("agents.blob")),
+                project_id: eb.ref("excluded.project_id"),
+                prompt: eb.ref("excluded.prompt"),
+                slug: eb.ref("excluded.slug"),
+                source: "apc",
+                parent: eb.ref("excluded.parent"),
+                description: eb.ref("excluded.description"),
+                extra: eb.ref("excluded.extra"),
+                archived: 0,
+              }))
+              // A reindex of unchanged files writes nothing, so it tells no client to reload.
+              .where((eb) =>
+                eb.or([
+                  ...(["name", "role", "project_id", "prompt", "slug", "parent", "description", "extra"] as const).map(
+                    (c) => eb(eb.ref(`agents.${c}`), "is not", eb.ref(`excluded.${c}`)),
+                  ),
+                  eb(eb.fn.coalesce(eb.ref("excluded.blob"), eb.ref("agents.blob")), "is not", eb.ref("agents.blob")),
+                  eb("agents.source", "!=", "apc"),
+                  eb("agents.archived", "!=", 0),
+                ]),
+              ),
+          ),
+      );
+    },
+    /**
+     * The agent a project file stands for: same slug, or the file's slug was this agent's before a rename (its
+     * aliases list it), or the file lists this agent's current slug among its own aliases.
+     */
+    forFile(
+      projectId: string,
+      slug: string,
+      aliases: string[],
+      /** Slugs whose files exist now: an agent whose own file is still there was not renamed. */
+      present: ReadonlySet<string> = new Set([slug]),
+    ): AgentRecord | undefined {
+      const rows = all(
+        qb.selectFrom("agents").selectAll().where("project_id", "=", projectId).where("source", "=", "apc"),
+      );
+      const moved = rows.filter((r) => !present.has(String(r.slug)));
+      const hit =
+        rows.find((r) => r.slug === slug) ??
+        moved.find((r) => aliases.includes(String(r.slug))) ??
+        moved.find((r) => ((JSON.parse(r.extra ?? "{}") as { aliases?: string[] }).aliases ?? []).includes(slug));
+      return hit ? toAgent(hit) : undefined;
+    },
+    archive(id: string): void {
+      write(qb.updateTable("agents").set({ archived: 1 }).where("id", "=", id));
+    },
+    /** Archived agents (all, or one project's): the owner can bring each back or delete it for good. */
+    /** Agents archived or deleted for good: kept only for the name and face their chats show. */
+    former(): AgentRecord[] {
+      return all(qb.selectFrom("agents").selectAll().where("archived", "!=", 0).orderBy("name")).map(toAgent);
+    },
+    archived(projectId?: string): AgentRecord[] {
+      let q = qb.selectFrom("agents").selectAll().where("archived", "=", 1);
+      if (projectId) q = q.where("project_id", "=", projectId);
+      return all(q.orderBy("name")).map(toAgent);
+    },
+    unarchive(id: string): void {
+      write(qb.updateTable("agents").set({ archived: 0 }).where("id", "=", id));
+    },
+    /**
+     * Deleted for good: its instructions go, and only its name, face and project stay (archived = 2, listed nowhere)
+     * so the chats and runs it took part in still say who it was.
+     */
+    purge(id: string): void {
+      write(
+        qb
+          .updateTable("agents")
+          .set({ archived: 2, prompt: "", description: null, extra: "{}", model_choice: null })
+          .where("id", "=", id),
+      );
+    },
+    /** Archives the project's file-defined agents that are not in `keep` (their files are gone). */
+    archiveMissing(projectId: string, keep: string[]): number {
+      const ids = all(
+        qb
+          .selectFrom("agents")
+          .select("id")
+          .where("project_id", "=", projectId)
+          .where("source", "=", "apc")
+          .where("archived", "=", 0),
+      )
+        .map((r) => r.id)
+        .filter((id) => !keep.includes(id));
+      for (const id of ids) repo.archive(id);
+      return ids.length;
+    },
+    upsert(a: Omit<Agent, "source"> & { source?: Agent["source"]; prompt?: string }): void {
+      write(
+        qb
+          .insertInto("agents")
+          .values({
+            id: a.id,
+            name: a.name,
+            role: a.role,
+            kind: a.kind,
+            blob: a.blob ?? null,
+            project_id: a.project_id ?? null,
+            browser_profile: a.browser_profile,
+            prompt: a.prompt ?? "",
+            created_at: now(),
+            model_choice: a.model_choice ? JSON.stringify(a.model_choice) : null,
+            description: a.description ?? null,
+            parent: a.parent ?? null,
+            extra: extraOf(a),
+          })
+          .onConflict((c) =>
+            c.column("id").doUpdateSet((eb) => ({
+              name: eb.ref("excluded.name"),
+              role: eb.ref("excluded.role"),
+              kind: eb.ref("excluded.kind"),
+              blob: eb.ref("excluded.blob"),
+              project_id: eb.ref("excluded.project_id"),
+              browser_profile: eb.ref("excluded.browser_profile"),
+              prompt: eb.ref("excluded.prompt"),
+              model_choice: eb.ref("excluded.model_choice"),
+              description: eb.ref("excluded.description"),
+              parent: eb.ref("excluded.parent"),
+              extra: eb.ref("excluded.extra"),
+            })),
+          ),
+      );
+    },
+  };
+  return repo;
+}
+
+/** The fields kept in `extra`: what an agent's file writes as tools, autonomy, skills and area, and its personality. */
+function extraOf(a: Policy): string | null {
+  const e = {
+    ...(a.tools?.length ? { tools: a.tools } : {}),
+    ...(a.autonomy ? { autonomy: a.autonomy } : {}),
+    ...(a.skills?.length ? { skills: a.skills } : {}),
+    ...(a.area ? { area: a.area } : {}),
+    ...(a.personality ? { personality: a.personality } : {}),
+    ...(a.orchestrator !== undefined ? { orchestrator: a.orchestrator } : {}),
+    ...(a.rules && rulesText(a.rules).length ? { rules: rulesText(a.rules) } : {}),
+  };
+  return Object.keys(e).length ? JSON.stringify(e) : null;
+}
+
+/** What clients see: the prompt stays in the core. */
+export const publicAgent = ({ prompt: _p, ...a }: AgentRecord): Agent => a;

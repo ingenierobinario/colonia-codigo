@@ -1,0 +1,130 @@
+import { type Lang, lang, translator } from "./i18n/index.ts";
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+const parse = (iso?: string) => {
+  const at = iso ? Date.parse(iso) : Number.NaN;
+  return Number.isNaN(at) ? undefined : new Date(at);
+};
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+/** Whole calendar days from `now`'s day to `at`'s day (negative: in the past). */
+const dayOffset = (at: Date, now: Date) => Math.round((startOfDay(at) - startOfDay(now)) / DAY);
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const locale = (language: Lang) => (language === "es" ? "es" : "en");
+/** One formatter per language and shape: making one is slow on the phone, and every row and message asks. */
+const formats = new Map<string, Intl.DateTimeFormat>();
+function format(language: Lang, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale(language)}|${JSON.stringify(options)}`;
+  let made = formats.get(key);
+  if (!made) {
+    made = new Intl.DateTimeFormat(locale(language), options);
+    formats.set(key, made);
+  }
+  return made;
+}
+
+/** Plain order for ISO times and ids, without the locale rules (slow on the phone, and not needed here). */
+export const textOrder = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+export function clock(iso?: string, language: Lang = lang): string {
+  const at = parse(iso);
+  return at ? format(language, { hour: "2-digit", minute: "2-digit" }).format(at) : "";
+}
+
+/** The day and the time, always both: "29 oct 2026, 22:52". */
+export function fullWhen(iso?: string, language: Lang = lang): string {
+  const at = parse(iso);
+  return at ? format(language, { dateStyle: "medium", timeStyle: "short" }).format(at) : "";
+}
+
+/** A chat row's time: the hour today, "Yesterday", or the date ("11 sept"). */
+export function listWhen(iso?: string, now = new Date(), language: Lang = lang): string {
+  const at = parse(iso);
+  if (!at) return "";
+  const days = dayOffset(at, now);
+  if (days === 0) return clock(iso, language);
+  if (days === -1) return translator(language)("yesterday");
+  return format(language, {
+    day: "numeric",
+    month: "short",
+    ...(at.getFullYear() === now.getFullYear() ? {} : { year: "numeric" }),
+  }).format(at);
+}
+
+/** A transcript's day row: "Today", "Yesterday" or the date. */
+export function dayLabel(iso?: string, now = new Date(), language: Lang = lang): string {
+  const at = parse(iso);
+  if (at && dayOffset(at, now) === 0) return translator(language)("today");
+  return listWhen(iso, now, language);
+}
+
+/** When a task is due: "Today", "Today 18:00", "Tomorrow", a weekday within the week, or the date. */
+export function dueWhen(iso?: string, now = new Date(), language: Lang = lang): string {
+  const at = parse(iso);
+  if (!at) return "—";
+  const tr = translator(language);
+  const days = dayOffset(at, now);
+  const time = at.getHours() || at.getMinutes() ? ` ${clock(iso, language)}` : "";
+  if (days === 0) return tr("today") + time;
+  if (days === 1) return tr("tomorrow") + time;
+  if (days === -1) return tr("yesterday");
+  if (days > 1 && days < 7) return capital(format(language, { weekday: "short" }).format(at).replace(".", ""));
+  return listWhen(iso, now, language);
+}
+
+/** How long ago: "Just now", "18 min ago", "2 h ago", "3 d ago". */
+export function ago(iso?: string, now = new Date(), language: Lang = lang): string {
+  const at = parse(iso);
+  if (!at) return "";
+  const tr = translator(language);
+  const ms = now.getTime() - at.getTime();
+  if (ms < MINUTE) return tr("justNow");
+  if (ms < HOUR) return tr("minutesAgo", { n: Math.floor(ms / MINUTE) });
+  if (ms < DAY) return tr("hoursAgo", { n: Math.floor(ms / HOUR) });
+  return tr("daysAgo", { n: Math.floor(ms / DAY) });
+}
+
+/** How long until: "in 12 min", "in 3 h", then "Tomorrow 08:00" or the date. */
+export function ahead(iso?: string, now = new Date(), language: Lang = lang): string {
+  const at = parse(iso);
+  if (!at) return "";
+  const tr = translator(language);
+  const ms = at.getTime() - now.getTime();
+  // Already past (a run that is late, a one-off that ran): say when, not "in 1 min".
+  if (ms < -MINUTE) return ago(iso, now, language);
+  if (ms < MINUTE) return tr("inMinutes", { n: 1 });
+  if (ms < HOUR) return tr("inMinutes", { n: Math.ceil(ms / MINUTE) });
+  if (ms < 6 * HOUR) return tr("inHours", { n: Math.round(ms / HOUR) });
+  const days = dayOffset(at, now);
+  if (days === 0) return `${tr("today")} ${clock(iso, language)}`;
+  if (days === 1) return `${tr("tomorrow")} ${clock(iso, language)}`;
+  return `${listWhen(iso, now, language)} ${clock(iso, language)}`;
+}
+
+/** How long something has been running: "12 min", "1 h 5 min". */
+export function elapsed(iso?: string, now = new Date(), language: Lang = lang): string {
+  const at = parse(iso);
+  if (!at) return "";
+  const tr = translator(language);
+  const minutes = Math.max(0, Math.floor((now.getTime() - at.getTime()) / MINUTE));
+  if (minutes < 60) return tr("minutes", { n: minutes });
+  return tr("hoursMinutes", { h: Math.floor(minutes / 60), m: minutes % 60 });
+}
+
+/** Text from the core (an agent's description or role) shown in sentence case; the data itself stays as written. */
+export function sentenceCase(text: string | undefined): string {
+  const trimmed = text?.trim() ?? "";
+  return trimmed ? trimmed.charAt(0).toLocaleUpperCase() + trimmed.slice(1) : "";
+}
+
+/** Up to two initials of a name; none for an empty one (the avatar shows a person instead). */
+export function initials(name: string | undefined): string {
+  return (name ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toLocaleUpperCase())
+    .join("");
+}

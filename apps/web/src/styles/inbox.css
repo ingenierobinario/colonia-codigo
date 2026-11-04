@@ -1,0 +1,235 @@
+/* ── Inbox list ────────────────────────────────────────────────────────────── */
+.inbox {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: var(--shell-list-w);
+  border-right: 1px solid var(--apx-border);
+  background: var(--apx-bg);
+  overflow: hidden;
+}
+.inbox__head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 10px;
+}
+.inbox__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inbox__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--apx-text-lg);
+  font-weight: var(--apx-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inbox__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 8px 16px;
+}
+.inbox__group + .inbox__group {
+  margin-top: 6px;
+}
+.inbox__grouphead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+  background: none;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-semibold);
+  cursor: pointer;
+}
+.inbox__grouphead:hover {
+  background: var(--apx-fill-hover);
+}
+.inbox__groupname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inbox__groupcount {
+  font-weight: var(--apx-weight-regular);
+  color: var(--apx-fg-subtle);
+}
+.inbox__grouprun {
+  font-weight: var(--apx-weight-medium);
+  color: var(--apx-brand);
+  white-space: nowrap;
+}
+.inbox__groupspacer {
+  flex: 1;
+}
+.inbox__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px;
+}
+.inbox__skelrow {
+  display: flex;
+  gap: 12px;
+}
+.inbox__skeltext {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+.threadrow__preview {
+  display: inline;
+}
+.threadrow__spin {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 6px;
+  color: var(--apx-brand);
+}
+.threadrow__waiting {
+  color: var(--apx-warning-soft-fg);
+  font-weight: var(--apx-weight-medium);
+}
+
+.chatprocesses {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: var(--apx-row-radius);
+  background: var(--apx-fill-hover);
+  color: var(--apx-brand);
+  font: inherit;
+  font-size: var(--apx-text-xs);
+  vertical-align: middle;
+}
+button.chatprocesses {
+  cursor: pointer;
+}
+
+/* An engine's sessions on this Mac, below those started in APX. */
+.engine__native {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--apx-border);
+}
+.engine__nativehead {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 8px 6px;
+  color: var(--apx-fg-muted);
+  font-size: var(--apx-text-xs);
+  font-weight: var(--apx-weight-semibold);
+}
+.engine__nativecount {
+  color: var(--apx-fg-subtle);
+  font-weight: var(--apx-weight-regular, 400);
+}
+.engine__session {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--apx-fg);
+  text-align: left;
+  cursor: pointer;
+}
+.engine__session:hover {
+  background: var(--apx-fill-hover);
+}
+.engine__session:disabled {
+  cursor: progress;
+}
+.engine__sessiontop {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.engine__sessiontitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--apx-text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.engine__sessiontime {
+  flex: none;
+  color: var(--apx-fg-subtle);
+  font-size: var(--apx-text-2xs);
+}
+.engine__sessioncwd {
+  overflow: hidden;
+  color: var(--apx-fg-muted);
+  font-family: var(--apx-font-mono, ui-monospace, monospace);
+  font-size: var(--apx-text-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A chat the owner pinned: a small pin before its name, in every view. */
+.threadrow__pin {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  margin-right: 4px;
+  vertical-align: -1px;
+  color: var(--apx-fg-subtle);
+}
+
+/* Archived chats: one quiet row at the end of the list that unfolds them. */
+.inbox__archived {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--apx-border);
+}
+
+/* Compact faces retain their column, including group and caller badges. */
+.threadavatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.threadavatar__caller {
+  position: absolute;
+  right: -3px;
+  bottom: -2px;
+}
+.threadavatar__group {
+  position: absolute;
+  right: -5px;
+  bottom: -2px;
+}
+.inbox .threadrow {
+  padding: 8px 10px;
+  gap: 10px;
+}
+.routinebundle > .tree__sessions {
+  min-width: 0;
+}
+.routinebundle .tree__agentmeta {
+  flex: none;
+  white-space: nowrap;
+}
