@@ -160,7 +160,7 @@ const api = {
   secrets: Object.fromEntries(
     Object.entries(process.env)
       .filter(([k]) => k.startsWith("COLONIA_SECRET_"))
-      .map(([k, v]) => [k.slice(11).toLowerCase(), v]),
+      .map(([k, v]) => [k.slice("COLONIA_SECRET_".length).toLowerCase(), v]),
   ),
   fetch: pluginFetch,
   on(type, fn) {
