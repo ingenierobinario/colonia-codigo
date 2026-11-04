@@ -37,6 +37,6 @@ export const GET: APIRoute = async ({ site }) => {
         `- [${entry.data.title}](${url(`/${entry.id}/`)})${entry.data.description ? `: ${entry.data.description}` : ""}`,
       );
   }
-  lines.push("", "## Optional", "", `- [Compare](${url("/en/compare/")})`, `- [Reserve your place](${RESERVAR_URL})`);
+  lines.push("", "## Optional", "", `- [Compare](${url("/en/compare/")})`, `- [Get Colonia](${RESERVAR_URL})`);
   return new Response(`${lines.join("\n")}\n`, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
 };

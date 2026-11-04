@@ -1,0 +1,186 @@
+---
+// La interfaz de la portada, viva: una recreación en HTML que se escribe sola, en el idioma de la página.
+// Sin JavaScript o con movimiento reducido se queda quieta en su estado final.
+import Blob from "../Blob.astro";
+
+interface Props {
+  demo: {
+    alt: string;
+    inbox: string;
+    tasks: string;
+    channels: string;
+    projects: string;
+    project: string;
+    personal: string;
+    search: string;
+    tabs: readonly string[];
+    today: string;
+    role: string;
+    placeholder: string;
+    working: string;
+    agents: readonly { name: string; blob: string; role: string; chats: readonly string[] }[];
+    script: readonly { from: string; text: string }[];
+  };
+}
+const { demo } = Astro.props;
+---
+
+<div class="demo" role="img" aria-label={demo.alt} data-stage-demo data-working={demo.working}>
+  <div class="demo__scale">
+    <div class="demo__bar"><span></span><span></span><span></span><em>{demo.search}</em></div>
+    <div class="demo__body">
+      <aside class="demo__side">
+        <b class="is-on">{demo.inbox}<i data-demo-count>3</i></b>
+        <b>{demo.tasks}</b>
+        <small>{demo.channels}</small>
+        <b>Telegram</b>
+        <b>WhatsApp</b>
+        <small>{demo.projects}</small>
+        <b>{demo.project}</b>
+        <b>{demo.personal}</b>
+      </aside>
+      <section class="demo__list">
+        <strong>{demo.inbox}</strong>
+        <div class="demo__tabs">{demo.tabs.map((tab, i) => <span class={i === 0 ? "is-on" : ""}>{tab}</span>)}</div>
+        {demo.agents.map((a, i) => (
+          <div class="demo__agent" data-demo-agent={i}>
+            <p><Blob name={a.blob as any} size={22} /><b>{a.name}</b><span data-demo-role>{a.role}</span></p>
+            {a.chats.map((c) => <div class="demo__row">{c}</div>)}
+          </div>
+        ))}
+      </section>
+      <section class="demo__chat">
+        <header><Blob name="menta" size={30} /><span><b>Nova</b><small>{demo.role}</small></span></header>
+        <div class="demo__msgs" data-demo-msgs>
+          <p class="demo__day">{demo.today}</p>
+          {demo.script.map((m) => <div class:list={["demo__msg", `demo__msg--${m.from}`]} data-from={m.from}>{m.text}</div>)}
+          <div class="demo__typing" data-demo-typing hidden><i></i><i></i><i></i></div>
+        </div>
+        <div class="demo__composer"><span data-demo-input>{demo.placeholder}</span><i aria-hidden="true">↑</i></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  for (const root of document.querySelectorAll<HTMLElement>("[data-stage-demo]")) {
+    const inner = root.querySelector<HTMLElement>(".demo__scale")!;
+    const fit = () => {
+      const compact = root.clientWidth < 560;
+      root.classList.toggle("is-compact", compact);
+      const base = compact ? 480 : 1168;
+      inner.style.width = `${base}px`;
+      const scale = root.clientWidth / base;
+      inner.style.transform = `scale(${scale})`;
+      root.style.height = `${inner.offsetHeight * scale}px`;
+    };
+    fit();
+    new ResizeObserver(fit).observe(root);
+
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) continue;
+    const msgs = [...root.querySelectorAll<HTMLElement>(".demo__msg")];
+    const typing = root.querySelector<HTMLElement>("[data-demo-typing]")!;
+    const input = root.querySelector<HTMLElement>("[data-demo-input]")!;
+    const count = root.querySelector<HTMLElement>("[data-demo-count]")!;
+    const agents = [...root.querySelectorAll<HTMLElement>("[data-demo-agent]")];
+    const placeholder = input.textContent ?? "";
+    const roles = agents.map((a) => a.querySelector("[data-demo-role]")?.textContent ?? "");
+    let visible = false;
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(root);
+    const whenVisible = async () => { while (!visible || document.hidden) await wait(300); };
+    const setRole = (a: HTMLElement, text: string) => {
+      const role = a.querySelector("[data-demo-role]");
+      if (role) role.textContent = text;
+    };
+    const rest = () => agents.forEach((a, i) => { a.classList.remove("is-busy"); setRole(a, roles[i]); });
+
+    (async () => {
+      root.classList.add("is-live");
+      for (;;) {
+        msgs.forEach((m) => m.classList.remove("is-in"));
+        rest();
+        count.textContent = "3";
+        await wait(700);
+        for (const [i, m] of msgs.entries()) {
+          await whenVisible();
+          if (m.dataset.from === "me") {
+            const text = m.textContent ?? "";
+            for (let c = 1; c <= text.length; c++) {
+              input.textContent = text.slice(0, c);
+              await wait(26);
+            }
+            await wait(320);
+            input.textContent = placeholder;
+          } else {
+            rest();
+            const busy = agents[Math.floor(i / 2) % agents.length];
+            busy.classList.add("is-busy");
+            setRole(busy, root.dataset.working ?? "");
+            typing.hidden = false;
+            await wait(1300);
+            typing.hidden = true;
+            count.textContent = String(Math.max(1, 2 - Math.floor(i / 2)));
+          }
+          m.classList.add("is-in");
+          await wait(m.dataset.from === "me" ? 450 : 1500);
+        }
+        rest();
+        await wait(4500);
+      }
+    })();
+  }
+</script>
+
+<style>
+  .demo { position: relative; overflow: hidden; background: var(--colonia-surface); font-family: var(--colonia-font-sans); color: var(--colonia-fg); aspect-ratio: 1168 / 640; }
+  .demo.is-compact { aspect-ratio: auto; min-height: 400px; }
+  .demo__scale { position: absolute; inset: 0 auto auto 0; width: 1168px; transform-origin: 0 0; }
+  .demo__bar { display: flex; align-items: center; gap: 7px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--colonia-border); }
+  .demo__bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--colonia-fill-strong); }
+  .demo__bar em { margin: 0 auto; padding: 4px 90px; border-radius: 8px; background: var(--colonia-fill); color: var(--colonia-fg-subtle); font-size: 12px; font-style: normal; white-space: nowrap; }
+  .demo__body { display: grid; grid-template-columns: 170px 270px 1fr; height: 596px; }
+  .demo__side { display: flex; flex-direction: column; gap: 3px; padding: 14px 10px; background: var(--colonia-fill); font-size: 13px; }
+  .demo__side b { display: flex; justify-content: space-between; padding: 6px 9px; border-radius: 8px; font-weight: 500; }
+  .demo__side b.is-on { background: var(--colonia-fill-strong); }
+  .demo__side i { color: var(--colonia-fg-muted); font-style: normal; }
+  .demo__side small { margin: 12px 9px 3px; color: var(--colonia-fg-subtle); font-size: 11px; }
+  .demo__list { overflow: hidden; padding: 14px 12px; border-right: 1px solid var(--colonia-border); font-size: 13px; }
+  .demo__tabs { display: flex; gap: 3px; margin: 10px 0 12px; padding: 3px; border-radius: 9px; background: var(--colonia-fill); font-size: 12px; }
+  .demo__tabs span { flex: 1; padding: 4px; border-radius: 7px; color: var(--colonia-fg-muted); text-align: center; }
+  .demo__tabs span.is-on { background: var(--colonia-surface); color: var(--colonia-fg); }
+  .demo__agent { margin-bottom: 12px; padding: 4px; border-radius: 10px; transition: background 0.3s; }
+  .demo__agent.is-busy { background: var(--colonia-brand-soft); }
+  .demo__agent p { display: flex; align-items: center; gap: 7px; margin: 0 0 3px; }
+  .demo__agent p span { color: var(--colonia-fg-subtle); font-size: 11px; }
+  .demo__agent.is-busy p span { color: var(--colonia-brand-soft-fg); }
+  .demo__row { overflow: hidden; padding: 4px 8px 4px 29px; color: var(--colonia-fg-muted); text-overflow: ellipsis; white-space: nowrap; }
+  .demo__chat { display: flex; flex-direction: column; min-width: 0; }
+  .demo__chat header { display: flex; align-items: center; gap: 10px; padding: 11px 20px; border-bottom: 1px solid var(--colonia-border); font-size: 13px; }
+  .demo__chat header span { display: flex; flex-direction: column; }
+  .demo__chat header small { color: var(--colonia-fg-subtle); font-size: 11px; }
+  .demo__msgs { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; padding: 16px 44px; font-size: 13.5px; line-height: 1.5; }
+  .demo__day { margin: 0; color: var(--colonia-fg-subtle); font-size: 11px; text-align: center; }
+  .demo__msg { max-width: 72%; padding: 9px 14px; border-radius: 15px; white-space: pre-line; }
+  .demo__msg--me { align-self: flex-end; background: var(--colonia-fg); color: var(--colonia-bg); }
+  .demo__msg--bot { align-self: flex-start; background: var(--colonia-fill); }
+  .is-live .demo__msg { display: none; }
+  .is-live .demo__msg.is-in { display: block; animation: demo-in 0.38s var(--colonia-spring) both; }
+  .demo__typing { align-self: flex-start; display: flex; gap: 4px; padding: 12px 14px; border-radius: 15px; background: var(--colonia-fill); }
+  .demo__typing[hidden] { display: none; }
+  .demo__typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--colonia-fg-subtle); animation: demo-dot 1s infinite; }
+  .demo__typing i:nth-child(2) { animation-delay: 0.15s; }
+  .demo__typing i:nth-child(3) { animation-delay: 0.3s; }
+  .demo__composer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 44px 20px; padding: 13px 14px; border: 1px solid var(--colonia-border-strong); border-radius: 14px; color: var(--colonia-fg-muted); font-size: 13.5px; }
+  .demo__composer span { overflow: hidden; white-space: nowrap; }
+  .demo__composer i { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--colonia-fill-strong); font-style: normal; }
+  .is-compact .demo__bar em { padding: 4px 40px; }
+  .is-compact .demo__body { display: block; height: 560px; }
+  .is-compact .demo__side, .is-compact .demo__list { display: none; }
+  .is-compact .demo__chat { height: 100%; }
+  .is-compact .demo__msgs { padding: 14px 18px; }
+  .is-compact .demo__composer { margin: 0 18px 16px; }
+  .is-compact .demo__msg { max-width: 86%; }
+  @keyframes demo-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } }
+  @keyframes demo-dot { 0%, 60%, 100% { opacity: 0.35; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
+</style>

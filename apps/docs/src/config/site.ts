@@ -1,5 +1,5 @@
 // Lo que el dueño aún debe fijar. Cambia estos valores y toda la web los sigue.
-/** A dónde lleva «Reservar mi plaza». La compra vive fuera de este sitio (esa página aún no existe). */
+/** A dónde lleva «Quiero mi colonia». La compra vive en el funnel de LeadMatch. */
 export const RESERVAR_URL = "https://www.leadmatch.ingenierobinario.com/colonia";
 /**
  * Dirección donde se publicarán install.sh e install.ps1. Aún no existe.

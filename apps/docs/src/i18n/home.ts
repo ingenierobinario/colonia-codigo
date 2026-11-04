@@ -41,7 +41,8 @@ const es = {
   },
   langLabel: "Idioma",
   themeLabel: "Cambiar entre claro y oscuro",
-  reserve: "Reservar mi plaza",
+  reserve: "Quiero mi colonia",
+  offer: "497 € · pago único · incluye todo el código",
   how: "Ver cómo funciona",
   pill: { strong: "Colonia", rest: "Se instala en" },
   meet: "Te presento a tu",
@@ -58,7 +59,24 @@ const es = {
   ],
   bubbles: ["@tomás, ¿puedes mirar el pago de la tienda?", "Voy. Ya lo tengo, te lo enseño."],
   shotAlt: "Colonia: la bandeja con el chat de la secretaria, el resumen del día y los chats del equipo por agente",
-  stageNote: "La aplicación real, con una oficina de demostración.",
+  stageNote: "Demostración animada, con una oficina de ejemplo.",
+  demo: {
+    alt: "Demostración animada de Colonia: pides algo a tu secretaria y el equipo de agentes se pone a trabajar",
+    inbox: "Bandeja", tasks: "Tareas", channels: "Canales", projects: "Proyectos", project: "Tienda Acme", personal: "Personal",
+    search: "Buscar o saltar a…", tabs: ["Árbol", "Actividad", "Por chat"], today: "Hoy", role: "Secretaria · Personal",
+    placeholder: "Escribe a Nova…", working: "trabajando…",
+    agents: [
+      { name: "Vera", blob: "amatista", role: "Agente · 3", chats: ["Boletín del viernes", "Campaña de primavera"] },
+      { name: "Tomás", blob: "cobalto", role: "Agente · 3", chats: ["Arreglar el pago", "Rediseño del catálogo"] },
+      { name: "Lucía", blob: "coral", role: "Agente · 4", chats: ["Lanzamiento del trimestre", "Aprobar el presupuesto"] },
+    ],
+    script: [
+      { from: "me", text: "¿Qué tengo hoy en el plato?" },
+      { from: "bot", text: "Tres cosas en Tienda Acme:\n1. Lucía ha preparado el plan de lanzamiento y espera tu visto bueno.\n2. Tomás tiene el arreglo del pago en revisión.\n3. Vera ha programado el boletín para el viernes a las 9:00." },
+      { from: "me", text: "Dile a Lucía que miro el plan después de comer." },
+      { from: "bot", text: "Hecho. Se lo he dicho a Lucía y te he puesto un aviso a las 14:00." },
+    ],
+  },
   what: {
     label: "Qué puedes hacer",
     title: "Una oficina entera, en una aplicación.",
@@ -412,7 +430,7 @@ const es = {
   download: {
     label: "Descargar",
     title: "Consigue Colonia.",
-    lead: "Colonia se instala en tu ordenador. Primero reservas tu plaza; después, la guía de instalación te lleva paso a paso.",
+    lead: "Colonia se instala en tu ordenador. Primero compras tu colonia (497 €, pago único, con todo el código); después, la guía de instalación te lleva paso a paso.",
     available: "Compatible",
     guide: "Guía para",
     cards: {
@@ -430,8 +448,8 @@ const es = {
       cta: "Cómo conectar la IA",
     },
     reserve: {
-      title: "Reserva tu plaza",
-      body: "La compra se hace en la página de LeadMatch. Allí verás las condiciones.",
+      title: "Quiero mi colonia",
+      body: "497 €, pago único. Tras pagar entras en una página privada con las descargas y todo el código. La IA la pones tú.",
     },
     unsigned: {
       title: "Tu sistema puede avisarte la primera vez",
@@ -509,7 +527,8 @@ const en: HomeText = {
   },
   langLabel: "Language",
   themeLabel: "Toggle light and dark",
-  reserve: "Reserve my place",
+  reserve: "I want my Colonia",
+  offer: "€497 · one-time payment · full source code included",
   how: "See how it works",
   pill: { strong: "Colonia", rest: "Installs on" },
   meet: "Meet your",
@@ -526,7 +545,24 @@ const en: HomeText = {
   ],
   bubbles: ["@tomás, can you check the checkout?", "On it. Found it, I'll show you."],
   shotAlt: "Colonia: the inbox with the secretary's chat, the day's summary and the team's chats by agent",
-  stageNote: "The real app, with a demo office.",
+  stageNote: "Animated demo, with a sample office.",
+  demo: {
+    alt: "Animated demo of Colonia: you ask your secretary for something and the team of agents gets to work",
+    inbox: "Inbox", tasks: "Tasks", channels: "Channels", projects: "Projects", project: "Acme Store", personal: "Personal",
+    search: "Search or jump to…", tabs: ["Tree", "Activity", "By chat"], today: "Today", role: "Secretary · Personal",
+    placeholder: "Message Nova…", working: "working…",
+    agents: [
+      { name: "Vera", blob: "amatista", role: "Agent · 3", chats: ["Friday newsletter", "Spring campaign"] },
+      { name: "Tomás", blob: "cobalto", role: "Agent · 3", chats: ["Fix the checkout", "Catalog redesign"] },
+      { name: "Lucía", blob: "coral", role: "Agent · 4", chats: ["Quarter launch", "Approve the budget"] },
+    ],
+    script: [
+      { from: "me", text: "What's on my plate today?" },
+      { from: "bot", text: "Three things at Acme Store:\n1. Lucía drafted the launch plan and is waiting for your OK.\n2. Tomás has the checkout fix in review.\n3. Vera scheduled the newsletter for Friday at 9:00." },
+      { from: "me", text: "Tell Lucía I'll look at the plan after lunch." },
+      { from: "bot", text: "Done. I told Lucía and added a reminder for 14:00." },
+    ],
+  },
   what: {
     label: "What you can do",
     title: "A whole office, in one app.",
@@ -880,7 +916,7 @@ const en: HomeText = {
   download: {
     label: "Download",
     title: "Get Colonia.",
-    lead: "Colonia installs on your computer. First you reserve your place; then the install guide takes you step by step.",
+    lead: "Colonia installs on your computer. First you buy your Colonia (€497, one-time, with the full source code); then the install guide takes you step by step.",
     available: "Supported",
     guide: "Guide for",
     cards: {
@@ -898,8 +934,8 @@ const en: HomeText = {
       cta: "How to connect the AI",
     },
     reserve: {
-      title: "Reserve your place",
-      body: "The purchase happens on the LeadMatch page, where you will see the terms.",
+      title: "I want my Colonia",
+      body: "€497, one-time payment. After paying you get a private page with the downloads and the full source code. You bring the AI.",
     },
     unsigned: {
       title: "Your system may warn you the first time",

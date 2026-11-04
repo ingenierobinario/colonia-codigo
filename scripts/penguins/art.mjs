@@ -19,8 +19,8 @@ const lum = (h) => {
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 };
 
-const BODY = "M128 14C186 14 212 62 212 122C212 190 178 232 128 232C78 232 44 190 44 122C44 62 70 14 128 14Z";
-const FLIPPER = "M54 106C30 122 16 154 20 186C22 197 33 197 39 188C49 174 60 156 70 140Z";
+const BODY = "M128 26C188 26 222 68 222 130C222 194 184 232 128 232C72 232 34 194 34 130C34 68 68 26 128 26Z";
+const FLIPPER = "M44 110C20 126 6 156 10 186C12 197 23 197 29 188C39 174 50 158 60 142Z";
 const MASK =
   "M128 62C142 46 176 50 186 78C194 102 180 128 158 140C148 146 138 150 128 150C118 150 108 146 98 140C76 128 62 102 70 78C80 50 114 46 128 62Z";
 const BEAK = "M108 122C116 114 140 114 148 122C145 136 135 146 128 146C121 146 111 136 108 122Z";
@@ -29,9 +29,9 @@ function accessory(kind, color, p) {
   const a = hex(rgb(color).reverse());
   const tone = lum(a) < 0.25 ? mix(a, "#ffffff", 0.45) : a;
   if (kind === "tuft")
-    return `<path d="M118 22C112 12 112 6 116 2C120 8 124 12 128 18C130 10 134 5 140 2C141 10 140 16 138 23Z" fill="url(#${p}f)"/>`;
+    return `<path transform="translate(0 12)" d="M118 22C112 12 112 6 116 2C120 8 124 12 128 18C130 10 134 5 140 2C141 10 140 16 138 23Z" fill="url(#${p}f)"/>`;
   if (kind === "crest")
-    return `<path d="M124 20C130 6 150 2 168 8C160 12 156 16 154 22C148 18 136 18 124 20Z" fill="${mix(color, "#ffffff", 0.3)}"/>`;
+    return `<path transform="translate(0 12)" d="M124 20C130 6 150 2 168 8C160 12 156 16 154 22C148 18 136 18 124 20Z" fill="${mix(color, "#ffffff", 0.3)}"/>`;
   if (kind === "scarf")
     return `<g clip-path="url(#${p}c)"><path d="M40 152Q128 192 216 152V172Q128 212 40 172Z" fill="${tone}"/><path d="M40 152Q128 192 216 152V156Q128 196 40 156Z" fill="#fff" opacity=".25"/></g><path d="M158 174L182 168L186 208Q176 214 166 208Z" fill="${mix(tone, "#000000", 0.14)}"/>`;
   if (kind === "bow")
@@ -55,13 +55,13 @@ export function penguin({ color, kind = "none", eyes = false, id = "p" }) {
 <filter id="${p}s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
 <clipPath id="${p}c"><path d="${BODY}"/></clipPath>
 </defs>
-<ellipse cx="90" cy="228" rx="27" ry="12" fill="url(#${p}o)"/><ellipse cx="166" cy="228" rx="27" ry="12" fill="url(#${p}o)"/>
+<ellipse cx="84" cy="228" rx="30" ry="12" fill="url(#${p}o)"/><ellipse cx="172" cy="228" rx="30" ry="12" fill="url(#${p}o)"/>
 <path d="${FLIPPER}" fill="url(#${p}f)"${rim}/><path d="${FLIPPER}" transform="translate(256 0) scale(-1 1)" fill="url(#${p}f)"${rim}/>
 ${kind === "tuft" || kind === "crest" ? accessory(kind, color, p) : ""}
 <path d="${BODY}" fill="url(#${p}b)"${rim}/>
 <g clip-path="url(#${p}c)">
-<ellipse cx="96" cy="42" rx="32" ry="15" transform="rotate(-28 96 42)" fill="#fff" opacity=".3" filter="url(#${p}s)"/>
-<ellipse cx="128" cy="172" rx="60" ry="60" fill="url(#${p}w)"/>
+<ellipse cx="90" cy="54" rx="32" ry="15" transform="rotate(-28 90 54)" fill="#fff" opacity=".3" filter="url(#${p}s)"/>
+<ellipse cx="128" cy="172" rx="74" ry="62" fill="url(#${p}w)"/>
 </g>
 <path d="${MASK}" fill="#fff"/>
 <ellipse cx="82" cy="124" rx="11" ry="7" fill="#ff8fa3" opacity=".5" filter="url(#${p}s)"/><ellipse cx="174" cy="124" rx="11" ry="7" fill="#ff8fa3" opacity=".5" filter="url(#${p}s)"/>

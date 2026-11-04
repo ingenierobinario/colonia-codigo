@@ -350,6 +350,12 @@
 }
 
 /* ── Stage ──────────────────────────────────────────────────────────────── */
+.hero__offer {
+  margin: 14px 0 0;
+  color: var(--colonia-fg-muted);
+  font-size: 14px;
+  text-align: center;
+}
 .stage {
   padding-top: 24px;
 }

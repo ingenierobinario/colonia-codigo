@@ -6,6 +6,7 @@ import { HIDDEN_SECTIONS, RESERVAR_URL, sectionRoute, type SectionId } from "../
 import { sitePath } from "../../doc-routes.mjs";
 import { HOME, type Lang } from "../../i18n/home";
 import Blob from "../Blob.astro";
+import StageDemo from "./StageDemo.astro";
 import BlobEyes from "../BlobEyes.astro";
 import BrandMark from "../BrandMark.astro";
 import OsIcon from "../OsIcon.astro";
@@ -34,7 +35,7 @@ const schema = [
     url: new URL(href(route), Astro.site).href,
     image: new URL(href(lang === "es" ? "/og-es.jpg" : "/og.jpg"), Astro.site).href,
     applicationCategory: "BusinessApplication",
-    operatingSystem: "macOS, Windows, Linux, Android",
+    operatingSystem: "macOS, Windows, Linux",
   },
   { "@type": "WebSite", name: "Colonia", url: new URL(href("/"), Astro.site).href, inLanguage: ["es", "en"] },
 ];
@@ -48,7 +49,6 @@ const osList = [
   { id: "mac", name: "macOS" },
   { id: "windows", name: "Windows" },
   { id: "linux", name: "Linux" },
-  { id: "android", name: "Android" },
 ] as const;
 const marquee = [
   { name: "ChatGPT", brand: "openai" },
@@ -68,7 +68,6 @@ const cards = [
   { id: "mac", name: "macOS", blob: "amatista", tone: "violet" },
   { id: "windows", name: "Windows", blob: "cobalto", tone: "info" },
   { id: "linux", name: "Linux", blob: "brasa", tone: "warning" },
-  { id: "android", name: "Android", blob: "menta", tone: "brand" },
 ] as const;
 ---
 
@@ -124,6 +123,7 @@ const cards = [
             <a class="btn btn-light hero__reserve" href={RESERVAR_URL}>{t.reserve}</a>
             <a class="hero__term" href="#what">{t.how} <span aria-hidden="true">↓</span></a>
           </div>
+          <p class="hero__offer">{t.offer}</p>
           <div class="hero__dock">
           <div class="status" id="status" data-lines={JSON.stringify(t.status)}>
             <span class="status__blob" aria-hidden="true">
@@ -141,7 +141,7 @@ const cards = [
           <div class="stage__bubble stage__bubble--l" aria-hidden="true"><Blob name="coral" size={32} /><span class="stage__say">{t.bubbles[0]}</span></div>
           <div class="stage__bubble stage__bubble--r" aria-hidden="true"><span class="stage__say">{t.bubbles[1]}</span><Blob name="cobalto" size={32} /></div>
           <div class="stage__shot" data-reveal data-stage-card>
-            <Shot name="home-hero" alt={t.shotAlt} frame="none" eager />
+            <StageDemo demo={t.demo} />
           </div>
           <p class="stage__note">{t.stageNote}</p>
         </div>
