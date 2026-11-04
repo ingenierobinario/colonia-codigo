@@ -137,7 +137,7 @@ const es = {
   newIn: {
     label: "Novedades",
     title: "Mucho más que una ventana de chat.",
-    lead: "Un equipo que trabaja junto, un navegador que sabe usar, pequeñas aplicaciones hechas para ti y los chats y el móvil que ya llevas encima.",
+    lead: "Un equipo que trabaja junto, un navegador que sabe usar, pequeñas aplicaciones hechas para ti y los chats que ya usas.",
     more: "Saber más",
     items: [
       {
@@ -167,18 +167,6 @@ const es = {
         title: "Tus canales",
         body: "Telegram, WhatsApp, Discord, Slack e iMessage. Cada contacto y cada sala es una conversación, con la misma memoria que la aplicación.",
         href: "/channels/overview/",
-      },
-      {
-        shot: "phone-app",
-        blob: "aqua",
-        title: "En tu móvil",
-        body: "Empareja tu móvil Android con un código y habla con Home desde donde estés.",
-        href: "/devices/phone/",
-        fan: [
-          ["android-home", "La aplicación Android: el chat de Home"],
-          ["android-chats", "La aplicación Android: los chats del equipo"],
-          ["android-inbox", "La aplicación Android: la bandeja"],
-        ],
       },
     ],
   },
@@ -357,7 +345,7 @@ const es = {
       {
         question: "¿Hay que instalar algo?",
         answer:
-          "Sí. Colonia se instala en tu ordenador con macOS, Windows o Linux. También hay aplicación para Android, que se empareja con tu ordenador.",
+          "Sí. Colonia se instala en tu ordenador con macOS, Windows o Linux.",
         path: "/start/install/",
       },
       {
@@ -623,7 +611,7 @@ const en: HomeText = {
   newIn: {
     label: "What's new",
     title: "More than a chat window.",
-    lead: "A team that works together, a browser it can use, little apps built for you, and the chats and phone you already carry.",
+    lead: "A team that works together, a browser it can use, little apps built for you, and the chats you already use.",
     more: "Learn more",
     items: [
       {
@@ -653,18 +641,6 @@ const en: HomeText = {
         title: "Your channels",
         body: "Telegram, WhatsApp, Discord, Slack and iMessage. Each contact and each room is one conversation, with the same memory as the app.",
         href: "/channels/overview/",
-      },
-      {
-        shot: "phone-app",
-        blob: "aqua",
-        title: "On your phone",
-        body: "Pair your Android phone with a code and talk to Home from anywhere.",
-        href: "/devices/phone/",
-        fan: [
-          ["android-home", "The Android app: Home's chat"],
-          ["android-chats", "The Android app: the team's chats"],
-          ["android-inbox", "The Android app: the inbox"],
-        ],
       },
     ],
   },
@@ -843,7 +819,7 @@ const en: HomeText = {
       {
         question: "Do I have to install anything?",
         answer:
-          "Yes. Colonia installs on your macOS, Windows or Linux computer. There is also an Android app that pairs with your computer.",
+          "Yes. Colonia installs on your macOS, Windows or Linux computer.",
         path: "/start/install/",
       },
       {

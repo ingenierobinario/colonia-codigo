@@ -2,8 +2,8 @@
 
 /** Ojos comunes a todos los pingüinos: quedan sobre la máscara blanca también en el recorrido máximo de la mirada. */
 export const EYES = [
-  { x: 99, y: 80, w: 17, h: 30, rx: 7.5 },
-  { x: 140, y: 80, w: 17, h: 30, rx: 7.5 },
+  { x: 99, y: 96, w: 17, h: 30, rx: 7.5 },
+  { x: 140, y: 96, w: 17, h: 30, rx: 7.5 },
 ];
 export const EYE_COLOR = "#15181C";
 export const BRAND = "#14C79A";
@@ -19,8 +19,8 @@ const lum = (h) => {
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 };
 
-const BODY = "M128 26C188 26 222 68 222 130C222 194 184 232 128 232C72 232 34 194 34 130C34 68 68 26 128 26Z";
-const FLIPPER = "M44 110C20 126 6 156 10 186C12 197 23 197 29 188C39 174 50 158 60 142Z";
+const BODY = "M128 40C196 40 238 84 238 142C238 202 190 234 128 234C66 234 18 202 18 142C18 84 60 40 128 40Z";
+const FLIPPER = "M24 126C8 138 0 160 3 180C5 190 14 190 20 183C27 174 34 162 40 150Z";
 const MASK =
   "M128 62C142 46 176 50 186 78C194 102 180 128 158 140C148 146 138 150 128 150C118 150 108 146 98 140C76 128 62 102 70 78C80 50 114 46 128 62Z";
 const BEAK = "M108 122C116 114 140 114 148 122C145 136 135 146 128 146C121 146 111 136 108 122Z";
@@ -29,13 +29,13 @@ function accessory(kind, color, p) {
   const a = hex(rgb(color).reverse());
   const tone = lum(a) < 0.25 ? mix(a, "#ffffff", 0.45) : a;
   if (kind === "tuft")
-    return `<path transform="translate(0 12)" d="M118 22C112 12 112 6 116 2C120 8 124 12 128 18C130 10 134 5 140 2C141 10 140 16 138 23Z" fill="url(#${p}f)"/>`;
+    return `<path transform="translate(0 26)" d="M118 22C112 12 112 6 116 2C120 8 124 12 128 18C130 10 134 5 140 2C141 10 140 16 138 23Z" fill="url(#${p}f)"/>`;
   if (kind === "crest")
-    return `<path transform="translate(0 12)" d="M124 20C130 6 150 2 168 8C160 12 156 16 154 22C148 18 136 18 124 20Z" fill="${mix(color, "#ffffff", 0.3)}"/>`;
+    return `<path transform="translate(0 26)" d="M124 20C130 6 150 2 168 8C160 12 156 16 154 22C148 18 136 18 124 20Z" fill="${mix(color, "#ffffff", 0.3)}"/>`;
   if (kind === "scarf")
-    return `<g clip-path="url(#${p}c)"><path d="M40 152Q128 192 216 152V172Q128 212 40 172Z" fill="${tone}"/><path d="M40 152Q128 192 216 152V156Q128 196 40 156Z" fill="#fff" opacity=".25"/></g><path d="M158 174L182 168L186 208Q176 214 166 208Z" fill="${mix(tone, "#000000", 0.14)}"/>`;
+    return `<g clip-path="url(#${p}c)"><path d="M10 166Q128 214 246 166V186Q128 234 10 186Z" fill="${tone}"/><path d="M10 166Q128 214 246 166V170Q128 218 10 170Z" fill="#fff" opacity=".25"/></g><path d="M160 194L184 188L188 226Q178 232 168 226Z" fill="${mix(tone, "#000000", 0.14)}"/>`;
   if (kind === "bow")
-    return `<path d="M128 170L102 156Q96 170 102 184ZM128 170L154 156Q160 170 154 184Z" fill="${tone}"/><rect x="120" y="162" width="16" height="16" rx="6" fill="${mix(tone, "#000000", 0.18)}"/>`;
+    return `<path d="M128 186L102 172Q96 186 102 200ZM128 186L154 172Q160 186 154 200Z" fill="${tone}"/><rect x="120" y="178" width="16" height="16" rx="6" fill="${mix(tone, "#000000", 0.18)}"/>`;
   return "";
 }
 
@@ -60,13 +60,13 @@ export function penguin({ color, kind = "none", eyes = false, id = "p" }) {
 ${kind === "tuft" || kind === "crest" ? accessory(kind, color, p) : ""}
 <path d="${BODY}" fill="url(#${p}b)"${rim}/>
 <g clip-path="url(#${p}c)">
-<ellipse cx="90" cy="54" rx="32" ry="15" transform="rotate(-28 90 54)" fill="#fff" opacity=".3" filter="url(#${p}s)"/>
-<ellipse cx="128" cy="172" rx="74" ry="62" fill="url(#${p}w)"/>
+<ellipse cx="84" cy="70" rx="34" ry="15" transform="rotate(-28 84 70)" fill="#fff" opacity=".3" filter="url(#${p}s)"/>
+<ellipse cx="128" cy="184" rx="88" ry="58" fill="url(#${p}w)"/>
 </g>
-<path d="${MASK}" fill="#fff"/>
+<g transform="translate(0 16)"><path d="${MASK}" fill="#fff"/>
 <ellipse cx="82" cy="124" rx="11" ry="7" fill="#ff8fa3" opacity=".5" filter="url(#${p}s)"/><ellipse cx="174" cy="124" rx="11" ry="7" fill="#ff8fa3" opacity=".5" filter="url(#${p}s)"/>
 <ellipse cx="128" cy="147" rx="17" ry="5" fill="#8a97ad" opacity=".3" filter="url(#${p}s)"/>
-<path d="${BEAK}" fill="url(#${p}o)"/><path d="M116 121Q128 116 140 121Q128 125 116 121Z" fill="#fff" opacity=".42"/>
+<path d="${BEAK}" fill="url(#${p}o)"/><path d="M116 121Q128 116 140 121Q128 125 116 121Z" fill="#fff" opacity=".42"/></g>
 ${kind === "scarf" || kind === "bow" ? accessory(kind, color, p) : ""}
 ${eyes ? EYES.map((e) => `<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" rx="${e.rx}" fill="${EYE_COLOR}"/><circle cx="${e.x + 5.5}" cy="${e.y + 7}" r="3" fill="#fff"/>`).join("") : ""}`;
 }

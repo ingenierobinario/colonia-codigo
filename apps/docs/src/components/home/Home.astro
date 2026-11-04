@@ -7,10 +7,10 @@ import { sitePath } from "../../doc-routes.mjs";
 import { HOME, type Lang } from "../../i18n/home";
 import Blob from "../Blob.astro";
 import StageDemo from "./StageDemo.astro";
+import FeatureScene from "./FeatureScene.astro";
 import BlobEyes from "../BlobEyes.astro";
 import BrandMark from "../BrandMark.astro";
 import OsIcon from "../OsIcon.astro";
-import Shot from "../Shot.astro";
 import UiIcon from "../UiIcon.astro";
 import PageMeta from "../web/PageMeta.astro";
 import WebFooter from "../web/WebFooter.astro";
@@ -271,16 +271,8 @@ const cards = [
             <div class="feats__shot">
               {
                 t.newIn.items.map((f, i) => (
-                  <div class:list={["feats__img", { on: i === 0, feats__fan: "fan" in f }]} data-shot={i}>
-                    {"fan" in f && f.fan ? (
-                      f.fan.map(([shot, alt], j) => (
-                        <div class:list={["fan__phone", `fan__phone--${j}`]}>
-                          <Shot name={shot} alt={alt} frame="none" />
-                        </div>
-                      ))
-                    ) : (
-                      <Shot name={f.shot} alt={f.title} frame="none" />
-                    )}
+                  <div class:list={["feats__img", { on: i === 0 }]} data-shot={i}>
+                    <FeatureScene kind={f.shot} lang={lang} />
                   </div>
                 ))
               }

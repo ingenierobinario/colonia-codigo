@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ site }) => {
     "",
     `> ${t.sub.strong} ${t.sub.rest}`,
     "",
-    "Colonia installs on macOS, Windows or Linux, with an Android app that pairs with the computer. Everyone connects their own AI subscription or key. Agents talk through Telegram, WhatsApp, Discord, Slack and iMessage. Every page is also in Spanish under /es/.",
+    "Colonia installs on macOS, Windows or Linux. Everyone connects their own AI subscription or key. Agents talk through Telegram, WhatsApp, Discord, Slack and iMessage. Every page is also in Spanish under /es/.",
   ];
   for (const section of docSections) {
     const pages = docs.filter((entry) => entry.id.split("/")[1] === section).sort((a, b) => order(a) - order(b));
