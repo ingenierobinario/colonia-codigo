@@ -8,7 +8,7 @@ import { say, scriptedLlm, startCore } from "./testkit.ts";
 
 const llm = scriptedLlm(() => say("ok"));
 let env: Awaited<ReturnType<typeof startCore>>;
-const folder = tempDir("apx-visual-");
+const folder = tempDir("colonia-visual-");
 
 before(async () => {
   env = await startCore({ llm });

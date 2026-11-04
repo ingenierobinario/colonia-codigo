@@ -6,10 +6,10 @@
   flex: none;
   width: 64px;
   height: 32px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
 }
 .theme-switch__thumb {
   position: absolute;
@@ -17,7 +17,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--apx-fill-strong);
+  background: var(--colonia-fill-strong);
   transition: transform 200ms ease;
 }
 .theme-switch svg {

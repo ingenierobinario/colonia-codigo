@@ -59,7 +59,7 @@ test("nota voz muestra volumen real, conserva audio y texto, reproduce después 
     await expect(page.locator(".voice-recording__time")).not.toHaveText("0:00");
     await expect(page.locator(".voice-recording__heard")).toHaveText("Revisá publicaciones");
     await expect(input).toHaveValue("");
-    await page.screenshot({ path: "/tmp/apx-voice-recording.png" });
+    await page.screenshot({ path: "/tmp/colonia-voice-recording.png" });
     await page.getByRole("button", { name: "Terminar de dictar", exact: true }).click();
     await expect(input).toHaveValue("Revisá publicaciones duplicadas");
     await expect(page.locator(".voice-recording__heard")).toHaveCount(0);
@@ -76,7 +76,7 @@ test("nota voz muestra volumen real, conserva audio y texto, reproduce después 
     await page.reload();
     await expect(page.getByText("Revisá publicaciones duplicadas", { exact: true })).toBeVisible();
     await expect(player).toBeEnabled();
-    await page.screenshot({ path: "/tmp/apx-voice-message.png" });
+    await page.screenshot({ path: "/tmp/colonia-voice-message.png" });
     const thread = await env.client.call("threads.get", { thread: "home" });
     expect(thread.messages.filter((m) => m.author.kind === "user")).toHaveLength(1);
     expect(thread.messages.find((m) => m.author.kind === "user")?.parts.some((p) => p.type === "audio")).toBe(true);

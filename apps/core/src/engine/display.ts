@@ -1,7 +1,7 @@
 // The answer the owner sees for one run: a message whose parts are added and replaced as the turn goes, in the order
 // things happened. Text comes in segments: once a card (a tool, an approval, a widget) lands after it, what the model
 // says next starts a new text part below that card instead of rewriting the one above.
-import type { Message, Part } from "@apx/protocol";
+import type { Message, Part } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 
 const TEXT_THROTTLE_MS = 120;

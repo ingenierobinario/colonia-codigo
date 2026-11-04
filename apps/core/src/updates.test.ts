@@ -15,7 +15,7 @@ import { createUpdates, RESTART_CODE, type Runner, restartAfterClose } from "./u
 
 const log = createLog("test", true);
 const checkout = () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-upd-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-upd-"));
   fs.mkdirSync(path.join(root, ".git"));
   return root;
 };
@@ -40,7 +40,7 @@ test("outside a checkout there is nothing to update, and an update says why", as
   assert.deepEqual(await u.apply(), {
     ok: false,
     restart: false,
-    log: "This APX updates with its desktop app, or by hand.",
+    log: "This Colonia updates with its desktop app, or by hand.",
   });
 });
 
@@ -86,7 +86,7 @@ test("a pull that cannot fast-forward stops the update before installing anythin
 });
 
 test("the served panel is known by its entry file, read again when the build changes", () => {
-  const dist = fs.mkdtempSync(path.join(os.tmpdir(), "apx-dist-"));
+  const dist = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-dist-"));
   const write = (entry: string, at: number) => {
     fs.writeFileSync(path.join(dist, "index.html"), `<script type="module" src="/assets/${entry}"></script>`);
     fs.utimesSync(path.join(dist, "index.html"), at, at);
@@ -99,21 +99,21 @@ test("the served panel is known by its entry file, read again when the build cha
   fs.rmSync(dist, { recursive: true });
 });
 
-/** A bundle install (APX_APP) at 2.0.3 and a feed that serves 2.1.0 for linux-x64, the way GitHub would. */
+/** A bundle install (COLONIA_APP) at 2.0.3 and a feed that serves 2.1.0 for linux-x64, the way GitHub would. */
 async function releaseFeed(o: { corrupt?: boolean } = {}) {
-  const app = fs.mkdtempSync(path.join(os.tmpdir(), "apx-upd-app-"));
+  const app = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-upd-app-"));
   const old = path.join(app, "versions", "2.0.3");
   fs.mkdirSync(path.join(old, "node", "bin"), { recursive: true });
   fs.writeFileSync(path.join(old, "node", "bin", "node"), "old");
   fs.mkdirSync(path.join(app, "versions", "1.9.0"));
   fs.symlinkSync(path.join("versions", "2.0.3"), path.join(app, "current"));
 
-  const src = fs.mkdtempSync(path.join(os.tmpdir(), "apx-upd-src-"));
-  fs.mkdirSync(path.join(src, "apx", "node", "bin"), { recursive: true });
-  fs.writeFileSync(path.join(src, "apx", "node", "bin", "node"), "new");
-  const name = "apx-core-2.1.0-linux-x64.tar.gz";
+  const src = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-upd-src-"));
+  fs.mkdirSync(path.join(src, "colonia", "node", "bin"), { recursive: true });
+  fs.writeFileSync(path.join(src, "colonia", "node", "bin", "node"), "new");
+  const name = "colonia-core-2.1.0-linux-x64.tar.gz";
   // Relative paths: Git's tar on Windows reads "C:" in a path as a remote host.
-  execFileSync("tar", ["-czf", name, "apx"], { cwd: src });
+  execFileSync("tar", ["-czf", name, "colonia"], { cwd: src });
   const tarball = fs.readFileSync(path.join(src, name));
   const digest = createHash("sha256")
     .update(o.corrupt ? "something else" : tarball)
@@ -139,7 +139,7 @@ async function releaseFeed(o: { corrupt?: boolean } = {}) {
   // The GitHub API call is the only one fetch makes to another host: answered here, downloads go to the server.
   const fakeFetch: typeof fetch = async (input, init) => {
     const url = String(input);
-    if (url.startsWith("https://api.github.com/repos/acme/apx/releases")) return Response.json(releases);
+    if (url.startsWith("https://api.github.com/repos/acme/colonia/releases")) return Response.json(releases);
     return fetch(input, init);
   };
   const tar: Runner = async (cmd, args) => {
@@ -160,7 +160,7 @@ async function releaseFeed(o: { corrupt?: boolean } = {}) {
       import { createLog } from ${JSON.stringify(new URL("./log.ts", import.meta.url).href)};
       const u = createUpdates({
         root: ${JSON.stringify(root)}, app: ${JSON.stringify(app)}, log: createLog("test", true),
-        enabled: true, supervised: false, version: "2.0.3", feed: "acme/apx",
+        enabled: true, supervised: false, version: "2.0.3", feed: "acme/colonia",
         platform: { os: "linux", arch: "x64" },
         fetch: (input, init) => fetch(String(input).startsWith("https://api.github.com/")
           ? ${JSON.stringify(`${base}/releases`)} : input, init),
@@ -188,7 +188,7 @@ test("a bundle install finds the newer release, installs it beside the running o
     supervised: true,
     version: "2.0.3",
     app: f.app,
-    feed: "acme/apx",
+    feed: "acme/colonia",
     platform: { os: "linux", arch: "x64" },
     fetch: f.fakeFetch,
     run: f.tar,
@@ -224,7 +224,7 @@ test("a bundle that does not match its .sha256 is refused and what runs stays as
     supervised: false,
     version: "2.0.3",
     app: f.app,
-    feed: "acme/apx",
+    feed: "acme/colonia",
     platform: { os: "linux", arch: "x64" },
     fetch: f.fakeFetch,
     run: f.tar,
@@ -262,7 +262,7 @@ test("an update never deletes the version a core that did not restart still runs
       supervised: false,
       version: "1.9.0",
       app: f.app,
-      feed: "acme/apx",
+      feed: "acme/colonia",
       platform: { os: "linux", arch: "x64" },
       fetch: f.fakeFetch,
       run: f.tar,
@@ -300,7 +300,7 @@ test("failed extraction preserves the installed versions and never requests a re
       enabled: true,
       supervised: true,
       version: "2.0.3",
-      feed: "acme/apx",
+      feed: "acme/colonia",
       platform: { os: "linux", arch: "x64" },
       fetch: f.fakeFetch,
       run: async () => ({ code: 1, out: "spawn tar ENOENT" }),
@@ -329,7 +329,7 @@ test("without a bundle install or a checkout, updates belong to the desktop app"
     enabled: true,
     supervised: false,
     version: "2.0.3",
-    feed: "acme/apx",
+    feed: "acme/colonia",
   });
   assert.equal((await u.check()).source, "none");
   assert.equal((await u.apply()).ok, false);
@@ -344,7 +344,7 @@ test("the core the desktop app carries says a newer release is out, and leaves i
     supervised: true,
     version: "2.0.3",
     byApp: true,
-    feed: "acme/apx",
+    feed: "acme/colonia",
     platform: { os: "linux", arch: "x64" },
     fetch: f.fakeFetch,
     run: f.tar,

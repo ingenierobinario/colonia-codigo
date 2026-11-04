@@ -1,6 +1,6 @@
 // Calls into the router from inside the core: tools as their agent, channels as the owner or a contact. The same
 // door every client uses, with a context built here that no request can forge.
-import { type Actor, type MethodName, methods, type Params, type Result } from "@apx/protocol";
+import { type Actor, type MethodName, methods, type Params, type Result } from "@colonia/protocol";
 import { CallError } from "../errors.ts";
 import type { Log } from "../log.ts";
 import type { CallContext } from "./context.ts";

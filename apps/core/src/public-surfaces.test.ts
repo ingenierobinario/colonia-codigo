@@ -8,7 +8,7 @@ test("only explicitly published widgets are readable through public ingress, nev
     const surface = env.core.store.surfaces.upsert({
       name: "acme",
       title: "Acme page",
-      html: '<script src="/_apx/kit@1.js"></script><h1>Public content</h1>',
+      html: '<script src="/_colonia/kit@1.js"></script><h1>Public content</h1>',
       created_by: "superagent",
       connect: ["https://example.com"],
     });
@@ -24,7 +24,7 @@ test("only explicitly published widgets are readable through public ingress, nev
     assert.equal(page.status, 200);
     const html = await page.text();
     assert.ok(html.includes("Public content"));
-    assert.ok(html.includes("window.APX"), "kit is inline without needing the private host");
+    assert.ok(html.includes("window.Colonia"), "kit is inline without needing the private host");
     assert.equal(html.includes("private-state-must-not-leak"), false);
     assert.equal(html.includes(surface.id), false);
     const csp = page.headers.get("content-security-policy") ?? "";
@@ -52,8 +52,8 @@ test("only explicitly published widgets are readable through public ingress, nev
       `${shared.share_path}/media/private.png`,
     ])
       assert.equal((await fetch(`${url}${path}`)).status, 404, path);
-    assert.equal((await fetch(`${url}/_apx/kit@1.js`)).status, 200);
-    assert.equal((await fetch(`${url}/_apx/kit@1.js`, { method: "POST" })).status, 405);
+    assert.equal((await fetch(`${url}/_colonia/kit@1.js`)).status, 200);
+    assert.equal((await fetch(`${url}/_colonia/kit@1.js`, { method: "POST" })).status, 405);
     await env.client.call("surfaces.share", { surface: surface.id, shared: false });
     assert.equal((await fetch(`${url}${shared.share_path}`)).status, 404);
     const again = await env.client.call("surfaces.share", { surface: surface.id, shared: true });

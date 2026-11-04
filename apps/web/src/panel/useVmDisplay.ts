@@ -1,4 +1,4 @@
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import RFB from "@novnc/novnc";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
@@ -85,7 +85,7 @@ export function useVmDisplay(screenNumber: number | undefined, ready: boolean, m
     })().catch((e: unknown) => {
       if (!abort.signal.aborted) {
         const full =
-          e instanceof ApxError && (e.detail as { reason?: unknown } | undefined)?.reason === "display_sessions";
+          e instanceof ColoniaError && (e.detail as { reason?: unknown } | undefined)?.reason === "display_sessions";
         setError(full ? t("computer.tooManyViewers") : e instanceof Error ? e.message : String(e));
         setState("disconnected");
       }

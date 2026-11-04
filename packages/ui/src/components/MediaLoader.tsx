@@ -30,7 +30,7 @@ export interface MediaLoaderProps {
 export function MediaLoader({ kind, inline, size, className, style }: MediaLoaderProps) {
   const icon = <LoaderIcon kind={kind} size={size ?? (inline ? 14 : 30)} />;
   return (
-    <span className={cx("apx-medialoader", inline && "is-inline", className)} style={style} aria-hidden="true">
+    <span className={cx("colonia-medialoader", inline && "is-inline", className)} style={style} aria-hidden="true">
       {icon}
     </span>
   );
@@ -39,7 +39,7 @@ export function MediaLoader({ kind, inline, size, className, style }: MediaLoade
 function LoaderIcon({ kind, size }: { kind: MediaKind; size: number }) {
   return (
     <svg
-      className={`apx-medialoader__icon is-${kind}`}
+      className={`colonia-medialoader__icon is-${kind}`}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -53,32 +53,32 @@ function LoaderIcon({ kind, size }: { kind: MediaKind; size: number }) {
       {kind === "video" && (
         <>
           <circle cx="12" cy="12" r="9.5" opacity="0.25" />
-          <circle className="apx-medialoader__arc" cx="12" cy="12" r="9.5" pathLength="100" />
-          <path className="apx-medialoader__play" d="M10 8.5 15.5 12 10 15.5Z" fill="currentColor" />
+          <circle className="colonia-medialoader__arc" cx="12" cy="12" r="9.5" pathLength="100" />
+          <path className="colonia-medialoader__play" d="M10 8.5 15.5 12 10 15.5Z" fill="currentColor" />
         </>
       )}
       {kind === "image" && (
         <>
           <rect x="3" y="4" width="18" height="16" rx="2.5" />
-          <circle className="apx-medialoader__sun" cx="8.5" cy="9.5" r="1.6" />
-          <path className="apx-medialoader__hills" d="m3.5 17.5 5-5 4 4 2.5-2.5 5.5 5.5" pathLength="100" />
+          <circle className="colonia-medialoader__sun" cx="8.5" cy="9.5" r="1.6" />
+          <path className="colonia-medialoader__hills" d="m3.5 17.5 5-5 4 4 2.5-2.5 5.5 5.5" pathLength="100" />
         </>
       )}
       {kind === "audio" && (
         <>
-          <path className="apx-medialoader__bar" d="M5 10v4" />
-          <path className="apx-medialoader__bar" d="M9.5 6v12" />
-          <path className="apx-medialoader__bar" d="M14.5 8v8" />
-          <path className="apx-medialoader__bar" d="M19 10v4" />
+          <path className="colonia-medialoader__bar" d="M5 10v4" />
+          <path className="colonia-medialoader__bar" d="M9.5 6v12" />
+          <path className="colonia-medialoader__bar" d="M14.5 8v8" />
+          <path className="colonia-medialoader__bar" d="M19 10v4" />
         </>
       )}
       {kind === "file" && (
         <>
           <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
           <path d="M14 3v5h5" />
-          <path className="apx-medialoader__line" d="M8.5 12.5h7" />
-          <path className="apx-medialoader__line" d="M8.5 15.5h7" />
-          <path className="apx-medialoader__line" d="M8.5 18h4" />
+          <path className="colonia-medialoader__line" d="M8.5 12.5h7" />
+          <path className="colonia-medialoader__line" d="M8.5 15.5h7" />
+          <path className="colonia-medialoader__line" d="M8.5 18h4" />
         </>
       )}
     </svg>

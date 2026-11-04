@@ -1,5 +1,5 @@
-import type { GitFile } from "@apx/protocol";
-import { IconButton, Icons, SectionLabel } from "@apx/ui";
+import type { GitFile } from "@colonia/protocol";
+import { IconButton, Icons, SectionLabel } from "@colonia/ui";
 import { type ReactNode, useMemo, useState } from "react";
 import { useT } from "../../i18n/index.ts";
 

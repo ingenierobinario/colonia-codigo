@@ -70,7 +70,7 @@ test("cambios: lista unificada, diff expandible en vivo, historial y registros a
     await code.getByRole("button").click();
     await expect(code.locator(".diff")).toHaveCount(0);
     await code.getByRole("button").click();
-    await page.screenshot({ path: "/tmp/apx-changes.png", fullPage: true });
+    await page.screenshot({ path: "/tmp/colonia-changes.png", fullPage: true });
     await env.client.call("threads.send", { thread: thread.id, text: "single" });
     await env.settle(thread.id);
     await expect(panel.getByText("Cambios: 1 archivo editado", { exact: true })).toBeVisible();

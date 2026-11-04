@@ -30,7 +30,7 @@ function fakeGoogle() {
     if (url === `${BASE}/token`) {
       const form = new URLSearchParams(String(init?.body));
       seen.push({ url, form });
-      if (!["s3cret", "apx-public"].includes(form.get("client_secret") ?? ""))
+      if (!["s3cret", "colonia-public"].includes(form.get("client_secret") ?? ""))
         return json(401, { error: "invalid_client" });
       if (form.get("grant_type") === "authorization_code") {
         const verifier = form.get("code_verifier") ?? "";
@@ -108,7 +108,7 @@ export function setup(o: { builtin?: boolean } = {}) {
     offIn: (project, id) => off.has(`${project}:${id}`),
     fetch: fake.fetchImpl,
     now: () => clock,
-    ...(o.builtin ? { builtin: { clientId: "apx.apps.googleusercontent.com", clientSecret: "apx-public" } } : {}),
+    ...(o.builtin ? { builtin: { clientId: "colonia.apps.googleusercontent.com", clientSecret: "colonia-public" } } : {}),
   });
   const start = (id: "google-calendar" | "gmail" | "google-drive" = "google-calendar") => {
     const url = new URL(g.start(id, { client_id: "123-abc.apps.googleusercontent.com", client_secret: "s3cret" }));

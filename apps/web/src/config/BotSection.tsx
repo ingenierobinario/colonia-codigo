@@ -1,6 +1,6 @@
-import type { ChannelInfo } from "@apx/protocol";
-import { SUPER_AGENT_ID } from "@apx/protocol/client";
-import { Badge, Button, Icons, Input, SettingRow, Switch, Textarea } from "@apx/ui";
+import type { ChannelInfo } from "@colonia/protocol";
+import { SUPER_AGENT_ID } from "@colonia/protocol/client";
+import { Badge, Button, Icons, Input, SettingRow, Switch, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
@@ -92,7 +92,7 @@ const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: TokenSp
     tokens: [
       {
         label: "gc.subscription",
-        placeholder: "projects/acme/subscriptions/apx-chat",
+        placeholder: "projects/acme/subscriptions/colonia-chat",
         pattern: /^projects\/[^/\s]+\/subscriptions\/[^/\s]+$/,
         plain: true,
       },
@@ -118,7 +118,7 @@ const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: TokenSp
     steps: ["nt.step1", "nt.step2", "nt.step3"],
     tokens: [
       { label: "nt.server", placeholder: "https://ntfy.sh", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "nt.topic", placeholder: "apx-7f3k9q2m8x", pattern: /^[-_A-Za-z0-9]{1,64}$/, plain: true },
+      { label: "nt.topic", placeholder: "colonia-7f3k9q2m8x", pattern: /^[-_A-Za-z0-9]{1,64}$/, plain: true },
       { label: "nt.token", placeholder: "tk_…", pattern: /^(tk_\S+)?$/ },
     ],
   },
@@ -127,7 +127,7 @@ const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: TokenSp
     steps: ["nc.step1", "nc.step2", "nc.step3"],
     tokens: [
       { label: "mm.server", placeholder: "https://cloud.example.org", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "nc.user", placeholder: "apx-bot", pattern: /^\S+$/, plain: true },
+      { label: "nc.user", placeholder: "colonia-bot", pattern: /^\S+$/, plain: true },
       { label: "nc.password", placeholder: "xxxxx-xxxxx-…", pattern: /^\S{8,}$/ },
     ],
   },

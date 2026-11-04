@@ -1,7 +1,7 @@
 // The office's moving parts that live in the engine: @mentions (an @agent the owner names in a task is asked there; see
 // task-work.ts) and the task a turn works on, shown at the top of its input.
 
-import type { Task, Thread } from "@apx/protocol";
+import type { Task, Thread } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import { ownerIdentity } from "../domain/owner.ts";
 import { ownerQuestionProblem } from "../domain/owner-question.ts";

@@ -1,7 +1,7 @@
 // The only tools a contact's chat can ever have, each behind a flag the owner turns on for that person (all off by
 // default). They never act for the owner: one leaves a task for the owner to look at, the other reads the owner's own
 // global notes. See DECISIONS.md#d-022
-import { methods, type Person, type PersonRelation, type Task } from "@apx/protocol";
+import { methods, type Person, type PersonRelation, type Task } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import { untrusted } from "./result.ts";

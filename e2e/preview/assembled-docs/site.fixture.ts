@@ -14,7 +14,7 @@ export const test = base.extend<Record<never, never>, { assembledOrigin: string 
         throw new Error(
           "Set DOCS_V1_DIST to a real v1 docs build (DOCS_BASE=/v1). No fixture substitutes the historical site.",
         );
-      const dir = tempDir(`apx-assembled-${browserName}-`);
+      const dir = tempDir(`colonia-assembled-${browserName}-`);
       const out = join(dir.path, "site");
       const mime: Record<string, string> = {
         ".html": "text/html",

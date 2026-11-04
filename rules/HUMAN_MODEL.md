@@ -1,4 +1,4 @@
-# Human model — APX v2
+# Human model — Colonia v2
 
 For an owner who will not read every file. Also serves as the system map; update it when a process, module or
 boundary changes.
@@ -7,10 +7,10 @@ boundary changes.
 
 | Process | Entry | Role | Lifetime |
 |---|---|---|---|
-| **core** | `apps/core/src/main.ts` (`pnpm dev`) | The only owner of state. Serves the protocol on `127.0.0.1:7440`. | Long-running (a user service: `apx service`, or the desktop app starts it). |
-| **terminal** | `apps/terminal/src/main.ts` (`apx`) | One command → protocol call(s) → exit. | Per command. |
+| **core** | `apps/core/src/main.ts` (`pnpm dev`) | The only owner of state. Serves the protocol on `127.0.0.1:7440`. | Long-running (a user service: `colonia service`, or the desktop app starts it). |
+| **terminal** | `apps/terminal/src/main.ts` (`colonia`) | One command → protocol call(s) → exit. | Per command. |
 | **web** | `apps/web` (Vite on `:7441` in dev) | Panel in a browser. Talks to core through the Vite proxy. | Per tab. |
-| **desktop** | `apps/desktop` (`pnpm --filter @apx/desktop dev`) | Panel on the left, embedded browser on the right; connects to core as a **node** offering `browser`. | While the app is open. |
+| **desktop** | `apps/desktop` (`pnpm --filter @colonia/desktop dev`) | Panel on the left, embedded browser on the right; connects to core as a **node** offering `browser`. | While the app is open. |
 | **mobile** | `apps/mobile` (Expo) | Operator + node (camera, notify). | App lifecycle. |
 
 Desktop supervises only a bundled child for its explicitly local home/port. URL and SSH connections never grant
@@ -19,7 +19,7 @@ the core installs once, confirms its running target after restart, then Desktop 
 The native coordinator and recovery work without the remote panel; offline clients reconcile on reconnect, not atomically.
 A bundled local core still updates with Desktop. See [Update coordination](UPDATE_COORDINATION.md). Production daemon
 startup holds an OS-released SQLite lock per canonical home, independent of port. Local service identities are
-home-specific; `APX_URL` does not redirect OS service commands. See [Desktop lifecycle](DESKTOP_LIFECYCLE.md).
+home-specific; `COLONIA_URL` does not redirect OS service commands. See [Desktop lifecycle](DESKTOP_LIFECYCLE.md).
 
 ## 2. How a call flows
 
@@ -66,7 +66,7 @@ LINE/Teams POSTs with native HMAC/JWT verification, registered Flow POSTs with i
 and explicitly published widget GET/HEAD pages plus the static kit. `public_routes.*` manages credentials through the
 private owner-only router; values live in Secrets and only references enter SQLite/idempotency replies. Public widget
 pages receive HTML, not saved state, stores, private media or actions, and a restrictive opaque-sandbox CSP prevents
-connections back into APX. See [Public ingress](PUBLIC_INGRESS.md) for limits, publication and rollback.
+connections back into Colonia. See [Public ingress](PUBLIC_INGRESS.md) for limits, publication and rollback.
 
 Webhook-only Flows (`flows.ts`, `domain/flows.ts`) enter on protected `/flows/<id>` routes, commit event deduplication,
 fixed action/read snapshots and table writes before accepting, then use the existing router's `threads.send` or
@@ -104,8 +104,8 @@ settings (`integrations.settings` / `integrations.configure`, a `SETTINGS` entry
 - `packages/surfaces` ← placement types and an inline CSS kit shared by panel, mobile and public widget hosts.
   The stored app flag controls layout in every host: widgets keep a 16–24px inset even when maximized;
   declared apps use zero inset and no kit width cap. Height fitting and view do not change the saved type; kit classes opt into
-  APX typography, cards and responsive controls.
-  The bundled `apx-artifacts` skill (artifacts of kind widget or app) includes the starters. Agent `edit_widget` changes app/pin flags through
+  Colonia typography, cards and responsive controls.
+  The bundled `colonia-artifacts` skill (artifacts of kind widget or app) includes the starters. Agent `edit_widget` changes app/pin flags through
   `surfaces.update` without reading or replacing HTML; metadata-only changes preserve the content version and share link. No stylesheet requests or extra sandbox permissions.
 - `apps/core`: `transport → rpc → engine (turns) → harness / providers / tools → domain (one repository per
   aggregate over SQLite)`; `nodes/` routes capability calls to the desktop; `channels/` adapts the messaging apps
@@ -117,14 +117,14 @@ computer and asks the local Codex app-server or Claude Code's structured `/usage
 metadata, with bounded child lifetimes, validated windows and a short shared cache. Claude requires version 2.1.273
 or later and runs isolated with safe mode, zero model turns, no session persistence, hooks, tools or MCP servers.
 Only global session and weekly limits are used; model-specific quotas are not substituted. It starts no model turn
-and APX reads no engine credentials. Other
+and Colonia reads no engine credentials. Other
 engines explicitly report unsupported or unavailable limits; session token counts are not account balances.
 The owner can turn quota visibility on or off with the compact Usage switch on each engine card. The core stores
 these choices independently of model power, filters disabled engines before account probes and hides pending/cached
 results after an opt-out. Defaults are off except for a linked ChatGPT plan (metadata only); its quota source still
 requires the separately linked Codex CLI. Explicit choices survive linking or disconnecting the plan.
 
-The super-agent's `apx_settings` email area discovers configured Gmail/SMTP identities and reads one local
+The super-agent's `colonia_settings` email area discovers configured Gmail/SMTP identities and reads one local
 signature by transport, account and sender. Human-only `email.signature_upsert` and `email.signature_remove`
 run through the same owner-confirmed settings flow, with the exact last-read entry as a concurrency precondition
 (`null` only when creating). Writes preserve other signatures and validate configured senders, including removals; an unconfigured mailbox's
@@ -132,14 +132,14 @@ signature is preserved after disconnection. Gmail's signature is edited in integ
 
 ## 4. State and persistence
 
-`~/.apx/v2/apx.db` (SQLite, WAL): projects, agents, threads (incl. a2a sub-threads), messages (what the UI shows),
+`~/.colonia/v2/colonia.db` (SQLite, WAL): projects, agents, threads (incl. a2a sub-threads), messages (what the UI shows),
 `model_log` (what the model saw — never rendered, tagged by run), runs (the durable queue: input, origin, reply destination, depth,
 deadline, A2A-shaped states, usage), steps (one per tool call, written before it runs), surfaces (+ share tokens),
 idempotency, and the rest of the product's records (persons and their addresses, channel inbox/outbox, tasks, routines,
 memories, notifications, devices, extensions, nudges, suggestions, media); `db/migrations.ts` is the list, `db/schema.ts`
 the generated types. Channel photos/documents and voice notes enter through `threads.send` as persisted uploads; image references reach
 vision models and the panel shows attachments from both sides. Owner uploads are copied into an ignored
-`.apx-attachments/upload-*` folder inside the turn work directory so file tools can inspect PDFs and other
+`.colonia-attachments/upload-*` folder inside the turn work directory so file tools can inspect PDFs and other
 documents. Contact uploads stay in their sealed chat and never get a shared work-folder copy. Voice uploads stay
 playable beside their words, even if transcription fails; `media.transcribe` can reuse the uploaded file by id.
 Agents share local project files through `send_file` → `media.attach`: a snapshot, at most 20 MB, scoped to
@@ -177,15 +177,15 @@ per path), or the current Git folder. Owner-only `files.diff` reads a saved patc
 after source deletion. Older records without patches show labeled current content only when their recorded
 folder still matches the chat's work folder; escapes, Git metadata, binaries and special files are refused.
 Files live in three places ([D-054](DECISIONS.md#d-054), [D-055](DECISIONS.md#d-055)): the project's own folder (the
-repository and its `.apc/`, where the native agent works); APX's side of each project in its home, `projects/<id>` (or
-the project's folder itself when APX made it, `projects/<name>`), where outside agents work outside code threads and
-the native agent falls back while the folder is off this machine; and each chat's temp folder (`apx-scratch-…` in the
+repository and its `.apc/`, where the native agent works); Colonia's side of each project in its home, `projects/<id>` (or
+the project's folder itself when Colonia made it, `projects/<name>`), where outside agents work outside code threads and
+the native agent falls back while the folder is off this machine; and each chat's temp folder (`colonia-scratch-…` in the
 system's temp folder), for downloads and tries, kept with `files.keep`. `work/` is the folder of chats outside a
 project. Widgets are not files: their HTML and where they show live in `surfaces`, scoped to one project or global.
 Secrets are referenced as `secret://name`: on macOS the values live in the login Keychain, elsewhere (and with
-`APX_SECRETS=file`, as in tests) in `~/.apx/v2/secrets.json` (0600). `~/.apx/v2/home-id` is the
+`COLONIA_SECRETS=file`, as in tests) in `~/.colonia/v2/secrets.json` (0600). `~/.colonia/v2/home-id` is the
 install id. Browser sessions live in Electron partitions on the
-desktop (`persist:apx-shared`, `persist:apx-agent-<id>`, in-memory `apx-incog-*`), never in the core.
+desktop (`persist:colonia-shared`, `persist:colonia-agent-<id>`, in-memory `colonia-incog-*`), never in the core.
 
 Asana is a native REST integration (`integrations/asana.ts`), configured with a validated personal access token
 referenced as `secret://asana-token`. The existing integration form and global-integration project switches apply,
@@ -302,7 +302,7 @@ jobs are closed, and queued runs are picked up.
 
 ## 5. Auth and trust
 
-- Loopback bind needs no token; any other bind **requires** `APX_TOKEN` (enforced at startup).
+- Loopback bind needs no token; any other bind **requires** `COLONIA_TOKEN` (enforced at startup).
 - `/rpc/*` checks `Authorization: Bearer` when a token is set. Over WS the token (`?token=`), or a paired device's own, is checked during upgrade and before every incoming or outgoing frame. Revoked sockets cannot call methods, receive events or lend node capabilities.
 - Trust boundaries to remember: web page content (embedded browser), channel messages, outside apps' agents,
   tool output → all untrusted data. The owner's own agents speak for the owner (DECISIONS.md#d-071).
@@ -310,7 +310,7 @@ jobs are closed, and queued runs are picked up.
 ## 6. External integrations
 
 - LLM: `providers/` speaks OpenAI-compatible chat, Anthropic Messages and the ChatGPT plan's responses API; keys are `secret://` references.
-- APX v1: read-only import (`import/v1.ts`, `import/v1-*.ts`) of projects, agents, chats, channels and, when asked, keys and skills; never writes to v1.
+- Colonia v1: read-only import (`import/v1.ts`, `import/v1-*.ts`) of projects, agents, chats, channels and, when asked, keys and skills; never writes to v1.
 - Electron + in-process CDP for the embedded browser; macOS Keychain + `sqlite3` for cookie import.
 Harnesses: native (our loop over `providers/`), Claude Code (Agent SDK), Codex (Codex SDK) and ACP agents — D-007, D-008.
 
@@ -335,16 +335,16 @@ esbuild script (consumed as `dist/`). Checks: `pnpm preflight`. Details: [`TESTI
 ## 9. Fragile seams
 
 The optional computer (`apps/core/src/environments`) is one Linux VM shared by the agents, inert at core startup and off
-for every agent: using it is a per-agent grant (`apx:computer`) the owner gives in the agent's settings or on the card
+for every agent: using it is a per-agent grant (`colonia:computer`) the owner gives in the agent's settings or on the card
 the agent's `computer` tool raises ([D-151](DECISIONS.md#d-151)). Each agent works as its own locked Linux user on its own
-screen (user `apx-a<n>`, display `:100+n`, a private VNC socket and X cookie, its own cgroup slice, and loopback
+screen (user `colonia-a<n>`, display `:100+n`, a private VNC socket and X cookie, its own cgroup slice, and loopback
 listeners no other agent can connect to); the owner has no screen of their own and
 takes control of an agent's when needed ([D-152](DECISIONS.md#d-152)). The Computer panel shows the chat agent's screen;
 the Computers view (`apps/web/src/computers`) shows every screen in use as a wall. The core keeps the ledger of which working run holds which screen (`screens.ts`,
 in settings, swept of finished runs), caps the screens up at once by the VM's memory and refuses a turn when none is
 free. The owner's `environments.enable`, or an allowed agent's `environments.start` from its own run, puts a chat on the
 computer and boots the VM if needed: verified private Lima runtime if missing → pinned Debian guest → root-owned
-firewall for the screen users → desktop helpers, templated screen units and APX appearance. Memory, CPUs and disk come
+firewall for the screen users → desktop helpers, templated screen units and Colonia appearance. Memory, CPUs and disk come
 from `environments.configure`, held to the host and applied on the next start with `limactl edit`; a start is refused
 while free host memory is below the VM's memory plus 2 GiB. `environments.release` takes a chat back to the Mac;
 `environments.stop` (owner) shuts the VM down for everyone, cancelling the runs that hold screens. A core watchdog
@@ -359,11 +359,11 @@ direct egress dropped by nftables ([`prototypes/vm-desktop/VERIFICATION.md`](../
 Control is a lease per screen: the owner taking an agent's screen cancels the run holding it, and agent work there is
 refused until it is handed back. `environments.*` uses the normal registry and router; `/vm-display` carries only RFB
 bytes of one screen after a human requests a short-lived single-use ticket for it. Light/dark desktops, terminals and the
-bundled wallpaper follow APX. The backend supports macOS Apple Silicon only. Runtime state and VM disks live outside the
+bundled wallpaper follow Colonia. The backend supports macOS Apple Silicon only. Runtime state and VM disks live outside the
 checkout.
 
 - **Node type stripping** only works for erasable syntax and for files **not** under `node_modules` — workspace
-  packages resolve through symlinks to their real path, which is why `@apx/protocol` can ship `.ts`.
+  packages resolve through symlinks to their real path, which is why `@colonia/protocol` can ship `.ts`.
 - **`packages/ui` ↔ Claude Design**: `dist/` is what design-sync reads; formatting or API changes need a re-sync.
 - **Protocol version**: a client with another `PROTOCOL_VERSION` is closed at `hello`. Bump only with a migration
   plan for every client.

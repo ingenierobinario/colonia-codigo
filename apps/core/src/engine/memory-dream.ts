@@ -1,6 +1,6 @@
 // Consolidation ("dream") of one agent's notebook: merge duplicates, retire notes a newer one corrects (or stale ones
 // once it outgrew its target) and write relative days as dates. The model only names ids; every text change is ours.
-import type { Memory } from "@apx/protocol";
+import type { Memory } from "@colonia/protocol";
 import { z } from "zod";
 import { forgetAllowance, NOTEBOOK_TARGET } from "../domain/memories.ts";
 import { absoluteDates, duplicateMemory } from "../domain/memory-content.ts";

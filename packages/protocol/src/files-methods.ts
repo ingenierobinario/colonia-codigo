@@ -40,7 +40,7 @@ export const SharedFile = z.object({
   media_id: Id,
   kind: SharedKind,
   mime: z.string(),
-  /** The file's own name, or how it was asked for when APX made it; empty when it has neither. */
+  /** The file's own name, or how it was asked for when Colonia made it; empty when it has neither. */
   name: z.string(),
   bytes: z.number().int(),
   /** Where it is kept on the core's computer. */
@@ -55,8 +55,8 @@ export const SharedFile = z.object({
 export type SharedFile = z.infer<typeof SharedFile>;
 
 /**
- * Whose folder: a project's, the base project's (`base`: APX's work folder, where its chats work), or the one a chat
- * works in (a code session's own, its project's, or APX's work folder); with `scratch`, the chat's temp folder instead.
+ * Whose folder: a project's, the base project's (`base`: Colonia's work folder, where its chats work), or the one a chat
+ * works in (a code session's own, its project's, or Colonia's work folder); with `scratch`, the chat's temp folder instead.
  */
 const Where = {
   project: Id.optional(),

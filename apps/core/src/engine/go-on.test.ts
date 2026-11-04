@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "./testkit.ts";
 
 let env: Awaited<ReturnType<typeof startCore>>;

@@ -7,10 +7,10 @@ for (const failed of [false, true]) {
     await rpc("setup.finish", {});
     await page.addInitScript(() => {
       if (!sessionStorage.getItem("approvalLanguageSeeded")) {
-        localStorage.setItem("apx.prefs", JSON.stringify({ language: "en" }));
+        localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en" }));
         sessionStorage.setItem("approvalLanguageSeeded", "true");
       }
-      sessionStorage.setItem("apx.preloadReload", String(Date.now()));
+      sessionStorage.setItem("colonia.preloadReload", String(Date.now()));
     });
     let releaseBase!: () => void;
     const base = new Promise<void>((resolve) => {
@@ -90,8 +90,8 @@ for (const language of ["en", "es"] as const) {
       const permissions = spanish ? "Permisos activos del navegador" : "Active browser permissions";
       await rpc("setup.finish", {});
       await page.addInitScript((language) => {
-        localStorage.setItem("apx.prefs", JSON.stringify({ language }));
-        sessionStorage.setItem("apx.preloadReload", String(Date.now()));
+        localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
+        sessionStorage.setItem("colonia.preloadReload", String(Date.now()));
       }, language);
       let release!: () => void;
       const held = new Promise<void>((resolve) => {

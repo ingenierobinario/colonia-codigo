@@ -1,5 +1,5 @@
-import type { TELEMETRY_STAGES, UsageStats } from "@apx/protocol";
-import { SettingRow, Switch } from "@apx/ui";
+import type { TELEMETRY_STAGES, UsageStats } from "@colonia/protocol";
+import { SettingRow, Switch } from "@colonia/ui";
 import { useEffect } from "react";
 import { formatNumber } from "../common/format.ts";
 import { PRIVACY_URL, refreshTelemetry, setUsage, useTelemetry } from "../data/telemetry.ts";

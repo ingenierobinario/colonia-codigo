@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import type { ToolApproval } from "../../../../packages/protocol/src/domain.ts";
 import type { Agent, Thread } from "../hooks/useWorkspace";
 import { t } from "../i18n";
-import type { ApxClient } from "../protocol";
+import type { ColoniaClient } from "../protocol";
 import { BottomSheet, Button } from "./kit";
 import { makeStyles } from "./theme";
 
@@ -13,7 +13,7 @@ export function BrowserConsents({
   agents,
   threads,
 }: {
-  client: ApxClient;
+  client: ColoniaClient;
   thread: string;
   agents: Agent[];
   threads: Thread[];

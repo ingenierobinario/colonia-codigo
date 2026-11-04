@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { EngineIcon } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { EngineIcon } from "@colonia/ui";
 
 type Report = Result<"engines.usage">;
 

@@ -3,7 +3,7 @@ import { Fragment, type ReactNode } from "react";
 /** An @mention as the core reads it (not inside an email or a longer word). */
 export const MENTION = /(?<![\p{L}\p{N}_@])@[\p{L}\p{N}][\p{L}\p{N}_-]*/gu;
 
-/** Plain text with each @mention as a badge (`apx-mention`). */
+/** Plain text with each @mention as a badge (`colonia-mention`). */
 export function withMentions(text: string, keyBase = "m"): ReactNode[] {
   const out: ReactNode[] = [];
   let last = 0;
@@ -12,7 +12,7 @@ export function withMentions(text: string, keyBase = "m"): ReactNode[] {
     const at = m.index ?? 0;
     if (at > last) out.push(<Fragment key={`${keyBase}t${n}`}>{text.slice(last, at)}</Fragment>);
     out.push(
-      <span key={`${keyBase}m${n++}`} className="apx-mention">
+      <span key={`${keyBase}m${n++}`} className="colonia-mention">
         {m[0]}
       </span>,
     );

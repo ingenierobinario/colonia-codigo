@@ -1,6 +1,6 @@
 // Telemetry (telemetry.*): what this install reports, and the owner's answer on usage statistics. Asked once: in the
 // setup on a fresh install, by a corner card on one that predates it. See rules/DECISIONS.md#d-092.
-import type { TelemetryState } from "@apx/protocol";
+import type { TelemetryState } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
@@ -12,7 +12,7 @@ const store = createStore<State>({ state: undefined });
 export const useTelemetry = <T>(select: (s: State) => T): T => useSlice(store, select);
 
 /** The page linked from every place that asks: what is sent, and what is not. */
-export const PRIVACY_URL = "https://apxagent.app/reference/privacy/";
+export const PRIVACY_URL = "https://colonia.ingenierobinario.com/reference/privacy/";
 
 /** Says the panel opened (the `opened` step, once) and reads where telemetry stands. */
 export async function loadTelemetry(): Promise<void> {

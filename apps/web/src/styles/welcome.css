@@ -2,7 +2,7 @@
 .welcome__video {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: var(--apx-radius-md);
+  border-radius: var(--colonia-radius-md);
   overflow: hidden;
   background: #000;
 }

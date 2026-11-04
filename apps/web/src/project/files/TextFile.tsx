@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, EmptyState, Icons, MarkdownView, SegmentedControl, Skeleton } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, EmptyState, Icons, MarkdownView, SegmentedControl, Skeleton } from "@colonia/ui";
 import { Suspense, useEffect, useState } from "react";
 import { useMarkdownLabels } from "../../common/useMarkdownLabels.ts";
 import { client } from "../../data/client.ts";

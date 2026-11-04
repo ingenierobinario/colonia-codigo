@@ -2,8 +2,8 @@
 // of the project or make a new one on the spot, empty, and add columns as they go. A save fills a value per column,
 // required ones marked, or keeps one value whole; a read gets one row by its key or the latest rows, with the columns
 // it ticks, and later steps read each column.
-import type { TableInfo } from "@apx/protocol";
-import { Button, Checkbox, Field, Icons, SegmentedControl, Select } from "@apx/ui";
+import type { TableInfo } from "@colonia/protocol";
+import { Button, Checkbox, Field, Icons, SegmentedControl, Select } from "@colonia/ui";
 import { useState } from "react";
 import { notify } from "../data/notices.ts";
 import { useT } from "../i18n/index.ts";

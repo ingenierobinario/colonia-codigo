@@ -1,4 +1,4 @@
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { Suspense } from "react";
 import { AudioPlayer as Player } from "../../lazy.ts";
 

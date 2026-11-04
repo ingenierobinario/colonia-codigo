@@ -131,7 +131,7 @@ export const chatgptResponses: Transport = async (req) => {
               name: t.function.name,
               description: t.function.description,
               parameters: t.function.parameters,
-              // Keep optional arguments optional; APX validates each call at execution time.
+              // Keep optional arguments optional; Colonia validates each call at execution time.
               strict: false,
             })),
             tool_choice: "auto",

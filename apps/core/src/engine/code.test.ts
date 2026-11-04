@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
 import { callTool, say, scriptedLlm, startCore } from "./testkit.ts";
@@ -21,7 +21,7 @@ let repo = "";
 let project = "";
 before(async () => {
   env = await startCore({ llm });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-code-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-code-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
   fs.mkdirSync(path.join(repo, "src"));
   execFileSync("git", ["init", "-q"], { cwd: repo });
@@ -50,7 +50,7 @@ test("a code thread works in a folder inside its project; outside is refused", a
   assert.equal(t.write, "ask");
   await assert.rejects(
     env.client.call("threads.create", { kind: "code", agent_id: "superagent", project_id: project, cwd: ".." }),
-    (e: unknown) => e instanceof ApxError && /outside the project/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /outside the project/.test(e.message),
   );
 });
 

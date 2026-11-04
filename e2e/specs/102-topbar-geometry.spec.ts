@@ -17,7 +17,7 @@ test("search stays centered with unequal sides and activity precedes notificatio
         center: Math.abs((search.left + search.right) / 2 - (bounds.left + bounds.right) / 2),
         overlap: search.right - right.left,
         overflow: bar.scrollWidth - bar.clientWidth,
-        searchOverflow: [...bar.querySelectorAll(".topbar__search svg, .topbar__search .apx-kbd")].some((child) => {
+        searchOverflow: [...bar.querySelectorAll(".topbar__search svg, .topbar__search .colonia-kbd")].some((child) => {
           const rect = child.getBoundingClientRect();
           return rect.width > 0 && (rect.left < search.left || rect.right > search.right);
         }),
@@ -47,7 +47,7 @@ test("pending usage has one anonymous preview until the empty report arrives", a
   await expect(loading).not.toContainText("100%");
   usage.resolve();
   await expect(page.getByTestId("engine-usage-summary")).toContainText("No hay engines seleccionados");
-  await expect(page.getByTestId("engine-usage-summary").locator(".apx-meter")).toHaveCount(0);
+  await expect(page.getByTestId("engine-usage-summary").locator(".colonia-meter")).toHaveCount(0);
 });
 
 test("selected engines missing from the installed catalog still use one anonymous loading preview", async ({
@@ -94,19 +94,19 @@ test("selected engines missing from the installed catalog still use one anonymou
   usage.resolve();
   const summary = page.getByTestId("engine-usage-summary");
   await expect(summary.getByRole("heading", { name: "OpenCode", exact: true })).toBeVisible();
-  await expect(summary.locator(".apx-meter")).toHaveCount(0);
+  await expect(summary.locator(".colonia-meter")).toHaveCount(0);
 });
 
 test("shared blob eyes retain the avatar canvas inside an icon button and chat headers animate", async ({ page }) => {
   await rpc("setup.finish");
   await open(page);
-  const eyes = page.locator(".topbar__agent .apx-blob__eyes");
+  const eyes = page.locator(".topbar__agent .colonia-blob__eyes");
   await expect(eyes).toBeVisible();
   const geometry = await eyes.evaluate((svg) => {
     const button = svg.closest("button");
     if (!button) throw new Error("Missing avatar button");
     const original = button.className;
-    const results = ["apx-iconbtn--sm", "apx-iconbtn--md", "apx-iconbtn--lg", "apx-btn"].map((variant) => {
+    const results = ["colonia-iconbtn--sm", "colonia-iconbtn--md", "colonia-iconbtn--lg", "colonia-btn"].map((variant) => {
       button.className = `topbar__agent ${variant}`;
       const eye = svg.getBoundingClientRect();
       const body = svg.parentElement?.querySelector("img")?.getBoundingClientRect();
@@ -122,9 +122,9 @@ test("shared blob eyes retain the avatar canvas inside an icon button and chat h
   }
   await page.locator(".topbar__agent").click();
   await page.getByRole("menuitem").first().click();
-  const blob = page.locator(".chat__agentbtn .apx-blob");
-  await expect(blob).toHaveClass(/apx-blob--anim/);
-  await expect(blob.locator(".apx-blob__bob")).toHaveCSS("animation-name", "apx-blob-float");
+  const blob = page.locator(".chat__agentbtn .colonia-blob");
+  await expect(blob).toHaveClass(/colonia-blob--anim/);
+  await expect(blob.locator(".colonia-blob__bob")).toHaveCSS("animation-name", "colonia-blob-float");
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(blob.locator(".apx-blob__bob")).toHaveCSS("animation-name", "none");
+  await expect(blob.locator(".colonia-blob__bob")).toHaveCSS("animation-name", "none");
 });

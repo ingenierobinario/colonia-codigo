@@ -8,7 +8,7 @@ import {
   SurfaceOrigin,
   SurfaceState,
   type SurfaceSummary,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import type { ExpressionBuilder, Selectable } from "kysely";
 import type { Bus } from "../bus.ts";
 import type { Database, SurfacesTable } from "../db/schema.ts";

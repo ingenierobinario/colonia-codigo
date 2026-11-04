@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import type { Release } from "@apx/protocol";
+import type { Release } from "@colonia/protocol";
 import { tempDir } from "./testkit/platform.ts";
 import { createUpdateCoordination } from "./update-coordination.ts";
 
 const desktop = { os: "mac", arch: "arm64" } as const;
 const names = (v: string) =>
-  [`apx-core-${v}-linux-x64.tar.gz`, `APX-${v}-mac-arm64.zip`].flatMap((n) => [n, `${n}.sha256`]);
+  [`colonia-core-${v}-linux-x64.tar.gz`, `Colonia-${v}-mac-arm64.zip`].flatMap((n) => [n, `${n}.sha256`]);
 const releases = (versions = ["2.2.0", "2.1.0"], omit?: string) =>
   versions.map((v) => ({
     tag_name: `v${v}`,
@@ -19,7 +19,7 @@ const releases = (versions = ["2.2.0", "2.1.0"], omit?: string) =>
 const request = { target: "2.1.0", desktop, format: "zip" } as const;
 
 async function fixture() {
-  const dir = tempDir("apx-coordination-");
+  const dir = tempDir("colonia-coordination-");
   const file = path.join(dir.path, "update.json");
   const installed: Release[] = [];
   let list = releases();
@@ -32,7 +32,7 @@ async function fixture() {
       file,
       supported,
       platform: { os: "linux", arch: "x64" },
-      feed: "acme/apx",
+      feed: "acme/colonia",
       fetch: async () => Response.json(list),
       now: () => clock,
       install: async (r) => {
@@ -134,11 +134,11 @@ test("server failure persists and blocks application until explicitly prepared a
 test("both platform assets and mandatory checksums are validated before recording intent", async () => {
   const f = await fixture();
   try {
-    f.omit("APX-2.1.0-mac-arm64.zip.sha256");
+    f.omit("Colonia-2.1.0-mac-arm64.zip.sha256");
     const u = f.create();
     await assert.rejects(u.prepare(request), /no Desktop package with a checksum/);
     assert.equal(u.state().coordination, null);
-    f.omit("apx-core-2.1.0-linux-x64.tar.gz");
+    f.omit("colonia-core-2.1.0-linux-x64.tar.gz");
     await assert.rejects(u.prepare(request), /no core bundle with a checksum/);
     assert.equal(fs.existsSync(f.file), false);
     assert.equal(f.installed.length, 0);

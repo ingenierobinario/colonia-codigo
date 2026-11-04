@@ -1,5 +1,5 @@
 // The open chat's folder: its own (a code session's) or its project's. Terminal, Files and Changes need one.
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import { findProject, type ProjectEntry } from "../data/identity.ts";
 import { useData } from "../data/state.ts";
 import { useNav } from "../shell/nav.ts";

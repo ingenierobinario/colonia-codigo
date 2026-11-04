@@ -1,4 +1,4 @@
-import type { Task, TaskColumn } from "@apx/protocol";
+import type { Task, TaskColumn } from "@colonia/protocol";
 import type { MessageKey, T } from "../i18n/index.ts";
 
 const COLUMN_KEYS: Record<string, MessageKey> = {

@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import type { MediaItem } from "../src/chat/media";
 import { saveMedia, shareMedia } from "../src/chat/mediaFiles";
-import type { ApxClient } from "../src/protocol";
+import type { ColoniaClient } from "../src/protocol";
 
 const mockFiles = new Map<string, string>();
 const mockDeleted: string[] = [];
@@ -71,7 +71,7 @@ const item = (overrides: Partial<MediaItem> = {}): MediaItem => ({
   ...overrides,
 });
 const call = jest.fn(async () => ({ data: "aW1hZ2U=" }));
-const client = { call } as unknown as ApxClient;
+const client = { call } as unknown as ColoniaClient;
 
 beforeEach(() => {
   jest.clearAllMocks();

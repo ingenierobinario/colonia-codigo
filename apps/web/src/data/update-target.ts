@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import type { DesktopUpdate } from "../apx-desktop.d.ts";
+import type { Result } from "@colonia/protocol";
+import type { DesktopUpdate } from "../colonia-desktop.d.ts";
 
 /** A remote Desktop always requests one coordinated update, even when only its own release appears newer. */
 export function updateTarget(

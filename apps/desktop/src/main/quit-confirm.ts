@@ -1,19 +1,19 @@
-// Asks before APX quits: its agents' browser tabs close and, when this app runs the core, so do the crew's routines
+// Asks before Colonia quits: its agents' browser tabs close and, when this app runs the core, so do the crew's routines
 // and channels. Closing the window never asks: it only hides it.
 import { type BaseWindow, dialog } from "electron";
 
 const TEXT = {
   en: {
-    message: "Quit APX?",
+    message: "Quit Colonia?",
     tabs: "The browser tabs your agents use close.",
-    core: "Your crew stops too: routines and channels wait until you open APX again.",
+    core: "Your crew stops too: routines and channels wait until you open Colonia again.",
     quit: "Quit",
     cancel: "Cancel",
   },
   es: {
-    message: "¿Salir de APX?",
+    message: "¿Salir de Colonia?",
     tabs: "Se cierran las pestañas del navegador que usan tus agentes.",
-    core: "Tu crew también se frena: las rutinas y los canales esperan hasta que abras APX de nuevo.",
+    core: "Tu crew también se frena: las rutinas y los canales esperan hasta que abras Colonia de nuevo.",
     quit: "Salir",
     cancel: "Cancelar",
   },

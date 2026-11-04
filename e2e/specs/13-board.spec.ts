@@ -88,14 +88,14 @@ test("a widget never pinned is added from the board's +, once, and opens beside 
     .click();
 });
 
-test("the base project's files are APX's work folder, where its chats work", async ({ page }) => {
+test("the base project's files are Colonia's work folder, where its chats work", async ({ page }) => {
   await open(page);
   await page
     .getByRole("button", { name: /^Default/ })
     .first()
     .click();
   await page.getByRole("tab", { name: "Archivos" }).click();
-  await expect(page.getByText("Carpeta de trabajo de APX", { exact: true })).toBeVisible();
+  await expect(page.getByText("Carpeta de trabajo de Colonia", { exact: true })).toBeVisible();
   await expect(page.getByText("Sin carpeta en esta máquina")).toHaveCount(0);
 });
 

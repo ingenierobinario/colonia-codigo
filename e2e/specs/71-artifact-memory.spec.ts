@@ -2,20 +2,20 @@ import type { Frame, Page } from "@playwright/test";
 import { expect, open, rpc, test } from "./kit.ts";
 
 /** A kit page that keeps a reading in its store and a row per click in its database. */
-const page = (live: boolean) => `${live ? '<meta name="apx-live" content="on">' : ""}
-<script src="/_apx/kit@1.js"></script>
+const page = (live: boolean) => `${live ? '<meta name="colonia-live" content="on">' : ""}
+<script src="/_colonia/kit@1.js"></script>
 <main class="ax-page"><button id="save" class="ax-btn">Save</button><output id="out">loading</output></main>
 <script>
 const out = document.getElementById("out");
 async function show() {
-  const reading = await APX.store.get("reading");
-  const rows = await APX.db.query("SELECT n FROM marks ORDER BY n");
+  const reading = await Colonia.store.get("reading");
+  const rows = await Colonia.db.query("SELECT n FROM marks ORDER BY n");
   out.textContent = (reading ?? "none") + "|" + rows.map((r) => r.n).join(",");
 }
-APX.db.exec("CREATE TABLE IF NOT EXISTS marks (n INTEGER)").then(show);
+Colonia.db.exec("CREATE TABLE IF NOT EXISTS marks (n INTEGER)").then(show);
 document.getElementById("save").onclick = async () => {
-  await APX.store.set("reading", "r1");
-  await APX.db.exec("INSERT INTO marks (n) VALUES (?)", [7]);
+  await Colonia.store.set("reading", "r1");
+  await Colonia.db.exec("INSERT INTO marks (n) VALUES (?)", [7]);
   show();
 };
 </script>`;
@@ -126,7 +126,7 @@ test("an opened artifact keeps running as it was left while the owner goes elsew
   await expect.poll(() => frames(p).length).toBe(2);
 });
 
-test("an .apxart file is shown for what it is before it installs, pinned and with its data as the owner chooses", async ({
+test("an .coloniaart file is shown for what it is before it installs, pinned and with its data as the owner chooses", async ({
   page: p,
 }) => {
   await rpc("setup.finish", {});
@@ -144,7 +144,7 @@ test("an .apxart file is shown for what it is before it installs, pinned and wit
   const dialog = p.getByRole("dialog", { name: "Instalar un artefacto" });
   await expect(dialog.getByRole("button", { name: "Instalar", exact: true })).toBeDisabled();
   await dialog.locator('input[type="file"]').setInputFiles({
-    name: "install-me.apxart",
+    name: "install-me.coloniaart",
     mimeType: "application/octet-stream",
     buffer: Buffer.from(JSON.stringify(bundle)),
   });
@@ -184,7 +184,7 @@ async function dropFiles(p: Page, selector: string, files: { name: string; text:
     }, files);
 }
 
-test("an .apxart dropped anywhere on the window opens the install dialog with it, never as a chat attachment", async ({
+test("an .coloniaart dropped anywhere on the window opens the install dialog with it, never as a chat attachment", async ({
   page: p,
 }) => {
   await rpc("setup.finish", {});
@@ -193,7 +193,7 @@ test("an .apxart dropped anywhere on the window opens the install dialog with it
 
   await open(p);
   // On the chat's composer, which takes other files as attachments.
-  await dropFiles(p, "textarea", [{ name: "dropped.apxart", text: bundle }]);
+  await dropFiles(p, "textarea", [{ name: "dropped.coloniaart", text: bundle }]);
   const dialog = p.getByRole("dialog", { name: "Instalar un artefacto" });
   await expect(dialog.getByText("Dropped", { exact: true })).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Instalar", exact: true })).toBeEnabled();
@@ -202,10 +202,10 @@ test("an .apxart dropped anywhere on the window opens the install dialog with it
   await expect(dialog).toBeHidden();
 
   // Anywhere else too; an app or extension file says it does not install from a file yet.
-  await dropFiles(p, "body", [{ name: "tools.apxext", text: "{}" }]);
-  await expect(p.getByText(/tools\.apxext es una app o extensión de APX/)).toBeVisible();
+  await dropFiles(p, "body", [{ name: "tools.coloniaext", text: "{}" }]);
+  await expect(p.getByText(/tools\.coloniaext es una app o extensión de Colonia/)).toBeVisible();
   await expect(dialog).toBeHidden();
-  await dropFiles(p, "body", [{ name: "dropped.apxart", text: bundle }]);
+  await dropFiles(p, "body", [{ name: "dropped.coloniaart", text: bundle }]);
   await expect(dialog.getByText("Dropped", { exact: true })).toBeVisible();
 });
 

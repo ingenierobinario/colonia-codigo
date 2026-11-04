@@ -1,8 +1,8 @@
-// A newer APX: what the core says (commits on main a checkout lacks, or a newer release for a daemon installed from a
+// A newer Colonia: what the core says (commits on main a checkout lacks, or a newer release for a daemon installed from a
 // bundle, here or on a server), what the desktop app says about itself, and whether this panel is older than the one
 // the core serves now. The core updates itself and restarts; the desktop app downloads its installer and restarts.
-import type { Health, Result } from "@apx/protocol";
-import type { DesktopUpdate } from "../apx-desktop.d.ts";
+import type { Health, Result } from "@colonia/protocol";
+import type { DesktopUpdate } from "../colonia-desktop.d.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import { releaseBefore } from "./release.ts";
@@ -53,7 +53,7 @@ function ownEntry(): string | undefined {
 
 /** Called with each health answer: a different entry means the panel on disk changed. */
 export function notePanel(health: Health): void {
-  const behind = releaseBefore(health.version, import.meta.env.VITE_APX_VERSION) ? health.version : undefined;
+  const behind = releaseBefore(health.version, import.meta.env.VITE_COLONIA_VERSION) ? health.version : undefined;
   if (behind !== store.get().coreBehind) store.set({ coreBehind: behind });
   const own = ownEntry();
   if (!own || !health.panel) return;
@@ -88,11 +88,11 @@ document.addEventListener("visibilitychange", () => void recheckPanel());
 
 /** Asks the desktop app (when there is one) whether a newer one is out. */
 async function loadApp(check: boolean): Promise<void> {
-  const app = await window.apxDesktop?.updateStatus?.(check).catch(() => undefined);
+  const app = await window.coloniaDesktop?.updateStatus?.(check).catch(() => undefined);
   if (app) store.set({ app });
 }
 // Started from the app menu, or found by the app's own check: the pill and the card follow it.
-window.apxDesktop?.onUpdateStatus?.((app) => store.set({ app }));
+window.coloniaDesktop?.onUpdateStatus?.((app) => store.set({ app }));
 
 export async function loadUpdates(check = false): Promise<void> {
   void loadApp(check);
@@ -122,7 +122,7 @@ export async function applyUpdate(): Promise<void> {
 }
 
 async function applyAppUpdate(): Promise<void> {
-  const r = await window.apxDesktop?.installUpdate?.().catch((e: unknown) => ({
+  const r = await window.coloniaDesktop?.installUpdate?.().catch((e: unknown) => ({
     ok: false as const,
     error: e instanceof Error ? e.message : String(e),
   }));
@@ -140,7 +140,7 @@ async function applyBoth(): Promise<void> {
 /** The desktop app quits and opens the newer one it has ready; if it cannot, the dialog says so and can be closed. */
 export async function restartApp(): Promise<void> {
   store.set((s) => ({ open: true, target: s.target === "both" ? "both" : "app", phase: "restarting", log: "" }));
-  const desktop = window.apxDesktop;
+  const desktop = window.coloniaDesktop;
   const outcome = await restartOutcome(
     desktop?.restartToUpdate && (() => desktop.restartToUpdate?.()),
     (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
@@ -156,8 +156,8 @@ export async function restartApp(): Promise<void> {
 export function newerOf(
   status: Status | undefined,
   app: DesktopUpdate | undefined,
-  coreElsewhere = window.apxDesktop?.coreLocal === false,
-  inApp = Boolean(window.apxDesktop),
+  coreElsewhere = window.coloniaDesktop?.coreLocal === false,
+  inApp = Boolean(window.coloniaDesktop),
 ): { target: State["target"]; version?: string } | undefined {
   return updateTarget(status, app, coreElsewhere, inApp);
 }

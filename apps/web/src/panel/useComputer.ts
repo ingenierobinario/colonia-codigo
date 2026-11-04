@@ -1,4 +1,4 @@
-import type { ComputerMemoryRefusal, Result } from "@apx/protocol";
+import type { ComputerMemoryRefusal, Result } from "@colonia/protocol";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { memoryRefusal } from "../computers/refusal.ts";
 import { computersOf } from "../computers/summary.ts";

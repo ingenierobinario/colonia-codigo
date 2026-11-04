@@ -2,7 +2,7 @@
 // folder it works in, from the same `cwd` shell takes. One call per file instead of shell cat or heredocs in pieces.
 import fs from "node:fs";
 import path from "node:path";
-import type { FileChange } from "@apx/protocol";
+import type { FileChange } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import { textDiff } from "../engine/changes.ts";

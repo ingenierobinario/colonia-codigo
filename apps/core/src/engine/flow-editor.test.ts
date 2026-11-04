@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import { ColoniaClient } from "@colonia/protocol/client";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "./testkit.ts";
 
 const llm = scriptedLlm(() => say("ok"));
@@ -66,6 +66,6 @@ test("only the owner binds a chat, to a Flow of the project it names", async () 
     env.client.call("threads.flow_editor", { thread: thread.id, editor: { project: acme, flow: theirs.flow.id } }),
     /not found/i,
   );
-  const shell = new ApxClient({ url: env.core.url, actor: "agent" });
+  const shell = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(shell.call("threads.flow_editor", { thread: thread.id, editor: { project: acme } }));
 });

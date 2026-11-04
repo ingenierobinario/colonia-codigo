@@ -1,6 +1,6 @@
-import type { Device } from "@apx/protocol";
-import { pairingLink } from "@apx/protocol/client";
-import { Badge, Button, EmptyState, IconButton, Icons, Input, Skeleton } from "@apx/ui";
+import type { Device } from "@colonia/protocol";
+import { pairingLink } from "@colonia/protocol/client";
+import { Badge, Button, EmptyState, IconButton, Icons, Input, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { QrCode } from "../common/QrCode.tsx";
 import { client } from "../data/client.ts";
@@ -15,7 +15,7 @@ import { SectionHead, SubHead } from "./SectionHead.tsx";
 type Pairing = { code: string; expires_at: string; urls: string[] };
 
 /**
- * Your devices (a phone, another computer): pair one by scanning a QR with the APX app, which then talks to this core
+ * Your devices (a phone, another computer): pair one by scanning a QR with the Colonia app, which then talks to this core
  * with a token of its own; remove one and only that one stops.
  */
 export function DevicesSection() {

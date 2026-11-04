@@ -1,14 +1,14 @@
-// Usage: the topbar gauge opens a compact view of memory, CPU, disk, the VM and APX's top consumers; the full dialog
+// Usage: the topbar gauge opens a compact view of memory, CPU, disk, the VM and Colonia's top consumers; the full dialog
 // comes from it, from the account menu and, on a narrow window, from the "more" menu. The e2e core has a fake VM on.
 import { expect, open, rpc, test } from "./kit.ts";
 
-test("the topbar gauge opens memory, CPU, disk, the VM and APX's top consumers, and the full dialog from there", async ({
+test("the topbar gauge opens memory, CPU, disk, the VM and Colonia's top consumers, and the full dialog from there", async ({
   page,
 }) => {
   await rpc("setup.finish");
   await page.addInitScript(() => {
     Object.assign(window, {
-      apxDesktop: {
+      coloniaDesktop: {
         setBrowserBounds() {},
         memory: async () => ({
           total_mb: 900,
@@ -34,10 +34,10 @@ test("the topbar gauge opens memory, CPU, disk, the VM and APX's top consumers, 
 
   await summary.getByRole("button", { name: "Ver todos los recursos" }).click();
   const dialog = page.getByRole("dialog", { name: "Recursos del sistema" });
-  await expect(dialog.getByRole("heading", { name: "Procesos de APX" })).toBeVisible();
-  // The APX folder is measured in the background: its parts come on a later read.
+  await expect(dialog.getByRole("heading", { name: "Procesos de Colonia" })).toBeVisible();
+  // The Colonia folder is measured in the background: its parts come on a later read.
   await expect(dialog.getByTestId("usage-home").getByText("Bases de datos")).toBeVisible({ timeout: 15_000 });
-  await expect(dialog.getByText(/Volumen (del sistema|de la carpeta de APX)/).first()).toBeVisible();
+  await expect(dialog.getByText(/Volumen (del sistema|de la carpeta de Colonia)/).first()).toBeVisible();
   await dialog.getByRole("button", { name: "Cerrar" }).last().click();
   await expect(dialog).toHaveCount(0);
 
@@ -56,7 +56,7 @@ test("the usage dropdown has no horizontal overflow or visible scroll tracks, ev
   const summary = page.getByTestId("usage-summary");
   await expect(summary.getByRole("heading", { name: "Memoria" })).toBeVisible();
   const metrics = await summary.evaluate((element) => {
-    const popup = element.closest(".apx-popover");
+    const popup = element.closest(".colonia-popover");
     const rect = popup?.getBoundingClientRect();
     return {
       horizontal: element.scrollWidth - element.clientWidth,

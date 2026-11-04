@@ -1,9 +1,9 @@
-// When the core does not answer, the terminal is what is left: `apx doctor` finds out why from this machine (the
-// service, the core's log, the release feed) and `apx update` brings in a newer bundle without the core. Both work
+// When the core does not answer, the terminal is what is left: `colonia doctor` finds out why from this machine (the
+// service, the core's log, the release feed) and `colonia update` brings in a newer bundle without the core. Both work
 // with the core down, so they cannot go through the protocol. See HISTORY.md#cli-without-core.
 import fs from "node:fs";
 import path from "node:path";
-import { coreBundleName, type Platform, platformOf, RELEASE_FEED, type Release } from "@apx/protocol";
+import { coreBundleName, type Platform, platformOf, RELEASE_FEED, type Release } from "@colonia/protocol";
 import {
   checkReleases,
   commandRunner,
@@ -13,7 +13,7 @@ import {
 } from "../../../../packages/install/src/release.ts";
 import { themedCard as card } from "../presentation.ts";
 import { version as cliVersion } from "./admin.ts";
-import { apxHome, localConnection } from "./local.ts";
+import { coloniaHome, localConnection } from "./local.ts";
 import { lastLines, restart, serviceState } from "./service.ts";
 import { appRoot, coreMain } from "./service-files.ts";
 
@@ -35,10 +35,10 @@ export type DoctorFacts = {
 
 /** What the log says about the core's last start, when it is something known: its cause and what to do. */
 export function logCause(lines: string[], port: string): { cause: string; fix: string } | undefined {
-  const started = lines.findLastIndex((l) => l.includes("apx core listening"));
+  const started = lines.findLastIndex((l) => l.includes("colonia core listening"));
   const since = lines.slice(started + 1).join("\n");
   if (since.includes("ERR_MODULE_NOT_FOUND"))
-    return { cause: "This APX version is missing files, so its core cannot start.", fix: "update" };
+    return { cause: "This Colonia version is missing files, so its core cannot start.", fix: "update" };
   if (since.includes("EADDRINUSE"))
     return {
       cause: `Another program already uses port ${port}.`,
@@ -52,7 +52,7 @@ export function diagnose(f: DoctorFacts): { ok: boolean; lines: string[]; next: 
   const port = new URL(f.url).port || "7440";
   const installed =
     f.install.kind === "bundle"
-      ? `Installed: APX ${f.install.version ?? "(unknown version)"} in ${f.install.app}`
+      ? `Installed: Colonia ${f.install.version ?? "(unknown version)"} in ${f.install.app}`
       : f.install.kind === "checkout"
         ? "Installed: run from a source checkout"
         : "Installed: inside the desktop app";
@@ -64,15 +64,15 @@ export function diagnose(f: DoctorFacts): { ok: boolean; lines: string[]; next: 
   }[f.service];
   const update =
     f.install.kind === "bundle"
-      ? "apx update"
+      ? "colonia update"
       : f.install.kind === "checkout"
         ? "git pull && pnpm install, then start it again"
-        : `Download the newest APX app: ${f.releases}`;
-  const newer = f.latest ? [`Newer: APX ${f.latest} is out`] : [];
+        : `Download the newest Colonia app: ${f.releases}`;
+  const newer = f.latest ? [`Newer: Colonia ${f.latest} is out`] : [];
   if (f.core)
     return {
       ok: true,
-      lines: [`Core: answers on ${f.url} · APX ${f.core.version} · ${f.core.code_sha}`, installed, service, ...newer],
+      lines: [`Core: answers on ${f.url} · Colonia ${f.core.version} · ${f.core.code_sha}`, installed, service, ...newer],
       next: f.latest ? [update] : [],
     };
   const cause = f.log ? logCause(f.log, port) : undefined;
@@ -81,10 +81,10 @@ export function diagnose(f: DoctorFacts): { ok: boolean; lines: string[]; next: 
     : f.latest
       ? [update]
       : f.install.kind === "bundle" && f.service === "none"
-        ? ["apx service install"]
+        ? ["colonia service install"]
         : f.service === "stopped"
-          ? ["apx service restart"]
-          : ["Read the log: apx service logs -n 100"];
+          ? ["colonia service restart"]
+          : ["Read the log: colonia service logs -n 100"];
   return {
     ok: false,
     lines: [
@@ -115,19 +115,19 @@ export async function updateWithoutCore(o: {
   restart(): Promise<void>;
 }): Promise<string[]> {
   const release = newestFor((await checkReleases(o.feed, o.current, o.fetch)).newer, o.platform);
-  if (!release) return [`APX ${o.current} is the newest for this computer.`, "To see why the core stops: apx doctor"];
+  if (!release) return [`Colonia ${o.current} is the newest for this computer.`, "To see why the core stops: colonia doctor"];
   const done = await installRelease({ app: o.app, release, platform: o.platform, fetch: o.fetch, run: o.run });
-  if (o.service === "none") return [`APX ${release.version} is installed (${done}).`, "Start it: apx service install"];
+  if (o.service === "none") return [`Colonia ${release.version} is installed (${done}).`, "Start it: colonia service install"];
   await o.restart();
-  return [`APX ${release.version} is installed (${done}).`, "The service is starting it: apx status"];
+  return [`Colonia ${release.version} is installed (${done}).`, "The service is starting it: colonia status"];
 }
 
-const feedOf = (env: NodeJS.ProcessEnv) => env.APX_RELEASES || RELEASE_FEED;
+const feedOf = (env: NodeJS.ProcessEnv) => env.COLONIA_RELEASES || RELEASE_FEED;
 const releasesPage = (feed: string) =>
   /^https?:\/\//.test(feed) ? feed : `https://github.com/${feed}/releases/latest`;
 
 function installOf(env: NodeJS.ProcessEnv): Install {
-  if (env.APX_APP) return { kind: "bundle", app: env.APX_APP, version: currentVersion(env.APX_APP) };
+  if (env.COLONIA_APP) return { kind: "bundle", app: env.COLONIA_APP, version: currentVersion(env.COLONIA_APP) };
   return fs.existsSync(path.join(appRoot(coreMain()), ".git")) ? { kind: "checkout" } : { kind: "app" };
 }
 
@@ -154,13 +154,13 @@ async function newestOnline(feed: string, current: string, platform: Platform | 
   }
 }
 
-/** `apx doctor`: why the core does not answer here, and the one thing to run next. */
+/** `colonia doctor`: why the core does not answer here, and the one thing to run next. */
 export async function doctor(o: { json?: boolean | undefined; env?: NodeJS.ProcessEnv }): Promise<void> {
   const env = o.env ?? process.env;
   const { url } = localConnection(env);
   const install = installOf(env);
   const feed = feedOf(env);
-  const file = path.join(apxHome(env), "logs", "core.log");
+  const file = path.join(coloniaHome(env), "logs", "core.log");
   const facts: DoctorFacts = {
     url,
     install,
@@ -172,11 +172,11 @@ export async function doctor(o: { json?: boolean | undefined; env?: NodeJS.Proce
   };
   const d = diagnose(facts);
   if (o.json) console.log(JSON.stringify({ ...d, facts: { ...facts, log: undefined } }, null, 2));
-  else console.log(card("APX doctor", [...d.lines, ...d.next.map((n) => `Next: ${n}`)]));
+  else console.log(card("Colonia doctor", [...d.lines, ...d.next.map((n) => `Next: ${n}`)]));
   if (!d.ok) process.exitCode = 1;
 }
 
-/** `apx update` when the core does not answer: a bundle install updates itself; others are told how. */
+/** `colonia update` when the core does not answer: a bundle install updates itself; others are told how. */
 export async function updateOffline(o: { check?: boolean | undefined; env?: NodeJS.ProcessEnv }): Promise<void> {
   const env = o.env ?? process.env;
   const install = installOf(env);
@@ -185,20 +185,20 @@ export async function updateOffline(o: { check?: boolean | undefined; env?: Node
   if (install.kind !== "bundle" || !platform) {
     const how =
       install.kind === "checkout"
-        ? "This APX runs from a source checkout: git pull && pnpm install, then start it again."
-        : `This APX runs inside the desktop app: download the newest one from ${releasesPage(feed)}`;
-    console.log(card("APX update", ["The core does not answer, so it cannot update itself.", how]));
+        ? "This Colonia runs from a source checkout: git pull && pnpm install, then start it again."
+        : `This Colonia runs inside the desktop app: download the newest one from ${releasesPage(feed)}`;
+    console.log(card("Colonia update", ["The core does not answer, so it cannot update itself.", how]));
     return;
   }
   const current = installedVersion(install);
   if (o.check) {
     const latest = await newestOnline(feed, current, platform);
     console.log(
-      card("APX updates", [latest ? `APX ${latest} is out (this is ${current})` : `APX ${current} is the newest`]),
+      card("Colonia updates", [latest ? `Colonia ${latest} is out (this is ${current})` : `Colonia ${current} is the newest`]),
     );
     return;
   }
-  console.log(`The core does not answer: updating APX ${current} without it…`);
+  console.log(`The core does not answer: updating Colonia ${current} without it…`);
   const lines = await updateWithoutCore({
     app: install.app,
     feed,
@@ -209,5 +209,5 @@ export async function updateOffline(o: { check?: boolean | undefined; env?: Node
     service: serviceState(),
     restart,
   });
-  console.log(card("APX update", lines));
+  console.log(card("Colonia update", lines));
 }

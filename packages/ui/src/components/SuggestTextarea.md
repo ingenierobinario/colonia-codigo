@@ -8,5 +8,5 @@ variables in a shell command, slots in a prompt. Arrows choose, Enter or Tab wri
 
 ```tsx
 <SuggestTextarea value={post} onValueChange={setPost} rows={2}
-  suggestions={[{ insert: "$APX_LLM_OUTPUT", hint: "what the agent answered" }]} />
+  suggestions={[{ insert: "$COLONIA_LLM_OUTPUT", hint: "what the agent answered" }]} />
 ```

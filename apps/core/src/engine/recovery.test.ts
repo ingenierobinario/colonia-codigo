@@ -302,7 +302,7 @@ test("a turn that was already resumed is not resumed again after another restart
   }
 });
 
-test("shutting APX down mid-delegation resumes both turns on boot, and the caller does not ask again", async () => {
+test("shutting Colonia down mid-delegation resumes both turns on boot, and the caller does not ask again", async () => {
   let restarted = false;
   let scoutStarted: () => void = () => {};
   const scoutWorking = new Promise<void>((resolve) => {
@@ -312,13 +312,13 @@ test("shutting APX down mid-delegation resumes both turns on boot, and the calle
     if (system.startsWith("You are Scout")) {
       if (restarted) return say("Scout's report.");
       scoutStarted();
-      // Works until APX stops it.
+      // Works until Colonia stops it.
       return new Promise((_resolve, reject) => {
         req.signal.addEventListener("abort", () => reject(req.signal.reason));
       });
     }
     if (said.includes("<delegation_result")) return say("Scout reported back.");
-    if (said.includes("APX restarted")) return say("Still waiting on Scout.");
+    if (said.includes("Colonia restarted")) return say("Still waiting on Scout.");
     if (!afterTool) return callTool("d1", "delegate", { agent: "scout", task: "Look this up", wait_s: 60 });
     return say("Sent.");
   });

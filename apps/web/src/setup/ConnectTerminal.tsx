@@ -1,6 +1,6 @@
-import { Icons } from "@apx/ui";
+import { Icons } from "@colonia/ui";
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
-import type { SshPrompt } from "../apx-desktop.d.ts";
+import type { SshPrompt } from "../colonia-desktop.d.ts";
 import { useT } from "../i18n/index.ts";
 
 export type TermLine = { kind: "step" | "out" | "said"; text: string };

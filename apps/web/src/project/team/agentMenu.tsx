@@ -1,6 +1,6 @@
 // What can be done to an agent from its right-click menu (org chart card, list row) or its "…" button.
-import type { Agent } from "@apx/protocol";
-import { Icons, type MenuEntry } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { Icons, type MenuEntry } from "@colonia/ui";
 import type { T } from "../../i18n/index.ts";
 
 export type AgentActions = {

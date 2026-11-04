@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { ftsQuery, looksSecret } from "../domain/memories.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -34,7 +34,7 @@ let repo = "";
 let project = "";
 before(async () => {
   env = await startCore({ llm });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-mem-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-mem-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
   fs.mkdirSync(path.join(repo, ".apc"));
   fs.writeFileSync(path.join(repo, ".apc", "memory.md"), "## Notes\n- The staging server is called kestrel.\n");
@@ -121,7 +121,7 @@ test("an agent cannot remove the owner's notes nor see another agent's", async (
 
   await assert.rejects(
     env.client.call("memory.add", { text: "x", scope: "project" }),
-    (e: unknown) => e instanceof ApxError && /needs a project/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /needs a project/.test(e.message),
   );
 });
 
@@ -250,7 +250,7 @@ test("a delegated turn gets its project's and its own notes, and global ones onl
   const byWords = async (o: { query: string; limit: number }) => store.memories.list(o);
   const note = (scope: "global" | "project" | "agent", text: string, project_id?: string) =>
     store.memories.add({ scope, text, source: "owner", project_id, agent_id: scope === "agent" ? "scout" : undefined });
-  const q = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-mem-q-")));
+  const q = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-mem-q-")));
   fs.writeFileSync(path.join(q, "AGENTS.md"), "# Other\n");
   const other = (await env.client.call("projects.register", { path: q })).project.id;
   note("project", "Zebrafish billing runs on the staging cluster.", project);

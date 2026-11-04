@@ -1,5 +1,5 @@
 // The corner cards: a newer release, the Discord and a star on GitHub, one at a time, each said once per device (the
-// update card again each time APX opens, until it is updated). The core's update answer is stood in for (the sandbox never asks the release feed).
+// update card again each time Colonia opens, until it is updated). The core's update answer is stood in for (the sandbox never asks the release feed).
 import type { Route } from "@playwright/test";
 import { expect, open, test } from "./kit.ts";
 
@@ -18,21 +18,21 @@ test("one card at a time: closing one brings the next, and closed stays closed",
 
   await corner.locator('[data-card="discord"]').getByRole("button", { name: "Cerrar" }).click();
   await expect(corner.getByText("Sumate a la comunidad")).toBeHidden();
-  await expect(corner.getByText("¿Te gusta APX?")).toBeVisible();
+  await expect(corner.getByText("¿Te gusta Colonia?")).toBeVisible();
 
   await page.reload();
-  await expect(corner.getByText("¿Te gusta APX?")).toBeVisible();
+  await expect(corner.getByText("¿Te gusta Colonia?")).toBeVisible();
   await expect(corner.getByText("Sumate a la comunidad")).toBeHidden();
 
   // Acting on it is enough: the repo opens in a new tab and the card does not come back.
   const popup = page.waitForEvent("popup");
   await page.context().route("https://github.com/**", (route) => route.fulfill({ body: "ok" }));
   await corner.getByRole("button", { name: "Dar una estrella" }).click();
-  expect((await popup).url()).toContain("github.com/agentprojectcontext/apx");
+  expect((await popup).url()).toContain("github.com/ingenierobinario/colonia");
   await expect(corner).toBeHidden();
 });
 
-test("a newer release goes first, opens the update dialog, and once closed comes back when APX opens again", async ({
+test("a newer release goes first, opens the update dialog, and once closed comes back when Colonia opens again", async ({
   page,
 }) => {
   let latest = "9.1.0";
@@ -46,9 +46,9 @@ test("a newer release goes first, opens the update dialog, and once closed comes
   });
   await open(page);
   const card = page.locator('[data-card="update"]');
-  await expect(card.getByText("Salió APX 9.1.0")).toBeVisible();
+  await expect(card.getByText("Salió Colonia 9.1.0")).toBeVisible();
   await card.getByRole("button", { name: "Ver novedades" }).click();
-  const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de APX" });
+  const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de Colonia" });
   await expect(dialog.getByText("feat: a")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
@@ -57,13 +57,13 @@ test("a newer release goes first, opens the update dialog, and once closed comes
   await card.getByRole("button", { name: "Cerrar" }).click();
   await expect(card).toBeHidden();
   await expect(page.getByText("Sumate a la comunidad")).toBeVisible();
-  // An update left for later is said again the next time APX opens.
+  // An update left for later is said again the next time Colonia opens.
   await page.reload();
-  await expect(card.getByText("Salió APX 9.1.0")).toBeVisible();
+  await expect(card.getByText("Salió Colonia 9.1.0")).toBeVisible();
 
   latest = "9.2.0";
   await page.reload();
-  await expect(card.getByText("Salió APX 9.2.0")).toBeVisible();
+  await expect(card.getByText("Salió Colonia 9.2.0")).toBeVisible();
 });
 
 test("an install from before telemetry is asked once in the corner, and closing the card is a no", async ({ page }) => {
@@ -77,7 +77,7 @@ test("an install from before telemetry is asked once in the corner, and closing 
     last: null,
     preview: { tokens_in: 0, tokens_out: 0, runs: 0, projects: 1, agents: 1, channels: 0, routines: 0 },
   });
-  // The sandbox core sends nothing (APX_TELEMETRY=off): the panel is shown one that would.
+  // The sandbox core sends nothing (COLONIA_TELEMETRY=off): the panel is shown one that would.
   await page.route("**/rpc/telemetry.get", (route: Route) => route.fulfill({ json: { ok: true, result: state() } }));
   await page.route("**/rpc/telemetry.set", async (route: Route) => {
     usage = (route.request().postDataJSON() as { usage: boolean }).usage;
@@ -86,7 +86,7 @@ test("an install from before telemetry is asked once in the corner, and closing 
   });
   await open(page);
   const card = page.locator('[data-card="telemetry"]');
-  await expect(card.getByText("Ayudá a mejorar APX")).toBeVisible();
+  await expect(card.getByText("Ayudá a mejorar Colonia")).toBeVisible();
   // It says where to read what is sent before anyone answers.
   await expect(card.getByRole("link", { name: "Qué se envía" })).toHaveAttribute("href", /reference\/privacy/);
   await card.getByRole("button", { name: "Cerrar" }).click();

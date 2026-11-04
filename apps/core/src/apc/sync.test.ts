@@ -3,8 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { AGENTS_MD_LIMIT } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
+import { AGENTS_MD_LIMIT } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir } from "../testkit/platform.ts";
 
@@ -12,7 +12,7 @@ function makeProject(root: string) {
   fs.mkdirSync(path.join(root, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(
     path.join(root, ".apc", "project.json"),
-    JSON.stringify({ name: "Northwind", description: "A sample company", apx_id: "abc123def456", kind: "company" }),
+    JSON.stringify({ name: "Northwind", description: "A sample company", colonia_id: "abc123def456", kind: "company" }),
   );
   fs.writeFileSync(path.join(root, "AGENTS.md"), "# Northwind\nUse metric units.\n");
   fs.writeFileSync(
@@ -27,8 +27,8 @@ function makeProject(root: string) {
 
 test("one folder is one project: a BOM is read, a changed or unreadable project.json keeps the project", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcid-"));
-  const clone = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcidc-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcid-"));
+  const clone = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcidc-"));
   const at = async (folder: string) =>
     (await env.client.call("projects.list", {})).projects
       .filter((p) => p.path === folder)
@@ -41,8 +41,8 @@ test("one folder is one project: a BOM is read, a changed or unreadable project.
     await env.client.call("projects.register", { path: root });
     assert.deepEqual(await at(root), [["p_abc123def456", "Northwind", "company"]]);
 
-    // Another tool rewrites the apx_id: the folder keeps its project (and agents), it gets no second one.
-    fs.writeFileSync(meta, JSON.stringify({ name: "Northwind Labs", apx_id: "fedcba654321", kind: "company" }));
+    // Another tool rewrites the colonia_id: the folder keeps its project (and agents), it gets no second one.
+    fs.writeFileSync(meta, JSON.stringify({ name: "Northwind Labs", colonia_id: "fedcba654321", kind: "company" }));
     await env.client.call("projects.sync", { project: "p_abc123def456" });
     assert.deepEqual(await at(root), [["p_abc123def456", "Northwind Labs", "company"]]);
     const again = await env.client.call("projects.register", { path: root });
@@ -75,7 +75,7 @@ test("one folder is one project: a BOM is read, a changed or unreadable project.
     const listed = (await env.client.call("agents.list", {})).agents.map((a) => a.id);
     assert.ok(!listed.includes("zz9876543210-arch"), "a duplicate's agents leave with it");
 
-    // A clone with the same apx_id is its own project, and stays so once the first folder is gone.
+    // A clone with the same colonia_id is its own project, and stays so once the first folder is gone.
     makeProject(clone);
     const copy = (await env.client.call("projects.register", { path: clone })).project.id;
     assert.notEqual(copy, "p_abc123def456");
@@ -90,12 +90,12 @@ test("one folder is one project: a BOM is read, a changed or unreadable project.
   }
 });
 
-test("a project removed from APX does not take over its folder from the project now in it", async () => {
+test("a project removed from Colonia does not take over its folder from the project now in it", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcrm-"));
-  const other = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcmv-"));
-  const meta = (folder: string, apx_id: string, name: string) =>
-    fs.writeFileSync(path.join(folder, ".apc", "project.json"), JSON.stringify({ name, apx_id }));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcrm-"));
+  const other = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcmv-"));
+  const meta = (folder: string, colonia_id: string, name: string) =>
+    fs.writeFileSync(path.join(folder, ".apc", "project.json"), JSON.stringify({ name, colonia_id }));
   try {
     makeProject(root);
     await env.client.call("projects.register", { path: root });
@@ -121,7 +121,7 @@ test("a project removed from APX does not take over its folder from the project 
 
 test("an agent file saved with a BOM is edited in place, not given a second frontmatter", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcbom-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcbom-"));
   try {
     makeProject(root);
     const file = path.join(root, ".apc", "agents", "ceo.md");
@@ -146,7 +146,7 @@ test("a registered project's agents come from its files; edits and removals foll
     say(system.includes("Use metric units.") ? "saw AGENTS.md" : "no context"),
   );
   const env = await startCore({ llm });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apc-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apc-"));
   try {
     makeProject(root);
     const reg = await env.client.call("projects.register", { path: root });
@@ -160,7 +160,7 @@ test("a registered project's agents come from its files; edits and removals foll
     assert.equal(arch?.blob, "saturno");
     assert.deepEqual(arch?.model_choice, { model: "fake/fake-pro", router: true }, "v1's provider:model, routed");
 
-    // The owner picks another model in APX; the file is edited; the owner's pick survives the reindex.
+    // The owner picks another model in Colonia; the file is edited; the owner's pick survives the reindex.
     await env.client.call("agents.update", {
       agent: "abc123def456-arch",
       model_choice: { model: "fake/fake-pro", router: false },
@@ -187,9 +187,9 @@ test("a registered project's agents come from its files; edits and removals foll
     assert.deepEqual(got.messages.at(-1)?.parts, [{ type: "text", text: "saw AGENTS.md" }]);
 
     // A folder that is not an APC project is refused with a reason.
-    const empty = fs.mkdtempSync(path.join(os.tmpdir(), "apx-notapc-"));
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-notapc-"));
     const err = await env.client.call("projects.register", { path: empty }).catch((e: unknown) => e);
-    assert.ok(err instanceof ApxError && /not an APC project/.test(err.message));
+    assert.ok(err instanceof ColoniaError && /not an APC project/.test(err.message));
     await removeDir(empty);
   } finally {
     await env.core.close();
@@ -198,13 +198,13 @@ test("a registered project's agents come from its files; edits and removals foll
   }
 });
 
-test("editing from APX writes the agent's file: create, edit, rename (same id) and archive (file moved, never deleted)", async () => {
+test("editing from Colonia writes the agent's file: create, edit, rename (same id) and archive (file moved, never deleted)", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcw-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcw-"));
   try {
     makeProject(root);
     fs.appendFileSync(path.join(root, ".apc", "agents", "arch.md"), "");
-    // An unknown field another tool wrote must survive APX's edits.
+    // An unknown field another tool wrote must survive Colonia's edits.
     const archFile = path.join(root, ".apc", "agents", "arch.md");
     fs.writeFileSync(
       archFile,
@@ -265,7 +265,7 @@ test("editing from APX writes the agent's file: create, edit, rename (same id) a
 
 test("an archived agent is listed apart, comes back with its file, or is deleted for good keeping its name in old chats", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apca-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apca-"));
   try {
     makeProject(root);
     await env.client.call("projects.register", { path: root });
@@ -283,7 +283,7 @@ test("an archived agent is listed apart, comes back with its file, or is deleted
     );
     assert.equal((await env.client.call("agents.archived", {})).agents.length, 1, "every project's, without a filter");
 
-    // Back: its file returns, it is active again, with what the owner set in APX.
+    // Back: its file returns, it is active again, with what the owner set in Colonia.
     const back = await env.client.call("agents.restore", { agent: id });
     assert.equal(back.name, "Arch");
     assert.ok(fs.existsSync(path.join(root, ".apc", "agents", "arch.md")));
@@ -308,10 +308,10 @@ test("an archived agent is listed apart, comes back with its file, or is deleted
   }
 });
 
-test("review fixes: an old slug can be reused after a rename; a clone with the same apx_id is its own project; symlinks are refused", async () => {
+test("review fixes: an old slug can be reused after a rename; a clone with the same colonia_id is its own project; symlinks are refused", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcr-"));
-  const clone = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apcc-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcr-"));
+  const clone = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apcc-"));
   try {
     makeProject(root);
     await env.client.call("projects.register", { path: root });
@@ -342,7 +342,7 @@ test("review fixes: an old slug can be reused after a rename; a clone with the s
     const first = (await env.client.call("projects.list", {})).projects.find((p) => p.id === "p_abc123def456");
     assert.equal(first?.path, root, "the first folder keeps its project");
 
-    const outside = path.join(os.tmpdir(), `apx-secret-${process.pid}.md`);
+    const outside = path.join(os.tmpdir(), `colonia-secret-${process.pid}.md`);
     fs.writeFileSync(outside, "---\nname: Leak\n---\n\nsecret\n");
     fs.symlinkSync(outside, path.join(root, ".apc", "agents", "leak.md"));
     await env.client.call("projects.sync", { project: "p_abc123def456" });
@@ -359,10 +359,10 @@ test("review fixes: an old slug can be reused after a rename; a clone with the s
   }
 });
 
-test("an agent's tools and skills are set from APX: a project agent's file says them, a global agent keeps them", async () => {
+test("an agent's tools and skills are set from Colonia: a project agent's file says them, a global agent keeps them", async () => {
   const llm = scriptedLlm((req) => say(`tools: ${req.tools.map((t) => t.function.name).join(",")}`));
   const env = await startCore({ llm });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-apct-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-apct-"));
   try {
     makeProject(root);
     await env.client.call("projects.register", { path: root });
@@ -417,7 +417,7 @@ test("a long AGENTS.md reaches its agents whole, and past the safety limit says 
     return callTool(`c${pages}`, "file_read", { path: cut[1], offset: Number(cut[2]) + pages * 5, limit: 5 });
   });
   const env = await startCore({ llm });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-longmd-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-longmd-"));
   const write = (width: number) => {
     const filler = (from: number, n: number) =>
       Array.from({ length: n }, (_, i) => `Rule ${from + i}: keep the line about ${"x".repeat(width)}.`);

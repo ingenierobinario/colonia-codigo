@@ -1,12 +1,12 @@
 // The right-click menu of a picture in the chat (its grid and its viewer, chat/parts/MediaGroup.tsx).
-import { Icons, type MenuEntry } from "@apx/ui";
+import { Icons, type MenuEntry } from "@colonia/ui";
 import { notify } from "../../data/notices.ts";
 import { useT } from "../../i18n/index.ts";
 import { useLinkItems } from "../LinkMenu.tsx";
 
 /**
  * What a right-click on a picture offers: view it full size (`onView`, left out inside the viewer), open a web one where
- * a link would, save APX's own, or copy it.
+ * a link would, save Colonia's own, or copy it.
  */
 export function useImageMenu(src: string | undefined, name: string, web: boolean, onView?: () => void): MenuEntry[] {
   const t = useT();
@@ -19,7 +19,7 @@ export function useImageMenu(src: string | undefined, name: string, web: boolean
           { type: "separator" as const },
         ]
       : []),
-    // A web image opens where a link would; APX's own is a local object URL, so it is saved instead.
+    // A web image opens where a link would; Colonia's own is a local object URL, so it is saved instead.
     ...(web && /^https?:/i.test(src)
       ? linkItems
       : [{ label: t("image.save"), icon: <Icons.Download size={14} />, onSelect: () => void save(src, name) }]),

@@ -1,8 +1,8 @@
 import "../styles/setup.css";
 import "../styles/screens.css";
 import "../styles/wizard.css";
-import type { ModelChoice, ProjectKind } from "@apx/protocol";
-import { AgentAvatar, Button, IconButton, Icons } from "@apx/ui";
+import type { ModelChoice, ProjectKind } from "@colonia/protocol";
+import { AgentAvatar, Button, IconButton, Icons } from "@colonia/ui";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.png";
 import { bootstrap } from "../data/actions.ts";
@@ -185,7 +185,7 @@ export function Wizard() {
   const name = d.name.trim() || t("setup.preview.unset");
   const body: Record<Step, ReactNode> = {
     welcome: <Welcome v1={status?.v1 ?? null} agent={boss} onStart={start} />,
-    import: <ImportStep home={status?.v1?.home ?? "~/.apx"} scan={scan} draft={d} set={set} />,
+    import: <ImportStep home={status?.v1?.home ?? "~/.colonia"} scan={scan} draft={d} set={set} />,
     agent: <AgentStep draft={d} set={set} />,
     engines: <EnginesStep draft={d} set={set} />,
     memory: <MemoryStep draft={d} set={set} />,
@@ -199,7 +199,7 @@ export function Wizard() {
       <header className={`wiz__head${desktop}`}>
         <div className="wiz__brand">
           <img src={logo} alt="" width={24} height={24} />
-          <span>APX</span>
+          <span>Colonia</span>
         </div>
         <nav className="wiz__steps" aria-label={t("setup.menu")}>
           {steps.map((s, i) => (

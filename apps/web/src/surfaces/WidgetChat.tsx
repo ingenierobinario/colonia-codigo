@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { IconButton, Icons, Skeleton } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { IconButton, Icons, Skeleton } from "@colonia/ui";
 import { useEffect } from "react";
 import { ChatComposer } from "../chat/composer/ChatComposer.tsx";
 import { Transcript } from "../chat/Transcript.tsx";

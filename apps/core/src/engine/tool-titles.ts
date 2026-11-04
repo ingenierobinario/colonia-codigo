@@ -25,7 +25,7 @@ const TASK_STATE: Record<string, string> = {
   renegotiated: "renegociada",
 };
 
-/** What apx_settings changed, by the area of its method ("Cambió un canal"). */
+/** What colonia_settings changed, by the area of its method ("Cambió un canal"). */
 const SETTING_AREA: Record<string, string> = {
   email: "una firma de email",
   contacts: "un contacto",
@@ -72,12 +72,12 @@ export const SPANISH_TITLES: Record<string, (a: Args) => string> = {
         : "Revisó los límites de los agentes",
   contact_list: () => "Revisó los contactos",
   sticker_list: () => "Revisó los stickers",
-  apx_settings: (a) => {
+  colonia_settings: (a) => {
     const { act, area } = settingAct(a);
     const what = SETTING_AREA[area] ?? "la configuración";
     return act === "look" ? "Revisó la configuración" : `${act === "remove" ? "Quitó" : "Cambió"} ${what}`;
   },
-  apx_flow: (a) => {
+  colonia_flow: (a) => {
     const { act, area } = settingAct(a, FLOW_SETTINGS);
     const what = area === "tables" ? "una tabla" : "un Flow";
     return act === "look" ? "Revisó los Flows" : `${act === "remove" ? "Quitó" : "Cambió"} ${what}`;

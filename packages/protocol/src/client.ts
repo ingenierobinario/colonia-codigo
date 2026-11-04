@@ -3,7 +3,7 @@
 // It holds no zod: the core validates params and results, so a browser never downloads the schema registry.
 
 import { PROTOCOL_VERSION } from "./constants.ts";
-import type { Actor, ApxErrorShape, ClientRole, EventFrame, ServerFrame, WelcomeFrame } from "./frames.ts";
+import type { Actor, ColoniaErrorShape, ClientRole, EventFrame, ServerFrame, WelcomeFrame } from "./frames.ts";
 import type { MethodName, Params, Result } from "./methods.ts";
 import { secureRequestKey } from "./request-key.ts";
 
@@ -30,13 +30,13 @@ export {
 
 export { secureRequestKey } from "./request-key.ts";
 
-export class ApxError extends Error {
-  readonly code: ApxErrorShape["code"];
+export class ColoniaError extends Error {
+  readonly code: ColoniaErrorShape["code"];
   readonly detail: unknown;
   readonly retryable: boolean;
-  constructor(shape: ApxErrorShape) {
+  constructor(shape: ColoniaErrorShape) {
     super(shape.message);
-    this.name = "ApxError";
+    this.name = "ColoniaError";
     this.code = shape.code;
     this.detail = shape.detail;
     this.retryable = shape.retryable ?? false;
@@ -100,7 +100,7 @@ export type ClientOptions = {
   timeoutMs?: number;
   /** Native runtimes inject their secure UUID source instead of a browser crypto global. */
   requestKey?: () => string;
-  /** "agent" for clients driven by a model (e.g. `apx mcp`): they never get the human's controls. */
+  /** "agent" for clients driven by a model (e.g. `colonia mcp`): they never get the human's controls. */
   actor?: Actor;
   /** An outside app's client token (clients.create): it acts as a model, limited to its scopes. */
   clientToken?: string;
@@ -114,7 +114,7 @@ export type ClientOptions = {
  */
 export const isRepeatableRead = (method: string) => /\.(get|list|pending|status|search)$/.test(method);
 
-export class ApxClient {
+export class ColoniaClient {
   readonly #opts: Required<Omit<ClientOptions, "token" | "clientToken" | "signal">> & {
     token?: string;
     clientToken?: string;
@@ -123,7 +123,7 @@ export class ApxClient {
 
   constructor(opts: ClientOptions) {
     this.#opts = {
-      client: { name: "apx-client", version: "0.0.0" },
+      client: { name: "colonia-client", version: "0.0.0" },
       timeoutMs: 15_000,
       actor: "human",
       requestKey: secureRequestKey,
@@ -133,8 +133,8 @@ export class ApxClient {
   }
 
   /** The same client, its calls also cancelled by `signal` (a console aborting the command it is waiting on). */
-  withSignal(signal: AbortSignal): ApxClient {
-    return new ApxClient({
+  withSignal(signal: AbortSignal): ColoniaClient {
+    return new ColoniaClient({
       ...this.#opts,
       signal: this.#opts.signal ? AbortSignal.any([this.#opts.signal, signal]) : signal,
     });
@@ -144,8 +144,8 @@ export class ApxClient {
   async call<M extends MethodName>(method: M, params: Params<M>, idem?: string): Promise<Result<M>> {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (this.#opts.token) headers.authorization = `Bearer ${this.#opts.token}`;
-    if (this.#opts.actor === "agent") headers["x-apx-actor"] = "agent";
-    if (this.#opts.clientToken) headers["x-apx-client"] = this.#opts.clientToken;
+    if (this.#opts.actor === "agent") headers["x-colonia-actor"] = "agent";
+    if (this.#opts.clientToken) headers["x-colonia-client"] = this.#opts.clientToken;
     // Every call carries a key: the core uses it only for methods with effects, so the client needs no registry.
     headers["idempotency-key"] = idem ?? this.#opts.requestKey();
     const deadline = AbortSignal.timeout(clientDeadline(method, params, this.#opts.timeoutMs));
@@ -166,20 +166,20 @@ export class ApxClient {
         throw error;
       res = await fetch(url, request);
     }
-    const body = (await res.json()) as { ok: boolean; result?: unknown; error?: ApxErrorShape };
+    const body = (await res.json()) as { ok: boolean; result?: unknown; error?: ColoniaErrorShape };
     if (!body.ok || body.error) {
-      throw new ApxError(body.error ?? { code: "internal", message: `HTTP ${res.status}` });
+      throw new ColoniaError(body.error ?? { code: "internal", message: `HTTP ${res.status}` });
     }
     return body.result as Result<M>;
   }
 
   /** Opens a live socket (hello → welcome), then req/res + events over one connection. */
-  async connect(role: ClientRole = "operator", caps: string[] = []): Promise<ApxSocket> {
+  async connect(role: ClientRole = "operator", caps: string[] = []): Promise<ColoniaSocket> {
     const signal = this.#opts.signal;
     signal?.throwIfAborted();
     const token = this.#opts.token ? `?token=${encodeURIComponent(this.#opts.token)}` : "";
     const wsUrl = `${this.#opts.url.replace(/^http/, "ws")}/ws${token}`;
-    const socket = new ApxSocket(wsUrl, this.#opts.timeoutMs, this.#opts.requestKey);
+    const socket = new ColoniaSocket(wsUrl, this.#opts.timeoutMs, this.#opts.requestKey);
     const abort = () => socket.close();
     signal?.addEventListener("abort", abort, { once: true });
     try {
@@ -219,7 +219,7 @@ export type RequestHandler = (method: string, params: unknown) => Promise<unknow
 
 type Pending = { resolve: (v: unknown) => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout> };
 
-export class ApxSocket {
+export class ColoniaSocket {
   #ws: WebSocket | undefined;
   #seq = 0;
   #pending = new Map<string, Pending>();
@@ -269,7 +269,7 @@ export class ApxSocket {
           this.#pending.delete(f.id);
           clearTimeout(p.timer);
           if (f.ok) p.resolve(f.result);
-          else p.reject(new ApxError(f.error));
+          else p.reject(new ColoniaError(f.error));
         } else if (f.t === "req") {
           void this.#serve(f.id, f.method, f.params);
         } else {
@@ -288,7 +288,7 @@ export class ApxSocket {
       const timer = setTimeout(
         () => {
           this.#pending.delete(id);
-          reject(new ApxError({ code: "timeout", message: `${method} timed out` }));
+          reject(new ColoniaError({ code: "timeout", message: `${method} timed out` }));
         },
         clientDeadline(method, params, this.timeoutMs),
       );
@@ -326,7 +326,7 @@ export class ApxSocket {
         body = {
           ok: false,
           error:
-            err instanceof ApxError
+            err instanceof ColoniaError
               ? { code: err.code, message: err.message }
               : { code: "internal", message: err instanceof Error ? err.message : String(err) },
         };

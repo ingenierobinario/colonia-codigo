@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
 import { pruneTaskUploads, pruneUploads, saveUpload } from "../services/uploads.ts";
@@ -54,7 +54,7 @@ test("temporary task uploads are consumed or discarded without deleting unrelate
     assert.equal(env.core.store.media.get(abandoned.id), undefined);
     assert.equal(fs.existsSync(abandonedRow.path), false);
     assert.ok(env.core.store.media.get(asset.media_id));
-    const external = new ApxClient({ url: env.core.url, actor: "agent" });
+    const external = new ColoniaClient({ url: env.core.url, actor: "agent" });
     assert.deepEqual((await external.call("tasks.get", { task: task.id })).attachments, []);
     await assert.rejects(
       external.call("tasks.attach", { task: task.id, media_ids: [asset.media_id] }),

@@ -3,14 +3,14 @@
 import * as Location from "expo-location";
 import type { Creds } from "./creds";
 import { handlePhoneRequest, PHONE_CAPS, type PhoneDeps } from "./phoneRequests";
-import { ApxClient, type ApxSocket } from "./protocol";
+import { ColoniaClient, type ColoniaSocket } from "./protocol";
 
 const RETRY_MS = [2000, 5000, 15000, 30000];
 
 /** Keeps a node link to the core; `photo` shows the camera to the owner. Returns a stop function. */
 export function startPhoneNode(creds: Creds, photo: PhoneDeps["photo"]): () => void {
-  const client = new ApxClient({ url: creds.url, token: creds.token, client: { name: "apx-phone", version: "0.0.0" } });
-  let socket: ApxSocket | undefined;
+  const client = new ColoniaClient({ url: creds.url, token: creds.token, client: { name: "colonia-phone", version: "0.0.0" } });
+  let socket: ColoniaSocket | undefined;
   let stopped = false;
   let attempt = 0;
   let retry: ReturnType<typeof setTimeout> | undefined;

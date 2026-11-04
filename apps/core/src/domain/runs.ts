@@ -1,6 +1,6 @@
 // Runs (one agent turn each) and their tool steps. A run row is written, with its input, before anything runs:
 // the runs table is also the durable queue a restart picks up from.
-import type { HarnessId, Run, RunEndReason, RunState, RunTrigger } from "@apx/protocol";
+import type { HarnessId, Run, RunEndReason, RunState, RunTrigger } from "@colonia/protocol";
 import { sql as raw, type Selectable } from "kysely";
 import type { Bus } from "../bus.ts";
 import type { RunsTable } from "../db/schema.ts";
@@ -50,9 +50,9 @@ export type Origin =
   | { kind: "terminal"; terminal_id: string; command: string; exit_code: number | null }
   /** The owner let agents go on after a pause: with a fresh budget, or with no limit this round (DECISIONS.md#d-081). */
   | { kind: "go_on"; mode: "reset" | "release" }
-  /** The agent's task turn ended with the task still in progress: APX starts its next part (engine/task-continue.ts). */
+  /** The agent's task turn ended with the task still in progress: Colonia starts its next part (engine/task-continue.ts). */
   | { kind: "task_continue"; task_id: string; title: string; part: number; of: number }
-  /** APX found the agent's task open with nothing running on it, and asks it once to go on (engine/task-stall.ts). */
+  /** Colonia found the agent's task open with nothing running on it, and asks it once to go on (engine/task-stall.ts). */
   | { kind: "stalled_task"; task_id: string; title: string }
   /** The owner added a project or an agent: the super-agent offers to adapt it (engine/added.ts). */
   | { kind: "added"; what: "project" | "agent"; id: string; name: string }
@@ -80,11 +80,11 @@ export type Origin =
       state: RunState;
       /** Why it ended (`step_limit`: it reported progress, not a result); absent on runs older than the field. */
       end_reason?: RunEndReason;
-      /** Its calls with an effect as APX recorded them (`actionsOf`), absent on runs older than the field. */
+      /** Its calls with an effect as Colonia recorded them (`actionsOf`), absent on runs older than the field. */
       actions?: string[];
       /** The session's name, to continue it with its context. */
       session?: string;
-      /** Why APX stopped going on with it after a limit cut it short (DECISIONS.md#d-116): the owner decides. */
+      /** Why Colonia stopped going on with it after a limit cut it short (DECISIONS.md#d-116): the owner decides. */
       stopped?: string;
       /** How it went when not well (`outcomeOf`): no answer, failed actions, an error. */
       outcome?: { level: "warn" | "error"; why: string };
@@ -156,9 +156,9 @@ export type RunInput = {
   project_at_start?: { id: string; name: string };
   /** The turn's destination; null means the app. Kept across waits and restarts. */
   reply_to?: ThreadContext["reply_to"] | null;
-  /** This run picks up the turn a restart of APX cut off (that run's id); such a run is never resumed again. */
+  /** This run picks up the turn a restart of Colonia cut off (that run's id); such a run is never resumed again. */
   resume_of?: string;
-  /** A delegated run APX started to go on with one a limit cut short (that run's id); never continued again. */
+  /** A delegated run Colonia started to go on with one a limit cut short (that run's id); never continued again. */
   continues?: string;
   /** A result turn that gave no answer, tried once more (that run's id); never retried again. */
   retry_of?: string;

@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { Icons, type SelectOption } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { Icons, type SelectOption } from "@colonia/ui";
 import { type ReactElement, Suspense, useMemo } from "react";
 import { useAgentOptions } from "../common/pickers/agentOptions.tsx";
 import { inProject, isListed, realProjectId } from "../data/identity.ts";

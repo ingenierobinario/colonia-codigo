@@ -1,5 +1,5 @@
-import type { McpServerStatus, ToolApproval } from "@apx/protocol";
-import { Button, Icons, SegmentedControl } from "@apx/ui";
+import type { McpServerStatus, ToolApproval } from "@colonia/protocol";
+import { Button, Icons, SegmentedControl } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { approveMcpTool, listApprovals, mcpPermissions, revokeApproval, setMcpToolMode } from "../data/resources.ts";
 import { useData } from "../data/state.ts";

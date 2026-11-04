@@ -39,7 +39,7 @@ function site(url: string): string {
 /** A path from the chat's scratch folder or its work folder, said relative to it (Windows paths too, with `/`). */
 function place(p: string, places: Places): string {
   const n = p.replace(/\\/g, "/");
-  const scratch = n.replace(/^.*\/apx-scratch-[0-9a-f]{8}\/[^/]+(?=\/|$)/, "<scratch>");
+  const scratch = n.replace(/^.*\/colonia-scratch-[0-9a-f]{8}\/[^/]+(?=\/|$)/, "<scratch>");
   if (scratch !== n) return scratch;
   return (places.work && relativeWritten(places.work, p)) || p;
 }

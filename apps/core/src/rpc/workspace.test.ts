@@ -20,7 +20,7 @@ const git = (...args: string[]) =>
 
 before(async () => {
   env = await startCore({ llm });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-ws-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ws-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
   fs.mkdirSync(path.join(repo, "src"));
   fs.writeFileSync(path.join(repo, "src", "app.ts"), "one\ntwo\nthree\n");
@@ -51,7 +51,7 @@ test("a project chat's Changes list what is uncommitted, each file with its diff
   assert.match(d.diff, /^\+2$/m);
   assert.match((await env.client.call("files.diff", { thread, path: "notes.md" })).diff, /^\+new$/m);
   await assert.rejects(env.client.call("files.diff", { thread, path: "../outside" }), /outside the folder/);
-  // A chat with no project works in APX's work folder, not a repository.
+  // A chat with no project works in Colonia's work folder, not a repository.
   assert.equal((await env.client.call("files.changes", { thread: bare })).git, false);
 });
 
@@ -75,7 +75,7 @@ test("a terminal runs the owner's commands in the chat's folder and keeps what i
   assert.equal((await env.client.call("terminal.list", { thread })).terminals.length, 1);
   await env.client.call("terminal.close", { terminal: t.id });
   assert.equal((await env.client.call("terminal.list", { thread })).terminals.length, 0);
-  // A chat with no folder opens it where its agent runs commands: APX's work folder.
+  // A chat with no folder opens it where its agent runs commands: Colonia's work folder.
   const loose = await env.client.call("terminal.open", { thread: bare, cols: 80, rows: 24 });
   assert.equal(loose.cwd, path.join(env.home, "work"));
   await env.client.call("terminal.close", { terminal: loose.id });

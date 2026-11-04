@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Id } from "./domain.ts";
 
 /** The grant key that lets an agent use the isolated computer, for good or for one chat (DECISIONS.md#d-151). */
-export const COMPUTER_GRANT = "apx:computer";
+export const COMPUTER_GRANT = "colonia:computer";
 
 const ThreadId = z.string().min(1).max(100);
 const Thread = z.object({ thread: ThreadId }).strict();

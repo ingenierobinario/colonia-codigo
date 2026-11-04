@@ -1,4 +1,4 @@
-import { AgentAvatar, Icons } from "@apx/ui";
+import { AgentAvatar, Icons } from "@colonia/ui";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useT } from "../i18n/index.ts";
 

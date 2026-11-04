@@ -1,20 +1,20 @@
-// apx routines: an agent's scheduled work from the terminal.
+// colonia routines: an agent's scheduled work from the terminal.
 import fs from "node:fs";
-import { CallModel, type Routine, type Schedule } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import { CallModel, type Routine, type Schedule } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
-const USAGE = `apx routines                                   Routines and when they run next
-apx routines add <name> <prompt…> --agent a [--project p] (--cron "30 8 * * 1-5" | --every 60 | --at <ISO date>)
+const USAGE = `colonia routines                                   Routines and when they run next
+colonia routines add <name> <prompt…> --agent a [--project p] (--cron "30 8 * * 1-5" | --every 60 | --at <ISO date>)
                  [--pre "<command>"] [--call always|output|succeeds|fails|never] [--post "<command>"]
                  [--max-steps 5-200]           The pre-command's output reaches the prompt at {{pre_output}}
-apx routines show <routine>                    Its schedule, commands and full prompt
-apx routines edit <routine> [<prompt…> | --prompt-file f] [--name n] [--cron …|--every …|--at …]
+colonia routines show <routine>                    Its schedule, commands and full prompt
+colonia routines edit <routine> [<prompt…> | --prompt-file f] [--name n] [--cron …|--every …|--at …]
                  [--pre "<command>"] [--call …] [--post "<command>"] [--max-steps n|default]
                                                 Change only what is given
-apx routines run <routine>                     Run now
-apx routines on|off <routine>
-apx routines rm <routine>
-apx routines log <routine>                     Recent runs
+colonia routines run <routine>                     Run now
+colonia routines on|off <routine>
+colonia routines rm <routine>
+colonia routines log <routine>                     Recent runs
 <routine> is its id (rtn_…) or its name; --project narrows a name to one project's routines`;
 
 type Opts = {
@@ -101,11 +101,11 @@ export function findRoutine(list: readonly Routine[], ref: string, project?: str
     );
   const near = scoped.filter((r) => r.name.toLowerCase().includes(ref.toLowerCase())).map((r) => r.name);
   throw new Error(
-    `no routine ${ref}${project ? ` in project ${project}` : ""}${near.length ? ` (did you mean ${near.slice(0, 5).join(", ")}?)` : ""}; apx routines lists them`,
+    `no routine ${ref}${project ? ` in project ${project}` : ""}${near.length ? ` (did you mean ${near.slice(0, 5).join(", ")}?)` : ""}; colonia routines lists them`,
   );
 }
 
-export async function routines(client: ApxClient, [sub, id, ...rest]: string[], opts: Opts): Promise<void> {
+export async function routines(client: ColoniaClient, [sub, id, ...rest]: string[], opts: Opts): Promise<void> {
   const get = async (ref: string): Promise<Routine> =>
     findRoutine((await client.call("routines.list", {})).routines, ref, opts.project);
   if (sub === "help") {

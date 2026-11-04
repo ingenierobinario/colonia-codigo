@@ -60,7 +60,7 @@ for (const lang of ["en", "es"] as const) {
     await rpc("setup.finish");
     const created = await rpc<{ project: { id: string } }>("projects.create", { name: `Card ${lang}` });
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     await open(page, `#view=flows&scope=${created.project.id}`);
     await page.getByRole("button", { name: l.newFlow }).first().click();

@@ -48,7 +48,7 @@ test("a server that does not start answers its tools with why, not as a failed c
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
   const target = { scope: "global" as const, server: "missing" };
   try {
-    await env.client.call("mcp.set", { name: target.server, server: { command: "apx-no-such-command" } });
+    await env.client.call("mcp.set", { name: target.server, server: { command: "colonia-no-such-command" } });
     const { tools, error } = await env.client.call("mcp.tools", target);
     assert.deepEqual(tools, []);
     assert.match(error ?? "", /ENOENT/);

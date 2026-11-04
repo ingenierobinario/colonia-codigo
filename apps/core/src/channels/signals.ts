@@ -1,8 +1,8 @@
-// An answer that is a signal to APX, not words for the chat ("SKIP", "REACT ❤️", "STICKER a bear with a heart"): its
+// An answer that is a signal to Colonia, not words for the chat ("SKIP", "REACT ❤️", "STICKER a bear with a heart"): its
 // words leave the chat (the model log keeps them), a reaction goes on the message it answers (on the platform too when
 // that message came from there), a sticker goes out instead of words, and the chat's preview says what happened
 // instead of the signal.
-import type { ChannelInfo } from "@apx/protocol";
+import type { ChannelInfo } from "@colonia/protocol";
 import { partOfMedia } from "../domain/media.ts";
 import type { NewNotification } from "../domain/notifications.ts";
 import { OWNER_ID } from "../domain/persons.ts";

@@ -1,8 +1,8 @@
 // The stickers people sent on a channel: whether new ones are the agent's to use as they come, what each one means to
 // it (the owner may say it better), whether it may answer with it, and forgetting one. An adult one, or one no model
 // could see, always waits for the owner's OK.
-import type { Sticker } from "@apx/protocol";
-import { Badge, IconButton, Icons, Input, SettingRow, Switch } from "@apx/ui";
+import type { Sticker } from "@colonia/protocol";
+import { Badge, IconButton, Icons, Input, SettingRow, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { useMediaUrl } from "../chat/parts/useMediaUrl.ts";
 import { loadStickers, removeSticker, setSticker, setStickersAuto } from "../data/channels.ts";

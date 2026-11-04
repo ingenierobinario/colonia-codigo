@@ -1,4 +1,4 @@
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import { isChannelKind } from "../channels/kinds.ts";
 import { useChannels } from "../data/channels.ts";
 

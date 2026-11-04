@@ -1,5 +1,5 @@
 // Copies the blobos (bodies + eye boxes) from the design system into the docs, which install apart from the
-// workspace and so cannot import @apx/ui. Run again after the catalog changes: node scripts/sync-design.ts
+// workspace and so cannot import @colonia/ui. Run again after the catalog changes: node scripts/sync-design.ts
 import fs from "node:fs";
 import path from "node:path";
 import { BLOBS } from "../../../packages/ui/src/blobs/catalog.ts";

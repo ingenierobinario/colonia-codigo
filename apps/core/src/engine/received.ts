@@ -1,5 +1,5 @@
 // What the model received on a run's first call, kept for the owner's "what it received" view (runs.context).
-import type { PromptPart } from "@apx/protocol";
+import type { PromptPart } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import type { ChatItem } from "../providers/types.ts";

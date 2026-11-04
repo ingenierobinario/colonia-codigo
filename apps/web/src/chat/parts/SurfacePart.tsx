@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { Button, IconButton, Icons } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { Button, IconButton, Icons } from "@colonia/ui";
 import { useData } from "../../data/state.ts";
 import { useT } from "../../i18n/index.ts";
 import { go, useNav } from "../../shell/nav.ts";

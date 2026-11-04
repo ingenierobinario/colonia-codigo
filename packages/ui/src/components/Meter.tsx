@@ -32,10 +32,10 @@ export function Meter({ value, segments, max, label, valueText, size = "md", leg
   const total = parts.reduce((n, p) => n + Math.max(0, p.value), 0);
   const pct = (v: number) => (max > 0 ? Math.min(100, (Math.max(0, v) / max) * 100) : 0);
   return (
-    <div className={cx("apx-meter", `apx-meter--${size}`, className)}>
+    <div className={cx("colonia-meter", `colonia-meter--${size}`, className)}>
       {/* Stacked parts have no native <meter>: one image named with the whole, the legend names the parts. */}
       <div
-        className="apx-meter__track"
+        className="colonia-meter__track"
         role="img"
         aria-label={`${label}: ${valueText ?? `${Math.round(pct(total))}%`}`}
       >
@@ -43,19 +43,19 @@ export function Meter({ value, segments, max, label, valueText, size = "md", leg
           <span
             // biome-ignore lint/suspicious/noArrayIndexKey: segments are positional
             key={i}
-            className={cx("apx-meter__fill", `apx-meter__fill--${p.tone ?? "brand"}`)}
+            className={cx("colonia-meter__fill", `colonia-meter__fill--${p.tone ?? "brand"}`)}
             style={{ width: `${pct(p.value)}%` }}
           />
         ))}
       </div>
       {legend && (
-        <div className="apx-meter__legend">
+        <div className="colonia-meter__legend">
           {parts
             .filter((p) => p.label)
             .map((p, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: segments are positional
-              <span key={i} className="apx-meter__key">
-                <span className={cx("apx-meter__swatch", `apx-meter__fill--${p.tone ?? "brand"}`)} />
+              <span key={i} className="colonia-meter__key">
+                <span className={cx("colonia-meter__swatch", `colonia-meter__fill--${p.tone ?? "brand"}`)} />
                 {p.label}
               </span>
             ))}

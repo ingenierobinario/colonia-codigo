@@ -1,6 +1,6 @@
 // Replies the agent drafted for a supervised contact: one row per draft, pending until the owner sends it, edits it,
 // drops it, or a newer message of theirs gets a new draft (channels/suggestions.ts).
-import type { ContactSuggestion, SuggestionState } from "@apx/protocol";
+import type { ContactSuggestion, SuggestionState } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { SuggestionsTable } from "../db/schema.ts";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";

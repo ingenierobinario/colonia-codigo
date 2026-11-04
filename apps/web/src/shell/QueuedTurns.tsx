@@ -1,5 +1,5 @@
-import type { Job, JobFrom } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Job, JobFrom } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { elapsed } from "../common/format.ts";
 import { type T, useT } from "../i18n/index.ts";
 

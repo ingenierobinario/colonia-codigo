@@ -80,7 +80,7 @@ function WorkRow({ session, data, onPress }: { session: Thread; data: Workspace;
   // The live list knows if it is working now; the task's copy is from when the page was read.
   const chat = data.threads.find((item) => item.id === session.id) ?? session;
   const agent = data.agents.find((item) => item.id === session.agent_ids[0]);
-  const name = agent?.name ?? session.agent_ids[0] ?? "APX";
+  const name = agent?.name ?? session.agent_ids[0] ?? "Colonia";
   const working = isWorking(chat.state);
   return (
     <ListRow

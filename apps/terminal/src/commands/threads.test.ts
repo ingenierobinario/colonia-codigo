@@ -22,7 +22,7 @@ test("threads search joins the words into one query and prints each hit", async 
   const out = await printed(() => threads(client, ["search", "acme", "invoice"]));
   assert.deepEqual(calls, [["threads.search", { query: "acme invoice" }]]);
   assert.match(out, /^thr_1 .* april {6}the Acme invoice$/);
-  await assert.rejects(threads(client, ["search"]), /usage: apx threads search/);
+  await assert.rejects(threads(client, ["search"]), /usage: colonia threads search/);
 });
 
 test("threads get shows a code thread's folder and write policy, and --json prints the whole answer", async () => {
@@ -114,7 +114,7 @@ test("projects create and set send only what was given, and a wrong kind never r
   await printed(() => projects(client, ["set", "p_nw"], { autonomy: "accept_edits" }));
   await assert.rejects(projects(client, ["set", "p_nw"], { autonomy: "yolo" }), /--autonomy is one of/);
   await assert.rejects(projects(client, ["create", "X"], { kind: "shop" }), /--kind is one of/);
-  await assert.rejects(projects(client, ["set", "p_nw"], {}), /usage: apx projects set/);
+  await assert.rejects(projects(client, ["set", "p_nw"], {}), /usage: colonia projects set/);
   assert.deepEqual(calls, [
     ["projects.create", { name: "Northwind", kind: "company", description: "Wholesale client" }],
     ["projects.create", { name: "Acme site", path: path.resolve("/work/acme") }],
@@ -138,7 +138,7 @@ test("projects folders add, list and remove a read-only folder through projects.
   );
   await printed(() => projects(client, ["folders", "rm", "p_nw", "/work/v1"]));
   await assert.rejects(projects(client, ["folders", "rm", "p_nw", "/work/other"]), /not a read-only folder/);
-  await assert.rejects(projects(client, ["folders", "add", "p_nw"]), /usage: apx projects folders/);
+  await assert.rejects(projects(client, ["folders", "add", "p_nw"]), /usage: colonia projects folders/);
   assert.deepEqual(
     calls.filter(([m]) => m === "projects.update"),
     [

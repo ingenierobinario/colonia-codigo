@@ -10,14 +10,14 @@ export type PageCall = (method: string, params: Record<string, unknown>) => Prom
 export const CHECK_WAIT_MS = 2_500;
 const MAX_ERRORS = 8;
 
-/** The bridge the panel gives a page (window.apx), with calls sent to the checker and fetch/WebSocket that never answer. */
+/** The bridge the panel gives a page (window.colonia), with calls sent to the checker and fetch/WebSocket that never answer. */
 const BRIDGE = `(function(){var ST={},seq=0,calls={};
-window.__apxResult=function(id,ok,v){var c=calls[id];if(!c)return;delete calls[id];ok?c.ok(v):c.no(new Error(String(v)));};
-function call(m,p){return new Promise(function(ok,no){var id=++seq;calls[id]={ok:ok,no:no};__apxCheck(JSON.stringify({id:id,method:String(m),params:p||{}}));});}
+window.__coloniaResult=function(id,ok,v){var c=calls[id];if(!c)return;delete calls[id];ok?c.ok(v):c.no(new Error(String(v)));};
+function call(m,p){return new Promise(function(ok,no){var id=++seq;calls[id]={ok:ok,no:no};__coloniaCheck(JSON.stringify({id:id,method:String(m),params:p||{}}));});}
 var state=Object.freeze({persistent:true,patch:function(p){for(var k in p){if(p[k]==null)delete ST[k];else ST[k]=p[k];}},
 all:function(){return JSON.parse(JSON.stringify(ST));},get:function(k,d){return k in ST?ST[k]:d;},set:function(k,v){ST[k]=v;},
 remove:function(k){delete ST[k];},on:function(){return function(){};}});
-window.apx=Object.freeze({host:"apx",sendPrompt:function(){},media:function(){return new Promise(function(){});},state:state,call:call,
+window.colonia=Object.freeze({host:"colonia",sendPrompt:function(){},media:function(){return new Promise(function(){});},state:state,call:call,
 visible:function(){return true;},onVisibility:function(){return function(){};}});
 window.fetch=function(){return new Promise(function(){});};
 window.WebSocket=function(){this.send=function(){};this.close=function(){};this.addEventListener=function(){};};})();`;
@@ -84,7 +84,7 @@ export async function runPageCheck(
     }
     if (m.method === "Runtime.bindingCalled") {
       const p = m.params as { name: string; payload: string };
-      if (p.name !== "__apxCheck") return;
+      if (p.name !== "__coloniaCheck") return;
       const req = JSON.parse(p.payload) as { id: number; method: string; params: Record<string, unknown> };
       void onCall(req.method, req.params).then(
         (v) => answer(req.id, true, v),
@@ -95,7 +95,7 @@ export async function runPageCheck(
   // A call that never resolves (a fetch) simply gets no answer.
   const answer = (id: number, ok: boolean, value: unknown) => {
     if (value === undefined) return;
-    const expr = `window.__apxResult(${id},${ok},${JSON.stringify(value)})`;
+    const expr = `window.__coloniaResult(${id},${ok},${JSON.stringify(value)})`;
     void send("Runtime.evaluate", { expression: expr }).catch(() => {});
   };
   try {
@@ -103,7 +103,7 @@ export async function runPageCheck(
     await send("Page.enable");
     await send("Network.enable");
     await send("Network.setBlockedURLs", { urls: ["*"] });
-    await send("Runtime.addBinding", { name: "__apxCheck" });
+    await send("Runtime.addBinding", { name: "__coloniaCheck" });
     const { frameTree } = await send<{ frameTree: { frame: { id: string } } }>("Page.getFrameTree");
     await send("Page.setDocumentContent", { frameId: frameTree.frame.id, html: withBridge(html) });
     await new Promise((r) => setTimeout(r, waitMs));

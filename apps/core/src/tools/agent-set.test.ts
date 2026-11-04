@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { AGENT_NAMES } from "@apx/protocol";
+import { AGENT_NAMES } from "@colonia/protocol";
 import { callTool, inputsOrEnd, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 // Each owner message names the tool call the scripted model makes; the tool's result comes back as the answer.
@@ -11,7 +11,7 @@ const CALLS: Record<string, [string, object]> = {
   "hire a triager": ["agent_set", { slug: "issue-triage", role: "Issue triage" }],
   "hire a wordy one": [
     "agent_set",
-    { slug: "wordy", role: "APX GitHub issue triage: validate reports, classify and label issues, assign owners" },
+    { slug: "wordy", role: "Colonia GitHub issue triage: validate reports, classify and label issues, assign owners" },
   ],
   "hire a tester for northwind": ["agent_set", { slug: "tester", name: "Tester", project: "northwind" }],
   "hire one for nowhere": ["agent_set", { slug: "lost", name: "Lost", project: "Nowhere" }],
@@ -99,7 +99,7 @@ test("an agent is created, changed and archived only once the owner says yes", a
 
   assert.match(
     await ask("let the writer go", "superagent", "approve"),
-    /removed Northwind Writer: .*apx:settings\/agents/,
+    /removed Northwind Writer: .*colonia:settings\/agents/,
   );
   assert.equal(await agent("acme-writer"), undefined);
 });
@@ -149,7 +149,7 @@ test("the team sheet lists kind, areas and roles; an area exists only in a compa
   assert.match(await ask("show the team"), /areas: Design \(design\)\nroles: Designer; Head of design/);
 });
 
-test("a new agent with no name given gets a person's name from APX's generator, none the crew uses", async () => {
+test("a new agent with no name given gets a person's name from Colonia's generator, none the crew uses", async () => {
   const taken = (await env.client.call("agents.list", {})).agents.map((a) => a.name);
   assert.match(await ask("hire a triager", "superagent", "approve"), /created: \S+ \(id: issue-triage\)/);
   const made = await agent("issue-triage");

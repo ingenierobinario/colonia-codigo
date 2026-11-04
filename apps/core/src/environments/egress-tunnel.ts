@@ -7,7 +7,7 @@ import type { LimaRun } from "./lima-process.ts";
  * The guest end of the tunnel: a socket in a folder only the Lima user can write. The proxy's guest port belongs to
  * PID 1 from boot and relays here (security.sh), so no agent can take the port first (DECISIONS.md#d-152).
  */
-export const EGRESS_SOCKET = "/run/apx-egress/proxy.sock";
+export const EGRESS_SOCKET = "/run/colonia-egress/proxy.sock";
 
 /** The SSH command that forwards the guest's egress socket to the host's public-only proxy. */
 export const tunnelArgs = (limaHome: string, instance: string, port: number) => [

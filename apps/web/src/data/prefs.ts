@@ -1,5 +1,5 @@
 // Per-device preferences (this browser only): display name, appearance and sounds. Nothing here reaches the core.
-import type { ApxLook } from "@apx/ui";
+import type { ColoniaLook } from "@colonia/ui";
 import { defaultLanguage, isLanguage, type Language } from "../i18n/messages.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import type { NoticeSound } from "./noticeSound.ts";
@@ -17,7 +17,7 @@ export type UiFont = "system" | "mono";
 export type Prefs = {
   /** How the panel calls you (account row, greetings). Empty = not set: the UI says "You" in its language. */
   displayName: string;
-  look: ApxLook;
+  look: ColoniaLook;
   font: UiFont;
   textSize: TextSize;
   transcriptWidth: TranscriptWidth;
@@ -73,7 +73,7 @@ export const SIDEBAR_MIN_ROWS: SidebarRows = { channels: 3, projects: 5, engines
 
 export type InboxView = "tree" | "activity" | "chats";
 
-const KEY = "apx.prefs";
+const KEY = "colonia.prefs";
 
 const DEFAULTS: Prefs = {
   displayName: "",

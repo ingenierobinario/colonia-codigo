@@ -1,4 +1,4 @@
-import type { TerminalInfo } from "@apx/protocol";
+import type { TerminalInfo } from "@colonia/protocol";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
@@ -13,10 +13,10 @@ function theme(host: HTMLElement) {
   const css = getComputedStyle(host);
   const v = (name: string) => css.getPropertyValue(name).trim();
   return {
-    background: v("--apx-bg"),
-    foreground: v("--apx-fg"),
-    cursor: v("--apx-fg"),
-    selectionBackground: v("--apx-selection"),
+    background: v("--colonia-bg"),
+    foreground: v("--colonia-fg"),
+    cursor: v("--colonia-fg"),
+    selectionBackground: v("--colonia-selection"),
   };
 }
 
@@ -33,7 +33,7 @@ export default function TerminalView({ terminal }: { terminal: TerminalInfo }) {
     const term = new Terminal({
       cursorBlink: true,
       fontSize: 12,
-      fontFamily: getComputedStyle(el).getPropertyValue("--apx-font-mono").trim() || "monospace",
+      fontFamily: getComputedStyle(el).getPropertyValue("--colonia-font-mono").trim() || "monospace",
       theme: theme(el),
       scrollback: 5000,
       disableStdin: !terminal.alive,

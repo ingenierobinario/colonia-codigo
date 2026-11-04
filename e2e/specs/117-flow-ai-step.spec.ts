@@ -1,4 +1,4 @@
-// An AI model step answered by a bot of the flow (a name and how it works, on APX's harness), whose answer a command
+// An AI model step answered by a bot of the flow (a name and how it works, on Colonia's harness), whose answer a command
 // reads through values inserted with the picker: the step's answer and a secret, shown as badges. The fake model
 // answers in the sandbox core; no real model or channel is reached. FLOW_SHOTS=<folder> also saves screenshots.
 import fs from "node:fs";
@@ -21,7 +21,7 @@ const L = {
     system: "How it works",
     task: "Instruction",
     harness: "Harness",
-    apx: "APX",
+    colonia: "Colonia",
     delegate: "Can ask other agents",
     command: "Command",
     env: "Variables",
@@ -36,7 +36,7 @@ const L = {
     allowTitle: "Let this flow act for you?",
     withSecret: "With the secret flow_key",
     allow: "Allow",
-    answered: "Answered by Triage on APX",
+    answered: "Answered by Triage on Colonia",
   },
   es: {
     newFlow: "Nuevo flow",
@@ -51,7 +51,7 @@ const L = {
     system: "Cómo trabaja",
     task: "Instrucción",
     harness: "Harness",
-    apx: "APX",
+    colonia: "Colonia",
     delegate: "Puede pedirle a otros agentes",
     command: "Comando",
     env: "Variables",
@@ -66,7 +66,7 @@ const L = {
     allowTitle: "¿Dejás que este flow actúe por vos?",
     withSecret: "Con el secreto flow_key",
     allow: "Permitir",
-    answered: "Respondió Triage en APX",
+    answered: "Respondió Triage en Colonia",
   },
 };
 
@@ -91,7 +91,7 @@ for (const lang of ["en", "es"] as const) {
     await rpc("secrets.set", { name: "flow_key", value: `sk-flow-e2e-${lang}-0123456789` });
     const project = (await rpc<{ project: { id: string } }>("projects.create", { name: `AI step ${lang}` })).project.id;
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     const name = `Triage ${lang}`;
     await open(page, `#view=flows&scope=${project}`);
@@ -112,7 +112,7 @@ for (const lang of ["en", "es"] as const) {
     await editor.getByRole("textbox", { name: l.botName }).fill("Triage");
     await editor.getByRole("textbox", { name: l.system }).fill("Label each request: damage, billing or other.");
     await editor.getByRole("textbox", { name: l.task }).fill("Label this request.");
-    await expect(editor.getByRole("combobox", { name: l.harness })).toContainText(l.apx);
+    await expect(editor.getByRole("combobox", { name: l.harness })).toContainText(l.colonia);
     await shot(page, `ai-bot-${lang}`, true);
 
     await editor.getByRole("button", { name: l.add(l.cmd) }).click();
@@ -131,8 +131,8 @@ for (const lang of ["en", "es"] as const) {
     await shot(page, `picker-${lang}`);
     await page.getByRole("option", { name: /secret:\/\/flow_key/ }).click();
     await expect(env).toHaveValue("ANSWER=$steps.agent-1.text\nKEY=secret://flow_key");
-    await expect(editor.locator(".apx-tfield__chip", { hasText: "$steps.agent-1.text" })).toBeVisible();
-    await expect(editor.locator(".apx-tfield__chip.is-secret", { hasText: "secret://flow_key" })).toBeVisible();
+    await expect(editor.locator(".colonia-tfield__chip", { hasText: "$steps.agent-1.text" })).toBeVisible();
+    await expect(editor.locator(".colonia-tfield__chip.is-secret", { hasText: "secret://flow_key" })).toBeVisible();
     // The command's input is text it reads as it is: no secret is offered there.
     const stdin = editor.getByRole("textbox", { name: l.stdin });
     await stdin.click();

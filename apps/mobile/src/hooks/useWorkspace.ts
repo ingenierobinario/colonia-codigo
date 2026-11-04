@@ -7,8 +7,8 @@ import { t } from "../i18n";
 import { showLiveNotice } from "../notifications";
 import {
   type Answer,
-  ApxClient,
-  type ApxSocket,
+  ColoniaClient,
+  type ColoniaSocket,
   type CoreEvent,
   type Message,
   type NoticePrefs,
@@ -138,7 +138,7 @@ export type Routine = {
 };
 /** A channel (Telegram bot, WhatsApp line…) as the phone lists it. */
 export type Channel = { id: string; type: string; label: string; enabled: boolean; agent_id: string };
-/** Someone APX talks to on a channel; `addresses` say which channels know them. */
+/** Someone Colonia talks to on a channel; `addresses` say which channels know them. */
 export type Person = { id: string; name: string; role: string; addresses: Array<{ channel: string }> };
 /** One running or finished piece of work, as jobs.list gives it. */
 export type Job = {
@@ -196,7 +196,7 @@ export type Workspace = {
   persons: Person[];
   /** How many notes the office remembers (memory.settings), when known. */
   memories?: number;
-  /** The owner's name as set in APX ("" until loaded or when unset). */
+  /** The owner's name as set in Colonia ("" until loaded or when unset). */
   owner: string;
 };
 
@@ -218,7 +218,7 @@ export const emptyWorkspace: Workspace = {
   owner: "",
 };
 
-async function rpc<T>(client: ApxClient, method: string, params: Record<string, unknown> = {}): Promise<T> {
+async function rpc<T>(client: ColoniaClient, method: string, params: Record<string, unknown> = {}): Promise<T> {
   return (await client.call(method as never, params as never)) as T;
 }
 
@@ -226,7 +226,7 @@ const sessionTitle = (engineId: string) =>
   engineId === "claude" ? "Claude Code" : engineId === "codex" ? "Codex" : engineId;
 
 export function useWorkspace(creds: Creds) {
-  const [client] = useState(() => new ApxClient({ url: creds.url, token: creds.token, client: APP_CLIENT }));
+  const [client] = useState(() => new ColoniaClient({ url: creds.url, token: creds.token, client: APP_CLIENT }));
   const [data, setData] = useState(emptyWorkspace);
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(false);
@@ -334,7 +334,7 @@ export function useWorkspace(creds: Creds) {
   }, [loadPrimary, loadSecondary]);
 
   useEffect(() => {
-    let socket: ApxSocket | undefined;
+    let socket: ColoniaSocket | undefined;
     let stopped = false;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
     let syncTimer: ReturnType<typeof setTimeout> | undefined;
@@ -579,7 +579,7 @@ export function useWorkspace(creds: Creds) {
     },
     [client],
   );
-  /** A new project in a folder of its own inside APX's, on the computer (the phone picks no folder). */
+  /** A new project in a folder of its own inside Colonia's, on the computer (the phone picks no folder). */
   const createProject = useCallback(
     async (p: { name: string; kind?: string; description?: string }) => {
       const { project } = await rpc<{ project: Project }>(client, "projects.create", p);
@@ -667,7 +667,7 @@ export function useWorkspace(creds: Creds) {
     [client],
   );
 
-  /** What `apx status` tells about the core, plus how many devices are paired. */
+  /** What `colonia status` tells about the core, plus how many devices are paired. */
   const serverInfo = useCallback(async () => {
     const [health, devices] = await Promise.all([
       rpc<Health>(client, "system.health", {}),

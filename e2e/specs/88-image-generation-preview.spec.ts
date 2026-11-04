@@ -70,7 +70,7 @@ test("image generation shows inline cubes, real single/multiple results, and cle
       await page.getByRole("button", { name: "Enviar", exact: true }).click();
       await expect(preview).toBeVisible();
       await expect(preview.locator("i")).toHaveCount(25);
-      expect(await preview.evaluate((el) => el.closest(".apx-msg"))).toBeNull();
+      expect(await preview.evaluate((el) => el.closest(".colonia-msg"))).toBeNull();
       await expect
         .poll(() => ({ pending: pending.length, requests }), { message: `Image request for ${scenario}` })
         .toEqual({ pending: 1, requests: expect.any(Array) });

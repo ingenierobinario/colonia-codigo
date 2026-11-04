@@ -78,9 +78,9 @@ test("one already connected gets no card: the agent is told to use it", async ()
   assert.equal(card, undefined);
 });
 
-test("nothing APX connects: no card, and the agent hears so", async () => {
+test("nothing Colonia connects: no card, and the agent hears so", async () => {
   const { answer, card } = await ask("fax it");
-  assert.match(answer, /Nothing APX connects matches/);
+  assert.match(answer, /Nothing Colonia connects matches/);
   assert.equal(card, undefined);
 });
 

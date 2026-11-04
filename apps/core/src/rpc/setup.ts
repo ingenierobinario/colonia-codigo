@@ -1,4 +1,4 @@
-// The first-run setup: whether it is done, whether this install is new, and what APX v1 left on this machine.
+// The first-run setup: whether it is done, whether this install is new, and what Colonia v1 left on this machine.
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -26,7 +26,7 @@ const run: Run = async (cmd, args) => {
     };
   }
 };
-/** This checkout's command (apps/terminal): where `pnpm link --global` makes `apx` this APX. */
+/** This checkout's command (apps/terminal): where `pnpm link --global` makes `colonia` this Colonia. */
 const TERMINAL = path.resolve(import.meta.dirname, "../../../terminal");
 
 const readJson = (file: string): Record<string, unknown> | undefined => {
@@ -39,10 +39,10 @@ const readJson = (file: string): Record<string, unknown> | undefined => {
 };
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
 
-/** A folder as the owner knows it: ~/.apx rather than the whole path. */
+/** A folder as the owner knows it: ~/.colonia rather than the whole path. */
 const shownPath = (p: string) => (p.startsWith(os.homedir()) ? `~${p.slice(os.homedir().length)}` : p);
 
-/** APX v1 on this machine: its folder has a config.json. Only names and counts come back, never its settings. */
+/** Colonia v1 on this machine: its folder has a config.json. Only names and counts come back, never its settings. */
 export function findV1(home: string) {
   const config = readJson(path.join(home, "config.json"));
   if (!config) return null;
@@ -79,7 +79,7 @@ export function setupHandlers(deps: V1ImportDeps & { v1Url?: string }) {
       ...(fs.existsSync(TERMINAL) ? { terminal: TERMINAL } : {}),
     }),
     "setup.take_over_cli": async () => {
-      if (!fs.existsSync(TERMINAL)) return { ok: false, detail: "this APX has no terminal to link" };
+      if (!fs.existsSync(TERMINAL)) return { ok: false, detail: "this Colonia has no terminal to link" };
       const electron = Boolean(process.versions.electron);
       return takeOverV1({
         platform: process.platform,

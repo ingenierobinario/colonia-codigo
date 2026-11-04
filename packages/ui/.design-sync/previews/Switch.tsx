@@ -1,4 +1,4 @@
-import { ApxProvider, Switch } from "@apx/ui";
+import { ColoniaProvider, Switch } from "@colonia/ui";
 
 const col = { width: 360, display: "flex", flexDirection: "column" as const, gap: 14 };
 
@@ -25,11 +25,11 @@ export function Bare() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 392 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 392 }}>
       <div style={col}>
         <Switch label="Responder con voz" defaultChecked />
         <Switch label="Horario silencioso" />
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

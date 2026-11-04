@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -13,8 +13,8 @@ const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3
 
 test("a widget loads its project's media it names, and nothing else", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-surface-media-")));
-  const other = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-surface-media-other-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-surface-media-")));
+  const other = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-surface-media-other-")));
   try {
     fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
     fs.writeFileSync(path.join(other, "AGENTS.md"), "# Northwind\n");
@@ -33,9 +33,9 @@ test("a widget loads its project's media it names, and nothing else", async () =
     const own = (await upload(chat.id)).media.id;
     const foreign = (await upload(elsewhere.id)).media.id;
 
-    const html = `<video data-apx-src="clips/reel.mp4"></video><img data-apx-src="cover.png">
-      <img data-apx-src="media:${own}"><img data-apx-src="media:${foreign}"><a href="notes.md">notes.md</a>
-      <img data-apx-src="brief.pdf"><img data-apx-src="../outside.png"><img data-apx-src="missing.png">`;
+    const html = `<video data-colonia-src="clips/reel.mp4"></video><img data-colonia-src="cover.png">
+      <img data-colonia-src="media:${own}"><img data-colonia-src="media:${foreign}"><a href="notes.md">notes.md</a>
+      <img data-colonia-src="brief.pdf"><img data-colonia-src="../outside.png"><img data-colonia-src="missing.png">`;
     const w = await env.client.call("surfaces.show", { name: "reel", title: "Reel", html, thread: chat.id });
     const media = (ref: string) => env.client.call("surfaces.media", { surface: w.id, ref });
 
@@ -54,7 +54,7 @@ test("a widget loads its project's media it names, and nothing else", async () =
     await assert.rejects(media("AGENTS.md"), /not in the widget/);
 
     // It is the panel's call: an agent reads files with its own tools, under its own checks.
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(agent.call("surfaces.media", { surface: w.id, ref: "cover.png" }));
   } finally {
     await env.core.close();

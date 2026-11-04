@@ -4,7 +4,7 @@
 // output and no credentials in their environment.
 import fs from "node:fs";
 import path from "node:path";
-import type { CallModel, Routine } from "@apx/protocol";
+import type { CallModel, Routine } from "@colonia/protocol";
 import { quietNow } from "../domain/notices.ts";
 import type { RunRecord } from "../domain/runs.ts";
 import { freshSignals, signalLines, watchSignals } from "../domain/signals.ts";
@@ -255,11 +255,11 @@ export function routinePipeline(o: { store: Store; home: string; routine: Routin
         "routine.post",
         routine.post_command,
         {
-          APX_LLM_OUTPUT: text.slice(-STEP_OUTPUT_CHARS),
-          APX_STATUS: skipped ? "skipped" : done.state,
-          APX_SKIPPED: skipped ? "1" : "0",
-          APX_PRE_OUTPUT: pre?.output ?? "",
-          APX_PRE_EXIT: String(pre?.exit ?? ""),
+          COLONIA_LLM_OUTPUT: text.slice(-STEP_OUTPUT_CHARS),
+          COLONIA_STATUS: skipped ? "skipped" : done.state,
+          COLONIA_SKIPPED: skipped ? "1" : "0",
+          COLONIA_PRE_OUTPUT: pre?.output ?? "",
+          COLONIA_PRE_EXIT: String(pre?.exit ?? ""),
         },
         AbortSignal.timeout(limitMs),
       );

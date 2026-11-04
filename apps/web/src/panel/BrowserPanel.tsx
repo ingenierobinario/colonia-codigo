@@ -1,6 +1,6 @@
 import "../styles/browser-panel.css";
-import type { TabInfo } from "@apx/protocol";
-import { BrowserTabs, EmptyState, IconButton, Icons, Menu, type MenuEntry } from "@apx/ui";
+import type { TabInfo } from "@colonia/protocol";
+import { BrowserTabs, EmptyState, IconButton, Icons, Menu, type MenuEntry } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserClose, loadTabs } from "../data/actions.ts";
@@ -78,7 +78,7 @@ export function BrowserPanel() {
   );
 }
 
-/** Where else to see the page: APX's own window, the system's default browser or an installed one. */
+/** Where else to see the page: Colonia's own window, the system's default browser or an installed one. */
 function OpenMenu({ tab }: { tab: TabInfo }) {
   const t = useT();
   const browsers = useInstalledBrowsers();

@@ -1,5 +1,5 @@
-import type { Thread } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Thread } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { routineName } from "../data/identity.ts";

@@ -9,7 +9,7 @@ import { removeDir } from "../testkit/platform.ts";
 
 test("unregister keeps files and history, stops queued watchers, and registering restores the same project", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-project-remove-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-project-remove-"));
   try {
     fs.writeFileSync(path.join(root, "AGENTS.md"), "# Acme\n");
     const { project } = await env.client.call("projects.register", { path: root });
@@ -49,9 +49,9 @@ test("unregister keeps files and history, stops queued watchers, and registering
   }
 });
 
-test("a project is created with a name and kind: without a folder in APX's home, or in a folder, named or not", async () => {
+test("a project is created with a name and kind: without a folder in Colonia's home, or in a folder, named or not", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-project-create-")));
+  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-project-create-")));
   try {
     const a = await env.client.call("projects.create", { name: "Ventas Q4 · Acme", kind: "company" });
     assert.equal(a.project.name, "Ventas Q4 · Acme");
@@ -84,7 +84,7 @@ test("a project is created with a name and kind: without a folder in APX's home,
 
 test("register with init writes only what is missing, never over a file, and again is the same project", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-project-init-")));
+  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-project-init-")));
   try {
     const plain = path.join(outside, "northwind");
     fs.mkdirSync(plain);

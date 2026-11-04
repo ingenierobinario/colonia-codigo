@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import { chatDescendants } from "./process-scope.ts";
 
 const thread = (id: string, parent_id?: string): Thread => ({

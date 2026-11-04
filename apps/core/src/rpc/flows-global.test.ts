@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { tempDir } from "../testkit/platform.ts";
 
@@ -46,7 +46,7 @@ test("global Flow listing keeps project filters, fixed project ownership and hum
     await assert.rejects(env.client.call("flows.set", draft("northwind", second)), /another project/);
     assert.equal(env.core.store.flows.get("northwind")?.projectId, first);
     const external = await env.client.call("clients.create", { name: "Acme", scopes: ["chat"] });
-    const outsider = new ApxClient({ url: env.core.url, clientToken: external.token });
+    const outsider = new ColoniaClient({ url: env.core.url, clientToken: external.token });
     await assert.rejects(outsider.call("flows.list", {}), /outside/);
     await assert.rejects(outsider.call("flows.list", { project: first }), /outside/);
     assert.equal(llm.calls.length, 0);

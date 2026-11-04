@@ -10,10 +10,10 @@ import sys
 import tempfile
 import uuid
 from pathlib import Path
-from apx_vm_session import desktop_environment
+from colonia_vm_session import desktop_environment
 
 home = Path(pwd.getpwuid(os.getuid()).pw_dir)
-state = home / ".local/state/apx-vm/commands"
+state = home / ".local/state/colonia-vm/commands"
 state.mkdir(parents=True, exist_ok=True, mode=0o700)
 operation = str(uuid.UUID(sys.argv[2])) if len(sys.argv) > 2 else str(uuid.uuid4())
 record = state / operation
@@ -43,7 +43,7 @@ if sys.argv[1] == "--cancel":
 
 command = base64.b64decode(sys.argv[1], validate=True).decode("utf-8")
 os.chdir(home / "work")
-transcript = str(home / "work/.apx-terminal.log")
+transcript = str(home / "work/.colonia-terminal.log")
 if os.path.exists(transcript) and os.path.getsize(transcript) > 2 * 1024 * 1024:
     open(transcript, "w").close()
 with open(transcript, "a") as screen:

@@ -30,7 +30,7 @@ export type FakeNextcloud = {
 };
 
 export async function fakeNextcloud(): Promise<FakeNextcloud> {
-  const USER = "apxbot";
+  const USER = "coloniabot";
   const PASSWORD = "Abcde-Fghij-Klmno-Pqrst-Uvwxy";
   const rooms = new Map<string, { type: number; displayName: string }>();
   const messages: Message[] = [];
@@ -58,7 +58,7 @@ export async function fakeNextcloud(): Promise<FakeNextcloud> {
     const auth = `Basic ${Buffer.from(`${USER}:${PASSWORD}`).toString("base64")}`;
     if (req.headers.authorization !== auth || req.headers["ocs-apirequest"] !== "true")
       return ocs(res, 401, { message: "Unauthorized" });
-    if (p === "/ocs/v2.php/cloud/user") return ocs(res, 200, { id: USER, displayname: "APX" });
+    if (p === "/ocs/v2.php/cloud/user") return ocs(res, 200, { id: USER, displayname: "Colonia" });
     if (p === "/ocs/v2.php/apps/spreed/api/v4/room")
       return ocs(
         res,
@@ -123,7 +123,7 @@ export async function fakeNextcloud(): Promise<FakeNextcloud> {
         messageType: opts.system ? "system" : "comment",
         systemMessage: opts.system ? "call_started" : "",
         timestamp: Math.floor(Date.now() / 1000),
-        messageParameters: opts.mention ? { "mention-user1": { type: "user", id: USER, name: "APX" } } : [],
+        messageParameters: opts.mention ? { "mention-user1": { type: "user", id: USER, name: "Colonia" } } : [],
       });
       for (const w of [...waiting]) w();
       return id;

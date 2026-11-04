@@ -69,7 +69,7 @@ const shots = process.env.FLOW_SHOTS;
 /** Dark or light as the panel draws it: the mode is chosen once at start, so the look switches in place. */
 async function setMode(page: Page, mode: "dark" | "light") {
   await page.evaluate((m) => {
-    for (const el of document.querySelectorAll("[data-apx-mode]")) el.setAttribute("data-apx-mode", m);
+    for (const el of document.querySelectorAll("[data-colonia-mode]")) el.setAttribute("data-colonia-mode", m);
   }, mode);
   // Fields ease into their new colors; wait until none is still moving.
   await page.evaluate(() =>
@@ -107,7 +107,7 @@ async function lostFields(side: Locator) {
       return "";
     };
     const fields = root.querySelectorAll(
-      ".apx-field:not(.fe-item__name), .apx-tfield__mirror, .apx-textarea:not(.apx-tfield__input)",
+      ".colonia-field:not(.fe-item__name), .colonia-tfield__mirror, .colonia-textarea:not(.colonia-tfield__input)",
     );
     return [...fields].flatMap((el) => {
       const s = getComputedStyle(el);
@@ -130,9 +130,9 @@ for (const lang of ["en", "es"] as const) {
     ])
       await rpc("agents.create", { project_id: project, slug: `${slug}-${lang}`, name, role });
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
-    await page.addInitScript(() => localStorage.setItem("apx.mode", "dark"));
+    await page.addInitScript(() => localStorage.setItem("colonia.mode", "dark"));
     const name = `Leads ${lang}`;
     await open(page, `#view=flows&scope=${project}`);
     await page.getByRole("button", { name: l.newFlow }).first().click();
@@ -175,7 +175,7 @@ for (const lang of ["en", "es"] as const) {
     await value.pressSequentially("secret://");
     await page.getByRole("option", { name: /flow_key/ }).click();
     await expect(value).toHaveValue("secret://flow_key");
-    await expect(side.locator(".apx-tfield__chip.is-secret", { hasText: "secret://flow_key" })).toBeVisible();
+    await expect(side.locator(".colonia-tfield__chip.is-secret", { hasText: "secret://flow_key" })).toBeVisible();
     await shot(page, `vars-secret-${lang}`);
     await value.click();
     await editor.getByRole("button", { name: l.pick }).first().click();

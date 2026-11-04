@@ -1,6 +1,6 @@
 // The tools a turn may use: the agent's, narrowed by its callers, its chat (a contact's, the computer, a phone chat)
 // and what is turned on; MCP's join behind the bridge on first use, and never in a contact's turn.
-import { BROWSER_CAP } from "@apx/protocol";
+import { BROWSER_CAP } from "@colonia/protocol";
 import { memorySettings } from "../domain/memory-settings.ts";
 import { answersChecked, type Origin } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
@@ -36,8 +36,8 @@ const HANDOFF_TOOLS = new Set([
   "channel_list",
   "contact_list",
   STICKER_TOOL,
-  "apx_settings",
-  "apx_flow",
+  "colonia_settings",
+  "colonia_flow",
   "read_chat",
 ]);
 
@@ -92,7 +92,7 @@ export function channelKindOf(store: Store, o: Origin, replyChannel?: string | n
 
 const VM_BROWSER_TOOLS = new Set(["browser_open", "browser_snapshot", "browser_text", "browser_click", "browser_type"]);
 /**
- * Host tools a chat on the computer keeps: they read nothing of the Mac's files or screen. APX's own work (tasks,
+ * Host tools a chat on the computer keeps: they read nothing of the Mac's files or screen. Colonia's own work (tasks,
  * delegation, memory) and web look-ups run in the core as they do elsewhere (DECISIONS.md#d-154).
  */
 const VM_HOST_TOOLS = new Set([

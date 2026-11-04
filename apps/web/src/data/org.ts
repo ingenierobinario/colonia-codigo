@@ -1,5 +1,5 @@
 // A project's areas and roles (org.get / org.set), per project; the base project's under its nav id.
-import type { Organization } from "@apx/protocol";
+import type { Organization } from "@colonia/protocol";
 import { useEffect } from "react";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";

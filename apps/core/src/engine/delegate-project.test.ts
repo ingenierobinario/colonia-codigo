@@ -25,7 +25,7 @@ after(async () => {
 });
 
 const register = async (name: string) => {
-  const dir = realpath(fs.mkdtempSync(path.join(os.tmpdir(), `apx-${name}-`)));
+  const dir = realpath(fs.mkdtempSync(path.join(os.tmpdir(), `colonia-${name}-`)));
   fs.writeFileSync(path.join(dir, "AGENTS.md"), `# ${name}\n`);
   return { dir, id: (await env.client.call("projects.register", { path: dir, init: true })).project.id };
 };

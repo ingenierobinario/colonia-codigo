@@ -1,19 +1,19 @@
 // Text with placeholders for messages, HTTP headers and bodies, SQL parameters and a command's environment and input:
 // `$trigger.a.b` reads the payload, `$steps.<step>.a.b` an earlier step's output, `$vars.name` a variable,
-// `$apx.project|now|run` what APX knows of the run, `$$` is a dollar sign. Each placeholder is an ordinary binding, so validation, ancestors and redaction are the same as for any
+// `$colonia.project|now|run` what Colonia knows of the run, `$$` is a dollar sign. Each placeholder is an ordinary binding, so validation, ancestors and redaction are the same as for any
 // step's input; nothing is evaluated.
-import type { FlowBinding } from "@apx/protocol/flow-graph";
+import type { FlowBinding } from "@colonia/protocol/flow-graph";
 import type { FlowVarIndex } from "./flow-expr.ts";
 
-/** What APX knows of a run: its project's name, when the step ran (ISO) and the run's id. */
-export const FLOW_APX = ["project", "now", "run"] as const;
-export type FlowApx = Record<(typeof FLOW_APX)[number], string>;
+/** What Colonia knows of a run: its project's name, when the step ran (ISO) and the run's id. */
+export const FLOW_Colonia = ["project", "now", "run"] as const;
+export type FlowColonia = Record<(typeof FLOW_Colonia)[number], string>;
 export type FlowTemplatePart =
   | { text: string }
   | { binding: FlowBinding; source: string }
-  | { apx: keyof FlowApx; source: string };
+  | { colonia: keyof FlowColonia; source: string };
 
-const PLACEHOLDER = /\$\$|\$(trigger|steps|vars|apx)((?:\.[A-Za-z0-9_-]+)*)/g;
+const PLACEHOLDER = /\$\$|\$(trigger|steps|vars|colonia)((?:\.[A-Za-z0-9_-]+)*)/g;
 const MAX_PLACEHOLDERS = 32;
 const FORBIDDEN = new Set(["__proto__", "constructor", "prototype"]);
 
@@ -34,13 +34,13 @@ export function parseFlowTemplate(template: string, vars: FlowVarIndex = new Map
       continue;
     }
     const path = (m[2] ?? "").split(".").filter(Boolean);
-    if (m[1] === "apx") {
-      const name = FLOW_APX.find((n) => n === path[0]);
-      if (!name || path.length !== 1) throw new Error("Flow template names no APX value");
+    if (m[1] === "colonia") {
+      const name = FLOW_Colonia.find((n) => n === path[0]);
+      if (!name || path.length !== 1) throw new Error("Flow template names no Colonia value");
       if (++count > MAX_PLACEHOLDERS) throw new Error("Flow template has too many placeholders");
       if (text) parts.push({ text });
       text = "";
-      parts.push({ apx: name, source: m[0] });
+      parts.push({ colonia: name, source: m[0] });
       continue;
     }
     if (path.length > 17 || path.some((s) => FORBIDDEN.has(s) || s.length > 128))
@@ -94,8 +94,8 @@ export function renderFlowTemplate(
     missing?: "throw" | "empty";
     literal?: (text: string) => string;
     bound?: (text: string) => string;
-    /** APX's own values for `$apx.…`; absent, they come out empty. */
-    apx?: FlowApx | undefined;
+    /** Colonia's own values for `$colonia.…`; absent, they come out empty. */
+    colonia?: FlowColonia | undefined;
   } = {},
 ): { text: string; empty: boolean } {
   let text = "";
@@ -106,8 +106,8 @@ export function renderFlowTemplate(
       text += o.literal ? o.literal(part.text) : part.text;
       continue;
     }
-    if ("apx" in part) {
-      text += o.bound ? o.bound(o.apx?.[part.apx] ?? "") : (o.apx?.[part.apx] ?? "");
+    if ("colonia" in part) {
+      text += o.bound ? o.bound(o.colonia?.[part.colonia] ?? "") : (o.colonia?.[part.colonia] ?? "");
       continue;
     }
     placeholders++;

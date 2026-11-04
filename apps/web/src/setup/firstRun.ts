@@ -1,4 +1,4 @@
-// The desktop app opens the panel with ?welcome=installed right after its first run: the setup's welcome says APX is
+// The desktop app opens the panel with ?welcome=installed right after its first run: the setup's welcome says Colonia is
 // installed. Read once, then dropped from the address so a reload or a later setup does not say it again.
 const query = new URLSearchParams(window.location.search);
 

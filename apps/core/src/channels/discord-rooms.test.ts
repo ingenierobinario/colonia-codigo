@@ -304,7 +304,7 @@ test("from the app the owner tells the agent what to post in a room: it goes out
   const input = String(llm.calls.at(-1)?.messages.at(-1)?.content);
   assert.match(
     input,
-    /<owner_instruction>\nthank ana for the issues\n<\/owner_instruction>\nYour owner wrote this in the APX app/,
+    /<owner_instruction>\nthank ana for the issues\n<\/owner_instruction>\nYour owner wrote this in the Colonia app/,
   );
   assert.equal(input.match(/<owner_instruction>/g)?.length, 1, "framed once");
 
@@ -321,7 +321,7 @@ test("from the app the owner tells the agent what to post in a room: it goes out
   assert.match(talk, /your owner: @ana could you look at the issues\?/);
   assert.match(talk, /your owner: @ana see you at the release/);
   assert.doesNotMatch(talk, /thank ana for the issues/);
-  assert.match(next, /earlier words to you from the APX app[^\n]*\n- thank ana for the issues\n/);
+  assert.match(next, /earlier words to you from the Colonia app[^\n]*\n- thank ana for the issues\n/);
 });
 
 test("a member's turn in a room pings nobody, even someone who wrote there", async () => {

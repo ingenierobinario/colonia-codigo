@@ -1,5 +1,5 @@
-import { FLOW_OTHERWISE, type FlowCase, flowBranches, flowCases, flowCompareAlone } from "@apx/protocol/flow-cases";
-import { flowGraphGaps } from "@apx/protocol/flow-complete";
+import { FLOW_OTHERWISE, type FlowCase, flowBranches, flowCases, flowCompareAlone } from "@colonia/protocol/flow-cases";
+import { flowGraphGaps } from "@colonia/protocol/flow-complete";
 import {
   type FlowBinding,
   type FlowDraftGraph,
@@ -7,7 +7,7 @@ import {
   type FlowGraphIssue,
   type FlowNode,
   FlowNode as FlowNodeSchema,
-} from "@apx/protocol/flow-graph";
+} from "@colonia/protocol/flow-graph";
 import { FlowExprError, type FlowVarIndex, flowExprBindings, parseFlowExpr } from "./flow-expr.ts";
 import { flowHttpUrlProblem } from "./flow-http-url.ts";
 import {
@@ -36,7 +36,7 @@ export function flowVarIndex(graph: Pick<FlowGraph, "nodes">): Map<string, strin
 /** A run starts at its one trigger: a POST or a schedule. */
 export const isFlowTrigger = (node: FlowNode): boolean => node.kind === "webhook" || node.kind === "schedule";
 
-/** Steps that act outside APX: a message sent as the owner, a request to another service. */
+/** Steps that act outside Colonia: a message sent as the owner, a request to another service. */
 export const isFlowOutward = (node: FlowNode): boolean => node.kind === "notify" || node.kind === "http";
 /** Steps that change things on this computer: a command, a write to a database. */
 export const isFlowLocalEffect = (node: FlowNode): boolean =>
@@ -47,9 +47,9 @@ const PROCESS_LIMIT = 8;
 
 /** Environment variables a step may not set: they change what the shell runs or where it looks. */
 export const FLOW_ENV_REFUSED =
-  /^(PATH|HOME|SHELL|IFS|ENV|BASH_ENV|BASH_FUNC_.*|CDPATH|PS[0-9]|PROMPT_COMMAND|SHELLOPTS|BASHOPTS|GLOBIGNORE|HISTFILE|ZDOTDIR|TMPDIR|TMP|TEMP|USER|LOGNAME|LANG|LANGUAGE|LC_[A-Z_]*|TERM|EDITOR|VISUAL|PAGER|COMSPEC|PATHEXT|SYSTEMROOT|WINDIR|(GIT|SSH|LD|DYLD|NODE|NPM|PNPM|YARN|PYTHON|PERL|RUBY|GEM|BUNDLE|CURL|PIP|APX|DOCKER|KUBE|AWS|GOOGLE|AZURE)[A-Z0-9_]*|USERPROFILE|HOMEDRIVE|HOMEPATH|APPDATA|LOCALAPPDATA|PROGRAMDATA|PROGRAMFILES.*|PSMODULEPATH|[A-Z0-9_]*PROXY|[A-Z0-9_]*PATH|[A-Z0-9_]*_HOME|[A-Z0-9_]*OPTIONS?|[A-Z0-9_]*OPTS|[A-Z0-9_]*RC)$/i;
+  /^(PATH|HOME|SHELL|IFS|ENV|BASH_ENV|BASH_FUNC_.*|CDPATH|PS[0-9]|PROMPT_COMMAND|SHELLOPTS|BASHOPTS|GLOBIGNORE|HISTFILE|ZDOTDIR|TMPDIR|TMP|TEMP|USER|LOGNAME|LANG|LANGUAGE|LC_[A-Z_]*|TERM|EDITOR|VISUAL|PAGER|COMSPEC|PATHEXT|SYSTEMROOT|WINDIR|(GIT|SSH|LD|DYLD|NODE|NPM|PNPM|YARN|PYTHON|PERL|RUBY|GEM|BUNDLE|CURL|PIP|Colonia|DOCKER|KUBE|AWS|GOOGLE|AZURE)[A-Z0-9_]*|USERPROFILE|HOMEDRIVE|HOMEPATH|APPDATA|LOCALAPPDATA|PROGRAMDATA|PROGRAMFILES.*|PSMODULEPATH|[A-Z0-9_]*PROXY|[A-Z0-9_]*PATH|[A-Z0-9_]*_HOME|[A-Z0-9_]*OPTIONS?|[A-Z0-9_]*OPTS|[A-Z0-9_]*RC)$/i;
 /** A placeholder written into a command's text: it would never be filled (values go in its environment or input). */
-const IN_COMMAND = /\$(trigger|steps|vars|apx)\b/;
+const IN_COMMAND = /\$(trigger|steps|vars|colonia)\b/;
 
 /** The templates of a step, where its placeholders are. */
 export function flowNodeTemplates(node: FlowNode): string[] {

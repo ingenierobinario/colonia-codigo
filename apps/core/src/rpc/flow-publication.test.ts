@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import { ColoniaError } from "@colonia/protocol/client";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const graphs: FlowGraph[] = [
@@ -76,7 +76,7 @@ test("HTTP and WS publish each drawing as a new revision without touching legacy
           assert.equal(published.publishedRevision, (revision ?? 0) + 1);
           assert.equal(published.draft, null);
           await assert.rejects(client.call("flows.publish", params), (error: unknown) => {
-            assert.ok(error instanceof ApxError);
+            assert.ok(error instanceof ColoniaError);
             assert.equal(error.code, "conflict");
             return true;
           });

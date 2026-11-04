@@ -11,7 +11,7 @@ export function openDb(home: string, env: NodeJS.ProcessEnv = process.env): Db {
   if (env.NODE_TEST_CONTEXT && (at === defaultHome() || at === legacyHome())) {
     throw new Error(`refusing to open the real ${at} from a test run; pass a temp home`);
   }
-  const db = new DatabaseSync(path.join(home, "apx.db"));
+  const db = new DatabaseSync(path.join(home, "colonia.db"));
   db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
   migrate(db);
   return db;

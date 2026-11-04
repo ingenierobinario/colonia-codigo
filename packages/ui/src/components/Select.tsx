@@ -2,7 +2,7 @@ import { Select as BaseSelect } from "@base-ui/react/select";
 import { Check, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { cx } from "../cx";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 
 export interface SelectOption {
   value: string;
@@ -46,23 +46,23 @@ export function Select({
   disabled,
   className,
 }: SelectProps) {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   const current = options.find((o) => o.value === value);
   const groups = [...new Set(options.map((o) => o.group ?? ""))];
   const item = (o: SelectOption) => (
-    <BaseSelect.Item key={o.value} value={o.value} disabled={o.disabled} className="apx-menu__item apx-select__item">
-      {o.icon && <span className="apx-select__icon">{o.icon}</span>}
+    <BaseSelect.Item key={o.value} value={o.value} disabled={o.disabled} className="colonia-menu__item colonia-select__item">
+      {o.icon && <span className="colonia-select__icon">{o.icon}</span>}
       {o.description ? (
-        <span className="apx-select__lines">
-          <BaseSelect.ItemText className="apx-menu__text">{o.label}</BaseSelect.ItemText>
-          <span className="apx-select__desc">{o.description}</span>
+        <span className="colonia-select__lines">
+          <BaseSelect.ItemText className="colonia-menu__text">{o.label}</BaseSelect.ItemText>
+          <span className="colonia-select__desc">{o.description}</span>
         </span>
       ) : (
-        <BaseSelect.ItemText className="apx-menu__text">{o.label}</BaseSelect.ItemText>
+        <BaseSelect.ItemText className="colonia-menu__text">{o.label}</BaseSelect.ItemText>
       )}
-      {o.hint && <span className="apx-select__hint">{o.hint}</span>}
-      {o.trailing && <span className="apx-select__trailing">{o.trailing}</span>}
-      <BaseSelect.ItemIndicator className="apx-select__check">
+      {o.hint && <span className="colonia-select__hint">{o.hint}</span>}
+      {o.trailing && <span className="colonia-select__trailing">{o.trailing}</span>}
+      <BaseSelect.ItemIndicator className="colonia-select__check">
         <Check size={14} />
       </BaseSelect.ItemIndicator>
     </BaseSelect.Item>
@@ -76,23 +76,23 @@ export function Select({
     >
       <BaseSelect.Trigger
         aria-label={label}
-        className={cx("apx-field", `apx-field--${size}`, "apx-select", disabled && "is-disabled", className)}
+        className={cx("colonia-field", `colonia-field--${size}`, "colonia-select", disabled && "is-disabled", className)}
       >
-        {current?.icon && <span className="apx-select__icon">{current.icon}</span>}
-        <BaseSelect.Value className={cx("apx-select__value", !current && "is-placeholder")} placeholder={placeholder}>
+        {current?.icon && <span className="colonia-select__icon">{current.icon}</span>}
+        <BaseSelect.Value className={cx("colonia-select__value", !current && "is-placeholder")} placeholder={placeholder}>
           {() => current?.label ?? placeholder}
         </BaseSelect.Value>
-        <BaseSelect.Icon className="apx-select__chevron">
+        <BaseSelect.Icon className="colonia-select__chevron">
           <ChevronDown size={14} />
         </BaseSelect.Icon>
       </BaseSelect.Trigger>
       <BaseSelect.Portal container={portalRef}>
-        <BaseSelect.Positioner sideOffset={6} alignItemWithTrigger={false} className="apx-select__positioner">
-          <BaseSelect.Popup className="apx-menu apx-select__popup">
+        <BaseSelect.Positioner sideOffset={6} alignItemWithTrigger={false} className="colonia-select__positioner">
+          <BaseSelect.Popup className="colonia-menu colonia-select__popup">
             {groups.map((g) =>
               g ? (
                 <BaseSelect.Group key={g}>
-                  <BaseSelect.GroupLabel className="apx-menu__label">{g}</BaseSelect.GroupLabel>
+                  <BaseSelect.GroupLabel className="colonia-menu__label">{g}</BaseSelect.GroupLabel>
                   {options.filter((o) => o.group === g).map(item)}
                 </BaseSelect.Group>
               ) : (

@@ -2,7 +2,7 @@
 // once. Each step goes through its checkpoint, so it runs once; a step whose effect is uncertain is left for the owner,
 // never repeated. Nothing here polls: receipts, management changes, a run ending, startup and deadlines wake it.
 import { createHash } from "node:crypto";
-import type { FlowBinding, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowBinding, FlowNode } from "@colonia/protocol/flow-graph";
 import { type FlowGraphRun, type FlowStepKey, flowUncertainWhy } from "./domain/flow-graph-runs.ts";
 import {
   conditionBranch,
@@ -24,7 +24,7 @@ import type { Store } from "./domain/store.ts";
 import type { RunTimers } from "./engine/engine.ts";
 import { answerOf } from "./engine/run-outcome.ts";
 import { planFlowAiStep } from "./flow-ai-step.ts";
-import { createOutwardSteps, type FlowHttpDeps, type FlowNotifier, flowApx } from "./flow-outward-steps.ts";
+import { createOutwardSteps, type FlowHttpDeps, type FlowNotifier, flowColonia } from "./flow-outward-steps.ts";
 import { createWorkSteps } from "./flow-work-steps.ts";
 import type { Log } from "./log.ts";
 import type { Llm } from "./providers/llm.ts";
@@ -91,7 +91,7 @@ export type FlowGraphExecutorDeps = {
   timers?: RunTimers | undefined;
   notifier?: FlowNotifier | undefined;
   http?: FlowHttpDeps | undefined;
-  /** APX's folder: where a project without a folder of its own runs its commands. */
+  /** Colonia's folder: where a project without a folder of its own runs its commands. */
   home?: string | undefined;
   /** A step of a run started or ended, or the run ended: an open screen follows it live. */
   moved?: ((flow: string, event: string) => void) | undefined;
@@ -333,7 +333,7 @@ export function createFlowGraphExecutor(deps: FlowGraphExecutorDeps) {
     const k = keyOf(run, node.id);
     const at = now();
     const snapshots = snapshotsOf(run);
-    // Steps that act outside APX build their own input from templates (flow-outward-steps.ts).
+    // Steps that act outside Colonia build their own input from templates (flow-outward-steps.ts).
     if (node.kind === "notify") {
       await outward.notify(run, node, k, snapshots);
       return true;
@@ -352,13 +352,13 @@ export function createFlowGraphExecutor(deps: FlowGraphExecutorDeps) {
     const reads = {
       resolve: (b: FlowBinding) => resolveFlowInput(b, run.payload, snapshots),
       vars: flowVarIndex(run.graph),
-      // A check's comparison may read APX's own values (`$apx.now`).
-      ...(node.kind === "condition" ? { apx: flowApx(store, run, at) } : {}),
+      // A check's comparison may read Colonia's own values (`$colonia.now`).
+      ...(node.kind === "condition" ? { colonia: flowColonia(store, run, at) } : {}),
     };
     // A row's key may name what arrived (`$trigger.email`): filled now, a missing value fails the step.
     const rowKey = (key: string) =>
       renderFlowTemplate(parseFlowTemplate(key, reads.vars), reads.resolve, {
-        apx: flowApx(store, run, at),
+        colonia: flowColonia(store, run, at),
       }).text.trim();
     const table = node.kind === "table_read" || node.kind === "table_write" ? node.table : undefined;
     let input: unknown;
@@ -377,7 +377,7 @@ export function createFlowGraphExecutor(deps: FlowGraphExecutorDeps) {
                   ...(table ? { table } : {}),
                   key: rowKey(node.key),
                   value: node.columns
-                    ? flowRowCells(node.columns, reads, flowApx(store, run, at))
+                    ? flowRowCells(node.columns, reads, flowColonia(store, run, at))
                     : resolveFlowInput(node.value ?? { kind: "event", path: [] }, run.payload, snapshots),
                 }
               : node.kind === "vars"

@@ -1,5 +1,5 @@
 // The attention tray (notifications.*), kept current by notification.updated events.
-import type { Notification } from "@apx/protocol";
+import type { Notification } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";

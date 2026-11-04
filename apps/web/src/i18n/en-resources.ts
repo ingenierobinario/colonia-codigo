@@ -65,7 +65,7 @@ export const enResources = {
     "Only {name}'s own: values stored for this project, and names its own servers ask for.",
   "res.engines.note": "Showing those in {list}; a dimmed tag is a copy agents do not use.",
   "res.appReadOnly": "It lives in {app}'s skills folder: change it there, or copy it into Colonia to edit it here.",
-  "res.copyToApx": "Copy to Colonia",
+  "res.copyToColonia": "Copy to Colonia",
   "res.skill.create": "Create",
   "res.skill.import": "Import",
   "res.import.from": "From",
@@ -108,7 +108,7 @@ export const enResources = {
   "res.source": "Source",
   "res.discard": "Discard",
   "res.extensionReadOnly": "It comes from an extension: read only. Save a copy in a project to change it there.",
-  "res.apxSkillNote":
+  "res.coloniaSkillNote":
     "It comes with Colonia and teaches agents how to change Colonia itself: always on, read only, and updated with Colonia.",
   "res.saveWhere": "Where does the change go?",
   "res.saveWhereBody":
@@ -237,9 +237,9 @@ export const enResources = {
     "a .mjs that runs apart, watches events and can add context to your turns; it cannot call Colonia.",
   "ext.guide.install": "Installing it",
   "ext.guide.step1":
-    "Make the folder with its apx-extension.json (there is an example in examples/extensions/ of the Colonia repo).",
+    "Make the folder with its colonia-extension.json (there is an example in examples/extensions/ of the Colonia repo).",
   "ext.guide.step2":
-    "Here, Install: paste the folder's path, Inspect and Install (or apx extensions install <folder>).",
+    "Here, Install: paste the folder's path, Inspect and Install (or colonia extensions install <folder>).",
   "ext.guide.step3": "It arrives off: fill in its variables and turn it on.",
   "ext.guide.safety":
     "Turning it on approves exactly the files it had: if one changes, it turns off until you approve it again.",
@@ -291,11 +291,11 @@ export const enResources = {
   "int.formNote": "Tokens and keys are stored securely; agents use them through its server and never see them.",
   "int.oauthNote":
     "Use an OAuth client of your own from Google Cloud Console: type Desktop app, or Web application with the address below as an authorized redirect URI. One client serves Calendar, Gmail and Drive.",
-  "int.clientApx": "Colonia sign-in",
+  "int.clientColonia": "Colonia sign-in",
   "int.clientOwn": "My own OAuth client",
-  "int.apxNote":
+  "int.coloniaNote":
     "Sign in with your Google account: no setup in Google Cloud. Colonia asks only for what this integration needs, and the access stays on this computer. You can remove it any time at myaccount.google.com/permissions.",
-  "int.clientApxLimited": "Colonia sign-in (limited)",
+  "int.clientColoniaLimited": "Colonia sign-in (limited)",
   "int.ownNote":
     "Your own OAuth client reaches all of Gmail and Drive. Create it once in Google Cloud (about 5 minutes) and upload its JSON here; it serves Calendar, Gmail and Drive.",
   "int.guide.project": "Create a project in Google Cloud.",
@@ -309,9 +309,9 @@ export const enResources = {
   "int.ownSaved": "Your own OAuth client is saved: just sign in.",
   "int.ownSavedFor": "You already connected {names} with your own OAuth client: just sign in.",
   "int.alsoLabel": "Connect these too, with the same sign-in",
-  "int.apxLimit.gmail":
+  "int.coloniaLimit.gmail":
     "With Colonia's sign-in, agents can send mail from your Gmail, always with your OK, but not read it. To read mail, connect it in Channels › Email or use your own OAuth client.",
-  "int.apxLimit.drive":
+  "int.coloniaLimit.drive":
     "With Colonia's sign-in, agents reach only the Docs they write. To find and read the rest of your Drive, use your own OAuth client.",
   "int.pasteLabel": "Signing in from another device?",
   "int.pasteHint":

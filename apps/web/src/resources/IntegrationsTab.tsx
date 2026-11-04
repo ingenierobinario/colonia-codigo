@@ -1,4 +1,4 @@
-import type { McpServerStatus, Result } from "@apx/protocol";
+import type { McpServerStatus, Result } from "@colonia/protocol";
 import {
   Badge,
   Button,
@@ -14,7 +14,7 @@ import {
   ProjectTile,
   SegmentedControl,
   Switch,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmailSignatures } from "../config/EmailSignatures.tsx";
 import { client } from "../data/client.ts";

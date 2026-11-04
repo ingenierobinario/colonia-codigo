@@ -1,6 +1,6 @@
-import type { SurfaceState } from "@apx/protocol";
-import { SURFACE_STATE_MAX, secureRequestKey } from "@apx/protocol/client";
-import { EmptyState, Icons, Skeleton, useApx } from "@apx/ui";
+import type { SurfaceState } from "@colonia/protocol";
+import { SURFACE_STATE_MAX, secureRequestKey } from "@colonia/protocol/client";
+import { EmptyState, Icons, Skeleton, useColonia } from "@colonia/ui";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { declaresLive } from "../../../../packages/surfaces/src/kit.ts";
 import type { SurfaceLayout } from "../../../../packages/surfaces/src/widget-kit.ts";
@@ -34,7 +34,7 @@ export type SurfaceFrameProps = {
 };
 
 /**
- * A surface where it is shown. An opened app, or a page that declares apx-live, is laid over this spot from the shell's
+ * A surface where it is shown. An opened app, or a page that declares colonia-live, is laid over this spot from the shell's
  * live layer, so it keeps running while hidden; any other is mounted here and destroyed with it.
  */
 export function SurfaceFrame(props: SurfaceFrameProps) {
@@ -46,7 +46,7 @@ export function SurfaceFrame(props: SurfaceFrameProps) {
 }
 
 export type FrameViewProps = SurfaceFrameProps & {
-  /** Whether the owner can see it now; a live page hidden by the shell is told so (APX.live pauses). */
+  /** Whether the owner can see it now; a live page hidden by the shell is told so (Colonia.live pauses). */
   visible?: boolean;
   /** The iframe's height as laid out, for a placeholder that reserves its space. */
   onHeight?: (height: number) => void;
@@ -54,7 +54,7 @@ export type FrameViewProps = SurfaceFrameProps & {
 
 /**
  * Renders a surface's HTML in a sandboxed iframe (scripts and in-page forms, opaque origin), themed with the current
- * --apx-* tokens. The widget talks back through postMessage: its height, window.apx.sendPrompt() and its bridge calls.
+ * --colonia-* tokens. The widget talks back through postMessage: its height, window.colonia.sendPrompt() and its bridge calls.
  */
 export function FrameView({
   surfaceId,
@@ -67,7 +67,7 @@ export function FrameView({
   const summary = useData((s) => s.surfaces[surfaceId]);
   const doc = useData((s) => s.surfaceDocs[surfaceId]);
   const layout: SurfaceLayout = (summary?.app ?? doc?.app) ? "app" : "widget";
-  const { mode } = useApx();
+  const { mode } = useColonia();
   const wrap = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const [theme, setTheme] = useState<string>();
@@ -100,7 +100,7 @@ export function FrameView({
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || e.origin !== "null") return;
       const m = e.data as {
-        apx?: unknown;
+        colonia?: unknown;
         kind?: unknown;
         height?: unknown;
         text?: unknown;
@@ -110,11 +110,11 @@ export function FrameView({
         method?: unknown;
         params?: unknown;
       };
-      if (!m || m.apx !== nonce) return;
+      if (!m || m.colonia !== nonce) return;
       if (m.kind === "call" && typeof m.id === "number") {
         const target = e.source as Window;
         const answer = (r: { ok: true; value: unknown } | { ok: false; error: string }) =>
-          target.postMessage({ apx: nonce, kind: "result", id: m.id, ...r }, "*");
+          target.postMessage({ colonia: nonce, kind: "result", id: m.id, ...r }, "*");
         const req = bridgeCall(m.method, m.params, surfaceId);
         if (!req) return answer({ ok: false, error: "not allowed" });
         if (inFlight.current >= CALLS_MAX) return answer({ ok: false, error: "too many calls at once" });
@@ -133,7 +133,7 @@ export function FrameView({
       if (m.kind === "media" && typeof m.id === "number" && typeof m.ref === "string" && version !== undefined) {
         const target = e.source as Window;
         const reply = (r: { data: ArrayBuffer; mime: string } | { error: string }) =>
-          target.postMessage({ apx: nonce, kind: "media", id: m.id, ...r }, "*", "data" in r ? [r.data] : []);
+          target.postMessage({ colonia: nonce, kind: "media", id: m.id, ...r }, "*", "data" in r ? [r.data] : []);
         asked.current.add(m.ref);
         if (asked.current.size > MEDIA_MAX) return reply({ error: "too many media files" });
         // Each frame gets its own copy: the bytes are moved into it, never shared.
@@ -187,7 +187,7 @@ export function FrameView({
 
   // What it remembers, changed elsewhere (its agent, another open copy), reaches the running page without a reload.
   useEffect(() => {
-    if (remembered) frame.current?.contentWindow?.postMessage({ apx: nonce, kind: "state", state: remembered }, "*");
+    if (remembered) frame.current?.contentWindow?.postMessage({ colonia: nonce, kind: "state", state: remembered }, "*");
   }, [remembered, nonce]);
 
   // The state is read when the frame is built, never a reason to rebuild it.
@@ -205,7 +205,7 @@ export function FrameView({
   useEffect(() => onHeightRef.current?.(frameHeight), [frameHeight]);
 
   useEffect(() => {
-    frame.current?.contentWindow?.postMessage({ apx: nonce, kind: "visibility", visible }, "*");
+    frame.current?.contentWindow?.postMessage({ colonia: nonce, kind: "visibility", visible }, "*");
   }, [visible, nonce]);
 
   return (
@@ -218,14 +218,14 @@ export function FrameView({
           ref={frame}
           title={summary?.title ?? t("panel.widget")}
           // The desktop app finds artifact frames by this name to count their memory in Advanced.
-          name={`apx-artifact:${summary?.title ?? surfaceId}`}
+          name={`colonia-artifact:${summary?.title ?? surfaceId}`}
           // Forms fire their submit event for the page's own script; the CSP's form-action lets none leave.
           sandbox="allow-scripts allow-forms"
           srcDoc={srcdoc}
           className="surfaceframe__iframe"
           onLoad={() =>
             frame.current?.contentWindow?.postMessage(
-              { apx: nonce, kind: "visibility", visible: visibleRef.current },
+              { colonia: nonce, kind: "visibility", visible: visibleRef.current },
               "*",
             )
           }

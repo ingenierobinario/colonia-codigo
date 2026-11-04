@@ -1,7 +1,7 @@
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import type { ReactElement } from "react";
 import { cx } from "../cx";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 import { MenuEntries, type MenuEntry } from "./menuEntries";
 
 export type { MenuEntry };
@@ -29,13 +29,13 @@ export function Menu({
   onOpenChange,
   className,
 }: MenuProps) {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   return (
     <BaseMenu.Root defaultOpen={defaultOpen} modal={false} onOpenChange={(open) => onOpenChange?.(open)}>
       <BaseMenu.Trigger render={trigger} />
       <BaseMenu.Portal container={portalRef}>
         <BaseMenu.Positioner side={side} align={align} sideOffset={6}>
-          <BaseMenu.Popup className={cx("apx-menu", className)}>
+          <BaseMenu.Popup className={cx("colonia-menu", className)}>
             <MenuEntries items={items} portal={portalRef} />
           </BaseMenu.Popup>
         </BaseMenu.Positioner>

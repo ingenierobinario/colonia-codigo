@@ -1,5 +1,5 @@
 // Synced from packages/ui/src/channel-marks.ts by scripts/sync-design-assets.mjs.
-// Official marks of the chat apps APX connects to, used only to say which app a channel is (never altered).
+// Official marks of the chat apps Colonia connects to, used only to say which app a channel is (never altered).
 // Path data from simple-icons 16.35.0 (CC0; Slack from an earlier release, which no longer carries it); Microsoft
 // Teams' 2025 icon and Google Chat's 2026 icon are drawn whole (gradients) from thesvg.org; the marks belong to their owners. `color` null draws in the text colour (a black mark would vanish on the
 // dark theme). Flat paths where possible: these ship in the first load.

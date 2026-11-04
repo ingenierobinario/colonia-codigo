@@ -1,5 +1,5 @@
-import type { CatalogEngine, ModelRef } from "@apx/protocol";
-import { Select, type SelectOption } from "@apx/ui";
+import type { CatalogEngine, ModelRef } from "@colonia/protocol";
+import { Select, type SelectOption } from "@colonia/ui";
 import { baseRef, effortLabel, modelOf, splitRef, useModels, withEffort } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 

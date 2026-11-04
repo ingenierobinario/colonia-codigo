@@ -1,4 +1,4 @@
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import {
   Badge,
   Button,
@@ -12,7 +12,7 @@ import {
   Skeleton,
   Switch,
   Textarea,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { client } from "../data/client.ts";
 import { useFlowDraft } from "../data/flowDrafts.ts";

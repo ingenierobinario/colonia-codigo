@@ -1,5 +1,5 @@
-import type { Memory, Result } from "@apx/protocol";
-import { Button } from "@apx/ui";
+import type { Memory, Result } from "@colonia/protocol";
+import { Button } from "@colonia/ui";
 import { useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

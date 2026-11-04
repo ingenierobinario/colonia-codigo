@@ -1,5 +1,5 @@
-// The core's log file, <home>/logs/core.log, however APX runs (desktop app, service, pnpm dev), and reading its tail
-// for the panel and `apx logs`. See DECISIONS.md#d-084
+// The core's log file, <home>/logs/core.log, however Colonia runs (desktop app, service, pnpm dev), and reading its tail
+// for the panel and `colonia logs`. See DECISIONS.md#d-084
 import fs from "node:fs";
 import path from "node:path";
 

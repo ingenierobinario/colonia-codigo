@@ -36,9 +36,9 @@ before(async () => {
     },
   });
   const v1 = path.join(env.home, "v1");
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-v1repo-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-v1repo-")));
   json(path.join(repo, "AGENTS.md"), "# Acme\n");
-  json(path.join(repo, ".apc", "project.json"), { name: "Acme", apx_id: "abc123def456" });
+  json(path.join(repo, ".apc", "project.json"), { name: "Acme", colonia_id: "abc123def456" });
   json(path.join(repo, ".apc", "agents", "dev.md"), "---\nname: Dev\nrole: developer\n---\nYou build.\n");
   json(path.join(v1, "config.json"), {
     projects: [{ path: repo }, { path: "/nowhere/gone" }],
@@ -217,7 +217,7 @@ before(async () => {
         schedule: "30 8 * * 1-5",
         spec: { agent: "dev", prompt: "Brief me" },
         pre_commands: ["acme check"],
-        post_commands: ['apx telegram send "$APX_LLM_OUTPUT"', "acme log done"],
+        post_commands: ['colonia telegram send "$COLONIA_LLM_OUTPUT"', "acme log done"],
         skip_prompt_on: "pre_failure",
         enabled: true,
       },

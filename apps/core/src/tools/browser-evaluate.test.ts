@@ -64,7 +64,7 @@ test("browser JavaScript always retains approval, validates source, and wraps ob
 });
 
 test("local JavaScript approves and executes one immutable source snapshot under normal folder rules", async () => {
-  const dir = tempDir("apx-js-");
+  const dir = tempDir("colonia-js-");
   try {
     const { tool, ctx, calls } = fixture(dir.path);
     const vm = browserEvaluateTool({} as Store, dir.path, async (_ctx, tab) => tab, { hasThread: () => true });

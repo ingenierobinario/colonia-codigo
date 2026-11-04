@@ -9,7 +9,7 @@
 export const PICK = {
   /** At or above: named, with its one-line description, for the agent to load. */
   hint: 2.2,
-  /** Under this raw similarity a skill is not named, however far above its floor: skills about APX itself reach 0.5. */
+  /** Under this raw similarity a skill is not named, however far above its floor: skills about Colonia itself reach 0.5. */
   suggest: 0.5,
   /** At or above this raw similarity a named skill is recommended strongly; the agent still decides. */
   strong: 0.65,
@@ -22,7 +22,7 @@ export const PICK = {
   keep: 5,
 } as const;
 
-/** What a prompt about nothing looks like, in both languages APX speaks: each skill's floor is measured on these. */
+/** What a prompt about nothing looks like, in both languages Colonia speaks: each skill's floor is measured on these. */
 export const BASELINE = [
   "hola, como va todo",
   "necesito que me ayudes con una cosa",

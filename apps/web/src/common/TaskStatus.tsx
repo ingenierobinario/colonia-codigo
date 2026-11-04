@@ -1,4 +1,4 @@
-import { Badge, Tooltip } from "@apx/ui";
+import { Badge, Tooltip } from "@colonia/ui";
 import { type ReactElement, useEffect } from "react";
 import { ensureTask, useTasks } from "../data/tasks.ts";
 import { useT } from "../i18n/index.ts";

@@ -3,7 +3,7 @@
 // model a capped copy.
 import path from "node:path";
 
-import type { MethodName, Params, Result, Thread } from "@apx/protocol";
+import type { MethodName, Params, Result, Thread } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import { type ApprovalTarget, strictApproval } from "../domain/approvals.ts";
 import type { InputRecord } from "../domain/inputs.ts";
@@ -141,8 +141,8 @@ export function createExecutor(o: {
   jobs: Jobs;
   /** Work in progress the turn waits on: its idle deadline is held until the returned function is called. */
   busy?: (() => () => void) | undefined;
-  /** APX's own port: a command that reaches it always asks. */
-  apxPort: () => number;
+  /** Colonia's own port: a command that reaches it always asks. */
+  coloniaPort: () => number;
   /** Where an outside agent works (harnessDir): its tools are checked against this folder. */
   workDir: string;
   /** How the agent acts and how far its files reach: asked for each call, never worked out here. */
@@ -546,7 +546,7 @@ export function createExecutor(o: {
     if (READING.has(kind)) return inside ? "never" : "ask";
     // Fetching sends something out; in a code thread it could carry the code with it.
     if (kind === "fetch") return worksInFolder(thread) ? "ask" : "untrusted";
-    if (kind === "execute" && typeof command === "string") return commandRisk(command, o.apxPort());
+    if (kind === "execute" && typeof command === "string") return commandRisk(command, o.coloniaPort());
     // APC files and AGENTS.md define agents and their modes: changing them is high impact, as file_write's.
     if (paths.some((p) => namesApc(p) || guarded(o.workDir, p))) return "always";
     return "ask";
@@ -554,7 +554,7 @@ export function createExecutor(o: {
 
   /**
    * An external agent's own tool, judged by the same folder rule and reach as ours: what it reads must be readable and
-   * what it changes changeable; outside those the owner is asked, and only a read-only folder or APX's own is refused.
+   * what it changes changeable; outside those the owner is asked, and only a read-only folder or Colonia's own is refused.
    */
   const approve: TurnIO["approve"] = async (req) => {
     const allow = () => {
@@ -574,7 +574,7 @@ export function createExecutor(o: {
     const ran = req.kind === "execute" && typeof command === "string";
     const refusedCommand = ran ? o.permissions.harnessCommand(scope, command, base) : undefined;
     if (refusedCommand) judged.push(refusedCommand);
-    // No answer of the owner's opens a read-only folder or APX's own, nor lets a file tool change git's folder.
+    // No answer of the owner's opens a read-only folder or Colonia's own, nor lets a file tool change git's folder.
     if (judged.some((r) => "refused" in r && !r.offer)) return false;
     if (!reading && paths.some((p) => inGitFolder(path.resolve(base, p)))) return false;
     const inside = judged.every((r) => !("refused" in r));

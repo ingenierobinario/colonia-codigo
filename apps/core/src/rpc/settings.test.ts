@@ -95,7 +95,7 @@ test("replacing a provider's environment key switches to the saved credential", 
     base_url: "http://127.0.0.1:9",
     models: ["m1"],
   };
-  env.core.store.settings.write("providers", [{ ...provider, id: "northwind-key", key: "env:APX_TEST_MISSING_KEY" }]);
+  env.core.store.settings.write("providers", [{ ...provider, id: "northwind-key", key: "env:COLONIA_TEST_MISSING_KEY" }]);
   const result = await env.client.call("providers.set", {
     id: "northwind-key",
     provider,

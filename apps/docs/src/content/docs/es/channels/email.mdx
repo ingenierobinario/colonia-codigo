@@ -21,7 +21,7 @@ dos. Leé [Email y firmas](/es/office/email/) para Gmail y las firmas locales de
 4. Completá el usuario si no coincide con la dirección. Conectá y revisá el estado antes de probar.
 5. Enviá un mensaje corto desde otro buzón, aprobá su pedido de vinculación como la persona correcta y verificá la respuesta.
 
-La seguridad **Ninguna** es solo para servidores locales, no para conexiones a internet. APX guarda la contraseña
+La seguridad **Ninguna** es solo para servidores locales, no para conexiones a internet. Colonia guarda la contraseña
 como secreto y no vuelve a mostrarla. Cambiar servidores o contraseña reconecta el buzón.
 
 ## Restringí el correo entrante
@@ -30,7 +30,7 @@ como secreto y no vuelve a mostrarla. Cambiar servidores o contraseña reconecta
 normal de desconocidos; no aprueba a todos automáticamente. Empezá con una lista acotada y revisá **Desconocidos**
 y las [respuestas supervisadas](/es/channels/supervised/).
 
-Por defecto APX descarta mensajes cuyo dominio remitente el servidor no pudo verificar con DKIM, SPF o DMARC.
+Por defecto Colonia descarta mensajes cuyo dominio remitente el servidor no pudo verificar con DKIM, SPF o DMARC.
 **Leer correo no verificado** debilita esa protección: activalo solo si entendés por qué tu servidor no verifica
 remitentes. Una dirección From no prueba que autorizaste una instrucción. El correo entrante sigue siendo contenido externo.
 
@@ -48,7 +48,7 @@ Consultá el error y la bandeja de salida en vez de asumir que un mensaje encola
 
 La integración Gmail y un canal Email son conexiones distintas. Gmail usa la API de Google; un canal Email lee por
 IMAP y envía por SMTP con la contraseña de aplicación de una casilla. Configurar una firma cambia sólo ajustes
-locales de APX, no los ajustes de Gmail, los borradores existentes ni los mensajes ya escritos.
+locales de Colonia, no los ajustes de Gmail, los borradores existentes ni los mensajes ya escritos.
 
 ### Gmail
 
@@ -59,9 +59,9 @@ elige en la página de la integración, en **Dónde se usa**. Una integración s
 
 La firma tiene dos formas: **Con formato** (el HTML, con una vista previa mientras escribís) y **Texto plano** (para los
 mails sin formato, obligatoria mientras la firma está activada). Con Gmail conectado con tu propio cliente de Google,
-**Traer de Gmail** llena las dos con la firma que agrega Gmail; lo que APX no puede guardar (estilos, tablas, fuentes)
-queda como líneas simples, y no se guarda nada hasta que guardás. Con el cliente de Google de APX no se pueden leer los
-ajustes de Gmail: pegá la firma. APX nunca cambia la firma de Gmail, y enviar un borrador de Gmail existente no agrega ni
+**Traer de Gmail** llena las dos con la firma que agrega Gmail; lo que Colonia no puede guardar (estilos, tablas, fuentes)
+queda como líneas simples, y no se guarda nada hasta que guardás. Con el cliente de Google de Colonia no se pueden leer los
+ajustes de Gmail: pegá la firma. Colonia nunca cambia la firma de Gmail, y enviar un borrador de Gmail existente no agrega ni
 reemplaza su firma.
 
 ### Casillas SMTP
@@ -80,13 +80,13 @@ El envío SMTP tiene pruebas con servidores locales simulados; eso no verifica l
 
 **Configuración › Cuenta › Firma de email por defecto** se puede editar antes de conectar una casilla. Admite texto
 plano y HTML básico opcional, con enlaces e imágenes alojadas en HTTPS. Una firma activada requiere texto plano;
-APX rechaza el HTML no admitido en vez de ejecutarlo o modificarlo silenciosamente.
+Colonia rechaza el HTML no admitido en vez de ejecutarlo o modificarlo silenciosamente.
 
-APX elige una firma, nunca las dos:
+Colonia elige una firma, nunca las dos:
 
 1. La firma guardada de la cuenta tiene prioridad sobre la global.
 2. Desactivar la firma automática de esa cuenta y guardar deshabilita explícitamente ambas firmas para esa cuenta.
-3. **Usar firma por defecto** quita la excepción de la cuenta. APX usa entonces la firma global activada, si existe.
+3. **Usar firma por defecto** quita la excepción de la cuenta. Colonia usa entonces la firma global activada, si existe.
 4. Podés pedir omitir la firma en un mensaje para saltear cualquiera de las dos. Eso no borra una firma que ya esté
    en el cuerpo del mensaje.
 

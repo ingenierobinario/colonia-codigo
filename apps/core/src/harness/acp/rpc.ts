@@ -49,7 +49,7 @@ export function connect(
     buf += chunk;
     if (buf.length > MAX_LINE && buf.indexOf("\n") < 0) {
       buf = "";
-      fail(new Error("the agent sent a line longer than APX accepts"));
+      fail(new Error("the agent sent a line longer than Colonia accepts"));
       child.kill("SIGKILL");
       return;
     }

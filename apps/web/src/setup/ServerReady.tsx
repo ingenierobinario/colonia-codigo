@@ -1,9 +1,9 @@
-import { Button, Input } from "@apx/ui";
+import { Button, Input } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../i18n/index.ts";
 
 /**
- * APX was just installed on a server over SSH: the screen says so before the server's own setup opens, and when the
+ * Colonia was just installed on a server over SSH: the screen says so before the server's own setup opens, and when the
  * user's services would stop at every disconnect (no linger) it offers to fix that with sudo, or the command to run.
  */
 export function ServerReady({
@@ -24,7 +24,7 @@ export function ServerReady({
   const turnOn = async () => {
     setBusy(true);
     setFailed(false);
-    const r = await window.apxConnect?.lingerSsh(target, password);
+    const r = await window.coloniaConnect?.lingerSsh(target, password);
     setBusy(false);
     setPassword("");
     if (r?.ok) setLingers(true);

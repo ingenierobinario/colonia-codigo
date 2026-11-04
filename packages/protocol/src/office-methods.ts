@@ -265,14 +265,14 @@ export const officeMethods = {
     effect: true,
     access: "human",
   },
-  /** Installs a profile from a folder with an apx-profile.json (copied into APX's home; one of the same id is replaced). */
+  /** Installs a profile from a folder with an colonia-profile.json (copied into Colonia's home; one of the same id is replaced). */
   "profiles.install": {
     params: z.object({ path: z.string().min(1).max(1000) }).strict(),
     result: z.object({ profile: ProfileInfo }),
     effect: true,
     access: "human",
   },
-  /** Removes an installed profile (APX's own stay); if it was running, the super-agent goes back to none. */
+  /** Removes an installed profile (Colonia's own stay); if it was running, the super-agent goes back to none. */
   "profiles.remove": {
     params: z.object({ id: z.string() }).strict(),
     result: z.object({ removed: z.boolean() }),
@@ -332,14 +332,14 @@ export const officeMethods = {
     effect: false,
     access: "human",
   },
-  /** Reads a folder's apx-extension.json without installing or running anything. */
+  /** Reads a folder's colonia-extension.json without installing or running anything. */
   "extensions.inspect": {
     params: z.object({ path: z.string().min(1).max(1000) }).strict(),
     result: ExtensionInfo,
     effect: false,
     access: "human",
   },
-  /** Copies the folder into APX's home, off; installing it again replaces it (and turns it off if it changed). */
+  /** Copies the folder into Colonia's home, off; installing it again replaces it (and turns it off if it changed). */
   "extensions.install": {
     params: z.object({ path: z.string().min(1).max(1000) }).strict(),
     result: ExtensionInfo,

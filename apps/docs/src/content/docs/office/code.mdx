@@ -1,6 +1,6 @@
 ---
 title: Code
-description: Code threads in a project's folder, the write policy, the Terminal, Files and Changes panels, and Claude Code and Codex sessions inside APX.
+description: Code threads in a project's folder, the write policy, the Terminal, Files and Changes panels, and Claude Code and Codex sessions inside Colonia.
 sidebar:
   order: 7
 ---
@@ -9,9 +9,9 @@ import { Aside, Steps, Tabs, TabItem, CardGrid, LinkCard } from "@astrojs/starli
 import Shot from "../../../components/Shot.astro";
 import Terminal from "../../../components/Terminal.astro";
 
-APX is not only for office work. An agent can work inside a project's folder: read the code, edit files, run tests and
+Colonia is not only for office work. An agent can work inside a project's folder: read the code, edit files, run tests and
 commands, and show you every change as a diff. You can do it in two ways: a **code thread** with one of your agents,
-or a session with **Claude Code** or **Codex** themselves, right inside APX.
+or a session with **Claude Code** or **Codex** themselves, right inside Colonia.
 
 ## Code threads
 
@@ -26,9 +26,9 @@ and the write policy, so you always know where it is working and how freely.
   <TabItem label="Terminal">
     From inside the project's folder (or with `--cwd`):
 
-    <Terminal command={`apx chat "Add a free-shipping banner over 50 to the cart page" --code --write ask`}>{`code thread th_8c41d07e2b9a5f13 · web/cart · write: ask`}</Terminal>
+    <Terminal command={`colonia chat "Add a free-shipping banner over 50 to the cart page" --code --write ask`}>{`code thread th_8c41d07e2b9a5f13 · web/cart · write: ask`}</Terminal>
 
-    The folder must be inside a registered project (`apx projects register <folder>`). Without `--agent`, Home does
+    The folder must be inside a registered project (`colonia projects register <folder>`). Without `--agent`, Home does
     the work.
   </TabItem>
 </Tabs>
@@ -85,8 +85,8 @@ the history.
 
 ## Claude Code and Codex sessions
 
-If you use Claude Code or Codex, APX can host their sessions. You talk to the engine itself, with your own login and
-plan, and APX gives it its chat, panels, approvals and history.
+If you use Claude Code or Codex, Colonia can host their sessions. You talk to the engine itself, with your own login and
+plan, and Colonia gives it its chat, panels, approvals and history.
 
 **External sessions** in the sidebar lists each coding CLI installed on this computer. Pick one:
 
@@ -100,23 +100,23 @@ plan, and APX gives it its chat, panels, approvals and history.
 
 </Steps>
 
-<Shot name="external-sessions" alt="External sessions, Claude Code: sessions started in APX at the top and, under On this computer, sessions found on disk with their folders" caption="External sessions" />
+<Shot name="external-sessions" alt="External sessions, Claude Code: sessions started in Colonia at the top and, under On this computer, sessions found on disk with their folders" caption="External sessions" />
 
 ### Resuming your own sessions
 
-Below the sessions started in APX, **On this computer** lists the Claude Code and Codex sessions you already have on
+Below the sessions started in Colonia, **On this computer** lists the Claude Code and Codex sessions you already have on
 this machine (from `~/.claude` and `~/.codex`), with their folder. Click one to **go on with it here**: the engine
-picks up its own session, history included, and from then on it lives in APX too.
+picks up its own session, history included, and from then on it lives in Colonia too.
 
-<Aside type="note" title="What APX keeps in check">
+<Aside type="note" title="What Colonia keeps in check">
 - Claude Code loads only your own user settings, not a repository's `.claude/settings` files (which could allow tools
-  past APX's approvals). APX reads the folder's `CLAUDE.md` itself and adds it to the prompt.
+  past Colonia's approvals). Colonia reads the folder's `CLAUDE.md` itself and adds it to the prompt.
 - Codex in an **Edits freely** chat writes in its folder when the agent is on Auto, Accept edits or Total, whatever
   the session read, unless the agent's own rules ask before writing or turn it off; on Manual or Plan it runs
   read-only (and says why), unless its rules let it write on its own. A session another agent delegated with
   **Asks before changes** stays read-only for Codex even on Total, since it cannot ask.
 - Once an engine session reads outside content (a web page, a message), the rest of that session is treated as
-  untrusted, as an APX agent's would be.
+  untrusted, as an Colonia agent's would be.
 </Aside>
 
 Other coding CLIs that speak the Agent Client Protocol (OpenCode, Qwen Code, Gemini CLI and others) show up in
@@ -129,10 +129,10 @@ example, is used only through Claude Code sessions. See [Models](/concepts/model
 
 ## Aider and Antigravity
 
-APX also supports **Aider** (`aider`) and headless **Antigravity** (`agy`) as one-shot CLI harnesses, not ACP
+Colonia also supports **Aider** (`aider`) and headless **Antigravity** (`agy`) as one-shot CLI harnesses, not ACP
 agents. Install the CLI on the core's machine and configure its own credentials first. Refresh **Settings →
 External engines**, then open its entry under **External sessions** and start a chat in a project folder.
-A GUI-only Antigravity installation is not runnable: APX does not launch the editor and pretend it returned an answer.
+A GUI-only Antigravity installation is not runnable: Colonia does not launch the editor and pretend it returned an answer.
 
 The catalog offers **CLI default**; the CLI's configuration chooses the model. A session model reference such as
 `aider/<model>` or `antigravity/<model>` passes that model to `--model`. These harnesses cannot be an agent's model,
@@ -146,19 +146,19 @@ this confirmation. Use a sandboxed OS account/container if you need filesystem o
 
 Both CLIs receive the conversation through a private temporary file, removed after the run. Aider uses its
 message-file option and runs without automatic commits; `agy` receives only instructions to read that file in its
-print argument, not the conversation itself. APX's environment variables and credential-like environment variables
+print argument, not the conversation itself. Colonia's environment variables and credential-like environment variables
 are removed. Configure credentials with the CLI's own local configuration or sign-in, rather than inherited API-key
 environment variables. Local credentials remain accessible to the CLI and commands it launches.
 </Aside>
 
 Each turn starts a fresh process and replays the projected text history. There is no external session resume,
-per-tool trace, live steering, image input or token accounting. APX records one execution step and persists success,
+per-tool trace, live steering, image input or token accounting. Colonia records one execution step and persists success,
 failure or cancellation through its normal run lifecycle. Nonzero exit, empty/binary output and more than 1 MB of
 combined output fail explicitly; stderr is not copied into errors. A turn's cancellation kills the process, with a
-10-minute absolute invocation limit in addition to APX's run deadline. On POSIX, termination targets the process
+10-minute absolute invocation limit in addition to Colonia's run deadline. On POSIX, termination targets the process
 group; Windows uses `taskkill /T /F` to terminate the process tree.
 
-Windows `.cmd` and `.bat` launchers are not supported: APX never enables a shell to run a shim. If discovery
+Windows `.cmd` and `.bat` launchers are not supported: Colonia never enables a shell to run a shim. If discovery
 returns one, the engine is unavailable and invocation is refused before spawning. Use a native executable instead.
 Windows discovery and execution remain unverified; do not assume an npm shim installation is runnable.
 
@@ -166,5 +166,5 @@ Windows discovery and execution remain unverified; do not assume an npm shim ins
 
 <CardGrid>
   <LinkCard title="Chat" href="/office/chat/" description="Every side panel and the composer." />
-  <LinkCard title="Outside clients" href="/extend/outside-clients/" description="Let Claude Code or Codex call your APX agents and browser." />
+  <LinkCard title="Outside clients" href="/extend/outside-clients/" description="Let Claude Code or Codex call your Colonia agents and browser." />
 </CardGrid>

@@ -1,8 +1,8 @@
-// Google Calendar, Gmail and Drive as APX tools, offered only while the owner's account is connected and on in the
+// Google Calendar, Gmail and Drive as Colonia tools, offered only while the owner's account is connected and on in the
 // thread's project (Tool.when). What other people wrote (events they invited to, mail, files) comes back as outside
 // data. An event only on the owner's calendar needs no OK; cancelling and writing a draft ask (DECISIONS.md#d-130);
 // sending mail, invitations and updates emailed to an event's guests included, always waits for the owner. Gmail's reading tools need the
-// owner's own client; APX's own client only sends (gmail_send).
+// owner's own client; Colonia's own client only sends (gmail_send).
 import { z } from "zod";
 import { calendarApi } from "../integrations/calendar.ts";
 import { gmailApi } from "../integrations/gmail.ts";
@@ -40,7 +40,7 @@ export function googleTools(g: Google | undefined): Tool[] {
   const cal = calendarApi(g);
   const mail = gmailApi(g);
   const onCalendar = (t: { project_id?: string | undefined }) => g.usable("google-calendar", t.project_id);
-  // Reading and drafts need the owner's own client; APX's own can only send.
+  // Reading and drafts need the owner's own client; Colonia's own can only send.
   const onGmail = (t: { project_id?: string | undefined }) => g.usable("gmail", t.project_id) && g.full("gmail");
   const onGmailSend = (t: { project_id?: string | undefined }) => g.usable("gmail", t.project_id) && !g.full("gmail");
   return [

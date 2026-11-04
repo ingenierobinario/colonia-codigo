@@ -3,11 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { formatLine, logsCommand } from "./logs.ts";
 import { printed } from "./testing.ts";
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-logs-cmd-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-logs-cmd-"));
 after(() => fs.rmSync(home, { recursive: true, force: true }));
 
 test("a log line prints as this computer's time, level, scope, message and its fields", () => {
@@ -24,18 +24,18 @@ test("a log line prints as this computer's time, level, scope, message and its f
   );
 });
 
-test("with no core answering, apx logs reads this computer's log file", async () => {
-  const before = process.env.APX_HOME;
-  process.env.APX_HOME = home;
+test("with no core answering, colonia logs reads this computer's log file", async () => {
+  const before = process.env.COLONIA_HOME;
+  process.env.COLONIA_HOME = home;
   try {
     fs.mkdirSync(path.join(home, "logs"), { recursive: true });
     fs.writeFileSync(path.join(home, "logs", "core.log"), "a\nb\nc\n");
     const down = "http://127.0.0.1:9";
-    const client = new ApxClient({ url: down });
+    const client = new ColoniaClient({ url: down });
     assert.equal(await printed(() => logsCommand(client, down, { lines: "2" })), "b\nc");
     await assert.rejects(logsCommand(client, down, { level: "debug" }), /--level is info, warn or error/);
   } finally {
-    if (before === undefined) delete process.env.APX_HOME;
-    else process.env.APX_HOME = before;
+    if (before === undefined) delete process.env.COLONIA_HOME;
+    else process.env.COLONIA_HOME = before;
   }
 });

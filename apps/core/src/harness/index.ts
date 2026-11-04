@@ -3,7 +3,7 @@
 
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
-import type { EngineStatus, HarnessId } from "@apx/protocol";
+import type { EngineStatus, HarnessId } from "@colonia/protocol";
 import { engineOf, harnessOf } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
 import { unauthorized } from "../errors.ts";
@@ -43,7 +43,7 @@ export function createHarnesses(deps: {
     if (!p) throw new Error(`${name} is not installed on this machine`);
     return p;
   };
-  /** The turn's folder, made when it is APX's own (a code thread's folder is the owner's and already there). */
+  /** The turn's folder, made when it is Colonia's own (a code thread's folder is the owner's and already there). */
   const cwd = (io: TurnIO) => {
     const dir = harnessDir(store, deps.home, io.thread);
     if (!io.thread.cwd) fs.mkdirSync(dir, { recursive: true });
@@ -53,7 +53,7 @@ export function createHarnesses(deps: {
     const token = openGate(io);
     const proxy = deps.mcpProxy();
     // The run token travels in the environment: on the command line any local user could read it with ps.
-    const command: McpCommand = { ...proxy, env: { ...proxy.env, APX_RUN_TOKEN: token } };
+    const command: McpCommand = { ...proxy, env: { ...proxy.env, COLONIA_RUN_TOKEN: token } };
     return { command, close: () => gates.delete(token) };
   };
   const registry: Record<HarnessId, Harness> = {
@@ -132,7 +132,7 @@ export function createHarnesses(deps: {
       return [
         {
           id: "native",
-          label: "APX (built-in model)",
+          label: "Colonia (built-in model)",
           installed: true,
           logged_in: label !== "none",
           detail: label,

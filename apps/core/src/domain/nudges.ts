@@ -1,6 +1,6 @@
-// The ledger of messages APX meant to send the owner unasked (the interruption budget reads it): one row each, with
+// The ledger of messages Colonia meant to send the owner unasked (the interruption budget reads it): one row each, with
 // what became of it. Kept in SQLite, pruned to the last 60 days.
-import type { Nudge } from "@apx/protocol";
+import type { Nudge } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { NudgesTable } from "../db/schema.ts";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";
@@ -67,7 +67,7 @@ export function nudgesRepo({ one, all, run }: Sql) {
       if (by.kind) q = q.where("kind", "=", by.kind);
       return one(q.orderBy("at", "desc").limit(1))?.at;
     },
-    /** When the newest message APX sent the owner unasked went out, counted or not. */
+    /** When the newest message Colonia sent the owner unasked went out, counted or not. */
     latestSent(): string | undefined {
       return one(qb.selectFrom("nudges").select("at").where("state", "=", "sent").orderBy("at", "desc").limit(1))?.at;
     },

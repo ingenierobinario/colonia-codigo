@@ -1,6 +1,6 @@
 ---
 title: Clientes externos
-description: Usá los agentes y el navegador de APX desde Claude Code, Codex o cualquier cliente MCP, con un token limitado a lo que puede hacer.
+description: Usá los agentes y el navegador de Colonia desde Claude Code, Codex o cualquier cliente MCP, con un token limitado a lo que puede hacer.
 sidebar:
   order: 5
 ---
@@ -9,32 +9,32 @@ import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-APX también es un servidor MCP. Registrá `apx mcp` en Claude Code, Codex o cualquier otro cliente MCP, y esa app puede
-preguntarles cosas a tus agentes de APX y manejar el navegador integrado de APX.
+Colonia también es un servidor MCP. Registrá `colonia mcp` en Claude Code, Codex o cualquier otro cliente MCP, y esa app puede
+preguntarles cosas a tus agentes de Colonia y manejar el navegador integrado de Colonia.
 
 ## Qué recibe el cliente
 
-`apx mcp` es un servidor MCP por stdio que reenvía al core que está corriendo. Lo que ofrece depende del token con
+`colonia mcp` es un servidor MCP por stdio que reenvía al core que está corriendo. Lo que ofrece depende del token con
 el que arranca:
 
 | Arranca con | Tools |
 |---|---|
 | Sin token | `browser_*`: tabs, open, navigate, snapshot, click, type, screenshot, text, history, handoff, close |
-| Un token con alcance **Chat** | `apx_agents`, `apx_ask`, `apx_read` |
+| Un token con alcance **Chat** | `colonia_agents`, `colonia_ask`, `colonia_read` |
 | Un token con **Chat** y **Navegador** | Los dos grupos |
 
-- `apx_agents` lista tus agentes.
-- `apx_ask` le pregunta a uno y espera la respuesta hasta 5 minutos. Pasale el `thread` que devuelve para seguir el
+- `colonia_agents` lista tus agentes.
+- `colonia_ask` le pregunta a uno y espera la respuesta hasta 5 minutos. Pasale el `thread` que devuelve para seguir el
   chat.
-- `apx_read` lee un chat que empezó el cliente.
+- `colonia_read` lee un chat que empezó el cliente.
 
-Las tools del navegador necesitan la app de escritorio de APX abierta, porque el navegador es de ella. Los campos de
+Las tools del navegador necesitan la app de escritorio de Colonia abierta, porque el navegador es de ella. Los campos de
 contraseña, código de un solo uso y tarjeta se rechazan: `browser_handoff` te pasa la pestaña para que inicies sesión
 vos.
 
 ## Creá un token
 
-Cada app tiene su propio token. Se muestra una sola vez; APX guarda solo una huella.
+Cada app tiene su propio token. Se muestra una sola vez; Colonia guarda solo una huella.
 
 <Tabs>
 <TabItem label="Panel">
@@ -48,10 +48,10 @@ En **Configuración › Tokens de API**, escribí un **Nombre de la app**, marc�
 <TabItem label="Terminal">
 
 ```bash
-apx clients add claude-code                    # alcance chat
-apx clients add codex --scopes chat,browser
-apx clients                                    # lista, con el último uso
-apx clients rm <id>                            # revocar
+colonia clients add claude-code                    # alcance chat
+colonia clients add codex --scopes chat,browser
+colonia clients                                    # lista, con el último uso
+colonia clients rm <id>                            # revocar
 ```
 
 </TabItem>
@@ -64,14 +64,14 @@ hacerlos actuar como vos. Guardá el token en la configuración MCP de la app, n
 `.apc/`.
 </Aside>
 
-## Registrá APX en tu cliente
+## Registrá Colonia en tu cliente
 
 <Tabs>
 <TabItem label="Claude Code">
 
 ```bash
-claude mcp add apx --scope user -e APX_CLIENT_TOKEN=<token> -- apx mcp
-claude mcp add apx-browser --scope user -- apx mcp        # solo navegador, sin token
+claude mcp add colonia --scope user -e COLONIA_CLIENT_TOKEN=<token> -- colonia mcp
+claude mcp add colonia-browser --scope user -- colonia mcp        # solo navegador, sin token
 claude mcp list
 ```
 
@@ -81,7 +81,7 @@ claude mcp list
 <TabItem label="Codex">
 
 ```bash
-codex mcp add apx --env APX_CLIENT_TOKEN=<token> -- apx mcp
+codex mcp add colonia --env COLONIA_CLIENT_TOKEN=<token> -- colonia mcp
 codex mcp list
 ```
 
@@ -90,36 +90,36 @@ codex mcp list
 
 ```json
 {
-  "command": "apx",
+  "command": "colonia",
   "args": ["mcp"],
-  "env": { "APX_CLIENT_TOKEN": "<token>" }
+  "env": { "COLONIA_CLIENT_TOKEN": "<token>" }
 }
 ```
 
 </TabItem>
 </Tabs>
 
-Si `apx` no está en el PATH del cliente, usá la ruta completa que imprime `command -v apx`. Para un core en otro
-puerto u otra máquina, sumá también `APX_URL` al entorno.
+Si `colonia` no está en el PATH del cliente, usá la ruta completa que imprime `command -v colonia`. Para un core en otro
+puerto u otra máquina, sumá también `COLONIA_URL` al entorno.
 
-Después simplemente pedí, por ejemplo en Claude Code: "preguntale a mi secretaria de APX qué vence esta semana". O, con
-el alcance de navegador: "abrí el admin de Acme Store en el navegador de APX y fijate los pedidos de hoy".
+Después simplemente pedí, por ejemplo en Claude Code: "preguntale a mi secretaria de Colonia qué vence esta semana". O, con
+el alcance de navegador: "abrí el admin de Acme Store en el navegador de Colonia y fijate los pedidos de hoy".
 
-## Enseñale APX al cliente
+## Enseñale Colonia al cliente
 
-APX copia unas skills en Claude Code, Codex, Cursor y `~/.agents` cada vez que arranca, así esas apps saben usar `apx`
-y estas tools. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agentes-a-usar-apx).
+Colonia copia unas skills en Claude Code, Codex, Cursor y `~/.agents` cada vez que arranca, así esas apps saben usar `colonia`
+y estas tools. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agentes-a-usar-colonia).
 
 ## Cuando las tools no aparecen
 
 <Steps>
 
-1. Corré `apx status`: ¿el core está andando?
+1. Corré `colonia status`: ¿el core está andando?
 
-2. Corré `apx mcp` en una terminal. Debería quedarse esperando en silencio (Ctrl-C para salir). Cualquier error ahí es
+2. Corré `colonia mcp` en una terminal. Debería quedarse esperando en silencio (Ctrl-C para salir). Cualquier error ahí es
    el real.
 
-3. Solo tools de navegador, sin `apx_*`: falta el token o fue revocado (`apx clients`).
+3. Solo tools de navegador, sin `colonia_*`: falta el token o fue revocado (`colonia clients`).
 
 4. Token pero sin tools de navegador: sus alcances dejan afuera el navegador (`--scopes chat,browser`).
 
@@ -128,5 +128,5 @@ y estas tools. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agent
 </Steps>
 
 <Aside type="note">
-`apx mcp --run` es otra cosa, que se usa adentro de las corridas propias de APX. No lo registres en un cliente.
+`colonia mcp --run` es otra cosa, que se usa adentro de las corridas propias de Colonia. No lo registres en un cliente.
 </Aside>

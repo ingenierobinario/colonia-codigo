@@ -1,19 +1,19 @@
 import type { CdpSend } from "./cdp.ts";
-import { ApxError } from "./client.ts";
+import { ColoniaError } from "./client.ts";
 
 export const SCRIPT_LIMIT = 64_000;
 export const EVALUATION_LIMIT = 16_000;
 
 /** One retained document per tab; another snapshot invalidates an older review rather than leaking handles. */
 export async function captureDocument(send: CdpSend): Promise<string> {
-  await send("Runtime.releaseObjectGroup", { objectGroup: "apx-browser-review" });
+  await send("Runtime.releaseObjectGroup", { objectGroup: "colonia-browser-review" });
   const reply = await send<{ result: { objectId?: string } }>("Runtime.evaluate", {
     expression:
       "(() => { const doc = document, href = location.href; return () => document === doc && location.href === href; })()",
-    objectGroup: "apx-browser-review",
+    objectGroup: "colonia-browser-review",
     returnByValue: false,
   });
-  if (!reply.result.objectId) throw new ApxError({ code: "bad_request", message: "cannot capture the page document" });
+  if (!reply.result.objectId) throw new ColoniaError({ code: "bad_request", message: "cannot capture the page document" });
   return reply.result.objectId;
 }
 
@@ -25,10 +25,10 @@ export async function evaluatePage(
   document: string,
 ): Promise<{ json: string }> {
   if (!script.trim() || script.length > SCRIPT_LIMIT)
-    throw new ApxError({ code: "bad_request", message: "script must contain 1–64000 characters" });
+    throw new ColoniaError({ code: "bad_request", message: "script must contain 1–64000 characters" });
   const expected = new URL(origin);
   if (!/^https?:$/.test(expected.protocol) || expected.origin !== origin)
-    throw new ApxError({ code: "bad_request", message: "expected an exact http(s) origin" });
+    throw new ColoniaError({ code: "bad_request", message: "expected an exact http(s) origin" });
   const source = script.trimEnd().replace(/;$/, "");
   let body = `return (\n${source}\n);`;
   try {
@@ -57,7 +57,7 @@ export async function evaluatePage(
     returnByValue: true,
   }).catch((error: unknown) => {
     const message = String(error).slice(0, 2000);
-    throw new ApxError({
+    throw new ColoniaError({
       code: "bad_request",
       message: /cannot find.*(context|object)|context.*destroyed/i.test(message)
         ? "Page document changed; take a new snapshot and approve again"
@@ -65,11 +65,11 @@ export async function evaluatePage(
     });
   });
   if (reply.exceptionDetails)
-    throw new ApxError({
+    throw new ColoniaError({
       code: "bad_request",
       message: `JavaScript failed: ${(reply.exceptionDetails.exception?.description ?? reply.exceptionDetails.text).slice(0, 2000)}`,
     });
   if (typeof reply.result.value !== "string" || reply.result.value.length > EVALUATION_LIMIT)
-    throw new ApxError({ code: "bad_request", message: "JavaScript did not return a bounded JSON result" });
+    throw new ColoniaError({ code: "bad_request", message: "JavaScript did not return a bounded JSON result" });
   return { json: reply.result.value };
 }

@@ -1,6 +1,6 @@
 // What can be done to a chat from its right-click menu (any Inbox view) or the chat header's "…" menu.
-import type { Agent, Thread } from "@apx/protocol";
-import { Icons, type MenuEntry } from "@apx/ui";
+import type { Agent, Thread } from "@colonia/protocol";
+import { Icons, type MenuEntry } from "@colonia/ui";
 import { markRead } from "../data/actions.ts";
 import { openThreadDialog, updateThread } from "../data/threadAdmin.ts";
 import type { T } from "../i18n/index.ts";

@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { withUsualDirs } from "./programs.ts";
 
 test("a bare PATH gets the usual folders it lacks at its end, only those that exist and once", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-programs-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-programs-"));
   const brew = path.join(root, "homebrew", "bin");
   const local = path.join(root, ".local", "bin");
   fs.mkdirSync(brew, { recursive: true });

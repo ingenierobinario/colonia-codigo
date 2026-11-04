@@ -1,4 +1,4 @@
-import type { SurfaceSummary } from "@apx/protocol";
+import type { SurfaceSummary } from "@colonia/protocol";
 import { createThread } from "../data/actions.ts";
 import { client } from "../data/client.ts";
 import { keepDraft } from "../data/drafts.ts";
@@ -13,7 +13,7 @@ import { widgetChatOpen as open } from "./widgetChatOpen.ts";
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /** The last chat used for each widget, remembered on this device so the next click continues it. */
-const CHATS_KEY = "apx.widgetChats";
+const CHATS_KEY = "colonia.widgetChats";
 function chatsMade(): Record<string, string> {
   try {
     const raw = JSON.parse(localStorage.getItem(CHATS_KEY) ?? "{}") as unknown;

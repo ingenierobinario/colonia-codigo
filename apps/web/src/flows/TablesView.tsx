@@ -1,7 +1,7 @@
 // The Flows screen's Tables (DECISIONS.md#d-176): a project's tables beside the one open, its columns and rows in a
 // grid. The owner adds, edits and deletes rows, makes tables and columns, renames and removes them.
-import type { Result, TableInfo } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
+import type { Result, TableInfo } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
 import {
   Button,
   Dialog,
@@ -14,7 +14,7 @@ import {
   Menu,
   PickRow,
   Skeleton,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -161,7 +161,7 @@ function TableDetail({ table }: { table: TableInfo }) {
       load();
     } catch (e) {
       // A save that leaves a required column empty says which (DECISIONS.md#d-180).
-      const empty = e instanceof ApxError ? (e.detail as { columns?: unknown } | undefined)?.columns : undefined;
+      const empty = e instanceof ColoniaError ? (e.detail as { columns?: unknown } | undefined)?.columns : undefined;
       notify(
         Array.isArray(empty) && empty.length
           ? t("flow.tables.requiredMissing", { columns: empty.join(", ") })

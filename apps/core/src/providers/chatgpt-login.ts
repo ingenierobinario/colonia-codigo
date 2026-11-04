@@ -1,4 +1,4 @@
-// The owner's ChatGPT plan as a model for APX's own loop: APX's own sign-in (device code, the way Codex signs in),
+// The owner's ChatGPT plan as a model for Colonia's own loop: Colonia's own sign-in (device code, the way Codex signs in),
 // kept in the secret store and refreshed here. Never Codex CLI's tokens (each keeps its own refresh family).
 // See DECISIONS.md#d-042
 import fs from "node:fs";
@@ -106,7 +106,7 @@ export function createChatgptLogin(deps: {
     const auth = authClaims(s.access_token);
     const account = String(auth.chatgpt_account_id ?? s.account_id ?? "");
     if (!account) throw new LoginError("the ChatGPT sign-in names no account: sign in again", true);
-    return { token: s.access_token, headers: { "chatgpt-account-id": account, originator: "apx" } };
+    return { token: s.access_token, headers: { "chatgpt-account-id": account, originator: "colonia" } };
   };
 
   async function refresh(s: Stored): Promise<Stored> {
@@ -224,7 +224,7 @@ export function createChatgptLogin(deps: {
       device.timer.unref?.();
       return { user_code: device.user_code, verification_url: device.verification_url, expires_at: device.expires_at };
     },
-    /** APX v1's own ChatGPT sign-in (its file is only read), taken over once so the owner need not sign in again. */
+    /** Colonia v1's own ChatGPT sign-in (its file is only read), taken over once so the owner need not sign in again. */
     importV1(file: string): boolean {
       try {
         const t = (JSON.parse(fs.readFileSync(file, "utf8")) as { tokens?: Partial<Stored> }).tokens;

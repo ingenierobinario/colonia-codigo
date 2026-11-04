@@ -1,4 +1,4 @@
-import { Button, IconButton, Icons, Input, Popover, SearchField } from "@apx/ui";
+import { Button, IconButton, Icons, Input, Popover, SearchField } from "@colonia/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { listSecrets } from "../data/resources.ts";
 import { useT } from "../i18n/index.ts";

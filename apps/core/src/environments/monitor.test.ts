@@ -81,7 +81,7 @@ test("the monitor shares one VM probe between callers and reuses it for a few se
 // portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
 if (RUNS_SCRIPTS)
   test("a guest that does not answer is given up within the monitor's wait, its probe killed", async () => {
-    const dir = tempDir("apx-vm-probe-");
+    const dir = tempDir("colonia-vm-probe-");
     const pids = path.join(dir.path, "pids");
     const binary = path.join(dir.path, "limactl.mjs");
     // A Lima that never answers: each call records its pid and hangs.

@@ -18,7 +18,7 @@ async function mockVmDisplay(page: Page) {
         init.writeUInt16BE(64, 2);
         init.set([32, 24, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0], 4);
         init.writeUInt32BE(3, 20);
-        init.write("APX", 24);
+        init.write("Colonia", 24);
         socket.send(init);
       }
       handshake++;
@@ -41,7 +41,7 @@ test("two agents hold two screens at once, a third waits for room, and the owner
   const started = new Set<string>();
   const llm = scriptedLlm(async (req) => {
     const said = String(req.messages.findLast((m) => m.role === "user")?.content ?? "");
-    // The owner's words are the input's last line ("chat roby"); APX's own lines above them say "chat" too.
+    // The owner's words are the input's last line ("chat roby"); Colonia's own lines above them say "chat" too.
     const who = /^chat (\w+)$/.exec(said.split("\n").at(-1) ?? "")?.[1] ?? "";
     started.add(who);
     await new Promise<void>((resolve) => {

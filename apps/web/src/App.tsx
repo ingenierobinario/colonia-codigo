@@ -1,4 +1,4 @@
-import { ApxProvider } from "@apx/ui";
+import { ColoniaProvider } from "@colonia/ui";
 import { type CSSProperties, Suspense, useEffect } from "react";
 import { startLive } from "./data/live.ts";
 import { checkAccess, useGate } from "./data/pairing.ts";
@@ -27,10 +27,10 @@ const OAUTH_RETURN = window.location.pathname === "/oauth/google";
 const QUICK = new URLSearchParams(window.location.search).has("quick");
 
 // Settings › Appearance › Font: swapping the sans token reaches every component, overlays included.
-const MONO = { "--apx-font-sans": "var(--apx-font-mono)" } as CSSProperties;
+const MONO = { "--colonia-font-sans": "var(--colonia-font-mono)" } as CSSProperties;
 
-/** The desktop app's first run (?connect): no APX is chosen yet, so nothing calls a core. */
-const CONNECT = new URLSearchParams(window.location.search).has("connect") && Boolean(window.apxConnect);
+/** The desktop app's first run (?connect): no Colonia is chosen yet, so nothing calls a core. */
+const CONNECT = new URLSearchParams(window.location.search).has("connect") && Boolean(window.coloniaConnect);
 
 /** One artifact in a window or tab of its own (?artifact=<id>). */
 const ARTIFACT = new URLSearchParams(window.location.search).get("artifact") ?? undefined;
@@ -41,9 +41,9 @@ const ABOUT = new URLSearchParams(window.location.search).has("about");
 export function App() {
   if (CONNECT || ABOUT)
     return (
-      <ApxProvider look="minimal" mode="dark" fill>
+      <ColoniaProvider look="minimal" mode="dark" fill>
         <Suspense fallback={null}>{ABOUT ? <AboutScreen /> : <ConnectScreen />}</Suspense>
-      </ApxProvider>
+      </ColoniaProvider>
     );
   return <Main />;
 }
@@ -60,14 +60,14 @@ function Main() {
   }, []);
   useEffect(() => {
     document.documentElement.lang = lang;
-    window.apxDesktop?.setLanguage?.(lang);
+    window.coloniaDesktop?.setLanguage?.(lang);
   }, [lang]);
   return (
-    <ApxProvider
+    <ColoniaProvider
       look={look}
       mode={mode}
       fill
-      style={{ ...(font === "mono" ? MONO : {}), "--apx-text-scale": textSize / 100 } as CSSProperties}
+      style={{ ...(font === "mono" ? MONO : {}), "--colonia-text-scale": textSize / 100 } as CSSProperties}
     >
       {/* Google's return page finishes without pairing: the browser it lands in may be any. */}
       {OAUTH_RETURN && (
@@ -81,7 +81,7 @@ function Main() {
           <PairScreen />
         </Suspense>
       )}
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }
 

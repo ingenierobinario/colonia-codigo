@@ -1,4 +1,4 @@
-import { ApxProvider, Button, Composer, Icons } from "@apx/ui";
+import { ColoniaProvider, Button, Composer, Icons } from "@colonia/ui";
 
 export function Pill() {
   return (
@@ -53,7 +53,7 @@ export function Busy() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 592 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 592 }}>
       <Composer
         placeholder="Escribí algo y enter para enviar (shift+enter = nueva línea)"
         onAttach={() => {}}
@@ -74,6 +74,6 @@ export function ClassicLook() {
           </>
         }
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

@@ -45,7 +45,7 @@ def main():
         try:
             os.execvp(argv[0], argv)
         except OSError as e:
-            sys.stderr.write("apx: cannot run %s: %s\r\n" % (argv[0], e))
+            sys.stderr.write("colonia: cannot run %s: %s\r\n" % (argv[0], e))
             sys.stderr.flush()
         os._exit(127)
 

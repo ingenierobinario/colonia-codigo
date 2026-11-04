@@ -1,5 +1,5 @@
-import type { ChannelInfo } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { ChannelInfo } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS, isChannelKind } from "../channels/kinds.ts";
 import { useT } from "../i18n/index.ts";

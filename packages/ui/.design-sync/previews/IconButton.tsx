@@ -1,4 +1,4 @@
-import { ApxProvider, IconButton, Icons } from "@apx/ui";
+import { ColoniaProvider, IconButton, Icons } from "@colonia/ui";
 
 const row = { display: "flex", gap: 8, alignItems: "center" };
 
@@ -32,12 +32,12 @@ export function Variants() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12 }}>
       <div style={row}>
         <IconButton label="Tools" icon={<Icons.Wrench />} variant="secondary" active />
         <IconButton label="Reload" icon={<Icons.RotateCcw />} />
         <IconButton label="Send" icon={<Icons.ArrowUp />} variant="primary" size="sm" />
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

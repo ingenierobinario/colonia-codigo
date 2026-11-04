@@ -13,7 +13,7 @@ test("agents set takes key=value pairs, the prompt from a file or stdin, or both
     name: "April",
     prompt: "Prompt from p.md",
   });
-  assert.throws(() => agentSetOf("april", [], undefined, read), /usage: apx agents set/);
+  assert.throws(() => agentSetOf("april", [], undefined, read), /usage: colonia agents set/);
   assert.throws(() => agentSetOf("april", ["prompt=x"], "p.md", read), /not both/);
 });
 

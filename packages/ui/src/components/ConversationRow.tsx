@@ -44,21 +44,21 @@ export function ConversationRow({
       type="button"
       onClick={onClick}
       aria-current={selected || undefined}
-      className={cx("apx-convrow", selected && "is-selected", unread > 0 && "is-unread", className)}
+      className={cx("colonia-convrow", selected && "is-selected", unread > 0 && "is-unread", className)}
     >
-      <span className="apx-convrow__avatar">{avatar}</span>
-      <span className="apx-convrow__main">
-        <span className="apx-convrow__top">
-          <span className="apx-convrow__title">{title}</span>
+      <span className="colonia-convrow__avatar">{avatar}</span>
+      <span className="colonia-convrow__main">
+        <span className="colonia-convrow__top">
+          <span className="colonia-convrow__title">{title}</span>
           {titleTag}
-          {time && <span className="apx-convrow__time">{time}</span>}
+          {time && <span className="colonia-convrow__time">{time}</span>}
         </span>
-        {tags && <span className="apx-convrow__tags">{tags}</span>}
-        <span className="apx-convrow__bottom">
-          <span className={cx("apx-convrow__preview", typing && "is-typing")}>{typing ?? preview}</span>
-          {unread > 0 && <span className="apx-convrow__unread">{unread}</span>}
+        {tags && <span className="colonia-convrow__tags">{tags}</span>}
+        <span className="colonia-convrow__bottom">
+          <span className={cx("colonia-convrow__preview", typing && "is-typing")}>{typing ?? preview}</span>
+          {unread > 0 && <span className="colonia-convrow__unread">{unread}</span>}
         </span>
-        {meta && <span className="apx-convrow__meta">{meta}</span>}
+        {meta && <span className="colonia-convrow__meta">{meta}</span>}
       </span>
     </button>
   );

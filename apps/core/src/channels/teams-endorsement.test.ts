@@ -8,7 +8,7 @@ import type { AdapterIO } from "./types.ts";
 
 test("an activity without a channel id is refused under a key endorsed for Teams, and nothing is received", async () => {
   const tm = await fakeTeams();
-  const dir = tempDir("apx-teams-endorse-").path;
+  const dir = tempDir("colonia-teams-endorse-").path;
   const adapter = teamsAdapter({ id: "tm", type: "teams" } as never, tm.secret, {
     dir,
     openid: `${tm.base}/openid`,

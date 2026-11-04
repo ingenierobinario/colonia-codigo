@@ -15,7 +15,7 @@ type Message = {
 
 export async function fakeNtfy() {
   const TOKEN = "tk_fakentfytoken000000001";
-  const TOPIC = "apx-test-topic";
+  const TOPIC = "colonia-test-topic";
   const cached: Message[] = [];
   const streams = new Set<http.ServerResponse>();
   const files = new Map<string, Buffer>();
@@ -103,8 +103,8 @@ export async function fakeNtfy() {
       files.set(name, data);
       add({ message: name, attachment: { name, type: "image/png", size: data.length, url: `${base}/file/${name}` } });
     },
-    /** Texts APX published (tagged as its own). */
-    published: () => cached.filter((m) => m.tags?.includes("apx")).map((m) => m.message),
+    /** Texts Colonia published (tagged as its own). */
+    published: () => cached.filter((m) => m.tags?.includes("colonia")).map((m) => m.message),
     /** The `since` of each subscription opened, in order. */
     subscribes,
     /** Ends every open subscription, as a server restart would. */

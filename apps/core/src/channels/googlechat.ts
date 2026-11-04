@@ -238,12 +238,12 @@ export const googlechatAdapter = (
         buttonList: {
           buttons: buttons.map((b) => ({
             text: b.label,
-            onClick: { action: { function: "apx", parameters: [{ key: "id", value: b.id }] } },
+            onClick: { action: { function: "colonia", parameters: [{ key: "id", value: b.id }] } },
           })),
         },
       },
     ];
-    return [{ cardId: "apx", card: { sections: [{ widgets }] } }];
+    return [{ cardId: "colonia", card: { sections: [{ widgets }] } }];
   }
 
   async function post(space: string, text: string, buttons: Presentation["buttons"], thread?: string) {

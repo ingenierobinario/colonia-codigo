@@ -1,14 +1,14 @@
 // The tray's new notices as the system's own notifications unless the owner is looking at the very chat they are about
-// (APX in front, that chat open), and APX's own sound for each as it arrives. The desktop app allows them already; a
+// (Colonia in front, that chat open), and Colonia's own sound for each as it arrives. The desktop app allows them already; a
 // browser asks on the owner's first click, as browsers require.
 
-import type { Notification as Notice } from "@apx/protocol";
+import type { Notification as Notice } from "@colonia/protocol";
 import { onNewNotice, readNotifications } from "../data/notifications.ts";
 import { go, nav, showsChat } from "./nav.ts";
 import { noticeTask } from "./noticeTarget.ts";
 import { noticeArrived } from "./sounds.ts";
 
-/** The owner has APX in front with this notice's chat open: the chat itself shows it. */
+/** The owner has Colonia in front with this notice's chat open: the chat itself shows it. */
 const looking = (n: Notice) => {
   if (document.visibilityState !== "visible" || !document.hasFocus()) return false;
   const s = nav.get();

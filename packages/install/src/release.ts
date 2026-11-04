@@ -1,7 +1,7 @@
-// Updates for a daemon installed from a bundle (install.sh/ps1): the release feed says whether a newer APX is out, and
+// Updates for a daemon installed from a bundle (install.sh/ps1): the release feed says whether a newer Colonia is out, and
 // on the owner's word the bundle for this platform is downloaded, checked against its .sha256, unpacked beside the one
 // running and made `current`. The running version is never touched, so a failed update changes nothing. The core uses
-// it, and so does `apx update` when the core cannot start.
+// it, and so does `colonia update` when the core cannot start.
 import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
@@ -16,7 +16,7 @@ import {
   type Platform,
   parseSha256,
   type Release,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 
 /** Runs a command; never throws (a failure is a non-zero code). */
 export type Runner = (cmd: string, args: string[], timeoutMs: number) => Promise<{ code: number; out: string }>;
@@ -128,7 +128,7 @@ export async function installRelease(o: {
   const name = coreBundleName(o.release.version, o.platform);
   const asset = o.release.assets.find((a) => a.name === name);
   const sum = o.release.assets.find((a) => a.name === `${name}.sha256`);
-  if (!asset || !sum) throw new Error(`APX ${o.release.version} has no ${name} (and its .sha256) for this computer`);
+  if (!asset || !sum) throw new Error(`Colonia ${o.release.version} has no ${name} (and its .sha256) for this computer`);
 
   const work = path.join(o.app, `.update-${randomUUID().slice(0, 8)}`);
   fs.mkdirSync(work, { recursive: true });
@@ -145,14 +145,14 @@ export async function installRelease(o: {
     fs.mkdirSync(unpacked);
     const tar = await o.run(tarCommand(), ["-xzf", file, "-C", unpacked], 5 * 60_000);
     if (tar.code !== 0) throw new Error(`unpacking ${name}: ${tar.out.trim().slice(-300)}`);
-    const node = path.join(unpacked, "apx", ...BUNDLE.node(o.platform.os === "win"));
+    const node = path.join(unpacked, "colonia", ...BUNDLE.node(o.platform.os === "win"));
     if (!fs.existsSync(node)) throw new Error(`${name} has no Node inside`);
 
     const before = currentVersion(o.app);
     const target = path.join(o.app, BUNDLE.versions, o.release.version);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.rmSync(target, { recursive: true, force: true });
-    fs.renameSync(path.join(unpacked, "apx"), target);
+    fs.renameSync(path.join(unpacked, "colonia"), target);
     switchCurrent(o.app, o.release.version);
     prune(o.app, [o.release.version, ...(before ? [before] : []), ...(o.running ? [o.running] : [])]);
     return `downloaded ${name}, checked its sha256, installed it as current${before ? ` (was ${before})` : ""}`;

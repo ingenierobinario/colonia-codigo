@@ -1,6 +1,6 @@
 // Who the owner is, for their agents: the name is the owner's person, the rest are settings. Agents read it in their
 // system prompt (name, about) and their turn context (language, time zone).
-import type { OwnerIdentity } from "@apx/protocol";
+import type { OwnerIdentity } from "@colonia/protocol";
 import type { Store } from "./store.ts";
 
 export function ownerIdentity(store: Store): OwnerIdentity {

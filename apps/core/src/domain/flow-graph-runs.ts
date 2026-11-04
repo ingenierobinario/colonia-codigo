@@ -2,7 +2,7 @@
 // transition is a compare-and-set inside a transaction that also checks the run is still going, so a step runs once
 // and a late answer never reopens an ended run (DECISIONS.md#d-167).
 
-import { FlowGraph, type FlowNode, type FlowRunDetail, type FlowStepRecord } from "@apx/protocol/flow-graph";
+import { FlowGraph, type FlowNode, type FlowRunDetail, type FlowStepRecord } from "@colonia/protocol/flow-graph";
 import { sql as raw } from "kysely";
 import type { Db } from "../db/db.ts";
 import { redactedJson } from "../log.ts";

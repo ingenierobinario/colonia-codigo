@@ -1,4 +1,4 @@
-import type { Run } from "@apx/protocol";
+import type { Run } from "@colonia/protocol";
 
 /**
  * How full the chat is, from the newest finished run (runs newest first). Engines that do not report it (Claude

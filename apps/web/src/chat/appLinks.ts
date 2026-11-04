@@ -1,11 +1,11 @@
-// Where an app link an agent wrote goes (apx:settings/desktop, apx:tasks…): a place of the panel, or nothing for a
+// Where an app link an agent wrote goes (colonia:settings/desktop, colonia:tasks…): a place of the panel, or nothing for a
 // link it does not know (shown as its label).
 import { CONFIG_SECTIONS, type ConfigSection, go, nav, RESOURCE_TABS, type ResourceTab } from "../shell/nav.ts";
 
 const isIn = <T extends string>(list: readonly T[], v: string | undefined): v is T =>
   v !== undefined && (list as readonly string[]).includes(v);
 
-/** A place an `apx:` link names: what it is (for its icon and hint) and the move that opens it. */
+/** A place an `colonia:` link names: what it is (for its icon and hint) and the move that opens it. */
 export type AppPlace =
   | { kind: "settings"; section: ConfigSection; open: () => void }
   | { kind: "task"; id: string; open: () => void }
@@ -17,13 +17,13 @@ export type AppPlace =
   | { kind: "project"; id: string; open: () => void }
   | { kind: "computer"; open: () => void };
 
-/** The place an `apx:` link names; undefined when it names none. */
+/** The place an `colonia:` link names; undefined when it names none. */
 export function appPlace(href: string): AppPlace | undefined {
-  const m = /^apx:([a-z]+)(?:\/([\w-]+))?(?:\/([\w-]+))?(?:\/([\w-]+))?$/i.exec(href.trim());
+  const m = /^colonia:([a-z]+)(?:\/([\w-]+))?(?:\/([\w-]+))?(?:\/([\w-]+))?$/i.exec(href.trim());
   if (!m) return undefined;
   const [, where = "", a, b, c] = m;
   const to = where.toLowerCase();
-  // Only a flow's link goes three deep: apx:flows/<project>/<flow>/edit.
+  // Only a flow's link goes three deep: colonia:flows/<project>/<flow>/edit.
   if (c !== undefined && (to !== "flows" || c !== "edit")) return undefined;
   switch (to) {
     case "settings":

@@ -1,4 +1,4 @@
-// Marks of the model APIs APX's own loop calls, drawn like the ACP marks: one colour in the text colour unless the
+// Marks of the model APIs Colonia's own loop calls, drawn like the ACP marks: one colour in the text colour unless the
 // brand's own colours are part of the mark. Path data from @lobehub/icons-static-svg (MIT); the marks belong to their
 // owners.
 import type { AcpMark } from "./acp-marks";

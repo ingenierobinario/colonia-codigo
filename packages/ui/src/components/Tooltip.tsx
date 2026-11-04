@@ -1,6 +1,6 @@
 import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
 import type { ReactElement, ReactNode } from "react";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 
 export interface TooltipProps {
   /** Tooltip text. */
@@ -27,15 +27,15 @@ export function Tooltip({
   defaultOpen,
   delay = 400,
 }: TooltipProps) {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   return (
     <BaseTooltip.Root defaultOpen={defaultOpen}>
       <BaseTooltip.Trigger delay={delay} render={children} />
       <BaseTooltip.Portal container={portalRef}>
         <BaseTooltip.Positioner side={side} sideOffset={6}>
-          <BaseTooltip.Popup className={`apx-tooltip${appearance === "surface" ? " apx-tooltip--surface" : ""}`}>
+          <BaseTooltip.Popup className={`colonia-tooltip${appearance === "surface" ? " colonia-tooltip--surface" : ""}`}>
             {content}
-            {shortcut && <span className="apx-tooltip__kbd">{shortcut}</span>}
+            {shortcut && <span className="colonia-tooltip__kbd">{shortcut}</span>}
           </BaseTooltip.Popup>
         </BaseTooltip.Positioner>
       </BaseTooltip.Portal>

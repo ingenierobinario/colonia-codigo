@@ -10,11 +10,11 @@ import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
 Los servidores MCP (Model Context Protocol) suman tools: uno de GitHub deja que los agentes lean issues, uno de base de
-datos deja que consulten, y así. APX corre los servidores que usan tus agentes y pone cada tool detrás de tus
+datos deja que consulten, y así. Colonia corre los servidores que usan tus agentes y pone cada tool detrás de tus
 permisos.
 
 <Aside type="note">
-Esta página trata de los servidores que usan **los agentes de APX** (`apx mcps`). Para usar APX **desde** Claude Code,
+Esta página trata de los servidores que usan **los agentes de Colonia** (`colonia mcps`). Para usar Colonia **desde** Claude Code,
 Codex u otro cliente MCP, mirá [Clientes externos](/es/extend/outside-clients/).
 </Aside>
 
@@ -51,16 +51,16 @@ muestra **Aprobar** hasta que lo aprobás; leé el comando antes. **Probar** lo 
 <TabItem label="Terminal">
 
 ```bash
-apx mcps                                   # todos los servidores: estado, cantidad de tools, error o destino
-apx mcps list acme-store                   # como los ve un proyecto
-apx mcps add github -- npx -y @modelcontextprotocol/server-github
-apx mcps add status https://mcp.example.com/status
-apx mcps trust acme-store docs             # aprobar un servidor de proyecto tal como lo define su archivo ahora
-apx mcps untrust acme-store docs
-apx mcps rm github
+colonia mcps                                   # todos los servidores: estado, cantidad de tools, error o destino
+colonia mcps list acme-store                   # como los ve un proyecto
+colonia mcps add github -- npx -y @modelcontextprotocol/server-github
+colonia mcps add status https://mcp.example.com/status
+colonia mcps trust acme-store docs             # aprobar un servidor de proyecto tal como lo define su archivo ahora
+colonia mcps untrust acme-store docs
+colonia mcps rm github
 ```
 
-Poné `--` antes de un comando cuyos argumentos empiezan con `-` (como `npx -y`), así `apx` no los toma como opciones
+Poné `--` antes de un comando cuyos argumentos empiezan con `-` (como `npx -y`), así `colonia` no los toma como opciones
 propias. El entorno y los headers se editan en el panel.
 
 </TabItem>
@@ -72,21 +72,21 @@ Los servidores no corren todo el tiempo: un servidor está **Listo** y arranca s
 vez.
 
 Un servidor que inicia sesión a través de tu navegador (uno que corre con `mcp-remote`, por ejemplo) abre su página
-de inicio de sesión la primera vez que arranca. Si no la terminás, muestra **Necesita que inicies sesión** y APX no
+de inicio de sesión la primera vez que arranca. Si no la terminás, muestra **Necesita que inicies sesión** y Colonia no
 lo vuelve a arrancar solo, así que tu navegador no se abre una y otra vez. Tocá **Iniciar sesión** en el servidor (o
-corré `apx mcp signin <server>`) cuando quieras, y terminá en la página que abre.
+corré `colonia mcp signin <server>`) cuando quieras, y terminá en la página que abre.
 
 ## Probar un servidor desde la terminal
 
-`apx mcp tools`, `run` y `check` hablan directo con un servidor, algo útil cuando algo no anda:
+`colonia mcp tools`, `run` y `check` hablan directo con un servidor, algo útil cuando algo no anda:
 
-<Terminal command="apx mcp check github">{`github: OK · 812 ms · 26 tools`}</Terminal>
+<Terminal command="colonia mcp check github">{`github: OK · 812 ms · 26 tools`}</Terminal>
 
 ```bash
-apx mcp tools github                       # cada tool con su esquema y un comando run listo para usar
-apx mcp tools github search_issues         # solo una
-apx mcp run github search_issues '{"q":"repo:acme/store is:open label:bug"}'
-echo '{"q":"is:open"}' | apx mcp run github search_issues -
+colonia mcp tools github                       # cada tool con su esquema y un comando run listo para usar
+colonia mcp tools github search_issues         # solo una
+colonia mcp run github search_issues '{"q":"repo:acme/store is:open label:bug"}'
+echo '{"q":"is:open"}' | colonia mcp run github search_issues -
 ```
 
 Sumá `--project <id>` para un servidor de proyecto, y `--scope global|project` cuando un nombre existe en los dos.
@@ -121,15 +121,15 @@ tools en el chat funcionan igual que si el agente hubiera llamado la tool direct
 
 Un agente puede pasarle uno de sus archivos a una tool de MCP: una imagen que dibujó, algo que adjuntaste en el chat o
 un archivo de las carpetas donde trabaja. En los argumentos de la tool escribe el id del archivo (`med_…`) o
-`apx-file:<ruta>`, y APX manda el archivo como ese campo lo recibe:
+`colonia-file:<ruta>`, y Colonia manda el archivo como ese campo lo recibe:
 
 - A un servidor que corre **en otro lado** (una URL `http(s)`), el campo recibe el contenido del archivo en base64,
   dentro de lo que el campo dice aceptar ("imágenes de menos de 8 MB") y nunca más de 20 MB. El tipo y el nombre del
   archivo completan los campos `mime_type` y `file_name` de la tool cuando los tiene y el agente los dejó vacíos.
 - A un servidor que corre **en esta computadora** (un comando), un campo de ruta recibe una ruta real. Un dibujo o un
-  adjunto se copia antes a la carpeta temporal del chat, así el servidor nunca lee la carpeta propia de APX.
+  adjunto se copia antes a la carpeta temporal del chat, así el servidor nunca lee la carpeta propia de Colonia.
 - Un campo que solo acepta un link público, o una ruta que un servidor remoto leería en su propio disco, se rechaza
-  diciendo qué campo usar. APX no publica tus archivos para conseguir un link: para un video grande, el servicio
+  diciendo qué campo usar. Colonia no publica tus archivos para conseguir un link: para un video grande, el servicio
   necesita su propia forma de recibirlo (un link de subida que él entregue, y después `curl` desde la carpeta temporal
   del agente).
 

@@ -7,7 +7,7 @@ sidebar:
 
 ## Una computadora aparte de tu equipo
 
-APX puede preparar una máquina virtual Linux opcional con navegador, escritorio y terminal. Descarga Lima si hace
+Colonia puede preparar una máquina virtual Linux opcional con navegador, escritorio y terminal. Descarga Lima si hace
 falta, Linux y los paquetes del escritorio; no requiere Docker. Corre en la **computadora del core**, no
 automáticamente en el dispositivo donde abrís el panel. Qué necesita esa computadora:
 
@@ -15,7 +15,7 @@ automáticamente en el dispositivo donde abrís el panel. Qué necesita esa comp
 |---|---|---|
 | macOS 13 o posterior (Apple Silicon o Intel) | Nada más | El framework de virtualización de Apple |
 | Linux (x86-64 o ARM64) | QEMU (`sudo apt install qemu-system-x86 qemu-utils`, o `qemu-system-arm qemu-efi-aarch64` en ARM) y acceso a `/dev/kvm` (`sudo usermod -aG kvm $USER` y volver a iniciar sesión) | QEMU con KVM |
-| Windows 10 (build 19041 o posterior) u 11 | WSL 2 (`wsl --install --no-distribution` en un PowerShell de administrador y reiniciar) y Git para Windows, por su `ssh` (`winget install --id Git.Git -e`) | WSL 2, sobre una imagen Debian que APX prepara la primera vez |
+| Windows 10 (build 19041 o posterior) u 11 | WSL 2 (`wsl --install --no-distribution` en un PowerShell de administrador y reiniciar) y Git para Windows, por su `ssh` (`winget install --id Git.Git -e`) | WSL 2, sobre una imagen Debian que Colonia prepara la primera vez |
 
 Si falta algo, el panel lo muestra como un paso: qué hacer, el comando de tu sistema para copiar (en Linux, el del gestor de paquetes de tu distribución: apt, dnf, pacman o zypper) y **Listo, probar de nuevo**. Instalar pide tu contraseña de administrador, así que es un paso que hacés una sola vez. En Windows:
 
@@ -25,12 +25,12 @@ Si falta algo, el panel lo muestra como un paso: qué hacer, el comando de tu si
 - WSL fija la memoria y los CPU de todas sus distribuciones juntas, en `.wslconfig`; los ajustes de memoria y CPU de
   la computadora no los cambian.
 - Las distribuciones de WSL comparten una red. Cada agente solo llega a sus propios servicios locales y al proxy de
-  salida de APX, así que los servicios que tus otras distribuciones escuchan en localhost quedan fuera de su alcance.
+  salida de Colonia, así que los servicios que tus otras distribuciones escuchan en localhost quedan fuera de su alcance.
 - La VM no puede ejecutar programas de Windows, y los discos de Windows montados en `/mnt` están cerrados para los
   agentes.
 
 No es lo mismo que [dejar que los agentes usen tu escritorio](/es/devices/desktop/#uso-de-la-computadora) ni que abrir
-pestañas en el [navegador integrado](/es/office/browser/) de APX.
+pestañas en el [navegador integrado](/es/office/browser/) de Colonia.
 
 ## Permitile el acceso a un agente y elegí su chat
 
@@ -39,7 +39,7 @@ La computadora está desactivada para todos los agentes hasta que les das permis
 su pantalla cuando la necesite; no le da permiso para usar tu propia pantalla.
 
 Abrí el chat de un agente de proyecto y su panel **Computadora**, y elegí **Usar la computadora acá** (o permitile
-el acceso y usala acá). Pedile que trabaje ahí. APX muestra la creación, la carga y cuándo está lista en el chat;
+el acceso y usala acá). Pedile que trabaje ahí. Colonia muestra la creación, la carga y cuándo está lista en el chat;
 un agente autorizado puede iniciarla y seguir cuando esté lista. Home se queda en la computadora anfitriona. Un
 mensaje de un contacto, widget o app externa no obtiene acceso a la computadora.
 
@@ -73,14 +73,14 @@ pero no achicarse.
 
 El límite de pantallas depende de la memoria asignada a la VM encendida. Si está lleno, apagá otra pantalla o
 asigná más memoria y reiniciá la VM. Iniciar también requiere memoria libre para la VM más una reserva para el anfitrión.
-Cuando puede, APX ofrece una asignación menor. **Iniciar igual** aparece solo cuando alcanza para la VM pero no
+Cuando puede, Colonia ofrece una asignación menor. **Iniciar igual** aparece solo cuando alcanza para la VM pero no
 para la reserva del anfitrión; no permite ignorar cualquier falta de memoria. La VM puede apagarse si el anfitrión se
 queda corta de memoria, conservando su disco.
 
 ## Límites
 
 El entorno separa el trabajo de tu escritorio, pero no vuelve confiables las páginas ni el código descargado.
-El acceso a la red pasa por el proxy de salida de APX; no es una ruta libre a tu anfitrión o red privada.
+El acceso a la red pasa por el proxy de salida de Colonia; no es una ruta libre a tu anfitrión o red privada.
 Revisá las solicitudes para enviar mensajes, publicar o usar credenciales como en cualquier chat. Elegí los
 [ajustes de autonomía](/es/concepts/autonomy/) con cuidado.
 

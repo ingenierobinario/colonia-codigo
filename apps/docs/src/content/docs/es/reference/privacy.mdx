@@ -15,7 +15,7 @@ Colonia funciona en tu ordenador y guarda ahí tus chats, agentes, archivos y cl
   agente. Lo que haga con ello se rige por sus condiciones: revísalas.
 - **A los servicios que conectes**: si conectas Telegram, WhatsApp u otros canales, los mensajes pasan por ellos. Si un
   agente navega, las webs que visita reciben esas visitas.
-- **Comprobación de actualizaciones**: Colonia consulta cada pocas horas si hay una versión nueva. `APX_UPDATES=off` lo
+- **Comprobación de actualizaciones**: Colonia consulta cada pocas horas si hay una versión nueva. `COLONIA_UPDATES=off` lo
   apaga.
 
 ## Telemetría: apagada por defecto
@@ -23,7 +23,7 @@ Colonia funciona en tu ordenador y guarda ahí tus chats, agentes, archivos y cl
 Colonia no tiene ningún destino de telemetría configurado, así que no envía estadísticas de uso a nadie. Aunque en la
 aplicación aparezca una pregunta sobre estadísticas de uso, sin destino nada sale de tu ordenador.
 
-Sólo se envían datos si alguien fija la variable `APX_TELEMETRY` con un destino en el ordenador donde funciona Colonia.
+Sólo se envían datos si alguien fija la variable `COLONIA_TELEMETRY` con un destino en el ordenador donde funciona Colonia.
 
 ## Si se configura un destino
 
@@ -38,6 +38,6 @@ carpetas; qué modelos o proveedores usas; ni tus claves.
 ## Cómo asegurarte de que sigue apagada
 
 <Aside>
-Cualquiera de estas opciones lo apaga todo, aunque haya un destino: `APX_TELEMETRY=off` en el entorno o en `core.env`,
+Cualquiera de estas opciones lo apaga todo, aunque haya un destino: `COLONIA_TELEMETRY=off` en el entorno o en `core.env`,
 `DO_NOT_TRACK=1` o una variable `CI`.
 </Aside>

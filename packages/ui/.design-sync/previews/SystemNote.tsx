@@ -1,4 +1,4 @@
-import { AgentChip, ApxProvider, Icons, SystemNote } from "@apx/ui";
+import { AgentChip, ColoniaProvider, Icons, SystemNote } from "@colonia/ui";
 
 const col = { width: 520, display: "flex", flexDirection: "column" as const };
 
@@ -21,10 +21,10 @@ export function Events() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 8, borderRadius: 10, width: 520 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 8, borderRadius: 10, width: 520 }}>
       <SystemNote icon={<Icons.Brain />}>
         Updated memory for <AgentChip name="Roby" blob="noche" tone="brand" />
       </SystemNote>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

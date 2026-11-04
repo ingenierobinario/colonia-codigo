@@ -1,5 +1,5 @@
 import "../styles/whats-new.css";
-import { Button, Dialog, Icons } from "@apx/ui";
+import { Button, Dialog, Icons } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { send } from "../data/actions.ts";
 import { secretary } from "../data/identity.ts";

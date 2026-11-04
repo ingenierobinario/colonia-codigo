@@ -74,24 +74,24 @@ async function ask(
   return input;
 }
 
-test("an always OK for one of APX's tools lets that agent use it without asking, until the owner revokes it", async () => {
+test("an always OK for one of Colonia's tools lets that agent use it without asking, until the owner revokes it", async () => {
   const first = await ask("stamp", "approve", "always");
   assert.deepEqual(first?.approval_scopes, ["once", "session", "always"]);
   assert.deepEqual(ran, ["stamp"]);
 
   assert.equal(await ask("stamp"), undefined, "the second time nobody is asked");
   assert.deepEqual(ran, ["stamp", "stamp"]);
-  const grant = (await env.client.call("tools.approvals", {})).approvals.find((g) => g.key === "apx:acme_stamp");
+  const grant = (await env.client.call("tools.approvals", {})).approvals.find((g) => g.key === "colonia:acme_stamp");
   assert.equal(grant?.agent_id, "clerk");
-  assert.equal(grant?.server, "apx");
+  assert.equal(grant?.server, "colonia");
 
-  await env.client.call("tools.revoke", { key: "apx:acme_stamp", agent: "clerk" });
+  await env.client.call("tools.revoke", { key: "colonia:acme_stamp", agent: "clerk" });
   assert.ok(await ask("stamp", "deny"), "revoked: it asks again");
   assert.deepEqual(ran, ["stamp", "stamp"]);
 });
 
 test("an action that always asks takes an OK for this chat, kept apart from the tool's ordinary grant", async () => {
-  await env.client.call("tools.revoke", { key: "apx:acme_shred", agent: "clerk" });
+  await env.client.call("tools.revoke", { key: "colonia:acme_shred", agent: "clerk" });
   await ask("stamp", "approve", "always");
   const first = await ask("shred", "approve", "session");
   assert.deepEqual(first?.approval_scopes, ["once", "session", "always"]);
@@ -101,13 +101,13 @@ test("an action that always asks takes an OK for this chat, kept apart from the 
   await ask("shred", "approve", "always");
   assert.equal(await ask("shred"), undefined, "an always OK covers it in every chat");
   const keys = (await env.client.call("tools.approvals", {})).approvals.map((g) => g.key);
-  assert.ok(keys.includes("apx:acme_shred#always"));
-  await env.client.call("tools.revoke", { key: "apx:acme_shred#always", agent: "clerk" });
+  assert.ok(keys.includes("colonia:acme_shred#always"));
+  await env.client.call("tools.revoke", { key: "colonia:acme_shred#always", agent: "clerk" });
   assert.ok(await ask("shred", "deny"), "revoked: it asks again");
 });
 
 test("an always OK for a tool's ordinary calls does not cover its calls that always ask", async () => {
-  await env.client.call("tools.revoke", { key: "apx:acme_shred#always", agent: "clerk" });
+  await env.client.call("tools.revoke", { key: "colonia:acme_shred#always", agent: "clerk" });
   await ask("trim", "approve", "always");
   assert.equal(await ask("trim"), undefined, "its ordinary call no longer asks");
   assert.ok(await ask("shred", "deny"), "its call that always asks still does");

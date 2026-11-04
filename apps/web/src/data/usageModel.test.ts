@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { SystemUsage } from "@apx/protocol";
+import type { SystemUsage } from "@colonia/protocol";
 import { createUsagePoller, processRows, ramSplit, size } from "./usageModel.ts";
 
 const usage = (over: Partial<SystemUsage> = {}): SystemUsage => ({
@@ -36,11 +36,11 @@ test("processes are the core and the desktop's, biggest first", () => {
   assert.deepEqual(processRows(undefined, undefined), []);
 });
 
-test("RAM splits into APX, the VM, other apps and free, adding up to the whole", () => {
+test("RAM splits into Colonia, the VM, other apps and free, adding up to the whole", () => {
   const vm = { running: true, memory_assigned_mb: 4096, memory_used_mb: 2048 };
   const r = ramSplit(usage({ vm }), { total_mb: 700, items: [] });
-  assert.deepEqual(r, { total: 16384, apx: 1000, vm: 2048, other: 10240 - 3048, free: 6144, used: 10240 });
-  assert.equal(r.apx + r.vm + r.other + r.free, r.total);
+  assert.deepEqual(r, { total: 16384, colonia: 1000, vm: 2048, other: 10240 - 3048, free: 6144, used: 10240 });
+  assert.equal(r.colonia + r.vm + r.other + r.free, r.total);
   assert.equal(ramSplit(usage({ vm: { ...vm, running: false } }), undefined).vm, 0, "a stopped VM takes none");
 });
 

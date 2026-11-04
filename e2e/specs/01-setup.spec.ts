@@ -3,13 +3,13 @@
 import { AGENT_NAMES } from "../../packages/protocol/src/constants.ts";
 import { expect, rpc, test, until, world } from "./kit.ts";
 
-test("a new install opens the setup and imports APX v1", async ({ page }) => {
+test("a new install opens the setup and imports Colonia v1", async ({ page }) => {
   await page.goto("/");
   const wizard = page.locator(".wiz");
   await expect(wizard).toBeVisible();
   await expect(wizard.getByText("v1.120.0")).toBeVisible();
 
-  await wizard.getByRole("button", { name: /Importar desde APX v1/ }).click();
+  await wizard.getByRole("button", { name: /Importar desde Colonia v1/ }).click();
   await expect(wizard.getByRole("switch").first()).toBeVisible();
   await expect(wizard.getByText("Ollama · embeddinggemma:300m")).toBeVisible();
   await expect(wizard.locator(".wiz__rowname").filter({ hasText: /^Motores\s*2$/ })).toBeVisible();
@@ -72,7 +72,7 @@ test("a new install opens the setup and imports APX v1", async ({ page }) => {
   await wizard.getByRole("textbox", { name: "Token del bot", exact: true }).fill(token);
   const telegram = wizard.locator(".wiz__engine").filter({ hasText: "TELEGRAM" });
   await telegram.getByRole("button", { name: "Conectar" }).click();
-  await expect(wizard.getByText("@apx_test_bot")).toBeVisible();
+  await expect(wizard.getByText("@colonia_test_bot")).toBeVisible();
   // Discord and Slack connect from here too (their bot's token), with how to make the bot one click away.
   const discord = wizard.locator(".wiz__engine").filter({ hasText: "DISCORD" });
   await expect(discord.getByRole("textbox", { name: "Discord: Token del bot" })).toBeVisible();
@@ -85,7 +85,7 @@ test("a new install opens the setup and imports APX v1", async ({ page }) => {
   await wizard.getByPlaceholder("/ruta/a/tu/proyecto").fill(repo);
   await wizard.getByRole("button", { name: "Crear crew" }).click();
   await expect(wizard.getByText(/está listo|is ready/)).toBeVisible();
-  // With v1's `apx` here the owner first says whether `apx` becomes v2; then the app opens by itself.
+  // With v1's `colonia` here the owner first says whether `colonia` becomes v2; then the app opens by itself.
   await expect(wizard.getByText("Abriendo tu chat con Robina…")).toBeHidden();
   await wizard.getByRole("button", { name: "Ahora no" }).click();
   await expect(wizard.getByText("Abriendo tu chat con Robina…")).toBeVisible();
@@ -156,7 +156,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await expect(dialog.getByRole("textbox", { name: "Modelo" })).toHaveValue("embeddinggemma:300m");
   await dialog.getByRole("button", { name: "Probar conexión" }).click();
   await expect(dialog.getByText("Responde, con 2 modelos: elegí uno.")).toBeVisible();
-  await page.screenshot({ path: "/tmp/apx-embed-test.png" });
+  await page.screenshot({ path: "/tmp/colonia-embed-test.png" });
   await page.keyboard.press("Escape");
   await wizard.getByRole("button", { name: /Buscar por palabras/ }).click();
   for (let i = 0; i < 2; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
@@ -166,7 +166,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await baseName.fill("Northwind");
   await wizard.getByRole("combobox", { name: "Tipo" }).click();
   await page.getByRole("option", { name: /Empresa/ }).click();
-  await wizard.getByRole("button", { name: /Usar la carpeta de APX/ }).click();
+  await wizard.getByRole("button", { name: /Usar la carpeta de Colonia/ }).click();
   await wizard.getByRole("button", { name: "Crear crew" }).click();
   await wizard.getByRole("button", { name: "Ahora no" }).click();
   await expect(wizard).toBeHidden();
@@ -176,21 +176,21 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await rpc("projects.update_base", { name: "Default", kind: null });
 });
 
-test("right after the desktop app installs APX, the setup's welcome says so, once", async ({ page }) => {
+test("right after the desktop app installs Colonia, the setup's welcome says so, once", async ({ page }) => {
   await page.goto("/?welcome=installed");
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
-  await expect(wizard.getByText("APX está instalado")).toBeVisible();
-  await expect(wizard.getByText(/APX ya está instalado; ahora armamos tu crew/)).toBeVisible();
+  await expect(wizard.getByText("Colonia está instalado")).toBeVisible();
+  await expect(wizard.getByText(/Colonia ya está instalado; ahora armamos tu crew/)).toBeVisible();
   // v1 is on this machine: the two ways in stay.
-  await expect(wizard.getByRole("button", { name: /Importar desde APX v1/ })).toBeVisible();
+  await expect(wizard.getByRole("button", { name: /Importar desde Colonia v1/ })).toBeVisible();
   expect(new URL(page.url()).searchParams.has("welcome")).toBe(false);
   await page.reload();
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   await expect(wizard.getByText("Open source")).toBeVisible();
-  await expect(wizard.getByText("APX está instalado")).toBeHidden();
+  await expect(wizard.getByText("Colonia está instalado")).toBeHidden();
 });
 
 test("the setup's header picks the language, kept like the app's own", async ({ page }) => {
@@ -214,8 +214,8 @@ for (const look of ["minimal", "classic"]) {
     test(`the wizard and its menus inherit ${look} ${mode}`, async ({ page }) => {
       await page.addInitScript(
         ({ look, mode }) => {
-          localStorage.setItem("apx.prefs", JSON.stringify({ look, language: "es" }));
-          localStorage.setItem("apx.mode", mode);
+          localStorage.setItem("colonia.prefs", JSON.stringify({ look, language: "es" }));
+          localStorage.setItem("colonia.mode", mode);
         },
         { look, mode },
       );
@@ -226,14 +226,14 @@ for (const look of ["minimal", "classic"]) {
       await wizard.getByRole("button", { name: /Empezar de cero/ }).click();
       for (let i = 0; i < 4; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
       await wizard.getByRole("combobox", { name: "Tipo" }).click();
-      const popup = page.locator(".apx-select__popup");
+      const popup = page.locator(".colonia-select__popup");
       await expect(popup).toBeVisible();
       const theme = (element: Element) => {
-        const root = element.closest("[data-apx-look]");
+        const root = element.closest("[data-colonia-look]");
         return {
-          look: root?.getAttribute("data-apx-look"),
-          mode: root?.getAttribute("data-apx-mode"),
-          surface: getComputedStyle(element).getPropertyValue("--apx-surface"),
+          look: root?.getAttribute("data-colonia-look"),
+          mode: root?.getAttribute("data-colonia-mode"),
+          surface: getComputedStyle(element).getPropertyValue("--colonia-surface"),
         };
       };
       expect(await wizard.evaluate(theme)).toEqual(await popup.evaluate(theme));

@@ -1,5 +1,5 @@
-import type { Job, TerminalInfo, Thread } from "@apx/protocol";
-import { EmptyState, IconButton, Icons, Skeleton } from "@apx/ui";
+import type { Job, TerminalInfo, Thread } from "@colonia/protocol";
+import { EmptyState, IconButton, Icons, Skeleton } from "@colonia/ui";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { watchEvents } from "../data/live.ts";

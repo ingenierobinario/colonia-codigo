@@ -1,6 +1,6 @@
-import type { ChannelInfo } from "@apx/protocol";
-import { SUPER_AGENT_ID } from "@apx/protocol/client";
-import { Badge, EmptyState, Icons, SettingRow, Switch } from "@apx/ui";
+import type { ChannelInfo } from "@colonia/protocol";
+import { SUPER_AGENT_ID } from "@colonia/protocol/client";
+import { Badge, EmptyState, Icons, SettingRow, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";

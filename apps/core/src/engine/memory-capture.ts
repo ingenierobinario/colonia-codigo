@@ -1,4 +1,4 @@
-import type { Memory, MemoryEvidence } from "@apx/protocol";
+import type { Memory, MemoryEvidence } from "@colonia/protocol";
 import { memorySensitive } from "../domain/memories.ts";
 import { duplicateMemory, durableMemory, factSupported } from "../domain/memory-content.ts";
 import { evidenceIsLive, memoryClaimKey } from "../domain/memory-evidence.ts";

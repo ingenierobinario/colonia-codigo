@@ -1,4 +1,4 @@
-import type { FileChange, MethodName, Params, Part, Result, Thread, WritePolicy } from "@apx/protocol";
+import type { FileChange, MethodName, Params, Part, Result, Thread, WritePolicy } from "@colonia/protocol";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { ApprovalTarget } from "../domain/approvals.ts";
@@ -133,7 +133,7 @@ export type Tool = {
   /** Offered in a thread only when this says so (an account connected and on in the thread's project). */
   when?: ((thread: Thread) => boolean) | undefined;
   /**
-   * Cheap checks of the parsed arguments against APX's own state (the task exists, the column is real), run before
+   * Cheap checks of the parsed arguments against Colonia's own state (the task exists, the column is real), run before
    * the owner is asked: nobody approves a call that could only fail. Throws what the call itself would.
    */
   check?: ((args: Record<string, unknown>, ctx: CheckContext) => void | Promise<void>) | undefined;
@@ -272,7 +272,7 @@ const slim = new WeakMap<object, ToolSpec>();
 
 /**
  * A tool as our own loop sends it to the model: its schema without size bounds, still checked here. Claude Code and
- * Codex keep the full schema, through APX's MCP server.
+ * Codex keep the full schema, through Colonia's MCP server.
  */
 export function modelSpec(spec: ToolSpec): ToolSpec {
   let out = slim.get(spec.function.parameters);

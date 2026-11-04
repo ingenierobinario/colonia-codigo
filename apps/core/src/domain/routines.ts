@@ -1,6 +1,6 @@
 // Routines: work an agent does on a schedule. The row says what and when; each run is a normal run (its state lives
 // in runs) in a conversation of its own, listed in routine_runs.
-import type { CallModel, Routine, RoutineAction, RoutineRun, RunState, Schedule } from "@apx/protocol";
+import type { CallModel, Routine, RoutineAction, RoutineRun, RunState, Schedule } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { RoutinesTable } from "../db/schema.ts";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";

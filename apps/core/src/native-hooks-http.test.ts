@@ -60,7 +60,7 @@ test("the public HTTP listener preserves native LINE HMAC and Teams JWT authenti
       "HMAC covers the original bytes",
     );
     assert.equal(await send("line", { ...signed, headers: { authorization: "Bearer unrelated" } }), 401);
-    assert.equal(await send("line", signed), 200, "native HMAC requires no APX bearer");
+    assert.equal(await send("line", signed), 200, "native HMAC requires no Colonia bearer");
     assert.equal(await send("missing", signed), 404);
     const activity = teams.message("visitor", "Hello");
     const now = Math.floor(Date.now() / 1000);

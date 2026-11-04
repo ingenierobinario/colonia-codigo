@@ -1,5 +1,5 @@
 // The first-run setup (setup.*): open on a new install, or from the account menu; v1's scan and import.
-import type { Params, Result } from "@apx/protocol";
+import type { Params, Result } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
@@ -55,7 +55,7 @@ export async function importV1(groups: Params<"setup.import_v1">["groups"]) {
   }
 }
 
-/** A new project, in a folder or in one of its own inside APX's; the project, or nothing when it failed. */
+/** A new project, in a folder or in one of its own inside Colonia's; the project, or nothing when it failed. */
 export async function createProject(p: Params<"projects.create">): Promise<{ id: string; name: string } | undefined> {
   try {
     return (await client.call("projects.create", p)).project;

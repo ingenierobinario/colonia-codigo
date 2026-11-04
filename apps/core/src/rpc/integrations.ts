@@ -1,7 +1,7 @@
-// Integrations: connecting an account (its secrets and its MCP server as a global one, or a Google sign-in for APX's
+// Integrations: connecting an account (its secrets and its MCP server as a global one, or a Google sign-in for Colonia's
 // own tools) and disconnecting it. Where it is used is the per-project switch every global server has (mcp.toggle).
 import os from "node:os";
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 import { CHANNEL_CATALOG } from "../channels/catalog.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, notFound } from "../errors.ts";

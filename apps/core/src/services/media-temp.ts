@@ -1,5 +1,5 @@
 // A chat's kept file (a drawing, an attachment) as a real file in the chat's temp folder, so file and shell tools,
-// skills and local MCP servers can use it. The media store under APX's home stays closed to agents.
+// skills and local MCP servers can use it. The media store under Colonia's home stays closed to agents.
 import fs from "node:fs";
 import path from "node:path";
 import type { MediaRecord } from "../domain/media.ts";
@@ -7,7 +7,7 @@ import type { Store } from "../domain/store.ts";
 import { insideReal } from "../paths.ts";
 import { scratchDir } from "../tools/folders.ts";
 
-/** The media id APX gives out (a drawing, an attachment, a voice note). */
+/** The media id Colonia gives out (a drawing, an attachment, a voice note). */
 export const MEDIA_ID = /^med_[0-9a-f]{16}$/;
 
 /** A file of this chat by its id, or why not: a media id from another chat is as unknown as a made-up one. */

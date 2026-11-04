@@ -7,7 +7,7 @@ import { createSecrets } from "../secrets.ts";
 import { createAsana } from "./asana.ts";
 
 test("Asana bounds streamed responses and never echoes malformed JSON", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-asana-body-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-asana-body-"));
   const secrets = createSecrets(home, "file");
   secrets.set("asana-token", "example-token");
   try {

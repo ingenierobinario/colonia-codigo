@@ -143,7 +143,7 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   await expect(done).toBeVisible();
   await expect(cut).toBeVisible();
   await expect(page.getByText("4 de 4 pasos corrieron")).toBeVisible();
-  await expect(page.getByText(/^Respondió .+ en APX/)).toBeVisible();
+  await expect(page.getByText(/^Respondió .+ en Colonia/)).toBeVisible();
   await page.getByRole("radio", { name: "Ronda completa" }).click();
   // The whole run's log says what arrived, as text, then each step as it started and ended.
   const log = page.getByRole("log");

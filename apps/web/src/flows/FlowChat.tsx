@@ -1,4 +1,4 @@
-import { IconButton, Icons, Skeleton } from "@apx/ui";
+import { IconButton, Icons, Skeleton } from "@colonia/ui";
 import { useEffect } from "react";
 import { ChatComposer } from "../chat/composer/ChatComposer.tsx";
 import { Transcript } from "../chat/Transcript.tsx";

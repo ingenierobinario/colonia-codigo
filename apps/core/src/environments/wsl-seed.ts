@@ -19,7 +19,7 @@ const DEBIAN_WSL = {
   },
 };
 
-const SEED_DISTRO = "apx-computer-seed";
+const SEED_DISTRO = "colonia-computer-seed";
 
 /**
  * What Lima needs in a WSL root filesystem (an SSH server, sudo, systemd) and what keeps the guest apart from Windows:

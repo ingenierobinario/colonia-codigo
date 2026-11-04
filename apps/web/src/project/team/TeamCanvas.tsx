@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { AgentNode, type AgentNodeStat, ContextMenu, IconButton, Icons, type MenuEntry } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { AgentNode, type AgentNodeStat, ContextMenu, IconButton, Icons, type MenuEntry } from "@colonia/ui";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { blobOf } from "../../data/identity.ts";
 import { useT } from "../../i18n/index.ts";

@@ -246,7 +246,7 @@ async function runE2ESuites(
       cwd: root,
       stdio: "inherit",
       shell: process.platform === "win32",
-      env: { ...process.env, ...ports, APX_TEST_COVERAGE: "1", APX_TEST_COVERAGE_DIR: raw, NODE_V8_COVERAGE: raw },
+      env: { ...process.env, ...ports, COLONIA_TEST_COVERAGE: "1", COLONIA_TEST_COVERAGE_DIR: raw, NODE_V8_COVERAGE: raw },
       timeout: 15 * 60_000,
     });
     if (result.status !== 0) {
@@ -262,14 +262,14 @@ async function runE2ESuites(
     run(pnpm, ["exec", "playwright", "test", "--project", "chromium", ...shard]);
   }
   if (!which.desktop) return failed;
-  run(pnpm, ["--filter", "@apx/desktop", "build"]);
+  run(pnpm, ["--filter", "@colonia/desktop", "build"]);
   snapshot(path.join(root, "apps/desktop/dist"));
   const desktop = ["exec", "playwright", "test", "--project", "desktop"];
   if (process.platform === "linux" && !process.env.DISPLAY) {
     // Xvfb supplies a display; a window manager supplies real focus and minimization transitions.
     const launch =
       'command -v openbox >/dev/null || { echo "Install openbox for desktop window tests" >&2; exit 1; }; openbox >/dev/null 2>&1 & exec "$@"';
-    run("xvfb-run", ["-a", "sh", "-c", launch, "apx-desktop", pnpm, ...desktop]);
+    run("xvfb-run", ["-a", "sh", "-c", launch, "colonia-desktop", pnpm, ...desktop]);
   } else if (process.platform === "darwin") {
     // Native focus assertions need an awake display for the lifetime of the test process.
     run("caffeinate", ["-d", "-i", pnpm, ...desktop]);
@@ -311,7 +311,7 @@ function runUnitSuites(root: string, raw: string, nativeOutput: string, snapshot
       ["--test", ...files.map((file) => path.relative(cwd, path.join(root, file)))],
       {
         cwd,
-        env: { ...process.env, NODE_V8_COVERAGE: raw, APX_UI_TEST_COVERAGE_DIR: raw },
+        env: { ...process.env, NODE_V8_COVERAGE: raw, COLONIA_UI_TEST_COVERAGE_DIR: raw },
         stdio: "inherit",
         timeout: 10 * 60_000,
       },

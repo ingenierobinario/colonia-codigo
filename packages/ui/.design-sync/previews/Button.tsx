@@ -1,4 +1,4 @@
-import { ApxProvider, Button, Icons } from "@apx/ui";
+import { ColoniaProvider, Button, Icons } from "@colonia/ui";
 
 const row = { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const };
 
@@ -43,7 +43,7 @@ export function States() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
       <div style={row}>
         <Button>Send email</Button>
         <Button variant="secondary">Discard</Button>
@@ -52,6 +52,6 @@ export function ClassicLook() {
           Interrumpe
         </Button>
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

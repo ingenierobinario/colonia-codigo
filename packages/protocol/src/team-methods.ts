@@ -1,10 +1,10 @@
-// Methods behind the Team screen: agent templates (APX's own and the v1 vault's, read-only) and installing them.
+// Methods behind the Team screen: agent templates (Colonia's own and the v1 vault's, read-only) and installing them.
 import { z } from "zod";
 import { Agent, Id, Organization, ProjectKind } from "./domain.ts";
 import { Routine, RoutineAction, Schedule } from "./office.ts";
 
-/** Where a template comes from: shipped with APX, or the owner's v1 vault (read, never written). */
-export const TemplateSource = z.enum(["apx", "v1"]);
+/** Where a template comes from: shipped with Colonia, or the owner's v1 vault (read, never written). */
+export const TemplateSource = z.enum(["colonia", "v1"]);
 export type TemplateSource = z.infer<typeof TemplateSource>;
 
 /**

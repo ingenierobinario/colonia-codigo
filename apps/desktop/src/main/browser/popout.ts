@@ -1,4 +1,4 @@
-// The browser in a window of its own: a small APX panel (?browser) with the tab strip and the toolbar, and the shown
+// The browser in a window of its own: a small Colonia panel (?browser) with the tab strip and the toolbar, and the shown
 // tab's native view laid over its slot, the same way the main window does it. Closing it brings the tab back.
 import { BaseWindow, type WebContents, WebContentsView } from "electron";
 

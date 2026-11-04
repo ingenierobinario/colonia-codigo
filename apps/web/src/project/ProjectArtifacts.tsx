@@ -1,5 +1,5 @@
-import type { Result, SurfaceSummary } from "@apx/protocol";
-import { Badge, EmptyState, Icons, SearchField, SegmentedControl } from "@apx/ui";
+import type { Result, SurfaceSummary } from "@colonia/protocol";
+import { Badge, EmptyState, Icons, SearchField, SegmentedControl } from "@colonia/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatBytes, shortWhen } from "../common/format.ts";
 import { client } from "../data/client.ts";

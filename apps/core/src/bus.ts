@@ -1,5 +1,5 @@
 // In-process event bus. Transports subscribe and forward events to operator sockets.
-import type { CoreEvent } from "@apx/protocol";
+import type { CoreEvent } from "@colonia/protocol";
 
 export type Bus = ReturnType<typeof createBus>;
 

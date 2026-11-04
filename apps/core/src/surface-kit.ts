@@ -1,10 +1,10 @@
-// The APX Kit a surface asks for with <script src="/_apx/kit@1.js">: read once, inlined wherever the page is served.
+// The Colonia Kit a surface asks for with <script src="/_colonia/kit@1.js">: read once, inlined wherever the page is served.
 import fs from "node:fs";
 import path from "node:path";
 import { inlineKit, usesKit } from "../../../packages/surfaces/src/kit.ts";
 
-// The overlays extend window.APX, so they run after the main kit, in the same script.
-const KIT_FILES = ["apx-kit.js", "apx-kit-overlays.js"].map((f) =>
+// The overlays extend window.Colonia, so they run after the main kit, in the same script.
+const KIT_FILES = ["colonia-kit.js", "colonia-kit-overlays.js"].map((f) =>
   path.resolve(import.meta.dirname, "../../../packages/surfaces/src/kit", f),
 );
 

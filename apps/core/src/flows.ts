@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import type { CoreEvent } from "@apx/protocol";
-import { hookMethods } from "@apx/protocol/flow-edit";
-import { type FlowDraftGraph, FlowGraph, type FlowGraphIssue } from "@apx/protocol/flow-graph";
-import type { FlowDefinition } from "@apx/protocol/flow-methods";
+import type { CoreEvent } from "@colonia/protocol";
+import { hookMethods } from "@colonia/protocol/flow-edit";
+import { type FlowDraftGraph, FlowGraph, type FlowGraphIssue } from "@colonia/protocol/flow-graph";
+import type { FlowDefinition } from "@colonia/protocol/flow-methods";
 import { FlowCapacityError } from "./domain/flow-events.ts";
 import { flowGapIssues, validateFlowGraph } from "./domain/flow-graph-validate.ts";
 import { FlowTriggerMismatch } from "./domain/flow-graphs.ts";
@@ -105,7 +105,7 @@ export function flowGraphIssues(
           message: "The project's folder is not on this computer",
         });
     }
-    // APX's harness runs a model API the owner set up; a CLI's model is its own, checked when its session starts.
+    // Colonia's harness runs a model API the owner set up; a CLI's model is its own, checked when its session starts.
     if (node.kind === "agent" && node.model && !flowEngineOf(node) && !model(node.model.replace(/#[^#]*$/, "")))
       issues.push({ code: "model_unavailable", node: node.id, message: "The chosen model is not set up" });
   }
@@ -166,7 +166,7 @@ export function createFlows(deps: {
   /** What HTTP steps may reach and how they read secrets. */
   outside?: FlowOutside | undefined;
   http?: FlowHttpDeps | undefined;
-  /** APX's folder: where a project without a folder of its own runs a Flow's commands. */
+  /** Colonia's folder: where a project without a folder of its own runs a Flow's commands. */
   home?: string | undefined;
   /** Where open screens hear of tests and of runs moving. */
   tell?: ((event: CoreEvent) => void) | undefined;

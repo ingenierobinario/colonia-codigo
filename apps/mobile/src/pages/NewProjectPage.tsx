@@ -19,7 +19,7 @@ const KIND_KEY: Record<Kind, Key> = {
 
 /**
  * A project made from the phone: name, kind and description. The phone has no folders to offer, so the computer makes
- * one of its own inside APX's; a project in a chosen folder is made from the computer.
+ * one of its own inside Colonia's; a project in a chosen folder is made from the computer.
  */
 export function NewProjectPage({
   host,

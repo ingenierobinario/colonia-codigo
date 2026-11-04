@@ -1,5 +1,5 @@
 // An HTML page from a project's folder made into a widget: local scripts and styles inlined (a widget loads nothing
-// from disk by URL), images and videos turned into folder references the widget host loads (data-apx-src).
+// from disk by URL), images and videos turned into folder references the widget host loads (data-colonia-src).
 import fs from "node:fs";
 import path from "node:path";
 import { isInside, samePath } from "../paths.ts";
@@ -40,7 +40,7 @@ export function pageAsWidget(projectRoot: string, file: string): { html: string;
     const media = local(root, dir, ref);
     if (!media) return attr;
     const rel = path.relative(root, media).split(path.sep).join("/");
-    return `data-apx-${name.toLowerCase() === "poster" ? "poster" : "src"}=${q}${rel}${q}`;
+    return `data-colonia-${name.toLowerCase() === "poster" ? "poster" : "src"}=${q}${rel}${q}`;
   });
   if (html.length > WIDGET_CHARS)
     throw new Error(`${file} is over ${WIDGET_CHARS / 1000} KB once its scripts and styles are in`);

@@ -63,7 +63,7 @@ export function AgentNode({
   return (
     <article
       className={cx(
-        "apx-agentnode",
+        "colonia-agentnode",
         `is-${status}`,
         selected && "is-selected",
         dimmed && "is-dimmed",
@@ -74,32 +74,32 @@ export function AgentNode({
       onMouseEnter={() => onHover?.(true)}
       onMouseLeave={() => onHover?.(false)}
     >
-      <button type="button" className="apx-agentnode__hit" aria-label={`${viewLabel}: ${name}`} onClick={onOpen} />
-      <header className="apx-agentnode__top">
-        <span className="apx-agentnode__avatar">
+      <button type="button" className="colonia-agentnode__hit" aria-label={`${viewLabel}: ${name}`} onClick={onOpen} />
+      <header className="colonia-agentnode__top">
+        <span className="colonia-agentnode__avatar">
           <AgentAvatar name={name} {...(blob ? { blob } : {})} size={32} animated={status === "running"} />
-          {status === "waiting" && <span className="apx-agentnode__wait" title={waitingLabel} />}
+          {status === "waiting" && <span className="colonia-agentnode__wait" title={waitingLabel} />}
         </span>
-        <span className="apx-agentnode__names">
-          <span className="apx-agentnode__name">{name}</span>
-          {slug && <span className="apx-agentnode__slug">{slug}</span>}
+        <span className="colonia-agentnode__names">
+          <span className="colonia-agentnode__name">{name}</span>
+          {slug && <span className="colonia-agentnode__slug">{slug}</span>}
         </span>
       </header>
       {(lead || role) && (
-        <div className="apx-agentnode__role">
+        <div className="colonia-agentnode__role">
           {lead ? (
-            <span className="apx-agentnode__lead">
+            <span className="colonia-agentnode__lead">
               <Crown size={12} />
               {lead}
             </span>
           ) : (
-            <span className="apx-agentnode__chip">{role}</span>
+            <span className="colonia-agentnode__chip">{role}</span>
           )}
         </div>
       )}
-      <p className={cx("apx-agentnode__desc", descriptionEmpty && "is-empty")}>{description || "\u00a0"}</p>
+      <p className={cx("colonia-agentnode__desc", descriptionEmpty && "is-empty")}>{description || "\u00a0"}</p>
       {stats.length > 0 && (
-        <ul className="apx-agentnode__stats">
+        <ul className="colonia-agentnode__stats">
           {stats.map((s) => (
             <li key={s.label} title={s.label}>
               {s.icon}
@@ -108,19 +108,19 @@ export function AgentNode({
           ))}
         </ul>
       )}
-      <footer className="apx-agentnode__foot">
-        <button type="button" className="apx-agentnode__act" onClick={onOpen}>
+      <footer className="colonia-agentnode__foot">
+        <button type="button" className="colonia-agentnode__act" onClick={onOpen}>
           <Eye size={13} />
           {viewLabel}
         </button>
-        <button type="button" className="apx-agentnode__act is-chat" onClick={onChat}>
+        <button type="button" className="colonia-agentnode__act is-chat" onClick={onChat}>
           <MessageCircle size={13} />
           {chatLabel}
         </button>
         {engine && (
-          <span className="apx-agentnode__engine" title={engineLabel ?? engine}>
+          <span className="colonia-agentnode__engine" title={engineLabel ?? engine}>
             <EngineIcon engine={engine} size={12} />
-            <span className="apx-agentnode__enginelabel">{engineLabel ?? engine}</span>
+            <span className="colonia-agentnode__enginelabel">{engineLabel ?? engine}</span>
           </span>
         )}
       </footer>

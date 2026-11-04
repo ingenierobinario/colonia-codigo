@@ -1,4 +1,4 @@
-// Build @apx/ui: split ESM bundle (deps external) + .d.ts tree + one stylesheet.
+// Build @colonia/ui: split ESM bundle (deps external) + .d.ts tree + one stylesheet.
 
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";

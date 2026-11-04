@@ -1,5 +1,5 @@
 // A task's events as sentences: who (you, or an agent by name) and what changed, from where to where.
-import type { TaskColumn, TaskEvent } from "@apx/protocol";
+import type { TaskColumn, TaskEvent } from "@colonia/protocol";
 
 export type HistoryLine = {
   at: string;

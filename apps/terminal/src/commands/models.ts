@@ -1,8 +1,8 @@
-// apx models / apx agents model: which models each engine offers, the install default, the router, and each
+// colonia models / colonia agents model: which models each engine offers, the install default, the router, and each
 // agent's choice. Every value is data in the core; nothing here knows a model name.
 import fs from "node:fs";
-import type { ModelChoice, RouterConfig } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import type { ModelChoice, RouterConfig } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 import { agentPatch } from "./agent-fields.ts";
 
 const show = (c: ModelChoice) => (c.model ? `${c.model}${c.router ? " → router" : ""}` : "router");
@@ -15,7 +15,7 @@ function parseChoice(arg: string | undefined, router: boolean): ModelChoice | nu
   return { model: arg, router };
 }
 
-export async function models(client: ApxClient, [sub, ...args]: string[], o: { refresh?: boolean; router?: boolean }) {
+export async function models(client: ColoniaClient, [sub, ...args]: string[], o: { refresh?: boolean; router?: boolean }) {
   if (!sub || sub === "list") {
     const { engines } = await client.call("models.list", { refresh: o.refresh ?? false });
     for (const e of engines) {
@@ -42,7 +42,7 @@ export async function models(client: ApxClient, [sub, ...args]: string[], o: { r
     return;
   }
   if (sub === "chain") {
-    if (!args.length) throw new Error("usage: apx models chain <ref> [<ref>…]");
+    if (!args.length) throw new Error("usage: colonia models chain <ref> [<ref>…]");
     const router: RouterConfig = { ...cfg.router, chain: args };
     const out = await client.call("models.set_config", { router });
     console.log(`router chain: ${out.router.chain.join(" → ")}`);
@@ -59,16 +59,16 @@ export async function models(client: ApxClient, [sub, ...args]: string[], o: { r
   throw new Error(`unknown models command: ${sub}`);
 }
 
-export async function agentModel(client: ApxClient, [agent, ref]: string[], o: { router?: boolean }) {
+export async function agentModel(client: ColoniaClient, [agent, ref]: string[], o: { router?: boolean }) {
   if (!agent || !ref)
-    throw new Error("usage: apx agents model <agent> <engine/model|engine|router|default> [--router]");
+    throw new Error("usage: colonia agents model <agent> <engine/model|engine|router|default> [--router]");
   const a = await client.call("agents.update", { agent, model_choice: parseChoice(ref, o.router ?? false) });
   console.log(`${a.name}: ${a.model_choice ? show(a.model_choice) : "install default"}`);
 }
 
-const SET_USAGE = "usage: apx agents set <agent> <field>=<value>… [--prompt-file f|-]  (apx agents set --help)";
+const SET_USAGE = "usage: colonia agents set <agent> <field>=<value>… [--prompt-file f|-]  (colonia agents set --help)";
 
-/** agents.update params for `apx agents set`: typed key=value pairs, and the prompt from a file or stdin ("-"). */
+/** agents.update params for `colonia agents set`: typed key=value pairs, and the prompt from a file or stdin ("-"). */
 export function agentSetOf(
   agent: string | undefined,
   pairs: string[],
@@ -79,9 +79,9 @@ export function agentSetOf(
   return agentPatch(agent, pairs, promptFile ? { prompt: readFile(promptFile) } : {});
 }
 
-/** apx agents show|new|set|archive: a project agent's changes land in its .apc/agents/<slug>.md. */
+/** colonia agents show|new|set|archive: a project agent's changes land in its .apc/agents/<slug>.md. */
 export async function agentEdit(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, ...args]: string[],
   o: {
     project?: string | undefined;
@@ -92,7 +92,7 @@ export async function agentEdit(
   },
 ) {
   if (sub === "show") {
-    if (!args[0]) throw new Error("usage: apx agents show <agent>");
+    if (!args[0]) throw new Error("usage: colonia agents show <agent>");
     const { agent: a, prompt } = await client.call("agents.get", { agent: args[0] });
     console.log(`${a.id}  ${a.name}${a.kind === "secretary" ? "  · Home" : ""}`);
     const fields: [string, string | undefined][] = [
@@ -116,7 +116,7 @@ export async function agentEdit(
   if (sub === "new") {
     const [slug, ...name] = args;
     if (!slug || !name.length)
-      throw new Error('usage: apx agents new <slug> "<Name>" [--project <id>] [--role "<role>"]');
+      throw new Error('usage: colonia agents new <slug> "<Name>" [--project <id>] [--role "<role>"]');
     const a = await client.call("agents.create", {
       slug,
       name: name.join(" "),
@@ -133,7 +133,7 @@ export async function agentEdit(
     return;
   }
   if (sub === "clone") {
-    if (!args.length) throw new Error("usage: apx agents clone <agent…> [--project <id>] [--rename] [--under <slug>]");
+    if (!args.length) throw new Error("usage: colonia agents clone <agent…> [--project <id>] [--rename] [--under <slug>]");
     const r = await client.call("agents.clone", {
       agents: args,
       rename: o.rename ?? false,
@@ -145,7 +145,7 @@ export async function agentEdit(
     return;
   }
   if (sub === "archive") {
-    if (!args[0]) throw new Error("usage: apx agents archive <agent>");
+    if (!args[0]) throw new Error("usage: colonia agents archive <agent>");
     const r = await client.call("agents.archive", { agent: args[0] });
     console.log(r.moved_to ? `archived; file moved to ${r.moved_to}` : "archived");
     return;
@@ -157,7 +157,7 @@ export async function agentEdit(
     return;
   }
   if (sub === "restore") {
-    if (!args[0]) throw new Error("usage: apx agents restore <agent>");
+    if (!args[0]) throw new Error("usage: colonia agents restore <agent>");
     const a = await client.call("agents.restore", { agent: args[0] });
     console.log(`${a.name} (${a.id}) is back on its team`);
     return;

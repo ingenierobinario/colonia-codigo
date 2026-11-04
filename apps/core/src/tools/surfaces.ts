@@ -1,6 +1,6 @@
 // show_widget / read_widget / edit_widget: the agent makes a widget, reads it back and changes a piece of it; pinned,
 // it lives on its project's board; it can also be an app. Every change shows live wherever the widget is open.
-import { SurfaceOrigin, type SurfaceSummary } from "@apx/protocol";
+import { SurfaceOrigin, type SurfaceSummary } from "@colonia/protocol";
 import { z } from "zod";
 import { memorySummary } from "../domain/artifact-memory.ts";
 import type { Store } from "../domain/store.ts";
@@ -46,7 +46,7 @@ export function surfaceTools(store: Store, home: string): Tool[] {
     defineTool({
       name: "show_widget",
       description:
-        "One self-contained HTML, inline CSS/JS/SVG. Default to a simple widget; an app only when asked or it must keep records. Add <script src='/_apx/kit@1.js'></script> and use ax-* classes (ax-page, ax-card, ax-stat, ax-table); load apx-artifacts first for more than a quick view, an app, memory or live data. Network only to connect origins. Project media: data-apx-src='clip.mp4' or 'media:ID' on img/video, or apx.media(ref). Same name replaces it; edit_widget edits parts. pin adds it to the board. window.apx.sendPrompt(text) writes to this chat.",
+        "One self-contained HTML, inline CSS/JS/SVG. Default to a simple widget; an app only when asked or it must keep records. Add <script src='/_colonia/kit@1.js'></script> and use ax-* classes (ax-page, ax-card, ax-stat, ax-table); load colonia-artifacts first for more than a quick view, an app, memory or live data. Network only to connect origins. Project media: data-colonia-src='clip.mp4' or 'media:ID' on img/video, or colonia.media(ref). Same name replaces it; edit_widget edits parts. pin adds it to the board. window.colonia.sendPrompt(text) writes to this chat.",
       args: z.object({
         name: z.string().describe("stable kebab-case name, e.g. monthly-sales"),
         title: z.string().describe("human title"),
@@ -139,7 +139,7 @@ export function surfaceTools(store: Store, home: string): Tool[] {
         title: z.string().trim().min(1).max(120).optional(),
         app: z.boolean().optional(),
         pin: z.boolean().optional(),
-        state: z.record(z.string(), z.unknown()).optional().describe("APX.state keys to set, null removes"),
+        state: z.record(z.string(), z.unknown()).optional().describe("Colonia.state keys to set, null removes"),
       }),
       effect: "local",
       deadlineMs: 10_000,

@@ -1,5 +1,5 @@
 // Native update sequencing remains available when the remote panel cannot load.
-import { compareVersions, type Result } from "@apx/protocol";
+import { compareVersions, type Result } from "@colonia/protocol";
 export type Coordination = Result<"system.update_prepare">;
 export type UpdateState = Result<"system.update_state">;
 export type PendingUpdate = { identity: string; home: string; target: string };
@@ -38,10 +38,10 @@ export function createUpdateCoordinator(opts: {
     authorized = undefined;
     const unchanged = () => {
       if (endpoint !== active || generation !== revision)
-        throw new Error("The APX connection changed. Retry the update.");
+        throw new Error("The Colonia connection changed. Retry the update.");
     };
     try {
-      if (!active) throw new Error("Connect to APX before updating.");
+      if (!active) throw new Error("Connect to Colonia before updating.");
       if (active.local) {
         if (!target) throw new Error("No target release selected.");
         return await opts.stage(target);
@@ -162,7 +162,7 @@ export function createUpdateCoordinator(opts: {
     },
     /** Activates the staged app; a failed answer says why it stays as it is. */
     async restart(): Promise<RestartAnswer> {
-      if (!endpoint) return { ok: false, error: "APX lost its connection. Quit APX and open it again to update." };
+      if (!endpoint) return { ok: false, error: "Colonia lost its connection. Quit Colonia and open it again to update." };
       if (endpoint.local) return opts.activate();
       const saved = authorized ?? pending();
       if (!saved || saved.identity !== endpoint.identity)

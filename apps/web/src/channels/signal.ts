@@ -1,6 +1,6 @@
-// What the agent writes for APX, not for the person, on a chat channel (see the core's channels/manager.ts).
+// What the agent writes for Colonia, not for the person, on a chat channel (see the core's channels/manager.ts).
 /**
- * An agent's answer that is only a signal to APX on a channel ("SKIP", "REACT ❤️", "STICKER thumbs up"): the core
+ * An agent's answer that is only a signal to Colonia on a channel ("SKIP", "REACT ❤️", "STICKER thumbs up"): the core
  * takes it out of the chat once the turn ends; it never shows meanwhile, nor while its first letters are being written.
  */
 export function isSignal(text: string): boolean {

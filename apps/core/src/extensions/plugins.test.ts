@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
 
@@ -37,11 +37,11 @@ const llm = scriptedLlm(() => say("ok"));
 let env: Awaited<ReturnType<typeof startCore>>;
 const dirs: string[] = [];
 const extension = (id: string, plugin: Record<string, unknown>) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `apx-plugin-${id}-`));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `colonia-plugin-${id}-`));
   dirs.push(dir);
   fs.writeFileSync(path.join(dir, "plugin.mjs"), PLUGIN);
   fs.writeFileSync(
-    path.join(dir, "apx-extension.json"),
+    path.join(dir, "colonia-extension.json"),
     JSON.stringify({
       id,
       name: `Plugin ${id}`,
@@ -95,7 +95,7 @@ test("Test asks the plugin for context on a sample text, as a turn would", async
   await assert.rejects(env.client.call("extensions.test", { id: "nobody", text: "x" }), /not found/);
 });
 
-test("its sandbox: no files outside its folder, no processes, no reaching APX; its data folder is writable", async () => {
+test("its sandbox: no files outside its folder, no processes, no reaching Colonia; its data folder is writable", async () => {
   const input = await turnInput(`check ${env.core.url}/health`);
   assert.match(input, /outside=ERR_ACCESS_DENIED/);
   assert.match(input, /exec=denied/);
@@ -108,7 +108,7 @@ test("one context provider at a time; off, it stops and turns get nothing from i
   await env.client.call("extensions.install", { path: extension("second", { context: true, network: true }) });
   await assert.rejects(
     env.client.call("extensions.enable", { id: "second", enabled: true }),
-    (e: unknown) => e instanceof ApxError && /already adds context/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /already adds context/.test(e.message),
   );
   await env.client.call("extensions.enable", { id: "watcher", enabled: false });
   const off = (await env.client.call("extensions.list", {})).extensions.find((e) => e.id === "watcher");
@@ -122,7 +122,7 @@ test("one context provider at a time; off, it stops and turns get nothing from i
     "second running",
     { ms: 8000 },
   );
-  // With the network, this machine (where APX listens) stays out of reach.
+  // With the network, this machine (where Colonia listens) stays out of reach.
   const input = await turnInput(`now ${env.core.url}/health`);
   assert.match(input, /from="Plugin second"/);
   assert.match(input, /core=denied \(127\.0\.0\.1 is not reachable from a plugin\)/);
@@ -132,10 +132,10 @@ test("one context provider at a time; off, it stops and turns get nothing from i
   assert.match(await turnInput("now http://192.168.1.1:9/"), /core=denied \(192\.168\.1\.1 is not reachable/);
 });
 
-test("a misbehaving plugin cannot stall turns or APX: odd answers are ignored, a flood stops it", async () => {
+test("a misbehaving plugin cannot stall turns or Colonia: odd answers are ignored, a flood stops it", async () => {
   const before = await turnInput("garbage please");
   assert.match(before, /from="Plugin second"/);
-  // The flood kills the plugin; the turn goes on without its context, and APX keeps answering.
+  // The flood kills the plugin; the turn goes on without its context, and Colonia keeps answering.
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
   await env.client.call("threads.send", { thread: t.id, text: "flood please" });
   const { runs } = await env.settle(t.id, 10_000);
@@ -144,7 +144,7 @@ test("a misbehaving plugin cannot stall turns or APX: odd answers are ignored, a
 });
 
 test("reinstalling changed files while on stops the plugin until approved again", async () => {
-  const dir = dirs.find((d) => d.includes("apx-plugin-second-")) ?? "";
+  const dir = dirs.find((d) => d.includes("colonia-plugin-second-")) ?? "";
   fs.appendFileSync(path.join(dir, "plugin.mjs"), "\n// changed\n");
   const again = await env.client.call("extensions.install", { path: dir });
   assert.equal(again.enabled, false);
@@ -154,8 +154,8 @@ test("reinstalling changed files while on stops the plugin until approved again"
 
 test("names inside an extension cannot be read two ways", async () => {
   const dir = extension("clash", {});
-  const m = JSON.parse(fs.readFileSync(path.join(dir, "apx-extension.json"), "utf8"));
+  const m = JSON.parse(fs.readFileSync(path.join(dir, "colonia-extension.json"), "utf8"));
   m.secrets = [{ name: "b-c", label: "x" }];
-  fs.writeFileSync(path.join(dir, "apx-extension.json"), JSON.stringify(m));
-  await assert.rejects(env.client.call("extensions.install", { path: dir }), (e: unknown) => e instanceof ApxError);
+  fs.writeFileSync(path.join(dir, "colonia-extension.json"), JSON.stringify(m));
+  await assert.rejects(env.client.call("extensions.install", { path: dir }), (e: unknown) => e instanceof ColoniaError);
 });

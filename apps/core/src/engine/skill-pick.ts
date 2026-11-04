@@ -1,7 +1,7 @@
 // Picks a turn's skills by meaning with the embedding engine. Each skill's vector and floor are kept in memory per
 // engine and description; a skill added or edited is embedded on the next turn. A slow or missing engine never holds a
 // turn: it goes on without picked skills (the catalog in the system prompt is always there).
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { parseFrontmatter } from "../apc/frontmatter.ts";
 import { memorySettings } from "../domain/memory-settings.ts";
 import type { Store } from "../domain/store.ts";

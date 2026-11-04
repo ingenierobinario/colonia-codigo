@@ -1,7 +1,7 @@
 // What a step's template fields can insert, grouped for the picker (TemplateField): what arrived, earlier steps'
-// results, variables, APX's own values and, only where the step resolves them itself, secrets (AGENTS.md rule 11).
-import { DEFINITION_NODE } from "@apx/protocol/flow-shape";
-import type { TemplateGroup } from "@apx/ui";
+// results, variables, Colonia's own values and, only where the step resolves them itself, secrets (AGENTS.md rule 11).
+import { DEFINITION_NODE } from "@colonia/protocol/flow-shape";
+import type { TemplateGroup } from "@colonia/ui";
 import type { FlowBinding, FlowGraph, FlowNode } from "../../../../packages/protocol/src/flow-graph.ts";
 import type { MessageKey } from "../i18n/index.ts";
 import { chainOrder, dotted } from "./graph-edit.ts";
@@ -33,7 +33,7 @@ export const SECRET_FIELDS: ReadonlySet<TemplateFieldKind> = new Set(["header", 
 const LITERAL_ONLY: ReadonlySet<TemplateFieldKind> = new Set(["varText"]);
 
 /** What shows as a badge in a template, and which badges are secrets. */
-export const TEMPLATE_PATTERN = /\$(trigger|steps|vars|apx)(\.[A-Za-z0-9_-]+)*|secret:\/\/[A-Za-z0-9_.~/-]+/g;
+export const TEMPLATE_PATTERN = /\$(trigger|steps|vars|colonia)(\.[A-Za-z0-9_-]+)*|secret:\/\/[A-Za-z0-9_.~/-]+/g;
 export const SECRET_PATTERN = /^secret:\/\//;
 
 /** What a step gives the next ones: the part of its result a later step receives. */
@@ -173,14 +173,14 @@ export function valueGroups(
       ),
     },
   ];
-  // Formulas and a value kept whole read what arrived, steps and variables, nothing of APX's own.
+  // Formulas and a value kept whole read what arrived, steps and variables, nothing of Colonia's own.
   if (field !== "formula" && field !== "whole")
     groups.push({
-      label: t("flow.v.apx"),
+      label: t("flow.v.colonia"),
       values: [
-        { insert: "$apx.project", label: t("flow.v.project") },
-        { insert: "$apx.now", label: t("flow.v.now") },
-        { insert: "$apx.run", label: t("flow.v.run") },
+        { insert: "$colonia.project", label: t("flow.v.project") },
+        { insert: "$colonia.now", label: t("flow.v.now") },
+        { insert: "$colonia.run", label: t("flow.v.run") },
       ],
     });
   if (secretsHere) groups.push(secretGroup);

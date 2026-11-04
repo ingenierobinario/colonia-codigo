@@ -1,7 +1,7 @@
 // The single dispatcher. HTTP /rpc, the WS socket and agent-side clients all enter here — there is no second path
 // into a handler. Access, params, result shape and idempotency are checked here, not in each handler.
 import {
-  type ApxErrorShape,
+  type ColoniaErrorShape,
   ErrorCode,
   isMethodName,
   type MethodDef,
@@ -11,7 +11,7 @@ import {
   type ParsedParams,
   type Result,
   SCOPE_METHODS,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { CallError, errorMessage } from "../errors.ts";
 import type { CallContext } from "./context.ts";
 
@@ -21,7 +21,7 @@ export type Handler<M extends MethodName> = (
 ) => Promise<Result<M>> | Result<M>;
 export type Handlers = { [M in MethodName]: Handler<M> };
 
-export type DispatchResult = { ok: true; result: unknown } | { ok: false; error: ApxErrorShape };
+export type DispatchResult = { ok: true; result: unknown } | { ok: false; error: ColoniaErrorShape };
 
 /** Remembers the answer to a side-effect call so a retried request with the same key gets it, not a second effect. */
 export type IdemStore = {

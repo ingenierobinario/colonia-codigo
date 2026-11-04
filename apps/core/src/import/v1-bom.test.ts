@@ -7,7 +7,7 @@ import { findV1 } from "../rpc/setup.ts";
 import { jsonFile } from "./v1-data.ts";
 
 test("v1's files are read even when a Windows editor saved them with a BOM", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-v1-bom-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-v1-bom-"));
   try {
     const project = path.join(home, "demo");
     fs.mkdirSync(path.join(project, ".apc"), { recursive: true });

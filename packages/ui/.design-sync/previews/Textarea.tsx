@@ -1,4 +1,4 @@
-import { ApxProvider, Textarea } from "@apx/ui";
+import { ColoniaProvider, Textarea } from "@colonia/ui";
 
 export function Default() {
   return (
@@ -21,8 +21,8 @@ export function Filled() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 412 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 412 }}>
       <Textarea rows={3} placeholder="Instrucciones del agente" />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

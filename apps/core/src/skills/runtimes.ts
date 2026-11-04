@@ -1,27 +1,27 @@
-// The skills that teach other agent runtimes (Claude Code, Codex, Cursor…) how to use APX, copied into their skills
-// folders at every start of the core, so an APX update brings their new text too (`apx skills install-runtimes`).
+// The skills that teach other agent runtimes (Claude Code, Codex, Cursor…) how to use Colonia, copied into their skills
+// folders at every start of the core, so an Colonia update brings their new text too (`colonia skills install-runtimes`).
 import fs from "node:fs";
 import path from "node:path";
 
-/** The skills APX ships for other runtimes, one folder each with a SKILL.md (apps/terminal/skills, also packaged). */
+/** The skills Colonia ships for other runtimes, one folder each with a SKILL.md (apps/terminal/skills, also packaged). */
 export const sourceDir = () => path.resolve(import.meta.dirname, "../../../terminal/skills");
 
 /**
- * Folders APX once installed in runtimes and no longer ships: removed when found. Only names on this list or in
+ * Folders Colonia once installed in runtimes and no longer ships: removed when found. Only names on this list or in
  * the shipped set are ever touched; every other skill in a runtime's folder belongs to someone else.
  */
 export const RETIRED = [
-  "apx-agency-agents",
-  "apx-agent",
-  "apx-mcp-builder",
-  "apx-project",
-  "apx-routine",
-  "apx-runtime",
-  "apx-sessions",
-  "apx-skill-builder",
-  "apx-task",
-  "apx-telegram",
-  "apx-voice",
+  "colonia-agency-agents",
+  "colonia-agent",
+  "colonia-mcp-builder",
+  "colonia-project",
+  "colonia-routine",
+  "colonia-runtime",
+  "colonia-sessions",
+  "colonia-skill-builder",
+  "colonia-task",
+  "colonia-telegram",
+  "colonia-voice",
   "claude-code",
   "codex-cli",
   "opencode-cli",
@@ -38,7 +38,7 @@ export type Runtime = {
 /** Where each runtime keeps its files; Claude Code and Codex can be moved (CLAUDE_CONFIG_DIR, CODEX_HOME). */
 export type RuntimeHomes = { home: string; claude?: string | undefined; codex?: string | undefined };
 
-/** Runtimes whose skills folder APX writes to; one only counts when its own folder exists. */
+/** Runtimes whose skills folder Colonia writes to; one only counts when its own folder exists. */
 export function runtimes({ home, claude, codex = path.join(home, ".codex") }: RuntimeHomes): Runtime[] {
   const at = (id: string, label: string, root: string): Runtime => ({
     id,
@@ -55,7 +55,7 @@ export function runtimes({ home, claude, codex = path.join(home, ".codex") }: Ru
   ];
 }
 
-/** Every name APX writes into the runtimes' folders, shipped or retired: a skill there under one of them is APX's. */
+/** Every name Colonia writes into the runtimes' folders, shipped or retired: a skill there under one of them is Colonia's. */
 export function shippedNames(source = sourceDir()): ReadonlySet<string> {
   let shipped: string[] = [];
   try {

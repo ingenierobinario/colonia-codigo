@@ -45,8 +45,8 @@ test("usage switches persist independently of model power and preserve the choic
   const claude = settings.locator(".engine", { hasText: "Claude Code" });
   await expect(claude.getByRole("switch", { name: "Consumo", exact: true })).not.toBeChecked();
   await claude.getByRole("switch", { name: "Consumo", exact: true }).hover();
-  await expect(page.locator(".apx-tooltip")).toBeVisible();
-  await expect(page.locator(".apx-tooltip")).toContainText("No enciende ni apaga el engine");
+  await expect(page.locator(".colonia-tooltip")).toBeVisible();
+  await expect(page.locator(".colonia-tooltip")).toContainText("No enciende ni apaga el engine");
   await page.setViewportSize({ width: 390, height: 700 });
   await expect(claude.getByRole("switch", { name: "Consumo", exact: true })).toBeVisible();
   const overflow = await claude.evaluate((card) => card.scrollWidth - card.clientWidth);
@@ -60,6 +60,6 @@ test("the real usage method returns an empty state when all quota sources are of
   await page.getByTestId("engine-usage-button").click();
   const summary = page.getByTestId("engine-usage-summary");
   await expect(summary).toContainText("No hay engines seleccionados");
-  await expect(summary.locator(".apx-meter")).toHaveCount(0);
+  await expect(summary.locator(".colonia-meter")).toHaveCount(0);
   await expect(summary.getByRole("button", { name: "Administrar engines" })).toBeVisible();
 });

@@ -1,4 +1,4 @@
-import { DAILY_MEMORY_CALLS, type Memory } from "@apx/protocol";
+import { DAILY_MEMORY_CALLS, type Memory } from "@colonia/protocol";
 import type { AuxAbout } from "../domain/aux-calls.ts";
 import { canUseChatMemory } from "../domain/chat-access.ts";
 import { NOTEBOOK_TARGET } from "../domain/memories.ts";

@@ -85,8 +85,8 @@ export function MarkdownTable({
     return table ? tableTsv(table) : "";
   };
   return (
-    <div className="apx-md__table">
-      <div className="apx-md__tablebar">
+    <div className="colonia-md__table">
+      <div className="colonia-md__tablebar">
         <Menu
           align="end"
           trigger={
@@ -103,7 +103,7 @@ export function MarkdownTable({
         />
         <IconButton size="sm" label={labels.maximize} icon={<Maximize2 size={13} />} onClick={() => setOpen(true)} />
       </div>
-      <div ref={scroller} className="apx-md__scroll">
+      <div ref={scroller} className="colonia-md__scroll">
         {children}
       </div>
       {open && (
@@ -113,10 +113,10 @@ export function MarkdownTable({
           size="xl"
           title={labels.table}
           closeLabel={labels.close}
-          className="apx-md__dialog"
+          className="colonia-md__dialog"
         >
           <div className={className}>
-            <div className="apx-md__scroll apx-md__scroll--max">{children}</div>
+            <div className="colonia-md__scroll colonia-md__scroll--max">{children}</div>
           </div>
         </Dialog>
       )}

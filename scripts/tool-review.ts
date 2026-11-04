@@ -1,4 +1,4 @@
-// Checks that a model understands APX's tool descriptions: the tools exactly as a turn sends them go to Codex with
+// Checks that a model understands Colonia's tool descriptions: the tools exactly as a turn sends them go to Codex with
 // ordinary requests, and it says which tool it would call first. Misses and the descriptions it found unclear come
 // back, with each tool's size. Run it before and after editing a description.
 //
@@ -112,7 +112,7 @@ const prompt = (tools: Spec[]) =>
 const tokens = (s: Spec) => Math.round(JSON.stringify(s).length / 4);
 
 const tools = await turnTools();
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-tool-review-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-tool-review-"));
 fs.writeFileSync(path.join(dir, "schema.json"), JSON.stringify(SCHEMA));
 const out = path.join(dir, "review.json");
 const run = spawnSync(

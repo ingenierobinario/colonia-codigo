@@ -1,4 +1,4 @@
-// The Mac stays awake while APX works for the owner (a turn, a command, a computer coming up), and may sleep again
+// The Mac stays awake while Colonia works for the owner (a turn, a command, a computer coming up), and may sleep again
 // once nothing does; and a sleep it took anyway is noticed, so the work it cut short is not taken for stuck.
 import { spawn as nodeSpawn } from "node:child_process";
 import type { RunTimers } from "./engine.ts";

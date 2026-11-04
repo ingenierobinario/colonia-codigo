@@ -15,7 +15,7 @@ export function Skeleton({ width = "100%", height, shape = "text", className, st
   const h = height ?? (shape === "text" ? 12 : shape === "circle" ? width : 80);
   return (
     <span
-      className={cx("apx-skeleton", `apx-skeleton--${shape}`, className)}
+      className={cx("colonia-skeleton", `colonia-skeleton--${shape}`, className)}
       style={{ width, height: h, ...style }}
       aria-hidden="true"
     />

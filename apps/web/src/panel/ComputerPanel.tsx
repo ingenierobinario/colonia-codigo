@@ -1,4 +1,4 @@
-import { IconButton, Icons, Select } from "@apx/ui";
+import { IconButton, Icons, Select } from "@colonia/ui";
 import { useState } from "react";
 import { screenChat, screensUp } from "../computers/agent.ts";
 import { ComputerError } from "../computers/ComputerError.tsx";

@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { AgentAvatar, Tooltip } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { AgentAvatar, Tooltip } from "@colonia/ui";
 import { blobOf, projectName } from "../data/identity.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";

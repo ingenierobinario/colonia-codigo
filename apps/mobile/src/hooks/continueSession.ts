@@ -4,19 +4,19 @@ import {
   latestDelegatedRun,
 } from "../../../../packages/protocol/src/delegation.ts";
 import { t } from "../i18n";
-import type { ApxClient } from "../protocol";
+import type { ColoniaClient } from "../protocol";
 
 export type { DelegationState };
 
 /** Where a delegated session stands now, read as the web reads it: its notice's buttons follow it. */
-export async function sessionState(client: ApxClient, session: string): Promise<DelegationState> {
+export async function sessionState(client: ColoniaClient, session: string): Promise<DelegationState> {
   const { thread, runs } = await client.call("threads.get", { thread: session });
   if (thread.archived) return "completed";
   return delegationState(thread, latestDelegatedRun(runs, session));
 }
 
 /** One more turn for a delegated session a limit stopped, as Continue on the web: the core checks it is still stopped. */
-export async function continueSession(client: ApxClient, session: string): Promise<void> {
+export async function continueSession(client: ColoniaClient, session: string): Promise<void> {
   const { runs } = await client.call("threads.get", { thread: session });
   const latest = latestDelegatedRun(runs, session);
   if (!latest) throw new Error(t("delegationGone"));

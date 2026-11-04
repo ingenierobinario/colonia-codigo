@@ -18,14 +18,14 @@ export function AvatarStack({ children, max = 4, size = 24, className }: AvatarS
   const shown = all.slice(0, max);
   const rest = all.length - shown.length;
   return (
-    <span className={cx("apx-avatar-stack", className)} style={{ ["--apx-stack-size" as string]: `${size}px` }}>
+    <span className={cx("colonia-avatar-stack", className)} style={{ ["--colonia-stack-size" as string]: `${size}px` }}>
       {keyed(shown, (c) => c).map(({ item: c, key }) => (
-        <span key={key} className="apx-avatar-stack__item">
+        <span key={key} className="colonia-avatar-stack__item">
           {c}
         </span>
       ))}
       {rest > 0 && (
-        <span className="apx-avatar-stack__more" style={{ width: size, height: size }}>
+        <span className="colonia-avatar-stack__more" style={{ width: size, height: size }}>
           +{rest}
         </span>
       )}

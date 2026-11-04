@@ -1,4 +1,4 @@
-import { FlowAction, FlowEvent, type FlowEventCursor } from "@apx/protocol/flow-methods";
+import { FlowAction, FlowEvent, type FlowEventCursor } from "@colonia/protocol/flow-methods";
 import type { Db } from "../db/db.ts";
 import { sql } from "./sql.ts";
 

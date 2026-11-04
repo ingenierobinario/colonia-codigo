@@ -1,5 +1,5 @@
-import type { Agent, CatalogEngine, Run, Thread } from "@apx/protocol";
-import { Composer, EngineIcon, IconButton, Icons, Menu, SegmentedControl, withMentions } from "@apx/ui";
+import type { Agent, CatalogEngine, Run, Thread } from "@colonia/protocol";
+import { Composer, EngineIcon, IconButton, Icons, Menu, SegmentedControl, withMentions } from "@colonia/ui";
 import { Suspense, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useEngineLabel } from "../../common/useEngineLabel.ts";
 import { ModelChoicePicker } from "../../config/models/ModelPickers.tsx";

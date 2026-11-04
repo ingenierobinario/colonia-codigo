@@ -47,7 +47,7 @@ type Activity = {
   recipient?: Account;
   conversation?: { id?: string; name?: string; conversationType?: string };
   entities?: Array<{ type?: string; text?: string; mentioned?: Account }>;
-  value?: { apx?: unknown; action?: { data?: { apx?: unknown } } };
+  value?: { colonia?: unknown; action?: { data?: { colonia?: unknown } } };
   membersAdded?: Account[];
   membersRemoved?: Account[];
   channelData?: { team?: { name?: string }; channel?: { name?: string } };
@@ -298,7 +298,7 @@ export function teamsAdapter(
     const who = a.from;
     if (!who?.id || who.role === "bot") return { status: 200 };
     const sender = { id: who.id, name: clean(who.name) || who.id };
-    const data = a.type === "invoke" ? a.value?.action?.data?.apx : a.type === "message" ? a.value?.apx : undefined;
+    const data = a.type === "invoke" ? a.value?.action?.data?.colonia : a.type === "message" ? a.value?.colonia : undefined;
     if (typeof data === "string" && data) {
       // Buttons only go to personal chats (the owner's confirmations), so a click counts only there.
       if (direct) io.action({ conversation, sender, data, ...(a.replyToId ? { ref: a.replyToId } : {}) });
@@ -327,7 +327,7 @@ export function teamsAdapter(
       $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
       version: "1.4",
       body: [],
-      actions: buttons.map((b) => ({ type: "Action.Submit", title: b.label, data: { apx: b.id } })),
+      actions: buttons.map((b) => ({ type: "Action.Submit", title: b.label, data: { colonia: b.id } })),
     };
     return [{ contentType: "application/vnd.microsoft.card.adaptive", content }];
   }

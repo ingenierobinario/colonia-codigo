@@ -4,8 +4,8 @@
   display: flex;
   flex-direction: column;
   width: var(--shell-list-w);
-  border-right: 1px solid var(--apx-border);
-  background: var(--apx-bg);
+  border-right: 1px solid var(--colonia-border);
+  background: var(--colonia-bg);
   overflow: hidden;
 }
 .inbox__head {
@@ -23,8 +23,8 @@
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-size: var(--apx-text-lg);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-lg);
+  font-weight: var(--colonia-weight-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -46,15 +46,15 @@
   height: 30px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: none;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-semibold);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-semibold);
   cursor: pointer;
 }
 .inbox__grouphead:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .inbox__groupname {
   overflow: hidden;
@@ -62,12 +62,12 @@
   white-space: nowrap;
 }
 .inbox__groupcount {
-  font-weight: var(--apx-weight-regular);
-  color: var(--apx-fg-subtle);
+  font-weight: var(--colonia-weight-regular);
+  color: var(--colonia-fg-subtle);
 }
 .inbox__grouprun {
-  font-weight: var(--apx-weight-medium);
-  color: var(--apx-brand);
+  font-weight: var(--colonia-weight-medium);
+  color: var(--colonia-brand);
   white-space: nowrap;
 }
 .inbox__groupspacer {
@@ -97,11 +97,11 @@
   display: inline-block;
   vertical-align: -2px;
   margin-right: 6px;
-  color: var(--apx-brand);
+  color: var(--colonia-brand);
 }
 .threadrow__waiting {
-  color: var(--apx-warning-soft-fg);
-  font-weight: var(--apx-weight-medium);
+  color: var(--colonia-warning-soft-fg);
+  font-weight: var(--colonia-weight-medium);
 }
 
 .chatprocesses {
@@ -111,35 +111,35 @@
   gap: 4px;
   padding: 2px 5px;
   border: 0;
-  border-radius: var(--apx-row-radius);
-  background: var(--apx-fill-hover);
-  color: var(--apx-brand);
+  border-radius: var(--colonia-row-radius);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-brand);
   font: inherit;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
   vertical-align: middle;
 }
 button.chatprocesses {
   cursor: pointer;
 }
 
-/* An engine's sessions on this Mac, below those started in APX. */
+/* An engine's sessions on this Mac, below those started in Colonia. */
 .engine__native {
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
 .engine__nativehead {
   display: flex;
   gap: 6px;
   align-items: center;
   padding: 0 8px 6px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-semibold);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-semibold);
 }
 .engine__nativecount {
-  color: var(--apx-fg-subtle);
-  font-weight: var(--apx-weight-regular, 400);
+  color: var(--colonia-fg-subtle);
+  font-weight: var(--colonia-weight-regular, 400);
 }
 .engine__session {
   display: flex;
@@ -150,12 +150,12 @@ button.chatprocesses {
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   text-align: left;
   cursor: pointer;
 }
 .engine__session:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .engine__session:disabled {
   cursor: progress;
@@ -169,20 +169,20 @@ button.chatprocesses {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .engine__sessiontime {
   flex: none;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-2xs);
 }
 .engine__sessioncwd {
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-family: var(--apx-font-mono, ui-monospace, monospace);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-muted);
+  font-family: var(--colonia-font-mono, ui-monospace, monospace);
+  font-size: var(--colonia-text-2xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -194,14 +194,14 @@ button.chatprocesses {
   flex: none;
   margin-right: 4px;
   vertical-align: -1px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 
 /* Archived chats: one quiet row at the end of the list that unfolds them. */
 .inbox__archived {
   margin-top: 8px;
   padding-top: 6px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
 
 /* Compact faces retain their column, including group and caller badges. */

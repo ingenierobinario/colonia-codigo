@@ -1,10 +1,10 @@
-// Extensions, the "bundle" step of the extension ladder (DECISIONS.md#d-018): a folder with apx-extension.json that
+// Extensions, the "bundle" step of the extension ladder (DECISIONS.md#d-018): a folder with colonia-extension.json that
 // brings skills, MCP servers and routine templates, read without running anything. Installing copies the folder
 // into the home and fingerprints it; turning it on approves exactly those files.
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { type ExtensionInfo, ExtensionManifest } from "@apx/protocol";
+import { type ExtensionInfo, ExtensionManifest } from "@colonia/protocol";
 import type { ExtensionRecord } from "../domain/extensions.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
@@ -12,7 +12,7 @@ import { expandHome, isInside, realpath, tildeHome } from "../paths.ts";
 import type { Secrets } from "../secrets.ts";
 import type { Plugins } from "./plugins.ts";
 
-export const MANIFEST = "apx-extension.json";
+export const MANIFEST = "colonia-extension.json";
 const MAX_FILES = 2000;
 const MAX_BYTES = 50 * 1024 * 1024;
 
@@ -78,7 +78,7 @@ export function readManifest(dir: string): ExtensionManifest {
     if (!server.command && !server.url) throw badRequest(`mcp ${name} needs a command or a url`);
     const values = [...Object.values(server.env), ...Object.values(server.headers), ...server.args, server.url ?? ""];
     for (const v of values) {
-      if (v.startsWith("env:")) throw badRequest(`mcp ${name}: an extension cannot read APX's environment`);
+      if (v.startsWith("env:")) throw badRequest(`mcp ${name}: an extension cannot read Colonia's environment`);
       // Every reference, also inside text ("Bearer secret://token"), must be one of its own.
       for (const [, ref] of v.matchAll(SECRET_REF))
         if (!declared.has(ref ?? "")) throw badRequest(`mcp ${name}: secret ${ref} is not declared under secrets`);
@@ -145,7 +145,7 @@ export function createExtensions(deps: { store: Store; secrets: Secrets; home: s
     if (isInside(root, dir)) throw badRequest("that folder is an installed copy already");
     return realpath(dir);
   };
-  /** Starts its plugin without ever failing APX: a problem is shown as the plugin's error. */
+  /** Starts its plugin without ever failing Colonia: a problem is shown as the plugin's error. */
   const startPlugin = (e: ExtensionRecord) => {
     try {
       plugins.start(e);

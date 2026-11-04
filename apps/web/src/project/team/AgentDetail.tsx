@@ -1,5 +1,5 @@
-import { type Agent, Autonomy, DEFAULT_AUTONOMY, names, parentIn, reportsOf } from "@apx/protocol";
-import { AgentAvatar, Button, Dialog, EngineIcon, IconButton, Icons, Menu, Tabs } from "@apx/ui";
+import { type Agent, Autonomy, DEFAULT_AUTONOMY, names, parentIn, reportsOf } from "@colonia/protocol";
+import { AgentAvatar, Button, Dialog, EngineIcon, IconButton, Icons, Menu, Tabs } from "@colonia/ui";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { shortWhen } from "../../common/format.ts";
 import { AgentModelPicker } from "../../config/models/AgentModelPicker.tsx";

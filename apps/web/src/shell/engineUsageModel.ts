@@ -1,4 +1,4 @@
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import type { T } from "../i18n/index.ts";
 
 type Window = Result<"engines.usage">["engines"][number]["windows"][number];

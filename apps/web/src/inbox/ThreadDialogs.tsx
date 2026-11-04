@@ -1,5 +1,5 @@
-import type { Thread } from "@apx/protocol";
-import { Button, Dialog, Field, Input } from "@apx/ui";
+import type { Thread } from "@colonia/protocol";
+import { Button, Dialog, Field, Input } from "@colonia/ui";
 import { useState } from "react";
 import { markRead } from "../data/actions.ts";
 import { useData } from "../data/state.ts";

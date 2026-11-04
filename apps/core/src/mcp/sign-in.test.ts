@@ -20,7 +20,7 @@ let env: Awaited<ReturnType<typeof startCore>>;
 let dir = "";
 before(async () => {
   env = await startCore({ llm });
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-sign-in-"));
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-sign-in-"));
 });
 after(async () => {
   await env.core.close();

@@ -1,4 +1,4 @@
-// Restarting into a newer APX quits this app, so this page never hears back when it works: an answer, or still being
+// Restarting into a newer Colonia quits this app, so this page never hears back when it works: an answer, or still being
 // here after a while, means it did not, and the owner gets a way out instead of a spinner.
 export type RestartAnswer = { ok: true } | { ok: false; error: string } | undefined;
 export type RestartOutcome = { phase: "failed"; log: string } | { phase: "stalled" };

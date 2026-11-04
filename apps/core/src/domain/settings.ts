@@ -1,5 +1,5 @@
 // Small key/value settings, external harness session ids per thread, and stored idempotent responses.
-import type { RunUsage } from "@apx/protocol";
+import type { RunUsage } from "@colonia/protocol";
 import { sql as raw } from "kysely";
 import { type Entry, SETTINGS, type SettingKey, type SettingValue } from "./setting-keys.ts";
 import { now, qb, type Sql } from "./sql.ts";
@@ -49,7 +49,7 @@ export function harnessSessionsRepo({ one, all, run }: Sql) {
     );
   return {
     get: (threadId: string, harness: string): string | undefined => row(threadId, harness)?.session_id,
-    /** The APX thread that already goes on with an outside session, if one does. */
+    /** The Colonia thread that already goes on with an outside session, if one does. */
     threadOf: (harness: string, sessionId: string): string | undefined =>
       one(
         qb
@@ -58,7 +58,7 @@ export function harnessSessionsRepo({ one, all, run }: Sql) {
           .where("harness", "=", harness)
           .where("session_id", "=", sessionId),
       )?.thread_id,
-    /** Every outside session id APX goes on with, for one harness. */
+    /** Every outside session id Colonia goes on with, for one harness. */
     sessionIds: (harness: string): Set<string> =>
       new Set(
         all(qb.selectFrom("harness_sessions").select("session_id").where("harness", "=", harness)).map(

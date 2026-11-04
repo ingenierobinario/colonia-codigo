@@ -7,7 +7,7 @@ const run = (over: Partial<VerifyRun> = {}): VerifyRun => ({
   databaseId: 1,
   status: "completed",
   conclusion: "success",
-  url: "https://github.com/acme/apx/actions/runs/1",
+  url: "https://github.com/acme/colonia/actions/runs/1",
   headSha: SHA,
   ...over,
 });
@@ -26,12 +26,12 @@ test("only a commit whose newest verify run passed is verified", () => {
 });
 
 test("arguments: a ref, --wait, --tag v2.x.y and --repo", () => {
-  assert.deepEqual(parseArgs([]), { ref: "HEAD", wait: false, tag: undefined, repo: "agentprojectcontext/apx" });
-  assert.deepEqual(parseArgs(["--tag", "v2.10.0", "main", "--wait", "--repo", "acme/apx"]), {
+  assert.deepEqual(parseArgs([]), { ref: "HEAD", wait: false, tag: undefined, repo: "ingenierobinario/colonia" });
+  assert.deepEqual(parseArgs(["--tag", "v2.10.0", "main", "--wait", "--repo", "acme/colonia"]), {
     ref: "main",
     wait: true,
     tag: "v2.10.0",
-    repo: "acme/apx",
+    repo: "acme/colonia",
   });
   assert.throws(() => parseArgs(["--tag", "v1.2.3"]), /not a release tag/);
   assert.throws(() => parseArgs(["--tag"]), /needs a value/);

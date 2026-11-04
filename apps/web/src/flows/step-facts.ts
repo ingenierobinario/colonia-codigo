@@ -1,6 +1,6 @@
 // A step's settings read back in words, for the chat's view of a Flow: the editor's field names with what each holds,
 // nothing to change.
-import { flowCases } from "@apx/protocol/flow-cases";
+import { flowCases } from "@colonia/protocol/flow-cases";
 import type { FlowBinding, FlowGraph, FlowNode } from "../../../../packages/protocol/src/flow-graph.ts";
 import type { MessageKey } from "../i18n/index.ts";
 import { rulesText } from "./compare.ts";

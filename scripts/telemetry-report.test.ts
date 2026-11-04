@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { existedBefore, html, summarize, text, toDay, toInstall } from "./telemetry-report.ts";
 
-const root = "projects/apx-agents/databases/(default)/documents/installs";
+const root = "projects/colonia-agents/databases/(default)/documents/installs";
 // Each stage lands a 30-minute tick after the one before, as on a new install; `gapMs` sets that gap.
 const install = (id: string, channel: string, stages: string[], usage?: boolean, gapMs = 30 * 60_000) =>
   toInstall({
@@ -65,7 +65,7 @@ test("the report reads Firestore documents into a funnel that leaves checkouts a
   assert.match(html(s), /<h2>Funnel \(new installs\)<\/h2>/);
 });
 
-test("an APX that ran before telemetry is kept out of the funnel but not out of usage", () => {
+test("an Colonia that ran before telemetry is kept out of the funnel but not out of usage", () => {
   const before = install("old", "bundle", ["installed", "opened", "setup", "first_run"], true, 1_000);
   const firstRunOnly = install("old2", "app", ["installed", "first_run"], undefined, 2_000);
   const fresh = install("new", "app", ["installed", "opened", "setup", "first_run"]);

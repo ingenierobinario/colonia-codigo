@@ -1,6 +1,6 @@
 ---
 title: Telegram
-description: Create a Telegram bot, connect it to APX and talk to your agents from your phone.
+description: Create a Telegram bot, connect it to Colonia and talk to your agents from your phone.
 sidebar:
   order: 2
 ---
@@ -24,7 +24,7 @@ messages land in Home, you see the bot typing while it works, and you can send v
 
 </Steps>
 
-## Connect it to APX
+## Connect it to Colonia
 
 <Tabs>
 <TabItem label="Panel">
@@ -42,15 +42,15 @@ messages land in Home, you see the bot typing while it works, and you can send v
 </TabItem>
 <TabItem label="Terminal">
 
-The token is read from `APX_CHANNEL_TOKEN`, never from the command line, so it stays out of your shell history:
+The token is read from `COLONIA_CHANNEL_TOKEN`, never from the command line, so it stays out of your shell history:
 
 ```bash
-read -rs APX_CHANNEL_TOKEN && export APX_CHANNEL_TOKEN   # paste the token, then Enter
-apx channels add telegram acme-bot --agent nova
-unset APX_CHANNEL_TOKEN
+read -rs COLONIA_CHANNEL_TOKEN && export COLONIA_CHANNEL_TOKEN   # paste the token, then Enter
+colonia channels add telegram acme-bot --agent nova
+unset COLONIA_CHANNEL_TOKEN
 ```
 
-`acme-bot` is the channel's id (lowercase letters, digits and `-`); `--agent` takes an agent's id (`apx agents` lists
+`acme-bot` is the channel's id (lowercase letters, digits and `-`); `--agent` takes an agent's id (`colonia agents` lists
 them).
 
 </TabItem>
@@ -72,7 +72,7 @@ The bot doesn't know you yet: to it, you're a stranger like anyone else. Link yo
 
 </Steps>
 
-From the terminal it's `apx pairing me <code>`. Only type a code your own bot sent you, never one someone else hands
+From the terminal it's `colonia pairing me <code>`. Only type a code your own bot sent you, never one someone else hands
 you.
 
 From then on, what you write to the bot is you: it goes to **Home** (or to a chat of its own, if you set **Your
@@ -93,7 +93,7 @@ Another agent's question comes as one line saying who waits, to answer in the ap
 
 Anyone else who finds your bot is a stranger. By default (**Send a code**) they get a code and wait until you approve
 it: from the request under **Waiting for your approval**, from your notice, by telling your agent, or with
-`apx pairing ok <code>`. You can switch to **Ask me**, **Answer** or **Ignore**; see
+`colonia pairing ok <code>`. You can switch to **Ask me**, **Answer** or **Ignore**; see
 [Who gets an answer](/channels/overview/#who-gets-an-answer).
 
 Approved people are contacts: their chats are sealed (no tools, none of your memory). They show under **People on
@@ -102,7 +102,7 @@ Telegram**, where you can block or forget them.
 ## Groups
 
 The bot can also look after Telegram groups, the way a Discord bot looks after rooms of a server. Groups are opt-in:
-one that isn't listed doesn't exist for APX, so it's neither read nor stored, even with the bot in it.
+one that isn't listed doesn't exist for Colonia, so it's neither read nor stored, even with the bot in it.
 
 <Steps>
 
@@ -112,7 +112,7 @@ one that isn't listed doesn't exist for APX, so it's neither read nor stored, ev
    one, remove it and add it again.
 
 2. Add the bot to the group, and write something there while the channel is connected. Telegram can't list the groups
-   a bot is in, so APX learns them from what arrives: being added, or any message.
+   a bot is in, so Colonia learns them from what arrives: being added, or any message.
 
 3. In **Settings › Channels**, under **Groups**, pick the group from **Add a group the bot is in…**. Typing its id
    (a negative number, `-100…` for a supergroup) is the fallback.
@@ -140,12 +140,12 @@ The panel sets up one Telegram bot. If you want a separate bot for a project, ad
 id and token, and point it at that project's agent:
 
 ```bash
-read -rs APX_CHANNEL_TOKEN && export APX_CHANNEL_TOKEN
-apx channels add telegram northwind-bot --agent <project-agent-id>
-unset APX_CHANNEL_TOKEN
+read -rs COLONIA_CHANNEL_TOKEN && export COLONIA_CHANNEL_TOKEN
+colonia channels add telegram northwind-bot --agent <project-agent-id>
+unset COLONIA_CHANNEL_TOKEN
 ```
 
-Then write to the new bot and link yourself with `apx pairing me <code>`: **Settings › Channels** shows the first bot
+Then write to the new bot and link yourself with `colonia pairing me <code>`: **Settings › Channels** shows the first bot
 of each kind.
 
 <Aside type="caution">
@@ -153,7 +153,7 @@ Each bot needs its own token from BotFather. Two channels can't share one: Teleg
 one listener.
 </Aside>
 
-<Terminal command="apx channels">{`telegram       telegram  running   @acme_store_bot    agent nova
+<Terminal command="colonia channels">{`telegram       telegram  running   @acme_store_bot    agent nova
 northwind-bot  telegram  running   @northwind_bot     agent lucia`}</Terminal>
 
-To remove a bot: **Remove this bot** in its settings, or `apx channels rm <id>`. Its token goes with it.
+To remove a bot: **Remove this bot** in its settings, or `colonia channels rm <id>`. Its token goes with it.

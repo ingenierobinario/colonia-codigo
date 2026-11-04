@@ -1,6 +1,6 @@
 // A project's tables (tables.*), read once per project and again after every change made here, shared by the editor's
 // Read and Save steps, the `{}` picker and the Flows screen's Tables (DECISIONS.md#d-176).
-import type { TableInfo } from "@apx/protocol";
+import type { TableInfo } from "@colonia/protocol";
 import { useEffect } from "react";
 import { client } from "../data/client.ts";
 import { createStore, useSlice } from "../data/createStore.ts";

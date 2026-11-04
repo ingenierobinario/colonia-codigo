@@ -80,12 +80,12 @@ export function StickyScroll({
   };
 
   return (
-    <div className={cx("apx-stickyscroll", className)} ref={scroller} onScroll={onScroll}>
+    <div className={cx("colonia-stickyscroll", className)} ref={scroller} onScroll={onScroll}>
       <div className={contentClassName} ref={content}>
         {children}
       </div>
       {away && (
-        <div className="apx-stickyscroll__tobottom">
+        <div className="colonia-stickyscroll__tobottom">
           <IconButton
             label={toBottomLabel}
             tooltipSide="top"

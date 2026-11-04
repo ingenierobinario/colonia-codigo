@@ -1,6 +1,6 @@
 // make_image: an agent draws with the owner's image services and the image appears in the chat. voice_replies: its
 // answers on a channel also go as voice notes.
-import { NEGATIVE_PROMPT_MAX } from "@apx/protocol";
+import { NEGATIVE_PROMPT_MAX } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import { channelsOn } from "./directory.ts";
@@ -8,7 +8,7 @@ import { documentTool } from "./documents.ts";
 import { readsOutside } from "./folders.ts";
 import { defineTool, type Tool } from "./types.ts";
 
-/** A media id APX gave out (an earlier drawing), not a file path. */
+/** A media id Colonia gave out (an earlier drawing), not a file path. */
 const MEDIA_ID = /^med_[0-9a-f]{16}$/;
 
 export function mediaTools(store: Store, home: string, vm?: { hasThread(id: string): boolean }): Tool[] {

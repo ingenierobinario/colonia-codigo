@@ -2,7 +2,7 @@
 // agent knows what the room was talking about when it is called; whether it answers depends on the room's mode, who
 // called it, a cheap model's judgment ("useful" rooms) and the room's limits. Answers are sealed turns, the owner's
 // too: the room is public. See DECISIONS.md#d-041
-import type { ChannelRooms, RoomMode, Thread } from "@apx/protocol";
+import type { ChannelRooms, RoomMode, Thread } from "@colonia/protocol";
 import type { AuxAbout } from "../domain/aux-calls.ts";
 import type { Inbound } from "../domain/channels.ts";
 import { withinHours } from "../domain/hours.ts";

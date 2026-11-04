@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { z } from "zod";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -90,7 +90,7 @@ const agents: Record<string, string> = {};
 
 before(async () => {
   env = await startCore({ llm, extraTools: [readPage], inputWaits: { turn: 2_000, external: 2_000 } });
-  root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-perms-")));
+  root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-perms-")));
   fs.mkdirSync(path.join(root, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(root, ".apc", "project.json"), JSON.stringify({ name: "Northwind" }));
   for (const [name, autonomy] of [
@@ -210,7 +210,7 @@ test("auto on the project: an agent with none of its own writes and builds with 
   fs.mkdirSync(path.join(root, "scratch"), { recursive: true });
   const set = await env.client.call("projects.update", { project, autonomy: "auto" });
   assert.equal(set.project.autonomy, "auto");
-  assert.doesNotMatch(fs.readFileSync(path.join(root, ".apc", "project.json"), "utf8"), /autonomy/, "kept by APX");
+  assert.doesNotMatch(fs.readFileSync(path.join(root, ".apc", "project.json"), "utf8"), /autonomy/, "kept by Colonia");
   const t = await chat("Builder");
   const sent = await env.client.call("threads.send", { thread: t.id, text: "build it" });
   const input: { id: string; tool?: string | undefined } | undefined = await inputOrEnd(env.client, t.id);

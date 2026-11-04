@@ -2,7 +2,7 @@
 // chose the file, not its words), images as a line (pixels go separately), and copies in the chat's temp folder for
 // file tools.
 import fs from "node:fs";
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import type { Attachment } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { mediaToTemp } from "../services/media-temp.ts";

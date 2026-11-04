@@ -1,8 +1,8 @@
-// apx skills import: read a folder, .zip or git repository, show what it holds, and with --yes copy it into APX.
+// colonia skills import: read a folder, .zip or git repository, show what it holds, and with --yes copy it into Colonia.
 import fs from "node:fs";
 import path from "node:path";
-import type { SkillCandidate, SkillImportSource } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import type { SkillCandidate, SkillImportSource } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 export type ImportFlags = {
   project?: string | undefined;
@@ -12,7 +12,7 @@ export type ImportFlags = {
   yes?: boolean | undefined;
 };
 
-const USAGE = "usage: apx skills import <folder|file.zip|git url> [--project p] [--only a,b] [--replace] [--yes]";
+const USAGE = "usage: colonia skills import <folder|file.zip|git url> [--project p] [--only a,b] [--replace] [--yes]";
 
 /** What the argument names: a repository address, a .zip on this computer, or a folder (made absolute here). */
 export function importSource(arg: string, cwd = process.cwd()): SkillImportSource {
@@ -26,7 +26,7 @@ export function importSource(arg: string, cwd = process.cwd()): SkillImportSourc
 const STATUS: Record<SkillCandidate["status"], string> = {
   new: "new",
   exists: "already there",
-  reserved: "APX's own name",
+  reserved: "Colonia's own name",
   invalid: "invalid name",
 };
 const NOTE: Record<SkillCandidate["notes"][number]["kind"], string> = {
@@ -35,7 +35,7 @@ const NOTE: Record<SkillCandidate["notes"][number]["kind"], string> = {
   skipped: "left out",
 };
 
-export async function skillsImport(client: ApxClient, arg: string | undefined, o: ImportFlags): Promise<void> {
+export async function skillsImport(client: ColoniaClient, arg: string | undefined, o: ImportFlags): Promise<void> {
   if (!arg) throw new Error(USAGE);
   const source = importSource(arg);
   const where = {
@@ -57,7 +57,7 @@ export async function skillsImport(client: ApxClient, arg: string | undefined, o
     console.log(
       pick.length
         ? `\nNothing copied yet (nothing in it runs). Add --yes to import ${pick.length}${o.only ? "" : " (choose with --only)"}.`
-        : "\nNothing to import: every skill there is already in APX (--replace to overwrite) or cannot be used.",
+        : "\nNothing to import: every skill there is already in Colonia (--replace to overwrite) or cannot be used.",
     );
     return;
   }

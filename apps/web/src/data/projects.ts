@@ -1,5 +1,5 @@
 // A project's own settings (projects.update): kept in its .apc/project.json by the core.
-import type { Params, Project } from "@apx/protocol";
+import type { Params, Project } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";

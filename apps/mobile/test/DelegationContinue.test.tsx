@@ -37,7 +37,7 @@ const notice = (variant: string): Message =>
     ],
   }) as unknown as Message;
 
-test("a delegated session APX stopped offers Continue on the phone, which goes on with that session", async () => {
+test("a delegated session Colonia stopped offers Continue on the phone, which goes on with that session", async () => {
   const continueSession = jest.fn(async () => undefined);
   const ui = await render(
     <ChatMessage
@@ -52,7 +52,7 @@ test("a delegated session APX stopped offers Continue on the phone, which goes o
   expect(continueSession).toHaveBeenCalledWith("th_sub");
 });
 
-test("a session APX is already going on with has nothing to press", async () => {
+test("a session Colonia is already going on with has nothing to press", async () => {
   const ui = await render(
     <ChatMessage message={notice("continuedSteps")} agents={[]} respond={async () => {}} continueSession={jest.fn()} />,
   );

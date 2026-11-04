@@ -22,12 +22,12 @@ export interface EntityCardProps {
 /** A thing the agent produced or proposes, inline in the chat: draft, task, routine, commitment — with its actions. */
 export function EntityCard({ eyebrow, icon, title, status, fields, children, actions, className }: EntityCardProps) {
   return (
-    <div className={cx("apx-entity", className)}>
-      <div className="apx-entity__sheet">
+    <div className={cx("colonia-entity", className)}>
+      <div className="colonia-entity__sheet">
         {(eyebrow || status) && (
-          <div className="apx-entity__top">
+          <div className="colonia-entity__top">
             {eyebrow && (
-              <span className="apx-entity__eyebrow">
+              <span className="colonia-entity__eyebrow">
                 {icon}
                 {eyebrow}
               </span>
@@ -35,20 +35,20 @@ export function EntityCard({ eyebrow, icon, title, status, fields, children, act
             {status}
           </div>
         )}
-        {title && <div className="apx-entity__title">{title}</div>}
+        {title && <div className="colonia-entity__title">{title}</div>}
         {fields && fields.length > 0 && (
-          <dl className="apx-entity__fields">
+          <dl className="colonia-entity__fields">
             {keyed(fields, (f) => f.label).map(({ item: f, key }) => (
-              <div key={key} className="apx-entity__field">
+              <div key={key} className="colonia-entity__field">
                 <dt>{f.label}</dt>
                 <dd>{f.value}</dd>
               </div>
             ))}
           </dl>
         )}
-        {children && <div className="apx-entity__body">{children}</div>}
+        {children && <div className="colonia-entity__body">{children}</div>}
       </div>
-      {actions && <div className="apx-entity__actions">{actions}</div>}
+      {actions && <div className="colonia-entity__actions">{actions}</div>}
     </div>
   );
 }

@@ -5,13 +5,13 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import { COVERAGE_CHUNKS_FILE } from "../../scripts/coverage-maps.ts";
 import { buildVersion } from "../../scripts/version.ts";
 
-const core = process.env.APX_URL ?? "http://127.0.0.1:7440";
+const core = process.env.COLONIA_URL ?? "http://127.0.0.1:7440";
 
 const coverageProvenance: Plugin = {
   name: "coverage-chunk-provenance",
   apply: "build",
   generateBundle(_options, bundle) {
-    if (process.env.APX_TEST_COVERAGE !== "1") return;
+    if (process.env.COLONIA_TEST_COVERAGE !== "1") return;
     const chunks = Object.fromEntries(
       Object.values(bundle).flatMap((entry) => (entry.type === "chunk" ? [[entry.fileName, entry.moduleIds]] : [])),
     );
@@ -20,7 +20,7 @@ const coverageProvenance: Plugin = {
 };
 
 // A page still open on the previous build fetches its lazy parts by their old names: keep that build's chunks one more
-// build, so a rebuild doesn't reload the panel under someone mid-work. Never in a packaged build (APX_VERSION).
+// build, so a rebuild doesn't reload the panel under someone mid-work. Never in a packaged build (COLONIA_VERSION).
 function keepPreviousChunks(): Plugin {
   let out = "";
   const kept = new Map<string, Buffer>();
@@ -33,7 +33,7 @@ function keepPreviousChunks(): Plugin {
     },
     buildStart() {
       kept.clear();
-      if (process.env.APX_VERSION || process.env.APX_TEST_COVERAGE === "1") return;
+      if (process.env.COLONIA_VERSION || process.env.COLONIA_TEST_COVERAGE === "1") return;
       let previous: string[] = [];
       try {
         previous = JSON.parse(fs.readFileSync(list(), "utf8")) as string[];
@@ -59,19 +59,19 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), coverageProvenance, keepPreviousChunks()],
     define: {
-      // The build's own version when pnpm package names it (APX_VERSION), else the last tag and the commits past it.
-      "import.meta.env.VITE_APX_VERSION": JSON.stringify(
-        process.env.APX_VERSION ||
+      // The build's own version when pnpm package names it (COLONIA_VERSION), else the last tag and the commits past it.
+      "import.meta.env.VITE_COLONIA_VERSION": JSON.stringify(
+        process.env.COLONIA_VERSION ||
           buildVersion(
             JSON.parse(fs.readFileSync(new URL("../desktop/package.json", import.meta.url), "utf8")).version,
             import.meta.dirname,
           ),
       ),
       // "beta" while v2 is not yet the release people get by default (release.yml sets it).
-      "import.meta.env.VITE_APX_CHANNEL": JSON.stringify(process.env.APX_CHANNEL ?? ""),
+      "import.meta.env.VITE_COLONIA_CHANNEL": JSON.stringify(process.env.COLONIA_CHANNEL ?? ""),
     },
     build: {
-      sourcemap: process.env.APX_TEST_COVERAGE === "1",
+      sourcemap: process.env.COLONIA_TEST_COVERAGE === "1",
       // Agent avatars stay files: fetched and cached as images, never inlined as base64 into the first script.
       assetsInlineLimit: (file) => (file.endsWith(".webp") ? false : undefined),
       // What the first page imports is one chunk: otherwise each module a lazy screen also uses becomes a small chunk
@@ -92,15 +92,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 7441,
       proxy:
-        env.VITE_APX_INBOX_PREVIEW === "1"
+        env.VITE_COLONIA_INBOX_PREVIEW === "1"
           ? undefined
           : {
               "/rpc": core,
               "/health": core,
               // Published surfaces (surfaces.share → /a/<token>).
               "/a/": core,
-              // The APX Kit, for pages opened outside a widget frame (inside one it is already inline).
-              "/_apx/": core,
+              // The Colonia Kit, for pages opened outside a widget frame (inside one it is already inline).
+              "/_colonia/": core,
               "/ws": { target: core.replace(/^http/, "ws"), ws: true },
             },
     },

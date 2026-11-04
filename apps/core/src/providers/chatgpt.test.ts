@@ -109,7 +109,7 @@ let dir = "";
 before(async () => {
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-chatgpt-"));
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-chatgpt-"));
 });
 after(() => {
   server.close();
@@ -158,7 +158,7 @@ test("a token close to expiry is refreshed once, even with calls racing, and v1'
   assert.notEqual(a.token, expired);
 });
 
-test("the plan's model runs in APX's loop: tools as functions, reasoning replayed to the same model, effort sent", async () => {
+test("the plan's model runs in Colonia's loop: tools as functions, reasoning replayed to the same model, effort sent", async () => {
   const secrets = secretsIn("call");
   const login = createChatgptLogin({ secrets, issuer: base });
   const v1 = path.join(dir, "v1b.json");

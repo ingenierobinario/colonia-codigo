@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { SegmentedControl } from "@apx/ui";
+import { SegmentedControl } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../i18n/index.ts";
 import { FilesPane } from "../project/files/FilesPane.tsx";

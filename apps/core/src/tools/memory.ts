@@ -1,5 +1,5 @@
 // remember / recall / forget: an agent's notes between threads, through the memory.* methods like any client.
-import type { Memory } from "@apx/protocol";
+import type { Memory } from "@colonia/protocol";
 import { z } from "zod";
 import { stepKey, stepPairs } from "../domain/procedure-steps.ts";
 import type { Store } from "../domain/store.ts";

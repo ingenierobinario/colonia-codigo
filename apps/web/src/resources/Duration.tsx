@@ -1,4 +1,4 @@
-import { Input, Select } from "@apx/ui";
+import { Input, Select } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../i18n/index.ts";
 

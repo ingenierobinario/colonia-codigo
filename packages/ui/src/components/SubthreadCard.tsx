@@ -60,30 +60,30 @@ export function SubthreadCard({
     return () => ro?.disconnect();
   }, [open, hasReport]);
   return (
-    <div className={cx("apx-subthread", className)}>
-      <button type="button" className="apx-subthread__head" onClick={onOpen} aria-label={openLabel}>
-        <span className="apx-subthread__avatar">{avatar}</span>
-        <span className="apx-subthread__main">
-          <span className="apx-subthread__top">
-            <span className="apx-subthread__title">{title}</span>
-            <span className={cx("apx-subthread__state", `is-${status}`)}>
+    <div className={cx("colonia-subthread", className)}>
+      <button type="button" className="colonia-subthread__head" onClick={onOpen} aria-label={openLabel}>
+        <span className="colonia-subthread__avatar">{avatar}</span>
+        <span className="colonia-subthread__main">
+          <span className="colonia-subthread__top">
+            <span className="colonia-subthread__title">{title}</span>
+            <span className={cx("colonia-subthread__state", `is-${status}`)}>
               {status === "running" && <Spinner size={12} />}
               {statusLabel}
             </span>
           </span>
-          {subtitle && <span className="apx-subthread__sub">{subtitle}</span>}
+          {subtitle && <span className="colonia-subthread__sub">{subtitle}</span>}
         </span>
-        <ChevronRight size={16} className="apx-subthread__chevron" />
+        <ChevronRight size={16} className="colonia-subthread__chevron" />
       </button>
       {summary && (
-        <div className="apx-subthread__report">
-          <div ref={body} className={cx("apx-subthread__summary", !open && "is-folded", !open && long && "is-long")}>
+        <div className="colonia-subthread__report">
+          <div ref={body} className={cx("colonia-subthread__summary", !open && "is-folded", !open && long && "is-long")}>
             {summary}
           </div>
           {(long || open) && (
             <button
               type="button"
-              className="apx-subthread__more"
+              className="colonia-subthread__more"
               aria-expanded={open}
               onClick={() => setOpen((o) => !o)}
             >
@@ -92,7 +92,7 @@ export function SubthreadCard({
           )}
         </div>
       )}
-      {meta && <div className="apx-subthread__meta">{meta}</div>}
+      {meta && <div className="colonia-subthread__meta">{meta}</div>}
     </div>
   );
 }

@@ -1,11 +1,11 @@
-// Where APX lives outside the app: the community, the code and the guides.
+// Where Colonia lives outside the app: the community, the code and the guides.
 export const LINKS = {
   discord: "https://discord.gg/vxdZuT5WuE",
   // The public repo: where the releases and the docs live.
   repo: "https://github.com/ingenierobinario/colonia",
   releases: "https://github.com/ingenierobinario/colonia/releases",
   feedback: "https://github.com/ingenierobinario/colonia/issues/new/choose",
-  docs: "https://apxagent.app/",
+  docs: "https://colonia.ingenierobinario.com/",
 } as const;
 
 /** The guides in the panel's language (the docs site has English and Spanish). */

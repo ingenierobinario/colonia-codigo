@@ -2,7 +2,7 @@
 // it would send (engine/suggest.ts) and the owner gets who wrote, what they said and the draft, to send it, answer
 // them themselves or drop it. The same choices are methods (contacts.suggestions.*) for any client.
 // See DECISIONS.md#d-088
-import type { ContactSuggestion, Thread } from "@apx/protocol";
+import type { ContactSuggestion, Thread } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { publicSuggestion } from "../domain/suggestions.ts";
 import { isSkip } from "../engine/routines.ts";

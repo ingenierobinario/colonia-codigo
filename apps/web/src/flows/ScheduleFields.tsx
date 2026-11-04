@@ -1,6 +1,6 @@
 // The schedule step's card: quick choices, then fixed times per day, "every N units" or a cron by hand. Whatever the
 // owner picks is kept as the step's cron (schedule-form.ts), with its next times in the owner's time zone.
-import { Button, Field, IconButton, Icons, Input, SegmentedControl, Select } from "@apx/ui";
+import { Button, Field, IconButton, Icons, Input, SegmentedControl, Select } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { currentLocale, useT } from "../i18n/index.ts";

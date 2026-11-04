@@ -1,7 +1,7 @@
 // A company project's areas and roles: a card per area with its roles, then the general roles. Agents take an area
 // and a role from here (the agent editor offers them); the agents of the project read them in their prompt.
-import type { Organization } from "@apx/protocol";
-import { Button, Card, Dialog, EmptyState, Field, IconButton, Icons, Input, Select, Skeleton, Textarea } from "@apx/ui";
+import type { Organization } from "@colonia/protocol";
+import { Button, Card, Dialog, EmptyState, Field, IconButton, Icons, Input, Select, Skeleton, Textarea } from "@colonia/ui";
 import { type ReactNode, useMemo, useState } from "react";
 import { slugOf } from "../common/slug.ts";
 import { inProject, type ProjectEntry } from "../data/identity.ts";

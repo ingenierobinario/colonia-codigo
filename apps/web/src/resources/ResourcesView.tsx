@@ -1,4 +1,4 @@
-import { Button, Icons, Menu, SearchField, SegmentedControl } from "@apx/ui";
+import { Button, Icons, Menu, SearchField, SegmentedControl } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import { type ProjectEntry, projectName } from "../data/identity.ts";
 import { useData } from "../data/state.ts";

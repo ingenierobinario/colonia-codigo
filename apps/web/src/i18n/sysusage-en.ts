@@ -45,7 +45,7 @@ export const enSysUsage = {
   "sysUsage.button": "System: {pct}% of memory in use",
   "sysUsage.memory": "Memory",
   "sysUsage.memoryOf": "{used} of {total} in use",
-  "sysUsage.apx": "Colonia {size}",
+  "sysUsage.colonia": "Colonia {size}",
   "sysUsage.vm": "Linux VM {size}",
   "sysUsage.other": "Other apps {size}",
   "sysUsage.free": "Free {size}",

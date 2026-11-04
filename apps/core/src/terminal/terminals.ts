@@ -4,7 +4,7 @@ import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { StringDecoder } from "node:string_decoder";
-import type { TerminalInfo } from "@apx/protocol";
+import type { TerminalInfo } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
 import { commandShell } from "../processes.ts";
 
@@ -38,11 +38,11 @@ function findPython(): string | undefined {
   return spawnSync("python3", ["-c", "import pty"], { timeout: 3000 }).status === 0 ? "python3" : undefined;
 }
 
-/** The owner's environment, without APX's own settings (its token, how the core was started). */
+/** The owner's environment, without Colonia's own settings (its token, how the core was started). */
 function shellEnv(): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [k, v] of Object.entries(process.env))
-    if (!k.startsWith("APX_") && k !== "ELECTRON_RUN_AS_NODE" && k !== "NODE_OPTIONS") env[k] = v;
+    if (!k.startsWith("COLONIA_") && k !== "ELECTRON_RUN_AS_NODE" && k !== "NODE_OPTIONS") env[k] = v;
   return { ...env, TERM: "xterm-256color", COLORTERM: "truecolor" };
 }
 
@@ -129,7 +129,7 @@ export function createTerminals(deps: { bus: Bus; commandEnded?: (e: CommandEnde
       };
       child.stdout?.on("data", take);
       child.stderr?.on("data", take);
-      child.on("error", (e) => take(Buffer.from(`\r\napx: ${e.message}\r\n`)));
+      child.on("error", (e) => take(Buffer.from(`\r\ncolonia: ${e.message}\r\n`)));
       child.on("exit", (code) => {
         clearTimeout(t.timer);
         flush(t);

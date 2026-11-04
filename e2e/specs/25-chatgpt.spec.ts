@@ -1,4 +1,4 @@
-// Engines and models: the ChatGPT plan first among the model APIs (as Codex, signed in from APX, never removed), then
+// Engines and models: the ChatGPT plan first among the model APIs (as Codex, signed in from Colonia, never removed), then
 // the APIs, known ones shown before they are set up (and removable from the list). The CLIs live in External sessions,
 // never in a picker of models for agents.
 import { expect, open, openSettings, rpc, test } from "./kit.ts";

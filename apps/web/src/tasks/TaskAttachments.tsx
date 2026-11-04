@@ -1,5 +1,5 @@
-import type { Task } from "@apx/protocol";
-import { Button, IconButton, Icons } from "@apx/ui";
+import type { Task } from "@colonia/protocol";
+import { Button, IconButton, Icons } from "@colonia/ui";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { FilePart } from "../chat/parts/FilePart.tsx";
 import { client } from "../data/client.ts";

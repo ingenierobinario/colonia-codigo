@@ -1,7 +1,7 @@
 // Notes by meaning: when the owner turns it on, each note is indexed with an embedding engine (in the background),
 // and a search mixes the notes that share words with the query and those close in meaning. If the engine is slow
 // or down, search goes on by words alone: memory never blocks a turn.
-import type { Memory } from "@apx/protocol";
+import type { Memory } from "@colonia/protocol";
 import { canSee, fuse, type MemoryView } from "../domain/memories.ts";
 import { memoryFragments } from "../domain/memory-content.ts";
 import { memorySettings } from "../domain/memory-settings.ts";

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
-import { type ClientScope, FILE_PAYLOAD_BYTES, methodOpen } from "@apx/protocol";
+import { type ClientScope, FILE_PAYLOAD_BYTES, methodOpen } from "@colonia/protocol";
 import { type PublicPages, surfacePage } from "../surface-pages.ts";
 
 export type { PublicPages } from "../surface-pages.ts";
@@ -86,7 +86,7 @@ export function httpHandler(
       );
     }
     if (req.method === "POST" && url.pathname.startsWith("/rpc/")) {
-      const clientToken = header(req, "x-apx-client");
+      const clientToken = header(req, "x-colonia-client");
       const client = clientToken ? clientOf?.(clientToken) : undefined;
       const why = refuse(req, gate, null, Boolean(client), methodOpen(url.pathname.slice(5)));
       if (why) return send(res, 403, { ok: false, error: { code: "unauthorized", message: why } });
@@ -105,7 +105,7 @@ export function httpHandler(
       }
       const idem = header(req, "idempotency-key");
       const auth = header(req, "authorization");
-      const device = auth?.startsWith("Bearer apxd_") ? deviceOf?.(auth.slice(7)) : undefined;
+      const device = auth?.startsWith("Bearer coloniad_") ? deviceOf?.(auth.slice(7)) : undefined;
       if (clientToken && !client)
         return send(res, 401, {
           ok: false,
@@ -119,7 +119,7 @@ export function httpHandler(
           local: localRequest(req),
           role: "operator",
           // An outside app is a model, whatever it says it is.
-          actor: client || header(req, "x-apx-actor") === "agent" ? "agent" : "human",
+          actor: client || header(req, "x-colonia-actor") === "agent" ? "agent" : "human",
           ...(client ? { client } : {}),
           ...(device ? { device } : {}),
           session: undefined,

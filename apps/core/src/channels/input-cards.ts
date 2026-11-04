@@ -1,6 +1,6 @@
 // A confirmation or question sent to a channel stops asking there once it is settled: answered in the app or in
 // another chat, its message is taken out; answered in that same chat or expired, it only loses its buttons.
-import type { InputState } from "@apx/protocol";
+import type { InputState } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { errorMessage } from "../errors.ts";
 import type { Log } from "../log.ts";

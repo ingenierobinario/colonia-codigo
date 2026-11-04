@@ -65,7 +65,7 @@ test("incomplete extension commands have no side effect and install errors canno
   const error = new Error("manifest refused");
   const { client, calls } = recordingClient({ "extensions.install": error });
   for (const args of [["inspect"], ["install"], ["on"], ["off"], ["rm"], ["secret", "acme"], ["unknown"]])
-    await assert.rejects(extensions(client, args, {}), /apx extensions/);
+    await assert.rejects(extensions(client, args, {}), /colonia extensions/);
   assert.deepEqual(calls, []);
   assert.equal(
     await printed(async () => {

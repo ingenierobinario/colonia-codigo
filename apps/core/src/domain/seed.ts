@@ -1,5 +1,5 @@
 // First-run defaults: a secretary, a small team and the Home thread. Idempotent.
-import { randomAgentName, SUPER_AGENT_ID } from "@apx/protocol";
+import { randomAgentName, SUPER_AGENT_ID } from "@colonia/protocol";
 import type { Store } from "./store.ts";
 
 export const HOME_THREAD_ID = "home";

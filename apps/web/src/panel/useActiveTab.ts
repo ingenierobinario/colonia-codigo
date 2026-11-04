@@ -1,4 +1,4 @@
-import type { TabInfo } from "@apx/protocol";
+import type { TabInfo } from "@colonia/protocol";
 import { useEffect } from "react";
 import { useData } from "../data/state.ts";
 import { useNav } from "../shell/nav.ts";
@@ -13,7 +13,7 @@ export function useActiveTab(): { tabs: TabInfo[]; active: TabInfo | undefined }
   const poppedOut = useBrowserPoppedOut();
   // In the desktop app the native view follows the panel's choice, again when the browser window hands it back.
   useEffect(() => {
-    if (activeId && !poppedOut) window.apxDesktop?.showBrowserTab?.(activeId);
+    if (activeId && !poppedOut) window.coloniaDesktop?.showBrowserTab?.(activeId);
   }, [activeId, poppedOut]);
   return { tabs, active };
 }

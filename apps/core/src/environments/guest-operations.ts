@@ -1,6 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomBytes, randomUUID } from "node:crypto";
-import type { TabInfo } from "@apx/protocol";
+import type { TabInfo } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { conflict, unauthorized } from "../errors.ts";
 import { createHeadlessBrowser } from "../nodes/headless-browser.ts";
@@ -121,7 +121,7 @@ export function guestOperations(
           "shell",
           config.instance,
           "--",
-          ...screenArgs(screen, "/usr/local/bin/apx-command", "--cancel", operation),
+          ...screenArgs(screen, "/usr/local/bin/colonia-command", "--cancel", operation),
         ]);
     },
     revokeDevice(id: string) {
@@ -172,7 +172,7 @@ export function guestOperations(
               "shell",
               config.instance,
               "--",
-              ...screenArgs(entry.screen, "nc", "-U", `/run/user/${u.uid}/apx-vnc.sock`),
+              ...screenArgs(entry.screen, "nc", "-U", `/run/user/${u.uid}/colonia-vnc.sock`),
             ],
             // Its own process group: ending it ends the ssh under it too (endViewer).
             { env, stdio: ["pipe", "pipe", "ignore"], detached: true, windowsHide: true },
@@ -204,7 +204,7 @@ export function guestOperations(
             "shell",
             config.instance,
             "--",
-            ...screenArgs(screen, "/usr/local/bin/apx-command", Buffer.from(command).toString("base64"), operation),
+            ...screenArgs(screen, "/usr/local/bin/colonia-command", Buffer.from(command).toString("base64"), operation),
           ],
           50_000,
         );

@@ -22,7 +22,7 @@ for (const width of [1280, 590, 390]) {
     await expect.poll(() => body.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
     for (const value of [
       parentLink.locator(".taskwork__title"),
-      drawer.locator(".apx-select__value").filter({ hasText: name.trim() }),
+      drawer.locator(".colonia-select__value").filter({ hasText: name.trim() }),
     ]) {
       await expect(value).toHaveCSS("text-overflow", "ellipsis");
       expect(await value.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);

@@ -31,7 +31,7 @@ const parts = (raw: string) =>
   ].map((m) => Buffer.from(m[1] ?? "", "base64").toString("utf8"));
 
 test("the production SMTP factory resolves signatures by channel and sender; omission survives the outbox", async () => {
-  const dir = tempDir("apx-email-signatures-");
+  const dir = tempDir("colonia-email-signatures-");
   const imap = await fakeImap({ user: address, pass });
   const smtp = await fakeSmtp({ user: address, pass });
   const env = await startCore({ home: dir.path, llm: scriptedLlm(() => say("Acknowledged")) });
@@ -110,7 +110,7 @@ test("the production SMTP factory resolves signatures by channel and sender; omi
 });
 
 test("SMTP signatures retain attachments and do not duplicate a pre-signed message", async () => {
-  const dir = tempDir("apx-email-signature-files-");
+  const dir = tempDir("colonia-email-signature-files-");
   const smtp = await fakeSmtp({ user: address, pass });
   const endpoint = { host: "127.0.0.1", port: smtp.port, tls: "none" as const };
   const adapter = emailAdapter(

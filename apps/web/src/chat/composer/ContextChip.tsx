@@ -1,4 +1,4 @@
-import { Icons, Tooltip } from "@apx/ui";
+import { Icons, Tooltip } from "@colonia/ui";
 import { useT } from "../../i18n/index.ts";
 import { go, useNav } from "../../shell/nav.ts";
 import { tokens as k } from "./context.ts";

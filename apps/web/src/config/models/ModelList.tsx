@@ -1,5 +1,5 @@
-import type { CatalogEngine, ModelRef } from "@apx/protocol";
-import { Badge, EngineIcon, Icons, SearchField } from "@apx/ui";
+import type { CatalogEngine, ModelRef } from "@colonia/protocol";
+import { Badge, EngineIcon, Icons, SearchField } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { baseRef, forAgents, refLabel, splitRef, useModels, withEffort } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";

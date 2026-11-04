@@ -1,6 +1,6 @@
 # Approved browser scripts
 
-These helpers are for unreleased staging builds. Use the existing APX browser tab, never a second browser or a remote
+These helpers are for unreleased staging builds. Use the existing Colonia browser tab, never a second browser or a remote
 CDP port. Arbitrary JavaScript requires an approval card even in Total. Read the whole file and compute its SHA-256
 before asking to execute it with `browser_evaluate({ tab, origin, document, path, sha256 })`. File access uses normal project permissions.
 Take `browser_snapshot` first and pass its `document` reference. Navigation, reload, a changed URL (including SPA routes)
@@ -10,11 +10,11 @@ is used, so `unsafe-eval` is not required. A core-only restart does not update a
 
 ## Instagram draft helper
 
-`instagram-draft.js` installs `apxInstagramDraft` in the current page; loading it does not compose or send anything.
+`instagram-draft.js` installs `coloniaInstagramDraft` in the current page; loading it does not compose or send anything.
 Then use an approved inline expression:
 
 ```js
-apxInstagramDraft({
+coloniaInstagramDraft({
   recipient: "acme",
   threadId: "123",
   text: "The exact approved draft",
@@ -44,7 +44,7 @@ Instagram-origin fixture and do not contact Instagram or send a real message.
 ## Ayuda en español
 
 Leé el archivo completo y calculá su SHA-256 antes de aprobar `browser_evaluate({ tab, origin, document, path, sha256 })` en la pestaña
-actual de APX. La tarjeta se mantiene incluso en Total. Cargar `instagram-draft.js` solo instala `apxInstagramDraft`;
+actual de Colonia. La tarjeta se mantiene incluso en Total. Cargar `instagram-draft.js` solo instala `coloniaInstagramDraft`;
 no compone ni manda. Después invocá la función con destinatario, ID numérico de conversación, texto exacto y selectores
 reales del contenedor y de burbujas individuales. Los selectores del ejemplo son placeholders, no selectores productivos
 validados. Si el header, el destinatario, la URL o el editor no coinciden, se detiene sin enviar.

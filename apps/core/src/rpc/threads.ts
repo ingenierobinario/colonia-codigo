@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Author, Task } from "@apx/protocol";
+import type { Author, Task } from "@colonia/protocol";
 import { ownerActsOn } from "../domain/channels.ts";
 import { OWNER_ID } from "../domain/persons.ts";
 import { type Attachment, ownerOrigin, publicRun, TERMINAL } from "../domain/runs.ts";
@@ -81,7 +81,7 @@ function createThread(
 function attachedFiles(store: Store, thread: string, ids: string[]): Attachment[] {
   return [...new Set(ids)].map((id) => {
     const m = store.media.get(id);
-    // Not media APX made (it has a service) nor another chat's upload.
+    // Not media Colonia made (it has a service) nor another chat's upload.
     if (!m || m.service || store.taskAttachments.pending(id) || (m.thread_id && m.thread_id !== thread))
       throw badRequest(`no attachment ${id}`);
     return { media_id: m.id, kind: m.kind, mime: m.mime, name: m.prompt ?? m.id };

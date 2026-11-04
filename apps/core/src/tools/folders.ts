@@ -1,4 +1,4 @@
-// The folders an agent may use, and the one rule every APX tool (files, shell, sending a file) asks about a path:
+// The folders an agent may use, and the one rule every Colonia tool (files, shell, sending a file) asks about a path:
 // readable, writable or refused, the same whether the path is written relative or absolute.
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -9,7 +9,7 @@ import { expandHome, insideReal, isInside, real, realpath } from "../paths.ts";
 import { namedPaths } from "./command-paths.ts";
 
 /**
- * APX's own folder for a project, so one project's files never land among another's: the project's folder when APX
+ * Colonia's own folder for a project, so one project's files never land among another's: the project's folder when Colonia
  * made it (a project with no folder elsewhere lives in `projects/<name>`), else `projects/<id>`.
  */
 export function projectSide(home: string, project: { id: string; path?: string | undefined }) {
@@ -22,7 +22,7 @@ export function projectSide(home: string, project: { id: string; path?: string |
 
 /**
  * Where an agent works in a thread: a code thread's own folder, else its project's folder when it is on disk, else
- * APX's side of the project, else (a chat outside a project) APX's work folder. Commands run and files are written
+ * Colonia's side of the project, else (a chat outside a project) Colonia's work folder. Commands run and files are written
  * only inside it, or in the chat's temp folder (scratchDir).
  */
 export function workDir(
@@ -77,8 +77,8 @@ export function folderInProject(store: Store, projectId: string | undefined, cwd
 }
 
 /**
- * Where an outside agent (Claude, Codex, an ACP agent) works: a code thread's folder, else APX's side of the project,
- * never the project's own folder (its settings there would apply unchecked), else APX's work folder.
+ * Where an outside agent (Claude, Codex, an ACP agent) works: a code thread's folder, else Colonia's side of the project,
+ * never the project's own folder (its settings there would apply unchecked), else Colonia's work folder.
  */
 export function harnessDir(
   store: Store,
@@ -92,7 +92,7 @@ export function harnessDir(
 
 /**
  * Where a chat keeps temporary files: a folder of its own (shared with the sub-chats it delegated to) in the system's
- * temp folder, outside the folder it works in and outside APX's home, so neither fills with downloads and test scripts.
+ * temp folder, outside the folder it works in and outside Colonia's home, so neither fills with downloads and test scripts.
  */
 export function scratchDir(store: Store, home: string, thread: { id: string; parent_id?: string | undefined }) {
   let root = thread;
@@ -101,40 +101,40 @@ export function scratchDir(store: Store, home: string, thread: { id: string; par
 }
 
 /**
- * Where a built artifact's source lives (one folder per artifact under it): APX's side, never the owner's repo, and
+ * Where a built artifact's source lives (one folder per artifact under it): Colonia's side, never the owner's repo, and
  * apart from the artifact's memory (`artifacts/`), which only the core writes. See DECISIONS.md#d-118.
  */
 export const artifactSources = (home: string, projectId: string | undefined) =>
   path.join(home, "artifact-sources", projectId ?? "global");
 
 /**
- * Whether a command names APX's own folder, leaving out this project's artifact sources, which its agents may build in.
+ * Whether a command names Colonia's own folder, leaving out this project's artifact sources, which its agents may build in.
  * Read as text (either slash; any case on Windows) and as the paths it names, resolved, so a link or a Windows short
  * name (RUNNER~1) for the same folder counts too.
  */
-export function namesApxHome(command: string, home: string, projectId: string | undefined): boolean {
+export function namesColoniaHome(command: string, home: string, projectId: string | undefined): boolean {
   const sources = artifactSources(home, projectId);
   const fold = (p: string) => (process.platform === "win32" ? p.toLowerCase() : p);
   const both = (p: string) => [...new Set([p, p.split(path.sep).join("/"), p.split("/").join(path.sep)].map(fold))];
   let rest = fold(command);
   for (const src of both(sources)) rest = rest.split(src).join("");
-  if (both(home).some((h) => rest.includes(h)) || /\.apx(2\b|[\\/]v2\b)/i.test(rest)) return true;
-  const [apx, own] = [real(home), real(sources)];
+  if (both(home).some((h) => rest.includes(h)) || /\.colonia(2\b|[\\/]v2\b)/i.test(rest)) return true;
+  const [colonia, own] = [real(home), real(sources)];
   return namedPaths(command).some((n) => {
     const to = n.kind === "path" || n.kind === "cd" ? n.to?.path : undefined;
     if (!to || !path.isAbsolute(to)) return false;
     const at = real(path.resolve(to));
-    return isInside(apx, at) && !isInside(own, at);
+    return isInside(colonia, at) && !isInside(own, at);
   });
 }
 
-/** Every chat's temp folder sits here; one per APX home, so a test core never shares the owner's. */
+/** Every chat's temp folder sits here; one per Colonia home, so a test core never shares the owner's. */
 export const scratchRoot = (home: string) =>
-  path.join(os.tmpdir(), `apx-scratch-${createHash("sha256").update(home).digest("hex").slice(0, 8)}`);
+  path.join(os.tmpdir(), `colonia-scratch-${createHash("sha256").update(home).digest("hex").slice(0, 8)}`);
 
 /**
  * A folder an agent may use (`off`: one it may not, inside one it may; `lent`: the owner let it use it for one call;
- * `anywhere`: every path the roots before it leave but APX's home, readable, and writable for an agent that acts
+ * `anywhere`: every path the roots before it leave but Colonia's home, readable, and writable for an agent that acts
  * outside on its own). The first is where relative paths start.
  */
 export type Root = {
@@ -148,7 +148,7 @@ export type Root = {
 
 /**
  * How far an agent's files reach outside the folders it works in (DECISIONS.md#d-106): `all` reads and changes any
- * folder but APX's home, `read` reads any and asks before changing outside, `card` asks before reading outside,
+ * folder but Colonia's home, `read` reads any and asks before changing outside, `card` asks before reading outside,
  * `fenced` keeps to its folders.
  */
 export type Reach = "all" | "read" | "card" | "fenced";
@@ -205,17 +205,17 @@ export function projectWorktrees(store: Store, thread: Parameters<typeof workDir
 
 /**
  * The owner's other projects and their worktrees, to change as freely as the agent's own folder in Auto: the owner
- * registered them, so moving between them is not acting outside (DECISIONS.md#d-108). Never one holding APX's home
+ * registered them, so moving between them is not acting outside (DECISIONS.md#d-108). Never one holding Colonia's home
  * or inside it; a thread kept to one folder stays in it.
  */
 export function ownerProjects(store: Store, home: string, thread: Thread): Root[] {
   if (thread.cwd) return [];
-  const apx = real(home);
+  const colonia = real(home);
   const out: Root[] = [];
   for (const p of store.projects.list()) {
     if (!p.path || !p.present || p.id === thread.project_id) continue;
     const at = real(p.path);
-    if (isInside(at, apx) || isInside(apx, at)) continue;
+    if (isInside(at, colonia) || isInside(colonia, at)) continue;
     out.push({ dir: p.path, write: true, scratch: false });
     for (const tree of projectWorktrees(store, { project_id: p.id }))
       out.push({ dir: tree, write: true, scratch: false });
@@ -223,7 +223,7 @@ export function ownerProjects(store: Store, home: string, thread: Thread): Root[
   return out;
 }
 
-/** The system's temp folders, shared scratch space for commands (`/tmp/out.txt`), unless one holds APX's home. */
+/** The system's temp folders, shared scratch space for commands (`/tmp/out.txt`), unless one holds Colonia's home. */
 export function tempAreas(home: string): string[] {
   const out: string[] = [];
   for (const dir of ["/tmp", "/private/tmp", os.tmpdir()]) {
@@ -275,12 +275,12 @@ export function harnessRoots(store: Store, home: string, thread: Thread): Root[]
 }
 
 /**
- * A project's read-only folders as the owner gave them, checked: absolute (or `~/…`), on disk, a folder, not APX's home
+ * A project's read-only folders as the owner gave them, checked: absolute (or `~/…`), on disk, a folder, not Colonia's home
  * nor in it nor holding it (its database and secrets), not in the project's own folder (already readable and writable
  * there, so listing it would only mislead). Duplicates are dropped. Throws the first problem.
  */
 export function checkReadOnly(home: string, project: { path?: string | undefined }, folders: string[]): string[] {
-  const apx = real(home);
+  const colonia = real(home);
   const own = project.path ? real(project.path) : undefined;
   const out: string[] = [];
   for (const given of folders) {
@@ -289,7 +289,7 @@ export function checkReadOnly(home: string, project: { path?: string | undefined
     const dir = path.resolve(p);
     if (!fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory()) throw new Error(`${given} is not a folder here`);
     const at = real(dir);
-    if (isInside(at, apx) || isInside(apx, at)) throw new Error(`${given} holds or is inside APX's own folder`);
+    if (isInside(at, colonia) || isInside(colonia, at)) throw new Error(`${given} holds or is inside Colonia's own folder`);
     // Read-only there would lock every chat's temp folder.
     if ([scratchRoot(home), "/tmp", "/private/tmp", os.tmpdir()].some((t) => isInside(at, real(t))))
       throw new Error(`${given} holds the system's temp folders`);
@@ -320,8 +320,8 @@ export const refusal = {
   /** Outside a project there is no read-only folder to add. */
   alone: (p: string) =>
     `${p} is outside the folders you can read: the folder you work in and your temp folder. Work with what is there, or tell the owner which folder you need and why.`,
-  apx: (p: string) =>
-    `${p} is in APX's own folder, which no agent may use. Ask APX through its tools (list_agents, recall, search_chats) instead.`,
+  colonia: (p: string) =>
+    `${p} is in Colonia's own folder, which no agent may use. Ask Colonia through its tools (list_agents, recall, search_chats) instead.`,
   unknown: (what: string) =>
     `cannot tell where ${what} writes, and this project has read-only folders: name the path plainly.`,
 };
@@ -356,7 +356,7 @@ export type JudgeOptions = {
   write?: boolean;
   /** The path as the agent wrote it, for the refusal. */
   name?: string;
-  /** APX's home, refused in its own words. */
+  /** Colonia's home, refused in its own words. */
   home?: string;
   /** Whether the thread is in a project, where the owner can add a read-only folder. */
   project?: boolean;
@@ -369,9 +369,9 @@ export function judge(roots: Root[], file: string, from: string, o: JudgeOptions
   const lands = physical(from, expandHome(file));
   const root = roots.find((r) => r.anywhere || insideReal(r.dir, lands));
   if (!root || root.off || root.lent || root.anywhere) {
-    // A folder lent for one call, or every folder, never opens APX's home inside it.
-    const apx = o.home ?? root?.anywhere?.home;
-    if (apx && insideReal(apx, lands)) return { refused: refusal.apx(name) };
+    // A folder lent for one call, or every folder, never opens Colonia's home inside it.
+    const colonia = o.home ?? root?.anywhere?.home;
+    if (colonia && insideReal(colonia, lands)) return { refused: refusal.colonia(name) };
   }
   if (!root || root.off) {
     // Outside every folder it may use the owner may let it there: the card offers the folder holding the path.

@@ -11,7 +11,7 @@ const poller = createUsagePoller({
   read: async (detail) => {
     const [u, desktop] = await Promise.all([
       client.call("system.usage", { disk: detail }),
-      detail ? window.apxDesktop?.memory?.().catch(() => undefined) : undefined,
+      detail ? window.coloniaDesktop?.memory?.().catch(() => undefined) : undefined,
     ]);
     // A light read keeps the last detail (home sizes, processes) rather than blanking an open view between reads.
     const prev = usage.get();

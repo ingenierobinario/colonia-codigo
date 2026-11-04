@@ -27,7 +27,7 @@ export function createArtifactWindows(opts: {
         height: 820,
         minWidth: 360,
         minHeight: 320,
-        title: title.slice(0, 120) || "APX",
+        title: title.slice(0, 120) || "Colonia",
         show: false,
         webPreferences: { partition: opts.partition, sandbox: true, preload: opts.preload },
       });

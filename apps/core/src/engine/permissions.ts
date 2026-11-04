@@ -25,7 +25,7 @@ export type Caller = { id: string; run_id: string; thread_id: string; call_id?: 
 
 export type Permissions = ReturnType<typeof createPermissions>;
 
-/** A fenced agent keeps to its folders: what the folder rule would put to the owner is refused, as for APX's tools. */
+/** A fenced agent keeps to its folders: what the folder rule would put to the owner is refused, as for Colonia's tools. */
 function fenced<A extends Access | undefined>(thread: FolderThread, r: A): A {
   if (thread.reach !== "fenced" || !r || !("refused" in r) || !r.offer) return r;
   return { refused: r.refused } as A;

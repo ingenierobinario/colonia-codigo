@@ -20,7 +20,7 @@ for (const lang of ["en", "es"] as const) {
     const requests: string[] = [];
     page.on("request", (request) => requests.push(request.url()));
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     const l =
       lang === "en"

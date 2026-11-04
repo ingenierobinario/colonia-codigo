@@ -4,7 +4,7 @@
 // goes through the durable outbox (delivery.ts).
 // See DECISIONS.md#d-014
 
-import { type ChannelInfo, type CoreEvent, noticeText, type Part } from "@apx/protocol";
+import { type ChannelInfo, type CoreEvent, noticeText, type Part } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
 import type { AuxAbout } from "../domain/aux-calls.ts";
 import type { Presentation } from "../domain/channels.ts";
@@ -335,14 +335,14 @@ export function createChannels(deps: {
     const why = (run.error ?? "").replace(/^Could not finish: /, "").slice(0, 200);
     const room = audience?.kind === "contact" ? audience.room : undefined;
     if (!out && run.state === "failed" && room) {
-      // A public room never sees what went wrong inside APX; the owner does.
+      // A public room never sees what went wrong inside Colonia; the owner does.
       const text = channelTexts(store).roomFailed(`#${room.name}`, why);
       tell({ text }, { level: "error", title: `#${room.name}`, thread_id: run.thread_id });
       return;
     }
     if (!out && run.state === "failed") {
       if (audience?.kind === "contact") {
-        // A contact never sees what went wrong inside APX; the owner does.
+        // A contact never sees what went wrong inside Colonia; the owner does.
         out = channelTexts(store).contactFailed;
         const text = channelTexts(store).contactFailedOwner(audience.name, why);
         tell({ text }, { level: "error", title: audience.name, thread_id: run.thread_id });
@@ -482,7 +482,7 @@ export function createChannels(deps: {
       for (const p of e.message.parts) if (p.type === "input") cards.settled(p.input_id, p.state);
     } else if (e.type === "message.created" && e.message.author.kind === "system") {
       // A pause at the owner's own limit is told in the app only (engine/attention.ts), never on a channel.
-      // A delegate APX keeps going on with is no news for the owner's phone: only a stop or a report is (DECISIONS.md#d-116).
+      // A delegate Colonia keeps going on with is no news for the owner's phone: only a stop or a report is (DECISIONS.md#d-116).
       const limit = e.message.parts.find(
         (p) => p.type === "notice" && p.code === "delegation.limit" && !String(p.vars?.variant).startsWith("continued"),
       );

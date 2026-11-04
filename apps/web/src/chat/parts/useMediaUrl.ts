@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { mediaUrl } from "../../data/media.ts";
 
-/** The object URL of a media file APX made, once it has loaded. */
+/** The object URL of a media file Colonia made, once it has loaded. */
 export function useMediaUrl(id: string | undefined): string | undefined {
   const [url, setUrl] = useState<string>();
   useEffect(() => {

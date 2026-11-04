@@ -66,7 +66,7 @@ test("Árbol: una sesión de Claude Code sin leer se muestra con su motor, no co
   await open(page, "#view=inbox");
   const row = page.locator(".tree__unreadlist .tree__session");
   await expect(row).toHaveCount(1);
-  await expect(row.locator(".apx-engine--claude")).toHaveCount(1);
-  await expect(row.locator(".apx-blob, .apx-avatar")).toHaveCount(0);
+  await expect(row.locator(".colonia-engine--claude")).toHaveCount(1);
+  await expect(row.locator(".colonia-blob, .colonia-avatar")).toHaveCount(0);
   await expect(row.locator(".tree__sessionwho")).toHaveText("Claude Code");
 });

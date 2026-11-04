@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { ActionGroup, Button, Icons } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { ActionGroup, Button, Icons } from "@colonia/ui";
 import { Suspense } from "react";
 import { isKey, useT } from "../../i18n/index.ts";
 import { ComputerNotice, DelegationActions, GoOn } from "../../lazy.ts";
@@ -25,12 +25,12 @@ export function NoticePart({ part }: { part: NoticeData }) {
   const key = `notice.${part.code}${part.vars?.variant ? `.${part.vars.variant}` : ""}`;
   // The core's English text carries details (e.g. the error); the translation is used when it is the plain case.
   const text = isKey(key) && (part.vars || !part.text.includes(":")) ? t(key, part.vars) : part.text;
-  // A `link` (apx:settings/…) is where the owner changes what the notice is about, labelled `notice.<code>.link`.
+  // A `link` (colonia:settings/…) is where the owner changes what the notice is about, labelled `notice.<code>.link`.
   const linkKey = `notice.${part.code}.link`;
   const linkLabel = isKey(linkKey) ? t(linkKey) : undefined;
   const open = typeof part.vars?.link === "string" && linkLabel ? appPlace(part.vars.link)?.open : undefined;
   const thread = part.code.startsWith("breaker.") && typeof part.vars?.thread === "string" ? part.vars.thread : "";
-  // A delegated run that hit a limit: its session to open and, while APX keeps it going, to stop.
+  // A delegated run that hit a limit: its session to open and, while Colonia keeps it going, to stop.
   const session =
     part.code === "delegation.limit" && typeof part.vars?.subthread === "string" ? part.vars.subthread : "";
   const link = (thread || open || session) && (

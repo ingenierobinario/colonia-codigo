@@ -1,4 +1,4 @@
-import { AgentAvatar, IconButton, Icons, Kbd, Menu, Tooltip } from "@apx/ui";
+import { AgentAvatar, IconButton, Icons, Kbd, Menu, Tooltip } from "@colonia/ui";
 import { Fragment, Suspense } from "react";
 import logoUrl from "../assets/logo.png";
 import { useChannels } from "../data/channels.ts";
@@ -83,7 +83,7 @@ export function Topbar() {
             onClick={go.forward}
           />
         </div>
-        <img className="topbar__logo" src={logoUrl} alt="APX" width={22} height={22} />
+        <img className="topbar__logo" src={logoUrl} alt="Colonia" width={22} height={22} />
         <nav className="topbar__crumbs" aria-label={t("topbar.location")}>
           {crumbs.map((c, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: breadcrumbs are positional

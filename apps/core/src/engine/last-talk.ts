@@ -1,7 +1,7 @@
 // When the owner and their agents last talked, for a message the agent writes them unasked (a routine, a report, the
 // release news): mid-conversation it goes on as a chat does; only after a long silence does it greet. Data in the turn's
 // input, never the system prompt (rules/PROMPT_SIZE.md). See DECISIONS.md#d-164
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import type { Origin } from "../domain/runs.ts";
 import { HOME_THREAD_ID } from "../domain/seed.ts";
 import type { Store } from "../domain/store.ts";

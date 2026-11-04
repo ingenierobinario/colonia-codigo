@@ -16,7 +16,7 @@ test("a fourth delegation shows as queued, then runs once one of the three ends"
   await composer.fill("start four slow workers");
   await composer.press("Enter");
 
-  const cards = mainChat.locator(".apx-subthread");
+  const cards = mainChat.locator(".colonia-subthread");
   await expect(cards).toHaveCount(4);
   await expect(cards.getByText("En cola", { exact: true })).toHaveCount(1);
 

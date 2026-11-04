@@ -1,5 +1,5 @@
-import type { Message, Result, Thread } from "@apx/protocol";
-import { EmptyState, IconButton, Icons, SectionLabel, Skeleton } from "@apx/ui";
+import type { Message, Result, Thread } from "@colonia/protocol";
+import { EmptyState, IconButton, Icons, SectionLabel, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { client } from "../data/client.ts";
 import { useData } from "../data/state.ts";

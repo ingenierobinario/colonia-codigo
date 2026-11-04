@@ -1,5 +1,5 @@
 // What a Claude Code or Codex project keeps besides its chats: its MCP servers, the memory notes the engine wrote,
-// the tasks left open and Codex's automations. Read-only on the CLIs' folders; APX applies them through its own
+// the tasks left open and Codex's automations. Read-only on the CLIs' folders; Colonia applies them through its own
 // methods (sessions.import).
 import fs from "node:fs";
 import path from "node:path";
@@ -39,7 +39,7 @@ const readJson = (file: string): unknown => {
 };
 
 const SECRET_KEY = /key|token|secret|pass|pwd|auth|credential|cookie/i;
-/** Keys whose value is a credential (or a reference to one the owner's shell had): APX needs the owner to give it. */
+/** Keys whose value is a credential (or a reference to one the owner's shell had): Colonia needs the owner to give it. */
 function secretKeys(s: FoundServer): string[] {
   const env = Object.entries(s.env ?? {}).filter(([k, v]) => v && (SECRET_KEY.test(k) || v.includes("${")));
   const headers = Object.entries(s.headers ?? {}).filter(([k, v]) => v && (SECRET_KEY.test(k) || v.length >= 24));

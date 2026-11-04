@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxError } from "../../../packages/protocol/src/client.ts";
+import { ColoniaError } from "../../../packages/protocol/src/client.ts";
 import { unpairDevice } from "./unpair.ts";
 
 const tracked = () => {
@@ -27,7 +27,7 @@ test("a core out of reach still lets the phone forget, and says only the phone d
 test("a key the core already refuses counts as revoked", async () => {
   const { steps, forget } = tracked();
   const outcome = await unpairDevice(async () => {
-    throw new ApxError({ code: "unauthorized", message: "missing or bad token" });
+    throw new ColoniaError({ code: "unauthorized", message: "missing or bad token" });
   }, forget);
   assert.equal(outcome, "revoked");
   assert.deepEqual(steps, ["forget"]);

@@ -1,6 +1,6 @@
-import type { DiskSpace, SystemUsage } from "@apx/protocol";
-import { BROWSER_TAB_IDLE_MIN } from "@apx/protocol/client";
-import { Button, Dialog, IconButton, Icons, Meter, Skeleton } from "@apx/ui";
+import type { DiskSpace, SystemUsage } from "@colonia/protocol";
+import { BROWSER_TAB_IDLE_MIN } from "@colonia/protocol/client";
+import { Button, Dialog, IconButton, Icons, Meter, Skeleton } from "@colonia/ui";
 import "../styles/usage.css";
 import { refreshUsage, useUsage } from "../data/usage.ts";
 import { type DesktopMemory, homeDisk, type ProcessRow, processRows, ramSplit, size } from "../data/usageModel.ts";
@@ -8,7 +8,7 @@ import { type T, usePack, useT } from "../i18n/index.ts";
 import { go, useNav } from "./nav.ts";
 import { UsageLoading as Loading } from "./UsageLoading.tsx";
 
-/** The topbar dropdown: RAM, CPU, disk free, APX's top consumers and the VM, with a way to the full dialog. */
+/** The topbar dropdown: RAM, CPU, disk free, Colonia's top consumers and the VM, with a way to the full dialog. */
 export function UsageSummary(props: { onClose: () => void }) {
   return usePack("usage") ? <Summary {...props} /> : <Loading />;
 }
@@ -50,7 +50,7 @@ function Summary({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** The full breakdown from the account menu: every process, every volume, the APX folder by part, the VM. */
+/** The full breakdown from the account menu: every process, every volume, the Colonia folder by part, the VM. */
 // Its strings load with it (usePack in index.ts): none of them is on the first screen.
 export function UsageDialog() {
   return usePack("usage") ? <UsageDialogBody /> : null;
@@ -91,7 +91,7 @@ function UsageDetail() {
       <Loading />
     );
   const rows = processRows(usage, desktop);
-  const apxMb = rows.reduce((n, r) => n + r.mb, 0);
+  const coloniaMb = rows.reduce((n, r) => n + r.mb, 0);
   return (
     <div className="usage usage--full" data-testid="usage-detail">
       <div className="usage__cols">
@@ -118,7 +118,7 @@ function UsageDetail() {
               />
             </div>
             <p className="usage__note">
-              {t("desktop.memoryHint", { total: size(apxMb), minutes: BROWSER_TAB_IDLE_MIN })}
+              {t("desktop.memoryHint", { total: size(coloniaMb), minutes: BROWSER_TAB_IDLE_MIN })}
             </p>
             <ProcessList t={t} rows={rows} limit={14} />
           </section>
@@ -169,7 +169,7 @@ function MemoryBlock({ t, usage, desktop }: { t: T; usage: SystemUsage; desktop:
         valueText={t("sysUsage.memoryOf", { used: size(r.used), total: size(r.total) })}
         legend
         segments={[
-          { value: r.apx, tone: "brand", label: t("sysUsage.apx", { size: size(r.apx) }) },
+          { value: r.colonia, tone: "brand", label: t("sysUsage.colonia", { size: size(r.colonia) }) },
           ...(r.vm ? [{ value: r.vm, tone: "violet" as const, label: t("sysUsage.vm", { size: size(r.vm) }) }] : []),
           { value: r.other, tone: "muted", label: t("sysUsage.other", { size: size(r.other) }) },
         ]}

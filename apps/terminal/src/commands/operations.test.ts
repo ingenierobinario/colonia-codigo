@@ -19,7 +19,7 @@ test("run responses preserve approval decisions, free text, notes and scope; inv
     ["runs.respond", { input: "in_3", text: "Monday morning" }],
   ]);
   for (const args of [["respond", "in_1"], ["get"], ["wait"], ["unknown", "run_1"]])
-    await assert.rejects(runs(client, args), /usage: apx runs/);
+    await assert.rejects(runs(client, args), /usage: colonia runs/);
   await assert.rejects(runs(client, ["respond", "in_1", "approve"], 60, "invalid"));
   assert.equal(calls.length, 3);
 });

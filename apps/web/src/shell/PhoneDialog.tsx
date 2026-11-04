@@ -1,5 +1,5 @@
-import { pairingLink } from "@apx/protocol/client";
-import { Button, Dialog, EmptyState, Icons, Skeleton } from "@apx/ui";
+import { pairingLink } from "@colonia/protocol/client";
+import { Button, Dialog, EmptyState, Icons, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { QrCode } from "../common/QrCode.tsx";
 import { client } from "../data/client.ts";
@@ -9,7 +9,7 @@ import { go, useNav } from "./nav.ts";
 type Pairing = { code: string; expires_at: string; urls: string[] };
 
 /**
- * A QR the phone's camera opens in the APX app: it pairs the phone (once) and opens this chat. A phone already paired
+ * A QR the phone's camera opens in the Colonia app: it pairs the phone (once) and opens this chat. A phone already paired
  * with this core only opens the chat. The code is asked when the dialog opens, renewed when it runs out, voided on close.
  */
 export function PhoneDialog() {

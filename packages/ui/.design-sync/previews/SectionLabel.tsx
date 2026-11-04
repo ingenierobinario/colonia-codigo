@@ -1,4 +1,4 @@
-import { IconButton, Icons, NavItem, SectionLabel } from "@apx/ui";
+import { IconButton, Icons, NavItem, SectionLabel } from "@colonia/ui";
 
 export function WithAction() {
   return (

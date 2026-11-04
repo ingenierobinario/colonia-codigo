@@ -94,7 +94,7 @@ test("Archivos lists what was shared, by kind and project, and leads back to the
     await expect(cards.first()).toContainText("invoice.pdf");
     await expect(cards.nth(2)).toContainText("teaser.mp4");
     await cards.first().getByRole("button", { name: "Descargar" }).hover();
-    await expect(page.locator(".apx-tooltip[data-open]")).toHaveText("Descargar");
+    await expect(page.locator(".colonia-tooltip[data-open]")).toHaveText("Descargar");
 
     // A card opens the file over the list: closing leaves the list as it was, the arrows step to the next one.
     await cards.nth(1).getByRole("button", { name: "storefront.png" }).click();

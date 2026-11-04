@@ -11,7 +11,7 @@ import {
   type Release,
   type Result,
   UpdateCoordination,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { errorMessage } from "./errors.ts";
 import type { UpdateResult } from "./updates.ts";
 
@@ -85,7 +85,7 @@ export function createUpdateCoordination(opts: {
     const release = newerReleases(await fetchReleases(opts.feed, opts.fetch), "0.0.0").find(
       (r) => r.version === target,
     );
-    if (!release) throw new Error(`APX ${target} is not a published stable release`);
+    if (!release) throw new Error(`Colonia ${target} is not a published stable release`);
     return release;
   }
 
@@ -95,7 +95,7 @@ export function createUpdateCoordination(opts: {
     if (compareVersions(params.target, opts.version) < 0)
       throw new Error("A coordinated update cannot downgrade the running core");
     if (state && state.target !== params.target && (busy || state.phase === "prepared" || state.phase === "restarting"))
-      throw new Error(`APX ${state.target} is already the shared update target`);
+      throw new Error(`Colonia ${state.target} is already the shared update target`);
     const release = await releaseAt(params.target);
     const core = coreBundleName(params.target, opts.platform);
     const desktop = desktopAssetFor(
@@ -105,9 +105,9 @@ export function createUpdateCoordination(opts: {
       params.format === "zip" ? "zip" : "installer",
     );
     if (!release.assets.some((a) => a.name === core) || !release.assets.some((a) => a.name === `${core}.sha256`))
-      throw new Error(`APX ${params.target} has no core bundle with a checksum for this server`);
+      throw new Error(`Colonia ${params.target} has no core bundle with a checksum for this server`);
     if (!desktop || !release.assets.some((a) => a.name === `${desktop.name}.sha256`))
-      throw new Error(`APX ${params.target} has no Desktop package with a checksum for this client`);
+      throw new Error(`Colonia ${params.target} has no Desktop package with a checksum for this client`);
     // Another client may already be installing this target while the asset check was in flight.
     selected = release;
     if (state?.target === params.target && state.phase !== "failed") return { ...state };

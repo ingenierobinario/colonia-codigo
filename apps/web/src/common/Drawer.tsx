@@ -1,4 +1,4 @@
-import { IconButton, Icons } from "@apx/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { type ReactNode, useEffect, useRef } from "react";
 import { useT } from "../i18n/index.ts";
 

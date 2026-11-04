@@ -9,8 +9,8 @@ import { Aside, FileTree, Steps, Tabs, TabItem } from "@astrojs/starlight/compon
 import Shot from "../../../components/Shot.astro";
 import Terminal from "../../../components/Terminal.astro";
 
-An extension is a folder with an `apx-extension.json` that brings several things together: skills, MCP servers,
-routine templates, the secrets they need and, optionally, a sandboxed plugin. APX reads the manifest without running
+An extension is a folder with an `colonia-extension.json` that brings several things together: skills, MCP servers,
+routine templates, the secrets they need and, optionally, a sandboxed plugin. Colonia reads the manifest without running
 anything, installs it **off**, and turning it on approves exactly the files it had.
 
 ## Do you need one?
@@ -20,23 +20,23 @@ Start with the smallest thing that does the job:
 | You want | Make |
 |---|---|
 | Know-how for one project's agents | A [project skill](/extend/skills/) in `.apc/skills/` |
-| One more MCP server for your agents | `apx mcps add` (see [MCP servers](/extend/mcp/)) |
+| One more MCP server for your agents | `colonia mcps add` (see [MCP servers](/extend/mcp/)) |
 | Skills, servers and routines that travel together, shared or reused | **An extension** |
 | Code that watches events or adds context to your turns | An extension with a plugin |
 
 ## A real example: daily brief
 
-APX's repository ships `examples/extensions/daily-brief`: one skill and a weekday routine that uses it.
+Colonia's repository ships `examples/extensions/daily-brief`: one skill and a weekday routine that uses it.
 
 <FileTree>
 - daily-brief/
-  - apx-extension.json
+  - colonia-extension.json
   - skills/
     - daily-brief/
       - SKILL.md
 </FileTree>
 
-```json title="apx-extension.json"
+```json title="colonia-extension.json"
 {
   "id": "daily-brief",
   "name": "Daily brief",
@@ -101,28 +101,28 @@ other variables or the environment, so a bundle can't carry your credentials els
 <TabItem label="Terminal">
 
 ```bash
-apx extensions inspect ~/work/daily-brief     # what it would bring; nothing is installed
-apx extensions install ~/work/daily-brief     # copied in, off
-apx extensions secret <id> <name>             # a declared secret's value, on stdin (--clear removes it)
-apx extensions on daily-brief
-apx extensions                                # installed ones, on or off
-apx extensions off daily-brief
-apx extensions rm daily-brief
+colonia extensions inspect ~/work/daily-brief     # what it would bring; nothing is installed
+colonia extensions install ~/work/daily-brief     # copied in, off
+colonia extensions secret <id> <name>             # a declared secret's value, on stdin (--clear removes it)
+colonia extensions on daily-brief
+colonia extensions                                # installed ones, on or off
+colonia extensions off daily-brief
+colonia extensions rm daily-brief
 ```
 
 </TabItem>
 </Tabs>
 
-<Terminal command="apx extensions install ~/work/daily-brief">{`daily-brief  Daily brief v1.0.0  · off  · 3f9c1a7e5b2d8c40
+<Terminal command="colonia extensions install ~/work/daily-brief">{`daily-brief  Daily brief v1.0.0  · off  · 3f9c1a7e5b2d8c40
   A short morning brief: open tasks, what is due, what others owe you.
   skills: daily-brief
   routines: Morning brief
 
-Turn it on with: apx extensions on daily-brief`}</Terminal>
+Turn it on with: colonia extensions on daily-brief`}</Terminal>
 
 <Shot name="resources-extensions" alt="Resources, Extensions tab: installed extensions with their on or off switch, skills, servers and routines" caption="Resources › Extensions" />
 
-Installing copies plain files into APX's home and fingerprints them. If the installed copy changes on disk, APX turns
+Installing copies plain files into Colonia's home and fingerprints them. If the installed copy changes on disk, Colonia turns
 the extension off at its next start until you approve it again. To take changes from the original folder, install it
 again or use **Read again** in its detail.
 
@@ -136,7 +136,7 @@ When files aren't enough, an extension can bring a plugin: a `.mjs` file that ru
 ```
 
 It runs sandboxed with Node's permission model: it reads only its folder, writes only its data folder, starts no
-processes and can't call APX. It reaches the internet only with `"network": true`, and never this machine. What it
+processes and can't call Colonia. It reaches the internet only with `"network": true`, and never this machine. What it
 adds as context reaches the agent as outside data, not as instructions.
 
 <Aside type="caution">
@@ -145,6 +145,6 @@ trust its author.
 </Aside>
 
 <Aside type="tip">
-APX ships an `apx-extensions` skill for Claude Code, Codex and other agent apps, so you can ask one of them to build
-an extension for you. See [Skills](/extend/skills/#teach-other-agent-apps-to-use-apx).
+Colonia ships an `colonia-extensions` skill for Claude Code, Codex and other agent apps, so you can ask one of them to build
+an extension for you. See [Skills](/extend/skills/#teach-other-agent-apps-to-use-colonia).
 </Aside>

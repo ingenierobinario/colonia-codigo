@@ -12,7 +12,7 @@ import {
   folderAccess,
   harnessDir,
   judge,
-  namesApxHome,
+  namesColoniaHome,
   refusal,
   rootsOf,
   scratchDir,
@@ -38,8 +38,8 @@ let repo: string;
 let sibling: string;
 before(async () => {
   env = await startCore({ llm });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-folders-")));
-  sibling = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-sibling-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-folders-")));
+  sibling = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-sibling-")));
 });
 after(async () => {
   await env.core.close();
@@ -53,7 +53,7 @@ const dirs = (thread: { cwd?: string; project_id?: string }) => [
   harnessDir(env.core.store, env.home, thread),
 ];
 
-test("an agent works in its project's folder; an outside agent in APX's side of it, never among other projects", async () => {
+test("an agent works in its project's folder; an outside agent in Colonia's side of it, never among other projects", async () => {
   const work = path.join(env.home, "work");
   assert.deepEqual(dirs({}), [work, work]);
 
@@ -62,7 +62,7 @@ test("an agent works in its project's folder; an outside agent in APX's side of 
   assert.deepEqual(dirs({ project_id: inRepo }), [repo, side]);
   assert.deepEqual(dirs({ project_id: inRepo, cwd: repo }), [repo, repo]);
 
-  // A project APX made with no folder elsewhere already is APX's own: both work in it.
+  // A project Colonia made with no folder elsewhere already is Colonia's own: both work in it.
   const made = (await env.client.call("projects.create", { name: "Northwind" })).project;
   const own = path.join(env.home, "projects", "northwind");
   assert.deepEqual(dirs({ project_id: made.id }), [own, own]);
@@ -75,7 +75,7 @@ test("an agent works in its project's folder; an outside agent in APX's side of 
     reach: "card" as const,
   };
   await env.client.call("files.tree", { thread: t.id, dir: "" });
-  assert.ok(fs.statSync(side).isDirectory(), "opened in the panel, APX's side is made");
+  assert.ok(fs.statSync(side).isDirectory(), "opened in the panel, Colonia's side is made");
 });
 
 test("a path is readable or refused the same way through file_read and shell, written relative or absolute", async () => {
@@ -206,8 +206,8 @@ test("a project's read-only folders are read by file_read and shell, never chang
     ...(await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", project_id: project })),
     reach: "card" as const,
   };
-  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-ref-")));
-  const away = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-away-")));
+  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ref-")));
+  const away = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-away-")));
   fs.writeFileSync(path.join(ref, "v1.txt"), "old\n");
   fs.writeFileSync(path.join(away, "x.txt"), "away\n");
   fs.symlinkSync(away, path.join(ref, "out"));
@@ -260,7 +260,7 @@ test("a project's read-only folders are read by file_read and shell, never chang
   }
 });
 
-test("a read-only folder must be an absolute folder on disk, apart from APX's home and the project's own folder", async () => {
+test("a read-only folder must be an absolute folder on disk, apart from Colonia's home and the project's own folder", async () => {
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   fs.mkdirSync(path.join(repo, "docs"), { recursive: true });
   const refused = async (folder: string, why: RegExp) =>
@@ -268,18 +268,18 @@ test("a read-only folder must be an absolute folder on disk, apart from APX's ho
   await refused("relative/dir", /not an absolute path/);
   await refused(path.join(sibling, "missing"), /not a folder here/);
   await refused(path.join(sibling, "b.txt"), /not a folder here/);
-  await refused(env.home, /APX's own folder/);
+  await refused(env.home, /Colonia's own folder/);
   fs.mkdirSync(path.join(env.home, "projects"), { recursive: true });
-  await refused(path.join(env.home, "projects"), /APX's own folder/);
-  await refused(path.dirname(env.home), /APX's own folder/);
+  await refused(path.join(env.home, "projects"), /Colonia's own folder/);
+  await refused(path.dirname(env.home), /Colonia's own folder/);
   // Nor the system's temp folders, where every chat keeps its own.
-  await refused(path.dirname(scratchRoot(env.home)), /APX's own folder|temp folders/);
-  await refused("/", /APX's own folder|temp folders/);
+  await refused(path.dirname(scratchRoot(env.home)), /Colonia's own folder|temp folders/);
+  await refused("/", /Colonia's own folder|temp folders/);
   await refused(repo, /already in the project's folder/);
   await refused(path.join(repo, "docs"), /already in the project's folder/);
   assert.equal(env.core.store.projects.get(project)?.read_only_folders, undefined, "nothing kept from a refusal");
   // Nor a folder holding the project's: listed as read-only, it reads as if the agent's own folder could not change.
-  const outer = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-outer-")));
+  const outer = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-outer-")));
   try {
     const nested = (await env.client.call("projects.create", { path: path.join(outer, "app") })).project.id;
     await assert.rejects(
@@ -293,7 +293,7 @@ test("a read-only folder must be an absolute folder on disk, apart from APX's ho
 
 test("in a project with a read-only folder, commands read it freely and only writes into it are refused", async () => {
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
-  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-ro-")));
+  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ro-")));
   fs.mkdirSync(path.join(ref, "sub"));
   fs.writeFileSync(path.join(ref, "f"), "old\n");
   fs.writeFileSync(path.join(ref, "script.mjs"), "console.log(1)\n");
@@ -392,12 +392,12 @@ test("in a project with a read-only folder, commands read it freely and only wri
   for (const c of ["echo hi > $OUT", "touch {a,b}", "cd $X && touch y"]) assert.ok(!("refused" in verdict(c)), c);
 });
 
-test("system temp folders are scratch space, except APX's own chats' temp folders", () => {
+test("system temp folders are scratch space, except Colonia's own chats' temp folders", () => {
   // A home on no temp folder, like the owner's (never created: only compared against).
-  const home = path.join(path.parse(os.tmpdir()).root, "apx-home-nowhere");
+  const home = path.join(path.parse(os.tmpdir()).root, "colonia-home-nowhere");
   const areas = tempAreas(home);
   assert.ok(areas.length > 0);
-  const own = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-own-")));
+  const own = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-own-")));
   const roots = [
     { dir: own, write: true, scratch: false },
     { dir: scratchRoot(home), write: false, scratch: true, off: true },
@@ -412,8 +412,8 @@ test("system temp folders are scratch space, except APX's own chats' temp folder
       assert.equal("refused" in judge(roots, p, own, { write: true }), false, p);
     const other = path.join(scratchRoot(home), "t_other", "a.txt");
     assert.equal("refused" in judge(roots, other, own), true, "another chat's temp folder");
-    // A temp folder that holds APX's home (a throwaway core's) is not shared scratch.
-    assert.equal(tempAreas(path.join(os.tmpdir(), "apx-x")).includes(os.tmpdir()), false);
+    // A temp folder that holds Colonia's home (a throwaway core's) is not shared scratch.
+    assert.equal(tempAreas(path.join(os.tmpdir(), "colonia-x")).includes(os.tmpdir()), false);
   } finally {
     fs.rmSync(own, { recursive: true, force: true });
   }
@@ -429,14 +429,14 @@ test("a refusal outside every folder names a next step that exists", async () =>
   assert.ok("refused" in r && !/ask_owner/.test(r.refused), JSON.stringify(r));
   assert.match(r.refused, /outside the folders you can read/);
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
-  const apx = path.join(env.home, "apx.db");
+  const colonia = path.join(env.home, "colonia.db");
   const roots = rootsOf(env.core.store, env.home, { id: "t_x", project_id: project, reach: "card" as const });
-  assert.deepEqual(judge(roots, apx, repo, { home: env.home, project: true }), { refused: refusal.apx(apx) });
+  assert.deepEqual(judge(roots, colonia, repo, { home: env.home, project: true }), { refused: refusal.colonia(colonia) });
 });
 
 test("a linked git worktree of the project beside its folder is the project's, unless the thread keeps to one", async (t) => {
   const git = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd, stdio: "ignore" });
-  const base = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-wt-")));
+  const base = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wt-")));
   t.after(() => removeDir(base));
   const main = path.join(base, "northwind");
   const beside = path.join(base, "northwind-issue-7");
@@ -468,28 +468,28 @@ test("an agent builds in its project's artifact sources, never in an artifact's 
   assert.ok("refused" in folderAccess(store, env.home, t, memory, { write: true }));
   const other = path.join(artifactSources(env.home, "p_other"), "expenses", "src", "main.jsx");
   assert.ok("refused" in folderAccess(store, env.home, t, other, { write: true }));
-  // The shell's own text rule: this project's sources pass, the rest of APX's home does not.
+  // The shell's own text rule: this project's sources pass, the rest of Colonia's home does not.
   const dir = sh(path.dirname(src));
-  assert.equal(namesApxHome(`cd ${dir} && npm run build`, sh(env.home), "p_acme"), false);
-  assert.equal(namesApxHome(`cd ${dir} && cat ${sh(env.home)}/apx.db`, sh(env.home), "p_acme"), true);
-  assert.equal(namesApxHome(`ls ${sh(artifactSources(env.home, "p_other"))}`, sh(env.home), "p_acme"), true);
+  assert.equal(namesColoniaHome(`cd ${dir} && npm run build`, sh(env.home), "p_acme"), false);
+  assert.equal(namesColoniaHome(`cd ${dir} && cat ${sh(env.home)}/colonia.db`, sh(env.home), "p_acme"), true);
+  assert.equal(namesColoniaHome(`ls ${sh(artifactSources(env.home, "p_other"))}`, sh(env.home), "p_acme"), true);
 });
 
-test("APX's home counts however a command spells it: through a link, in another case on Windows, as .apx\\v2", () => {
-  const base = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-home-names-")));
+test("Colonia's home counts however a command spells it: through a link, in another case on Windows, as .colonia\\v2", () => {
+  const base = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-home-names-")));
   const home = path.join(base, "home");
   fs.mkdirSync(path.join(home, "artifact-sources", "p_acme"), { recursive: true });
   const alias = path.join(base, "alias");
   fs.symlinkSync(home, alias, process.platform === "win32" ? "junction" : "dir");
   try {
     // The same folder by another name: a link (on Windows also its short 8.3 name, which resolves the same way).
-    assert.equal(namesApxHome(`cat ${sh(alias)}/apx.db`, home, "p_acme"), true);
-    assert.equal(namesApxHome(`cat ${sh(home)}/apx.db`, alias, "p_acme"), true);
-    assert.equal(namesApxHome(`cd ${sh(alias)}/artifact-sources/p_acme && npm run build`, home, "p_acme"), false);
-    assert.equal(namesApxHome("type %USERPROFILE%\\.apx\\v2\\apx.db", home, "p_acme"), true);
-    assert.equal(namesApxHome(`cat ${sh(base)}/elsewhere.txt`, home, "p_acme"), false);
+    assert.equal(namesColoniaHome(`cat ${sh(alias)}/colonia.db`, home, "p_acme"), true);
+    assert.equal(namesColoniaHome(`cat ${sh(home)}/colonia.db`, alias, "p_acme"), true);
+    assert.equal(namesColoniaHome(`cd ${sh(alias)}/artifact-sources/p_acme && npm run build`, home, "p_acme"), false);
+    assert.equal(namesColoniaHome("type %USERPROFILE%\\.colonia\\v2\\colonia.db", home, "p_acme"), true);
+    assert.equal(namesColoniaHome(`cat ${sh(base)}/elsewhere.txt`, home, "p_acme"), false);
     if (process.platform === "win32")
-      assert.equal(namesApxHome(`type ${home.toUpperCase()}\\apx.db`, home, "p_acme"), true);
+      assert.equal(namesColoniaHome(`type ${home.toUpperCase()}\\colonia.db`, home, "p_acme"), true);
   } finally {
     fs.rmSync(base, { recursive: true, force: true });
   }

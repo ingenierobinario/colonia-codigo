@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
 import { after, before, test } from "node:test";
-import type { TabInfo } from "@apx/protocol";
+import type { TabInfo } from "@colonia/protocol";
 import { chromium } from "@playwright/test";
 import { removeDir } from "../testkit/platform.ts";
 import { createHeadlessBrowser } from "./headless-browser.ts";
@@ -18,11 +18,11 @@ const PAGES: Record<string, string> = {
   "/": `<html><head><title>Acme home</title></head><body><h1>Acme</h1><a href="/prices">Prices</a>
     <form action="/search"><input name="q" aria-label="Search"><input type="password" aria-label="Password"></form></body></html>`,
   "/prices": `<html><head><title>Prices</title></head><body><p>From 10 a month.</p></body></html>`,
-  "/to-apx": "",
+  "/to-colonia": "",
 };
 let srv: http.Server;
 let base = "";
-let apxPort = "";
+let coloniaPort = "";
 let dir = "";
 let chromeStderr = "";
 let browser: ReturnType<typeof createHeadlessBrowser>;
@@ -31,7 +31,7 @@ const seen: TabInfo[][] = [];
 before(async () => {
   assert.ok(fs.existsSync(chrome), "Install the browser first: pnpm exec playwright install chromium");
   srv = http.createServer((req, res) => {
-    if (req.url === "/to-apx") return res.writeHead(302, { location: `http://127.0.0.1:${apxPort}/rpc` }).end();
+    if (req.url === "/to-colonia") return res.writeHead(302, { location: `http://127.0.0.1:${coloniaPort}/rpc` }).end();
     const page = PAGES[req.url?.split("?")[0] ?? ""];
     if (page === undefined) return res.writeHead(404).end();
     res
@@ -43,12 +43,12 @@ before(async () => {
   });
   await new Promise<void>((r) => srv.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
-  // Stands in for APX's own port: a tab must never reach it, not even through a redirect.
-  const apx = http.createServer((_q, r) => r.end("APX"));
-  await new Promise<void>((r) => apx.listen(0, "127.0.0.1", r));
-  apxPort = String((apx.address() as AddressInfo).port);
-  apx.unref();
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-headless-"));
+  // Stands in for Colonia's own port: a tab must never reach it, not even through a redirect.
+  const colonia = http.createServer((_q, r) => r.end("Colonia"));
+  await new Promise<void>((r) => colonia.listen(0, "127.0.0.1", r));
+  coloniaPort = String((colonia.address() as AddressInfo).port);
+  colonia.unref();
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-headless-"));
   browser = createHeadlessBrowser({
     dir,
     chrome,
@@ -61,7 +61,7 @@ before(async () => {
       });
       return child;
     }) as typeof spawn,
-    blockedPorts: () => new Set([apxPort]),
+    blockedPorts: () => new Set([coloniaPort]),
     onChange: (t) => seen.push(t),
   });
 });
@@ -90,7 +90,7 @@ test("CDP input and output pipe errors reject work and stop Chrome without an un
         return true;
       },
     }) as unknown as ChildProcess;
-    const isolatedDir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-headless-pipe-"));
+    const isolatedDir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-headless-pipe-"));
     const isolated = createHeadlessBrowser({
       dir: isolatedDir,
       chrome: process.execPath,
@@ -184,12 +184,12 @@ test("with no desktop app the core drives its own headless Chrome: open, read, c
     /nobody can take over/,
   );
   await assert.rejects(
-    browser.handle("browser.navigate", { tab: tab.tab, url: `http://127.0.0.1:${apxPort}/`, by: "superagent" }),
-    /APX itself/,
+    browser.handle("browser.navigate", { tab: tab.tab, url: `http://127.0.0.1:${coloniaPort}/`, by: "superagent" }),
+    /Colonia itself/,
   );
-  await browser.handle("browser.navigate", { tab: tab.tab, url: `${base}/to-apx`, by: "superagent" });
+  await browser.handle("browser.navigate", { tab: tab.tab, url: `${base}/to-colonia`, by: "superagent" });
   const after = (await browser.handle("browser.text", { tab: tab.tab })) as { text: string };
-  assert.doesNotMatch(after.text, /^APX$/, "a redirect to APX is blocked too");
+  assert.doesNotMatch(after.text, /^Colonia$/, "a redirect to Colonia is blocked too");
   assert.ok(seen.length > 0, "tab changes reach the panel");
   await browser.handle("browser.close", { tab: tab.tab });
   assert.deepEqual(browser.list(), []);

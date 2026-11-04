@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { signatureFor } from "../domain/email-signature-settings.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
@@ -39,7 +39,7 @@ test("signature configuration round-trips through the running core and is isolat
 });
 
 test("agents cannot read or change signature configuration", async () => {
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(agent.call("email.signatures_get", {}), /reserved to the owner/);
   await assert.rejects(agent.call("email.signatures_set", { signatures: [] }), /reserved to the owner/);
   assert.deepEqual(signatureFor(env.core.store, "gmail", gmail.account, gmail.sender), gmail);

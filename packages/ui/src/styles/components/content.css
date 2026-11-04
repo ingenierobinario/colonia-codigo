@@ -1,28 +1,28 @@
 /* ── VoiceNote ─────────────────────────────────────────────────────────────── */
-.apx-voice {
+.colonia-voice {
   display: inline-flex;
   flex-direction: column;
   gap: 8px;
   width: 260px;
   padding: 10px 12px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface);
-  border: 1px solid var(--apx-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
+  border: 1px solid var(--colonia-border);
 }
-.apx-voice__head {
+.colonia-voice__head {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--apx-text-2xs);
-  color: var(--apx-fg-subtle);
-  font-family: var(--apx-meta-font);
+  font-size: var(--colonia-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-family: var(--colonia-meta-font);
 }
-.apx-voice__player {
+.colonia-voice__player {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.apx-voice__play {
+.colonia-voice__play {
   display: grid;
   place-items: center;
   width: 30px;
@@ -30,95 +30,95 @@
   flex-shrink: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
 }
-.apx-voice__play:disabled {
+.colonia-voice__play:disabled {
   cursor: default;
 }
-.apx-voice__track {
+.colonia-voice__track {
   position: relative;
   flex: 1;
   height: 4px;
   border-radius: 2px;
-  background: var(--apx-fill-strong);
+  background: var(--colonia-fill-strong);
 }
-.apx-voice__fill {
+.colonia-voice__fill {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 2px;
-  background: var(--apx-fg);
+  background: var(--colonia-fg);
 }
-.apx-voice__knob {
+.colonia-voice__knob {
   position: absolute;
   top: 50%;
   width: 12px;
   height: 12px;
   margin: -6px 0 0 -6px;
   border-radius: 50%;
-  background: var(--apx-fg);
-  box-shadow: 0 0 0 2px var(--apx-surface);
+  background: var(--colonia-fg);
+  box-shadow: 0 0 0 2px var(--colonia-surface);
 }
-.apx-voice__time {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+.colonia-voice__time {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 /* ── Composer ──────────────────────────────────────────────────────────────── */
-.apx-composer {
+.colonia-composer {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: var(--apx-composer-bg);
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-composer-radius);
-  box-shadow: var(--apx-shadow-sm);
+  background: var(--colonia-composer-bg);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-composer-radius);
+  box-shadow: var(--colonia-shadow-sm);
   transition:
-    border-color var(--apx-duration),
-    box-shadow var(--apx-duration);
+    border-color var(--colonia-duration),
+    box-shadow var(--colonia-duration);
 }
-.apx-composer:focus-within {
-  border-color: var(--apx-border-strong);
-  box-shadow: var(--apx-shadow-md);
+.colonia-composer:focus-within {
+  border-color: var(--colonia-border-strong);
+  box-shadow: var(--colonia-shadow-md);
 }
-.apx-composer.is-disabled {
+.colonia-composer.is-disabled {
   opacity: 0.6;
 }
-.apx-composer {
+.colonia-composer {
   position: relative;
 }
 /* A popup over the box (the "/" menu): its bottom sits on the box's top edge. */
-.apx-composer__popup {
+.colonia-composer__popup {
   position: absolute;
   left: 0;
   right: 0;
   bottom: calc(100% + 6px);
   z-index: 20;
 }
-.apx-composer__header {
+.colonia-composer__header {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 7px 14px;
-  border-bottom: 1px solid var(--apx-border);
-  font-family: var(--apx-meta-font);
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  border-bottom: 1px solid var(--colonia-border);
+  font-family: var(--colonia-meta-font);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
 }
-.apx-composer__row {
+.colonia-composer__row {
   display: flex;
   align-items: flex-end;
   gap: 6px;
 }
-.apx-composer--pill .apx-composer__row {
+.colonia-composer--pill .colonia-composer__row {
   padding: 6px;
 }
-.apx-composer--box .apx-composer__row {
+.colonia-composer--box .colonia-composer__row {
   padding: 12px 14px 4px;
 }
-.apx-composer__input {
+.colonia-composer__input {
   flex: 1;
   min-width: 0;
   border: 0;
@@ -128,27 +128,27 @@
   padding: 0;
   margin: 0;
   font: inherit;
-  font-size: var(--apx-text-md);
-  line-height: calc(20px * var(--apx-text-scale, 1));
-  color: var(--apx-fg);
+  font-size: var(--colonia-text-md);
+  line-height: calc(20px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg);
   field-sizing: content;
   max-height: 200px;
 }
-.apx .apx-composer__input:focus-visible {
+.colonia .colonia-composer__input:focus-visible {
   outline: none;
 }
-.apx-composer--pill .apx-composer__input {
+.colonia-composer--pill .colonia-composer__input {
   padding: 7px 4px;
   min-height: 34px;
 }
-.apx-composer--box .apx-composer__input {
+.colonia-composer--box .colonia-composer__input {
   min-height: 44px;
 }
-.apx-composer__input::placeholder {
-  color: var(--apx-fg-subtle);
+.colonia-composer__input::placeholder {
+  color: var(--colonia-fg-subtle);
 }
-.apx-composer__btn,
-.apx-composer__send {
+.colonia-composer__btn,
+.colonia-composer__send {
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -157,237 +157,237 @@
   border: 0;
   border-radius: 50%;
   transition:
-    background var(--apx-duration),
-    color var(--apx-duration);
+    background var(--colonia-duration),
+    color var(--colonia-duration);
 }
-.apx-composer__btn {
-  background: var(--apx-fill);
-  color: var(--apx-fg-muted);
+.colonia-composer__btn {
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-muted);
 }
-.apx-composer__btn:hover:not(:disabled) {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+.colonia-composer__btn:hover:not(:disabled) {
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
-.apx-composer__send {
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
+.colonia-composer__send {
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
 }
-.apx-composer__send:disabled {
+.colonia-composer__send:disabled {
   opacity: 0.4;
   cursor: default;
 }
-.apx-composer__send:hover:not(:disabled) {
-  background: var(--apx-accent-hover);
+.colonia-composer__send:hover:not(:disabled) {
+  background: var(--colonia-accent-hover);
 }
-.apx-composer__send.is-quiet {
+.colonia-composer__send.is-quiet {
   background: transparent;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-composer__send.is-quiet:hover:not(:disabled) {
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+.colonia-composer__send.is-quiet:hover:not(:disabled) {
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
 }
-.apx-composer__toolbar {
+.colonia-composer__toolbar {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 4px 8px 8px;
 }
-.apx-composer--box .apx-composer__btn {
+.colonia-composer--box .colonia-composer__btn {
   width: 30px;
   height: 30px;
   background: transparent;
 }
-.apx-composer--box .apx-composer__send {
+.colonia-composer--box .colonia-composer__send {
   width: 30px;
   height: 30px;
 }
-.apx-composer__spacer {
+.colonia-composer__spacer {
   flex: 1;
 }
 
 /* ── EmptyState ────────────────────────────────────────────────────────────── */
-.apx-empty {
+.colonia-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
   text-align: center;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-sm);
 }
-.apx-empty--sm {
+.colonia-empty--sm {
   padding: 20px 16px;
 }
-.apx-empty--lg {
+.colonia-empty--lg {
   padding: 48px 24px;
   gap: 8px;
 }
-.apx-empty--plain {
+.colonia-empty--plain {
   flex: 1;
   min-height: 0;
 }
-.apx-empty--dashed {
-  border: 1px dashed var(--apx-border-strong);
-  border-radius: var(--apx-radius-md);
+.colonia-empty--dashed {
+  border: 1px dashed var(--colonia-border-strong);
+  border-radius: var(--colonia-radius-md);
 }
-.apx-empty__icon {
+.colonia-empty__icon {
   display: inline-grid;
   place-items: center;
   width: 40px;
   height: 40px;
   margin-bottom: 4px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
-  color: var(--apx-fg-muted);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-muted);
 }
-.apx-empty__icon svg {
+.colonia-empty__icon svg {
   width: 20px;
   height: 20px;
 }
-.apx-empty__title {
-  color: var(--apx-fg);
-  font-size: var(--apx-text-md);
-  font-weight: var(--apx-weight-semibold);
+.colonia-empty__title {
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-md);
+  font-weight: var(--colonia-weight-semibold);
 }
-.apx-empty--lg .apx-empty__title {
-  font-size: var(--apx-text-lg);
+.colonia-empty--lg .colonia-empty__title {
+  font-size: var(--colonia-text-lg);
 }
-.apx-empty__text {
+.colonia-empty__text {
   max-width: 360px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-empty__action {
+.colonia-empty__action {
   margin-top: 8px;
 }
 
 /* ── MarkdownView ──────────────────────────────────────────────────────────── */
-.apx-md {
-  font-size: var(--apx-text-md);
+.colonia-md {
+  font-size: var(--colonia-text-md);
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
-.apx-md--sm {
-  font-size: var(--apx-text-sm);
+.colonia-md--sm {
+  font-size: var(--colonia-text-sm);
 }
-.apx-md > *,
-.apx-md__quote > * {
+.colonia-md > *,
+.colonia-md__quote > * {
   margin: 0 0 8px;
 }
-.apx-md > :first-child {
+.colonia-md > :first-child {
   margin-top: 0;
 }
-.apx-md > :last-child,
-.apx-md__quote > :last-child {
+.colonia-md > :last-child,
+.colonia-md__quote > :last-child {
   margin-bottom: 0;
 }
-.apx-md ul,
-.apx-md ol {
+.colonia-md ul,
+.colonia-md ol {
   padding-left: 20px;
 }
-.apx-md li + li {
+.colonia-md li + li {
   margin-top: 2px;
 }
-.apx-md h3,
-.apx-md h4 {
+.colonia-md h3,
+.colonia-md h4 {
   margin: 12px 0 6px;
-  font-size: var(--apx-text-md);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-md);
+  font-weight: var(--colonia-weight-semibold);
 }
-.apx-md h3 {
-  font-size: var(--apx-text-lg);
+.colonia-md h3 {
+  font-size: var(--colonia-text-lg);
 }
-.apx-md code {
+.colonia-md code {
   padding: 1px 5px;
   border-radius: 6px;
-  background: var(--apx-fill);
-  font-family: var(--apx-font-mono);
+  background: var(--colonia-fill);
+  font-family: var(--colonia-font-mono);
   font-size: 0.88em;
 }
-.apx-md pre {
+.colonia-md pre {
   padding: 10px 12px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
   overflow-x: auto;
 }
-.apx-md pre code {
+.colonia-md pre code {
   padding: 0;
   background: none;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
 }
-.apx-md a {
+.colonia-md a {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.apx-md a:hover {
-  color: var(--apx-brand);
+.colonia-md a:hover {
+  color: var(--colonia-brand);
 }
 /* A button the host put in place of a link (a place in the app): it sits in the line. */
-.apx-md .apx-btn {
+.colonia-md .colonia-btn {
   vertical-align: middle;
   margin-block: 2px;
 }
 
-.apx-md__quote {
+.colonia-md__quote {
   padding-left: 12px;
-  border-left: 3px solid var(--apx-border-strong);
-  color: var(--apx-fg-muted);
+  border-left: 3px solid var(--colonia-border-strong);
+  color: var(--colonia-fg-muted);
 }
 
 /* A table in its own frame: columns keep their words whole and a wide table scrolls sideways inside the frame. */
-.apx-md__table {
+.colonia-md__table {
   position: relative;
   max-width: 100%;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
 }
-.apx-md__scroll {
+.colonia-md__scroll {
   overflow-x: auto;
   border-radius: inherit;
 }
-.apx-md__scroll table {
+.colonia-md__scroll table {
   min-width: 100%;
   border-collapse: collapse;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   line-height: 1.5;
   /* "anywhere" would let a column shrink to one letter per line; words only break when one alone is too wide. */
   overflow-wrap: break-word;
 }
-.apx-md__scroll th,
-.apx-md__scroll td {
+.colonia-md__scroll th,
+.colonia-md__scroll td {
   min-width: 4em;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
   vertical-align: top;
 }
-.apx-md__scroll tr:last-child td {
+.colonia-md__scroll tr:last-child td {
   border-bottom: 0;
 }
-.apx-md__scroll th {
-  font-weight: var(--apx-weight-semibold);
+.colonia-md__scroll th {
+  font-weight: var(--colonia-weight-semibold);
   white-space: nowrap;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
-.apx-md__scroll thead tr {
-  background: var(--apx-fill);
+.colonia-md__scroll thead tr {
+  background: var(--colonia-fill);
 }
-.apx-md__scroll :is(td, th) :is(a, code) {
+.colonia-md__scroll :is(td, th) :is(a, code) {
   overflow-wrap: anywhere;
 }
-.apx-md__scroll--max {
+.colonia-md__scroll--max {
   max-height: calc(100vh - 160px);
   overflow: auto;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
 }
-.apx-md__scroll--max thead th {
+.colonia-md__scroll--max thead th {
   position: sticky;
   top: 0;
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
-.apx-md__tablebar {
+.colonia-md__tablebar {
   display: flex;
   justify-content: flex-end;
   gap: 2px;
@@ -395,57 +395,57 @@
 }
 /* With a mouse the toolbar floats over the header's corner and shows on hover or focus. */
 @media (hover: hover) {
-  .apx-md__tablebar {
+  .colonia-md__tablebar {
     position: absolute;
     top: 4px;
     right: 4px;
     z-index: 1;
-    border-radius: var(--apx-radius-sm);
-    background: var(--apx-surface);
-    box-shadow: var(--apx-shadow-sm);
+    border-radius: var(--colonia-radius-sm);
+    background: var(--colonia-surface);
+    box-shadow: var(--colonia-shadow-sm);
   }
-  .apx-md__table:not(:hover) .apx-md__tablebar:not(:focus-within) {
+  .colonia-md__table:not(:hover) .colonia-md__tablebar:not(:focus-within) {
     opacity: 0;
   }
 }
-.apx-md__dialog {
+.colonia-md__dialog {
   width: calc(100vw - 32px);
 }
 
 /* ── LiveBrowserCard ───────────────────────────────────────────────────────── */
-.apx-livebrowser {
+.colonia-livebrowser {
   display: flex;
   flex-direction: column;
   width: min(440px, 100%);
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-lg);
-  background: var(--apx-surface);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface);
   overflow: hidden;
 }
-.apx-livebrowser__preview {
+.colonia-livebrowser__preview {
   position: relative;
   display: block;
   height: 170px;
   padding: 0;
   border: 0;
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
   cursor: pointer;
   overflow: hidden;
 }
-.apx-livebrowser__img {
+.colonia-livebrowser__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top center;
   display: block;
 }
-.apx-livebrowser__placeholder {
+.colonia-livebrowser__placeholder {
   display: grid;
   place-items: center;
   height: 100%;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
-.apx-livebrowser__badge {
+.colonia-livebrowser__badge {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -454,61 +454,61 @@
   gap: 6px;
   height: 22px;
   padding: 0 9px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-surface);
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-2xs);
-  box-shadow: var(--apx-shadow-sm);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-surface);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-2xs);
+  box-shadow: var(--colonia-shadow-sm);
 }
-.apx-livebrowser__dot {
+.colonia-livebrowser__dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--apx-danger);
-  animation: apx-live 1.6s ease-in-out infinite;
+  background: var(--colonia-danger);
+  animation: colonia-live 1.6s ease-in-out infinite;
 }
-@keyframes apx-live {
+@keyframes colonia-live {
   50% {
     opacity: 0.35;
   }
 }
-.apx-livebrowser__foot {
+.colonia-livebrowser__foot {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
-.apx-livebrowser__globe {
+.colonia-livebrowser__globe {
   display: inline-flex;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-livebrowser__text {
+.colonia-livebrowser__text {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
-.apx-livebrowser__title {
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-medium);
+.colonia-livebrowser__title {
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-livebrowser__status {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+.colonia-livebrowser__status {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-livebrowser__status.is-warning {
-  color: var(--apx-warning-soft-fg);
+.colonia-livebrowser__status.is-warning {
+  color: var(--colonia-warning-soft-fg);
 }
 
 /* ── BrowserTabs ───────────────────────────────────────────────────────────── */
-.apx-btabs {
+.colonia-btabs {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -516,7 +516,7 @@
   overflow-x: auto;
   scrollbar-width: none;
 }
-.apx-btabs__tab {
+.colonia-btabs__tab {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -526,82 +526,82 @@
   height: 30px;
   padding: 0 4px 0 10px;
   border-radius: 8px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
   user-select: none;
 }
-.apx-btabs__tab:hover {
-  background: var(--apx-fill-hover);
+.colonia-btabs__tab:hover {
+  background: var(--colonia-fill-hover);
 }
-.apx-btabs__tab.is-active {
-  background: var(--apx-surface);
-  color: var(--apx-fg);
-  box-shadow: var(--apx-shadow-sm);
+.colonia-btabs__tab.is-active {
+  background: var(--colonia-surface);
+  color: var(--colonia-fg);
+  box-shadow: var(--colonia-shadow-sm);
 }
-.apx-btabs__dot {
+.colonia-btabs__dot {
   flex-shrink: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--apx-fg-subtle);
+  background: var(--colonia-fg-subtle);
 }
-.apx-btabs__dot.is-agent {
-  background: var(--apx-warning);
+.colonia-btabs__dot.is-agent {
+  background: var(--colonia-warning);
 }
-.apx-btabs__dot.is-handoff {
-  background: var(--apx-warning);
-  animation: apx-live 1.2s ease-in-out infinite;
+.colonia-btabs__dot.is-handoff {
+  background: var(--colonia-warning);
+  animation: colonia-live 1.2s ease-in-out infinite;
 }
-.apx-btabs__dot.is-user {
-  background: var(--apx-brand);
+.colonia-btabs__dot.is-user {
+  background: var(--colonia-brand);
 }
-.apx-btabs__title {
+.colonia-btabs__title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-btabs__close,
-.apx-btabs__new {
+.colonia-btabs__close,
+.colonia-btabs__new {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
   border: 0;
   border-radius: 6px;
   background: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
-.apx-btabs__close {
+.colonia-btabs__close {
   width: 20px;
   height: 20px;
 }
-.apx-btabs__new {
+.colonia-btabs__new {
   width: 28px;
   height: 28px;
 }
-.apx-btabs__close:hover,
-.apx-btabs__new:hover {
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg);
+.colonia-btabs__close:hover,
+.colonia-btabs__new:hover {
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg);
 }
 
 /* ── SubthreadCard ─────────────────────────────────────────────────────────── */
-.apx-subthread {
+.colonia-subthread {
   display: flex;
   flex-direction: column;
   width: min(560px, 100%);
-  border: 1px solid var(--apx-group-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-group-bg);
-  color: var(--apx-fg);
-  transition: border-color var(--apx-duration);
+  border: 1px solid var(--colonia-group-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-group-bg);
+  color: var(--colonia-fg);
+  transition: border-color var(--colonia-duration);
 }
-.apx-subthread:hover {
-  border-color: var(--apx-border-strong);
+.colonia-subthread:hover {
+  border-color: var(--colonia-border-strong);
 }
-.apx-subthread__head {
+.colonia-subthread__head {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -615,56 +615,56 @@
   text-align: left;
   cursor: pointer;
 }
-.apx-subthread__avatar {
+.colonia-subthread__avatar {
   display: inline-flex;
   flex-shrink: 0;
   padding-top: 1px;
 }
-.apx-subthread__main {
+.colonia-subthread__main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.apx-subthread__top {
+.colonia-subthread__top {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
-.apx-subthread__title {
+.colonia-subthread__title {
   flex: 1;
   min-width: 0;
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-subthread__state {
+.colonia-subthread__state {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-brand-soft-fg);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-brand-soft-fg);
 }
-.apx-subthread__state.is-done {
-  color: var(--apx-fg-subtle);
+.colonia-subthread__state.is-done {
+  color: var(--colonia-fg-subtle);
 }
-.apx-subthread__state.is-failed {
-  color: var(--apx-danger-soft-fg);
+.colonia-subthread__state.is-failed {
+  color: var(--colonia-danger-soft-fg);
 }
-.apx-subthread__state.is-waiting {
-  color: var(--apx-warning-soft-fg);
+.colonia-subthread__state.is-waiting {
+  color: var(--colonia-warning-soft-fg);
 }
-.apx-subthread__sub {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+.colonia-subthread__sub {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
 /* The report sits under the head, lined up with the title (avatar 28px + gap). */
-.apx-subthread__report {
+.colonia-subthread__report {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -672,95 +672,95 @@
   margin: -2px 12px 0 50px;
   padding-bottom: 10px;
 }
-.apx-subthread__summary {
+.colonia-subthread__summary {
   width: 100%;
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
   overflow-wrap: anywhere;
 }
-.apx-subthread__summary.is-folded {
+.colonia-subthread__summary.is-folded {
   max-height: 9.5em;
   overflow: hidden;
 }
-.apx-subthread__summary.is-long {
+.colonia-subthread__summary.is-long {
   mask-image: linear-gradient(to bottom, #000 70%, transparent);
 }
-.apx-subthread__summary > :first-child {
+.colonia-subthread__summary > :first-child {
   margin-top: 0;
 }
-.apx-subthread__summary > :last-child {
+.colonia-subthread__summary > :last-child {
   margin-bottom: 0;
 }
-.apx-subthread__more {
+.colonia-subthread__more {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--apx-brand-soft-fg);
+  color: var(--colonia-brand-soft-fg);
   font: inherit;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
 }
-.apx-subthread__more:hover {
+.colonia-subthread__more:hover {
   text-decoration: underline;
 }
-.apx-subthread__meta {
+.colonia-subthread__meta {
   padding: 6px 12px 8px;
-  border-top: 1px solid var(--apx-group-border);
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  border-top: 1px solid var(--colonia-group-border);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
-.apx-subthread__chevron {
+.colonia-subthread__chevron {
   flex-shrink: 0;
   align-self: center;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 
 /* An @mention, in a message or as it is typed. */
-.apx-mention {
+.colonia-mention {
   padding: 0 3px;
   border-radius: 5px;
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
-  font-weight: var(--apx-weight-medium);
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
+  font-weight: var(--colonia-weight-medium);
 }
 /* On the owner's own (inked) bubble the badge takes the bubble's colour. */
-.apx-msg--user .apx-mention {
+.colonia-msg--user .colonia-mention {
   background: color-mix(in srgb, currentColor 12%, transparent);
   color: inherit;
 }
 
 /* With `highlight`: the field sits on a mirror of its own text that draws the marks (badges) behind the letters. */
-.apx-composer__field {
+.colonia-composer__field {
   position: relative;
   display: flex;
   flex: 1;
   min-width: 0;
 }
-.apx-composer__field > .apx-composer__input {
+.colonia-composer__field > .colonia-composer__input {
   position: relative;
   z-index: 1;
   width: 100%;
 }
-.apx-composer__mirror {
+.colonia-composer__mirror {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   padding: 0;
   font: inherit;
-  font-size: var(--apx-text-md);
-  line-height: calc(20px * var(--apx-text-scale, 1));
+  font-size: var(--colonia-text-md);
+  line-height: calc(20px * var(--colonia-text-scale, 1));
   white-space: pre-wrap;
   overflow-wrap: break-word;
   color: transparent;
 }
-.apx-composer--pill .apx-composer__mirror {
+.colonia-composer--pill .colonia-composer__mirror {
   padding: 7px 4px;
 }
 /* In the mirror a mark may not take room: the letters on top must stay where they are. */
-.apx-composer__mirror .apx-mention {
+.colonia-composer__mirror .colonia-mention {
   padding: 0;
   color: transparent;
   font-weight: inherit;
-  box-shadow: 0 0 0 2px var(--apx-brand-soft);
+  box-shadow: 0 0 0 2px var(--colonia-brand-soft);
 }

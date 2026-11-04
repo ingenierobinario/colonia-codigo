@@ -18,7 +18,7 @@ const part = (type: string, text: string): string => {
 export function emailMimeBody(body: EmailBody): string {
   const text = part("text/plain", body.text);
   if (body.html === undefined) return text;
-  const boundary = `apx-alternative-${randomUUID()}`;
+  const boundary = `colonia-alternative-${randomUUID()}`;
   return [
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",

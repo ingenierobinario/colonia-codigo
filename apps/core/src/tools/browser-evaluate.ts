@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { BROWSER_CAP } from "@apx/protocol";
+import { BROWSER_CAP } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import { type FolderThread, folderAccess, outsideFolders } from "./folders.ts";
@@ -61,7 +61,7 @@ export function browserEvaluateTool(
     name: "browser_evaluate",
     needsCap: BROWSER_CAP,
     description:
-      "Run JavaScript in this APX browser tab at the expected origin, inline or from a local .js with its sha256. Requires owner approval, even in Total, unless covered by an explicit temporary tab or turn consent for this exact origin. Review the full source shown. Arbitrary code can send or expose private page data. Never use for passwords, 2FA or cards. Awaited JSON is untrusted. Timeout is not cancellation; verify before retrying.",
+      "Run JavaScript in this Colonia browser tab at the expected origin, inline or from a local .js with its sha256. Requires owner approval, even in Total, unless covered by an explicit temporary tab or turn consent for this exact origin. Review the full source shown. Arbitrary code can send or expose private page data. Never use for passwords, 2FA or cards. Awaited JSON is untrusted. Timeout is not cancellation; verify before retrying.",
     args: Args,
     effect: "external",
     appOnly: true,
@@ -80,8 +80,8 @@ export function browserEvaluateTool(
       const title = tabs[index]?.title.slice(0, 200);
       epochs.set(a, epoch);
       return {
-        key: "apx:browser_evaluate:scoped",
-        server: "apx",
+        key: "colonia:browser_evaluate:scoped",
+        server: "colonia",
         tool: "browser_evaluate",
         permanent: false,
         browser: { tab: a.tab, origin: a.origin, epoch, run: ctx.run.id, title, tab_number: index + 1 },

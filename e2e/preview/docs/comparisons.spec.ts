@@ -25,7 +25,7 @@ for (const lang of ["en", "es"] as const) {
       const errors: string[] = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await page.goto(`${prefix}/compare/${slug}/`);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText(`APX vs ${name}: ${tagline(slug, lang)}`);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Colonia vs ${name}: ${tagline(slug, lang)}`);
       await expect(page.locator("html")).toHaveAttribute("lang", lang);
       const rows = page.locator(".compare-table tbody tr");
       await expect(rows).toHaveCount(8);
@@ -67,7 +67,7 @@ for (const lang of ["en", "es"] as const) {
       await rail.locator('a[href="#overview"]').click();
       await expect(page).toHaveURL(/#overview$/);
       await expect(rail.locator('[aria-current="location"]')).toHaveAttribute("href", "#overview");
-      const guide = rail.locator(".apx-blob img:visible").first();
+      const guide = rail.locator(".colonia-blob img:visible").first();
       await expect(guide).toHaveJSProperty("complete", true);
       expect(await guide.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
       await page.screenshot({ path: testInfo.outputPath("table.png") });
@@ -96,7 +96,7 @@ for (const lang of ["en", "es"] as const) {
     await expect(page.locator(".comparison-card")).toHaveCount(12);
     await expect(page.locator('.comparison-card[aria-current="page"]')).toHaveCount(0);
     await page.locator('.comparison-card[href$="/openbot/"]').click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`APX vs OpenBot: ${tagline("openbot", lang)}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Colonia vs OpenBot: ${tagline("openbot", lang)}`);
     // Keep comparing lists every product, the one being read marked as such.
     await expect(page.locator(".comparison-card")).toHaveCount(12);
     await expect(page.locator('.comparison-card[aria-current="page"]')).toHaveAttribute(
@@ -105,7 +105,7 @@ for (const lang of ["en", "es"] as const) {
     );
     await page.locator('.comparison-card[href$="/hermes-agent/"]').click();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      `APX vs Hermes Agent: ${tagline("hermes-agent", lang)}`,
+      `Colonia vs Hermes Agent: ${tagline("hermes-agent", lang)}`,
     );
   });
 }
@@ -124,7 +124,7 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
     try {
       await page.goto("/es/compare/openbot/", { waitUntil: "domcontentloaded" });
       // Home in the hero's chat, four in the short answer, Scout, and the crew card.
-      const blobs = page.locator(".compare-main .apx-blob");
+      const blobs = page.locator(".compare-main .colonia-blob");
       await expect(blobs).toHaveCount(9);
       for (const blob of await blobs.all()) {
         expect(await blob.locator("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(0);
@@ -146,7 +146,7 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
 test("failed blob bodies never leave visible eyes", async ({ page }) => {
   await page.route("**/*.webp", (route) => route.abort());
   await page.goto("/compare/hermes-agent/");
-  const blobs = page.locator(".compare-main .apx-blob");
+  const blobs = page.locator(".compare-main .colonia-blob");
   await expect(blobs).toHaveCount(9);
   for (const blob of await blobs.all()) {
     await blob.scrollIntoViewIfNeeded();

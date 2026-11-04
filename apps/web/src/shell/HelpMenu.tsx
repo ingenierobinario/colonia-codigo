@@ -1,4 +1,4 @@
-import { Icons, Menu, type MenuEntry } from "@apx/ui";
+import { Icons, Menu, type MenuEntry } from "@colonia/ui";
 import { Suspense, useEffect } from "react";
 import { guidesUrl, LINKS, openLink } from "../data/links.ts";
 import { loadNews, lookAtNews, openNews, useNews } from "../data/news.ts";

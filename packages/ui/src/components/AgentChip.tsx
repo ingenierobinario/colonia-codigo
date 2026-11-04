@@ -20,7 +20,7 @@ export function AgentChip({ name, blob, tone = "violet", variant = "chip", onCli
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={cx("apx-agentchip", `apx-agentchip--${variant}`, `apx-tone--${tone}`)}
+      className={cx("colonia-agentchip", `colonia-agentchip--${variant}`, `colonia-tone--${tone}`)}
     >
       <AgentAvatar name={name} blob={blob} size={14} animated={false} />
       {name}

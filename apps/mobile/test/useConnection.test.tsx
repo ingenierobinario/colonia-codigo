@@ -60,7 +60,7 @@ test("manual diagnosis uses the current server address after props change", asyn
   });
   await act(() => hook.result.current.check());
   expect(hook.result.current.offline).toBe("tailscale");
-  await hook.rerender("https://apx.example.com");
+  await hook.rerender("https://colonia.example.com");
   await act(() => hook.result.current.check());
   expect(hook.result.current.offline).toBe("server");
   await hook.unmount();

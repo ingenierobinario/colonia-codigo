@@ -2,8 +2,8 @@
 // on different days, a webhook that takes GET as well as POST, and the key its callers send, made or chosen.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { switchTrigger } from "@apx/protocol/flow-edit";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import { switchTrigger } from "@colonia/protocol/flow-edit";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { flowCronProblem, nextCrons, parseCrons } from "./domain/schedule.ts";
 import { say, scriptedLlm, startCore } from "./engine/testkit.ts";
 
@@ -95,7 +95,7 @@ test("a webhook answers the methods its step names, GET reading the query, both 
     );
     const plain = await published(env, "Plain", graphOf({ id: "start", kind: "webhook", label: "Start" }));
     const key = await env.client.call("flows.token_rotate", { flow: both.id });
-    assert.match(key.token ?? "", /^apxp_[a-f0-9]{64}$/);
+    assert.match(key.token ?? "", /^coloniap_[a-f0-9]{64}$/);
     await env.client.call("flows.token_rotate", { flow: plain.id });
     const auth = { authorization: `Bearer ${key.token}` };
     const { port } = await env.client.call("webhooks.get", {});

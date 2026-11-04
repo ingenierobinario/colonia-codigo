@@ -1,6 +1,6 @@
 // The agent editor's general pages: identity (with area and role picked from the project or created on the spot),
 // prompt, and model and team.
-import type { Agent, Organization } from "@apx/protocol";
+import type { Agent, Organization } from "@colonia/protocol";
 import {
   AgentAvatar,
   BLOB_NAMES,
@@ -13,7 +13,7 @@ import {
   SettingRow,
   Switch,
   Textarea,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { useState } from "react";
 import { slugOf } from "../../../common/slug.ts";
 import { AgentModelPicker } from "../../../config/models/AgentModelPicker.tsx";

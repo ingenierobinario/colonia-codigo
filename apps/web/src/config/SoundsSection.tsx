@@ -1,4 +1,4 @@
-import { Button, Icons, SegmentedControl, SettingRow, Switch } from "@apx/ui";
+import { Button, Icons, SegmentedControl, SettingRow, Switch } from "@colonia/ui";
 import type { NoticeSound } from "../data/noticeSound.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useT } from "../i18n/index.ts";

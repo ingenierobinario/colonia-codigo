@@ -1,4 +1,4 @@
-import type { ParsedParams, Result } from "@apx/protocol";
+import type { ParsedParams, Result } from "@colonia/protocol";
 import type { Secrets } from "../secrets.ts";
 
 export const ASANA_SECRET = "asana-token";

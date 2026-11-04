@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { t } from "../../i18n";
-import type { ApxClient, Message } from "../../protocol";
+import type { ColoniaClient, Message } from "../../protocol";
 import { Icon } from "../Icon";
 import { BottomSheet } from "../kit";
 import { makeStyles, type Theme, useTheme } from "../theme";
@@ -16,7 +16,7 @@ export function SkillsRow({
   projectId,
 }: {
   part: SkillsPart;
-  client: ApxClient | undefined;
+  client: ColoniaClient | undefined;
   projectId: string | undefined;
 }) {
   const theme = useTheme();
@@ -77,7 +77,7 @@ function SkillDetail({
   name: string;
   kind: SkillKind;
   sim: number | undefined;
-  client: ApxClient | undefined;
+  client: ColoniaClient | undefined;
   projectId: string | undefined;
 }) {
   const s = useStyles();

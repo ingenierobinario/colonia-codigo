@@ -1,4 +1,4 @@
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import { useEffect } from "react";
 import { loadChannels, useChannels } from "../data/channels.ts";
 

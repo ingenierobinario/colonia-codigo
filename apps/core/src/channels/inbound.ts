@@ -1,7 +1,7 @@
 // What arrives on a channel. Who wrote (an exact address match) decides where the words go: the owner's thread, a
 // contact's sealed thread, or a pairing code for a stranger. Button presses decide only when the owner presses them.
 
-import { type Thread, UPLOAD_LIMITS } from "@apx/protocol";
+import { type Thread, UPLOAD_LIMITS } from "@colonia/protocol";
 import {
   type Inbound,
   type InboundAction,
@@ -381,7 +381,7 @@ export function createInbound(deps: {
     // On the owner's own number the request is only listed: the owner's friends must not get a code from it. Past
     // the hourly cap of codes (a wave of spam mail) the rest are only listed too: no reply goes to forged senders.
     if (deps.ownAccount(cfg.id) || codesOver(cfg.id)) return "ignored";
-    const agent = store.agents.get(cfg.agent_id)?.name ?? "APX";
+    const agent = store.agents.get(cfg.agent_id)?.name ?? "Colonia";
     delivery.enqueue({
       channel: cfg.id,
       conversation: m.conversation,
@@ -531,7 +531,7 @@ export function createInbound(deps: {
   }
 
   /**
-   * The owner's text answers an open question: the one APX sent last in this chat, from whatever thread asked it,
+   * The owner's text answers an open question: the one Colonia sent last in this chat, from whatever thread asked it,
    * else one waiting in the thread the text goes to. An older question is not taken: the text may be about else.
    */
   async function answerPending(

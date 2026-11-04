@@ -1,4 +1,4 @@
-import { PROTOCOL_VERSION } from "@apx/protocol";
+import { PROTOCOL_VERSION } from "@colonia/protocol";
 import { coreLogFile, readCoreLog } from "../core-log.ts";
 import type { Identity } from "../identity.ts";
 import type { News } from "../news/news.ts";
@@ -14,7 +14,7 @@ export function systemHandlers(
   subsystems: () => Record<string, { status: "ok" | "degraded" | "down" | "off"; detail?: string }>,
 ) {
   const health: Handler<"system.health"> = () => ({
-    name: "apx-core",
+    name: "colonia-core",
     version: identity.version,
     code_sha: identity.code_sha,
     home_id: identity.home_id,
@@ -33,7 +33,7 @@ export function systemHandlers(
   return { "system.health": health, "system.ping": ping, "system.logs": logs };
 }
 
-/** Whether a newer APX is out, and bringing it in on the owner's word. */
+/** Whether a newer Colonia is out, and bringing it in on the owner's word. */
 export function updateHandlers(updates: Updates) {
   return {
     "system.updates": async ({ check }) => (check ? await updates.check() : updates.status()),
@@ -63,7 +63,7 @@ export function newsHandlers(news: Pick<News, "list" | "tell">) {
   } satisfies Partial<Handlers>;
 }
 
-/** Memory, CPU and disk: the computer's and APX's. */
+/** Memory, CPU and disk: the computer's and Colonia's. */
 export function usageHandlers(usage: Usage) {
   return {
     "system.usage": ({ disk }) => usage.read({ disk }),

@@ -212,7 +212,7 @@ test("a delegation the breaker refuses shows the owner a notice with the ways to
       who: "Scout",
       task: "check the invoices",
       thread: t.id,
-      link: "apx:settings/agents",
+      link: "colonia:settings/agents",
     });
     const runs = store.runs.list(t.id).length;
     assert.deepEqual(await env.client.call("threads.go_on", { thread: t.id, mode: "reset" }), { started: 1 });

@@ -1,7 +1,7 @@
 // The owner's phone, as a node: where they are, and a picture they take on it. Offered only while a phone lending the
 // capability is connected (engine/turn.ts). Where the owner is goes to a model only with the owner's OK when outside
 // content is in the turn; a picture always asks them, on the phone.
-import { PHONE_CAMERA_CAP, PHONE_LOCATION_CAP } from "@apx/protocol";
+import { PHONE_CAMERA_CAP, PHONE_LOCATION_CAP } from "@colonia/protocol";
 import { z } from "zod";
 import { defineTool, type Tool } from "./types.ts";
 

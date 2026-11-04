@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside, Steps } from "@astrojs/starlight/components";
 
-Both connect without a public URL or an extra library: APX opens the platform's own socket from your machine. In
+Both connect without a public URL or an extra library: Colonia opens the platform's own socket from your machine. In
 direct messages they work like Telegram: you pair yourself with a code, strangers wait for your approval, and the
 outbox keeps every reply. Discord can also look after rooms of your server.
 
@@ -23,7 +23,7 @@ outbox keeps every reply. Discord can also look after rooms of your server.
 
 3. Under **Installation**, add the bot to your account (or to a server you're in), so you can write to it.
 
-4. In APX, open **Settings › Channels**, **Add channel › Discord**. Paste the token in **Bot token**, choose **Who
+4. In Colonia, open **Settings › Channels**, **Add channel › Discord**. Paste the token in **Bot token**, choose **Who
    answers** and press **Connect bot**.
 
 5. Write to the bot in a direct message. It answers with a code: type it under **This is my Discord** and press
@@ -36,7 +36,7 @@ and follow the channel's **Strangers** setting.
 
 ### Server rooms
 
-Discord rooms are opt-in. A room that isn't listed doesn't exist for APX: it's neither read nor stored. Under **Server
+Discord rooms are opt-in. A room that isn't listed doesn't exist for Colonia: it's neither read nor stored. Under **Server
 rooms**, pick each one from **Add a room from the server…**, which lists the rooms of the bot's servers while it runs
 and says where it can't write. When they can't be read, **Add by ID** takes a **Room name** and **Room id**, then
 **Add room**.
@@ -74,12 +74,12 @@ the people it names in the room; nobody else can make it ping anyone. If an answ
 posted.
 </Aside>
 
-Every message of a listed room is kept in that room's chat in APX. Agents can read a room (for example, "what did
+Every message of a listed room is kept in that room's chat in Colonia. Agents can read a room (for example, "what did
 they say in #general today?") and post in one by its exact name; a near miss only gets a suggestion, since a public
 post can't be taken back.
 
 <Aside type="note">
-Discord doesn't send again a message that arrived while APX was disconnected, so a direct message sent during that
+Discord doesn't send again a message that arrived while Colonia was disconnected, so a direct message sent during that
 gap is missed.
 </Aside>
 
@@ -97,14 +97,14 @@ direct messages to the app reach your agents; the workspace's channels are ignor
 
 3. In **App Home**, allow messages in the **Messages** tab. Install the app and copy the bot token (`xoxb-…`).
 
-4. In APX, open **Settings › Channels**, **Add channel › Slack**. Paste both tokens (**Bot token** and **App-level
+4. In Colonia, open **Settings › Channels**, **Add channel › Slack**. Paste both tokens (**Bot token** and **App-level
    token**), choose **Who answers** and press **Connect bot**.
 
 5. Write to the app and type its code under **This is my Slack**.
 
 </Steps>
 
-APX stores the two tokens together as one secret. Pairing, strangers, contacts and the outbox work as on the other
+Colonia stores the two tokens together as one secret. Pairing, strangers, contacts and the outbox work as on the other
 channels; as everywhere but Telegram, WhatsApp and Signal, what you ask there goes through your super-agent first, and cards are answered in
 the app ([which channels act on your word](/channels/overview/#which-channels-act-on-your-word)).
 

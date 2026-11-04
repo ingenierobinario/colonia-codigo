@@ -1,4 +1,4 @@
-import { AgentAvatar, EmptyState, Icons, ProjectTile, Spinner } from "@apx/ui";
+import { AgentAvatar, EmptyState, Icons, ProjectTile, Spinner } from "@colonia/ui";
 import { useMemo } from "react";
 import { shortWhen } from "../common/format.ts";
 import { blobOf, inProject, isListed, isWorking, type ProjectEntry, teamOf, threadAgent } from "../data/identity.ts";

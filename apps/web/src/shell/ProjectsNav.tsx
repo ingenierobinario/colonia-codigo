@@ -1,4 +1,4 @@
-import { IconButton, Icons, ProjectTile } from "@apx/ui";
+import { IconButton, Icons, ProjectTile } from "@colonia/ui";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   inInbox,

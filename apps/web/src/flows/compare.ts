@@ -7,7 +7,7 @@ import {
   type FlowCompareType,
   type FlowComparison,
   flowCompareAlone,
-} from "@apx/protocol/flow-cases";
+} from "@colonia/protocol/flow-cases";
 import type { MessageKey } from "../i18n/index.ts";
 
 type T = (key: MessageKey, vars?: Record<string, string | number>) => string;

@@ -1,6 +1,6 @@
-import type { NoticePrefs, Nudge } from "@apx/protocol";
-import { QUIET_HOURS } from "@apx/protocol/client";
-import { Badge, Button, EmptyState, Icons, Input, SettingRow, Switch } from "@apx/ui";
+import type { NoticePrefs, Nudge } from "@colonia/protocol";
+import { QUIET_HOURS } from "@colonia/protocol/client";
+import { Badge, Button, EmptyState, Icons, Input, SettingRow, Switch } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { loadChannels, saveNotices, useChannels } from "../data/channels.ts";
 import { client } from "../data/client.ts";
@@ -22,7 +22,7 @@ const rateable = (n: Nudge) =>
   (n.state === "sent" || n.state === "no_channel") && (n.kind.startsWith("routine:") || n.kind.startsWith("agent:"));
 
 /**
- * How often APX may write to you unasked: a daily cap, gaps per project and per kind, quiet hours that hold messages
+ * How often Colonia may write to you unasked: a daily cap, gaps per project and per kind, quiet hours that hold messages
  * (they go together when the hours end), and what it meant to send lately. Answers to you never count.
  */
 export function InterruptionsSection() {

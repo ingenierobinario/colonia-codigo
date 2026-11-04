@@ -1,7 +1,7 @@
-// Notify and HTTP steps of a graph run (DECISIONS.md#d-169). Both act outside APX, so each goes out at most once: a
+// Notify and HTTP steps of a graph run (DECISIONS.md#d-169). Both act outside Colonia, so each goes out at most once: a
 // send or a non-GET request commits `dispatched` right before it can reach the other side, and anything after that
 // without a clear answer is left uncertain for the owner, never repeated. Destinations are the revision's own fields.
-import type { FlowBinding, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowBinding, FlowNode } from "@colonia/protocol/flow-graph";
 import type { FlowVarIndex } from "./domain/flow-expr.ts";
 import type { FlowGraphRun, FlowStepKey } from "./domain/flow-graph-runs.ts";
 import {
@@ -11,7 +11,7 @@ import {
   resolveFlowInput,
 } from "./domain/flow-graph-semantics.ts";
 import { flowSecretVars, secretTemplate } from "./domain/flow-secret-vars.ts";
-import { type FlowApx, parseFlowTemplate, renderFlowTemplate } from "./domain/flow-template.ts";
+import { type FlowColonia, parseFlowTemplate, renderFlowTemplate } from "./domain/flow-template.ts";
 import type { Store } from "./domain/store.ts";
 import type { RunTimers } from "./engine/engine.ts";
 import { type FlowHttpAnswer, FlowHttpError, type FlowHttpPolicy, flowHttpRequest } from "./flow-http.ts";
@@ -72,8 +72,8 @@ class StepRefused extends Error {
   }
 }
 
-/** What `$apx.…` reads in a run's templates: its project's name, the moment and the run's id. */
-export function flowApx(store: Store, run: Pick<FlowGraphRun, "flow" | "event">, at: Date): FlowApx {
+/** What `$colonia.…` reads in a run's templates: its project's name, the moment and the run's id. */
+export function flowColonia(store: Store, run: Pick<FlowGraphRun, "flow" | "event">, at: Date): FlowColonia {
   const project = store.flows.get(run.flow)?.projectId;
   return {
     project: (project && store.projects.get(project)?.name) || "",
@@ -86,7 +86,7 @@ export function flowApx(store: Store, run: Pick<FlowGraphRun, "flow" | "event">,
 function renderBody(
   template: string,
   resolve: (b: FlowBinding) => unknown,
-  apx: FlowApx,
+  colonia: FlowColonia,
   vars: FlowVarIndex,
 ): { text: string; json: boolean } {
   let parsed: unknown;
@@ -94,12 +94,12 @@ function renderBody(
     parsed = JSON.parse(template);
   } catch {}
   if (parsed === null || typeof parsed !== "object")
-    return { text: renderFlowTemplate(parseFlowTemplate(template, vars), resolve, { apx }).text, json: false };
+    return { text: renderFlowTemplate(parseFlowTemplate(template, vars), resolve, { colonia }).text, json: false };
   const fill = (v: unknown): unknown => {
     if (typeof v === "string") {
       const parts = parseFlowTemplate(v, vars);
       const only = parts.length === 1 ? parts[0] : undefined;
-      return only && "binding" in only ? resolve(only.binding) : renderFlowTemplate(parts, resolve, { apx }).text;
+      return only && "binding" in only ? resolve(only.binding) : renderFlowTemplate(parts, resolve, { colonia }).text;
     }
     if (Array.isArray(v)) return v.map(fill);
     // Keys are the owner's; fromEntries keeps a "__proto__" key as data.
@@ -191,7 +191,7 @@ export function createOutwardSteps(deps: {
       const out = renderFlowTemplate(parseFlowTemplate(node.text, flowVarIndex(run.graph)), resolve, {
         missing: node.onlyIfContent ? "empty" : "throw",
         bound: plainBound,
-        apx: flowApx(store, run, now()),
+        colonia: flowColonia(store, run, now()),
       });
       if (node.onlyIfContent && (out.empty || !out.text.trim())) {
         runs.settle(k, ["pending"], "skipped", now(), W.nothing);
@@ -258,7 +258,7 @@ export function createOutwardSteps(deps: {
     const project = store.flows.get(run.flow)?.projectId ?? "";
     const resolve = (b: FlowBinding) => resolveFlowInput(b, run.payload, snapshots);
     const used: string[] = [];
-    const apx = flowApx(store, run, now());
+    const colonia = flowColonia(store, run, now());
     const headers: Record<string, string> = {};
     const shown: { name: string; value: string }[] = [];
     let body: { text: string; json: boolean } | undefined;
@@ -271,7 +271,7 @@ export function createOutwardSteps(deps: {
         if (!parts) throw new StepRefused(W.invalid);
         // Secret references are read only in the owner's own text, never in a value the payload brought.
         const real = renderFlowTemplate(parts, resolve, {
-          apx,
+          colonia,
           literal: (t) =>
             t.replace(SECRET_REF, (ref) => {
               const value = http.secret(ref, project);
@@ -282,14 +282,14 @@ export function createOutwardSteps(deps: {
         }).text;
         if (/[\r\n\0]/.test(real)) throw new StepRefused(W.invalid);
         headers[h.name.toLowerCase()] = real;
-        shown.push({ name: h.name, value: renderFlowTemplate(parts, resolve, { apx }).text });
+        shown.push({ name: h.name, value: renderFlowTemplate(parts, resolve, { colonia }).text });
       }
       if (node.method !== "GET" && node.body.trim()) {
-        body = renderBody(node.body, resolve, apx, flowVarIndex(run.graph));
+        body = renderBody(node.body, resolve, colonia, flowVarIndex(run.graph));
         if (Buffer.byteLength(body.text) > BODY_LIMIT) throw new StepRefused(W.value);
         headers["content-type"] ??= body.json ? "application/json" : "text/plain; charset=utf-8";
       }
-      headers["user-agent"] ??= "APX-Flow";
+      headers["user-agent"] ??= "Colonia-Flow";
     } catch (err) {
       fail(k, "pending", err instanceof StepRefused ? err.why : W.missing);
       return;

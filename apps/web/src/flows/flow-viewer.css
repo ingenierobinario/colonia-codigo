@@ -1,5 +1,5 @@
 /* A Flow opened from its chat card: the drawing large with the steps beside it; full screen on a phone. */
-.apx-dialog.flowviewer {
+.colonia-dialog.flowviewer {
   height: min(820px, calc(100vh - 64px));
 }
 .fv {
@@ -15,7 +15,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 60px 12px 16px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .fv__text {
   display: flex;
@@ -30,12 +30,12 @@
   white-space: nowrap;
 }
 .fv__name {
-  font-size: var(--apx-text-md);
+  font-size: var(--colonia-text-md);
   font-weight: 600;
 }
 .fv__project {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
 }
 .fv__body {
   position: relative;
@@ -53,8 +53,8 @@
   flex-direction: column;
   width: 340px;
   min-height: 0;
-  border-left: 1px solid var(--apx-border);
-  background: var(--apx-surface);
+  border-left: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
 }
 .fv__steps {
   display: flex;
@@ -78,7 +78,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .fv__title {
   flex: 1;
@@ -110,12 +110,12 @@
   min-width: 0;
 }
 .fv__fact dt {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font-size: 12px;
 }
 .fv__fact dd {
   margin: 0;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font-size: 13px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -126,9 +126,9 @@
   max-height: 220px;
   padding: 8px 10px;
   overflow: auto;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
-  font-family: var(--apx-font-mono);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
+  font-family: var(--colonia-font-mono);
   font-size: 12.5px;
 }
 .fv__next {
@@ -138,8 +138,8 @@
   min-height: 32px;
   padding: 0 8px 0 10px;
   border: 0;
-  border-radius: var(--apx-control-radius);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-control-radius);
+  background: var(--colonia-fill);
   color: inherit;
   font: inherit;
   font-size: 12.5px;
@@ -147,14 +147,14 @@
   cursor: pointer;
 }
 .fv__next:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .fv__when {
   flex: none;
   padding: 1px 8px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
   font-size: 12px;
 }
 .fv__nextname {
@@ -170,7 +170,7 @@
 }
 
 @media (max-width: 640px) {
-  .apx-dialog.flowviewer {
+  .colonia-dialog.flowviewer {
     top: 0;
     left: 0;
     width: 100vw;
@@ -204,6 +204,6 @@
     height: 60%;
     border-width: 1px 0 0;
     border-radius: 16px 16px 0 0;
-    box-shadow: var(--apx-shadow-md);
+    box-shadow: var(--colonia-shadow-md);
   }
 }

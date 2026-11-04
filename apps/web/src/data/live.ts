@@ -1,6 +1,6 @@
 // Live link to the core: one socket, events folded into the store, refetch on reconnect or seq gap.
-import type { CoreEvent, EventFrame } from "@apx/protocol";
-import type { ApxSocket } from "@apx/protocol/client";
+import type { CoreEvent, EventFrame } from "@colonia/protocol";
+import type { ColoniaSocket } from "@colonia/protocol/client";
 import { t } from "../i18n/index.ts";
 import { documentToOpen } from "../panel/documents.ts";
 import { go, nav } from "../shell/nav.ts";
@@ -22,7 +22,7 @@ import { loadUpdates, notePanel } from "./updates.ts";
 const RETRY_MS = [1000, 2000, 4000, 8000, 15000];
 
 let started = false;
-let socket: ApxSocket | undefined;
+let socket: ColoniaSocket | undefined;
 let attempt = 0;
 let generation = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -54,7 +54,7 @@ async function connect(): Promise<void> {
   const gen = ++generation;
   // While retrying keep "offline" (and its banner) until a connection actually succeeds.
   if (data.get().connection !== "offline") data.set({ connection: "connecting" });
-  let s: ApxSocket | undefined;
+  let s: ColoniaSocket | undefined;
   try {
     // The health probe fails fast when the core is down; the socket alone can wait for its full timeout. A refused
     // socket says nothing of why: the probe's error does (a revoked token shows the pairing gate).

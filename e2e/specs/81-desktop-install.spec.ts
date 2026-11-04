@@ -29,7 +29,7 @@ test("existing web users get one-click desktop installation, progress, reload re
     await route.fulfill({ json: { ok: true, result: current } });
   });
   await page.goto("/");
-  const notice = page.getByRole("complementary", { name: "Usá APX como aplicación de escritorio" });
+  const notice = page.getByRole("complementary", { name: "Usá Colonia como aplicación de escritorio" });
   await expect(notice).toBeVisible();
   await notice.getByRole("button", { name: "Instalar y abrir" }).click();
   await expect(notice.getByRole("progressbar")).toHaveAttribute("value", "25");
@@ -145,7 +145,7 @@ test("a pending start must be acknowledged before cancel, including in the minim
   });
   try {
     await page.goto("/");
-    const notice = page.getByRole("complementary", { name: "Usá APX como aplicación de escritorio" });
+    const notice = page.getByRole("complementary", { name: "Usá Colonia como aplicación de escritorio" });
     await notice.getByRole("button", { name: "Instalar y abrir" }).click();
     await expect.poll(() => requests).toBe(1);
     await expect(notice.getByRole("button", { name: "Cancelar" })).toBeDisabled();
@@ -187,7 +187,7 @@ test("dismissing the offer survives reload and the sidebar can start installatio
     return route.fulfill({ json: { ok: true, result: current } });
   });
   await page.goto("/");
-  const notice = page.getByRole("complementary", { name: "Usá APX como aplicación de escritorio" });
+  const notice = page.getByRole("complementary", { name: "Usá Colonia como aplicación de escritorio" });
   await notice.getByRole("button", { name: "Más tarde" }).click();
   await expect(notice).not.toBeVisible();
   await page.reload();
@@ -203,7 +203,7 @@ test("dismissing the offer survives reload and the sidebar can start installatio
 test("the desktop app never renders the web launcher or queries installation status", async ({ page }) => {
   let checks = 0;
   await page.addInitScript(() => {
-    Object.defineProperty(window, "apxDesktop", { value: { platform: "darwin", coreLocal: true } });
+    Object.defineProperty(window, "coloniaDesktop", { value: { platform: "darwin", coreLocal: true } });
   });
   await page.route("**/rpc/setup.status", (route) =>
     route.fulfill({ json: { ok: true, result: { done: true, fresh: false } } }),

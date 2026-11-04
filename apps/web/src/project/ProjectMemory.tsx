@@ -1,4 +1,4 @@
-import type { Memory, MemoryScope } from "@apx/protocol";
+import type { Memory, MemoryScope } from "@colonia/protocol";
 import {
   AgentAvatar,
   Badge,
@@ -9,7 +9,7 @@ import {
   SearchField,
   SegmentedControl,
   Textarea,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { client } from "../data/client.ts";

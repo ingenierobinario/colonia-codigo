@@ -1,5 +1,5 @@
-import type { ServiceDialect, ServiceInfo, ServiceKind, ServiceSettings, ServiceTest } from "@apx/protocol";
-import { Button, Dialog, Icons, Input, Switch, Textarea } from "@apx/ui";
+import type { ServiceDialect, ServiceInfo, ServiceKind, ServiceSettings, ServiceTest } from "@colonia/protocol";
+import { Button, Dialog, Icons, Input, Switch, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -189,7 +189,7 @@ export function ServiceDialog(props: {
     setDraft((d) => ({ ...d, ...patch }));
   };
   const validUrl = /^https?:\/\/.+/.test(draft.base_url);
-  // APX runs these itself (whisper.cpp) or through the owner's own CLI (Codex): there is no address or key to give.
+  // Colonia runs these itself (whisper.cpp) or through the owner's own CLI (Codex): there is no address or key to give.
   const runsHere = draft.dialect === "whisper-cpp" || draft.dialect === "codex-images";
   const runCheck = async () => {
     setChecking(true);

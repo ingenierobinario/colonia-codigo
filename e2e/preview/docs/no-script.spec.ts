@@ -22,5 +22,5 @@ test("comparison navigation and sources remain usable without scripts", async ({
   await expect(page.locator("html")).toHaveAttribute("lang", "es");
   await page.locator('.comparison-card[href$="/openclaw/"]').click();
   const openclaw = comparisons.find((item) => item.slug === "openclaw");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`APX vs OpenClaw: ${openclaw?.tagline.es}`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Colonia vs OpenClaw: ${openclaw?.tagline.es}`);
 });

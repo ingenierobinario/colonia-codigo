@@ -1,6 +1,6 @@
 // MCP servers: listing, the owner's approval of a project's server, and the owner's own servers.
 
-import { ErrorCode } from "@apx/protocol";
+import { ErrorCode } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { badRequest, CallError, notFound } from "../errors.ts";
 import { ARGS_SECRET } from "../mcp/config.ts";

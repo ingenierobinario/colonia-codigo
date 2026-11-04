@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { methods } from "@apx/protocol";
+import { methods } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createAsana } from "../integrations/asana.ts";
 import { realpath } from "../paths.ts";
@@ -27,7 +27,7 @@ test("native Asana lifecycle, pagination, writes and idempotency through the run
       return Response.json({ data: [{ gid: "123", name: "Acme" }], next_page: { offset: "next" } });
     },
   });
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-asana-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-asana-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
   try {
     const project = (await env.client.call("projects.register", { path: repo })).project.id;

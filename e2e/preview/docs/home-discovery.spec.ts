@@ -36,7 +36,7 @@ for (const lang of ["en", "es"] as const) {
     ]);
     for (const [index, product] of featured.entries()) {
       const slug = product.slug;
-      await expect(cards.nth(index)).toContainText(`APX vs ${product?.name}`);
+      await expect(cards.nth(index)).toContainText(`Colonia vs ${product?.name}`);
       await expect(cards.nth(index)).toContainText(product?.tagline[lang] ?? "\0");
       await expect(cards.nth(index)).toHaveAttribute("href", `${pre}/compare/${slug}/`);
       await cards.nth(index).scrollIntoViewIfNeeded();
@@ -81,7 +81,7 @@ for (const lang of ["en", "es"] as const) {
     await expect(final.getByRole("heading", { level: 2 })).toHaveText(
       lang === "es" ? "Tu crew te está esperando." : "Your crew is waiting.",
     );
-    await expect(final.locator(".parade .apx-blob")).toHaveCount(35);
+    await expect(final.locator(".parade .colonia-blob")).toHaveCount(35);
     await expect(final.locator(".final__actions a")).toHaveCount(2);
     await expect(final.locator(".btn-light")).toHaveAttribute("href", "#download");
     await expect(final.locator(".btn-light")).toHaveText(lang === "es" ? "Bajar la app" : "Download the app");

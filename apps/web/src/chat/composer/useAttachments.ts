@@ -1,4 +1,4 @@
-import { secureRequestKey } from "@apx/protocol/client";
+import { secureRequestKey } from "@colonia/protocol/client";
 import { useCallback, useSyncExternalStore } from "react";
 import { type AttachmentChip, attachmentsOf } from "../../data/attachmentDrafts.ts";
 import { type Attached, isImage, mimeOf, tooBig, transcribe, upload } from "../../data/composer.ts";

@@ -10,9 +10,9 @@ import { test } from "node:test";
 import { promisify } from "node:util";
 
 test("curl-style setup opens desktop before installing any service; server and headless paths stay explicit", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-install-shell-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-install-shell-"));
   const fakebin = path.join(dir, "bin");
-  const bundleDir = path.join(dir, "bundle/apx/node/bin");
+  const bundleDir = path.join(dir, "bundle/colonia/node/bin");
   fs.mkdirSync(fakebin);
   fs.mkdirSync(bundleDir, { recursive: true });
   const executable = (file: string, body: string) => fs.writeFileSync(file, `#!/bin/sh\n${body}\n`, { mode: 0o755 });
@@ -20,9 +20,9 @@ test("curl-style setup opens desktop before installing any service; server and h
   executable(path.join(fakebin, "pkill"), "exit 0");
   executable(path.join(fakebin, "npm"), "exit 1");
   executable(path.join(fakebin, "loginctl"), "echo yes");
-  executable(path.join(bundleDir, "node"), 'printf "%s\\n" "$*" >> "$APX_INSTALL_LOG"');
-  const archive = path.join(dir, "apx-core-2.9.1-linux-x64.tar.gz");
-  execFileSync("tar", ["-czf", archive, "-C", path.join(dir, "bundle"), "apx"]);
+  executable(path.join(bundleDir, "node"), 'printf "%s\\n" "$*" >> "$COLONIA_INSTALL_LOG"');
+  const archive = path.join(dir, "colonia-core-2.9.1-linux-x64.tar.gz");
+  execFileSync("tar", ["-czf", archive, "-C", path.join(dir, "bundle"), "colonia"]);
   const bytes = fs.readFileSync(archive);
   const server = createServer((req, res) => {
     if (req.url?.startsWith("/releases")) res.end(JSON.stringify([{ tag_name: "v2.9.1" }]));
@@ -57,11 +57,11 @@ test("curl-style setup opens desktop before installing any service; server and h
     for (const item of cases) {
       const home = path.join(dir, item.name);
       fs.mkdirSync(home);
-      const app = path.join(home, ".apx/v2/app");
+      const app = path.join(home, ".colonia/v2/app");
       const log = path.join(home, "calls");
       if (item.existing) {
         fs.mkdirSync(app, { recursive: true });
-        fs.symlinkSync(path.join(dir, "bundle/apx"), path.join(app, "current"));
+        fs.symlinkSync(path.join(dir, "bundle/colonia"), path.join(app, "current"));
       }
       const result = await promisify(execFile)(
         "bash",
@@ -70,9 +70,9 @@ test("curl-style setup opens desktop before installing any service; server and h
           env: {
             ...process.env,
             HOME: home,
-            APX_APP: app,
-            APX_HOME: path.join(home, ".apx/v2"),
-            APX_INSTALL_LOG: log,
+            COLONIA_APP: app,
+            COLONIA_HOME: path.join(home, ".colonia/v2"),
+            COLONIA_INSTALL_LOG: log,
             DISPLAY: item.graphical ? ":1" : "",
             WAYLAND_DISPLAY: "",
             SSH_CONNECTION: "",
@@ -93,7 +93,7 @@ test("curl-style setup opens desktop before installing any service; server and h
       }
       if (item.name === "existing-desktop") {
         assert.equal(fs.existsSync(path.join(app, "install-mode")), false);
-        assert.equal(fs.realpathSync(path.join(app, "current")), fs.realpathSync(path.join(dir, "bundle/apx")));
+        assert.equal(fs.realpathSync(path.join(app, "current")), fs.realpathSync(path.join(dir, "bundle/colonia")));
       } else assert.equal(fs.readFileSync(path.join(app, "install-mode"), "utf8").trim(), item.mode);
     }
   } finally {

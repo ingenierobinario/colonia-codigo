@@ -62,8 +62,8 @@ function zip(entries: Array<{ name: string; data?: string; mode?: number }>): Bu
 }
 
 before(async () => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-skill-import-"));
-  work = fs.mkdtempSync(path.join(os.tmpdir(), "apx-skill-src-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-skill-import-"));
+  work = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-skill-src-"));
   env = await startCore({ llm: scriptedLlm(() => say("ok")), home });
 });
 after(async () => {
@@ -100,16 +100,16 @@ test("a zip is previewed with its notes, then only the picked skills are copied;
     { name: "pack/pdf/SKILL.md", data: "---\nname: pdf\ndescription: Reads PDFs.\nallowed-tools: Bash\n---\n" },
     { name: "pack/pdf/scripts/fill.py", data: "print(1)" },
     { name: "pack/notes/SKILL.md", data: "---\nname: notes\ndescription: Takes notes.\n---\n" },
-    { name: "pack/apx-mcps/SKILL.md", data: "---\nname: apx-mcps\n---\n" },
+    { name: "pack/colonia-mcps/SKILL.md", data: "---\nname: colonia-mcps\n---\n" },
   ]).toString("base64");
   const source = { kind: "zip" as const, name: "pack.zip", data };
-  const temps = () => fs.readdirSync(os.tmpdir()).filter((n) => n.startsWith("apx-skill-zip-")).length;
+  const temps = () => fs.readdirSync(os.tmpdir()).filter((n) => n.startsWith("colonia-skill-zip-")).length;
   const before = temps();
   const { candidates } = await env.client.call("skills.preview", { source, target: "global" });
   assert.deepEqual(
     candidates.map((c) => [c.id, c.name, c.status]),
     [
-      ["pack/apx-mcps", "apx-mcps", "reserved"],
+      ["pack/colonia-mcps", "colonia-mcps", "reserved"],
       ["pack/notes", "notes", "new"],
       ["pack/pdf", "pdf", "new"],
     ],
@@ -121,12 +121,12 @@ test("a zip is previewed with its notes, then only the picked skills are copied;
   ]);
   assert.equal(fs.existsSync(path.join(home, "skills", "pdf")), false, "a preview writes nothing");
 
-  const r = await env.client.call("skills.import", { source, target: "global", pick: ["pack/pdf", "pack/apx-mcps"] });
+  const r = await env.client.call("skills.import", { source, target: "global", pick: ["pack/pdf", "pack/colonia-mcps"] });
   assert.deepEqual(
     r.imported.map((s) => [s.name, s.source]),
     [["pdf", "owner"]],
   );
-  assert.deepEqual(r.skipped, [{ id: "pack/apx-mcps", reason: "apx-mcps is one of APX's own skills" }]);
+  assert.deepEqual(r.skipped, [{ id: "pack/colonia-mcps", reason: "colonia-mcps is one of Colonia's own skills" }]);
   assert.equal(fs.readFileSync(path.join(home, "skills", "pdf", "scripts", "fill.py"), "utf8"), "print(1)");
   assert.equal(fs.existsSync(path.join(home, "skills", "notes")), false, "not picked");
   assert.equal(temps(), before, "the unpacked zip is removed");

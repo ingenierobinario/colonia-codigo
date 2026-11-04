@@ -1,12 +1,12 @@
-// v2 takes APX v1's place on this machine: v1's daemon stops for good (two daemons would run the same routines and
-// answer the same bots), v1's `apx` goes, and `apx` runs this APX. v1's files in ~/.apx stay, to import them.
+// v2 takes Colonia v1's place on this machine: v1's daemon stops for good (two daemons would run the same routines and
+// answer the same bots), v1's `colonia` goes, and `colonia` runs this Colonia. v1's files in ~/.colonia stay, to import them.
 import fs from "node:fs";
 import path from "node:path";
 
-/** The global npm package v1's `apx` comes from. */
-export const V1_PACKAGE = "@agentprojectcontext/apx";
+/** The global npm package v1's `colonia` comes from. */
+export const V1_PACKAGE = "@ingenierobinario/colonia";
 /** v1's daemon in a process list (its npm install or a checkout of it). */
-const V1_DAEMON = "apx/src/host/daemon";
+const V1_DAEMON = "colonia/src/host/daemon";
 
 export type Run = (cmd: string, args: string[]) => Promise<{ code: number; out: string }>;
 
@@ -17,7 +17,7 @@ export type TakeoverDeps = {
   run: Run;
   /** v1's daemon answers on its port. */
   v1Running: () => Promise<boolean>;
-  /** This APX's own command: apps/terminal/src/main.ts, and the program that runs it. */
+  /** This Colonia's own command: apps/terminal/src/main.ts, and the program that runs it. */
   terminal: { main: string; exe: string; electron: boolean; appImage: boolean; checkout: boolean };
   wait?: (ms: number) => Promise<void>;
 };
@@ -38,31 +38,31 @@ export async function v1Answers(url: string, fetchImpl: typeof fetch = fetch): P
 async function stopV1(d: TakeoverDeps): Promise<void> {
   const home = d.home;
   if (d.platform === "darwin") {
-    for (const label of ["dev.apx.daemon", "dev.apx.desktop"]) {
+    for (const label of ["dev.colonia.daemon", "dev.colonia.desktop"]) {
       if (!fs.existsSync(path.join(home, "Library", "LaunchAgents", `${label}.plist`))) continue;
       await d.run("launchctl", ["bootout", `gui/${d.uid}/${label}`]);
       // A plist left in LaunchAgents loads again at login unless launchd is told it is off.
       await d.run("launchctl", ["disable", `gui/${d.uid}/${label}`]);
     }
   } else if (d.platform === "linux") {
-    if (fs.existsSync(path.join(home, ".config", "systemd", "user", "apx-daemon.service")))
-      await d.run("systemctl", ["--user", "disable", "--now", "apx-daemon.service"]);
-    const autostart = path.join(home, ".config", "autostart", "apx-desktop.desktop");
+    if (fs.existsSync(path.join(home, ".config", "systemd", "user", "colonia-daemon.service")))
+      await d.run("systemctl", ["--user", "disable", "--now", "colonia-daemon.service"]);
+    const autostart = path.join(home, ".config", "autostart", "colonia-desktop.desktop");
     if (fs.existsSync(autostart)) fs.renameSync(autostart, `${autostart}.off`);
   } else if (d.platform === "win32") {
-    for (const name of ["APXDaemon", "APXDesktop"])
+    for (const name of ["ColoniaDaemon", "ColoniaDesktop"])
       await d.run("reg", ["delete", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "/v", name, "/f"]);
     await d.run("powershell", [
       "-NoProfile",
       "-Command",
-      `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -match 'apx[\\\\/]src[\\\\/]host[\\\\/]daemon' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`,
+      `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -match 'colonia[\\\\/]src[\\\\/]host[\\\\/]daemon' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`,
     ]);
   }
-  // One started by hand (`apx daemon start`) has no service to stop.
+  // One started by hand (`colonia daemon start`) has no service to stop.
   if (d.platform !== "win32") await d.run("pkill", ["-f", V1_DAEMON]);
 }
 
-/** Removes v1's global `apx`; says what to run when that needs administrator rights. */
+/** Removes v1's global `colonia`; says what to run when that needs administrator rights. */
 async function removeV1Command(d: TakeoverDeps): Promise<string | undefined> {
   let left: string | undefined;
   const npm = await d.run("npm", ["ls", "-g", "--depth=0", V1_PACKAGE]);
@@ -77,51 +77,51 @@ async function removeV1Command(d: TakeoverDeps): Promise<string | undefined> {
 
 const quoteSh = (s: string) => `'${s.replaceAll("'", `'\\''`)}'`;
 
-/** Makes `apx` run this APX: the checkout's link, or a launcher next to the one install.sh writes. */
+/** Makes `colonia` run this Colonia: the checkout's link, or a launcher next to the one install.sh writes. */
 async function linkV2(d: TakeoverDeps): Promise<{ ok: boolean; detail: string }> {
   const { terminal: t } = d;
   if (t.checkout) {
     const linked = await d.run("pnpm", ["--dir", path.resolve(t.main, "../.."), "link", "--global"]);
     return linked.code === 0
-      ? { ok: true, detail: "apx runs this checkout" }
+      ? { ok: true, detail: "colonia runs this checkout" }
       : { ok: false, detail: `pnpm link failed: ${linked.out.trim().slice(-200)}` };
   }
   // An AppImage's files live in a folder that is gone once it closes: the install line gives a lasting command.
   if (t.appImage)
     return {
       ok: false,
-      detail: "for the apx command, run: curl -fsSL https://apxagent.app/install.sh | bash",
+      detail: "for the colonia command, run: curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash",
     };
   const node = t.electron ? "ELECTRON_RUN_AS_NODE=1 " : "";
   if (d.platform === "win32") {
-    const bin = path.join(d.home, ".apx", "v2", "app", "bin");
+    const bin = path.join(d.home, ".colonia", "v2", "app", "bin");
     fs.mkdirSync(bin, { recursive: true });
     const cmd = `@echo off\r\n${t.electron ? "set ELECTRON_RUN_AS_NODE=1\r\n" : ""}"${t.exe}" --disable-warning=ExperimentalWarning "${t.main}" %*\r\n`;
-    // apx2 too: it reaches this APX even where another apx comes first on the PATH.
-    for (const name of ["apx.cmd", "apx2.cmd"]) fs.writeFileSync(path.join(bin, name), cmd);
+    // colonia2 too: it reaches this Colonia even where another colonia comes first on the PATH.
+    for (const name of ["colonia.cmd", "colonia2.cmd"]) fs.writeFileSync(path.join(bin, name), cmd);
     await d.run("powershell", [
       "-NoProfile",
       "-Command",
       `$p = [Environment]::GetEnvironmentVariable('Path','User'); if (-not (($p -split ';') -contains '${bin}')) { [Environment]::SetEnvironmentVariable('Path', ('${bin};' + $p).TrimEnd(';'), 'User') }`,
     ]);
-    return { ok: true, detail: "apx runs this APX (open a new terminal)" };
+    return { ok: true, detail: "colonia runs this Colonia (open a new terminal)" };
   }
   const bin = path.join(d.home, ".local", "bin");
-  const file = path.join(bin, "apx");
+  const file = path.join(bin, "colonia");
   const alias = () => {
-    // apx2 too: it reaches this APX even where another apx (v1's) comes first on the PATH.
-    fs.rmSync(path.join(bin, "apx2"), { force: true });
-    fs.symlinkSync("apx", path.join(bin, "apx2"));
+    // colonia2 too: it reaches this Colonia even where another colonia (v1's) comes first on the PATH.
+    fs.rmSync(path.join(bin, "colonia2"), { force: true });
+    fs.symlinkSync("colonia", path.join(bin, "colonia2"));
   };
   // install.sh's own launcher already runs v2.
   if (fs.existsSync(file) && fs.readFileSync(file, "utf8").includes("written by install.sh")) {
     alias();
-    return { ok: true, detail: "apx runs this APX" };
+    return { ok: true, detail: "colonia runs this Colonia" };
   }
   fs.mkdirSync(bin, { recursive: true });
   fs.writeFileSync(
     file,
-    `#!/bin/sh\n# The APX command, written by the APX app.\n${node}exec ${quoteSh(t.exe)} --disable-warning=ExperimentalWarning ${quoteSh(t.main)} "$@"\n`,
+    `#!/bin/sh\n# The Colonia command, written by the Colonia app.\n${node}exec ${quoteSh(t.exe)} --disable-warning=ExperimentalWarning ${quoteSh(t.main)} "$@"\n`,
     { mode: 0o755 },
   );
   alias();
@@ -129,9 +129,9 @@ async function linkV2(d: TakeoverDeps): Promise<{ ok: boolean; detail: string }>
   for (const rc of [".zshrc", ".bashrc", ".profile"]) {
     const f = path.join(d.home, rc);
     if (fs.existsSync(f) && !fs.readFileSync(f, "utf8").includes(".local/bin"))
-      fs.appendFileSync(f, '\n# Added by APX\nexport PATH="$HOME/.local/bin:$PATH"\n');
+      fs.appendFileSync(f, '\n# Added by Colonia\nexport PATH="$HOME/.local/bin:$PATH"\n');
   }
-  return { ok: true, detail: "apx runs this APX (open a new terminal)" };
+  return { ok: true, detail: "colonia runs this Colonia (open a new terminal)" };
 }
 
 export async function takeOverV1(d: TakeoverDeps): Promise<TakeoverResult> {
@@ -145,8 +145,8 @@ export async function takeOverV1(d: TakeoverDeps): Promise<TakeoverResult> {
   const left = await removeV1Command(d);
   const link = await linkV2(d);
   const lines = [
-    stopped ? "APX v1's daemon is off and will not start at login" : "APX v1 still answers: quit it from its own app",
-    left ? `v1's apx needs administrator rights to go: ${left}` : "v1's apx is gone",
+    stopped ? "Colonia v1's daemon is off and will not start at login" : "Colonia v1 still answers: quit it from its own app",
+    left ? `v1's colonia needs administrator rights to go: ${left}` : "v1's colonia is gone",
     link.detail,
   ];
   return { ok: stopped && !left && link.ok, detail: lines.join(". ") };

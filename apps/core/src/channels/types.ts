@@ -9,7 +9,7 @@
 // - reactions out: set `caps.reactions` and `react`, so a closing "ok"/"gracias" can get an emoji (channel setting
 //   `closers`); set `Inbound.ref` when the id to react to is not `external_id`;
 // - presence (online / last seen) and avatars, where the platform shares them.
-import type { ChannelInfo } from "@apx/protocol";
+import type { ChannelInfo } from "@colonia/protocol";
 import type { Inbound, InboundAction, InboundReaction, Presentation } from "../domain/channels.ts";
 
 export type InboundFile = NonNullable<Inbound["files"]>[number];
@@ -123,9 +123,9 @@ export interface ChannelAdapter {
   typing?(conversation: string): Promise<void>;
   /** Puts the agent's emoji on a message (`ref`: the platform's id of it); "" takes it off. */
   react?(conversation: string, ref: string, emoji: string): Promise<void>;
-  /** Replaces the buttons under a message APX sent (`ref`: the platform's id of it); none takes them off. */
+  /** Replaces the buttons under a message Colonia sent (`ref`: the platform's id of it); none takes them off. */
   setButtons?(conversation: string, ref: string, buttons: Presentation["buttons"]): Promise<void>;
-  /** Takes a message APX sent out of the chat; fails when the platform no longer allows it. */
+  /** Takes a message Colonia sent out of the chat; fails when the platform no longer allows it. */
   remove?(conversation: string, ref: string): Promise<void>;
   /** The profile picture someone shows on the platform (none when hidden or not set). */
   avatar?(externalId: string): Promise<{ mime: string; data: Buffer } | undefined>;

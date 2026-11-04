@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, Icons, Skeleton } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, Icons, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { useT } from "../i18n/index.ts";

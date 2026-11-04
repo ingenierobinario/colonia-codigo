@@ -1,6 +1,6 @@
 # Agent templates
 
-What the Team screen's "Import" dialog offers, beside the owner's v1 vault (`~/.apx/agents`, read-only).
+What the Team screen's "Import" dialog offers, beside the owner's v1 vault (`~/.colonia/agents`, read-only).
 
 - A folder with `TEAM.md` is a team: its frontmatter gives the `name` and `description`, and every `<slug>.md` beside
   it is a member, written in the same format as `.apc/agents/<slug>.md`. A member without a `parent` inside the team

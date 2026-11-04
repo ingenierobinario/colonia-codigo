@@ -36,7 +36,7 @@ test("a line parses into tags, prefix, command and params, the trailing one with
     command: "PING",
     params: ["irc.example.org"],
   });
-  assert.deepEqual(parseIrcLine(":irc.example.org 001 apx :Welcome")?.params, ["apx", "Welcome"]);
+  assert.deepEqual(parseIrcLine(":irc.example.org 001 colonia :Welcome")?.params, ["colonia", "Welcome"]);
   assert.deepEqual(parseIrcLine(":s CAP * LS * :sasl")?.params, ["*", "LS", "*", "sasl"]);
   assert.equal(parseIrcLine(""), undefined);
   assert.equal(parseIrcLine("@only-tags"), undefined);
@@ -44,7 +44,7 @@ test("a line parses into tags, prefix, command and params, the trailing one with
 
 test("a line out escapes tags, puts a colon before a trailing param and never carries a line break", () => {
   assert.equal(ircLine("PRIVMSG", ["#acme", "hello world"]), "PRIVMSG #acme :hello world");
-  assert.equal(ircLine("NICK", ["apx"]), "NICK apx");
+  assert.equal(ircLine("NICK", ["colonia"]), "NICK colonia");
   assert.equal(ircLine("PRIVMSG", ["ana", ":)"]), "PRIVMSG ana ::)");
   assert.equal(ircLine("PRIVMSG", ["ana", ""]), "PRIVMSG ana :");
   assert.equal(
@@ -64,18 +64,18 @@ test("text splits by bytes at spaces, whole characters; formatting codes are dro
 });
 
 test("the secret is the server's address, the nick and an optional password", () => {
-  assert.deepEqual(ircSecret("ircs://irc.example.org:6697 apxbot s3cret"), {
+  assert.deepEqual(ircSecret("ircs://irc.example.org:6697 coloniabot s3cret"), {
     host: "irc.example.org",
     port: 6697,
     tls: true,
-    nick: "apxbot",
+    nick: "coloniabot",
     password: "s3cret",
   });
-  assert.deepEqual(ircSecret("irc://irc.example.org apx_bot"), {
+  assert.deepEqual(ircSecret("irc://irc.example.org colonia_bot"), {
     host: "irc.example.org",
     port: 6667,
     tls: false,
-    nick: "apx_bot",
+    nick: "colonia_bot",
   });
   assert.deepEqual(ircSecret("ircs://irc.example.org"), { host: "irc.example.org", port: 6697, tls: true });
   assert.deepEqual(ircSecret("https://irc.example.org 1bad"), {});
@@ -93,12 +93,12 @@ describe("irc channel", () => {
   const texts = (to: string) => irc.sentTo(to).map((s) => s.text);
 
   before(async () => {
-    irc = await fakeIrc({ taken: ["apxbot"] });
+    irc = await fakeIrc({ taken: ["coloniabot"] });
     env = await startCore({ llm, roomBurstMs: 40, channelAdapters: { irc: ircAdapter } });
     await env.client.call("channels.set", {
       id: "irc",
       channel: { type: "irc", agent_id: "superagent", rooms: ROOMS },
-      token: `${irc.url} apxbot`,
+      token: `${irc.url} coloniabot`,
     });
     await waitFor(
       async () => (await env.client.call("channels.list", {})).channels[0]?.status === "running",
@@ -112,10 +112,10 @@ describe("irc channel", () => {
   });
 
   test("a nick in use gets an underscore, and the listed room is joined", async () => {
-    assert.equal(irc.nick(), "apxbot_");
+    assert.equal(irc.nick(), "coloniabot_");
     await waitFor(() => irc.joined.has("#acme"), "joined #acme");
     assert.ok(irc.lines.includes("CAP REQ :message-tags account-tag"));
-    assert.equal((await env.client.call("channels.list", {})).channels[0]?.account, "apxbot_");
+    assert.equal((await env.client.call("channels.list", {})).channels[0]?.account, "coloniabot_");
   });
 
   test("the owner pairs by private message and is answered there", async () => {
@@ -134,14 +134,14 @@ describe("irc channel", () => {
     const lines = texts("owner").slice(before_);
     assert.ok(lines.length > 1);
     for (const l of lines)
-      assert.ok(Buffer.byteLength(`:apxbot_!uuuuuuuuuu@${"h".repeat(63)} PRIVMSG owner :${l}\r\n`) <= 512);
+      assert.ok(Buffer.byteLength(`:coloniabot_!uuuuuuuuuu@${"h".repeat(63)} PRIVMSG owner :${l}\r\n`) <= 512);
   });
 
   test("in the room only an address to the bot is answered, in the room, as a reply to it", async () => {
     irc.message("ana", "anyone tried the beta?", { room: "#acme" });
     await pause(200);
     assert.equal(texts("#acme").length, 0, "not called, not answered");
-    irc.message("ana", "apxbot_: what is Acme Notes?", { room: "#ACME" });
+    irc.message("ana", "coloniabot_: what is Acme Notes?", { room: "#ACME" });
     await waitFor(() => texts("#acme").length === 1, "answered when addressed");
     const room = env.core.store.threads.byConversation("irc", "#acme");
     const kept = env.core.store.messages
@@ -153,7 +153,7 @@ describe("irc channel", () => {
   });
 
   test("an unlisted room is offered in the rooms picker and never answered", async () => {
-    irc.message("ana", "apxbot_: hello", { room: "#northwind" });
+    irc.message("ana", "coloniabot_: hello", { room: "#northwind" });
     await waitFor(
       async () =>
         (await env.client.call("channels.rooms", { channel: "irc" })).rooms.some((r) => r.id === "#northwind"),
@@ -168,17 +168,17 @@ test("with a password and SASL offered, the bot logs in by SASL PLAIN and never 
   const irc = await fakeIrc({ password: "s3cret-pass", sasl: true });
   const adapter = ircAdapter(
     { id: "irc", type: "irc" } as Parameters<typeof ircAdapter>[0],
-    `${irc.url} apx s3cret-pass`,
+    `${irc.url} colonia s3cret-pass`,
   );
   const ac = new AbortController();
   const io = { receive() {}, action() {}, status() {}, signal: ac.signal };
-  assert.deepEqual(await adapter.start(io), { account: "apx" });
+  assert.deepEqual(await adapter.start(io), { account: "colonia" });
   assert.ok(irc.lines.includes("AUTHENTICATE PLAIN"));
   assert.ok(!irc.lines.some((l) => l.startsWith("PASS")));
   ac.abort();
   await adapter.stop();
 
-  const wrong = ircAdapter({ id: "irc", type: "irc" } as Parameters<typeof ircAdapter>[0], `${irc.url} apx nope-nope`);
+  const wrong = ircAdapter({ id: "irc", type: "irc" } as Parameters<typeof ircAdapter>[0], `${irc.url} colonia nope-nope`);
   await assert.rejects(wrong.start({ ...io, signal: new AbortController().signal }), /refused the bot's password/);
   await wrong.stop();
   await irc.close();

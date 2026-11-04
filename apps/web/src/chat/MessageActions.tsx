@@ -1,6 +1,6 @@
 // The controls under one bubble: copy its words, quote or answer it (in a task), fork the chat from it, read it aloud.
-import type { Message as Msg, Thread } from "@apx/protocol";
-import { IconButton, Icons, Spinner } from "@apx/ui";
+import type { Message as Msg, Thread } from "@colonia/protocol";
+import { IconButton, Icons, Spinner } from "@colonia/ui";
 import { type ReactNode, useContext, useEffect, useState } from "react";
 import { DeliveryTicks } from "../channels/MessageMarks.tsx";
 import { shortWhen } from "../common/format.ts";

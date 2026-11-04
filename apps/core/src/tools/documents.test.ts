@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { DOCUMENT_MAX_BYTES } from "@apx/protocol/client";
+import { DOCUMENT_MAX_BYTES } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { mediaTools } from "./media.ts";
 import { allowedTools } from "./policy.ts";

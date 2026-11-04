@@ -1,5 +1,5 @@
-import type { Thread } from "@apx/protocol";
-import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, Spinner } from "@apx/ui";
+import type { Thread } from "@colonia/protocol";
+import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, Spinner } from "@colonia/ui";
 import { useState } from "react";
 import { AgentFace } from "../common/AgentFace.tsx";
 import { shortWhen } from "../common/format.ts";

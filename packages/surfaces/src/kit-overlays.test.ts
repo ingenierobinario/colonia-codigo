@@ -14,10 +14,10 @@ type Place = (
 
 /** The overlays script run without a DOM, after a stand-in main kit: only its pure helpers load. */
 function loadPlace(): Place {
-  const window = { APX: { kit: "1.3.0" } as { kit: string; place?: Place } };
-  vm.runInNewContext(fs.readFileSync(new URL("./kit/apx-kit-overlays.js", import.meta.url), "utf8"), { window });
-  if (!window.APX.place) throw new Error("APX.place missing");
-  return window.APX.place;
+  const window = { Colonia: { kit: "1.3.0" } as { kit: string; place?: Place } };
+  vm.runInNewContext(fs.readFileSync(new URL("./kit/colonia-kit-overlays.js", import.meta.url), "utf8"), { window });
+  if (!window.Colonia.place) throw new Error("Colonia.place missing");
+  return window.Colonia.place;
 }
 
 const place = loadPlace();

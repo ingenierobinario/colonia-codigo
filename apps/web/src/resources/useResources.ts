@@ -1,4 +1,4 @@
-import type { ExtensionInfo } from "@apx/protocol";
+import type { ExtensionInfo } from "@colonia/protocol";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import {

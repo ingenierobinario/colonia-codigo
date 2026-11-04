@@ -11,7 +11,7 @@ import { expect, test } from "./kit.ts";
 /** A desktop on stdin/stdout: version, security "none", then the server's init; the first one ends after a moment. */
 const DESKTOP = `#!/usr/bin/env node
 const fs = require("node:fs");
-const count = process.env.APX_VIEWER_COUNT;
+const count = process.env.COLONIA_VIEWER_COUNT;
 const n = Number(fs.existsSync(count) ? fs.readFileSync(count, "utf8") : "0") + 1;
 fs.writeFileSync(count, String(n));
 process.stdout.write("RFB 003.008\\n");
@@ -28,7 +28,7 @@ process.stdin.on("data", (chunk) => {
     init.writeUInt16BE(64, 2);
     init.set([32, 24, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0], 4);
     init.writeUInt32BE(3, 20);
-    init.write("APX", 24);
+    init.write("Colonia", 24);
     process.stdout.write(init);
     if (n === 1) setTimeout(() => process.exit(0), 300);
   }
@@ -37,11 +37,11 @@ process.stdin.on("end", () => process.exit(0));
 `;
 
 test("a viewer that drops reconnects by itself and shows the agent's screen, never the error", async ({ page }) => {
-  const dir = tempDir("apx-viewer-").path;
+  const dir = tempDir("colonia-viewer-").path;
   const desktop = path.join(dir, "desktop.cjs");
   const count = path.join(dir, "count");
   fs.writeFileSync(desktop, DESKTOP, { mode: 0o755 });
-  process.env.APX_VIEWER_COUNT = count;
+  process.env.COLONIA_VIEWER_COUNT = count;
   const lifecycle = createVmLifecycle({
     supported: true,
     installed: () => true,
@@ -57,7 +57,7 @@ test("a viewer that drops reconnects by itself and shows the agent's screen, nev
       instance: "missing",
       lifecycle,
       executable: () => desktop,
-      env: { ...process.env, APX_VIEWER_COUNT: count },
+      env: { ...process.env, COLONIA_VIEWER_COUNT: count },
     },
   });
   const viewers = () => Number(fs.existsSync(count) ? fs.readFileSync(count, "utf8") : "0");

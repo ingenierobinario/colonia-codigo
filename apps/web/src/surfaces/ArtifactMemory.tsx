@@ -1,5 +1,5 @@
-import type { ArtifactMemory as Memory, SurfaceSummary } from "@apx/protocol";
-import { Button, Checkbox, Dialog, IconButton, Icons, SettingRow, Skeleton, Tag } from "@apx/ui";
+import type { ArtifactMemory as Memory, SurfaceSummary } from "@colonia/protocol";
+import { Button, Checkbox, Dialog, IconButton, Icons, SettingRow, Skeleton, Tag } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { formatBytes, formatNumber } from "../common/format.ts";
 import { artifactMemory, clearArtifactMemory, exportArtifact, type MemoryPart } from "../data/artifacts.ts";

@@ -24,7 +24,7 @@ const probe = defineTool({
 });
 
 test("a question still waiting in the app after a restart follows the owner to Telegram once, when its time comes", async () => {
-  const home = tempDir("apx-follow-up-").path;
+  const home = tempDir("colonia-follow-up-").path;
   const tg = await fakeTelegram(TOKEN);
   // One clock across the restarts: the owner's two minutes pass when the test says so.
   const timers = manualTimers();

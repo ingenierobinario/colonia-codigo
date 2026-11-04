@@ -10,7 +10,7 @@ if (!linux) throw new Error("Linux x64 has a computer host");
 const host = linux;
 
 test("a tampered Lima download never installs or leaves partial files", async () => {
-  const root = tempDir("apx-lima-install-").path;
+  const root = tempDir("colonia-lima-install-").path;
   const download: typeof fetch = async () => new Response("tampered archive");
   try {
     await assert.rejects(
@@ -24,7 +24,7 @@ test("a tampered Lima download never installs or leaves partial files", async ()
 });
 
 test("a canceled runtime download cleans its staging directory", async () => {
-  const root = tempDir("apx-lima-cancel-").path;
+  const root = tempDir("colonia-lima-cancel-").path;
   const controller = new AbortController();
   const download: typeof fetch = async () => {
     controller.abort();

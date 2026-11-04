@@ -1,4 +1,4 @@
-import { AgentAvatar, ApxProvider, Message, MessageMeta, StepList } from "@apx/ui";
+import { AgentAvatar, ColoniaProvider, Message, MessageMeta, StepList } from "@colonia/ui";
 
 const thread = { width: 560, display: "flex", flexDirection: "column" as const };
 
@@ -44,7 +44,7 @@ export function RichBody() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 600 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 600 }}>
       <Message
         avatar={<AgentAvatar name="Roby" blob="noche" size={22} />}
         meta={<MessageMeta agent="Roby" model="codex:gpt-6.1-sol" effort="medium" />}
@@ -53,6 +53,6 @@ export function ClassicLook() {
         <p>Ahora sí dejé la ejecución corriendo con Albert sobre la misma tarea, sin publicar.</p>
       </Message>
       <Message from="user">¿seguís?</Message>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

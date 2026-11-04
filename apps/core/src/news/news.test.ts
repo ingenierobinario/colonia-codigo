@@ -21,7 +21,7 @@ const SOME_NEWS = NEWS.filter((e) =>
 );
 
 function setup(o: { entries?: readonly NewsEntry[]; models?: string[]; fail?: boolean; noGoogle?: boolean } = {}) {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-news-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-news-"));
   const db = openDb(home);
   const store = createStore(db, createBus());
   seed(store, "Roby");
@@ -295,7 +295,7 @@ test("without an API model one line goes out in English: the first in bold, the 
     assert.equal(r.voiced, false);
     assert.equal(llm.calls.length, 0);
     const text = notices[0]?.body.text ?? "";
-    assert.match(text, /^APX has something new for you: \*\*Widgets remember and can become apps\*\*/);
+    assert.match(text, /^Colonia has something new for you: \*\*Widgets remember and can become apps\*\*/);
     assert.match(text, /Update my widgets, or Make one an app/);
     assert.doesNotMatch(text, /\n- /, "no list: the Help menu has the rest");
   } finally {
@@ -340,9 +340,9 @@ test("Google news reach an owner without Calendar; mail alerts only a secretary 
     assert.equal(applies("google"), false, "Calendar already connected: nothing to tell");
 
     store.settings.set("google_account:gmail", "owner@example.com");
-    store.settings.set("google_client:gmail", "apx");
+    store.settings.set("google_client:gmail", "colonia");
     store.settings.write("profile", { id: "secretary", values: {} });
-    assert.equal(applies("mail-alerts"), false, "APX's sign-in only sends mail");
+    assert.equal(applies("mail-alerts"), false, "Colonia's sign-in only sends mail");
     store.settings.set("google_client:gmail", "own");
     assert.equal(applies("mail-alerts"), true);
     store.settings.write("profile", { id: null, values: {} });

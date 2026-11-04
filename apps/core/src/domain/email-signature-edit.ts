@@ -1,4 +1,4 @@
-import { type EmailSignatureEntry, EmailSignatures } from "@apx/protocol";
+import { type EmailSignatureEntry, EmailSignatures } from "@colonia/protocol";
 import { badRequest, conflict } from "../errors.ts";
 import { readSignatures, sameSignatureKey } from "./email-signature-settings.ts";
 import type { Store } from "./store.ts";

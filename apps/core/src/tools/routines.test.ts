@@ -45,7 +45,7 @@ async function ask(text: string, decision?: "approve" | "deny"): Promise<string>
 const byName = async (name: string) =>
   (await env.client.call("routines.list", {})).routines.find((r) => r.name === name);
 
-test("routine_list shows global and project routines with the id apx routines takes", async () => {
+test("routine_list shows global and project routines with the id colonia routines takes", async () => {
   const { project } = await env.client.call("projects.create", { name: "Acme" });
   const global = await env.client.call("routines.set", {
     name: "weather-acme",

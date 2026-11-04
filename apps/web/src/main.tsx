@@ -1,4 +1,4 @@
-import "@apx/ui/styles.css";
+import "@colonia/ui/styles.css";
 import "./app.css";
 import "./styles/inbox.css";
 import "./styles/chat.css";
@@ -19,7 +19,7 @@ import { isLanguage, startI18n } from "./i18n/index.ts";
 // A newer panel replaced this page's lazy parts (an update, a rebuild): load it again instead of a blank screen. Not
 // twice in a few seconds: a panel that keeps failing shows its error.
 window.addEventListener("vite:preloadError", (e) => {
-  const key = "apx.preloadReload";
+  const key = "colonia.preloadReload";
   try {
     if (Date.now() - Number(sessionStorage.getItem(key) ?? 0) < 10_000) return;
     sessionStorage.setItem(key, String(Date.now()));
@@ -39,7 +39,7 @@ if (!root) throw new Error("#root missing");
 // The language's texts arrive first (one small chunk): the panel never flashes keys or another language.
 void startI18n().then(async () => {
   const Preview =
-    import.meta.env.DEV && import.meta.env.VITE_APX_INBOX_PREVIEW === "1"
+    import.meta.env.DEV && import.meta.env.VITE_COLONIA_INBOX_PREVIEW === "1"
       ? (await import("./inbox/InboxPreview.tsx")).default
       : undefined;
   createRoot(root).render(<StrictMode>{Preview ? <Preview /> : <App />}</StrictMode>);

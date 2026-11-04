@@ -1,6 +1,6 @@
-import type { Agent } from "@apx/protocol";
-import { randomAgentName } from "@apx/protocol/client";
-import { Button, Dialog, Field, IconButton, Icons, Input, Textarea } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { randomAgentName } from "@colonia/protocol/client";
+import { Button, Dialog, Field, IconButton, Icons, Input, Textarea } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { slugOf } from "../../common/slug.ts";
 import { client } from "../../data/client.ts";
@@ -44,7 +44,7 @@ export function DeleteAgentDialog({ agent, onClose }: { agent: Agent; onClose():
 }
 
 /**
- * A new agent: its name (a person's, from APX's generator, none the crew uses), what it does and its instructions;
+ * A new agent: its name (a person's, from Colonia's generator, none the crew uses), what it does and its instructions;
  * the rest is edited afterwards like any other.
  */
 export function NewAgentDialog({

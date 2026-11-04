@@ -8,9 +8,9 @@ if pgrep -u "$(id -u)" Xtigervnc >/dev/null; then exit 0; fi
 umask 077
 export DISPLAY="$display" XAUTHORITY="$HOME/.Xauthority"
 xauth -q -f "$XAUTHORITY" add "$display" . "$(mcookie)"
-socket="$XDG_RUNTIME_DIR/apx-vnc.sock"
+socket="$XDG_RUNTIME_DIR/colonia-vnc.sock"
 rm -f "$socket"
 Xtigervnc "$display" -auth "$XAUTHORITY" -geometry 1440x900 -depth 24 -localhost yes -rfbunixpath "$socket" \
-  -rfbunixmode 0600 -SecurityTypes None -AlwaysShared -desktop 'APX Computer' > "$HOME/.vnc-screen.log" 2>&1 &
+  -rfbunixmode 0600 -SecurityTypes None -AlwaysShared -desktop 'Colonia Computer' > "$HOME/.vnc-screen.log" 2>&1 &
 sleep 1
 exec dbus-run-session -- startxfce4 > "$HOME/.xfce.log" 2>&1

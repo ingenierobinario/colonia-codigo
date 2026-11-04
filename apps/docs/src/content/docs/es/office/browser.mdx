@@ -39,7 +39,7 @@ por chat.
 
 ## Ejecución de JavaScript aprobada
 
-En builds de staging todavía no publicados, el agente puede usar `browser_evaluate` en su pestaña actual de APX.
+En builds de staging todavía no publicados, el agente puede usar `browser_evaluate` en su pestaña actual de Colonia.
 Pasá una expresión JavaScript en `script`, o un `path` local `.js` con el SHA-256 de sus bytes exactos en `sha256`.
 Se respetan los permisos habituales de carpetas; no se cargan scripts desde URLs. Los chats en VM aceptan solo código
 inline, nunca archivos del host. Para sentencias, usá una IIFE async
@@ -68,9 +68,9 @@ La protección de campos sensibles de la herramienta de escritura **no es un san
 que maneje contraseñas, códigos 2FA ni tarjetas. Se mantienen el perfil y el control/handoff de la pestaña. Este método
 no se expone a clientes MCP externos.
 
-APX espera promesas y devuelve texto JSON no confiable (hasta 16.000 caracteres); undefined pasa a null, bigint a texto,
+Colonia espera promesas y devuelve texto JSON no confiable (hasta 16.000 caracteres); undefined pasa a null, bigint a texto,
 y los resultados circulares o demasiado grandes fallan. El límite del script es 64.000 caracteres (archivos: bytes).
-APX deja de esperar la evaluación de Chromium a los 7 segundos. Un timeout **no cancela ni revierte**:
+Colonia deja de esperar la evaluación de Chromium a los 7 segundos. Un timeout **no cancela ni revierte**:
 timers, solicitudes u otros efectos pueden continuar. Verificá la página antes de reintentar, especialmente un envío.
 Esto agrega una herramienta para agentes, no un panel DevTools ni un puerto de depuración. Desktop debe cargar el build
 nuevo compatible; reiniciar solo el core no alcanza.
@@ -88,7 +88,7 @@ del propio agente):
 
 ## Importar tus sesiones
 
-Si ya iniciaste sesión en un sitio desde tu propio navegador, no hace falta volver a hacerlo en el de APX.
+Si ya iniciaste sesión en un sitio desde tu propio navegador, no hace falta volver a hacerlo en el de Colonia.
 **Configuración › Navegador** copia tus sesiones al perfil compartido: elegí un navegador de origen (Chrome, Brave,
 Arc, Edge, Zen o Firefox), filtrá los dominios e importá solo los que necesitás. Tu navegador puede pedirte permiso;
 los valores nunca salen de tu máquina.
@@ -101,30 +101,30 @@ pestaña.
 
 Cuando ninguna app de escritorio presta un navegador (un servidor, o una Mac con la app cerrada), el core arranca su
 propio Chrome, Chromium o Edge **headless**, sin ventana, en el primer pedido de navegador. Navega igual, pero ahí
-nadie puede tomar el control y no se usan tus sesiones. `APX_HEADLESS=off` lo apaga; `APX_CHROME` lo apunta a un
+nadie puede tomar el control y no se usan tus sesiones. `COLONIA_HEADLESS=off` lo apaga; `COLONIA_CHROME` lo apunta a un
 navegador específico.
 
 ## Desde la terminal
 
-`apx browser` maneja el mismo navegador desde tu shell, útil para scripts y para ver lo mismo que ve un agente.
+`colonia browser` maneja el mismo navegador desde tu shell, útil para scripts y para ver lo mismo que ve un agente.
 
-<Terminal command="apx --help">{`apx browser tabs
-apx browser open <url> [--profile shared|incognito|agent:<id>] [--by <agent>]
-apx browser nav <tab> <url>
-apx browser snapshot <tab>
-apx browser click <tab> <ref>
-apx browser type <tab> <ref> <text> [--submit]
-apx browser shot <tab> <file.jpg>
-apx browser close <tab>
-apx browser control <tab> user|idle|done
-apx browser cookies                          List browsers whose sessions can be imported
-apx browser cookies <source> [filter]        Domains with cookies (counts only)
-apx browser import <source> <domain,…> [--profile shared|agent:<id>]`}</Terminal>
+<Terminal command="colonia --help">{`colonia browser tabs
+colonia browser open <url> [--profile shared|incognito|agent:<id>] [--by <agent>]
+colonia browser nav <tab> <url>
+colonia browser snapshot <tab>
+colonia browser click <tab> <ref>
+colonia browser type <tab> <ref> <text> [--submit]
+colonia browser shot <tab> <file.jpg>
+colonia browser close <tab>
+colonia browser control <tab> user|idle|done
+colonia browser cookies                          List browsers whose sessions can be imported
+colonia browser cookies <source> [filter]        Domains with cookies (counts only)
+colonia browser import <source> <domain,…> [--profile shared|agent:<id>]`}</Terminal>
 
 `snapshot` lista los elementos de la página con referencias que toman `click` y `type`. `control` define quién tiene
 la pestaña. `cookies` muestra solo cantidades, nunca valores.
 
-Las apps de afuera, como Claude Code, también pueden usar este navegador, con `apx mcp`. Mirá
+Las apps de afuera, como Claude Code, también pueden usar este navegador, con `colonia mcp`. Mirá
 [Clientes externos](/es/extend/outside-clients/).
 
 ## Uso de la computadora en macOS

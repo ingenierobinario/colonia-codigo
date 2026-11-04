@@ -210,7 +210,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     sent,
     phone,
     resendAsked,
-    /** The phone holds a message's real content (APX had kept only a placeholder for it). */
+    /** The phone holds a message's real content (Colonia had kept only a placeholder for it). */
     phoneKeeps(id: string, content: object) {
       const m = phone.history.find((x) => x.key.id === id);
       if (m) m.message = content as WaContent;

@@ -1,5 +1,5 @@
-// Google Drive as APX tools (see tools/google.ts): files come back as outside data, since other people write them.
-// Writing a Doc of APX's own needs no OK; sharing one speaks to other people and asks.
+// Google Drive as Colonia tools (see tools/google.ts): files come back as outside data, since other people write them.
+// Writing a Doc of Colonia's own needs no OK; sharing one speaks to other people and asks.
 import { z } from "zod";
 import { driveApi, KINDS, type Kind } from "../integrations/drive.ts";
 import type { Google } from "../integrations/google.ts";
@@ -17,7 +17,7 @@ export function driveTools(g: Google): Tool[] {
     defineTool({
       name: "drive_search",
       description:
-        "Find files in the owner's Google Drive by words in their name or text (without q: the most recently changed). With APX's own sign-in it sees only the files APX wrote.",
+        "Find files in the owner's Google Drive by words in their name or text (without q: the most recently changed). With Colonia's own sign-in it sees only the files Colonia wrote.",
       args: z.object({
         q: z.string().max(200).optional(),
         kind: z.enum(Object.keys(KINDS) as [Kind, ...Kind[]]).optional(),
@@ -50,7 +50,7 @@ export function driveTools(g: Google): Tool[] {
     defineTool({
       name: "drive_write_doc",
       description:
-        "Write a Google Doc in the owner's Drive from plain text: a new one, or with id one APX wrote before (its whole text is replaced). Returns its link.",
+        "Write a Google Doc in the owner's Drive from plain text: a new one, or with id one Colonia wrote before (its whole text is replaced). Returns its link.",
       args: z.object({
         id: FileId.optional(),
         title: z.string().max(200).optional().describe("required for a new Doc"),
@@ -69,7 +69,7 @@ export function driveTools(g: Google): Tool[] {
     defineTool({
       name: "drive_share",
       description:
-        "Share a file APX wrote in the owner's Drive (from drive_write_doc) with people by email; Google emails them the link.",
+        "Share a file Colonia wrote in the owner's Drive (from drive_write_doc) with people by email; Google emails them the link.",
       args: z.object({
         id: FileId,
         emails: Emails.min(1),

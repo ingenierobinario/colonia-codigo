@@ -1,7 +1,7 @@
 // Editing one of the owner's messages and asking again for an answer: the chat goes back to that point and sends
 // again, so what came after it is removed (asked first when there is any).
-import type { Message as Msg, Thread } from "@apx/protocol";
-import { Button, Dialog, IconButton, Icons, Message, Textarea } from "@apx/ui";
+import type { Message as Msg, Thread } from "@colonia/protocol";
+import { Button, Dialog, IconButton, Icons, Message, Textarea } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import { isWorking } from "../data/identity.ts";
 import { rewindThread } from "../data/threadAdmin.ts";

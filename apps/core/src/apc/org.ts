@@ -1,8 +1,8 @@
-// A project's areas and roles: `.apc/organization.json`, the same file APX v1 wrote. Read leniently (v1 wrote nulls,
+// A project's areas and roles: `.apc/organization.json`, the same file Colonia v1 wrote. Read leniently (v1 wrote nulls,
 // a hand edit may break one entry): an entry that does not fit is skipped, not the whole file.
 import fs from "node:fs";
 import path from "node:path";
-import { OrgArea, type Organization, OrgRole } from "@apx/protocol";
+import { OrgArea, type Organization, OrgRole } from "@colonia/protocol";
 import { writeAtomic } from "../paths.ts";
 import { withoutBom } from "./read.ts";
 

@@ -1,4 +1,4 @@
-// Plain values every client may need, with no zod: the browser imports these through `@apx/protocol/client`
+// Plain values every client may need, with no zod: the browser imports these through `@colonia/protocol/client`
 // and never loads the schema registry (the core validates; see client.ts).
 
 export const PROTOCOL_VERSION = 1;
@@ -36,7 +36,7 @@ export const FILE_PAYLOAD_BYTES =
   64 * 1024;
 
 /**
- * Model calls a turn on APX's own loop may make before it must answer: a long piece of work fits. A routine may set
+ * Model calls a turn on Colonia's own loop may make before it must answer: a long piece of work fits. A routine may set
  * its own; the panel shows this as its default (DECISIONS.md#d-116).
  */
 export const TURN_STEPS = 150;
@@ -306,17 +306,17 @@ export function randomAgentName(avoid: string | readonly string[] = []): string 
 export function pairingLink(p: { code: string; urls: readonly string[]; thread?: string }): string {
   const q = new URLSearchParams([["c", p.code], ...p.urls.map((u) => ["u", u] as [string, string])]);
   if (p.thread) q.set("t", p.thread);
-  return `apx://pair?${q.toString()}`;
+  return `colonia://pair?${q.toString()}`;
 }
 
 /** Most a widget's state may hold, as JSON characters. */
 export const SURFACE_STATE_MAX = 64_000;
 
 /**
- * An artifact's file name ends in this, widget or app alike (the kind is in its manifest). `.apxapp` and `.apxext` are
+ * An artifact's file name ends in this, widget or app alike (the kind is in its manifest). `.coloniaapp` and `.coloniaext` are
  * kept for the marketplace's packaged apps and extensions. See DECISIONS.md#d-118.
  */
-export const ARTIFACT_FILE_EXT = ".apxart";
+export const ARTIFACT_FILE_EXT = ".coloniaart";
 
 /** How long before an event its reminder comes, in minutes: from 5 up to a week ahead. */
 export const CALENDAR_LEAD = { min: 5, max: 7 * 24 * 60, default: 30 } as const;

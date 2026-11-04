@@ -6,7 +6,7 @@ import { expect, open, rpc, test } from "./kit.ts";
 
 test("a project's tabs count its agents and chats, and its settings rename it and set its kind", async ({ page }) => {
   await rpc("setup.finish", {});
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-settings-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-settings-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
   fs.mkdirSync(path.join(repo, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(repo, ".apc", "agents", "boss.md"), "---\nname: Boss\nrole: Orchestrator\n---\n\nLead.\n");
@@ -24,12 +24,12 @@ test("a project's tabs count its agents and chats, and its settings rename it an
   await dialog.getByLabel("Nombre").fill("Northwind");
   await dialog.getByRole("combobox", { name: "Tipo" }).click();
   await page.getByRole("option", { name: /Empresa/ }).click();
-  // How far its agents go on their own: APX keeps it, the folder never does. The five modes, in the owner's order.
+  // How far its agents go on their own: Colonia keeps it, the folder never does. The five modes, in the owner's order.
   await dialog.getByRole("combobox", { name: "Modo de permisos de los agentes" }).click();
   await expect(page.getByRole("option")).toHaveText([/^Manual/, /^Auto/, /^Acepta ediciones/, /^Plan/, /^Total/]);
   await page.getByRole("option", { name: /Acepta ediciones/ }).click();
   // Another project arriving refreshes the list while the dialog is open: what was typed stays.
-  const other = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-settings-other-")));
+  const other = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-settings-other-")));
   fs.writeFileSync(path.join(other, "AGENTS.md"), "# Other\n");
   const refreshed = page.waitForResponse((r) => r.url().endsWith("/rpc/projects.list"));
   const second = (await rpc<{ project: { id: string } }>("projects.register", { path: other })).project.id;

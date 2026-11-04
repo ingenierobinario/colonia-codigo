@@ -1,7 +1,7 @@
 // A task an agent was working on can stop with nobody on it: a result nobody picked up, a turn that ended without
 // closing it or saying what it waits for. The office clock finds these from the store alone (no model call), asks the
 // agent once to go on, and tells the owner if it stops again.
-import type { Task, Thread } from "@apx/protocol";
+import type { Task, Thread } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { noticeTaskStalled } from "../domain/task-attention.ts";
@@ -88,7 +88,7 @@ export function reviveStalled(store: Store, admit: AdmitFn, now: Date): { revive
           type: "notice",
           level: "info",
           code: "task.stalled",
-          text: "Nothing was running on this task: APX asked the agent to go on or say what it waits for.",
+          text: "Nothing was running on this task: Colonia asked the agent to go on or say what it waits for.",
         },
       ],
     });

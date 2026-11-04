@@ -1,4 +1,4 @@
-import type { EngineUsageReport } from "@apx/protocol";
+import type { EngineUsageReport } from "@colonia/protocol";
 
 /** Cache failures too: repeated panel opens must not launch another account probe. */
 export function cachedEngineUsage(

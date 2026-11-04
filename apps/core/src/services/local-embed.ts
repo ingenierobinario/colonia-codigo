@@ -1,5 +1,5 @@
-// Memory by meaning on this machine: Ollama (when it runs here) has the embedding models; APX lists them, says which
-// fits the machine and pulls it through Ollama's own API. Ollama itself is never installed by APX.
+// Memory by meaning on this machine: Ollama (when it runs here) has the embedding models; Colonia lists them, says which
+// fits the machine and pulls it through Ollama's own API. Ollama itself is never installed by Colonia.
 import os from "node:os";
 import { errorMessage } from "../errors.ts";
 

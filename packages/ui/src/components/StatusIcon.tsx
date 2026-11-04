@@ -12,7 +12,7 @@ export interface StatusIconProps {
 
 /** Tiny state glyph for steps and tool calls: ✓ done, spinner running, ✕ failed, ○ pending. */
 export function StatusIcon({ status, size = 14, className }: StatusIconProps) {
-  const cls = cx("apx-status", `is-${status}`, className);
+  const cls = cx("colonia-status", `is-${status}`, className);
   if (status === "running")
     return (
       <span className={cls}>

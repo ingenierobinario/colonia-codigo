@@ -170,7 +170,7 @@ export const enSetup = {
   "setup.project.title": "Where does",
   "setup.project.titleGreen": "your crew work?",
   "setup.project.body":
-    "Default is your crew's general space: it uses no folder of yours, and its agents work in Colonia's own folder (~/.apx/v2/work). Your v1 projects come with their folders. Add a folder of yours now if you like.",
+    "Default is your crew's general space: it uses no folder of yours, and its agents work in Colonia's own folder (~/.colonia/v2/work). Your v1 projects come with their folders. Add a folder of yours now if you like.",
   "setup.project.default": "Your base project · works in Colonia's folder · always there",
   "setup.project.baseName": "Name of the base project",
   "setup.project.baseHint": "It can stay Default. A company? Make it one and import its executive team later.",
@@ -178,7 +178,7 @@ export const enSetup = {
   "setup.project.folderBody": "A repo or a folder of yours. Agents read and edit there.",
   "setup.project.later": "Use Colonia's folder",
   "setup.project.laterBody":
-    "Choose nothing: your crew works in Colonia's folder (~/.apx/v2/work). You can add folders later.",
+    "Choose nothing: your crew works in Colonia's folder (~/.colonia/v2/work). You can add folders later.",
   "setup.project.pick": "Choose folder",
   "setup.project.pathPlaceholder": "/path/to/your/project",
   "setup.project.plain": "It is a plain folder: an AGENTS.md naming it is written there.",
@@ -188,11 +188,11 @@ export const enSetup = {
     "Your crew lives in {home} and in each project's .apc/. Everything can be changed later in Settings.",
   "setup.done.opening": "Opening your chat with {name}…",
   "setup.done.takeOverSkip": "Not now",
-  "setup.done.takeOverDo": "Use v2 as apx",
-  "setup.done.takeOverDone": "Done: apx is now v2.",
-  "setup.done.takeOver": "Make apx this version",
+  "setup.done.takeOverDo": "Use v2 as colonia",
+  "setup.done.takeOverDone": "Done: colonia is now v2.",
+  "setup.done.takeOver": "Make colonia this version",
   "setup.done.takeOverBody":
-    "While v1 is installed, the apx command is v1's. One click makes it this version. Your v1 files stay in ~/.apx; v1's own commands (like apx company) stop being there.",
+    "While v1 is installed, the colonia command is v1's. One click makes it this version. Your v1 files stay in ~/.colonia; v1's own commands (like colonia company) stop being there.",
   "setup.preview.engines": "ENGINES",
   "setup.preview.memory": "MEMORY",
   "setup.preview.channels": "CHANNELS",
@@ -205,7 +205,7 @@ export const enSetup = {
   "pair.title": "Pair this",
   "pair.titleEnd": "device.",
   "pair.body":
-    "This Colonia asks to pair this browser or computer before it opens. Get a code in Colonia › Settings › Connections › Devices on the machine that runs it, or with apx pair on a server.",
+    "This Colonia asks to pair this browser or computer before it opens. Get a code in Colonia › Settings › Connections › Devices on the machine that runs it, or with colonia pair on a server.",
   "pair.code": "Pairing code",
   "pair.placeholder": "ABCD2345",
   "pair.submit": "Pair",
@@ -261,7 +261,7 @@ export const enSetup = {
   "connect.urlLabel": "Colonia address",
   "connect.sshLabel": "Server (user@server)",
   "connect.urlHint":
-    "Its Tailscale one, for example. It asks for a code: get it on that Colonia in Config › Connections › Devices, or with apx pair.",
+    "Its Tailscale one, for example. It asks for a code: get it on that Colonia in Config › Connections › Devices, or with colonia pair.",
   "connect.sshHint":
     "Uses your ssh and your keys, or the server's password. The core stays on the server and no port is opened.",
   "connect.connect": "Connect",
@@ -270,7 +270,7 @@ export const enSetup = {
   "connect.step.probe": "Looking for Colonia on the server…",
   "connect.step.install": "Installing Colonia on the server. It takes a minute or two.",
   "connect.step.connect": "Connecting to the Colonia just installed…",
-  "connect.noApx": "Colonia is not on that server yet. It can be installed from here, or by hand.",
+  "connect.noColonia": "Colonia is not on that server yet. It can be installed from here, or by hand.",
   "connect.installThere": "Install it for me",
   "connect.installByHand": "Install it myself",
   "connect.byHandHint": "Run this on the server, then connect again:",

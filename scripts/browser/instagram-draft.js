@@ -1,5 +1,5 @@
 (() => {
-  globalThis.apxInstagramDraft = async function apxInstagramDraft(options = {}) {
+  globalThis.coloniaInstagramDraft = async function coloniaInstagramDraft(options = {}) {
     const { recipient, threadId, text, conversationSelector, messagesSelector, send = false, confirmSend } = options;
     if (!/^[a-z0-9._]+$/i.test(recipient ?? "") || !/^\d+$/.test(threadId ?? "") || !text?.trim())
       throw new Error("Supply recipient, numeric threadId and nonempty text");
@@ -37,7 +37,7 @@
         (el) => !el.contains(editor) && !editor.contains(el) && visible(el),
       );
     const matching = () => bubbles().filter((el) => exact(el) === text);
-    const key = `apx-ig-send:${JSON.stringify([threadId, recipient.toLowerCase(), text])}`;
+    const key = `colonia-ig-send:${JSON.stringify([threadId, recipient.toLowerCase(), text])}`;
     if (matching().length) return { status: "already_present", recipient, threadId, sent: false };
     if (sessionStorage.getItem(key))
       throw new Error("An earlier send is uncertain or complete; inspect the conversation, do not retry");
@@ -83,5 +83,5 @@
     }
     throw new Error("Send not verified by one exact bubble and empty composer; do not retry automatically");
   };
-  return { installed: "apxInstagramDraft", default: "compose only; sending requires explicit options" };
+  return { installed: "coloniaInstagramDraft", default: "compose only; sending requires explicit options" };
 })();

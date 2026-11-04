@@ -1,4 +1,4 @@
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import { useEffect, useState } from "react";
 import { client } from "../../data/client.ts";
 

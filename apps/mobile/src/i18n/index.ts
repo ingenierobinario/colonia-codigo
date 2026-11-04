@@ -6,7 +6,7 @@ export type Lang = "en" | "es";
 
 const dictionaries: Record<Lang, Record<Key, string>> = { en, es };
 
-/** The phone's language when APX speaks it, English otherwise. */
+/** The phone's language when Colonia speaks it, English otherwise. */
 export const lang: Lang = Intl.DateTimeFormat().resolvedOptions().locale.toLowerCase().startsWith("es") ? "es" : "en";
 
 /** A translator for one language (tests pick theirs; the app uses the phone's). */

@@ -1,7 +1,7 @@
 // Model APIs the owner adds or changes from the app. Keys go to the secret store under the provider's name.
 import fs from "node:fs";
 import path from "node:path";
-import type { ChatgptStatus, ProviderInfo } from "@apx/protocol";
+import type { ChatgptStatus, ProviderInfo } from "@colonia/protocol";
 import { OAUTH_CHATGPT } from "../config.ts";
 import { badRequest } from "../errors.ts";
 import type { ChatgptLogin } from "../providers/chatgpt-login.ts";
@@ -15,7 +15,7 @@ export function providerHandlers(
   secrets: Secrets,
   chatgpt: { login: ChatgptLogin; v1Home: string },
 ) {
-  /** APX v1's own ChatGPT sign-in file (only read). */
+  /** Colonia v1's own ChatGPT sign-in file (only read). */
   const v1File = path.join(chatgpt.v1Home, "auth", "chatgpt-codex.json");
   const status = (): ChatgptStatus => ({ ...chatgpt.login.status(), v1_available: fs.existsSync(v1File) });
   const signedIn = (key: string) =>
@@ -44,7 +44,7 @@ export function providerHandlers(
     "chatgpt.status": () => status(),
     "chatgpt.connect": async ({ via }) => {
       if (via === "v1") {
-        if (!chatgpt.login.importV1(v1File)) throw badRequest("APX v1 has no ChatGPT sign-in to take over");
+        if (!chatgpt.login.importV1(v1File)) throw badRequest("Colonia v1 has no ChatGPT sign-in to take over");
       } else await chatgpt.login.start();
       return status();
     },

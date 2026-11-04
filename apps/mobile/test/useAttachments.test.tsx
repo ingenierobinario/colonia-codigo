@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react-native";
 import { Alert } from "react-native";
 import { useAttachments } from "../src/chat/useAttachments";
-import type { ApxClient } from "../src/protocol";
+import type { ColoniaClient } from "../src/protocol";
 
 const mockPicker = {
   canceled: true,
@@ -27,7 +27,7 @@ jest.mock("expo-image-picker", () => ({
 }));
 jest.mock("expo-document-picker", () => ({ getDocumentAsync: (options: unknown) => mockDocsLaunch(options) }));
 
-const client = { call: mockUploadCall } as unknown as ApxClient;
+const client = { call: mockUploadCall } as unknown as ColoniaClient;
 beforeEach(() => {
   mockPicker.canceled = true;
   mockPicker.assets = [];

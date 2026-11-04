@@ -1,4 +1,4 @@
-import { Badge, Button, Kbd, SettingRow, Switch } from "@apx/ui";
+import { Badge, Button, Kbd, SettingRow, Switch } from "@colonia/ui";
 import { type KeyboardEvent, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -30,7 +30,7 @@ export function DesktopSection() {
   const t = useT();
   const [prefs, setPrefs] = useState<Prefs>();
   const [recording, setRecording] = useState(false);
-  const inApp = Boolean(window.apxDesktop?.applyDesktopPrefs);
+  const inApp = Boolean(window.coloniaDesktop?.applyDesktopPrefs);
 
   useEffect(() => {
     void client
@@ -44,7 +44,7 @@ export function DesktopSection() {
     try {
       const saved = await client.call("desktop.set", next);
       setPrefs(saved);
-      window.apxDesktop?.applyDesktopPrefs?.({
+      window.coloniaDesktop?.applyDesktopPrefs?.({
         shortcut: saved.shortcut,
         launchAtLogin: saved.launch_at_login,
         computerUse: saved.computer_use,
@@ -99,7 +99,7 @@ export function DesktopSection() {
           aria-label={t("desktop.login")}
         />
       </SettingRow>
-      {window.apxDesktop?.platform === "darwin" && (
+      {window.coloniaDesktop?.platform === "darwin" && (
         <SettingRow title={t("desktop.awake")} description={t("desktop.awakeHint")}>
           <Switch
             size="sm"
@@ -121,10 +121,10 @@ type Permissions = { screen: string; accessibility: boolean };
 /** Computer use on this computer: the switch, and on a Mac the two permissions macOS asks for, each with a way to grant it. */
 function ComputerUse({ on, onChange }: { on: boolean; onChange: (on: boolean) => void }) {
   const t = useT();
-  const mac = window.apxDesktop?.platform === "darwin";
+  const mac = window.coloniaDesktop?.platform === "darwin";
   const [perms, setPerms] = useState<Permissions>();
   useEffect(() => {
-    const read = () => void window.apxDesktop?.computerPermissions?.().then(setPerms, () => {});
+    const read = () => void window.coloniaDesktop?.computerPermissions?.().then(setPerms, () => {});
     read();
     // The owner grants them in System Settings: coming back here shows the new state.
     window.addEventListener("focus", read);
@@ -137,7 +137,7 @@ function ComputerUse({ on, onChange }: { on: boolean; onChange: (on: boolean) =>
           {t(granted ? "desktop.cu.granted" : "desktop.cu.missing")}
         </Badge>
         {!granted && (
-          <Button size="sm" variant="secondary" onClick={() => void window.apxDesktop?.openPrivacy?.(kind)}>
+          <Button size="sm" variant="secondary" onClick={() => void window.coloniaDesktop?.openPrivacy?.(kind)}>
             {t("desktop.cu.open")}
           </Button>
         )}

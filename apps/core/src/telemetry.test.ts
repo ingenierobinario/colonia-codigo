@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { TelemetryEvent } from "@apx/protocol";
+import type { TelemetryEvent } from "@colonia/protocol";
 import { loadConfig } from "./config.ts";
 import { say, scriptedLlm, startCore } from "./engine/testkit.ts";
 import { createLog } from "./log.ts";
@@ -146,11 +146,11 @@ test("the Firestore write creates the record once and then only stamps steps", (
   assert.deepEqual(day.update.fields.tokens_in, { integerValue: "10" });
 });
 
-test("DO_NOT_TRACK, CI and APX_TELEMETRY=off turn telemetry off", () => {
+test("DO_NOT_TRACK, CI and COLONIA_TELEMETRY=off turn telemetry off", () => {
   assert.equal(loadConfig({}, false).telemetry, undefined);
   assert.equal(loadConfig({ DO_NOT_TRACK: "1" }, false).telemetry, undefined);
   assert.equal(loadConfig({ CI: "true" }, false).telemetry, undefined);
-  assert.equal(loadConfig({ APX_TELEMETRY: "off" }, false).telemetry, undefined);
+  assert.equal(loadConfig({ COLONIA_TELEMETRY: "off" }, false).telemetry, undefined);
   assert.equal(loadConfig({ DO_NOT_TRACK: "0" }, false).telemetry, undefined);
-  assert.equal(loadConfig({ APX_TELEMETRY: "https://example.com/t" }, false).telemetry, "https://example.com/t");
+  assert.equal(loadConfig({ COLONIA_TELEMETRY: "https://example.com/t" }, false).telemetry, "https://example.com/t");
 });

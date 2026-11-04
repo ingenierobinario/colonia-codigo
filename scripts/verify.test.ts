@@ -25,7 +25,7 @@ const ticking = () => {
 };
 
 function cache(t: { after(fn: () => void): void }) {
-  const dir = tempDir("apx-verify-");
+  const dir = tempDir("colonia-verify-");
   t.after(dir.remove);
   return dir.path;
 }

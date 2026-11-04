@@ -9,7 +9,7 @@ const LIST = { initial: 340, min: 240, max: 560 };
 function remembered(key: string | undefined): number {
   if (!key) return LIST.initial;
   try {
-    const v = Number(localStorage.getItem(`apx.mdetail.${key}`));
+    const v = Number(localStorage.getItem(`colonia.mdetail.${key}`));
     return v >= LIST.min && v <= LIST.max ? v : LIST.initial;
   } catch {
     return LIST.initial;
@@ -49,15 +49,15 @@ export function MasterDetail({
   const resize = (w: number) => {
     setWidth(w);
     try {
-      if (resizeKey) localStorage.setItem(`apx.mdetail.${resizeKey}`, String(w));
+      if (resizeKey) localStorage.setItem(`colonia.mdetail.${resizeKey}`, String(w));
     } catch {}
   };
   return (
     <div
-      className={cx("apx-mdetail", detail !== undefined && "has-detail", className)}
-      style={{ "--apx-mdetail-list": `${width}px` } as CSSProperties}
+      className={cx("colonia-mdetail", detail !== undefined && "has-detail", className)}
+      style={{ "--colonia-mdetail-list": `${width}px` } as CSSProperties}
     >
-      <nav className="apx-mdetail__list" aria-label={listLabel}>
+      <nav className="colonia-mdetail__list" aria-label={listLabel}>
         {list}
       </nav>
       {resizeKey && (
@@ -68,13 +68,13 @@ export function MasterDetail({
           onResize={resize}
           onReset={() => resize(LIST.initial)}
           label={listLabel ?? "Resize"}
-          className="apx-mdetail__resize"
+          className="colonia-mdetail__resize"
         />
       )}
 
-      <section className="apx-mdetail__detail">
+      <section className="colonia-mdetail__detail">
         {detail !== undefined && onBack && (
-          <button type="button" className="apx-mdetail__back" onClick={onBack}>
+          <button type="button" className="colonia-mdetail__back" onClick={onBack}>
             <ArrowLeft size={14} />
             {backLabel}
           </button>

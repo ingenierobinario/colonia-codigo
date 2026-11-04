@@ -8,7 +8,7 @@ export function publishedPublicRoutes(store: Store): PublicRoutes {
   const pages = storedPublicPages(store);
   return (pathname) => {
     const token = /^\/a\/([a-f0-9]{32})$/.exec(pathname)?.[1];
-    const kit = /^\/_apx\/kit@1(?:\.\d+){0,2}\.js$/.test(pathname);
+    const kit = /^\/_colonia\/kit@1(?:\.\d+){0,2}\.js$/.test(pathname);
     const surface = token ? store.surfaces.byShareToken(token) : undefined;
     if (!kit && !surface) return;
     return {
@@ -35,7 +35,7 @@ export function nativePublicRoutes(deps: {
     return {
       id: `channel:${id}`,
       methods: ["POST"],
-      // These providers cannot attach an APX bearer. The adapter MUST verify its native HMAC/JWT before delivery.
+      // These providers cannot attach an Colonia bearer. The adapter MUST verify its native HMAC/JWT before delivery.
       authorize: () => true,
       handle: (request, signal) => deps.deliver(id, { ...request, path: "" }, signal),
     };

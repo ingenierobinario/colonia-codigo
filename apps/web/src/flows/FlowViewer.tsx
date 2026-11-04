@@ -1,4 +1,4 @@
-import { Badge, Button, Dialog, FlowStepTile, IconButton, Icons } from "@apx/ui";
+import { Badge, Button, Dialog, FlowStepTile, IconButton, Icons } from "@colonia/ui";
 import { useCallback, useMemo, useState } from "react";
 import { effortLabel, modelOf, splitRef, useModels } from "../data/models.ts";
 import { useData } from "../data/state.ts";
@@ -8,7 +8,7 @@ import { type Cover, FlowCanvas, type StepLook } from "./FlowCanvas.tsx";
 import { stepDetail } from "./look.tsx";
 import { nextSteps, stepFacts } from "./step-facts.ts";
 import { chainOrder, type FlowGraph, type FlowNode, STEP, scheduleName } from "./steps.tsx";
-import "@apx/ui/flow.css";
+import "@colonia/ui/flow.css";
 import "./editor.css";
 import "./flow-viewer.css";
 

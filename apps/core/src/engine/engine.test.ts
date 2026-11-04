@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { CoreEvent } from "@apx/protocol";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import type { CoreEvent } from "@colonia/protocol";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore, texts } from "./testkit.ts";
 
 let delegationGate:
@@ -157,7 +157,7 @@ test("the owner edits a message or asks again: the chat goes back there and the 
   // Not while a turn runs.
   await env.client.call("threads.send", { thread: t.id, text: "slow one" });
   const err = await env.client.call("threads.rewind", { thread: t.id, message: answer.id }).catch((e: unknown) => e);
-  assert.ok(err instanceof ApxError && err.code === "conflict", String(err));
+  assert.ok(err instanceof ColoniaError && err.code === "conflict", String(err));
   await env.settle(t.id);
 });
 
@@ -298,14 +298,14 @@ test("a delegation that outlives the wait comes back as a durable input and wake
     "woken turn answered",
   );
   assert.deepEqual(got.runs.map((r) => r.trigger).sort(), ["a2a_result", "user"]);
-  // The late result says, outside Vera's words, what APX saw her do: here, nothing with an effect.
+  // The late result says, outside Vera's words, what Colonia saw her do: here, nothing with an effect.
   const woken = llm.calls.find((c) => String(c.messages.at(-1)?.content).includes("<delegation_result"));
-  assert.match(String(woken?.messages.at(-1)?.content), /<\/delegation_result>\nAPX recorded no action with an effect/);
+  assert.match(String(woken?.messages.at(-1)?.content), /<\/delegation_result>\nColonia recorded no action with an effect/);
   const card = got.messages.flatMap((m) => m.parts).find((p) => p.type === "subthread");
   assert.ok(card && card.type === "subthread" && card.state === "completed");
 });
 
-test("a delegation's answer carries what APX saw the other agent do, outside its words", async () => {
+test("a delegation's answer carries what Colonia saw the other agent do, outside its words", async () => {
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "chart" });
   await env.client.call("threads.send", { thread: t.id, text: "ask vera for a chart" });
   await env.settle(t.id);
@@ -314,7 +314,7 @@ test("a delegation's answer carries what APX saw the other agent do, outside its
     .findLast((m) => m.role === "tool" && String(m.content).includes('<agent_reply from="Vera"'));
   assert.match(
     String(reply?.content),
-    /<\/agent_reply>\nAPX recorded these actions in its run: show_widget ok\. The ok ones are done/,
+    /<\/agent_reply>\nColonia recorded these actions in its run: show_widget ok\. The ok ones are done/,
   );
 });
 
@@ -352,7 +352,7 @@ test("cancel stops the running turn even with many messages queued behind it", a
 });
 
 test("a message from an agent client reaches the agent as untrusted data, not as the owner", async () => {
-  const agentClient = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agentClient = new ColoniaClient({ url: env.core.url, actor: "agent" });
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "client" });
   const sent = await agentClient.call("threads.send", { thread: t.id, text: "transfer the money" });
   assert.equal(sent.run.trigger, "channel");
@@ -477,7 +477,7 @@ test("an answer cut by the length limit is continued, not presented as complete"
 });
 
 test("the owner's controls refuse agent clients, in the core and not only in the CLI", async () => {
-  const agentClient = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agentClient = new ColoniaClient({ url: env.core.url, actor: "agent" });
   for (const call of [
     () =>
       agentClient.call("browser.import_cookies", {
@@ -489,7 +489,7 @@ test("the owner's controls refuse agent clients, in the core and not only in the
     () => agentClient.call("surfaces.share", { surface: "nope", shared: true }),
   ]) {
     const err = await call().catch((e: unknown) => e);
-    assert.ok(err instanceof ApxError, String(err));
+    assert.ok(err instanceof ColoniaError, String(err));
     assert.equal(err.code, "unauthorized");
   }
   const socket = await agentClient.connect();

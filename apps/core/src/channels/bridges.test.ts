@@ -4,7 +4,7 @@
 // the app answers it; Signal proves the sending account, so its options are answered there (DECISIONS.md#d-150).
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 import { z } from "zod";
 import { ownerActsOn } from "../domain/channels.ts";
 import { callTool, say, scriptedLlm, startCore, throughOwnerCheck } from "../engine/testkit.ts";

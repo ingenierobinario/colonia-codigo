@@ -1,7 +1,7 @@
 // Memory methods. The owner manages every note; an agent reads and writes only where its thread lets it: the owner's
 // global notes, its thread's project and its own notebook. What an agent writes about the owner (global) waits for
 // the owner to confirm it.
-import type { Memory } from "@apx/protocol";
+import type { Memory } from "@colonia/protocol";
 import { canUseChatMemory, memoryEligibleChat } from "../domain/chat-access.ts";
 import { canSee, looksSecret, type MemoryView } from "../domain/memories.ts";
 import { factSupported } from "../domain/memory-content.ts";

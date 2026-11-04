@@ -1,4 +1,4 @@
-import type { ServiceInfo, ServiceSettings, ServiceTest } from "@apx/protocol";
+import type { ServiceInfo, ServiceSettings, ServiceTest } from "@colonia/protocol";
 import { client } from "../data/client.ts";
 import type { T } from "../i18n/index.ts";
 

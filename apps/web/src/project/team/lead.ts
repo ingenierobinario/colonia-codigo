@@ -1,4 +1,4 @@
-import { type Agent, teamHead } from "@apx/protocol";
+import { type Agent, teamHead } from "@colonia/protocol";
 
 /**
  * A team's top agent: the super-agent, else the core's rule (a marked agent with no parent in the team, then one whose

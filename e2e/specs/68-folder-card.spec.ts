@@ -14,7 +14,7 @@ test("an agent reading its project's parent folder asks with a card; it is lent 
   page,
 }) => {
   await rpc("setup.finish", {});
-  const northwind = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-northwind-")));
+  const northwind = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-northwind-")));
   const repo = path.join(northwind, "app");
   fs.mkdirSync(path.join(northwind, "docs"), { recursive: true });
   fs.mkdirSync(repo);
@@ -25,7 +25,7 @@ test("an agent reading its project's parent folder asks with a card; it is lent 
       (p) => p.id === project,
     )?.read_only_folders;
   await rpc("agents.create", { slug: "fausto", name: "Fausto" });
-  // Asking before a read outside is manual mode's; Auto reads anywhere but APX's home (DECISIONS.md#d-106).
+  // Asking before a read outside is manual mode's; Auto reads anywhere but Colonia's home (DECISIONS.md#d-106).
   await rpc("agents.update", { agent: "fausto", autonomy: "manual" });
   const chat = await rpc<{ id: string }>("threads.create", {
     kind: "loose",

@@ -1,5 +1,5 @@
-// An installed APX updated the way people update it: bundles laid out as releases ship them, served by the local
-// feed, a core started through `current` as the service starts it, and `apx upgrade` run twice. The unit tests fake
+// An installed Colonia updated the way people update it: bundles laid out as releases ship them, served by the local
+// feed, a core started through `current` as the service starts it, and `colonia upgrade` run twice. The unit tests fake
 // the folder a core runs from; here it is the real version folder, which an update must never take from under it.
 import assert from "node:assert/strict";
 import { type ChildProcess, execFile, execFileSync, spawn } from "node:child_process";
@@ -15,7 +15,7 @@ import { coreBundleName, platformOf } from "../packages/protocol/src/releases.ts
 const root = path.resolve(import.meta.dirname, "..");
 const terminal = path.join(root, "apps/terminal/src/main.ts");
 const platform = platformOf(process.platform, process.arch);
-const work = fs.mkdtempSync(path.join(os.tmpdir(), "apx-bundle-update-"));
+const work = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-bundle-update-"));
 const children: ChildProcess[] = [];
 after(async () => {
   await Promise.all(children.map(stop));
@@ -54,7 +54,7 @@ function stop(child: ChildProcess): Promise<void> {
  * panel, build.json), with its .sha256. Node and the dependencies are this checkout's, linked rather than copied.
  */
 function publish(out: string, version: string): void {
-  const src = path.join(work, `src-${path.basename(out)}-${version}`, "apx");
+  const src = path.join(work, `src-${path.basename(out)}-${version}`, "colonia");
   fs.mkdirSync(path.join(src, "node", "bin"), { recursive: true });
   fs.symlinkSync(process.execPath, path.join(src, "node", "bin", "node"));
   fs.cpSync(path.join(root, "apps/core/src"), path.join(src, "apps/core/src"), { recursive: true });
@@ -67,7 +67,7 @@ function publish(out: string, version: string): void {
   fs.writeFileSync(path.join(src, "build.json"), JSON.stringify({ version, sha: `bundle-${version}` }));
   fs.mkdirSync(out, { recursive: true });
   const name = coreBundleName(version, platform ?? { os: "linux", arch: "x64" });
-  execFileSync("tar", ["-czf", path.join(out, name), "-C", path.dirname(src), "apx"]);
+  execFileSync("tar", ["-czf", path.join(out, name), "-C", path.dirname(src), "colonia"]);
   const digest = createHash("sha256")
     .update(fs.readFileSync(path.join(out, name)))
     .digest("hex");
@@ -81,7 +81,7 @@ function install(app: string, out: string, version: string): void {
   fs.mkdirSync(unpacked, { recursive: true });
   execFileSync("tar", ["-xzf", path.join(out, name), "-C", unpacked]);
   fs.mkdirSync(path.join(app, "versions"), { recursive: true });
-  fs.renameSync(path.join(unpacked, "apx"), path.join(app, "versions", version));
+  fs.renameSync(path.join(unpacked, "colonia"), path.join(app, "versions", version));
   fs.symlinkSync(path.join("versions", version), path.join(app, "current"));
 }
 
@@ -96,7 +96,7 @@ async function startFeed(out: string): Promise<string> {
   return url;
 }
 
-/** An installed APX with its own home, feed and port. */
+/** An installed Colonia with its own home, feed and port. */
 async function setup(name: string) {
   const out = path.join(work, `${name}-feed`);
   const app = path.join(work, `${name}-app`);
@@ -105,14 +105,14 @@ async function setup(name: string) {
   install(app, out, "1.0.0");
   const port = await freePort();
   const env: NodeJS.ProcessEnv = {
-    ...Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("APX_"))),
-    APX_APP: app,
-    APX_HOME: home,
-    APX_PORT: String(port),
-    APX_RELEASES: await startFeed(out),
-    APX_SECRETS: "file",
-    APX_NEWS: "off",
-    APX_TELEMETRY: "off",
+    ...Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("COLONIA_"))),
+    COLONIA_APP: app,
+    COLONIA_HOME: home,
+    COLONIA_PORT: String(port),
+    COLONIA_RELEASES: await startFeed(out),
+    COLONIA_SECRETS: "file",
+    COLONIA_NEWS: "off",
+    COLONIA_TELEMETRY: "off",
   };
   const base = `http://127.0.0.1:${port}`;
   const health = () =>
@@ -136,10 +136,10 @@ async function setup(name: string) {
 
 // Windows runs the core from a junction and has no symlinked Node to lay out: the unit tests cover it there.
 if (process.platform !== "win32") {
-  test("an installed APX run as a service updates twice and restarts on the new code each time", async () => {
+  test("an installed Colonia run as a service updates twice and restarts on the new code each time", async () => {
     const a = await setup("service");
-    // `apx service run` is the supervisor: it starts the core through `current` and again whenever it exits.
-    const service = spawn(process.execPath, [terminal, "service", "run", "--home", String(a.env.APX_HOME)], {
+    // `colonia service run` is the supervisor: it starts the core through `current` and again whenever it exits.
+    const service = spawn(process.execPath, [terminal, "service", "run", "--home", String(a.env.COLONIA_HOME)], {
       env: a.env,
       stdio: "ignore",
     });

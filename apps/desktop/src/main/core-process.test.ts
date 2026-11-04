@@ -14,8 +14,8 @@ async function until(check: () => boolean): Promise<void> {
 }
 
 function fixture(source: string) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-embedded-"));
-  const main = path.join(dir, "apx", "apps", "core", "src", "main.ts");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-embedded-"));
+  const main = path.join(dir, "colonia", "apps", "core", "src", "main.ts");
   fs.mkdirSync(path.dirname(main), { recursive: true });
   fs.writeFileSync(main, source);
   return {
@@ -34,22 +34,22 @@ function fixture(source: string) {
 const record = `
   import fs from 'node:fs';
   import path from 'node:path';
-  fs.appendFileSync(path.join(process.env.APX_HOME, 'starts'), JSON.stringify({ home: process.env.APX_HOME, port: process.env.APX_PORT, app: process.env.APX_APP, host: process.env.APX_HOST, token: process.env.APX_TOKEN }) + '\\n');
+  fs.appendFileSync(path.join(process.env.COLONIA_HOME, 'starts'), JSON.stringify({ home: process.env.COLONIA_HOME, port: process.env.COLONIA_PORT, app: process.env.COLONIA_APP, host: process.env.COLONIA_HOST, token: process.env.COLONIA_TOKEN }) + '\\n');
 `;
 
 test("an embedded child gets its explicit local target; stop is idempotent and waits for exit", {
   timeout: 10_000,
 }, async () => {
   const { dir, opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`);
-  const oldHost = process.env.APX_HOST;
-  const oldToken = process.env.APX_TOKEN;
-  process.env.APX_HOST = "0.0.0.0";
-  process.env.APX_TOKEN = "ambient-test-token";
+  const oldHost = process.env.COLONIA_HOST;
+  const oldToken = process.env.COLONIA_TOKEN;
+  process.env.COLONIA_HOST = "0.0.0.0";
+  process.env.COLONIA_TOKEN = "ambient-test-token";
   const core = startEmbeddedCore(opts);
-  if (oldHost === undefined) delete process.env.APX_HOST;
-  else process.env.APX_HOST = oldHost;
-  if (oldToken === undefined) delete process.env.APX_TOKEN;
-  else process.env.APX_TOKEN = oldToken;
+  if (oldHost === undefined) delete process.env.COLONIA_HOST;
+  else process.env.COLONIA_HOST = oldHost;
+  if (oldToken === undefined) delete process.env.COLONIA_TOKEN;
+  else process.env.COLONIA_TOKEN = oldToken;
   try {
     const file = path.join(dir, "starts");
     // The child appends one line: wait for its newline, not just the file, or the read can see it half written.

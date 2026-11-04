@@ -2,7 +2,7 @@
 // its own, newest first) plus what matches the message; later turns get only matches not shown yet in this thread.
 // Shown notes stay in the model log, so the prefix never changes; once the turn that showed the standing notes falls
 // out of the model's view (history budget), they are offered again.
-import type { Memory, Thread } from "@apx/protocol";
+import type { Memory, Thread } from "@colonia/protocol";
 import { canUseChatMemory } from "../domain/chat-access.ts";
 import { canSee, ftsQuery, NOTEBOOK_TARGET } from "../domain/memories.ts";
 import type { Store } from "../domain/store.ts";

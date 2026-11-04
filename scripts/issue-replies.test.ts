@@ -18,11 +18,11 @@ test("each Issue trailer names one fix; a commit without one names none", () => 
 test("the reply says the version, each commit as a sentence, and how to update", () => {
   const body = replyFor("v2.3.28", [
     { issue: 105, sha: "abc1234", subject: "fix(core): a chat turn gets 60 steps" },
-    { issue: 105, sha: "9f8e7d6", subject: "fix: apx chat shows the step limit" },
+    { issue: 105, sha: "9f8e7d6", subject: "fix: colonia chat shows the step limit" },
   ]);
-  assert.match(body, /^Released in APX v2\.3\.28:/);
+  assert.match(body, /^Released in Colonia v2\.3\.28:/);
   assert.match(body, /- A chat turn gets 60 steps \(abc1234\)/);
-  assert.match(body, /- apx chat shows the step limit \(9f8e7d6\)/);
-  assert.match(body, /apx upgrade/);
+  assert.match(body, /- colonia chat shows the step limit \(9f8e7d6\)/);
+  assert.match(body, /colonia upgrade/);
   assert.match(body, /releases\/tag\/v2\.3\.28/);
 });

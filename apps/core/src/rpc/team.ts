@@ -1,7 +1,7 @@
 // Team screen: agent templates and installing them into a project, and how far agents go on their own. Templates
 // are read on each call (they are a handful of small files) so a folder edited by hand shows up without a restart.
 
-import type { Organization, Routine, Schedule } from "@apx/protocol";
+import type { Organization, Routine, Schedule } from "@colonia/protocol";
 import { parseFrontmatter, textField } from "../apc/frontmatter.ts";
 import { readOrganization, writeOrganization } from "../apc/org.ts";
 import type { ApcSync } from "../apc/sync.ts";
@@ -45,7 +45,7 @@ export function teamHandlers(
     },
 
     "agents.install": ({ project_id, templates, hang_under }) => {
-      // No project: the base project, whose agents are global (kept by APX, named by their slug as id).
+      // No project: the base project, whose agents are global (kept by Colonia, named by their slug as id).
       const project = project_id ? store.projects.get(project_id) : undefined;
       if (project_id && !project?.path) throw notFound(`project ${project_id}`);
       if (project && !project.present)
@@ -75,9 +75,9 @@ export function teamHandlers(
       const used = new Set(store.agents.list().map((a) => a.name.toLowerCase()));
       for (const file of toWrite) {
         const parent = file.parent && coming.has(file.parent) ? file.parent : (hang_under ?? "");
-        // APX's own templates are named by their job ("Senior Developer"): each member gets a person's name and
+        // Colonia's own templates are named by their job ("Senior Developer"): each member gets a person's name and
         // the job becomes its role. The owner's v1 agents already have names and keep them.
-        const named = file.source === "apx" ? { name: freeName(used, file.name), role: file.name } : {};
+        const named = file.source === "colonia" ? { name: freeName(used, file.name), role: file.name } : {};
         if (named.name) used.add(named.name.toLowerCase());
         try {
           if (root) writeAgentFromTemplate(root, file.slug, file.text, { parent, ...named });

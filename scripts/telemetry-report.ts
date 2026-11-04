@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// The telemetry funnel, read from the apx-agents Firestore with the maintainers' own credentials (the database lets
+// The telemetry funnel, read from the colonia-agents Firestore with the maintainers' own credentials (the database lets
 // no one else read). See rules/DECISIONS.md#d-092 and apps/core/src/telemetry.ts for what is sent.
 //
-//   node scripts/telemetry-report.ts --key ~/keys/apx-agents.json          a summary in the terminal
+//   node scripts/telemetry-report.ts --key ~/keys/colonia-agents.json          a summary in the terminal
 //   node scripts/telemetry-report.ts --key … --html report.html             the same as a page
 //   node scripts/telemetry-report.ts --token "$(gcloud auth print-access-token)"
 //
@@ -12,7 +12,7 @@ import { createSign } from "node:crypto";
 import fs from "node:fs";
 import { parseArgs } from "node:util";
 
-const PROJECT = "apx-agents";
+const PROJECT = "colonia-agents";
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 export const STAGES = ["installed", "opened", "consent", "setup", "first_run"] as const;
 
@@ -74,7 +74,7 @@ export function toDay(doc: FsDoc): Day {
 /** Stages of one flush land seconds apart; a real setup or first message comes at least a tick (30 min) later. */
 const SAME_FLUSH_MS = 10_000;
 
-/** An APX that ran before it had telemetry: its first send already carried setup or a first message. */
+/** An Colonia that ran before it had telemetry: its first send already carried setup or a first message. */
 export function existedBefore(i: Install): boolean {
   const installed = Date.parse(i.stages.installed ?? "");
   return (["setup", "first_run"] as const).some((s) => {
@@ -212,11 +212,11 @@ export function html(s: Summary): string {
       .map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
       .join("")}</table>`;
   const bar = (n: number) => `<span class="bar" style="width:${s.installs ? (n / s.installs) * 100 : 0}%"></span>`;
-  return `<!doctype html><meta charset="utf-8"><title>APX telemetry</title>
+  return `<!doctype html><meta charset="utf-8"><title>Colonia telemetry</title>
 <style>body{font:14px system-ui;margin:32px;max-width:900px;color:#222}h2{margin-top:28px}table{border-collapse:collapse;width:100%}
 td,th{padding:6px 8px;border-bottom:1px solid #ddd;text-align:left}.bar{display:inline-block;height:10px;background:#3fb950;border-radius:3px}
 @media (prefers-color-scheme:dark){body{background:#111;color:#ddd}td,th{border-color:#333}}</style>
-<h1>APX telemetry</h1><p>${s.installs} new installs · ${s.existing} running before telemetry · usage statistics ${s.opt_in.yes} of ${s.opt_in.answered} · active ${s.active.d1} today, ${s.active.d7} in 7 days, ${s.active.d30} in 30 days</p>
+<h1>Colonia telemetry</h1><p>${s.installs} new installs · ${s.existing} running before telemetry · usage statistics ${s.opt_in.yes} of ${s.opt_in.answered} · active ${s.active.d1} today, ${s.active.d7} in 7 days, ${s.active.d30} in 30 days</p>
 <h2>Funnel (new installs)</h2><table><tr><th>Step</th><th>Installs</th><th></th></tr>${s.funnel
     .map(
       (f) =>

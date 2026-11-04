@@ -69,7 +69,7 @@ export const esResources: Partial<Record<MessageKey, string>> = {
     "Solo las propias de {name}: valores guardados para este proyecto y los nombres que piden sus servidores.",
   "res.engines.note": "Mostrando las de {list}; un tag atenuado es una copia que los agentes no usan.",
   "res.appReadOnly": "Vive en la carpeta de skills de {app}: cámbiala ahí, o cópiala a Colonia para editarla aquí.",
-  "res.copyToApx": "Copiar a Colonia",
+  "res.copyToColonia": "Copiar a Colonia",
   "res.skill.create": "Crear",
   "res.skill.import": "Importar",
   "res.import.from": "Desde",
@@ -112,7 +112,7 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.source": "Fuente",
   "res.discard": "Descartar",
   "res.extensionReadOnly": "Viene de una extensión: solo lectura. Guarda una copia en un proyecto para cambiarla ahí.",
-  "res.apxSkillNote":
+  "res.coloniaSkillNote":
     "Viene con Colonia y les enseña a los agentes a cambiar Colonia: siempre activa, solo lectura y se actualiza con Colonia.",
   "res.saveWhere": "¿Dónde va el cambio?",
   "res.saveWhereBody":
@@ -242,9 +242,9 @@ export const esResources: Partial<Record<MessageKey, string>> = {
     "un .mjs que se ejecuta aparte, mira eventos y puede añadir contexto a tus turnos; no puede llamar a Colonia.",
   "ext.guide.install": "Instalarla",
   "ext.guide.step1":
-    "Monta la carpeta con su apx-extension.json (hay un ejemplo en examples/extensions/ del repo de Colonia).",
+    "Monta la carpeta con su colonia-extension.json (hay un ejemplo en examples/extensions/ del repo de Colonia).",
   "ext.guide.step2":
-    "Aquí, Instalar: pega la ruta de la carpeta, Revisar e Instalar (o apx extensions install <carpeta>).",
+    "Aquí, Instalar: pega la ruta de la carpeta, Revisar e Instalar (o colonia extensions install <carpeta>).",
   "ext.guide.step3": "Llega apagada: completa sus variables y enciéndela.",
   "ext.guide.safety":
     "Encenderla aprueba exactamente los archivos que tenía: si uno cambia, se apaga hasta que la vuelvas a aprobar.",
@@ -297,11 +297,11 @@ export const esResources: Partial<Record<MessageKey, string>> = {
     "Los tokens y claves se guardan de forma segura; los agentes los usan a través de su servidor y nunca los ven.",
   "int.oauthNote":
     "Usa un OAuth client tuyo de Google Cloud Console: tipo App de escritorio, o Aplicación web con la dirección de abajo como URI de redirección autorizado. Un mismo client sirve para Calendar, Gmail y Drive.",
-  "int.clientApx": "Acceso de Colonia",
+  "int.clientColonia": "Acceso de Colonia",
   "int.clientOwn": "Mi propio OAuth client",
-  "int.apxNote":
+  "int.coloniaNote":
     "Inicia sesión con tu cuenta de Google: no hace falta configurar nada en Google Cloud. Colonia pide solo lo que necesita esta integración y el acceso queda en este ordenador. Lo puedes quitar cuando quieras en myaccount.google.com/permissions.",
-  "int.clientApxLimited": "Acceso de Colonia (limitado)",
+  "int.clientColoniaLimited": "Acceso de Colonia (limitado)",
   "int.ownNote":
     "Tu propio OAuth client llega a todo Gmail y Drive. Créalo una vez en Google Cloud (unos 5 minutos) y sube su JSON aquí; sirve para Calendar, Gmail y Drive.",
   "int.guide.project": "Crea un proyecto en Google Cloud.",
@@ -315,9 +315,9 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "int.ownSaved": "Tu propio OAuth client ya está guardado: solo inicia sesión.",
   "int.ownSavedFor": "Ya conectaste {names} con tu propio OAuth client: solo inicia sesión.",
   "int.alsoLabel": "Conectar también, con el mismo inicio de sesión",
-  "int.apxLimit.gmail":
+  "int.coloniaLimit.gmail":
     "Con el acceso de Colonia, los agentes pueden enviar correos desde tu Gmail, siempre con tu OK, pero no leerlos. Para leer el correo, conéctalo en Canales › Email o usa tu propio OAuth client.",
-  "int.apxLimit.drive":
+  "int.coloniaLimit.drive":
     "Con el acceso de Colonia, los agentes llegan solo a los Docs que escriben. Para buscar y leer el resto de tu Drive, usa tu propio OAuth client.",
   "int.pasteLabel": "¿Inicias sesión desde otro dispositivo?",
   "int.pasteHint":

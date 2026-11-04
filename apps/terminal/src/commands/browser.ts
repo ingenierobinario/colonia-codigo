@@ -1,14 +1,14 @@
-// apx browser …: the embedded browser, by hand. The same methods the agents use.
-import type { ApxClient } from "@apx/protocol/client";
+// colonia browser …: the embedded browser, by hand. The same methods the agents use.
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 export async function browser(
-  client: ApxClient,
+  client: ColoniaClient,
   values: { by?: string | undefined; profile?: string | undefined; submit?: boolean | undefined },
   [sub, a, b, c]: string[],
 ): Promise<void> {
   const by = values.by ?? "terminal";
   const need = (v: string | undefined, what: string): string => {
-    if (!v) throw new Error(`missing ${what} (see apx --help)`);
+    if (!v) throw new Error(`missing ${what} (see colonia --help)`);
     return v;
   };
   switch (sub) {
@@ -93,6 +93,6 @@ export async function browser(
       console.log("closed");
       return;
     default:
-      throw new Error(`unknown browser command: ${sub ?? "(none)"} (see apx --help)`);
+      throw new Error(`unknown browser command: ${sub ?? "(none)"} (see colonia --help)`);
   }
 }

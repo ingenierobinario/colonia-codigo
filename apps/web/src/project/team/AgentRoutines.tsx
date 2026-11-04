@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { Badge, EmptyState, IconButton, Icons, Switch } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { Badge, EmptyState, IconButton, Icons, Switch } from "@colonia/ui";
 import { aheadLabel, shortWhen } from "../../common/format.ts";
 import { draftOf, runRoutine, saveRoutine, useRoutines } from "../../data/routines.ts";
 import { useT } from "../../i18n/index.ts";

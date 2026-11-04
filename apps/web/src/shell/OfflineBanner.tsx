@@ -1,4 +1,4 @@
-import { Button, Icons } from "@apx/ui";
+import { Button, Icons } from "@colonia/ui";
 import { retryNow } from "../data/live.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";

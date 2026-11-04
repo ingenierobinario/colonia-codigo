@@ -19,7 +19,7 @@ const native = {
       return {
         protocol: {
           handle: (scheme: string, next: NonNullable<typeof handler>) => {
-            assert.equal(scheme, "apx-app");
+            assert.equal(scheme, "colonia-app");
             handler = next;
           },
         },
@@ -39,13 +39,13 @@ const native = {
     },
   },
 };
-const key = Symbol.for("apx.test.scheme");
+const key = Symbol.for("colonia.test.scheme");
 Object.assign(globalThis, { [key]: native });
 const hook = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
       return {
-        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("apx.test.scheme")]; export const app = n.app; export const protocol = n.protocol; export const session = n.session; export const net = n.net; export const shell = n.shell;')}`,
+        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("colonia.test.scheme")]; export const app = n.app; export const protocol = n.protocol; export const session = n.session; export const net = n.net; export const shell = n.shell;')}`,
         shortCircuit: true,
       };
     return next(specifier, context);
@@ -65,27 +65,27 @@ async function request(url: string) {
 test("local panel registers a secure fetch-capable scheme and serves the selected partition only", async () => {
   registerAppScheme();
   assert.deepEqual(schemes, [
-    [{ scheme: "apx-app", privileges: { standard: true, secure: true, supportFetchAPI: true } }],
+    [{ scheme: "colonia-app", privileges: { standard: true, secure: true, supportFetchAPI: true } }],
   ]);
-  assert.equal(FIRST_RUN_URL, "apx-app://app/index.html?connect");
+  assert.equal(FIRST_RUN_URL, "colonia-app://app/index.html?connect");
   assert.equal(webDist(path.resolve("apps/desktop/dist")), path.resolve("apps/web/dist"));
   serveAppScheme("panel-test", root);
   assert.deepEqual(partitions, ["panel-test"]);
-  assert.equal((await request("apx-app://app/")).status, 200);
+  assert.equal((await request("colonia-app://app/")).status, 200);
   assert.equal(fetched.at(-1), pathToFileURL(path.join(root, "index.html")).href);
-  assert.equal(await (await request("apx-app://app/assets/a%20b.js")).text(), "Panel");
+  assert.equal(await (await request("colonia-app://app/assets/a%20b.js")).text(), "Panel");
   assert.equal(fetched.at(-1), pathToFileURL(path.join(root, "assets/a b.js")).href);
 });
 
 test("local panel refuses encoded separator escapes before fetch and reports unavailable files as 404", async () => {
   serveAppScheme("panel-test", root);
   const before = fetched.length;
-  assert.equal((await request("apx-app://app/..%2foutside.txt")).status, 404);
-  assert.equal((await request("apx-app://app/..%2ftest-panel-neighbor/secret.txt")).status, 404);
+  assert.equal((await request("colonia-app://app/..%2foutside.txt")).status, 404);
+  assert.equal((await request("colonia-app://app/..%2ftest-panel-neighbor/secret.txt")).status, 404);
   assert.equal(fetched.length, before);
   failFetch = true;
   try {
-    const response = await request("apx-app://app/missing.js");
+    const response = await request("colonia-app://app/missing.js");
     assert.equal(response.status, 404);
     assert.equal(await response.text(), "not found");
   } finally {
@@ -103,7 +103,7 @@ test("only HTTP and HTTPS links can reach the system browser; invalid input has 
     "relative/path",
     "file:///tmp/a",
     "javascript:alert(1)",
-    "apx:settings",
+    "colonia:settings",
     "mailto:user@example.com",
   ]) {
     assert.equal(isWebUrl(value), false);

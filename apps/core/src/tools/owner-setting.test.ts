@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { agentSetTools, SUPER_AGENT_TOOLS } from "./agent-set.ts";
 import { browserTools } from "./browser.ts";
@@ -20,7 +20,7 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
   const code = /let (\S+) in/.exec(said)?.[1];
   if (code) return callTool("r1", "answer_contact_request", { who: code, decision: "answer" });
   return said.includes("tell her who she is")
-    ? callTool("c1", "apx_settings", { method: "contacts.set", params: { id: sister, note: "My sister" } })
+    ? callTool("c1", "colonia_settings", { method: "contacts.set", params: { id: sister, note: "My sister" } })
     : say("ok");
 });
 
@@ -52,7 +52,7 @@ test("on total, a change to what the owner set up still waits for their card", a
     const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "Settings" });
     await env.client.call("threads.send", { thread: t.id, text: "tell her who she is" });
     const [card] = await pendingIn(t.id);
-    assert.equal(card?.tool, "apx_settings");
+    assert.equal(card?.tool, "colonia_settings");
     assert.equal(await note(), undefined);
     await env.client.call("runs.respond", { input: card?.id ?? "", decision: "approve" });
     await env.settle(t.id);
@@ -65,7 +65,7 @@ test("on total, a change to what the owner set up still waits for their card", a
 test("another agent asking the super-agent changes nothing, and nobody is asked", async () => {
   await env.client.call("contacts.set", { id: sister, name: "Northwind Sister", note: "" });
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "From an agent" });
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await agent.call("threads.send", { thread: t.id, text: "tell her who she is" });
   await env.settle(t.id);
   assert.deepEqual((await env.client.call("runs.pending", { thread: t.id })).inputs, []);
@@ -109,7 +109,7 @@ test("on total, letting a stranger in still waits for the owner's card, and only
   }).request;
   await env.client.call("agents.update", { agent: "superagent", autonomy: "total" });
   try {
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     const asked = await env.client.call("threads.create", {
       kind: "loose",
       agent_id: "superagent",

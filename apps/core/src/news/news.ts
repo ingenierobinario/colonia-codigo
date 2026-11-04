@@ -51,7 +51,7 @@ export function createNews(deps: {
   models: (agentId: string) => string[];
   notifyOwner: (body: Presentation, threadId: string) => boolean;
   log: Log;
-  /** APX's own entries unless a test brings its own. */
+  /** Colonia's own entries unless a test brings its own. */
   entries?: readonly NewsEntry[];
   timeoutMs?: number;
 }) {
@@ -149,7 +149,7 @@ export function createNews(deps: {
       thread_id: home.id,
       agent_id: boss.id,
       text,
-      note: `<system_note>\nAPX was updated; you told the owner what is new for them.\n</system_note>`,
+      note: `<system_note>\nColonia was updated; you told the owner what is new for them.\n</system_note>`,
       unread: true,
     });
     const buttons = shown.map((a) => {
@@ -209,7 +209,7 @@ export type News = ReturnType<typeof createNews>;
 const labelOf = (a: NewsEntry["actions"][number], lang: string) => (lang === "es" ? a.label.es : a.label.en);
 
 const voicePrompt = (boss: { name: string; personality?: string | undefined }) =>
-  `You are ${boss.name}, the owner's assistant in APX, the app you run in.${boss.personality ? ` Your personality: ${boss.personality}` : ""}`;
+  `You are ${boss.name}, the owner's assistant in Colonia, the app you run in.${boss.personality ? ` Your personality: ${boss.personality}` : ""}`;
 
 /** A few hundred characters: what is new for this owner, and how the message should read. */
 export function newsInput(told: NewsEntry[], lang: string, moreActions: number, talk?: string): string {
@@ -220,7 +220,7 @@ export function newsInput(told: NewsEntry[], lang: string, moreActions: number, 
     .map((a) => `"${a.label.en}"`)
     .join(", ");
   return [
-    "APX was updated. What is new that you can now do for the owner:",
+    "Colonia was updated. What is new that you can now do for the owner:",
     items,
     `Write them one or two short sentences in your voice, in their language (${lang}): the one thing that matters most to them in **bold** (the only Markdown), then offer: ${offers}.${told.length > 1 ? " Do not list the rest: say the whole list is in Help › What's new." : ""}${moreActions > 0 ? ` Mention there are ${moreActions} more things you can show them.` : ""} They can pick one or just answer you. Write only the message.`,
     talk ? `[last talk] ${talk}` : "",
@@ -233,5 +233,5 @@ export function newsInput(told: NewsEntry[], lang: string, moreActions: number, 
 function plainText(told: NewsEntry[], offers: string[]): string {
   const [first, ...rest] = told;
   const more = rest.length ? ` (and ${rest.length} more in Help › What's new)` : "";
-  return `APX has something new for you: **${first?.title.en ?? ""}**${more}.${offers.length ? ` Want me to: ${offers.join(", or ")}? Just answer me.` : ""}`;
+  return `Colonia has something new for you: **${first?.title.en ?? ""}**${more}.${offers.length ? ` Want me to: ${offers.join(", or ")}? Just answer me.` : ""}`;
 }

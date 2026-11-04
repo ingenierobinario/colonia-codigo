@@ -1,9 +1,9 @@
-// Read-only import from a local APX v1: registers the project folders it knows (each one's AGENTS.md and .apc/ are
+// Read-only import from a local Colonia v1: registers the project folders it knows (each one's AGENTS.md and .apc/ are
 // then read from disk, like any project) and, only when asked, copies its model API keys and its skills once into
 // v2's own home. Never writes to v1; never sends the v1 token off this machine.
 import fs from "node:fs";
 import path from "node:path";
-import { ImageDefaults, type ServiceSettings } from "@apx/protocol";
+import { ImageDefaults, type ServiceSettings } from "@colonia/protocol";
 import type { ApcSync } from "../apc/sync.ts";
 import { realpath } from "../paths.ts";
 import type { Secrets } from "../secrets.ts";

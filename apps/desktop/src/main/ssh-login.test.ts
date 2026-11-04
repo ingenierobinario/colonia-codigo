@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { askpassSupported, authorizeCommand, loginArgs, opensshVersion, publicKeyLine } from "./ssh-login.ts";
 import { needsPassword } from "./ssh-tunnel.ts";
 
-const KEY = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGm0Zk7dQ1x2y3z4A5B6C7D8E9F0a1b2c3d4e5f6g7h8 apx-desktop";
+const KEY = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGm0Zk7dQ1x2y3z4A5B6C7D8E9F0a1b2c3d4e5f6g7h8 colonia-desktop";
 
 test("a login that failed because the server wants a password is told apart from any other failure", () => {
   assert.equal(needsPassword(255, "root@vps: Permission denied (publickey,password).\n"), true);
@@ -26,7 +26,7 @@ test("the key goes into authorized_keys once, quoted as one word", () => {
   const command = authorizeCommand(KEY);
   assert.ok(command.includes(`grep -qxF '${KEY}' ~/.ssh/authorized_keys`));
   assert.ok(command.includes(`echo '${KEY}' >> ~/.ssh/authorized_keys`));
-  assert.ok(command.endsWith("echo APX_KEY_OK"));
+  assert.ok(command.endsWith("echo COLONIA_KEY_OK"));
 });
 
 test("anything but one plain ed25519 key line is refused before it reaches a remote shell", () => {

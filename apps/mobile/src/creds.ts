@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 
 export type Creds = { url: string; token: string; device: string };
 
-const KEY = "apx.pairing";
+const KEY = "colonia.pairing";
 
 export async function loadCreds(): Promise<Creds | undefined> {
   const raw = await SecureStore.getItemAsync(KEY);

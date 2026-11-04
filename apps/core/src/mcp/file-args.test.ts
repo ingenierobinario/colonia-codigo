@@ -19,7 +19,7 @@ const fake = (bytes = PNG) => {
     read: () => bytes,
     path: () => {
       asked.push(ref);
-      return `/tmp/apx-scratch/${ref}.png`;
+      return `/tmp/colonia-scratch/${ref}.png`;
     },
   });
   return { open, asked };
@@ -38,7 +38,7 @@ const UPLOAD = {
   },
 };
 
-test("a med_ id or apx-file: reference becomes base64 for a remote server, with its type and name filled in", () => {
+test("a med_ id or colonia-file: reference becomes base64 for a remote server, with its type and name filled in", () => {
   const { open } = fake();
   const out = fillFileArgs({ base64: ID, post_id: "01ABC" }, UPLOAD, { remote: true, open });
   assert.deepEqual(out, {
@@ -47,7 +47,7 @@ test("a med_ id or apx-file: reference becomes base64 for a remote server, with 
     mime_type: "image/png",
     file_name: "slide.png",
   });
-  const own = fillFileArgs({ base64: "apx-file:out/slide.png", mime_type: "image/webp" }, UPLOAD, {
+  const own = fillFileArgs({ base64: "colonia-file:out/slide.png", mime_type: "image/webp" }, UPLOAD, {
     remote: true,
     open,
   });
@@ -62,15 +62,15 @@ test("a path or link field on a remote server is refused with the field that tak
     /path is read by the server, which runs elsewhere.*give the file in base64 instead/,
   );
   assert.throws(
-    () => fillFileArgs({ url: "apx-file:clip.mp4" }, UPLOAD, { remote: true, open }),
-    /url takes a public link, and APX does not publish the owner's files: give the file in base64 instead/,
+    () => fillFileArgs({ url: "colonia-file:clip.mp4" }, UPLOAD, { remote: true, open }),
+    /url takes a public link, and Colonia does not publish the owner's files: give the file in base64 instead/,
   );
 });
 
 test("a local server gets a real path; a kept file is copied out for it", () => {
   const { open, asked } = fake();
   const out = fillFileArgs({ path: ID }, UPLOAD, { remote: false, open });
-  assert.equal(out.path, `/tmp/apx-scratch/${ID}.png`);
+  assert.equal(out.path, `/tmp/colonia-scratch/${ID}.png`);
   assert.deepEqual(asked, [ID]);
   // A field that says it takes contents still gets them from a local server.
   assert.equal(fillFileArgs({ base64: ID }, UPLOAD, { remote: false, open }).base64, PNG.toString("base64"));
@@ -121,7 +121,7 @@ test("what a field takes comes from its name, then its schema and description", 
 
 test("plain values pass through untouched", () => {
   assert.equal(hasFileRefs({ caption: "see med_ ids", n: 3, tags: ["a"] }), false);
-  assert.equal(hasFileRefs({ list: [{ x: "apx-file:a.png" }] }), true);
+  assert.equal(hasFileRefs({ list: [{ x: "colonia-file:a.png" }] }), true);
   const args = { caption: "med_notanid", count: 2 };
   assert.deepEqual(fillFileArgs(args, UPLOAD, { remote: true, open: fake().open }), args);
 });
@@ -162,6 +162,6 @@ test("an agent hands on only its chat's kept files and paths in its own folders"
   const file = open("cover.png");
   assert.equal(file.mime, "image/png");
   assert.equal(file.path(), path.join(work, "cover.png"));
-  assert.throws(() => open(path.join(env.home, "apx.db")), /refused/);
+  assert.throws(() => open(path.join(env.home, "colonia.db")), /refused/);
   assert.throws(() => open("missing.png"), /does not exist/);
 });

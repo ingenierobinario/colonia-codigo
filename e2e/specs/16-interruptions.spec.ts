@@ -1,4 +1,4 @@
-// Interruptions: the owner sets how often APX may write unasked; a second notice of the same kind soon after the first
+// Interruptions: the owner sets how often Colonia may write unasked; a second notice of the same kind soon after the first
 // stays in the tray, and the log says so; what reached the owner can be rated.
 import { expect, open, rpc, test, until } from "./kit.ts";
 

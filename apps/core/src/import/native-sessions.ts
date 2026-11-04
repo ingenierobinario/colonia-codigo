@@ -1,5 +1,5 @@
 // The owner's own Claude Code and Codex sessions, read from where those CLIs keep them (~/.claude, ~/.codex), so one
-// can go on in APX. Read-only: nothing here writes there. Only each file's start and end are read to list it; a
+// can go on in Colonia. Read-only: nothing here writes there. Only each file's start and end are read to list it; a
 // transcript is read whole only when it is opened.
 import fs from "node:fs";
 import path from "node:path";
@@ -19,8 +19,8 @@ export type NativeSession = {
 export type NativeTurn = { role: "user" | "assistant"; text: string };
 export type NativeHomes = { claude: string; codex: string };
 
-/** How APX frames an agent's turn ("[context: …]", "[contexto: …]"): such a session is APX's own, not the owner's. */
-const APX_FRAMING = /^\[(context|contexto):/;
+/** How Colonia frames an agent's turn ("[context: …]", "[contexto: …]"): such a session is Colonia's own, not the owner's. */
+const COLONIA_FRAMING = /^\[(context|contexto):/;
 const HEAD_BYTES = 256 * 1024;
 const TAIL_BYTES = 128 * 1024;
 const TITLE_CHARS = 80;
@@ -130,8 +130,8 @@ function claudeSession(file: string, mtime: number): NativeSession | undefined {
   let title = "";
   for (const o of jsonLines(readSlice(file, "end", TAIL_BYTES)))
     if (o.type === "custom-title" && typeof o.customTitle === "string") title = o.customTitle;
-  // A turn APX itself ran on Claude Code (an agent's chat) starts with APX's framing: not one of the owner's sessions.
-  if (!cwd || (!first && !title) || APX_FRAMING.test(first)) return undefined;
+  // A turn Colonia itself ran on Claude Code (an agent's chat) starts with Colonia's framing: not one of the owner's sessions.
+  if (!cwd || (!first && !title) || COLONIA_FRAMING.test(first)) return undefined;
   return {
     id: path.basename(file, ".jsonl"),
     engine: "claude",
@@ -150,7 +150,7 @@ function codexSession(file: string, mtime: number, names: Map<string, string>): 
   for (const o of jsonLines(readSlice(file, "start", HEAD_BYTES))) {
     const p = (o.payload ?? {}) as Record<string, unknown>;
     if (o.type === "session_meta") {
-      // APX's own runs (through the SDK) and Codex's sub-agents are not sessions the owner opened.
+      // Colonia's own runs (through the SDK) and Codex's sub-agents are not sessions the owner opened.
       if (p.originator === "codex_sdk_ts" || (p.source && typeof p.source === "object")) return undefined;
       id = String(p.id ?? "");
       cwd = String(p.cwd ?? "");

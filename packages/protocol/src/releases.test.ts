@@ -45,7 +45,7 @@ test("only published vX.Y.Z releases newer than this one count, newest first", (
     { tag_name: "v2.2.0-beta.1", prerelease: true, assets: [] },
     {
       tag_name: "v2.1.0",
-      body: "## What's Changed\n* feat: sidebar sections by @someone in https://x/1\n- fix: `apx` on PATH\n",
+      body: "## What's Changed\n* feat: sidebar sections by @someone in https://x/1\n- fix: `colonia` on PATH\n",
       assets: [asset("a")],
     },
     { tag_name: "v2.2.0", body: "", assets: [] },
@@ -58,17 +58,17 @@ test("only published vX.Y.Z releases newer than this one count, newest first", (
     out.map((r) => r.version),
     ["2.2.0", "2.1.0"],
   );
-  assert.deepEqual(out[1]?.notes, ["feat: sidebar sections", "fix: apx on PATH"]);
+  assert.deepEqual(out[1]?.notes, ["feat: sidebar sections", "fix: colonia on PATH"]);
   assert.deepEqual(out[1]?.assets, [{ name: "a", url: "https://example.com/a" }]);
   assert.deepEqual(newerReleases({ message: "rate limited" }, "2.0.0"), []);
 });
 
 test("each platform finds its own installer and daemon bundle", () => {
   const assets = [
-    "APX-2.2.0-linux-x86_64.AppImage",
-    "APX-2.2.0-mac-arm64.dmg",
-    "APX-2.2.0-mac-arm64.zip",
-    "APX-2.2.0-win-x64.exe",
+    "Colonia-2.2.0-linux-x86_64.AppImage",
+    "Colonia-2.2.0-mac-arm64.dmg",
+    "Colonia-2.2.0-mac-arm64.zip",
+    "Colonia-2.2.0-win-x64.exe",
   ].map((n) => ({
     name: n,
     url: n,
@@ -76,11 +76,11 @@ test("each platform finds its own installer and daemon bundle", () => {
   const linux = platformOf("linux", "x64");
   const mac = platformOf("darwin", "arm64");
   assert.ok(linux && mac);
-  assert.equal(desktopAssetFor(assets, "2.2.0", linux)?.name, "APX-2.2.0-linux-x86_64.AppImage");
-  assert.equal(desktopAssetFor(assets, "2.2.0", mac)?.name, "APX-2.2.0-mac-arm64.dmg");
+  assert.equal(desktopAssetFor(assets, "2.2.0", linux)?.name, "Colonia-2.2.0-linux-x86_64.AppImage");
+  assert.equal(desktopAssetFor(assets, "2.2.0", mac)?.name, "Colonia-2.2.0-mac-arm64.dmg");
   assert.equal(desktopAssetFor(assets, "2.2.1", mac), undefined);
-  assert.equal(desktopAssetFor(assets, "2.2.0", mac, "zip")?.name, "APX-2.2.0-mac-arm64.zip");
-  assert.equal(coreBundleName("2.2.0", linux), "apx-core-2.2.0-linux-x64.tar.gz");
+  assert.equal(desktopAssetFor(assets, "2.2.0", mac, "zip")?.name, "Colonia-2.2.0-mac-arm64.zip");
+  assert.equal(coreBundleName("2.2.0", linux), "colonia-core-2.2.0-linux-x64.tar.gz");
   assert.equal(platformOf("freebsd", "x64"), undefined);
   assert.equal(platformOf("linux", "ia32"), undefined);
 });
@@ -91,17 +91,17 @@ test("the feed is a GitHub repo, or the base URL of a feed shaped like its API",
     asked.push(url);
     return new Response("[]");
   }) as typeof fetch;
-  await fetchReleases("acme/apx", fake);
+  await fetchReleases("acme/colonia", fake);
   await fetchReleases("http://127.0.0.1:7499/", fake);
   assert.deepEqual(asked, [
-    "https://api.github.com/repos/acme/apx/releases?per_page=100",
+    "https://api.github.com/repos/acme/colonia/releases?per_page=100",
     "http://127.0.0.1:7499/releases?per_page=100",
   ]);
 });
 
 test("a .sha256 file gives its digest", () => {
   const hex = "a".repeat(64);
-  assert.equal(parseSha256(`${hex}  apx-core-2.2.0-linux-x64.tar.gz\n`), hex);
+  assert.equal(parseSha256(`${hex}  colonia-core-2.2.0-linux-x64.tar.gz\n`), hex);
   assert.equal(parseSha256("not a digest"), undefined);
 });
 
@@ -114,7 +114,7 @@ test("what the newer releases change: their bullets, newest first, and the name 
     "2.3.24",
   );
   assert.deepEqual(releaseChanges(newer), [
-    "APX 2.3.26",
+    "Colonia 2.3.26",
     "Inbox: unread chats repeat on top",
     "Docs: guides in line with the code",
   ]);

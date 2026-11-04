@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { t } from "../../i18n";
-import type { ApxClient, Message } from "../../protocol";
+import type { ColoniaClient, Message } from "../../protocol";
 import { ChannelMark, isChannelBrand } from "../ChannelMark";
 import { Icon } from "../Icon";
 import { Tag } from "../kit";
@@ -11,7 +11,7 @@ type ConnectPart = Extract<Message["parts"][number], { type: "connect" }>;
 type Offer = ConnectPart["offers"][number];
 
 /** What is connected already: integration ids and channel types, read once per card. */
-function useConnected(client: ApxClient | undefined) {
+function useConnected(client: ColoniaClient | undefined) {
   const [connected, setConnected] = useState<Set<string>>();
   useEffect(() => {
     if (!client) return;
@@ -34,10 +34,10 @@ function useConnected(client: ApxClient | undefined) {
 }
 
 /**
- * Apps and channels the agent offers to connect for what the owner asked. Their forms live in APX on the computer,
+ * Apps and channels the agent offers to connect for what the owner asked. Their forms live in Colonia on the computer,
  * so the phone says what is connected and where to connect the rest.
  */
-export function ConnectCard({ part, client }: { part: ConnectPart; client: ApxClient | undefined }) {
+export function ConnectCard({ part, client }: { part: ConnectPart; client: ColoniaClient | undefined }) {
   const theme = useTheme();
   const s = useStyles();
   const connected = useConnected(client);

@@ -1,10 +1,10 @@
-// Updates for an APX that runs from its source checkout or from an installed bundle. Every few hours it asks git
-// whether main moved (a checkout) or the release feed whether a newer APX is out (a bundle, see packages/install/src/release.ts),
+// Updates for an Colonia that runs from its source checkout or from an installed bundle. Every few hours it asks git
+// whether main moved (a checkout) or the release feed whether a newer Colonia is out (a bundle, see packages/install/src/release.ts),
 // and on the owner's word it brings it in. A supervisor (`pnpm app`, the service) starts the core again with the new
 // code; without one the owner is told to restart.
 import fs from "node:fs";
 import path from "node:path";
-import { type Platform, platformOf, type Release, releaseChanges } from "@apx/protocol";
+import { type Platform, platformOf, type Release, releaseChanges } from "@colonia/protocol";
 import {
   checkReleases,
   commandRunner,
@@ -105,11 +105,11 @@ export function createUpdates(opts: {
   enabled: boolean;
   /** A supervisor starts the core again after an update (exit code RESTART_CODE). */
   supervised: boolean;
-  /** This APX's version (what the release feed is compared with). */
+  /** This Colonia's version (what the release feed is compared with). */
   version?: string;
   /** Durable update intent, scoped to this core's home. */
   stateFile?: string;
-  /** APX_APP: the folder a bundle install lives in (install.sh/ps1); updates then come from the release feed. */
+  /** COLONIA_APP: the folder a bundle install lives in (install.sh/ps1); updates then come from the release feed. */
   app?: string | undefined;
   /** The desktop app carries this core and installs its updates: the core only says a newer one is out. */
   byApp?: boolean;
@@ -187,7 +187,7 @@ export function createUpdates(opts: {
 
   async function apply(): Promise<UpdateResult> {
     if (opts.byApp || (!git && !release))
-      return { ok: false, restart: false, log: "This APX updates with its desktop app, or by hand." };
+      return { ok: false, restart: false, log: "This Colonia updates with its desktop app, or by hand." };
     const r = git ? await applyGit(sh) : await applyRelease();
     if (!r.ok) return { ...r, log: r.log.slice(-6000) };
     if (release) newer = [];

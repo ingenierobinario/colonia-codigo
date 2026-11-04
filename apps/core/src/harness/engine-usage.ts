@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import type { EngineStatus, EngineUsageReport, EngineUsageWindow } from "@apx/protocol";
+import type { EngineStatus, EngineUsageReport, EngineUsageWindow } from "@colonia/protocol";
 import { z } from "zod";
 import { readClaudeUsage } from "./claude-usage.ts";
 import { which } from "./detect.ts";
@@ -102,7 +102,7 @@ export async function readCodexUsage(
       send({
         id: 1,
         method: "initialize",
-        params: { clientInfo: { name: "apx", version: "2.0.0" } },
+        params: { clientInfo: { name: "colonia", version: "2.0.0" } },
       }),
     );
   });

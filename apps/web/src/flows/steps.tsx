@@ -1,6 +1,6 @@
-import type { Params, Result } from "@apx/protocol";
-import type { FlowShape } from "@apx/protocol/flow-shape";
-import { type FlowStepTone, Icons } from "@apx/ui";
+import type { Params, Result } from "@colonia/protocol";
+import type { FlowShape } from "@colonia/protocol/flow-shape";
+import { type FlowStepTone, Icons } from "@colonia/ui";
 import type { ReactNode } from "react";
 import type { FlowGraph, FlowNode } from "../../../../packages/protocol/src/flow-graph.ts";
 import { currentLocale, type MessageKey } from "../i18n/index.ts";

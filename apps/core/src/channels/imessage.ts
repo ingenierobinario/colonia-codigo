@@ -1,6 +1,6 @@
 // iMessage on the owner's own Mac as a channel, like WhatsApp on their own phone: new messages are read from Messages'
 // database (polled by ROWID) and answers go out through the Messages app. Reading needs Full Disk Access for the
-// process running APX; sending asks macOS once for permission to control Messages. Only one-to-one chats are read.
+// process running Colonia; sending asks macOS once for permission to control Messages. Only one-to-one chats are read.
 // What it remembers (the last ROWID read) lives in the channel's folder, so a restart never answers old messages.
 import fs from "node:fs";
 import os from "node:os";
@@ -55,7 +55,7 @@ export function imessageAdapter(
       return new DatabaseSync(db, { readOnly: true });
     } catch (err) {
       throw new Error(
-        `cannot read Messages (${errorMessage(err, 120)}): give the app running APX Full Disk Access in System Settings › Privacy & Security`,
+        `cannot read Messages (${errorMessage(err, 120)}): give the app running Colonia Full Disk Access in System Settings › Privacy & Security`,
       );
     }
   }

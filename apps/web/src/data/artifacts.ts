@@ -1,5 +1,5 @@
-import type { ArtifactBundle, ArtifactMemory, Params } from "@apx/protocol";
-import { ARTIFACT_FILE_EXT } from "@apx/protocol/client";
+import type { ArtifactBundle, ArtifactMemory, Params } from "@colonia/protocol";
+import { ARTIFACT_FILE_EXT } from "@colonia/protocol/client";
 import { t } from "../i18n/index.ts";
 import type { BridgeMethod } from "../surfaces/srcdoc.ts";
 import { client } from "./client.ts";
@@ -38,7 +38,7 @@ export async function clearArtifactMemory(id: string, parts: MemoryPart[]): Prom
   }
 }
 
-/** Saves the artifact as `<name>.apx-artifact.json`; its memory only when asked. */
+/** Saves the artifact as `<name>.colonia-artifact.json`; its memory only when asked. */
 export async function exportArtifact(id: string, memory: boolean): Promise<boolean> {
   try {
     const bundle = await client.call("surfaces.export", { surface: id, memory });
@@ -55,7 +55,7 @@ export async function exportArtifact(id: string, memory: boolean): Promise<boole
   }
 }
 
-/** Installs an `.apx-artifact.json` file as a new artifact of the project (none: global). */
+/** Installs an `.colonia-artifact.json` file as a new artifact of the project (none: global). */
 /** Installs an artifact file here: into `projectId` (none: global), pinned to Apps or not. */
 export async function installArtifact(
   bundle: ArtifactBundle,

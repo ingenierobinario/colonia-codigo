@@ -1,4 +1,4 @@
-import { Autonomy, type Project } from "@apx/protocol";
+import { Autonomy, type Project } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { ProjectsTable } from "../db/schema.ts";
 import { now, opt, qb, type Sql } from "./sql.ts";
@@ -39,7 +39,7 @@ function foldersOf(v: string | null): { read_only_folders?: string[] } {
   }
 }
 
-/** A stored autonomy APX knows; anything else reads as none. */
+/** A stored autonomy Colonia knows; anything else reads as none. */
 function autonomyOf(v: string | null): { autonomy?: Autonomy } {
   const a = Autonomy.safeParse(v);
   return a.success ? { autonomy: a.data } : {};

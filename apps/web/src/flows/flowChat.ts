@@ -6,7 +6,7 @@ import { data } from "../data/state.ts";
 import { t as tr } from "../i18n/index.ts";
 
 /** The last chat used for each Flow, remembered on this device so the next "Ask" continues it. */
-const CHATS_KEY = "apx.flowChats";
+const CHATS_KEY = "colonia.flowChats";
 function chatsMade(): Record<string, string> {
   try {
     const raw = JSON.parse(localStorage.getItem(CHATS_KEY) ?? "{}") as unknown;

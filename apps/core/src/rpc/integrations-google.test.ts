@@ -111,7 +111,7 @@ test("events and mail come back as outside data; a draft waits for the owner's O
 });
 
 test("an integration off in a project or disconnected takes its tools away", async () => {
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-gint-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-gint-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
   const project = (await env.client.call("projects.register", { path: repo })).project.id;
   await env.client.call("mcp.toggle", { project, server: "gmail", on: false });

@@ -1,6 +1,6 @@
-import type { Result } from "@apx/protocol";
-import { randomAgentName } from "@apx/protocol/client";
-import { AgentAvatar, BLOB_NAMES, Button, Checkbox, IconButton, Icons, Input, Skeleton, Switch } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { randomAgentName } from "@colonia/protocol/client";
+import { AgentAvatar, BLOB_NAMES, Button, Checkbox, IconButton, Icons, Input, Skeleton, Switch } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import type { V1Group, V1Groups } from "../data/setup.ts";
 import { PRIVACY_URL, setUsage, useTelemetry } from "../data/telemetry.ts";
@@ -34,7 +34,7 @@ export function StepHead(props: {
 
 /**
  * The first screen: the website's hero, then what comes next (start, or start fresh / bring v1 when it is here).
- * Right after the desktop app installed APX it says so.
+ * Right after the desktop app installed Colonia it says so.
  */
 export function Welcome({
   v1,

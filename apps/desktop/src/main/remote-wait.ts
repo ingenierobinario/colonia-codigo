@@ -1,4 +1,4 @@
-// A remote APX (an address, or one over SSH) the window waits for: the screen says so and it retries until the server
+// A remote Colonia (an address, or one over SSH) the window waits for: the screen says so and it retries until the server
 // answers, then loads the panel. A server restarting after an update, or this app restarting, comes back on its own.
 import type { Tunnel } from "./ssh-tunnel.ts";
 
@@ -68,28 +68,28 @@ export function waiting(remote: Remote, linked: boolean, es: boolean): Waiting {
     identityProblem ??
     (remote.local
       ? es
-        ? "APX en este equipo todavía no responde. Puede estar arrancando, por ejemplo después de reiniciar."
-        : "APX on this computer is not answering yet. It may still be starting, for example after a restart."
+        ? "Colonia en este equipo todavía no responde. Puede estar arrancando, por ejemplo después de reiniciar."
+        : "Colonia on this computer is not answering yet. It may still be starting, for example after a restart."
       : !remote.tunnel
         ? es
           ? "Esperando que el servidor responda."
           : "Waiting for the server to answer."
         : linked
           ? es
-            ? "La conexión SSH está lista. Esperando que APX responda en el servidor; puede estar reiniciándose después de una actualización."
-            : "The SSH connection is up. Waiting for APX on the server to answer; it may be restarting after an update."
+            ? "La conexión SSH está lista. Esperando que Colonia responda en el servidor; puede estar reiniciándose después de una actualización."
+            : "The SSH connection is up. Waiting for Colonia on the server to answer; it may be restarting after an update."
           : es
             ? "Esperando la conexión SSH con el servidor. Puede estar reiniciándose o sin red por un momento."
             : "Waiting for the SSH connection to the server. It may be restarting or briefly offline.");
   const detail = problem ?? remote.local;
   return {
-    title: es ? "Conectando con APX" : "Connecting to APX",
+    title: es ? "Conectando con Colonia" : "Connecting to Colonia",
     where: remote.where,
     status,
     ...(detail ? { detail } : {}),
     hint: es
-      ? "Se abre solo cuando responde. Para elegir otro APX: menú APX › Cambiar conexión."
-      : "It opens by itself once it answers. To pick another APX: APX menu › Change connection.",
+      ? "Se abre solo cuando responde. Para elegir otro Colonia: menú Colonia › Cambiar conexión."
+      : "It opens by itself once it answers. To pick another Colonia: Colonia menu › Change connection.",
   };
 }
 
@@ -102,7 +102,7 @@ const esc = (t: string) => t.replaceAll("&", "&amp;").replaceAll("<", "&lt;").re
 /** The waiting screen: a calm card in the app's colors, with ssh's own words kept small. */
 export function waitingHtml(w: Waiting, es: boolean): string {
   const detail = w.detail ? `<p class="detail"><span>${es ? "Detalle" : "Details"}</span>${esc(w.detail)}</p>` : "";
-  return `<!doctype html><html lang="${es ? "es" : "en"}"><head><meta charset="utf-8"><title>APX</title><style>
+  return `<!doctype html><html lang="${es ? "es" : "en"}"><head><meta charset="utf-8"><title>Colonia</title><style>
 :root{color-scheme:light dark;--bg:#f6f5f2;--card:#fff;--fg:#1f1e1c;--muted:#6b6963;--line:#e6e3dc;--accent:#d97757}
 @media (prefers-color-scheme:dark){:root{--bg:#1a1a19;--card:#232321;--fg:#ecebe7;--muted:#9c9a93;--line:#34332f}}
 *{box-sizing:border-box}html,body{height:100%;margin:0}

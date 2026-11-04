@@ -1,6 +1,6 @@
-// apx_flow: the super-agent reads, draws and fills the owner's Flows and their project tables. They are the owner's work,
+// colonia_flow: the super-agent reads, draws and fills the owner's Flows and their project tables. They are the owner's work,
 // like routines and tasks, not their settings, so they have a tool of their own (DECISIONS.md#d-181). A new Flow or
-// table method, step kind or field reaches agents here and in the apx-flows skill: rules/FLOWS.md#agents-reach-it.
+// table method, step kind or field reaches agents here and in the colonia-flows skill: rules/FLOWS.md#agents-reach-it.
 import type { Store } from "../domain/store.ts";
 import { FLOWS } from "./flow-tool-flows.ts";
 import { FLOW_PUBLISH } from "./flow-tool-publish.ts";
@@ -9,7 +9,7 @@ import { areaTool } from "./settings.ts";
 import type { Setting } from "./settings-kit.ts";
 import type { Tool } from "./types.ts";
 
-export const FLOW_TOOL = "apx_flow";
+export const FLOW_TOOL = "colonia_flow";
 
 /** What the super-agent may read and change in Flows and tables, by method. */
 export const FLOW_SETTINGS: Readonly<Record<string, Setting>> = { ...FLOWS, ...FLOW_PUBLISH, ...TABLES };
@@ -23,7 +23,7 @@ export function flowTools(store: Store): Tool[] {
       {
         name: FLOW_TOOL,
         description:
-          "Read, draw and change the owner's Flows (a webhook or schedule that runs checks, tables, code, an AI model, a message or a request) and their projects' tables. No args: the areas; method: an area's methods, or a method's fields; method + params: run it. Step fields: load_skill \"apx-flows\".",
+          "Read, draw and change the owner's Flows (a webhook or schedule that runs checks, tables, code, an AI model, a message or a request) and their projects' tables. No args: the areas; method: an area's methods, or a method's fields; method + params: run it. Step fields: load_skill \"colonia-flows\".",
         table: FLOW_SETTINGS,
         areas: AREA,
         looked: "Looked at the Flows",

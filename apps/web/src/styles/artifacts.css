@@ -31,38 +31,38 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   align-items: flex-start;
 }
 .artmem__size {
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
   font-variant-numeric: tabular-nums;
 }
 .artmem__tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--apx-space-1);
-  margin-top: var(--apx-space-2);
+  gap: var(--colonia-space-1);
+  margin-top: var(--colonia-space-2);
 }
 .artmem__more {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-sm);
 }
 .artmem__tables {
   list-style: none;
-  margin: var(--apx-space-2) 0 0;
+  margin: var(--colonia-space-2) 0 0;
   padding: 0;
   display: grid;
-  gap: var(--apx-space-1);
-  font-size: var(--apx-text-sm);
+  gap: var(--colonia-space-1);
+  font-size: var(--colonia-text-sm);
 }
 .artmem__tables li {
   display: flex;
   justify-content: space-between;
-  gap: var(--apx-space-3);
-  color: var(--apx-fg-muted);
+  gap: var(--colonia-space-3);
+  color: var(--colonia-fg-muted);
 }
 .artmem__choose {
   display: grid;
-  gap: var(--apx-space-3);
+  gap: var(--colonia-space-3);
 }
 .artmem__spacer {
   flex: 1;
@@ -73,7 +73,7 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--apx-bg);
+  background: var(--colonia-bg);
 }
 
 /* An opened app still running (AppsDock.tsx): a small dot after its name. */
@@ -81,7 +81,7 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
   flex: none;
 }
 
@@ -107,20 +107,20 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   gap: 10px;
   padding: 7px 8px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 .appsdock__row:hover,
 .appsdock__row:focus-visible {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 /* Already in the dock: still openable, shown quieter. */
 .appsdock__row[data-pinned] {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .appsdock__name {
   display: flex;
@@ -129,13 +129,13 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   flex: 1;
 }
 .appsdock__name small {
-  color: var(--apx-fg-subtle);
-  font-size: calc(11.5px * var(--apx-text-scale, 1));
+  color: var(--colonia-fg-subtle);
+  font-size: calc(11.5px * var(--colonia-text-scale, 1));
 }
 .appsdock__empty {
   padding: 12px 8px;
-  color: var(--apx-fg-muted);
-  font-size: calc(13px * var(--apx-text-scale, 1));
+  color: var(--colonia-fg-muted);
+  font-size: calc(13px * var(--colonia-text-scale, 1));
 }
 .appsdock__icon {
   position: relative;
@@ -147,12 +147,12 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   width: calc(100% - 20px);
   margin: 4px 10px;
   border: 0;
-  border-top: 1px dashed var(--apx-border);
+  border-top: 1px dashed var(--colonia-border);
 }
 .appsdock__loose {
   position: relative;
 }
-.appsdock__loose .apx-nav {
+.appsdock__loose .colonia-nav {
   padding-right: 60px;
 }
 .appsdock__looseactions {
@@ -174,7 +174,7 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   position: absolute;
   right: -2px;
   bottom: -2px;
-  box-shadow: 0 0 0 2px var(--apx-bg);
+  box-shadow: 0 0 0 2px var(--colonia-bg);
 }
 
 /* The install dialog (InstallArtifact.tsx). */
@@ -188,9 +188,9 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   align-items: center;
   gap: 10px;
   padding: 18px;
-  border: 1.5px dashed var(--apx-border-strong, var(--apx-border));
-  border-radius: var(--apx-radius-md);
-  color: var(--apx-fg-muted);
+  border: 1.5px dashed var(--colonia-border-strong, var(--colonia-border));
+  border-radius: var(--colonia-radius-md);
+  color: var(--colonia-fg-muted);
 }
 .install__drop span {
   flex: 1;
@@ -200,14 +200,14 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   white-space: nowrap;
 }
 .install__drop[data-dragging] {
-  border-color: var(--apx-brand);
-  background: var(--apx-brand-soft);
+  border-color: var(--colonia-brand);
+  background: var(--colonia-brand-soft);
 }
 .install__what {
   padding: 12px 14px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
 }
 .install__name {
   display: flex;
@@ -217,16 +217,16 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
 .install__facts {
   margin: 6px 0 0;
   padding-left: 18px;
-  color: var(--apx-fg-muted);
-  font-size: calc(13px * var(--apx-text-scale, 1));
+  color: var(--colonia-fg-muted);
+  font-size: calc(13px * var(--colonia-text-scale, 1));
 }
 .install__error {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
   margin: 0;
 }
 .install__note {
-  color: var(--apx-fg-muted);
-  font-size: calc(13px * var(--apx-text-scale, 1));
+  color: var(--colonia-fg-muted);
+  font-size: calc(13px * var(--colonia-text-scale, 1));
   margin: 0;
 }
 
@@ -247,7 +247,7 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
   gap: 12px;
 }
 .artprops dt {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .artprops dd {
   margin: 0;
@@ -255,12 +255,12 @@ body:has(.projboard__grid.is-dragging) .livelayer__box[data-shown] {
 }
 .artprops__head {
   margin: 18px 0 8px;
-  font-size: calc(13px * var(--apx-text-scale, 1));
+  font-size: calc(13px * var(--colonia-text-scale, 1));
   font-weight: 600;
 }
 /* Creating one comes first in the launcher, apart from the list to open. */
 .appsdock__create {
-  border-bottom: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-sm) var(--apx-radius-sm) 0 0;
+  border-bottom: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-sm) var(--colonia-radius-sm) 0 0;
   padding-bottom: 10px;
 }

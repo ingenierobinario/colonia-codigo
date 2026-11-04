@@ -28,8 +28,8 @@
   right: 6px;
   display: flex;
   gap: 2px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
   opacity: 0;
   pointer-events: none;
 }
@@ -40,8 +40,8 @@
 }
 .documentpart__label,
 .documentpart__name {
-  font-size: calc(11px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-muted);
+  font-size: calc(11px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-muted);
 }
 .documentpart__name {
   overflow: hidden;

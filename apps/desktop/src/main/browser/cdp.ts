@@ -1,8 +1,8 @@
 // The desktop's tabs over webContents.debugger: no remote-debugging port, so nothing else on the machine can drive
-// the app. What a page can be asked (snapshot, click, type…) is shared with the core's headless Chrome (@apx/protocol/cdp).
+// the app. What a page can be asked (snapshot, click, type…) is shared with the core's headless Chrome (@colonia/protocol/cdp).
 
-import { CdpPage, withTimeout } from "@apx/protocol/cdp";
-import { ApxError } from "@apx/protocol/client";
+import { CdpPage, withTimeout } from "@colonia/protocol/cdp";
+import { ColoniaError } from "@colonia/protocol/client";
 import type { WebContents } from "electron";
 
 export class CdpTab {
@@ -78,7 +78,7 @@ export class CdpTab {
       return Buffer.from(await this.#page.screenshot(), "base64");
     } catch {
       const image = await withTimeout(this.#wc.capturePage(), 4_000);
-      if (image.isEmpty()) throw new ApxError({ code: "unavailable", message: "tab is not painting (window hidden?)" });
+      if (image.isEmpty()) throw new ColoniaError({ code: "unavailable", message: "tab is not painting (window hidden?)" });
       return (image.getSize().width > 1280 ? image.resize({ width: 1280 }) : image).toJPEG(70);
     }
   }

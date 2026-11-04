@@ -2,7 +2,7 @@
 // for the owner leave the tray once answered or moved on. A turn that ends or fails in one of the owner's chats is
 // noticed when the chat is still unread a moment later (nobody was looking) and has nothing else coming: the agent's
 // work ends once, not at each result that wakes it. Routines, channels and tasks add their own.
-import { type CoreEvent, noticeText, type Part } from "@apx/protocol";
+import { type CoreEvent, noticeText, type Part } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
 import type { Store } from "../domain/store.ts";
 import { previewOf } from "../domain/threads.ts";
@@ -84,7 +84,7 @@ export function createAttention(deps: { store: Store; bus: Bus; now?: () => Date
     store.notifications.add({
       kind: "agent",
       level: "warn",
-      title: store.threads.get(top)?.title ?? "APX",
+      title: store.threads.get(top)?.title ?? "Colonia",
       body: previewOf(noticeText(notice, store.settings.get("owner_language") === "en" ? "en" : "es")),
       thread_id: threadId,
       ref,

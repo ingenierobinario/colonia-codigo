@@ -18,7 +18,7 @@ async function mockVmDisplay(page: Page) {
         init.writeUInt16BE(64, 2);
         init.set([32, 24, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0], 4);
         init.writeUInt32BE(3, 20);
-        init.write("APX", 24);
+        init.write("Colonia", 24);
         socket.send(init);
       }
       handshake++;
@@ -26,7 +26,7 @@ async function mockVmDisplay(page: Page) {
   });
 }
 
-test("Computer installs only on enable, shows the chat agent's screen, follows APX appearance and stops for everyone", async ({
+test("Computer installs only on enable, shows the chat agent's screen, follows Colonia appearance and stops for everyone", async ({
   page,
 }) => {
   let installed = false;
@@ -56,7 +56,7 @@ test("Computer installs only on enable, shows the chat agent's screen, follows A
     });
     return say("ok");
   });
-  const home = tempDir("apx-computer-ui-").path;
+  const home = tempDir("colonia-computer-ui-").path;
   const env = await startCore({
     home,
     llm,
@@ -87,7 +87,7 @@ test("Computer installs only on enable, shows the chat agent's screen, follows A
       title: "Probar en Linux",
     });
     await page.addInitScript((origin) => {
-      if (location.origin === origin) localStorage.setItem("apx.mode", "light");
+      if (location.origin === origin) localStorage.setItem("colonia.mode", "light");
     }, env.core.url);
     await page.goto(`${env.core.url}/#thread=${robyChat.id}&panel=computer`);
     const computer = page.locator(".computer");

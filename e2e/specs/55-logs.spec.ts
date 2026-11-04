@@ -23,15 +23,15 @@ test("the owner reads the core's log in settings, narrows it and finds the file"
   await expect(lines.getByRole("listitem").first()).toBeVisible();
   const search = dialog.getByRole("searchbox", { name: "Buscar en el registro" });
   await search.fill("core listening");
-  await expect(lines.getByText("apx core listening").first()).toBeVisible();
+  await expect(lines.getByText("colonia core listening").first()).toBeVisible();
 
   // Only errors: the core's start is not one.
   await dialog.getByRole("radio", { name: "Error" }).click();
-  await expect(lines.getByText("apx core listening")).toHaveCount(0);
+  await expect(lines.getByText("colonia core listening")).toHaveCount(0);
 
   // All levels again, then a text nothing logs.
   await dialog.getByRole("radio", { name: "Todos" }).click();
-  await expect(lines.getByText("apx core listening").first()).toBeVisible();
+  await expect(lines.getByText("colonia core listening").first()).toBeVisible();
   await search.fill("nothing-logs-this-e2e-text");
   await expect(dialog.getByText("Ninguna línea coincide")).toBeVisible();
 

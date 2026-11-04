@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Part, RunState } from "@apx/protocol";
+import type { Part, RunState } from "@colonia/protocol";
 import { isGeneratingImage } from "./imageGeneration.ts";
 import { mediaBlocks } from "./mediaGroups.ts";
 

@@ -1,5 +1,5 @@
-import type { FileEntry } from "@apx/protocol";
-import { Button, Dialog, Field, Icons, Input, type MenuEntry } from "@apx/ui";
+import type { FileEntry } from "@colonia/protocol";
+import { Button, Dialog, Field, Icons, Input, type MenuEntry } from "@colonia/ui";
 import { useState } from "react";
 import {
   coreOnThisComputer,

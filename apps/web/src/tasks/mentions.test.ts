@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Agent } from "@apx/protocol";
+import type { Agent } from "@colonia/protocol";
 import { availableAgents } from "../common/pickers/agents.ts";
 import { insertMention, mentionAt, mentionToken } from "./mentions.ts";
 

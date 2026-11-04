@@ -1,5 +1,5 @@
-// apx notifications: the attention tray from the terminal.
-import type { ApxClient } from "@apx/protocol/client";
+// colonia notifications: the attention tray from the terminal.
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 const KIND: Record<string, string> = {
   input: "needs your OK",
@@ -8,13 +8,13 @@ const KIND: Record<string, string> = {
   channel: "channel",
 };
 
-export async function notifications(client: ApxClient, [sub]: string[]): Promise<void> {
+export async function notifications(client: ColoniaClient, [sub]: string[]): Promise<void> {
   if (sub === "read") {
     const r = await client.call("notifications.read", {});
     console.log(`${r.unread} unread`);
     return;
   }
-  if (sub) throw new Error("usage: apx notifications [read]");
+  if (sub) throw new Error("usage: colonia notifications [read]");
   const { notifications: list, unread } = await client.call("notifications.list", {});
   for (const n of list)
     console.log(

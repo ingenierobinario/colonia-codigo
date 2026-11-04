@@ -1,6 +1,6 @@
 ---
 title: Your phone
-description: Open APX on your phone, pair it with a one-time code, revoke it when you want, and get notices by push.
+description: Open Colonia on your phone, pair it with a one-time code, revoke it when you want, and get notices by push.
 sidebar:
   order: 2
 ---
@@ -15,8 +15,8 @@ else.
 
 <Aside type="caution" title="First, the phone has to reach the core">
 A core that only listens on its own computer (the default) can't be reached by a phone. Open it to your local
-network or your Tailscale network first: in **Settings › Connections › Devices** under **Who can reach this APX**,
-in the desktop app's first run, or with `apx expose` on a server ([Run APX on a server](/devices/server/)).
+network or your Tailscale network first: in **Settings › Connections › Devices** under **Who can reach this Colonia**,
+in the desktop app's first run, or with `colonia expose` on a server ([Run Colonia on a server](/devices/server/)).
 </Aside>
 
 ## Open on your phone
@@ -25,10 +25,10 @@ The quickest way: click **Open on your phone** in the top bar (it's also in your
 
 <Shot name="phone-pair" alt="The Open on your phone dialog with a pairing QR code and the code typed out below it" caption="Open on your phone" />
 
-Scan it with the phone's camera. It opens the APX app, pairs the phone if it isn't paired yet, and opens the chat you
+Scan it with the phone's camera. It opens the Colonia app, pairs the phone if it isn't paired yet, and opens the chat you
 were looking at. A phone already paired with this core just opens the chat.
 
-The code under the QR works once, for 10 minutes. While the dialog is open APX renews it before it runs out, and
+The code under the QR works once, for 10 minutes. While the dialog is open Colonia renews it before it runs out, and
 closing the dialog voids it. If the core only listens on this computer, the dialog says **Your phone cannot reach
 this core yet** instead of showing a QR.
 
@@ -36,10 +36,10 @@ this core yet** instead of showing a QR.
 
 You don't need the app to use the panel on a phone. Open the core's address in the phone's browser (the Tailscale
 address, or the LAN one such as `http://192.168.1.20:7440`). The panel asks to **Pair this device**: type a code from
-**Settings › Connections › Devices › Pair a device** or from `apx pair`, and the browser keeps its own key. The panel
+**Settings › Connections › Devices › Pair a device** or from `colonia pair`, and the browser keeps its own key. The panel
 adapts to the narrow screen.
 
-<Shot name="phone-home" alt="The APX panel at phone width, with the Home chat open" frame="phone" />
+<Shot name="phone-home" alt="The Colonia panel at phone width, with the Home chat open" frame="phone" />
 
 ## Pairing codes and device keys
 
@@ -49,8 +49,8 @@ Every pairing works the same way, whether it's a phone, a browser or another com
   memory. Restarting the core voids pending codes.
 - It works **once**. The device trades it for a key of its own; the core stores only that key's hash.
 - **Five wrong codes** void every pending code and pause pairing for **five minutes**.
-- The QR carries an `apx://pair?…` link with the code and the addresses the core can be reached on. If you set
-  `APX_PUBLIC_URL` (a VPS or Tailscale address), it goes first.
+- The QR carries an `colonia://pair?…` link with the code and the addresses the core can be reached on. If you set
+  `COLONIA_PUBLIC_URL` (a VPS or Tailscale address), it goes first.
 
 You can make a code in three places:
 
@@ -58,14 +58,14 @@ You can make a code in three places:
 - **Settings › Connections › Devices › Pair a device**: a QR, the code and the addresses.
 - The terminal, on the machine that runs the core:
 
-<Terminal command="apx pair">{`Pairing code: ABCD2345
+<Terminal command="colonia pair">{`Pairing code: ABCD2345
 Expires at 10:40:00 (in about 10 min)
 
 Addresses a device may reach this core on:
   https://<machine>.<tailnet>.ts.net
 
-In the APX app, open Pair and paste the link, or enter an address and the code:
-  apx://pair?c=ABCD2345&u=https%3A%2F%2F<machine>.<tailnet>.ts.net`}</Terminal>
+In the Colonia app, open Pair and paste the link, or enter an address and the code:
+  colonia://pair?c=ABCD2345&u=https%3A%2F%2F<machine>.<tailnet>.ts.net`}</Terminal>
 
 ## See and revoke devices
 
@@ -78,12 +78,12 @@ to the pairing screen.
 From the terminal:
 
 ```bash
-apx devices                 # list paired devices
-apx devices pair            # a new code (same as apx pair)
-apx devices revoke <id>     # revoke one device
+colonia devices                 # list paired devices
+colonia devices pair            # a new code (same as colonia pair)
+colonia devices revoke <id>     # revoke one device
 ```
 
-## The APX app for phones
+## The Colonia app for phones
 
 ### Install it on Android
 
@@ -91,19 +91,19 @@ The Android app comes with every v2 release. It isn't in Google Play yet, so you
 
 <Steps>
 
-1. On the phone, open the [v2 releases](https://github.com/agentprojectcontext/apx/releases?q=v2&expanded=true) and, in the newest one, download `APX-<version>-android.apk`.
+1. On the phone, open the [v2 releases](https://github.com/ingenierobinario/colonia/releases?q=v2&expanded=true) and, in the newest one, download `Colonia-<version>-android.apk`.
 
 2. Open the downloaded file. The first time, Android asks you to allow installing apps from your browser (or from
    Files): allow it, go back and tap **Install**. If Play Protect warns that it doesn't know the app, tap **Install
    anyway**.
 
-3. Open APX and pair it, as in [Open on your phone](#open-on-your-phone).
+3. Open Colonia and pair it, as in [Open on your phone](#open-on-your-phone).
 
 </Steps>
 
-It installs beside APX v1's phone app; the two don't touch each other.
+It installs beside Colonia v1's phone app; the two don't touch each other.
 
-<Shot name="phone-app" alt="The APX app on a phone, with the Home chat open" frame="phone" />
+<Shot name="phone-app" alt="The Colonia app on a phone, with the Home chat open" frame="phone" />
 
 **Updating.** The app doesn't update itself yet. When a new version is out, download its APK the same way and install
 it over the one you have: your pairing and settings stay. If Android says the app conflicts with one already
@@ -116,7 +116,7 @@ The iOS app isn't in the App Store yet. To try it you build it from the reposito
 
 What it does once paired:
 
-- **Pairs** by scanning the QR, opening an `apx://pair` link, or typing the address and the code by hand. It keeps its
+- **Pairs** by scanning the QR, opening an `colonia://pair` link, or typing the address and the code by hand. It keeps its
   key in the system's secure storage.
 - **Shows your Home chat live**, over the same socket the panel uses.
 - **Lists pinned surfaces and every app** (the Apps button), even an app that is not pinned. Open one full screen.
@@ -180,7 +180,7 @@ show summaries and open detail screens rather than every desktop configuration c
   system/light/dark appearance, and adjust notice preferences. **Disconnect** removes this app's pairing after
   confirmation; it does not shut down the core or disconnect every device.
 
-Creating or editing work uses the same permissions and confirmations as other APX clients, not a separate
+Creating or editing work uses the same permissions and confirmations as other Colonia clients, not a separate
 unrestricted mobile account. Use the web panel for settings not offered by the native screens.
 
 ## Attachments, images and voice
@@ -195,7 +195,7 @@ message for copy, selection or sharing. These actions affect the file on your ph
 
 If saving fails, check the app's media permission and that the file has finished downloading. An error or an open
 share sheet is not proof that Android saved it. Confirm in your gallery or destination app. If the file is private,
-choose the recipient deliberately: sharing out of APX leaves its chat boundaries.
+choose the recipient deliberately: sharing out of Colonia leaves its chat boundaries.
 
 ## Push notifications
 
@@ -206,7 +206,7 @@ working push registration.
 
 <Steps>
 
-1. Give the device a way to receive push. The APX app registers itself with Expo push when the build has an EAS
+1. Give the device a way to receive push. The Colonia app registers itself with Expo push when the build has an EAS
    project id. Otherwise, under the device in **Settings › Connections › Devices**, use **Set up notifications** and
    paste an ntfy or UnifiedPush address.
 
@@ -218,6 +218,6 @@ any client.
 
 ## Where to next
 
-- [Run APX on a server](/devices/server/), to reach it from anywhere
+- [Run Colonia on a server](/devices/server/), to reach it from anywhere
 - [Desktop app](/devices/desktop/)
 - [Troubleshooting](/reference/troubleshooting/): pairing codes that don't work

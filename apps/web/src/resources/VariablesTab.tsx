@@ -1,4 +1,4 @@
-import { Badge, Button, Checkbox, ContextMenu, Dialog, EmptyState, IconButton, Icons, Input } from "@apx/ui";
+import { Badge, Button, Checkbox, ContextMenu, Dialog, EmptyState, IconButton, Icons, Input } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { projectName } from "../data/identity.ts";

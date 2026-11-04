@@ -1,4 +1,4 @@
-// Images and audio APX made: fetched once through media.get and kept as object URLs for the page's life.
+// Images and audio Colonia made: fetched once through media.get and kept as object URLs for the page's life.
 import { client } from "./client.ts";
 
 const cache = new Map<string, Promise<string>>();

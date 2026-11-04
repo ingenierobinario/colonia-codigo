@@ -38,7 +38,7 @@ console.log(`ojos en la cara: ${faces}/${names.length}`);
 
 let icons = 0;
 const want = { ic11: 32, ic12: 64, ic07: 128, ic08: 256, ic13: 256, ic09: 512, ic14: 512, ic10: 1024 };
-for (const ext of ["apxart", "apxapp", "apxext"]) {
+for (const ext of ["coloniaart", "coloniaapp", "coloniaext"]) {
   const i = fs.readFileSync(r(`apps/desktop/assets/file-${ext}.ico`));
   for (let k = 0; k < i.readUInt16LE(4); k++) {
     const p = 6 + 16 * k;
@@ -93,7 +93,7 @@ if (out) {
   const A = "apps/desktop/assets/";
   for (const yy of [y, y + H2]) {
     let x = 12;
-    for (const f of ["icon.png", "file-apxart.png", "file-apxapp.png", "file-apxext.png"]) {
+    for (const f of ["icon.png", "file-coloniaart.png", "file-coloniaapp.png", "file-coloniaext.png"]) {
       top.push({ input: await sharp(r(A + f)).resize(140, 140).png().toBuffer(), left: x, top: yy + 10 });
       x += 150;
     }

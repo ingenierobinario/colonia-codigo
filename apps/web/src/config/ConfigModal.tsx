@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { Dialog, Icons, NavItem, SearchField } from "@apx/ui";
+import { Dialog, Icons, NavItem, SearchField } from "@colonia/ui";
 import { type CSSProperties, type ReactNode, useState } from "react";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { LAYOUT } from "../shell/layout.ts";

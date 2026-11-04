@@ -1,5 +1,5 @@
-import type { Agent, Thread } from "@apx/protocol";
-import { AgentAvatar, EngineIcon } from "@apx/ui";
+import type { Agent, Thread } from "@colonia/protocol";
+import { AgentAvatar, EngineIcon } from "@colonia/ui";
 import { Suspense } from "react";
 import { AgentFace } from "../common/AgentFace.tsx";
 import { useData, useShownAgents } from "../data/state.ts";

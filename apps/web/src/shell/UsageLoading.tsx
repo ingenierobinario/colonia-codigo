@@ -1,4 +1,4 @@
-import { Skeleton } from "@apx/ui";
+import { Skeleton } from "@colonia/ui";
 import "../styles/usage.css";
 
 /** A full-sized preview also used while the panel's code and translations arrive. */

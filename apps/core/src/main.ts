@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { getDefaultAutoSelectFamilyAttemptTimeout, setDefaultAutoSelectFamilyAttemptTimeout } from "node:net";
-import { exitWhenClosed } from "@apx/protocol/exit";
+import { exitWhenClosed } from "@colonia/protocol/exit";
 import { legacyHome, loadConfig } from "./config.ts";
 import { acquireDaemonLock } from "./daemon-lock.ts";
 import { moveLegacyHome } from "./home.ts";
@@ -15,9 +15,9 @@ const startupLock = acquireDaemonLock(`${config.home}.startup`);
 const lock = (() => {
   try {
     if (
-      moveLegacyHome({ home: config.home, legacy: legacyHome(), explicit: Boolean(process.env.APX_HOME) }) === "moved"
+      moveLegacyHome({ home: config.home, legacy: legacyHome(), explicit: Boolean(process.env.COLONIA_HOME) }) === "moved"
     )
-      console.warn(`APX moved its state from ${legacyHome()} to ${config.home}`);
+      console.warn(`Colonia moved its state from ${legacyHome()} to ${config.home}`);
     return acquireDaemonLock(config.home);
   } finally {
     startupLock.release();

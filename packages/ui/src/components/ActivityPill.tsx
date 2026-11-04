@@ -16,17 +16,17 @@ export interface ActivityPillProps {
 /** Live activity between agents: animated dots + label, optionally flanked by sender/recipient avatars. */
 export function ActivityPill({ label, from, to, tone = "neutral", className }: ActivityPillProps) {
   return (
-    <div className={cx("apx-activity", `apx-tone--${tone}`, className)} role="status">
-      {from && <span className="apx-activity__who">{from}</span>}
-      <span className="apx-activity__pill">
-        <span className="apx-activity__dots" aria-hidden="true">
+    <div className={cx("colonia-activity", `colonia-tone--${tone}`, className)} role="status">
+      {from && <span className="colonia-activity__who">{from}</span>}
+      <span className="colonia-activity__pill">
+        <span className="colonia-activity__dots" aria-hidden="true">
           <i />
           <i />
           <i />
         </span>
-        <span className="apx-activity__label">{label}</span>
+        <span className="colonia-activity__label">{label}</span>
       </span>
-      {to && <span className="apx-activity__who">{to}</span>}
+      {to && <span className="colonia-activity__who">{to}</span>}
     </div>
   );
 }

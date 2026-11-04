@@ -1,6 +1,6 @@
 // What goes out to people and rooms outside a turn's answer: the owner writing to a contact, an agent messaging a
 // contact or posting in a room, and what a channel knows about a person (their picture, whether they are online).
-import type { ChannelInfo, OutboxItem } from "@apx/protocol";
+import type { ChannelInfo, OutboxItem } from "@colonia/protocol";
 import { quietNow } from "../domain/notices.ts";
 import { HOME_THREAD_ID } from "../domain/seed.ts";
 import type { Store } from "../domain/store.ts";
@@ -40,7 +40,7 @@ export function createOutgoing(deps: {
   ): { outbox: string; message_id: string } | undefined {
     const thread = store.threads.get(threadId);
     const ch = thread?.channel;
-    // In a room the owner's words go out as they are, through the bot's account (it is the only one APX has there).
+    // In a room the owner's words go out as they are, through the bot's account (it is the only one Colonia has there).
     if (thread && ch && store.threads.context(threadId).room) {
       const named = roomMentions(quietMentions(text), store.channels.inbox.people(ch.id, ch.conversation));
       post(thread, ch.id, ch.conversation, named.text, { logged: false, mentions: named.mentions });
@@ -90,7 +90,7 @@ export function createOutgoing(deps: {
       throw new Error(
         wanted
           ? `${person.name} has no address on ${channel}`
-          : `${person.name} has no address on any channel APX runs`,
+          : `${person.name} has no address on any channel Colonia runs`,
       );
     const pick = [...options].sort(
       (a, b) =>

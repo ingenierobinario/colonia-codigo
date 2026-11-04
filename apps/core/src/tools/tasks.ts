@@ -1,5 +1,5 @@
 // task_*: agents work the office board through the tasks.* methods, like the owner does in the app.
-import { type Task, TaskKind, TaskPriority, TaskTag } from "@apx/protocol";
+import { type Task, TaskKind, TaskPriority, TaskTag } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import {

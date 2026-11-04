@@ -1,5 +1,5 @@
-import type { AuxPurpose, Message, Run } from "@apx/protocol";
-import { Badge, EmptyState, Icons } from "@apx/ui";
+import type { AuxPurpose, Message, Run } from "@colonia/protocol";
+import { Badge, EmptyState, Icons } from "@colonia/ui";
 import { useMemo } from "react";
 import { contextOf, usageStamp } from "../chat/composer/context.ts";
 import { useThreadUsage } from "../chat/composer/usage.ts";

@@ -1,5 +1,5 @@
-import type { LocalEmbedding, ServiceInfo } from "@apx/protocol";
-import { Badge, Button, Icons, Spinner } from "@apx/ui";
+import type { LocalEmbedding, ServiceInfo } from "@colonia/protocol";
+import { Badge, Button, Icons, Spinner } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { ServiceDialog } from "../config/ServiceDialog.tsx";
 import { ServicesSection } from "../config/ServicesSection.tsx";
@@ -61,7 +61,7 @@ export function EmbedderCard() {
     setOwn(r?.services.map((x) => x.id) ?? []);
   };
   const site = () => {
-    if (window.apxDesktop?.openExternal) void window.apxDesktop.openExternal(OLLAMA_SITE);
+    if (window.coloniaDesktop?.openExternal) void window.coloniaDesktop.openExternal(OLLAMA_SITE);
     else window.open(OLLAMA_SITE, "_blank", "noopener,noreferrer");
   };
 

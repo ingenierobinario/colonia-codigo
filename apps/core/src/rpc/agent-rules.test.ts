@@ -11,7 +11,7 @@ let root: string;
 let project: string;
 before(async () => {
   env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-rules-"));
+  root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-rules-"));
   project = (await env.client.call("projects.register", { path: root, init: true })).project.id;
 });
 after(async () => {

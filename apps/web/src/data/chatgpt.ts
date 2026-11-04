@@ -1,5 +1,5 @@
-// The ChatGPT plan's sign-in for APX's own loop (chatgpt.*): status, a device code to type, or v1's sign-in taken over.
-import type { ChatgptStatus } from "@apx/protocol";
+// The ChatGPT plan's sign-in for Colonia's own loop (chatgpt.*): status, a device code to type, or v1's sign-in taken over.
+import type { ChatgptStatus } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { loadCatalog } from "./models.ts";

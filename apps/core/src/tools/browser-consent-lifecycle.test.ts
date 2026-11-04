@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { TabInfo, ToolApproval } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
+import type { TabInfo, ToolApproval } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
 
@@ -26,9 +26,9 @@ for (const scope of ["tab", "turn"] as const) {
           return say("Done");
         }),
       });
-      const node = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+      const node = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
       const other =
-        change === "foreign event" ? await new ApxClient({ url: env.core.url }).connect("node", ["fs"]) : undefined;
+        change === "foreign event" ? await new ColoniaClient({ url: env.core.url }).connect("node", ["fs"]) : undefined;
       const tab: TabInfo = {
         tab: "tab1",
         title: "Example",

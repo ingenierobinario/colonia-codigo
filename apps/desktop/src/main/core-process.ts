@@ -18,7 +18,7 @@ export async function isUp(url: string): Promise<boolean> {
   }
 }
 
-/** Supervises only the bundled child at the explicit local home/port, never an endpoint supplied by APX_URL. */
+/** Supervises only the bundled child at the explicit local home/port, never an endpoint supplied by COLONIA_URL. */
 export function startEmbeddedCore(opts: {
   resources: string;
   logFile: string;
@@ -27,7 +27,7 @@ export function startEmbeddedCore(opts: {
   port: number;
   restartDelayMs?: number;
 }): EmbeddedCore {
-  const root = path.join(opts.resources, "apx");
+  const root = path.join(opts.resources, "colonia");
   const build = readBuild(root);
   fs.mkdirSync(path.dirname(opts.logFile), { recursive: true });
   if ((fs.statSync(opts.logFile, { throwIfNoEntry: false })?.size ?? 0) > ROTATE_BYTES)
@@ -50,17 +50,17 @@ export function startEmbeddedCore(opts: {
         stdio: ["ignore", log, log],
         windowsHide: true,
         env: {
-          ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("APX_"))),
-          APX_HOST: "127.0.0.1",
+          ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("COLONIA_"))),
+          COLONIA_HOST: "127.0.0.1",
           ELECTRON_RUN_AS_NODE: "1",
           NODE_COMPILE_CACHE: opts.cacheDir,
-          APX_APP: "",
-          APX_HOME: path.resolve(opts.home),
-          APX_PORT: String(opts.port),
-          APX_WEB_DIST: path.join(root, "apps", "web", "dist"),
-          APX_UPDATES: "app",
-          APX_SUPERVISED: "1",
-          APX_CODE_SHA: build.sha ?? "",
+          COLONIA_APP: "",
+          COLONIA_HOME: path.resolve(opts.home),
+          COLONIA_PORT: String(opts.port),
+          COLONIA_WEB_DIST: path.join(root, "apps", "web", "dist"),
+          COLONIA_UPDATES: "app",
+          COLONIA_SUPERVISED: "1",
+          COLONIA_CODE_SHA: build.sha ?? "",
         },
       },
     );

@@ -4,7 +4,7 @@
   display: grid;
   gap: 3px;
   width: min(420px, 100%);
-  border-radius: var(--apx-radius-lg);
+  border-radius: var(--colonia-radius-lg);
   overflow: hidden;
 }
 .mediagrid__row {
@@ -17,7 +17,7 @@
   aspect-ratio: 1;
   padding: 0;
   border: 0;
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
   cursor: zoom-in;
   overflow: hidden;
 }
@@ -59,7 +59,7 @@
   width: min(480px, calc(100vw - 48px));
   height: auto;
   aspect-ratio: 4 / 3;
-  border-radius: var(--apx-radius-lg);
+  border-radius: var(--colonia-radius-lg);
 }
 .mediagrid__more {
   position: absolute;
@@ -68,8 +68,8 @@
   place-items: center;
   background: rgb(0 0 0 / 0.45);
   color: #fff;
-  font-size: var(--apx-text-xl, 22px);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-xl, 22px);
+  font-weight: var(--colonia-weight-semibold);
 }
 .imageviewer__frame {
   position: relative;
@@ -84,15 +84,15 @@
   gap: 6px;
   padding: 4px 6px;
   border-radius: 999px;
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-md, 0 4px 16px rgb(0 0 0 / 0.2));
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-md, 0 4px 16px rgb(0 0 0 / 0.2));
 }
 .mediagallery__count,
 .mediacarousel__count {
   min-width: 48px;
   text-align: center;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -125,7 +125,7 @@
   width: 100%;
   aspect-ratio: 9 / 16;
   max-height: 430px;
-  border-radius: var(--apx-radius-lg);
+  border-radius: var(--colonia-radius-lg);
   object-fit: contain;
 }
 .mediacarousel__card video {
@@ -149,7 +149,7 @@
   gap: 6px;
   min-width: 0;
   padding: 0 2px;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
 }
 .mediacarousel__name {
   flex: 1;
@@ -159,7 +159,7 @@
   white-space: nowrap;
 }
 .mediacarousel__size {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .mediacarousel__bar {
   display: flex;

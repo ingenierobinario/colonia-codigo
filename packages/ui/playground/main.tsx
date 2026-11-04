@@ -1,18 +1,18 @@
 import { createRoot } from "react-dom/client";
 import {
-  ActionGroup, ActivityPill, AgentAvatar, AgentChip, ApxProvider, AvatarStack, Avatar, Badge, Button, Composer,
+  ActionGroup, ActivityPill, AgentAvatar, AgentChip, ColoniaProvider, AvatarStack, Avatar, Badge, Button, Composer,
   ConversationRow, DayDivider, EntityCard, Icons, IconButton, Message, MessageMeta, NavItem, SearchField,
-  SectionLabel, StepList, SystemNote, Tag, VoiceNote, SegmentedControl, type ApxLook, type ApxMode,
+  SectionLabel, StepList, SystemNote, Tag, VoiceNote, SegmentedControl, type ColoniaLook, type ColoniaMode,
 } from "../src";
 import "../src/styles/tokens.css";
 import "../src/styles/components.css";
 import "../src/styles/components/flow.css";
 
-function Screen({ look, mode }: { look: ApxLook; mode: ApxMode }) {
+function Screen({ look, mode }: { look: ColoniaLook; mode: ColoniaMode }) {
   const classic = look === "classic";
   return (
-    <ApxProvider look={look} mode={mode} fill style={{ display: "flex", height: 760, border: "1px solid #8884", borderRadius: 14, overflow: "hidden" }}>
-      <aside style={{ width: 280, background: "var(--apx-sidebar)", borderRight: "1px solid var(--apx-border)", padding: 10, display: "flex", flexDirection: "column", gap: 2 }}>
+    <ColoniaProvider look={look} mode={mode} fill style={{ display: "flex", height: 760, border: "1px solid #8884", borderRadius: 14, overflow: "hidden" }}>
+      <aside style={{ width: 280, background: "var(--colonia-sidebar)", borderRight: "1px solid var(--colonia-border)", padding: 10, display: "flex", flexDirection: "column", gap: 2 }}>
         <SearchField size="sm" shortcut={["⌘", "K"]} />
         <div style={{ height: 8 }} />
         <NavItem icon={<Icons.House />} label="Home" active />
@@ -27,8 +27,8 @@ function Screen({ look, mode }: { look: ApxLook; mode: ApxMode }) {
         <ConversationRow avatar={<AgentAvatar name="Scout" blob="zafiro" size={34} />} title="Scout" time="10:34 a. m." preview="3 intros drafted in your voice" unread={2} />
         <ConversationRow avatar={<AvatarStack size={22}><AgentAvatar name="Ledger" blob="menta" size={22} animated={false} /><AgentAvatar name="Scout" blob="amatista" size={22} animated={false} /></AvatarStack>} title="Offsite crew" time="7:34 a. m." preview="that leaves the pipeline" typing={classic ? undefined : "Ledger is typing…"} tags={classic ? <><Tag icon={<Icons.Folder />}>Acme</Tag><Tag>Agente ↔ agente</Tag></> : undefined} />
       </aside>
-      <main style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--apx-bg)", minWidth: 0 }}>
-        <header style={{ height: 48, display: "flex", alignItems: "center", gap: 8, padding: "0 16px", borderBottom: "1px solid var(--apx-border)" }}>
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--colonia-bg)", minWidth: 0 }}>
+        <header style={{ height: 48, display: "flex", alignItems: "center", gap: 8, padding: "0 16px", borderBottom: "1px solid var(--colonia-border)" }}>
           <AgentAvatar name="Outbound" blob="brasa" size={22} />
           <strong style={{ fontWeight: 500 }}>Outbound</strong>
           <span style={{ flex: 1 }} />
@@ -65,7 +65,7 @@ function Screen({ look, mode }: { look: ApxLook; mode: ApxMode }) {
           )}
         </div>
       </main>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }
 

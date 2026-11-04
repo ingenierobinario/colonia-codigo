@@ -1,5 +1,5 @@
 import "../styles/computer.css";
-import { Icons } from "@apx/ui";
+import { Icons } from "@colonia/ui";
 import { useEffect } from "react";
 import { data } from "../data/state.ts";
 import { usePack, useT } from "../i18n/index.ts";

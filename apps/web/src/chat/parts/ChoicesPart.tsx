@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { Button, Icons } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { Button, Icons } from "@colonia/ui";
 import { useState } from "react";
 import { send } from "../../data/actions.ts";
 import { useData } from "../../data/state.ts";

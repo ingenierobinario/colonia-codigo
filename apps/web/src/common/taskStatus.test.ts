@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Task } from "@apx/protocol";
+import { Task } from "@colonia/protocol";
 import { prefs } from "../data/prefs.ts";
 import { startI18n, t } from "../i18n/index.ts";
 import { taskStatus, taskStatusTone } from "./taskStatus.ts";

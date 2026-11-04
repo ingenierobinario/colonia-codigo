@@ -1,4 +1,4 @@
-import { flowMethods } from "@apx/protocol/flow-methods";
+import { flowMethods } from "@colonia/protocol/flow-methods";
 import { FLOW_DRAFTS, flowLines } from "./flow-tool-drafts.ts";
 import { merged, type Setting, str } from "./settings-kit.ts";
 

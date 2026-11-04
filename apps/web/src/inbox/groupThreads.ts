@@ -1,4 +1,4 @@
-import type { Project, Thread } from "@apx/protocol";
+import type { Project, Thread } from "@colonia/protocol";
 import { baseName, inInbox, inProject, isTopLevel, isWorking } from "../data/identity.ts";
 
 /** `routines`: routine runs that told something are listed too. */

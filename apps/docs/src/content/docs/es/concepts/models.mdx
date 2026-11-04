@@ -9,31 +9,31 @@ import { Aside, Steps, CardGrid, LinkCard } from "@astrojs/starlight/components"
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-APX no trae un modelo propio. Vos traés uno (o varios): una API key, tu plan de ChatGPT, un modelo que corre en tu
-máquina. APX elige el indicado para cada turno y pasa al siguiente cuando uno falla.
+Colonia no trae un modelo propio. Vos traés uno (o varios): una API key, tu plan de ChatGPT, un modelo que corre en tu
+máquina. Colonia elige el indicado para cada turno y pasa al siguiente cuando uno falla.
 
 ## Dos palabras: proveedor y harness
 
 | | Es | Ejemplos |
 |---|---|---|
-| **Proveedor** | Una API de modelos que llama el loop propio de APX. Con esto piensan tus agentes. | Gemini, Anthropic, OpenAI, OpenRouter, un Ollama local, tu plan de ChatGPT |
-| **Harness** | Lo que corre el loop de un turno. `native` es el de APX; los otros son CLIs de código que corren su propio loop. | `native`, `claude` (Claude Code), `codex` (Codex), `acp` (OpenCode, Qwen Code, Gemini CLI, goose…) |
+| **Proveedor** | Una API de modelos que llama el loop propio de Colonia. Con esto piensan tus agentes. | Gemini, Anthropic, OpenAI, OpenRouter, un Ollama local, tu plan de ChatGPT |
+| **Harness** | Lo que corre el loop de un turno. `native` es el de Colonia; los otros son CLIs de código que corren su propio loop. | `native`, `claude` (Claude Code), `codex` (Codex), `acp` (OpenCode, Qwen Code, Gemini CLI, goose…) |
 
 Tus agentes, el router y el modelo por defecto de la instalación usan siempre **proveedores** a través del loop de
-APX, con las herramientas, la memoria y las reglas de seguridad de APX. Claude Code, Codex y las otras CLIs corren
+Colonia, con las herramientas, la memoria y las reglas de seguridad de Colonia. Claude Code, Codex y las otras CLIs corren
 **en sus propias sesiones**: le hablás a la CLI en persona, en una carpeta, desde **Sesiones externas**. No son
 modelos para tus agentes.
 
 <Aside>
   Tu suscripción de Claude funciona sólo dentro de Claude Code: Anthropic limita su inicio de sesión a Claude Code.
-  Así que en APX vive en las sesiones de Claude Code, y los agentes que quieras que piensen con Claude usan una API key
+  Así que en Colonia vive en las sesiones de Claude Code, y los agentes que quieras que piensen con Claude usan una API key
   de Anthropic.
 </Aside>
 
 ## Sumar un proveedor
 
-Abrí **Configuración › Motores y modelos**. En **APIs de modelos (loop propio de APX)**, tocá **Agregar proveedor** y
-elegí su tipo; la dirección se completa sola. Pegá la key (APX la guarda en el almacén de secretos y no la vuelve a
+Abrí **Configuración › Motores y modelos**. En **APIs de modelos (loop propio de Colonia)**, tocá **Agregar proveedor** y
+elegí su tipo; la dirección se completa sola. Pegá la key (Colonia la guarda en el almacén de secretos y no la vuelve a
 mostrar) y la lista de modelos se le pide al proveedor mismo.
 
 Presets: **OpenCode Zen**, **Gemini**, **Anthropic**, **OpenAI**, **OpenRouter**, **Groq**, **Cerebras**,
@@ -42,13 +42,13 @@ API. Ollama y LM Studio corren en tu máquina y no necesitan key.
 
 <Shot name="settings-engines" alt="Configuración, Engines and models: la tarjeta del plan de ChatGPT y una lista de APIs de modelos con su estado" caption="Configuración › Motores y modelos" />
 
-En un servidor sin panel, tres variables de entorno suman un proveedor OpenAI-compatible: `APX_LLM_BASE_URL`,
-`APX_LLM_KEY_REF` (el nombre de un secreto) y `APX_LLM_MODELS`. Mirá [Configuración](/es/reference/configuration/).
+En un servidor sin panel, tres variables de entorno suman un proveedor OpenAI-compatible: `COLONIA_LLM_BASE_URL`,
+`COLONIA_LLM_KEY_REF` (el nombre de un secreto) y `COLONIA_LLM_MODELS`. Mirá [Configuración](/es/reference/configuration/).
 
 ### Tu plan de ChatGPT
 
 Tu plan de ChatGPT también puede ser un proveedor, que aparece como **Codex**. Sus modelos corren entonces en el loop
-de APX, con las herramientas de APX.
+de Colonia, con las herramientas de Colonia.
 
 <Steps>
 
@@ -56,11 +56,11 @@ de APX, con las herramientas de APX.
    sesión no puede terminar.
 2. En **Configuración › Motores y modelos**, tocá **Conectar** en la tarjeta del plan de ChatGPT y después
    **Iniciar sesión con ChatGPT**.
-3. Abrí la página que te muestra APX y escribí ahí el código. APX espera hasta que termines en el navegador.
+3. Abrí la página que te muestra Colonia y escribí ahí el código. Colonia espera hasta que termines en el navegador.
 
 </Steps>
 
-APX tiene su propio inicio de sesión, separado del de la app de Codex, y lo renueva solo. Si APX v1 ya tenía la sesión
+Colonia tiene su propio inicio de sesión, separado del de la app de Codex, y lo renueva solo. Si Colonia v1 ya tenía la sesión
 iniciada, podés tomar esa sesión sin un código nuevo.
 
 ## Cómo se nombra un modelo
@@ -102,15 +102,15 @@ Tres lugares eligen modelo, del más puntual al más general:
 | Dónde | Cómo | Quiere decir |
 |---|---|---|
 | Un chat | El selector de modelo del compositor | Sólo este chat. |
-| Un agente | El panel del agente, o `apx agents model` | Un modelo fijo, un modelo con el router detrás (`--router`), el router solo, o el por defecto de la instalación. |
-| La instalación | `apx models default`, o la cadena del router | Todos los agentes que no eligieron otro. |
+| Un agente | El panel del agente, o `colonia agents model` | Un modelo fijo, un modelo con el router detrás (`--router`), el router solo, o el por defecto de la instalación. |
+| La instalación | `colonia models default`, o la cadena del router | Todos los agentes que no eligieron otro. |
 
 ## Consumo
 
 Cada turno anota su modelo y sus tokens, y si estaban **incluidos** en una suscripción o eran **medidos** (pagados por
 token). Lo ves en el panel lateral **Consumo** de un chat, con `/usage` en un chat, o para toda la instalación:
 
-<Terminal command="apx usage 7">{`since 2026-10-01
+<Terminal command="colonia usage 7">{`since 2026-10-01
 gemini/gemini-3.8-flash                      metered     212 runs     1840233 in      96410 out
 chatgpt/gpt-6-sol                            included     48 runs      603118 in      41022 out`}</Terminal>
 
@@ -119,7 +119,7 @@ chatgpt/gpt-6-sol                            included     48 runs      603118 in
 **Desde 2.11.1**, el botón **Uso de IA** de la barra superior puede mostrar ventanas
 de cuota, proporción restante y horarios de reinicio informados por los CLI locales de Codex y Claude. Las consultas
 corren en la **computadora del core**, no necesariamente en tu escritorio. Claude requiere Claude Code 2.1.273 o
-posterior. APX no inicia turnos de modelo para consultarlas ni lee las credenciales de los CLI. Las cuentas no
+posterior. Colonia no inicia turnos de modelo para consultarlas ni lee las credenciales de los CLI. Las cuentas no
 compatibles o no disponibles muestran ese estado, no un saldo estimado de suscripción.
 
 Cada tarjeta de motor tiene un interruptor **Uso**, independiente de la potencia del modelo. Está desactivado por
@@ -129,7 +129,7 @@ conserva. Los tokens, costos y contexto del chat siguen separados de estos lími
 
 ## Desde la terminal
 
-<Terminal command="apx models">{`claude — Claude Code
+<Terminal command="colonia models">{`claude — Claude Code
   claude/sonnet
 codex — Codex
   codex/gpt-6-sol
@@ -141,19 +141,19 @@ chatgpt — Codex
 ollama — Ollama (not available)`}</Terminal>
 
 La lista arranca con las CLIs (`claude`, `codex`, los agentes ACP), cuyos modelos usás en sus propias sesiones, y
-sigue con tus proveedores. A cada motor se le pide su propia lista; `apx models --refresh` vuelve a preguntar en vez
+sigue con tus proveedores. A cada motor se le pide su propia lista; `colonia models --refresh` vuelve a preguntar en vez
 de usar la caché de un día.
 
-<Terminal command="apx models config">{`default: router
+<Terminal command="colonia models config">{`default: router
 router chain: gemini/gemini-3.8-flash → chatgpt/gpt-6-sol
   rule {"has_image":true} → gemini/gemini-3.8-pro  # photos and screenshots`}</Terminal>
 
 | Comando | Hace |
 |---|---|
-| `apx models default <engine/model \| engine \| router> [--router]` | Define el modelo por defecto de la instalación. |
-| `apx models chain <ref> [<ref>…]` | Define la cadena de respaldo del router, en orden. |
-| `apx models rules < rules.json` | Reemplaza las reglas del router (JSON por stdin). |
-| `apx agents model <agent> <ref \| router \| default> [--router]` | Define el modelo de un agente. |
+| `colonia models default <engine/model \| engine \| router> [--router]` | Define el modelo por defecto de la instalación. |
+| `colonia models chain <ref> [<ref>…]` | Define la cadena de respaldo del router, en orden. |
+| `colonia models rules < rules.json` | Reemplaza las reglas del router (JSON por stdin). |
+| `colonia agents model <agent> <ref \| router \| default> [--router]` | Define el modelo de un agente. |
 
 Un archivo de reglas es una lista. Todas las condiciones de `when` tienen que cumplirse; `model` es lo que elige la
 regla:
@@ -170,6 +170,6 @@ Las condiciones son `has_image`, `min_chars`, `max_chars`, `min_context_chars`, 
 `a2a`, `a2a_result`, `surface`, `channel`, `routine`, `system`), `agent_kinds` (`secretary`, `agent`) y `keywords`.
 
 <CardGrid>
-  <LinkCard title="Código" description="Sesiones de Claude Code y Codex desde APX." href="/es/office/code/" />
+  <LinkCard title="Código" description="Sesiones de Claude Code y Codex desde Colonia." href="/es/office/code/" />
   <LinkCard title="Configuración" description="Variables de entorno y archivos." href="/es/reference/configuration/" />
 </CardGrid>

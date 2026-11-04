@@ -1,5 +1,5 @@
-import type { Routine, RoutineRun } from "@apx/protocol";
-import { Badge, Button, Icons } from "@apx/ui";
+import type { Routine, RoutineRun } from "@colonia/protocol";
+import { Badge, Button, Icons } from "@colonia/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { Transcript } from "../chat/Transcript.tsx";
 import { Drawer } from "../common/Drawer.tsx";

@@ -1,5 +1,5 @@
-import type { Agent, Thread, WritePolicy } from "@apx/protocol";
-import { EngineIcon, IconButton, Icons, Menu, type MenuEntry, ProjectTile, Tag, Tooltip } from "@apx/ui";
+import type { Agent, Thread, WritePolicy } from "@colonia/protocol";
+import { EngineIcon, IconButton, Icons, Menu, type MenuEntry, ProjectTile, Tag, Tooltip } from "@colonia/ui";
 import { Suspense } from "react";
 import { useAgentHint } from "../common/AgentFace.tsx";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";

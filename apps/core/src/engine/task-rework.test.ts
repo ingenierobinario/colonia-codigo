@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { createLog } from "../log.ts";
 import { taskHandlers } from "../rpc/tasks.ts";
 import { reworkTask } from "./task-work.ts";
@@ -54,7 +54,7 @@ async function settled(thread: string, count: number) {
   throw new Error(`Expected ${count} finished runs in ${thread}`);
 }
 const rejects = (operation: Promise<unknown>, message: RegExp) =>
-  assert.rejects(operation, (error: unknown) => error instanceof ApxError && message.test(error.message));
+  assert.rejects(operation, (error: unknown) => error instanceof ColoniaError && message.test(error.message));
 
 async function closedTask(title = "Delivery") {
   const task = await env.client.call("tasks.create", {

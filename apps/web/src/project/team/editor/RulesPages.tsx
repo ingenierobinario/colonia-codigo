@@ -1,6 +1,6 @@
 // The agent editor's permission pages: autonomy (with its budget), rules by case and the browser profile.
-import { type Agent, Autonomy, type Result, type RulePolicy, type ToolApproval, type ToolRisk } from "@apx/protocol";
-import { Button, Dialog, SegmentedControl } from "@apx/ui";
+import { type Agent, Autonomy, type Result, type RulePolicy, type ToolApproval, type ToolRisk } from "@colonia/protocol";
+import { Button, Dialog, SegmentedControl } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import { type MessageKey, useT } from "../../../i18n/index.ts";
 import { AgentBudgetField } from "../AgentBudgetField.tsx";

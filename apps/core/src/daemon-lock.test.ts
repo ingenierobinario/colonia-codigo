@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { acquireDaemonLock } from "./daemon-lock.ts";
 import { removeDir } from "./testkit/platform.ts";
 
-const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), "apx-daemon-lock-"));
+const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), "colonia-daemon-lock-"));
 
 test("a home has one owner, including aliases, while another home remains independent", () => {
   const root = temp();

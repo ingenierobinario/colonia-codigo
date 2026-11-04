@@ -81,7 +81,7 @@ export async function fakeIrc(opts: { password?: string; sasl?: boolean; taken?:
         } else if (m.command === "JOIN")
           for (const ch of p0.split(",")) {
             joined.add(ch);
-            out(`:${nick}!bot@apx.example JOIN ${ch}`);
+            out(`:${nick}!bot@colonia.example JOIN ${ch}`);
           }
         else if (m.command === "PING") out(ircLine("PONG", ["irc.example.org", p0]));
         else if (m.command === "PRIVMSG") sent.push({ to: p0, text: p1, tags: m.tags });
@@ -154,7 +154,7 @@ export async function fakeTwitch(channel: string): Promise<FakeTwitch> {
           }
           sockets.add(ws);
           out(`:tmi.twitch.tv 001 ${p0} :Welcome, GLHF!`);
-        } else if (m.command === "JOIN") out(`:apxbot!apxbot@apxbot.tmi.twitch.tv JOIN ${p0}`);
+        } else if (m.command === "JOIN") out(`:coloniabot!coloniabot@coloniabot.tmi.twitch.tv JOIN ${p0}`);
         else if (m.command === "PING") out(`PONG :${p0}`);
         else if (m.command === "PRIVMSG") sent.push({ to: p0, text: p1, tags: m.tags });
       }

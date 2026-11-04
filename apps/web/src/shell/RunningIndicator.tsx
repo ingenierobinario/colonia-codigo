@@ -8,7 +8,7 @@ import {
   Popover,
   SegmentedControl,
   Spinner,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { Fragment, Suspense, useMemo, useState } from "react";
 import { elapsed } from "../common/format.ts";
 import { useNow } from "../common/useNow.ts";

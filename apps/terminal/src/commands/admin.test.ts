@@ -3,7 +3,7 @@ import { once } from "node:events";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { admin, consoleCommands } from "./admin.ts";
 
 for (const result of [
@@ -27,16 +27,16 @@ for (const result of [
     await once(server, "listening");
     try {
       const { port } = server.address() as AddressInfo;
-      const client = new ApxClient({ url: `http://127.0.0.1:${port}` });
+      const client = new ColoniaClient({ url: `http://127.0.0.1:${port}` });
       await admin(client, "upgrade", [], {});
       const output = lines.join("\n");
       assert.match(output, result.ok ? /Updated/ : /Update failed/);
       assert.match(output, new RegExp(result.log));
       if (!result.ok) {
-        assert.doesNotMatch(output, /Restart APX|Core restarting/);
+        assert.doesNotMatch(output, /Restart Colonia|Core restarting/);
         assert.equal(process.exitCode, 1);
       } else {
-        assert.match(output, result.restart ? /Core restarting/ : /Restart APX to load the update/);
+        assert.match(output, result.restart ? /Core restarting/ : /Restart Colonia to load the update/);
         assert.equal(process.exitCode, previousExitCode);
       }
     } finally {
@@ -58,7 +58,7 @@ test("closing the console aborts the command still waiting on the core, and the 
   await once(server, "listening");
   try {
     const { port } = server.address() as AddressInfo;
-    const runner = consoleCommands(new ApxClient({ url: `http://127.0.0.1:${port}`, timeoutMs: 60_000 }));
+    const runner = consoleCommands(new ColoniaClient({ url: `http://127.0.0.1:${port}`, timeoutMs: 60_000 }));
     const started = Date.now();
     const pending = runner.run(async (client) => void (await client.call("agents.list", {})));
     await once(server, "request");

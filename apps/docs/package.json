@@ -1,8 +1,8 @@
 {
-  "name": "@apx/docs",
+  "name": "@colonia/docs",
   "version": "0.0.0",
   "private": true,
-  "description": "The APX documentation site (Astro + Starlight). Installs on its own: cd apps/docs && pnpm install --ignore-workspace.",
+  "description": "The Colonia documentation site (Astro + Starlight). Installs on its own: cd apps/docs && pnpm install --ignore-workspace.",
   "type": "module",
   "packageManager": "pnpm@11.11.0",
   "scripts": {

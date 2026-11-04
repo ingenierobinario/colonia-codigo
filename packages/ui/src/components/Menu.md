@@ -11,7 +11,7 @@ Dropdown / overflow menu driven by an `items` array: `{ label, icon, shortcut, d
   stays open between clicks.
 - `onOpenChange` says when it opens: read fresh items then, never on the trigger's own press (a re-render mid-press
   can swallow the click).
-- Renders into the ApxProvider portal, so it keeps the look.
+- Renders into the ColoniaProvider portal, so it keeps the look.
 
 ```tsx
 <Menu trigger={<IconButton label="Actions" icon={<Icons.Ellipsis />} />} items={[

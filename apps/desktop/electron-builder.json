@@ -2,9 +2,9 @@
   "appId": "com.ingenierobinario.colonia",
   "productName": "Colonia",
   "extraMetadata": {
-    "name": "apx"
+    "name": "colonia"
   },
-  "artifactName": "APX-${version}-${os}-${arch}.${ext}",
+  "artifactName": "Colonia-${version}-${os}-${arch}.${ext}",
   "directories": {
     "output": "../../out",
     "buildResources": "assets"
@@ -12,13 +12,13 @@
   "files": ["dist/**", "package.json", "!node_modules/**"],
   "extraResources": [
     {
-      "from": ".stage/apx",
-      "to": "apx",
+      "from": ".stage/colonia",
+      "to": "colonia",
       "filter": ["**/*"]
     },
     {
-      "from": ".stage/apx/node_modules",
-      "to": "apx/node_modules",
+      "from": ".stage/colonia/node_modules",
+      "to": "colonia/node_modules",
       "filter": ["**/*"]
     }
   ],
@@ -27,28 +27,28 @@
   "publish": null,
   "fileAssociations": [
     {
-      "ext": "apxart",
+      "ext": "coloniaart",
       "name": "Colonia artifact",
-      "description": "APX artifact",
+      "description": "Colonia artifact",
       "role": "Viewer",
-      "icon": "file-apxart",
-      "mimeType": "application/x-apx-artifact"
+      "icon": "file-coloniaart",
+      "mimeType": "application/x-colonia-artifact"
     },
     {
-      "ext": "apxapp",
+      "ext": "coloniaapp",
       "name": "Colonia app",
-      "description": "APX app",
+      "description": "Colonia app",
       "role": "Viewer",
-      "icon": "file-apxapp",
-      "mimeType": "application/x-apx-app"
+      "icon": "file-coloniaapp",
+      "mimeType": "application/x-colonia-app"
     },
     {
-      "ext": "apxext",
+      "ext": "coloniaext",
       "name": "Colonia extension",
-      "description": "APX extension",
+      "description": "Colonia extension",
       "role": "Viewer",
-      "icon": "file-apxext",
-      "mimeType": "application/x-apx-extension"
+      "icon": "file-coloniaext",
+      "mimeType": "application/x-colonia-extension"
     }
   ],
   "mac": {
@@ -60,33 +60,33 @@
     "extendInfo": {
       "UTExportedTypeDeclarations": [
         {
-          "UTTypeIdentifier": "dev.apx.artifact",
-          "UTTypeDescription": "APX artifact",
+          "UTTypeIdentifier": "dev.colonia.artifact",
+          "UTTypeDescription": "Colonia artifact",
           "UTTypeConformsTo": ["public.json", "public.data"],
-          "UTTypeIconFile": "file-apxart.icns",
+          "UTTypeIconFile": "file-coloniaart.icns",
           "UTTypeTagSpecification": {
-            "public.filename-extension": ["apxart"],
-            "public.mime-type": ["application/x-apx-artifact"]
+            "public.filename-extension": ["coloniaart"],
+            "public.mime-type": ["application/x-colonia-artifact"]
           }
         },
         {
-          "UTTypeIdentifier": "dev.apx.app",
-          "UTTypeDescription": "APX app",
+          "UTTypeIdentifier": "dev.colonia.app",
+          "UTTypeDescription": "Colonia app",
           "UTTypeConformsTo": ["public.json", "public.data"],
-          "UTTypeIconFile": "file-apxapp.icns",
+          "UTTypeIconFile": "file-coloniaapp.icns",
           "UTTypeTagSpecification": {
-            "public.filename-extension": ["apxapp"],
-            "public.mime-type": ["application/x-apx-app"]
+            "public.filename-extension": ["coloniaapp"],
+            "public.mime-type": ["application/x-colonia-app"]
           }
         },
         {
-          "UTTypeIdentifier": "dev.apx.extension",
-          "UTTypeDescription": "APX extension",
+          "UTTypeIdentifier": "dev.colonia.extension",
+          "UTTypeDescription": "Colonia extension",
           "UTTypeConformsTo": ["public.json", "public.data"],
-          "UTTypeIconFile": "file-apxext.icns",
+          "UTTypeIconFile": "file-coloniaext.icns",
           "UTTypeTagSpecification": {
-            "public.filename-extension": ["apxext"],
-            "public.mime-type": ["application/x-apx-extension"]
+            "public.filename-extension": ["coloniaext"],
+            "public.mime-type": ["application/x-colonia-extension"]
           }
         }
       ]
@@ -105,8 +105,8 @@
     "target": ["AppImage", "zip"],
     "icon": "assets/icon.png",
     "category": "Utility",
-    "maintainer": "APX",
+    "maintainer": "Colonia",
     "synopsis": "Your agents, your projects, one local core.",
-    "executableName": "apx"
+    "executableName": "colonia"
   }
 }

@@ -9,7 +9,7 @@ import { printed, recordingClient } from "./testing.ts";
 const shown = { id: "srf_1", name: "expenses", title: "Expenses", version: 3, app: true, project_id: "p_acme" };
 
 test("artifacts push shows a built page by name, in the project asked for, titled from the page", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-artifacts-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-artifacts-"));
   try {
     const file = path.join(dir, "index.html");
     fs.writeFileSync(file, "<title>Expenses</title><p>built</p>");
@@ -52,7 +52,7 @@ test("artifacts list shows each one's kind and project", async () => {
   assert.deepEqual(calls, [["surfaces.list", {}]]);
 });
 
-test("a built artifact's source lives in APX's home apart from its memory, per project", () => {
+test("a built artifact's source lives in Colonia's home apart from its memory, per project", () => {
   assert.equal(artifactSourceDir("/h", "expenses"), path.join("/h", "artifact-sources", "global", "expenses"));
   assert.equal(
     artifactSourceDir("/h", "expenses", "p_acme"),

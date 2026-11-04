@@ -107,7 +107,7 @@ test("the VM's usage reads its guest memory when it runs, and leaves out what it
 });
 
 test("the guest disk's size is what it holds, read from Lima 2's `disk` or an older `diffdisk`", async () => {
-  const dir = tempDir("apx-vm-disk-").path;
+  const dir = tempDir("colonia-vm-disk-").path;
   try {
     assert.equal(diskImageBytes(dir), 0);
     fs.writeFileSync(path.join(dir, "diffdisk"), Buffer.alloc(64 * 1024, 1));

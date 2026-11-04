@@ -1,7 +1,7 @@
 // A LINE Official Account through the Messaging API: LINE delivers to the channel's public address (a webhook signed
 // with the channel secret) and the core answers with the free reply API while the event's token is fresh, else with
 // push. One-to-one chats are contacts; groups and multi-person chats are rooms the owner lists, answered when the bot
-// is @mentioned. Buttons are quick replies. Pictures out need a public HTTPS URL, which APX does not serve: only text
+// is @mentioned. Buttons are quick replies. Pictures out need a public HTTPS URL, which Colonia does not serve: only text
 // goes out.
 import { createHmac, timingSafeEqual } from "node:crypto";
 import fs from "node:fs";

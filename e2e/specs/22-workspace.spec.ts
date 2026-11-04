@@ -10,7 +10,7 @@ test("a project chat shows its folder's changes, files and a terminal, and can w
   page,
 }) => {
   await rpc("setup.finish", {});
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-ws-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-ws-")));
   const git = (...args: string[]) =>
     execFileSync("git", ["-c", "user.name=Acme", "-c", "user.email=dev@example.com", "-C", repo, ...args]);
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
@@ -79,12 +79,12 @@ test("a project chat shows its folder's changes, files and a terminal, and can w
   await page.getByRole("menuitem", { name: "Pregunta antes de cambiar" }).click();
   await expect(page.locator(".chat__code")).toContainText("Pregunta antes de cambiar");
 
-  // A chat with no project browses where its agent works: APX's work folder.
+  // A chat with no project browses where its agent works: Colonia's work folder.
   await page.goto("/#thread=home");
   await expect(page.locator(".chat__header")).toContainText("Home");
   const switcher = page.locator(".panelswitch");
   await expect(switcher.getByRole("button", { name: "Terminal" })).toHaveCount(1);
   await switcher.getByRole("button", { name: "Archivos" }).click();
-  await expect(panel.locator(".files__root")).toContainText("Carpeta de trabajo de APX");
+  await expect(panel.locator(".files__root")).toContainText("Carpeta de trabajo de Colonia");
   fs.rmSync(repo, { recursive: true, force: true });
 });

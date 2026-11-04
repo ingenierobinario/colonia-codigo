@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { TabInfo, ToolApproval } from "@apx/protocol";
+import type { TabInfo, ToolApproval } from "@colonia/protocol";
 import { bindBrowserEpoch } from "./browser-consent-binding.ts";
 import { browserConsentCurrent, reconcileBrowserConsents } from "./browser-consent-reconcile.ts";
 
 const grant = (key: string, scope: "tab" | "turn" = "tab", backend = "node1"): ToolApproval => ({
   key,
   scope,
-  server: "apx",
+  server: "colonia",
   tool: "browser_evaluate",
   thread_id: "thread1",
   agent_id: "reader",

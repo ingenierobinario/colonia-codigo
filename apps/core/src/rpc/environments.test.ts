@@ -4,7 +4,7 @@ import { once } from "node:events";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import WebSocket from "ws";
 import { testConfig } from "../config.ts";
 import { callTool, computerChat, say, scriptedLlm, startCore } from "../engine/testkit.ts";
@@ -64,7 +64,7 @@ test("the computer is off by default over HTTP and WS; agent clients cannot acqu
     }
     assert.equal(http.enabled, false);
     assert.deepEqual(http.screens, []);
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(agent.call("environments.display", { screen: 1 }), { code: "unauthorized" });
     assert.equal(fs.existsSync(path.join(env.home, "computer")), false);
     await assert.rejects(env.client.call("environments.display", { screen: 1 }), /not running/);
@@ -75,7 +75,7 @@ test("the computer is off by default over HTTP and WS; agent clients cannot acqu
 });
 
 test("chats go on the computer only for allowed agents; outside clients run nothing and the host terminal stays shut", async () => {
-  const home = tempDir("apx-vm-test-").path;
+  const home = tempDir("colonia-vm-test-").path;
   const env = await startCore({
     home,
     llm: scriptedLlm(() => say("ok")),
@@ -97,7 +97,7 @@ test("chats go on the computer only for allowed agents; outside clients run noth
     assert.deepEqual([...(status.allowed ?? [])].sort(), ["scout", "superagent"]);
     assert.equal(status.allowed_agents, 2);
     await assert.rejects(env.client.call("terminal.open", { thread: chat, cols: 80, rows: 24 }), /VM terminal/i);
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(agent.call("environments.command", { thread: chat, command: "pwd" }), /bound native run/i);
     assert.deepEqual((await env.client.call("terminal.list", { thread: chat })).terminals, []);
   } finally {
@@ -107,7 +107,7 @@ test("chats go on the computer only for allowed agents; outside clients run noth
 });
 
 test("native VM turns expose guest shell and browser tools and never fall back to host when Lima is unavailable", async () => {
-  const home = tempDir("apx-vm-test-").path;
+  const home = tempDir("colonia-vm-test-").path;
   const marker = path.join(home, "must-not-exist");
   const llm = scriptedLlm((req, { afterTool }) => {
     assert.deepEqual(
@@ -172,12 +172,12 @@ test("display tickets are single-use, bounded and revoked at shutdown without sp
 });
 
 test("a failed guest browser never reaches a connected host browser node", async () => {
-  const home = tempDir("apx-vm-browser-").path;
+  const home = tempDir("colonia-vm-browser-").path;
   const llm = scriptedLlm((_req, { afterTool }) =>
     afterTool ? say("Guest browser unavailable") : callTool("open", "browser_open", { url: "https://example.com" }),
   );
   const env = await startCore({ home, llm, computer: { limaHome: path.join(home, "no-vms"), instance: "missing" } });
-  const desktop = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+  const desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
   const hostCalls: string[] = [];
   desktop.onRequest(async (method) => {
     hostCalls.push(method);
@@ -204,7 +204,7 @@ test("a failed guest browser never reaches a connected host browser node", async
 });
 
 test("a chat on the computer keeps make_image, which takes only earlier drawings as references there", async () => {
-  const home = tempDir("apx-vm-test-").path;
+  const home = tempDir("colonia-vm-test-").path;
   const offered: string[][] = [];
   const llm = scriptedLlm((req, { afterTool }) => {
     offered.push(req.tools.map((tool) => tool.function.name));
@@ -244,7 +244,7 @@ test("a chat on the computer keeps make_image, which takes only earlier drawings
 });
 
 test("a VM-bound chat restarted on a core whose computer is not set up offers only guest tools, never the host's", async () => {
-  const home = tempDir("apx-vm-restart-").path;
+  const home = tempDir("colonia-vm-restart-").path;
   const first = await startCore({
     home,
     llm: scriptedLlm(() => say("ok")),
@@ -293,13 +293,13 @@ test("only the owner shuts the shared computer down; it cancels the turns holdin
     });
     return say("Stopped");
   });
-  const home = tempDir("apx-computer-control-").path;
+  const home = tempDir("colonia-computer-control-").path;
   const env = await startCore({
     home,
     llm,
     computer: { limaHome: path.join(home, "no-vms"), instance: "missing", lifecycle: fakeLifecycle(state, modes) },
   });
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   const socket = await env.client.connect();
   try {
     const chat = await computerChat(env);
@@ -381,7 +381,7 @@ test("only the owner shuts the shared computer down; it cancels the turns holdin
 // portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
 if (RUNS_SCRIPTS)
   test("shutdown terminates an in-flight guest command's local SSH process", async () => {
-    const home = tempDir("apx-computer-command-").path;
+    const home = tempDir("colonia-computer-command-").path;
     const pidFile = path.join(home, "ssh.pid");
     const binary = path.join(home, "guest.mjs");
     fs.writeFileSync(
@@ -453,7 +453,7 @@ test("taking an agent's screen cancels the run holding it, persists an interrupt
       env.client.call("environments.command", { thread: chat, command: "pwd" }),
       /name the agent screen/,
     );
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(agent.call("environments.control", { screen: 1, mode: "human" }), { code: "unauthorized" });
     await env.client.call("threads.send", { thread: chat, text: "Work in the VM" });
     await active;
@@ -549,7 +549,7 @@ test("VM availability does not advertise browser tools to an ordinary chat witho
 // portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
 if (RUNS_SCRIPTS)
   test("revoking a device invalidates pending display tickets, closes its live display and refuses existing RPC sockets", async () => {
-    const home = tempDir("apx-display-revoke-").path;
+    const home = tempDir("colonia-display-revoke-").path;
     const binary = path.join(home, "display.mjs");
     fs.writeFileSync(binary, `#!${process.execPath}\nsetInterval(() => {}, 10000);\n`, { mode: 0o755 });
     const token = "test-core-display-token";
@@ -567,15 +567,15 @@ if (RUNS_SCRIPTS)
         imessage: null,
       },
     );
-    const owner = new ApxClient({ url: core.url, token });
+    const owner = new ColoniaClient({ url: core.url, token });
     let display: WebSocket | undefined;
-    let socket: Awaited<ReturnType<ApxClient["connect"]>> | undefined;
+    let socket: Awaited<ReturnType<ColoniaClient["connect"]>> | undefined;
     try {
       await owner.call("environments.status", {});
       await core.computer.ledger.claim("superagent", "home", "run_test");
       const { code } = await owner.call("devices.pair_start", {});
-      const paired = await new ApxClient({ url: core.url }).call("devices.pair", { code, name: "Test display" });
-      const client = new ApxClient({ url: core.url, token: paired.token });
+      const paired = await new ColoniaClient({ url: core.url }).call("devices.pair", { code, name: "Test display" });
+      const client = new ColoniaClient({ url: core.url, token: paired.token });
       socket = await client.connect();
       const live = await client.call("environments.display", { screen: 1 });
       const pending = await socket.call("environments.display", { screen: 1 });
@@ -614,7 +614,7 @@ if (RUNS_SCRIPTS)
 if (RUNS_SCRIPTS)
   test("a viewer that reconnects again and again never hits the cap: the same device's oldest one gives way", async () => {
     const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-    const dir = tempDir("apx-vm-viewer-").path;
+    const dir = tempDir("colonia-vm-viewer-").path;
     // A viewer that stays open until it is ended, as a desktop's does.
     const viewer = path.join(dir, "viewer.sh");
     fs.writeFileSync(viewer, "#!/bin/sh\nexec sleep 60\n", { mode: 0o755 });

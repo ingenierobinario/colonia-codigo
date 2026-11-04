@@ -1,4 +1,4 @@
-import { ApxProvider, Avatar, IconButton, Icons, NavItem, SectionLabel } from "@apx/ui";
+import { ColoniaProvider, Avatar, IconButton, Icons, NavItem, SectionLabel } from "@colonia/ui";
 
 function Sidebar() {
   return (
@@ -9,7 +9,7 @@ function Sidebar() {
         flexDirection: "column",
         gap: 2,
         padding: 8,
-        background: "var(--apx-sidebar)",
+        background: "var(--colonia-sidebar)",
         borderRadius: 12,
       }}
     >
@@ -32,8 +32,8 @@ export function Minimal() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 8, borderRadius: 12, width: 256 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 8, borderRadius: 12, width: 256 }}>
       <Sidebar />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

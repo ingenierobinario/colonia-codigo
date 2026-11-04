@@ -7,7 +7,7 @@ import { expect, test } from "./kit.ts";
 test("guest browser cards, including old messages, stay in the VM; an open panel replaces the preview", async ({
   page,
 }) => {
-  const home = tempDir("apx-browser-card-").path;
+  const home = tempDir("colonia-browser-card-").path;
   const env = await startCore({
     home,
     llm: scriptedLlm(() => say("ok")),
@@ -70,12 +70,12 @@ test("guest browser cards, including old messages, stay in the VM; an open panel
     const legacy = page.getByRole("button", { name: "Computadora: Legacy guest page", exact: true });
     await expect(legacy).toBeVisible();
     await expect(page.getByRole("button", { name: "Computadora: Tagged guest page", exact: true })).toBeVisible();
-    await expect(page.locator(".apx-livebrowser__preview")).toHaveCount(0);
+    await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Abrir de nuevo", exact: true })).toHaveCount(0);
     await legacy.click();
     await expect(page.locator(".computer")).toBeVisible();
     await expect(page).toHaveURL(/panel=computer/);
-    await expect(page.locator(".apx-livebrowser__preview")).toHaveCount(0);
+    await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(0);
     expect(hostCalls.filter((method) => method !== "browser.tabs")).toEqual([]);
     await page.locator(".computer").getByRole("button", { name: "Cerrar panel", exact: true }).click();
     await expect(page.locator(".computer")).toHaveCount(0);
@@ -88,16 +88,16 @@ test("guest browser cards, including old messages, stay in the VM; an open panel
     const other = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
     add(other.id, "Ordinary host page", "h1");
     await page.goto(`${env.core.url}/#thread=${other.id}`);
-    await expect(page.locator(".apx-livebrowser__preview")).toHaveCount(1);
-    await page.locator(".apx-livebrowser__preview").click();
+    await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(1);
+    await page.locator(".colonia-livebrowser__preview").click();
     await expect(page).toHaveURL(/panel=browser/);
     await expect(page.locator(".browser__page")).toBeVisible();
-    await expect(page.locator(".apx-livebrowser__preview")).toHaveCount(0);
+    await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(0);
     await expect(page.locator(".browserpart__compact")).toContainText("Host page");
 
     // Another selected tab must not suppress this card's preview.
     await page.getByRole("tab", { name: /Other page/ }).click();
-    await expect(page.locator(".apx-livebrowser__preview")).toHaveCount(1);
+    await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(1);
     expect(hostCalls).not.toContain("browser.open");
   } finally {
     await page.goto("about:blank");

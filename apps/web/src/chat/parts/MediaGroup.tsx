@@ -1,6 +1,6 @@
 // A message's pictures as one grid that opens a viewer to step through them, and its videos as one carousel. Loaded
 // with the first message that has media, so it never weighs on the panel's first script.
-import { ContextMenu, Dialog, IconButton, Icons, MediaLoader } from "@apx/ui";
+import { ContextMenu, Dialog, IconButton, Icons, MediaLoader } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { formatBytes } from "../../common/format.ts";
 import { mediaUrl } from "../../data/media.ts";
@@ -11,7 +11,7 @@ import "../../styles/media.css";
 
 const SAFE = /^(https?:|data:image\/)/i;
 
-/** The object URL of a media file APX holds, once loaded (its own copy: a shared hook would be a chunk of its own). */
+/** The object URL of a media file Colonia holds, once loaded (its own copy: a shared hook would be a chunk of its own). */
 function useMediaUrl(id: string | undefined): string | undefined {
   const [url, setUrl] = useState<string>();
   useEffect(() => {

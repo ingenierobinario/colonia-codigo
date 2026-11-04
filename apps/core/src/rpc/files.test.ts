@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -27,8 +27,8 @@ let project = "";
 
 before(async () => {
   env = await startCore({ llm: scriptedLlm(() => say("ok")), desktop });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-files-repo-")));
-  outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-files-out-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-files-repo-")));
+  outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-files-out-")));
   fs.mkdirSync(path.join(repo, ".apc"), { recursive: true });
   fs.mkdirSync(path.join(repo, "docs"));
   fs.mkdirSync(path.join(repo, ".git"));
@@ -75,10 +75,10 @@ test("nothing outside the folder: .., absolute paths, links out, .git; and only 
   // An absolute path is read inside the folder, never from the root of the disk.
   await assert.rejects(env.client.call("files.read", { project, path: "/etc/hosts" }), /file \/etc\/hosts not found/);
   await assert.rejects(env.client.call("files.tree", { project, dir: "escape" }), /outside the folder/);
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(
     agent.call("files.read", { project, path: "AGENTS.md" }),
-    (e: unknown) => e instanceof ApxError && /reserved to the owner/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /reserved to the owner/.test(e.message),
   );
 });
 
@@ -137,7 +137,7 @@ test("Finder, rename and trash stay inside the folder; the trash never takes the
   assert.equal(desktopCalls.length, before, "nothing else reached the trash");
 });
 
-test("a chat browses the folder its agent works in: its project's, or else APX's work folder", async () => {
+test("a chat browses the folder its agent works in: its project's, or else Colonia's work folder", async () => {
   const inProject = await env.client.call("threads.create", {
     kind: "loose",
     agent_id: "superagent",
@@ -153,7 +153,7 @@ test("a chat browses the folder its agent works in: its project's, or else APX's
   await assert.rejects(env.client.call("files.tree", {}), /a project or a chat/);
 });
 
-test("the base project browses APX's work folder, the one its chats work in", async () => {
+test("the base project browses Colonia's work folder, the one its chats work in", async () => {
   const bare = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
   const fromChat = await env.client.call("files.tree", { thread: bare.id });
   const fromBase = await env.client.call("files.tree", { base: true });

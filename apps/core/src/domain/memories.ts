@@ -1,7 +1,7 @@
 // Memory: short notes agents keep between threads, scoped to the owner (global), a project or one agent, searched
 // with SQLite's full-text index.
 import { createHash } from "node:crypto";
-import type { Memory, MemoryEvidence, MemoryScope } from "@apx/protocol";
+import type { Memory, MemoryEvidence, MemoryScope } from "@colonia/protocol";
 import { type ExpressionBuilder, sql as raw, type Selectable } from "kysely";
 import type { Database, MemoriesTable } from "../db/schema.ts";
 import { absoluteDates, duplicateMemory, memoryKey, sameMemory } from "./memory-content.ts";

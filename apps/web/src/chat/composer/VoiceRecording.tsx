@@ -1,4 +1,4 @@
-import { Icons } from "@apx/ui";
+import { Icons } from "@colonia/ui";
 import { useT } from "../../i18n/index.ts";
 import type { DictationState } from "./useDictation.ts";
 

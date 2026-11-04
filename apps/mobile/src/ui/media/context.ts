@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { MediaItem } from "../../chat/media";
 import { mediaFile } from "../../chat/mediaFiles";
-import type { ApxClient } from "../../protocol";
+import type { ColoniaClient } from "../../protocol";
 
 /** The chat's client, for the pictures, videos and sounds in its messages to fetch their bytes. */
-export const MediaClient = createContext<ApxClient | undefined>(undefined);
+export const MediaClient = createContext<ColoniaClient | undefined>(undefined);
 
-export function useMediaClient(): ApxClient {
+export function useMediaClient(): ColoniaClient {
   const client = useContext(MediaClient);
   if (!client) throw new Error("MediaClient missing");
   return client;

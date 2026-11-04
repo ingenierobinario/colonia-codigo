@@ -1,6 +1,6 @@
-# APX docs
+# Colonia docs
 
-The documentation site for APX v2: Astro + Starlight, in English (`src/content/docs/`) and Spanish
+The documentation site for Colonia v2: Astro + Starlight, in English (`src/content/docs/`) and Spanish
 (`src/content/docs/es/`). The front page is not a Starlight page: it is `src/components/home/Home.astro`, in the
 site's look, with its words in `src/i18n/home.ts`.
 
@@ -16,8 +16,8 @@ pnpm preview      # preview the built site at http://127.0.0.1:4400/
 pnpm shots        # retake every screenshot against a demo core (see below)
 ```
 
-It is published at `https://apxagent.app/` (the repository's Pages custom domain, built by the Pages workflow on
-`main`; `agentprojectcontext.github.io/apx/…` redirects there). The build also copies `scripts/install/install.sh` and `install.ps1` to the site's root,
+It is published at `https://colonia.ingenierobinario.com/` (the repository's Pages custom domain, built by the Pages workflow on
+`main`; `agentprojectcontext.github.io/colonia/…` redirects there). The build also copies `scripts/install/install.sh` and `install.ps1` to the site's root,
 so `<site>/install.sh` is the stable install URL; the older `/v2/install.sh` stays served beside it. `<base>docs/`
 redirects to `/docs/start/introduction/`; Spanish documentation lives at `/es/docs/…`.
 All former documentation addresses remain static HTML redirects. See [Site routing](SITE_ROUTING.md)
@@ -44,7 +44,7 @@ With the repository's root development dependencies installed and the built site
 - English: short, concrete, second person. Spanish: rioplatense ("vos", "tenés"), same sections as the English page.
   Commands, flags, paths and code stay as they are. UI labels are written as the app shows them in that language.
 - Sentence case for titles and headings ("Run a routine now", not "Run A Routine Now").
-- Document what the code does today. Check commands with `apx <command> --help`; mark anything partial as such.
+- Document what the code does today. Check commands with `colonia <command> --help`; mark anything partial as such.
 - Public-safe content only (rule 17): Acme, Northwind, `user@example.com`, `~/work/…`.
 
 ## Documentation impact and checks
@@ -69,7 +69,7 @@ import Blob from "../../../components/Blob.astro";
 <Shot name="tasks" alt="The Tasks screen with open tasks grouped by state" caption="Tasks, across every project" />
 <Shot name="phone-home" alt="…" frame="phone" />
 
-<Terminal command="apx status">{`✓ core  running  http://127.0.0.1:7440
+<Terminal command="colonia status">{`✓ core  running  http://127.0.0.1:7440
 • crew  Home + 3 agents`}</Terminal>
 ```
 

@@ -1,6 +1,6 @@
 import "./RunnableCode.css";
-import type { TerminalInfo, Thread } from "@apx/protocol";
-import { IconButton, Icons } from "@apx/ui";
+import type { TerminalInfo, Thread } from "@colonia/protocol";
+import { IconButton, Icons } from "@colonia/ui";
 import type { ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";

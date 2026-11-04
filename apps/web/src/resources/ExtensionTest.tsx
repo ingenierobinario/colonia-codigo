@@ -1,5 +1,5 @@
-import type { ExtensionInfo } from "@apx/protocol";
-import { Button, Icons, Input } from "@apx/ui";
+import type { ExtensionInfo } from "@colonia/protocol";
+import { Button, Icons, Input } from "@colonia/ui";
 import { useState } from "react";
 import { client } from "../data/client.ts";
 import { useT } from "../i18n/index.ts";

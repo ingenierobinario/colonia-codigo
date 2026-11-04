@@ -1,6 +1,6 @@
 // A channel's attention hours: a contact who writes outside them is kept unanswered, and once the hours begin their
 // chat gets one turn that answers everything they sent meanwhile. The owner is always answered. See DECISIONS.md#d-136
-import type { Person } from "@apx/protocol";
+import type { Person } from "@colonia/protocol";
 import { withinHours } from "../domain/hours.ts";
 import { ownerTimeZone } from "../domain/owner.ts";
 import type { Store } from "../domain/store.ts";

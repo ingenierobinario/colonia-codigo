@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Message, Part } from "@apx/protocol";
+import type { Message, Part } from "@colonia/protocol";
 import { recordedChanges } from "./change-records.ts";
 
 const change = (file: string, diff = "", edits = true): Part => ({

@@ -1,6 +1,6 @@
-import type { Agent, ChannelInfo, Person, Result, Routine } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
-import { graphOfDefinition, sameShape, shapeOfDefinition, shapeOfGraph } from "@apx/protocol/flow-shape";
+import type { Agent, ChannelInfo, Person, Result, Routine } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
+import { graphOfDefinition, sameShape, shapeOfDefinition, shapeOfGraph } from "@colonia/protocol/flow-shape";
 import { useEffect, useMemo } from "react";
 import type { FlowGraphIssue } from "../../../../packages/protocol/src/flow-graph.ts";
 import { loadChannels, useChannels } from "../data/channels.ts";
@@ -75,7 +75,7 @@ export async function publishSaved(flow: Flow): Promise<boolean> {
 /** Why a drawing can't run, in the person's words, from what the core said (its first issue). */
 export function issueText(error: unknown, graph: FlowGraph | undefined, t: T): string | undefined {
   const issues =
-    error instanceof ApxError ? (error.detail as { issues?: FlowGraphIssue[] } | undefined)?.issues : undefined;
+    error instanceof ColoniaError ? (error.detail as { issues?: FlowGraphIssue[] } | undefined)?.issues : undefined;
   const first = issues?.[0];
   return first ? describeIssue(first, graph, t) : undefined;
 }

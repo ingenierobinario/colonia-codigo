@@ -1,7 +1,7 @@
 // Push notices to a paired device whose app is closed: Expo's push service (an Expo push token) or a UnifiedPush /
-// ntfy address (the body is the text; the title and the link that opens APX are headers). Best effort: a failure is
+// ntfy address (the body is the text; the title and the link that opens Colonia are headers). Best effort: a failure is
 // logged, never retried here.
-import type { PushTarget } from "@apx/protocol";
+import type { PushTarget } from "@colonia/protocol";
 
 export function createPush(opts: { expoUrl: string; onError?: (err: string) => void }) {
   return async function push(
@@ -47,9 +47,9 @@ function encodedWord(text: string): string {
   return `=?UTF-8?B?${Buffer.from(text, "utf8").toString("base64")}?=`;
 }
 
-/** Tapping the notice in the ntfy app opens APX on the phone, on its chat when it has one. */
+/** Tapping the notice in the ntfy app opens Colonia on the phone, on its chat when it has one. */
 function openLink(threadId: string | undefined): string {
-  return threadId ? `apx://open?t=${encodeURIComponent(threadId)}` : "apx://open";
+  return threadId ? `colonia://open?t=${encodeURIComponent(threadId)}` : "colonia://open";
 }
 
 export type Push = ReturnType<typeof createPush>;

@@ -1,8 +1,8 @@
-import { Spinner } from "@apx/ui";
+import { Spinner } from "@colonia/ui";
 
 export function Sizes() {
   return (
-    <div style={{ display: "flex", gap: 16, alignItems: "center", color: "var(--apx-fg-muted)" }}>
+    <div style={{ display: "flex", gap: 16, alignItems: "center", color: "var(--colonia-fg-muted)" }}>
       <Spinner size={12} />
       <Spinner size={16} />
       <Spinner size={24} />

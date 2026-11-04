@@ -19,7 +19,7 @@ export type MailArrival = {
   labels: string[];
 };
 
-/** The owner's Gmail; `readable` is false while it cannot be read (not connected, or APX's send-only client). */
+/** The owner's Gmail; `readable` is false while it cannot be read (not connected, or Colonia's send-only client). */
 export type MailSource = {
   readable(): boolean;
   historyId(): Promise<string>;

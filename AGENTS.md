@@ -1,6 +1,6 @@
-# AGENTS.md — dev guide for the APX v2 codebase
+# AGENTS.md — dev guide for the Colonia v2 codebase
 
-> Hand-maintained guide for working **on** APX v2 (read by Claude Code, Codex and any AGENTS.md-aware tool).
+> Hand-maintained guide for working **on** Colonia v2 (read by Claude Code, Codex and any AGENTS.md-aware tool).
 > This file is the hub: glossary, dev loop and numbered rules live here. Everything else is read on demand
 > under [`rules/`](rules/). Product plan and research (Spanish) live in `plan/`, in the maintainers' checkout only
 > (it is not published).
@@ -13,25 +13,25 @@ New here or reviewing? Read [`rules/HUMAN_MODEL.md`](rules/HUMAN_MODEL.md) first
 | Term | Means here | Not to be confused with |
 |---|---|---|
 | **core** | `apps/core`, the daemon: the only process that owns state. | "core logic" in general. |
-| **terminal** | `apps/terminal`, the `apx` CLI. A thin protocol client. | A shell/PTY. |
+| **terminal** | `apps/terminal`, the `colonia` CLI. A thin protocol client. | A shell/PTY. |
 | **protocol** | `packages/protocol`: frames, the method registry and the client SDK. The one contract. | Ad-hoc REST routes (there are none). |
 | **operator** | A client that shows/controls things (terminal, web, desktop, mobile). | A **node**. |
 | **node** | A client that *lends capabilities* to the core (desktop: `browser`, `fs`; mobile: `camera`, `notify`). The core routes tool calls to it. | A Node.js process. |
 | **surface** | A widget/app/artifact: HTML bundle + manifest, shown inline, in the sidebar or fullscreen, or published. | A UI "surface" in the generic sense. |
 | **provider** | A model API (Gemini, Anthropic, OpenAI-compatible…) called by the built-in harness. `apps/core/src/providers`. | A harness. |
 | **harness** | What runs an agent turn's loop: `native` (ours), `claude` (Agent SDK), `codex` (Codex SDK), `acp` (agents that speak the Agent Client Protocol). | A provider. "Engine" and "runtime" are not used for either. |
-| **channel / contact / room** | An app APX talks through (WhatsApp, Telegram, Discord…); a person on it; a shared place on it (a Discord #channel, a group). [D-049](rules/DECISIONS.md#d-049) | A **thread**: each contact chat and each room is kept in one. |
+| **channel / contact / room** | An app Colonia talks through (WhatsApp, Telegram, Discord…); a person on it; a shared place on it (a Discord #channel, a group). [D-049](rules/DECISIONS.md#d-049) | A **thread**: each contact chat and each room is kept in one. |
 | **thread / run / step** | A conversation; one agent turn in it (durable, with its input and origin); one tool call in a run. | v1's ledgers, sessions and conversations (all replaced by these). |
-| **APC** | The open standard: `AGENTS.md` + `.apc/` in a project. APX implements it. | APX itself. |
+| **APC** | The open standard: `AGENTS.md` + `.apc/` in a project. Colonia implements it. | Colonia itself. |
 
 ## Dev loop
 
 ```bash
 pnpm install
 pnpm app                                   # build panel + desktop, start the core (serves the panel) and open the app
-pnpm dev                                   # core only, on 127.0.0.1:7440, home ~/.apx/v2 (override APX_HOME/APX_PORT)
+pnpm dev                                   # core only, on 127.0.0.1:7440, home ~/.colonia/v2 (override COLONIA_HOME/COLONIA_PORT)
 node apps/terminal/src/main.ts status      # is the core up, and is it running my code? (code_sha)
-pnpm --filter @apx/web dev                 # panel on :7441, proxies /rpc, /ws, /health to the core
+pnpm --filter @colonia/web dev                 # panel on :7441, proxies /rpc, /ws, /health to the core
 pnpm preflight                             # check:private + check:schema + lint + typecheck + test — must be green before push
 pnpm verify                                # preflight + e2e (web, desktop) + perf budgets — what CI runs; green before merge
 pnpm package                               # this OS's installer + daemon bundle in out/ (CI: push a v2.x.y tag)
@@ -39,15 +39,15 @@ pnpm package:linux                         # …or another OS's (also :mac, :win
 ```
 
 - The core runs `.ts` directly (Node 24 type stripping): no build step. `pnpm dev` uses `node --watch`, so a
-  saved file restarts it. Always confirm with `apx status` that `code_sha` is the commit you expect.
-- v2 runs **beside** v1: port `7440`, home `~/.apx/v2` (inside v1's folder, never touching v1's files), binary `apx` (it
-  replaces v1's). Never write to v1's files in `~/.apx`.
+  saved file restarts it. Always confirm with `colonia status` that `code_sha` is the commit you expect.
+- v2 runs **beside** v1: port `7440`, home `~/.colonia/v2` (inside v1's folder, never touching v1's files), binary `colonia` (it
+  replaces v1's). Never write to v1's files in `~/.colonia`.
 
 ## Repo map
 
 ```
 apps/core        daemon — transport/ → rpc/ (single router) → engine/ (turns) · harness/ · providers/ · tools/ → domain/ (repos) · channels/ · nodes/ · db/
-apps/terminal    apx CLI — protocol calls only
+apps/terminal    colonia CLI — protocol calls only
 apps/web         React panel — served by core, renderer of desktop
 apps/desktop     Electron shell + embedded browser node (tabs, CDP, profiles, cookie import)
 apps/mobile      Expo (Android app; installs outside the pnpm workspace)
@@ -79,7 +79,7 @@ Each rule says how it is enforced. `[gate]` = a command fails; `[review]` = conv
    `as const` objects + derived type. `[gate]` typecheck.
 6. **Config and paths are injected**, never read at import time. The store refuses the real home under a
    test runner (`db/db.ts`). `[review]`
-7. **Loopback by default.** The core refuses a non-loopback bind without `APX_TOKEN`. `[gate]` test.
+7. **Loopback by default.** The core refuses a non-loopback bind without `COLONIA_TOKEN`. `[gate]` test.
 8. **Side-effect methods require an idempotency key** (`effect: true` in the registry). `[gate]` router.
 9. **Every turn/job/tool call has a deadline and a persisted terminal state**; client deadline > server deadline.
    `[review]`
@@ -106,7 +106,7 @@ Each rule says how it is enforced. `[gate]` = a command fails; `[review]` = conv
     Placeholders: Acme, Northwind, `user@example.com`, `~/work/…`. `[gate]` `pnpm check:private`.
 18. **Conventional commits** (`feat:`, `fix:`, `chore:`…); the release tooling will read them. Branches are named the
     same way (`feat/…`, `fix/…`, `docs/…`, `perf/…`, `chore/…`), never after a tool or an agent (`claude/…`, `codex/…`):
-    rename one before it is pushed. They start from and merge back into `staging` of `agentprojectcontext/apx`; `main` takes `staging` only when a
+    rename one before it is pushed. They start from and merge back into `staging` of `ingenierobinario/colonia`; `main` takes `staging` only when a
     version is cut, so it is always the last release (v1 lives on branch `v1`).
     A commit that fixes a GitHub issue ends with an `Issue: #N` trailer. Once it is pushed to origin's `staging`,
     comment on the issue (what changed, the commit) and close it, in the same turn; the release adds the version
@@ -121,9 +121,9 @@ Each rule says how it is enforced. `[gate]` = a command fails; `[review]` = conv
 22. **Sentence case in the UI, in every language** ("Router chain", "Por defecto (Medio)"): never all lowercase,
     never Title Case Every Word; only a fragment continuing a sentence on screen starts lowercase. Outside values
     (provider or model ids, status codes) never show raw as a label: a name (`label`, `effortLabel`) or code. Brand
-    names keep their case (iMessage, `apx`). `[review]`
+    names keep their case (iMessage, `colonia`). `[review]`
 23. **Prompt budget.** What every model call carries (a default turn's system prompt and tool definitions) stays
-    within [`rules/PROMPT_SIZE.md`](rules/PROMPT_SIZE.md): APX sends the least of the agent apps measured, keep it so.
+    within [`rules/PROMPT_SIZE.md`](rules/PROMPT_SIZE.md): Colonia sends the least of the agent apps measured, keep it so.
     Per-turn context goes in the input, MCP and extension tools behind `mcp_search`. `[gate]` test.
 24. **Fixes leave regression protection.** Reproduce the failure, add or strengthen a test that catches it, verify
     the fix and its callers; never loosen an assertion to accept a regression
@@ -139,7 +139,7 @@ Each rule says how it is enforced. `[gate]` = a command fails; `[review]` = conv
     fix it on the branch and tag the next one. `[gate]` `release:check`, and the publish job's own wait.
 
 29. **One worktree per task, and look before making one.** Other sessions work in this checkout at the same time.
-    Whether code work goes in a worktree or in the checkout is the owner's call (APX agents follow the project's note
+    Whether code work goes in a worktree or in the checkout is the owner's call (Colonia agents follow the project's note
     or ask once). Before creating a worktree, run `git worktree list` and `git branch --list 'feat/*' 'fix/*' 'docs/*'`: if one
     already covers the task, continue there or ask the session that owns it, never open a second one to reproduce,
     baseline or retry the same thing. Worktrees live in `.worktrees/<name>` on a named branch (no detached HEAD);
@@ -171,7 +171,7 @@ Each rule says how it is enforced. `[gate]` = a command fails; `[review]` = conv
 31. **Screens talk to the person, not about the code.** UI text says what the person can do, what happens and what
     they must decide, in words they use. Never on screen: internal names (RPC, listener, route, bearer, payload,
     module or method names), which integration a mechanism exists for, security caveats from reviews ("never the
-    panel or the API", "APX does not promise…"), or a fact another section of the same screen already shows. Those
+    panel or the API", "Colonia does not promise…"), or a fact another section of the same screen already shows. Those
     belong in docs. Lists show what the person has, with one action each where it is needed.
     [D-166](rules/DECISIONS.md#d-166). `[review]`
 
@@ -181,7 +181,7 @@ Each rule says how it is enforced. `[gate]` = a command fails; `[review]` = conv
     ([UI changes](rules/WORKFLOW.md#ui-changes)). `[review]`
 
 33. **A Flow change reaches the agent in the same change.** A new Flow or table method, step kind or field is usable
-    by the super-agent through `apx_flow` and explained in the `apx-flows` skill, or placed as the owner's with a reason
+    by the super-agent through `colonia_flow` and explained in the `colonia-flows` skill, or placed as the owner's with a reason
     ([Agents reach it](rules/FLOWS.md#agents-reach-it), [D-181](rules/DECISIONS.md#d-181)). `[gate]`
     `flow-tool.test.ts` for methods and step kinds; fields `[review]`.
 
@@ -197,7 +197,7 @@ Non-trivial changes follow [`rules/WORKFLOW.md`](rules/WORKFLOW.md):
 plan → implement → independent review → security/risk review → test + runtime proof → architecture check →
 owner brief → release check. Commands for each level: [`rules/TESTING.md`](rules/TESTING.md).
 
-A green typecheck is not proof. Runtime changes are verified against the **running** core (`apx status` shows the
+A green typecheck is not proof. Runtime changes are verified against the **running** core (`colonia status` shows the
 expected `code_sha`) and the changed path is exercised for real; anything not exercised is reported `UNVERIFIED`.
 
 ## Deep dives

@@ -1,5 +1,5 @@
 import "../styles/wizard.css";
-import { Button, Icons, Input } from "@apx/ui";
+import { Button, Icons, Input } from "@colonia/ui";
 import { type FormEvent, useState } from "react";
 import logo from "../assets/logo.png";
 import { pairWith, thisDevice } from "../data/pairing.ts";
@@ -28,7 +28,7 @@ export function PairScreen() {
   };
 
   return (
-    <div className="wiz is-pair" data-apx-look="minimal" data-apx-mode="dark">
+    <div className="wiz is-pair" data-colonia-look="minimal" data-colonia-mode="dark">
       <header className="wiz__head pair__head">
         <div className="wiz__brand">
           <img src={logo} alt="" width={24} height={24} />

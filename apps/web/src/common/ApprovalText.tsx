@@ -1,4 +1,4 @@
-import { Button } from "@apx/ui";
+import { Button } from "@colonia/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { addPack, isKey, useLanguage, useT } from "../i18n/index.ts";
 

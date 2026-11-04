@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { createElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
-  ApxProvider,
+  ColoniaProvider,
   Badge,
   Button,
   Calendar,
@@ -16,7 +16,7 @@ import {
   MarkdownView,
   Spinner,
   StepList,
-  useApx,
+  useColonia,
   withMentions,
 } from "../dist/index.js";
 import { keyed } from "../src/keys.ts";
@@ -81,7 +81,7 @@ test("spinners announce progress only when labelled; badge dots remain decorativ
   assert.doesNotMatch(labelled, /aria-hidden/);
   assert.match(renderToStaticMarkup(createElement(Spinner)), /aria-hidden="true"/);
   const badge = renderToStaticMarkup(createElement(Badge, { dot: true, tone: "danger" }, "Offline"));
-  assert.match(badge, /apx-tone--danger/);
+  assert.match(badge, /colonia-tone--danger/);
   assert.match(badge, /aria-hidden="true"/);
   assert.match(badge, /Offline/);
 });
@@ -135,21 +135,21 @@ test("Markdown custom renderers receive code, quote, inline code and app links w
   };
   renderToStaticMarkup(
     createElement(MarkdownView, {
-      source: "[Settings](apx:settings/desktop)\n\n> Quote\n\n```JS\nlet x = 1;\n```\n\n`thr_1`",
+      source: "[Settings](colonia:settings/desktop)\n\n> Quote\n\n```JS\nlet x = 1;\n```\n\n`thr_1`",
       renderLink: (href: string, node: ReactElement) => wrap(href, node),
       renderQuote: (node: ReactElement) => wrap("quote", node),
       renderCode: (code: string, lang: string | undefined, node: ReactElement) => wrap(`${lang}:${code}`, node),
       renderCodeSpan: (text: string, node: ReactElement) => wrap(text, node),
     }),
   );
-  assert.deepEqual(seen.sort(), ["apx:settings/desktop", "js:let x = 1;", "quote", "thr_1"].sort());
+  assert.deepEqual(seen.sort(), ["colonia:settings/desktop", "js:let x = 1;", "quote", "thr_1"].sort());
 });
 
 test("mentions do not turn emails or embedded names into badges and preserve every character", () => {
   const html = renderToStaticMarkup(
     createElement("p", {}, ...withMentions("Ask @scout, user@example.com, word@vera, @@no; @Álvaro-2")),
   );
-  assert.equal((html.match(/class="apx-mention"/g) ?? []).length, 2);
+  assert.equal((html.match(/class="colonia-mention"/g) ?? []).length, 2);
   assert.match(html, />@scout<\/span>/);
   assert.match(html, />@Álvaro-2<\/span>/);
   assert.match(html, /user@example.com, word@vera, @@no/);
@@ -203,15 +203,15 @@ test("calendar supports leap days and selected dates without UTC shifting local 
 
 test("theme context follows the nearest provider and has usable defaults outside a provider", () => {
   const View = () => {
-    const { look, mode } = useApx();
+    const { look, mode } = useColonia();
     return createElement("span", {}, `${look}/${mode}`);
   };
   assert.equal(renderToStaticMarkup(createElement(View)), "<span>minimal/light</span>");
   const html = renderToStaticMarkup(
-    createElement(ApxProvider, { look: "classic", mode: "dark", fill: true }, createElement(View)),
+    createElement(ColoniaProvider, { look: "classic", mode: "dark", fill: true }, createElement(View)),
   );
-  assert.match(html, /data-apx-look="classic"/);
-  assert.match(html, /data-apx-mode="dark"/);
+  assert.match(html, /data-colonia-look="classic"/);
+  assert.match(html, /data-colonia-mode="dark"/);
   assert.match(html, />classic\/dark</);
-  assert.match(html, /apx-portal/);
+  assert.match(html, /colonia-portal/);
 });

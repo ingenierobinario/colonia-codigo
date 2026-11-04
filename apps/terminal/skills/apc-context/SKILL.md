@@ -66,7 +66,7 @@ After migration:
 ```text
 AGENTS.md                        ← root project contract
 .apc/
-  project.json                   ← project metadata (name, description, apx_id)
+  project.json                   ← project metadata (name, description, colonia_id)
   .gitignore                     ← safety guard
   agents/<name>.md               ← agent definition
   memory.md                      ← optional curated project memory (committed)
@@ -104,7 +104,7 @@ Do not store:
 1. Read `AGENTS.md` and relevant `.apc/` files before assuming project context.
 2. Read agent definitions from `.apc/agents/<name>.md` when present.
 3. Read curated project memory from `.apc/memory.md` when present. An individual agent's own memory is runtime
-   state kept by the runtime (for APX: in its core, see `apx memory`) — never under `.apc/`.
+   state kept by the runtime (for Colonia: in its core, see `colonia memory`) — never under `.apc/`.
 4. Write only durable, safe, curated facts to APC memory.
 5. Never write raw sessions, transcripts, messages, conversations, or tool logs into `.apc/`.
 6. Keep secrets out of APC and out of git.
@@ -139,22 +139,22 @@ Examples:
 Codex runtime storage
 Claude Code runtime storage
 OpenCode runtime storage
-APX core (threads and runs, under ~/.apx/v2)
+Colonia core (threads and runs, under ~/.colonia/v2)
 ```
 
 At task end, provide the user a concise result. If project memory should be updated, write a short
 sanitized fact to `.apc/memory.md` only when useful and safe.
 
-## APX
+## Colonia
 
-APX is a runtime that implements APC: its core reads `AGENTS.md`, `.apc/agents/`, `.apc/skills/`,
+Colonia is a runtime that implements APC: its core reads `AGENTS.md`, `.apc/agents/`, `.apc/skills/`,
 `.apc/memory.md` and `.apc/mcps.json` of registered projects, and keeps runtime state (threads, runs, agent
-memory, secrets) outside the repository, under `~/.apx/v2`.
+memory, secrets) outside the repository, under `~/.colonia/v2`.
 
-Read `.apc/project.json` if present. It may contain an `apx` field:
+Read `.apc/project.json` if present. It may contain an `colonia` field:
 
-- `"installed"`: APX is available; use `apx` commands when useful (see the `apx` skill).
-- `"declined"`: user chose not to install; do not suggest or run APX.
-- missing or `null`: unknown; check with `apx status` before assuming APX is available.
+- `"installed"`: Colonia is available; use `colonia` commands when useful (see the `colonia` skill).
+- `"declined"`: user chose not to install; do not suggest or run Colonia.
+- missing or `null`: unknown; check with `colonia status` before assuming Colonia is available.
 
-Never use APX to write secrets or raw sessions into `.apc/`.
+Never use Colonia to write secrets or raw sessions into `.apc/`.

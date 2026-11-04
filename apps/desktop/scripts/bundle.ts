@@ -1,14 +1,14 @@
 // The daemon on its own, for a server or a computer without the desktop app: what stage.ts laid out (core, terminal,
-// panel, node_modules) plus a Node to run it, packed as out/apx-core-<version>-<os>-<arch>.tar.gz with a .sha256
+// panel, node_modules) plus a Node to run it, packed as out/colonia-core-<version>-<os>-<arch>.tar.gz with a .sha256
 // beside it. install.sh/ps1 and the core's own updates unpack it. Run after stage.ts; the target is the stage's.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { BUNDLE, coreBundleName, nodeOs, type Platform, platformOf } from "@apx/protocol";
+import { BUNDLE, coreBundleName, nodeOs, type Platform, platformOf } from "@colonia/protocol";
 
 const root = path.resolve(import.meta.dirname, "..");
-const stage = path.join(root, ".stage/apx");
+const stage = path.join(root, ".stage/colonia");
 const out = path.resolve(root, "../../out");
 const build = JSON.parse(fs.readFileSync(path.join(stage, "build.json"), "utf8")) as {
   version: string;
@@ -52,9 +52,9 @@ async function nodeFor(p: Platform, dest: string): Promise<void> {
   }
 }
 
-// The archive holds one folder, apx/, so unpacking never spills into the folder it lands in.
+// The archive holds one folder, colonia/, so unpacking never spills into the folder it lands in.
 const work = path.join(root, ".bundle");
-const top = path.join(work, "apx");
+const top = path.join(work, "colonia");
 fs.rmSync(work, { recursive: true, force: true });
 fs.cpSync(stage, top, { recursive: true, verbatimSymlinks: true });
 const node = path.join(top, ...BUNDLE.node(target.os === "win"));
@@ -65,7 +65,7 @@ fs.chmodSync(node, 0o755);
 
 fs.mkdirSync(out, { recursive: true });
 const name = coreBundleName(build.version, target);
-execFileSync(tar, ["-czf", name, "-C", path.relative(out, work), "apx"], { cwd: out, stdio: "inherit" });
+execFileSync(tar, ["-czf", name, "-C", path.relative(out, work), "colonia"], { cwd: out, stdio: "inherit" });
 const file = path.join(out, name);
 fs.writeFileSync(`${file}.sha256`, `${sha256(fs.readFileSync(file))}  ${name}\n`);
 fs.rmSync(work, { recursive: true, force: true });

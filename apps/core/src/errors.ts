@@ -1,9 +1,9 @@
-import { type ApxErrorShape, ErrorCode } from "@apx/protocol";
+import { type ColoniaErrorShape, ErrorCode } from "@colonia/protocol";
 
 /** A failure that should reach the caller with its own code, not as `internal`. */
 export class CallError extends Error {
-  readonly shape: ApxErrorShape;
-  constructor(shape: ApxErrorShape) {
+  readonly shape: ColoniaErrorShape;
+  constructor(shape: ColoniaErrorShape) {
     super(shape.message);
     this.name = "CallError";
     this.shape = shape;
@@ -29,7 +29,7 @@ export function errorMessage(err: unknown, max?: number): string {
   return max === undefined ? m : m.slice(0, max);
 }
 
-/** Why a turn's signal was aborted: the owner canceled it, its time ran out, or APX is shutting down. */
+/** Why a turn's signal was aborted: the owner canceled it, its time ran out, or Colonia is shutting down. */
 export class Canceled extends Error {
   constructor(message = "canceled by the owner") {
     super(message);
@@ -54,7 +54,7 @@ export class DeadlineExceeded extends Error {
 
 export class Shutdown extends Error {
   constructor() {
-    super("APX is shutting down");
+    super("Colonia is shutting down");
     this.name = "Shutdown";
   }
 }

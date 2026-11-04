@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { AGENT_NAMES } from "@apx/protocol";
+import { AGENT_NAMES } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -14,7 +14,7 @@ let repo = "";
 let project = "";
 
 before(async () => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-team-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-team-"));
   // The owner's v1 vault (inside the test home): one loose agent and a link that must never be followed.
   const vault = path.join(home, "v1", "agents");
   fs.mkdirSync(vault, { recursive: true });
@@ -24,7 +24,7 @@ before(async () => {
   );
   fs.symlinkSync("/etc", path.join(vault, "linked"));
   env = await startCore({ llm: scriptedLlm(() => say("ok")), home });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-team-repo-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-team-repo-")));
   fs.mkdirSync(path.join(repo, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(repo, ".apc", "agents", "boss.md"), "---\nname: Boss\nrole: Orchestrator\n---\n\nLead.\n");
   project = (await env.client.call("projects.register", { path: repo })).project.id;
@@ -35,10 +35,10 @@ after(async () => {
   await removeDir(repo);
 });
 
-test("templates: APX's teams with their lead, and single agents from APX and the v1 vault", async () => {
+test("templates: Colonia's teams with their lead, and single agents from Colonia and the v1 vault", async () => {
   const { teams, singles } = await env.client.call("agents.templates", {});
-  const product = teams.find((t) => t.id === "apx:product-team");
-  assert.ok(product, "the product team ships with APX");
+  const product = teams.find((t) => t.id === "colonia:product-team");
+  assert.ok(product, "the product team ships with Colonia");
   assert.equal(product.name, "Product team");
   assert.deepEqual(
     product.members.filter((m) => m.lead).map((m) => m.slug),
@@ -60,7 +60,7 @@ test("install: the team keeps its shape, its lead hangs under the orchestrator, 
   const before = fs.readFileSync(path.join(repo, ".apc", "agents", "boss.md"), "utf8");
   const r = await env.client.call("agents.install", {
     project_id: project,
-    templates: ["apx:product-team:orchestrator", "apx:product-team:qa-engineer", "apx:product-team:security"],
+    templates: ["colonia:product-team:orchestrator", "colonia:product-team:qa-engineer", "colonia:product-team:security"],
     hang_under: "boss",
   });
   assert.deepEqual(r.skipped, []);
@@ -83,7 +83,7 @@ test("install: the team keeps its shape, its lead hangs under the orchestrator, 
 
   const again = await env.client.call("agents.install", {
     project_id: project,
-    templates: ["apx:product-team:security"],
+    templates: ["colonia:product-team:security"],
   });
   assert.equal(again.installed.length, 0);
   assert.match(again.skipped[0]?.reason ?? "", /already has security/);
@@ -139,7 +139,7 @@ test("install: a parent that is skipped never adopts a member; the member hangs 
   await env.client.call("projects.sync", { project });
   const r = await env.client.call("agents.install", {
     project_id: project,
-    templates: ["apx:product-team:pm", "apx:product-team:designer"],
+    templates: ["colonia:product-team:pm", "colonia:product-team:designer"],
     hang_under: "boss",
   });
   assert.match(r.skipped[0]?.reason ?? "", /already has pm/);
@@ -175,7 +175,7 @@ test("an agent's prompt, area and description are read and edited; its activity 
 
 test("install: an executive comes with its routines, on, in the project; installing again does not double them", async () => {
   const { teams } = await env.client.call("agents.templates", {});
-  const ceo = teams.find((t) => t.id === "apx:executive-team")?.members.find((m) => m.slug === "ceo");
+  const ceo = teams.find((t) => t.id === "colonia:executive-team")?.members.find((m) => m.slug === "ceo");
   assert.deepEqual(
     ceo?.routines.map((r) => r.name),
     ["Weekly review", "Daily pulse"],
@@ -183,7 +183,7 @@ test("install: an executive comes with its routines, on, in the project; install
   );
   const r = await env.client.call("agents.install", {
     project_id: project,
-    templates: ["apx:executive-team:ceo", "apx:executive-team:cfo"],
+    templates: ["colonia:executive-team:ceo", "colonia:executive-team:cfo"],
   });
   const ceoId = r.installed.find((a) => a.slug === "ceo")?.id;
   assert.ok(ceoId);
@@ -212,7 +212,7 @@ test("install: an executive comes with its routines, on, in the project; install
       ["cfo", "finance"],
     ],
   );
-  const again = await env.client.call("agents.install", { project_id: project, templates: ["apx:executive-team:ceo"] });
+  const again = await env.client.call("agents.install", { project_id: project, templates: ["colonia:executive-team:ceo"] });
   assert.equal(again.routines.length, 0);
   const listed = (await env.client.call("routines.list", {})).routines.filter((x) => x.agent_id === ceoId);
   assert.equal(listed.length, 2);
@@ -220,7 +220,7 @@ test("install: an executive comes with its routines, on, in the project; install
 
 test("the base project takes a team as global agents: its shape, its routines, and it becomes a company", async () => {
   const r = await env.client.call("agents.install", {
-    templates: ["apx:executive-team:ceo", "apx:executive-team:cfo", "apx:executive-team:coo"],
+    templates: ["colonia:executive-team:ceo", "colonia:executive-team:cfo", "colonia:executive-team:coo"],
   });
   assert.deepEqual(
     r.installed.map((a) => [a.id, a.project_id, a.parent ?? "", a.area]),
@@ -238,7 +238,7 @@ test("the base project takes a team as global agents: its shape, its routines, a
     ["leadership", "finance", "operations"],
   );
   assert.match((await env.client.call("agents.get", { agent: "cfo" })).prompt, /finance lead/);
-  const again = await env.client.call("agents.install", { templates: ["apx:executive-team:cfo"] });
+  const again = await env.client.call("agents.install", { templates: ["colonia:executive-team:cfo"] });
   assert.deepEqual(again.installed, []);
   assert.match(again.skipped[0]?.reason ?? "", /already has cfo/);
 });
@@ -257,7 +257,7 @@ test("projects.update: name, description and kind go to .apc/project.json, keepi
   assert.equal(r.project.kind, "company");
   assert.equal(r.project.description, "Wholesale for small shops");
   const saved = JSON.parse(fs.readFileSync(file, "utf8"));
-  assert.deepEqual(saved.tool, { x: 1 }, "keys APX does not own stay");
+  assert.deepEqual(saved.tool, { x: 1 }, "keys Colonia does not own stay");
 
   const cleared = await env.client.call("projects.update", { project: id, description: null, kind: null });
   assert.equal(cleared.project.description, undefined);

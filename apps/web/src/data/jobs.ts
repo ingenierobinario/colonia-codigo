@@ -1,5 +1,5 @@
 // Background work (delegations, wake-ups, routines; terminals later): what jobs.list reports, refreshed as runs move.
-import type { Job } from "@apx/protocol";
+import type { Job } from "@colonia/protocol";
 import { client } from "./client.ts";
 import { data } from "./state.ts";
 

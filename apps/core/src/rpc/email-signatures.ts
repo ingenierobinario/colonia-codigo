@@ -26,7 +26,7 @@ export function emailSignatureHandlers(store: Store, google: Google) {
       return { removed: true };
     },
     "email.signature_import": async ({ account }) => {
-      // Gmail's settings are read only with the owner's own Google client: APX's can only send.
+      // Gmail's settings are read only with the owner's own Google client: Colonia's can only send.
       if (!google.connected("gmail") || google.account("gmail")?.toLowerCase() !== account.toLowerCase())
         throw badRequest("Connect this Gmail account first");
       if (!google.full("gmail")) throw badRequest("Gmail's signature can be read only with your own Google client");

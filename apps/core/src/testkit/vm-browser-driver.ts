@@ -12,7 +12,7 @@ export function vmBrowserDriver(dir: string, chrome: string, gate: string) {
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { StringDecoder } from 'node:string_decoder';
-if (process.argv.includes('/usr/local/bin/apx-browser')) {
+if (process.argv.includes('/usr/local/bin/colonia-browser')) {
   const child = spawn(${JSON.stringify(chrome)}, ['--headless=new', '--disable-gpu', '--remote-debugging-pipe', '--no-first-run', '--no-default-browser-check', ...${JSON.stringify(process.getuid?.() === 0 ? ["--no-sandbox"] : [])}, '--user-data-dir=' + ${JSON.stringify(path.join(dir, "profile"))}, 'about:blank'], {stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe']});
   fs.writeFileSync(${JSON.stringify(pids)}, [process.pid, child.pid].join('\\n'));
   const held = new Set();

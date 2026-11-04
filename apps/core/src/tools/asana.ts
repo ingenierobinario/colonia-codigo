@@ -1,4 +1,4 @@
-import { AsanaRead, AsanaWrite } from "@apx/protocol";
+import { AsanaRead, AsanaWrite } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import type { Asana } from "../integrations/asana.ts";

@@ -1,4 +1,4 @@
-import { Spinner } from "@apx/ui";
+import { Spinner } from "@colonia/ui";
 import { activeCommandsOf } from "../data/jobs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";

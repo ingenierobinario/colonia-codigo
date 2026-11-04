@@ -1,8 +1,8 @@
-import type { FlowBinding, FlowGraph, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowBinding, FlowGraph, FlowNode } from "@colonia/protocol/flow-graph";
 import { flowCaseHolds } from "./flow-compare.ts";
 import { evalFlowExpr, type FlowVarIndex, flowTruthy, parseFlowExpr } from "./flow-expr.ts";
 import { FLOW_OTHERWISE, flowCases, resolveFlowBinding, validateFlowGraph } from "./flow-graph-validate.ts";
-import type { FlowApx } from "./flow-template.ts";
+import type { FlowColonia } from "./flow-template.ts";
 
 export { FLOW_OTHERWISE, flowBranches, flowCases, flowVarIndex } from "./flow-graph-validate.ts";
 
@@ -149,7 +149,7 @@ export function resolveFlowInput(
 }
 
 /** What an expression reads and how: a binding's value from the run, and where each variable is set. */
-export type FlowReads = { resolve: (b: FlowBinding) => unknown; vars: FlowVarIndex; apx?: FlowApx | undefined };
+export type FlowReads = { resolve: (b: FlowBinding) => unknown; vars: FlowVarIndex; colonia?: FlowColonia | undefined };
 
 /**
  * The first case that holds names the way out, else otherwise. An equals case compares the check's input; a case of

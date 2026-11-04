@@ -10,13 +10,13 @@ import { fileURLToPath } from "node:url";
 import { stripVTControlCharacters } from "node:util";
 import { card, cells, failure, portrait, readTheme, rememberTheme, unreachableCore } from "./presentation.ts";
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-cli-brand-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-cli-brand-"));
 after(() => fs.rmSync(home, { recursive: true, force: true }));
 
 const cli = (...args: string[]) =>
   spawnSync(process.execPath, [fileURLToPath(new URL("./main.ts", import.meta.url)), ...args], {
     encoding: "utf8",
-    env: { ...process.env, APX_URL: "http://127.0.0.1:1", APX_HOME: home },
+    env: { ...process.env, COLONIA_URL: "http://127.0.0.1:1", COLONIA_HOME: home },
     timeout: 10_000,
   });
 
@@ -24,19 +24,19 @@ test("version and help work offline, including short flags and JSON", () => {
   for (const flag of ["--version", "-v"]) {
     const r = cli(flag);
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stdout, /APX v2/);
+    assert.match(r.stdout, /Colonia v2/);
     assert.ok(!r.stdout.includes("0.0.0"));
   }
   const r = cli("--version", "--json");
   assert.equal(JSON.parse(r.stdout).generation, 2);
-  assert.match(cli("--help").stdout, /apx mcp run/);
+  assert.match(cli("--help").stdout, /colonia mcp run/);
 });
 
 test("the help the top-level help advertises is help, not an error", () => {
   for (const command of ["routines", "tasks", "channels", "owner", "org", "profiles", "service", "init", "mcps"]) {
     const r = cli(command, "help");
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stdout, new RegExp(`^apx ${command}`));
+    assert.match(r.stdout, new RegExp(`^colonia ${command}`));
     assert.equal(r.stderr, "");
   }
 });
@@ -56,11 +56,11 @@ test("with --plain an error is one line with the message, for scripts and agents
   assert.equal(r.status, 1);
   assert.equal(
     r.stderr.trim(),
-    "apx: APX · Error: usage: apx agents model <agent> <engine/model|engine|router|default> [--router]",
+    "colonia: Colonia · Error: usage: colonia agents model <agent> <engine/model|engine|router|default> [--router]",
   );
   assert.equal(
-    failure("APX · not_found", ["agent \u001b[2Jx not found"], true),
-    "apx: APX · not_found: agent  [2Jx not found",
+    failure("Colonia · not_found", ["agent \u001b[2Jx not found"], true),
+    "colonia: Colonia · not_found: agent  [2Jx not found",
   );
 });
 
@@ -110,8 +110,8 @@ test("help and errors preserve the selected blob offline without coloring machin
 test("daemon explains the service command without acting as an alias", () => {
   const r = cli("daemon");
   assert.equal(r.status, 1);
-  assert.match(r.stderr, /apx service status/);
-  assert.match(r.stderr, /apx service restart/);
+  assert.match(r.stderr, /colonia service status/);
+  assert.match(r.stderr, /colonia service restart/);
 });
 
 test("a core that cannot be reached is explained: not running, or blocked by a sandbox", async () => {
@@ -133,7 +133,7 @@ test("a core that cannot be reached is explained: not running, or blocked by a s
   await new Promise((resolve) => server.close(resolve));
   const r = spawnSync(process.execPath, [fileURLToPath(new URL("./main.ts", import.meta.url)), "status", "--plain"], {
     encoding: "utf8",
-    env: { ...process.env, APX_URL: `http://127.0.0.1:${port}`, APX_HOME: home },
+    env: { ...process.env, COLONIA_URL: `http://127.0.0.1:${port}`, COLONIA_HOME: home },
     timeout: 10_000,
   });
   assert.equal(r.status, 1);

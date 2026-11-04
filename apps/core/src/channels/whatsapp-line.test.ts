@@ -63,7 +63,7 @@ test("a line of its own is nobody: its 'Message yourself' gets no answer and the
   assert.equal(llm.calls.length, calls);
 });
 
-test("the owner writes from their phone, gets a code, and once it is typed in APX their words are answered", async () => {
+test("the owner writes from their phone, gets a code, and once it is typed in Colonia their words are answered", async () => {
   wa.message(ME, "it's me");
   await waitFor(() => wa.textsTo(ME.phone).length === 1, "the code");
   const sent = wa.textsTo(ME.phone)[0] ?? "";

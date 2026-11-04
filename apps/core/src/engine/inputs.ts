@@ -1,7 +1,7 @@
 // One machine for everything an agent waits on from the owner: confirmations before a tool runs and questions.
 // The row is written before the wait starts; an answer that arrives after its run is gone (a restart, a deadline)
 // wakes the agent with a new run instead of being lost.
-import type { ApprovalScope, FileChange, InputKind, Part } from "@apx/protocol";
+import type { ApprovalScope, FileChange, InputKind, Part } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import { type ApprovalTarget, writeFolderApproval } from "../domain/approvals.ts";
 import { type InputRecord, publicInput } from "../domain/inputs.ts";
@@ -63,7 +63,7 @@ export const inputPartOf = (r: InputRecord): Extract<Part, { type: "input" }> =>
 
 export function createInputs(deps: {
   store: Store;
-  /** APX's home: a folder card's folder is checked against it before it joins a project. */
+  /** Colonia's home: a folder card's folder is checked against it before it joins a project. */
   home: string;
   admit: AdmitFn;
   /** Stops the run's deadline while it waits; the returned function starts it again. */
@@ -328,7 +328,7 @@ export function createInputs(deps: {
     },
 
     /**
-     * Boot: inputs whose deadline passed while APX was down are closed; the rest stay answerable (the answer wakes
+     * Boot: inputs whose deadline passed while Colonia was down are closed; the rest stay answerable (the answer wakes
      * the agent) and close on their own deadline, with their cards saying so.
      */
     restore(): void {

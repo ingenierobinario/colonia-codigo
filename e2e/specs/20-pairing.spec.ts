@@ -16,7 +16,7 @@ let proc: ChildProcess | undefined;
 let dir = "";
 
 base.beforeAll(async () => {
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-pair-"));
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-pair-"));
   const home = path.join(dir, "home");
   proc = spawn(process.execPath, ["--no-warnings", path.join(root, "apps/core/src/main.ts")], {
     cwd: root,
@@ -25,14 +25,14 @@ base.beforeAll(async () => {
       // Nothing of this machine's: no agent CLIs, no v1, no Keychain, no updates, no Messages.
       PATH: ["/usr/bin", "/bin"].join(path.delimiter),
       HOME: dir,
-      APX_HOME: home,
-      APX_PORT: String(port),
-      APX_TOKEN: TOKEN,
-      APX_SECRETS: "file",
-      APX_UPDATES: "off",
-      APX_IMESSAGE: "off",
-      APX_V1_HOME: path.join(dir, "v1"),
-      APX_V1_URL: "http://127.0.0.1:9",
+      COLONIA_HOME: home,
+      COLONIA_PORT: String(port),
+      COLONIA_TOKEN: TOKEN,
+      COLONIA_SECRETS: "file",
+      COLONIA_UPDATES: "off",
+      COLONIA_IMESSAGE: "off",
+      COLONIA_V1_HOME: path.join(dir, "v1"),
+      COLONIA_V1_URL: "http://127.0.0.1:9",
       CLAUDE_CONFIG_DIR: path.join(dir, "claude"),
       CODEX_HOME: path.join(dir, "codex"),
     },
@@ -51,7 +51,7 @@ base.afterAll(() => {
   if (dir) fs.rmSync(dir, { recursive: true, force: true });
 });
 
-/** The owner, with the core's token (as `apx pair` on the server would be). */
+/** The owner, with the core's token (as `colonia pair` on the server would be). */
 async function pairCode(): Promise<string> {
   const res = await fetch(`${core}/rpc/devices.pair_start`, {
     method: "POST",
@@ -86,8 +86,8 @@ test("panel pairs with a code when the core asks for a token", async ({ page }) 
   await page.addInitScript(() => Object.defineProperty(crypto, "randomUUID", { value: undefined }));
   await page.goto(core);
   await expect(page.getByText("Vinculá este")).toBeVisible();
-  await expect(page.getByText(/^APX v\d+\.\d+\.\d+/)).toBeVisible();
-  await expect(page.getByText(/apx pair en un servidor/)).toBeVisible();
+  await expect(page.getByText(/^Colonia v\d+\.\d+\.\d+/)).toBeVisible();
+  await expect(page.getByText(/colonia pair en un servidor/)).toBeVisible();
   const logo = await page.locator(".pair__head img").boundingBox();
   const footer = await page.locator(".wiz__version").boundingBox();
   const viewport = page.viewportSize();
@@ -105,8 +105,8 @@ test("panel pairs with a code when the core asks for a token", async ({ page }) 
   // Paired: the page reloads with its own key and the app opens (a fresh core starts on its setup).
   await expect(page.getByRole("button", { name: "Salir" })).toBeVisible();
   await expect(page.getByText("Vinculá este")).toBeHidden();
-  const token = await page.evaluate(() => localStorage.getItem("apx.token"));
-  expect(token).toMatch(/^apxd_/);
+  const token = await page.evaluate(() => localStorage.getItem("colonia.token"));
+  expect(token).toMatch(/^coloniad_/);
 
   // The owner sees this browser in their list, named after its system.
   const list = await fetch(`${core}/rpc/devices.list`, {
@@ -122,10 +122,10 @@ test("a stored token the core no longer takes is dropped and the gate shows agai
   await page.addInitScript(() => {
     if (!sessionStorage.getItem("seeded")) {
       sessionStorage.setItem("seeded", "1");
-      localStorage.setItem("apx.token", "apxd_revoked-or-never-valid");
+      localStorage.setItem("colonia.token", "coloniad_revoked-or-never-valid");
     }
   });
   await page.goto(core);
   await expect(page.getByText("Vinculá este")).toBeVisible();
-  expect(await page.evaluate(() => localStorage.getItem("apx.token"))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("colonia.token"))).toBeNull();
 });

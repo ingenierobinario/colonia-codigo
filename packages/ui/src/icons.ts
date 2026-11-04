@@ -1,4 +1,4 @@
-// Curated lucide icons re-exported as one object, so designs built with @apx/ui use the
+// Curated lucide icons re-exported as one object, so designs built with @colonia/ui use the
 // same set as the components. Size with the `size` prop (14–18 in controls).
 import {
   Activity,

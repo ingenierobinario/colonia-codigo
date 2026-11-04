@@ -1,6 +1,6 @@
 ---
 title: Conversaciones
-description: Hilos, turnos y pasos, los tipos de conversación que guarda APX y por qué un turno sobrevive a un reinicio.
+description: Hilos, turnos y pasos, los tipos de conversación que guarda Colonia y por qué un turno sobrevive a un reinicio.
 sidebar:
   order: 3
 ---
@@ -10,7 +10,7 @@ import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
 Todo lo que le decís a un agente, y todo lo que los agentes se dicen entre ellos, vive en una misma forma. Aprendé tres
-palabras y el resto de APX se lee solo.
+palabras y el resto de Colonia se lee solo.
 
 | Palabra | Quiere decir | Ejemplo |
 |---|---|---|
@@ -54,7 +54,7 @@ Un turno pasa por pocos estados. La lista de chats y el menú **Procesos** los m
 | `input-required` | El agente te está esperando: una pregunta o una aprobación. |
 | `completed` | Listo. |
 | `failed` | Algo se rompió. El chat dice qué. |
-| `canceled` | Lo frenaste vos (con /stop, el botón de frenar o `apx threads cancel`). |
+| `canceled` | Lo frenaste vos (con /stop, el botón de frenar o `colonia threads cancel`). |
 
 Una pregunta que te hace un agente no vence con el turno. El turno termina, el chat muestra que te está esperando, y
 la pregunta queda para responder durante 30 días. Tu respuesta arranca un turno nuevo. Mirá
@@ -62,7 +62,7 @@ la pregunta queda para responder durante 30 días. Tu respuesta arranca un turno
 
 ## Los turnos sobreviven a los reinicios
 
-Cada turno se anota con su entrada antes de empezar, y cada paso antes de que corra su herramienta. Así, cuando APX
+Cada turno se anota con su entrada antes de empezar, y cada paso antes de que corra su herramienta. Así, cuando Colonia
 se reinicia (una actualización, un crash, una notebook que se durmió en medio de un turno), nada se pierde en
 silencio:
 
@@ -86,12 +86,12 @@ el agente puede cambiar ahí:
 
 Arrancá uno desde un proyecto, o desde la terminal dentro de la carpeta del proyecto:
 
-<Terminal command={'apx chat "Make the coupon field ignore case" --code --cwd ~/work/acme-store --write ask'}>{`Done: codes are trimmed and upper-cased before the check.
+<Terminal command={'colonia chat "Make the coupon field ignore case" --code --cwd ~/work/acme-store --write ask'}>{`Done: codes are trimmed and upper-cased before the check.
 — completed · gemini/gemini-3.8-flash · thread th_4be19c07a2d35e61`}</Terminal>
 
 Un hilo de código también puede ser una **sesión de motor**: un chat con Claude Code, Codex u otro agente ACP en
 persona, con su propio prompt y su configuración, en tu carpeta. Las sesiones que ya tenés en `~/.claude` y
-`~/.codex` aparecen en **Sesiones externas** en la barra lateral, y podés retomar cualquiera desde APX. Mirá
+`~/.codex` aparecen en **Sesiones externas** en la barra lateral, y podés retomar cualquiera desde Colonia. Mirá
 [Código](/es/office/code/) y [Modelos y motores](/es/concepts/models/).
 
 ## Jobs
@@ -100,47 +100,47 @@ Algunos trabajos corren de fondo: una delegación de un agente, o un comando de 
 build, un servidor de desarrollo, un script largo). Eso son **jobs**. Un comando de fondo corre como mucho 6 horas, y
 cuando termina despierta al agente que lo arrancó con el final de su salida.
 
-<Terminal command="apx jobs">{`job_9c2e71d04ab83f15     terminal working    pnpm dev
+<Terminal command="colonia jobs">{`job_9c2e71d04ab83f15     terminal working    pnpm dev
 
 finished:
 job_17ad0e5c9b2f4e88     terminal completed  pnpm test (exit 0)
 job_5f0b8e2a7c1d9346     agent    completed  Tomás: fix the checkout coupon`}</Terminal>
 
-`apx jobs get <job>` muestra la salida de un job, y `apx jobs cancel <job>` lo frena. En el panel, el menú
+`colonia jobs get <job>` muestra la salida de un job, y `colonia jobs cancel <job>` lo frena. En el panel, el menú
 **Procesos** de la barra de arriba muestra lo que está corriendo en todos los chats.
 
 ## Compactación
 
-Los chats largos pesan. Cuando un hilo crece, APX resume sus turnos viejos en un resumen fijo de cinco partes y deja
+Los chats largos pesan. Cuando un hilo crece, Colonia resume sus turnos viejos en un resumen fijo de cinco partes y deja
 los más nuevos palabra por palabra, así el agente sigue trabajando con un contexto más chico. Un resumen de contenido
 de afuera sigue marcado como de afuera, así las reglas de seguridad no se aflojan.
 
 - Pasa solo con **Resumir los chats largos** en Configuración › Memoria (prendido por defecto).
-- Escribí `/compact` en un chat para hacerlo ya, o corré `apx compact <thread>`.
+- Escribí `/compact` en un chat para hacerlo ya, o corré `colonia compact <thread>`.
 - Las sesiones de Claude Code y Codex compactan sus propias transcripciones.
 
 ## Desde la terminal
 
-`apx chat` es la única forma de hablarle a un agente desde la terminal. Sin `--agent` ni `--thread`, le habla a Home.
+`colonia chat` es la única forma de hablarle a un agente desde la terminal. Sin `--agent` ni `--thread`, le habla a Home.
 
-<Terminal command={'apx chat "¿Qué tengo para hoy?"'}>{`Tres cosas: el plan de Q4 de Lucía espera tu OK, Tomás tiene el arreglo del checkout en revisión,
+<Terminal command={'colonia chat "¿Qué tengo para hoy?"'}>{`Tres cosas: el plan de Q4 de Lucía espera tu OK, Tomás tiene el arreglo del checkout en revisión,
 y Vera programó el newsletter para el viernes a las 9:00.
 — completed · gemini/gemini-3.8-flash · thread home`}</Terminal>
 
 | Comando | Hace |
 |---|---|
-| `apx chat "…" [--agent <id> \| --thread <id>]` | Manda un mensaje y espera la respuesta. `--new` arranca un chat nuevo, `--detach` vuelve enseguida. |
-| `apx chat "…" --interrupt` / `--steer` | Si hay un turno corriendo: lo frena y responde esto, o suma esto al turno en curso. |
-| `apx threads` | Lista los hilos con su estado y tipo. |
-| `apx threads get <thread>` | Muestra los últimos mensajes de un hilo. |
-| `apx threads cancel <thread>` | Frena lo que esté corriendo ahí. |
-| `apx runs get <run>` / `apx runs wait <run> [--timeout 60]` | Un turno en JSON, ahora o cuando termine. |
-| `apx runs pending [thread]` | Lo que los agentes están esperando de vos. |
-| `apx runs respond <input> approve\|deny` | Responde una aprobación. Mirá [Autonomía y seguridad](/es/concepts/autonomy/). |
-| `apx jobs [list] \| get <job> \| cancel <job>` | Trabajo de fondo. |
-| `apx compact <thread>` | Resume ya los turnos viejos de un hilo. |
+| `colonia chat "…" [--agent <id> \| --thread <id>]` | Manda un mensaje y espera la respuesta. `--new` arranca un chat nuevo, `--detach` vuelve enseguida. |
+| `colonia chat "…" --interrupt` / `--steer` | Si hay un turno corriendo: lo frena y responde esto, o suma esto al turno en curso. |
+| `colonia threads` | Lista los hilos con su estado y tipo. |
+| `colonia threads get <thread>` | Muestra los últimos mensajes de un hilo. |
+| `colonia threads cancel <thread>` | Frena lo que esté corriendo ahí. |
+| `colonia runs get <run>` / `colonia runs wait <run> [--timeout 60]` | Un turno en JSON, ahora o cuando termine. |
+| `colonia runs pending [thread]` | Lo que los agentes están esperando de vos. |
+| `colonia runs respond <input> approve\|deny` | Responde una aprobación. Mirá [Autonomía y seguridad](/es/concepts/autonomy/). |
+| `colonia jobs [list] \| get <job> \| cancel <job>` | Trabajo de fondo. |
+| `colonia compact <thread>` | Resume ya los turnos viejos de un hilo. |
 
-<Terminal command="apx threads">{`home                   idle       home   Home
+<Terminal command="colonia threads">{`home                   idle       home   Home
 th_4be19c07a2d35e61    completed  code   Lucía · acme-store
 th_a07c33e19d5b2f40    input-required agent  Lucía
 th_e2915bd0c4f7a813    working    routine Daily sales check · 10/8/26, 9:00 AM`}</Terminal>

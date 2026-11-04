@@ -193,7 +193,7 @@ export const discordAdapter = ((
             d: {
               token,
               intents: INTENTS | (rooms.size ? GUILD_MESSAGES : 0),
-              properties: { os: process.platform, browser: "apx", device: "apx" },
+              properties: { os: process.platform, browser: "colonia", device: "colonia" },
             },
           });
         } else if (f.op === 11) acked = true;

@@ -1,4 +1,4 @@
-// Profiles: what the super-agent is for, as data (an apx-profile.json). APX ships some; the owner installs more from a
+// Profiles: what the super-agent is for, as data (an colonia-profile.json). Colonia ships some; the owner installs more from a
 // folder. The running one adds a block to the super-agent's system prompt and keeps its routines on the super-agent
 // in step with its settings. Team news reuses the scheduler as a secretary capability; its explicit
 // on/off choices survive profile saves and changes. See DECISIONS.md#d-037
@@ -12,10 +12,10 @@ import {
   type ProfileRoutine,
   type Routine,
   type Schedule,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 
-export const PROFILE_FILE = "apx-profile.json";
+export const PROFILE_FILE = "colonia-profile.json";
 
 export type ProfileRoot = { dir: string; source: ProfileInfo["source"] };
 type Values = ActiveProfile["values"];
@@ -29,7 +29,7 @@ export function readProfile(dir: string): ProfileManifest {
   return ProfileManifest.parse(raw);
 }
 
-/** Every profile found: the owner's win over APX's own of the same id. */
+/** Every profile found: the owner's win over Colonia's own of the same id. */
 export function listProfiles(roots: readonly ProfileRoot[]): ProfileInfo[] {
   const byId = new Map<string, ProfileInfo>();
   for (const root of roots) {

@@ -1,6 +1,6 @@
 // Accounting of work: the background view (agents' runs on their own and terminal commands, as one list) and
 // usage by model.
-import type { Job, JobFrom } from "@apx/protocol";
+import type { Job, JobFrom } from "@colonia/protocol";
 import { publicJob } from "../domain/jobs.ts";
 import type { Origin, RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";

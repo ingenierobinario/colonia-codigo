@@ -7,7 +7,7 @@ import { coreLogFile, coreLogSink, OUTPUT_SCOPE, parseLine, readCoreLog } from "
 import { createLog } from "./log.ts";
 import { waitFor } from "./testkit/platform.ts";
 
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "apx-core-log-"));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-core-log-"));
 after(() => fs.rmSync(tmp, { recursive: true, force: true }));
 
 function logFile(lines: string[]): string {
@@ -34,7 +34,7 @@ test("the newest matching lines come back oldest first, and say when older ones 
 
 test("level, scope and text filter the lines; other fields come as detail", () => {
   const file = logFile([
-    json("info", "apx core listening", { url: "http://127.0.0.1:7440" }),
+    json("info", "colonia core listening", { url: "http://127.0.0.1:7440" }),
     json("warn", "push not delivered", { err: "timeout" }),
     json("error", "channel down", { channel: "acme" }),
     "TypeError: boom",

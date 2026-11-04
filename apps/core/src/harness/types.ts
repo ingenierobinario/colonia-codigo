@@ -1,4 +1,4 @@
-import type { HarnessId, Thread } from "@apx/protocol";
+import type { HarnessId, Thread } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import { parseRef } from "../domain/refs.ts";
 import type { RunRecord } from "../domain/runs.ts";
@@ -33,7 +33,7 @@ export type TurnIO = {
   onUsage?(soFar: Usage): void;
   /** Any sign of progress (a token, a tool's result or progress, a status): the turn is still working. */
   alive?(): void;
-  /** Runs one APX tool with its card and step record. Every harness calls tools through here. */
+  /** Runs one Colonia tool with its card and step record. Every harness calls tools through here. */
   /** `images`: what the tool showed the model to look at with its result (a picture of the screen). */
   execute(
     callId: string,

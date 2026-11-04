@@ -1,5 +1,5 @@
-import type { ModelRef, RouterConfig, RouterRule } from "@apx/protocol";
-import { Button, Icons } from "@apx/ui";
+import type { ModelRef, RouterConfig, RouterRule } from "@colonia/protocol";
+import { Button, Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { forAgents, inCatalog, saveModelsConfig, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";

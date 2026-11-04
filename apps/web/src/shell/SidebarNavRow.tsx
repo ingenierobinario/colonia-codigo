@@ -1,4 +1,4 @@
-import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, NavItem, Tooltip } from "@apx/ui";
+import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, NavItem, Tooltip } from "@colonia/ui";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode, useState } from "react";
 import { type T, useT } from "../i18n/index.ts";
 
@@ -35,7 +35,7 @@ export function SidebarNavRow({
   const t = useT();
   const [dragging, setDragging] = useState(false);
   const [drop, setDrop] = useState<"before" | "after">();
-  const dragType = `application/x-apx-${kind}`;
+  const dragType = `application/x-colonia-${kind}`;
   return (
     <ContextMenu
       items={items}

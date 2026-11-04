@@ -96,8 +96,8 @@ test("a read brings the columns it ticked, in the table's order, and only those 
   const inserts = steps?.values.map((v) => v.insert) ?? [];
   assert.ok(inserts.includes("$steps.lookup.name"));
   assert.ok(!inserts.includes("$steps.lookup.email"));
-  // A whole value offers nothing of APX's own: it would be saved as its text.
-  assert.ok(!valueGroups(graph, save, "whole", [], t, (k) => k).some((g) => g.label === "flow.v.apx"));
+  // A whole value offers nothing of Colonia's own: it would be saved as its text.
+  assert.ok(!valueGroups(graph, save, "whole", [], t, (k) => k).some((g) => g.label === "flow.v.colonia"));
 });
 
 test("a save by column that leaves a required column without a value is unfinished", () => {

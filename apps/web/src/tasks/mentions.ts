@@ -1,4 +1,4 @@
-import type { Agent } from "@apx/protocol";
+import type { Agent } from "@colonia/protocol";
 
 export type Mention = { start: number; end: number; query: string };
 

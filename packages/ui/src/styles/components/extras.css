@@ -1,104 +1,104 @@
 /* ── Look accents: classic ─────────────────────────────────────────────────
  * Tokens carry almost everything; these are the few shape differences v1 had. */
-[data-apx-look="classic"] .apx-composer__send:not(.is-quiet) {
+[data-colonia-look="classic"] .colonia-composer__send:not(.is-quiet) {
   border-radius: 8px;
 }
-[data-apx-look="classic"] .apx-tag--role {
+[data-colonia-look="classic"] .colonia-tag--role {
   background: transparent;
-  border-color: var(--apx-brand);
+  border-color: var(--colonia-brand);
 }
-[data-apx-look="classic"] .apx-activity__pill {
+[data-colonia-look="classic"] .colonia-activity__pill {
   border-radius: 8px;
 }
-[data-apx-look="classic"] .apx-entity {
+[data-colonia-look="classic"] .colonia-entity {
   background: transparent;
   padding: 0;
 }
-[data-apx-look="classic"] .apx-entity__sheet {
-  border-radius: var(--apx-radius-lg);
+[data-colonia-look="classic"] .colonia-entity__sheet {
+  border-radius: var(--colonia-radius-lg);
 }
-[data-apx-look="classic"] .apx-entity__actions {
+[data-colonia-look="classic"] .colonia-entity__actions {
   padding: 0;
 }
-[data-apx-look="classic"] .apx-tooltip {
-  background: var(--apx-surface-raised);
-  color: var(--apx-fg);
-  border: 1px solid var(--apx-border);
+[data-colonia-look="classic"] .colonia-tooltip {
+  background: var(--colonia-surface-raised);
+  color: var(--colonia-fg);
+  border: 1px solid var(--colonia-border);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .apx-blob--anim .apx-blob__bob,
-  .apx-blob--anim .apx-blob__look,
-  .apx-blob--anim .apx-blob__blink,
-  .apx-activity__dots i,
-  .apx-skeleton {
+  .colonia-blob--anim .colonia-blob__bob,
+  .colonia-blob--anim .colonia-blob__look,
+  .colonia-blob--anim .colonia-blob__blink,
+  .colonia-activity__dots i,
+  .colonia-skeleton {
     animation: none;
   }
 }
 
 /* ── ProjectTile ───────────────────────────────────────────────────────────── */
-.apx-tile {
+.colonia-tile {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
   overflow: hidden;
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg-muted);
-  font-weight: var(--apx-weight-semibold);
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg-muted);
+  font-weight: var(--colonia-weight-semibold);
   line-height: 1;
   user-select: none;
 }
-.apx-tile--brand {
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
+.colonia-tile--brand {
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
 }
-.apx-tile--violet {
-  background: var(--apx-violet-soft);
-  color: var(--apx-violet-soft-fg);
+.colonia-tile--violet {
+  background: var(--colonia-violet-soft);
+  color: var(--colonia-violet-soft-fg);
 }
-.apx-tile--info {
-  background: var(--apx-info-soft);
-  color: var(--apx-info-soft-fg);
+.colonia-tile--info {
+  background: var(--colonia-info-soft);
+  color: var(--colonia-info-soft-fg);
 }
-.apx-tile--warning {
-  background: var(--apx-warning-soft);
-  color: var(--apx-warning-soft-fg);
+.colonia-tile--warning {
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
 }
-.apx-tile--danger {
-  background: var(--apx-danger-soft);
-  color: var(--apx-danger-soft-fg);
+.colonia-tile--danger {
+  background: var(--colonia-danger-soft);
+  color: var(--colonia-danger-soft-fg);
 }
-.apx-tile--ink {
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
+.colonia-tile--ink {
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
 }
-.apx-tile svg {
+.colonia-tile svg {
   width: 60%;
   height: 60%;
 }
-.apx-tile__img {
+.colonia-tile__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 /* ── Popover ───────────────────────────────────────────────────────────────── */
-.apx-popover {
+.colonia-popover {
   max-width: calc(100vw - 24px);
   padding: 8px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  border: 1px solid var(--apx-border);
-  box-shadow: var(--apx-shadow-md);
-  font-family: var(--apx-font-sans);
-  font-size: var(--apx-text-md);
-  color: var(--apx-fg);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  border: 1px solid var(--colonia-border);
+  box-shadow: var(--colonia-shadow-md);
+  font-family: var(--colonia-font-sans);
+  font-size: var(--colonia-text-md);
+  color: var(--colonia-fg);
   outline: 0;
 }
 
 /* ── Help: a "?" after a title, opening what each option is for ─────────── */
-.apx-help {
+.colonia-help {
   display: inline-grid;
   place-items: center;
   width: 18px;
@@ -107,42 +107,42 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   cursor: pointer;
   vertical-align: middle;
 }
-.apx-help:hover,
-.apx-help[data-popup-open] {
-  color: var(--apx-fg);
-  background: var(--apx-fill);
+.colonia-help:hover,
+.colonia-help[data-popup-open] {
+  color: var(--colonia-fg);
+  background: var(--colonia-fill);
 }
-.apx-help__panel {
+.colonia-help__panel {
   padding: 12px 14px;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   line-height: 1.45;
 }
 /* It opens by growing out of the "?": its outline is uncovered (clip-path), never scaled, so the words keep their shape;
    they fade in once there is room. Keyframes, since the popover turns transitions off for a click. The negative inset
    keeps the shadow outside the clip. */
 @media (prefers-reduced-motion: no-preference) {
-  .apx-help__panel[data-open] {
-    animation: apx-help-grow 340ms cubic-bezier(0.34, 1.25, 0.64, 1) both;
+  .colonia-help__panel[data-open] {
+    animation: colonia-help-grow 340ms cubic-bezier(0.34, 1.25, 0.64, 1) both;
   }
-  .apx-help__panel[data-open] > * {
-    animation: apx-help-words 200ms ease 140ms both;
+  .colonia-help__panel[data-open] > * {
+    animation: colonia-help-words 200ms ease 140ms both;
   }
 }
-@keyframes apx-help-grow {
+@keyframes colonia-help-grow {
   from {
     clip-path: inset(0 calc(100% - 20px) calc(100% - 20px) 0 round 10px);
     opacity: 0.4;
   }
   to {
-    clip-path: inset(-24px round var(--apx-radius-md));
+    clip-path: inset(-24px round var(--colonia-radius-md));
     opacity: 1;
   }
 }
-@keyframes apx-help-words {
+@keyframes colonia-help-words {
   from {
     opacity: 0;
   }
@@ -150,183 +150,183 @@
     opacity: 1;
   }
 }
-.apx-help__title {
+.colonia-help__title {
   margin-bottom: 8px;
-  font-weight: var(--apx-weight-semibold);
+  font-weight: var(--colonia-weight-semibold);
 }
-.apx-help__items {
+.colonia-help__items {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin: 0;
 }
-.apx-help__item dt {
-  font-weight: var(--apx-weight-medium);
+.colonia-help__item dt {
+  font-weight: var(--colonia-weight-medium);
 }
-.apx-help__item dd {
+.colonia-help__item dd {
   margin: 2px 0 0;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-help__body {
-  color: var(--apx-fg-muted);
+.colonia-help__body {
+  color: var(--colonia-fg-muted);
 }
-.apx-help__items + .apx-help__body {
+.colonia-help__items + .colonia-help__body {
   margin-top: 10px;
 }
 
 /* ── SettingRow ────────────────────────────────────────────────────────────── */
-.apx-setting {
+.colonia-setting {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   column-gap: 24px;
   row-gap: 8px;
   padding: 12px 0;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
 /* The text keeps room to read: a control too wide to sit beside it on a narrow screen goes under it. */
-.apx-setting__text {
+.colonia-setting__text {
   flex: 1 1 180px;
   min-width: 0;
 }
-.apx-setting__title {
-  font-size: var(--apx-text-md);
+.colonia-setting__title {
+  font-size: var(--colonia-text-md);
 }
-.apx-setting__desc {
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-muted);
+.colonia-setting__desc {
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
   text-wrap: pretty;
 }
-.apx-setting__control {
+.colonia-setting__control {
   display: flex;
   align-items: center;
   gap: 8px;
   flex: none;
 }
 /* Stacked: a control that needs the width (a paragraph to write) goes under the text. */
-.apx-setting--stacked {
+.colonia-setting--stacked {
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
   gap: 8px;
 }
 /* In a column the row's 180px basis would be a height: the text takes only what it needs. */
-.apx-setting--stacked > .apx-setting__text {
+.colonia-setting--stacked > .colonia-setting__text {
   flex: none;
 }
-.apx-setting--stacked > .apx-setting__control {
+.colonia-setting--stacked > .colonia-setting__control {
   flex: auto;
 }
-.apx-setting--stacked > .apx-setting__control > * {
+.colonia-setting--stacked > .colonia-setting__control > * {
   flex: 1;
   min-width: 0;
 }
 
 /* ── ChannelIcon ──────────────────────────────────────────────────────────── */
-.apx-chanicon {
+.colonia-chanicon {
   display: inline-grid;
   place-items: center;
   flex: none;
   line-height: 0;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
-.apx-chanicon--none {
-  color: var(--apx-fg-muted);
+.colonia-chanicon--none {
+  color: var(--colonia-fg-muted);
 }
 
 /* ── IntegrationIcon ───────────────────────────────────────────────────────── */
 /* One-colour marks (GitHub, Notion) in the text colour, not the tile's muted one. */
-.apx-tile.apx-intmark {
-  color: var(--apx-fg);
+.colonia-tile.colonia-intmark {
+  color: var(--colonia-fg);
 }
 
 /* ── EngineIcon ────────────────────────────────────────────────────────────── */
-.apx-engine {
+.colonia-engine {
   display: inline-grid;
   place-items: center;
   flex: none;
   line-height: 0;
 }
-.apx-engine--tile {
+.colonia-engine--tile {
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px var(--apx-border);
+  box-shadow: inset 0 0 0 1px var(--colonia-border);
 }
-.apx-engine--tile.apx-engine--claude {
+.colonia-engine--tile.colonia-engine--claude {
   box-shadow: none;
 }
-.apx-engine--none {
-  color: var(--apx-fg-muted);
+.colonia-engine--none {
+  color: var(--colonia-fg-muted);
 }
-.apx-engine--none.apx-engine--tile {
-  background: var(--apx-fill);
+.colonia-engine--none.colonia-engine--tile {
+  background: var(--colonia-fill);
 }
 /* An ACP agent's one-colour mark: the text colour, on the neutral tile when there is one. */
-.apx-engine--acp {
-  color: var(--apx-fg);
+.colonia-engine--acp {
+  color: var(--colonia-fg);
 }
-.apx-engine__tile {
-  fill: var(--apx-fill);
+.colonia-engine__tile {
+  fill: var(--colonia-fill);
 }
 
 /* ── Meter ─────────────────────────────────────────────────────────────────── */
-.apx-meter {
+.colonia-meter {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
-.apx-meter__track {
+.colonia-meter__track {
   display: flex;
   height: 8px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
   overflow: hidden;
 }
-.apx-meter--sm .apx-meter__track {
+.colonia-meter--sm .colonia-meter__track {
   height: 4px;
 }
-.apx-meter__fill {
+.colonia-meter__fill {
   height: 100%;
   flex: none;
   transition: width 0.3s ease;
 }
-.apx-meter__fill--brand {
-  background: var(--apx-brand);
+.colonia-meter__fill--brand {
+  background: var(--colonia-brand);
 }
-.apx-meter__fill--violet {
-  background: var(--apx-violet);
+.colonia-meter__fill--violet {
+  background: var(--colonia-violet);
 }
-.apx-meter__fill--info {
-  background: var(--apx-info);
+.colonia-meter__fill--info {
+  background: var(--colonia-info);
 }
-.apx-meter__fill--warning {
-  background: var(--apx-warning);
+.colonia-meter__fill--warning {
+  background: var(--colonia-warning);
 }
-.apx-meter__fill--danger {
-  background: var(--apx-danger);
+.colonia-meter__fill--danger {
+  background: var(--colonia-danger);
 }
-.apx-meter__fill--muted {
-  background: var(--apx-fg-subtle);
+.colonia-meter__fill--muted {
+  background: var(--colonia-fg-subtle);
 }
-.apx-meter__legend {
+.colonia-meter__legend {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  font-size: calc(12px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-muted);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-muted);
 }
-.apx-meter__key {
+.colonia-meter__key {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.apx-meter__swatch {
+.colonia-meter__swatch {
   width: 8px;
   height: 8px;
   border-radius: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .apx-meter__fill {
+  .colonia-meter__fill {
     transition: none;
   }
 }

@@ -8,7 +8,7 @@ import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
-import { CatalogEngine as CatalogEngineSchema } from "@apx/protocol";
+import { CatalogEngine as CatalogEngineSchema } from "@colonia/protocol";
 import type { ProviderConfig } from "../config.ts";
 import type { Store } from "../domain/store.ts";
 import { errorMessage } from "../errors.ts";
@@ -46,7 +46,7 @@ export type CatalogEngine = {
 
 /**
  * Where an engine's list is kept. The version moves whenever more is read from an engine (efforts were added later),
- * so a list kept by an older APX is asked again instead of hiding what is new for a day.
+ * so a list kept by an older Colonia is asked again instead of hiding what is new for a day.
  */
 const cacheKey = (id: string) => `catalog.v2:${id}`;
 

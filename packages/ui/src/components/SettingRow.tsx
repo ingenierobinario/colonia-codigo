@@ -16,12 +16,12 @@ export interface SettingRowProps {
 /** One settings line: title + description on the left, control on the right, hairline on top. */
 export function SettingRow({ title, description, children, stacked, className }: SettingRowProps) {
   return (
-    <div className={cx("apx-setting", stacked && "apx-setting--stacked", className)}>
-      <div className="apx-setting__text">
-        <div className="apx-setting__title">{title}</div>
-        {description && <div className="apx-setting__desc">{description}</div>}
+    <div className={cx("colonia-setting", stacked && "colonia-setting--stacked", className)}>
+      <div className="colonia-setting__text">
+        <div className="colonia-setting__title">{title}</div>
+        {description && <div className="colonia-setting__desc">{description}</div>}
       </div>
-      {children != null && <div className="apx-setting__control">{children}</div>}
+      {children != null && <div className="colonia-setting__control">{children}</div>}
     </div>
   );
 }

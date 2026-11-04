@@ -40,7 +40,7 @@ test("deleting a chat during upload clears its draft and ignores the late result
   await expect(page.locator(".attchip")).toHaveCount(0);
   await expect(box).toHaveValue("Keep remaining words");
   await expect
-    .poll(() => page.evaluate((id) => JSON.parse(localStorage.getItem("apx.drafts") ?? "{}")[id], a.id))
+    .poll(() => page.evaluate((id) => JSON.parse(localStorage.getItem("colonia.drafts") ?? "{}")[id], a.id))
     .toBeUndefined();
   expect(transcripts).toBe(0);
 });

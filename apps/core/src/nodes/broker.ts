@@ -1,7 +1,7 @@
 // Connected nodes and the capabilities they lend. The core never executes a node capability itself:
 // it routes the call and fails fast when no node offers it.
 import { randomUUID } from "node:crypto";
-import type { ApxErrorShape, EventFrame } from "@apx/protocol";
+import type { ColoniaErrorShape, EventFrame } from "@colonia/protocol";
 import { CallError } from "../errors.ts";
 
 export type NodeLink = {
@@ -56,7 +56,7 @@ export function createNodeBroker() {
         return Promise.reject(
           new CallError({
             code: "unavailable",
-            message: `no connected node offers "${cap}" (open the APX desktop app)`,
+            message: `no connected node offers "${cap}" (open the Colonia desktop app)`,
           }),
         );
       }
@@ -74,7 +74,7 @@ export function createNodeBroker() {
     },
 
     /** A `res` frame arriving from a node. Unknown ids (late answers after a timeout) are dropped. */
-    settle(id: string, body: { ok: true; result: unknown } | { ok: false; error: ApxErrorShape }) {
+    settle(id: string, body: { ok: true; result: unknown } | { ok: false; error: ColoniaErrorShape }) {
       const p = pending.get(id);
       if (!p) return;
       pending.delete(id);

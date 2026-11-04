@@ -2,7 +2,7 @@ import type { Frame, Page } from "@playwright/test";
 import { expect, open, rpc, test } from "./kit.ts";
 
 /** A kit page with one of each overlay, logging what the page hears. */
-const page = `<script src="/_apx/kit@1.js"></script>
+const page = `<script src="/_colonia/kit@1.js"></script>
 <main class="ax-page">
   <div id="clip" style="overflow:hidden;width:70px;height:34px"><button id="tipped" class="ax-btn" data-ax-tip="Archive this item for later">Tip</button></div>
   <div class="ax-dropdown"><button class="ax-btn" data-ax-dropdown>Actions</button>
@@ -27,7 +27,7 @@ const page = `<script src="/_apx/kit@1.js"></script>
 const log = (s) => { document.getElementById("log").textContent += s + ";"; };
 document.addEventListener("ax:select", (e) => log(e.detail.value + ":" + e.detail.checked));
 document.getElementById("remove").onclick = async () =>
-  log("confirm=" + (await APX.confirm("Delete the order?", { confirm: "Yes", cancel: "No" })));
+  log("confirm=" + (await Colonia.confirm("Delete the order?", { confirm: "Yes", cancel: "No" })));
 document.getElementById("country").addEventListener("change", (e) => log("country=" + e.target.value));
 </script>`;
 
@@ -123,7 +123,7 @@ test("the kit's overlays open, pick and close from the keyboard and the pointer"
   expect(await f.evaluate(() => (document.getElementById("country") as HTMLSelectElement).value)).toBe("cl");
   await expect.poll(() => logged(f)).toContain("country=cl;");
 
-  // APX.confirm, asked from a click as pages do, resolves true on confirm and false on Esc.
+  // Colonia.confirm, asked from a click as pages do, resolves true on confirm and false on Esc.
   await f.getByRole("button", { name: "Remove" }).click();
   await f.getByRole("alertdialog", { name: "Delete the order?" }).getByRole("button", { name: "Yes" }).click();
   await expect.poll(() => logged(f)).toContain("confirm=true;");

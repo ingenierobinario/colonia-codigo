@@ -1,12 +1,12 @@
-// Where telemetry goes when APX_TELEMETRY names a sink: a Firestore project, written through its REST API with no account: its
+// Where telemetry goes when COLONIA_TELEMETRY names a sink: a Firestore project, written through its REST API with no account: its
 // security rules (firebase/firestore.rules) accept only these shapes, stamp the time themselves and allow no reads.
 // A plain https URL takes the same events as JSON instead (a backend of our own later, a test's fake one now).
-import type { TelemetryEvent } from "@apx/protocol";
+import type { TelemetryEvent } from "@colonia/protocol";
 
 /** Sends one event; throws when it did not land, so the step is tried again later. */
 export type TelemetrySink = (event: TelemetryEvent) => Promise<void>;
 
-/** Sin destino por defecto: Colonia solo envía telemetría si APX_TELEMETRY indica uno propio. */
+/** Sin destino por defecto: Colonia solo envía telemetría si COLONIA_TELEMETRY indica uno propio. */
 
 const TIMEOUT_MS = 15_000;
 
@@ -20,7 +20,7 @@ function jsonSink(url: string, fetchImpl: typeof fetch): TelemetrySink {
   return async (event) => {
     const res = await fetchImpl(url, {
       method: "POST",
-      headers: { "content-type": "application/json", "user-agent": "apx-telemetry" },
+      headers: { "content-type": "application/json", "user-agent": "colonia-telemetry" },
       body: JSON.stringify(event),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
@@ -74,7 +74,7 @@ function firestoreSink(project: string, fetchImpl: typeof fetch): TelemetrySink 
   return async (event) => {
     const res = await fetchImpl(url, {
       method: "POST",
-      headers: { "content-type": "application/json", "user-agent": "apx-telemetry" },
+      headers: { "content-type": "application/json", "user-agent": "colonia-telemetry" },
       body: JSON.stringify({ writes: [firestoreWrite(project, event)] }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

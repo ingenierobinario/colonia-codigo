@@ -14,7 +14,7 @@
   -webkit-app-region: drag;
 }
 .window-bar.is-desktop :is(button, a, input, textarea, [role="combobox"]),
-.apx-portal > * {
+.colonia-portal > * {
   -webkit-app-region: no-drag;
 }
 /* Unified window bar. Tokens only; sizes from --shell-* (shell/layout.ts). */
@@ -28,8 +28,8 @@
   align-items: center;
   gap: 16px;
   height: var(--shell-topbar-h);
-  background: var(--apx-sidebar);
-  border-bottom: 1px solid var(--apx-border);
+  background: var(--colonia-sidebar);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .topbar__left,
 .topbar__right,
@@ -64,7 +64,7 @@
   gap: 4px;
   margin-left: 12px;
   padding-right: 12px;
-  border-right: 1px solid var(--apx-border);
+  border-right: 1px solid var(--colonia-border);
 }
 .topbar__agent {
   margin-left: 8px;
@@ -72,7 +72,7 @@
 .topbar .running {
   width: auto;
 }
-.topbar__nav .apx-iconbtn:disabled {
+.topbar__nav .colonia-iconbtn:disabled {
   opacity: 0.35;
 }
 .topbar__logo {
@@ -86,20 +86,20 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   white-space: nowrap;
   overflow: hidden;
 }
 .topbar__crumb {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .topbar__crumb.is-last {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .topbar__sep {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .topbar__search {
   display: flex;
@@ -109,10 +109,10 @@
   height: 30px;
   padding: 0 8px 0 10px;
   border: 0;
-  border-radius: var(--apx-control-radius);
-  background: var(--apx-fill);
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-sm);
+  border-radius: var(--colonia-control-radius);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-sm);
   cursor: default;
 }
 .topbar__search-label {
@@ -123,11 +123,11 @@
   text-overflow: ellipsis;
 }
 .topbar .topbar__icon {
-  width: var(--apx-control-h-sm);
-  height: var(--apx-control-h-sm);
+  width: var(--colonia-control-h-sm);
+  height: var(--colonia-control-h-sm);
   flex: none;
-  border-radius: var(--apx-radius-sm);
-  color: var(--apx-fg-muted);
+  border-radius: var(--colonia-radius-sm);
+  color: var(--colonia-fg-muted);
 }
 .topbar .topbar__agent {
   display: flex;
@@ -138,29 +138,29 @@
   height: 32px;
   padding: 0 12px 0 4px;
   border: 0;
-  border-radius: var(--apx-control-radius);
+  border-radius: var(--colonia-control-radius);
   background: transparent;
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-medium);
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
 }
 .topbar__agent:hover:not(:disabled) {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .topbar__agentkbd {
-  font-size: var(--apx-text-2xs);
-  font-weight: var(--apx-weight-regular);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-2xs);
+  font-weight: var(--colonia-weight-regular);
+  color: var(--colonia-fg-subtle);
 }
 html[data-shortcuts-active] [data-shortcut-modifier] {
-  color: var(--apx-fg);
-  border-color: var(--apx-fg-muted);
+  color: var(--colonia-fg);
+  border-color: var(--colonia-fg-muted);
 }
 .topbar .topbar__more {
   display: none;
 }
 .topbar.is-desktop {
   -webkit-app-region: drag;
-  border-bottom-color: color-mix(in srgb, var(--apx-border) 80%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--colonia-border) 80%, transparent);
 }
 .topbar.is-desktop .topbar__left {
   padding-left: calc(14px + var(--window-controls-start, 0px));
@@ -209,11 +209,11 @@ html[data-shortcuts-active] [data-shortcut-modifier] {
 }
 @container topbar (max-width: 1599px) {
   .topbar__search-label,
-  .topbar__search .apx-kbd {
+  .topbar__search .colonia-kbd {
     display: none;
   }
   .topbar__search {
-    width: var(--apx-control-h-sm);
+    width: var(--colonia-control-h-sm);
     padding: 0;
     justify-content: center;
   }
@@ -228,7 +228,7 @@ html[data-shortcuts-active] [data-shortcut-modifier] {
     --topbar-min-fit: 3;
   }
   .topbar__crumbs {
-    font-size: var(--apx-text-xs);
+    font-size: var(--colonia-text-xs);
   }
 }
 @container topbar (max-width: 1099px) {

@@ -1,4 +1,4 @@
-import { Icons, Menu, type MenuEntry } from "@apx/ui";
+import { Icons, Menu, type MenuEntry } from "@colonia/ui";
 import { initialsOf, usePrefs } from "../data/prefs.ts";
 import { openSetup } from "../data/setup.ts";
 import { type T, useT } from "../i18n/index.ts";
@@ -54,7 +54,7 @@ export function AccountRow({ rail }: { rail: boolean }) {
  * there. macOS keeps it in its menu bar.
  */
 function appMenuItems(t: T): MenuEntry[] {
-  const desktop = window.apxDesktop;
+  const desktop = window.coloniaDesktop;
   const run = desktop?.menuAction;
   if (!run || desktop.platform === "darwin") return [];
   return [

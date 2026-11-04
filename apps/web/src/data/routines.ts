@@ -1,5 +1,5 @@
 // Routines (routines.*): read when their screen opens and after every change; runs show up as normal runs.
-import type { CallModel, Routine, RoutineAction, RoutineRun, Schedule } from "@apx/protocol";
+import type { CallModel, Routine, RoutineAction, RoutineRun, Schedule } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";

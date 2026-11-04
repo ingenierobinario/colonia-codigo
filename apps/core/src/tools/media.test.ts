@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ImageDefaults, NEGATIVE_PROMPT_MAX } from "@apx/protocol";
+import { ImageDefaults, NEGATIVE_PROMPT_MAX } from "@colonia/protocol";
 import { mediaTools } from "./media.ts";
 
 test("a negative prompt the owner may save as a default is one make_image takes", () => {

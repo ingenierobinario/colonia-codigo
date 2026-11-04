@@ -13,10 +13,10 @@ let directory: string;
 let script: string;
 let css: string;
 let bundle: string;
-const coverage = process.env.APX_UI_TEST_COVERAGE_DIR;
+const coverage = process.env.COLONIA_UI_TEST_COVERAGE_DIR;
 
 before(async () => {
-  directory = fs.mkdtempSync(path.join(os.tmpdir(), "apx-ui-test-"));
+  directory = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ui-test-"));
   bundle = path.join(directory, "fixture.js");
   await build({
     entryPoints: [path.join(import.meta.dirname, "interaction.test-support.ts")],

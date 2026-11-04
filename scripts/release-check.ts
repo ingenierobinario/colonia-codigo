@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 export const RELEASE_BRANCH = "main";
 export const VERIFY_WORKFLOW = "verify.yml";
-const DEFAULT_REPO = "agentprojectcontext/apx";
+const DEFAULT_REPO = "ingenierobinario/colonia";
 
 export type VerifyRun = { databaseId: number; status: string; conclusion: string; url: string; headSha: string };
 export type Verdict = { verified: true; run: VerifyRun } | { verified: false; pending?: VerifyRun; reason: string };
@@ -51,7 +51,7 @@ export function parseArgs(argv: readonly string[]) {
   };
   const wait = rest.includes("--wait");
   const tag = take("--tag");
-  const repo = take("--repo") ?? process.env.APX_RELEASE_REPO ?? DEFAULT_REPO;
+  const repo = take("--repo") ?? process.env.COLONIA_RELEASE_REPO ?? DEFAULT_REPO;
   const positional = rest.filter((a) => a !== "--wait");
   if (positional.some((a) => a.startsWith("-")))
     throw new Error(`unknown flag ${positional.find((a) => a.startsWith("-"))}`);

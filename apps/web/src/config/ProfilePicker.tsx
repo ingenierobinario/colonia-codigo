@@ -1,5 +1,5 @@
-import type { Localized, ProfileField, Routine } from "@apx/protocol";
-import { Button, Dialog, Icons, Input, SegmentedControl, Select, SettingRow, Skeleton, Tag } from "@apx/ui";
+import type { Localized, ProfileField, Routine } from "@colonia/protocol";
+import { Button, Dialog, Icons, Input, SegmentedControl, Select, SettingRow, Skeleton, Tag } from "@colonia/ui";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import {
@@ -30,7 +30,7 @@ const toCron = (time: string, days: Days) => {
 
 /**
  * What the super-agent is for: the profile picker, the active profile's settings and its routines. A profile gives it a
- * role in its prompt, routines on its own schedule and the settings both read; APX ships some, more install from a
+ * role in its prompt, routines on its own schedule and the settings both read; Colonia ships some, more install from a
  * folder. None: it only answers. Shown in Settings › Super-agent and in the super-agent's editor.
  */
 /** `actions`: links shown under its routines. */
@@ -267,7 +267,7 @@ function FieldInput({
   );
 }
 
-/** A profile from a folder on this machine (one with an apx-profile.json). */
+/** A profile from a folder on this machine (one with an colonia-profile.json). */
 function InstallDialog({ onClose, onInstalled }: { onClose(): void; onInstalled(): void }) {
   const t = useT();
   const [path, setPath] = useState("");

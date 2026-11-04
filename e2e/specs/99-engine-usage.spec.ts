@@ -73,11 +73,11 @@ test("AI usage shows account windows, unavailable engines and a narrow-screen ac
   await expect(summary.getByRole("img", { name: "Codex · 5 horas: 37% usado" })).toBeVisible();
   await expect(summary.getByText(/Se renueva/)).toBeVisible();
   const claude = summary.locator("section").filter({ has: page.getByRole("heading", { name: "Claude", exact: true }) });
-  await expect(claude.locator(".apx-meter")).toHaveCount(0);
+  await expect(claude.locator(".colonia-meter")).toHaveCount(0);
   await expect(claude).toContainText("Sin fuente de cuota compatible");
   await expect(summary.getByText(/Sin datos no significa consumo ilimitado/)).toHaveCount(0);
   await summary.getByRole("button", { name: "Ayuda sobre cuotas de IA", exact: true }).click();
-  await expect(page.locator(".apx-help__panel")).toContainText("Sin datos no significa consumo ilimitado");
+  await expect(page.locator(".colonia-help__panel")).toContainText("Sin datos no significa consumo ilimitado");
   await page.keyboard.press("Escape");
   const beforeRefresh = calls;
   await summary.getByRole("button", { name: "Actualizar" }).click();
@@ -127,8 +127,8 @@ test("Claude displays real account windows and its CLI source", async ({ page })
   const help = summary.getByRole("button", { name: "Ayuda sobre cuotas de Claude", exact: true });
   await help.focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator(".apx-help__panel")).toContainText("Fuente: cuota del plan de Claude (/usage)");
-  await expect(page.locator(".apx-help__panel")).not.toContainText("Sin fuente de cuota compatible");
+  await expect(page.locator(".colonia-help__panel")).toContainText("Fuente: cuota del plan de Claude (/usage)");
+  await expect(page.locator(".colonia-help__panel")).not.toContainText("Sin fuente de cuota compatible");
   await page.keyboard.press("Escape");
   await expect(summary.getByText("85% disponible")).toBeVisible();
 });
@@ -147,7 +147,7 @@ test("AI usage recovers from a failed request without showing an invented balanc
   await page.getByTestId("engine-usage-button").click();
   const summary = page.getByTestId("engine-usage-summary");
   await expect(summary.getByRole("alert")).toContainText("Volvé a intentar");
-  await expect(summary.locator(".apx-meter")).toHaveCount(0);
+  await expect(summary.locator(".colonia-meter")).toHaveCount(0);
   fail = false;
   await summary.getByRole("button", { name: "Actualizar" }).click();
   await expect(summary.getByText("63% disponible")).toBeVisible();

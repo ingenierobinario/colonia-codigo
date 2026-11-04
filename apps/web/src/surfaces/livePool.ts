@@ -3,7 +3,7 @@ import { setAnyLive } from "./liveAny.ts";
 
 // Pages kept running while hidden, in one overlay layer of the shell (moving an iframe in the DOM reloads it, so each
 // stays put and is laid over whichever placeholder shows it): apps the owner opened, until closed, and pages that
-// declare apx-live, for their keep time. See DECISIONS.md#d-119.
+// declare colonia-live, for their keep time. See DECISIONS.md#d-119.
 
 /** Live pages kept running at once; beyond it the one seen least recently is closed. */
 export const LIVE_MAX = 3;
@@ -124,7 +124,7 @@ export function useLiveHeight(surface: string): number {
   return useSyncExternalStore(subscribe, () => entries.find((e) => e.surface === surface)?.height ?? 120);
 }
 
-/** Closes a live page at once (it stopped declaring apx-live, or it is gone). */
+/** Closes a live page at once (it stopped declaring colonia-live, or it is gone). */
 export function dropLive(surface: string): void {
   if (entries.some((e) => e.surface === surface)) set(entries.filter((e) => e.surface !== surface));
 }

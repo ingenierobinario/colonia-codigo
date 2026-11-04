@@ -36,21 +36,21 @@ test("Marcar todo como leído: desde la Bandeja y desde el menú del proyecto", 
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, "#view=inbox");
   const inbox = page.locator(".sidebar__top").getByRole("button", { name: /^Inbox/, includeHidden: true });
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("5");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("5");
   const all = page.getByRole("button", { name: "Marcar todo como leído", exact: true });
   const dialog = page.getByRole("dialog", { name: "Marcar todo como leído", exact: true });
   await all.click();
   await expect(dialog).toContainText("Chats que se marcarán como leídos: 2.");
   expect(read).toEqual([]);
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("5");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("5");
   await dialog.getByRole("button", { name: "Cancelar", exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(read).toEqual([]);
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("5");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("5");
   await all.click();
   await dialog.getByRole("button", { name: "Marcar todo como leído", exact: true }).click();
   await expect.poll(() => [...read].sort()).toEqual([a.id, b.id].sort());
-  await expect(inbox.locator(".apx-nav__count")).toHaveCount(0);
+  await expect(inbox.locator(".colonia-nav__count")).toHaveCount(0);
   await expect(all).toBeDisabled();
 
   // Inbox unread counts can also be cleared from its sidebar context menu.
@@ -58,7 +58,7 @@ test("Marcar todo como leído: desde la Bandeja y desde el menú del proyecto", 
   unread.set(b.id, 3);
   read.length = 0;
   await page.reload();
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("5");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("5");
   await inbox.click({ button: "right" });
   await page.getByRole("menuitem", { name: "Marcar todo como leído", exact: true }).click();
   await expect(dialog).toBeVisible();
@@ -66,18 +66,18 @@ test("Marcar todo como leído: desde la Bandeja y desde el menú del proyecto", 
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   expect(read).toEqual([]);
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("5");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("5");
   await inbox.click({ button: "right" });
   await page.getByRole("menuitem", { name: "Marcar todo como leído", exact: true }).click();
   await dialog.getByRole("button", { name: "Marcar todo como leído", exact: true }).click();
   await expect.poll(() => [...read].sort()).toEqual([a.id, b.id].sort());
-  await expect(inbox.locator(".apx-nav__count")).toHaveCount(0);
+  await expect(inbox.locator(".colonia-nav__count")).toHaveCount(0);
 
   // The project's dot goes the same way, from its own menu.
   unread.set(a.id, 1);
   read.length = 0;
   await page.reload();
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("1");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("1");
   const row = page.locator(".sidebar__scroll [data-project-id]").filter({ has: page.locator(".sidebar__unread") });
   await expect(row).toHaveCount(1);
   await row.click({ button: "right" });
@@ -87,11 +87,11 @@ test("Marcar todo como leído: desde la Bandeja y desde el menú del proyecto", 
   await dialog.getByRole("button", { name: "Cerrar", exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(read).toEqual([]);
-  await expect(inbox.locator(".apx-nav__count")).toHaveText("1");
+  await expect(inbox.locator(".colonia-nav__count")).toHaveText("1");
   await row.click({ button: "right" });
   await page.getByRole("menuitem", { name: "Marcar todo como leído", exact: true }).click();
   await dialog.getByRole("button", { name: "Marcar todo como leído", exact: true }).click();
   await expect.poll(() => read).toEqual([a.id]);
   await expect(page.locator(".sidebar__unread")).toHaveCount(0);
-  await expect(inbox.locator(".apx-nav__count")).toHaveCount(0);
+  await expect(inbox.locator(".colonia-nav__count")).toHaveCount(0);
 });

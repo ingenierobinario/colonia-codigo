@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { testConfig } from "../config.ts";
 import { createCore } from "../server.ts";
 import { tempDir } from "../testkit/platform.ts";
@@ -8,8 +8,8 @@ import { tempDir } from "../testkit/platform.ts";
 test("agents cannot query owner account limits over HTTP or WebSocket", async () => {
   await using home = tempDir();
   const core = await createCore(testConfig({ home: home.path }), { quiet: true });
-  const agent = new ApxClient({ url: core.url, actor: "agent" });
-  const owner = new ApxClient({ url: core.url });
+  const agent = new ColoniaClient({ url: core.url, actor: "agent" });
+  const owner = new ColoniaClient({ url: core.url });
   try {
     assert.equal((await owner.call("engines.usage_preferences", {})).engines.codex, false);
     const live = await owner.connect();

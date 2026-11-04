@@ -12,7 +12,7 @@ test("a path under the home shows as ~ and reads back, and nothing else changes"
   // A folder that only starts with the home's name is not inside it.
   assert.equal(tildeHome(`${home}-backup`, home), `${home}-backup`);
   assert.equal(expandHome("~alex/notes", home), "~alex/notes");
-  assert.equal(expandHome("/srv/apx", home), "/srv/apx");
+  assert.equal(expandHome("/srv/colonia", home), "/srv/colonia");
   // A relative path is not under the home, whatever it resolves to from here.
   assert.equal(tildeHome("work/notes", home), "work/notes");
 });

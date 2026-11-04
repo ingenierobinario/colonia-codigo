@@ -1,7 +1,7 @@
 // Which token the panel shows the core, and what a refusal means. Pure: no window, no client, so it is tested in Node.
 
 /** Where a paired browser keeps the device token the core gave it. */
-export const TOKEN_KEY = "apx.token";
+export const TOKEN_KEY = "colonia.token";
 
 export type TokenFrom = "desktop" | "stored" | "none";
 export type KeyStore = Pick<Storage, "getItem" | "setItem" | "removeItem">;

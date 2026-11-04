@@ -1,10 +1,10 @@
-// A core whose scripted model calls apx_settings (or `tool`, like apx_flow) with what the owner wrote, as JSON: each test says the call, the
+// A core whose scripted model calls colonia_settings (or `tool`, like colonia_flow) with what the owner wrote, as JSON: each test says the call, the
 // owner approves or declines it, and reads the card and the answer.
 import assert from "node:assert/strict";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 export async function settingsCore({
-  tool = "apx_settings",
+  tool = "colonia_settings",
   ...opts
 }: Omit<Parameters<typeof startCore>[0] & object, "llm"> & { tool?: string } = {}) {
   const llm = scriptedLlm((req, { said, afterTool }) => {

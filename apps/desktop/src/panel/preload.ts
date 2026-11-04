@@ -1,4 +1,4 @@
-// Sandboxed preload for APX's own pages (the panel and the quick chat): the few things the web UI asks of the shell.
+// Sandboxed preload for Colonia's own pages (the panel and the quick chat): the few things the web UI asks of the shell.
 import { contextBridge, ipcRenderer } from "electron";
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -9,7 +9,7 @@ ipcRenderer.on("window:fullscreen", (_e, full: unknown) => {
   if (typeof full === "boolean") fullScreen = full;
 });
 
-contextBridge.exposeInMainWorld("apxDesktop", {
+contextBridge.exposeInMainWorld("coloniaDesktop", {
   /** darwin | win32 | linux — panel pads the unified title bar for traffic lights / overlay. */
   platform: process.platform,
   setBrowserBounds: (b: Bounds | null) => ipcRenderer.send("panel:browser-bounds", b),
@@ -39,7 +39,7 @@ contextBridge.exposeInMainWorld("apxDesktop", {
   },
   openMain: (threadId?: string) =>
     ipcRenderer.send("quick:open-main", typeof threadId === "string" ? threadId : undefined),
-  /** Files the owner opened with APX, each with its text or why it has none; taken once. */
+  /** Files the owner opened with Colonia, each with its text or why it has none; taken once. */
   takeOpenedFiles: (): Promise<unknown> => ipcRenderer.invoke("artifact:take-opened"),
   onFileOpened: (listener: () => void) => {
     const on = () => listener();
@@ -63,7 +63,7 @@ contextBridge.exposeInMainWorld("apxDesktop", {
   },
   applyDesktopPrefs: (prefs: { shortcut: string; launchAtLogin: boolean; computerUse?: boolean }) =>
     ipcRenderer.send("desktop:prefs", prefs),
-  /** Computer use: what macOS allows APX, where the owner allows it, and the live view of what an agent works on. */
+  /** Computer use: what macOS allows Colonia, where the owner allows it, and the live view of what an agent works on. */
   computerPermissions: (): Promise<unknown> => ipcRenderer.invoke("computer:permissions"),
   openPrivacy: (kind: "screen" | "accessibility") => ipcRenderer.invoke("computer:open-privacy", kind),
   computerFrame: (): Promise<unknown> => ipcRenderer.invoke("computer:frame"),
@@ -86,7 +86,7 @@ contextBridge.exposeInMainWorld("apxDesktop", {
   menuAction: (id: string) => ipcRenderer.send("desktop:menu-action", String(id)),
   pickFolder: (): Promise<string | undefined> => ipcRenderer.invoke("panel:pick-folder"),
   memory: (): Promise<unknown> => ipcRenderer.invoke("desktop:memory"),
-  /** Whether a newer APX app is out (check: ask the release feed now). */
+  /** Whether a newer Colonia app is out (check: ask the release feed now). */
   updateAuth: (token?: string) => ipcRenderer.send("desktop:update-auth", token),
   updateStatus: (check?: boolean): Promise<unknown> => ipcRenderer.invoke("desktop:update-status", check === true),
   /** Downloads the newer app and leaves it ready for the next restart (or opens it for the owner to drag in). */
@@ -111,8 +111,8 @@ type Answer =
   | { ok: true; ready?: true; linger?: string }
   | { ok: false; reason?: string; error?: string; key?: string };
 type SshPrompt = { id: string; text: string; secret: boolean };
-// The first-run screen (apx-app://app/?connect): the main process only answers it while the window shows that page.
-contextBridge.exposeInMainWorld("apxConnect", {
+// The first-run screen (colonia-app://app/?connect): the main process only answers it while the window shows that page.
+contextBridge.exposeInMainWorld("coloniaConnect", {
   local: (access: string): Promise<Answer> => ipcRenderer.invoke("connect:local", access),
   url: (url: string): Promise<Answer> => ipcRenderer.invoke("connect:url", url),
   ssh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh", target),

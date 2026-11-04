@@ -1,4 +1,4 @@
-// The world the e2e core lives in, written into a temp folder: an APX v1 to import (a project with an agent, tasks,
+// The world the e2e core lives in, written into a temp folder: an Colonia v1 to import (a project with an agent, tasks,
 // a routine, notes, a variable, a skill), a Claude Code and a Codex session to resume, and a project folder of its own.
 import fs from "node:fs";
 import path from "node:path";
@@ -10,8 +10,8 @@ const write = (file: string, v: unknown) => {
 const lines = (...rows: unknown[]) => `${rows.map((r) => JSON.stringify(r)).join("\n")}\n`;
 
 export function writeFixtures(dir: string, opts: { embedUrl: string }) {
-  const home = path.join(dir, "apx-home");
-  const v1 = path.join(dir, "apx-v1");
+  const home = path.join(dir, "colonia-home");
+  const v1 = path.join(dir, "colonia-v1");
   const claude = path.join(dir, "claude");
   const codex = path.join(dir, "codex");
   const repo = path.join(dir, "work", "acme");
@@ -25,9 +25,9 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
   // A plain folder (no AGENTS.md): added from the sidebar later.
   write(path.join(dir, "work", "globex", "notes.txt"), "Globex notes.\n");
 
-  // APX v1, as it leaves its folder.
+  // Colonia v1, as it leaves its folder.
   write(path.join(legacy, "AGENTS.md"), "# Northwind\n");
-  write(path.join(legacy, ".apc", "project.json"), { name: "Northwind", apx_id: "nw0000000001" });
+  write(path.join(legacy, ".apc", "project.json"), { name: "Northwind", colonia_id: "nw0000000001" });
   write(path.join(legacy, ".apc", "agents", "dev.md"), "---\nname: Dev\nrole: developer\n---\nYou build.\n");
   write(path.join(legacy, ".apc", "agents", "ops.md"), "---\nname: Ops\nrole: operations\n---\nYou deploy.\n");
   write(path.join(v1, "config.json"), {
@@ -62,7 +62,7 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
     routines: [{ name: "Morning brief", kind: "exec_agent", schedule: "0 9 * * *", spec: { prompt: "Brief me." } }],
   });
 
-  // A Claude Code session and a Codex one the owner started outside APX.
+  // A Claude Code session and a Codex one the owner started outside Colonia.
   write(
     path.join(claude, "projects", "-work-acme", "11111111-2222-3333-4444-555555555555.jsonl"),
     lines(

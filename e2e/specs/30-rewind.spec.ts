@@ -15,7 +15,7 @@ test("the owner edits a message and asks again for an answer; what came after go
   }
 
   // The last message: edited in place, no question (only its own answer is replaced).
-  const last = main.locator(".apx-msg--user", { hasText: "Northwind dos" });
+  const last = main.locator(".colonia-msg--user", { hasText: "Northwind dos" });
   await last.hover();
   await last.getByRole("button", { name: "Editar mensaje" }).click();
   const editor = main.getByRole("textbox", { name: "Editar mensaje" });
@@ -25,7 +25,7 @@ test("the owner edits a message and asks again for an answer; what came after go
   await expect(main.getByText("Northwind dos")).toHaveCount(0);
 
   // An earlier one: what came after it goes, so it asks first.
-  const first = main.locator(".apx-msg--user", { hasText: "Northwind uno" });
+  const first = main.locator(".colonia-msg--user", { hasText: "Northwind uno" });
   await first.hover();
   await first.getByRole("button", { name: "Editar mensaje" }).click();
   await main.getByRole("textbox", { name: "Editar mensaje" }).fill("Northwind cuatro");
@@ -34,12 +34,12 @@ test("the owner edits a message and asks again for an answer; what came after go
   await expect(confirm).toContainText("Se borran 2 mensajes posteriores");
   await confirm.getByRole("button", { name: "Borrar y enviar" }).click();
   await expect(main.locator("p", { hasText: "Got it: Northwind cuatro" })).toBeVisible();
-  await expect(main.locator(".apx-msg--user")).toHaveCount(1);
+  await expect(main.locator(".colonia-msg--user")).toHaveCount(1);
 
   // Asking again for the last answer replaces it.
-  const answer = main.locator(".apx-msg--agent", { hasText: "Got it: Northwind cuatro" });
+  const answer = main.locator(".colonia-msg--agent", { hasText: "Got it: Northwind cuatro" });
   await answer.hover();
   await answer.getByRole("button", { name: "Regenerar respuesta" }).click();
-  await expect(main.locator(".apx-msg--user")).toHaveCount(1);
+  await expect(main.locator(".colonia-msg--user")).toHaveCount(1);
   await expect(main.locator("p", { hasText: "Got it: Northwind cuatro" })).toHaveCount(1);
 });

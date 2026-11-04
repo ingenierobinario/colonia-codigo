@@ -1,6 +1,6 @@
 // Leaving the editor with unsaved edits, out of it or to a table in Tables: keep editing, drop them, or save a draft
 // first and go.
-import { Button, Dialog } from "@apx/ui";
+import { Button, Dialog } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../i18n/index.ts";
 

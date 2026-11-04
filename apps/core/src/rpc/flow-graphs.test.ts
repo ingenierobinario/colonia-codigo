@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import { ColoniaClient } from "@colonia/protocol/client";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const graph: FlowGraph = {
@@ -85,7 +85,7 @@ test("graph management and publishing are owner-only over HTTP/WS, with CAS and 
     }
     assert.equal((await env.client.call("flows.set", { ...legacy, enabled: true })).enabled, true);
     const external = await env.client.call("clients.create", { name: "Acme", scopes: ["chat"] });
-    const outsider = new ApxClient({ url: env.core.url, clientToken: external.token });
+    const outsider = new ColoniaClient({ url: env.core.url, clientToken: external.token });
     await assert.rejects(outsider.call("flows.graph_get", { flow: "visual" }), /outside/);
     await assert.rejects(outsider.call("flows.draft_save", { flow: "visual", expectedVersion: 5, graph }), /outside/);
     await assert.rejects(

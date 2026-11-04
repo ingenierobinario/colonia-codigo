@@ -1,7 +1,7 @@
 .transcript__agent-event {
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-sm);
-  background: var(--apx-fill);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-fill);
   overflow: hidden;
 }
 .transcript__agent-event > summary {
@@ -11,7 +11,7 @@
   padding: 10px 12px;
   cursor: pointer;
   list-style: none;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   font-weight: 500;
 }
 .transcript__agent-event > summary::-webkit-details-marker {
@@ -25,18 +25,18 @@
 }
 .transcript__event-state {
   margin-left: auto;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .transcript__event-source {
   display: block;
   text-align: left;
   margin: 0 12px 10px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
   overflow-wrap: anywhere;
 }
 .transcript__event-source:hover {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .transcript__event-body {
   padding: 0 12px 12px;

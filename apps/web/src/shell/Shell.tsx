@@ -28,7 +28,7 @@ import {
   WidgetChatHost,
 } from "../lazy.ts";
 import { useAnyLive } from "../surfaces/liveAny.ts";
-import { useApxFiles } from "../surfaces/openedFiles.ts";
+import { useColoniaFiles } from "../surfaces/openedFiles.ts";
 import { widgetChatOpen } from "../surfaces/widgetChatOpen.ts";
 import { ChatWorkspace } from "./ChatWorkspace.tsx";
 import { computeLayout, layoutVars } from "./layout.ts";
@@ -221,8 +221,8 @@ function useShortcuts() {
 function useDesktopBridge() {
   useEffect(() => {
     void applyDesktopPrefs();
-    window.apxDesktop?.setTitleBar?.(nav.get().mode);
-    return window.apxDesktop?.onOpenThread?.((id) => go.thread(id));
+    window.coloniaDesktop?.setTitleBar?.(nav.get().mode);
+    return window.coloniaDesktop?.onOpenThread?.((id) => go.thread(id));
   }, []);
-  useApxFiles();
+  useColoniaFiles();
 }

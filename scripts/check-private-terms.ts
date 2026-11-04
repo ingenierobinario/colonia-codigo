@@ -3,7 +3,7 @@
 //
 // Two layers:
 //  1. A PRIVATE denylist that is never committed (a denylist in the repo would publish what it protects).
-//     Read from $APX_PRIVATE_TERMS, <repo>/spec/private-terms.txt (gitignored) or ~/.apx/private-terms.txt.
+//     Read from $COLONIA_PRIVATE_TERMS, <repo>/spec/private-terms.txt (gitignored) or ~/.colonia/private-terms.txt.
 //     No file → the layer passes silently (CI, fresh clones). Format per line:
 //       term | re:<regex> | allow:<literal> | # comment
 //  2. Public SHAPES that run everywhere: real-looking WhatsApp numbers and absolute /Users|/Volumes paths.
@@ -52,8 +52,8 @@ export function parseTerms(text: string): { matchers: Matcher[]; allow: string[]
 }
 
 function termFiles(env = process.env): string[] {
-  if (env.APX_PRIVATE_TERMS) return fs.existsSync(env.APX_PRIVATE_TERMS) ? [env.APX_PRIVATE_TERMS] : [];
-  return [path.join(REPO, "spec", "private-terms.txt"), path.join(os.homedir(), ".apx", "private-terms.txt")].filter(
+  if (env.COLONIA_PRIVATE_TERMS) return fs.existsSync(env.COLONIA_PRIVATE_TERMS) ? [env.COLONIA_PRIVATE_TERMS] : [];
+  return [path.join(REPO, "spec", "private-terms.txt"), path.join(os.homedir(), ".colonia", "private-terms.txt")].filter(
     (f) => fs.existsSync(f),
   );
 }

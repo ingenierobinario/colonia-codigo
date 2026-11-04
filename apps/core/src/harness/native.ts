@@ -1,7 +1,7 @@
 // The built-in loop: our model call, our tools, bounded steps. What the model says and every tool result are
 // logged as they happen.
 
-import { TURN_STEPS } from "@apx/protocol";
+import { TURN_STEPS } from "@colonia/protocol";
 import type { Llm } from "../providers/llm.ts";
 import type { ChatItem, ModelFailure, Usage } from "../providers/types.ts";
 import { readsImages } from "../providers/vision.ts";
@@ -26,7 +26,7 @@ const READS_AGAIN = new Set(["browser_text"]);
 const PICTURE_BESIDE_TEXT = new Set(["browser_snapshot"]);
 
 /**
- * A note from APX to the model mid-turn. Sent as a tagged user item: some providers fold every system item into
+ * A note from Colonia to the model mid-turn. Sent as a tagged user item: some providers fold every system item into
  * the system prompt, which would move it out of order and break the cached prefix.
  */
 export const systemNote = (content: string): ChatItem => ({

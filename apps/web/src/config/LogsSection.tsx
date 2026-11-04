@@ -1,4 +1,4 @@
-import { Badge, Button, EmptyState, IconButton, Icons, SearchField, SegmentedControl, Select, Skeleton } from "@apx/ui";
+import { Badge, Button, EmptyState, IconButton, Icons, SearchField, SegmentedControl, Select, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { type CoreLog, readCoreLog } from "../data/logs.ts";
 import { notify } from "../data/notices.ts";

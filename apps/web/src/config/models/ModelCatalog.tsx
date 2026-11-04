@@ -1,5 +1,5 @@
-import type { CatalogEngine } from "@apx/protocol";
-import { Badge, Button, Checkbox, EngineIcon, Icons, SearchField, Skeleton } from "@apx/ui";
+import type { CatalogEngine } from "@colonia/protocol";
+import { Badge, Button, Checkbox, EngineIcon, Icons, SearchField, Skeleton } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { dayLabel } from "../../common/format.ts";
 import { loadCatalog, useModels } from "../../data/models.ts";

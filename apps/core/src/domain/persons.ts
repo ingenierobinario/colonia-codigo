@@ -1,6 +1,6 @@
 // People and their addresses on channels. The owner is the person with role "owner" (one, created on first use);
 // who someone is on a channel is decided only by an exact address match, never by a name.
-import { type Address, type Person, PersonPerms, PersonRelation, type PersonRole } from "@apx/protocol";
+import { type Address, type Person, PersonPerms, PersonRelation, type PersonRole } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { AddressesTable, PersonsTable } from "../db/schema.ts";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";

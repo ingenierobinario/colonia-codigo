@@ -1,4 +1,4 @@
-// A Claude Code or Codex session read whole, for bringing it into APX: what the owner and the engine said, the images
+// A Claude Code or Codex session read whole, for bringing it into Colonia: what the owner and the engine said, the images
 // either attached or made, the tools the engine ran and the pages it wrote. Read-only on the CLIs' folders.
 import fs from "node:fs";
 import path from "node:path";

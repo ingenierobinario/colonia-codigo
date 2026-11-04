@@ -1,4 +1,4 @@
-import { Dialog, IconButton, Icons, MediaLoader, mediaKindOf } from "@apx/ui";
+import { Dialog, IconButton, Icons, MediaLoader, mediaKindOf } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../../i18n/index.ts";
 import { AudioPart } from "../parts/lazyAudio.tsx";

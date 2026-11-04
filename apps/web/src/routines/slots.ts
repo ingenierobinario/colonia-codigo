@@ -1,4 +1,4 @@
-import type { RoutineRun, Schedule } from "@apx/protocol";
+import type { RoutineRun, Schedule } from "@colonia/protocol";
 import { weeklyOf } from "./cron.ts";
 
 /** How many activations a routine's row shows. */

@@ -127,7 +127,7 @@ export const Routine = z.object({
   prompt: z.string(),
   /** Shell run in the project's folder before the agent; its output reaches the prompt as outside data. */
   pre_command: z.string().optional(),
-  /** Shell run after the agent, with $APX_LLM_OUTPUT, $APX_STATUS, $APX_SKIPPED and $APX_PRE_OUTPUT. */
+  /** Shell run after the agent, with $COLONIA_LLM_OUTPUT, $COLONIA_STATUS, $COLONIA_SKIPPED and $COLONIA_PRE_OUTPUT. */
   post_command: z.string().optional(),
   call_model: CallModel.default("always"),
   /** Its news always arrives (a morning or evening brief): never counted in the daily cap nor held by quiet hours. */
@@ -220,8 +220,8 @@ export const ProfileManifest = z.object({
 export type ProfileManifest = z.infer<typeof ProfileManifest>;
 
 export const ProfileInfo = ProfileManifest.extend({
-  /** "apx": ships with APX; "owner": installed from a folder. */
-  source: z.enum(["apx", "owner"]),
+  /** "colonia": ships with Colonia; "owner": installed from a folder. */
+  source: z.enum(["colonia", "owner"]),
 });
 export type ProfileInfo = z.infer<typeof ProfileInfo>;
 
@@ -270,7 +270,7 @@ const ExtId = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,19}$/);
 const ExtName = z.string().regex(/^[a-z0-9][a-z0-9_]{0,19}$/);
 
 /**
- * `apx-extension.json`: what an extension brings, readable without running anything. Paths are relative to its
+ * `colonia-extension.json`: what an extension brings, readable without running anything. Paths are relative to its
  * folder; `secret://name` in an MCP server means the extension's own secret `name`, declared under `secrets`.
  */
 export const ExtensionManifest = z
@@ -305,8 +305,8 @@ export const ExtensionManifest = z
       .max(10)
       .default([]),
     /**
-     * Code that runs beside APX in a separate process (it reads only its folder and writes only its data folder). It
-     * can watch the events it names and add context to the owner's turns; it never calls APX.
+     * Code that runs beside Colonia in a separate process (it reads only its folder and writes only its data folder). It
+     * can watch the events it names and add context to the owner's turns; it never calls Colonia.
      */
     plugin: z
       .object({

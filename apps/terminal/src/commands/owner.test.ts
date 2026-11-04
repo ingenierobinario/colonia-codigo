@@ -16,7 +16,7 @@ test("owner prints who you are; set sends only the identity's keys", async () =>
   ]);
   assert.deepEqual(ownerPatchOf(["about=a=b", "name="]), { about: "a=b", name: "" });
   assert.throws(() => ownerPatchOf(["phone=1"]), /unknown: phone/);
-  assert.throws(() => ownerPatchOf([]), /apx owner set/);
+  assert.throws(() => ownerPatchOf([]), /colonia owner set/);
   assert.throws(() => ownerPatchOf(["name"]), /expected key=value/);
 });
 
@@ -47,7 +47,7 @@ const secretary = {
   id: "secretary",
   name: { en: "Secretary" },
   description: { en: "" },
-  source: "apx",
+  source: "colonia",
   settings: [field("day_open", "schedule", "0 9 * * 1-5"), field("waiting_hours", "number", 24)],
   routines: [],
 };
@@ -96,9 +96,9 @@ test("profiles off runs none, restore puts back a routine's prompt, help calls n
     await printed(() => profiles(client, ["restore", "rtn_1"])),
     /rtn_1 {2}Day open: default prompt restored/,
   );
-  assert.match(await printed(() => profiles(client, ["help"])), /apx profiles use <id>/);
-  assert.match(await printed(() => owner(client, ["help"])), /^apx owner/);
-  assert.match(await printed(() => org(client, ["help"], {})), /^apx org/);
+  assert.match(await printed(() => profiles(client, ["help"])), /colonia profiles use <id>/);
+  assert.match(await printed(() => owner(client, ["help"])), /^colonia owner/);
+  assert.match(await printed(() => org(client, ["help"], {})), /^colonia org/);
   assert.deepEqual(calls, [
     ["profiles.set", { id: null, values: {} }],
     ["profiles.restore", { routine: "rtn_1" }],

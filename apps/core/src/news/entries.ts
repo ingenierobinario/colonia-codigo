@@ -9,7 +9,7 @@ import { BROWSER_JAVASCRIPT_NEWS } from "./browser-javascript.ts";
 export type NewsFacts = {
   /** The owner's widgets and apps, in every project. */
   artifacts: number;
-  /** Google's parts signed in to, and whether Gmail can be read (the owner's own client: APX's only sends). */
+  /** Google's parts signed in to, and whether Gmail can be read (the owner's own client: Colonia's only sends). */
   google: { calendar: boolean; gmail: boolean; drive: boolean; gmailReadable: boolean };
   /** The super-agent runs the secretary profile (chief of staff). */
   secretary: boolean;
@@ -74,7 +74,7 @@ export const NEWS: readonly NewsEntry[] = [
       {
         label: { en: "What can you set up for me?", es: "¿Qué me podés configurar?" },
         prompt:
-          "Look at what is new in APX for me and tell me, in two lines, the one thing worth setting up first. Change " +
+          "Look at what is new in Colonia for me and tell me, in two lines, the one thing worth setting up first. Change " +
           "nothing until I answer.",
       },
     ],
@@ -115,10 +115,10 @@ export const NEWS: readonly NewsEntry[] = [
     },
     about: {
       en:
-        "Choose how often APX looks at your new Gmail and whether only important mail counts. Do " +
+        "Choose how often Colonia looks at your new Gmail and whether only important mail counts. Do " +
         "it in Resources › Integrations, on Gmail's page.",
       es:
-        "Elegí cada cuánto revisa APX tu correo nuevo de Gmail y si solo cuenta el importante. " +
+        "Elegí cada cuánto revisa Colonia tu correo nuevo de Gmail y si solo cuenta el importante. " +
         "Hacelo en Recursos › Integraciones, en la página de Gmail.",
     },
     applies: (f) => f.google.gmailReadable,
@@ -127,7 +127,7 @@ export const NEWS: readonly NewsEntry[] = [
       "day) and narrowed to what Gmail marks important under Configure integration on Gmail's page (Resources › " +
       "Integrations). New mail outside ads, social and lists reaches the super-agent, who tells the owner what needs " +
       "them or stays quiet. An owner who had the routine on keeps it on, at the same pace. The same place can now bring " +
-      "the signature the owner has in Gmail into APX.",
+      "the signature the owner has in Gmail into Colonia.",
     actions: [
       {
         label: { en: "Set up the mail check", es: "Configurar la revisión de mails" },
@@ -248,7 +248,7 @@ export const NEWS: readonly NewsEntry[] = [
         "08:30. Usá Ejecutar ahora en su página para iniciarlo y detené una ejecución en curso.",
     },
     applies: (f) => f.secretary && f.channels > 0,
-    text: "A Flow can now start on a schedule instead of a webhook: every 5 minutes, every hour, weekdays at 08:30, daily at 03:00 or any cron, in the owner's time zone, with the next runs shown in its editor and list. If APX was off at a run's time, the Flow runs once when APX starts, not once per missed time. Any published Flow has Run now on its page (a webhook Flow asks for a sample body, filled in with the last one it received), and a run that is going can be stopped: steps that haven't started don't run, and a model step already sent is left for the owner to look at, never sent again.",
+    text: "A Flow can now start on a schedule instead of a webhook: every 5 minutes, every hour, weekdays at 08:30, daily at 03:00 or any cron, in the owner's time zone, with the next runs shown in its editor and list. If Colonia was off at a run's time, the Flow runs once when Colonia starts, not once per missed time. Any published Flow has Run now on its page (a webhook Flow asks for a sample body, filled in with the last one it received), and a run that is going can be stopped: steps that haven't started don't run, and a model step already sent is left for the owner to look at, never sent again.",
     actions: [
       {
         label: { en: "Schedule a Flow", es: "Programar un Flow" },
@@ -378,7 +378,7 @@ export const NEWS: readonly NewsEntry[] = [
         "mientras escribís.",
     },
     applies: (f) => f.secretary,
-    text: "A Flow's AI model step can now be answered by an agent of the crew (with its instructions, memory and tools) or by a bot written just for that Flow: a name and how it works, starting from scratch each run. The owner picks the harness (APX, or Claude Code or Codex when they're installed), the model, the effort and how freely it acts. By default it works alone, without handing work to other agents; a switch on the step lets it. In every field that takes values, typing {{ or $ or pressing a button offers what arrived, earlier steps, variables and APX's values, shown as badges; secrets only where the step reads them itself, like a request's headers or a command's variables.",
+    text: "A Flow's AI model step can now be answered by an agent of the crew (with its instructions, memory and tools) or by a bot written just for that Flow: a name and how it works, starting from scratch each run. The owner picks the harness (Colonia, or Claude Code or Codex when they're installed), the model, the effort and how freely it acts. By default it works alone, without handing work to other agents; a switch on the step lets it. In every field that takes values, typing {{ or $ or pressing a button offers what arrived, earlier steps, variables and Colonia's values, shown as badges; secrets only where the step reads them itself, like a request's headers or a command's variables.",
     actions: [
       {
         label: { en: "Add a bot to a Flow", es: "Sumar un bot a un Flow" },
@@ -429,12 +429,12 @@ export const NEWS: readonly NewsEntry[] = [
         "privados.",
     },
     applies: (f) => f.artifacts > 0 || f.channels > 0,
-    text: "Settings › Devices now manages one restricted public HTTPS address for signed LINE/Teams webhooks, registered Flows with separate rotatable/revocable route tokens, and explicitly published read-only widgets. The panel, RPC, private widget state and files stay private. Turning on the tunnel does not publish private widgets. The public provider supplies the address; a fixed public IP is not promised. Publishing requires reviewing the HTML for private literals; public widgets cannot use private data or APX actions.",
+    text: "Settings › Devices now manages one restricted public HTTPS address for signed LINE/Teams webhooks, registered Flows with separate rotatable/revocable route tokens, and explicitly published read-only widgets. The panel, RPC, private widget state and files stay private. Turning on the tunnel does not publish private widgets. The public provider supplies the address; a fixed public IP is not promised. Publishing requires reviewing the HTML for private literals; public widgets cannot use private data or Colonia actions.",
     actions: [
       {
         label: { en: "Review public access", es: "Revisar acceso público" },
         prompt:
-          "Help me review which APX resources should be public and open Settings › Devices without enabling a tunnel or publishing anything yet.",
+          "Help me review which Colonia resources should be public and open Settings › Devices without enabling a tunnel or publishing anything yet.",
       },
       {
         label: { en: "Prepare a read-only widget", es: "Preparar un widget de solo lectura" },
@@ -563,12 +563,12 @@ export const NEWS: readonly NewsEntry[] = [
         "aunque se borre el chat, y podés previsualizarlos y descargarlos.",
     },
     applies: (f) => f.secretary,
-    text: "Tasks can keep selected screenshots and files as durable snapshots, at creation or later. Authorized agents can inspect them from the task even after the source chat is deleted. The panel previews and downloads them. This does not grant access to private contact chats or publish files; sending outside APX remains a separate owner action.",
+    text: "Tasks can keep selected screenshots and files as durable snapshots, at creation or later. Authorized agents can inspect them from the task even after the source chat is deleted. The panel previews and downloads them. This does not grant access to private contact chats or publish files; sending outside Colonia remains a separate owner action.",
     actions: [
       {
         label: { en: "Attach files to a task", es: "Adjuntar archivos a una tarea" },
         prompt:
-          "Help me choose a task and the screenshots or files to attach to it. Do not copy unrelated chat history or send anything outside APX.",
+          "Help me choose a task and the screenshots or files to attach to it. Do not copy unrelated chat history or send anything outside Colonia.",
       },
     ],
   },
@@ -612,7 +612,7 @@ export const NEWS: readonly NewsEntry[] = [
     },
     applies: (f) => Boolean(f.desktop),
     text:
-      "Desktop now coordinates remote updates over the authenticated APX connection, without SSH. " +
+      "Desktop now coordinates remote updates over the authenticated Colonia connection, without SSH. " +
       "A shared release is checked for server and client packages; the remote core updates once, and each app " +
       "can apply that release only after confirming the server is running it. Offline apps reconcile when they reconnect. " +
       "The local integrated core still updates with its Desktop bundle. Older or unsupported servers block the app update " +
@@ -621,7 +621,7 @@ export const NEWS: readonly NewsEntry[] = [
       {
         label: { en: "Review my update setup", es: "Revisar mis actualizaciones" },
         prompt:
-          "Help me check how my APX core is installed and explain the coordinated update flow before I update from the Desktop menu.",
+          "Help me check how my Colonia core is installed and explain the coordinated update flow before I update from the Desktop menu.",
       },
     ],
   },
@@ -642,14 +642,14 @@ export const NEWS: readonly NewsEntry[] = [
     },
     applies: (f) => f.google.gmail || f.email,
     text:
-      "The super-agent can now read and change individual local APX email signatures with your approval. " +
+      "The super-agent can now read and change individual local Colonia email signatures with your approval. " +
       "Each signature must match a configured Gmail account or SMTP mailbox. Other signatures are preserved, " +
       "and a concurrent edit requires a fresh read. This does not import or change Gmail settings or send mail.",
     actions: [
       {
         label: { en: "Configure my signature", es: "Configurar mi firma" },
         prompt:
-          "Help me configure my local APX email signature. Read my configured mailboxes and ask which signature to use before changing anything.",
+          "Help me configure my local Colonia email signature. Read my configured mailboxes and ask which signature to use before changing anything.",
       },
     ],
   },
@@ -671,7 +671,7 @@ export const NEWS: readonly NewsEntry[] = [
       "connected Gmail sender or SMTP Email channel. New messages and replies include it automatically; ask to omit " +
       "it for one message. Links and hosted HTTPS images are supported. Existing Gmail drafts are sent unchanged. " +
       "Gmail signatures are not imported because the connection does not request Gmail settings access; copying one " +
-      "into APX changes only APX's local signature, not Gmail settings.",
+      "into Colonia changes only Colonia's local signature, not Gmail settings.",
     actions: [
       {
         label: { en: "Where do I set my signature?", es: "¿Dónde configuro mi firma?" },
@@ -696,9 +696,9 @@ export const NEWS: readonly NewsEntry[] = [
     text:
       "The panel's AI usage button shows Codex and Claude account quota windows, the share remaining and reset times " +
       "when their local CLIs can report them. Claude Code 2.1.273 or later supplies structured /usage reports. " +
-      "These are account limits, not token totals from APX chats. OpenCode and Antigravity have explicit " +
+      "These are account limits, not token totals from Colonia chats. OpenCode and Antigravity have explicit " +
       "unavailable states and guidance rather than estimated subscription balances. " +
-      "The check runs on the core's computer, without starting a model turn or reading credentials in APX. " +
+      "The check runs on the core's computer, without starting a model turn or reading credentials in Colonia. " +
       "Each engine card has a compact Usage switch independent of model power. Quota checks default off except " +
       "for a linked ChatGPT plan; an explicit choice is remembered. Codex quota metadata still requires its " +
       "separately linked local CLI account. Turning Usage off also stops its account probes.",
@@ -731,7 +731,7 @@ export const NEWS: readonly NewsEntry[] = [
       {
         label: { en: "Update my widgets", es: "Actualizar mis widgets" },
         prompt:
-          "Review my widgets and offer to update them to the new APX Kit design and memory (the last reading kept, " +
+          "Review my widgets and offer to update them to the new Colonia Kit design and memory (the last reading kept, " +
           "live where it helps). Tell me which ones you would change and how before changing them; hand the work to " +
           "my agents if you prefer.",
       },
@@ -828,7 +828,7 @@ export const NEWS: readonly NewsEntry[] = [
       "outside them gets no answer then, and the agent answers everything they sent, once, when the hours begin. " +
       "The owner is always answered, and a contact can be marked to be answered at any hour. The owner sets them in " +
       "each channel's settings and on the contact's card, or asks the super-agent, who sets both with " +
-      "apx_settings once the owner approves each change.",
+      "colonia_settings once the owner approves each change.",
     actions: [
       {
         label: { en: "Suggest my hours", es: "Sugerime un horario" },
@@ -853,7 +853,7 @@ export const NEWS: readonly NewsEntry[] = [
     // The owner's profile, notices, projects and memory are every owner's: contacts are only part of it.
     applies: () => true,
     text:
-      "The super-agent can now change, with apx_settings, almost anything the owner sets up in the panel: a " +
+      "The super-agent can now change, with colonia_settings, almost anything the owner sets up in the panel: a " +
       "contact (who they are, the rules to answer them, their relation), a channel (who answers it, strangers, " +
       "rooms), the owner's own profile and time zone, when they are notified, projects, memory, skills, agent " +
       "profiles, routines, archived agents, tasks, chats, widgets and MCP servers (their keys named by a variable the " +
@@ -863,7 +863,7 @@ export const NEWS: readonly NewsEntry[] = [
       {
         label: { en: "What can you change?", es: "¿Qué podés cambiar?" },
         prompt:
-          "Tell me in a few lines what you can change in my APX settings from chat, then ask me what I would like " +
+          "Tell me in a few lines what you can change in my Colonia settings from chat, then ask me what I would like " +
           "to adjust, and change it as I tell you.",
       },
       {
@@ -971,7 +971,7 @@ export const NEWS: readonly NewsEntry[] = [
     text:
       "Agents can now be reached on Microsoft Teams and LINE. Both send their messages to a web address, so their " +
       "screen in Settings › Channels turns on a public address first: Tailscale Funnel (a fixed address), ngrok " +
-      "(started by APX, which says when its address is new) or the " +
+      "(started by Colonia, which says when its address is new) or the " +
       "owner's own. Only a door for webhooks is published, never the panel, and every message is checked.",
     actions: [
       {
@@ -1028,7 +1028,7 @@ export const NEWS: readonly NewsEntry[] = [
       "Agents can now work on a Linux computer they share, a VM apart from the owner's Mac with no way into the Mac " +
       "or the local network. Each agent gets its own user, files and screen with a desktop and browser. It is off " +
       "for every agent until the owner allows one: in the agent's card or settings, from the card the agent shows " +
-      "when it asks, or by asking the super-agent. An allowed agent starts it itself; it does not start without enough free memory, and APX shuts it down " +
+      "when it asks, or by asking the super-agent. An allowed agent starts it itself; it does not start without enough free memory, and Colonia shuts it down " +
       "when the Mac runs short or nobody uses it, keeping its files. The new Computers view shows every allowed agent's " +
       "screen at once, and the owner can turn any of them on or off from there; memory, CPUs and disk are set in the Computer panel.",
     actions: [
@@ -1064,7 +1064,7 @@ export const NEWS: readonly NewsEntry[] = [
     actions: [
       {
         label: { en: "When does it apply?", es: "¿Cuándo se aplica?" },
-        prompt: "Tell me in two lines when APX keeps my Mac awake now and how I turn that off if I prefer it to sleep.",
+        prompt: "Tell me in two lines when Colonia keeps my Mac awake now and how I turn that off if I prefer it to sleep.",
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { Button, ContextMenu, Icons, type LinkRenderer, type MenuEntry, Tooltip } from "@apx/ui";
+import { Button, ContextMenu, Icons, type LinkRenderer, type MenuEntry, Tooltip } from "@colonia/ui";
 import { type ReactNode, useEffect } from "react";
 import { CONFIG_SECTION_LABELS } from "../config/sectionLabels.ts";
 import { browserOpen } from "../data/actions.ts";
@@ -10,7 +10,7 @@ import { openOutside, useInstalledBrowsers } from "../panel/browserWindow.ts";
 import { go, nav } from "../shell/nav.ts";
 import { type AppPlace, appPlace } from "./appLinks.ts";
 
-/** Where a link can open (APX's browser, another one) and copying it: the right-click items of a link or a web image. */
+/** Where a link can open (Colonia's browser, another one) and copying it: the right-click items of a link or a web image. */
 export function useLinkItems(href: string): MenuEntry[] {
   const t = useT();
   const browsers = useInstalledBrowsers();
@@ -19,7 +19,7 @@ export function useLinkItems(href: string): MenuEntry[] {
     ...(web
       ? [
           {
-            label: t("link.openApx"),
+            label: t("link.openColonia"),
             icon: <Icons.PanelRight size={14} />,
             onSelect: async () => {
               const id = await browserOpen(href);
@@ -48,7 +48,7 @@ export function useLinkItems(href: string): MenuEntry[] {
   ];
 }
 
-/** A link in a message: a click opens it as usual; a right-click says where (APX's browser, another one) or copies it. */
+/** A link in a message: a click opens it as usual; a right-click says where (Colonia's browser, another one) or copies it. */
 function LinkMenu({ href, children }: { href: string; children: React.ReactElement }) {
   const items = useLinkItems(href);
   // The trigger renders as the link itself; its text stays its own.
@@ -131,7 +131,7 @@ function AppLink({ href, label }: { href: string; label: ReactNode }) {
 }
 
 export const linkMenu: LinkRenderer = (href, link) =>
-  /^apx:/i.test(href) ? (
+  /^colonia:/i.test(href) ? (
     <AppLink href={href} label={(link.props as { children?: React.ReactNode }).children} />
   ) : (
     <LinkMenu href={href}>{link}</LinkMenu>

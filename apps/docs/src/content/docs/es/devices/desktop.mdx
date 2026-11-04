@@ -1,6 +1,6 @@
 ---
 title: App de escritorio
-description: La app de APX para macOS, Windows y Linux, con el panel, un chat rápido, el navegador que manejan tus agentes y la elección de a qué APX se conecta.
+description: La app de Colonia para macOS, Windows y Linux, con el panel, un chat rápido, el navegador que manejan tus agentes y la elección de a qué Colonia se conecta.
 sidebar:
   order: 1
 ---
@@ -8,7 +8,7 @@ sidebar:
 import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 import Shot from "../../../../components/Shot.astro";
 
-La app de escritorio es la forma más cómoda de convivir con APX. Su ventana es el panel, el mismo que el core le sirve
+La app de escritorio es la forma más cómoda de convivir con Colonia. Su ventana es el panel, el mismo que el core le sirve
 a un navegador. Alrededor, la app suma tres cosas que una página web no puede: un ícono en la barra de menú con un chat
 rápido, un navegador de verdad que tus agentes pueden manejar y (en macOS y Windows) la opción de dejar que los agentes usen
 tu computadora.
@@ -17,18 +17,18 @@ tu computadora.
 
 La ventana principal es el panel: Inbox, Tareas, Proyectos, Configuración y todo lo demás que cuentan estas páginas.
 Cerrarla solo la esconde. Las pestañas del navegador y la conexión con el core siguen vivas, y el Dock, el ícono de la
-barra de menú o abrir APX de nuevo la traen de vuelta. Lo que la cierra de verdad es **Salir**.
+barra de menú o abrir Colonia de nuevo la traen de vuelta. Lo que la cierra de verdad es **Salir**.
 
-Corre un solo APX a la vez: si lo abrís otra vez, trae al frente el que ya está corriendo.
+Corre un solo Colonia a la vez: si lo abrís otra vez, trae al frente el que ya está corriendo.
 
 ## El ícono de la barra de menú y el chat rápido
 
-APX pone un ícono en la barra de menú (en la bandeja del sistema en Windows y Linux):
+Colonia pone un ícono en la barra de menú (en la bandeja del sistema en Windows y Linux):
 
 - **Un clic** abre el chat rápido, una ventanita de 400×600 debajo del ícono con tu chat Home (la secretaria). Se
   vuelve a esconder cuando pierde el foco.
 - **Doble clic** abre la ventana principal.
-- **Clic derecho** muestra el menú: **Abrir APX**, **Chat rápido** y **Salir de APX**.
+- **Clic derecho** muestra el menú: **Abrir Colonia**, **Chat rápido** y **Salir de Colonia**.
 
 Cuando algo te está esperando, el ícono muestra un globito con la cantidad (en una Mac, también al lado del ícono y en
 el Dock).
@@ -46,8 +46,8 @@ sección lo avisa).
 
 | Ajuste | Qué hace |
 |---|---|
-| **Atajo** | El atajo global del chat rápido. Hacé clic y apretá las teclas. **Quitar** lo deja sin atajo. Si otra app ya usa esas teclas, APX te avisa. |
-| **Abrir al iniciar la compu** | APX se abre cuando iniciás sesión. Viene prendido. |
+| **Atajo** | El atajo global del chat rápido. Hacé clic y apretá las teclas. **Quitar** lo deja sin atajo. Si otra app ya usa esas teclas, Colonia te avisa. |
+| **Abrir al iniciar la compu** | Colonia se abre cuando iniciás sesión. Viene prendido. |
 | **Dejar que los agentes usen esta computadora** | El uso de la computadora, en macOS y Windows, apagado hasta que lo prendas. Mirá abajo. |
 | **Mantener la Mac despierta mientras trabajan los agentes** | Evita que el sistema se duerma durante un turno, un comando o el inicio de la computadora. La pantalla puede apagarse. Podés desactivarlo. |
 
@@ -82,61 +82,61 @@ El navegador se le presta al core que esta app corre o al que llega por SSH. Una
 dirección** todavía no le presta su navegador.
 </Aside>
 
-## A qué APX se conecta
+## A qué Colonia se conecta
 
-La primera vez que abrís la app instalada, te pregunta **¿Dónde corre tu APX?**
+La primera vez que abrís la app instalada, te pregunta **¿Dónde corre tu Colonia?**
 
 <Tabs>
 <TabItem label="Servidor (esta compu)">
 
-APX corre acá: la app arranca su propio core. Después te pregunta **¿Desde dónde lo vas a usar?**
+Colonia corre acá: la app arranca su propio core. Después te pregunta **¿Desde dónde lo vas a usar?**
 
 - **Solo desde esta computadora**: lo más seguro. Nadie más llega al core.
 - **También desde mi red local**: otros equipos de tu casa u oficina, cada uno con un código de vinculación.
 - **Tailscale**: tus equipos desde cualquier lado, con https. Necesita Tailscale instalado.
 
-Si es la primera vez, después elegís empezar de cero o importar desde APX v1.
+Si es la primera vez, después elegís empezar de cero o importar desde Colonia v1.
 
 Si ya hay un core corriendo en esta compu (puerto `7440`), la app usa ese en vez de arrancar otro.
 
 </TabItem>
 <TabItem label="Cliente (otra máquina)">
 
-APX ya corre en otra compu o en un servidor, y esta app solo se conecta. Dos formas:
+Colonia ya corre en otra compu o en un servidor, y esta app solo se conecta. Dos formas:
 
 - **Dirección**: la URL del core, por ejemplo la de Tailscale. La primera vez, el core le pide a esta app un código de
-  vinculación; lo sacás en ese APX en **Configuración › Conexiones › Dispositivos** o con `apx pair`.
+  vinculación; lo sacás en ese Colonia en **Configuración › Conexiones › Dispositivos** o con `colonia pair`.
 - **SSH**: `usuario@servidor` (con `:puerto` si hace falta). La app usa tu propio `ssh`, tus claves, tu agente y tu
   `~/.ssh/config` para traer el core del servidor a esta compu, así que el servidor no abre ningún puerto. Si no puede
-  entrar, si no encuentra APX en el servidor o si el core no responde, te dice cuál de las tres pasó.
+  entrar, si no encuentra Colonia en el servidor o si el core no responde, te dice cuál de las tres pasó.
 
 </TabItem>
 </Tabs>
 
-Para elegir otro APX más adelante, usá el menú de la app: **APX › Cambiar conexión…**
+Para elegir otro Colonia más adelante, usá el menú de la app: **Colonia › Cambiar conexión…**
 
-Cómo preparar el lado del servidor está en [APX en un servidor](/es/devices/server/).
+Cómo preparar el lado del servidor está en [Colonia en un servidor](/es/devices/server/).
 
 ## Qué proceso controla la app
 
-La opción local usa `APX_HOME` (por defecto `~/.apx/v2`) y el puerto configurado para ese home. Antes de conectarse,
+La opción local usa `COLONIA_HOME` (por defecto `~/.colonia/v2`) y el puerto configurado para ese home. Antes de conectarse,
 la app verifica la identidad del home del daemon. Si el daemon ya estaba corriendo, salir de Desktop lo deja activo.
 Si Desktop arrancó su core incluido, salir de Desktop detiene solo ese proceso, con sus rutinas y canales. Cada home
 puede tener un solo daemon, incluso si se intenta arrancar otro con un puerto distinto.
 
-Una URL explícita (también `APX_URL`) sirve solo para conectarse: si el servidor no responde, la app no arranca un
+Una URL explícita (también `COLONIA_URL`) sirve solo para conectarse: si el servidor no responde, la app no arranca un
 reemplazo en esta computadora. El modo SSH controla su túnel, no el daemon del servidor. Actualizar o reiniciar
 Desktop no actualiza ni reinicia ese servidor por sí solo. La activación coordinada de una versión, explicada abajo, es una acción separada del dueño.
 
-Los comandos `apx service` de la CLI siempre controlan servicios de la computadora donde corrés el comando, nunca
-la indicada por `APX_URL`. Usá `--home` para elegir la instalación local. `apx desktop` también abre la app en la
+Los comandos `colonia service` de la CLI siempre controlan servicios de la computadora donde corrés el comando, nunca
+la indicada por `COLONIA_URL`. Usá `--home` para elegir la instalación local. `colonia desktop` también abre la app en la
 computadora donde corre el comando: ejecutarlo por SSH no abre Desktop en tu cliente.
 
 Para un escritorio Linux aparte de tu pantalla, consultá [La computadora de los agentes](/es/office/computers/).
 
 ## Actualizaciones
 
-La app instalada se actualiza sola. Cada tantas horas revisa las versiones publicadas y, cuando sale un APX más nuevo,
+La app instalada se actualiza sola. Cada tantas horas revisa las versiones publicadas y, cuando sale un Colonia más nuevo,
 el panel lo muestra en la barra de arriba. Cuando vos decís, baja el instalador para tu sistema y lo verifica contra su
 `.sha256`:
 
@@ -145,7 +145,7 @@ el panel lo muestra en la barra de arriba. Cuando vos decís, baja el instalador
   **Reiniciar ahora**, o cuando la cerrás.
 
 El core local incluido se actualiza con Desktop. Con un core remoto, Desktop coordina una versión compartida
-mediante la conexión autenticada de APX, sin SSH. El servidor se actualiza una vez; cada app Desktop solo puede
+mediante la conexión autenticada de Colonia, sin SSH. El servidor se actualiza una vez; cada app Desktop solo puede
 activar su paquete después de confirmar que el servidor ejecuta esa misma versión. Las apps desconectadas se
 reconcilian al volver: los dispositivos no se actualizan de forma atómica. Los servidores anteriores o no
 compatibles bloquean la activación de Desktop y muestran cómo recuperarse. La primera actualización de un servidor
@@ -153,7 +153,7 @@ sin coordinación todavía usa su mecanismo anterior.
 
 ## Correrla desde el código
 
-¿Trabajás en APX? Desde el repositorio:
+¿Trabajás en Colonia? Desde el repositorio:
 
 ```bash
 pnpm install
@@ -162,6 +162,6 @@ pnpm app    # compila el panel y la app de escritorio, arranca el core y abre la
 
 ## Para seguir
 
-- [APX en tu teléfono](/es/devices/phone/)
-- [APX en un servidor](/es/devices/server/)
+- [Colonia en tu teléfono](/es/devices/phone/)
+- [Colonia en un servidor](/es/devices/server/)
 - [Problemas frecuentes](/es/reference/troubleshooting/)

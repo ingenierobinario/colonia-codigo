@@ -29,7 +29,7 @@ test("send refuses an unknown or ambiguous contact and a missing text, sending n
   const { client, calls } = recordingClient(answers);
   await assert.rejects(channels(client, ["send", "telegram-main", "Sam", "Hi"], {}), /2 contacts are named Sam/);
   await assert.rejects(channels(client, ["send", "telegram-main", "Nobody", "Hi"], {}), /no contact Nobody/);
-  await assert.rejects(channels(client, ["send", "telegram-main", "per_1"], {}), /apx channels send/);
+  await assert.rejects(channels(client, ["send", "telegram-main", "per_1"], {}), /colonia channels send/);
   assert.ok(!calls.some(([m]) => m !== "contacts.list"));
 });
 
@@ -47,7 +47,7 @@ test("recover asks for a chat's lost files and prints what came and why the rest
     out,
     "recovered video.mp4  (msg_1)\nmissing   msg_2: WhatsApp did not send this message again\n1 of 2 recovered",
   );
-  await assert.rejects(channels(client, ["recover"], {}), /apx channels recover/);
+  await assert.rejects(channels(client, ["recover"], {}), /colonia channels recover/);
 });
 
 test("supervise finds the contact by name; suggestions are listed, sent with the owner's text or dropped", async () => {
@@ -115,7 +115,7 @@ test("pairing decisions keep owner, contact and denial distinct and forward the 
 test("malformed pairing commands change nothing and core refusals never print a linked result", async () => {
   const empty = recordingClient({});
   for (const args of [["unknown", "123456"], ["ok"], ["me"], ["no"]])
-    await assert.rejects(pairing(empty.client, args), /apx pairing/);
+    await assert.rejects(pairing(empty.client, args), /colonia pairing/);
   assert.deepEqual(empty.calls, []);
   const denied = recordingClient({ "pairing.respond": new Error("Code expired") });
   assert.equal(

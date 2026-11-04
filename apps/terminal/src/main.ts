@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 // The terminal owns no domain logic: every command is a protocol call to the core.
 import { admin, status, version, wizard } from "./commands/admin.ts";
 import { agentLimits } from "./commands/agent-fields.ts";
@@ -36,151 +36,151 @@ import { agents, jobs, projects, runs, runtimeSkills, secrets, skills, threads, 
 import { v1 } from "./commands/v1.ts";
 import { themedCard as card, coreRefused, failure, unreachableCore } from "./presentation.ts";
 
-const HELP = `apx — the APX terminal
+const HELP = `colonia — the Colonia terminal
 
 Usage:
-  apx                     Interactive crew console (TTY only)
-  apx --version [-v]      Local CLI version (works without the core)
-  apx status (or --status) [--json] [--plain]   Core, crew, projects, MCP, devices and access
-  apx wizard              Guided terminal setup and maintenance
-  apx open                The panel in your browser
-  apx desktop             The desktop app (downloads and opens its installer when it is not here)
-  apx upgrade [--check] [--json]   Check or apply the core's updater (a server install updates itself even when its core is down)
-  apx doctor [--json]     Why the core does not answer on this machine, and what to run next
-  apx devices [list|pair|revoke <id>] [--json]
-  apx tailscale [status|connect|off]   Expose APX through Tailscale (must already be logged in)
-  apx mcp tools <server> [<tool>] [--project <id>] [--scope global|project] [--json]
-  apx mcp run <server> <tool> ['{"key":"value"}'|-] [--project <id>]
-  apx mcp check <server> [--project <id>]   Connection test
-  apx mcp signin <server> [--project <id>]  Sign in to a server that asked for it
-  apx ping [text]         Round-trip over the live socket
+  colonia                     Interactive crew console (TTY only)
+  colonia --version [-v]      Local CLI version (works without the core)
+  colonia status (or --status) [--json] [--plain]   Core, crew, projects, MCP, devices and access
+  colonia wizard              Guided terminal setup and maintenance
+  colonia open                The panel in your browser
+  colonia desktop             The desktop app (downloads and opens its installer when it is not here)
+  colonia upgrade [--check] [--json]   Check or apply the core's updater (a server install updates itself even when its core is down)
+  colonia doctor [--json]     Why the core does not answer on this machine, and what to run next
+  colonia devices [list|pair|revoke <id>] [--json]
+  colonia tailscale [status|connect|off]   Expose Colonia through Tailscale (must already be logged in)
+  colonia mcp tools <server> [<tool>] [--project <id>] [--scope global|project] [--json]
+  colonia mcp run <server> <tool> ['{"key":"value"}'|-] [--project <id>]
+  colonia mcp check <server> [--project <id>]   Connection test
+  colonia mcp signin <server> [--project <id>]  Sign in to a server that asked for it
+  colonia ping [text]         Round-trip over the live socket
 
-  apx browser tabs
-  apx browser open <url> [--profile shared|incognito|agent:<id>] [--by <agent>]
-  apx browser nav <tab> <url>
-  apx browser snapshot <tab>
-  apx browser click <tab> <ref>
-  apx browser type <tab> <ref> <text> [--submit]
-  apx browser shot <tab> <file.jpg>
-  apx browser close <tab>
-  apx browser control <tab> user|idle|done
-  apx browser cookies                          List browsers whose sessions can be imported
-  apx browser cookies <source> [filter]        Domains with cookies (counts only)
-  apx browser import <source> <domain,…> [--profile shared|agent:<id>]
+  colonia browser tabs
+  colonia browser open <url> [--profile shared|incognito|agent:<id>] [--by <agent>]
+  colonia browser nav <tab> <url>
+  colonia browser snapshot <tab>
+  colonia browser click <tab> <ref>
+  colonia browser type <tab> <ref> <text> [--submit]
+  colonia browser shot <tab> <file.jpg>
+  colonia browser close <tab>
+  colonia browser control <tab> user|idle|done
+  colonia browser cookies                          List browsers whose sessions can be imported
+  colonia browser cookies <source> [filter]        Domains with cookies (counts only)
+  colonia browser import <source> <domain,…> [--profile shared|agent:<id>]
 
-  apx chat "<text>" [--agent <id> | --thread <id>] [--new] [--detach] [--interrupt | --steer]
-  apx chat "<text>" --code [--cwd <folder>] [--write ask|auto|read-only] [--agent <id>]   Code thread
-  apx jobs [list] | get <job> | cancel <job>   Background work: agents' runs and terminal commands
-  apx skills [list] [project]   Skills agents can load ("off" marks one turned off there)
-  apx skills on|off <skill> [--project p]   Turn a skill on or off everywhere, or only in one project
-  apx skills save <skill> [--project p]     Create or replace a skill: its SKILL.md on stdin
-  apx skills import <folder|file.zip|git url> [--project p] [--only a,b] [--replace] [--yes]
-                           List the skills in it (nothing runs); with --yes copy them into APX (or the project)
-  apx skills install-runtimes [--dry-run]
-                           Refresh now the skills that teach Claude Code, Codex, Cursor and ~/.agents how to use APX
-                           (the core does it at every start); removes ones APX no longer ships, never anyone else's
-  apx tasks [add|show|edit|settle|move|done|say]  The office board (apx tasks help)
-  apx routines [add|show|edit|run|on|off|rm|log]  Scheduled work (apx routines help)
-  apx flows [list|set|rows|events|write|retry|retire]  Webhook-only work and persistent tables (apx flows help)
-  apx notifications [read]       What is waiting for you
-  apx news [tell [<id>…]] [--json]   Release news; tell runs the super-agent's message now
-  apx clients [add <name>|rm <id>]  Outside apps with their own token (Claude Code, Codex…)
-  apx extensions [inspect|install|on|off|secret|rm]  Skills, MCP servers and routines in one folder
-  apx memory [words]      Notes agents keep between threads (newest first, or the best matches for the words)
-  apx memory add [global|project|agent] <text> [--project p] [--agent a]
-  apx memory edit <id> <text…>   Rewrite a note in place
-  apx memory rm <id…>     Remove notes
-  apx artifacts [list] [--project <id>] [--json]   Widgets and apps agents made
-  apx artifacts push <name> <file.html> [--title t] [--app] [--connect <origin,…>] [--project <id>]   Show a built page
-  apx artifacts dir <name> [--project <id>]   Where a built artifact keeps its source (created if missing)
-  apx artifacts export <name> [--memory] [--out <file>] [--project <id>]   Save one as an .apxart file
-  apx artifacts import <file.apxart> [--project <id>]   Load an .apxart file into this APX
-  apx sessions projects codex|claude   Claude Code or Codex projects and chats on this computer
-  apx sessions import codex|claude <project> [--only <id,…>] [--name "…"]   Bring them in as an APX project
-  apx sessions digest|adopt|page …     What an imported chat is about, who takes it over, its pages as widgets
-  apx channels [add|rm|outbox]   Channels (Telegram bots); apx channels add telegram <id> --agent <a>
-  apx channels send <channel> <contact> <text…>   Write to a contact yourself, in their chat on that channel
-  apx channels recover <thread>   Ask the channel again for files that never arrived in a chat
-  apx contacts [add|block|rm]    People APX talks to on channels
-  apx pairing [me|ok|no <code>]  Approve who wrote to a channel
-  apx compact <thread>    Summarize a thread's older turns now (APX's own loop; Claude Code and Codex compact their own)
-  apx owner [set key=value…]     Who you are, for your agents: name, about, language, timezone
-  apx org [set] [--project p]    A project's areas and roles (set: JSON on stdin)
-  apx profiles [list] | use <id> [key=value…] | off | restore <routine>
+  colonia chat "<text>" [--agent <id> | --thread <id>] [--new] [--detach] [--interrupt | --steer]
+  colonia chat "<text>" --code [--cwd <folder>] [--write ask|auto|read-only] [--agent <id>]   Code thread
+  colonia jobs [list] | get <job> | cancel <job>   Background work: agents' runs and terminal commands
+  colonia skills [list] [project]   Skills agents can load ("off" marks one turned off there)
+  colonia skills on|off <skill> [--project p]   Turn a skill on or off everywhere, or only in one project
+  colonia skills save <skill> [--project p]     Create or replace a skill: its SKILL.md on stdin
+  colonia skills import <folder|file.zip|git url> [--project p] [--only a,b] [--replace] [--yes]
+                           List the skills in it (nothing runs); with --yes copy them into Colonia (or the project)
+  colonia skills install-runtimes [--dry-run]
+                           Refresh now the skills that teach Claude Code, Codex, Cursor and ~/.agents how to use Colonia
+                           (the core does it at every start); removes ones Colonia no longer ships, never anyone else's
+  colonia tasks [add|show|edit|settle|move|done|say]  The office board (colonia tasks help)
+  colonia routines [add|show|edit|run|on|off|rm|log]  Scheduled work (colonia routines help)
+  colonia flows [list|set|rows|events|write|retry|retire]  Webhook-only work and persistent tables (colonia flows help)
+  colonia notifications [read]       What is waiting for you
+  colonia news [tell [<id>…]] [--json]   Release news; tell runs the super-agent's message now
+  colonia clients [add <name>|rm <id>]  Outside apps with their own token (Claude Code, Codex…)
+  colonia extensions [inspect|install|on|off|secret|rm]  Skills, MCP servers and routines in one folder
+  colonia memory [words]      Notes agents keep between threads (newest first, or the best matches for the words)
+  colonia memory add [global|project|agent] <text> [--project p] [--agent a]
+  colonia memory edit <id> <text…>   Rewrite a note in place
+  colonia memory rm <id…>     Remove notes
+  colonia artifacts [list] [--project <id>] [--json]   Widgets and apps agents made
+  colonia artifacts push <name> <file.html> [--title t] [--app] [--connect <origin,…>] [--project <id>]   Show a built page
+  colonia artifacts dir <name> [--project <id>]   Where a built artifact keeps its source (created if missing)
+  colonia artifacts export <name> [--memory] [--out <file>] [--project <id>]   Save one as an .coloniaart file
+  colonia artifacts import <file.coloniaart> [--project <id>]   Load an .coloniaart file into this Colonia
+  colonia sessions projects codex|claude   Claude Code or Codex projects and chats on this computer
+  colonia sessions import codex|claude <project> [--only <id,…>] [--name "…"]   Bring them in as an Colonia project
+  colonia sessions digest|adopt|page …     What an imported chat is about, who takes it over, its pages as widgets
+  colonia channels [add|rm|outbox]   Channels (Telegram bots); colonia channels add telegram <id> --agent <a>
+  colonia channels send <channel> <contact> <text…>   Write to a contact yourself, in their chat on that channel
+  colonia channels recover <thread>   Ask the channel again for files that never arrived in a chat
+  colonia contacts [add|block|rm]    People Colonia talks to on channels
+  colonia pairing [me|ok|no <code>]  Approve who wrote to a channel
+  colonia compact <thread>    Summarize a thread's older turns now (Colonia's own loop; Claude Code and Codex compact their own)
+  colonia owner [set key=value…]     Who you are, for your agents: name, about, language, timezone
+  colonia org [set] [--project p]    A project's areas and roles (set: JSON on stdin)
+  colonia profiles [list] | use <id> [key=value…] | off | restore <routine>
                            What the super-agent is for (a profile), its settings and the routines it keeps
-  apx image "<prompt>" [--out file] [--size WxH]   Draw an image and save it
-  apx say "<text>" [--out file]    Speak text and save the audio
-  apx transcribe <audio file>      Speech to text
-  apx usage [days]        Turns and tokens by model, and whether they were included or paid per token
-  apx mcps [list [project]] | tools|run|check <server> | trust|untrust <project> <server> | add <name> <command…|url> | rm <name>
-  apx mcps on|off <server> --project p   Turn one of your servers on or off inside a project
-  apx mcps logs <server> [--project p] [-n 100]   What a server printed on stderr since the core started
+  colonia image "<prompt>" [--out file] [--size WxH]   Draw an image and save it
+  colonia say "<text>" [--out file]    Speak text and save the audio
+  colonia transcribe <audio file>      Speech to text
+  colonia usage [days]        Turns and tokens by model, and whether they were included or paid per token
+  colonia mcps [list [project]] | tools|run|check <server> | trust|untrust <project> <server> | add <name> <command…|url> | rm <name>
+  colonia mcps on|off <server> --project p   Turn one of your servers on or off inside a project
+  colonia mcps logs <server> [--project p] [-n 100]   What a server printed on stderr since the core started
                            The one way to talk to an agent. Default: Home (the secretary)
-  apx threads [list] | get <thread> [--json] | cancel <thread>
-  apx threads search <words…>   Messages with every word, best first
-  apx runs get <run> | wait <run> [--timeout 60]
-  apx runs pending [thread]   What agents are waiting on from you
-  apx runs respond <input> approve|deny ["note"] [--scope once|session|always] | "<answer>"
-  apx projects [list] | register <folder> | sync [project]
+  colonia threads [list] | get <thread> [--json] | cancel <thread>
+  colonia threads search <words…>   Messages with every word, best first
+  colonia runs get <run> | wait <run> [--timeout 60]
+  colonia runs pending [thread]   What agents are waiting on from you
+  colonia runs respond <input> approve|deny ["note"] [--scope once|session|always] | "<answer>"
+  colonia projects [list] | register <folder> | sync [project]
                            Projects are folders with AGENTS.md / .apc/; their agents come from those files
-  apx projects create "<Name>" [--path <folder>] [--kind personal|app|company|software|other] [--desc "…"]
-                           A new project: in that folder (made if missing), else in a folder of its own in APX's home
-  apx projects set <project> [--name "…"] [--kind …] [--desc "…"] [--autonomy manual|auto|accept_edits|plan|total]
+  colonia projects create "<Name>" [--path <folder>] [--kind personal|app|company|software|other] [--desc "…"]
+                           A new project: in that folder (made if missing), else in a folder of its own in Colonia's home
+  colonia projects set <project> [--name "…"] [--kind …] [--desc "…"] [--autonomy manual|auto|accept_edits|plan|total]
                            Rename it, change its kind or description, or how far its agents go without asking
-  apx projects folders list|add|rm <project> [folder]
+  colonia projects folders list|add|rm <project> [folder]
                            Folders its agents may read and never change (another checkout, docs)
-  apx projects rm <project>   Forget a project in APX; its folder and files are never deleted
-  apx init [folder]       Make a folder (default: this one) an APC project and register it; writes only what is
+  colonia projects rm <project>   Forget a project in Colonia; its folder and files are never deleted
+  colonia init [folder]       Make a folder (default: this one) an APC project and register it; writes only what is
                            missing (AGENTS.md, .apc/), never over an existing file
-  apx agents              Agents and the model each one runs on
-  apx agents show <agent>            Its fields and full prompt
-  apx agents new <slug> "<Name>" [--project <id>] [--role "<role>"]
-  apx agents set <agent> <field>=<value>…   Any field the agent editor has (an unknown one lists them all)
+  colonia agents              Agents and the model each one runs on
+  colonia agents show <agent>            Its fields and full prompt
+  colonia agents new <slug> "<Name>" [--project <id>] [--role "<role>"]
+  colonia agents set <agent> <field>=<value>…   Any field the agent editor has (an unknown one lists them all)
                            Lists as a,b (tools= is all of them); orchestrator=true|false; rules='{"write":"ask"}';
                            autonomy= or rules= go back to the default
-  apx agents set <agent> --prompt-file <file | ->   Its prompt from a file, or stdin with -
-  apx agents limits [<agent> runs=… tokens=… | <agent> clear | default runs=… tokens=…]
+  colonia agents set <agent> --prompt-file <file | ->   Its prompt from a file, or stdin with -
+  colonia agents limits [<agent> runs=… tokens=… | <agent> clear | default runs=… tokens=…]
                            How far agents go without you in one chat: the default, and an agent's own (0 = no limit)
-  apx agents clone <agent…> [--project <id>] [--rename] [--under <slug>]
+  colonia agents clone <agent…> [--project <id>] [--rename] [--under <slug>]
                            Copy agents (whole definition) into a project; --rename gives each a new free name
-  apx agents archive <agent>         Project agents: changes are written to .apc/agents/<slug>.md
-  apx agents archived | restore <agent>   Archived agents, and bringing one back (deleting for good is in the app)
-  apx agents model <agent> <engine/model | engine | router | default> [--router]
+  colonia agents archive <agent>         Project agents: changes are written to .apc/agents/<slug>.md
+  colonia agents archived | restore <agent>   Archived agents, and bringing one back (deleting for good is in the app)
+  colonia agents model <agent> <engine/model | engine | router | default> [--router]
                            An agent's model; --router keeps the router as its fallback
 
-  apx models [--refresh]  Every engine and the models it offers (asked to the engine)
-  apx models config       The install default and the router
-  apx models default <engine/model | engine | router> [--router]
-  apx models chain <ref> [<ref>…]      The router's fallback chain, in order
-  apx models rules < rules.json        The router's rules (JSON on stdin)
+  colonia models [--refresh]  Every engine and the models it offers (asked to the engine)
+  colonia models config       The install default and the router
+  colonia models default <engine/model | engine | router> [--router]
+  colonia models chain <ref> [<ref>…]      The router's fallback chain, in order
+  colonia models rules < rules.json        The router's rules (JSON on stdin)
 
-  apx secrets [list] | set <name> (value on stdin) | rm <name>
-  apx v1 [off]            Is APX v1 still here and running? off stops its daemon for good and makes apx this one
-  apx import-v1 [--keys] [--skills] [--services]
-                           Import what a local APX v1 holds, from its files (read-only, v1 may be stopped):
+  colonia secrets [list] | set <name> (value on stdin) | rm <name>
+  colonia v1 [off]            Is Colonia v1 still here and running? off stops its daemon for good and makes colonia this one
+  colonia import-v1 [--keys] [--skills] [--services]
+                           Import what a local Colonia v1 holds, from its files (read-only, v1 may be stopped):
                            projects, agents, memory, chats, channels, tasks, routines (off)… --keys also copies
                            its model API keys into v2's secret store, --skills its skills, --services its
                            image engines and voices, once
 
-  apx service install|uninstall|status|restart
+  colonia service install|uninstall|status|restart
                            Run the core in the background (systemd, launchd or a Windows login entry), started at
                            login and again if it dies
-  apx service logs [-n 100] [-f]   The core's log file (<home>/logs/core.log), read on this machine only
-  apx logs [-n 100] [--level info|warn|error] [--grep text] [--scope core|output] [--json]
+  colonia service logs [-n 100] [-f]   The core's log file (<home>/logs/core.log), read on this machine only
+  colonia logs [-n 100] [--level info|warn|error] [--grep text] [--scope core|output] [--json]
                            The core's log through the core (also a remote one); the file when no core answers
-  apx expose tailscale|lan|off|status
+  colonia expose tailscale|lan|off|status
                            Who may reach the core: your tailnet (https://<machine>.ts.net), the network, or only
                            this computer. Writes <home>/core.env; restart the core afterwards
-  apx pair                A one-time code and link to connect a phone or another computer
-  apx setup --headless [--import [--keys] [--skills] [--services]] [--expose tailscale|lan]
+  colonia pair                A one-time code and link to connect a phone or another computer
+  colonia setup --headless [--import [--keys] [--skills] [--services]] [--expose tailscale|lan]
                            A server with no desktop: service, optional import, optional exposure, then a pair code
 
-  apx mcp [--by <agent>]  Stdio MCP server exposing browser_* tools (for Claude Code, Codex…); with
-                           APX_CLIENT_TOKEN also apx_agents / apx_ask / apx_read (apx clients add <name>)
-  apx mcp --run           The tools of one agent run (APX_RUN_TOKEN), for an external harness
+  colonia mcp [--by <agent>]  Stdio MCP server exposing browser_* tools (for Claude Code, Codex…); with
+                           COLONIA_CLIENT_TOKEN also colonia_agents / colonia_ask / colonia_read (colonia clients add <name>)
+  colonia mcp --run           The tools of one agent run (COLONIA_RUN_TOKEN), for an external harness
 
-Env: APX_URL (default http://127.0.0.1:<APX_PORT or 7440>), APX_TOKEN (default: the one in <home>/core.env),
-     APX_HOME (default ~/.apx/v2)`;
+Env: COLONIA_URL (default http://127.0.0.1:<COLONIA_PORT or 7440>), COLONIA_TOKEN (default: the one in <home>/core.env),
+     COLONIA_HOME (default ~/.colonia/v2)`;
 
 // Installed from a bundle: the service it writes and the core it starts run through that install's `current`.
 adoptBundleApp(process.env, import.meta.dirname);
@@ -268,7 +268,7 @@ let parsed: ReturnType<typeof argumentsOf>;
 try {
   parsed = argumentsOf();
 } catch (err) {
-  console.error(failure("Invalid arguments", [err instanceof Error ? err.message : String(err), "Try: apx --help"]));
+  console.error(failure("Invalid arguments", [err instanceof Error ? err.message : String(err), "Try: colonia --help"]));
   // portable: nothing has opened a handle yet, and nothing after this may run.
   process.exit(2);
 }
@@ -277,10 +277,10 @@ const fail = (title: string, lines: string[]) => failure(title, lines, Boolean(v
 const [command, ...rest] = positionals;
 const connection = localConnection();
 const terminalClient = () =>
-  new ApxClient({ ...localConnection(), client: { name: "apx-terminal", version: "0.0.0" } });
+  new ColoniaClient({ ...localConnection(), client: { name: "colonia-terminal", version: "0.0.0" } });
 const client = terminalClient();
 /** MCP servers are driven by a model: the core never gives them the owner's controls. */
-const agentClient = new ApxClient({ ...connection, client: { name: "apx-mcp", version: "0.0.0" }, actor: "agent" });
+const agentClient = new ColoniaClient({ ...connection, client: { name: "colonia-mcp", version: "0.0.0" }, actor: "agent" });
 
 try {
   switch (values.version ? "version" : values.help ? "help" : values.status ? "status" : command) {
@@ -359,7 +359,7 @@ try {
       await pairing(client, rest);
       break;
     case "compact": {
-      if (!rest[0]) throw new Error("usage: apx compact <thread>");
+      if (!rest[0]) throw new Error("usage: colonia compact <thread>");
       const r = await client.call("threads.compact", { thread: rest[0] });
       console.log(r.compacted ? "summarized" : `not summarized: ${r.reason ?? ""}`);
       break;
@@ -518,17 +518,17 @@ try {
       }
       if (values.run) {
         // The run token comes in the environment, never on the command line.
-        const token = process.env.APX_RUN_TOKEN;
-        if (!token) throw new Error("apx mcp --run needs APX_RUN_TOKEN");
+        const token = process.env.COLONIA_RUN_TOKEN;
+        if (!token) throw new Error("colonia mcp --run needs COLONIA_RUN_TOKEN");
         const { runRunMcp } = await import("./mcp-run.ts");
         await runRunMcp(agentClient, token);
         break;
       }
       const { runMcp } = await import("./mcp.ts");
       // An outside app's token (Settings › MCP › Outside apps) comes in the environment, never on the command line.
-      const clientToken = process.env.APX_CLIENT_TOKEN;
+      const clientToken = process.env.COLONIA_CLIENT_TOKEN;
       const mcpClient = clientToken
-        ? new ApxClient({ ...connection, client: { name: "apx-mcp", version: "0.0.0" }, clientToken })
+        ? new ColoniaClient({ ...connection, client: { name: "colonia-mcp", version: "0.0.0" }, clientToken })
         : agentClient;
       await runMcp(mcpClient, values.by ?? "mcp-client", Boolean(clientToken));
       break;
@@ -552,10 +552,10 @@ try {
             "Agents that remember.",
             "One core. Every device.",
             "",
-            "Start: apx wizard",
-            "Crew: apx status",
-            "Core: apx service status",
-            "Tools: apx mcp tools <server>",
+            "Start: colonia wizard",
+            "Crew: colonia status",
+            "Core: colonia service status",
+            "Tools: colonia mcp tools <server>",
           ]),
         );
       console.log(HELP);
@@ -563,24 +563,24 @@ try {
     case "daemon":
       console.error(
         card("Daemon is now service", [
-          "APX v2 calls the background core a service.",
+          "Colonia v2 calls the background core a service.",
           "",
-          "Inspect: apx service status",
-          "Restart: apx service restart",
-          "At login: apx service install",
-          "Remove: apx service uninstall",
+          "Inspect: colonia service status",
+          "Restart: colonia service restart",
+          "At login: colonia service install",
+          "Remove: colonia service uninstall",
         ]),
       );
       process.exitCode = 1;
       break;
     default:
-      console.error(fail("404 · Command not found", [`Unknown command: ${command}`, "Try: apx --help"]));
+      console.error(fail("404 · Command not found", [`Unknown command: ${command}`, "Try: colonia --help"]));
       process.exitCode = 1;
   }
 } catch (err) {
   const unreachable = unreachableCore(err);
-  if (err instanceof ApxError) console.error(fail(`APX · ${err.code}`, [err.message]));
+  if (err instanceof ColoniaError) console.error(fail(`Colonia · ${err.code}`, [err.message]));
   else if (unreachable) console.error(fail(unreachable.title, unreachable.lines));
-  else console.error(fail("APX · Error", [err instanceof Error ? err.message : String(err)]));
+  else console.error(fail("Colonia · Error", [err instanceof Error ? err.message : String(err)]));
   process.exitCode = 1;
 }

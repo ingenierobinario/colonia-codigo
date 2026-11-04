@@ -1,8 +1,8 @@
-// apx news: the release news APX carries, and telling them now (to see how the super-agent words them).
-import type { ApxClient } from "@apx/protocol/client";
+// colonia news: the release news Colonia carries, and telling them now (to see how the super-agent words them).
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 export async function news(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, ...ids]: string[],
   o: { json?: boolean | undefined },
 ): Promise<void> {
@@ -16,7 +16,7 @@ export async function news(
       );
     return;
   }
-  if (sub) throw new Error("usage: apx news [tell [<id>…]] [--json]");
+  if (sub) throw new Error("usage: colonia news [tell [<id>…]] [--json]");
   const { entries } = await client.call("system.news", {});
   if (o.json) {
     console.log(JSON.stringify(entries, null, 2));

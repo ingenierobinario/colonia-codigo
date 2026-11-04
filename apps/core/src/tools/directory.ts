@@ -1,8 +1,8 @@
 // contact_list / channel_list: what the owner set up, read by their agent ("who is Alex?", "can you reach Discord?").
 // sticker_list: the stickers the agent may answer with on the channel a message came on.
-// Read only: changes from chat (a channel's hours, a contact let through them) go through apx_settings, each once the
+// Read only: changes from chat (a channel's hours, a contact let through them) go through colonia_settings, each once the
 // owner approves it. Routines are in routines.ts.
-import type { ChannelHours } from "@apx/protocol";
+import type { ChannelHours } from "@colonia/protocol";
 import { z } from "zod";
 import type { Origin } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
@@ -78,7 +78,7 @@ export function directoryTools(store: Store): Tool[] {
     defineTool({
       name: "channel_list",
       description:
-        "List the channels APX talks through for the owner (WhatsApp, Telegram, Discord, Slack…), whether each is up, and its rooms: shared places inside a channel, such as a Discord #channel, as opposed to contacts, who are people (contact_list). Check it before saying you cannot reach a channel or a room.",
+        "List the channels Colonia talks through for the owner (WhatsApp, Telegram, Discord, Slack…), whether each is up, and its rooms: shared places inside a channel, such as a Discord #channel, as opposed to contacts, who are people (contact_list). Check it before saying you cannot reach a channel or a room.",
       args: z.object({}),
       effect: "none",
       when: () => channelsOn(store),

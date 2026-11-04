@@ -1,4 +1,4 @@
-import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu } from "@apx/ui";
+import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu } from "@colonia/ui";
 import { useState } from "react";
 import { blobOf, projectName } from "../data/identity.ts";
 import { useData } from "../data/state.ts";

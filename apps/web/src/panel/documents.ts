@@ -1,4 +1,4 @@
-import type { CoreEvent, DocumentSource, Message, Part } from "@apx/protocol";
+import type { CoreEvent, DocumentSource, Message, Part } from "@colonia/protocol";
 
 export type DocumentPart = Extract<Part, { type: "file" }> & {
   document: NonNullable<Extract<Part, { type: "file" }>["document"]>;

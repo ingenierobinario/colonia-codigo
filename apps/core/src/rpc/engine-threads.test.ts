@@ -25,7 +25,7 @@ test("an engine's list holds its own sessions only, and a CLI runs nowhere else"
     env.client.call("threads.model", { thread: ran.id, model_choice: { model: "claude", router: false } }),
     /own sessions/,
   );
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-eng-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-eng-")));
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   const session = await env.client.call("threads.create", {
     kind: "code",

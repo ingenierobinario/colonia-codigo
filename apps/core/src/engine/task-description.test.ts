@@ -23,7 +23,7 @@ after(async () => {
 
 const blank = [undefined, "", " \t\n "];
 const sessions = (id: string) => env.core.store.threads.byTask(id);
-/** The task's starts: a part APX goes on with on its own (engine/task-continue.ts) is not another start. */
+/** The task's starts: a part Colonia goes on with on its own (engine/task-continue.ts) is not another start. */
 const runs = (id: string) =>
   sessions(id)
     .flatMap((s) => env.core.store.runs.list(s.id))

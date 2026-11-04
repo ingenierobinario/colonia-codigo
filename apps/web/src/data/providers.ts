@@ -1,5 +1,5 @@
 // Model APIs the owner manages (providers.list / providers.set). Keys go to the core and never come back.
-import type { ProviderInfo } from "@apx/protocol";
+import type { ProviderInfo } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";

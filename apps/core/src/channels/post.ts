@@ -1,6 +1,6 @@
 // What an agent (or the owner) writes on a channel outside a turn's answer: kept in the chat, then sent through the
 // outbox. Used for a contact's chat and for a public room.
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import type { Presentation } from "../domain/channels.ts";
 import type { Store } from "../domain/store.ts";
 import { previewOf } from "../domain/threads.ts";

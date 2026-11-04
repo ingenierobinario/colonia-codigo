@@ -9,12 +9,12 @@ import { limaProcess } from "../../apps/core/src/environments/lima-process.ts";
 import { agentLoopbackRules, LOOPBACK_RULES } from "../../apps/core/src/environments/loopback.ts";
 import { screenArgs, workerArgs } from "../../apps/core/src/environments/worker.ts";
 import { findProgram, withUsualDirs } from "../../apps/core/src/programs.ts";
-import { ApxClient } from "../../packages/protocol/src/client.ts";
+import { ColoniaClient } from "../../packages/protocol/src/client.ts";
 
 const runtime = path.resolve(process.argv[2] ?? "");
-if (!path.basename(runtime).startsWith("apx-vm-lab-")) throw new Error("Use an isolated apx-vm-lab-* runtime");
+if (!path.basename(runtime).startsWith("colonia-vm-lab-")) throw new Error("Use an isolated colonia-vm-lab-* runtime");
 const { url } = JSON.parse(fs.readFileSync(path.join(runtime, "running.json"), "utf8")) as { url: string };
-const client = new ApxClient({ url: new URL(url).origin });
+const client = new ColoniaClient({ url: new URL(url).origin });
 const status = await client.call("environments.status", {});
 const chat = status.chats?.[0];
 assert.ok(status.ready && chat, "Start the protected lab computer first");
@@ -49,7 +49,7 @@ try {
 import os,socket,urllib.request,urllib.error,subprocess
 assert os.getuid()==1001
 assert subprocess.run(['sudo','-n','true'],capture_output=True).returncode!=0
-for name in ['/home/apx/password','/mnt/lima-cidata','/run/user/1000']:
+for name in ['/home/colonia/password','/mnt/lima-cidata','/run/user/1000']:
  assert not os.access(name,os.R_OK),name
 for target in [('192.168.5.2',${address.port}),('192.168.5.2',22),('1.1.1.1',443),('10.0.0.1',80)]:
  s=socket.socket();s.settimeout(2);code=s.connect_ex(target);s.close();assert code in (1,13,113),(target,code)
@@ -74,9 +74,9 @@ print('Verified worker privileges, administrator boundaries, direct egress rejec
 // is refused on both, while A reaches its own listener.
 const admin = (args: string[], input?: string) =>
   run(["shell", status.name, "--", ...args], { input, timeout: 60_000 });
-for (const screen of [1, 2]) await admin(["sudo", "-n", "/usr/local/libexec/apx-computer-user", String(screen)]);
+for (const screen of [1, 2]) await admin(["sudo", "-n", "/usr/local/libexec/colonia-computer-user", String(screen)]);
 await admin(["sudo", "-n", "tee", LOOPBACK_RULES], agentLoopbackRules([1, 2]));
-await admin(["sudo", "-n", "/usr/local/libexec/apx-computer-firewall"]);
+await admin(["sudo", "-n", "/usr/local/libexec/colonia-computer-firewall"]);
 const port = 47011;
 const listening = run(
   [

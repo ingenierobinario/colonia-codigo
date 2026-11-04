@@ -1,4 +1,4 @@
-// Every owner-only method that changes something, placed once: changed by the super-agent through apx_settings, through
+// Every owner-only method that changes something, placed once: changed by the super-agent through colonia_settings, through
 // a tool of its own, kept the owner's own (and why), or not decided yet. settings.test.ts fails on a method left out, so
 // what the owner can do in the panel never quietly stays out of the super-agent's reach.
 
@@ -36,7 +36,7 @@ const AS_OWNER = "the owner's own word: their answer, their send, their read";
 /** Owner methods no agent calls, by reason. */
 export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "email.signature_import": "it only fills the owner's signature editor with Gmail's; saving it is theirs",
-  "engines.set_usage": "the owner chooses whether APX queries and displays their external account limits",
+  "engines.set_usage": "the owner chooses whether Colonia queries and displays their external account limits",
   "secrets.set": SECRET,
   "providers.set": SECRET,
   "services.set": SECRET,
@@ -60,7 +60,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "tools.grant_set": POWER,
   "tools.revoke": POWER,
   "mcp.trust": POWER,
-  // A drawing is published and run by hand through apx_flow's card or in the panel's Flows editor (DECISIONS.md#d-184).
+  // A drawing is published and run by hand through colonia_flow's card or in the panel's Flows editor (DECISIONS.md#d-184).
   "flows.draft_discard": "the owner deletes a Flow draft on purpose",
   "flows.cancel_run": "the owner stops a Flow run they are looking at",
   "flows.test_start": "a test sends, calls, runs and writes for real, with what the owner approved in the editor",
@@ -142,7 +142,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
 };
 
 /**
- * Flow and table methods apx_flow leaves out that change nothing, by reason. With FLOW_SETTINGS and OWNER_ONLY they place
+ * Flow and table methods colonia_flow leaves out that change nothing, by reason. With FLOW_SETTINGS and OWNER_ONLY they place
  * every `flows.*` and `tables.*` method; flow-tool.test.ts fails on one left out (rules/FLOWS.md#agents-reach-it).
  */
 export const FLOW_ELSEWHERE: Readonly<Record<string, string>> = {

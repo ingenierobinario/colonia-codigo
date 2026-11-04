@@ -50,7 +50,7 @@ export async function fakeDiscord(token: string) {
       if (req.headers.authorization !== `Bot ${token}`) return reply(401, { message: "401: Unauthorized", code: 0 });
       const forced = failures.get(`${req.method} ${route}`)?.shift();
       if (forced) return reply(forced.status, forced.body);
-      if (req.method === "GET" && route === "/users/@me") return reply(200, { id: "1", username: "apx_test_bot" });
+      if (req.method === "GET" && route === "/users/@me") return reply(200, { id: "1", username: "colonia_test_bot" });
       if (req.method === "GET" && route === "/users/@me/guilds")
         return reply(200, [{ id: guild.id, name: guild.name }]);
       if (req.method === "GET" && route.startsWith("/users/")) return reply(200, { id: route.slice(7), avatar: null });
@@ -88,7 +88,7 @@ export async function fakeDiscord(token: string) {
       if (f.op === 2) {
         if (f.d?.token !== token) return ws.close(4004, "Authentication failed");
         identified.push({ intents: f.d.intents ?? 0 });
-        ws.send(JSON.stringify({ op: 0, s: ++seq, t: "READY", d: { user: { id: "1", username: "apx_test_bot" } } }));
+        ws.send(JSON.stringify({ op: 0, s: ++seq, t: "READY", d: { user: { id: "1", username: "colonia_test_bot" } } }));
       }
     });
   });
@@ -144,10 +144,10 @@ export async function fakeDiscord(token: string) {
         author: { ...author(from), ...(opts.bot ? { bot: true } : {}) },
         content: opts.mention ? `<@1> ${content}` : content,
         mentions: [
-          ...(opts.mention ? [{ id: "1", username: "apx_test_bot" }] : []),
+          ...(opts.mention ? [{ id: "1", username: "colonia_test_bot" }] : []),
           ...(opts.mentions ?? []).map(author),
         ],
-        ...(opts.replyToBot ? { referenced_message: { author: { id: "1", username: "apx_test_bot" } } } : {}),
+        ...(opts.replyToBot ? { referenced_message: { author: { id: "1", username: "colonia_test_bot" } } } : {}),
       });
       return id;
     },

@@ -140,7 +140,7 @@ test("fetch reaches only the artifact's origins and injects its secret without e
 test("a secret is pinned to the first origin it reaches, refused elsewhere until the pins are reset", async () => {
   const a = await echoServer();
   const b = await echoServer();
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-artifact-pins-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-artifact-pins-"));
   const mem = artifactMemory({ home });
   const ref = { name: "sales" };
   const pins = { get: (k: string) => mem.pins(ref)[k], set: (k: string, o: string) => mem.pin(ref, k, o) };

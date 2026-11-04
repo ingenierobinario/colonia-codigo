@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { AgentAvatar, ProjectTile, SearchField, SegmentedControl } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { AgentAvatar, ProjectTile, SearchField, SegmentedControl } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { setAgentBrowserProfile } from "../data/actions.ts";
 import { PROFILE_KEY } from "../data/engines.ts";

@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="592" viewBox="0 0 920 592" role="img" aria-label="APX v1 vs v2: duplication removed">
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="592" viewBox="0 0 920 592" role="img" aria-label="Colonia v1 vs v2: duplication removed">
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14161c"/><stop offset="1" stop-color="#1c1f2a"/></linearGradient>
 <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c8cff"/><stop offset="1" stop-color="#4fd1a5"/></linearGradient></defs>
 <rect width="920" height="592" rx="22" fill="url(#bg)"/>
 <rect x="40" y="40" width="64" height="5" rx="2.5" fill="url(#bar)"/>
 <text x="40" y="84" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="28" font-weight="700" fill="#f2f4f8">One way to do each thing</text>
-<text x="40" y="114" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="15" fill="#9aa3b5">What APX v1 did in many ways, v2 does through a single path.</text>
+<text x="40" y="114" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="15" fill="#9aa3b5">What Colonia v1 did in many ways, v2 does through a single path.</text>
 <text x="490" y="138" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="1.2" fill="#e88" text-anchor="middle">V1</text>
 <text x="650" y="138" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="1.2" fill="#4fd1a5" text-anchor="middle">V2</text>
 <rect x="24" y="150" width="872" height="62" rx="12" fill="#ffffff" fill-opacity="0.035"/>

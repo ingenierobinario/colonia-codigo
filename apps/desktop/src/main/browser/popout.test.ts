@@ -58,13 +58,13 @@ class Window extends EventEmitter {
     this.emit("closed");
   }
 }
-const key = Symbol.for("apx.test.popout");
+const key = Symbol.for("colonia.test.popout");
 Object.assign(globalThis, { [key]: { BaseWindow: Window, WebContentsView: View } });
 const hook = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
       return {
-        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("apx.test.popout")]; export const BaseWindow = n.BaseWindow; export const WebContentsView = n.WebContentsView;')}`,
+        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("colonia.test.popout")]; export const BaseWindow = n.BaseWindow; export const WebContentsView = n.WebContentsView;')}`,
         shortCircuit: true,
       };
     return next(specifier, context);

@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// APX telemetry (apps/core/src/telemetry.ts). Installs write without an account, so these rules are the whole guard:
+// Colonia telemetry (apps/core/src/telemetry.ts). Installs write without an account, so these rules are the whole guard:
 // only known shapes, server timestamps and immutable steps. Private readers need an administrator-issued claim;
 // authenticated readers cannot write. Console/report access continues through IAM. See rules/DECISIONS.md#d-092.
 service cloud.firestore {

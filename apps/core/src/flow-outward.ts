@@ -1,8 +1,8 @@
-// What a drawing does outside APX: where its notify steps send as the owner and which hosts its HTTP steps call.
+// What a drawing does outside Colonia: where its notify steps send as the owner and which hosts its HTTP steps call.
 // Publishing a revision is the owner's approval of exactly that list (DECISIONS.md#d-169), so the destinations are
 // fixed fields of the revision, checked against the owner's own channels, contacts and secrets.
 import { createHash } from "node:crypto";
-import type { FlowGraph, FlowGraphIssue, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowGraph, FlowGraphIssue, FlowNode } from "@colonia/protocol/flow-graph";
 import type { ChannelConfig } from "./channels/types.ts";
 import { flowVarIndex } from "./domain/flow-graph-validate.ts";
 import { flowHttpUrlProblem } from "./domain/flow-http-url.ts";
@@ -22,7 +22,7 @@ export type FlowOutside = {
   secret(ref: string, project: string): boolean;
   /** A test's exact `host:port` destinations that are not public (empty in a real core). */
   allowHttp?: readonly string[] | undefined;
-  /** APX's folder, for where a project's commands run and its databases are. */
+  /** Colonia's folder, for where a project's commands run and its databases are. */
   home?: string | undefined;
 };
 

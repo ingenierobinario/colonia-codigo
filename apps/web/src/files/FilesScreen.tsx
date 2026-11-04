@@ -1,7 +1,7 @@
 import "../styles/resources.css";
 import "../styles/shared-files.css";
-import type { SharedFile, SharedKind, SharedOrder } from "@apx/protocol";
-import { Button, EmptyState, Icons, ProjectTile, SearchField, SegmentedControl, Select } from "@apx/ui";
+import type { SharedFile, SharedKind, SharedOrder } from "@colonia/protocol";
+import { Button, EmptyState, Icons, ProjectTile, SearchField, SegmentedControl, Select } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMediaUrl } from "../chat/parts/useMediaUrl.ts";
 import { client } from "../data/client.ts";

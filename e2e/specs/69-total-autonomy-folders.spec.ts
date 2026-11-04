@@ -13,7 +13,7 @@ test("an agent on total autonomy writes in another folder from a chat with no pr
   page,
 }) => {
   await rpc("setup.finish", {});
-  const northwind = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-anywhere-")));
+  const northwind = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-anywhere-")));
   const note = path.join(northwind, "note.txt");
   await rpc("agents.create", { slug: "ondina", name: "Ondina" });
   await rpc("agents.update", { agent: "ondina", autonomy: "total" });

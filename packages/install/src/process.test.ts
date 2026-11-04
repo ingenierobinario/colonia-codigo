@@ -29,7 +29,7 @@ test("native launchers wait for the actual exit status", async () => {
 
 test("a missing launcher reports an error", async () => {
   await assert.rejects(
-    runProcess("apx-missing-launcher", [], {
+    runProcess("colonia-missing-launcher", [], {
       signal: AbortSignal.timeout(5000),
       detached: true,
       env: { ...process.env },

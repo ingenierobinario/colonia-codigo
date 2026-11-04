@@ -1,6 +1,6 @@
 // Files shared in chats: every file a message shows, with its chat and project. message_media (kept by triggers on
 // messages) says which message shows which file.
-import type { Author, SharedFile, SharedKind, SharedOrder } from "@apx/protocol";
+import type { Author, SharedFile, SharedKind, SharedOrder } from "@colonia/protocol";
 import { sql as raw } from "kysely";
 import { qb, type Sql } from "./sql.ts";
 
@@ -22,7 +22,7 @@ const kindOf = raw<SharedKind>`case
   when md.mime like 'audio/%' then 'audio'
   else 'document' end`;
 
-/** The name a file shows: its own, else how APX was asked for it. */
+/** The name a file shows: its own, else how Colonia was asked for it. */
 const nameOf = raw<string>`coalesce(mm.name, md.prompt, '')`;
 
 /** A LIKE pattern for words typed by the owner: their % and _ are literal. */

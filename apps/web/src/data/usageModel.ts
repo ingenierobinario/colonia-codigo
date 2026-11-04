@@ -1,6 +1,6 @@
 // What the usage views show, from system.usage and the desktop app's process list: pure, so the three views (topbar
 // dropdown, dialog, Settings › Advanced) count the same way. Polling lives here too, shared by whoever is looking.
-import type { SystemUsage } from "@apx/protocol";
+import type { SystemUsage } from "@colonia/protocol";
 
 export type DesktopKind = "main" | "gpu" | "panel" | "quick" | "tab" | "page" | "app" | "helper";
 export type DesktopMemory = {
@@ -33,20 +33,20 @@ export function processRows(usage: SystemUsage | undefined, desktop: DesktopMemo
   return [...core, ...own].sort((a, b) => b.mb - a.mb);
 }
 
-export type RamSplit = { total: number; apx: number; vm: number; other: number; free: number; used: number };
+export type RamSplit = { total: number; colonia: number; vm: number; other: number; free: number; used: number };
 
-/** The computer's RAM as APX, the VM, everything else, and what is still free. */
+/** The computer's RAM as Colonia, the VM, everything else, and what is still free. */
 export function ramSplit(usage: SystemUsage, desktop: DesktopMemory | undefined): RamSplit {
   const total = usage.host.memory_total_mb;
   const free = Math.min(total, usage.host.memory_available_mb);
   const used = total - free;
-  const apx = Math.min(used, usage.core.rss_mb + (desktop?.total_mb ?? 0));
+  const colonia = Math.min(used, usage.core.rss_mb + (desktop?.total_mb ?? 0));
   const vmMb = usage.vm?.running ? (usage.vm.memory_used_mb ?? usage.vm.memory_assigned_mb ?? 0) : 0;
-  const vm = Math.min(used - apx, vmMb);
-  return { total, apx, vm, other: Math.max(0, used - apx - vm), free, used };
+  const vm = Math.min(used - colonia, vmMb);
+  return { total, colonia, vm, other: Math.max(0, used - colonia - vm), free, used };
 }
 
-/** The volume holding the APX home (the first one when there is no home role). */
+/** The volume holding the Colonia home (the first one when there is no home role). */
 export const homeDisk = (usage: SystemUsage) =>
   usage.host.disks.find((d) => d.roles.includes("home")) ?? usage.host.disks[0];
 

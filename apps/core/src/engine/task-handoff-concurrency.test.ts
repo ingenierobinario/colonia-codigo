@@ -8,8 +8,8 @@ import { pendingInput, say, scriptedLlm, startCore } from "./testkit.ts";
 
 const goal = { title: "One executor", description: "Finish the current work once.", assignee: "superagent" };
 
-test("an asynchronous APX tool must drain before a concurrent handoff can start a task", async () => {
-  const folder = tempDir("apx-handoff-concurrent-");
+test("an asynchronous Colonia tool must drain before a concurrent handoff can start a task", async () => {
+  const folder = tempDir("colonia-handoff-concurrent-");
   const leave = Promise.withResolvers<void>();
   let entered = false;
   let blocked = "";
@@ -84,7 +84,7 @@ test("an asynchronous APX tool must drain before a concurrent handoff can start 
 
 for (const observed of [false, true]) {
   test(`an external permission blocks handoff even ${observed ? "with an uncorrelated observation" : "before the SDK reports a tool"}, but not a later owner turn`, async () => {
-    const folder = tempDir("apx-handoff-native-");
+    const folder = tempDir("colonia-handoff-native-");
     let attempt = 0;
     let refused = "";
     let deniedTask = "";
@@ -138,7 +138,7 @@ for (const observed of [false, true]) {
 }
 
 test("a native permission waiting on approval is refused if handoff wins the race", async () => {
-  const folder = tempDir("apx-handoff-approval-");
+  const folder = tempDir("colonia-handoff-approval-");
   let transferred = false;
   let allowed: boolean | undefined;
   let source = "";
@@ -180,7 +180,7 @@ test("a native permission waiting on approval is refused if handoff wins the rac
 });
 
 test("a harness without a native permission intercept keeps its executor in the source chat", async () => {
-  const folder = tempDir("apx-handoff-unrevocable-");
+  const folder = tempDir("colonia-handoff-unrevocable-");
   let refused = "";
   let canContinue = false;
   const codex: Harness = {

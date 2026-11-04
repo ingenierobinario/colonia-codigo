@@ -1,4 +1,4 @@
-import { ApxProvider, Icons, Input, Kbd } from "@apx/ui";
+import { ColoniaProvider, Icons, Input, Kbd } from "@colonia/ui";
 
 const col = { width: 320, display: "flex", flexDirection: "column" as const, gap: 10 };
 
@@ -25,11 +25,11 @@ export function SizesAndStates() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 352 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 352 }}>
       <div style={col}>
         <Input placeholder="Nombre del proyecto" />
         <Input leadingIcon={<Icons.Folder size={15} />} defaultValue="~/work/acme" />
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

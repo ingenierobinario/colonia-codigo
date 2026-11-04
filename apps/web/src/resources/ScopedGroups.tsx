@@ -1,4 +1,4 @@
-import { Switch } from "@apx/ui";
+import { Switch } from "@colonia/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { getInheritance, setInheritance } from "../data/resources.ts";
 import { useT } from "../i18n/index.ts";

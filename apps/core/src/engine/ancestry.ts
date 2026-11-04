@@ -1,6 +1,6 @@
 // Where a thread sits in a delegation tree. Policy and limits follow the thread, not the run: every turn in a
 // sub-thread (the first one, a woken one, an owner's message) works under the agents above it.
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { Store } from "../domain/store.ts";
 

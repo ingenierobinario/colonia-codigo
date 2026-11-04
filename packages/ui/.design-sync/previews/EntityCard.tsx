@@ -1,4 +1,4 @@
-import { ApxProvider, Badge, Button, EntityCard, Icons } from "@apx/ui";
+import { ColoniaProvider, Badge, Button, EntityCard, Icons } from "@colonia/ui";
 
 export function EmailDraft() {
   return (
@@ -76,7 +76,7 @@ export function Routine() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
       <EntityCard
         eyebrow="Compromiso"
         icon={<Icons.Calendar />}
@@ -92,6 +92,6 @@ export function ClassicLook() {
           </>
         }
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

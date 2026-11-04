@@ -7,7 +7,7 @@ import {
   methodAccess,
   methods,
   PROTOCOL_VERSION,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { type WebSocket, WebSocketServer } from "ws";
 import type { Bus } from "../bus.ts";
 import type { Identity } from "../identity.ts";
@@ -18,7 +18,7 @@ import { type Gate, localRequest, mayBeNode, refuse } from "./guard.ts";
 import type { ClientLookup } from "./http.ts";
 
 /** How an outside app's client token starts (domain/clients.ts). */
-const CLIENT_TOKEN = "apxc_";
+const CLIENT_TOKEN = "coloniac_";
 
 const MAX_PAYLOAD = FILE_PAYLOAD_BYTES;
 
@@ -159,7 +159,7 @@ export function attachWs(
         else broker.event(session, frame);
         return;
       }
-      const device = key?.startsWith("apxd_") ? deps.deviceOf?.(key) : undefined;
+      const device = key?.startsWith("coloniad_") ? deps.deviceOf?.(key) : undefined;
       const client = clientFor(key);
       const out = await dispatch(
         frame.method,

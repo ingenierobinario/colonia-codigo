@@ -218,7 +218,7 @@ export function createUpkeep(deps: { store: Store; llm: Llm; log: Log }) {
     const agent = store.agents.get(run.agent_id);
     if (!t || !agent || t.parent_id || t.kind === "a2a" || store.threads.context(t.id).titled) return;
     store.threads.mergeContext(t.id, { titled: true });
-    // Only a title APX gave (the agent's name, or name · folder) is replaced; one the owner typed at creation stays.
+    // Only a title Colonia gave (the agent's name, or name · folder) is replaced; one the owner typed at creation stays.
     // A rename (auto_title) stands over it either way, and a reset shows this one.
     const auto = t.auto_title ?? t.title;
     if (auto !== agent.name && !auto.startsWith(`${agent.name} · `)) return;

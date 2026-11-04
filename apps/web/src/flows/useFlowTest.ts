@@ -1,7 +1,7 @@
 // The editor's test with a real event (DECISIONS.md#d-178): it saves the drawing, asks what it may do for the owner,
 // then waits for one event (a webhook Flow) or runs once now (a schedule one), and follows the run as the core says it
 // moves. The run's steps come from `flows.run_get`; the core's events carry ids and states only.
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { useFlowRunMoved, useFlowTestHeard } from "../data/flowTests.ts";
@@ -120,7 +120,7 @@ export function useFlowTest(o: {
       setState({ phase: "idle" });
       o.say(
         issueText(e, drawn, t) ??
-          t(e instanceof ApxError && e.code === "conflict" ? "flow.ed.conflict" : "flow.test.failedStart"),
+          t(e instanceof ColoniaError && e.code === "conflict" ? "flow.ed.conflict" : "flow.test.failedStart"),
         true,
       );
     }

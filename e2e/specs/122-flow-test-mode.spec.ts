@@ -15,7 +15,7 @@ async function shot(page: Page, name: string) {
   fs.mkdirSync(shots, { recursive: true });
   await page.screenshot({ path: path.join(shots, `${name}.png`) });
 }
-const HOST = "https://apx.example.com";
+const HOST = "https://colonia.example.com";
 
 type Graph = NonNullable<Result<"flows.graph_get">["published"]>;
 const leads = (slow: boolean): Graph => ({

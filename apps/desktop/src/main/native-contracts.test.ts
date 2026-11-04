@@ -40,13 +40,13 @@ const native = {
   },
   Notification: Notice,
 };
-const boundary = Symbol.for("apx.test.native");
+const boundary = Symbol.for("colonia.test.native");
 Object.assign(globalThis, { [boundary]: native });
 const hooks = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
       return {
-        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("apx.test.native")]; export const dialog = n.dialog; export const Notification = n.Notification;')}`,
+        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("colonia.test.native")]; export const dialog = n.dialog; export const Notification = n.Notification;')}`,
         shortCircuit: true,
       };
     return next(specifier, context);
@@ -118,7 +118,7 @@ test("update menu hides unsupported updates and disables downloads without offer
   const h = harness();
   const downloading = h.menu.item({ ...initial, latest: "2.1.0", downloading: true });
   assert.equal(downloading?.enabled, false);
-  assert.equal(downloading?.label, "Downloading APX 2.1.0…");
+  assert.equal(downloading?.label, "Downloading Colonia 2.1.0…");
   assert.equal(downloading?.click, undefined);
   assert.deepEqual(h.counts(), { checks: 0, installs: 0, restarts: 0 });
 });
@@ -126,7 +126,7 @@ test("update menu hides unsupported updates and disables downloads without offer
 test("manual checks distinguish current versions and feed failures without starting installation", async () => {
   const h = harness();
   await click(h.menu.item(initial));
-  assert.equal(messages[0]?.message, "APX is up to date");
+  assert.equal(messages[0]?.message, "Colonia is up to date");
   assert.equal(messages[0]?.detail, "You have version 2.0.0.");
   h.status({ ...initial, error: "Offline" });
   await click(h.menu.item(initial));
@@ -139,8 +139,8 @@ test("a new release installs from check, defers restart, and remains available i
   const h = harness({ es: true, platform: "win32" });
   h.status({ ...initial, latest: "2.1.0" });
   await click(h.menu.item(initial));
-  assert.equal(messages[0]?.message, "APX 2.1.0 está listo");
-  assert.match(String(messages[0]?.detail), /queda en el menú APX/);
+  assert.equal(messages[0]?.message, "Colonia 2.1.0 está listo");
+  assert.match(String(messages[0]?.detail), /queda en el menú Colonia/);
   assert.deepEqual(messages[0]?.buttons, ["Reiniciar ahora", "Más tarde"]);
   assert.deepEqual(h.counts(), { checks: 1, installs: 1, restarts: 0 });
   await click(h.menu.item({ ...initial, ready: "2.1.0" }));
@@ -152,7 +152,7 @@ test("an explicit release installs and restarts only with consent", async () => 
   response = 0;
   await click(h.menu.item({ ...initial, latest: "2.1.0" }));
   assert.deepEqual(h.counts(), { checks: 0, installs: 1, restarts: 1 });
-  assert.match(String(messages[0]?.detail), /when you quit APX/);
+  assert.match(String(messages[0]?.detail), /when you quit Colonia/);
 });
 
 test("a restart from the menu that cannot go ahead shows the reason", async () => {
@@ -161,7 +161,7 @@ test("a restart from the menu that cannot go ahead shows the reason", async () =
   await click(h.menu.item({ ...initial, ready: "2.1.0" }));
   assert.equal(h.counts().restarts, 1);
   assert.equal(messages[0]?.type, "warning");
-  assert.equal(messages[0]?.message, "APX could not update");
+  assert.equal(messages[0]?.message, "Colonia could not update");
   assert.equal(messages[0]?.detail, "The new version is no longer ready. Check for updates again.");
 });
 
@@ -186,7 +186,7 @@ test("background releases notify once per version and notification clicks ask be
   assert.equal(h.counts().installs, 1);
   assert.equal(notices.length, 1);
   assert.equal(notices[0]?.shown, true);
-  assert.equal(notices[0]?.options.body, "APX 2.1.0 is ready. Restart APX to use it.");
+  assert.equal(notices[0]?.options.body, "Colonia 2.1.0 is ready. Restart Colonia to use it.");
   response = 0;
   notices[0]?.listener?.();
   await new Promise<void>((resolve) => setImmediate(resolve));
@@ -210,14 +210,14 @@ test("background failures and unsupported notifications stay silent; drag mode n
   const drag = harness({ mode: "drag", es: true });
   drag.menu.found({ ...initial, latest: "2.1.0" });
   assert.equal(drag.counts().installs, 0);
-  assert.equal(notices[0]?.options.body, "Salió APX 2.1.0. Abrí APX para actualizar.");
+  assert.equal(notices[0]?.options.body, "Salió Colonia 2.1.0. Abrí Colonia para actualizar.");
   assert.equal(notices[0]?.listener, undefined);
 });
 
 test("quit confirmation defaults to quit but Escape cancels and warns about local core shutdown only", () => {
   harness();
   assert.equal(confirmQuit(window, { es: false, runsCore: false }), false);
-  assert.equal(messages[0]?.message, "Quit APX?");
+  assert.equal(messages[0]?.message, "Quit Colonia?");
   assert.equal(messages[0]?.detail, "The browser tabs your agents use close.");
   assert.equal(messages[0]?.cancelId, 1);
   response = 0;

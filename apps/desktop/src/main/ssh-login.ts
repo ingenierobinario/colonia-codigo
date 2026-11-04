@@ -8,7 +8,7 @@ import { splitTarget } from "./ssh-tunnel.ts";
 
 /** The app's key pair, made once in its data folder. */
 export function appKeyPath(dataDir: string): string {
-  return path.join(dataDir, "ssh", "apx_ed25519");
+  return path.join(dataDir, "ssh", "colonia_ed25519");
 }
 
 /** OpenSSH's version from `ssh -V` ("OpenSSH_9.6p1", "OpenSSH_for_Windows_9.5p1"). */
@@ -38,7 +38,7 @@ export function ensureAppKey(dataDir: string): string | undefined {
   const file = appKeyPath(dataDir);
   if (!fs.existsSync(file)) {
     fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
-    const r = spawnSync("ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "apx-desktop", "-f", file], {
+    const r = spawnSync("ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "colonia-desktop", "-f", file], {
       stdio: ["ignore", "ignore", "pipe"],
       timeout: 30_000,
       windowsHide: true,
@@ -59,7 +59,7 @@ export function authorizeCommand(pubkey: string): string {
   return (
     "umask 077; mkdir -p ~/.ssh && chmod 700 ~/.ssh && " +
     `{ grep -qxF '${key}' ~/.ssh/authorized_keys 2>/dev/null || echo '${key}' >> ~/.ssh/authorized_keys; } && ` +
-    "chmod 600 ~/.ssh/authorized_keys && echo APX_KEY_OK"
+    "chmod 600 ~/.ssh/authorized_keys && echo COLONIA_KEY_OK"
   );
 }
 
@@ -104,7 +104,7 @@ export async function authorizeKey(
     const lines = (d: Buffer) => {
       for (const raw of d.toString().split(/\r?\n|\r/)) {
         const line = stripVTControlCharacters(raw).trimEnd();
-        if (line === "APX_KEY_OK") ok = true;
+        if (line === "COLONIA_KEY_OK") ok = true;
         else if (line) onLine(line);
       }
     };

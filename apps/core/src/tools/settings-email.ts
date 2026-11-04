@@ -1,4 +1,4 @@
-import { EmailSignatureKey } from "@apx/protocol";
+import { EmailSignatureKey } from "@colonia/protocol";
 import { signatureIdentities } from "../domain/email-signature-edit.ts";
 import { readSignatures, sameSignatureKey } from "../domain/email-signature-settings.ts";
 import type { Setting } from "./settings-kit.ts";
@@ -27,7 +27,7 @@ export const EMAIL: Readonly<Record<string, Setting>> = {
     },
   },
   "email.signature_upsert": {
-    does: "Create or replace one local APX signature for a configured mailbox. expected must be the exact last-read entry, or null if absent. Does not change Gmail settings or other signatures.",
+    does: "Create or replace one local Colonia signature for a configured mailbox. expected must be the exact last-read entry, or null if absent. Does not change Gmail settings or other signatures.",
     says: () => "Change the local email signature",
     whole: true,
   },

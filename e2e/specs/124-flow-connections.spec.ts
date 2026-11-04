@@ -13,7 +13,7 @@ async function pick(page: Page, link: Locator) {
 test("a connection is picked and removed from the canvas, and a loop is never drawn", async ({ page }) => {
   await rpc("setup.finish", {});
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Acme links" })).project.id;
-  await page.addInitScript(() => localStorage.setItem("apx.prefs", JSON.stringify({ language: "es" })));
+  await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "es" })));
   await open(page, `#view=flows&scope=${project}`);
   await page.getByRole("button", { name: "Nuevo flow" }).first().click();
   const editor = page.locator(".fe");

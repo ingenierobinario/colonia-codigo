@@ -1,5 +1,5 @@
 /** The guest's unprivileged probe user: it has no screen; setup checks the firewall and the admin boundary as it. */
-export const VM_WORKER = "apx-worker";
+export const VM_WORKER = "colonia-worker";
 export const MAX_SCREEN = 999;
 
 export type ScreenUser = { screen: number; user: string; uid: number; display: string; home: string; work: string };
@@ -7,7 +7,7 @@ export type ScreenUser = { screen: number; user: string; uid: number; display: s
 /** Screens are agents' only: screen n runs as its own locked user, uid 2000+n, on display :100+n. */
 export function screenUser(screen: number): ScreenUser {
   if (!Number.isInteger(screen) || screen < 1 || screen > MAX_SCREEN) throw new Error(`invalid screen ${screen}`);
-  const user = `apx-a${screen}`;
+  const user = `colonia-a${screen}`;
   const home = `/home/${user}`;
   return { screen, user, uid: 2000 + screen, display: `:${100 + screen}`, home, work: `${home}/work` };
 }
@@ -62,4 +62,4 @@ export const workerArgs = (...args: string[]) => asUser(VM_WORKER, 1001, args);
 
 /** A screen's visible browser, logging in its user's own home: a shared /tmp log would be the first agent's alone. */
 export const browserArgs = (screen: number) =>
-  screenArgs(screen, "/usr/local/bin/apx-browser", `${screenUser(screen).home}/.cache/apx/browser.log`);
+  screenArgs(screen, "/usr/local/bin/colonia-browser", `${screenUser(screen).home}/.cache/colonia/browser.log`);

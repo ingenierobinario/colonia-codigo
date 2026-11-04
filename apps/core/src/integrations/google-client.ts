@@ -1,6 +1,6 @@
-// APX's own OAuth client for Google, so the owner signs in without making one in Cloud Console. It is a Desktop app
+// Colonia's own OAuth client for Google, so the owner signs in without making one in Cloud Console. It is a Desktop app
 // client: Google treats its secret as public (an installed app cannot keep one) and PKCE guards each sign-in. It is
-// still kept out of the repository: a release build writes it beside build.json from CI's APX_GOOGLE_CLIENT secret, and
+// still kept out of the repository: a release build writes it beside build.json from CI's COLONIA_GOOGLE_CLIENT secret, and
 // a checkout reads the same file, git-ignored, at its root. See DECISIONS.md#d-130.
 import fs from "node:fs";
 import path from "node:path";
@@ -35,7 +35,7 @@ export function clientFromJson(text: string): ClientCreds | undefined {
 }
 
 /** The client this install carries, if any: none in a build or a checkout without the file. */
-export function apxGoogleClient(root = ROOT): ClientCreds | undefined {
+export function coloniaGoogleClient(root = ROOT): ClientCreds | undefined {
   try {
     return clientFromJson(fs.readFileSync(path.join(root, CLIENT_FILE), "utf8"));
   } catch {

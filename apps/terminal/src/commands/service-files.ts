@@ -1,23 +1,23 @@
-// What `apx service install` writes: a systemd user unit, a launchd agent, or a Windows login entry. Pure text.
+// What `colonia service install` writes: a systemd user unit, a launchd agent, or a Windows login entry. Pure text.
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { BUNDLE } from "@apx/protocol";
+import { BUNDLE } from "@colonia/protocol";
 
-export const SYSTEMD_UNIT = "apx.service";
-export const LAUNCHD_LABEL = "dev.apx.core";
-export const WINDOWS_RUN_VALUE = "APXCore";
+export const SYSTEMD_UNIT = "colonia.service";
+export const LAUNCHD_LABEL = "dev.colonia.core";
+export const WINDOWS_RUN_VALUE = "ColoniaCore";
 export const NODE_FLAGS = ["--disable-warning=ExperimentalWarning"];
 
 /** A custom home must not restart or replace the default installation's service. */
-export function serviceNames(home: string, defaultHome = path.join(os.homedir(), ".apx", "v2")) {
+export function serviceNames(home: string, defaultHome = path.join(os.homedir(), ".colonia", "v2")) {
   const real = (p: string) => (fs.existsSync(p) ? fs.realpathSync(p) : path.resolve(p));
   const canonical = real(home);
   const suffix =
     canonical === real(defaultHome) ? "" : `-${createHash("sha256").update(canonical).digest("hex").slice(0, 16)}`;
   return {
-    systemd: suffix ? `apx${suffix}.service` : SYSTEMD_UNIT,
+    systemd: suffix ? `colonia${suffix}.service` : SYSTEMD_UNIT,
     launchd: `${LAUNCHD_LABEL}${suffix}`,
     windows: `${WINDOWS_RUN_VALUE}${suffix}`,
   };
@@ -30,8 +30,8 @@ export const terminalMain = () => path.resolve(import.meta.dirname, "../main.ts"
 export const appRoot = (main: string) => path.resolve(path.dirname(main), "../../..");
 
 /**
- * The APX_APP a bundle's terminal lives in (<app>/versions/<version>/apps/terminal/src), for when it runs without the
- * `apx` shim that sets it (the Windows login entry starts the terminal directly).
+ * The COLONIA_APP a bundle's terminal lives in (<app>/versions/<version>/apps/terminal/src), for when it runs without the
+ * `colonia` shim that sets it (the Windows login entry starts the terminal directly).
  */
 export function bundleAppOf(terminalSrc: string): string | undefined {
   const version = path.resolve(terminalSrc, "../../..");
@@ -39,15 +39,15 @@ export function bundleAppOf(terminalSrc: string): string | undefined {
   return path.basename(versions) === BUNDLE.versions ? path.dirname(versions) : undefined;
 }
 
-/** Sets APX_APP for a terminal that runs from a bundle; a checkout leaves it unset (process.env would store "undefined"). */
+/** Sets COLONIA_APP for a terminal that runs from a bundle; a checkout leaves it unset (process.env would store "undefined"). */
 export function adoptBundleApp(env: NodeJS.ProcessEnv, terminalSrc: string): void {
-  if (env.APX_APP) return;
+  if (env.COLONIA_APP) return;
   const app = bundleAppOf(terminalSrc);
-  if (app) env.APX_APP = app;
+  if (app) env.COLONIA_APP = app;
 }
 
 /**
- * What runs, for a daemon installed from a bundle (APX_APP): always through `current`, never the version folder it
+ * What runs, for a daemon installed from a bundle (COLONIA_APP): always through `current`, never the version folder it
  * points at today, so an update that moves `current` is what the service starts next.
  */
 export function bundleRun(app: string, win = process.platform === "win32") {
@@ -74,11 +74,11 @@ export type ServiceSpec = {
 
 /**
  * The environment the service runs with. PATH is kept because the core starts agent CLIs (claude, codex, git) that a
- * login manager's bare PATH would not find; APX_SUPERVISED lets an update exit and be started again.
+ * login manager's bare PATH would not find; COLONIA_SUPERVISED lets an update exit and be started again.
  */
 export function serviceEnv(env: NodeJS.ProcessEnv): Record<string, string> {
-  const out: Record<string, string> = { APX_SUPERVISED: "1" };
-  for (const k of ["APX_HOME", "APX_APP", "APX_RELEASES", "ELECTRON_RUN_AS_NODE", "APX_WEB_DIST", "PATH"]) {
+  const out: Record<string, string> = { COLONIA_SUPERVISED: "1" };
+  for (const k of ["COLONIA_HOME", "COLONIA_APP", "COLONIA_RELEASES", "ELECTRON_RUN_AS_NODE", "COLONIA_WEB_DIST", "PATH"]) {
     const v = env[k];
     if (v) out[k] = v;
   }
@@ -93,20 +93,20 @@ export function serviceOwnsHome(text: string, platform: string, home: string): b
   let configured: string | undefined;
   if (platform === "win32") configured = /service run --home "([^"]+)"/.exec(text)?.[1];
   else if (platform === "darwin") {
-    configured = /<key>APX_HOME<\/key>\s*<string>([^<]*)<\/string>/.exec(text)?.[1];
+    configured = /<key>COLONIA_HOME<\/key>\s*<string>([^<]*)<\/string>/.exec(text)?.[1];
     configured = configured?.replace(
       /&(amp|lt|gt|quot|apos);/g,
       (entity) => ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&apos;": "'" })[entity] ?? entity,
     );
   } else {
-    configured = /^Environment="APX_HOME=((?:\\.|[^"\\])*)"$/m.exec(text)?.[1];
+    configured = /^Environment="COLONIA_HOME=((?:\\.|[^"\\])*)"$/m.exec(text)?.[1];
     configured = configured?.replace(/\\(.)/g, "$1").replace(/%%/g, "%");
   }
   if (configured) {
     const canonical = (p: string) => (fs.existsSync(p) ? fs.realpathSync(p) : path.resolve(p));
     return canonical(configured) === canonical(home);
   }
-  return platform !== "win32" && !text.includes("APX_HOME") && serviceNames(home).systemd === SYSTEMD_UNIT;
+  return platform !== "win32" && !text.includes("COLONIA_HOME") && serviceNames(home).systemd === SYSTEMD_UNIT;
 }
 
 export function systemdUnit(spec: ServiceSpec): string {
@@ -114,7 +114,7 @@ export function systemdUnit(spec: ServiceSpec): string {
   const env = Object.entries(spec.env).map(([k, v]) => `Environment=${sdQuote(`${k}=${v}`)}`);
   return `${[
     "[Unit]",
-    "Description=APX core",
+    "Description=Colonia core",
     "",
     "[Service]",
     `ExecStart=${exec}`,
@@ -199,7 +199,7 @@ export function windowsStopScript(home: string, command: string): string {
 }
 
 /**
- * The Windows login entry: it starts `apx service run`, the terminal's own supervisor, since a Run value cannot
+ * The Windows login entry: it starts `colonia service run`, the terminal's own supervisor, since a Run value cannot
  * restart what dies. Electron's binary only behaves as Node with ELECTRON_RUN_AS_NODE, set through cmd.
  */
 export function windowsRunCommand(o: {

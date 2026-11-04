@@ -1,31 +1,31 @@
 {
   "expo": {
-    "name": "APX",
-    "slug": "apx",
-    "scheme": "apx",
+    "name": "Colonia",
+    "slug": "colonia",
+    "scheme": "colonia",
     "version": "2.0.10",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "../desktop/assets/icon.png",
     "ios": {
-      "bundleIdentifier": "dev.apx.mobile",
+      "bundleIdentifier": "dev.colonia.mobile",
       "supportsTablet": true
     },
     "android": {
-      "package": "dev.apx.mobile"
+      "package": "dev.colonia.mobile"
     },
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "APX uses the camera to scan the QR that pairs it with your computer, and to take a picture you attach to a chat."
+          "cameraPermission": "Colonia uses the camera to scan the QR that pairs it with your computer, and to take a picture you attach to a chat."
         }
       ],
       "expo-secure-store",
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "APX tells your agents where you are when they ask (only while the app is open)."
+          "locationWhenInUsePermission": "Colonia tells your agents where you are when they ask (only while the app is open)."
         }
       ],
       [
@@ -39,7 +39,7 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "APX records a voice note when you tap the mic in a chat, and turns it into text."
+          "microphonePermission": "Colonia records a voice note when you tap the mic in a chat, and turns it into text."
         }
       ],
       "expo-video",
@@ -47,16 +47,16 @@
       [
         "expo-media-library",
         {
-          "photosPermission": "APX saves the pictures and videos you keep from a chat to your photos.",
-          "savePhotosPermission": "APX saves the pictures and videos you keep from a chat to your photos.",
+          "photosPermission": "Colonia saves the pictures and videos you keep from a chat to your photos.",
+          "savePhotosPermission": "Colonia saves the pictures and videos you keep from a chat to your photos.",
           "granularPermissions": ["photo", "video"]
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "APX attaches the photos you pick to a chat.",
-          "cameraPermission": "APX uses the camera to scan the QR that pairs it with your computer, and to take a picture you attach to a chat."
+          "photosPermission": "Colonia attaches the photos you pick to a chat.",
+          "cameraPermission": "Colonia uses the camera to scan the QR that pairs it with your computer, and to take a picture you attach to a chat."
         }
       ]
     ]

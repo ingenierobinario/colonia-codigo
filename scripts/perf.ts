@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `pnpm perf`: how light APX itself is, with the model's cost taken out (a fake model answers at once). Starts a core on
+// `pnpm perf`: how light Colonia itself is, with the model's cost taken out (a fake model answers at once). Starts a core on
 // a temp home and measures startup, idle memory and CPU, protocol latency, chat turns and the memory they leave
 // behind, and the panel's bundle. Fails when a number goes over its budget in scripts/perf-budget.json.
 import { spawn } from "node:child_process";
@@ -78,18 +78,18 @@ if (
     () => false,
   )
 )
-  throw new Error(`port ${port} is taken (another APX core?): stop it or set PERF_PORT`);
+  throw new Error(`port ${port} is taken (another Colonia core?): stop it or set PERF_PORT`);
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-perf-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-perf-"));
 const llm = await fakeLlm();
-const startCore = (apxHome: string) =>
+const startCore = (coloniaHome: string) =>
   spawn(
     process.execPath,
     ["--no-warnings", ...(diagnostics ? ["--trace-gc"] : []), path.join(root, "apps/core/src/main.ts")],
     {
       cwd: root,
       stdio: ["ignore", diagnostics ? "pipe" : "ignore", "pipe"],
-      env: coreEnv(apxHome),
+      env: coreEnv(coloniaHome),
     },
   );
 
@@ -108,24 +108,24 @@ await new Promise((r) => warm.once("exit", r));
 
 const coreEpoch = Date.now();
 const t0 = performance.now();
-const core = startCore(path.join(home, "apx"));
-function coreEnv(apxHome: string): NodeJS.ProcessEnv {
+const core = startCore(path.join(home, "colonia"));
+function coreEnv(coloniaHome: string): NodeJS.ProcessEnv {
   return {
     // No agent CLIs: the numbers are the core's own, whatever this machine has installed.
     PATH: [path.dirname(process.execPath), "/usr/bin", "/bin"].join(path.delimiter),
     HOME: process.env.HOME ?? os.homedir(),
     ...compileCacheEnv(root),
-    APX_HOME: apxHome,
-    APX_TELEMETRY: "off",
-    APX_PORT: String(port),
-    APX_SECRETS: "file",
-    APX_UPDATES: "off",
-    APX_V1_HOME: path.join(home, "no-v1"),
+    COLONIA_HOME: coloniaHome,
+    COLONIA_TELEMETRY: "off",
+    COLONIA_PORT: String(port),
+    COLONIA_SECRETS: "file",
+    COLONIA_UPDATES: "off",
+    COLONIA_V1_HOME: path.join(home, "no-v1"),
     CLAUDE_CONFIG_DIR: path.join(home, "claude"),
     CODEX_HOME: path.join(home, "codex"),
-    APX_LLM_BASE_URL: llm.url,
-    APX_LLM_KEY: "perf",
-    APX_LLM_MODELS: "fake-1",
+    COLONIA_LLM_BASE_URL: llm.url,
+    COLONIA_LLM_KEY: "perf",
+    COLONIA_LLM_MODELS: "fake-1",
   };
 }
 let stderr = "";
@@ -193,7 +193,7 @@ try {
       total_ms: ended - s,
       start_ms: s - t0,
       end_ms: ended - t0,
-      ...(diagnostics ? { wal_sequence: walSequence(path.join(home, "apx", "apx.db-wal")) } : {}),
+      ...(diagnostics ? { wal_sequence: walSequence(path.join(home, "colonia", "colonia.db-wal")) } : {}),
     });
   }
   results.turn_p50_ms = pct(turns, 0.5);
@@ -207,7 +207,7 @@ try {
   results.initial_bundle_gzip_kb = boot ? sumKb(dist, boot.initial) : Number.NaN;
   results.boot_gzip_kb = boot ? sumKb(dist, boot.files) : Number.NaN;
 
-  console.log(`\nAPX perf (${TURNS} turns, fake model)\n`);
+  console.log(`\nColonia perf (${TURNS} turns, fake model)\n`);
   for (const [k, v] of Object.entries(results)) {
     const limit = budget[k];
     const over = limit !== undefined && v > limit;

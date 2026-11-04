@@ -14,7 +14,7 @@ const GREET = /open with one short greeting/;
 const GO_ON = /mid-conversation: go on as in a chat, with no greeting/;
 
 async function withStore(work: (store: Store) => void) {
-  const dir = tempDir("apx-last-talk-");
+  const dir = tempDir("colonia-last-talk-");
   const db = openDb(dir.path);
   try {
     const store = createStore(db, createBus());
@@ -56,7 +56,7 @@ test("a message soon after they talked goes on with the conversation; after hour
     assert.match(lastTalk(store, home, new Date(at.getTime() + 7 * HOUR)) ?? "", GREET);
   }));
 
-test("a message APX sent them counts as talking; the turn's own message does not", () =>
+test("a message Colonia sent them counts as talking; the turn's own message does not", () =>
   withStore((store) => {
     ownerSaid(store, "hola", 10 * HOUR);
     agentSaid(store, 0, "run_now");

@@ -1,7 +1,7 @@
 // The Team view's tree: who reports to whom, laid out top-down as a tidy tree (each parent centred over its first and
 // last child, sibling subtrees packed by their contours) with siblings grouped by area. Pure (no React, no DOM) so it
 // is tested on its own.
-import { parentIn } from "@apx/protocol";
+import { parentIn } from "@colonia/protocol";
 
 export type TeamMember = {
   id: string;

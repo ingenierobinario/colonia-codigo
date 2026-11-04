@@ -26,11 +26,11 @@ test("browser coverage maps only the sandbox's own assets to their local build o
 });
 
 test("browser coverage stays inactive unless explicitly requested", async (t) => {
-  const previous = process.env.APX_TEST_COVERAGE_DIR;
-  delete process.env.APX_TEST_COVERAGE_DIR;
+  const previous = process.env.COLONIA_TEST_COVERAGE_DIR;
+  delete process.env.COLONIA_TEST_COVERAGE_DIR;
   t.after(() => {
-    if (previous === undefined) delete process.env.APX_TEST_COVERAGE_DIR;
-    else process.env.APX_TEST_COVERAGE_DIR = previous;
+    if (previous === undefined) delete process.env.COLONIA_TEST_COVERAGE_DIR;
+    else process.env.COLONIA_TEST_COVERAGE_DIR = previous;
   });
   let touched = false;
   const page = new Proxy(
@@ -47,12 +47,12 @@ test("browser coverage stays inactive unless explicitly requested", async (t) =>
 });
 
 test("browser coverage keeps counters across navigation and includes temporary cores without outside scripts", async (t) => {
-  const previous = process.env.APX_TEST_COVERAGE_DIR;
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-browser-coverage-"));
-  process.env.APX_TEST_COVERAGE_DIR = dir;
+  const previous = process.env.COLONIA_TEST_COVERAGE_DIR;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-browser-coverage-"));
+  process.env.COLONIA_TEST_COVERAGE_DIR = dir;
   t.after(() => {
-    if (previous === undefined) delete process.env.APX_TEST_COVERAGE_DIR;
-    else process.env.APX_TEST_COVERAGE_DIR = previous;
+    if (previous === undefined) delete process.env.COLONIA_TEST_COVERAGE_DIR;
+    else process.env.COLONIA_TEST_COVERAGE_DIR = previous;
     fs.rmSync(dir, { recursive: true, force: true });
   });
   const page = new EventEmitter();

@@ -13,7 +13,7 @@ import { imessageTools } from "../tools/imessage.ts";
 import { SPANISH_TITLES, toolTitle } from "./tool-titles.ts";
 
 const setup = () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-titles-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-titles-"));
   const store = createStore(openDb(home), createBus());
   const tools = [...builtinTools(store, home, () => 0), ...imessageTools({} as IMessageOps), documentTool(store, home)];
   return { store, tools };
@@ -29,18 +29,18 @@ test("titles follow the owner's language, Spanish by default", () => {
   const { store, tools } = setup();
   const post = tools.find((t) => t.name === "channel_post");
   assert.ok(post);
-  assert.equal(toolTitle(store, post, { room: "#apx-help" }), "Publicó en #apx-help");
+  assert.equal(toolTitle(store, post, { room: "#colonia-help" }), "Publicó en #colonia-help");
   store.settings.set("owner_language", "en");
-  assert.equal(toolTitle(store, post, { room: "#apx-help" }), "Posted in #apx-help");
+  assert.equal(toolTitle(store, post, { room: "#colonia-help" }), "Posted in #colonia-help");
 });
 
 test("a skill's second file reads as that file, not as loading the skill again", () => {
   const { store, tools } = setup();
   const load = tools.find((t) => t.name === "load_skill");
   assert.ok(load);
-  assert.equal(toolTitle(store, load, { name: "apx-artifacts" }), "Cargó la habilidad apx-artifacts");
-  const ref = { name: "apx-artifacts", file: "references/update.md" };
-  assert.equal(toolTitle(store, load, ref), "Leyó update.md de la habilidad apx-artifacts");
+  assert.equal(toolTitle(store, load, { name: "colonia-artifacts" }), "Cargó la habilidad colonia-artifacts");
+  const ref = { name: "colonia-artifacts", file: "references/update.md" };
+  assert.equal(toolTitle(store, load, ref), "Leyó update.md de la habilidad colonia-artifacts");
   store.settings.set("owner_language", "en");
-  assert.equal(toolTitle(store, load, ref), "Read update.md from the skill apx-artifacts");
+  assert.equal(toolTitle(store, load, ref), "Read update.md from the skill colonia-artifacts");
 });

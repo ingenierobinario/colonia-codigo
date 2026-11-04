@@ -62,28 +62,28 @@ export function VoiceNote({
   };
   const pct = Math.min(100, (t / Math.max(duration, 0.001)) * 100);
   return (
-    <div className={cx("apx-voice", className)}>
-      <div className="apx-voice__head">
+    <div className={cx("colonia-voice", className)}>
+      <div className="colonia-voice__head">
         <Mic size={12} />
         <span>{label}</span>
         <span>· {fmt(duration)}</span>
         {detail && <span>· {detail}</span>}
       </div>
-      <div className="apx-voice__player">
+      <div className="colonia-voice__player">
         <button
           type="button"
-          className="apx-voice__play"
+          className="colonia-voice__play"
           onClick={toggle}
           aria-label={playing ? pauseLabel : playLabel}
           disabled={!src}
         >
           {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
         </button>
-        <div className="apx-voice__track">
-          <div className="apx-voice__fill" style={{ width: `${pct}%` }} />
-          <div className="apx-voice__knob" style={{ left: `${pct}%` }} />
+        <div className="colonia-voice__track">
+          <div className="colonia-voice__fill" style={{ width: `${pct}%` }} />
+          <div className="colonia-voice__knob" style={{ left: `${pct}%` }} />
         </div>
-        <span className="apx-voice__time">
+        <span className="colonia-voice__time">
           {fmt(t)} / {fmt(duration)}
         </span>
       </div>

@@ -4,9 +4,9 @@
   width: 100%;
   max-width: 640px;
   overflow: hidden;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-lg);
-  background: var(--apx-surface);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface);
   box-sizing: border-box;
 }
 .flowcard--gone {
@@ -14,8 +14,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
 }
 .flowcard__head {
   display: flex;
@@ -29,9 +29,9 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  color: var(--apx-fg-muted);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  color: var(--colonia-fg-muted);
 }
 .flowcard__text {
   display: flex;
@@ -46,18 +46,18 @@
   white-space: nowrap;
 }
 .flowcard__name {
-  color: var(--apx-fg);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-sm);
   font-weight: 600;
 }
 .flowcard__project {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
 }
 .flowcard__canvas {
   height: 200px;
-  border-top: 1px solid var(--apx-border);
-  border-bottom: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .flowcard__canvas .fc.is-still .react-flow__pane {
   cursor: default;
@@ -73,8 +73,8 @@
 .flowcard__hint {
   flex: 1;
   min-width: 160px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 @media (max-width: 600px) {
   .flowcard__canvas {
@@ -87,8 +87,8 @@
   align-items: center;
   gap: 6px;
   margin: 0;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
 }
 /* The drawing opens larger: the whole picture is the button, a corner icon says so. */
 .flowcard__canvas {
@@ -107,7 +107,7 @@
   cursor: zoom-in;
 }
 .flowcard__zoom:focus-visible {
-  outline: 2px solid var(--apx-brand);
+  outline: 2px solid var(--colonia-brand);
   outline-offset: -2px;
 }
 .flowcard__zoomhint {
@@ -115,12 +115,12 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
-  color: var(--apx-fg-muted);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
+  color: var(--colonia-fg-muted);
 }
 .flowcard__zoom:hover .flowcard__zoomhint {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }

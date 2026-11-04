@@ -1,4 +1,4 @@
-import { EmptyState, IconButton, Icons, PickRow, ResizeHandle, SegmentedControl, Tag } from "@apx/ui";
+import { EmptyState, IconButton, Icons, PickRow, ResizeHandle, SegmentedControl, Tag } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { shortWhen } from "../../common/format.ts";
 import { inProject, type ProjectEntry } from "../../data/identity.ts";
@@ -12,7 +12,7 @@ import { GitPane } from "./GitPane.tsx";
 type Scope = "folder" | "widgets" | "git";
 
 /**
- * A project's files: its folder (the base project's is APX's work folder, where its chats work) or every widget its
+ * A project's files: its folder (the base project's is Colonia's work folder, where its chats work) or every widget its
  * chats made, so one that was never pinned is not lost.
  */
 export function ProjectFiles({ project }: { project: ProjectEntry }) {
@@ -29,7 +29,7 @@ export function ProjectFiles({ project }: { project: ProjectEntry }) {
           options={[
             { value: "folder", label: t("files.scope.folder") },
             { value: "widgets", label: t("files.scope.widgets") },
-            // The base project's folder is APX's own, never a repository.
+            // The base project's folder is Colonia's own, never a repository.
             ...(project.path ? [{ value: "git", label: t("files.scope.git") }] : []),
           ]}
         />

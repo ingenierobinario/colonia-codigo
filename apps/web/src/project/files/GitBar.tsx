@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, Dialog, Field, IconButton, Icons, Input, Menu, type MenuEntry, Select } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, Dialog, Field, IconButton, Icons, Input, Menu, type MenuEntry, Select } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../../data/client.ts";
 import { notify } from "../../data/notices.ts";

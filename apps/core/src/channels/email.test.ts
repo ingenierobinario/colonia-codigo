@@ -247,7 +247,7 @@ describe("the email channel", () => {
   before(async () => {
     imap = await fakeImap({ user: USER, pass: PASS });
     smtp = await fakeSmtp({ user: USER, pass: PASS });
-    home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-email-"));
+    home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-email-"));
     env = await startCore({
       llm,
       home,

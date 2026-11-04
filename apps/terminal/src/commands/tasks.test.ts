@@ -126,7 +126,7 @@ test("edit calls tasks.update; help prints the usage without calling the core", 
   const { client, calls } = recordingClient({ "tasks.update": { ...task, title: "Quote" } });
   assert.match(await printed(() => tasks(client, ["edit", "tsk_1"], { title: "Quote" })), /tsk_1 {2}saved · Quote/);
   assert.deepEqual(calls, [["tasks.update", { task: "tsk_1", title: "Quote" }]]);
-  assert.match(await printed(() => tasks(client, ["help"], {})), /apx tasks show <id>/);
+  assert.match(await printed(() => tasks(client, ["help"], {})), /colonia tasks show <id>/);
   assert.equal(calls.length, 1);
 });
 
@@ -141,20 +141,20 @@ test("settle sends the outcome, the new date and the note; an unknown outcome pr
     ["tasks.settle", { task: "tsk_1", outcome: "renegotiated", due_at: "2026-10-12", note: "asked for a week" }],
     ["tasks.settle", { task: "tsk_1", outcome: "kept" }],
   ]);
-  await assert.rejects(tasks(client, ["settle", "tsk_1", "later"], {}), /apx tasks settle <id>/);
+  await assert.rejects(tasks(client, ["settle", "tsk_1", "later"], {}), /colonia tasks settle <id>/);
   assert.equal(calls.length, 2);
 });
 
 test("inside an agent's command, closing a task as the owner is refused: the agent closes with task_close", async () => {
   const { client, calls } = recordingClient({});
-  const inherited = process.env.APX_AGENT;
-  process.env.APX_AGENT = "builder";
+  const inherited = process.env.COLONIA_AGENT;
+  process.env.COLONIA_AGENT = "builder";
   try {
     for (const sub of ["done", "drop", "reopen"])
       await assert.rejects(tasks(client, [sub, "tsk_1"], {}), /use task_close/);
   } finally {
-    if (inherited === undefined) delete process.env.APX_AGENT;
-    else process.env.APX_AGENT = inherited;
+    if (inherited === undefined) delete process.env.COLONIA_AGENT;
+    else process.env.COLONIA_AGENT = inherited;
   }
   assert.deepEqual(calls, [], "nothing was closed");
 });

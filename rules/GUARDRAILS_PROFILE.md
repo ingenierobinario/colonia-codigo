@@ -1,4 +1,4 @@
-# Guardrails profile — APX v2
+# Guardrails profile — Colonia v2
 
 Mode: **personal** (owner-operated; stricter anyway around secrets, the embedded browser and anything that sends
 messages or spends money on the owner's behalf).
@@ -10,8 +10,8 @@ messages or spends money on the owner's behalf).
 | Package manager | pnpm 11 workspaces (`apps/*`, `packages/*`), one lockfile |
 | Surfaces | core (daemon), terminal (CLI), web (React 19 + Vite 8), desktop (Electron), mobile (Expo, Android), docs (Astro) |
 | Contract | `packages/protocol` (zod) — HTTP `/rpc/<method>` + WS frames; platforms' webhooks reach a listener of their own outside it (`apps/core/src/transport/hooks.ts`, [D-139](DECISIONS.md#d-139)) |
-| Persistence | SQLite (`node:sqlite`, WAL) in `~/.apx/v2/apx.db`; append-only migrations in `apps/core/src/db/migrations.ts` |
-| Auth | loopback by default; browser origins limited to the panel's own (`transport/guard.ts`); `APX_TOKEN` required off-loopback (HTTP header or WS `?token=`); a paired device (`apx pair`, `devices.*`) carries its own token, which passes like the core's; the restricted public listener (`transport/hooks.ts`) requires a distinct revocable bearer per registered Flow route; only configured LINE/Teams routes delegate authentication to their adapter's native JWT/HMAC over original bytes, and explicitly published read-only widgets/static kit need no bearer. See [Public ingress](PUBLIC_INGRESS.md) |
+| Persistence | SQLite (`node:sqlite`, WAL) in `~/.colonia/v2/colonia.db`; append-only migrations in `apps/core/src/db/migrations.ts` |
+| Auth | loopback by default; browser origins limited to the panel's own (`transport/guard.ts`); `COLONIA_TOKEN` required off-loopback (HTTP header or WS `?token=`); a paired device (`colonia pair`, `devices.*`) carries its own token, which passes like the core's; the restricted public listener (`transport/hooks.ts`) requires a distinct revocable bearer per registered Flow route; only configured LINE/Teams routes delegate authentication to their adapter's native JWT/HMAC over original bytes, and explicitly published read-only widgets/static kit need no bearer. See [Public ingress](PUBLIC_INGRESS.md) |
 | Agentic surfaces | harnesses: our own tool loop over providers (OpenAI-compatible, Anthropic Messages, ChatGPT plan), Claude Code, Codex and ACP agents; browser and computer tools via the desktop node; widgets (sandboxed iframes); delegation between agents (a2a sub-threads) |
 | Tests | `node:test` (packages, `scripts/`, mobile logic), Jest Expo + React Native Testing Library (mounted mobile hooks/screens), Playwright (`e2e/`, web and desktop) |
 | Lint / format | Biome 2 |
@@ -52,4 +52,4 @@ override is closed — see [`DECISIONS.md#d-005`](DECISIONS.md#d-005)).
 - Who counts as the owner on a channel and where an owner card may be answered: `channels/inbound.ts`,
   `engine/owner-relay.ts`, `OWNER_ACTS_ON`, `app_only` inputs ([D-144](DECISIONS.md#d-144)).
 - Harness integrations touching the user's Claude/Codex logins (never read or copy their tokens).
-- Anything that could make v2 read or write v1's home (`~/.apx`).
+- Anything that could make v2 read or write v1's home (`~/.colonia`).

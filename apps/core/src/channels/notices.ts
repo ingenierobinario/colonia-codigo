@@ -1,5 +1,5 @@
 // How a confirmation or question is shown on a channel.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { Presentation } from "../domain/channels.ts";
 import type { ChannelConfig } from "./types.ts";
 

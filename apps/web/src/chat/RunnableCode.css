@@ -8,11 +8,11 @@
 .runcode__card,
 .runcode__out {
   position: relative;
-  border: 1px solid var(--apx-border-strong);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-bg);
+  border: 1px solid var(--colonia-border-strong);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-bg);
 }
-.apx-md .runcode__card pre {
+.colonia-md .runcode__card pre {
   margin: 0;
   padding: 10px 64px 10px 12px;
   background: transparent;
@@ -26,14 +26,14 @@
   display: flex;
   gap: 2px;
 }
-.apx-md .runcode__screen {
+.colonia-md .runcode__screen {
   margin: 0;
   max-height: 220px;
   overflow: auto;
   padding: 8px 12px 4px;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
   white-space: pre-wrap;
   word-break: break-word;
   background: transparent;
@@ -46,17 +46,17 @@
   padding: 0 5px 4px 12px;
 }
 .runcode__status {
-  font-family: var(--apx-meta-font);
-  font-size: var(--apx-text-2xs);
-  color: var(--apx-fg-subtle);
+  font-family: var(--colonia-meta-font);
+  font-size: var(--colonia-text-2xs);
+  color: var(--colonia-fg-subtle);
 }
 .runcode__status.is-running {
-  color: var(--apx-brand);
+  color: var(--colonia-brand);
 }
 .runcode__status.is-failed {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .runcode__shell.is-asking {
-  color: var(--apx-brand);
-  background: var(--apx-fill);
+  color: var(--colonia-brand);
+  background: var(--colonia-fill);
 }

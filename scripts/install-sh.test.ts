@@ -8,30 +8,30 @@ import { coreBundleName, platformOf } from "../packages/protocol/src/releases.ts
 
 const script = path.resolve(import.meta.dirname, "install/install.sh");
 
-/** A bundle with only what install.sh checks: apx/node/bin/node, executable. */
+/** A bundle with only what install.sh checks: colonia/node/bin/node, executable. */
 function bundle(dir: string, version: string): string {
   const platform = platformOf(process.platform, process.arch);
   assert.ok(platform);
   const src = path.join(dir, `src-${version}`);
-  fs.mkdirSync(path.join(src, "apx", "node", "bin"), { recursive: true });
-  fs.writeFileSync(path.join(src, "apx", "node", "bin", "node"), `#!/bin/sh\necho ${version}\n`, { mode: 0o755 });
+  fs.mkdirSync(path.join(src, "colonia", "node", "bin"), { recursive: true });
+  fs.writeFileSync(path.join(src, "colonia", "node", "bin", "node"), `#!/bin/sh\necho ${version}\n`, { mode: 0o755 });
   const name = coreBundleName(version, platform);
-  execFileSync("tar", ["-czf", name, "apx"], { cwd: src });
+  execFileSync("tar", ["-czf", name, "colonia"], { cwd: src });
   return path.join(src, name);
 }
 
-test("installing over an existing APX makes the new version current", async () => {
+test("installing over an existing Colonia makes the new version current", async () => {
   // install.sh is the Linux and macOS installer; Windows runs install.ps1, which swaps a junction instead.
   if (process.platform === "win32") return;
-  await using dir = tempDir("apx-install-sh-");
+  await using dir = tempDir("colonia-install-sh-");
   const home = path.join(dir.path, "home");
   const app = path.join(dir.path, "app");
-  // Stand-ins for what the APX v1 cleanup calls, so the test never stops or removes anything on this machine.
+  // Stand-ins for what the Colonia v1 cleanup calls, so the test never stops or removes anything on this machine.
   const bin = path.join(dir.path, "bin");
   fs.mkdirSync(bin);
   for (const tool of ["pkill", "launchctl", "systemctl", "npm", "loginctl"])
     fs.writeFileSync(path.join(bin, tool), "#!/bin/sh\nexit 1\n", { mode: 0o755 });
-  const env = { HOME: home, APX_APP: app, PATH: `${bin}:/usr/bin:/bin` };
+  const env = { HOME: home, COLONIA_APP: app, PATH: `${bin}:/usr/bin:/bin` };
   const install = (version: string) =>
     execFileSync("bash", [script, "--file", bundle(dir.path, version), "--no-service"], { env, stdio: "pipe" });
 

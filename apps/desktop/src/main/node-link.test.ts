@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { test } from "node:test";
-import type { RequestHandler } from "@apx/protocol/client";
+import type { RequestHandler } from "@colonia/protocol/client";
 import { startNodeLink } from "./node-link.ts";
 
 class Host extends EventEmitter<{ changed: [] }> {

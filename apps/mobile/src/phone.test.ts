@@ -26,7 +26,7 @@ test("the phone node releases late connections and cancels scheduled reconnects 
   let allowed = true;
   const locationCalls: unknown[] = [];
   const api = {
-    ApxClient: class {
+    ColoniaClient: class {
       async connect(...args: unknown[]) {
         calls.push(args);
         const pending = Promise.withResolvers<ReturnType<typeof socket>>();
@@ -45,21 +45,21 @@ test("the phone node releases late connections and cancels scheduled reconnects 
       },
     },
   };
-  const key = Symbol.for("apx.phone-test");
+  const key = Symbol.for("colonia.phone-test");
   Reflect.set(globalThis, key, api);
   const hooks = registerHooks({
     resolve(specifier, context, next) {
-      if (specifier === "expo-location") return { url: "apx-phone-test:location", shortCircuit: true };
+      if (specifier === "expo-location") return { url: "colonia-phone-test:location", shortCircuit: true };
       if (specifier === "./protocol" && context.parentURL?.endsWith("/phone.ts"))
-        return { url: "apx-phone-test:protocol", shortCircuit: true };
+        return { url: "colonia-phone-test:protocol", shortCircuit: true };
       if (specifier === "./phoneRequests") return next(`${specifier}.ts`, context);
       return next(specifier, context);
     },
     load(url, context, next) {
-      const base = 'const api = globalThis[Symbol.for("apx.phone-test")];';
-      if (url === "apx-phone-test:protocol")
-        return { shortCircuit: true, format: "module", source: `${base} export const ApxClient = api.ApxClient;` };
-      if (url === "apx-phone-test:location")
+      const base = 'const api = globalThis[Symbol.for("colonia.phone-test")];';
+      if (url === "colonia-phone-test:protocol")
+        return { shortCircuit: true, format: "module", source: `${base} export const ColoniaClient = api.ColoniaClient;` };
+      if (url === "colonia-phone-test:location")
         return {
           shortCircuit: true,
           format: "module",

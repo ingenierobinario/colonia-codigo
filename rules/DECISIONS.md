@@ -6,7 +6,7 @@ Durable architectural choices. Code points here with `See DECISIONS.md#d-NNN`. P
 <a id="d-001"></a>
 ## D-001 — 2026-09-30 — TypeScript everywhere, run natively on Node 24
 Core, terminal and protocol are `.ts` executed by Node's type stripping: no build step, no `tsx`. Consequence:
-erasable syntax only. Rust/Go were rejected for the core: APX is I/O-bound and every agent SDK that matters is
+erasable syntax only. Rust/Go were rejected for the core: Colonia is I/O-bound and every agent SDK that matters is
 TS/Python first. Speed comes from native tooling (TS 7, Biome, Vite 8).
 
 <a id="d-002"></a>
@@ -38,9 +38,9 @@ Fewer dependencies and one fast binary. Vitest may be added for `apps/web` compo
 <a id="d-007"></a>
 ## D-007 — 2026-10-01 — Claude and Codex run as harnesses with the user's own login
 An agent's turn can run inside the user's installed `claude` (Claude Agent SDK, `pathToClaudeCodeExecutable`) or
-`codex` (Codex SDK). APX never implements their OAuth nor reads, copies or refreshes their tokens: each CLI uses
-its own login on the user's machine. APX keeps identity, system prompt and tools: Claude gets APX tools as an
-in-process MCP server; Codex gets them through `apx2 mcp --run <token>`, a stdio proxy bound to one run by a random
+`codex` (Codex SDK). Colonia never implements their OAuth nor reads, copies or refreshes their tokens: each CLI uses
+its own login on the user's machine. Colonia keeps identity, system prompt and tools: Claude gets Colonia tools as an
+in-process MCP server; Codex gets them through `colonia2 mcp --run <token>`, a stdio proxy bound to one run by a random
 token that dies with the run. Claude runs isolated (`settingSources: []`, only WebSearch/WebFetch built-ins,
 `permissionMode: "dontAsk"`); Codex runs read-only with no approvals. Each thread keeps the harness session id so
 the conversation resumes. If a harness fails before any tool ran (quota, logged out), the turn falls back to the
@@ -67,12 +67,12 @@ runs run, and a finished delegation wakes its caller even when the caller's turn
 
 <a id="d-010"></a>
 ## D-010 — 2026-10-01 — Secrets in the macOS Keychain; agent harnesses get a clean environment
-A Codex harness in its read-only sandbox can read any file of the owner, including `~/.apx2`, but not the login
-Keychain (checked with `codex sandbox`). So on macOS secret values live in the Keychain (service `apx2` for the
-default home and `apx2:<home path>` for any other, so a second home never overwrites the first's values; written
-through `security -i` on stdin so no value reaches argv); `~/.apx2/secrets.index.json` keeps only names and dates.
-Other platforms and tests use `~/.apx2/secrets.json` (0600). Harness processes (Claude Code, Codex) get the
-environment without `APX_*` variables, and the per-run tool token travels in `APX_RUN_TOKEN`, never on argv.
+A Codex harness in its read-only sandbox can read any file of the owner, including `~/.colonia2`, but not the login
+Keychain (checked with `codex sandbox`). So on macOS secret values live in the Keychain (service `colonia2` for the
+default home and `colonia2:<home path>` for any other, so a second home never overwrites the first's values; written
+through `security -i` on stdin so no value reaches argv); `~/.colonia2/secrets.index.json` keeps only names and dates.
+Other platforms and tests use `~/.colonia2/secrets.json` (0600). Harness processes (Claude Code, Codex) get the
+environment without `COLONIA_*` variables, and the per-run tool token travels in `COLONIA_RUN_TOKEN`, never on argv.
 Residual risk, accepted for now: a harness with web tools can still be talked into sending what it reads in a
 page or a tool result; high-impact confirmation (rule 10) is the next layer.
 
@@ -85,7 +85,7 @@ alone — and agents without one use the install default. The router (settings) 
 image, size, context, channel, trigger, agent kind, keywords) and a fallback chain; a turn walks the resulting list
 and moves to the next engine only if one fails before running a tool. The model lists come from the engines
 themselves (`/models`, the Agent SDK's `supportedModels()`, `codex debug models`) and are cached a day. Code holds
-no model names: defaults, chains and rules are data an owner sets from the app or `apx2 models`.
+no model names: defaults, chains and rules are data an owner sets from the app or `colonia2 models`.
 
 <a id="d-012"></a>
 ## D-012 — 2026-10-01 — One tool registry, one policy, one way to wait for the owner
@@ -122,7 +122,7 @@ A channel adapter (Telegram first) only translates platform messages in and pres
 every inbound message before the platform is told it arrived (`channel_inbox`, deduplicated by the platform's id),
 resolves the sender by an exact address match (`persons` + `addresses`; never by a name) and then: the owner's words
 go through `threads.send` with a server-side channel context (to the Home chat by default, one conversation
-everywhere); a contact's go to a thread of that conversation with a sealed agent (no tools of APX or of the engine,
+everywhere); a contact's go to a thread of that conversation with a sealed agent (no tools of Colonia or of the engine,
 no memory, no projects, only that chat, input marked untrusted, reply filtered for paths and keys); a stranger gets a
 pairing code the owner approves (as themselves, as a contact, or not at all), which replaces v1's
 first-writer-is-owner. Everything a channel sends goes through a durable outbox (`queued → sending → sent`, retried
@@ -150,9 +150,9 @@ routine twice, and a time missed while the core was off runs once. Schedules are
 fields, local time) plus "every N minutes" (5 at least), "once" and "by hand"; no cron dependency for ~100 lines.
 The prompt is the owner's own words (trusted); the agent answers `SKIP` when there is nothing to say, and only other
 answers reach the owner. Routines are owner-only methods for now: an agent creating standing work for itself is a
-persistent rule and needs its own confirmation design. Known limit: on loopback without `APX_TOKEN`, "owner-only"
-rests on the client declaring itself (`x-apx-actor`); a shell command an agent runs could call the API as the owner,
-which is why the shell tool asks before any command that reaches APX's port. Per-client tokens (mobile stage) close it.
+persistent rule and needs its own confirmation design. Known limit: on loopback without `COLONIA_TOKEN`, "owner-only"
+rests on the client declaring itself (`x-colonia-actor`); a shell command an agent runs could call the API as the owner,
+which is why the shell tool asks before any command that reaches Colonia's port. Per-client tokens (mobile stage) close it.
 
 ## D-017 — 2026-10-01 — Commitments are tasks with a person; one tray for what wants the owner
 A commitment (what the owner promised someone, or what someone owes the owner) is a task with `person_id` and
@@ -162,20 +162,20 @@ scheduler's tick. Everything that wants the owner lands in one `notifications` t
 the same thing replaces the unread one and leaves by itself once answered, done or moved; channels only mirror it.
 
 ## D-018 — 2026-10-01 — Extensions: a declarative bundle first; code only out of process
-An extension is a folder with `apx-extension.json` that brings skills, MCP servers, routine templates and the secrets
+An extension is a folder with `colonia-extension.json` that brings skills, MCP servers, routine templates and the secrets
 it needs; the manifest is validated without running anything. Installing copies the folder into the home (plain files
 only) and fingerprints it, off; turning it on approves exactly those files, and a copy that changed on disk is turned
 off at start. Its MCP servers are the owner's (no extra approval) but can only name the extension's own secrets
 (`ext-<id>-<name>`), never `env:` or another secret, so a bundle cannot carry the owner's credentials elsewhere. Code
-that must run as part of APX (hooks) runs in a separate process with Node's permission model (stage 8b), never inside
+that must run as part of Colonia (hooks) runs in a separate process with Node's permission model (stage 8b), never inside
 the core. A plugin process reads only its folder,
 writes only its data folder and starts no processes (Node's permission model); Node does not restrict the network, so
 the runner also refuses raw socket modules and makes `fetch` refuse this machine and metadata addresses — a best-effort
-guard so a plugin cannot call APX's loopback API as the owner. Plugins watch declared events and may add context to
-owner turns (outside data, capped, 2.5 s); they never call APX.
+guard so a plugin cannot call Colonia's loopback API as the owner. Plugins watch declared events and may add context to
+owner turns (outside data, capped, 2.5 s); they never call Colonia.
 
 ## D-019 — 2026-10-01 — Outside apps get a scoped client token and always act as a model
-An app such as Claude Code connects with its own token (`x-apx-client`, apart from `APX_TOKEN`'s Authorization
+An app such as Claude Code connects with its own token (`x-colonia-client`, apart from `COLONIA_TOKEN`'s Authorization
 header): the core keeps only its sha256, the token makes the caller an agent-actor whatever it declares, and the router
 lets it call only its scopes' methods (`SCOPE_METHODS`). With `chat` it starts plain chats that only it can read or
 write, and its text reaches the agent as another app's message (untrusted). This limits what a model-driven app may do
@@ -194,9 +194,9 @@ sheets and the build inlines them in that order into the single `dist/styles.css
 <a id="d-021"></a>
 ## D-021 — 2026-10-02 — Agent templates are plain APC folders; installing copies the file
 A template folder holds `<slug>.md` agent files in the `.apc/agents/` format; a sub-folder with `TEAM.md` is a team
-whose members report to each other through `parent:`. APX ships its own under `examples/agents/` and also reads the
+whose members report to each other through `parent:`. Colonia ships its own under `examples/agents/` and also reads the
 owner's v1 vault (`<v1 home>/agents`), never writing there and never following symlinks. Installing writes the
-template's text as is into the project (only `parent` changes), so fields APX does not model yet (`area`, `tools`,
+template's text as is into the project (only `parent` changes), so fields Colonia does not model yet (`area`, `tools`,
 `skills`) survive; a slug the project already has is skipped, never overwritten. `hang_under` keeps one tree when a
 team with its own lead lands in a project that already has an orchestrator. The Team view draws the tree itself (SVG
 curves, HTML cards, no graph library): the owner chose no new dependency, so the parent is changed from the agent's
@@ -218,24 +218,24 @@ contact's chat are an instruction to the agent (`<owner_instruction>`), answered
 ## D-023 — 2026-10-02 — An engine session is the engine itself, with the owner's own Claude Code settings
 External sessions (Sessions › Claude Code, Codex, an ACP agent) were an agent (the super-agent) running on that
 engine, so the owner talked to Roby, not to the engine. A thread can now be an engine session (`Thread.engine`): a
-code thread in a project's folder where the engine keeps its own prompt (Claude Code's preset with a one-line APX
+code thread in a project's folder where the engine keeps its own prompt (Claude Code's preset with a one-line Colonia
 note appended; Codex and ACP agents get no instructions), with none of an agent's notes, roster, skills or framing;
 the super-agent only owns the run. Unlike an agent (isolated: no CLAUDE.md, hooks or plugins), an engine session
 loads the owner's own Claude Code settings (`user`, `project`, `local`) as the CLI would, because it is the owner's
-own tool; MCP stays limited to APX's server and the engine's own edits and commands still go through APX's policy.
+own tool; MCP stays limited to Colonia's server and the engine's own edits and commands still go through Colonia's policy.
 The owner's sessions in `~/.claude` and `~/.codex` (paths injected: `CLAUDE_CONFIG_DIR`, `CODEX_HOME`) are listed
-read-only and gone on with as an engine session that resumes the engine's own session id; APX's own runs (framed
+read-only and gone on with as an engine session that resumes the engine's own session id; Colonia's own runs (framed
 turns, `codex_sdk_ts`, sub-agents) are left out.
 
 <a id="d-024"></a>
-## D-024 — 2026-10-02 — v2 lives in ~/.apx/v2, beside v1's files
-v2 will be "APX" in the same folder v1 uses, so its state moved from `~/.apx2` to `~/.apx/v2`: one product folder,
+## D-024 — 2026-10-02 — v2 lives in ~/.colonia/v2, beside v1's files
+v2 will be "Colonia" in the same folder v1 uses, so its state moved from `~/.colonia2` to `~/.colonia/v2`: one product folder,
 and v1's files around it (`config.json`, `messages.db`, `skills/`…) are never written by v2 while v1 is in use. The
 move happens once when the core starts, before the store opens, and only when the new folder does not exist and the
-owner did not set `APX_HOME` (a rename on the same disk: all or nothing). This is a one-off move of where state
+owner did not set `COLONIA_HOME` (a rename on the same disk: all or nothing). This is a one-off move of where state
 lives, not a compatibility shim, and there is no `doctor` yet to host it. The default home keeps the Keychain service
-`apx2`, so its secrets are still found. The command stays `apx2` until the owner finishes the setup wizard; then v2
-takes `apx` and v1 leaves the PATH.
+`colonia2`, so its secrets are still found. The command stays `colonia2` until the owner finishes the setup wizard; then v2
+takes `colonia` and v1 leaves the PATH.
 
 <a id="d-025"></a>
 ## D-025 — 2026-10-03 — WhatsApp is the owner's own account, linked as a device; strangers are only listed
@@ -253,14 +253,14 @@ deleted when the channel is removed. The library loads with the first WhatsApp c
 install scripts are not run. Amended by [D-027](#d-027): the owner's own number is now a choice, not the default.
 
 <a id="d-026"></a>
-## D-026 — 2026-10-03 — Updates follow main of the checkout APX runs from
-APX runs from its source checkout today (no packaged build, no release feed yet), so "a newer APX" means commits on
-`main` this checkout does not have. The core asks git every 6 hours (first a minute after it starts; `APX_UPDATES=off`
+## D-026 — 2026-10-03 — Updates follow main of the checkout Colonia runs from
+Colonia runs from its source checkout today (no packaged build, no release feed yet), so "a newer Colonia" means commits on
+`main` this checkout does not have. The core asks git every 6 hours (first a minute after it starts; `COLONIA_UPDATES=off`
 stops it) and keeps the answer in memory; the panel shows a pill only while there is one, with the commit subjects
 as "what's new". Updating is the owner's click: `git pull --ff-only` (never a merge or a reset of the owner's work),
 `pnpm install --frozen-lockfile`, `pnpm build:web`; any failure stops before the next step and what runs now is
 untouched. A supervisor restarts the core with the new code when it exits with code 75 (`pnpm app` does; it sets
-`APX_SUPERVISED=1`); without one the owner is asked to restart. The panel knows its own build by its entry file and
+`COLONIA_SUPERVISED=1`); without one the owner is asked to restart. The panel knows its own build by its entry file and
 reloads when the core serves another one. When packaged releases exist this becomes a signed feed plus
 electron-updater (plan §12), behind the same two methods.
 
@@ -305,14 +305,14 @@ only after it is stored; Discord does not redeliver a message sent while the soc
 ## D-030 — 2026-10-03 — Devices pair with a one-time code and keep a key of their own
 A phone (or another computer) reaches the core through the same protocol as the panel. It does not get the core's
 token: the panel asks for a one-time code (8 characters without look-alikes, 10 minutes, kept in memory), shown as a
-QR with the addresses the core listens on (`apx://pair?c=…&u=…`); the device trades it in `devices.pair`, the one
-method callable without a token (`open` in the registry), for a key of its own (`apxd_…`, only its sha256 stored).
+QR with the addresses the core listens on (`colonia://pair?c=…&u=…`); the device trades it in `devices.pair`, the one
+method callable without a token (`open` in the registry), for a key of its own (`coloniad_…`, only its sha256 stored).
 That key passes the gate like the core's token, as the owner, and is revoked alone. Five wrong codes void every
 pending one and pause pairing for five minutes. A core listening only on loopback lists no address: the panel says to
-start it with `APX_HOST` and `APX_TOKEN` (or reach it through Tailscale) first.
+start it with `COLONIA_HOST` and `COLONIA_TOKEN` (or reach it through Tailscale) first.
 
 <a id="d-031"></a>
-## D-031 — 2026-10-03 — One interruption budget for everything APX says unasked
+## D-031 — 2026-10-03 — One interruption budget for everything Colonia says unasked
 Messages the owner did not ask for (routine news, the reminders they set, later agents' notices) go through one gate,
 `engine/nudges.ts`, with its ledger in SQLite (`nudges`), as v1's `canNudge` did: a daily cap (3 by default, 0 = none),
 a gap per project (180 min) and per kind (120 min), and quiet hours that now **hold** a message instead of only
@@ -335,7 +335,7 @@ the phone never sees them. A picture is always taken by the owner on the phone (
 reading the location asks for the owner's OK only while outside content is in the turn. Push goes to a device chosen
 as where notices go (`notices.channel = "device:<id>"`), after the interruption budget (D-031): Expo push with the
 token the app registers itself, or a UnifiedPush / ntfy address the owner pastes. A device sets only its own push; the
-token never comes back to any client. `APX_PUBLIC_URL` puts a VPS or Tailscale address first in the pairing QR.
+token never comes back to any client. `COLONIA_PUBLIC_URL` puts a VPS or Tailscale address first in the pairing QR.
 
 <a id="d-033"></a>
 ## D-033 — 2026-10-04 — The secretary profile is settings plus three seeded routines, no package system
@@ -364,7 +364,7 @@ No learned model, no per-signal scoring: two counts and a rule the owner can rea
 `agent:<id>` (so the owner's 👍/👎, D-034, tune it per agent) and adds a tray entry either way. It is refused in a
 routine's thread (its answer is already delivered) and between agents (the answer goes back to the asker), and it is
 not among a contact's tools. It asks the owner's OK while outside content is in the turn: an injected page must not
-write to the owner in APX's voice. The tool reports what the gate did, so a dropped message is not retried.
+write to the owner in Colonia's voice. The tool reports what the gate did, so a dropped message is not retried.
 
 Changed 2026-10-28: `message_contact` with `to="me"` was a second way to the owner's phone with no cap, quiet hours or
 👎. An agent's message to the owner in a run the owner did not ask for (`ownerAsked`) now goes through the same budget
@@ -383,10 +383,10 @@ commitment is raised is the secretary profile's `commitment_lead_hours` (D-033).
 <a id="d-037"></a>
 ## D-037 — 2026-10-04 — Profiles are data: the secretary is one of several, and more install from a folder
 The owner wants to choose what the super-agent is for, and later get more from a store. D-033's secretary was fixed in
-code, so a profile is now an `apx-profile.json`: an English block for the super-agent's system prompt (`{{key}}` takes
+code, so a profile is now an `colonia-profile.json`: an English block for the super-agent's system prompt (`{{key}}` takes
 a setting; a choice's option brings its own line), settings fields (schedule, number, text, command, choice) with
 labels per language, and routine templates (`{{day_open}}` crons, every `{{watch_every_h}}` hours, `v1` names to
-adopt). APX ships `examples/profiles/` (secretary, focus); the owner's install into `<home>/profiles/` and win an id.
+adopt). Colonia ships `examples/profiles/` (secretary, focus); the owner's install into `<home>/profiles/` and win an id.
 One runs at a time (`profile` setting: id + values); switching turns the previous one's routines off and keeps them
 (prompts the owner wrote stay, Restore puts the shipped one back). D-033's objection still holds: no fingerprint, no
 re-adoption, no drift warnings. The watch's thresholds read `waiting_hours`, `commitment_lead_hours` and
@@ -410,7 +410,7 @@ prompt), the profile it ran with its values, and its nudge budget and quiet hour
 <a id="d-039"></a>
 ## D-039 — 2026-10-04 — v1's chats come in as threads with their own dates; Default's agents become global
 The owner moves to v2 by importing, so the import brings what v1 kept, not only its settings. v1's super-agent chats
-(`~/.apx/messages/<channel>/<day>.jsonl`) become one thread per channel (per chat on Telegram; web and v1's sidebar
+(`~/.colonia/messages/<channel>/<day>.jsonl`) become one thread per channel (per chat on Telegram; web and v1's sidebar
 are one), so the owner finds "Telegram" rather than a hundred days of it, and the model log gets only the newest
 stretch (about 200k characters), which the upkeep summarizes on the thread's next turn; a WhatsApp
 contact's rows, one thread with that contact; project agents' web and agent-to-agent conversations
@@ -451,44 +451,44 @@ criterion and limits; direct messages from strangers wait for the owner (v1 neve
 room summaries and similarity recall over older room messages, and a bot-role mention counting as a call.
 
 <a id="d-042"></a>
-## D-042 — 2026-10-05 — The ChatGPT plan as a model in APX's own loop; Claude and Codex harnesses keep to APX's tools
+## D-042 — 2026-10-05 — The ChatGPT plan as a model in Colonia's own loop; Claude and Codex harnesses keep to Colonia's tools
 Amends D-007. Running Codex as a harness meant an agent's turn ran the owner's whole Codex app: its own shell, search,
-browser and sub-agents, and the owner's own MCP servers and plugins, outside APX's policy. As v1 did, the plan is now
+browser and sub-agents, and the owner's own MCP servers and plugins, outside Colonia's policy. As v1 did, the plan is now
 also a provider (`chatgpt`, transport `chatgpt-responses`: the Responses API the plan serves at
 chatgpt.com/backend-api/codex, streamed, `store: false`, encrypted reasoning replayed to the same model) so the router
-can put `chatgpt/<model>` in its chain and the turn is APX's loop with the plan's model. Its sign-in is APX's own
+can put `chatgpt/<model>` in its chain and the turn is Colonia's loop with the plan's model. Its sign-in is Colonia's own
 (the device code Codex uses), kept in the secret store and refreshed by the core; Codex CLI's tokens are never read,
-so the two never share a refresh family. v1's APX-owned sign-in is taken over once (read only). The Codex harness
+so the two never share a refresh family. v1's Colonia-owned sign-in is taken over once (read only). The Codex harness
 stays for code threads and the owner's own Codex sessions; outside them it now runs with the owner's servers,
 plugins, AGENTS.md and Codex's own tools off. Claude stays a harness only: Anthropic limits the subscription's
-sign-in to Claude Code; outside code threads it sees APX's tools only.
+sign-in to Claude Code; outside code threads it sees Colonia's tools only.
 
 <a id="d-043"></a>
 ## D-043 — 2026-10-05 — Agents and the router run on model APIs; CLIs run only in their own sessions
 Amends D-007 and D-042. An agent on Claude Code, Codex or an ACP agent ran that CLI's whole turn, so a chat with an
-agent behaved like the CLI and not like APX. Agents, the router (rules and chain) and the install default now take
-model APIs only: the providers APX's own loop calls, including the ChatGPT plan (`chatgpt`, shown as Codex) signed in
-from APX. Claude Code, Codex and ACP agents run only in their own sessions (`Thread.engine`, D-023), where the owner
+agent behaved like the CLI and not like Colonia. Agents, the router (rules and chain) and the install default now take
+model APIs only: the providers Colonia's own loop calls, including the ChatGPT plan (`chatgpt`, shown as Codex) signed in
+from Colonia. Claude Code, Codex and ACP agents run only in their own sessions (`Thread.engine`, D-023), where the owner
 talks to the CLI itself; `models.set_config`, `agents.update` and `threads.model` outside a session refuse a CLI ref,
-and a choice an older APX saved is skipped when read (the router drops it, the default falls back to the router).
-The Claude plan has no counterpart in APX's loop: Anthropic limits the subscription's sign-in to Claude Code, so it
+and a choice an older Colonia saved is skipped when read (the router drops it, the default falls back to the router).
+The Claude plan has no counterpart in Colonia's loop: Anthropic limits the subscription's sign-in to Claude Code, so it
 stays an external session and agents use an Anthropic key. The plan's model list is asked to the plan
 (`<base>/models`, as Codex does), never read from a CLI's cache. Settings shows the plans and model APIs under
 Engines and models, and the CLIs under External sessions.
 So the harnesses keep only their session mode: Claude Code always loads its own prompt and the owner's settings,
-Codex its own config, and no agent framing (`<apx_instructions>`), Codex lockdown or agent-only tool cut is left. A
+Codex its own config, and no agent framing (`<colonia_instructions>`), Codex lockdown or agent-only tool cut is left. A
 session runs its CLI and nothing else (`threads.model` refuses another engine there), so the engine-to-engine
 fallback and the recap of turns another engine answered are gone: a CLI that fails fails the turn.
 
 <a id="d-044"></a>
-## D-044 — 2026-10-05 — One `apx`; installed APX updates from a public release feed
-v2 replaces v1: the command is `apx` (no `apx2`), and installing v2 stops v1's daemon and removes v1's npm package while
-v1's files in `~/.apx` stay to import. Every release carries, per platform, the desktop installer and a daemon bundle
-(`apx-core-<v>-<os>-<arch>.tar.gz`: core, terminal, panel, `node_modules` and the Node that runs them), each with a
-`.sha256`, plus `install.sh` / `install.ps1`. A server installs the bundle with the script into `APX_APP`
-(`~/.apx/v2/app`: `versions/<v>/` and a `current` link the service runs through) without root and without a system
-Node. Installed APX learns of a newer one from the GitHub Releases of a public repo (`RELEASE_FEED`,
-`agentprojectcontext/apx`; `APX_RELEASES` overrides, `off` stops it) — the code repo stays private, only builds are
+## D-044 — 2026-10-05 — One `colonia`; installed Colonia updates from a public release feed
+v2 replaces v1: the command is `colonia` (no `colonia2`), and installing v2 stops v1's daemon and removes v1's npm package while
+v1's files in `~/.colonia` stay to import. Every release carries, per platform, the desktop installer and a daemon bundle
+(`colonia-core-<v>-<os>-<arch>.tar.gz`: core, terminal, panel, `node_modules` and the Node that runs them), each with a
+`.sha256`, plus `install.sh` / `install.ps1`. A server installs the bundle with the script into `COLONIA_APP`
+(`~/.colonia/v2/app`: `versions/<v>/` and a `current` link the service runs through) without root and without a system
+Node. Installed Colonia learns of a newer one from the GitHub Releases of a public repo (`RELEASE_FEED`,
+`ingenierobinario/colonia`; `COLONIA_RELEASES` overrides, `off` stops it) — the code repo stays private, only builds are
 published there. A bundle install downloads, checks and unpacks the newer bundle beside the running one, moves
 `current` and restarts (`system.update`), so a desktop connected to a server updates the server. The desktop app
 updates itself (it carries its own core): the AppImage replaces its file, the Windows installer runs, macOS opens the
@@ -510,7 +510,7 @@ not ours to run later.
 ## D-046 — 2026-10-07 — A shell block an agent wrote runs from the chat, and its end wakes that agent
 A fenced `bash`/`sh`/`zsh` block in an agent's message gets a run button in any chat; agents are told in their prompt
 to write a command the owner must run (sudo, a password) that way. It opens a terminal of its own in the side panel,
-in the chat's folder or else APX's work folder (where the agent's own commands run there), (`terminal.open` with `command` and the `message` it came from) that runs only
+in the chat's folder or else Colonia's work folder (where the agent's own commands run there), (`terminal.open` with `command` and the `message` it came from) that runs only
 that command on a real tty, so the owner can type what it asks (a `sudo` password, which is not echoed). When it ends,
 the agent that wrote the block gets a turn with the exit code and the end of what it printed, framed as untrusted
 output like a background job's; pressing run is the owner's own action, so it does not count as an agent acting
@@ -521,7 +521,7 @@ cannot press run for itself.
 ## D-047 — 2026-10-07 — Total autonomy asks for nothing; low-impact tools stop asking in standard (amended by D-140)
 D-012 kept `always` confirmations even under total autonomy, so an agent the owner set to run on its own still stopped
 for them. Total is the owner's explicit choice: now nothing waits for them there, `always` included (destructive
-shell commands, commands that reach APX's own API, iMessage, answering a contact, using the owner's browser login).
+shell commands, commands that reach Colonia's own API, iMessage, answering a contact, using the owner's browser login).
 The embedded browser still never types passwords or payment data: that is a handoff, not a confirmation. In standard
 autonomy, tools that only keep something of the agent's own or reach only the owner no longer ask while outside
 content is in the turn: `remember` (a note saved then stays tainted and reads as outside content wherever it shows),
@@ -544,9 +544,9 @@ began (`task_work_since`), so the board already assigned before it does not star
 <a id="d-049"></a>
 ## D-049 — 2026-10-07 — Channels, contacts and rooms: three words, a tool for each
 Asked to read a Discord room, an agent went to the browser: nothing said the room existed, and the only send tool
-reached people. The words are now fixed. A **channel** is an app APX talks through (WhatsApp, Telegram, Discord,
+reached people. The words are now fixed. A **channel** is an app Colonia talks through (WhatsApp, Telegram, Discord,
 Slack, iMessage). On a channel, a **contact** is a person (their direct chat) and a **room** is a shared place many
-people read (a Discord or Slack channel; a WhatsApp or Telegram group would be one too). "Thread" stays APX's own word
+people read (a Discord or Slack channel; a WhatsApp or Telegram group would be one too). "Thread" stays Colonia's own word
 for any conversation: every contact chat and every room is kept in one. The agent is not told this in each turn: one
 line of the system prompt names the words, and it looks when it needs to. `channel_list` (over `channels.overview`,
 open to agents, no tokens, accounts or QR) shows each channel's state and rooms; `contact_list` shows people;
@@ -556,9 +556,9 @@ near name only gets a suggestion, since a public post cannot be taken back. Read
 <a id="d-050"></a>
 ## D-050 — 2026-10-07 — Each chat keeps its temporary files in a temp folder of its own
 An agent in a project chat had only the project's folder: downloads, scripts it tried and the owner's uploaded
-attachments (`.apx-attachments/`) landed in the repository. Each chat now has a temp folder (`scratchDir`), shared with
-the sub-chats it delegates to, in the system's temp folder under `apx-scratch-<hash of APX's home>`: outside the project
-and outside APX's home, so shell's refusal of commands that name APX's home still holds. The file tools, `send_file`,
+attachments (`.colonia-attachments/`) landed in the repository. Each chat now has a temp folder (`scratchDir`), shared with
+the sub-chats it delegates to, in the system's temp folder under `colonia-scratch-<hash of Colonia's home>`: outside the project
+and outside Colonia's home, so shell's refusal of commands that name Colonia's home still holds. The file tools, `send_file`,
 `open_document` and shell's `cwd` take absolute paths there; another chat's folder is refused. Writing there never
 waits for the owner, outside content or not: it changes nothing of theirs, and running what was written stays under
 shell's own rule. Those files are not the owner's changes, so they get no changes card. The owner's attachments are
@@ -571,13 +571,13 @@ Outside engines' sessions (D-023) are unchanged: their own prompt does not name 
 Revises [D-028](#d-028). A match by meaning no longer puts a skill's body in the turn: a skill well above its own
 floor still had a raw similarity under 0.4 and loaded on messages about something else, costing context and steering
 the answer. Every match is now named with its description and the agent judges it and calls `load_skill`. The bars are raw
-similarity, set on the owner's chats with a small local engine: skills about APX itself reached 0.52 on messages about
+similarity, set on the owner's chats with a small local engine: skills about Colonia itself reached 0.52 on messages about
 something else, real matches 0.49 to 0.73. So a skill is named from 0.50 (and still 2.2 over its floor), listed first as
 "most likely" and blue in the chat from 0.65; up to three in all. The chat shows near misses from 0.30. Only a skill
 the owner names with `/name` goes in whole.
 
 <a id="d-052"></a>
-## D-052 — 2026-10-07 — A restart of APX picks the turns it cut off back up, once
+## D-052 — 2026-10-07 — A restart of Colonia picks the turns it cut off back up, once
 A restart (an update, `node --watch` saving a file, a crash) ended every running turn as `failed`, and nothing ran it
 again: a delegated task cut halfway stayed dead unless the caller's model happened to ask again, and a finished report
 cut while closing showed "Failed". Now shutting down leaves a running turn open; the next boot closes its model log as
@@ -590,7 +590,7 @@ a turn waiting on the owner still gets their answer as a new input instead.
 <a id="d-053"></a>
 ## D-053 — 2026-10-07 — MCP tools are found with mcp_search and run with mcp_call
 Every MCP tool used to go to the model on every call, and every server started at the start of every turn: ten
-ordinary servers came to 319 tools and about 62k tokens per call, several times APX's own prompt. Now a turn offers two
+ordinary servers came to 319 tools and about 62k tokens per call, several times Colonia's own prompt. Now a turn offers two
 tools while any server is enabled and approved: `mcp_search` (by words or by server; returns names, descriptions and
 argument schemas, the servers' names in its description) and `mcp_call` (an MCP tool's exact name and its arguments).
 Servers start on the first of either. The executor turns `mcp_call` into a call of the tool it names, so approvals,
@@ -600,13 +600,13 @@ tools still restricts, and the tools that join later are held to it and to every
 and the tool search of other agent apps.
 
 <a id="d-054"></a>
-## D-054 — 2026-10-07 — Each project has APX's side of it, `projects/<id>`, so no chat works among other projects
-Outside code threads, Claude, Codex and ACP agents worked in APX's one `work/` folder whatever the project, and a
+## D-054 — 2026-10-07 — Each project has Colonia's side of it, `projects/<id>`, so no chat works among other projects
+Outside code threads, Claude, Codex and ACP agents worked in Colonia's one `work/` folder whatever the project, and a
 project chat whose folder was off this machine (an unplugged drive) fell back to it too: one project's files landed
-among every other's. Now each project has APX's side of it in APX's home: the project's own folder when APX made it
+among every other's. Now each project has Colonia's side of it in Colonia's home: the project's own folder when Colonia made it
 (`projects/<name>`, a project with no folder elsewhere), else `projects/<id>` (ids carry a `_`, folder names never do,
 so they cannot meet). An outside agent in a project chat works there, never in the project's own folder, where that
-folder's `.claude/` settings would allow tools past APX's gate; a code thread keeps its folder. The native agent keeps
+folder's `.claude/` settings would allow tools past Colonia's gate; a code thread keeps its folder. The native agent keeps
 the project's folder and moves to its side only while the folder is missing. `work/` is left to chats outside a
 project. Made on first use; the files panel shows it as the chat's folder.
 
@@ -636,7 +636,7 @@ back with the picture alone and says so. Windows and Linux do not lend the capab
 ## D-057 — 2026-10-08 — Security holes closed for the beta
 The G0 audit (plan/parity/07-seguridad.md) left holes open for the owner to decide; for the beta they are closed:
 - **Claude Code loads only the owner's own settings.** A repo's `.claude/settings*.json` could allow tools or run hooks
-  that skip APX's approval; now `settingSources` is `["user"]` and APX reads the folder's `CLAUDE.md` itself (not
+  that skip Colonia's approval; now `settingSources` is `["user"]` and Colonia reads the folder's `CLAUDE.md` itself (not
   through a link) and appends it to the prompt. A repo's own Claude skills and `@` imports are no longer loaded.
 - **A URL that carries values asks after outside content.** `web_read`, `browser_open` and `browser_navigate` with a
   query are `untrusted`: with a page or a message in the turn, `?d=<data>` to someone's site waits for the owner.
@@ -652,11 +652,11 @@ The G0 audit (plan/parity/07-seguridad.md) left holes open for the owner to deci
   when the agent asks before acting, or when outside content is in the session; total autonomy still writes.
 - **A variable never goes in an MCP server's args.** The process list shows a command's arguments to anyone on the
   computer: `mcp.set` refuses `secret://` there, and a server that still has one does not start, saying to use env.
-- **Accepted: a shell command the owner approves can call APX's local API.** A token file would not stop it (the
+- **Accepted: a shell command the owner approves can call Colonia's local API.** A token file would not stop it (the
   command runs as the owner and can read it, and an Origin header is easy to forge); the child's environment has no
-  APX secrets, and every non-trivial command asks in standard autonomy. The real fix is an OS sandbox for commands.
+  Colonia secrets, and every non-trivial command asks in standard autonomy. The real fix is an OS sandbox for commands.
 - **Contact names stay one line, and task titles the owner did not write are outside data.** A name from a channel
-  (a contact's, a room's) sits inside APX's sentences and the contact prompt without newlines, tags or quotes, capped.
+  (a contact's, a room's) sits inside Colonia's sentences and the contact prompt without newlines, tags or quotes, capped.
   `task_list` and `task_update` wrap the list when a title came from an agent (a contact's request among them), as the
   task's own chat already did; a board of the owner's own tasks stays plain.
 - **The log redacts credentials.** Every line passes a redaction step: string fields named like secrets (token,
@@ -664,15 +664,15 @@ The G0 audit (plan/parity/07-seguridad.md) left holes open for the owner to deci
   `xox?-`, `AIza`, bot tokens, JWTs, `Bearer …`, `?key=`) too. `secret://` references and counts stay.
 
 <a id="d-103"></a>
-## D-103 — 2026-10-08 — Google Calendar and Gmail are APX's own tools behind the owner's Google sign-in
-The owner brings their own OAuth client (Cloud Console, Desktop app or Web application); APX ships no client id. The
+## D-103 — 2026-10-08 — Google Calendar and Gmail are Colonia's own tools behind the owner's Google sign-in
+The owner brings their own OAuth client (Cloud Console, Desktop app or Web application); Colonia ships no client id. The
 sign-in needs no route of its own in the core: the redirect URI is the panel's `/oauth/google` page on the core's
 loopback address (the SPA fallback serves it), and that page hands the code to `integrations.oauth_finish`. The
 consent URL carries PKCE (S256) and a state signed with a per-process key, valid ten minutes and used once. The
 client secret and one refresh token per integration are secrets; access tokens live only in memory. The tools are
 built-in tools with `Tool.when` (offered only while that integration is connected and on in the thread's project),
 not an MCP server: no maintained server takes a refresh token by reference, a server per account would hold tokens
-outside the core, and the tools need APX's confirmations and outside-data framing. Events and mail come back as
+outside the core, and the tools need Colonia's confirmations and outside-data framing. Events and mail come back as
 untrusted data; creating or changing an event and writing a draft are `ask`; mail leaves only as a draft the owner
 approved sending (`gmail_send_draft`, `always`), never in one silent step.
 
@@ -680,25 +680,25 @@ approved sending (`gmail_send_draft`, `always`), never in one silent step.
 ## D-058 — 2026-10-08 — The desktop app downloads its update and asks when to restart
 D-044 had macOS open the disk image for the owner to drag in, because an unsigned app cannot use the system's silent
 updater. The app now replaces itself without it: it downloads the release's `.zip`, checks its `.sha256`, unpacks it
-beside the running `APX.app`, and swaps the two once APX (and the core it runs from inside the bundle) has quit, putting
+beside the running `Colonia.app`, and swaps the two once Colonia (and the core it runs from inside the bundle) has quit, putting
 the old one back if the swap fails. A file the app downloads itself carries no quarantine flag, so nothing asks again.
 The update is found by the app's own check (every 6 hours; the first a minute after start) and downloaded on its own;
 it then says once that it is ready (a notification, the top bar's pill, the corner card) and goes in when the owner
-picks "Restart now", or when they quit APX. Started from the app menu ("Check for updates…", "Update to APX x.y.z…")
-or the panel, it asks right away: restart now or later. While one waits, the app menu says "Restart to update to APX
+picks "Restart now", or when they quit Colonia. Started from the app menu ("Check for updates…", "Update to Colonia x.y.z…")
+or the panel, it asks right away: restart now or later. While one waits, the app menu says "Restart to update to Colonia
 x.y.z". The AppImage works the same way (its file is replaced at once and the next start is the new one); Windows
-keeps its installer, which runs on "Restart now" only, since it reopens APX when it ends. Where the app cannot write
+keeps its installer, which runs on "Restart now" only, since it reopens Colonia when it ends. Where the app cannot write
 its own place (a read-only folder, run from the disk image, a translocated copy) macOS still opens the disk image. An
 unsigned build keeps losing the macOS permissions (Accessibility, Screen Recording) at each update, as it did with the
-drag; only a Developer ID signature ends that. `APX_RELEASES` also takes a base URL, so a local feed can stand in for
-GitHub to try an update between two builds (`APX_VERSION` names a build's version in `pnpm package`).
+drag; only a Developer ID signature ends that. `COLONIA_RELEASES` also takes a base URL, so a local feed can stand in for
+GitHub to try an update between two builds (`COLONIA_VERSION` names a build's version in `pnpm package`).
 
 ## D-059 — 2026-10-10 — Agents change routines through `routine_set`, and the owner approves each call
 D-016 kept routines owner-only until an agent creating standing work had a confirmation design. D-047's `always`
 level is that design: `routine_set` creates a routine, changes one by id or name (only what it is given), turns it on
 or off, or runs it now, and every call waits for the owner's yes (total autonomy, the owner's explicit choice, asks
 for nothing). The approved call runs `routines.set` / `routines.run` as the owner's act (`callAsOwner`), the same door
-the app and `apx routines edit` use. It never sets a pre- or post-command or a shell routine: those run commands on
+the app and `colonia routines edit` use. It never sets a pre- or post-command or a shell routine: those run commands on
 the owner's machine on a schedule and stay in the app and the terminal. Removing a routine stays the owner's too.
 `routine_list` with a name returns that routine's whole prompt, so an agent edits the text it read, not a guess.
 
@@ -736,14 +736,14 @@ clock is held, as for any turn. The owner can always stop a session; a stopped-f
 and reaches the tray like any other failure. Chat turns on our own loop keep their fixed minutes.
 
 <a id="d-062"></a>
-## D-062 — 2026-10-11 — An "always" OK covers APX's own tools too, per agent, and the owner manages it
-Only MCP tools could be approved for good: approving one of APX's own tools (writing a file, messaging a contact, a
+## D-062 — 2026-10-11 — An "always" OK covers Colonia's own tools too, per agent, and the owner manages it
+Only MCP tools could be approved for good: approving one of Colonia's own tools (writing a file, messaging a contact, a
 command that changes something) held for that call alone, so an agent on standard or ask autonomy asked again every
-time. Each built-in tool now carries an approval target too (`apx:<tool>`), so its confirmation offers the same three
+time. Each built-in tool now carries an approval target too (`colonia:<tool>`), so its confirmation offers the same three
 answers as an MCP tool's: once, in this chat, or always for this agent. The grant lives with the MCP ones
 (`tools.approvals`, `tools.revoke`) and shows in the agent's editor, where the owner revokes it. A call that always
-asks (a destructive or APX-reaching command, a routine or agent change, iMessage, the owner's browser login) never
-uses a grant, and `grant_tool` still hands on MCP tools only: APX's own are the owner's to allow. An agent's editor
+asks (a destructive or Colonia-reaching command, a routine or agent change, iMessage, the owner's browser login) never
+uses a grant, and `grant_tool` still hands on MCP tools only: Colonia's own are the owner's to allow. An agent's editor
 also sets its `tools:` and `skills:` lists (written to a project agent's file); [] goes back to all of them.
 
 
@@ -752,7 +752,7 @@ also sets its `tools:` and `skills:` lists (written to a project agent's file); 
 Asked in a room's chat in the app to thank someone there, the agent answered the owner in the app: nothing reached the
 room, and D-041 forbade mentions anyway. A room's chat now works like a contact's: what the owner writes there in the
 app is an instruction nobody in the room sees (framed as `<owner_instruction>`), and the agent's answer is posted in the
-room; "I'll write" (`channels.send`) posts the owner's words as they are, through the bot's account, the only one APX
+room; "I'll write" (`channels.send`) posts the owner's words as they are, through the bot's account, the only one Colonia
 has there. Mentions: an incoming `<@id>` reads as `@username`, and an answer's `@handle` pings that person only when
 they wrote or were mentioned in that room's latest 500 messages and the turn is the owner's (from the app, their
 message in the room, or `channel_post`). A member's turn still pings nobody, so no one can make the bot ping others;
@@ -779,7 +779,7 @@ not write there, computed from the server's roles and the room's overwrites; typ
 
 <a id="d-066"></a>
 ## D-066 — 2026-10-11 — A delegation names its project
-A session another agent started from Home had no project, so the agent asked worked in APX's work folder and could not
+A session another agent started from Home had no project, so the agent asked worked in Colonia's work folder and could not
 read the repository the task was about. `delegate` takes `project` (an id, a name, or a path inside the project's
 folder, the deepest project holding it): the session is created in that project and works in its folder. Without it,
 the session takes the caller's chat's project, else the asked agent's own. A project's own agent can only name its
@@ -794,26 +794,26 @@ without either is stopped with that reason. Its step limit still bounds it, each
 the owner hold the clock, and a turn delegated by another agent keeps its fixed ten minutes (its caller waits on them).
 
 <a id="d-068"></a>
-## D-068 — 2026-10-13 — An agent delegates for what the other one has, and APX tells the caller what the delegate did
+## D-068 — 2026-10-13 — An agent delegates for what the other one has, and Colonia tells the caller what the delegate did
 The delegation rule said "if another agent's role covers the request, delegate it", and the seeded designer's role
 named widgets: the secretary loaded the widgets skill, gathered the data, then handed the widget off, and the designer
 loaded the same skill again. A widget, a document or a chart is the answer's form, and every agent has those tools. The
 rule now delegates only when the other agent has what the caller lacks (its own project, tools or knowledge, a session
 with context) or the task is big and separate, and work already started is finished by whoever started it. The
 designer's seeded role is visual design (brand, layouts, design reviews, multi-screen apps). A delegated run's result,
-inline or in a later turn, now carries APX's own list of its calls with an effect and how each ended, outside the
+inline or in a later turn, now carries Colonia's own list of its calls with an effect and how each ended, outside the
 agent's words, so the caller does not read a widget or a file back to check it. A chat's storage kind shows as "chat"
 in the system prompt: shown as "loose", a model passed it to `delegate` as a project's name.
 
 <a id="d-069"></a>
-## D-069 — 2026-10-13 — The owner sets how far agents go on their own; agents make projects through `apx projects`
+## D-069 — 2026-10-13 — The owner sets how far agents go on their own; agents make projects through `colonia projects`
 The breaker's 16 turns and 600k tokens (counted since the owner last wrote in a conversation tree) were constants: an
 owner whose agents research for a while hit "Paused" with no way to move it. They are now the owner's, in Config ›
 Agents (`agents.limits` / `agents.set_limits`, setting `agent_limits`), each one on or off (0 = no limit), and the
 paused notice links there. Unset, the defaults in `engine/limits.ts` hold. Agents had no way to make a project:
 `projects.create` is owner-only and no tool covered it. Following the footprint ladder (rule 15) it is not a new tool
-but `apx projects create|set` plus the `apx-projects` guide: `shell` running `apx` always waits for the owner's OK
-(total autonomy, their explicit choice, asks for nothing), the same door as `apx mcps` and `apx secrets`.
+but `colonia projects create|set` plus the `colonia-projects` guide: `shell` running `colonia` always waits for the owner's OK
+(total autonomy, their explicit choice, asks for nothing), the same door as `colonia mcps` and `colonia secrets`.
 
 <a id="d-070"></a>
 ## D-070 — 2026-10-13 — A team is copied into another project, never shared, and the copies may take new names
@@ -822,8 +822,8 @@ An owner wanted a second project with the same team. An agent belongs to one pro
 the whole definition (role, prompt, tools, skills, area, personality, autonomy, model) as new agents, keeps reports
 under their cloned boss and never copies the super-agent, routines or memory. Two agents with one name read as a bug,
 so the copies take new free names by default (`rename`, from `AGENT_NAMES`, now about 200 names); the owner can keep
-the names. The owner does it from Team › Import › Another project; agents through `apx agents clone` (the shell asks
-the owner), taught by the `apx-projects` guide, instead of recreating each agent with `agent_set`.
+the names. The owner does it from Team › Import › Another project; agents through `colonia agents clone` (the shell asks
+the owner), taught by the `colonia-projects` guide, instead of recreating each agent with `agent_set`.
 
 <a id="d-071"></a>
 ## D-071 — 2026-10-14 — The owner's own agents are the owner's side, not outside content
@@ -844,11 +844,11 @@ writes once a command's output or a page is in the turn, and a developer reads c
 way out was total, set agent by agent. Following Claude Code's modes, autonomy has a fourth level, `edits`: as
 standard, but the tools that work in the agent's folder (`file_write`, `file_edit`, `shell`, an outside harness's edit
 or command inside its folder) run without asking whatever the turn read; what always asks still does (destructive
-commands, commands that reach APX's API, APC files and AGENTS.md, now `always`), and so does what leaves the machine
+commands, commands that reach Colonia's API, APC files and AGENTS.md, now `always`), and so does what leaves the machine
 (messages, the browser, URLs with values). Codex writes in its sandbox under `edits`. A project has an autonomy
-(Project settings, `projects.update`, `apx projects set --autonomy`), the base project too for global agents, and an
+(Project settings, `projects.update`, `colonia projects set --autonomy`), the base project too for global agents, and an
 agent with none of its own takes its project's ("The project's: …" in its detail; `agents.update` with `autonomy:
-null` gives it back). The project's is kept in APX's database, not in `.apc/project.json`: a folder someone else
+null` gives it back). The project's is kept in Colonia's database, not in `.apc/project.json`: a folder someone else
 wrote cannot raise it. A delegated run still works under the strictest autonomy up its chain. Claude Code's `auto`
 mode (a model judging each risky call) is not copied yet.
 
@@ -882,13 +882,13 @@ open: it may still create and assign tasks, which start their agent's own work, 
 off by default since [D-160](#d-160)).
 
 <a id="d-075"></a>
-## D-075 — 2026-10-14 — The core gives agents their own `apx`
-APX's guides teach agents to use the `apx` command (projects, agents, tasks), but it only existed after the owner
-ran "use v2 as apx" or install.sh, and an agent's shell does not read the owner's profile, so on a desktop install
-agents got `apx: command not found` and stopped. At start the core writes `<home>/bin/apx` (`apx.cmd` on Windows): a
+## D-075 — 2026-10-14 — The core gives agents their own `colonia`
+Colonia's guides teach agents to use the `colonia` command (projects, agents, tasks), but it only existed after the owner
+ran "use v2 as colonia" or install.sh, and an agent's shell does not read the owner's profile, so on a desktop install
+agents got `colonia: command not found` and stopped. At start the core writes `<home>/bin/colonia` (`colonia.cmd` on Windows): a
 launcher of its own terminal with this core's home and port (never its token, which the CLI reads from the home as
 for the owner) and puts that folder first on the PATH of everything agents run (shell commands, MCP servers,
-Claude Code, Codex, ACP agents). Running `apx` from a shell still asks the owner as before (D-069).
+Claude Code, Codex, ACP agents). Running `colonia` from a shell still asks the owner as before (D-069).
 
 <a id="d-076"></a>
 ## D-076 — 2026-10-14 — A task an agent gave to another reports back to it when it closes
@@ -1005,7 +1005,7 @@ Now the core's logger also appends to `<home>/logs/core.log`, unless its stderr 
 app and the launchd/Windows service send its output there; comparing the device and inode avoids writing every line
 twice). Whoever owns the file rotates it at 20 MB into `core.log.1` when the core starts. Reading goes through the
 protocol (`system.logs`, human only: lines may name contacts and chats), filtered in the core, so the panel's
-Settings › Logs and `apx logs` work for a remote core too; `apx service logs` still reads the local file.
+Settings › Logs and `colonia logs` work for a remote core too; `colonia service logs` still reads the local file.
 
 <a id="d-085"></a>
 ## D-085 — 2026-10-15 — An agent may have a budget of its own inside the chain's
@@ -1023,8 +1023,8 @@ synchronous step as the check, so delegations racing in one turn count each othe
 <a id="d-086"></a>
 ## D-086 — 2026-10-15 — A widget shows its project's media as bytes the panel hands it, never by URL
 A widget could only show media inlined as data: (under the 400 KB HTML cap), so a reel preview could not play the
-project's own MP4. The widget now names the file (`data-apx-src="clips/reel.mp4"`, `media:<id>` for a file APX stored,
-or `apx.media(ref)` from script); its frame asks the panel over postMessage, the panel calls `surfaces.media` (human
+project's own MP4. The widget now names the file (`data-colonia-src="clips/reel.mp4"`, `media:<id>` for a file Colonia stored,
+or `colonia.media(ref)` from script); its frame asks the panel over postMessage, the panel calls `surfaces.media` (human
 only) and moves the bytes into the frame, which loads them from its own `blob:` URL. The CSP is unchanged: no media
 URL, no route outside the protocol and no origin the frame could reach, which a scoped URL in `media-src` would have
 needed (and a token in it, since the opaque-origin frame carries no credentials). The core decides scope: a path in
@@ -1115,16 +1115,16 @@ the middle and the owner had to say "go on" for it; the repeat check and the six
 that loops.
 
 ## D-092 — 2026-10-16 — Telemetry: a lifecycle ping for every install, usage numbers only with a yes
-We could not tell how many people install APX, how many open it, finish the setup or use it, or how much they use it.
-APX now keeps a random install id of its own (`<home>/telemetry-id`, apart from the home id the panel shows) and reports
+We could not tell how many people install Colonia, how many open it, finish the setup or use it, or how much they use it.
+Colonia now keeps a random install id of its own (`<home>/telemetry-id`, apart from the home id the panel shows) and reports
 the steps an install goes through once each — installed, opened, consent (the owner's answer), setup, first_run — and
 `updated` on each new version, with the version, OS, CPU and where it came from (checkout, bundle, desktop app). Only
 after the owner ticks "Share anonymous usage statistics" (asked in the setup on a fresh install, and once in a dialog on
 an install that predates it; unticked by default) does it also send, once a UTC day, totals: tokens in and out over every
 model, turns, and how many projects, agents, channels and routines there are. Never names, text, paths, models,
 providers, keys or the home id; the first report starts the day after the yes. The settings show the last thing sent.
-`APX_TELEMETRY=off`, `DO_NOT_TRACK=1` or `CI` send nothing at all; tests, e2e and perf cores never send.
-It lands in the `apx-agents` Firestore through its REST API without an account (the Spark plan has no Functions):
+`COLONIA_TELEMETRY=off`, `DO_NOT_TRACK=1` or `CI` send nothing at all; tests, e2e and perf cores never send.
+It lands in the `colonia-agents` Firestore through its REST API without an account (the Spark plan has no Functions):
 `firebase/firestore.rules` allows only these shapes, stamps every time with the server's clock, keeps a stamped step
 from moving and allows no reads or deletes from outside. The sink is one function (`telemetry-sink.ts`), so a backend of
 our own (beside the marketplace and accounts) can take an https URL later without touching the core's logic.
@@ -1185,7 +1185,7 @@ chat) starts it.
 ## D-097 — 2026-10-17 — A project may have read-only folders: its agents read them and change nothing there
 An audit of one checkout against a sibling one failed because the sibling was outside the project's folder: helpers
 could not read it, and the only way in was a relative path one tool let through. The owner now adds read-only folders
-to a project (Project settings, `projects.update` `read_only_folders`, `apx projects folders`). They are roots of the
+to a project (Project settings, `projects.update` `read_only_folders`, `colonia projects folders`). They are roots of the
 one folder rule (`tools/folders.ts`), after the folder the agent works in and its temp folder, so `file_read` and
 `shell` read there and every write is refused with the read-only refusal; the first root holding a path decides. A
 folder holding the project's own cannot be one: listed as read-only it told an agent its own folder could not change. A shell command is judged path by path: what it reads (a
@@ -1193,12 +1193,12 @@ source, a script it runs, `git -C <dir> log`) may be in one, what it writes (a r
 `rsync`, `sed -i`, `git -C <dir> commit`, any other program run there as its cwd) may not, and a word whose place only
 the shell knows (`$X`, `{a,b}`, `$(…)`) may not write while the project has one. That is a static reading of the
 command, not a sandbox: a script that builds a path as it runs is not caught, and the docs say so. The system's temp
-folders are scratch space beside them (never one holding APX's home, nor other chats' temp folders), so a folder that
+folders are scratch space beside them (never one holding Colonia's home, nor other chats' temp folders), so a folder that
 holds them cannot be read-only. Each turn's input names them (not the
-system prompt). They are kept in APX's database like autonomy (D-072), never in `.apc/`: a folder someone else wrote
-cannot widen what its agents read. A folder must be absolute, on disk, outside APX's home and not holding it (its
+system prompt). They are kept in Colonia's database like autonomy (D-072), never in `.apc/`: a folder someone else wrote
+cannot widen what its agents read. A folder must be absolute, on disk, outside Colonia's home and not holding it (its
 database and secrets), and not inside the project's own folder (already writable there). Outside agents: Claude Code
-and ACP agents ask APX about each of their tools, and reads in these folders now run without asking while any change
+and ACP agents ask Colonia about each of their tools, and reads in these folders now run without asking while any change
 there is refused (their commands judged as the shell tool's); Codex's sandbox already reads anywhere and its `additionalDirectories` would make a folder writable,
 so it is not given them. The base project has none yet.
 
@@ -1226,9 +1226,9 @@ A refused read told the agent to "ask the owner with ask_owner to add it as a re
 first look, concluded its chat had only a read-only repository, and asked the owner, in a question with a text box only,
 to "enable a writable worktree". The owner had nothing to press. Now a read outside the agent's folders, in a project,
 is a card on the approval flow: "<agent> wants to read <folder>" with "Only this time" (that call runs with the folder
-lent to it, `thread.lent`, after every other root, so other chats' temp folders and APX's home stay closed), "Allow
+lent to it, `thread.lent`, after every other root, so other chats' temp folders and Colonia's home stay closed), "Allow
 reading it in this project" (the folder joins the project's read-only folders through the checks `projects.update`
-uses, D-097: never APX's home or a folder holding it or the temp folders, so for those only "once" is offered) and
+uses, D-097: never Colonia's home or a folder holding it or the temp folders, so for those only "once" is offered) and
 "No". The folder offered is the nearest one on disk holding the path (the parent folder for `..`), not the disk. A shell
 command reading several outside folders raises one card for all of them; `file_read` asks the same way (tools declare
 `outside`). An agent whose rule for acting outside is `auto` (total autonomy) reads without a card and nothing is kept;
@@ -1248,7 +1248,7 @@ later, offline, in the database; a separate changelog view would have been a sec
 The text is the commits between version tags, each subject as a sentence: the one source the Discord announcement
 and the issue replies already read (their `previousTag` and `sentence` now live in `apps/core/src/release-notes.ts`).
 GitHub's generated release body was not used: it lists pull requests, which v2 does not use, and needs the network. A
-packaged APX has no git, so `stage.ts` writes `release-notes.json` beside `build.json` (the last 20 releases and the
+packaged Colonia has no git, so `stage.ts` writes `release-notes.json` beside `build.json` (the last 20 releases and the
 branch the build came from; the release workflow fetches every tag for it); a checkout reads its own tags, so the
 owner's core under launchd is told once a new `v2.x.y` tag is reachable, not on every merge.
 
@@ -1257,7 +1257,7 @@ untold; an install in use from before this existed is told the release it starts
 keeps the newest release told, so going back up is not told twice; an install that skipped releases gets one chat with
 each under its version. Asking in that chat is an ordinary turn: its input (never the byte-stable system prompt) names
 the version, its branch and the commit range to read (`git log` in a checkout, the compare page otherwise), about 300
-characters. No tool was added: the agent's shell and web reading already reach the commits. `APX_WHATS_NEW=off` turns
+characters. No tool was added: the agent's shell and web reading already reach the commits. `COLONIA_WHATS_NEW=off` turns
 the chat off; test cores start with it off. Amended by [D-117](#d-117): the chat is always in English, and news worth
 acting on reach the owner apart, in the super-agent's words.
 
@@ -1274,21 +1274,21 @@ still stops it first. An @mention of anyone else is a consult, as D-073 says; th
 A task nobody has keeps the old behaviour: the agent of its conversation answers there, since no work chat exists.
 
 <a id="d-102"></a>
-## D-102 — 2026-10-17 — An agent that acts outside on its own works in any folder but APX's home
+## D-102 — 2026-10-17 — An agent that acts outside on its own works in any folder but Colonia's home
 The super-agent on total autonomy, in Home (a chat with no project), was asked to make a video in another project's
 folder and refused itself three times: D-099 kept every read outside a chat with no project refused, and every write
 outside the agent's folders refused, whatever its autonomy. That contradicted rule 10, where total autonomy is the
 owner's choice to be asked nothing, and left the agent that is meant to do anything unable to touch the owner's other
 projects. Now, when an agent's rule for acting outside is `auto` (total autonomy, or that rule set on its own), each
 call runs with every folder open (`thread.anywhere`: a last root after the others): it reads and writes anywhere, in a
-project or not, with no card and nothing kept. APX's home stays refused, other chats' temp folders stay closed and a
+project or not, with no card and nothing kept. Colonia's home stays refused, other chats' temp folders stay closed and a
 project's read-only folders stay read-only, since those roots come first. Outside harnesses (Claude Code, Codex) keep
-their own sandboxes; this is the folder rule of APX's tools.
+their own sandboxes; this is the folder rule of Colonia's tools.
 
 <a id="d-104"></a>
 ## D-104 — 2026-10-17 — A delegation works in a folder of its project, never with more writes than its caller
 An orchestrator delegating review or fixes into one git worktree under its project could only name the project: the
-session worked in the project's root, so it fell back to `apx chat --code --cwd`, whose threads have no parent and
+session worked in the project's root, so it fell back to `colonia chat --code --cwd`, whose threads have no parent and
 never report back, and polled for results. Now a path inside the project given to `delegate` as `project` is the
 session's folder (`cwd` on the a2a sub-thread, checked like a code thread's folder: inside the project once links are
 resolved), and `write` says how far it may change it. The policy is the strictest of the caller's code thread, the
@@ -1305,11 +1305,11 @@ its caller read "could not finish" and the work died. Now a delegated run has th
 after its window without progress: a model token, a tool result, an outside engine's event) and a cap of two hours in
 all. A foreground command still running, and a caller's wait on a delegate at work, hold the idle clock: they are the
 turn at work, bounded by their own timeouts. When a limit (steps or time) cuts a delegated run short and its caller is
-not waiting for it inside its turn, APX starts one continuation in the same session, which keeps its context, reporting to the same caller;
+not waiting for it inside its turn, Colonia starts one continuation in the same session, which keeps its context, reporting to the same caller;
 the owner gets a notice in the caller's chat (with the session to open or stop), the tray and the channel that chat
 lives on. The cap is per run: a continuation gets its own. A continuation cut short again, a caller still waiting inside its turn, or agents paused by the breaker go
 back to the caller instead, with the progress-report note `step_limit` had and the session to delegate "the rest" to.
-APX continues on its own once and not more: a run cut short while making progress usually needs only a little more,
+Colonia continues on its own once and not more: a run cut short while making progress usually needs only a little more,
 while a second cut says the task is larger than one run or is stuck, which is the caller's (and the owner's) call; the
 breaker still counts the continuation. `stop_session` lets a caller stop a session it started; it is offered only
 while one of its thread's sessions works, so the default turn's tool definitions stay within PROMPT_SIZE.md.
@@ -1333,11 +1333,11 @@ default), **Accept edits** (`accept_edits`, as Auto for files; a command that ch
 `ask_owner`, `load_skill`, `recall` and `delegate` still run) and **Total** (`total`, unchanged: D-047, D-102). The
 field stays `autonomy`, in files and in the protocol.
 
-Auto, like Codex: an agent reads any path on the machine but APX's home (a last root, `reach: "read"`, after every
+Auto, like Codex: an agent reads any path on the machine but Colonia's home (a last root, `reach: "read"`, after every
 other one, so other chats' temp folders stay closed and read-only folders stay read-only); writes files and runs
 commands in the folder it works in and its temp folder without asking, whatever the turn read; and asks only for strong
 actions: what acts in the owner's name (messages, posts, payments, a URL with values once outside content is in the
-turn, D-047's list), what always asks (destructive commands, APX's own API, APC files, D-089), and writing outside its
+turn, D-047's list), what always asks (destructive commands, Colonia's own API, APC files, D-089), and writing outside its
 work folder. That last one is a folder card for the call ("wants to change files in …, outside its project": Only this
 time or No; never kept, since read-only folders cannot be written), raised by `file_write`, `file_edit` and `shell`
 through the same `lend` step D-099 reads use. Outside content in the turn no longer gates a call that works in the
@@ -1357,8 +1357,8 @@ session that works in another project, folder or write policy now opens a new se
 (`<name>-2`), and the result says it has none of the old session's context. Every refusal names a next step.
 
 Stored values move once in a migration (rule 14; there is no `doctor` yet, as D-024 says): `ask` → `manual`,
-`standard` and `edits` → `auto` (Auto covers what `edits` did), for projects, the base project and APX's own agents.
-An agent file in someone's repository is not APX's to rewrite, so the APC sync reads the old names the same way;
+`standard` and `edits` → `auto` (Auto covers what `edits` did), for projects, the base project and Colonia's own agents.
+An agent file in someone's repository is not Colonia's to rewrite, so the APC sync reads the old names the same way;
 reading `ask` as the default would have let that agent act unasked.
 
 A project's linked git worktrees count as the project wherever they sit (`git worktree add ../northwind-issue-7`):
@@ -1366,15 +1366,15 @@ the same repository, so writing there in Auto needs no card. They are found from
 not by a parent folder. A thread kept to one folder (a code thread, a session in a worktree) still keeps to it.
 
 <a id="d-107"></a>
-## D-107 — 2026-10-17 — An agent hands its files to MCP tools by reference; APX never publishes them for a link
+## D-107 — 2026-10-17 — An agent hands its files to MCP tools by reference; Colonia never publishes them for a link
 An agent drew carousel slides (kept only as `med_` ids in the media store, which agents may not read) and could not
 attach them to a draft on a remote MCP server: its upload tool took a public `url`, `base64`, or a `path` the server
 reads on its own disk. Now an MCP argument may name a file of the agent's: a bare `med_` id of its chat, or
-`apx-file:<path or med_ id>` for a path in its folders. The MCP adapter (`mcp/file-args.ts`, called from the tool's
+`colonia-file:<path or med_ id>` for a path in its folders. The MCP adapter (`mcp/file-args.ts`, called from the tool's
 `run`) replaces it with what the field takes, judged from the field's name, then its JSON schema (`contentEncoding`,
 `format: uri`), then its description: base64 (a data URL when the field asks for one) for a server elsewhere, within
 the smallest size its description names and its `maxLength`, never over 20 MB; a real path for a server on this
-computer, a kept file copied into the chat's temp folder first so the server never reads APX's home. A field that only
+computer, a kept file copied into the chat's temp folder first so the server never reads Colonia's home. A field that only
 takes a public link, or a path on a remote server, is refused with the base64 field to use. One file in an object
 fills its empty `mime_type`/`file_name` fields. The step keeps the reference, not the bytes; the tool's `check` stops
 a reference to nothing before the owner is asked; a call carrying a file waits for the owner while untrusted content
@@ -1390,15 +1390,15 @@ which the agent fills with `curl -T` from its temp folder.
 
 <a id="d-108"></a>
 ## D-108 — 2026-10-19 — Auto changes the owner's other projects freely, and a folder card can let an agent write there for good
-After D-106 the cards that still stopped the owner were mostly folders: a developer moving from the APX repository to
+After D-106 the cards that still stopped the owner were mostly folders: a developer moving from the Colonia repository to
 the folder that holds it (itself a registered project), or to a sibling worktree, got "wants to change files in …,
 outside its project" for each command, and a folder card could only say yes for that call. Now, in Auto and Accept
 edits, every registered project on disk and its linked git worktrees is writable like the agent's own folder: the owner
 registered them, so moving between them is not acting outside. They come after the project's read-only folders and
-other chats' temp folders, which keep their rule inside them, and never one holding APX's home or inside it. A thread
+other chats' temp folders, which keep their rule inside them, and never one holding Colonia's home or inside it. A thread
 kept to one folder (a code thread, a session in a worktree) still keeps to it. A folder that is not a project still
 asks, and its card now offers "Always let this agent change it": a grant for good for that agent (key
-`apx:write_folder:<dir>`, shown in its permissions with the folder as the condition, revoked there), never for other
+`colonia:write_folder:<dir>`, shown in its permissions with the folder as the condition, revoked there), never for other
 agents. A worktree kept under `.apc/worktree(s)/` is a checkout of the code, not APC definitions: editing it no
 longer asks as a high-impact action; `.apc`'s own files and any AGENTS.md still do. Known limit: Claude Code and
 Codex sessions keep their own folder rule (their side folder or code thread), unchanged here.
@@ -1418,17 +1418,17 @@ this agent", and `screen_open` still asks, since it opens pages with the owner's
 
 <a id="d-110"></a>
 ## D-110 — 2026-10-19 — A project's AGENTS.md reaches its agents whole; how long it is, is the project's choice
-APX cut a project's AGENTS.md past 12,000 characters (and `.apc/memory.md` past 6,000) to its head and tail, with only
+Colonia cut a project's AGENTS.md past 12,000 characters (and `.apc/memory.md` past 6,000) to its head and tail, with only
 "[… N chars omitted …]" in place of the middle: a rule there was lost and neither the agents nor the owner knew. The
-owner's call: APX does not decide how long a project's instructions are. Both files now reach the agents whole; a
+owner's call: Colonia does not decide how long a project's instructions are. Both files now reach the agents whole; a
 project that wants them short says so in its own rules and review (this repository's AGENTS.md does), not in code that
-cuts. They are not part of the default-turn budget (PROMPT_SIZE.md), which measures what APX itself sends.
+cuts. They are not part of the default-turn budget (PROMPT_SIZE.md), which measures what Colonia itself sends.
 Both files share a safety limit of 200,000 UTF-16 code units (`AGENTS_MD_LIMIT`); this is not a guarantee that
 any content fits every model's token budget. Past it, the head and tail are sent, preferring line ends, with a marker
 naming the file's path, omitted lines and a `file_read` offset and limit. Line-based recovery is subject to the file
 tool's per-line output limit. The persisted counter and owner-facing notice cover **AGENTS.md only**: its full length
 is kept as `projects.context_chars` and sent as `Project.agents_md_chars` only past the limit, shown in project
-settings and by `apx projects list`. `.apc/memory.md` shares the cap and agent-facing marker, but has no CLI/UI notice.
+settings and by `colonia projects list`. `.apc/memory.md` shares the cap and agent-facing marker, but has no CLI/UI notice.
 What reaches the prompt whole is superseded by [D-157](#d-157): every call now carries an AGENTS.md's first 8,000
 characters and the headings of the rest; the 200,000 limit, its marker and the owner's notice stay as they are.
 [D-158](#d-158) restores it whole.
@@ -1458,7 +1458,7 @@ cannot commit across a memory-generation change. The system prompt remains stabl
 
 Legacy model-log entries lack dependency offsets. Only an exact canonical input suffix proves where their injected
 context ends: stale legacy context is removed as a whole, and an unverifiable legacy run is omitted from the model
-projection. Arbitrary note text can contain blank lines or APX-like headers, so those are never treated as boundaries.
+projection. Arbitrary note text can contain blank lines or Colonia-like headers, so those are never treated as boundaries.
 The original chat remains readable; current turns rebuild task and skill context.
 
 Historical recall also covers completed turns of the current chat outside the projected context. Visible runs and
@@ -1572,8 +1572,8 @@ or source run, including after permanent deletion of the original note.
 
 The five shared prompt rules now cover evidence already present, permitted recovery, role-appropriate delegation,
 known methods in handoffs and scoped memory with supported reasons. Dynamic memory stays in turn input; no new tool,
-permission or prompt-budget exception is introduced. Engine sessions remain outside APX's automatic memory boundary
-(D-113); a CLI session is not an API-backed APX agent.
+permission or prompt-budget exception is introduced. Engine sessions remain outside Colonia's automatic memory boundary
+(D-113); a CLI session is not an API-backed Colonia agent.
 
 Behavioral evaluation uses isolated homes, fresh conversations, real model decisions and temporary artifact tools.
 The live runner is opt-in, has explicit call/output caps and stores local reports outside version control. Scripted
@@ -1632,7 +1632,7 @@ while it made progress (`engine/progress.ts`: some calls worked, something with 
 round the same calls or redo the last part's changes), up to eight parts in a row; the breaker's budgets still bound
 it all (D-080). A part that only looked things up, failed or repeated itself stops, and that is the only time the owner
 hears of it: the notice in the caller's chat carries Continue (web, desktop and now Android), the tray and the owner's
-channel get it, and the caller is told why and to tell the owner, not to go on by itself. Going on is APX's own
+channel get it, and the caller is told why and to tell the owner, not to go on by itself. Going on is Colonia's own
 business: that notice stays in the chat, quiet, and never reaches the tray or a channel. An owner's Continue starts the
 count over. Kept: 150 and not 500, since one 60-step turn already sends about 3.5 M input tokens (most cached) with a
 context near 100 k, and a loop that slipped past the checks would spend all of it before stopping.
@@ -1660,17 +1660,17 @@ nothing, and the next start tries again. With no API model (an agent on a CLI on
 English. This was a direct call, not an engine turn: a turn would bring the agent's tools and, on a CLI harness, a
 whole session, which this short message must not have.
 
-`APX_NEWS=off` stops it; test cores start with it off. `system.news` lists the entries (told, applies) and
-`system.news_tell` (the owner only) tells now: the given ones again, or the untold ones that apply; `apx news` and
-`apx news tell [id]` reach them from the terminal. Nothing was added to the system prompt or the tool definitions.
+`COLONIA_NEWS=off` stops it; test cores start with it off. `system.news` lists the entries (told, applies) and
+`system.news_tell` (the owner only) tells now: the given ones again, or the untold ones that apply; `colonia news` and
+`colonia news tell [id]` reach them from the terminal. Nothing was added to the system prompt or the tool definitions.
 
 <a id="d-118"></a>
 ## D-118 — 2026-10-21 — Artifacts: one primitive, two kinds, three memory layers, three lifecycle tiers
 Widgets and apps were one thing already (a surface: an HTML page, kept by name per project), but the owner and the
 agent saw two words and the agent leaned towards building apps. Owner-facing, both are now **artifacts**, of kind
 **widget** (the default) or **app**; internally it stays a surface (`surfaces.*`, `show_widget`), so no table, method
-or tool was renamed and no compatibility shim exists. The skill is `apx-artifacts`: a short SKILL.md for the common
-case (one hand-written HTML with APX Kit, how to update one without losing what it remembers) and references loaded
+or tool was renamed and no compatibility shim exists. The skill is `colonia-artifacts`: a short SKILL.md for the common
+case (one hand-written HTML with Colonia Kit, how to update one without losing what it remembers) and references loaded
 only when needed (kit, app, build, update). The tool says "default to a simple widget; an app only when asked or it
 must keep records" and names the kit's main classes, so a quick widget needs no skill load at all; the system prompt
 line got shorter, and the tool definitions did not grow.
@@ -1679,27 +1679,27 @@ line got shorter, and the tool definitions did not grow.
 `store` (cached data such as the last reading, ≤5 MB, the agent sees only key names and size) and `db` (SQLite records
 for apps, ≤50 MB, the agent sees tables and row counts). They differ in who reads them and how big they get: the
 agent's context must not carry a cache, and records do not fit in a JSON column. Each artifact's store and database
-live in `<home>/artifacts/<project|global>/<name>/`, not in `apx.db`, so one app cannot grow the core's database or
+live in `<home>/artifacts/<project|global>/<name>/`, not in `colonia.db`, so one app cannot grow the core's database or
 lock it. A credential never lives in the page: secrets named `artifact.<name>.<key>` are injected by the core in
 `surfaces.fetch`, only towards the artifact's `connect` origins.
 
-**Three lifecycle tiers.** Static (mounted while shown), cached (still destroyed when hidden, but `APX.live` paints the
-stored reading at once) and live (a page that declares `apx-live` stays mounted, at most three, LRU). Most artifacts
+**Three lifecycle tiers.** Static (mounted while shown), cached (still destroyed when hidden, but `Colonia.live` paints the
+stored reading at once) and live (a page that declares `colonia-live` stays mounted, at most three, LRU). Most artifacts
 need no running process: cached gives the "it was already there" feeling without keeping iframes alive.
 
 **Built artifacts are one HTML.** A large app is built with Preact + Vite + `vite-plugin-singlefile` and shown with
-`apx artifacts push` (a `surfaces.show` call; `project` was added as an optional param for a call without a thread).
+`colonia artifacts push` (a `surfaces.show` call; `project` was added as an optional param for a call without a thread).
 The host, the sandbox, the kit inlining and publishing stay the same for every artifact. Its source lives under
 `artifact-sources/<scope>/<name>`, never in the owner's project, whose repo is the owner's, and apart from its memory: the
-agents of that project may write and build there (a folder root, and the shell's APX-home rule leaves it out), while
+agents of that project may write and build there (a folder root, and the shell's Colonia-home rule leaves it out), while
 `artifacts/` (the database, the store, the secret pins) stays the core's alone, so an agent cannot rewrite a pin.
 
-**Bundle format for a future marketplace.** `apx-artifact@1`: a manifest (name, title, kind, version, kit, connect,
+**Bundle format for a future marketplace.** `colonia-artifact@1`: a manifest (name, title, kind, version, kit, connect,
 secret keys without values, live, `data_version` for future db migrations, source), the html and, only when the owner
 asks, the memory. An upload will never carry the owner's memory: installing starts empty and asks for its own secrets.
-Nothing is uploaded yet; the format is fixed now so exports made today stay importable. The file is `<name>.apxart`
-for a widget and an app alike (the kind is in the manifest): `.apxapp` and `.apxext` stay for the marketplace's packaged
-apps and extensions, which install through the extension installer; an `.apxart` is content an agent made, carried
+Nothing is uploaded yet; the format is fixed now so exports made today stay importable. The file is `<name>.coloniaart`
+for a widget and an app alike (the kind is in the manifest): `.coloniaapp` and `.coloniaext` stay for the marketplace's packaged
+apps and extensions, which install through the extension installer; an `.coloniaart` is content an agent made, carried
 between installs. Installing shows what the file is before anything is written (kind, origins, secrets, data) and lets
 the owner choose the project, pin it and drop its data.
 
@@ -1707,20 +1707,20 @@ the owner choose the project, pin it and drop its data.
 ## D-119 — 2026-10-21 — An app keeps running until the owner closes it; a widget closes when left
 The owner wanted apps to behave as apps: open three, go to the inbox, come back, and find each as it was left (a menu
 open, a form half filled), not reloaded from its memory. A page's own running state cannot be saved and restored by
-APX, so the page is simply not destroyed: an app opened full screen joins the live layer (D-118's pool, which never
+Colonia, so the page is simply not destroyed: an app opened full screen joins the live layer (D-118's pool, which never
 moves an iframe in the DOM, since a moved iframe reloads) and stays there until the owner closes it (Close app, the
-Apps menu) or quits APX.
+Apps menu) or quits Colonia.
 
 Only apps. Kind decides it, not size: an **app** is a tool the owner works in (in the dock, running until closed, the
 page owns the whole window); a **widget** is a view of something, mostly read in a chat or on a project's board, and
 opening one full screen is only a bigger look at it, closed when the owner leaves. A widget that must keep running
-(a live price) says so itself with `apx-live`. How an app is laid out is the page's own design: one that wants a
+(a live price) says so itself with `colonia-live`. How an app is laid out is the page's own design: one that wants a
 centered column uses `ax-page` inside; no third flag was added for "an app the size of a widget". Pinning a widget to
 Apps makes it an app from then on; unpinning one stops it running.
 
 The cost is bounded and visible. At most six apps run at once (the seventh closes the one seen least recently) and three
-`apx-live` pages, each kind in its own room so one never closes the other. A hidden app is told so: the kit pauses
-`APX.live`, and the skill asks pages to pause their own timers with `APX.onVisible`. The sidebar's Apps section works
+`colonia-live` pages, each kind in its own room so one never closes the other. A hidden app is told so: the kit pauses
+`Colonia.live`, and the skill asks pages to pause their own timers with `Colonia.onVisible`. The sidebar's Apps section works
 like a dock: every app, a dot on each running one; "+" searches every artifact in the system and opens it. Advanced
 names each running artifact's process when Chromium gives it one of its own.
 
@@ -1764,7 +1764,7 @@ references to elements it had dropped, and never learned the page broke when it 
 scripts. Agents edit files well; retyping a whole page each time is where they lose pieces.
 
 So a big artifact is a project in `<home>/artifact-sources/<project|global>/<name>/` (D-118's folder, writable by that
-project's agents). Saving `index.html` there (or `dist/index.html`) with APX's own `file_write` or `file_edit` shows
+project's agents). Saving `index.html` there (or `dist/index.html`) with Colonia's own `file_write` or `file_edit` shows
 it as the artifact `<name>`, a new version, as `show_widget` would, and its result says how it went: refused if a
 script does not parse, otherwise shown, then run once. No tool was added and no tool text grew: the skill names the
 folder (`{{artifact_sources}}`, filled in when it loads) and the agent copies a starter there with the shell
@@ -1783,7 +1783,7 @@ until all work, in the same turn, with questions only when they block: the owner
 
 <a id="d-123"></a>
 ## D-123 — 2026-10-22 — Work on a task stays legible: one session per agent, deliberate comments, comments that reach someone
-A user moving a project into APX for two days kept re-uploading a guide and reminding agents where they were; on the
+A user moving a project into Colonia for two days kept re-uploading a guide and reminding agents where they were; on the
 owner's own office one task opened 21 chats (each `delegate` a new sub-thread, each review a new one) and its
 conversation repeated every turn's full answer. Nobody could tell what was going on without reading everything.
 
@@ -1812,9 +1812,9 @@ Owners could not tell **In review** from **Blocked**: both read as "someone else
 goes on when they answer. Only the label changed.
 
 **In review names its checker.** A task has a `reviewer`: the owner when unset, or an agent (`task_update reviewer`,
-"Reviewed by" in the drawer, `apx tasks edit --reviewer`). Put in review, the owner's tray gets one notice (it clears
+"Reviewed by" in the drawer, `colonia tasks edit --reviewer`). Put in review, the owner's tray gets one notice (it clears
 when the task leaves review); an agent named is asked to review it in a consult on the task, with the trigger `system`
-so APX asking does not start a new budget window as the owner writing would (D-081). The row reads "Reviews: …".
+so Colonia asking does not start a new budget window as the owner writing would (D-081). The row reads "Reviews: …".
 
 **A task can start later.** `start_at`: an assigned task whose start is ahead does not start on assignment; the office
 clock starts it when the time comes (each tick, not the hourly pickup). Only `task_create` takes it among agent tools:
@@ -1850,26 +1850,26 @@ write auto" and agents forgot. D-104's rule stays (never more than the caller); 
   asking a project agent of Acme gets it working in Acme. A worker, or a global agent, works in the chat's project as
   before; `project` named still decides.
 - **Asked for nothing, nothing changes**: no folder of its own. Our loop works in its project anyway, as far as its
-  mode lets it; an outside engine (Codex, an ACP agent) stays on APX's side of the project, where the folder's own
+  mode lets it; an outside engine (Codex, an ACP agent) stays on Colonia's side of the project, where the folder's own
   settings cannot apply unchecked. A security review found that giving every delegate the real folder would have let
   those engines write there with nobody choosing it.
 - On our own loop only `read-only` is enforced per session; `ask` and `auto` are what an outside engine runs under.
 
 <a id="d-127"></a>
-## D-127 — 2026-10-22 — An agent asks other agents with delegate; `apx chat` from its commands refuses
-An agent ran `apx chat --agent … --detach` from its shell: the words reached the other agent as the owner's, in a new
-chat, with no result coming back, past the breaker, depth and permissions, and the task ran twice in parallel. `apx chat`
+## D-127 — 2026-10-22 — An agent asks other agents with delegate; `colonia chat` from its commands refuses
+An agent ran `colonia chat --agent … --detach` from its shell: the words reached the other agent as the owner's, in a new
+chat, with no result coming back, past the breaker, depth and permissions, and the task ran twice in parallel. `colonia chat`
 is the owner's (and outside apps') way in; `delegate` is an agent's, and the only one with those checks (rule 2).
 
-An agent's commands now carry `APX_AGENT=<its id>` (our shell and jobs, and the processes of Claude Code, Codex and ACP
-sessions), and `apx chat` and `apx tasks say` refuse there, saying to use `delegate` or `task_comment`. The rest of the
+An agent's commands now carry `COLONIA_AGENT=<its id>` (our shell and jobs, and the processes of Claude Code, Codex and ACP
+sessions), and `colonia chat` and `colonia tasks say` refuse there, saying to use `delegate` or `task_comment`. The rest of the
 CLI (tasks, status, reading) still works from an agent's command; the owner and outside apps use both as before. It is
 a guardrail against a habit, not a boundary: the core trusts loopback as the owner, so a command that calls it directly
 still could.
 
 <a id="d-128"></a>
 ## D-128 — 2026-10-22 — Fewer summaries and chats, a plan that outlives them, widgets that can go, reviews that close
-Follow-ups of the same audit (an owner who had to supervise APX to get a migration done):
+Follow-ups of the same audit (an owner who had to supervise Colonia to get a migration done):
 
 - **Summaries measured as the model sees them.** A chat was summarized when the raw log since the last summary passed
   90k characters, counting every old tool output in full although the model only sees a stub of it; chats that read
@@ -1915,27 +1915,27 @@ finished task with no agent to review it; each row says which. "In review" is an
 has its "?" in the list. The mobile app groups the same way.
 
 <a id="d-130"></a>
-## D-130 — 2026-10-22 — APX ships its own Google sign-in; Drive joins; an event only on the owner's calendar needs no OK
-D-103 had the owner make an OAuth client in Cloud Console, a step most owners never finish. APX now ships one: a
+## D-130 — 2026-10-22 — Colonia ships its own Google sign-in; Drive joins; an event only on the owner's calendar needs no OK
+D-103 had the owner make an OAuth client in Cloud Console, a step most owners never finish. Colonia now ships one: a
 **Desktop app** client, which Google treats as public (an installed app cannot keep a secret; its own guide says so)
 and which reaches nothing by itself: every access is a consent the owner gives in Google's page, guarded by PKCE and
 the signed one-use state of D-103, and the refresh token stays in the owner's secret store. Leaked, the pair lets
-someone show a consent page named APX, which Google's warning and the owner's own click still stand between. Even so it
+someone show a consent page named Colonia, which Google's warning and the owner's own click still stand between. Even so it
 is not committed, nor obfuscated: Google requires the secret in the code exchange (checked: without it, "client_secret
-is missing"), so a release build writes `google-client.json` beside `build.json` from CI's `APX_GOOGLE_CLIENT` secret,
+is missing"), so a release build writes `google-client.json` beside `build.json` from CI's `COLONIA_GOOGLE_CLIENT` secret,
 and a checkout keeps the same file, git-ignored, at its root (Cloud Console's download works as is).
-`APX_GOOGLE_CLIENT` (`id:secret`) in the environment replaces it, and a core pointed at a stand-in Google never uses it. The owner's own
+`COLONIA_GOOGLE_CLIENT` (`id:secret`) in the environment replaces it, and a core pointed at a stand-in Google never uses it. The owner's own
 client stays as **My own OAuth client**; each integration remembers which client signed it in (a refresh token works
 only with the client that issued it), and the owner's client is forgotten once nothing signs in with it. Rejected: a
-hosted token broker with a confidential web client (every refresh through APX's servers, a service to keep up, and
+hosted token broker with a confidential web client (every refresh through Colonia's servers, a service to keep up, and
 the owner's Google access leaving their machine).
 
-APX's client asks only for scopes Google verifies without its paid yearly security assessment (CASA): Calendar
+Colonia's client asks only for scopes Google verifies without its paid yearly security assessment (CASA): Calendar
 (`calendar.events`, `calendar.readonly`, sensitive), `gmail.send` (sensitive) and `drive.file` (not sensitive). So with
 it agents send mail (always confirmed, `gmail_send`) but do not read it (the Email channel does), and reach only the
-Docs APX wrote. The restricted scopes (`gmail.readonly`, `gmail.compose`, `drive.readonly`) and their tools stay with
-the owner's own client, whose consent page says the app is unverified. So the dialog starts Calendar on APX's client
-and Gmail and Drive on the owner's (APX's is there, marked limited), with a guide to create one in Google Cloud and the
+Docs Colonia wrote. The restricted scopes (`gmail.readonly`, `gmail.compose`, `drive.readonly`) and their tools stay with
+the owner's own client, whose consent page says the app is unverified. So the dialog starts Calendar on Colonia's client
+and Gmail and Drive on the owner's (Colonia's is there, marked limited), with a guide to create one in Google Cloud and the
 downloaded JSON as the way to enter it; one sign-in can connect the other parts with the same client (`also`), each
 keeping the refresh token. OpenClaw (`gog`) and Hermes ask every user for their own client too; neither ships one.
 The app is **In production**, not Testing, or Google would end every grant after seven days; until its verification
@@ -1943,11 +1943,11 @@ passes, at most 100 accounts can grant it the sensitive scopes.
 
 **Google Drive** is a third part, connected on its own like Calendar and Gmail: `drive.readonly` to find and read
 files (Docs as text, Sheets as CSV, Slides as text, text files as they are; binaries are refused with their link) and
-`drive.file` to write Docs and share what APX wrote (with APX's client, only the latter); nothing else of the owner's
+`drive.file` to write Docs and share what Colonia wrote (with Colonia's client, only the latter); nothing else of the owner's
 can be changed. Calendar edits the
 current guest list (`add_attendees`/`remove_attendees`, answers kept), adds a Meet link to an event without one, and
 cancels. Confirmations follow D-106's strong actions: an event only on the owner's calendar, a change to one, and a
-Doc APX writes are the owner's own and do not ask; inviting people, cancelling and sharing a file speak to others in
+Doc Colonia writes are the owner's own and do not ask; inviting people, cancelling and sharing a file speak to others in
 the owner's name and ask; sending mail still always asks.
 
 Changed 2026-10-28: moving an event with guests, taking guests off or cancelling emailed them (`sendUpdates: "all"`)
@@ -1996,7 +1996,7 @@ The index (`secrets.index.json`: names, dates, hints) stays a file. A store is c
 otherwise (a Linux server with no keyring, PowerShell blocked) the file stays, as before. Once values went to a store,
 that store stays chosen even while it does not answer, so a core started before the keyring unlocks (a service at boot)
 shows the owner's names and finds their values once it opens, instead of falling back to an empty file; such installs
-can set `APX_SECRETS=file`. Values in `secrets.json` move to the store once at start, as D-010 did for the Keychain.
+can set `COLONIA_SECRETS=file`. Values in `secrets.json` move to the store once at start, as D-010 did for the Keychain.
 The newer stores look up only names the index lists, so a check for a missing secret runs no command. Checked against a
 real keyring in a Linux container; the Windows store runs only against a stand-in so far.
 
@@ -2020,7 +2020,7 @@ agent as `untrusted("emails")`, one line each (from, subject, date, a snippet, w
 tells the owner in one or two lines or answers SKIP. Delivery is the routines' own: the owner's notice channel, the
 daily budget, 👍/👎. Its tools are not narrowed per routine (none are, D-106); with mail in the turn, sending or
 drafting as the owner keeps asking, and its prompt says never to act on a mail there. It reads only with the owner's
-own Google client (D-130: APX's cannot read mail), and stays silent otherwise. The secretary gains it as "Important
+own Google client (D-130: Colonia's cannot read mail), and stays silent otherwise. The secretary gains it as "Important
 mail", every `mail_every_min` (default 5, 2 to 60), and its morning brief reads today's events with `calendar_events`
 when Google Calendar is connected, so `calendar_command` is only for other calendars. Profile numbers now keep inside
 their declared range, since they end up in schedules.
@@ -2065,24 +2065,24 @@ used meanings under `[stickers]`, so the agent picks among stickers that exist. 
 the agent's to use as soon as a model named it (the owner blocks what they do not want), or, with `stickers_auto` off,
 each waits for their OK. One the naming model marks `[18+]`, or one no model could see (an animated sticker, an install
 with no vision model), always waits: what nobody looked at may be anything. The owner is told in the tray when one
-waits, and approves it in the channel's Stickers section or by asking the super-agent (`apx_settings`, approved). Discord's stickers are not read nor sent
+waits, and approves it in the channel's Stickers section or by asking the super-agent (`colonia_settings`, approved). Discord's stickers are not read nor sent
 yet: a bot can only send its own servers' stickers.
 
 <a id="d-138"></a>
 ## D-138 — 2026-10-23 — The super-agent changes the owner's settings through one tool, and every owner method is placed
 The owner wants to ask the super-agent for anything they can change in the panel ("add rules to this contact and say
-who she is") without other agents getting the same reach. Two ways were open. The `apx` CLI from the agent's shell
+who she is") without other agents getting the same reach. Two ways were open. The `colonia` CLI from the agent's shell
 announces itself as the agent, so the router refuses owner-only methods there; letting it through would make a shell
 command, read as a command line, the only card the owner approves, and a command an agent may run freely would act as
 the owner. One tool per setting would grow every super-agent call with the panel (rules/PROMPT_SIZE.md).
 
-So `apx_settings` is one tool, offered only to the super-agent (`SUPER_AGENT_TOOLS`): with no args it lists what it
+So `colonia_settings` is one tool, offered only to the super-agent (`SUPER_AGENT_TOOLS`): with no args it lists what it
 reads and changes, with a method alone it gives that method's fields (from the protocol's own schema), and with params
 it runs the owner's method through the router as the owner, after the owner approves a card that names the record and
 shows each field before and after (`explain`). The arguments are checked against the method before anyone is asked.
 Reads come from the store, with nothing secret in them.
 
-`tools/settings-reach.ts` places every owner-only method that changes something: in `apx_settings`, in a tool of its
+`tools/settings-reach.ts` places every owner-only method that changes something: in `colonia_settings`, in a tool of its
 own (`agent_set`, `routine_set`…), kept the owner's with its reason (keys and sign-ins, what agents may do and their
 models per D-060, the machine, the panel's own views, the owner's own answer or send), or `NOT_YET`, the list still to
 place. `settings.test.ts` fails on a new owner method nobody placed, so the super-agent's reach is decided with each
@@ -2108,9 +2108,9 @@ Teams, LINE and WhatsApp's business API do not let a bot pull its messages: they
 The core listens only on loopback (rule 7) and has one contract, the router (rule 1), so those channels stayed
 "coming". openclaw and hermes open their gateway's port and leave the owner to put a tunnel in front (Microsoft's dev
 tunnels, ngrok, Tailscale Funnel); hermes also tries a hosted relay. Exposing the core's own port would publish the
-panel and the API, and a hosted relay is a service APX would have to run for everyone.
+panel and the API, and a hosted relay is a service Colonia would have to run for everyone.
 
-So webhooks get a second HTTP listener (`transport/hooks.ts`), on 127.0.0.1, at the core's port + 8 (`APX_HOOKS_PORT`;
+So webhooks get a second HTTP listener (`transport/hooks.ts`), on 127.0.0.1, at the core's port + 8 (`COLONIA_HOOKS_PORT`;
 a free one when that is taken), that takes only `POST …/hooks/<channel id>[/…]` up to 1 MB and hands the raw request
 to that channel's running adapter (`ChannelAdapter.webhook`); every other path is 404, and an adapter answers in 15 s
 or the platform gets 503. It is not a client↔core call, so it is not a router method: the platform is no client, and
@@ -2118,8 +2118,8 @@ each adapter verifies its platform's own signature (Teams' Bot Framework JWT, LI
 and refuses what it cannot verify. A failure's detail stays in the log.
 
 What publishes that port is the owner's choice (`webhooks.set`, Settings › Channels › Public address), kept and applied
-again at every start (`webhooks.ts`): Tailscale Funnel on HTTPS port 8443 (443 stays what `apx tailscale connect`
-serves to the tailnet, and only APX's own Funnel is undone when it is turned off); ngrok, started and watched by the
+again at every start (`webhooks.ts`): Tailscale Funnel on HTTPS port 8443 (443 stays what `colonia tailscale connect`
+serves to the tailnet, and only Colonia's own Funnel is undone when it is turned off); ngrok, started and watched by the
 core, which remembers the last address ngrok gave and tells the owner only when one is new (a free account usually
 keeps one across starts; a reserved domain can be given); or the owner's own https URL (a proxy they run). Each adapter reads its address through `io.hookUrl()`, and a
 channel that needs one and has none says so in its status until one exists.
@@ -2134,7 +2134,7 @@ always show its card (do it or not), and that no other agent can get the super-a
 skipped the card on Total (D-047) or under the agent's own rule for that risk, and a message another agent posted in the
 super-agent's chat (origin `agent`) reached a turn that had the tools.
 
-A tool marks such calls with `ownerSetting` (`agent_set` and `apx_settings`, the tools only the
+A tool marks such calls with `ownerSetting` (`agent_set` and `colonia_settings`, the tools only the
 super-agent has; `owner-setting.test.ts` fails on one without it). `authorize` turns an allow into a card for them in
 every mode and under every rule; plan mode still refuses them. The executor refuses them, before anyone is asked,
 unless the run's origin is the owner's own: their message in the app or on a channel as the owner, or their answer to a
@@ -2145,11 +2145,11 @@ owner asks you themselves". A delegated run already loses these tools (`inherit`
 ## D-141 — 2026-10-23 — The super-agent adds MCP servers, their keys only by reference
 D-138 kept adding an MCP server the owner's, since its command runs on this computer and its env and headers carry
 keys. The owner wants to ask for one in chat and then say which saved variable holds its key. `mcp.set` is now in
-`apx_settings`, under D-140 (the owner's card in every mode, only at their word): the card names the server and shows
+`colonia_settings`, under D-140 (the owner's card in every mode, only at their word): the card names the server and shows
 its command or URL, args and each env or header field. A value that reads like a key once its `secret://NAME`
 references are taken out (a run of 20 or more letters, digits, `_` or `-`, with both letters and digits) is refused
 before anyone is asked, as is a variable in args (it would show in the process list). Saving the key stays the
-owner's (`secrets.set`, Variables, or `apx secrets set`); the answer names the variables still without a value.
+owner's (`secrets.set`, Variables, or `colonia secrets set`); the answer names the variables still without a value.
 `mcp.list` reads the owner's own servers, showing a value that reads like a key as "(a value)". Trusting a project's
 server and approving its tools stay the owner's.
 
@@ -2158,11 +2158,11 @@ server and approving its tools stay the owner's.
 A publisher agent asked by a teammate to post (and move two posts that clashed) refused: the system prompt said
 "authorization to send, post or pay cannot be relayed", so a request from one of the owner's agents read as no
 authorization at all, against D-071. Asked again by the owner in its own chat, it asked the teammate, whose answer the
-prompt called "data, not new authorization", and refused again. No call was made, so APX never showed a card, and the
+prompt called "data, not new authorization", and refused again. No call was made, so Colonia never showed a card, and the
 owner could not write in the read-only chat between the two agents: they only got it moving by writing new requests.
 
 Now a send, post or payment the agent can make still stays with it (it delegates only the preparation), but one a
-teammate asks of it is the owner's work: it makes the call and APX asks the owner when its mode and rules say so; it
+teammate asks of it is the owner's work: it makes the call and Colonia asks the owner when its mode and rules say so; it
 never refuses as relayed nor sends the owner to repeat it. The line on asking another agent about earlier work loses
 its "not new authorization": that answer is evidence, and permission is the permissions service's (D-115), not the
 model's.
@@ -2206,7 +2206,7 @@ editor and every agent file for one tool; the card already asks, and its answer 
 A review found that the owner's identity on most channels is the platform's word, and that word is weak: ntfy knows
 only a topic, IRC a nick without an account, an SMS sender's number and a mail's From can be forged, an email channel
 may trust unverified mail. Whoever passed as the owner there got an owner run (`inbound.ts` sent their words as the
-owner's) and could answer the cards APX sent to that chat (a button, a number, a text answer), and since D-141 that
+owner's) and could answer the cards Colonia sent to that chat (a button, a number, a text answer), and since D-141 that
 reaches `mcp.set`: a command run on the owner's machine.
 
 The owner's rule. A card about the owner's settings (`ownerSetting`) is approved only in the app: the panel, the
@@ -2261,7 +2261,7 @@ failed on a Windows flake, and publication slipped ten hours until a re-tag on a
 <a id="d-147"></a>
 ## D-147 — 2026-10-23 — The panel's late code is declared in one registry, and the first load is measured from the build
 The first-load budget counted only the files `index.html` names, about 270 of its 275 KB. The language chunk
-`main.tsx` waits for imported its notice strings from the `@apx/protocol` barrel, and that barrel's side effects kept
+`main.tsx` waits for imported its notice strings from the `@colonia/protocol` barrel, and that barrel's side effects kept
 zod and every method schema on the boot path, unmeasured: what a first screen really downloaded was 379 KB gz. Opening
 the inbox then fetched the widget chat and the project settings too (the Apps dock and the new-project dialog took
 helpers from them), bringing that protocol chunk again. Lazy declarations were spread over 19 files, some targets
@@ -2289,12 +2289,12 @@ connected one comes first.
 - **When the card appears:** only when the best match is not connected. Up to three of the unconnected matches go on a
   "Suggested connections" card in the answer; Connect opens that integration's form in the chat, a channel opens its
   setup in Settings › Channels. The agent is told what it showed and to stop there until the owner says it is
-  connected. An already connected match gets no card: the agent is told to use it. No match: the agent says APX does
+  connected. An already connected match gets no card: the agent is told to use it. No match: the agent says Colonia does
   not connect to it yet.
 - **Never in sealed chats:** a contact's or a room's turn gets only the tools the owner allowed for that person, and
   `suggest_connection` is not one of them, so nobody but the owner is ever offered a connection. It stays in the
   owner's turns even when no channel is on (unlike the channel tools), since connecting the first one is its job.
-- **What agents see:** labels and descriptions of what APX can connect and a connected flag; never credentials,
+- **What agents see:** labels and descriptions of what Colonia can connect and a connected flag; never credentials,
   accounts or settings. Connecting stays the owner's act on the card or in Settings.
 
 <a id="d-149"></a>
@@ -2326,7 +2326,7 @@ the host and the local network) could only be turned on by the owner from the Co
 fixed 4 GiB of memory. The owner wants it off by default, given to agents one by one, and started and stopped by the
 agents themselves as free memory allows.
 
-**Permission.** Using the computer is an owner's grant per agent, key `apx:computer` (`COMPUTER_GRANT`) in the grants
+**Permission.** Using the computer is an owner's grant per agent, key `colonia:computer` (`COMPUTER_GRANT`) in the grants
 store: for good (`always`, shown and revoked in the agent's settings, Computer page, or in its granted list) or for one
 chat (`session`). No agent has it until the owner gives it, whatever its autonomy: Total skips confirmation cards
 (D-047), so the request is not the executor's card but `requestGrant`, a card the tool raises itself that no mode
@@ -2334,7 +2334,7 @@ skips; it offers "for this chat" and "always for this agent", never "only this t
 turns that follow. A chat bound to the computer whose agent lost the permission refuses its turns before any model
 call, as it does without a backend: never host tools instead. The owner's `environments.enable` and `bind` refuse an
 agent without it; the panel offers "Allow <agent> and turn on". The owner can also ask the super-agent: `environments.permit` and
-a read of who may use it (`environments.status`) are in `apx_settings` (D-138), and each change waits on the owner's
+a read of who may use it (`environments.status`) are in `colonia_settings` (D-138), and each change waits on the owner's
 card in every mode, like their other settings; `environments.status` lists the allowed agents for each agent's card.
 
 **The tool.** `computer` (status, start, stop) is one conditional tool (rule 15): offered in an owner's native chat to
@@ -2344,7 +2344,7 @@ to no one; the prompt-budget test's default turn has no computer, so its budget 
 needs a boot or the first setup does not keep the turn waiting: the tool tells the agent to say once that it will let
 the owner know and end its turn, and the core gives the chat one turn (origin `computer_ready`) the moment the computer
 is up, or did not start (`environments/ready.ts`, polled in the core every 2 s, at most 25 minutes); that turn carries
-on with what the owner asked. A refusal for memory comes back to the agent with its numbers and the `apx:computer`
+on with what the owner asked. A refusal for memory comes back to the agent with its numbers and the `colonia:computer`
 link to give the owner, never to retry. In the computer's chat what speaks for the owner runs on it (`runsOnComputer`): their words, from the app or as the
 owner on a channel, their answers, their routines and commands, and their own agents' results; a contact, a widget or
 an outside app's agent does not, and its refusal says so in the owner's language. It acts through `environments.start`
@@ -2387,20 +2387,20 @@ memory mostly goes back to macOS only when the VM stops. So there is one VM, siz
 resources), shared by every allowed agent.
 
 **Users and screens.** Each agent gets a screen number the first time it uses the computer (`computer_screens`, kept):
-screen n is Linux user `apx-a<n>` (uid 2000+n, locked, no sudo, its own `/home/apx-a<n>` with mode 700, its own
+screen n is Linux user `colonia-a<n>` (uid 2000+n, locked, no sudo, its own `/home/colonia-a<n>` with mode 700, its own
 Chromium profile there) on display `:100+n`. There is no screen of the owner's own: the owner watches an agent's screen and takes control of it
-(signing in to a site by hand happens there, with control taken). The former worker user `apx-worker` (uid 1001) stays
+(signing in to a site by hand happens there, with control taken). The former worker user `colonia-worker` (uid 1001) stays
 as a screenless probe user the setup checks the boundary with. The firewall rules that kept uid 1001 to loopback now
 cover uids 2001–2999 too, and every user's session waits for the firewall. A desktop is reached only through its user's
-private socket: Xtigervnc listens on `$XDG_RUNTIME_DIR/apx-vnc.sock` (mode 600) and X clients need that user's cookie,
+private socket: Xtigervnc listens on `$XDG_RUNTIME_DIR/colonia-vnc.sock` (mode 600) and X clients need that user's cookie,
 so one agent can neither watch nor type into another's screen. The core opens a viewer by running
 `nc -U` on that socket as that user. The proxy is the same for all. The owner's control of a screen lasts as long as
 the screen: it stopping, the computer stopping or starting, and a restart of the core all give it back to its agent,
 and a turn blocked by a screen that is up and in the owner's hands says so with a one-click hand-back.
 
 **The proxy's port and agents' sessions.** The guest's proxy port, 127.0.0.1:3128, is held by PID 1 from boot
-(`apx-proxy.socket`), before any user's session, and `systemd-socket-proxyd` relays it to the host's tunnel through
-`/run/apx-egress/proxy.sock`, in a folder only the Lima user can write: an agent that binds 3128 first would otherwise
+(`colonia-proxy.socket`), before any user's session, and `systemd-socket-proxyd` relays it to the host's tunnel through
+`/run/colonia-egress/proxy.sock`, in a folder only the Lima user can write: an agent that binds 3128 first would otherwise
 make the tunnel's forward fail and put the computer in error for every agent. An agent's session runs only while it
 has a screen: stopping a screen turns its linger off, and a boot unit clears agents' linger before logind starts, so
 units an agent enabled do not come back with the computer.
@@ -2422,12 +2422,12 @@ process of an agent runs in its own cgroup, `user.slice/user-<uid>.slice`: its d
 manager, and its commands, browser and the core's helpers through `systemd-run --scope --slice` and then
 `setpriv --reuid --regid --init-groups` (plain `sudo -u` from the admin's SSH session would leave them in that session's
 cgroup; the scope's own `--uid` keeps root's supplementary group 0, which can read root-group files in the guest). A
-screen does not start unless a process run this way has the agent's uid and its one group. A table of its own, `apx_loopback`, marks
+screen does not start unless a process run this way has the agent's uid and its one group. A table of its own, `colonia_loopback`, marks
 each loopback packet with its sender's agent uid on the way out (`meta skuid`), and on the way in looks up the listening
 socket (`socket cgroupv2 level 2`) and refuses a new connection to an agent's listener whose mark is not that agent's.
 The egress proxy, the guest's own services and the owner's paths into a screen (private Unix sockets, CDP pipes) are
 not in an agent's slice and are untouched; the egress table and its uid 2001–2999 coverage are unchanged. The core
-writes the rules for every agent screen to `/etc/apx-computer/agents.nft` when an agent gets a screen, and the firewall
+writes the rules for every agent screen to `/etc/colonia-computer/agents.nft` when an agent gets a screen, and the firewall
 service starts those slices before loading them (a rule cannot name a cgroup that does not exist yet). Rejected:
 `meta skuid` alone, which names only the sender, never the listener; a network namespace per agent, which would put the
 proxy on 127.0.0.1:3128 out of reach and need a veth, DNAT and `route_localnet` path rebuilt for each agent, a second
@@ -2469,7 +2469,7 @@ whether it is on the computer and its agent's screen. The guest disk marker move
 guest is secured and provisioned again on its next start.
 
 <a id="d-153"></a>
-## D-153 — 2026-10-25 — The Mac stays awake while APX works, and a sleep it took anyway is not a stuck turn
+## D-153 — 2026-10-25 — The Mac stays awake while Colonia works, and a sleep it took anyway is not a stuck turn
 An owner leaves a turn, a command or a computer coming up and walks away; the Mac sleeps, the work stops, and on wake
 its timers all fire at once, so a turn that had worked for minutes is stopped as "no progress". While a run is
 working, a terminal job runs or the computer is coming up, the core holds `caffeinate -i -w <core pid>` (macOS only):
@@ -2482,7 +2482,7 @@ retried once as a network failure. Rejected: `pmset`/IOKit assertions through a 
 `caffeinate` does; keeping the display awake too (`-d`), which the owner never asked for.
 
 <a id="d-154"></a>
-## D-154 — 2026-10-25 — Home stays on the Mac, a chat on the computer keeps APX's own work, and only an allowed agent sees the computer
+## D-154 — 2026-10-25 — Home stays on the Mac, a chat on the computer keeps Colonia's own work, and only an allowed agent sees the computer
 Home went on the computer when the super-agent started it from there, and stayed bound after the VM shut down idle.
 Every later turn in Home (the owner's channel messages, task results) then had only the guest's shell and browser:
 asked to create a task it had no task tools, asked to publish with the owner's logins it used the VM's browser, and a
@@ -2545,7 +2545,7 @@ Superseded by [D-158](#d-158): AGENTS.md reaches the prompt whole again.
 
 <a id="d-158"></a>
 ## D-158 — 2026-10-26 — A project's AGENTS.md reaches the prompt whole again
-Supersedes [D-157](#d-157). Cutting AGENTS.md at 8,000 characters left out the rules near its end: in APX's own repo
+Supersedes [D-157](#d-157). Cutting AGENTS.md at 8,000 characters left out the rules near its end: in Colonia's own repo
 the agent never saw the worktree rule, and kept opening duplicate worktrees. A project's rules are its author's to
 size; the agent gets all of them, as Claude Code and Codex do with theirs. The cost is small because AGENTS.md sits in
 the byte-stable prefix (rule 12) that providers cache. The 200,000 safety limit, its marker and the owner's notice
@@ -2570,7 +2570,7 @@ three tasks stalled: 30 unattended turns went fast because every background comm
 turn; past it every result paused the chain and told the owner's Telegram, in English, once per result (about thirty
 messages); a paused chain left tasks "in progress" with nobody on them; and the super-agent stopped twice on a system
 card asking to hand work to a third agent, after the owner had already said to do the work. Coding agents finish what
-they are asked; APX's agents should too.
+they are asked; Colonia's agents should too.
 
 - **No unattended limits by default** (`MAX_UNATTENDED_RUNS` and `MAX_UNATTENDED_TOKENS` are 0). **Set limits** in
   Config › Agents turns them on, starting from 100 turns and 5M fresh tokens (`SUGGESTED_LIMITS`, `agents.limits`
@@ -2591,11 +2591,11 @@ Rejected: raising the default to 100 turns (still a stop the owner did not ask f
 ## D-161 — 2026-10-27 — The app is where the owner is always told; the super-agent tells what its team finished and what the owner added
 Until now a chat app was the owner's main place to be told: phones got a push only for a finished turn or an agent
 waiting for their OK, and picking a phone as "where notices go" replaced the channel. The owner wants the opposite:
-APX's apps always tell them, and a chat app is an extra they may pick or not.
+Colonia's apps always tell them, and a chat app is an extra they may pick or not.
 
 - **Every tray notice reaches paired phones** (`engine/notice-push.ts`), in quiet hours only a question or an error.
   The desktop and web panel show it as a system notification unless the owner is looking at that very chat. The dev
-  `APX.app` is signed again (ad-hoc) after it is renamed, since macOS drops a broken bundle's notifications silently.
+  `Colonia.app` is signed again (ad-hoc) after it is renamed, since macOS drops a broken bundle's notifications silently.
 - **The chat app is optional.** `notices.channel` takes `"none"`: nothing the super-agent says unasked goes to a chat
   app (news stays `no_channel`, in the tray). An old `device:<id>` choice means the same; the phone option is gone from
   the selector, since every phone is told. What a contact leaves for the owner reaches the tray too.
@@ -2610,7 +2610,7 @@ Rejected: a digest of closed tasks once a day (the owner wants to hear when the 
 
 <a id="d-162"></a>
 ## D-162 — 2026-10-27 — Work goes on until it is done, and says what shows it
-Patterns read in an open harness (DeepSeek Harness, MIT, studied as reference; no code taken), adopted where APX's
+Patterns read in an open harness (DeepSeek Harness, MIT, studied as reference; no code taken), adopted where Colonia's
 agents stopped short. Each answers a stop seen in real work:
 
 - **A task turn that ends with the task in progress goes on at once** (`engine/task-continue.ts`), numbered "part k of
@@ -2631,13 +2631,13 @@ agents stopped short. Each answers a stop seen in real work:
   compared at its end.
 
 Rejected for now: programmatic tool calling (a typed tool SDK in the prompt breaks the prompt budget and needs its own
-sandbox), a goal tool separate from tasks (tasks already are the goal), fresh-worker rounds (APX's sessions keep
+sandbox), a goal tool separate from tasks (tasks already are the goal), fresh-worker rounds (Colonia's sessions keep
 context and compact).
 
 <a id="d-163"></a>
 ## D-163 — 2026-10-27 — A teammate's question reaches the owner's chat app as the super-agent saying who waits
 A card any agent raised used to reach the owner's chat app as a system message with buttons ("Fausto wants to use
-file_edit…"), as if APX itself spoke. Questions and approvals stay with the agent that does the work: its card is in
+file_edit…"), as if Colonia itself spoke. Questions and approvals stay with the agent that does the work: its card is in
 its chat, in the app's tray, on the desktop and on paired phones (D-161). On the chat app the owner picked, a
 teammate's card is now one line in the super-agent's voice, "Fausto te espera: <what>", without buttons, to answer
 in the app; the super-agent's own questions still come whole with their buttons. With no chat app chosen, nothing
@@ -2662,7 +2662,7 @@ new one must decide. Fixed template messages are untouched.
 
 <a id="d-165"></a>
 ## D-165 — 2026-10-27 — Arbitrary browser JavaScript is reviewed execution, not a credential sandbox
-The owner explicitly accepted reviewed JavaScript execution in the existing APX tab after the security review explained
+The owner explicitly accepted reviewed JavaScript execution in the existing Colonia tab after the security review explained
 that arbitrary page code cannot retain a mechanical guarantee against reading or filling sensitive fields, making
 requests or sending as the signed-in account. This is a narrow exception for `browser_evaluate`, not a change to the
 ordinary browser typing guard, navigation policy or a permission to handle passwords, 2FA or card data.
@@ -2695,7 +2695,7 @@ read-only snapshot console equivalent to executing code against the owner's actu
 
 ## D-166 — 2026-10-28 — Screens talk to the person, and a UI change is looked at before it is done
 Flows and the public address reached the owner as a JSON form and a settings section that explained its own
-plumbing: "token bearer", "RPC", "listener", "registered routes", which channels sign their requests, what APX "does
+plumbing: "token bearer", "RPC", "listener", "registered routes", which channels sign their requests, what Colonia "does
 not promise", and the same address and the same sentence twice. Every gate was green: the change workflow measured
 types, tests, runtime, security and architecture, and nothing measured what a person sees or reads. Reviewers'
 caveats were written into hints, and the agents' own terse register (how they write to each other) became the UI's.
@@ -2776,7 +2776,7 @@ and letting a webhook Flow tick or a schedule Flow take POSTs "for testing" (tha
 
 <a id="d-169"></a>
 ## D-169 — 2026-10-28 — A Flow speaks as the owner and calls other services only where its published revision says
-Flows got two steps that act outside APX: notify (a message through one of the owner's chat apps) and an outgoing
+Flows got two steps that act outside Colonia: notify (a message through one of the owner's chat apps) and an outgoing
 HTTP request. Rule 10 makes sending or posting as the owner a strong action that needs confirmation; a Flow runs
 unattended, often on an outside service's POST. The confirmation therefore moves to the moment the owner decides what
 the Flow does, and everything a run could change afterwards is taken out of the payload's hands:
@@ -2786,7 +2786,7 @@ the Flow does, and everything a run could change afterwards is taken out of the 
   it carries that list back (`outward_unconfirmed`), so a client can't publish them without having had them to show.
   The panel asks **Let this flow act for you?** whenever a destination is new to the published revision; Not now keeps
   the previous one running. Drafts and publication stay owner-only (OWNER_ONLY): the super-agent can't publish, run or
-  stop a Flow, and the CLI's `apx flows run|stop` refuse inside an agent's command, whose own `apx` calls already ask.
+  stop a Flow, and the CLI's `colonia flows run|stop` refuse inside an agent's command, whose own `colonia` calls already ask.
 - **Destinations are ids in the revision.** A notify step names a channel id and a person or a listed room by id; the
   send uses exact ids (`messageContact` with an exact channel, `postToRoom`), never a name match, so a payload, a renamed
   room or a second channel of the same type can't redirect it. The payload only fills the words, through placeholders
@@ -2800,7 +2800,7 @@ the Flow does, and everything a run could change afterwards is taken out of the 
 - **The network is the internet only.** The egress policy agents' computers use (`vmAddressAllowed`) decides, on every
   address a name resolves to; the connection is pinned to the checked address and checked again on the socket, and
   redirects are not followed, so neither DNS rebinding nor a 30x reaches loopback, a private network or a metadata
-  service. A test core can let exactly its own loopback service through (`APX_FLOW_HTTP_ALLOW`), by config.
+  service. A test core can let exactly its own loopback service through (`COLONIA_FLOW_HTTP_ALLOW`), by config.
 - **Secrets stay references.** Only `secret://name` in a header's own text, resolved inside the step for the Flow's
   project; a value the payload brings is never read as a reference. Resolved values are cut from the answer and never
   stored, logged or shown: the run shows the reference.
@@ -2818,7 +2818,7 @@ days later; a Flow's message in a contact's chat is a user-role note for its age
 values can't form links or mentions; consent keys include which secret goes to which URL; non-GET calls get an hourly
 limit (60); JSON-escaped and URL-encoded echoes of a secret are cut. Known limit, not changed here: the CLI's
 "not inside an agent's command" is a client-side courtesy; the core trusts every loopback caller as the owner, for
-every owner method, and relies on D-106's "APX's own API always asks" for agents' shells.
+every owner method, and relies on D-106's "Colonia's own API always asks" for agents' shells.
 
 <a id="d-170"></a>
 ## D-170 — 2026-10-28 — A Flow's checks branch into cases, and code, SQL and commands run apart, at most once when they change something
@@ -2842,7 +2842,7 @@ what arrives only ever travels as data.
   process so a runaway query is killed. Values are always bound parameters. `node:sqlite` ignores the permission
   model, so its authorizer allows reads (and, for a write, inserts, updates, deletes and new tables or indexes) on the
   main database only; another file (`ATTACH`, `VACUUM INTO`, which asks no authorizer and is refused by its first
-  word), pragmas, triggers and extensions never run. The file is the project's: no link, no climbing out, never APX's
+  word), pragmas, triggers and extensions never run. The file is the project's: no link, no climbing out, never Colonia's
   own. Postgres and MySQL are left out (a driver per engine and a network path for little the owner asked): SQLite
   files and the Flow's own tables (Read table, Save to table) cover what Flows need now.
 - **A command is the owner's text; the payload is its environment.** Cmd runs the published command through routines'
@@ -2864,25 +2864,25 @@ not), letting a webhook choose the database or the folder, and re-running an unc
 local".
 
 The independent security review added: a database path that is a link is refused even when it points nowhere yet;
-APX's own files are never a step's database when a project's folder holds APX's home; the approval includes the
+Colonia's own files are never a step's database when a project's folder holds Colonia's home; the approval includes the
 folder; a command a signal ended is uncertain, not "couldn't start"; commands lose connection strings too. Known
 limits: SQLite's defensive mode is not exposed by `node:sqlite` (every pragma is denied instead); the database is
 opened by path a moment after the core checks it; a project's folder moved after publishing is used until the next
 publish.
 
 <a id="d-171"></a>
-## D-171 — 2026-10-28 — Work APX does on its own is a background check set where it lives; routines are the owner's
+## D-171 — 2026-10-28 — Work Colonia does on its own is a background check set where it lives; routines are the owner's
 The owner found Important mail among their routines, timed in the secretary profile, while Google Calendar's reminders
 had just left the routines for Calendar's own settings (a212a1077). They asked for the mail check to work the same way,
 with its pace chosen in Gmail, and for a rule so every later job follows it.
 
-**The rule.** Periodic work that comes with a feature (an integration's reminders or polling, upkeep APX does for the
+**The rule.** Periodic work that comes with a feature (an integration's reminders or polling, upkeep Colonia does for the
 owner) is a **background check** (`engine/background.ts`) on the office clock, not a routine:
 
 - **Where it is set.** In the settings of what it belongs to: an integration's **Configure integration**
   (`integrations.settings` / `integrations.configure`, its `settings` list naming it), or the screen of the feature.
   Its value is one `SETTINGS` entry (`domain/setting-keys.ts`), each field falling back alone, off until the owner turns
-  it on unless it is upkeep they never see. An agent changes it with `integrations.configure` through `apx_settings`,
+  it on unless it is upkeep they never see. An agent changes it with `integrations.configure` through `colonia_settings`,
   the owner's OK first.
 - **How it runs.** `{ id, everyMs, run }` passed to `officeScheduler`'s `checks`. The clock beats every minute: a check
   whose pace is the owner's (every N minutes) runs each minute and returns at once until its time, within half a beat
@@ -2908,7 +2908,7 @@ but never less often than `lead_min`, since an event starting between two looks 
 important_only }` (`CHECK_EVERY` is the range both share). Each run asks Gmail's history (D-135's cursor, now `mail_seen`), leaves out promotions, social,
 forums, spam, trash and sent (and, if chosen, what Gmail does not mark important), and only with something left admits
 a `mail` turn to the super-agent with the mail as `untrusted("emails")`. Only the owner's own Google client can read the
-inbox (D-130); with APX's the switch is shown off with a line saying so. The routine's own instructions and per-run
+inbox (D-130); with Colonia's the switch is shown off with a line saying so. The routine's own instructions and per-run
 history are not carried over: the check's framing holds D-135's prompt.
 
 **Signature import, beside it.** `email.signature_import` reads the send-as signature Gmail keeps (own client only) and
@@ -2940,22 +2940,22 @@ makes one run fan out into many:
   the owner's chats, mail, calendar, contacts, accounts, MCP servers or settings. Each run gets a new chat, so it has
   no history; it never delegates.
 - **One ref picks harness, model and effort.** `model` is an `engine/model#effort` ref, set as the chat's own model.
-  A model API runs on APX's loop. A CLI (Claude Code, Codex, an ACP agent) runs the step as its own session in the
+  A model API runs on Colonia's loop. A CLI (Claude Code, Codex, an ACP agent) runs the step as its own session in the
   project's folder (D-043: CLIs never run as an agent's persona); who answers travels as the brief of its first
-  message, and APX's memory does not reach it. Its permission is the session's write policy (ask, auto, read-only);
-  on APX's loop it is the mode (manual, auto, total) over the agent's own, its own rules still applying. Plan and
+  message, and Colonia's memory does not reach it. Its permission is the session's write policy (ask, auto, read-only);
+  on Colonia's loop it is the mode (manual, auto, total) over the agent's own, its own rules still applying. Plan and
   accept-edits are left out: nobody is there to review a plan.
 - **What answered is shown.** `flows.run_get` adds the harness and model of the run each AI step started; the run
   detail names them beside the bot's or agent's name and opens the chat.
 
-Template fields gained the values a person reaches for: `$apx.project`, `$apx.now` and `$apx.run`, filled by the
+Template fields gained the values a person reaches for: `$colonia.project`, `$colonia.now` and `$colonia.run`, filled by the
 step, never bindings the payload could reach. A command's environment reads `secret://name` like an HTTP header does
 (D-169): in the owner's own text only, resolved in the step, cut from what it printed, shown as the reference, named in
 the allow dialog. The panel's picker offers secrets only in those two fields; a message, a body, SQL values or an AI
 instruction would carry a secret as text.
 
-The independent security review added: the step's limits also apply to the APX tools a CLI session reaches through
-APX's MCP bridge (it found a CLI bot with the super-agent's whole tool set); the bot's tools became a short list to
+The independent security review added: the step's limits also apply to the Colonia tools a CLI session reaches through
+Colonia's MCP bridge (it found a CLI bot with the super-agent's whole tool set); the bot's tools became a short list to
 keep instead of a list to drop (the super-agent can read every chat, so a payload could have read them through a
 bot); a helper an agent step delegates to works in the step's mode, not the agent's own; a CLI step in a project
 without a folder is refused at validation instead of failing every run. Known limits: a CLI step's brief reaches the
@@ -2965,7 +2965,7 @@ echoed transformed (base64, hex), can survive in the run.
 
 Rejected: capping an agent step's tools to a fixed safe list (the owner asked for full power; the agent's own rules already
 say what it may use), a second "direct model" block beside it (one block; old drawings keep theirs), letting a bot
-delegate (a bot has no team to speak for), and letting a CLI session read APX memory through framing (D-043).
+delegate (a bot has no team to speak for), and letting a CLI session read Colonia memory through framing (D-043).
 
 <a id="d-173"></a>
 ## D-173 — 2026-10-29 — A Flow saves to the project's named tables, and a variable may hold a secret's reference
@@ -3002,7 +3002,7 @@ text that leaves (rule 11: it would put the key in a message or a prompt).
 <a id="d-174"></a>
 ## D-174 — 2026-10-29 — Agents draw Flow drafts; what runs stays the owner's to publish
 The owner wants to ask for a Flow from any chat and have their super-agent make it, or change one, instead of drawing
-every step themselves. The super-agent does it through `apx_settings`' existing `flows` area (moved to `apx_flow` by [D-181](#d-181)), not a new tool
+every step themselves. The super-agent does it through `colonia_settings`' existing `flows` area (moved to `colonia_flow` by [D-181](#d-181)), not a new tool
 (rule 15): `flows.list`, `flows.graph_get` (its steps and connections as compact JSON, no places), `flows.validate`,
 `flows.create {project, name, graph | edits}` and `flows.draft_save {flow, edits}` or `{flow, expectedVersion,
 graph}`. Edits are `add` (a step with only the fields it sets; ids from the kind), `update`, `remove`, `connect`,
@@ -3011,14 +3011,14 @@ made meanwhile is a conflict, never overwritten; a whole graph needs the `draftV
 answers with what keeps the drawing from running, step by step with its code, and puts a `flow` card in the chat
 (the drawing, draft or published, **Open in the editor**). New steps are placed by `placeSteps`
 (`packages/protocol/src/flow-edit.ts`, shared with the panel): right of the step they follow, on the nearest free row;
-a drawing with no places is laid out left to right. The step fields live in the `apx-flows` skill, loaded on demand:
+a drawing with no places is laid out left to right. The step fields live in the `colonia-flows` skill, loaded on demand:
 the prompt does not grow.
 
 **The router decides who reaches a drawing.** `flows.graph_get`, `flows.validate`, `flows.draft_save` and the new
 `flows.create` (an off, table-only Flow with the drawing as its draft, in one transaction) are no longer human-only.
 The owner reaches every Flow; an agent's own tool call (the core sets `ctx.agent`) reaches its project's Flows, or any
 when the agent is global; an outside app is out by its scopes, a channel and a call with no agent behind it (an
-agent's shell through `apx`) are refused. `flows.publish`, `flows.draft_discard`, `flows.set`, `flows.run_now` and
+agent's shell through `colonia`) are refused. `flows.publish`, `flows.draft_discard`, `flows.set`, `flows.run_now` and
 `flows.cancel_run` stay the owner's. Every draft change (saved, discarded, published, made) emits `flow.draft {flow,
 project, draft_version, by}` so the list, a Flow's detail and the chat card read it again. The open editor is not
 merged with it yet: that comes with the editor's own chat.
@@ -3044,7 +3044,7 @@ cover, and each is closed:
   would drop the limit), checked against the draft and, when an agent saved the draft, what runs.
 - `flows.create` revokes any route credential left under the new identifier, as `flows.set` does.
 
-Turning a Flow on through `apx_settings`' `flows.set` keeps its card. Known limits: the open editor does not take an
+Turning a Flow on through `colonia_settings`' `flows.set` keeps its card. Known limits: the open editor does not take an
 agent's later draft (its next save conflicts); `flow.draft` reaches every operator socket with ids only, as other
 events do.
 
@@ -3065,7 +3065,7 @@ super-agent in a card over the canvas, and the steps it saves appear there as it
   the step card. Two cards side by side would leave little canvas to watch, and a step's settings and the chat are
   never needed together: edits wait while the agent works.
 - **The chat.** A loose thread with the super-agent in the Flow's project, remembered per Flow on this device
-  (`apx.flowChats`, as widget chats are) so **Ask** continues it; the card's ↻ starts a new one. The owner's
+  (`colonia.flowChats`, as widget chats are) so **Ask** continues it; the card's ↻ starts a new one. The owner's
   bubbles show only what they typed. Which Flow it is comes from the core: the editor binds the chat with
   `threads.flow_editor {thread, editor: {project, flow?} | null}` (owner-only, kept in the thread's context as
   `flow_editor`; rebound when the Flow gets its id, unbound when the chat closes or another replaces it), and each
@@ -3135,11 +3135,11 @@ lead to the leads table") for a Flow to read later.
   and add columns ("New column") to the chosen one; the "save first" gate is gone. The Flows screen switches between
   Flows and Tables (`#view=flows&tab=tables&table=<name>`): a table's columns and rows in a grid, rows added, edited
   and deleted, tables and columns made, renamed and deleted with a confirmation.
-- **The super-agent**, through `apx_settings`' `tables` area: `tables.list` and `tables.get` (rows wrapped as
+- **The super-agent**, through `colonia_settings`' `tables` area: `tables.list` and `tables.get` (rows wrapped as
   untrusted data, so a change after reading them asks), and `tables.create`, `tables.column_add`, `tables.write`,
   `tables.delete_rows` as its own calls, asked only while outside content is in the turn (D-174's rule: rows are data
   in the owner's project, D-106). Renaming or removing a table or a column changes what the owner's Flows read, so
-  those go through the owner's card every time. Field shapes are in the `apx-flows` skill.
+  those go through the owner's card every time. Field shapes are in the `colonia-flows` skill.
 
 Rejected: keeping tables implicit with a "declared in a drawing" list (the owner had no place to see or fill them),
 storing a column type (text, number…: values stay JSON as they arrive), following a rename into published drawings
@@ -3276,9 +3276,9 @@ which also hold test pins and are pruned by what runs point at), so a draft save
   read-only, labelled "Version #n · when · who", with **Restore as draft** (asks first). The editor's top bar has a
   history button with the same list in a popover; restoring replaces the canvas and says so first when there are
   unsaved edits. The bar keeps its other buttons: on a phone it already wraps to two lines, and one icon fits.
-- **The super-agent** reads versions through `apx_settings`' `flows.history {flow, entry?}` (asked like
+- **The super-agent** reads versions through `colonia_settings`' `flows.history {flow, entry?}` (asked like
   `flows.graph_get` while outside content is in the turn, since a version's drawing goes back to the model), to say
-  what changed. Restoring stays the owner's (`OWNER_ONLY`); the fields are in the `apx-flows` skill, not the prompt.
+  what changed. Restoring stays the owner's (`OWNER_ONLY`); the fields are in the `colonia-flows` skill, not the prompt.
 
 No news entry: restoring is the owner's own act in the panel, not something the super-agent offers to do. Rejected:
 reusing `flow_graph_revisions` with a draft-history table beside it (two tables to page together, and revisions are
@@ -3316,7 +3316,7 @@ short help line.
   required column as `step_incomplete`, and the editor's `stepGap` does too, so Save names it before publishing. A save
   of one value whole is checked on what arrives. Admission does not refuse a published Flow for it: marking a column
   required should not stop Flows that do fill it, so the refusal is per run.
-- **The super-agent** reads the shapes in the `apx-flows` skill; marking a column required changes what the owner's
+- **The super-agent** reads the shapes in the `colonia-flows` skill; marking a column required changes what the owner's
   Flows may save, so `tables.column_required` waits for the owner's card, like renaming one.
 
 No news entry: these are fields the owner fills in the editor, not something the super-agent offers to do. Rejected:
@@ -3326,29 +3326,29 @@ stop every run, also those that fill it), storing columns as objects in the cata
 one flag), and case-insensitive text by default (exact is what the formula did; `lower()` in a formula remains).
 
 <a id="d-181"></a>
-## D-181 — 2026-10-29 — Flows and their tables have a tool of their own, apx_flow
-The owner pointed out that `apx_settings` is for how APX is set up, and Flows are not: they are the owner's work, like
+## D-181 — 2026-10-29 — Flows and their tables have a tool of their own, colonia_flow
+The owner pointed out that `colonia_settings` is for how Colonia is set up, and Flows are not: they are the owner's work, like
 routines (`routine_list`, `routine_set`) and tasks (`task_*`), which have tools of their own. The chat said
 "Changed the settings" while the super-agent was drawing a Flow. And the approval rules did not fit: every
-`apx_settings` change waits for the owner's card (D-138, D-140), while a Flow draft saves freely and only publishing is
+`colonia_settings` change waits for the owner's card (D-138, D-140), while a Flow draft saves freely and only publishing is
 the owner's (D-174).
 
-So the `flows` and `tables` areas move from `apx_settings` to `apx_flow`, offered only to the super-agent
+So the `flows` and `tables` areas move from `colonia_settings` to `colonia_flow`, offered only to the super-agent
 (`SUPER_AGENT_TOOLS`) and, like it, kept in channel handoffs and out of a Flow's AI step. This replaces D-174's
-"through `apx_settings`' existing `flows` area, not a new tool". Nothing else about reach changes: the methods, their
+"through `colonia_settings`' existing `flows` area, not a new tool". Nothing else about reach changes: the methods, their
 `own` calls, the cards (`ownerSetting` for `flows.set` and table renames or removals) and the router's checks are the
 same. Both tools are one `areaTool` (`tools/settings.ts`) over a table of methods, so the index, fields, card and
 checks behave alike; the area files are `tools/flow-tool-flows.ts`, `flow-tool-drafts.ts` and `flow-tool-tables.ts`.
-The step fields stay in the `apx-flows` skill. Cost: one tool definition of 521 chars in a default turn
+The step fields stay in the `colonia-flows` skill. Cost: one tool definition of 521 chars in a default turn
 (`rules/PROMPT_SIZE.md`).
 
 **Keeping it current.** Flows grow every day, and an agent that cannot draw a new step is a feature half shipped.
-`tools/flow-tool.test.ts` fails when a `flows.*` or `tables.*` method is in neither `apx_flow`, `OWNER_ONLY` nor
-`FLOW_ELSEWHERE` (reads only the editor needs, with a reason), when `apx_settings` holds one again, and when a step kind
+`tools/flow-tool.test.ts` fails when a `flows.*` or `tables.*` method is in neither `colonia_flow`, `OWNER_ONLY` nor
+`FLOW_ELSEWHERE` (reads only the editor needs, with a reason), when `colonia_settings` holds one again, and when a step kind
 of `FlowNode` has no row in the skill. The checklist is [Agents reach it](FLOWS.md#agents-reach-it), and AGENTS.md
 rule 33 points at it.
 
-Rejected: keeping the area inside `apx_settings` with a nicer title (the confirmation semantics would still be the
+Rejected: keeping the area inside `colonia_settings` with a nicer title (the confirmation semantics would still be the
 exception), one tool per method like `routine_set` (each would add a definition to every turn), and tables in a third
 tool (they are the data Flows read and save, and the skill explains them together).
 
@@ -3375,7 +3375,7 @@ Devices, while the only way to get the key callers need was a separate Devices s
 - **The key in the card.** `flows.token` / `flows.token_rotate` (owner-only) read and replace a Flow's key by the Flow,
   whether it is on or off (`public-credentials.issue`, which `public_routes.rotate` now calls too). The owner may write
   their own key for a service that sends a fixed one (24–200 URL-safe characters); `verify` accepts that shape as well
-  as APX's. Replacing asks first: services using the old key stop at once.
+  as Colonia's. Replacing asks first: services using the old key stop at once.
 - **One trigger, switched in place.** A trigger turns into the other kind under the same id (`switchTrigger`), so its
   connections stay; a name still the default follows the kind.
 - **Save draft says what is left.** A draft may be unfinished (D-177); saving one now names the first issue, as Save
@@ -3392,7 +3392,7 @@ and `wsl2` on Windows, the guest template listing Debian's image for both archit
 `/dev/kvm`, WSL 2, Git for Windows) stops the first start with the command that fixes it, never a hidden screen.
 
 Windows differs in what it can promise, and the guest is checked for each point, not trusted:
-- WSL imports a root filesystem, not a disk image: APX builds one once from Debian's pinned WSL image, with sshd,
+- WSL imports a root filesystem, not a disk image: Colonia builds one once from Debian's pinned WSL image, with sshd,
   systemd, interop off and no Windows PATH (`wsl-seed.ts`), named after its recipe so a change rebuilds it. Plain
   mode skips Lima's WSL user setup, so the template's first provisioning step creates Lima's user and key.
 - Lima pipes guest scripts through ssh's stdin, which Windows' own OpenSSH never delivers: Git's ssh is used.
@@ -3425,13 +3425,13 @@ the Flow, but could not go further: publishing and running by hand were the owne
 webhook's key never reaches a model, so the curl it offered could not have worked. Its `flows.set {enabled: true}`
 was also accepted on a Flow never published, which turned on something that runs nothing.
 
-- `flows.publish` and `flows.run_now` move from `OWNER_ONLY` into `apx_flow` (`tools/flow-tool-publish.ts`) as owner
+- `flows.publish` and `flows.run_now` move from `OWNER_ONLY` into `colonia_flow` (`tools/flow-tool-publish.ts`) as owner
   calls: each waits for the owner's card, like `flows.set`. The publish card names the Flow, says it will be turned on,
   and lists what the draft sends, calls, runs and changes (`flowOutward`, the editor's **Let this flow act for you?**)
   and its AI steps. On approval it reads the draft again, stops if its version is not the one asked about, passes
   `flows.outward`'s keys to `flows.publish` and turns the Flow on, all as the owner. The run card shows the data whole.
 - A run by hand is how the agent tries a Flow, then reads it with `flows.run_get`; it never asks for the key.
-- `apx_flow`'s `flows.set` refuses to turn on a Flow whose drawing was never published, before anyone is asked.
+- `colonia_flow`'s `flows.set` refuses to turn on a Flow whose drawing was never published, before anyone is asked.
 - The editor's on switch is unchanged: it still opens an agent's draft for review instead of publishing it. The card
   is that review when the owner asks in the chat.
 

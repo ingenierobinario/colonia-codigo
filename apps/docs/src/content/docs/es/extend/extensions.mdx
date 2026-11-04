@@ -9,8 +9,8 @@ import { Aside, FileTree, Steps, Tabs, TabItem } from "@astrojs/starlight/compon
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-Una extensión es una carpeta con un `apx-extension.json` que junta varias cosas: skills, servidores MCP, plantillas de
-rutinas, los secretos que necesitan y, si hace falta, un plugin en un sandbox. APX lee el manifiesto sin correr nada,
+Una extensión es una carpeta con un `colonia-extension.json` que junta varias cosas: skills, servidores MCP, plantillas de
+rutinas, los secretos que necesitan y, si hace falta, un plugin en un sandbox. Colonia lee el manifiesto sin correr nada,
 la instala **apagada**, y encenderla aprueba exactamente los archivos que tenía.
 
 ## ¿Necesitás una?
@@ -20,23 +20,23 @@ Empezá por lo más chico que resuelva el problema:
 | Querés | Hacé |
 |---|---|
 | Saber hacer algo para los agentes de un proyecto | Una [skill de proyecto](/es/extend/skills/) en `.apc/skills/` |
-| Un servidor MCP más para tus agentes | `apx mcps add` (mirá [Servidores MCP](/es/extend/mcp/)) |
+| Un servidor MCP más para tus agentes | `colonia mcps add` (mirá [Servidores MCP](/es/extend/mcp/)) |
 | Skills, servidores y rutinas que viajan juntos, para compartir o reusar | **Una extensión** |
 | Código que mira eventos o suma contexto a tus turnos | Una extensión con plugin |
 
 ## Un ejemplo real: daily brief
 
-El repositorio de APX trae `examples/extensions/daily-brief`: una skill y una rutina de días hábiles que la usa.
+El repositorio de Colonia trae `examples/extensions/daily-brief`: una skill y una rutina de días hábiles que la usa.
 
 <FileTree>
 - daily-brief/
-  - apx-extension.json
+  - colonia-extension.json
   - skills/
     - daily-brief/
       - SKILL.md
 </FileTree>
 
-```json title="apx-extension.json"
+```json title="colonia-extension.json"
 {
   "id": "daily-brief",
   "name": "Daily brief",
@@ -101,29 +101,29 @@ puede nombrar tus otras variables ni el entorno, así que un paquete no puede ll
 <TabItem label="Terminal">
 
 ```bash
-apx extensions inspect ~/work/daily-brief     # qué traería; no se instala nada
-apx extensions install ~/work/daily-brief     # se copia, apagada
-apx extensions secret <id> <name>             # el valor de un secreto declarado, por stdin (--clear lo borra)
-apx extensions on daily-brief
-apx extensions                                # las instaladas, encendidas o apagadas
-apx extensions off daily-brief
-apx extensions rm daily-brief
+colonia extensions inspect ~/work/daily-brief     # qué traería; no se instala nada
+colonia extensions install ~/work/daily-brief     # se copia, apagada
+colonia extensions secret <id> <name>             # el valor de un secreto declarado, por stdin (--clear lo borra)
+colonia extensions on daily-brief
+colonia extensions                                # las instaladas, encendidas o apagadas
+colonia extensions off daily-brief
+colonia extensions rm daily-brief
 ```
 
 </TabItem>
 </Tabs>
 
-<Terminal command="apx extensions install ~/work/daily-brief">{`daily-brief  Daily brief v1.0.0  · off  · 3f9c1a7e5b2d8c40
+<Terminal command="colonia extensions install ~/work/daily-brief">{`daily-brief  Daily brief v1.0.0  · off  · 3f9c1a7e5b2d8c40
   A short morning brief: open tasks, what is due, what others owe you.
   skills: daily-brief
   routines: Morning brief
 
-Turn it on with: apx extensions on daily-brief`}</Terminal>
+Turn it on with: colonia extensions on daily-brief`}</Terminal>
 
 <Shot name="resources-extensions" alt="Recursos, pestaña Extensiones: extensiones instaladas con su interruptor, skills, servidores y rutinas" caption="Recursos › Extensiones" />
 
-Instalar copia archivos comunes a la carpeta de APX y les toma una huella. Si la copia instalada cambia en el disco,
-APX apaga la extensión en el próximo arranque hasta que la vuelvas a aprobar. Para traer cambios de la carpeta
+Instalar copia archivos comunes a la carpeta de Colonia y les toma una huella. Si la copia instalada cambia en el disco,
+Colonia apaga la extensión en el próximo arranque hasta que la vuelvas a aprobar. Para traer cambios de la carpeta
 original, instalala de nuevo o usá **Volver a leer** en su detalle.
 
 ## Plugins
@@ -136,7 +136,7 @@ proceso, mira eventos (una tarea cambió, llegó un mensaje…) y puede sumar co
 ```
 
 Corre en un sandbox con el modelo de permisos de Node: lee solo su carpeta, escribe solo su carpeta de datos, no
-arranca procesos y no puede llamar a APX. Llega a internet solo con `"network": true`, y nunca a esta máquina. Lo que
+arranca procesos y no puede llamar a Colonia. Llega a internet solo con `"network": true`, y nunca a esta máquina. Lo que
 suma como contexto le llega al agente como dato de afuera, no como instrucciones.
 
 <Aside type="caution">
@@ -145,6 +145,6 @@ confiás en quien la hizo.
 </Aside>
 
 <Aside type="tip">
-APX trae una skill `apx-extensions` para Claude Code, Codex y otras apps de agentes, así le podés pedir a una de ellas
-que te arme una extensión. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agentes-a-usar-apx).
+Colonia trae una skill `colonia-extensions` para Claude Code, Codex y otras apps de agentes, así le podés pedir a una de ellas
+que te arme una extensión. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agentes-a-usar-colonia).
 </Aside>

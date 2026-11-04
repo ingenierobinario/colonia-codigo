@@ -9,7 +9,7 @@ import { createUpdates, type Runner } from "./updates.ts";
 
 for (const corrupt of [false, true]) {
   test(`the production coordinator ${corrupt ? "blocks a corrupt bundle" : "installs a pinned bundle once across clients and restart"}`, async () => {
-    const dir = tempDir("apx-coordinated-install-");
+    const dir = tempDir("colonia-coordinated-install-");
     const app = path.join(dir.path, "app");
     const root = path.join(app, "versions", "2.0.0");
     fs.mkdirSync(root, { recursive: true });
@@ -22,7 +22,7 @@ for (const corrupt of [false, true]) {
       .update(corrupt ? "wrong package" : archive)
       .digest("hex");
     const assets = (v: string) =>
-      [`apx-core-${v}-linux-x64.tar.gz`, `APX-${v}-linux-x64.AppImage`].flatMap((name) => [name, `${name}.sha256`]);
+      [`colonia-core-${v}-linux-x64.tar.gz`, `Colonia-${v}-linux-x64.AppImage`].flatMap((name) => [name, `${name}.sha256`]);
     const fetchImpl: typeof fetch = async (input) => {
       const url = String(input);
       if (url.includes("/releases?"))
@@ -39,8 +39,8 @@ for (const corrupt of [false, true]) {
       extracts++;
       const unpacked = args[args.indexOf("-C") + 1];
       assert.ok(unpacked);
-      fs.mkdirSync(path.join(unpacked, "apx", "node", "bin"), { recursive: true });
-      fs.writeFileSync(path.join(unpacked, "apx", "node", "bin", "node"), "installed runtime");
+      fs.mkdirSync(path.join(unpacked, "colonia", "node", "bin"), { recursive: true });
+      fs.writeFileSync(path.join(unpacked, "colonia", "node", "bin", "node"), "installed runtime");
       return { code: 0, out: "" };
     };
     const make = (version: string) =>
@@ -57,7 +57,7 @@ for (const corrupt of [false, true]) {
         updateTimers: timers,
         log: createLog("test", true),
         platform: { os: "linux", arch: "x64" },
-        feed: "acme/apx",
+        feed: "acme/colonia",
         fetch: fetchImpl,
         run,
       });

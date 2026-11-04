@@ -23,12 +23,12 @@ export interface RunBarsProps {
 
 /** Recent runs of an automation as a row of bars: full when it ran, short when it stopped early, red when it failed. */
 export function RunBars({ runs, label, size = "sm", selected, onSelect, className }: RunBarsProps) {
-  const cls = cx("apx-runbars", `apx-runbars--${size}`, className);
+  const cls = cx("colonia-runbars", `colonia-runbars--${size}`, className);
   if (!onSelect)
     return (
       <span className={cls} role="img" aria-label={label}>
         {runs.map((r) => (
-          <span key={r.id} className={cx("apx-runbars__bar", `apx-runbars__bar--${r.state}`)} title={r.label} />
+          <span key={r.id} className={cx("colonia-runbars__bar", `colonia-runbars__bar--${r.state}`)} title={r.label} />
         ))}
       </span>
     );
@@ -38,7 +38,7 @@ export function RunBars({ runs, label, size = "sm", selected, onSelect, classNam
         <button
           key={r.id}
           type="button"
-          className={cx("apx-runbars__bar", `apx-runbars__bar--${r.state}`, selected === r.id && "is-selected")}
+          className={cx("colonia-runbars__bar", `colonia-runbars__bar--${r.state}`, selected === r.id && "is-selected")}
           aria-label={r.label}
           aria-pressed={selected === r.id}
           title={r.label}

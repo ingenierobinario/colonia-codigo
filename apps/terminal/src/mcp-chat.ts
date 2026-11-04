@@ -1,6 +1,6 @@
-// Chat tools for an outside app connected with a client token (`APX_CLIENT_TOKEN`): list APX's agents, ask one and
+// Chat tools for an outside app connected with a client token (`COLONIA_CLIENT_TOKEN`): list Colonia's agents, ask one and
 // wait for the answer, read a chat it started. The core decides what the token allows; nothing is checked here.
-import { type ApxClient, ApxError } from "@apx/protocol/client";
+import { type ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -9,10 +9,10 @@ const WAIT_MS = 5 * 60_000;
 const POLL_MS = 1500;
 
 const text = (t: string, isError = false): CallToolResult => ({ content: [{ type: "text", text: t }], isError });
-const failed = (err: unknown) => text(err instanceof ApxError ? `${err.code}: ${err.message}` : String(err), true);
+const failed = (err: unknown) => text(err instanceof ColoniaError ? `${err.code}: ${err.message}` : String(err), true);
 
 /** The words of a run's answer, once it ended (or why it has not). */
-async function answerOf(client: ApxClient, thread: string, runId: string, until: number): Promise<string> {
+async function answerOf(client: ColoniaClient, thread: string, runId: string, until: number): Promise<string> {
   for (;;) {
     const r = await client.call("threads.get", { thread });
     const run = r.runs.find((x) => x.id === runId);
@@ -23,16 +23,16 @@ async function answerOf(client: ApxClient, thread: string, runId: string, until:
         run.end_reason === "step_limit" ? "(It ran out of steps: a progress report, not a final result.)\n" : "";
       return run.state === "completed" ? `${cut}${words || "(no answer)"}` : `The run ${run.state}: ${run.error ?? ""}`;
     }
-    if (run?.state === "input-required") return `Waiting for the owner to approve something in APX (thread ${thread}).`;
-    if (Date.now() > until) return `Still working; read it later with apx_read (thread ${thread}).`;
+    if (run?.state === "input-required") return `Waiting for the owner to approve something in Colonia (thread ${thread}).`;
+    if (Date.now() > until) return `Still working; read it later with colonia_read (thread ${thread}).`;
     await new Promise((r) => setTimeout(r, POLL_MS));
   }
 }
 
-export function registerChatTools(server: McpServer, client: ApxClient): void {
+export function registerChatTools(server: McpServer, client: ColoniaClient): void {
   server.registerTool(
-    "apx_agents",
-    { description: "List the agents in APX (id, name, role, project) you can ask with apx_ask.", inputSchema: {} },
+    "colonia_agents",
+    { description: "List the agents in Colonia (id, name, role, project) you can ask with colonia_ask.", inputSchema: {} },
     async () => {
       try {
         const { agents } = await client.call("agents.list", {});
@@ -62,12 +62,12 @@ export function registerChatTools(server: McpServer, client: ApxClient): void {
     },
   );
   server.registerTool(
-    "apx_ask",
+    "colonia_ask",
     {
       description:
-        "Ask an APX agent something and wait for its answer (up to 5 minutes). Pass `thread` to continue a chat you started; otherwise a new one starts. The agent treats your text as a request from another app, not as its owner's order.",
+        "Ask an Colonia agent something and wait for its answer (up to 5 minutes). Pass `thread` to continue a chat you started; otherwise a new one starts. The agent treats your text as a request from another app, not as its owner's order.",
       inputSchema: {
-        agent: z.string().describe("Agent id (see apx_agents)."),
+        agent: z.string().describe("Agent id (see colonia_agents)."),
         text: z.string().min(1).max(20_000),
         thread: z.string().optional(),
       },
@@ -84,9 +84,9 @@ export function registerChatTools(server: McpServer, client: ApxClient): void {
     },
   );
   server.registerTool(
-    "apx_read",
+    "colonia_read",
     {
-      description: "Read the last messages of a chat you started with apx_ask.",
+      description: "Read the last messages of a chat you started with colonia_ask.",
       inputSchema: { thread: z.string(), last: z.number().int().min(1).max(50).optional() },
     },
     async ({ thread, last }) => {

@@ -2,7 +2,7 @@
 // inside the repository and away from .git; git runs with the repository unable to make it run anything (no hooks).
 import fs from "node:fs";
 import path from "node:path";
-import type { GitCommit, GitFile } from "@apx/protocol";
+import type { GitCommit, GitFile } from "@colonia/protocol";
 import type { AuxAbout } from "../domain/aux-calls.ts";
 import type { Store } from "../domain/store.ts";
 import { git, gitBoth } from "../engine/changes.ts";

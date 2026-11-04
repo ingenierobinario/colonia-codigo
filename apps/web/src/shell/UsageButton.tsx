@@ -1,4 +1,4 @@
-import { IconButton, Icons, Popover } from "@apx/ui";
+import { IconButton, Icons, Popover } from "@colonia/ui";
 import { Suspense, useState } from "react";
 import { useUsage } from "../data/usage.ts";
 import { useT } from "../i18n/index.ts";
@@ -6,7 +6,7 @@ import { UsageSummary } from "../lazy.ts";
 import { UsageLoading } from "./UsageLoading.tsx";
 import { useVisible } from "./useVisible.ts";
 
-/** Topbar gauge: how full the computer's RAM is. Opens a compact view of RAM, CPU, disk and APX's top consumers. */
+/** Topbar gauge: how full the computer's RAM is. Opens a compact view of RAM, CPU, disk and Colonia's top consumers. */
 export function UsageButton() {
   const t = useT();
   const [open, setOpen] = useState(false);

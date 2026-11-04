@@ -1,4 +1,4 @@
-// Where secret values live outside APX's own files, one store per operating system: the login Keychain (macOS), a file
+// Where secret values live outside Colonia's own files, one store per operating system: the login Keychain (macOS), a file
 // only the user's Windows account can decrypt (DPAPI, what Credential Manager itself uses) and the desktop keyring
 // through the Secret Service (Linux, `secret-tool`). Each runs the system's own command; values go on stdin, never on
 // argv. See DECISIONS.md#d-010 and DECISIONS.md#d-133.
@@ -80,11 +80,11 @@ export function secretServiceStore(service: string, run: Run = runCommand): Valu
         } catch {}
         return;
       }
-      run("secret-tool", ["store", "--label", `APX ${name}`, ...attrs(name)], { input: value });
+      run("secret-tool", ["store", "--label", `Colonia ${name}`, ...attrs(name)], { input: value });
     },
     works() {
       // A round trip: a keyring that is missing, or a session bus that is not there, fails here.
-      const probe = "apx-store-probe";
+      const probe = "colonia-store-probe";
       try {
         store.set(probe, "ok");
         const back = store.get(probe);
@@ -104,9 +104,9 @@ const DPAPI_SCRIPT = [
   "$ErrorActionPreference = 'Stop'",
   "Add-Type -AssemblyName System.Security",
   "$data = [Convert]::FromBase64String([Console]::In.ReadToEnd().Trim())",
-  "$entropy = [Text.Encoding]::UTF8.GetBytes($env:APX_DPAPI_ENTROPY)",
+  "$entropy = [Text.Encoding]::UTF8.GetBytes($env:COLONIA_DPAPI_ENTROPY)",
   "$scope = [Security.Cryptography.DataProtectionScope]::CurrentUser",
-  "if ($env:APX_DPAPI_OP -eq 'protect') { $out = [Security.Cryptography.ProtectedData]::Protect($data, $entropy, $scope) }",
+  "if ($env:COLONIA_DPAPI_OP -eq 'protect') { $out = [Security.Cryptography.ProtectedData]::Protect($data, $entropy, $scope) }",
   "else { $out = [Security.Cryptography.ProtectedData]::Unprotect($data, $entropy, $scope) }",
   "[Console]::Out.Write([Convert]::ToBase64String($out))",
 ].join("\n");
@@ -122,7 +122,7 @@ export function dpapiStore(home: string, service: string, run: Run = runCommand)
   const crypt = (op: "protect" | "unprotect", b64: string) =>
     run("powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", ENCODED_SCRIPT], {
       input: b64,
-      env: { APX_DPAPI_OP: op, APX_DPAPI_ENTROPY: service },
+      env: { COLONIA_DPAPI_OP: op, COLONIA_DPAPI_ENTROPY: service },
     }).trim();
   const load = (): Record<string, string> => {
     if (values) return values;

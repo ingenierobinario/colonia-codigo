@@ -1,5 +1,5 @@
 // The news as the panel shows them: by release, newest first, and the few lines the Help menu has room for.
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 
 export type NewsItem = Result<"system.news">["entries"][number];
 export type Release = { version: string; entries: NewsItem[] };

@@ -15,7 +15,7 @@ let fx: Fixture;
 let tmp: TempDir;
 
 before(() => {
-  tmp = tempDir("apx-codex-wt-");
+  tmp = tempDir("colonia-codex-wt-");
   const root = tmp.path;
   const env: Record<string, string> = { GIT_CONFIG_NOSYSTEM: "1" };
   for (const [k, v] of Object.entries(process.env)) if (v !== undefined && !k.startsWith("GIT_")) env[k] = v;

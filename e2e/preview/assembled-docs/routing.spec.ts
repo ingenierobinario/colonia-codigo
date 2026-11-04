@@ -7,15 +7,15 @@ const suffix = "?from=historical#_top";
 const routes = [
   ["/docs/start/installation/", "/v1/start/installation/"],
   ["/docs/es/start/introduction/", "/v1/es/start/introduction/"],
-  ["/apx/docs/start/installation/", "/v1/start/installation/"],
-  ["/apx/docs/es/start/introduction/", "/v1/es/start/introduction/"],
+  ["/colonia/docs/start/installation/", "/v1/start/installation/"],
+  ["/colonia/docs/es/start/introduction/", "/v1/es/start/introduction/"],
   ["/start/introduction/", "/docs/start/introduction/"],
   ["/es/start/introduction/", "/es/docs/start/introduction/"],
   ["/v2/start/introduction/", "/docs/start/introduction/"],
   ["/v2/es/start/introduction/", "/es/docs/start/introduction/"],
-  ["/apx/v2/es/start/introduction/", "/es/docs/start/introduction/"],
-  ["/apx/start/introduction/", "/docs/start/introduction/"],
-  ["/apx/es/start/introduction/", "/es/docs/start/introduction/"],
+  ["/colonia/v2/es/start/introduction/", "/es/docs/start/introduction/"],
+  ["/colonia/start/introduction/", "/docs/start/introduction/"],
+  ["/colonia/es/start/introduction/", "/es/docs/start/introduction/"],
   ["/v1/start/introduction/", "/v1/start/introduction/"],
   ["/v1/es/start/introduction/", "/v1/es/start/introduction/"],
   ["/docs/", "/docs/start/introduction/"],
@@ -79,7 +79,7 @@ test("all historical pages follow the approved current-docs precedence and retai
     const archived = await request.get(`${assembledOrigin}${historical}`);
     expect(archived.status(), historical).toBe(200);
     expect(await archived.body(), historical).toEqual(await readFile(join(v1, file)));
-    for (const address of [legacy, `/apx${legacy}`]) {
+    for (const address of [legacy, `/colonia${legacy}`]) {
       await page.goto(`${assembledOrigin}${address}${suffix}`);
       await expect(page).toHaveURL(`${assembledOrigin}${target}${suffix}`);
       await expect(page.locator("h1").first()).toBeVisible();
@@ -133,7 +133,7 @@ test("404 aliases never redirect outside the assembled origin", async ({ page, a
       await route.fulfill({ status: 200, contentType: "text/html", body: "External destination blocked by test" });
     } else await route.continue();
   });
-  for (const path of ["/apx//example.com", "/v2//example.com", "/apx/\\\\example.com", "/v2/\\\\example.com"]) {
+  for (const path of ["/colonia//example.com", "/v2//example.com", "/colonia/\\\\example.com", "/v2/\\\\example.com"]) {
     await page.goto(`${assembledOrigin}${path}`);
     await expect(page.locator("h1")).toHaveText("404");
     expect(new URL(page.url()).origin).toBe(assembledOrigin);

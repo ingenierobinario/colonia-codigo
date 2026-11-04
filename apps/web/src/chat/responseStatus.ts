@@ -1,4 +1,4 @@
-import type { RunEndReason, RunState } from "@apx/protocol";
+import type { RunEndReason, RunState } from "@colonia/protocol";
 import type { MessageKey } from "../i18n/index.ts";
 
 type Report = { state: RunState; end_reason?: RunEndReason; issue?: "no_answer" | "actions_failed" };

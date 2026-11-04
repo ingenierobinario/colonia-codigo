@@ -1,4 +1,4 @@
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { useT } from "../../i18n/index.ts";
 
 export function BrowserReview({

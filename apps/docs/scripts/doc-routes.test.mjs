@@ -28,10 +28,10 @@ test("web pages, assets, external URLs and migrated documentation stay unchanged
 });
 
 test("configurable publication base is added once before locale and docs", () => {
-  assert.equal(sitePath("/es/start/install/", "/apx/"), "/apx/es/docs/start/install/");
-  assert.equal(sitePath("/apx/es/start/install/", "/apx/"), "/apx/es/docs/start/install/");
-  assert.equal(sitePath("/apx/docs/start/install/", "/apx/"), "/apx/docs/start/install/");
-  assert.equal(sitePath("/compare/", "/apx/"), "/apx/compare/");
-  assert.equal(sitePath("/apx-extra/compare/", "/apx/"), "/apx/apx-extra/compare/");
-  assert.equal(sitePath("/preview/apx/es/start/install/", "/preview/apx/"), "/preview/apx/es/docs/start/install/");
+  assert.equal(sitePath("/es/start/install/", "/colonia/"), "/colonia/es/docs/start/install/");
+  assert.equal(sitePath("/colonia/es/start/install/", "/colonia/"), "/colonia/es/docs/start/install/");
+  assert.equal(sitePath("/colonia/docs/start/install/", "/colonia/"), "/colonia/docs/start/install/");
+  assert.equal(sitePath("/compare/", "/colonia/"), "/colonia/compare/");
+  assert.equal(sitePath("/colonia-extra/compare/", "/colonia/"), "/colonia/colonia-extra/compare/");
+  assert.equal(sitePath("/preview/colonia/es/start/install/", "/preview/colonia/"), "/preview/colonia/es/docs/start/install/");
 });

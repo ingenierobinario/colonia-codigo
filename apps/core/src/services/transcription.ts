@@ -1,4 +1,4 @@
-// Transcription dialects: voice notes to text. "whisper-cpp" is whisper.cpp's server, which APX starts and stops
+// Transcription dialects: voice notes to text. "whisper-cpp" is whisper.cpp's server, which Colonia starts and stops
 // itself; "whisper-local" is a whisper server already running on this Mac (faster-whisper or mlx-whisper) that reads
 // the audio from a path; "openai-transcribe" uploads it to any OpenAI-compatible endpoint.
 import { errorMessage } from "../errors.ts";

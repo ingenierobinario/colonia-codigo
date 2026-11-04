@@ -1,6 +1,6 @@
 // Agents are always addressed by id. Names are for people and models; turning a name into an id is an explicit,
 // scoped lookup (`resolve`) that refuses ambiguity instead of picking one.
-import { type Agent, type AgentRules, Autonomy, type ModelChoice, RulePolicy, ToolRisk } from "@apx/protocol";
+import { type Agent, type AgentRules, Autonomy, type ModelChoice, RulePolicy, ToolRisk } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { AgentsTable } from "../db/schema.ts";
 import { harnessOf } from "./refs.ts";
@@ -131,7 +131,7 @@ export function agentsRepo({ one, all, run }: Sql, changed: () => void) {
     },
     /**
      * Mirrors an agent defined in a project file. The file owns name, role, prompt and hierarchy; what the owner set in
-     * APX (model choice, browser profile) is kept.
+     * Colonia (model choice, browser profile) is kept.
      */
     upsertApc(a: {
       id: string;

@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { ArtifactBundle, ArtifactManifest, Surface } from "@apx/protocol";
+import type { ArtifactBundle, ArtifactManifest, Surface } from "@colonia/protocol";
 import { declaresApp, declaresLive } from "../../../../packages/surfaces/src/kit.ts";
 import { artifactFetch } from "../artifact-fetch.ts";
 import { artifactMemory, type SqlParam } from "../domain/artifact-memory.ts";
@@ -17,9 +17,9 @@ import { type Secrets, splitSecretName } from "../secrets.ts";
 import { withKit } from "../surface-kit.ts";
 import type { Handlers } from "./router.ts";
 
-/** The kit version a page loads (`/_apx/kit@1.2.js` → "1.2"). */
+/** The kit version a page loads (`/_colonia/kit@1.2.js` → "1.2"). */
 export function kitVersionOf(html: string): string | undefined {
-  return /<script\b[^>]*\bsrc\s*=\s*["']?\/_apx\/kit@(\d+(?:\.\d+){0,2})\.js/i.exec(html)?.[1];
+  return /<script\b[^>]*\bsrc\s*=\s*["']?\/_colonia\/kit@(\d+(?:\.\d+){0,2})\.js/i.exec(html)?.[1];
 }
 
 export function artifactHandlers(deps: {
@@ -30,7 +30,7 @@ export function artifactHandlers(deps: {
   /** The headless browser's page check, when one can run here. */
   checkPage?: ((html: string, onCall: PageCall) => Promise<PageCheck>) | undefined;
 }) {
-  /** Who made it, for its file: an installed one keeps its first maker; one made here names this APX's owner. */
+  /** Who made it, for its file: an installed one keeps its first maker; one made here names this Colonia's owner. */
   const madeBy = (s: Surface): Pick<ArtifactManifest, "author" | "agent" | "project"> => {
     if (s.origin) return { author: s.origin.author, agent: s.origin.agent, project: s.origin.project };
     const owner = ownerIdentity(store).name;
@@ -69,7 +69,7 @@ export function artifactHandlers(deps: {
     "surfaces.check": async ({ html }) => {
       if (!deps.checkPage) return { checked: false, errors: [], text: "", views: [] };
       // A scratch memory per check: the page's first queries and writes run for real, on nothing of the owner's.
-      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-check-"));
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-check-"));
       const scratch = artifactMemory({ home: dir });
       const ref = { name: "check" };
       const onCall: PageCall = async (method, p) => {
@@ -120,7 +120,7 @@ export function artifactHandlers(deps: {
         ...madeBy(s),
         exported_at: new Date().toISOString(),
       };
-      const bundle: ArtifactBundle = { format: "apx-artifact@1", manifest, html: s.html };
+      const bundle: ArtifactBundle = { format: "colonia-artifact@1", manifest, html: s.html };
       if (withMemory) {
         if (s.state) bundle.state = s.state;
         const values = memory.storeGet(s);

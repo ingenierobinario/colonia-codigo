@@ -1,4 +1,4 @@
-import { Badge, Button, ContextMenu, EmptyState, Icons, MasterDetail, PickRow, Tag } from "@apx/ui";
+import { Badge, Button, ContextMenu, EmptyState, Icons, MasterDetail, PickRow, Tag } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { projectName } from "../data/identity.ts";
 import { type SkillInfo, toggleSkill } from "../data/resources.ts";
@@ -15,13 +15,13 @@ const keyOf = (s: SkillInfo) => `${s.scope}:${s.project_id ?? ""}:${s.name}`;
 
 const folderOf = (skillMd: string) => skillMd.replace(/[\\/]SKILL\.md$/, "");
 
-/** Another app's skill copied into APX: its folder, into APX's skills (or the project's, for a project's own). */
+/** Another app's skill copied into Colonia: its folder, into Colonia's skills (or the project's, for a project's own). */
 export const copyStart = (s: SkillInfo): ImportStart => ({
   source: { kind: "folder", path: folderOf(s.path) },
   project: s.scope === "project" ? s.project_id : undefined,
 });
 
-/** One of a skill's copies made the one agents use: copied into APX in place of the current one. */
+/** One of a skill's copies made the one agents use: copied into Colonia in place of the current one. */
 const takeCopyStart = (s: SkillInfo, copyPath: string): ImportStart => ({
   ...copyStart(s),
   source: { kind: "folder", path: folderOf(copyPath) },
@@ -70,7 +70,7 @@ export function SkillsTab({ projectId, query, scope, adding, setAdding, res, own
   const inherit = useInheritance(projectId, "skills", res.loadSkills);
   const row = (s: SkillInfo) => {
     const tag = sourceTag(s, t);
-    const fromApp = engineOf(s.source) !== "apx";
+    const fromApp = engineOf(s.source) !== "colonia";
     const open = (edit: boolean) => {
       setPicked(keyOf(s));
       setEditing(edit ? Date.now() : 0);
@@ -84,10 +84,10 @@ export function SkillsTab({ projectId, query, scope, adding, setAdding, res, own
             ? [{ label: t("res.edit"), icon: <Icons.Pencil size={14} />, onSelect: () => open(true) }]
             : []),
           ...(fromApp && !s.editable
-            ? [{ label: t("res.copyToApx"), icon: <Icons.Copy size={14} />, onSelect: () => setCopying(copyStart(s)) }]
+            ? [{ label: t("res.copyToColonia"), icon: <Icons.Copy size={14} />, onSelect: () => setCopying(copyStart(s)) }]
             : []),
-          // APX's own skills are always on.
-          ...(s.source === "apx"
+          // Colonia's own skills are always on.
+          ...(s.source === "colonia"
             ? []
             : [
                 {

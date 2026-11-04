@@ -1,8 +1,8 @@
 import "../styles/screens.css";
 import "../styles/computer.css";
-import type { ComputerMemoryRefusal, ComputerScreen, Result } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
-import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu } from "@apx/ui";
+import type { ComputerMemoryRefusal, ComputerScreen, Result } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
+import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { ChatView } from "../chat/ChatView.tsx";
 import { client } from "../data/client.ts";
@@ -20,7 +20,7 @@ type ScreensFull = { max: number; up: string[] };
 
 /** The cap a screen start ran into, from the refusal's detail; else undefined. */
 function screensFull(failure: unknown): ScreensFull | undefined {
-  const d = failure instanceof ApxError ? (failure.detail as Record<string, unknown> | undefined) : undefined;
+  const d = failure instanceof ColoniaError ? (failure.detail as Record<string, unknown> | undefined) : undefined;
   if (!d || typeof d !== "object" || d.reason !== "screens_full") return undefined;
   const up = Array.isArray(d.up) ? d.up.filter((n): n is string => typeof n === "string") : [];
   return { max: typeof d.max === "number" ? d.max : up.length, up };

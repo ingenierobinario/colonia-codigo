@@ -1,6 +1,6 @@
 # Public ingress
 
-APX has two different network boundaries. The private daemon serves the panel, RPC and device connections.
+Colonia has two different network boundaries. The private daemon serves the panel, RPC and device connections.
 The public listener binds only to loopback (the preferred port is the private port plus eight) and has no panel,
 RPC, WebSocket upgrade, health endpoint, filesystem fallback or general reverse proxy. Publish **only that listener**.
 
@@ -11,12 +11,12 @@ tunnel. The existing `webhooks.get` / `webhooks.set` protocol methods and saved 
 `apps/core/src/public-tunnel.ts` owns the infrastructure independently of channel adapters.
 
 - **Tailscale Funnel:** HTTPS on port 8443 forwards to the public listener. Private Tailscale Serve on 443 is untouched.
-- **ngrok:** APX starts a bounded child process pointing only at the public listener. A reserved domain is optional.
+- **ngrok:** Colonia starts a bounded child process pointing only at the public listener. A reserved domain is optional.
 - **Custom:** an HTTPS origin, without userinfo, path, query or fragment. Configure the owner's reverse proxy to forward
   to the listener's actual loopback port. A proxy prefix must be stripped before forwarding; it is not a route alias.
-- **Off:** no APX-managed public tunnel. A separately configured reverse proxy remains the owner's responsibility.
+- **Off:** no Colonia-managed public tunnel. A separately configured reverse proxy remains the owner's responsibility.
 
-The provider supplies a hostname or public IP and its lifetime. APX does not allocate or promise a fixed public IP.
+The provider supplies a hostname or public IP and its lifetime. Colonia does not allocate or promise a fixed public IP.
 Forwarded headers do not grant access and are not trusted as client identity. No daemon token belongs in a tunnel URL.
 
 ## Allowlist and authentication
@@ -24,10 +24,10 @@ Forwarded headers do not grant access and are not trusted as client identity. No
 | Resource | Methods | Authentication |
 | --- | --- | --- |
 | `/hooks/<configured-channel-id>` | POST | Only LINE and Teams; the adapter verifies the native signature/JWT before delivering any event |
-| `/flows/<flow-path>` | POST, GET (as its webhook step says) | A separate APX bearer token for that exact endpoint; the registered destination owns payload validation and execution |
+| `/flows/<flow-path>` | POST, GET (as its webhook step says) | A separate Colonia bearer token for that exact endpoint; the registered destination owns payload validation and execution |
 | `/flows/test/<flow-path>` | POST, GET (as the drawing tested says) | Only while the owner listens for one test event on that Flow (five minutes, one event); the address's bearer token when it has one |
 | `/a/<published-share-link>` | GET, HEAD | Explicit publication; a read-only page, never artifact state, stores, secrets or actions |
-| `/_apx/kit@1[.minor[.patch]].js` | GET, HEAD | Static public widget kit only |
+| `/_colonia/kit@1[.minor[.patch]].js` | GET, HEAD | Static public widget kit only |
 
 Everything else is denied, including arbitrary prefixes, suffixes, private media URLs and RPC. Unknown routes return
 404, wrong methods 405, missing/invalid/revoked tokens 401. No query parameter or cookie supplies a public bearer token.
@@ -37,10 +37,10 @@ normalization. Only a Flow's GET reads the query, decoded with `URLSearchParams`
 ([D-182](DECISIONS.md#d-182)); every other route ignores it. Reverse proxies must preserve the request target and enforce equally
 strict normalization; a proxy that rewrites an ambiguous request into a different canonical route changes this boundary.
 
-LINE and Teams are deliberate exceptions to APX bearer authentication, not unauthenticated generic webhooks. LINE
+LINE and Teams are deliberate exceptions to Colonia bearer authentication, not unauthenticated generic webhooks. LINE
 requires its HMAC over the original request bytes. Teams requires the Bot Framework JWT with its existing issuer,
-audience and endorsement checks. These platforms cannot be assumed to attach a custom APX bearer. Rotating their
-provider credentials uses the existing channel configuration, not a shared APX global webhook token.
+audience and endorsement checks. These platforms cannot be assumed to attach a custom Colonia bearer. Rotating their
+provider credentials uses the existing channel configuration, not a shared Colonia global webhook token.
 
 Native deliveries propagate the request deadline and disconnect signal through the channel manager. LINE cancels
 profile, group and image requests and checks cancellation before delivery; a concurrent copy of an in-flight event
@@ -67,7 +67,7 @@ Human-only protocol operations run through the private router:
 4. `public_routes.revoke {"path":"/flows/<path>"}` removes that credential immediately. A revoked or old rotated token
    cannot deliver an event; another endpoint's token never works here. A deleted destination is no longer a public route.
 
-Tokens have 256 random bits and live in APX's Secrets backend (OS keyring when available; protected file otherwise).
+Tokens have 256 random bits and live in Colonia's Secrets backend (OS keyring when available; protected file otherwise).
 SQLite settings and idempotent management replies contain references only. Rotation immediately replaces the active
 reference. A bounded durable cleanup journal tracks the new secret before creation and atomically records the previous
 reference when activation commits. Cleanup references never authorize a request. Failed deletion is retried at core
@@ -129,15 +129,15 @@ after the public address is known.
 
 Review the HTML before publishing: literal content embedded in it is public. Public ingress never supplies the widget's
 saved state, artifact store/database, private media, provenance, project data or secrets. The kit is inlined. Include
-portable images/fonts as data URLs; private `media:<id>` references and private APX APIs do not become public assets.
+portable images/fonts as data URLs; private `media:<id>` references and private Colonia APIs do not become public assets.
 Public CSP uses an opaque sandbox, allows inline rendering scripts/styles, and blocks network connections, forms,
-frames, external scripts and private resource loads. A widget needing APX actions, persisted data or authenticated live
-integrations belongs inside APX, not on this read-only public host. Do not publish secret literals inside its HTML.
+frames, external scripts and private resource loads. A widget needing Colonia actions, persisted data or authenticated live
+integrations belongs inside Colonia, not on this read-only public host. Do not publish secret literals inside its HTML.
 
 ## Verification and rollback
 
 Behavioral coverage lives in `transport/hooks.test.ts`, `public-credentials.test.ts`, `public-surfaces.test.ts` and
 `public-tunnel.test.ts`, plus native LINE/Teams auth tests. A real internet/provider check is separate from local listener
-and protocol tests. To stop an individual resource, revoke its token or unpublish the widget. To stop APX-managed ingress,
+and protocol tests. To stop an individual resource, revoke its token or unpublish the widget. To stop Colonia-managed ingress,
 set the public address to Off; also remove any independently managed reverse proxy forwarding rule. Never compensate
 for a public routing failure by forwarding the private daemon instead.

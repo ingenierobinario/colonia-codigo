@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { type Run, takeOverV1, V1_PACKAGE, v1Answers } from "./v1-takeover.ts";
 
 function world(platform: NodeJS.Platform, opts: { npmHasV1?: boolean; npmFails?: boolean; v1Stays?: boolean } = {}) {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-takeover-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-takeover-"));
   const calls: string[] = [];
   let v1Up = true;
   const run: Run = async (cmd, args) => {
@@ -20,8 +20,8 @@ function world(platform: NodeJS.Platform, opts: { npmHasV1?: boolean; npmFails?:
     return { code: 0, out: "" };
   };
   const terminal = {
-    main: path.join(home, "App.app", "apx", "apps", "terminal", "src", "main.ts"),
-    exe: path.join(home, "App.app", "MacOS", "APX"),
+    main: path.join(home, "App.app", "colonia", "apps", "terminal", "src", "main.ts"),
+    exe: path.join(home, "App.app", "MacOS", "Colonia"),
     electron: true,
     appImage: false,
     checkout: false,
@@ -34,44 +34,44 @@ test("on a Mac v1's daemon and desktop are booted out and disabled, so login doe
   const { home, calls, deps } = world("darwin", { npmHasV1: true });
   const agents = path.join(home, "Library", "LaunchAgents");
   fs.mkdirSync(agents, { recursive: true });
-  fs.writeFileSync(path.join(agents, "dev.apx.daemon.plist"), "<plist/>");
-  fs.writeFileSync(path.join(agents, "dev.apx.desktop.plist"), "<plist/>");
+  fs.writeFileSync(path.join(agents, "dev.colonia.daemon.plist"), "<plist/>");
+  fs.writeFileSync(path.join(agents, "dev.colonia.desktop.plist"), "<plist/>");
   const res = await takeOverV1(deps);
   assert.equal(res.ok, true, res.detail);
-  for (const label of ["dev.apx.daemon", "dev.apx.desktop"]) {
+  for (const label of ["dev.colonia.daemon", "dev.colonia.desktop"]) {
     assert.ok(calls.includes(`launchctl bootout gui/501/${label}`));
     assert.ok(calls.includes(`launchctl disable gui/501/${label}`));
   }
   assert.ok(calls.includes(`npm uninstall -g ${V1_PACKAGE}`));
   // The app's own command, run as Node by the app's executable, never pnpm.
-  const launcher = fs.readFileSync(path.join(home, ".local", "bin", "apx"), "utf8");
+  const launcher = fs.readFileSync(path.join(home, ".local", "bin", "colonia"), "utf8");
   assert.match(launcher, /^#!\/bin\/sh\n/);
   assert.ok(launcher.includes(`ELECTRON_RUN_AS_NODE=1 exec '${deps.terminal.exe}'`));
   assert.ok(launcher.includes(`'${deps.terminal.main}' "$@"`));
   // Windows exposes writable mode bits without POSIX ownership.
   assert.equal(
-    fs.statSync(path.join(home, ".local", "bin", "apx")).mode & 0o777,
+    fs.statSync(path.join(home, ".local", "bin", "colonia")).mode & 0o777,
     process.platform === "win32" ? 0o666 : 0o755,
   );
-  // apx2 reaches it even where v1's apx still comes first on the PATH.
-  assert.equal(fs.readlinkSync(path.join(home, ".local", "bin", "apx2")), "apx");
+  // colonia2 reaches it even where v1's colonia still comes first on the PATH.
+  assert.equal(fs.readlinkSync(path.join(home, ".local", "bin", "colonia2")), "colonia");
 });
 
 test("on Linux the systemd unit is disabled and the desktop's autostart entry put aside", async () => {
   const { home, calls, deps } = world("linux");
   fs.mkdirSync(path.join(home, ".config", "systemd", "user"), { recursive: true });
-  fs.writeFileSync(path.join(home, ".config", "systemd", "user", "apx-daemon.service"), "[Unit]");
+  fs.writeFileSync(path.join(home, ".config", "systemd", "user", "colonia-daemon.service"), "[Unit]");
   fs.mkdirSync(path.join(home, ".config", "autostart"), { recursive: true });
-  fs.writeFileSync(path.join(home, ".config", "autostart", "apx-desktop.desktop"), "[Desktop Entry]");
+  fs.writeFileSync(path.join(home, ".config", "autostart", "colonia-desktop.desktop"), "[Desktop Entry]");
   fs.writeFileSync(path.join(home, ".bashrc"), "# mine\n");
   const res = await takeOverV1(deps);
   assert.equal(res.ok, true, res.detail);
-  assert.ok(calls.includes("systemctl --user disable --now apx-daemon.service"));
-  assert.ok(fs.existsSync(path.join(home, ".config", "autostart", "apx-desktop.desktop.off")));
+  assert.ok(calls.includes("systemctl --user disable --now colonia-daemon.service"));
+  assert.ok(fs.existsSync(path.join(home, ".config", "autostart", "colonia-desktop.desktop.off")));
   assert.match(fs.readFileSync(path.join(home, ".bashrc"), "utf8"), /export PATH="\$HOME\/\.local\/bin:\$PATH"/);
 });
 
-test("what is left is said plainly: v1 still answering, or its apx needing administrator rights", async () => {
+test("what is left is said plainly: v1 still answering, or its colonia needing administrator rights", async () => {
   const { deps } = world("darwin", { npmHasV1: true, npmFails: true, v1Stays: true });
   const res = await takeOverV1(deps);
   assert.equal(res.ok, false);
@@ -82,11 +82,11 @@ test("what is left is said plainly: v1 still answering, or its apx needing admin
 test("install.sh's launcher is left alone; an AppImage points at the install line", async () => {
   const a = world("linux");
   fs.mkdirSync(path.join(a.home, ".local", "bin"), { recursive: true });
-  const mine = "#!/bin/sh\n# The APX command, written by install.sh.\n";
-  fs.writeFileSync(path.join(a.home, ".local", "bin", "apx"), mine);
+  const mine = "#!/bin/sh\n# The Colonia command, written by install.sh.\n";
+  fs.writeFileSync(path.join(a.home, ".local", "bin", "colonia"), mine);
   assert.equal((await takeOverV1(a.deps)).ok, true);
-  assert.equal(fs.readFileSync(path.join(a.home, ".local", "bin", "apx"), "utf8"), mine);
-  assert.equal(fs.readlinkSync(path.join(a.home, ".local", "bin", "apx2")), "apx");
+  assert.equal(fs.readFileSync(path.join(a.home, ".local", "bin", "colonia"), "utf8"), mine);
+  assert.equal(fs.readlinkSync(path.join(a.home, ".local", "bin", "colonia2")), "colonia");
   const b = world("linux");
   const res = await takeOverV1({ ...b.deps, terminal: { ...b.deps.terminal, appImage: true } });
   assert.equal(res.ok, false);

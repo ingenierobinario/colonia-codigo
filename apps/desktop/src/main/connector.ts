@@ -1,4 +1,4 @@
-// What the window opens: the first-run choice (server or client) on an installed app, then the APX it chose — its
+// What the window opens: the first-run choice (server or client) on an installed app, then the Colonia it chose — its
 // own core here, one at an address, or one over SSH. The panel is the same web app in every case.
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -25,7 +25,7 @@ import { type Remote, reachRemote, type WaitDeps, waitingHtml } from "./remote-w
 import { appKeyPath, askpassSupported, authorizeKey, ensureAppKey, localSshVersion } from "./ssh-login.ts";
 import {
   installArgs,
-  remoteApx,
+  remoteColonia,
   remoteInstall,
   remoteLinger,
   startTunnel,
@@ -45,7 +45,7 @@ export function createConnector(opts: {
   coreUrl: string;
   webUrl: string;
   dist: string;
-  /** Whether a window asking for the core token is one of APX's own (the panel or the quick chat). */
+  /** Whether a window asking for the core token is one of Colonia's own (the panel or the quick chat). */
   isOwnWindow: (sender: WebContents) => boolean;
   /** Revoke capabilities before a connection changes or the app quits. */
   disconnected: () => void;
@@ -55,7 +55,7 @@ export function createConnector(opts: {
 }) {
   const dataDir = app.getPath("userData");
   const corePort = Number(new URL(opts.coreUrl).port || 7440);
-  // Asked once (installed or from a checkout) and kept; APX_CONNECTION=local skips the question (tests, scripts).
+  // Asked once (installed or from a checkout) and kept; COLONIA_CONNECTION=local skips the question (tests, scripts).
   let conn: Connection | undefined = initialConnection(dataDir);
   let core: EmbeddedCore | undefined;
   let tunnel: Tunnel | undefined;
@@ -111,19 +111,19 @@ export function createConnector(opts: {
     if (typeof input !== "string" || !validSshTarget(input)) return { ok: false, reason: "badSsh" };
     const target = input.trim();
     step(e.sender, "ssh");
-    let remote = await remoteApx(target);
+    let remote = await remoteColonia(target);
     if (remote === "password") {
       const login = await passwordLogin(e.sender, target);
       if (!login.ok) return login;
-      remote = await remoteApx(target);
+      remote = await remoteColonia(target);
       // The key is in authorized_keys, yet the server still wants a password: it does not take keys.
       if (remote === "password" || remote === "unreachable") return { ok: false, reason: "sshKeyRefused" };
     }
     if (remote === "unreachable") return { ok: false, reason: "sshFailed" };
     step(e.sender, "probe");
-    // A core that answers wins, even one put there some other way than an `apx` command.
+    // A core that answers wins, even one put there some other way than an `colonia` command.
     try {
-      if (!(await sshCoreUp(target))) return { ok: false, reason: remote === "missing" ? "sshNoApx" : "sshDown" };
+      if (!(await sshCoreUp(target))) return { ok: false, reason: remote === "missing" ? "sshNoColonia" : "sshDown" };
     } catch (error) {
       return { ok: false, error: error instanceof Error ? error.message : String(error) };
     }
@@ -139,13 +139,13 @@ export function createConnector(opts: {
     done(typeof answer === "string" ? answer.replace(/[\r\n]/g, "").slice(0, 4096) : undefined);
   });
 
-  // The server has no APX: this app installs its own version there (install.sh over ssh), then connects.
+  // The server has no Colonia: this app installs its own version there (install.sh over ssh), then connects.
   ipcMain.handle("connect:ssh-install", async (e, input: unknown): Promise<Answer> => {
     if (!onChooser(e.sender)) return { ok: false, error: "not allowed" };
     if (typeof input !== "string" || !validSshTarget(input)) return { ok: false, reason: "badSsh" };
     const target = input.trim();
     const script = fs.readFileSync(installScript(), "utf8");
-    const args = installArgs(app.getVersion(), process.env.APX_RELEASES);
+    const args = installArgs(app.getVersion(), process.env.COLONIA_RELEASES);
     step(e.sender, "install");
     const r = await remoteInstall(target, script, args, (line) => progress(e.sender, line));
     if (!r.ok) return r;
@@ -159,7 +159,7 @@ export function createConnector(opts: {
     return r.lingers ? { ok: true, ready: true } : { ok: true, ready: true, linger: r.user };
   });
 
-  // Keeping the server's APX up after this app disconnects takes root: sudo, with the password the owner types now.
+  // Keeping the server's Colonia up after this app disconnects takes root: sudo, with the password the owner types now.
   ipcMain.handle("connect:ssh-linger", async (e, input: unknown, password: unknown): Promise<Answer> => {
     if (!onChooser(e.sender)) return { ok: false, error: "not allowed" };
     if (typeof input !== "string" || !validSshTarget(input) || typeof password !== "string")
@@ -225,7 +225,7 @@ export function createConnector(opts: {
   /** install.sh as this build carries it (the stage copies it next to the core; a checkout has it in scripts/). */
   function installScript(): string {
     return app.isPackaged
-      ? path.join(process.resourcesPath, "apx", "scripts", "install", "install.sh")
+      ? path.join(process.resourcesPath, "colonia", "scripts", "install", "install.sh")
       : path.resolve(opts.dist, "../../../scripts/install/install.sh");
   }
 
@@ -256,13 +256,13 @@ export function createConnector(opts: {
     return { ok: true };
   }
 
-  /** The bundled terminal (`apx`), run on Electron's own Node like the core. */
+  /** The bundled terminal (`colonia`), run on Electron's own Node like the core. */
   function runCli(args: string[]): Answer {
     const main = app.isPackaged
-      ? path.join(process.resourcesPath, "apx", "apps", "terminal", "src", "main.ts")
+      ? path.join(process.resourcesPath, "colonia", "apps", "terminal", "src", "main.ts")
       : path.resolve(opts.dist, "../../terminal/src/main.ts");
     const r = spawnSync(process.execPath, ["--disable-warning=ExperimentalWarning", main, ...args], {
-      env: { ...process.env, APX_URL: "", APX_HOME: localCoreHome(), ELECTRON_RUN_AS_NODE: "1" },
+      env: { ...process.env, COLONIA_URL: "", COLONIA_HOME: localCoreHome(), ELECTRON_RUN_AS_NODE: "1" },
       timeout: 60_000,
       windowsHide: true,
       encoding: "utf8",
@@ -272,7 +272,7 @@ export function createConnector(opts: {
       : { ok: false, error: `${r.stdout ?? ""}${r.stderr ?? ""}`.trim().slice(-600) };
   }
 
-  /** `firstRun`: just chosen on the first-run screen, so the panel's setup opens by saying APX is installed. */
+  /** `firstRun`: just chosen on the first-run screen, so the panel's setup opens by saying Colonia is installed. */
   async function open(firstRun = false): Promise<void> {
     const connection = conn;
     const revision = connectionRevision;
@@ -283,7 +283,7 @@ export function createConnector(opts: {
     }
     if (connection.mode === "local") {
       opts.updating({ identity: "local", url: opts.coreUrl, local: true, token: localCoreToken() });
-      // Installed, APX starts its own core unless one already answers; a checkout tries the panel's dev server first.
+      // Installed, Colonia starts its own core unless one already answers; a checkout tries the panel's dev server first.
       if (app.isPackaged && !core) {
         const up = await isUp(opts.coreUrl);
         if (!current()) return;
@@ -311,8 +311,8 @@ export function createConnector(opts: {
         local: app.isPackaged
           ? `${es ? "Si no abre, mirá el registro" : "If it does not open, see the log"}: ${localCoreLogFile()}`
           : es
-            ? "Si no abre, arrancalo con pnpm dev (mismo APX_HOME y APX_PORT)."
-            : "If it does not open, start it with pnpm dev (same APX_HOME and APX_PORT).",
+            ? "Si no abre, arrancalo con pnpm dev (mismo COLONIA_HOME y COLONIA_PORT)."
+            : "If it does not open, start it with pnpm dev (same COLONIA_HOME and COLONIA_PORT).",
       };
       const reached = await wait(local, firstRun, current, {
         isUp: async () => {
@@ -326,7 +326,7 @@ export function createConnector(opts: {
                     ? "Falta la identidad de la instalación local o del core. No se conectará hasta poder verificarla."
                     : "The local installation or core identity is missing. It will not connect until it can be verified."
                   : es
-                    ? "Este puerto pertenece a otra instalación de APX. No se conectará como el core local."
+                    ? "Este puerto pertenece a otra instalación de Colonia. No se conectará como el core local."
                     : "This port belongs to another home. It will not be adopted as the local core.";
             return identity === "matches";
           } catch {
@@ -377,7 +377,7 @@ export function createConnector(opts: {
     return opts.opened(activeTunnel.url, { url: activeTunnel.url, token: undefined });
   }
 
-  /** Waits for a remote APX, saying so on screen, and loads its panel once it answers. */
+  /** Waits for a remote Colonia, saying so on screen, and loads its panel once it answers. */
   function wait(
     remote: Remote,
     firstRun: boolean,
@@ -392,7 +392,7 @@ export function createConnector(opts: {
       // A newer page (the panel, the chooser) may replace this one before it finishes loading.
       show: (w) =>
         opts.panel
-          .loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(waitingHtml(w, es))}#apx-connecting`)
+          .loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(waitingHtml(w, es))}#colonia-connecting`)
           .catch(() => {}),
       sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
       now: Date.now,

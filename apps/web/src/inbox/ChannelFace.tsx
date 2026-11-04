@@ -1,5 +1,5 @@
-import type { Thread } from "@apx/protocol";
-import { Avatar, Tag, Tooltip } from "@apx/ui";
+import type { Thread } from "@colonia/protocol";
+import { Avatar, Tag, Tooltip } from "@colonia/ui";
 import { KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";
 import { PersonAvatar } from "../channels/PersonAvatar.tsx";

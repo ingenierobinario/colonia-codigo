@@ -1,5 +1,5 @@
-import type { Project } from "@apx/protocol";
-import { Button, Field, IconButton, Icons, Input } from "@apx/ui";
+import type { Project } from "@colonia/protocol";
+import { Button, Field, IconButton, Icons, Input } from "@colonia/ui";
 import { useState } from "react";
 import { updateProject } from "../data/projects.ts";
 import { useT } from "../i18n/index.ts";
@@ -22,7 +22,7 @@ export function ReadOnlyFolders({ project }: { project: Project }) {
     if (await save([...folders, p])) setPath("");
   };
   const pick = async () => {
-    const dir = await window.apxDesktop?.pickFolder?.();
+    const dir = await window.coloniaDesktop?.pickFolder?.();
     if (dir) setPath(dir);
   };
   return (
@@ -58,7 +58,7 @@ export function ReadOnlyFolders({ project }: { project: Project }) {
                 if (e.key === "Enter") void add();
               }}
             />
-            {window.apxDesktop?.pickFolder && (
+            {window.coloniaDesktop?.pickFolder && (
               <Button variant="secondary" leadingIcon={<Icons.FolderOpen size={14} />} onClick={() => void pick()}>
                 {t("setup.project.pick")}
               </Button>

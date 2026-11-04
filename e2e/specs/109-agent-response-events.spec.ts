@@ -43,7 +43,7 @@ test("task consult replies arrive as traced events, survive reload and do not tu
     await expect(event.locator("summary")).toContainText("Respuesta de Helper");
     await expect(event).toContainText("Consult evidence: tests passed.");
     await expect(event.locator(".turn__agentbtn")).toHaveCount(0);
-    await expect(page.locator(".transcript > .transcript__row .apx-subthread")).toHaveCount(0);
+    await expect(page.locator(".transcript > .transcript__row .colonia-subthread")).toHaveCount(0);
     await expect(page.locator(".transcript")).toContainText("Holder consolidated the report.");
     await expect(page.getByText("Consult evidence: tests passed.", { exact: false })).toHaveCount(1);
     await event.locator("summary").click();
@@ -154,7 +154,7 @@ for (const outcome of ["empty", "failed", "step_limit"] as const) {
       if (outcome === "empty") expect(response?.issue).toBe("no_answer");
       else expect(response?.end_reason).toBe(outcome);
       await page.goto(`${env.core.url}/#thread=${created.thread_id}`);
-      const card = page.locator(".transcript .apx-subthread");
+      const card = page.locator(".transcript .colonia-subthread");
       await expect(card).toContainText(status);
       await expect(card).toContainText(title);
       await env.settle(chat.id);

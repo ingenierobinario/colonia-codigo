@@ -2,14 +2,14 @@ import { useContext, useEffect, useState } from "react";
 import { Image, Text, View } from "react-native";
 import { mediaFile } from "../chat/mediaFiles";
 import { initials } from "../format";
-import type { ApxClient } from "../protocol";
+import type { ColoniaClient } from "../protocol";
 import { ChannelMark } from "./ChannelMark";
 import { MediaClient } from "./media/context";
 import { makeStyles, useTheme } from "./theme";
 
 /** One question per person while the app runs: the core keeps the picture a day and asks the channel after that. */
 const asked = new Map<string, Promise<string | undefined>>();
-function pictureOf(client: ApxClient, person: string): Promise<string | undefined> {
+function pictureOf(client: ColoniaClient, person: string): Promise<string | undefined> {
   let picture = asked.get(person);
   if (!picture) {
     picture = client

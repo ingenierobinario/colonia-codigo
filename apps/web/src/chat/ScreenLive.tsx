@@ -1,4 +1,4 @@
-import { IconButton, Icons } from "@apx/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { stopKeys } from "../config/desktopPrefs.ts";
 import { useT } from "../i18n/index.ts";
@@ -37,7 +37,7 @@ export function ScreenLive() {
 
   useEffect(
     () =>
-      window.apxDesktop?.onComputerActivity?.((a) =>
+      window.coloniaDesktop?.onComputerActivity?.((a) =>
         setLast((prev) => {
           // A new session (none running): back to its place at the bottom, small.
           if (!prev) {
@@ -51,7 +51,7 @@ export function ScreenLive() {
   );
 
   // The emergency stop, pulled here or with its keys (stopKeys) from any app.
-  useEffect(() => window.apxDesktop?.onComputerStopped?.(setStopped), []);
+  useEffect(() => window.coloniaDesktop?.onComputerStopped?.(setStopped), []);
 
   // Computer use is over after a while with no action: close, forget where it was moved.
   useEffect(() => {
@@ -65,7 +65,7 @@ export function ScreenLive() {
 
   const live = Boolean(last) && size !== "hidden";
   useEffect(() => {
-    const desktop = window.apxDesktop;
+    const desktop = window.coloniaDesktop;
     if (!live || !desktop?.computerFrame) return;
     let stop = false;
     const tick = async () => {
@@ -102,7 +102,7 @@ export function ScreenLive() {
     drag.current = undefined;
   };
 
-  if (!window.apxDesktop?.computerFrame || !last) return null;
+  if (!window.coloniaDesktop?.computerFrame || !last) return null;
   if (size === "hidden")
     return (
       <button type="button" className="screenlive__pill" onClick={() => setSize("mini")}>
@@ -136,7 +136,7 @@ export function ScreenLive() {
             type="button"
             className="screenlive__stop"
             aria-label={t("live.stopHint", { keys: stopKeys() })}
-            onClick={() => void window.apxDesktop?.stopComputer?.()}
+            onClick={() => void window.coloniaDesktop?.stopComputer?.()}
           >
             <Icons.Square size={10} />
             <span className="screenlive__stoplabel">{t("live.stop")}</span>

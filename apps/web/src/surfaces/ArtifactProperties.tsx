@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { Badge, Dialog } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { Badge, Dialog } from "@colonia/ui";
 import { useEffect } from "react";
 import { declaresLive } from "../../../../packages/surfaces/src/kit.ts";
 import { loadSurfaceDoc } from "../data/actions.ts";
@@ -11,7 +11,7 @@ import "../styles/artifacts.css";
 
 /** The kit version a page asks for, as people read versions: kit@1.js → "v1". */
 const kitOf = (html: string) => {
-  const v = /\/_apx\/kit@(\d+(?:\.\d+){0,2})\.js/.exec(html)?.[1];
+  const v = /\/_colonia\/kit@(\d+(?:\.\d+){0,2})\.js/.exec(html)?.[1];
   return v ? `v${v}` : undefined;
 };
 const when = (iso: string | undefined) => (iso ? new Date(iso).toLocaleString() : undefined);

@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { Badge, Button, EmptyState, IconButton, Icons, ProjectTile, Tabs } from "@apx/ui";
+import { Badge, Button, EmptyState, IconButton, Icons, ProjectTile, Tabs } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { loadProjectThreads } from "../data/actions.ts";
 import {

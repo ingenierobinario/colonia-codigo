@@ -45,7 +45,7 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "sysUsage.button": "Sistema: {pct}% de la memoria en uso",
   "sysUsage.memory": "Memoria",
   "sysUsage.memoryOf": "{used} de {total} en uso",
-  "sysUsage.apx": "Colonia {size}",
+  "sysUsage.colonia": "Colonia {size}",
   "sysUsage.vm": "VM Linux {size}",
   "sysUsage.other": "Otras apps {size}",
   "sysUsage.free": "Libre {size}",

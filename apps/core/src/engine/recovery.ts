@@ -1,6 +1,6 @@
 // Ending a turn honestly, also when the process died in the middle of it. The model log of an interrupted turn is
 // closed so the next turn sees what may have happened; the owner's view loses its spinners.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { systemNote } from "../harness/native.ts";
@@ -51,7 +51,7 @@ export function closeTurnLog(store: Store, run: RunRecord, why: string): void {
 
 /** What the model reads when its cut-off turn is picked back up. */
 export const RESUME_NOTE =
-  "APX restarted while you were working on this, and your turn was cut off. Carry on from where it stopped and finish the task. Tools marked effect UNKNOWN may have acted: check before running them again.";
+  "Colonia restarted while you were working on this, and your turn was cut off. Carry on from where it stopped and finish the task. Tools marked effect UNKNOWN may have acted: check before running them again.";
 
 /**
  * A turn cut off mid-work is picked up once more: a restart is not the agent failing. A turn waiting on the owner
@@ -87,8 +87,8 @@ export function recoverInterrupted(store: Store): { run: RunRecord; resume: bool
   const delegated = new Map(interrupted.map((run) => [run.id, stillDelegated(store, run)]));
   for (const run of interrupted) {
     const resume = resumable(store, run);
-    const text = resume ? "Interrupted by a restart of APX; picking it back up." : "Interrupted by a restart of APX.";
-    closeTurnLog(store, run, `This turn was interrupted by a restart of APX.${delegated.get(run.id) ?? ""}`);
+    const text = resume ? "Interrupted by a restart of Colonia; picking it back up." : "Interrupted by a restart of Colonia.";
+    closeTurnLog(store, run, `This turn was interrupted by a restart of Colonia.${delegated.get(run.id) ?? ""}`);
     const msg = run.message_id ? store.messages.get(run.message_id) : undefined;
     if (msg) {
       const parts: Part[] = msg.parts.map((p) =>

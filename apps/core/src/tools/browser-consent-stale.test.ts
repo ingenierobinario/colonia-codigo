@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
 
@@ -37,7 +37,7 @@ for (const scenario of [
       }),
     });
     const connect = async () => {
-      const node = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+      const node = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
       node.onRequest(async (method, params) => {
         if (method === "browser.approval_context") {
           if (!present) throw new Error("Tab closed");

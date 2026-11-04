@@ -6,9 +6,9 @@ import { expect, open, rpc, test } from "./kit.ts";
 
 test("a project's settings add a read-only folder, list it and remove it", async ({ page }) => {
   await rpc("setup.finish", {});
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-ro-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-ro-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
-  const ref = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-ro-ref-")));
+  const ref = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-ro-ref-")));
   const project = (await rpc<{ project: { id: string } }>("projects.register", { path: repo })).project.id;
   const listed = async () =>
     (await rpc<{ projects: Array<{ id: string; read_only_folders?: string[] }> }>("projects.list")).projects.find(

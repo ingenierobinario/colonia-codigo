@@ -1,6 +1,6 @@
 // shell: an agent runs a command on the owner's machine, in its project's folder. Commands that only read run like
 // any tool; anything else waits for the owner (unless the agent's autonomy is total); destructive ones always do.
-// Commands get an environment without secret-looking variables (harness/env.ts) and cannot name APX's home.
+// Commands get an environment without secret-looking variables (harness/env.ts) and cannot name Colonia's home.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -18,7 +18,7 @@ import {
   type JudgeOptions,
   judge,
   missingCwd,
-  namesApxHome,
+  namesColoniaHome,
   outsideFolders,
   type Root,
   refusal,
@@ -73,21 +73,21 @@ export function broadScan(command: string, home = os.homedir()): string | undefi
  * How much the owner must be asked for this command. Commands that only read on this machine run without asking
  * (DECISIONS.md#d-098); anything the classifier cannot be sure of asks.
  */
-export function commandRisk(command: string, apxPort?: number): Confirm {
+export function commandRisk(command: string, coloniaPort?: number): Confirm {
   const c = command.trim();
   if (DESTRUCTIVE.test(c) || DESTRUCTIVE.test(normalize(c))) return "always";
-  // A command that talks to APX's own API could act as the owner (answer its own confirmation): always asked.
-  if (apxPort && new RegExp(`(127\\.0\\.0\\.1|localhost|\\[::1\\]|0\\.0\\.0\\.0):${apxPort}\\b`).test(c))
+  // A command that talks to Colonia's own API could act as the owner (answer its own confirmation): always asked.
+  if (coloniaPort && new RegExp(`(127\\.0\\.0\\.1|localhost|\\[::1\\]|0\\.0\\.0\\.0):${coloniaPort}\\b`).test(c))
     return "always";
-  // So does APX's own CLI, which finds the port by itself.
-  if (runsApxCli(c)) return "always";
+  // So does Colonia's own CLI, which finds the port by itself.
+  if (runsColoniaCli(c)) return "always";
   // Only reading, here: where it reads is the folder rule's to judge (commandFolder), not the owner's to approve.
   if (readsOnly(c)) return "never";
   // APC definitions and AGENTS.md set agents' modes: changed by a command as by file_write, the owner says yes first.
   return c.split(/[\s;&|<>()'"`=]+/).some((w) => w && namesApc(w)) ? "always" : "ask";
 }
 
-/** Programs that run the command after them: `env apx …`, `xargs apx`, `bash -c "apx …"`, `pnpm exec apx`. */
+/** Programs that run the command after them: `env colonia …`, `xargs colonia`, `bash -c "colonia …"`, `pnpm exec colonia`. */
 const LAUNCHERS = new Set([
   "env",
   "command",
@@ -114,17 +114,17 @@ const LAUNCHERS = new Set([
 ]);
 
 /**
- * Whether a command runs APX's CLI: `apx` (or a path to it) as the program of one of its parts, not as a word
- * after it, so `cd ~/code/apx` or `ls /…/apx` only read a folder of that name.
+ * Whether a command runs Colonia's CLI: `colonia` (or a path to it) as the program of one of its parts, not as a word
+ * after it, so `cd ~/code/colonia` or `ls /…/colonia` only read a folder of that name.
  */
-function runsApxCli(command: string): boolean {
+function runsColoniaCli(command: string): boolean {
   if (/(^|[\s;&|(`"'])[\w./-]*apps\/terminal\/src\/main\.ts(\s|$|["'])/.test(command)) return true;
   for (const part of command.replace(/["'\\]/g, "").split(/[;&|\n(`]|\$\(/)) {
     for (const word of part.trim().split(/\s+/)) {
       // Variables set for the program, a launcher's flags and its numbers (`timeout 30`) come before it.
       if (/^\w+=/.test(word) || word.startsWith("-") || /^\d+[smhd]?$/.test(word)) continue;
       const program = path.basename(word);
-      if (program === "apx" || program === "apx.exe" || program === "apx.cmd") return true;
+      if (program === "colonia" || program === "colonia.exe" || program === "colonia.cmd") return true;
       if (!LAUNCHERS.has(program)) break;
     }
   }
@@ -140,7 +140,7 @@ export function reachesOut(command: string): boolean {
 }
 
 const NETWORK =
-  /(\w+:\/\/|(^|[\s;&|(`])(curl|wget|ssh|scp|rsync|nc|ncat|telnet|ftp|sftp|gh|aws|gcloud|az|kubectl|docker|podman|ollama|apx)(\s|$)|\b(npm|pnpm|yarn|bun|pip3?|uv|poetry|cargo|go|gem|bundle|composer|brew|apt(-get)?)\s+(i|install|add|update|upgrade|get|fetch|sync|publish|dlx|x|create|init)\b|\b(npx|pnpx|bunx|uvx)\b|\bgit\s+(fetch|pull|clone|push|ls-remote|submodule)\b)/i;
+  /(\w+:\/\/|(^|[\s;&|(`])(curl|wget|ssh|scp|rsync|nc|ncat|telnet|ftp|sftp|gh|aws|gcloud|az|kubectl|docker|podman|ollama|colonia)(\s|$)|\b(npm|pnpm|yarn|bun|pip3?|uv|poetry|cargo|go|gem|bundle|composer|brew|apt(-get)?)\s+(i|install|add|update|upgrade|get|fetch|sync|publish|dlx|x|create|init)\b|\b(npx|pnpx|bunx|uvx)\b|\bgit\s+(fetch|pull|clone|push|ls-remote|submodule)\b)/i;
 
 /** Programs, libraries, devices and system settings a command may read or run (`/usr/bin/env`, `/etc/hosts`). */
 const PLUMBING =
@@ -225,7 +225,7 @@ const BACKGROUND_S = 3600;
 export function shellTools(
   store: Store,
   home: string,
-  apxPort: () => number,
+  coloniaPort: () => number,
   vm?: { hasThread(id: string): boolean },
 ): Tool[] {
   return [
@@ -260,7 +260,7 @@ export function shellTools(
           .describe("relative to the project, or an absolute temp or read-only folder"),
       }),
       effect: "external",
-      confirm: (a) => commandRisk(a.command, apxPort()),
+      confirm: (a) => commandRisk(a.command, coloniaPort()),
       // A command that could only be refused is not put to the owner.
       check(a, ctx) {
         if (vm?.hasThread(ctx.thread.id)) {
@@ -281,18 +281,18 @@ export function shellTools(
       // Run in a temp folder, writing only there and reaching nothing outside: its own scratch work.
       scratch: (a) => {
         const temp = scratchRoot(home);
-        // Its cwd, or the folder the command starts by going into (`cd /…/apx-scratch-…/x && …`).
+        // Its cwd, or the folder the command starts by going into (`cd /…/colonia-scratch-…/x && …`).
         const at = a.cwd ?? /^\s*cd\s+(["']?)([^"'\s;&|]+)\1\s*(&&|;)/.exec(a.command)?.[2];
         if (!at || !path.isAbsolute(at) || !insideReal(temp, at) || reachesOut(a.command)) return false;
-        if (commandRisk(a.command, apxPort()) === "always") return false;
+        if (commandRisk(a.command, coloniaPort()) === "always") return false;
         const roots: Root[] = [
           { dir: temp, write: true, scratch: true },
           { dir: path.parse(home).root, write: false, scratch: false, anywhere: { home } },
         ];
         return !judgeCommand(roots, a.command, at, { home, strict: true });
       },
-      local: (a) => !a.background && (commandRisk(a.command, apxPort()) === "never" || !reachesOut(a.command)),
-      reads: (a) => commandRisk(a.command, apxPort()) === "never",
+      local: (a) => !a.background && (commandRisk(a.command, coloniaPort()) === "never" || !reachesOut(a.command)),
+      reads: (a) => commandRisk(a.command, coloniaPort()) === "never",
       // Covers the longest foreground wait plus the time to stop the process.
       deadlineMs: 615_000,
       title: (a) => `Ran ${String(a.command ?? "").slice(0, 60)}`,
@@ -306,8 +306,8 @@ export function shellTools(
         if ("refused" in where) return `refused: ${where.refused}`;
         const { base, at: cwd } = where;
         const limit = a.background ? (a.timeout_s ?? BACKGROUND_S) : Math.min(a.timeout_s ?? 120, 600);
-        // APX's own home (database, secrets index, job logs) is never an agent's to read or change.
-        if (namesApxHome(a.command, home, ctx.thread.project_id)) return "refused: APX's own folder is off limits";
+        // Colonia's own home (database, secrets index, job logs) is never an agent's to read or change.
+        if (namesColoniaHome(a.command, home, ctx.thread.project_id)) return "refused: Colonia's own folder is off limits";
         if (cwd === base) fs.mkdirSync(base, { recursive: true });
         else if (!fs.existsSync(cwd)) return `${a.cwd} does not exist`;
         const r = await ctx.runCommand({

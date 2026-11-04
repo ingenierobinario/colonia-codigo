@@ -46,7 +46,7 @@ test("the parts together run every file once, spread evenly, and whole suites on
 });
 
 test("a failed file runs once more: passing then is flaky, failing again fails, and a crash is never flaky", (t) => {
-  const dir = tempDir("apx-shard-test-").path;
+  const dir = tempDir("colonia-shard-test-").path;
   t.after(() => removeDir(dir));
   const write = (name: string, body: string) =>
     fs.writeFileSync(path.join(dir, name), `import { test } from "node:test";\nimport fs from "node:fs";\n${body}\n`);
@@ -71,7 +71,7 @@ test("a failed file runs once more: passing then is flaky, failing again fails, 
 });
 
 test("flaky files are written to the job summary, one row each, with their count", (t) => {
-  const dir = tempDir("apx-shard-summary-").path;
+  const dir = tempDir("colonia-shard-summary-").path;
   t.after(() => removeDir(dir));
   const summary = path.join(dir, "summary.md");
   const log = t.mock.method(console, "log", () => {});

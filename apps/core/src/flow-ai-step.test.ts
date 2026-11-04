@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { FlowGraph, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowGraph, FlowNode } from "@colonia/protocol/flow-graph";
 import { validateFlowGraph } from "./domain/flow-graph-validate.ts";
 import { createPermissions } from "./engine/permissions.ts";
 import { say, scriptedLlm, startCore } from "./engine/testkit.ts";
@@ -127,8 +127,8 @@ test("a bot of the Flow answers with its own system prompt, no memory and no tea
       "remember",
       "recall",
       "agent_set",
-      "apx_settings",
-      "apx_flow",
+      "colonia_settings",
+      "colonia_flow",
       "read_chat",
       "search_chats",
       "search_owner_notes",
@@ -148,7 +148,7 @@ test("an AI step names an agent or a bot, with the permission mode of its harnes
   assert.ok(codes(ai({})).includes("ai_source"));
   assert.ok(codes(ai({ agent: "superagent", bot: { name: "B", system: "S" } })).includes("ai_source"));
   assert.ok(!codes(ai({ agent: "superagent", autonomy: "auto", delegate: true })).includes("ai_mode"));
-  assert.ok(codes(ai({ agent: "superagent", write: "auto" })).includes("ai_mode"), "APX's harness has no write mode");
+  assert.ok(codes(ai({ agent: "superagent", write: "auto" })).includes("ai_mode"), "Colonia's harness has no write mode");
   assert.ok(codes(ai({ agent: "superagent", model: "claude", autonomy: "total" })).includes("ai_mode"));
   assert.ok(codes(ai({ agent: "superagent", model: "codex", delegate: true })).includes("ai_mode"));
   assert.ok(!codes(ai({ agent: "superagent", model: "claude/opus", write: "read-only" })).includes("ai_mode"));
@@ -171,7 +171,7 @@ test("a CLI harness runs the agent's or the bot's brief in its own session, with
     assert.deepEqual(plan.context.model_choice, { model: "claude/opus#high", router: false });
     assert.ok(plan.text.startsWith("You are Fixer.") && plan.text.includes("Fix lint errors only."));
     assert.ok(plan.text.endsWith('Untrusted input JSON:\n{"file":"a.ts"}'));
-    // The APX tools a CLI reaches follow the step's limits too.
+    // The Colonia tools a CLI reaches follow the step's limits too.
     assert.deepEqual(plan.context.flow_step, { delegate: false, bot: true });
     const agent = planFlowAiStep(env.core.store, project, ai({ agent: "superagent", model: "codex" }), null);
     assert.deepEqual(agent?.context.flow_step, { delegate: false });

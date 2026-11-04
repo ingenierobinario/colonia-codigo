@@ -41,8 +41,8 @@ export function ProjectTile({
     fontSize: Math.max(8, Math.round(size * 0.4 + 3)),
     ...style,
   };
-  const cls = cx("apx-tile", `apx-tile--${tone}`, className);
-  const content = src ? <img src={src} alt="" className="apx-tile__img" /> : (icon ?? initial?.slice(0, 2));
+  const cls = cx("colonia-tile", `colonia-tile--${tone}`, className);
+  const content = src ? <img src={src} alt="" className="colonia-tile__img" /> : (icon ?? initial?.slice(0, 2));
   return label ? (
     <span className={cls} style={box} role="img" aria-label={label}>
       {content}

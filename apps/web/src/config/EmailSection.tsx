@@ -1,6 +1,6 @@
-import type { ChannelEmail, ChannelInfo, MailServer } from "@apx/protocol";
-import { SUPER_AGENT_ID } from "@apx/protocol/client";
-import { Badge, Button, Icons, Input, Select, SettingRow, Switch, TagInput } from "@apx/ui";
+import type { ChannelEmail, ChannelInfo, MailServer } from "@colonia/protocol";
+import { SUPER_AGENT_ID } from "@colonia/protocol/client";
+import { Badge, Button, Icons, Input, Select, SettingRow, Switch, TagInput } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";

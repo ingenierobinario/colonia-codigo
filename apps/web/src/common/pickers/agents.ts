@@ -1,4 +1,4 @@
-import type { Agent } from "@apx/protocol";
+import type { Agent } from "@colonia/protocol";
 
 /** Project tasks use their team and the super-agent; the base space keeps its specialists. */
 export function availableAgents(

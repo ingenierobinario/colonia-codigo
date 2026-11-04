@@ -6,7 +6,7 @@ import { expect, open, rpc, test } from "./kit.ts";
 
 for (const mode of ["dark", "light"] as const) {
   test(`task status hover keeps ${mode} surfaces and readable semantic colors`, async ({ page }) => {
-    await page.addInitScript((value) => localStorage.setItem("apx.mode", value), mode);
+    await page.addInitScript((value) => localStorage.setItem("colonia.mode", value), mode);
     await rpc("setup.finish", {});
     const { project } = await rpc<{ project: { id: string } }>("projects.create", { name: "Task hint project" });
     const agent = await rpc<{ id: string }>("agents.create", {
@@ -28,9 +28,9 @@ for (const mode of ["dark", "light"] as const) {
     await open(page);
     const title = page.locator(".taskbundle__title").filter({ hasText: task.title });
     await title.hover();
-    const hint = page.locator(".apx-tooltip[data-open]");
+    const hint = page.locator(".colonia-tooltip[data-open]");
     await expect(hint.locator(".task-status-hint__title")).toHaveText(task.title);
-    await expect(hint.locator(".apx-badge")).toHaveText("Hecha");
+    await expect(hint.locator(".colonia-badge")).toHaveText("Hecha");
     await expect(hint).toHaveText(`${task.title}Hecha`);
     const titleLayout = await hint.locator(".task-status-hint__title").evaluate((el) => ({
       whiteSpace: getComputedStyle(el).whiteSpace,
@@ -53,7 +53,7 @@ for (const mode of ["dark", "light"] as const) {
           );
         }, 0);
       const surface = rgb(getComputedStyle(el).backgroundColor);
-      const badgeElement = el.querySelector(".apx-badge");
+      const badgeElement = el.querySelector(".colonia-badge");
       if (!badgeElement) throw new Error("Missing task status badge");
       const badge = getComputedStyle(badgeElement);
       const fill = rgb(badge.backgroundColor);
@@ -69,7 +69,7 @@ for (const mode of ["dark", "light"] as const) {
     expect(colors.contrast).toBeGreaterThanOrEqual(4.5);
     if (mode === "dark") expect(colors.surface).toBeLessThan(0.1);
     else expect(colors.surface).toBeGreaterThan(0.6);
-    await expect(hint.locator(".apx-badge__dot")).toBeVisible();
+    await expect(hint.locator(".colonia-badge__dot")).toBeVisible();
   });
 }
 
@@ -118,15 +118,15 @@ test("task context actions keep status live and archived conversations remain re
   await page.getByRole("menuitem", { name: "Espera tu respuesta", exact: true }).click();
   await expect(status).toHaveText("Necesita tu revisión");
   await expect(bundle.locator(".taskbundle__title")).toHaveText(task.title);
-  await expect(bundle.locator(".apx-badge")).toHaveCount(0);
-  await expect(status.locator(".apx-badge")).toHaveClass(/apx-tone--warning/);
+  await expect(bundle.locator(".colonia-badge")).toHaveCount(0);
+  await expect(status.locator(".colonia-badge")).toHaveClass(/colonia-tone--warning/);
   await header.hover();
   await bundle.locator(".taskbundle__title").hover();
-  const hint = page.locator(".apx-tooltip[data-open]");
+  const hint = page.locator(".colonia-tooltip[data-open]");
   await expect(hint.locator(".task-status-hint__title")).toHaveText(task.title);
-  await expect(hint.locator(".apx-badge")).toHaveText("Necesita tu revisión");
-  await expect(hint.locator(".apx-badge__dot")).toBeVisible();
-  await expect(hint.locator(".apx-badge")).toHaveClass(/apx-tone--warning/);
+  await expect(hint.locator(".colonia-badge")).toHaveText("Necesita tu revisión");
+  await expect(hint.locator(".colonia-badge__dot")).toBeVisible();
+  await expect(hint.locator(".colonia-badge")).toHaveClass(/colonia-tone--warning/);
   // The explicit overflow menu works on touch and from the keyboard without a right click.
   await bundle.getByRole("button", { name: "Acciones de la tarea" }).focus();
   await page.keyboard.press("Enter");
@@ -136,7 +136,7 @@ test("task context actions keep status live and archived conversations remain re
   await bundle.getByRole("button", { name: "Acciones de la tarea" }).click();
   await page.getByRole("menuitem", { name: "Hecha", exact: true }).click();
   await expect(status).toHaveText("Hecha");
-  await expect(status.locator(".apx-badge")).toHaveClass(/apx-tone--brand/);
+  await expect(status.locator(".colonia-badge")).toHaveClass(/colonia-tone--brand/);
   await bundle.locator(".taskbundle__task").click({ button: "right" });
   await expect(page.getByRole("menuitem", { name: "Mover a", exact: true })).toBeDisabled();
   await page.getByRole("menuitem", { name: "Reabrir", exact: true }).click();
@@ -170,7 +170,7 @@ test("task context actions keep status live and archived conversations remain re
   expect(await rpc("runs.list", { agent: agent.id })).toEqual(before);
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, `#project=${project.id}&tab=chats&thread=${detail.sessions[0]?.id}`);
-  await expect(header.getByRole("status").locator(".apx-badge")).toBeVisible();
+  await expect(header.getByRole("status").locator(".colonia-badge")).toBeVisible();
   const bounds = await header.getByRole("status").boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds && bounds.x + bounds.width).toBeLessThanOrEqual(390);

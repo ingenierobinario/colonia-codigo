@@ -6,7 +6,7 @@ test("CDP deadlines reject stalled commands and preserve earlier results or fail
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const stalled = Promise.withResolvers<string>();
   const rejected = assert.rejects(withTimeout(stalled.promise, 50), {
-    name: "ApxError",
+    name: "ColoniaError",
     code: "timeout",
     message: "timed out after 50ms",
   });

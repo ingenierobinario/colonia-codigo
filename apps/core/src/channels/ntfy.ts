@@ -26,10 +26,10 @@ const MAX_FILE_BYTES = 2 * 1024 * 1024;
 /** Images an agent can read; other attachments are only named. */
 const KEEP = /^image\/(png|jpeg|gif|webp)$/;
 /**
- * The tag on what APX publishes: one topic both ways, so the owner subscribes once and replies under the agent's
- * messages; the tag comes back on every event (even replayed after a restart), so APX never reads its own words.
+ * The tag on what Colonia publishes: one topic both ways, so the owner subscribes once and replies under the agent's
+ * messages; the tag comes back on every event (even replayed after a restart), so Colonia never reads its own words.
  */
-const MARK = "apx";
+const MARK = "colonia";
 /** The one person writing on an ntfy topic. */
 export const NTFY_OWNER = "owner";
 
@@ -49,7 +49,7 @@ class NtfyError extends Error {
   }
 }
 
-/** The server, the topic and an optional access token, as one secret: "https://ntfy.sh apx-abc123 tk_xyz". */
+/** The server, the topic and an optional access token, as one secret: "https://ntfy.sh colonia-abc123 tk_xyz". */
 export function ntfySecret(raw: string | undefined): { server: string; topic: string; token?: string } | undefined {
   const words = (raw ?? "").split(/\s+/).filter(Boolean);
   const server = words.find((w) => /^https?:\/\//.test(w))?.replace(/\/+$/, "");

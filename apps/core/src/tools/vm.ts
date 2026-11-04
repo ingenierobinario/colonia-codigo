@@ -121,7 +121,7 @@ export function vmTools(vm: Computer | undefined): Tool[] {
         };
         const taken = await take();
         if (typeof taken === "string")
-          return `Not started: ${taken}. Tell the owner why in their language, with those numbers, and give them [Computer](apx:computer) to lower its memory or close apps; do not try again until they say so.`;
+          return `Not started: ${taken}. Tell the owner why in their language, with those numbers, and give them [Computer](colonia:computer) to lower its memory or close apps; do not try again until they say so.`;
         if (!taken) return later(await vm.status(thread));
         let s = await settle(vm, ctx, ["preparing"], FIRST_LOOK_MS);
         if (s.phase === "preparing") {

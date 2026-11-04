@@ -202,7 +202,7 @@ export function composeMail(m: OutMail): { id: string; data: Buffer } {
   ];
   const textPart = emailMimeBody({ text: m.text, html: m.html });
   if (!m.files?.length) return { id, data: Buffer.from(`${head.join("\r\n")}\r\n${textPart}\r\n`) };
-  const boundary = `apx-${randomUUID()}`;
+  const boundary = `colonia-${randomUUID()}`;
   const parts = [
     textPart,
     ...m.files.map((f) => {

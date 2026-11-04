@@ -6,7 +6,7 @@ import {
   type RulePolicy,
   type Thread,
   ToolRisk,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { Store } from "../domain/store.ts";
 import { worksInFolder } from "../domain/threads.ts";
@@ -75,7 +75,7 @@ export function toolCatalog(
 }
 
 /**
- * The agent's `tools:` list as a filter. A list that names nothing APX knows (a file written for another tool) is
+ * The agent's `tools:` list as a filter. A list that names nothing Colonia knows (a file written for another tool) is
  * not a restriction: an agent left with no tools at all would be a silent break.
  */
 export function allowedTools(agent: AgentRecord, tools: Tool[]): Tool[] {
@@ -149,7 +149,7 @@ const PLAN_KEEPS = new Set([...ALWAYS, "delegate", "list_agents", "list_sessions
 const OUTSIDE = "content from outside (web, another agent or a message) is in this turn";
 
 /**
- * The rule itself, for APX's tools and for what external agents ask to do with theirs (DECISIONS.md#d-106).
+ * The rule itself, for Colonia's tools and for what external agents ask to do with theirs (DECISIONS.md#d-106).
  * `workspace`: the call writes files or runs a command in the folder the agent works in, where the folder rule
  * already keeps it.
  */

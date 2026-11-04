@@ -1,6 +1,6 @@
-import type { MemorySettings } from "@apx/protocol";
-import { DAILY_MEMORY_CALLS } from "@apx/protocol/client";
-import { Button, Input, SettingRow, Switch } from "@apx/ui";
+import type { MemorySettings } from "@colonia/protocol";
+import { DAILY_MEMORY_CALLS } from "@colonia/protocol/client";
+import { Button, Input, SettingRow, Switch } from "@colonia/ui";
 import { useT } from "../i18n/index.ts";
 import { SubHead } from "./SectionHead.tsx";
 import { useMemoryAutomation } from "./useMemoryAutomation.ts";

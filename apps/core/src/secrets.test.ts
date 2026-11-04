@@ -7,7 +7,7 @@ import { createSecrets, keychainService, projectSecretName, splitSecretName } fr
 import { type Run, systemBackend } from "./secrets-stores.ts";
 
 test("secrets resolve by reference, list names only, and live in a 0600 file with the file backend", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-secrets-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
   try {
     const s = createSecrets(home, "file", { MY_KEY: "from-env" });
     s.set("gemini", "k-123");
@@ -31,7 +31,7 @@ test("secrets resolve by reference, list names only, and live in a 0600 file wit
 });
 
 test("a project's own value wins over the global one there, and only there", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-secrets-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
   try {
     const s = createSecrets(home, "file", {});
     s.set("GH_TOKEN", "global-value");
@@ -51,9 +51,9 @@ test("a project's own value wins over the global one there, and only there", () 
 });
 
 test("each home has its own Keychain service; the default home keeps the plain one", () => {
-  assert.equal(keychainService("/home/u/.apx/v2", "/home/u/.apx/v2"), "apx2");
-  assert.equal(keychainService("/home/u/.apx/v2/", "/home/u/.apx/v2"), "apx2");
-  assert.equal(keychainService("/tmp/test-home", "/home/u/.apx/v2"), `apx2:${path.resolve("/tmp/test-home")}`);
+  assert.equal(keychainService("/home/u/.colonia/v2", "/home/u/.colonia/v2"), "colonia2");
+  assert.equal(keychainService("/home/u/.colonia/v2/", "/home/u/.colonia/v2"), "colonia2");
+  assert.equal(keychainService("/tmp/test-home", "/home/u/.colonia/v2"), `colonia2:${path.resolve("/tmp/test-home")}`);
 });
 
 /** A system command stand-in: a Secret Service keyring in memory, or DPAPI as a reversible seal, as a Run. */
@@ -77,7 +77,7 @@ function fakeSystem(o: { keyring?: boolean; powershell?: boolean } = {}) {
     if (cmd === "powershell.exe") {
       if (!o.powershell) throw new Error("not found");
       const text = Buffer.from(opts.input ?? "", "base64").toString("utf8");
-      const sealed = opts.env?.APX_DPAPI_OP === "protect" ? `sealed:${text}` : text.replace(/^sealed:/, "");
+      const sealed = opts.env?.COLONIA_DPAPI_OP === "protect" ? `sealed:${text}` : text.replace(/^sealed:/, "");
       return Buffer.from(sealed, "utf8").toString("base64");
     }
     throw new Error(`unexpected ${cmd}`);
@@ -85,7 +85,7 @@ function fakeSystem(o: { keyring?: boolean; powershell?: boolean } = {}) {
   return { run, keyring, calls };
 }
 
-const tempHome = () => fs.mkdtempSync(path.join(os.tmpdir(), "apx-secrets-"));
+const tempHome = () => fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
 
 test("each system has its store: Keychain on macOS, DPAPI on Windows, the Secret Service on Linux", () => {
   assert.equal(systemBackend("darwin"), "keychain");

@@ -11,7 +11,7 @@ Connect **Gmail** in **Resources › Integrations**, or configure an SMTP mailbo
 **Settings › Channels**. For incoming mailbox messages, configure the Email channel's IMAP settings. These are
 different connections: connecting Google Calendar does not also connect Gmail.
 
-With APX's limited Google sign-in, Gmail can send mail. To search and read Gmail and prepare drafts, connect it
+With Colonia's limited Google sign-in, Gmail can send mail. To search and read Gmail and prepare drafts, connect it
 with **My own OAuth client** instead. The connection dialog walks you through that setup. See
 [Integrations](/extend/integrations/) for Google scopes and [Channels](/channels/overview/) for incoming mail and
 contact boundaries.
@@ -43,8 +43,8 @@ New messages and replies use the matching enabled signature automatically. Ask t
 for one message when needed. **Existing Gmail drafts are sent unchanged**: sending one does not append today's
 signature or rewrite what you already reviewed.
 
-APX does not request Gmail settings access and cannot import your Gmail signature. Copy it into APX yourself.
-This changes only APX's locally stored signature, not Gmail settings. If a mailbox is disconnected, its saved
+Colonia does not request Gmail settings access and cannot import your Gmail signature. Copy it into Colonia yourself.
+This changes only Colonia's locally stored signature, not Gmail settings. If a mailbox is disconnected, its saved
 signature stays stored and is used again if that sender is configured again.
 
 ## Configure and test a signature
@@ -82,7 +82,7 @@ Embedded data images and URLs containing credentials are rejected. Plain text is
 HTML to 30,000; a simple footer is more reliable than a full marketing template.
 
 A hosted logo can reveal a recipient's image request to that host when their mail client loads it. Prefer plain
-text when that disclosure is unwanted. APX validates a small fragment; it does not host the logo or guarantee how
+text when that disclosure is unwanted. Colonia validates a small fragment; it does not host the logo or guarantee how
 every recipient's mail client will display it.
 
 ## When the signature is missing or wrong
@@ -102,6 +102,6 @@ same footer, and inspect the draft if you suspect duplication.
 ## Let your super-agent configure it
 
 The super-agent can read configured senders and propose a local
-signature change through APX settings. It asks for your confirmation before applying a change; it does not edit
+signature change through Colonia settings. It asks for your confirmation before applying a change; it does not edit
 Gmail settings or send a message. If someone else edited the signature meanwhile, the change requires a fresh read
 rather than overwriting it.

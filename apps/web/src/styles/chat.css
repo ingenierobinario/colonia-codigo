@@ -4,7 +4,7 @@
   min-width: var(--shell-chat-min-w);
   display: flex;
   flex-direction: column;
-  background: var(--apx-surface);
+  background: var(--colonia-surface);
 }
 .chat--empty {
   justify-content: center;
@@ -16,7 +16,7 @@
   gap: 12px;
   height: var(--shell-header-h);
   padding: 0 12px 0 18px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .chat__titles {
   flex: 1;
@@ -31,8 +31,8 @@
   min-width: 0;
 }
 .chat__name {
-  font-size: var(--apx-text-md);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-md);
+  font-weight: var(--colonia-weight-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -42,17 +42,17 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
   white-space: nowrap;
 }
 .chat__crumbsep {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .chat__crumbthread {
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .chat__tools {
   display: flex;
@@ -77,18 +77,18 @@
   flex-direction: column;
   gap: 10px;
 }
-.transcript__row > .apx-msg {
+.transcript__row > .colonia-msg {
   margin-top: 0;
 }
 /* The message a search result opened, lit for a moment. */
 .transcript__row.is-flash {
-  border-radius: var(--apx-radius-md);
+  border-radius: var(--colonia-radius-md);
   animation: msg-flash 2.4s ease-out;
 }
 @keyframes msg-flash {
   0%,
   40% {
-    background: var(--apx-fill);
+    background: var(--colonia-fill);
   }
   100% {
     background: transparent;
@@ -99,10 +99,10 @@
 }
 /* A routine run's instructions, folded above what it told. */
 .transcript__routine {
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-sm);
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-muted);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-sm);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
 }
 .transcript__routine summary {
   display: flex;
@@ -136,12 +136,12 @@
   margin: 0 0 6px;
   padding: 6px 10px;
   border: 0;
-  border-left: 3px solid var(--apx-brand);
+  border-left: 3px solid var(--colonia-brand);
   border-radius: 6px;
   background: color-mix(in srgb, currentColor 7%, transparent);
   color: inherit;
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
 }
 .transcript__quote.is-link {
@@ -151,8 +151,8 @@
   background: color-mix(in srgb, currentColor 12%, transparent);
 }
 .transcript__quoteauthor {
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-semibold);
 }
 .transcript__quotetext {
   opacity: 0.75;
@@ -167,7 +167,7 @@
   display: flex;
   padding-top: 4px;
 }
-.apx-msg.is-pending {
+.colonia-msg.is-pending {
   opacity: 0.6;
 }
 .turn {
@@ -175,17 +175,17 @@
   flex-direction: column;
   gap: 10px;
 }
-.turn > .apx-msg {
+.turn > .colonia-msg {
   margin-top: 0;
 }
-.turn .apx-msg__col {
+.turn .colonia-msg__col {
   max-width: min(82%, 640px);
 }
-.turn .apx-msg__bare {
+.turn .colonia-msg__bare {
   width: 100%;
 }
-.turn:has(.surfacecard) .apx-msg__col,
-.apx-msg__col:has(.inputcard.has-change) {
+.turn:has(.surfacecard) .colonia-msg__col,
+.colonia-msg__col:has(.inputcard.has-change) {
   max-width: 100%;
   width: 100%;
 }
@@ -206,8 +206,8 @@
   .transcript {
     padding: 14px 10px 10px;
   }
-  .apx-msg__col,
-  .turn .apx-msg__col {
+  .colonia-msg__col,
+  .turn .colonia-msg__col {
     max-width: 88%;
   }
   .chat__composer {
@@ -221,9 +221,9 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  border-top: 1px solid var(--apx-border);
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-sm);
+  border-top: 1px solid var(--colonia-border);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-sm);
 }
 
 /* Parts */
@@ -233,23 +233,23 @@
   gap: 8px;
   width: 100%;
   padding: 10px 12px 12px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-lg);
-  background: var(--apx-surface);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface);
   box-sizing: border-box;
 }
 .surfacecard--gone {
   flex-direction: row;
   align-items: center;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-sm);
 }
 .surfacecard__head {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
 }
 .surfacecard__eyebrow {
   overflow: hidden;
@@ -262,7 +262,7 @@
   gap: 4px;
   min-width: 0;
   overflow: hidden;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -275,7 +275,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .surfacecard__asidetext {
   flex: 1;
@@ -285,13 +285,13 @@
 }
 .surfacecard__asidetitle {
   overflow: hidden;
-  color: var(--apx-fg);
-  font-weight: var(--apx-weight-semibold);
+  color: var(--colonia-fg);
+  font-weight: var(--colonia-weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .surfacecard__asidenote {
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
 }
 
 /* ── Surfaces ──────────────────────────────────────────────────────────────── */
@@ -328,8 +328,8 @@
   align-items: center;
   gap: 4px;
   padding-left: 2px;
-  font-size: calc(11px * var(--apx-text-scale, 1));
-  color: var(--apx-info);
+  font-size: calc(11px * var(--colonia-text-scale, 1));
+  color: var(--colonia-info);
 }
 .turn__skillsicon {
   display: grid;
@@ -339,11 +339,11 @@
 }
 .skillchip {
   font: inherit;
-  font-family: var(--apx-font-mono);
+  font-family: var(--colonia-font-mono);
   color: inherit;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   padding: 1px 5px;
   cursor: pointer;
 }
@@ -379,18 +379,18 @@
   gap: 8px;
 }
 .skillcard__name {
-  font-family: var(--apx-font-mono);
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  font-family: var(--colonia-font-mono);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   font-weight: 600;
 }
 .skillcard__why {
   margin: 0;
-  font-size: calc(11px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-muted);
+  font-size: calc(11px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-muted);
 }
 .skillcard__desc {
   margin: 0;
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   line-height: 1.5;
 }
 .skillcard__open {
@@ -400,9 +400,9 @@
   align-self: flex-start;
   padding: 0;
   font: inherit;
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   font-weight: 500;
-  color: var(--apx-info);
+  color: var(--colonia-info);
   background: none;
   border: 0;
   cursor: pointer;
@@ -440,16 +440,16 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg-muted);
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg-muted);
 }
 
 /* A bubble's controls (Message `actions`): its time after them, and read aloud crossed out with no voice set up. */
 .msgactions__when {
   margin-left: 4px;
-  font-family: var(--apx-meta-font);
-  font-size: var(--apx-text-2xs);
-  color: var(--apx-fg-subtle);
+  font-family: var(--colonia-meta-font);
+  font-size: var(--colonia-text-2xs);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
 }
 .msgactions__off {
@@ -457,10 +457,10 @@
   cursor: not-allowed;
 }
 /* Sized by the chat column, not the window: beside a side panel the column is far narrower than 70vw. */
-.apx-msg.is-editing .apx-msg__col {
+.colonia-msg.is-editing .colonia-msg__col {
   flex: 1;
 }
-.apx-msg.is-editing .apx-msg__bare {
+.colonia-msg.is-editing .colonia-msg__bare {
   align-self: stretch;
 }
 .rewind__edit {
@@ -481,17 +481,17 @@
   align-items: center;
   gap: 4px;
   padding: 1px 7px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
   background: transparent;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font: inherit;
-  font-size: var(--apx-text-2xs);
+  font-size: var(--colonia-text-2xs);
   cursor: pointer;
 }
 .chat__task:hover {
-  color: var(--apx-fg);
-  background: var(--apx-fill);
+  color: var(--colonia-fg);
+  background: var(--colonia-fill);
 }
 
 /* ── Live view of the window an agent works on (desktop app) ─────────────────── */
@@ -505,9 +505,9 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 10px;
-  background: var(--apx-surface-raised);
+  background: var(--colonia-surface-raised);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
   overflow: hidden;
 }
@@ -525,8 +525,8 @@
   align-items: center;
   gap: 6px;
   padding: 4px 4px 4px 10px;
-  font-size: calc(12px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-muted);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-muted);
 }
 .screenlive__title {
   flex: 1;
@@ -534,10 +534,10 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .screenlive__window {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .screenlive__view {
   position: relative;
@@ -551,8 +551,8 @@
 .screenlive__wait {
   padding: 24px;
   text-align: center;
-  font-size: calc(12px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-muted);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-muted);
 }
 .screenlive__dot {
   position: absolute;
@@ -575,15 +575,15 @@
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 999px;
-  background: var(--apx-surface);
-  color: var(--apx-fg);
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  background: var(--colonia-surface);
+  color: var(--colonia-fg);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   cursor: pointer;
 }
 .computer-icon {
-  color: var(--apx-brand, #2fb67c);
+  color: var(--colonia-brand, #2fb67c);
   flex: none;
 }
 .computer-icon.is-busy .computer-icon__pointer {
@@ -616,7 +616,7 @@
   gap: 10px;
   padding: 12px;
   text-align: center;
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   color: #fff;
   background: rgba(0, 0, 0, 0.72);
 }
@@ -629,8 +629,8 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--apx-danger);
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  color: var(--colonia-danger);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   cursor: pointer;
   transition:
     background 0.15s,
@@ -648,8 +648,8 @@
 .screenlive__stop:hover,
 .screenlive__stop:focus-visible {
   gap: 5px;
-  background: var(--apx-danger-soft);
-  color: var(--apx-danger-soft-fg);
+  background: var(--colonia-danger-soft);
+  color: var(--colonia-danger-soft-fg);
 }
 .screenlive__stop:hover .screenlive__stoplabel,
 .screenlive__stop:focus-visible .screenlive__stoplabel {
@@ -659,7 +659,7 @@
 .computer-icon.is-done .computer-icon__pointer {
   animation: computer-pointer 1.6s ease-in-out 2;
 }
-.apx-actions:hover .computer-icon .computer-icon__pointer,
+.colonia-actions:hover .computer-icon .computer-icon__pointer,
 .turn__tools:hover .computer-icon .computer-icon__pointer {
   animation: computer-pointer 1.6s ease-in-out infinite;
 }
@@ -670,7 +670,7 @@
 }
 
 /* An image full size over the app: no card around it, it fits the window and keeps its proportions. */
-.apx-dialog.imageviewer {
+.colonia-dialog.imageviewer {
   width: auto;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 48px);
@@ -686,11 +686,11 @@
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 48px);
   object-fit: contain;
-  border-radius: var(--apx-radius-lg);
+  border-radius: var(--colonia-radius-lg);
 }
-.imageviewer .apx-dialog__close--float {
-  background: var(--apx-surface-raised);
-  color: var(--apx-fg);
+.imageviewer .colonia-dialog__close--float {
+  background: var(--colonia-surface-raised);
+  color: var(--colonia-fg);
 }
 
 /* A quote an agent drafted, with its copy button in the corner (on hover with a mouse). */
@@ -716,10 +716,10 @@
   gap: 4px;
   max-width: min(320px, 100%);
   padding: 0 7px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
   font: inherit;
   font-size: 0.92em;
   line-height: 1.5;
@@ -727,12 +727,12 @@
   cursor: pointer;
 }
 .taskchip:hover {
-  border-color: var(--apx-border-strong);
-  background: var(--apx-fill-hover);
+  border-color: var(--colonia-border-strong);
+  background: var(--colonia-fill-hover);
 }
 .taskchip__icon {
   flex: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .taskchip__title {
   overflow: hidden;
@@ -740,20 +740,20 @@
   white-space: nowrap;
 }
 /* In a table cell a long task title is cut short instead of widening its column. */
-.apx-md__scroll .taskchip {
+.colonia-md__scroll .taskchip {
   max-width: 22em;
 }
 /* An agent's link into the panel reads as an action, not as plain text: a raised fill at rest, and on hover the
    sidebar's selected row (same fill and hairline), so it stays calm inside the chat. */
-.apx-btn.applink {
-  background: var(--apx-fill-hover);
+.colonia-btn.applink {
+  background: var(--colonia-fill-hover);
 }
-.apx-btn.applink:hover:not(:disabled) {
-  background: var(--apx-row-selected-bg);
-  box-shadow: inset 0 0 0 1px var(--apx-row-selected-border);
+.colonia-btn.applink:hover:not(:disabled) {
+  background: var(--colonia-row-selected-bg);
+  box-shadow: inset 0 0 0 1px var(--colonia-row-selected-border);
 }
 .taskchip.is-closed .taskchip__title {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-decoration: line-through;
 }
 
@@ -761,7 +761,7 @@
   max-width: 100%;
 }
 
-.browserpart__compact .apx-btn__label {
+.browserpart__compact .colonia-btn__label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

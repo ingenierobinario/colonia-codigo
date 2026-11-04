@@ -92,7 +92,7 @@ export type TempDir = {
 };
 
 /** A fresh folder under the system's temp folder. */
-export function tempDir(prefix = "apx-test-"): TempDir {
+export function tempDir(prefix = "colonia-test-"): TempDir {
   const dir = real(fs.mkdtempSync(path.join(os.tmpdir(), prefix)));
   const remove = () => removeDir(dir);
   return { path: dir, remove, [Symbol.asyncDispose]: remove };

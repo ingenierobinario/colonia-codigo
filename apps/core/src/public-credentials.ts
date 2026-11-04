@@ -1,6 +1,6 @@
 // Route-scoped public bearer credentials. Only secret references live in SQLite or idempotent RPC replies.
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { PublicEndpointPath as Path } from "@apx/protocol";
+import { PublicEndpointPath as Path } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "./domain/store.ts";
 import { badRequest } from "./errors.ts";
@@ -20,7 +20,7 @@ const Saved = z
   )
   .max(1000);
 const KEY = "public-route-credentials";
-/** What a key may be: APX's own (`apxp_` and 64 hex) or one the owner chose (DECISIONS.md#d-182). */
+/** What a key may be: Colonia's own (`coloniap_` and 64 hex) or one the owner chose (DECISIONS.md#d-182). */
 export const PUBLIC_TOKEN = /^[A-Za-z0-9._~-]{24,200}$/;
 const digest = (value: string) => createHash("sha256").update(value).digest();
 const deliveryHeaders = (headers: Record<string, string>) =>
@@ -79,7 +79,7 @@ export function createPublicCredentials(deps: { store: Store; secrets: Secrets; 
       return api.issue(pathname);
     },
     /**
-     * A new key for an address whether or not it is a route now (a Flow still off), APX's or `value`; the old one
+     * A new key for an address whether or not it is a route now (a Flow still off), Colonia's or `value`; the old one
      * stops at once. Callers check the address is one the owner may key.
      */
     issue(pathname: string, value?: string) {
@@ -96,7 +96,7 @@ export function createPublicCredentials(deps: { store: Store; secrets: Secrets; 
       // Journal before touching the external secret store: an interrupted creation is never untracked.
       savePending([...queued, entry.secret_ref]);
       try {
-        deps.secrets.set(name, value ?? `apxp_${randomBytes(32).toString("hex")}`);
+        deps.secrets.set(name, value ?? `coloniap_${randomBytes(32).toString("hex")}`);
         deps.store.tx(() => {
           deps.store.settings.set(KEY, JSON.stringify([...saved.filter((s) => s.path !== pathname), entry]));
           savePending(before ? [...queued, before.secret_ref] : queued);

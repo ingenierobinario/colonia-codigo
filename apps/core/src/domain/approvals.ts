@@ -1,7 +1,7 @@
 // Owner grants: durable for every agent or for one, or limited to one chat.
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { type ApprovalScope, COMPUTER_GRANT, STRICT_APPROVAL, ToolApproval } from "@apx/protocol";
+import { type ApprovalScope, COMPUTER_GRANT, STRICT_APPROVAL, ToolApproval } from "@colonia/protocol";
 import { z } from "zod";
 import { type BrowserConsentContext, browserConsents } from "./browser-consents.ts";
 import { settingsRepo } from "./settings.ts";
@@ -27,16 +27,16 @@ export const approvalScopes = (a: ApprovalTarget): ApprovalScope[] =>
       ? ["session", "always"]
       : ["once", "session", "always"];
 
-/** The server name of APX's own tools in grants (an MCP server's is its approval id). */
-export const APX_SERVER = "apx";
+/** The server name of Colonia's own tools in grants (an MCP server's is its approval id). */
+export const COLONIA_SERVER = "colonia";
 
 /**
- * One of APX's own tools: one key per tool name, so the owner's "always" for an agent covers that tool's calls that
+ * One of Colonia's own tools: one key per tool name, so the owner's "always" for an agent covers that tool's calls that
  * would ask. Calls that always ask (a destructive command, a routine or agent change) use `strictApproval`'s key.
  */
 export const nativeApproval = (tool: string): ApprovalTarget => ({
-  key: `${APX_SERVER}:${tool}`,
-  server: APX_SERVER,
+  key: `${COLONIA_SERVER}:${tool}`,
+  server: COLONIA_SERVER,
   tool,
   permanent: false,
 });
@@ -48,12 +48,12 @@ export const nativeApproval = (tool: string): ApprovalTarget => ({
 export const strictApproval = (a: ApprovalTarget): ApprovalTarget => ({ ...a, key: `${a.key}${STRICT_APPROVAL}` });
 
 /** The key prefix of a folder an agent may change for good, from a folder card's "always" (DECISIONS.md#d-108). */
-const WRITE_FOLDER = `${APX_SERVER}:write_folder:`;
+const WRITE_FOLDER = `${COLONIA_SERVER}:write_folder:`;
 
 /** The grant letting an agent change files in a folder outside its own; the folder shows as its condition. */
 export const writeFolderApproval = (dir: string): ApprovalTarget => ({
   key: `${WRITE_FOLDER}${dir}`,
-  server: APX_SERVER,
+  server: COLONIA_SERVER,
   tool: "write_folder",
   permanent: false,
 });

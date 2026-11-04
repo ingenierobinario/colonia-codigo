@@ -6,7 +6,7 @@
 import { execFileSync } from "node:child_process";
 import { previousTag, sentence } from "../apps/core/src/release-notes.ts";
 
-const REPO = "agentprojectcontext/apx";
+const REPO = "ingenierobinario/colonia";
 
 export type Fix = { issue: number; sha: string; subject: string };
 
@@ -29,11 +29,11 @@ export function fixesIn(log: string): Fix[] {
 export function replyFor(tag: string, fixes: Fix[]): string {
   const lines = fixes.map((f) => `- ${sentence(f.subject)} (${f.sha})`);
   return [
-    `Released in APX ${tag}:`,
+    `Released in Colonia ${tag}:`,
     "",
     ...lines,
     "",
-    "The desktop app offers the update by itself; on a server, run `apx upgrade`. " +
+    "The desktop app offers the update by itself; on a server, run `colonia upgrade`. " +
       `Release notes: https://github.com/${REPO}/releases/tag/${tag}`,
   ].join("\n");
 }
@@ -59,7 +59,7 @@ if (import.meta.main) {
     // The release is out already: one issue that cannot be answered only warns.
     try {
       const said = gh("issue", "view", String(issue), "-R", REPO, "--json", "comments", "-q", ".comments[].body");
-      if (said.includes(`Released in APX ${tag}:`)) {
+      if (said.includes(`Released in Colonia ${tag}:`)) {
         console.log(`#${issue}: already answered for ${tag}`);
         continue;
       }

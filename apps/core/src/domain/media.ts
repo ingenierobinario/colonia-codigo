@@ -1,6 +1,6 @@
-// Media APX made (generated images, synthesized speech) or the owner attached (images, files): one row per file. The bytes stay on disk under the home,
+// Media Colonia made (generated images, synthesized speech) or the owner attached (images, files): one row per file. The bytes stay on disk under the home,
 // never in the database or in messages; clients fetch them through media.get.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { MediaTable } from "../db/schema.ts";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";

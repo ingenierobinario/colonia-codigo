@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient, ApxError, type ApxSocket } from "@apx/protocol/client";
+import { ColoniaClient, ColoniaError, type ColoniaSocket } from "@colonia/protocol/client";
 import { testConfig } from "../config.ts";
 import { callTool, say, scriptedLlm } from "../engine/testkit.ts";
 import { createCore } from "../server.ts";
@@ -37,22 +37,22 @@ const expo = http.createServer((req, res) => {
 
 let core: Awaited<ReturnType<typeof createCore>>;
 let home = "";
-let owner: ApxClient;
-let phone: ApxSocket | undefined;
+let owner: ColoniaClient;
+let phone: ColoniaSocket | undefined;
 
 before(async () => {
   await new Promise<void>((r) => expo.listen(0, "127.0.0.1", r));
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-phone-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-phone-"));
   core = await createCore(
     {
       ...testConfig({ home }),
       expoPushUrl: `http://127.0.0.1:${(expo.address() as AddressInfo).port}/push`,
-      publicUrl: "https://apx.example.ts.net",
+      publicUrl: "https://colonia.example.ts.net",
     },
     { quiet: true, llm },
   );
   core.store.settings.set("model_default", JSON.stringify({ model: "fake/fake-1", router: false }));
-  owner = new ApxClient({ url: core.url });
+  owner = new ColoniaClient({ url: core.url });
 });
 after(async () => {
   phone?.close();
@@ -79,12 +79,12 @@ test("the phone's tools are offered only while a phone lends them; then an agent
   assert.doesNotMatch(await toolsSeen(thread), /phone_location/);
 
   const { code } = await owner.call("devices.pair_start", {});
-  const { token } = await new ApxClient({ url: core.url }).call("devices.pair", {
+  const { token } = await new ColoniaClient({ url: core.url }).call("devices.pair", {
     code,
     name: "iPhone",
     platform: "ios",
   });
-  phone = await new ApxClient({ url: core.url, token }).connect("node", ["location", "camera"]);
+  phone = await new ColoniaClient({ url: core.url, token }).connect("node", ["location", "camera"]);
   phone.onRequest(async (method, params) => {
     if (method === "phone.location")
       return { lat: -41.1335, lon: -71.3103, accuracy_m: 12, at: "2026-10-04T10:00:00Z" };
@@ -116,12 +116,12 @@ test("a picture the owner takes on the phone is kept as media and shown in the c
 
 test("a device sets its own push; notices then reach the phone instead of a channel", async () => {
   const { code } = await owner.call("devices.pair_start", {});
-  const { token, device } = await new ApxClient({ url: core.url }).call("devices.pair", {
+  const { token, device } = await new ColoniaClient({ url: core.url }).call("devices.pair", {
     code,
     name: "Pixel",
     platform: "android",
   });
-  const self = new ApxClient({ url: core.url, token });
+  const self = new ColoniaClient({ url: core.url, token });
   const set = await self.call("devices.set_push", { push: { kind: "expo", token: "ExponentPushToken[abc123]" } });
   assert.equal(set.push, "expo");
   // The token itself never comes back.
@@ -130,7 +130,7 @@ test("a device sets its own push; notices then reach the phone instead of a chan
   const other = (await owner.call("devices.list", {})).devices.find((d) => d.id !== device.id);
   await assert.rejects(
     self.call("devices.set_push", { id: other?.id ?? "", push: null }),
-    (e: unknown) => e instanceof ApxError && e.code === "unauthorized",
+    (e: unknown) => e instanceof ColoniaError && e.code === "unauthorized",
   );
 
   const prefs = await owner.call("notices.get", {});
@@ -150,5 +150,5 @@ test("a device sets its own push; notices then reach the phone instead of a chan
 });
 
 test("a public address goes first in the pairing QR", () => {
-  assert.deepEqual(reachableAt("127.0.0.1", 7440, "https://apx.example.ts.net"), ["https://apx.example.ts.net"]);
+  assert.deepEqual(reachableAt("127.0.0.1", 7440, "https://colonia.example.ts.net"), ["https://colonia.example.ts.net"]);
 });

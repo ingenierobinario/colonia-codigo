@@ -182,16 +182,16 @@ export function sshCommand(target: string, command: string, connectTimeout = 10)
 }
 
 // A command over ssh runs in a non-interactive shell, where ~/.local/bin (install.sh's) is often not on PATH yet;
-// and an `apx` on PATH may still be v1's, which is not the APX this app connects to.
-const HAS_APX =
-  'test -x "$HOME/.local/bin/apx" || case "$(apx --version 2>/dev/null)" in "APX v"[2-9]*) exit 0 ;; *) exit 1 ;; esac';
+// and an `colonia` on PATH may still be v1's, which is not the Colonia this app connects to.
+const HAS_Colonia =
+  'test -x "$HOME/.local/bin/colonia" || case "$(colonia --version 2>/dev/null)" in "Colonia v"[2-9]*) exit 0 ;; *) exit 1 ;; esac';
 
 /**
- * Whether the server has an APX command (to tell "not installed" apart from "not running" and "no login"), and when
+ * Whether the server has an Colonia command (to tell "not installed" apart from "not running" and "no login"), and when
  * the login failed, whether the server would take a password instead.
  */
-export async function remoteApx(target: string): Promise<"installed" | "missing" | "unreachable" | "password"> {
-  const r = await run(sshCommand(target, HAS_APX), 20_000);
+export async function remoteColonia(target: string): Promise<"installed" | "missing" | "unreachable" | "password"> {
+  const r = await run(sshCommand(target, HAS_Colonia), 20_000);
   // ssh itself exits 255 when it cannot log in; anything else is the remote command's own answer.
   if (r.status === 0) return "installed";
   if (needsPassword(r.status, r.stderr)) return "password";
@@ -226,8 +226,8 @@ export type RemoteInstall =
 
 /** What a server needs before install.sh runs there: Linux or macOS, with bash, curl and tar. */
 const PRECHECK =
-  'case "$(uname -s 2>/dev/null)" in Linux|Darwin) ;; *) echo "APX_UNSUPPORTED"; exit 3 ;; esac; ' +
-  'for c in bash curl tar; do command -v "$c" >/dev/null 2>&1 || { echo "APX_NEEDS $c"; exit 3; }; done';
+  'case "$(uname -s 2>/dev/null)" in Linux|Darwin) ;; *) echo "COLONIA_UNSUPPORTED"; exit 3 ;; esac; ' +
+  'for c in bash curl tar; do command -v "$c" >/dev/null 2>&1 || { echo "COLONIA_NEEDS $c"; exit 3; }; done';
 
 const LINGER = 'echo "$(id -un) $(loginctl show-user "$(id -un)" -p Linger --value 2>/dev/null || echo n/a)"';
 
@@ -265,7 +265,7 @@ export function installArgs(version: string, feed: string | undefined): string[]
 }
 
 /**
- * Installs the APX daemon on a server over SSH: this app's own install.sh goes in on ssh's stdin (no script is
+ * Installs the Colonia daemon on a server over SSH: this app's own install.sh goes in on ssh's stdin (no script is
  * fetched from the network), downloads the release's bundle there and starts it as a service. `onLine` gets its output.
  */
 export async function remoteInstall(
@@ -279,9 +279,9 @@ export async function remoteInstall(
   if (pre.status === 255 || pre.status === null) return { ok: false, reason: "sshFailed" };
   if (pre.status !== 0) {
     const out = `${pre.stdout ?? ""}`.trim();
-    return out.includes("APX_UNSUPPORTED")
+    return out.includes("COLONIA_UNSUPPORTED")
       ? { ok: false, reason: "sshUnsupported" }
-      : { ok: false, reason: "installFailed", error: out.replace(/^APX_NEEDS /, "missing on the server: ") };
+      : { ok: false, reason: "installFailed", error: out.replace(/^COLONIA_NEEDS /, "missing on the server: ") };
   }
   const tail: string[] = [];
   const code = await new Promise<number | null>((resolve) => {

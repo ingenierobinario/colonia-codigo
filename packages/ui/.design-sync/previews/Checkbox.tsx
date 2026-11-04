@@ -1,4 +1,4 @@
-import { ApxProvider, Checkbox } from "@apx/ui";
+import { ColoniaProvider, Checkbox } from "@colonia/ui";
 
 const col = { width: 340, display: "flex", flexDirection: "column" as const, gap: 12 };
 
@@ -15,11 +15,11 @@ export function Options() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 372 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 372 }}>
       <div style={col}>
         <Checkbox label="Incluir chats archivados" defaultChecked />
         <Checkbox label="Solo este proyecto" />
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { AgentAvatar, BLOB_NAMES } from "@apx/ui";
+import { AgentAvatar, BLOB_NAMES } from "@colonia/ui";
 
 export function Catalog() {
   return (
@@ -6,7 +6,7 @@ export function Catalog() {
       {BLOB_NAMES.map((b) => (
         <div key={b} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
           <AgentAvatar name={b} blob={b} size={36} animated={false} />
-          <span style={{ fontSize: 9, color: "var(--apx-fg-subtle)" }}>{b}</span>
+          <span style={{ fontSize: 9, color: "var(--colonia-fg-subtle)" }}>{b}</span>
         </div>
       ))}
     </div>

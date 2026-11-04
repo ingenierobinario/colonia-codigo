@@ -1,7 +1,7 @@
 // Agents: list, create, edit, archive. A project agent's definition is its file (.apc/agents/<slug>.md): edits are
-// written there and read back through the index; what only APX knows (model choice, browser profile) lives in the
+// written there and read back through the index; what only Colonia knows (model choice, browser profile) lives in the
 // database. Global agents (no project) live in the database.
-import { type Agent, type ModelChoice, names, parentIn, reportsOf } from "@apx/protocol";
+import { type Agent, type ModelChoice, names, parentIn, reportsOf } from "@colonia/protocol";
 import type { ApcSync } from "../apc/sync.ts";
 import {
   archiveAgentFile,
@@ -51,7 +51,7 @@ export function agentHandlers(store: Store, apc: ApcSync, engines: EngineIds, to
       throw badRequest(errorMessage(err));
     }
   };
-  /** Sets what only APX knows about an agent (kept across reindexes). */
+  /** Sets what only Colonia knows about an agent (kept across reindexes). */
   const setLocal = (
     cur: AgentRecord,
     p: { browser_profile?: Agent["browser_profile"] | undefined; model_choice?: ModelChoice | null | undefined },
@@ -238,7 +238,7 @@ export function agentHandlers(store: Store, apc: ApcSync, engines: EngineIds, to
         const root = rootOf(cur.project_id);
         const slug = cur.slug;
         onDisk(() => restoreAgentFile(root, slug));
-        // The sync finds the file again and lists the agent as active, with what the owner set in APX.
+        // The sync finds the file again and lists the agent as active, with what the owner set in Colonia.
         apc.sync(cur.project_id);
       }
       store.agents.unarchive(cur.id);

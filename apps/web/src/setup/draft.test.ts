@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { CatalogEngine } from "@apx/protocol";
+import type { CatalogEngine } from "@colonia/protocol";
 import { withStarters } from "./draft.ts";
 
 const engine = (id: string, starter?: string, available = true): CatalogEngine => ({

@@ -161,7 +161,7 @@ export function messageTools(store: Store, home: string): Tool[] {
         });
         if ("withheld" in r) {
           if (r.withheld === "app_only")
-            return `in the owner's tray: they chose to be told only in the APX app, so it went to no chat app${files.ids.length ? " (the files stay in this chat)" : ""}. Do not send it again.`;
+            return `in the owner's tray: they chose to be told only in the Colonia app, so it went to no chat app${files.ids.length ? " (the files stay in this chat)" : ""}. Do not send it again.`;
           return r.withheld === "held"
             ? `held: the owner's quiet hours are on; the text goes when they end${files.ids.length ? ", without the files" : ""}. Do not send it again.`
             : "not sent: the owner's notice budget did not let it through (today's cap, another notice too soon, or a kind they marked unhelpful). Do not retry; it stays in this chat.";

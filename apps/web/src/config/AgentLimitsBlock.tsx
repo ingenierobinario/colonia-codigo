@@ -1,5 +1,5 @@
-import type { AgentLimits } from "@apx/protocol";
-import { Input, SettingRow, Switch } from "@apx/ui";
+import type { AgentLimits } from "@colonia/protocol";
+import { Input, SettingRow, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { useT } from "../i18n/index.ts";

@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { Button, Dialog, IconButton, Icons } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { Button, Dialog, IconButton, Icons } from "@colonia/ui";
 import { useState } from "react";
 import { removeSurface, setSurfaceFlags } from "../data/actions.ts";
 import { projectName } from "../data/identity.ts";

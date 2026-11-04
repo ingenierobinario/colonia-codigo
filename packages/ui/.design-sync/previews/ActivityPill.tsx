@@ -1,4 +1,4 @@
-import { ActivityPill, AgentAvatar, ApxProvider, AvatarStack } from "@apx/ui";
+import { ActivityPill, AgentAvatar, ColoniaProvider, AvatarStack } from "@colonia/ui";
 
 export function Handoff() {
   return (
@@ -33,12 +33,12 @@ export function Tones() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
       <ActivityPill
         tone="brand"
         label="Albert está renderizando…"
         from={<AgentAvatar name="Albert" blob="aqua" size={24} />}
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

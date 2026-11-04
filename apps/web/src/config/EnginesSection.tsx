@@ -6,7 +6,7 @@ import { ProvidersGrid } from "./ProvidersGrid.tsx";
 import { SectionHead, SubHead } from "./SectionHead.tsx";
 
 /**
- * What agents and the router run on: the ChatGPT plan (as Codex) and the model APIs in APX's own loop (add your own),
+ * What agents and the router run on: the ChatGPT plan (as Codex) and the model APIs in Colonia's own loop (add your own),
  * and every model each one offers. The CLIs are in External sessions.
  */
 export function EnginesSection() {

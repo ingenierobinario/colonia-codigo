@@ -128,7 +128,7 @@ test("stable-diffusion.cpp: queued job polled until done; an abandoned job is ca
     | undefined;
   assert.equal(params?.sample_steps, 8);
 
-  // A server that never finishes: the caller gives up, APX cancels the job so the GPU is free again.
+  // A server that never finishes: the caller gives up, Colonia cancels the job so the GPU is free again.
   const slow: typeof fetch = (input, init) =>
     String(input).endsWith("/img_gen")
       ? Promise.resolve(new Response(JSON.stringify({ id: "slow" }), { status: 200 }))
@@ -171,7 +171,7 @@ test("OpenAI-compatible images; QVox speech gets its style and language; Gemini 
 });
 
 test("with references, OpenAI-compatible images go to the edits endpoint as files; word-only servers refuse them", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-refs-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-refs-"));
   try {
     const ref = path.join(dir, "reel.png");
     fs.writeFileSync(ref, PNG);

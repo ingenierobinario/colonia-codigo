@@ -8,9 +8,9 @@ import { startCore, texts } from "../apps/core/src/engine/testkit.ts";
 
 const { values } = parseArgs({ options: { live: { type: "boolean" }, out: { type: "string" } } });
 if (!values.live || !values.out) throw new Error("Explicit --live --out <local-report> required");
-// The control tests APX injection, with the CLI's separate auto-memory disabled for this process only.
+// The control tests Colonia injection, with the CLI's separate auto-memory disabled for this process only.
 process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-session-control-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-session-control-"));
 const work = path.join(dir, "workspace");
 fs.mkdirSync(work);
 const marker = randomBytes(6).toString("hex");
@@ -23,7 +23,7 @@ const env = await startCore({
     label: () => "control",
     async complete() {
       apiCalls++;
-      throw new Error("An isolated CLI session must not call the APX auxiliary model");
+      throw new Error("An isolated CLI session must not call the Colonia auxiliary model");
     },
   },
 });

@@ -45,8 +45,8 @@ function tableCells(line: string): string[] {
 
 const QUOTE = /^\s*>\s?(.*)$/;
 const SAFE_HREF = /^(https?:|mailto:)/i;
-/** A link into the host app (apx:settings/desktop): only a renderLink can follow it; without one, its label stays. */
-const APP_HREF = /^apx:[a-z]/i;
+/** A link into the host app (colonia:settings/desktop): only a renderLink can follow it; without one, its label stays. */
+const APP_HREF = /^colonia:[a-z]/i;
 const MAX_TABLE_COLUMNS = 64;
 const MAX_TABLE_CELLS = 10_000;
 const INLINE = new RegExp(
@@ -173,7 +173,7 @@ function inline(text: string, keyBase: string, r: InlineRenderers): ReactNode[] 
     } else if (m[4] || m[5]) out.push(<em key={key}>{inline(tok.slice(1, -1), key, r)}</em>);
     else if (m[7])
       out.push(
-        <span key={key} className="apx-mention">
+        <span key={key} className="colonia-mention">
           {tok}
         </span>,
       );
@@ -212,7 +212,7 @@ export function MarkdownView({
   labels,
 }: MarkdownViewProps) {
   const blocks = parseBlocks(source);
-  const root = cx("apx-md", `apx-md--${size}`, className);
+  const root = cx("colonia-md", `colonia-md--${size}`, className);
   return (
     <div className={root}>
       {renderBlocks(blocks, "b", {
@@ -239,7 +239,7 @@ function renderBlocks(blocks: Block[], prefix: string, r: Renderers): ReactNode[
     if (b.kind === "p") return <p key={k}>{inline(b.text, k, spans)}</p>;
     if (b.kind === "quote") {
       const quote = (
-        <blockquote key={k} className="apx-md__quote">
+        <blockquote key={k} className="colonia-md__quote">
           {renderBlocks(b.blocks, `${k}q`, r)}
         </blockquote>
       );

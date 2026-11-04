@@ -1,6 +1,6 @@
 // The attention tray's notices. A notice about something (an input, a task) replaces the unread one about the same
 // thing, and is marked read once that thing no longer needs the owner.
-import type { Notification, NotificationKind } from "@apx/protocol";
+import type { Notification, NotificationKind } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { Bus } from "../bus.ts";
 import type { NotificationsTable } from "../db/schema.ts";

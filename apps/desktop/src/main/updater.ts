@@ -1,6 +1,6 @@
 // The installed app updates itself (it carries its own core): every few hours it asks the release feed whether a newer
-// APX is out, downloads this platform's build, checks its .sha256 and leaves it ready; it goes in when the owner
-// restarts APX, or when they quit it. macOS replaces its own APX.app from the release's zip; the AppImage replaces its
+// Colonia is out, downloads this platform's build, checks its .sha256 and leaves it ready; it goes in when the owner
+// restarts Colonia, or when they quit it. macOS replaces its own Colonia.app from the release's zip; the AppImage replaces its
 // file; Windows runs the installer. Where the app cannot replace itself (a read-only place, an unpacked Linux zip),
 // the owner gets the installer to put in by hand. See DECISIONS.md#d-058.
 import { execFile, spawn } from "node:child_process";
@@ -22,7 +22,7 @@ import {
   type Release,
   type ReleaseAsset,
   releaseChanges,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { app, shell } from "electron";
 import { replaceableBundle } from "./app-bundle.ts";
 import { removeOldInstallers } from "./installer-files.ts";
@@ -30,20 +30,20 @@ import { updateLog } from "./update-log.ts";
 
 export type DesktopUpdate = {
   current: string;
-  /** A newer APX with a build for this computer. */
+  /** A newer Colonia with a build for this computer. */
   latest?: string | undefined;
   notes: string[];
   /** How it goes in: by itself at the next restart (auto), or the owner drags it in (macOS disk image). */
   install: "auto" | "drag" | "none";
-  /** Downloading the newer APX now. */
+  /** Downloading the newer Colonia now. */
   downloading?: boolean | undefined;
-  /** The newer APX, downloaded and checked: it goes in when APX restarts. */
+  /** The newer Colonia, downloaded and checked: it goes in when Colonia restarts. */
   ready?: string | undefined;
   checked_at?: string | undefined;
   error?: string | undefined;
 };
 export type InstallAnswer = { ok: true; ready: boolean } | { ok: false; error: string };
-/** ok: the app is quitting into the newer APX. */
+/** ok: the app is quitting into the newer Colonia. */
 export type RestartAnswer = { ok: true } | { ok: false; error: string };
 
 const FIRST_MS = 60_000;
@@ -105,12 +105,12 @@ async function fetchChecked(release: Release, asset: ReleaseAsset, file: string)
   }
 }
 
-// Swaps APX.app once APX (and the core it runs from inside the bundle) has quit; puts the old one back if that fails.
+// Swaps Colonia.app once Colonia (and the core it runs from inside the bundle) has quit; puts the old one back if that fails.
 const SWAP = `
 pid="$1"; old="$2"; new="$3"; stage="$4"; relaunch="$5"; log="$6"
 say() { [ -n "$log" ] && echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) swap: $*" >> "$log"; }
 i=0; while kill -0 "$pid" 2>/dev/null && [ $i -lt 600 ]; do sleep 0.1; i=$((i+1)); done
-kill -0 "$pid" 2>/dev/null && say "APX was still running after 60 s"
+kill -0 "$pid" 2>/dev/null && say "Colonia was still running after 60 s"
 i=0; while pgrep -f "$old/Contents/" >/dev/null 2>&1 && [ $i -lt 100 ]; do sleep 0.1; i=$((i+1)); done
 pgrep -f "$old/Contents/" >/dev/null 2>&1 && say "a process still ran from the old app after 10 s"
 if mv "$old" "$stage/previous.app"; then
@@ -122,7 +122,7 @@ if [ "$relaunch" = 1 ]; then open "$old" || say "could not open $old"; fi
 type Staged = { version: string; restart(): void; onQuit?(): void };
 
 export function createDesktopUpdater(opts: { quit(): void; changed(status: DesktopUpdate): void; logFile?: string }) {
-  const env = process.env.APX_RELEASES;
+  const env = process.env.COLONIA_RELEASES;
   const feed = env === "off" ? undefined : env || RELEASE_FEED;
   const enabled = app.isPackaged && Boolean(feed) && Boolean(platformOf(process.platform, process.arch));
   const bundle = process.platform === "darwin" ? replaceableBundle(process.execPath, writable) : undefined;
@@ -164,9 +164,9 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
     return current();
   }
 
-  /** Downloads the newer APX and leaves it ready (or, where it cannot go in by itself, opens it for the owner). */
+  /** Downloads the newer Colonia and leaves it ready (or, where it cannot go in by itself, opens it for the owner). */
   function install(target?: string, deferOpen = false): Promise<InstallAnswer> {
-    if (!enabled) return Promise.resolve({ ok: false, error: "No newer APX for this computer." });
+    if (!enabled) return Promise.resolve({ ok: false, error: "No newer Colonia for this computer." });
     if (staged && staged.version === (target ?? staged.version)) return Promise.resolve({ ok: true, ready: true });
     staged = undefined;
     const started = generation;
@@ -176,7 +176,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
         if (started !== generation) {
           staged = undefined;
           log("download dropped: the connection changed");
-          return { ok: false as const, error: "The APX connection changed. Retry the update." };
+          return { ok: false as const, error: "The Colonia connection changed. Retry the update." };
         }
         log(
           answer.ok
@@ -202,7 +202,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
       found = { release, asset, notes: release.notes };
     }
     if (!found) await check();
-    if (!found) return { ok: false, error: status.error ?? "No newer APX for this computer." };
+    if (!found) return { ok: false, error: status.error ?? "No newer Colonia for this computer." };
     const { release, asset } = found;
     const p = platformOf(process.platform, process.arch);
     const zip = bundle && p ? desktopAssetFor(release.assets, release.version, p, "zip") : undefined;
@@ -237,7 +237,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
 
   async function stageMac(release: Release, zip: ReleaseAsset, old: string): Promise<Staged> {
     // Beside the running app, so the swap is a rename on the same disk.
-    const stage = path.join(path.dirname(old), `.APX-${release.version}.update`);
+    const stage = path.join(path.dirname(old), `.Colonia-${release.version}.update`);
     fs.rmSync(stage, { recursive: true, force: true });
     fs.mkdirSync(stage);
     const file = path.join(os.tmpdir(), zip.name);
@@ -260,7 +260,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
     const swap = (relaunch: boolean) => {
       swapping = true;
       const args = [String(process.pid), old, next, stage, relaunch ? "1" : "0", opts.logFile ?? ""];
-      spawn("/bin/sh", ["-c", SWAP, "apx-update", ...args], {
+      spawn("/bin/sh", ["-c", SWAP, "colonia-update", ...args], {
         detached: true,
         stdio: "ignore",
       }).unref();
@@ -303,7 +303,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
     await fetchChecked(release, asset, file);
     return {
       version: release.version,
-      // The installer replaces APX once it has quit, then opens the new one (runAfterFinish).
+      // The installer replaces Colonia once it has quit, then opens the new one (runAfterFinish).
       restart: () => {
         spawn(file, [], { detached: true, stdio: "ignore", windowsHide: false }).unref();
         setTimeout(opts.quit, 1000);
@@ -324,7 +324,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
       staged = undefined;
       publish();
     },
-    /** Quits and opens the newer APX; a failed answer means the app keeps running as it is. */
+    /** Quits and opens the newer Colonia; a failed answer means the app keeps running as it is. */
     restart(): RestartAnswer {
       if (!staged) {
         log("restart: nothing is ready");
@@ -340,21 +340,21 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
         return { ok: false, error };
       }
     },
-    /** Quitting with a newer APX ready puts it in place (where that needs no installer window). */
+    /** Quitting with a newer Colonia ready puts it in place (where that needs no installer window). */
     quitting() {
       if (staged?.onQuit && !swapping) {
         log(`quit: putting ${staged.version} in place`);
         staged.onQuit();
       }
     },
-    /** `found(status)`: a background check found a newer APX (auto mode then downloads it on its own). */
+    /** `found(status)`: a background check found a newer Colonia (auto mode then downloads it on its own). */
     start(found: (s: DesktopUpdate) => void) {
       if (!enabled) return;
       // Running means the last installer is done: it and any before it go.
       if (process.platform === "win32") removeOldInstallers(os.tmpdir());
       if (bundle)
         for (const f of fs.readdirSync(path.dirname(bundle)))
-          if (/^\.APX-.+\.update$/.test(f))
+          if (/^\.Colonia-.+\.update$/.test(f))
             fs.rmSync(path.join(path.dirname(bundle), f), { recursive: true, force: true });
       const tick = (ms: number) => {
         timer = setTimeout(

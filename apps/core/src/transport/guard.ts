@@ -1,4 +1,4 @@
-// Who may talk to the core. Browsers always send Origin: only the APX panel's own origins pass.
+// Who may talk to the core. Browsers always send Origin: only the Colonia panel's own origins pass.
 // Native clients (terminal, desktop main process) send none. A token, when configured, is required everywhere.
 import type { IncomingMessage } from "node:http";
 
@@ -37,7 +37,7 @@ export function refuse(
   if (origin && !gate.allowedOrigins.has(origin)) return `origin ${origin} is not allowed`;
   // Without a token the core is this computer's only. A request a proxy forwarded (tailscale serve, a reverse
   // proxy) comes from elsewhere even though it arrives on loopback.
-  if (!gate.token && !open && forwarded(req)) return "a request through a proxy needs APX_TOKEN on the core";
+  if (!gate.token && !open && forwarded(req)) return "a request through a proxy needs COLONIA_TOKEN on the core";
   if (gate.token && !knownClient && !open) {
     const auth = req.headers.authorization;
     const bearer = auth?.startsWith("Bearer ") ? auth.slice(7) : undefined;

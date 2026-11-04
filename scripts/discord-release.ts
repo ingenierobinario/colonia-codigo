@@ -6,8 +6,8 @@
 import { execFileSync } from "node:child_process";
 import { previousTag, sentence } from "../apps/core/src/release-notes.ts";
 
-const REPO = "agentprojectcontext/apx";
-const BRAND = 4176208; // APX green
+const REPO = "ingenierobinario/colonia";
+const BRAND = 4176208; // Colonia green
 const FIELD_MAX = 1024;
 const PER_SECTION = 10;
 const SECTIONS = [
@@ -46,16 +46,16 @@ export function payload(o: {
   const compare = o.previous ? `https://github.com/${REPO}/compare/${o.previous}...${o.tag}` : release;
   const fields = sections(o.subjects);
   return {
-    username: "APX",
-    content: `${o.roleId ? `<@&${o.roleId}> ` : ""}**APX** v${version}${o.beta ? " · beta" : ""}${o.note ? `\n${o.note}` : ""}`,
+    username: "Colonia",
+    content: `${o.roleId ? `<@&${o.roleId}> ` : ""}**Colonia** v${version}${o.beta ? " · beta" : ""}${o.note ? `\n${o.note}` : ""}`,
     ...(o.roleId ? { allowed_mentions: { roles: [o.roleId] } } : { allowed_mentions: { parse: [] } }),
     embeds: [
       {
-        title: `${version.endsWith(".0") ? "🚀" : "🔧"} APX v${version}${o.beta ? " · beta" : ""}`,
+        title: `${version.endsWith(".0") ? "🚀" : "🔧"} Colonia v${version}${o.beta ? " · beta" : ""}`,
         url: release,
         color: BRAND,
         description:
-          "La app de escritorio te ofrece la actualización sola. En un servidor: `apx upgrade`. " +
+          "La app de escritorio te ofrece la actualización sola. En un servidor: `colonia upgrade`. " +
           "En el celular: bajá el APK nuevo de la versión e instalalo encima.\n" +
           `[Versión](${release}) · [Cambios](${compare})`,
         ...(fields.length ? { fields } : {}),

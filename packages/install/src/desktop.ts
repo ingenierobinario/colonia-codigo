@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { DesktopInstallStatus } from "@apx/protocol";
-import { desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED } from "@apx/protocol";
+import type { DesktopInstallStatus } from "@colonia/protocol";
+import { desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED } from "@colonia/protocol";
 import { downloadDesktop } from "./download.ts";
 import { desktopCandidates, desktopDataDir, hasDesktop, type LocalTarget, saveLocalTarget } from "./paths.ts";
 import { installDesktopFile } from "./platform.ts";
@@ -77,7 +77,7 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
           release &&
           desktopAssetFor(release.assets, release.version, platform, platform.os === "mac" ? "zip" : "installer");
         if (!release || !asset) throw new Error("No desktop download available for this system");
-        work = fs.mkdtempSync(path.join(os.tmpdir(), "apx-desktop-install-"));
+        work = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-install-"));
         const file = path.join(work, asset.name);
         await downloadDesktop({
           asset,
@@ -103,9 +103,9 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
       await run(
         opts.platform === "darwin" ? "/usr/bin/open" : app,
         opts.platform === "darwin"
-          ? [...(target ? ["-n"] : []), "-a", app, ...(target ? ["--args", "--apx-adopt-local"] : [])]
+          ? [...(target ? ["-n"] : []), "-a", app, ...(target ? ["--args", "--colonia-adopt-local"] : [])]
           : target
-            ? ["--apx-adopt-local"]
+            ? ["--colonia-adopt-local"]
             : [],
         { signal, detached: opts.platform !== "darwin", env: launchEnv(env) },
       );
@@ -159,7 +159,7 @@ function launchEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return Object.fromEntries(
     Object.entries(env).filter(
       ([key]) =>
-        (!key.startsWith("APX_") || key === "APX_DESKTOP_DATA" || key === "APX_RELEASES") &&
+        (!key.startsWith("COLONIA_") || key === "COLONIA_DESKTOP_DATA" || key === "COLONIA_RELEASES") &&
         key !== "ELECTRON_RUN_AS_NODE",
     ),
   );

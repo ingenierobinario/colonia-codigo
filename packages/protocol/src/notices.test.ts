@@ -14,7 +14,7 @@ test("a notice reads in the app's language, its variant's wording filled with it
 });
 
 test("the core's own text stays when there is no translation or it carries details", () => {
-  assert.equal(noticeText({ code: "part.unknown", text: "Needs a newer APX." }, "es"), "Needs a newer APX.");
+  assert.equal(noticeText({ code: "part.unknown", text: "Needs a newer Colonia." }, "es"), "Needs a newer Colonia.");
   const failed = { code: "run.failed", text: "Could not finish: HTTP 429" };
   assert.equal(noticeText(failed, "es"), failed.text);
   assert.equal(noticeText({ code: "run.failed", text: "Could not finish." }, "es"), "No pude terminar.");

@@ -1,5 +1,5 @@
 // A task can wait for its start time, and a task in review says who checks it: the owner hears it is theirs to check,
-// an agent named to review it is asked to (by APX, not as the owner).
+// an agent named to review it is asked to (by Colonia, not as the owner).
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { pickUpTasks, startScheduled } from "./task-work.ts";
@@ -67,7 +67,7 @@ test("put in review with no reviewer, it is the owner's to check until it leaves
   assert.equal(notice(), undefined, "leaving review clears it");
 });
 
-test("an agent named to review it is asked to, by APX, in a consult shown on the task", async () => {
+test("an agent named to review it is asked to, by Colonia, in a consult shown on the task", async () => {
   const store = env.core.store;
   const task = await env.client.call("tasks.create", { title: "Payments fix", assignee: "vera" });
   const changed = await env.client.call("tasks.update", { task: task.id, status: "review", reviewer: "Scout" });

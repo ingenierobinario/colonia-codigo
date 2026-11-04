@@ -1,12 +1,12 @@
 // ntfy against a fake server: the owner's topic is the owner (or pairs with a code when the channel does not say so),
-// their words reach the agent and the answer is published back; APX never reads its own messages; a dropped stream
+// their words reach the agent and the answer is published back; Colonia never reads its own messages; a dropped stream
 // picks up after the last message read; a refused token stops the channel.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, describe, test } from "node:test";
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 import { z } from "zod";
 import { callTool, say, scriptedLlm, startCore, throughOwnerCheck } from "../engine/testkit.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
@@ -30,18 +30,18 @@ const probe = defineTool({
 });
 
 test("the secret splits into the server, the topic and an optional token", () => {
-  assert.deepEqual(ntfySecret("https://ntfy.sh/ apx-abc123 tk_xyz"), {
+  assert.deepEqual(ntfySecret("https://ntfy.sh/ colonia-abc123 tk_xyz"), {
     server: "https://ntfy.sh",
-    topic: "apx-abc123",
+    topic: "colonia-abc123",
     token: "tk_xyz",
   });
-  assert.deepEqual(ntfySecret("tk_xyz apx-abc123 https://ntfy.example.org"), {
+  assert.deepEqual(ntfySecret("tk_xyz colonia-abc123 https://ntfy.example.org"), {
     server: "https://ntfy.example.org",
-    topic: "apx-abc123",
+    topic: "colonia-abc123",
     token: "tk_xyz",
   });
-  assert.deepEqual(ntfySecret("https://ntfy.sh apx_abc"), { server: "https://ntfy.sh", topic: "apx_abc" });
-  assert.equal(ntfySecret("apx-abc123"), undefined, "no server");
+  assert.deepEqual(ntfySecret("https://ntfy.sh colonia_abc"), { server: "https://ntfy.sh", topic: "colonia_abc" });
+  assert.equal(ntfySecret("colonia-abc123"), undefined, "no server");
   assert.equal(ntfySecret("https://ntfy.sh"), undefined, "no topic");
   assert.equal(ntfySecret("https://ntfy.sh bad/topic"), undefined, "not a topic name");
   assert.equal(ntfySecret(undefined), undefined);
@@ -120,7 +120,7 @@ describe("the adapter alone", () => {
   let dir: string;
   before(async () => {
     fake = await fakeNtfy();
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-ntfy-"));
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ntfy-"));
   });
   after(async () => {
     await fake.close();
@@ -169,6 +169,6 @@ describe("the adapter alone", () => {
     const bad = fake.secret.replace(/tk_\w+/, "tk_wrong");
     const a = ntfyAdapter(config, bad, { dir });
     await assert.rejects(a.start(io([], new AbortController())), ChannelRefused);
-    await assert.rejects(ntfyAdapter(config, "apx-only", { dir }).start(io([], new AbortController())), ChannelRefused);
+    await assert.rejects(ntfyAdapter(config, "colonia-only", { dir }).start(io([], new AbortController())), ChannelRefused);
   });
 });

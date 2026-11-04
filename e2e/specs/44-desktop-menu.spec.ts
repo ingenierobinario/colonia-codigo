@@ -7,12 +7,12 @@ test("on Windows the account menu runs the desktop app's About, updates and chan
     const ran: string[] = [];
     Object.assign(window, {
       ran,
-      apxDesktop: { platform: "win32", setBrowserBounds() {}, menuAction: (id: string) => ran.push(id) },
+      coloniaDesktop: { platform: "win32", setBrowserBounds() {}, menuAction: (id: string) => ran.push(id) },
     });
   });
   await page.goto("/");
   await page.getByRole("button", { name: /^Cuenta/ }).click();
-  await page.getByRole("menuitem", { name: "Acerca de APX" }).click();
+  await page.getByRole("menuitem", { name: "Acerca de Colonia" }).click();
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await page.getByRole("menuitem", { name: "Buscar actualizaciones…" }).click();
   await page.getByRole("button", { name: /^Cuenta/ }).click();
@@ -28,5 +28,5 @@ test("in a browser the account menu has no desktop app items", async ({ page }) 
   await page.goto("/");
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await expect(page.getByRole("menuitem", { name: "Configuración inicial" })).toBeVisible();
-  await expect(page.getByRole("menuitem", { name: "Acerca de APX" })).toHaveCount(0);
+  await expect(page.getByRole("menuitem", { name: "Acerca de Colonia" })).toHaveCount(0);
 });

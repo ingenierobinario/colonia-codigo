@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, Help, Icons, Meter } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, Help, Icons, Meter } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { currentLocale, type MessageKey, useT } from "../i18n/index.ts";
 import { windowLabel } from "./engineUsageModel.ts";
@@ -72,7 +72,7 @@ export default function EngineUsageSummary({
       </div>
       {loading && (
         <>
-          <span className="apx-sr-only" role="status">
+          <span className="colonia-sr-only" role="status">
             {t("engineUsage.loading")}
           </span>
           <UsageLoading slots={1} />

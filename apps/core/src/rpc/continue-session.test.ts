@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore, texts } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
 
@@ -171,10 +171,10 @@ test("models and external clients cannot continue sessions; concurrent owner cli
   const { env, sub, stopped } = await fixture();
   try {
     const params = { thread: sub.id, text: "Check the rest", continue_run: stopped.id };
-    const model = new ApxClient({ url: env.core.url, actor: "agent" });
+    const model = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(model.call("threads.send", params), /only the owner/);
     const made = await env.client.call("clients.create", { name: "Test client", scopes: ["chat"] });
-    const outside = new ApxClient({ url: env.core.url, clientToken: made.token });
+    const outside = new ColoniaClient({ url: env.core.url, clientToken: made.token });
     await assert.rejects(outside.call("threads.send", params), /only use the chats it started|only the owner/);
     const channel = await env.core.dispatch(
       "threads.send",

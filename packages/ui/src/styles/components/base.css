@@ -1,73 +1,73 @@
-/* APX component styles. Every value comes from a --apx-* token (tokens.css);
+/* Colonia component styles. Every value comes from a --colonia-* token (tokens.css);
  * the only look-specific rules live at the bottom, under "Look accents". */
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
-.apx {
-  font-family: var(--apx-font-sans);
-  font-size: var(--apx-text-md);
-  line-height: var(--apx-leading);
-  color: var(--apx-fg);
+.colonia {
+  font-family: var(--colonia-font-sans);
+  font-size: var(--colonia-text-md);
+  line-height: var(--colonia-leading);
+  color: var(--colonia-fg);
   -webkit-font-smoothing: antialiased;
 }
-.apx *,
-.apx *::before,
-.apx *::after {
+.colonia *,
+.colonia *::before,
+.colonia *::after {
   box-sizing: border-box;
 }
-.apx-fill {
-  background: var(--apx-bg);
+.colonia-fill {
+  background: var(--colonia-bg);
   min-height: 100%;
 }
-.apx-portal {
+.colonia-portal {
   position: relative;
   z-index: 50;
 }
-.apx :where(button) {
+.colonia :where(button) {
   font: inherit;
   color: inherit;
 }
-.apx :where(button:not(:disabled)) {
+.colonia :where(button:not(:disabled)) {
   cursor: pointer;
 }
 /* No focus rings: a focused field shows by its border, a focused control by its own hover look. */
-.apx :focus-visible {
+.colonia :focus-visible {
   outline: none;
 }
 
-/* Tone helper: sets --apx-tone-* for any component that takes a `tone`. */
-.apx-tone--neutral {
-  --apx-tone: var(--apx-fg-muted);
-  --apx-tone-soft: var(--apx-fill-strong);
-  --apx-tone-soft-fg: var(--apx-fg-muted);
-  --apx-tone-solid-fg: var(--apx-bg);
+/* Tone helper: sets --colonia-tone-* for any component that takes a `tone`. */
+.colonia-tone--neutral {
+  --colonia-tone: var(--colonia-fg-muted);
+  --colonia-tone-soft: var(--colonia-fill-strong);
+  --colonia-tone-soft-fg: var(--colonia-fg-muted);
+  --colonia-tone-solid-fg: var(--colonia-bg);
 }
-.apx-tone--brand {
-  --apx-tone: var(--apx-brand);
-  --apx-tone-soft: var(--apx-brand-soft);
-  --apx-tone-soft-fg: var(--apx-brand-soft-fg);
-  --apx-tone-solid-fg: #fff;
+.colonia-tone--brand {
+  --colonia-tone: var(--colonia-brand);
+  --colonia-tone-soft: var(--colonia-brand-soft);
+  --colonia-tone-soft-fg: var(--colonia-brand-soft-fg);
+  --colonia-tone-solid-fg: #fff;
 }
-.apx-tone--violet {
-  --apx-tone: var(--apx-violet);
-  --apx-tone-soft: var(--apx-violet-soft);
-  --apx-tone-soft-fg: var(--apx-violet-soft-fg);
-  --apx-tone-solid-fg: #fff;
+.colonia-tone--violet {
+  --colonia-tone: var(--colonia-violet);
+  --colonia-tone-soft: var(--colonia-violet-soft);
+  --colonia-tone-soft-fg: var(--colonia-violet-soft-fg);
+  --colonia-tone-solid-fg: #fff;
 }
-.apx-tone--info {
-  --apx-tone: var(--apx-info);
-  --apx-tone-soft: var(--apx-info-soft);
-  --apx-tone-soft-fg: var(--apx-info-soft-fg);
-  --apx-tone-solid-fg: #fff;
+.colonia-tone--info {
+  --colonia-tone: var(--colonia-info);
+  --colonia-tone-soft: var(--colonia-info-soft);
+  --colonia-tone-soft-fg: var(--colonia-info-soft-fg);
+  --colonia-tone-solid-fg: #fff;
 }
-.apx-tone--warning {
-  --apx-tone: var(--apx-warning);
-  --apx-tone-soft: var(--apx-warning-soft);
-  --apx-tone-soft-fg: var(--apx-warning-soft-fg);
-  --apx-tone-solid-fg: #fff;
+.colonia-tone--warning {
+  --colonia-tone: var(--colonia-warning);
+  --colonia-tone-soft: var(--colonia-warning-soft);
+  --colonia-tone-soft-fg: var(--colonia-warning-soft-fg);
+  --colonia-tone-solid-fg: #fff;
 }
-.apx-tone--danger {
-  --apx-tone: var(--apx-danger);
-  --apx-tone-soft: var(--apx-danger-soft);
-  --apx-tone-soft-fg: var(--apx-danger-soft-fg);
-  --apx-tone-solid-fg: #fff;
+.colonia-tone--danger {
+  --colonia-tone: var(--colonia-danger);
+  --colonia-tone-soft: var(--colonia-danger-soft);
+  --colonia-tone-soft-fg: var(--colonia-danger-soft-fg);
+  --colonia-tone-solid-fg: #fff;
 }

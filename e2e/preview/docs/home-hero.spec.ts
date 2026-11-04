@@ -18,7 +18,7 @@ for (const lang of ["en", "es"] as const) {
     const [lead, ...rest] = featured;
     const card = menu.locator(".nav__feat");
     await expect(card).toHaveAttribute("href", `${pre}/compare/${lead?.slug}/`);
-    await expect(card).toContainText(`APX vs ${lead?.name}`);
+    await expect(card).toContainText(`Colonia vs ${lead?.name}`);
     await expect(card.locator(".nav__feat-date")).toBeVisible();
     // The blob sits inside the card, never past its edge.
     const cardBox = await card.boundingBox();
@@ -74,7 +74,7 @@ for (const lang of ["en", "es"] as const) {
     expect((await stage.boundingBox())?.y).toBe(before?.y);
     await page.locator("#heroInstall [data-term='server']").click();
     await expect(page.locator("#heroInstall [data-pane='server'] code")).toHaveText(
-      "curl -fsSL https://apxagent.app/install.sh | bash -s -- --server",
+      "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --server",
     );
     await page.locator(".hero__term").click();
     await expect(page.locator("#heroInstall")).toBeHidden();

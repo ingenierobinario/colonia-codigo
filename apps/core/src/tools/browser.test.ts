@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient, type ApxSocket } from "@apx/protocol/client";
+import { ColoniaClient, type ColoniaSocket } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { tempDir, waitFor } from "../testkit/platform.ts";
 
@@ -68,7 +68,7 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
 });
 
 let env: Awaited<ReturnType<typeof startCore>>;
-let desktop: ApxSocket;
+let desktop: ColoniaSocket;
 const snapshots: number[] = [];
 const evaluations: unknown[] = [];
 const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1, 0xff, 0xd9]);
@@ -83,7 +83,7 @@ let shot = JPEG;
 
 before(async () => {
   env = await startCore({ llm });
-  desktop = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+  desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
   desktop.onRequest(async (method, params) => {
     if (method === "browser.tabs") return { tabs };
     if (method === "browser.approval_context") return { epoch: "epoch1" };
@@ -151,7 +151,7 @@ test("JavaScript reaches the node only after approval, even in Total; agents can
       await env.settle(thread);
       assert.equal(evaluations.length, decision === "approve" ? 1 : 0);
     }
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(
       agent.call("browser.evaluate", { tab: "t1", script: "1", origin: "https://example.com", document: "doc1" }),
       /human|owner|agent/i,
@@ -182,7 +182,7 @@ test("JavaScript reaches the node only after approval, even in Total; agents can
 });
 
 test("a local script changed while approval waits executes only the source displayed on the card", async () => {
-  const dir = tempDir("apx-browser-source-");
+  const dir = tempDir("colonia-browser-source-");
   try {
     const script = `/*${"review ".repeat(3400)}*/\nPromise.resolve({answer: 42})`;
     const file = path.join(dir.path, "probe.js");
@@ -301,7 +301,7 @@ test("the turn holds the tab it used while it runs and lets it go when it ends",
 test("the agent is told a send the owner asked for stays its own, not a hand-off", async () => {
   const system = String(llm.calls[0]?.messages[0]?.content);
   assert.match(system, /A send, post or payment you can make stays yours: delegate only its preparation/);
-  // A teammate's request is the owner's work: the agent makes the call and APX asks (DECISIONS.md#d-142).
+  // A teammate's request is the owner's work: the agent makes the call and Colonia asks (DECISIONS.md#d-142).
   assert.match(system, /never refuse it as relayed, nor send the owner to repeat it to you/);
   // How to drive the browser is in its tools, not in every prompt.
   const open = llm.calls[0]?.tools.find((t) => t.function.name === "browser_open");

@@ -1,7 +1,7 @@
 import { ContextMenu as BaseContextMenu } from "@base-ui/react/context-menu";
 import type { ReactElement, ReactNode } from "react";
 import { cx } from "../cx";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 import { MenuEntries, type MenuEntry } from "./menuEntries";
 
 export interface ContextMenuProps {
@@ -17,15 +17,15 @@ export interface ContextMenuProps {
 
 /** Right-click menu on an area: the same items as Menu (submenus, checks, danger). */
 export function ContextMenu({ children, items, disabled, className, render }: ContextMenuProps) {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   return (
     <BaseContextMenu.Root disabled={disabled}>
-      <BaseContextMenu.Trigger {...(render ? { render, className } : { className: cx("apx-ctxmenu", className) })}>
+      <BaseContextMenu.Trigger {...(render ? { render, className } : { className: cx("colonia-ctxmenu", className) })}>
         {children}
       </BaseContextMenu.Trigger>
       <BaseContextMenu.Portal container={portalRef}>
         <BaseContextMenu.Positioner>
-          <BaseContextMenu.Popup className="apx-menu">
+          <BaseContextMenu.Popup className="colonia-menu">
             <MenuEntries items={items} portal={portalRef} />
           </BaseContextMenu.Popup>
         </BaseContextMenu.Positioner>

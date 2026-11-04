@@ -1,6 +1,6 @@
 ---
 title: Outside clients
-description: Use APX's agents and browser from Claude Code, Codex or any MCP client, with a token limited to what it may do.
+description: Use Colonia's agents and browser from Claude Code, Codex or any MCP client, with a token limited to what it may do.
 sidebar:
   order: 5
 ---
@@ -9,30 +9,30 @@ import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 import Shot from "../../../components/Shot.astro";
 import Terminal from "../../../components/Terminal.astro";
 
-APX is also an MCP server. Register `apx mcp` in Claude Code, Codex or any other MCP client, and that app can ask your
-APX agents things and drive APX's embedded browser.
+Colonia is also an MCP server. Register `colonia mcp` in Claude Code, Codex or any other MCP client, and that app can ask your
+Colonia agents things and drive Colonia's embedded browser.
 
 ## What the client gets
 
-`apx mcp` is a stdio MCP server that forwards to your running core. What it offers depends on the token it starts
+`colonia mcp` is a stdio MCP server that forwards to your running core. What it offers depends on the token it starts
 with:
 
 | Started with | Tools |
 |---|---|
 | No token | `browser_*`: tabs, open, navigate, snapshot, click, type, screenshot, text, history, handoff, close |
-| A token with the **Chat** scope | `apx_agents`, `apx_ask`, `apx_read` |
+| A token with the **Chat** scope | `colonia_agents`, `colonia_ask`, `colonia_read` |
 | A token with **Chat** and **Browser** | Both sets |
 
-- `apx_agents` lists your agents.
-- `apx_ask` asks one and waits up to 5 minutes for the answer. Pass the `thread` it returns to continue the chat.
-- `apx_read` reads a chat the client started.
+- `colonia_agents` lists your agents.
+- `colonia_ask` asks one and waits up to 5 minutes for the answer. Pass the `thread` it returns to continue the chat.
+- `colonia_read` reads a chat the client started.
 
-The browser tools need the APX desktop app open, since it owns the browser. Password, one-time-code and card fields
+The browser tools need the Colonia desktop app open, since it owns the browser. Password, one-time-code and card fields
 are refused: `browser_handoff` hands the tab to you to log in.
 
 ## Create a token
 
-Each app gets a token of its own. It's shown once; APX keeps only a fingerprint.
+Each app gets a token of its own. It's shown once; Colonia keeps only a fingerprint.
 
 <Tabs>
 <TabItem label="Panel">
@@ -46,10 +46,10 @@ Copy it right away. Each token shows when it was last used, and **Revoke** remov
 <TabItem label="Terminal">
 
 ```bash
-apx clients add claude-code                    # scope chat
-apx clients add codex --scopes chat,browser
-apx clients                                    # list, with last use
-apx clients rm <id>                            # revoke
+colonia clients add claude-code                    # scope chat
+colonia clients add codex --scopes chat,browser
+colonia clients                                    # list, with last use
+colonia clients rm <id>                            # revoke
 ```
 
 </TabItem>
@@ -61,14 +61,14 @@ a request from another app, not as your order, so a hijacked prompt in that app 
 token in the app's MCP settings, never in a repository, a prompt or `.apc/`.
 </Aside>
 
-## Register APX in your client
+## Register Colonia in your client
 
 <Tabs>
 <TabItem label="Claude Code">
 
 ```bash
-claude mcp add apx --scope user -e APX_CLIENT_TOKEN=<token> -- apx mcp
-claude mcp add apx-browser --scope user -- apx mcp        # browser only, no token
+claude mcp add colonia --scope user -e COLONIA_CLIENT_TOKEN=<token> -- colonia mcp
+claude mcp add colonia-browser --scope user -- colonia mcp        # browser only, no token
 claude mcp list
 ```
 
@@ -78,7 +78,7 @@ claude mcp list
 <TabItem label="Codex">
 
 ```bash
-codex mcp add apx --env APX_CLIENT_TOKEN=<token> -- apx mcp
+codex mcp add colonia --env COLONIA_CLIENT_TOKEN=<token> -- colonia mcp
 codex mcp list
 ```
 
@@ -87,35 +87,35 @@ codex mcp list
 
 ```json
 {
-  "command": "apx",
+  "command": "colonia",
   "args": ["mcp"],
-  "env": { "APX_CLIENT_TOKEN": "<token>" }
+  "env": { "COLONIA_CLIENT_TOKEN": "<token>" }
 }
 ```
 
 </TabItem>
 </Tabs>
 
-If `apx` isn't on the client's PATH, use the full path that `command -v apx` prints. For a core on another port or
-machine, add `APX_URL` to the environment too.
+If `colonia` isn't on the client's PATH, use the full path that `command -v colonia` prints. For a core on another port or
+machine, add `COLONIA_URL` to the environment too.
 
-Then just ask, in Claude Code for example: "ask my APX secretary what's due this week". Or, with the browser scope:
-"open the Acme Store admin in the APX browser and check today's orders".
+Then just ask, in Claude Code for example: "ask my Colonia secretary what's due this week". Or, with the browser scope:
+"open the Acme Store admin in the Colonia browser and check today's orders".
 
-## Teach the client about APX
+## Teach the client about Colonia
 
-APX copies a few skills into Claude Code, Codex, Cursor and `~/.agents` at every start, so those apps know how to use
-`apx` and these tools. See [Skills](/extend/skills/#teach-other-agent-apps-to-use-apx).
+Colonia copies a few skills into Claude Code, Codex, Cursor and `~/.agents` at every start, so those apps know how to use
+`colonia` and these tools. See [Skills](/extend/skills/#teach-other-agent-apps-to-use-colonia).
 
 ## When the tools don't show up
 
 <Steps>
 
-1. Run `apx status`: is the core running?
+1. Run `colonia status`: is the core running?
 
-2. Run `apx mcp` in a terminal. It should wait silently (Ctrl-C to quit). Any error here is the real one.
+2. Run `colonia mcp` in a terminal. It should wait silently (Ctrl-C to quit). Any error here is the real one.
 
-3. Only browser tools, no `apx_*`: the token is missing or was revoked (`apx clients`).
+3. Only browser tools, no `colonia_*`: the token is missing or was revoked (`colonia clients`).
 
 4. A token but no browser tools: its scopes leave the browser out (`--scopes chat,browser`).
 
@@ -124,5 +124,5 @@ APX copies a few skills into Claude Code, Codex, Cursor and `~/.agents` at every
 </Steps>
 
 <Aside type="note">
-`apx mcp --run` is a different thing, used inside APX's own runs. Don't register it in a client.
+`colonia mcp --run` is a different thing, used inside Colonia's own runs. Don't register it in a client.
 </Aside>

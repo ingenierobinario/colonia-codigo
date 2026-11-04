@@ -46,11 +46,11 @@ for the Android app and [integrations](/extend/integrations/) for connected serv
 
 ## Three words: channel, contact, room
 
-- A **channel** is an app APX talks through: Telegram, WhatsApp, Discord, Slack, iMessage, Google Chat, SMS and more.
+- A **channel** is an app Colonia talks through: Telegram, WhatsApp, Discord, Slack, iMessage, Google Chat, SMS and more.
 - A **contact** is a person on a channel. Each contact has a direct chat with your agent.
 - A **room** is a shared place many people read, such as a channel on your Discord server.
 
-Every contact chat and every room is kept as an APX conversation, so you can read it, search it and step in from the
+Every contact chat and every room is kept as an Colonia conversation, so you can read it, search it and step in from the
 panel. Agents use the same words: they can list channels and contacts, write to a contact, read a room and post in
 one by its exact name.
 
@@ -80,7 +80,7 @@ channels a card arrives without buttons and says where to answer it.
 
 ## Who gets an answer
 
-APX answers you, and the people you approve. Everyone else is a stranger, and you choose what happens when one
+Colonia answers you, and the people you approve. Everyone else is a stranger, and you choose what happens when one
 writes (**Strangers** in the channel's settings):
 
 | Option | What happens |
@@ -93,12 +93,12 @@ writes (**Strangers** in the channel's settings):
 You can also approve from the terminal, or just tell your agent ("let her in"). The agent asks for your OK before it
 lets anyone in.
 
-<Terminal command="apx pairing">{`482913  telegram  Ana: Hi, is this the store?`}</Terminal>
+<Terminal command="colonia pairing">{`482913  telegram  Ana: Hi, is this the store?`}</Terminal>
 
 ```bash
-apx pairing ok 482913 "Ana"    # approve as a contact
-apx pairing no 482913          # drop the request
-apx pairing me 482913          # this address is mine (yours, the owner's)
+colonia pairing ok 482913 "Ana"    # approve as a contact
+colonia pairing no 482913          # drop the request
+colonia pairing me 482913          # this address is mine (yours, the owner's)
 ```
 
 ## Contacts are sealed
@@ -131,9 +131,9 @@ In a contact's chat in the panel, **Who answers** switches between the agent (yo
 **I'll write** (your words go out as you typed them).
 
 ```bash
-apx contacts                 # people and their addresses
-apx contacts add Ana Pérez   # add one by hand (link addresses with pairing)
-apx contacts block <id>      # or unblock, rm
+colonia contacts                 # people and their addresses
+colonia contacts add Ana Pérez   # add one by hand (link addresses with pairing)
+colonia contacts block <id>      # or unblock, rm
 ```
 
 ## While the agent is working
@@ -141,7 +141,7 @@ apx contacts block <id>      # or unblock, rm
 **While it is working** decides what happens if you send another message before the answer is done:
 
 - **Slip in** (the default): your message joins the running turn; the agent reads it between steps and keeps going.
-  This works on APX's own engine; other engines wait.
+  This works on Colonia's own engine; other engines wait.
 - **Wait**: your new message waits, and is answered when the current one finishes.
 - **Interrupt**: it stops what it was doing and starts over with your new message.
 
@@ -171,10 +171,10 @@ a channel's hours and who is answered at any hour, each change once you approve 
 
 ## Delivery and notices
 
-Everything APX sends goes through a durable **outbox**: a message survives a restart and is retried, and each one ends
+Everything Colonia sends goes through a durable **outbox**: a message survives a restart and is retried, and each one ends
 as sent, maybe sent or failed. The channel's settings list what was **Recently sent**; the terminal shows more:
 
-<Terminal command="apx channels outbox">{`10-08T09:14  sent      telegram  reply   Your order shipped this morning…
+<Terminal command="colonia channels outbox">{`10-08T09:14  sent      telegram  reply   Your order shipped this morning…
 10-08T09:02  sent      telegram  notice  Morning brief: 3 tasks due today…`}</Terminal>
 
 Under **Notices for you**, **Confirmations follow you** sends a question an agent asked in the app to your channel
@@ -213,7 +213,7 @@ The terminal adds Telegram bots only. Every other channel is set up in **Setting
 
 ## A public address for Teams and LINE
 
-Teams and LINE don't let a bot fetch its messages: they send each one to a web address. APX only listens on your
+Teams and LINE don't let a bot fetch its messages: they send each one to a web address. Colonia only listens on your
 computer, so these two need a **public address**, set in their screen under **Settings › Channels**. It publishes
 only a separate door for webhooks (`…/hooks/<channel>`), never the panel or the API, and each message is checked
 against the platform's signature before anything reads it.
@@ -224,10 +224,10 @@ against the platform's signature before anything reads it.
 | **ngrok** | ngrok installed and signed in once (`ngrok config add-authtoken …`) | Usually the same one each time (a free account keeps one); the panel tells you if it changes |
 | **My own** | An https address of yours that forwards to the webhook port on this computer | Yours |
 
-Copy **This channel's address** into the platform (Teams' messaging endpoint, LINE's webhook URL). APX remembers the
+Copy **This channel's address** into the platform (Teams' messaging endpoint, LINE's webhook URL). Colonia remembers the
 last address ngrok gave: if a restart brings a different one, the panel says so, and you paste the new one.
 
-<Terminal command="apx channels">{`telegram       telegram  running   @acme_store_bot    agent nova
+<Terminal command="colonia channels">{`telegram       telegram  running   @acme_store_bot    agent nova
 whatsapp       whatsapp  running   +1 555 0100        agent nova`}</Terminal>
 
 <CardGrid>

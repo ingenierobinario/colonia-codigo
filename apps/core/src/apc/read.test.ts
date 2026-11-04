@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { AGENTS_MD_LIMIT } from "@apx/protocol";
+import { AGENTS_MD_LIMIT } from "@colonia/protocol";
 import { cap, readProject } from "./read.ts";
 
 test("a cap preserves boundary-sized text and names the exact omitted lines for a path with spaces", () => {
@@ -31,8 +31,8 @@ test("a cap preserves boundary-sized text and names the exact omitted lines for 
 });
 
 test("project Markdown respects safety boundaries, BOMs, and removal without importing symlink targets", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-context-read-"));
-  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "apx-context-outside-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-context-read-"));
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-context-outside-"));
   const rules = path.join(root, "AGENTS.md");
   const memory = path.join(root, ".apc", "memory.md");
   try {

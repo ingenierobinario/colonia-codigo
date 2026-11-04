@@ -5,7 +5,7 @@ import { tempDir } from "../testkit/platform.ts";
 import { receiveFlowEvent, saveFlow } from "./flows.ts";
 
 test("flow writes and deduplicates atomically across database reopen", async () => {
-  const temp = tempDir("apx-flow-");
+  const temp = tempDir("colonia-flow-");
   const home = temp.path;
   try {
     let db = openDb(home);

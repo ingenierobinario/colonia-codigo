@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import { useState } from "react";
 import { useChannels } from "../data/channels.ts";
 import { go } from "../shell/nav.ts";

@@ -1,4 +1,4 @@
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { ThreadsTable } from "../db/schema.ts";
 import { opt } from "./sql.ts";

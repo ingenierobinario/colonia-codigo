@@ -1,13 +1,13 @@
 // Small labels shared by the Resources tabs.
-import type { McpServerStatus, SkillInfo } from "@apx/protocol";
+import type { McpServerStatus, SkillInfo } from "@colonia/protocol";
 import type { MessageKey, T } from "../i18n/index.ts";
 
-/** The agent apps a skill can live in; APX's own, the owner's, a project's and extensions' count as APX. */
-export const SKILL_ENGINES = ["apx", "claude", "codex", "cursor", "agents"] as const;
+/** The agent apps a skill can live in; Colonia's own, the owner's, a project's and extensions' count as Colonia. */
+export const SKILL_ENGINES = ["colonia", "claude", "codex", "cursor", "agents"] as const;
 export type SkillEngine = (typeof SKILL_ENGINES)[number];
 
 export const ENGINE_LABEL: Record<SkillEngine, string> = {
-  apx: "APX",
+  colonia: "Colonia",
   claude: "Claude",
   codex: "Codex",
   cursor: "Cursor",
@@ -15,7 +15,7 @@ export const ENGINE_LABEL: Record<SkillEngine, string> = {
 };
 
 export const engineOf = (source: SkillInfo["source"]): SkillEngine =>
-  source === "owner" || source === "project" || source === "extension" ? "apx" : source;
+  source === "owner" || source === "project" || source === "extension" ? "colonia" : source;
 
 /** Whether a skill, or one of its copies, lives in one of these engines (none picked: every skill). */
 export const inEngines = (s: SkillInfo, picked: ReadonlySet<SkillEngine>) =>
@@ -29,14 +29,14 @@ export const unusedIn = (s: SkillInfo, picked: ReadonlySet<SkillEngine> | undefi
 
 /** Where a skill comes from, when it is not the owner's or the project's own. */
 export function sourceTag(s: Pick<SkillInfo, "source">, t: T): string | undefined {
-  if (s.source === "apx") return "APX";
+  if (s.source === "colonia") return "Colonia";
   if (s.source === "extension") return t("res.source.extension");
   if (s.source === "owner" || s.source === "project") return undefined;
   return ENGINE_LABEL[s.source];
 }
 
-/** A copy's place: its app, or APX for the owner's and a project's folders. */
-export const copyTag = (c: SkillInfo["copies"][number], t: T) => sourceTag(c, t) ?? "APX";
+/** A copy's place: its app, or Colonia for the owner's and a project's folders. */
+export const copyTag = (c: SkillInfo["copies"][number], t: T) => sourceTag(c, t) ?? "Colonia";
 
 export const STATUS_KEY: Record<McpServerStatus["status"], MessageKey> = {
   ready: "mcp.status.ready",

@@ -69,7 +69,7 @@ test("agente adjunta JPG, MP4 y audio: visibles, reproducibles y descargables tr
     const downloaded = await file.path();
     if (!downloaded) throw new Error("Missing downloaded attachment");
     expect(fs.readFileSync(downloaded)).toEqual(fs.readFileSync(path.join(fixtures, "preview.mp4")));
-    await page.screenshot({ path: "/tmp/apx-agent-attachments.png", fullPage: true });
+    await page.screenshot({ path: "/tmp/colonia-agent-attachments.png", fullPage: true });
   } finally {
     // Detach the browser before stopping its server; reconnect timers must not outlive the fixture.
     await page.goto("about:blank");

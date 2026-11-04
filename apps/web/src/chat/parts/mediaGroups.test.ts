@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { bubbleFiles, mediaBlocks, withoutFilesNote } from "./mediaGroups.ts";
 
 const video = (n: number): Part => ({ type: "file", media_id: `v${n}`, name: `${n}.mp4`, mime: "video/mp4", bytes: 9 });

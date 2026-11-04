@@ -3,12 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { ArtifactBundle } from "@apx/protocol";
+import { ArtifactBundle } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir } from "../testkit/platform.ts";
 import { kitVersionOf } from "./surfaces.ts";
 
-const PAGE = `<meta name="apx-live" content="15m"><script src="/_apx/kit@1.2.js"></script><h1>Orders</h1>`;
+const PAGE = `<meta name="colonia-live" content="15m"><script src="/_colonia/kit@1.2.js"></script><h1>Orders</h1>`;
 
 test("a page names the kit version it loads", () => {
   assert.equal(kitVersionOf(PAGE), "1.2");
@@ -17,7 +17,7 @@ test("a page names the kit version it loads", () => {
 
 test("an artifact's store and database work through the protocol, export without and with memory, and import back", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-artifact-rpc-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-artifact-rpc-"));
   try {
     fs.writeFileSync(path.join(root, "AGENTS.md"), "# Northwind\n");
     const { project } = await env.client.call("projects.register", { path: root });
@@ -127,7 +127,7 @@ test("an artifact's store and database work through the protocol, export without
 
 test("an artifact's file says who made it, and an installed one keeps its maker when exported again", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-artifact-origin-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-artifact-origin-"));
   try {
     fs.writeFileSync(path.join(root, "AGENTS.md"), "# Northwind\n");
     const { project } = await env.client.call("projects.register", { path: root });

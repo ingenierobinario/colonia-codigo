@@ -1,10 +1,10 @@
-// Which APX this app shows: its own core on this computer (server), or one running elsewhere (client: an address, or
+// Which Colonia this app shows: its own core on this computer (server), or one running elsewhere (client: an address, or
 // a host reached over SSH). Chosen on the first run of an installed app and kept in the app's data folder.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { CORE_ENV_FILE, parseCoreEnv } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
+import { CORE_ENV_FILE, parseCoreEnv } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
 
 type LocalConnection = { mode: "local"; home?: string; port?: number; home_id?: string };
 export type Connection = LocalConnection | { mode: "url"; url: string } | { mode: "ssh"; target: string };
@@ -52,13 +52,13 @@ export function forgetConnection(dataDir: string): void {
 
 /** A desktop installed from the local panel retains that exact installation after a restart. */
 export function applySavedLocalTarget(dataDir: string, env: NodeJS.ProcessEnv): void {
-  if (env.APX_URL || env.APX_HOME || env.APX_PORT) return;
+  if (env.COLONIA_URL || env.COLONIA_HOME || env.COLONIA_PORT) return;
   const target = loadConnection(dataDir);
   if (target?.mode !== "local" || !target.home || !target.port || !target.home_id) return;
   const identity = fs.readFileSync(path.join(target.home, "home-id"), "utf8").trim();
-  if (identity !== target.home_id) throw new Error("The saved local APX belongs to another installation");
-  env.APX_HOME = target.home;
-  env.APX_PORT = String(target.port);
+  if (identity !== target.home_id) throw new Error("The saved local Colonia belongs to another installation");
+  env.COLONIA_HOME = target.home;
+  env.COLONIA_PORT = String(target.port);
 }
 
 /** An address the owner typed: http(s) only, no path, no trailing slash. */
@@ -78,30 +78,30 @@ export function validSshTarget(input: string): boolean {
   return /^(?:[A-Za-z0-9._-]+@)?[A-Za-z0-9.-]+(?::\d{1,5})?$/.test(input.trim()) && !input.trim().startsWith("-");
 }
 
-/** The home of the core on this computer (the core's own default, unless APX_HOME moves it). */
+/** The home of the core on this computer (the core's own default, unless COLONIA_HOME moves it). */
 export const localCoreHome = (env: NodeJS.ProcessEnv = process.env) =>
-  env.APX_HOME || path.join(os.homedir(), ".apx", "v2");
+  env.COLONIA_HOME || path.join(os.homedir(), ".colonia", "v2");
 
-/** APX_URL selects a connection, never the daemon this computer may start. */
+/** COLONIA_URL selects a connection, never the daemon this computer may start. */
 export function localCoreUrl(env: NodeJS.ProcessEnv = process.env): string {
-  let port = env.APX_PORT;
+  let port = env.COLONIA_PORT;
   if (!port) {
     try {
-      port = parseCoreEnv(fs.readFileSync(path.join(localCoreHome(env), CORE_ENV_FILE), "utf8")).APX_PORT;
+      port = parseCoreEnv(fs.readFileSync(path.join(localCoreHome(env), CORE_ENV_FILE), "utf8")).COLONIA_PORT;
     } catch {}
   }
   const n = Number(port || 7440);
-  if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("Invalid local APX_PORT");
+  if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("Invalid local COLONIA_PORT");
   return `http://127.0.0.1:${n}`;
 }
 
 export function initialConnection(dataDir: string, env: NodeJS.ProcessEnv = process.env): Connection | undefined {
-  if (env.APX_URL) {
-    const url = normalizeUrl(env.APX_URL);
-    if (!url) throw new Error("Invalid APX_URL");
+  if (env.COLONIA_URL) {
+    const url = normalizeUrl(env.COLONIA_URL);
+    if (!url) throw new Error("Invalid COLONIA_URL");
     return { mode: "url", url };
   }
-  return env.APX_CONNECTION === "local" ? { mode: "local" } : loadConnection(dataDir);
+  return env.COLONIA_CONNECTION === "local" ? { mode: "local" } : loadConnection(dataDir);
 }
 
 /** A healthy port alone is not evidence that it belongs to the selected installation. */
@@ -111,7 +111,7 @@ export async function verifyLocalCore(
 ): Promise<"matches" | "mismatch" | "missing"> {
   const expected = fs.readFileSync(path.join(localCoreHome(env), "home-id"), "utf8").trim();
   const token = localCoreToken(env);
-  const health = await new ApxClient({ url, ...(token ? { token } : {}), timeoutMs: 2000 }).call("system.health", {});
+  const health = await new ColoniaClient({ url, ...(token ? { token } : {}), timeoutMs: 2000 }).call("system.health", {});
   if (!expected || !health.home_id.trim()) return "missing";
   return health.home_id === expected ? "matches" : "mismatch";
 }
@@ -122,10 +122,10 @@ export const localCoreLogFile = (env: NodeJS.ProcessEnv = process.env) =>
 
 /** The core's own token on this computer (core.env in its home), when it asks for one. */
 export function localCoreToken(env: NodeJS.ProcessEnv = process.env): string | undefined {
-  if (env.APX_TOKEN) return env.APX_TOKEN;
+  if (env.COLONIA_TOKEN) return env.COLONIA_TOKEN;
   const home = localCoreHome(env);
   try {
-    return parseCoreEnv(fs.readFileSync(path.join(home, CORE_ENV_FILE), "utf8")).APX_TOKEN || undefined;
+    return parseCoreEnv(fs.readFileSync(path.join(home, CORE_ENV_FILE), "utf8")).COLONIA_TOKEN || undefined;
   } catch {
     return undefined;
   }

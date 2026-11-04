@@ -1,4 +1,4 @@
-import { ApxClient } from "../../packages/protocol/src/client.ts";
+import { ColoniaClient } from "../../packages/protocol/src/client.ts";
 import { expect, open, rpc, test, until, world } from "./kit.ts";
 
 for (const [width, scope, language] of [
@@ -16,7 +16,7 @@ for (const [width, scope, language] of [
     const empty = spanish
       ? "No hay permisos temporales activos del navegador."
       : "No active temporary browser permissions.";
-    await page.addInitScript((language) => localStorage.setItem("apx.prefs", JSON.stringify({ language })), language);
+    await page.addInitScript((language) => localStorage.setItem("colonia.prefs", JSON.stringify({ language })), language);
     let failPermissions = false;
     let failRevocation = false;
     await page.route("**/rpc/tools.revoke", async (route) => {
@@ -35,7 +35,7 @@ for (const [width, scope, language] of [
     });
     await rpc("setup.finish", {});
     const { core, token } = await world.info();
-    const node = await new ApxClient({ url: core, token }).connect("node", ["browser"]);
+    const node = await new ColoniaClient({ url: core, token }).connect("node", ["browser"]);
     let evaluations = 0;
     node.onRequest(async (method) => {
       if (method === "browser.tabs")

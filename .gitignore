@@ -12,7 +12,7 @@ _design/
 
 # local-only
 apps/desktop/.dev/
-# APX's Google OAuth client: CI writes it into builds, a checkout keeps its own here (DECISIONS.md#d-130)
+# Colonia's Google OAuth client: CI writes it into builds, a checkout keeps its own here (DECISIONS.md#d-130)
 /google-client.json
 .env
 .env.*

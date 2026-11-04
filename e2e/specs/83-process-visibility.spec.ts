@@ -62,7 +62,7 @@ test("background details keep another project's executor across chats and expose
     );
     await page.keyboard.press("Tab");
     await cards.first().locator(".job__main").focus();
-    const tooltip = page.locator(".apx-tooltip[data-open]");
+    const tooltip = page.locator(".colonia-tooltip[data-open]");
     await expect(tooltip).toContainText(command);
     await expect(tooltip).toContainText(title);
     await expect(tooltip).toContainText(cwd);
@@ -76,7 +76,7 @@ test("background details keep another project's executor across chats and expose
   await page.getByRole("radio", { name: /Segundo plano/ }).click();
   await page.keyboard.press("Tab");
   await page.locator(".running__list .job__main").first().focus();
-  const hint = page.locator(".apx-tooltip[data-open]");
+  const hint = page.locator(".colonia-tooltip[data-open]");
   await expect(hint).toContainText(command);
   const bounds = await hint.boundingBox();
   expect(bounds).not.toBeNull();

@@ -262,7 +262,7 @@ test("importing tasks and commitments twice leaves one of each", async () => {
 test("a v1 project's own variables land in that project's scope; Default's and the global ones are global", async () => {
   const v1 = path.join(env.home, "v1");
   const dir = path.join(env.home, "work", "northwind");
-  write(path.join(dir, ".apc", "project.json"), { apx_id: "0b0b0b0b0b0b", name: "Northwind" });
+  write(path.join(dir, ".apc", "project.json"), { colonia_id: "0b0b0b0b0b0b", name: "Northwind" });
   write(path.join(dir, "AGENTS.md"), "# Northwind\n");
   const config = JSON.parse(fs.readFileSync(path.join(v1, "config.json"), "utf8")) as Record<string, unknown>;
   write(path.join(v1, "config.json"), { ...config, projects: [{ path: dir }] });
@@ -299,7 +299,7 @@ test("a v1 project's own variables land in that project's scope; Default's and t
 test("v1's MCP servers become the owner's; a project's runs only there, and no credential stays in plain text", async () => {
   const v1 = path.join(env.home, "v1");
   const dir = path.join(env.home, "work", "northwind");
-  write(path.join(dir, ".apc", "project.json"), { apx_id: "0b0b0b0b0b0b", name: "Northwind" });
+  write(path.join(dir, ".apc", "project.json"), { colonia_id: "0b0b0b0b0b0b", name: "Northwind" });
   write(path.join(dir, "AGENTS.md"), "# Northwind\n");
   const other = path.join(env.home, "work", "acme");
   write(path.join(other, "AGENTS.md"), "# Acme\n");

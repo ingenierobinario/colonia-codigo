@@ -80,7 +80,7 @@ export const world = {
   dmSentTo: async (channel: "dc" | "sl", user: string) =>
     ((await (await fetch(`${control}/${channel}/sent?user=${user}`)).json()) as { sent: Array<{ text?: string }> })
       .sent,
-  /** Streamed drafts sent to a chat (APX sends none: a draft locks the owner's Telegram chat). */
+  /** Streamed drafts sent to a chat (Colonia sends none: a draft locks the owner's Telegram chat). */
   draftsTo: async (chat: number) =>
     ((await (await fetch(`${control}/tg/drafts?chat=${chat}`)).json()) as { drafts: Array<{ text?: string }> }).drafts,
   sentTo: async (chat: number) =>
@@ -92,7 +92,7 @@ export const world = {
     /** Someone writes; resolves with WhatsApp's id of the message. */
     message: async (from: { phone: string; name: string }, text: string) =>
       ((await (await post(`${phone}/message`, { from, text })).json()) as { id: string }).id,
-    /** The phone holds a message's real content (a video APX kept only as a placeholder), to send when asked again. */
+    /** The phone holds a message's real content (a video Colonia kept only as a placeholder), to send when asked again. */
     keep: (id: string, content: object) => post(`${phone}/keep`, { id, content }),
     /** Someone sends a file: `content` as WhatsApp shapes it (videoMessage, documentMessage…), `bytes` base64. */
     media: (from: { phone: string; name: string }, content: object) => post(`${phone}/media`, { from, content }),
@@ -151,7 +151,7 @@ export const test = base.extend<{
         (seed) => {
           // It also runs in sandboxed widget frames, which have no storage.
           try {
-            if (!localStorage.getItem("apx.corner")) localStorage.setItem("apx.corner", JSON.stringify(seed));
+            if (!localStorage.getItem("colonia.corner")) localStorage.setItem("colonia.corner", JSON.stringify(seed));
           } catch {}
         },
         { ...(cornerCards ? {} : { discord: true, star: true }), ...(welcome ? {} : { welcome: true }) },

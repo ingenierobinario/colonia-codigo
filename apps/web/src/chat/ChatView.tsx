@@ -1,4 +1,4 @@
-import { Button, EmptyState, Icons, Skeleton } from "@apx/ui";
+import { Button, EmptyState, Icons, Skeleton } from "@colonia/ui";
 import { Suspense, useEffect } from "react";
 import { useContactChat } from "../channels/useContactChat.ts";
 import { usePageVisible } from "../common/useInView.ts";
@@ -14,7 +14,7 @@ import { ChatHeader } from "./ChatHeader.tsx";
 import { ChatComposer } from "./composer/ChatComposer.tsx";
 import { Transcript } from "./Transcript.tsx";
 
-const COMPUTER = Boolean(window.apxDesktop?.onComputerActivity);
+const COMPUTER = Boolean(window.coloniaDesktop?.onComputerActivity);
 
 /** `via`: a channel's part of the chat (Home seen from that channel), read there; the whole chat is written in. */
 export function ChatView({

@@ -1,6 +1,6 @@
 // The owner's phone as a node: where it is, and a picture the owner takes there. The core only routes; a photo comes
 // back as bytes and is kept as media like an upload.
-import { PHONE_CAMERA_CAP, PHONE_LOCATION_CAP } from "@apx/protocol";
+import { PHONE_CAMERA_CAP, PHONE_LOCATION_CAP } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { CallError } from "../errors.ts";
 import type { NodeBroker } from "../nodes/broker.ts";

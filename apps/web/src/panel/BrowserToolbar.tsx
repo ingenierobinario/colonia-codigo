@@ -1,5 +1,5 @@
-import type { TabInfo } from "@apx/protocol";
-import { Button, IconButton, Icons } from "@apx/ui";
+import type { TabInfo } from "@colonia/protocol";
+import { Button, IconButton, Icons } from "@colonia/ui";
 import { useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserControl, browserHistory, browserNavigate, browserOpen } from "../data/actions.ts";

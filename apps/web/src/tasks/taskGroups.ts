@@ -1,7 +1,7 @@
 // How the Tasks list groups tasks: what needs the owner first (a question, or a review that is theirs), then what is
 // moving, what waits, what an agent reviews, and the closed ones. Pure, so it is tested on its own.
-import type { Task } from "@apx/protocol";
-import { TASK_GROUP_ORDER, type TaskGroupId, taskGroupOf } from "@apx/protocol/task-groups";
+import type { Task } from "@colonia/protocol";
+import { TASK_GROUP_ORDER, type TaskGroupId, taskGroupOf } from "@colonia/protocol/task-groups";
 
 export type GroupId = TaskGroupId;
 export const GROUP_ORDER = TASK_GROUP_ORDER;

@@ -1,8 +1,8 @@
 .inboxpreview {
   width: 100%;
   min-height: 100dvh;
-  background: var(--apx-bg);
-  color: var(--apx-fg);
+  background: var(--colonia-bg);
+  color: var(--colonia-fg);
   padding: 16px;
 }
 .inboxpreview__header {
@@ -15,20 +15,20 @@
 }
 .inboxpreview__header p {
   font-size: 13px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .inboxpreview__header button {
   padding: 8px 12px;
   color: inherit;
-  background: var(--apx-fill);
-  border: 1px solid var(--apx-border);
+  background: var(--colonia-fill);
+  border: 1px solid var(--colonia-border);
   border-radius: 6px;
   cursor: pointer;
 }
 .inboxpreview__panel {
   width: min(100%, 460px);
   margin: auto;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 8px;
   overflow: hidden;
 }

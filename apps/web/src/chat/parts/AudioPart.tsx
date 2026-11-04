@@ -1,6 +1,6 @@
 import "../../styles/audio.css";
-import type { Part } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { useRef, useState } from "react";
 import { audioEnded } from "../../data/audioEnd.ts";
 import { useT } from "../../i18n/index.ts";

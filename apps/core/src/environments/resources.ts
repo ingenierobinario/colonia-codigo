@@ -1,5 +1,5 @@
 import os from "node:os";
-import type { ComputerMemoryRefusal } from "@apx/protocol";
+import type { ComputerMemoryRefusal } from "@colonia/protocol";
 
 const GIB = 1024 ** 3;
 

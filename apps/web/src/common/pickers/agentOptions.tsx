@@ -1,4 +1,4 @@
-import { AgentAvatar, type SelectOption } from "@apx/ui";
+import { AgentAvatar, type SelectOption } from "@colonia/ui";
 import { useMemo } from "react";
 import { baseName, blobOf } from "../../data/identity.ts";
 import { useData } from "../../data/state.ts";

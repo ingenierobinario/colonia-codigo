@@ -12,5 +12,5 @@ test("memory edit rewrites a note in place by its id", async () => {
     /mem_1 {2}project:p_acme {2}edited/,
   );
   assert.deepEqual(calls, [["memory.add", { id: "mem_1", text: "Acme pays on Fridays", scope: "global" }]]);
-  await assert.rejects(memory(client, ["edit", "mem_1"], {}), /usage: apx memory edit/);
+  await assert.rejects(memory(client, ["edit", "mem_1"], {}), /usage: colonia memory edit/);
 });

@@ -2,7 +2,7 @@
 // local-embed.ts).
 
 import os from "node:os";
-import type { LocalEmbedding } from "@apx/protocol";
+import type { LocalEmbedding } from "@colonia/protocol";
 import { badRequest, errorMessage } from "../errors.ts";
 import { EMBED_MODELS, type LocalEmbeddings, recommendEmbedder } from "../services/local-embed.ts";
 import type { Services } from "../services/registry.ts";

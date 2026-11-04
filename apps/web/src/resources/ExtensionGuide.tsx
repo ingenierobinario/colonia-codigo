@@ -1,9 +1,9 @@
-import { Icons } from "@apx/ui";
+import { Icons } from "@colonia/ui";
 import { useState } from "react";
 import { type MessageKey, useT } from "../i18n/index.ts";
 
 const EXAMPLE = `northwind-crm/
-├── apx-extension.json
+├── colonia-extension.json
 └── skills/
     └── crm-notes/
         └── SKILL.md`;
@@ -65,7 +65,7 @@ export function ExtensionGuide() {
               </ul>
             </div>
             <div>
-              <b>apx-extension.json</b>
+              <b>colonia-extension.json</b>
               <pre>{MANIFEST}</pre>
             </div>
           </div>

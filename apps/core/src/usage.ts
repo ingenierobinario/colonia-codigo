@@ -1,15 +1,15 @@
-// What the computer has and what APX takes of it (system.usage). Host numbers are read on each call, cheaply; the
-// APX home's size is a walk of every file, so it runs in the background with a deadline and is kept for a while.
+// What the computer has and what Colonia takes of it (system.usage). Host numbers are read on each call, cheaply; the
+// Colonia home's size is a walk of every file, so it runs in the background with a deadline and is kept for a while.
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { DiskSpace, HomePart, HomeUsage, SystemUsage, VmUsage } from "@apx/protocol";
+import type { DiskSpace, HomePart, HomeUsage, SystemUsage, VmUsage } from "@colonia/protocol";
 
 const MB = 1048576;
 const mb = (bytes: number) => Math.round(bytes / MB);
 
-/** Top-level entries of the APX home by part; files ending in a database suffix are databases wherever they are. */
+/** Top-level entries of the Colonia home by part; files ending in a database suffix are databases wherever they are. */
 const PART_OF: Record<string, HomePart> = {
   backups: "databases",
   logs: "logs",

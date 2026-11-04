@@ -1,6 +1,6 @@
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { t } from "../src/i18n";
-import type { ApxClient, Message } from "../src/protocol";
+import type { ColoniaClient, Message } from "../src/protocol";
 import { BrowserConsents } from "../src/ui/BrowserConsents";
 import { ChatMessage } from "../src/ui/ChatMessage";
 
@@ -90,7 +90,7 @@ test.each([undefined, grant.expires_at])(
   "turn permission shows execution end, not a timed expiry (%s)",
   async (expires_at) => {
     const call = jest.fn().mockResolvedValue({ approvals: [{ ...grant, scope: "turn", expires_at }] });
-    const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ApxClient} />);
+    const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ColoniaClient} />);
     await fireEvent.press(ui.getByRole("button", { name: t("browserPermissions") }));
     await waitFor(() => expect(ui.getByText(t("browserTurnEnds"))).toBeVisible());
     expect(ui.queryByText(t("browserExpires", { at: new Date(grant.expires_at).toLocaleString() }))).toBeNull();
@@ -109,7 +109,7 @@ test("active permissions are reachable during the chat, show human scope and rev
     })
     .mockResolvedValueOnce({})
     .mockResolvedValueOnce({ approvals: [] });
-  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ApxClient} />);
+  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ColoniaClient} />);
   expect(call).not.toHaveBeenCalled();
   await fireEvent.press(ui.getByRole("button", { name: t("browserPermissions") }));
   await waitFor(() => expect(ui.getByText(`https://example.test · ${t("browserTab")}`)).toBeVisible());
@@ -130,7 +130,7 @@ test("active permissions are reachable during the chat, show human scope and rev
 
 test("failed permission loading is not an empty list and can be retried", async () => {
   const call = jest.fn().mockRejectedValueOnce(new Error("Offline")).mockResolvedValueOnce({ approvals: [] });
-  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ApxClient} />);
+  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ColoniaClient} />);
   await fireEvent.press(ui.getByRole("button", { name: t("browserPermissions") }));
   await waitFor(() => expect(ui.getByText(t("browserLoadFailed"))).toBeVisible());
   expect(ui.queryByText(t("browserNone"))).toBeNull();
@@ -149,7 +149,7 @@ test("a late permissions response cannot replace the new chat's permissions", as
     .fn()
     .mockReturnValueOnce(pending)
     .mockResolvedValueOnce({ approvals: [next] });
-  const client = { call } as unknown as ApxClient;
+  const client = { call } as unknown as ColoniaClient;
   const ui = await render(<BrowserConsents {...props} client={client} />);
   await fireEvent.press(ui.getByRole("button", { name: t("browserPermissions") }));
   await ui.rerender(<BrowserConsents {...props} thread="th_other" client={client} />);
@@ -167,7 +167,7 @@ test("failed revocation does not pretend the grant disappeared; refresh can reco
     .mockResolvedValueOnce({ approvals: [grant] })
     .mockRejectedValueOnce(new Error("Offline"))
     .mockResolvedValueOnce({ approvals: [grant] });
-  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ApxClient} />);
+  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ColoniaClient} />);
   await fireEvent.press(ui.getByRole("button", { name: t("browserPermissions") }));
   await waitFor(() => expect(ui.getByRole("button", { name: new RegExp(`^${t("browserRevoke")}:`) })).toBeVisible());
   await fireEvent.press(ui.getByRole("button", { name: new RegExp(`^${t("browserRevoke")}:`) }));
@@ -237,7 +237,7 @@ test.each([true, false])("same-site tabs have distinct revoke names (tab metadat
     .mockResolvedValueOnce({ approvals: [first, second] })
     .mockResolvedValueOnce({})
     .mockResolvedValueOnce({ approvals: [first] });
-  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ApxClient} />);
+  const ui = await render(<BrowserConsents {...props} client={{ call } as unknown as ColoniaClient} />);
   await fireEvent.press(ui.getByRole("button", { name: t("browserPermissions") }));
   const names = (n: number) =>
     `${t("browserRevoke")}: https://example.test · ${metadata ? "Orders" : t("browserUntitled")} · ${t(metadata ? "browserTabNumber" : "browserPermissionNumber", { n })} · Reader · ${t("browserChat")}`;

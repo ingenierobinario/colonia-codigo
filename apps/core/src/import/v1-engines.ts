@@ -3,7 +3,7 @@
 // built-in `chatgpt`. v1's main model and its fallback chain become the install default and the router's chain.
 // v1's folder is only read.
 import path from "node:path";
-import { ModelRef, type RouterConfig } from "@apx/protocol";
+import { ModelRef, type RouterConfig } from "@colonia/protocol";
 import { harnessOf } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
 import { modelSettings } from "../models/choice.ts";
@@ -21,7 +21,7 @@ type V1Engine = {
   is_active?: unknown;
 };
 
-/** What v2 makes of one v1 engine: a model API, or the ChatGPT plan (v2's built-in `chatgpt`, signed in from APX). */
+/** What v2 makes of one v1 engine: a model API, or the ChatGPT plan (v2's built-in `chatgpt`, signed in from Colonia). */
 type Plan =
   | { slug: string; kind: "plan"; id: "chatgpt" }
   | { slug: string; kind: "provider"; id: string; entry: Omit<ProviderEntry, "id">; key?: string | undefined };

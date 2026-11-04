@@ -21,7 +21,7 @@ function parts(store: Store, threadId: string): RunRecord[] {
 
 /** Starts the next part of `run`'s task when its turn ended with the task in progress and nothing else to come. */
 export function continueTask(store: Store, admit: AdmitFn, run: RunRecord): RunRecord | undefined {
-  // A stopped turn is the owner's word; a failed one is the provider's or APX's, told on its own.
+  // A stopped turn is the owner's word; a failed one is the provider's or Colonia's, told on its own.
   if (run.state !== "completed") return undefined;
   const thread = store.threads.get(run.thread_id);
   const task = thread?.task_id ? store.tasks.get(thread.task_id) : undefined;

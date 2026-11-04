@@ -1,6 +1,6 @@
-import type { Agent, Routine } from "@apx/protocol";
-import { switchTrigger } from "@apx/protocol/flow-edit";
-import { Field, FlowStepTile, IconButton, Icons, Input, SegmentedControl, Select, Textarea } from "@apx/ui";
+import type { Agent, Routine } from "@colonia/protocol";
+import { switchTrigger } from "@colonia/protocol/flow-edit";
+import { Field, FlowStepTile, IconButton, Icons, Input, SegmentedControl, Select, Textarea } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { forAgents, useModels } from "../data/models.ts";

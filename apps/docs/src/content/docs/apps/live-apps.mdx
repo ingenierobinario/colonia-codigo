@@ -7,7 +7,7 @@ sidebar:
 
 ## Open is not the same as up to date
 
-An app can keep its current view while you visit another APX screen. That does not make its data live: the page
+An app can keep its current view while you visit another Colonia screen. That does not make its data live: the page
 must explicitly fetch a source or compute new values. A cached view can show an old result immediately and refresh
 it afterward. Ask for a visible timestamp and a stale/error state, not an unlabeled number.
 
@@ -17,11 +17,11 @@ For example:
 > result, show when it was fetched and mark it stale if refreshing fails. Do not invent an “online” result.
 
 For private APIs, tell the agent the service and required data, not the secret in chat. Configure the artifact's
-secret separately. A source may reject requests, impose rate limits or lack the needed API; APX does not bypass it.
+secret separately. A source may reject requests, impose rate limits or lack the needed API; Colonia does not bypass it.
 
 ## Open, leave and return
 
-Open a saved app from **Apps**. It stays running as you navigate within APX, until **Close app**, application exit
+Open a saved app from **Apps**. It stays running as you navigate within Colonia, until **Close app**, application exit
 or eviction when another app needs its slot. The panel keeps up to **six opened apps**. When full, it can close an
 app not currently shown, starting with the one seen least recently. A dot in Apps indicates an open app, not a
 successful connection to its data source.
@@ -50,7 +50,7 @@ routine, an always-on server, or permission to publish or send messages.
 ## When it looks frozen
 
 1. Check the last-success timestamp and error text. Cached data is not proof of a fresh fetch.
-2. Bring the app into view and retry its refresh control; reconnect APX if offline.
+2. Bring the app into view and retry its refresh control; reconnect Colonia if offline.
 3. Check that the API origin was declared and any required secret is configured. Do not remove sandbox protections.
 4. Reopen an evicted app. Saved records should remain; verify them before clearing its memory.
 5. Ask the agent to fix the same artifact instead of creating a second copy with empty records.

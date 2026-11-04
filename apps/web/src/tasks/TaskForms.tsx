@@ -1,5 +1,5 @@
-import type { Task, TaskKind, TaskPriority } from "@apx/protocol";
-import { Button, Dialog, Field, Help, Input, TagInput, Textarea } from "@apx/ui";
+import type { Task, TaskKind, TaskPriority } from "@colonia/protocol";
+import { Button, Dialog, Field, Help, Input, TagInput, Textarea } from "@colonia/ui";
 import { useState } from "react";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
 import { ProjectSelect } from "../common/pickers/ProjectSelect.tsx";

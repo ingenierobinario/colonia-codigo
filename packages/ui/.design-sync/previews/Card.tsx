@@ -1,4 +1,4 @@
-import { ApxProvider, Badge, Button, Card, Icons } from "@apx/ui";
+import { ColoniaProvider, Badge, Button, Card, Icons } from "@colonia/ui";
 
 export function Feature() {
   return (
@@ -47,9 +47,9 @@ export function Empty() {
     <div style={{ width: 380 }}>
       <Card variant="outline" padding="lg">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center" }}>
-          <Icons.Inbox size={22} color="var(--apx-fg-subtle)" />
+          <Icons.Inbox size={22} color="var(--colonia-fg-subtle)" />
           <strong style={{ fontWeight: 500 }}>Inbox zero</strong>
-          <span style={{ color: "var(--apx-fg-muted)", fontSize: 13 }}>Nothing needs you right now.</span>
+          <span style={{ color: "var(--colonia-fg-muted)", fontSize: 13 }}>Nothing needs you right now.</span>
         </div>
       </Card>
     </div>
@@ -58,12 +58,12 @@ export function Empty() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 412 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 412 }}>
       <Card
         title="Motores"
         description="Claude Code y Codex detectados en este equipo."
         aside={<Badge tone="brand">2 activos</Badge>}
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

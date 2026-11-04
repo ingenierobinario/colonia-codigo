@@ -1,4 +1,4 @@
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { useLastFlowDraft } from "../data/flowDrafts.ts";
@@ -114,7 +114,7 @@ export function useFlowChat(at: EditorNow, set: EditorSet) {
     } catch (e) {
       setNotice(
         issueText(e, clean, t) ??
-          t(e instanceof ApxError && e.code === "conflict" ? "flow.ed.conflict" : "flow.ed.saveFailed"),
+          t(e instanceof ColoniaError && e.code === "conflict" ? "flow.ed.conflict" : "flow.ed.saveFailed"),
       );
       return null;
     }

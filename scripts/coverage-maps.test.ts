@@ -8,7 +8,7 @@ import { missingSourceMaps, readCoveragePayloads, snapshotSourceMaps } from "./c
 import { coverageReport } from "./test-coverage.ts";
 
 test("browser counters keep their temporary bundle mappings after the bundle has been removed", (t) => {
-  const root = tempDir("apx-coverage-browser-").path;
+  const root = tempDir("colonia-coverage-browser-").path;
   t.after(() => removeDir(root));
   const raw = path.join(root, "raw");
   fs.mkdirSync(raw);
@@ -34,14 +34,14 @@ test("browser counters keep their temporary bundle mappings after the bundle has
 });
 
 test("invalid coverage payloads fail instead of silently dropping counters", (t) => {
-  const raw = tempDir("apx-coverage-invalid-").path;
+  const raw = tempDir("colonia-coverage-invalid-").path;
   t.after(() => removeDir(raw));
   fs.writeFileSync(path.join(raw, "broken.json"), "{");
   assert.throws(() => readCoveragePayloads(raw), SyntaxError);
 });
 
 test("saved build mappings still report original execution after another build replaces dist", (t) => {
-  const root = tempDir("apx-coverage-maps-").path;
+  const root = tempDir("colonia-coverage-maps-").path;
   t.after(() => removeDir(root));
   const dist = path.join(root, "apps/web/dist/assets");
   fs.mkdirSync(dist, { recursive: true });
@@ -90,7 +90,7 @@ test("missing mappings identify only repository builds, deduplicate and ignore t
 });
 
 test("an orphaned source map is rejected rather than paired with different generated text", (t) => {
-  const root = tempDir("apx-coverage-orphan-").path;
+  const root = tempDir("colonia-coverage-orphan-").path;
   t.after(() => removeDir(root));
   fs.writeFileSync(path.join(root, "missing.js.map"), JSON.stringify({ sources: [], mappings: "" }));
   assert.throws(() => snapshotSourceMaps(root), { code: "ENOENT" });
@@ -119,7 +119,7 @@ test("a browser map cannot silently drop a referenced library build's missing ma
 test("compiler provenance excludes only a pure runtime, never a mixed, application or unknown chunk", async (t) => {
   const { compilerGeneratedChunks, COVERAGE_CHUNKS_FILE } = await import("./coverage-maps.ts");
   const { localBrowserScripts } = await import("../e2e/coverage.ts");
-  const directory = tempDir("apx-coverage-provenance-").path;
+  const directory = tempDir("colonia-coverage-provenance-").path;
   t.after(() => removeDir(directory));
   const manifest = path.join(directory, COVERAGE_CHUNKS_FILE);
   assert.equal(compilerGeneratedChunks(directory).size, 0);
@@ -163,7 +163,7 @@ test("compiler provenance excludes only a pure runtime, never a mixed, applicati
 test("compiler facades omit only static plumbing while their source-bearing targets still require maps", async (t) => {
   const { compilerGeneratedChunks, COVERAGE_CHUNKS_FILE } = await import("./coverage-maps.ts");
   const { localBrowserScripts } = await import("../e2e/coverage.ts");
-  const directory = tempDir("apx-coverage-facade-").path;
+  const directory = tempDir("colonia-coverage-facade-").path;
   t.after(() => removeDir(directory));
   fs.mkdirSync(path.join(directory, "assets"));
   const fixtures = {

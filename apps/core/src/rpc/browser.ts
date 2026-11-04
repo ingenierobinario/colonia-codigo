@@ -1,4 +1,4 @@
-import { BROWSER_CAP, BROWSER_HOLD, BROWSER_METHODS, type BrowserMethod, type TabInfo } from "@apx/protocol";
+import { BROWSER_CAP, BROWSER_HOLD, BROWSER_METHODS, type BrowserMethod, type TabInfo } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
 import { TERMINAL } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";

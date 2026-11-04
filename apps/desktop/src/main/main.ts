@@ -1,4 +1,4 @@
-// The window is the APX panel (web). The panel reserves a slot for the browser and reports its bounds;
+// The window is the Colonia panel (web). The panel reserves a slot for the browser and reports its bounds;
 // the active tab's native view is positioned over that slot. Tab views are siblings of the panel, so a
 // panel reload never kills tabs.
 import fs from "node:fs";
@@ -41,30 +41,30 @@ import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
 
 // ssh runs this same executable as its SSH_ASKPASS (askpass.ts): it answers one question and exits before the app's
 // data folder, its scheme or the single-instance lock are touched.
-if (process.env.APX_ASKPASS) process.exit(await runAskpass(process.env, process.argv));
+if (process.env.COLONIA_ASKPASS) process.exit(await runAskpass(process.env, process.argv));
 
-const WEB_URL = process.env.APX_WEB_URL ?? "http://127.0.0.1:7441";
+const WEB_URL = process.env.COLONIA_WEB_URL ?? "http://127.0.0.1:7441";
 const DIST = import.meta.dirname;
 
-/** Past this, APX tells the owner how much it takes and what takes the most. */
+/** Past this, Colonia tells the owner how much it takes and what takes the most. */
 const MEMORY_LIMIT_MB = 4096;
 
-// The app is APX (menus, notifications, About), keeping the data folder it always had (its browser sessions and
-// imported cookies live there). APX_DESKTOP_DATA gives a copy its own (a test run): its own sessions and its own
-// single-instance lock, so it never meets the owner's running APX.
-app.setPath("userData", process.env.APX_DESKTOP_DATA ?? path.join(app.getPath("appData"), "@apx", "desktop"));
-app.setName("APX");
+// The app is Colonia (menus, notifications, About), keeping the data folder it always had (its browser sessions and
+// imported cookies live there). COLONIA_DESKTOP_DATA gives a copy its own (a test run): its own sessions and its own
+// single-instance lock, so it never meets the owner's running Colonia.
+app.setPath("userData", process.env.COLONIA_DESKTOP_DATA ?? path.join(app.getPath("appData"), "@colonia", "desktop"));
+app.setName("Colonia");
 applySavedLocalTarget(app.getPath("userData"), process.env);
 const CORE_URL = localCoreUrl();
 const openedConnection = JSON.stringify(loadConnection(app.getPath("userData")));
 
 registerAppScheme();
 
-// One APX at a time: opening it again brings the running one forward.
+// One Colonia at a time: opening it again brings the running one forward.
 const single = app.requestSingleInstanceLock();
 if (!single) app.quit();
 
-// Files opened with APX (double-click, Open with, the Dock icon): macOS sends them even before the window exists.
+// Files opened with Colonia (double-click, Open with, the Dock icon): macOS sends them even before the window exists.
 let tellPanel = () => {};
 const opened = openedQueue(() => tellPanel());
 app.on("open-file", (e, file) => {
@@ -86,7 +86,7 @@ app.on("before-quit", (e) => {
 
 app.whenReady().then(() => {
   if (!single) return;
-  // Run straight from Electron (not the APX bundle `pnpm app` makes), the Dock still shows APX's face.
+  // Run straight from Electron (not the Colonia bundle `pnpm app` makes), the Dock still shows Colonia's face.
   app.dock?.setIcon(path.join(DIST, "icon.png"));
   // One chrome bar: native window controls sit in the topbar (hidden title bar on every OS).
   const win = new BaseWindow({
@@ -94,7 +94,7 @@ app.whenReady().then(() => {
     height: 920,
     minWidth: 980,
     minHeight: 600,
-    title: "APX",
+    title: "Colonia",
     autoHideMenuBar: true,
     ...(process.platform === "darwin"
       ? { titleBarStyle: "hiddenInset" as const, trafficLightPosition: { x: 16, y: 14 } }
@@ -106,7 +106,7 @@ app.whenReady().then(() => {
     backgroundColor: "#1a1a19",
   });
   const foregroundMain = () => {
-    // Steal focus so a double-click on the tray brings APX above other apps on every display.
+    // Steal focus so a double-click on the tray brings Colonia above other apps on every display.
     if (process.platform === "darwin") app.focus({ steal: true });
     win.show();
     win.moveTop();
@@ -121,7 +121,7 @@ app.whenReady().then(() => {
     } else foregroundMain();
   };
   // Closing the window hides it — its browser tabs and the core link stay alive; the Dock, the menu-bar icon or
-  // opening APX again bring it back, and Quit ends it.
+  // opening Colonia again bring it back, and Quit ends it.
   win.on("close", (e) => {
     if (quitting) return;
     e.preventDefault();
@@ -130,14 +130,14 @@ app.whenReady().then(() => {
   app.on("activate", openMain);
   app.on("second-instance", (_event, argv) => {
     if (
-      argv.includes("--apx-adopt-local") &&
+      argv.includes("--colonia-adopt-local") &&
       JSON.stringify(loadConnection(app.getPath("userData"))) !== openedConnection
     ) {
       quitting = true;
-      delete process.env.APX_HOME;
-      delete process.env.APX_PORT;
-      delete process.env.APX_URL;
-      delete process.env.APX_TOKEN;
+      delete process.env.COLONIA_HOME;
+      delete process.env.COLONIA_PORT;
+      delete process.env.COLONIA_URL;
+      delete process.env.COLONIA_TOKEN;
       app.relaunch();
       app.quit();
       return;
@@ -156,14 +156,14 @@ app.whenReady().then(() => {
       if (items.length) Menu.buildFromTemplate(items).popup({ frame: params.frame ?? undefined });
     });
   });
-  serveAppScheme("persist:apx-ui", webDist(DIST));
+  serveAppScheme("persist:colonia-ui", webDist(DIST));
   const host = new BrowserHost();
   blockAppOrigins([CORE_URL, WEB_URL]);
 
   // The panel never shares a partition with web tabs; its preload only exposes the bounds bridge.
   const panel = new WebContentsView({
     webPreferences: {
-      partition: "persist:apx-ui",
+      partition: "persist:colonia-ui",
       sandbox: true,
       preload: path.join(DIST, "panel-preload.cjs"),
       // The panel must keep applying live events while the window is behind others.
@@ -182,7 +182,7 @@ app.whenReady().then(() => {
   const popout = createPopout({
     url: () => base,
     preload: path.join(DIST, "panel-preload.cjs"),
-    partition: "persist:apx-ui",
+    partition: "persist:colonia-ui",
     changed: (open) => {
       const pw = popout.panel();
       if (open && pw) externalLinks(pw);
@@ -229,11 +229,11 @@ app.whenReady().then(() => {
   };
   host.on("changed", () => {
     const active = host.active ? host.list().find((t) => t.tab === host.active) : undefined;
-    popout.setTitle(active?.title || "APX");
+    popout.setTitle(active?.title || "Colonia");
   });
   host.onAttention = (message) => {
     openMain();
-    if (Notification.isSupported()) new Notification({ title: "APX", body: message }).show();
+    if (Notification.isSupported()) new Notification({ title: "Colonia", body: message }).show();
   };
   win.on("resize", layout);
   // Windows sends resize before a maximize settles: lay out again once the final size is in.
@@ -276,7 +276,7 @@ app.whenReady().then(() => {
     if (!ownBrowserPanel(e.sender)) return;
     if (open === false) return popout.close();
     const active = host.active ? host.list().find((t) => t.tab === host.active) : undefined;
-    popout.open(active?.title || "APX", active?.tab);
+    popout.open(active?.title || "Colonia", active?.tab);
   });
   ipcMain.on("browser:popout-state", (e) => {
     e.returnValue = ownBrowserPanel(e.sender) && popout.window() != null;
@@ -291,7 +291,7 @@ app.whenReady().then(() => {
   const artifactWindows = createArtifactWindows({
     url: () => base,
     preload: path.join(DIST, "panel-preload.cjs"),
-    partition: "persist:apx-ui",
+    partition: "persist:colonia-ui",
     links: externalLinks,
     changed: (id, open) => panel.webContents.send("artifact:window", id, open),
   });
@@ -300,13 +300,13 @@ app.whenReady().then(() => {
   });
   ipcMain.on("artifact:open-window", (e, id: unknown, title: unknown) => {
     if (e.sender !== panel.webContents || typeof id !== "string") return;
-    artifactWindows.open(id, typeof title === "string" ? title : "APX");
+    artifactWindows.open(id, typeof title === "string" ? title : "Colonia");
   });
 
   const quick = createQuick({
     url: () => base,
     preload: path.join(DIST, "panel-preload.cjs"),
-    partition: "persist:apx-ui",
+    partition: "persist:colonia-ui",
     assets: DIST,
     openMain,
   });
@@ -321,7 +321,7 @@ app.whenReady().then(() => {
       panel.webContents.send("computer:stopped", stopped);
       if (stopped && Notification.isSupported())
         new Notification({
-          title: "APX",
+          title: "Colonia",
           body: language === "es" ? "Uso de la computadora detenido." : "Computer use stopped.",
         }).show();
     },
@@ -339,10 +339,10 @@ app.whenReady().then(() => {
             ? "Accesibilidad"
             : "Accessibility";
       const n = new Notification({
-        title: es ? `APX necesita el permiso de ${what}` : `APX needs the ${what} permission`,
+        title: es ? `Colonia necesita el permiso de ${what}` : `Colonia needs the ${what} permission`,
         body: es
-          ? "Activá APX en Configuración del Sistema. Si ya está activado, quitalo con − y agregalo de nuevo."
-          : "Turn APX on in System Settings. If it is already on, remove it with − and add it again.",
+          ? "Activá Colonia en Configuración del Sistema. Si ya está activado, quitalo con − y agregalo de nuevo."
+          : "Turn Colonia on in System Settings. If it is already on, remove it with − and add it again.",
       });
       n.on("click", () => openPrivacy(kind));
       n.show();
@@ -385,8 +385,8 @@ app.whenReady().then(() => {
       });
     },
   });
-  // Tests quit the app themselves (APX_QUIT_CONFIRM=off); a shutdown or a logout never waits on a question.
-  if (process.env.APX_QUIT_CONFIRM !== "off")
+  // Tests quit the app themselves (COLONIA_QUIT_CONFIRM=off); a shutdown or a logout never waits on a question.
+  if (process.env.COLONIA_QUIT_CONFIRM !== "off")
     askBeforeQuit = () => confirmQuit(win, { es: app.getLocale().startsWith("es"), runsCore: connector.runsCore() });
   powerMonitor.on("shutdown", () => {
     quitting = true;
@@ -395,7 +395,7 @@ app.whenReady().then(() => {
     quitting = true;
   });
 
-  // A newer APX: the panel and the app menu show it; the app downloads it and it goes in at the next restart.
+  // A newer Colonia: the panel and the app menu show it; the app downloads it and it goes in at the next restart.
   const updater = nativeUpdates(
     createDesktopUpdater({
       logFile: path.join(app.getPath("logs"), "update.log"),
@@ -425,7 +425,7 @@ app.whenReady().then(() => {
       appMenu(
         () => quick.toggle(false),
         () => void connector.change(),
-        () => void showAbout("persist:apx-ui", { coreUrl: base, language }),
+        () => void showAbout("persist:colonia-ui", { coreUrl: base, language }),
         updateMenu.item(s),
       ),
     );
@@ -452,7 +452,7 @@ app.whenReady().then(() => {
     armStop();
     link?.refresh();
     const error = quick.apply({ shortcut: prefs.shortcut, launchAtLogin: prefs.launchAtLogin === true });
-    if (error && Notification.isSupported()) new Notification({ title: "APX", body: error }).show();
+    if (error && Notification.isSupported()) new Notification({ title: "Colonia", body: error }).show();
   });
   // Computer use: what macOS allows, where to allow it, and live frames of the window an agent works on (panel only).
   ipcMain.handle("computer:permissions", (e) => (e.sender === panel.webContents ? computerPermissions() : undefined));
@@ -518,7 +518,7 @@ app.whenReady().then(() => {
   void connector.open();
 
   // Dev-only: `kill -USR2 <pid>` writes the panel, the visible tab and the slot so a script can compose them.
-  const captureDir = process.env.APX_CAPTURE_DIR;
+  const captureDir = process.env.COLONIA_CAPTURE_DIR;
   if (captureDir) {
     process.on("SIGUSR2", async () => {
       const fs = await import("node:fs");
@@ -530,7 +530,7 @@ app.whenReady().then(() => {
     });
   }
 
-  // Every minute: tabs nobody uses close, and APX says when it takes too much memory (and what takes it).
+  // Every minute: tabs nobody uses close, and Colonia says when it takes too much memory (and what takes it).
   const report = () => {
     const owners = host.processOwners();
     owners.set(panel.webContents.getOSProcessId(), { kind: "panel" });
@@ -559,7 +559,7 @@ app.whenReady().then(() => {
         .mkdir(path.dirname(memoryLog), { recursive: true })
         .then(() => fs.promises.appendFile(memoryLog, `${new Date().toISOString()} ${message}\n${lines}\n`))
         .catch(() => {});
-      if (Notification.isSupported()) new Notification({ title: "APX", body: message }).show();
+      if (Notification.isSupported()) new Notification({ title: "Colonia", body: message }).show();
     },
   });
   const tick = setInterval(() => {
@@ -572,7 +572,7 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => app.quit());
 
-/** APX's own pages never open child windows (they would carry the panel's preload): web links go to the system. */
+/** Colonia's own pages never open child windows (they would carry the panel's preload): web links go to the system. */
 function externalLinks(wc: WebContents): void {
   wc.setWindowOpenHandler(({ url }) => {
     if (isWebUrl(url)) void shell.openExternal(url);
@@ -593,7 +593,7 @@ function appMenu(
   const es = app.getLocale().startsWith("es");
   const about = {
     id: "about",
-    label: es ? "Acerca de APX" : "About APX",
+    label: es ? "Acerca de Colonia" : "About Colonia",
     click: openAbout,
   };
   const change = {
@@ -622,7 +622,7 @@ function appMenu(
         ]
       : [
           {
-            label: "APX",
+            label: "Colonia",
             submenu: [
               about,
               ...(update ? [update] : []),

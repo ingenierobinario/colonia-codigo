@@ -1,5 +1,5 @@
 // A step's template field: TemplateField with what this step can insert in it (values.ts).
-import { TemplateField, type TemplateFieldProps, type TemplateGroup } from "@apx/ui";
+import { TemplateField, type TemplateFieldProps, type TemplateGroup } from "@colonia/ui";
 import { useMemo } from "react";
 import { useT } from "../i18n/index.ts";
 import { SECRET_PATTERN, TEMPLATE_PATTERN, type TemplateFieldKind } from "./values.ts";

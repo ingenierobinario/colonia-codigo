@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Retakes the docs' screenshots: a core of its own (temp home and HOME, port 7480, file secrets, a scripted model),
 // the demo office from demo-seed.ts, and the panel in English in both themes, saved as src/assets/shots/*.webp.
-// Nothing here touches ~/.apx, the Keychain or a real service. Needs `pnpm build:web` at the repo root first.
+// Nothing here touches ~/.colonia, the Keychain or a real service. Needs `pnpm build:web` at the repo root first.
 //   node --no-warnings scripts/shots.ts [name…]     (no names: every shot)
 //   SHOTS_SERVE=1 node --no-warnings scripts/shots.ts  (only the demo core, to pair the phone app with)
 import { spawn } from "node:child_process";
@@ -26,14 +26,14 @@ if (!fs.existsSync(path.join(root, "apps/web/dist/index.html"))) {
   process.exit(1);
 }
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-shots-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-shots-"));
 // A HOME of its own: no browser profiles, Claude or Codex sessions, v1 or Tailscale of the owner's show up.
 const fakeHome = path.join(dir, "home");
 // The example extension is copied into that HOME, so the screen shows "~/work/…" and not this checkout's path.
 const extension = path.join(fakeHome, "work", "extensions", "daily-brief");
 fs.cpSync(path.join(root, "examples/extensions/daily-brief"), extension, { recursive: true });
 const world = { ...writeDemoWorld(fakeHome), extension };
-writeHomeSkills(path.join(dir, "apx"));
+writeHomeSkills(path.join(dir, "colonia"));
 // A tailscale that is not logged in, ahead of the real one in PATH (the core would show this machine's tailnet name).
 const bin = path.join(dir, "bin");
 fs.mkdirSync(bin, { recursive: true });
@@ -49,23 +49,23 @@ const child = spawn(process.execPath, ["--no-warnings", path.join(root, "apps/co
   env: {
     PATH: [bin, "/usr/bin", "/bin"].join(path.delimiter),
     HOME: fakeHome,
-    APX_PUBLIC_URL: "https://apx.example.com",
-    APX_HOME: path.join(dir, "apx"),
-    APX_PORT: String(port),
-    APX_SECRETS: "file",
-    APX_UPDATES: "off",
-    APX_RELEASES: "off",
-    APX_AGENT_NAME: "Nova",
-    APX_V1_HOME: path.join(dir, "no-v1"),
-    APX_V1_URL: "http://127.0.0.1:9",
-    APX_IMESSAGE: "off",
-    APX_HEADLESS: "off",
+    COLONIA_PUBLIC_URL: "https://colonia.example.com",
+    COLONIA_HOME: path.join(dir, "colonia"),
+    COLONIA_PORT: String(port),
+    COLONIA_SECRETS: "file",
+    COLONIA_UPDATES: "off",
+    COLONIA_RELEASES: "off",
+    COLONIA_AGENT_NAME: "Nova",
+    COLONIA_V1_HOME: path.join(dir, "no-v1"),
+    COLONIA_V1_URL: "http://127.0.0.1:9",
+    COLONIA_IMESSAGE: "off",
+    COLONIA_HEADLESS: "off",
     CLAUDE_CONFIG_DIR: world.claude,
     CODEX_HOME: world.codex,
-    APX_LLM_BASE_URL: llm.url,
-    APX_LLM_KEY: "demo",
-    APX_LLM_MODELS: models.join(","),
-    APX_TELEGRAM_API: tg.url,
+    COLONIA_LLM_BASE_URL: llm.url,
+    COLONIA_LLM_KEY: "demo",
+    COLONIA_LLM_MODELS: models.join(","),
+    COLONIA_TELEGRAM_API: tg.url,
   },
 });
 const coreLog = fs.createWriteStream(path.join(dir, "core.log"));
@@ -111,7 +111,7 @@ await new Promise((r) => setTimeout(r, 1500));
 // SHOTS_SERVE=1 keeps the demo office running for a device to pair with (the phone app's own screenshots).
 if (process.env.SHOTS_SERVE) {
   const { code } = await rpc<{ code: string }>("devices.pair_start");
-  log(`demo core on ${core}; pair with apx://pair?c=${code}&u=${encodeURIComponent(core)}  (Ctrl+C stops it)`);
+  log(`demo core on ${core}; pair with colonia://pair?c=${code}&u=${encodeURIComponent(core)}  (Ctrl+C stops it)`);
   process.on("SIGINT", () => void stop());
   process.on("SIGTERM", () => void stop());
   await new Promise(() => {});
@@ -269,9 +269,9 @@ const browser = await chromium.launch({ executablePath: process.env.SHOTS_CHROMI
 const prefs = async (p: Page, mode: "light" | "dark") =>
   p.addInitScript((mode) => {
     try {
-      localStorage.setItem("apx.mode", mode);
-      localStorage.setItem("apx.prefs", JSON.stringify({ language: "en", look: "minimal", displayName: "Alex" }));
-      localStorage.setItem("apx.corner", JSON.stringify({ discord: true, star: true }));
+      localStorage.setItem("colonia.mode", mode);
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en", look: "minimal", displayName: "Alex" }));
+      localStorage.setItem("colonia.corner", JSON.stringify({ discord: true, star: true }));
     } catch {}
   }, mode);
 // The demo lives in a temp folder; it shows the way a reader's own one would, under ~ (kept so across re-renders).

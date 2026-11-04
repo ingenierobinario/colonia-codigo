@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { Icons, type MenuEntry } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { Icons, type MenuEntry } from "@colonia/ui";
 import { setSurfaceFlags } from "../data/actions.ts";
 import { exportArtifact } from "../data/artifacts.ts";
 import { projectName } from "../data/identity.ts";
@@ -11,7 +11,7 @@ import { dropLive } from "./livePool.ts";
 import { shareEntries } from "./ShareMenu.tsx";
 import { openWidgetChat } from "./widgetChatActions.ts";
 
-/** The artifact as an .apxart file to keep, share or load in another APX: alone, or with what it remembers. */
+/** The artifact as an .coloniaart file to keep, share or load in another Colonia: alone, or with what it remembers. */
 export function downloadEntry(s: SurfaceSummary, t: typeof tr): MenuEntry {
   return {
     type: "submenu",

@@ -54,7 +54,7 @@ export function visibleMemoryRuns(store: Store, entries: LogEntry[], from: numbe
   return runs;
 }
 
-/** Before dependency metadata existed, the APX header and run time identify stale injected notes. */
+/** Before dependency metadata existed, the Colonia header and run time identify stale injected notes. */
 function legacySnapshot(
   store: Store,
   entry: LogEntry,
@@ -74,7 +74,7 @@ function legacySnapshot(
   }
   const end = item.content.length - suffix.length;
   if (start >= end) return entry;
-  // Legacy notes can contain blank lines and APX-like headers; only the original input proves their boundary.
+  // Legacy notes can contain blank lines and Colonia-like headers; only the original input proves their boundary.
   const body = item.content.slice(start, end);
   const ids = [...body.matchAll(/\[(mem_[a-z0-9]+)\]/g)].map((m) => m[1] as string);
   if (!ids.length) {

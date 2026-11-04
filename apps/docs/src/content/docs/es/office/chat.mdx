@@ -9,7 +9,7 @@ import { Aside, Steps, Tabs, TabItem, CardGrid, LinkCard } from "@astrojs/starli
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-En APX todo arranca con una conversación. Le escribís a un agente, trabaja (lee, navega, corre comandos, delega) y
+En Colonia todo arranca con una conversación. Le escribís a un agente, trabaja (lee, navega, corre comandos, delega) y
 ves cada paso en el mismo lugar. Esta página cubre el chat del panel: el Inbox, el cuadro de redacción, los comandos
 que podés escribir y el panel lateral que muestra lo que está haciendo el agente.
 
@@ -53,7 +53,7 @@ Un ejemplo. Lucía es la PM de Acme Store:
 
 Desde la terminal, la misma conversación está a un comando:
 
-<Terminal command={`apx chat "¿Qué está trabando el lanzamiento de primavera?" --agent <id-de-lucia>`}>{`# sin --agent va a Home, tu secretaria`}</Terminal>
+<Terminal command={`colonia chat "¿Qué está trabando el lanzamiento de primavera?" --agent <id-de-lucia>`}>{`# sin --agent va a Home, tu secretaria`}</Terminal>
 
 ## El cuadro de redacción
 
@@ -113,7 +113,7 @@ Las skills se explican en [Skills](/es/extend/skills/); los modelos y el esfuerz
 Cada mensaje tiene sus acciones al pasar el mouse:
 
 - **Editar mensaje** en uno tuyo lo reescribe y lo vuelve a mandar. Lo que vino después se borra (el agente lo
-  olvida), y APX te pregunta antes.
+  olvida), y Colonia te pregunta antes.
 - **Regenerar respuesta** en una respuesta del agente vuelve a correr ese turno.
 - **Bifurcar en un chat nuevo** copia la conversación hasta ese mensaje en un chat nuevo, para probar otro camino sin
   perder este.
@@ -171,18 +171,18 @@ lo tuyo, lo de tus contactos y lo de tus agentes. Cada tarjeta dice de qué proy
 mandó y cuándo. Filtrá por tipo (Imágenes, Videos, Audios, Documentos) o por proyecto, buscá por nombre y ordená de
 más nuevo a más viejo, al revés o por nombre.
 
-Las tarjetas de video muestran el primer cuadro del video cuando la computadora donde corre APX tiene ffmpeg. Tocá una
+Las tarjetas de video muestran el primer cuadro del video cuando la computadora donde corre Colonia tiene ffmpeg. Tocá una
 tarjeta para ver el archivo sobre la lista, con fondo oscuro y sus datos al costado: la foto, el video o el audio para
 reproducir, un PDF o un documento de texto. Las flechas (o ← →) pasan a los otros, y al cerrarlo (o con Esc) la lista
 queda como estaba. Los botones de la tarjeta y los de al lado del archivo te llevan al chat en el mensaje donde se
-mandó, lo descargan, lo muestran en su carpeta en la computadora donde corre APX o copian su ruta.
+mandó, lo descargan, lo muestran en su carpeta en la computadora donde corre Colonia o copian su ruta.
 
 Los archivos con los que tus agentes solo trabajaron durante una tarea (capturas, archivos temporales) no aparecen:
 solo lo que muestra un mensaje.
 
 ## Chat rápido desde la bandeja
 
-En la app de escritorio, el ícono de APX en la barra de menú (o la bandeja del sistema) abre **Chat rápido**: una
+En la app de escritorio, el ícono de Colonia en la barra de menú (o la bandeja del sistema) abre **Chat rápido**: una
 ventanita con el chat de Home, desde cualquier app. El atajo global se configura en Configuración › Escritorio
 (Alt+Space por defecto). Cerrarla solo la esconde; **Abrir en la app** lleva la conversación a la ventana principal.
 Mirá [App de escritorio](/es/devices/desktop/).

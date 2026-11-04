@@ -1,6 +1,6 @@
-import type { CallModel, RoutineAction } from "@apx/protocol";
-import { TURN_STEPS } from "@apx/protocol/client";
-import { Button, Dialog, Field, Icons, Input, SegmentedControl, Select, SuggestTextarea, Switch } from "@apx/ui";
+import type { CallModel, RoutineAction } from "@colonia/protocol";
+import { TURN_STEPS } from "@colonia/protocol/client";
+import { Button, Dialog, Field, Icons, Input, SegmentedControl, Select, SuggestTextarea, Switch } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
 import { secretary } from "../data/identity.ts";
@@ -193,7 +193,7 @@ export function RoutineEditor({ draft, onClose }: { draft: RoutineDraft; onClose
               className="rtedit__code"
               aria-label={t("routines.post")}
               rows={2}
-              placeholder={'echo "$APX_LLM_OUTPUT" >> report.md'}
+              placeholder={'echo "$COLONIA_LLM_OUTPUT" >> report.md'}
               value={d.post_command}
               onValueChange={(post_command) => set({ post_command })}
               suggestions={postVars(t)}

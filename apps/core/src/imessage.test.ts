@@ -8,7 +8,7 @@ import { callTool, inputsOrEnd, say, scriptedLlm, startCore } from "./engine/tes
 import { appleDate, attributedText, type IMessageOps, systemIMessage } from "./imessage.ts";
 import { removeDir } from "./testkit/platform.ts";
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-imessage-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-imessage-"));
 const db = path.join(dir, "chat.db");
 const NS = 1_000_000_000;
 
@@ -20,7 +20,7 @@ const archived = (text: string) => {
 };
 
 before(() => {
-  // Messages' own tables, as much of them as APX reads.
+  // Messages' own tables, as much of them as Colonia reads.
   const d = new DatabaseSync(db);
   d.exec(`CREATE TABLE handle (ROWID INTEGER PRIMARY KEY, id TEXT);
     CREATE TABLE message (ROWID INTEGER PRIMARY KEY, text TEXT, attributedBody BLOB, is_from_me INTEGER,

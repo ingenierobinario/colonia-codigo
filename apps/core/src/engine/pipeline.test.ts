@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { Params } from "@apx/protocol";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import type { Params } from "@colonia/protocol";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import { callsModel, runStep, withPreOutput } from "./pipeline.ts";
 import { say, scriptedLlm, startCore } from "./testkit.ts";
 
@@ -18,7 +18,7 @@ after(async () => {
   await env.cleanup();
 });
 
-const POST = `printf '%s|%s|%s|%s' "$APX_STATUS" "$APX_SKIPPED" "$APX_PRE_OUTPUT" "$APX_LLM_OUTPUT" > post.txt`;
+const POST = `printf '%s|%s|%s|%s' "$COLONIA_STATUS" "$COLONIA_SKIPPED" "$COLONIA_PRE_OUTPUT" "$COLONIA_LLM_OUTPUT" > post.txt`;
 
 async function runRoutine(o: { pre: string; call_model: "always" | "output" | "fails" | "never" }) {
   const r = await env.client.call("routines.set", {
@@ -78,7 +78,7 @@ test("nothing printed and 'if output': the model is not called, the run still en
 });
 
 test("only the owner sets commands; credentials stay out of their environment", async () => {
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   const routine = {
     name: "x",
     agent: "superagent",
@@ -87,7 +87,7 @@ test("only the owner sets commands; credentials stay out of their environment", 
   } as const;
   await assert.rejects(
     agent.call("routines.set", { ...routine, pre_command: "id" }),
-    (e: unknown) => e instanceof ApxError && /reserved to the owner/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /reserved to the owner/.test(e.message),
   );
   process.env.ACME_API_TOKEN = "never-printed";
   try {

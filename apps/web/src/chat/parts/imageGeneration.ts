@@ -1,4 +1,4 @@
-import type { Part, RunState } from "@apx/protocol";
+import type { Part, RunState } from "@colonia/protocol";
 
 export function isGeneratingImage(part: Part, state: RunState | undefined): boolean {
   return (

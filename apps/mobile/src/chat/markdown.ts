@@ -19,8 +19,8 @@ const NUMBERED = /^\s*(\d+)[.)]\s+(.*)$/;
 const HEADING = /^(#{1,6})\s+(.*)$/;
 const QUOTE = /^\s*>\s?(.*)$/;
 
-/** A link into the desktop panel ([Config › Desktop](apx:settings/desktop)): the phone keeps its label. */
-const APP_LINK = /\[([^\]\n]+)\]\(apx:[^)\s]*\)/gi;
+/** A link into the desktop panel ([Config › Desktop](colonia:settings/desktop)): the phone keeps its label. */
+const APP_LINK = /\[([^\]\n]+)\]\(colonia:[^)\s]*\)/gi;
 
 /** The common markdown agents write, as blocks; anything else stays plain text. */
 export function parseMarkdown(source: string): Block[] {

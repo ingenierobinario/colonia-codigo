@@ -1,4 +1,4 @@
-// apx_settings, the owner's team and its work: agents beyond what agent_set does (archived ones, copies, templates,
+// colonia_settings, the owner's team and its work: agents beyond what agent_set does (archived ones, copies, templates,
 // one agent's limits), routines, agent profiles, tasks, chats and imported sessions. A chat's write policy stays the
 // owner's, like an agent's autonomy (DECISIONS.md#d-060).
 import { readTemplates, singlesOf } from "../apc/templates.ts";
@@ -51,7 +51,7 @@ export const TEAM: Readonly<Record<string, Setting>> = {
         .join("\n") || "no archived agents.",
   },
   "agents.templates": {
-    does: "the agents APX offers to add to a project, by template id",
+    does: "the agents Colonia offers to add to a project, by template id",
     read: (_p, { templates }) =>
       singlesOf(readTemplates(templates).files)
         .map(
@@ -143,7 +143,7 @@ export const TEAM: Readonly<Record<string, Setting>> = {
     },
   },
   "profiles.remove": {
-    does: "remove an installed agent profile (id); APX's own stay",
+    does: "remove an installed agent profile (id); Colonia's own stay",
     named: ["id"],
     says: (p) => `Remove the agent profile ${str(p.id)}`,
   },
@@ -172,9 +172,9 @@ export const TEAM: Readonly<Record<string, Setting>> = {
     },
   },
   "sessions.import": {
-    does: "bring Claude Code or Codex sessions of a folder (engine, cwd) into APX as chats of its project",
+    does: "bring Claude Code or Codex sessions of a folder (engine, cwd) into Colonia as chats of its project",
     named: ["engine", "cwd"],
-    says: (p) => `Bring the ${str(p.engine)} sessions of ${str(p.cwd)} into APX`,
+    says: (p) => `Bring the ${str(p.engine)} sessions of ${str(p.cwd)} into Colonia`,
   },
   "sessions.adopt": {
     does: "hand an imported chat (thread) to another agent of its project (agent)",

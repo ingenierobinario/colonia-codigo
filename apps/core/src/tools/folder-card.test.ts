@@ -28,7 +28,7 @@ let repo: string;
 let project: string;
 before(async () => {
   env = await startCore({ llm });
-  northwind = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-northwind-")));
+  northwind = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-northwind-")));
   repo = path.join(northwind, "app");
   fs.mkdirSync(path.join(northwind, "docs"), { recursive: true });
   fs.writeFileSync(path.join(northwind, "docs", "plan.md"), "the plan\n");
@@ -36,7 +36,7 @@ before(async () => {
   fs.writeFileSync(path.join(repo, "readme.md"), "app\n");
   project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   await env.client.call("agents.create", { slug: "fausto", name: "Fausto" });
-  // Asking before a read outside is manual mode's; auto reads anywhere but APX's home (DECISIONS.md#d-106).
+  // Asking before a read outside is manual mode's; auto reads anywhere but Colonia's home (DECISIONS.md#d-106).
   await env.client.call("agents.update", { agent: "fausto", autonomy: "manual" });
 });
 after(async () => {
@@ -130,7 +130,7 @@ test("total autonomy reads outside without a card and adds nothing", async () =>
   }
 });
 
-test("total autonomy reads and changes any folder, in a chat with no project too, never APX's own", async () => {
+test("total autonomy reads and changes any folder, in a chat with no project too, never Colonia's own", async () => {
   await env.client.call("agents.update", { agent: "fausto", autonomy: "total" });
   const made = path.join(northwind, "docs", "made.md");
   try {
@@ -146,8 +146,8 @@ test("total autonomy reads and changes any folder, in a chat with no project too
       assert.equal(file.input, undefined);
       assert.equal(fs.readFileSync(made, "utf8"), "from file_write\n", `in a project: ${inProject}`);
       fs.rmSync(made);
-      const apx = await run({ name: "file_read", args: { path: path.join(env.home, "apx.db") } }, { inProject });
-      assert.match(apx.said, /APX's own folder/);
+      const colonia = await run({ name: "file_read", args: { path: path.join(env.home, "colonia.db") } }, { inProject });
+      assert.match(colonia.said, /Colonia's own folder/);
     }
     assert.equal(folders(), undefined);
     // The owner's read-only folders keep their rule.
@@ -160,7 +160,7 @@ test("total autonomy reads and changes any folder, in a chat with no project too
   }
 });
 
-test("manual in a chat with no project asks for that call instead of refusing; APX's own folder raises no card", async () => {
+test("manual in a chat with no project asks for that call instead of refusing; Colonia's own folder raises no card", async () => {
   const alone = await run(
     { name: "shell", args: { command: `ls ${sh(northwind)}` } },
     { inProject: false, decision: "approve" },
@@ -169,12 +169,12 @@ test("manual in a chat with no project asks for that call instead of refusing; A
   // No project to keep it in: only this time.
   assert.deepEqual(alone.input?.approval_scopes, ["once"]);
   assert.match(alone.said, /exit 0[\s\S]*docs/);
-  const apx = await run({ name: "file_read", args: { path: path.join(env.home, "apx.db") } });
-  assert.equal(apx.input, undefined);
-  assert.match(apx.said, /APX's own folder/);
+  const colonia = await run({ name: "file_read", args: { path: path.join(env.home, "colonia.db") } });
+  assert.equal(colonia.input, undefined);
+  assert.match(colonia.said, /Colonia's own folder/);
 });
 
-test("a folder that cannot be kept (a home holding APX's) is offered for this call only", async () => {
+test("a folder that cannot be kept (a home holding Colonia's) is offered for this call only", async () => {
   const thread = (await env.client.call("threads.create", { kind: "loose", agent_id: "fausto", project_id: project }))
     .id;
   const call = { name: "shell", args: { command: `ls ${sh(path.dirname(env.home))}` } };
@@ -199,7 +199,7 @@ test("the folder holding the project is lent for one call, never kept: it would 
 
 test("auto reads another project's file and runs a reading command there with no card", async () => {
   await env.client.call("agents.update", { agent: "fausto", autonomy: "auto" });
-  const other = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-acme-")));
+  const other = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-acme-")));
   fs.writeFileSync(path.join(other, "brief.md"), "acme brief\n");
   try {
     for (const inProject of [true, false]) {
@@ -210,9 +210,9 @@ test("auto reads another project's file and runs a reading command there with no
       assert.equal(ls.input, undefined);
       assert.match(ls.said, /exit 0[\s\S]*brief\.md/);
     }
-    // APX's own folder stays closed, and nothing was kept as a read-only folder.
-    const apx = await run({ name: "file_read", args: { path: path.join(env.home, "apx.db") } });
-    assert.match(apx.said, /APX's own folder/);
+    // Colonia's own folder stays closed, and nothing was kept as a read-only folder.
+    const colonia = await run({ name: "file_read", args: { path: path.join(env.home, "colonia.db") } });
+    assert.match(colonia.said, /Colonia's own folder/);
     assert.equal(folders(), undefined);
   } finally {
     await removeDir(other);
@@ -246,9 +246,9 @@ test("auto asks before writing outside its project; once never keeps the folder"
   }
 });
 
-test("auto changes the owner's other projects and their worktrees with no card, never one in APX's home", async () => {
+test("auto changes the owner's other projects and their worktrees with no card, never one in Colonia's home", async () => {
   await env.client.call("agents.update", { agent: "fausto", autonomy: "auto" });
-  const acme = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-acme-")));
+  const acme = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-acme-")));
   const site = path.join(acme, "site");
   const tree = path.join(acme, "site-fix");
   fs.mkdirSync(site);
@@ -268,8 +268,8 @@ test("auto changes the owner's other projects and their worktrees with no card, 
     const cmd = await run({ name: "shell", args: { command: "touch fixed.txt", cwd: tree } });
     assert.equal(cmd.input, undefined, cmd.said);
     assert.ok(fs.existsSync(path.join(tree, "fixed.txt")));
-    const apx = await run({ name: "file_write", args: { path: path.join(inHome, "x.md"), content: "x" } });
-    assert.match(apx.said, /APX's own folder/);
+    const colonia = await run({ name: "file_write", args: { path: path.join(inHome, "x.md"), content: "x" } });
+    assert.match(colonia.said, /Colonia's own folder/);
     assert.equal(fs.existsSync(path.join(inHome, "x.md")), false);
   } finally {
     await removeDir(acme);

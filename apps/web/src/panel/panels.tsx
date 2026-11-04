@@ -1,4 +1,4 @@
-import { Icons } from "@apx/ui";
+import { Icons } from "@colonia/ui";
 import type { ReactNode } from "react";
 import type { MessageKey } from "../i18n/index.ts";
 import type { PanelKind } from "../shell/nav.ts";

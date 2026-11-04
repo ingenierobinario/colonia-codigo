@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { ChangedFile, Part } from "@apx/protocol";
+import type { ChangedFile, Part } from "@colonia/protocol";
 
 const run = promisify(execFile);
 const MAX_FILES = 50;
@@ -77,7 +77,7 @@ export async function gitChanges(cwd: string): Promise<Extract<Part, { type: "ch
  * outside a work tree or when git cannot. A private index leaves the owner's staging area alone.
  */
 export async function gitSnapshot(cwd: string): Promise<string | undefined> {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-snapshot-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-snapshot-"));
   const env = { GIT_INDEX_FILE: path.join(dir, "index") };
   try {
     // Outside this folder the snapshot is HEAD, so only what changes here can differ.
@@ -161,7 +161,7 @@ export async function gitDiff(cwd: string, file: string): Promise<{ diff: string
 /** A bounded turn snapshot, independent of the folder's repository or subsequent file changes. */
 export async function textDiff(before: string, after: string, limit = 64_000, timeout = 1500) {
   if (before === after) return { diff: "", truncated: false, added: 0, removed: 0 };
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-edit-diff-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-edit-diff-"));
   try {
     fs.writeFileSync(path.join(dir, "before"), before, { mode: 0o600 });
     fs.writeFileSync(path.join(dir, "after"), after, { mode: 0o600 });

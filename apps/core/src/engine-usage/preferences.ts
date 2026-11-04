@@ -1,4 +1,4 @@
-import type { EngineUsageReport } from "@apx/protocol";
+import type { EngineUsageReport } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { cachedEngineUsage } from "./cache.ts";
 

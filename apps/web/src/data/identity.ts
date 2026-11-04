@@ -1,5 +1,5 @@
-import type { Agent, Project, Thread } from "@apx/protocol";
-import { BLOB_NAMES, type TileTone } from "@apx/ui";
+import type { Agent, Project, Thread } from "@colonia/protocol";
+import { BLOB_NAMES, type TileTone } from "@colonia/ui";
 import { data } from "./state.ts";
 
 function hash(s: string): number {

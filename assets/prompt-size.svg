@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="920" height="600" viewBox="0 0 920 600" role="img" aria-labelledby="t d">
-<title id="t">Prompt size per model call: APX v2 vs APX v1, Hermes and OpenClaw</title>
-<desc id="d">Tokens of system prompt and tool definitions in the first model call of a fresh install. APX v2: 8.2k (1467 system, 6728 tools); Hermes: 13.0k (3956 system, 9070 tools); APX v1 (Telegram, CLI, desktop): 13.2k (4626 system, 8609 tools); OpenClaw: 13.2k (9800 system, 3411 tools); APX v1 (web chat, API, routines): 23.6k (4115 system, 19441 tools).</desc>
+<title id="t">Prompt size per model call: Colonia v2 vs Colonia v1, Hermes and OpenClaw</title>
+<desc id="d">Tokens of system prompt and tool definitions in the first model call of a fresh install. Colonia v2: 8.2k (1467 system, 6728 tools); Hermes: 13.0k (3956 system, 9070 tools); Colonia v1 (Telegram, CLI, desktop): 13.2k (4626 system, 8609 tools); OpenClaw: 13.2k (9800 system, 3411 tools); Colonia v1 (web chat, API, routines): 23.6k (4115 system, 19441 tools).</desc>
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.2" height="6" fill="#171a22" fill-opacity="0.55"/></pattern><linearGradient id="bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c8cff"/><stop offset="1" stop-color="#4fd1a5"/></linearGradient></defs>
 <rect width="920" height="600" rx="22" fill="#171a22"/>
 <rect x="40" y="40" width="64" height="5" rx="2.5" fill="url(#bar)"/>
 <text x="40" y="84" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="28" font-weight="700" fill="#f2f4f8" text-anchor="start">What every model call carries</text>
 <text x="40" y="112" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="15" font-weight="400" fill="#8a93a6" text-anchor="start">System prompt and tool definitions in the first call of a fresh install, default settings. Tokens (o200k).</text>
 <rect x="40" y="138" width="12" height="12" rx="3" fill="#1fa874"/>
-<text x="58" y="148" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#c9cfdb" text-anchor="start">APX v2</text>
+<text x="58" y="148" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#c9cfdb" text-anchor="start">Colonia v2</text>
 <rect x="124.4" y="138" width="12" height="12" rx="3" fill="#1fa874"/>
 <rect x="124.4" y="138" width="12" height="12" rx="3" fill="url(#hatch)"/>
-<text x="142.4" y="148" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#c9cfdb" text-anchor="start">APX v1</text>
+<text x="142.4" y="148" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#c9cfdb" text-anchor="start">Colonia v1</text>
 <rect x="208.8" y="138" width="12" height="12" rx="3" fill="#3b8bea"/>
 <text x="226.8" y="148" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#c9cfdb" text-anchor="start">Hermes</text>
 <rect x="293.20000000000005" y="138" width="12" height="12" rx="3" fill="#ec5a26"/>
@@ -31,7 +31,7 @@
 <text x="655.0" y="522" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="middle">20k</text>
 <line x1="755.0" y1="172" x2="755.0" y2="502" stroke="#ffffff" stroke-opacity="0.06"/>
 <text x="755.0" y="522" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="middle">25k</text>
-<text x="40" y="195.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#f2f4f8" text-anchor="start">APX v2</text>
+<text x="40" y="195.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#f2f4f8" text-anchor="start">Colonia v2</text>
 <text x="40" y="213.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="start">45 tools</text>
 <rect x="255" y="182" width="29.3" height="24" fill="#1fa874"/>
 <path d="M286.3 182 h128.6 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-128.6 z" fill="#1fa874" fill-opacity="0.5"/>
@@ -43,7 +43,7 @@
 <path d="M335.1 248 h176.4 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-176.4 z" fill="#3b8bea" fill-opacity="0.5"/>
 <text x="525.5" y="265.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#f2f4f8" text-anchor="start">13.0k</text>
 <text x="581.5" y="265.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="start">4.0k + 9.1k</text>
-<text x="40" y="327.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#f2f4f8" text-anchor="start">APX v1</text>
+<text x="40" y="327.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#f2f4f8" text-anchor="start">Colonia v1</text>
 <text x="40" y="345.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="start">Telegram, CLI, desktop · 39 tools</text>
 <rect x="255" y="314" width="91.5" height="24" fill="#1fa874"/>
 <rect x="255" y="314" width="91.5" height="24" fill="url(#hatch)"/>
@@ -57,7 +57,7 @@
 <path d="M452.0 380 h63.2 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-63.2 z" fill="#ec5a26" fill-opacity="0.5"/>
 <text x="529.2" y="397.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#f2f4f8" text-anchor="start">13.2k</text>
 <text x="585.2" y="397.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="start">9.8k + 3.4k</text>
-<text x="40" y="459.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#f2f4f8" text-anchor="start">APX v1</text>
+<text x="40" y="459.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#f2f4f8" text-anchor="start">Colonia v1</text>
 <text x="40" y="477.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="start">web chat, API, routines · 102 tools</text>
 <rect x="255" y="446" width="81.3" height="24" fill="#1fa874"/>
 <rect x="255" y="446" width="81.3" height="24" fill="url(#hatch)"/>
@@ -65,6 +65,6 @@
 <path d="M338.3 446 h383.8 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-383.8 z" fill="url(#hatch)"/>
 <text x="736.1" y="463.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#f2f4f8" text-anchor="start">23.6k</text>
 <text x="792.1" y="463.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8a93a6" text-anchor="start">4.1k + 19.4k</text>
-<text x="40" y="554" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#8a93a6" text-anchor="start">Hermes and OpenClaw send their other tools only when searched for; APX v2 does the same for MCP servers (mcp_search).</text>
-<text x="40" y="574" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#8a93a6" text-anchor="start">Each app's own prompt builder: APX v2 on 2026-10-20; APX v1 1.124.0, OpenClaw 2026.9.5, Hermes Agent on 2026-10-07.</text>
+<text x="40" y="554" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#8a93a6" text-anchor="start">Hermes and OpenClaw send their other tools only when searched for; Colonia v2 does the same for MCP servers (mcp_search).</text>
+<text x="40" y="574" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#8a93a6" text-anchor="start">Each app's own prompt builder: Colonia v2 on 2026-10-20; Colonia v1 1.124.0, OpenClaw 2026.9.5, Hermes Agent on 2026-10-07.</text>
 </svg>

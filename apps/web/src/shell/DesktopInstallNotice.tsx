@@ -1,5 +1,5 @@
-import type { DesktopInstallStatus } from "@apx/protocol";
-import { Button, IconButton, Icons, NavItem } from "@apx/ui";
+import type { DesktopInstallStatus } from "@colonia/protocol";
+import { Button, IconButton, Icons, NavItem } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { client, keyStore } from "../data/client.ts";
 import { useSetup } from "../data/setup.ts";
@@ -7,12 +7,12 @@ import { useT } from "../i18n/index.ts";
 import "../styles/desktop-install.css";
 
 const localBrowser = () =>
-  !window.apxDesktop &&
+  !window.coloniaDesktop &&
   ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname) &&
   !/Android|iPhone|iPad/i.test(navigator.userAgent);
 const busy = (s?: DesktopInstallStatus) => s && ["downloading", "installing", "opening"].includes(s.phase);
 const showOutcome = (next: DesktopInstallStatus) => next.phase === "failed" || next.phase === "ready";
-const DISMISSED = "apx.desktop-install.dismissed";
+const DISMISSED = "colonia.desktop-install.dismissed";
 const readDismissed = () => {
   try {
     return keyStore()?.getItem(DISMISSED) === "1";

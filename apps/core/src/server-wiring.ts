@@ -5,7 +5,7 @@ import fs from "node:fs";
 import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { BROWSER_CAP } from "@apx/protocol";
+import { BROWSER_CAP } from "@colonia/protocol";
 import type { Bus } from "./bus.ts";
 import type { CoreConfig } from "./config.ts";
 import { nativeApproval } from "./domain/approvals.ts";
@@ -227,7 +227,7 @@ type HandlerDeps = {
   app: Omit<Parameters<typeof appHandlers>[0], "store" | "secrets" | "services">;
   apc: Parameters<typeof agentHandlers>[1];
   templateRoots: Parameters<typeof teamHandlers>[2];
-  /** Where profiles are found: APX's own, then the owner's installed ones. */
+  /** Where profiles are found: Colonia's own, then the owner's installed ones. */
   profileRoots: readonly ProfileRoot[];
   engines: Parameters<typeof agentHandlers>[2];
   /** Every built-in tool: what an agent's editor offers. */
@@ -236,7 +236,7 @@ type HandlerDeps = {
   desktopInstaller: Parameters<typeof desktopInstallHandlers>[0];
   /** Where Claude Code and Codex keep the owner's own sessions. */
   native: Parameters<typeof sessionHandlers>[1];
-  /** Other agent apps' folders that get APX's skills for them. */
+  /** Other agent apps' folders that get Colonia's skills for them. */
   runtimeHomes: Parameters<typeof resourceHandlers>[0]["runtimeHomes"];
   updates: Updates;
   telemetry: Telemetry;
@@ -254,7 +254,7 @@ type HandlerDeps = {
   integrationFetch?: typeof fetch | undefined;
   /** The owner's shells in a chat's folder. */
   terminals: Parameters<typeof terminalHandlers>[1];
-  /** What the computer has and what APX takes of it. */
+  /** What the computer has and what Colonia takes of it. */
   usage: Parameters<typeof usageHandlers>[0];
 };
 
@@ -393,7 +393,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
   };
 }
 
-/** The panel built by `pnpm --filter @apx/web build`, when present next to the core in the workspace. */
+/** The panel built by `pnpm --filter @colonia/web build`, when present next to the core in the workspace. */
 function workspaceWebDist(): string | undefined {
   const dist = path.resolve(import.meta.dirname, "../../web/dist");
   return fs.existsSync(path.join(dist, "index.html")) ? dist : undefined;
@@ -442,7 +442,7 @@ export function exposedOrigins(config: Pick<CoreConfig, "host" | "publicUrl">, p
     try {
       origins.add(new URL(u).origin);
     } catch {
-      // A malformed APX_PUBLIC_URL allows nothing extra.
+      // A malformed COLONIA_PUBLIC_URL allows nothing extra.
     }
   }
   return [...origins];
@@ -503,7 +503,7 @@ export async function listen(
   });
   const { port } = server.address() as AddressInfo;
   for (const origin of originsFor(`http://${config.host}:${port}`, config.allowedOrigins)) allowedOrigins.add(origin);
-  // Known once bound: a test or an APX_PORT=0 core only learns its port here.
+  // Known once bound: a test or an COLONIA_PORT=0 core only learns its port here.
   for (const o of exposedOrigins(config, port)) allowedOrigins.add(o);
   return {
     port,

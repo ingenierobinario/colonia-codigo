@@ -11,7 +11,7 @@ import {
 import { createPortal } from "react-dom";
 import { cx } from "../cx";
 import { Icons } from "../icons";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 import { Textarea, type TextareaProps } from "./Textarea";
 
 /** The list's height at most (its CSS max-height): below the field when it fits there, above otherwise. */
@@ -96,7 +96,7 @@ function mirror(text: string, pattern: RegExp, secret: RegExp | undefined): Reac
     if (!m[0]) continue;
     out.push(text.slice(last, m.index));
     out.push(
-      <mark key={m.index} className={cx("apx-tfield__chip", secret?.test(m[0]) && "is-secret")}>
+      <mark key={m.index} className={cx("colonia-tfield__chip", secret?.test(m[0]) && "is-secret")}>
         {m[0]}
       </mark>,
     );
@@ -131,7 +131,7 @@ export function TemplateField({
   const back = useRef<HTMLDivElement>(null);
   const pending = useRef<number | undefined>(undefined);
   const listId = useId();
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   const [place, setPlace] = useState<CSSProperties>();
   const [caret, setCaret] = useState(0);
   const [active, setActive] = useState(0);
@@ -237,8 +237,8 @@ export function TemplateField({
     .map((g) => ({ label: g.label, values: matches.filter((m) => m.group === g.label) }))
     .filter((g) => g.values.length);
   return (
-    <div className={cx("apx-tfield", singleLine && "is-single", className)}>
-      <div ref={back} className="apx-tfield__mirror apx-textarea" aria-hidden="true">
+    <div className={cx("colonia-tfield", singleLine && "is-single", className)}>
+      <div ref={back} className="colonia-tfield__mirror colonia-textarea" aria-hidden="true">
         {mirror(value, pattern, secretPattern)}
       </div>
       <Textarea
@@ -246,7 +246,7 @@ export function TemplateField({
         rows={singleLine ? 1 : rows}
         ref={ref}
         value={value}
-        className="apx-tfield__input"
+        className="colonia-tfield__input"
         aria-controls={open ? listId : undefined}
         onChange={(e) => {
           const text = e.currentTarget.value;
@@ -266,7 +266,7 @@ export function TemplateField({
       />
       <button
         type="button"
-        className="apx-tfield__pick"
+        className="colonia-tfield__pick"
         aria-label={pickLabel}
         title={pickLabel}
         // Opened before the textarea loses focus, at the caret it had.
@@ -284,11 +284,11 @@ export function TemplateField({
       {open &&
         place &&
         createPortal(
-          <div id={listId} role="listbox" aria-label={pickLabel} className="apx-tfield__list" style={place}>
-            {shownGroups.length === 0 && emptyText && <div className="apx-tfield__empty">{emptyText}</div>}
+          <div id={listId} role="listbox" aria-label={pickLabel} className="colonia-tfield__list" style={place}>
+            {shownGroups.length === 0 && emptyText && <div className="colonia-tfield__empty">{emptyText}</div>}
             {shownGroups.map((g) => (
-              <fieldset key={g.label} className="apx-tfield__set">
-                <legend className="apx-tfield__group">{g.label}</legend>
+              <fieldset key={g.label} className="colonia-tfield__set">
+                <legend className="colonia-tfield__group">{g.label}</legend>
                 {g.values.map((v) => {
                   index++;
                   const i = index;
@@ -299,16 +299,16 @@ export function TemplateField({
                       role="option"
                       tabIndex={-1}
                       aria-selected={i === active}
-                      className={cx("apx-tfield__item", i === active && "is-active", v.run && "is-action")}
+                      className={cx("colonia-tfield__item", i === active && "is-active", v.run && "is-action")}
                       onMouseDown={(e) => {
                         e.preventDefault();
                         pick(v);
                       }}
                     >
                       {v.run ? <Icons.Plus size={12} /> : v.secret ? <Icons.KeyRound size={12} /> : null}
-                      <span className="apx-tfield__label">{v.label}</span>
-                      {v.hint && <span className="apx-tfield__hint">{v.hint}</span>}
-                      {!v.run && <code className={cx("apx-tfield__chip", v.secret && "is-secret")}>{v.insert}</code>}
+                      <span className="colonia-tfield__label">{v.label}</span>
+                      {v.hint && <span className="colonia-tfield__hint">{v.hint}</span>}
+                      {!v.run && <code className={cx("colonia-tfield__chip", v.secret && "is-secret")}>{v.insert}</code>}
                     </button>
                   );
                 })}

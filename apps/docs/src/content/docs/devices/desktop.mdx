@@ -1,6 +1,6 @@
 ---
 title: Desktop app
-description: The APX app for macOS, Windows and Linux, with the panel, a quick chat, the browser your agents drive, and a choice of which APX it connects to.
+description: The Colonia app for macOS, Windows and Linux, with the panel, a quick chat, the browser your agents drive, and a choice of which Colonia it connects to.
 sidebar:
   order: 1
 ---
@@ -8,7 +8,7 @@ sidebar:
 import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 import Shot from "../../../components/Shot.astro";
 
-The desktop app is the easiest way to live with APX. Its window is the panel, the same one the core serves to a
+The desktop app is the easiest way to live with Colonia. Its window is the panel, the same one the core serves to a
 browser. Around it, the app adds three things a web page can't: an icon in the menu bar with a quick chat, a real
 browser your agents can drive, and (on macOS and Windows) the option to let agents use your computer.
 
@@ -16,18 +16,18 @@ browser your agents can drive, and (on macOS and Windows) the option to let agen
 
 The main window is the panel: Inbox, Tasks, Projects, Settings and everything else, as described in the rest of
 these docs. Closing it only hides it. Browser tabs and the link to the core stay alive, and the Dock, the menu-bar
-icon or opening APX again bring the window back. **Quit** is what ends it.
+icon or opening Colonia again bring the window back. **Quit** is what ends it.
 
-Only one APX runs at a time: opening it again brings the running one to the front.
+Only one Colonia runs at a time: opening it again brings the running one to the front.
 
 ## The menu-bar icon and the quick chat
 
-APX puts an icon in the menu bar (the system tray on Windows and Linux):
+Colonia puts an icon in the menu bar (the system tray on Windows and Linux):
 
 - **One click** opens the quick chat, a small 400×600 window under the icon with your Home chat (the secretary).
   It hides again when it loses focus.
 - **Double click** opens the main window.
-- **Right click** shows the menu: **Open APX**, **Quick chat** and **Quit APX**.
+- **Right click** shows the menu: **Open Colonia**, **Quick chat** and **Quit Colonia**.
 
 When something is waiting for you, the icon gets a badge with the count (on a Mac, also next to the icon and on the
 Dock).
@@ -43,8 +43,8 @@ These settings live in the core but only apply inside the desktop app (in a plai
 
 | Setting | What it does |
 |---|---|
-| **Shortcut** | The global shortcut for the quick chat. Click, then press the keys. **Remove** leaves it without one. If another app already uses those keys, APX tells you. |
-| **Start with the computer** | APX opens when you log in. On by default. |
+| **Shortcut** | The global shortcut for the quick chat. Click, then press the keys. **Remove** leaves it without one. If another app already uses those keys, Colonia tells you. |
+| **Start with the computer** | Colonia opens when you log in. On by default. |
 | **Let agents use this computer** | Computer use, on macOS and Windows, off until you turn it on. See below. |
 | **Keep the Mac awake while agents work** | Prevents system sleep during a turn, command or computer startup. The screen can still turn off. You can disable it. |
 
@@ -79,61 +79,61 @@ The browser is lent to the core this app runs or reaches over SSH. An app connec
 doesn't lend its browser to it yet.
 </Aside>
 
-## Which APX it connects to
+## Which Colonia it connects to
 
-The first time an installed app opens, it asks **Where does your APX run?**
+The first time an installed app opens, it asks **Where does your Colonia run?**
 
 <Tabs>
 <TabItem label="Server (this computer)">
 
-APX runs here: the app starts its own core. Then it asks **Where will you use it from?**
+Colonia runs here: the app starts its own core. Then it asks **Where will you use it from?**
 
 - **Only from this computer**: the safest. Nobody else reaches the core.
 - **Also from my local network**: other devices at home or at the office, each with a pairing code.
 - **Tailscale**: your devices from anywhere, over https. Needs Tailscale installed.
 
-The first time, it then offers to start fresh or import from APX v1.
+The first time, it then offers to start fresh or import from Colonia v1.
 
 If a core is already running on this computer (port `7440`), the app uses it instead of starting another.
 
 </TabItem>
 <TabItem label="Client (another machine)">
 
-APX already runs on another computer or a server, and this app only connects. Two ways:
+Colonia already runs on another computer or a server, and this app only connects. Two ways:
 
 - **Address**: the core's URL, for example its Tailscale address. The core asks this app for a pairing code the first
-  time; get one on that APX in **Settings › Connections › Devices** or with `apx pair`.
+  time; get one on that Colonia in **Settings › Connections › Devices** or with `colonia pair`.
 - **SSH**: `user@server` (optionally `:port`). The app uses your own `ssh`, keys, agent and `~/.ssh/config` to forward
-  the server's core to this computer, so the server opens no port. If it can't log in, can't find APX on the server,
+  the server's core to this computer, so the server opens no port. If it can't log in, can't find Colonia on the server,
   or the core there doesn't answer, it tells you which.
 
 </TabItem>
 </Tabs>
 
-To pick another APX later, use the app menu: **APX › Change connection…**
+To pick another Colonia later, use the app menu: **Colonia › Change connection…**
 
-Setting up the server side is covered in [Run APX on a server](/devices/server/).
+Setting up the server side is covered in [Run Colonia on a server](/devices/server/).
 
 ## Which process the app controls
 
-The local choice uses `APX_HOME` (default `~/.apx/v2`) and that home's configured port. The app checks the daemon's
+The local choice uses `COLONIA_HOME` (default `~/.colonia/v2`) and that home's configured port. The app checks the daemon's
 home identity before connecting. If a daemon already runs for that home, quitting Desktop leaves it running. If
 Desktop starts its bundled daemon, quitting Desktop stops only that child, including its routines and channels.
 A home can have only one daemon, even when two launches use different ports.
 
-An explicit URL (including `APX_URL`) is connect-only: an unavailable server never makes the app start a replacement
+An explicit URL (including `COLONIA_URL`) is connect-only: an unavailable server never makes the app start a replacement
 on this computer. SSH mode owns its tunnel, not the server daemon. Updating or restarting Desktop does not update
 or restart that server by itself. Coordinated release activation, described below, is a separate owner action.
 
-The CLI's `apx service` commands always control services on the computer running the command, never the computer
-named by `APX_URL`. Use `--home` to select the local installation. `apx desktop` likewise opens the app on the
+The CLI's `colonia service` commands always control services on the computer running the command, never the computer
+named by `COLONIA_URL`. Use `--home` to select the local installation. `colonia desktop` likewise opens the app on the
 computer where the command runs, not on your client when you run it over SSH.
 
 For a Linux desktop apart from your own screen, see [Agents' computer](/office/computers/).
 
 ## Updates
 
-The installed app updates itself. Every few hours it checks the release feed and, when a newer APX is out, the panel
+The installed app updates itself. Every few hours it checks the release feed and, when a newer Colonia is out, the panel
 shows it in the top bar. On your word it downloads the installer for your system and checks it against its `.sha256`:
 
 - **Linux** (AppImage) and **Windows** finish on their own and open again.
@@ -141,14 +141,14 @@ shows it in the top bar. On your word it downloads the installer for your system
   when you quit it.
 
 A bundled local core updates with Desktop. With a remote core, Desktop coordinates a shared release over the
-authenticated APX connection, without SSH. The server updates once; each Desktop app can activate its package only
+authenticated Colonia connection, without SSH. The server updates once; each Desktop app can activate its package only
 after confirming that the server is running that exact release. Offline apps reconcile when they reconnect:
 devices do not update atomically. Older or unsupported servers block Desktop activation and show recovery guidance.
 The first update of a server without coordination support still uses its existing update mechanism.
 
 ## Running it from a checkout
 
-Working on APX itself? From the repository:
+Working on Colonia itself? From the repository:
 
 ```bash
 pnpm install
@@ -157,6 +157,6 @@ pnpm app    # builds the panel and the desktop app, starts the core, opens the a
 
 ## Where to next
 
-- [Use APX from your phone](/devices/phone/)
-- [Run APX on a server](/devices/server/)
+- [Use Colonia from your phone](/devices/phone/)
+- [Run Colonia on a server](/devices/server/)
 - [Troubleshooting](/reference/troubleshooting/)

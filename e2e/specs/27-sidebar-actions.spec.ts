@@ -73,20 +73,20 @@ test("Canales recientes, tres visibles, acciones integradas y menú idéntico co
   await expect.poll(() => orderedIds(page, "channel")).toEqual(["slack", "telegram", "discord"]);
   const more = page.getByRole("button", { name: "2 canales más · 2 sin leer" });
   await more.hover();
-  await expect(page.locator(".apx-tooltip")).toContainText("2 canales más · 2 sin leer");
+  await expect(page.locator(".colonia-tooltip")).toContainText("2 canales más · 2 sin leer");
   const row = page.locator('.sidebar [data-channel-id="telegram"]');
   const options = row.getByRole("button", { name: "Opciones de Telegram con nombre largo de canal" });
   await page.mouse.move(1000, 800);
   await expect(row.locator(".sidebar-navrow__actions")).toHaveCSS("opacity", "0");
-  await row.locator(".apx-nav").click();
+  await row.locator(".colonia-nav").click();
   await expect(row).toHaveClass(/is-active/);
   await row.hover();
   await expect(row.locator(".sidebar-navrow__actions")).toHaveCSS("opacity", "1");
-  await expect(row.locator(".apx-nav")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(row.locator(".colonia-nav")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   const geometry = await row.evaluate((row) => {
-    const nav = row.querySelector(".apx-nav")?.getBoundingClientRect();
+    const nav = row.querySelector(".colonia-nav")?.getBoundingClientRect();
     const action = row.querySelector(".sidebar-navrow__options")?.getBoundingClientRect();
-    const label = row.querySelector(".apx-nav__label");
+    const label = row.querySelector(".colonia-nav__label");
     if (!nav || !action || !label) throw new Error("Missing navigation row controls");
     return {
       inside: action.left >= nav.left && action.right <= nav.right,
@@ -98,7 +98,7 @@ test("Canales recientes, tres visibles, acciones integradas y menú idéntico co
   expect(geometry.mask).toContain("linear-gradient");
   expect(geometry.nested).toBe(0);
   await options.hover();
-  await expect(page.locator(".apx-tooltip")).toContainText("Opciones de Telegram");
+  await expect(page.locator(".colonia-tooltip")).toContainText("Opciones de Telegram");
   await options.click();
   await expect(page.getByRole("menuitem", { name: "Abrir", exact: true })).toBeVisible();
   const menuLabels = await page.getByRole("menuitem").allTextContents();
@@ -138,7 +138,7 @@ test("Proyectos: último acceso, arrastre, menús v1, copia y confirmación ante
   // Projects' own "N más" (the channels section has its own "N canales más").
   const more = page.getByRole("button", { name: /^\d+ más$/ });
   await more.click();
-  const overflow = page.locator(".apx-popover");
+  const overflow = page.locator(".colonia-popover");
   const hidden = overflow.locator(`[data-project-id="${northwind.id}"]`);
   await hidden.click({ button: "right" });
   await page.getByRole("menuitem", { name: "Configuración del proyecto", exact: true }).click();
@@ -146,13 +146,13 @@ test("Proyectos: último acceso, arrastre, menús v1, copia y confirmación ante
   await page.keyboard.press("Escape");
   // Opened from "N más", a project comes first after the base space.
   await more.click();
-  await overflow.locator(`[data-project-id="${northwind.id}"] .apx-nav`).click();
+  await overflow.locator(`[data-project-id="${northwind.id}"] .colonia-nav`).click();
   await expect.poll(async () => (await orderedIds(page, "project"))[1]).toBe(northwind.id);
   // One already in view keeps its place: opening it reorders nothing, not even after a reload.
   const inView = (await orderedIds(page, "project")).slice(0, 5);
   const third = page.locator(`.sidebar [data-project-id="${inView[3]}"]`);
-  await third.locator(".apx-nav").click();
-  await expect(third.locator(".apx-nav")).toHaveAttribute("aria-current", "page");
+  await third.locator(".colonia-nav").click();
+  await expect(third.locator(".colonia-nav")).toHaveAttribute("aria-current", "page");
   expect((await orderedIds(page, "project")).slice(0, 5)).toEqual(inView);
   await page.reload();
   await expect.poll(async () => (await orderedIds(page, "project")).slice(0, 5)).toEqual(inView);
@@ -160,7 +160,7 @@ test("Proyectos: último acceso, arrastre, menús v1, copia y confirmación ante
   // Projects from earlier specs may leave Acme in the overflow: opened from wherever it is, it ends up in view.
   if (!(await row.isVisible())) {
     await more.click();
-    await overflow.locator(`[data-project-id="${acme.id}"] .apx-nav`).click();
+    await overflow.locator(`[data-project-id="${acme.id}"] .colonia-nav`).click();
     await expect.poll(async () => (await orderedIds(page, "project"))[1]).toBe(acme.id);
   }
   await row.hover();
@@ -198,7 +198,7 @@ test("Proyectos: último acceso, arrastre, menús v1, copia y confirmación ante
   await expect(page.getByRole("menuitem", { name: "Quitar registro del proyecto" })).toHaveCount(0);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Nuevo proyecto", exact: true }).hover();
-  await expect(page.locator(".apx-tooltip")).toContainText("Nuevo proyecto");
+  await expect(page.locator(".colonia-tooltip")).toContainText("Nuevo proyecto");
 });
 
 test("Sesiones externas: orden por acceso y arrastre, mismas opciones en ambos menús", async ({ page }) => {
@@ -222,7 +222,7 @@ test("Sesiones externas: orden por acceso y arrastre, mismas opciones en ambos m
   await open(page, "#view=tasks");
   await expect.poll(() => orderedIds(page, "engine")).toEqual(["claude", "codex"]);
   const codex = page.locator('.sidebar [data-engine-id="codex"]');
-  await codex.locator(".apx-nav").click();
+  await codex.locator(".colonia-nav").click();
   await expect.poll(() => orderedIds(page, "engine")).toEqual(["codex", "claude"]);
   await page.reload();
   await expect.poll(() => orderedIds(page, "engine")).toEqual(["codex", "claude"]);

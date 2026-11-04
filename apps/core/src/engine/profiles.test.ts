@@ -24,15 +24,15 @@ const set = async (patch: Record<string, string | number>) => {
   return env.client.call("profiles.set", { id: "secretary", values: { ...active.values, ...patch } });
 };
 
-test("no profile by default; APX's own are listed; the secretary seeds open, close, watch and team news on the super-agent", async () => {
+test("no profile by default; Colonia's own are listed; the secretary seeds open, close, watch and team news on the super-agent", async () => {
   const before = await get();
   assert.equal(before.active.id, null);
   assert.deepEqual(before.routines, []);
   assert.deepEqual(
     before.profiles.map((p) => [p.id, p.source]),
     [
-      ["focus", "apx"],
-      ["secretary", "apx"],
+      ["focus", "colonia"],
+      ["secretary", "colonia"],
     ],
   );
 
@@ -182,10 +182,10 @@ test("another profile takes over: the secretary's routines turn off, the new one
 });
 
 test("a profile installs from a folder, can run, and removing it while it runs leaves the super-agent with none", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-profile-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-profile-"));
   try {
     fs.writeFileSync(
-      path.join(dir, "apx-profile.json"),
+      path.join(dir, "colonia-profile.json"),
       JSON.stringify({
         id: "golf-coach",
         name: { en: "Golf coach" },
@@ -207,10 +207,10 @@ test("a profile installs from a folder, can run, and removing it while it runs l
     assert.ok((await get()).profiles.some((p) => p.id === "golf-coach"));
     const { routines } = await env.client.call("profiles.set", { id: "golf-coach", values: {} });
     assert.deepEqual(routines[0]?.schedule, { kind: "every", minutes: 1440 });
-    await assert.rejects(env.client.call("profiles.install", { path: os.tmpdir() }), /apx-profile.json/);
+    await assert.rejects(env.client.call("profiles.install", { path: os.tmpdir() }), /colonia-profile.json/);
     assert.equal((await env.client.call("profiles.remove", { id: "golf-coach" })).removed, true);
     assert.equal((await get()).active.id, null);
-    assert.equal((await env.client.call("profiles.remove", { id: "secretary" })).removed, false, "APX's own stay");
+    assert.equal((await env.client.call("profiles.remove", { id: "secretary" })).removed, false, "Colonia's own stay");
   } finally {
     await removeDir(dir);
     await set({});

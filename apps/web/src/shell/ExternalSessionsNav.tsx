@@ -1,5 +1,5 @@
-import type { EngineStatus } from "@apx/protocol";
-import { EngineIcon, engineBrand, Icons } from "@apx/ui";
+import type { EngineStatus } from "@colonia/protocol";
+import { EngineIcon, engineBrand, Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { rememberSidebar, setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";

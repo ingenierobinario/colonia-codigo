@@ -1,5 +1,5 @@
-import type { ModelRef } from "@apx/protocol";
-import { Badge, IconButton, Icons } from "@apx/ui";
+import type { ModelRef } from "@colonia/protocol";
+import { Badge, IconButton, Icons } from "@colonia/ui";
 import { forAgents, inCatalog, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 import { ModelRefPicker } from "./ModelRefPicker.tsx";

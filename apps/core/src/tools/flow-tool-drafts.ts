@@ -1,9 +1,9 @@
-// apx_flow's Flow drawings: the super-agent reads a Flow's graph, makes a new Flow, edits its draft step by step and
+// colonia_flow's Flow drawings: the super-agent reads a Flow's graph, makes a new Flow, edits its draft step by step and
 // checks it, as its own call through the router. A draft runs nothing until the owner publishes it in the editor, so
 // these ask the owner only when outside content is in the turn (DECISIONS.md#d-174). The graph's shape is in the
-// apx-flows skill, read on demand, never in the prompt.
+// colonia-flows skill, read on demand, never in the prompt.
 
-import { flowBranches } from "@apx/protocol/flow-cases";
+import { flowBranches } from "@colonia/protocol/flow-cases";
 import {
   connectionError,
   connectNodes,
@@ -12,8 +12,8 @@ import {
   newNode,
   placeSteps,
   removeNode,
-} from "@apx/protocol/flow-edit";
-import { FlowDraftGraph, FlowGraph, type FlowGraphIssue, type FlowNode } from "@apx/protocol/flow-graph";
+} from "@colonia/protocol/flow-edit";
+import { FlowDraftGraph, FlowGraph, type FlowGraphIssue, type FlowNode } from "@colonia/protocol/flow-graph";
 import { z } from "zod";
 import { CallError as CoreCallError } from "../errors.ts";
 import type { Params, Setting } from "./settings-kit.ts";
@@ -78,7 +78,7 @@ const ARGS = {
     ),
 };
 
-const SKILL = 'Step fields, bindings and templates: load_skill "apx-flows".';
+const SKILL = 'Step fields, bindings and templates: load_skill "colonia-flows".';
 const EMPTY: Graph = { schemaVersion: 2, nodes: [], edges: [], layout: [] };
 const LABELS: Record<FlowNode["kind"], string> = {
   webhook: "Webhook",
@@ -264,7 +264,7 @@ async function saved(
   return `${head}\n${issuesText(graph, issues)}`;
 }
 
-/** The methods for a Flow's drawing, merged into apx_flow's flows area. */
+/** The methods for a Flow's drawing, merged into colonia_flow's flows area. */
 export const FLOW_DRAFTS: Readonly<Record<string, Setting>> = {
   "flows.graph_get": {
     does: `read a Flow's drawing (flow; which: draft or published, default the draft if there is one) as JSON steps and connections, with draftVersion for flows.draft_save. ${SKILL}`,

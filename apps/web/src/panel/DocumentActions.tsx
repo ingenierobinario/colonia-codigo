@@ -1,6 +1,6 @@
 // A document's actions wherever it shows (its page, the documents list, its card in the chat): its folder, open it
 // apart and download it.
-import { IconButton, Icons } from "@apx/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { client } from "../data/client.ts";
 import { coreOnThisComputer, type FileWhere, openFile, revealFile } from "../data/files.ts";
 import { mediaUrl } from "../data/media.ts";
@@ -38,7 +38,7 @@ async function openApart(doc: DocRef, thread: string | undefined): Promise<void>
 }
 
 /** Only where it can: beside the core, or in a browser (the desktop app of a far core has neither). */
-const canOpenApart = () => coreOnThisComputer() || !window.apxDesktop;
+const canOpenApart = () => coreOnThisComputer() || !window.coloniaDesktop;
 
 export function DocumentActions({ doc, thread }: { doc: DocRef; thread: string | undefined }) {
   const t = useT();

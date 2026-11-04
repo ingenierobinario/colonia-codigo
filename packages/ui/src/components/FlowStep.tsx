@@ -48,25 +48,25 @@ export function FlowStep({
   return (
     <div
       className={cx(
-        "apx-flowstep",
-        state && `apx-flowstep--${state}`,
-        selected && "apx-flowstep--selected",
-        muted && "apx-flowstep--muted",
+        "colonia-flowstep",
+        state && `colonia-flowstep--${state}`,
+        selected && "colonia-flowstep--selected",
+        muted && "colonia-flowstep--muted",
         className,
       )}
       style={style}
     >
-      {order !== undefined && <span className="apx-flowstep__order">{order}</span>}
-      <span className="apx-flowstep__head">
-        <span className={`apx-flowstep__tile apx-flowstep__tile--${tone}`} aria-hidden="true">
+      {order !== undefined && <span className="colonia-flowstep__order">{order}</span>}
+      <span className="colonia-flowstep__head">
+        <span className={`colonia-flowstep__tile colonia-flowstep__tile--${tone}`} aria-hidden="true">
           {icon}
         </span>
-        <span className="apx-flowstep__kind">{kind}</span>
-        {badge !== undefined && <span className="apx-flowstep__badge">{badge}</span>}
+        <span className="colonia-flowstep__kind">{kind}</span>
+        {badge !== undefined && <span className="colonia-flowstep__badge">{badge}</span>}
       </span>
-      <span className="apx-flowstep__title">{title}</span>
+      <span className="colonia-flowstep__title">{title}</span>
       {detail !== undefined && (
-        <span className={cx("apx-flowstep__detail", detailPlain && "apx-flowstep__detail--plain")}>{detail}</span>
+        <span className={cx("colonia-flowstep__detail", detailPlain && "colonia-flowstep__detail--plain")}>{detail}</span>
       )}
       {children}
     </div>
@@ -87,7 +87,7 @@ export function FlowStepTile({
 }) {
   return (
     <span
-      className={`apx-flowstep__tile apx-flowstep__tile--${tone} apx-flowstep__tile--${size}`}
+      className={`colonia-flowstep__tile colonia-flowstep__tile--${tone} colonia-flowstep__tile--${size}`}
       {...(label ? { role: "img", "aria-label": label, title: label } : { "aria-hidden": true })}
     >
       {icon}

@@ -1,7 +1,7 @@
 // What a message sent on a channel carries besides its words: how far it got (ticks) and the emoji put on it. Shared
 // by the channel view and the main chat, so both read the same.
-import type { MessageDelivery, MessageReaction } from "@apx/protocol";
-import { Icons, Tooltip } from "@apx/ui";
+import type { MessageDelivery, MessageReaction } from "@colonia/protocol";
+import { Icons, Tooltip } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { type MessageKey, useT } from "../i18n/index.ts";
 

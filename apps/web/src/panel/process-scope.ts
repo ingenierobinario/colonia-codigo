@@ -1,4 +1,4 @@
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 
 /** Descendants belong to the current chat, including workers delegated by its subagents. */
 export function chatDescendants(threads: readonly Thread[], root: string): Thread[] {

@@ -1,4 +1,4 @@
-import { ApxProvider, StepList } from "@apx/ui";
+import { ColoniaProvider, StepList } from "@colonia/ui";
 
 export function RunReport() {
   return (
@@ -29,13 +29,13 @@ export function MixedStatus() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
       <StepList
         steps={[
           { label: "Render", detail: "reel-26 · 1080p" },
           { label: "Upload", detail: "subiendo", status: "running" },
         ]}
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

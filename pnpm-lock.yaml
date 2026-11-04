@@ -29,7 +29,7 @@ importers:
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.3.286
         version: 0.3.286(@anthropic-ai/sdk@0.129.0(zod@4.6.6))(@modelcontextprotocol/sdk@1.31.0(zod@4.6.6))(zod@4.6.6)
-      '@apx/protocol':
+      '@colonia/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
       '@openai/codex-sdk':
@@ -48,7 +48,7 @@ importers:
         specifier: ^4.6.6
         version: 4.6.6
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@modelcontextprotocol/sdk':
@@ -60,11 +60,11 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@apx/protocol':
+      '@colonia/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../../packages/config
       electron:
@@ -76,7 +76,7 @@ importers:
 
   apps/terminal:
     dependencies:
-      '@apx/protocol':
+      '@colonia/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
       '@modelcontextprotocol/sdk':
@@ -86,16 +86,16 @@ importers:
         specifier: ^4.6.6
         version: 4.6.6
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../../packages/config
 
   apps/web:
     dependencies:
-      '@apx/protocol':
+      '@colonia/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@apx/ui':
+      '@colonia/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@base-ui/react':
@@ -171,7 +171,7 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/react':
@@ -191,11 +191,11 @@ importers:
 
   packages/install:
     dependencies:
-      '@apx/protocol':
+      '@colonia/protocol':
         specifier: workspace:*
         version: link:../protocol
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../config
 
@@ -205,7 +205,7 @@ importers:
         specifier: ^4.6.6
         version: 4.6.6
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../config
 
@@ -215,7 +215,7 @@ importers:
         specifier: ^4.6.6
         version: 4.6.6
     devDependencies:
-      '@apx/config':
+      '@colonia/config':
         specifier: workspace:*
         version: link:../config
 

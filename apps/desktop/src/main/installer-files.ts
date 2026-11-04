@@ -3,14 +3,14 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const INSTALLER = /^APX-\d+\.\d+\.\d+(?:-[\w.]+)?-win-(?:x64|arm64)\.exe$/;
+const INSTALLER = /^Colonia-\d+\.\d+\.\d+(?:-[\w.]+)?-win-(?:x64|arm64)\.exe$/;
 
-/** Of the files in a folder, the APX installers to remove: all but `keep`. */
+/** Of the files in a folder, the Colonia installers to remove: all but `keep`. */
 export function oldInstallers(names: string[], keep?: string): string[] {
   return names.filter((n) => INSTALLER.test(n) && n !== keep);
 }
 
-/** Removes the APX installers in `dir` but `keep`; one still open (running) is left for the next time. */
+/** Removes the Colonia installers in `dir` but `keep`; one still open (running) is left for the next time. */
 export function removeOldInstallers(dir: string, keep?: string): void {
   let names: string[];
   try {

@@ -1,5 +1,5 @@
 // A stdio server that signs in through the owner's browser (mcp-remote and the like) says so on stderr, with the page
-// to open: "Please authorize this client by visiting:\n https://…". Seeing it is how APX knows the server waits on them.
+// to open: "Please authorize this client by visiting:\n https://…". Seeing it is how Colonia knows the server waits on them.
 
 import type { Stream } from "node:stream";
 import { stripVTControlCharacters } from "node:util";

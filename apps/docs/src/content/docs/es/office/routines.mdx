@@ -48,8 +48,8 @@ La lista muestra todos los flows de todos los proyectos con sus pasos, cuántos 
 últimas rondas y un interruptor de encendido; el menú de proyecto la acota. El acceso de Rutinas abre esta misma
 pantalla global. Los enlaces directos usan `#view=flows`, `#view=flows&scope=<project-id>`,
 `#view=flows&flow=<flow-id>` (sus rondas) o `#view=flows&flow=<flow-id>&edit=1` (su editor); los botones del chat
-pueden usar `apx:flows`, `apx:flows/<project-id>`, `apx:flows/<project-id>/<flow-id>` o
-`apx:flows/<project-id>/<flow-id>/edit`.
+pueden usar `colonia:flows`, `colonia:flows/<project-id>`, `colonia:flows/<project-id>/<flow-id>` o
+`colonia:flows/<project-id>/<flow-id>/edit`.
 
 **Nuevo flow** abre el editor, en blanco o desde una forma de arranque. Sumá pasos desde la izquierda (se unen después
 del paso elegido), arrastrá desde el punto de salida de un paso para unir dos pasos y tocá un paso para configurarlo en
@@ -71,7 +71,7 @@ teléfono los tipos de paso se abren desde **Sumar un paso** y la tarjeta es una
 | Modelo directo | Le pregunta una vez a un modelo configurado, sin herramientas, y pasa su respuesta. Gasta tokens. Queda en los flows que ya lo tienen; los pasos nuevos usan **Modelo IA**. |
 | Webhook saliente | Llama a una URL con GET, POST o PUT. Headers y body pueden llevar valores de la ronda; una clave va en un header como `secret://nombre`, de **Secretos**. Los pasos siguientes leen su respuesta como `$steps.<paso>.status`, `.ok` y `.json` (o `.body` si no es JSON). |
 | Cmd | Un comando de shell en la carpeta del proyecto, como el de una rutina. Los valores de la ronda le llegan solo como variables (`EMAIL=$trigger.email`, que lee como `$EMAIL`) y como su entrada, nunca dentro del texto; una clave va en una variable como `secret://nombre`. Los pasos siguientes leen `$steps.<paso>.stdout` y `.exit`; un error corta el flow salvo que **Seguir si falla** esté prendido. Tiene tiempo máximo (hasta 2 minutos). |
-| Avisar | Manda un mensaje por vos en una de tus apps de chat (Telegram, WhatsApp, Discord…) a alguien que conocés ahí, a vos o a una sala que listaste. En APX aparece en ese chat como escrito por el agente que atiende esa app, tal como llegó. Con **Solo si hay algo para contar**, no manda nada cuando todos los valores del mensaje salen vacíos. |
+| Avisar | Manda un mensaje por vos en una de tus apps de chat (Telegram, WhatsApp, Discord…) a alguien que conocés ahí, a vos o a una sala que listaste. En Colonia aparece en ese chat como escrito por el agente que atiende esa app, tal como llegó. Con **Solo si hay algo para contar**, no manda nada cuando todos los valores del mensaje salen vacíos. |
 
 La barra de arriba del editor tiene el nombre del flow a la izquierda y **Salir** a la derecha, junto al estado de
 guardado, **Escuchar un evento de prueba**, **Simular**, **Guardar borrador** y **Guardar** (en el teléfono, **Borrador** y un ícono para salir). Si
@@ -120,15 +120,15 @@ ronda: sin memoria, sin historial y sin equipo, y trabaja solo con la web, los a
 propio navegador, nunca con tus chats, correo, calendario o cuentas. Después elegí:
 
 - **Agente del crew**: los agentes del proyecto y, siempre, tu super-agente, como tarjetas.
-- **Harness**: **APX** (el propio de APX, sobre las APIs de modelos que configuraste) o una app de esta computadora como
+- **Harness**: **Colonia** (el propio de Colonia, sobre las APIs de modelos que configuraste) o una app de esta computadora como
   Claude Code o Codex, si está instalada. En una app, el paso corre en la carpeta del proyecto con las herramientas y la
-  configuración de esa app, en una sesión propia; quién responde va en su encargo, y la memoria de APX no le llega.
+  configuración de esa app, en una sesión propia; quién responde va en su encargo, y la memoria de Colonia no le llega.
 - **Modelo** y, si el modelo lo acepta, **Esfuerzo**. Si lo dejás como está, un agente usa su propio modelo y un bot tu
   modelo por defecto.
-- **Permisos**: en APX, los del agente, **Pregunta antes**, **Auto** o **Total**; en una app, **Pregunta antes**,
+- **Permisos**: en Colonia, los del agente, **Pregunta antes**, **Auto** o **Total**; en una app, **Pregunta antes**,
   **Edita libre** o **Solo lectura**. Un flow corre sin nadie mirando: lo que pregunta te espera hasta el tiempo máximo
   de la ronda.
-- **Puede pedirle a otros agentes** (solo agentes en APX), apagado de entrada. Apagado, el agente trabaja solo con todas
+- **Puede pedirle a otros agentes** (solo agentes en Colonia), apagado de entrada. Apagado, el agente trabaja solo con todas
   sus herramientas y su memoria, pero no puede pasarle trabajo a tus otros agentes, escribirles, ni crearles o
   comentarles tareas. Prendido, trabaja como en un chat.
 
@@ -172,7 +172,7 @@ que usó esa ronda. Un flow del que todavía no corre ningún dibujo (uno que tu
 su borrador.
 
 Cada ronda tiene 10 minutos desde que llega su evento; un paso de modelo tiene su propio límite (hasta 2 minutos). Los
-pasos que llaman a un modelo se mandan una vez y nunca más: si APX se detiene o la respuesta no llega a tiempo después
+pasos que llaman a un modelo se mandan una vez y nunca más: si Colonia se detiene o la respuesta no llega a tiempo después
 de mandar el pedido, la ronda dice **Para revisar** en lugar de reintentar, porque el modelo pudo haberlo hecho igual. Los
 comandos y las escrituras SQL siguen la misma regla: uno cortado por un reinicio, el tiempo máximo o **Detener ronda**
 no se vuelve a correr. Prender un flow con un comando o una escritura SQL pregunta antes (**¿Dejás que este flow actúe
@@ -186,8 +186,8 @@ trata como cualquier dato de afuera. La ronda dice **La arrancaste vos**. **Dete
 corriendo, la frena: los pasos que no empezaron no corren y un paso que ya se le mandó a un modelo queda **Para
 revisar**, sin volver a mandarse.
 
-Un flow con horario corre mientras APX está prendido. Si APX estaba apagado a la hora de una ronda, el flow corre una
-vez al arrancar APX (no una por cada hora que se perdió) y esa ronda dice que arrancó tarde. Si la ronda anterior sigue
+Un flow con horario corre mientras Colonia está prendido. Si Colonia estaba apagado a la hora de una ronda, el flow corre una
+vez al arrancar Colonia (no una por cada hora que se perdió) y esa ronda dice que arrancó tarde. Si la ronda anterior sigue
 corriendo cuando llega la hora siguiente, esa hora se salta, no se encola, y la página del flow dice cuántas se saltaron.
 Un flow apagado no corre por horario y, al prenderlo de nuevo, cuenta desde ese momento. Un flow con horario no tiene
 dirección: nunca recibe un POST, y uno con webhook nunca corre por horario.
@@ -195,10 +195,10 @@ dirección: nunca recibe un POST, y uno con webhook nunca corre por horario.
 ### Mensajes y llamadas que un flow hace por vos
 
 El texto de un paso lleva valores de la ronda: `$trigger.email` es un campo de lo que llegó, `$steps.<paso>.text` la
-respuesta de un paso anterior, `$vars.nombre` una variable, `$apx.project`, `$apx.now` y `$apx.run` el nombre del
+respuesta de un paso anterior, `$vars.nombre` una variable, `$colonia.project`, `$colonia.now` y `$colonia.run` el nombre del
 proyecto, la fecha y hora y el número de ronda, y `$$` es un signo de pesos. No hace falta saberlos: en cualquier campo
 que acepta valores, escribí `{{` o `$`, o tocá el botón **{}**, y elegí entre lo que llegó, los pasos anteriores, las
-variables del flow y los valores de APX; lo que elegiste se ve como una insignia. **Qué recibe** funciona igual: vacío
+variables del flow y los valores de Colonia; lo que elegiste se ve como una insignia. **Qué recibe** funciona igual: vacío
 es todo lo que llegó, o elegí un campo o el resultado de un paso anterior. Los **Secretos** se ofrecen solo en los
 headers de un webhook saliente y en las variables de un comando, donde el paso los lee por su cuenta; un mensaje, un
 body o una instrucción de IA nunca reciben uno. Lo que
@@ -209,7 +209,7 @@ llamaría a un lugar nuevo, guardarlo prendido (o prenderlo) pregunta **¿Dejás
 cada persona, sala y dirección. **Permitir** lo convierte en lo que corre; **Ahora no** deja corriendo la versión
 anterior. Después, cada ronda manda sin volver a preguntar.
 
-Cada mensaje y cada llamada que cambia algo sale una sola vez: si APX se detiene o el otro lado no responde después de
+Cada mensaje y cada llamada que cambia algo sale una sola vez: si Colonia se detiene o el otro lado no responde después de
 mandarlo, el paso dice **Para revisar** en lugar de repetirlo (revisá el chat o el servicio). Un GET, que no cambia
 nada, prueba una vez más si la conexión falla antes de cualquier respuesta. Un flow manda como mucho 20 mensajes por
 hora y hace como mucho 60 llamadas que cambian algo; la siguiente falla sin salir. Un mensaje a una app de chat que no
@@ -268,8 +268,8 @@ primero el proyecto: tu super-agente crea el flow ahí y el editor lo abre. La b
 hasta que tocás **Guardar**. Un editor abierto sin ese chat conserva lo que tiene en pantalla si un agente cambia el
 flow desde otro chat: salí y volvé a abrirlo para verlo.
 
-El CLI también arranca y detiene rondas: `apx flows run <flow> ['<cuerpo de ejemplo JSON>']` y
-`apx flows stop <flow> <evento>`. Actúan como vos, así que no corren dentro del comando de un agente.
+El CLI también arranca y detiene rondas: `colonia flows run <flow> ['<cuerpo de ejemplo JSON>']` y
+`colonia flows stop <flow> <evento>`. Actúan como vos, así que no corren dentro del comando de un agente.
 
 Un Flow pertenece a un proyecto. Su clave se hace en la tarjeta del paso webhook (**Configuración → Dispositivos →
 Endpoints** lista las direcciones de los flows encendidos). El acceso público se configura por separado y nunca expone el
@@ -295,7 +295,7 @@ de administración cuya respuesta se perdió.
 
 El prompt de una rutina de agente son tus propias palabras. Cuando esta vez no hay nada que valga contarte, el agente
 responde solo `SKIP` y no te llega nada. Cuando la tarea de la rutina es escribirte («recordame por Telegram…»), ese
-mensaje te llega una vez: lo que el agente dice después sobre haberlo mandado queda en el chat de la rutina en APX.
+mensaje te llega una vez: lo que el agente dice después sobre haberlo mandado queda en el chat de la rutina en Colonia.
 Escribí prompts que dejen lugar para eso:
 
 > Revisá los pedidos de ayer buscando algo raro: reembolsos de más de 200, un producto vendiendo 3 veces su promedio,
@@ -324,11 +324,11 @@ credenciales en su entorno.
 
    | Variable | Valor |
    |---|---|
-   | `APX_LLM_OUTPUT` | Lo que respondió el agente (o el mensaje) |
-   | `APX_STATUS` | `completed`, `failed` o `skipped` |
-   | `APX_SKIPPED` | `1` si no se llamó al modelo, si no `0` |
-   | `APX_PRE_OUTPUT` | La salida del pre-comando |
-   | `APX_PRE_EXIT` | El código de salida del pre-comando |
+   | `COLONIA_LLM_OUTPUT` | Lo que respondió el agente (o el mensaje) |
+   | `COLONIA_STATUS` | `completed`, `failed` o `skipped` |
+   | `COLONIA_SKIPPED` | `1` si no se llamó al modelo, si no `0` |
+   | `COLONIA_PRE_OUTPUT` | La salida del pre-comando |
+   | `COLONIA_PRE_EXIT` | El código de salida del pre-comando |
 
 </Steps>
 
@@ -362,26 +362,26 @@ Cada corrida es un chat propio, así que podés abrirla y ver exactamente qué h
 
 ## Desde la terminal
 
-<Terminal command="apx routines help">{`apx routines                                   Routines and when they run next
-apx routines add <name> <prompt…> --agent a [--project p] (--cron "30 8 * * 1-5" | --every 60 | --at <ISO date>)
+<Terminal command="colonia routines help">{`colonia routines                                   Routines and when they run next
+colonia routines add <name> <prompt…> --agent a [--project p] (--cron "30 8 * * 1-5" | --every 60 | --at <ISO date>)
                  [--pre "<command>"] [--call always|output|fails|never] [--post "<command>"]
                                                 The pre-command's output reaches the prompt at {{pre_output}}
-apx routines run <id>                          Run now
-apx routines on|off <id>
-apx routines rm <id>
-apx routines log <id>                          Recent runs`}</Terminal>
+colonia routines run <id>                          Run now
+colonia routines on|off <id>
+colonia routines rm <id>
+colonia routines log <id>                          Recent runs`}</Terminal>
 
 Sin `--cron`, `--every` ni `--at`, la rutina corre a mano. `--every` va en minutos. La CLI crea rutinas de agente;
 las de mensaje, shell y vigía, y las anclas, se configuran en el panel.
 
 ```bash
 # Días hábiles a las 9: Tomás mira el stock bajo, solo cuando hay
-apx routines add stock-bajo "Esta es la lista de stock bajo de hoy: {{pre_output}} Armá el pedido para el proveedor." \
+colonia routines add stock-bajo "Esta es la lista de stock bajo de hoy: {{pre_output}} Armá el pedido para el proveedor." \
   --agent <id-tomas> --project <id-acme> --cron "0 9 * * 1-5" \
   --pre "./scripts/low-stock.sh" --call output
 
-apx routines run <id-rutina>     # probala ahora
-apx routines log <id-rutina>     # corridas recientes; "(nothing to say)" marca un SKIP
+colonia routines run <id-rutina>     # probala ahora
+colonia routines log <id-rutina>     # corridas recientes; "(nothing to say)" marca un SKIP
 ```
 
 <Aside type="note">

@@ -29,11 +29,11 @@ const McpTarget = z
 const SkillName = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/);
 
 /**
- * Where a skill's files live. apx: comes with APX (how to change APX itself; always on, read-only); owner: APX home
+ * Where a skill's files live. colonia: comes with Colonia (how to change Colonia itself; always on, read-only); owner: Colonia home
  * `skills/`; project: `.apc/skills/`; extension; claude, codex, cursor, agents: that app's own skills folder (in the
- * home or the project), read where it is, or linked into APX's.
+ * home or the project), read where it is, or linked into Colonia's.
  */
-export const SkillSource = z.enum(["apx", "owner", "project", "extension", "claude", "codex", "cursor", "agents"]);
+export const SkillSource = z.enum(["colonia", "owner", "project", "extension", "claude", "codex", "cursor", "agents"]);
 export type SkillSource = z.infer<typeof SkillSource>;
 
 export const SkillInfo = z.object({
@@ -84,7 +84,7 @@ export const SkillCandidate = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  /** The folder it lands in, in APX's skills or the project's `.apc/skills/`. */
+  /** The folder it lands in, in Colonia's skills or the project's `.apc/skills/`. */
   folder: z.string(),
   files: z.array(z.object({ path: z.string(), bytes: z.number().int() })),
   /**
@@ -92,13 +92,13 @@ export const SkillCandidate = z.object({
    * (`allowed-tools`…), kept but ignored; skipped: links, oversized or extra files left out.
    */
   notes: z.array(z.object({ kind: z.enum(["scripts", "app_only", "skipped"]), items: z.array(z.string()) })),
-  /** new; exists: that folder is taken (kept unless replaced); reserved: one of APX's own names; invalid: no usable name. */
+  /** new; exists: that folder is taken (kept unless replaced); reserved: one of Colonia's own names; invalid: no usable name. */
   status: z.enum(["new", "exists", "reserved", "invalid"]),
 });
 export type SkillCandidate = z.infer<typeof SkillCandidate>;
 
 const ImportTarget = {
-  /** `global`: APX's skills; `project`: that project's `.apc/skills/`. */
+  /** `global`: Colonia's skills; `project`: that project's `.apc/skills/`. */
   target: z.enum(["global", "project"]),
   project: Id.optional(),
 };
@@ -134,7 +134,7 @@ export const resourceMethods = {
     access: "human",
   },
   /**
-   * Skills agents can load: APX's own, the owner's (APX home `skills/`), a project's `.apc/skills/` with `project`, and enabled
+   * Skills agents can load: Colonia's own, the owner's (Colonia home `skills/`), a project's `.apc/skills/` with `project`, and enabled
    * extensions'. Skills the owner turned off are listed with `on: false`; agents do not see them.
    */
   "skills.list": {
@@ -173,7 +173,7 @@ export const resourceMethods = {
     access: "human",
   },
   /**
-   * Copies APX's skills for other agent apps (Claude Code, Codex, Cursor, ~/.agents) into each one installed, as the
+   * Copies Colonia's skills for other agent apps (Claude Code, Codex, Cursor, ~/.agents) into each one installed, as the
    * core does at every start; `dry_run` only says what it would do. Other skills in those folders are left alone.
    */
   "skills.runtimes": {
@@ -203,7 +203,7 @@ export const resourceMethods = {
     access: "human",
   },
   /**
-   * Copies the picked skills (by candidate id) into APX's skills or a project's `.apc/skills/`: regular files only, no
+   * Copies the picked skills (by candidate id) into Colonia's skills or a project's `.apc/skills/`: regular files only, no
    * links, nothing run. A taken folder is kept unless `replace`.
    */
   "skills.import": {
@@ -375,7 +375,7 @@ export const resourceMethods = {
           off_in: z.array(Id),
           /**
            * One the owner signs in to (Google): the address their own OAuth client must allow as redirect, the
-           * account it is connected as, whether APX ships a client of its own (no Cloud Console needed) and which
+           * account it is connected as, whether Colonia ships a client of its own (no Cloud Console needed) and which
            * client it is signed in with.
            */
           /** What its settings hold, beside where it is used: an email signature, the mail check, event reminders. */
@@ -385,7 +385,7 @@ export const resourceMethods = {
               redirect_uri: z.string(),
               account: z.string().optional(),
               builtin: z.boolean().optional(),
-              client: z.enum(["apx", "own"]).optional(),
+              client: z.enum(["colonia", "own"]).optional(),
             })
             .optional(),
         }),
@@ -406,7 +406,7 @@ export const resourceMethods = {
   },
   /**
    * Starts signing in to one that uses OAuth (Google) and gives the consent URL to open in a browser. `values.client`
-   * picks APX's own client ("apx") or the owner's ("own": the client typed is saved, a field left empty keeps the
+   * picks Colonia's own client ("colonia") or the owner's ("own": the client typed is saved, a field left empty keeps the
    * stored one). Google sends the browser back to the panel's
    * /oauth/google page, which finishes it.
    */

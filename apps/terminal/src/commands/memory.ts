@@ -1,6 +1,6 @@
-// apx memory: the notes agents keep between threads, as the owner sees and manages them.
-import type { Memory, MemoryScope } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+// colonia memory: the notes agents keep between threads, as the owner sees and manages them.
+import type { Memory, MemoryScope } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 const SCOPES = ["global", "project", "agent"] as const;
 
@@ -8,7 +8,7 @@ const where = (m: Memory) =>
   m.scope === "project" ? `project:${m.project_id}` : m.scope === "agent" ? `agent:${m.agent_id}` : "global";
 
 export async function memory(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, ...rest]: string[],
   opts: { project?: string | undefined; agent?: string | undefined; json?: boolean | undefined },
 ): Promise<void> {
@@ -17,7 +17,7 @@ export async function memory(
       const [scopeArg, ...words] = rest;
       const scope = SCOPES.includes(scopeArg as MemoryScope) ? (scopeArg as MemoryScope) : undefined;
       const text = (scope ? words : rest).join(" ").trim();
-      if (!text) throw new Error('usage: apx memory add [global|project|agent] "text" [--project p] [--agent a]');
+      if (!text) throw new Error('usage: colonia memory add [global|project|agent] "text" [--project p] [--agent a]');
       const resolved = scope ?? (opts.agent ? "agent" : opts.project ? "project" : "global");
       const m = await client.call("memory.add", {
         text,
@@ -31,7 +31,7 @@ export async function memory(
     case "edit": {
       const [id, ...words] = rest;
       const text = words.join(" ").trim();
-      if (!id || !text) throw new Error('usage: apx memory edit <id> "new text"');
+      if (!id || !text) throw new Error('usage: colonia memory edit <id> "new text"');
       // With an id the core rewrites that note in place and keeps its own scope; `scope` is only the schema's.
       const m = await client.call("memory.add", { id, text, scope: "global" });
       console.log(`${m.id}  ${where(m)}  edited`);
@@ -46,7 +46,7 @@ export async function memory(
       return;
     }
     default: {
-      // `apx memory`, `apx memory list`, or `apx memory search <words>`.
+      // `colonia memory`, `colonia memory list`, or `colonia memory search <words>`.
       const query = sub === "search" ? rest.join(" ") : sub && sub !== "list" ? [sub, ...rest].join(" ") : undefined;
       const r = await client.call("memory.list", {
         ...(query ? { query } : {}),

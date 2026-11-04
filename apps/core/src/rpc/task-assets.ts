@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import type { MediaRecord } from "../domain/media.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, notFound, unauthorized } from "../errors.ts";

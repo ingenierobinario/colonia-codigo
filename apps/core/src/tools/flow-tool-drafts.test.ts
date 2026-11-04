@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { CoreEvent } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import type { CoreEvent } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { createLog } from "../log.ts";
 import { flowTools } from "./flow-tool.ts";
 import { settingsCore } from "./settings.test-support.ts";
@@ -12,7 +12,7 @@ let acme = "";
 let northwind = "";
 const events: Extract<CoreEvent, { type: "flow.draft" }>[] = [];
 before(async () => {
-  h = await settingsCore({ tool: "apx_flow" });
+  h = await settingsCore({ tool: "colonia_flow" });
   acme = (await h.env.client.call("projects.create", { name: "Acme" })).project.id;
   northwind = (await h.env.client.call("projects.create", { name: "Northwind" })).project.id;
   // The table the drawings here save to: a step names a table that exists (DECISIONS.md#d-176).
@@ -306,10 +306,10 @@ test("an agent reaches the Flows of its project only, and nothing reaches them w
   const peek = await h.env.core.dispatch("flows.graph_get", { flow: other.flow.id }, as(writer));
   assert.ok(!peek.ok && peek.error.code === "not_found");
   // An agent's shell or an outside app: no agent behind the call.
-  const shell = new ApxClient({ url: h.env.core.url, actor: "agent" });
+  const shell = new ColoniaClient({ url: h.env.core.url, actor: "agent" });
   await assert.rejects(shell.call("flows.graph_get", { flow: id }), /reserved to the owner and their agents' tools/);
   const app = await h.env.client.call("clients.create", { name: "Acme app", scopes: ["chat"] });
-  const outsider = new ApxClient({ url: h.env.core.url, clientToken: app.token });
+  const outsider = new ColoniaClient({ url: h.env.core.url, clientToken: app.token });
   await assert.rejects(outsider.call("flows.create", { project: acme, name: "X", graph }), /outside/);
   // Publishing stays the owner's.
   const publish = await h.env.core.dispatch(

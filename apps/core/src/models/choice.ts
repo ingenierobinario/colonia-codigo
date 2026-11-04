@@ -1,7 +1,7 @@
 // Which model runs a turn. An agent's choice (or the install default) gives a model, the router, or both; the
 // router adds its first matching rule and its fallback chain. The result is an ordered list of model refs the turn
 // tries until one engine answers. Nothing here names a model: they all come from settings.
-import type { ModelChoice, ModelRef, RouterConfig, RouterRule } from "@apx/protocol";
+import type { ModelChoice, ModelRef, RouterConfig, RouterRule } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import { type EngineIds, isCliRef, parseRef } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
@@ -24,7 +24,7 @@ export function modelSettings(store: Store) {
       if (saved) return saved.model && isCliRef(saved.model) ? { router: true } : saved;
       return { router: true };
     },
-    /** The router as saved, without the CLIs an older APX let it name (they run only in their own sessions). */
+    /** The router as saved, without the CLIs an older Colonia let it name (they run only in their own sessions). */
     router(): RouterConfig {
       const r = store.settings.read("model_router");
       return { rules: r.rules.filter((x) => !isCliRef(x.model)), chain: r.chain.filter((x) => !isCliRef(x)) };

@@ -3,7 +3,7 @@
 // silently repeated).
 
 import { randomInt } from "node:crypto";
-import type { OutboxItem, PairingRequest } from "@apx/protocol";
+import type { OutboxItem, PairingRequest } from "@colonia/protocol";
 import { type Selectable, sql } from "kysely";
 import type { OutboxTable, PairingTable } from "../db/schema.ts";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";

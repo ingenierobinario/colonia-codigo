@@ -1,6 +1,6 @@
 // A table's rows as the Tables view shows and edits them (DECISIONS.md#d-176): a cell is text as typed, except numbers,
 // true/false and JSON lists or objects, which are kept as values; an empty cell is empty.
-import type { TableInfo, TableRow } from "@apx/protocol";
+import type { TableInfo, TableRow } from "@colonia/protocol";
 import { tableCells } from "../../../../packages/protocol/src/table-cells.ts";
 
 /** A cell as text in the grid and its edit field. */

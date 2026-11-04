@@ -23,7 +23,7 @@ for (const independent of [true, false]) {
                 state: "done",
                 note: "Verified report findings.",
               });
-        if (said.includes("APX stopped your last turn on this task")) return say("Policy summary completed.");
+        if (said.includes("Colonia stopped your last turn on this task")) return say("Policy summary completed.");
         await started;
         return req.tools.length
           ? callTool(`search-${req.messages.length}`, "memory_search", {

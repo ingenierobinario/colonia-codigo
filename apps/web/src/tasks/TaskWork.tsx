@@ -1,5 +1,5 @@
-import type { Result, Task, Thread } from "@apx/protocol";
-import { AgentAvatar, Icons, Skeleton, Spinner } from "@apx/ui";
+import type { Result, Task, Thread } from "@colonia/protocol";
+import { AgentAvatar, Icons, Skeleton, Spinner } from "@colonia/ui";
 import { formatNumber, shortWhen } from "../common/format.ts";
 import { blobOf, isWorking } from "../data/identity.ts";
 import { useData, useShownAgents } from "../data/state.ts";

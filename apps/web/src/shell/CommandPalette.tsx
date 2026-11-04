@@ -1,5 +1,5 @@
-import type { Task } from "@apx/protocol";
-import { AgentAvatar, Dialog, Icons, Kbd, ProjectTile } from "@apx/ui";
+import type { Task } from "@colonia/protocol";
+import { AgentAvatar, Dialog, Icons, Kbd, ProjectTile } from "@colonia/ui";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { CONFIG_SECTION_LABELS } from "../config/sectionLabels.ts";
 import { client } from "../data/client.ts";

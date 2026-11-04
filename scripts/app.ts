@@ -12,9 +12,9 @@ const step = (args: string[]) => {
   const r = spawnSync("pnpm", args, { cwd: root, stdio: "inherit" });
   if (r.status !== 0) process.exit(r.status ?? 1);
 };
-step(["--filter", "@apx/ui", "build"]);
-step(["--filter", "@apx/web", "build"]);
-step(["--filter", "@apx/desktop", "build"]);
+step(["--filter", "@colonia/ui", "build"]);
+step(["--filter", "@colonia/web", "build"]);
+step(["--filter", "@colonia/desktop", "build"]);
 
 // The core asks to be started again after it updated itself (exit code 75: the new code is on disk).
 const RESTART_CODE = 75;
@@ -23,7 +23,7 @@ function startCore() {
   const child = spawn(process.execPath, ["--disable-warning=ExperimentalWarning", "apps/core/src/main.ts"], {
     cwd: root,
     stdio: "inherit",
-    env: { ...process.env, ...compileCacheEnv(root), APX_SUPERVISED: "1" },
+    env: { ...process.env, ...compileCacheEnv(root), COLONIA_SUPERVISED: "1" },
   });
   child.on("exit", (code) => {
     if (code === RESTART_CODE) core = startCore();
@@ -35,7 +35,7 @@ const electron = devBundle() ?? path.join(root, "apps/desktop/node_modules/.bin/
 const desktop = spawn(electron, ["."], {
   cwd: path.join(root, "apps/desktop"),
   stdio: "inherit",
-  env: { ...process.env, APX_WEB_URL: process.env.APX_WEB_URL ?? "http://127.0.0.1:7440" },
+  env: { ...process.env, COLONIA_WEB_URL: process.env.COLONIA_WEB_URL ?? "http://127.0.0.1:7440" },
 });
 const stop = () => {
   desktop.kill();
@@ -50,7 +50,7 @@ process.on("SIGTERM", stop);
 
 /**
  * macOS names the app (menu bar, Dock, ⌘-Tab) and draws its icon from the bundle that runs. Electron's own bundle says
- * "Electron", so a copy named APX with APX's icon runs instead: an APFS clone (no space), rebuilt when Electron
+ * "Electron", so a copy named Colonia with Colonia's icon runs instead: an APFS clone (no space), rebuilt when Electron
  * changes. Elsewhere, or if anything fails, Electron runs as it is.
  */
 function devBundle(): string | undefined {
@@ -58,7 +58,7 @@ function devBundle(): string | undefined {
   try {
     const desktop = path.join(root, "apps/desktop");
     const source = path.join(path.dirname(electronPackage(desktop)), "dist", "Electron.app");
-    const app = path.join(desktop, ".dev", "APX.app");
+    const app = path.join(desktop, ".dev", "Colonia.app");
     const stamp = path.join(desktop, ".dev", "electron-version");
     const version = fs.readFileSync(path.join(source, "Contents", "Info.plist"), "utf8");
     if (!fs.existsSync(app) || fs.readFileSync(stamp, "utf8") !== version) {
@@ -68,7 +68,7 @@ function devBundle(): string | undefined {
       if (!cloned && spawnSync("cp", ["-R", source, app]).status !== 0) return undefined;
       const plist = path.join(app, "Contents", "Info.plist");
       for (const key of ["CFBundleName", "CFBundleDisplayName"])
-        spawnSync("plutil", ["-replace", key, "-string", "APX", plist]);
+        spawnSync("plutil", ["-replace", key, "-string", "Colonia", plist]);
       fs.writeFileSync(stamp, version);
     }
     const icon = path.join(desktop, "assets", "icon.png");
@@ -96,9 +96,9 @@ function electronPackage(desktop: string): string {
   return fs.realpathSync(path.join(desktop, "node_modules", "electron", "package.json"));
 }
 
-/** A .icns from the APX logo (sips + iconutil, both part of macOS). */
+/** A .icns from the Colonia logo (sips + iconutil, both part of macOS). */
 function makeIcns(png: string, dir: string): string | undefined {
-  const set = path.join(dir, "APX.iconset");
+  const set = path.join(dir, "Colonia.iconset");
   fs.mkdirSync(set, { recursive: true });
   for (const size of [16, 32, 128, 256, 512]) {
     spawnSync("sips", ["-z", String(size), String(size), png, "--out", path.join(set, `icon_${size}x${size}.png`)]);
@@ -111,6 +111,6 @@ function makeIcns(png: string, dir: string): string | undefined {
       path.join(set, `icon_${size}x${size}@2x.png`),
     ]);
   }
-  const out = path.join(dir, "APX.icns");
+  const out = path.join(dir, "Colonia.icns");
   return spawnSync("iconutil", ["-c", "icns", set, "-o", out]).status === 0 ? out : undefined;
 }

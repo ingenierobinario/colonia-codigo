@@ -1,4 +1,4 @@
-import { sameShape, shapeOfDefinition, shapeOfGraph } from "@apx/protocol/flow-shape";
+import { sameShape, shapeOfDefinition, shapeOfGraph } from "@colonia/protocol/flow-shape";
 import { matchesFlowPredicates } from "../domain/flow-evaluate.ts";
 import { flowDraftOrder, flowGraphOrder } from "../domain/flow-graph-semantics.ts";
 import { tryFlowGraph } from "../domain/flow-graph-try.ts";

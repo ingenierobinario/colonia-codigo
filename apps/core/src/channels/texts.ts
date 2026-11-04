@@ -1,11 +1,11 @@
-// What APX itself writes on a channel (not the agent's words), in the owner's language.
+// What Colonia itself writes on a channel (not the agent's words), in the owner's language.
 import type { Store } from "../domain/store.ts";
 
 const es = {
   pairing: (name: string, agent: string, code: string, label: string) =>
-    `Hola ${name}. Soy ${agent}, un asistente. Todavía no conozco este chat: hay que aprobarlo con el código ${code}. Si sos mi dueño, en APX › ${label} tocá "Soy yo" y escribilo.`,
+    `Hola ${name}. Soy ${agent}, un asistente. Todavía no conozco este chat: hay que aprobarlo con el código ${code}. Si sos mi dueño, en Colonia › ${label} tocá "Soy yo" y escribilo.`,
   pairingOwner: (name: string, label: string, code: string) =>
-    `${name} quiere hablar por ${label}. Código ${code}. Aprobalo acá o en APX › Canales.`,
+    `${name} quiere hablar por ${label}. Código ${code}. Aprobalo acá o en Colonia › Canales.`,
   pairingApp: (name: string, label: string, code: string) =>
     `${name} quiere hablar por ${label} (código ${code}). Aprobalo en la lista de ${label}.`,
   askOwner: (name: string, label: string, text: string) =>
@@ -25,7 +25,7 @@ const es = {
   skip: "Omitir",
   skipped: "(omitida)",
   pickSome: "Tildá al menos una opción, o tocá Omitir.",
-  cut: (more: number) => `(cortado: ${more} caracteres más, miralos en APX antes de aprobar)`,
+  cut: (more: number) => `(cortado: ${more} caracteres más, miralos en Colonia antes de aprobar)`,
   asContact: "Aprobar como contacto",
   ignore: "Ignorar",
   failed: (why: string) => `No pude terminar: ${why}`,
@@ -88,9 +88,9 @@ const es = {
   suggestionDropped: (name: string) => `Listo: no le contesto a ${name}.`,
   suggestionGone: "Esa sugerencia ya no está pendiente (ya se decidió o llegó un mensaje más nuevo).",
   inputGone: "Eso ya no está pendiente: se respondió en otro lado o venció.",
-  inApp: "Esto se responde en la app de APX (el panel, el escritorio o tu teléfono vinculado), no por este canal.",
+  inApp: "Esto se responde en la app de Colonia (el panel, el escritorio o tu teléfono vinculado), no por este canal.",
   waiting: (agent: string, what: string) =>
-    `${agent} te espera: ${what}\n\nRespondele en APX (la app, el escritorio o tu teléfono).`,
+    `${agent} te espera: ${what}\n\nRespondele en Colonia (la app, el escritorio o tu teléfono).`,
   writeNow: (name: string, minutes: number) =>
     `Escribí tu respuesta para ${name}: lo próximo que me mandes acá se lo envío tal cual (durante ${minutes} minutos). Mandá «cancelar» para no enviarle nada.`,
   writeCanceled: "Listo, no le mando nada.",
@@ -100,9 +100,9 @@ const es = {
 
 const en: typeof es = {
   pairing: (name, agent, code, label) =>
-    `Hi ${name}. I'm ${agent}, an assistant. I don't know this chat yet: it has to be approved with the code ${code}. If you are my owner, tap "It's me" in APX › ${label} and type it.`,
+    `Hi ${name}. I'm ${agent}, an assistant. I don't know this chat yet: it has to be approved with the code ${code}. If you are my owner, tap "It's me" in Colonia › ${label} and type it.`,
   pairingOwner: (name, label, code) =>
-    `${name} wants to talk on ${label}. Code ${code}. Approve it here or in APX › Channels.`,
+    `${name} wants to talk on ${label}. Code ${code}. Approve it here or in Colonia › Channels.`,
   pairingApp: (name, label, code) =>
     `${name} wants to talk on ${label} (code ${code}). Approve it in the ${label} list.`,
   askOwner: (name, label, text) => `${name} wrote to you on ${label}${text ? `: "${text}"` : "."} Shall I answer?`,
@@ -121,7 +121,7 @@ const en: typeof es = {
   skip: "Skip",
   skipped: "(skipped)",
   pickSome: "Tick at least one option, or tap Skip.",
-  cut: (more) => `(cut: ${more} more characters, see them in APX before approving)`,
+  cut: (more) => `(cut: ${more} more characters, see them in Colonia before approving)`,
   asContact: "Approve as contact",
   ignore: "Ignore",
   failed: (why) => `I couldn't finish: ${why}`,
@@ -181,9 +181,9 @@ const en: typeof es = {
   suggestionDropped: (name) => `Done: I won't answer ${name}.`,
   suggestionGone: "That suggestion is no longer pending (it was decided, or a newer message came in).",
   inputGone: "That is no longer pending: it was answered elsewhere or it expired.",
-  inApp: "Answer this in the APX app (the panel, the desktop or your paired phone), not on this channel.",
+  inApp: "Answer this in the Colonia app (the panel, the desktop or your paired phone), not on this channel.",
   waiting: (agent, what) =>
-    `${agent} is waiting for you: ${what}\n\nAnswer them in APX (the app, the desktop or your phone).`,
+    `${agent} is waiting for you: ${what}\n\nAnswer them in Colonia (the app, the desktop or your phone).`,
   writeNow: (name, minutes) =>
     `Write your answer for ${name}: the next thing you send me here goes to them as it is (for ${minutes} minutes). Send "cancel" to send nothing.`,
   writeCanceled: "Done, I'm sending nothing.",

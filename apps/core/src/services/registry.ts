@@ -4,7 +4,7 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { ImageDefaults, ServiceInfo, ServiceKind, ServiceSettings, ServiceTest } from "@apx/protocol";
+import type { ImageDefaults, ServiceInfo, ServiceKind, ServiceSettings, ServiceTest } from "@colonia/protocol";
 import type { MediaRecord } from "../domain/media.ts";
 import type { Store } from "../domain/store.ts";
 import { errorMessage } from "../errors.ts";
@@ -92,7 +92,7 @@ export function createServices(deps: {
     const cached = status.get(s.id);
     if (cached && Date.now() - cached.at < STATUS_TTL_MS) return cached.ok;
     const path = PROBES[s.kind][s.dialect] ?? "/";
-    // APX's own whisper.cpp is not started just to be checked; Codex is there when it is signed in.
+    // Colonia's own whisper.cpp is not started just to be checked; Codex is there when it is signed in.
     const ok =
       s.dialect === "whisper-cpp"
         ? whisperCpp.available(s.model)
@@ -178,7 +178,7 @@ export function createServices(deps: {
       status.delete(id);
     },
     /**
-     * Adds a service APX found on this machine, first of its kind, once: one the owner removed (or already has, under
+     * Adds a service Colonia found on this machine, first of its kind, once: one the owner removed (or already has, under
      * any id) is not added again. True when it was added now.
      */
     offer(id: string, s: ServiceSettings): boolean {
@@ -308,14 +308,14 @@ export function createServices(deps: {
       const s = ofKind("embedding").find((x) => x.enabled);
       return s ? [s.label, s.model].filter(Boolean).join(" · ") : undefined;
     },
-    /** Stops what APX runs itself (its whisper.cpp). */
+    /** Stops what Colonia runs itself (its whisper.cpp). */
     close: () => whisperCpp.close(),
-    /** A media file's bytes; only files APX itself recorded are ever read. */
-    /** Keeps bytes APX was handed (a contact's profile picture) as media, read back through media.get. */
+    /** A media file's bytes; only files Colonia itself recorded are ever read. */
+    /** Keeps bytes Colonia was handed (a contact's profile picture) as media, read back through media.get. */
     keep(bytes: Buffer, mime: string): MediaRecord {
       return saveFile(bytes, mime, { kind: "image" });
     },
-    /** An image APX keeps that a drawing may work from; only one of `thread`'s when a thread is given. */
+    /** An image Colonia keeps that a drawing may work from; only one of `thread`'s when a thread is given. */
     imageReference(id: string, thread: string | undefined): ImageReference | undefined {
       const m = store.media.get(id);
       if (m?.kind !== "image" || !REFERENCE_MIME.has(m.mime) || (thread && m.thread_id !== thread)) return undefined;

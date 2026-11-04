@@ -23,7 +23,7 @@ import type { Scheduler } from "../engine/routines.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import type { Handlers } from "./router.ts";
 
-const PROFILE_HINT = "it needs an apx-profile.json";
+const PROFILE_HINT = "it needs an colonia-profile.json";
 
 export function routineHandlers(store: Store, scheduler: Scheduler, profileRoots: readonly ProfileRoot[] = []) {
   const lang = () => store.settings.get("owner_language") ?? "es";

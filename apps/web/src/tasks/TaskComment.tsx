@@ -1,5 +1,5 @@
-import type { Agent, Task } from "@apx/protocol";
-import { AgentAvatar, Composer, IconButton, Icons, withMentions } from "@apx/ui";
+import type { Agent, Task } from "@colonia/protocol";
+import { AgentAvatar, Composer, IconButton, Icons, withMentions } from "@colonia/ui";
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 import { availableAgents } from "../common/pickers/agents.ts";
 import { blobOf } from "../data/identity.ts";

@@ -1,4 +1,4 @@
-import { FLOW_OTHERWISE, flowBranches, flowCases } from "@apx/protocol/flow-cases";
+import { FLOW_OTHERWISE, flowBranches, flowCases } from "@colonia/protocol/flow-cases";
 import type { FlowGraph, FlowNode } from "../../../../packages/protocol/src/flow-graph.ts";
 import type { MessageKey } from "../i18n/index.ts";
 
@@ -6,7 +6,7 @@ type Condition = Extract<FlowNode, { kind: "condition" }>;
 type T = (key: MessageKey, vars?: Record<string, string | number>) => string;
 
 // The edits an agent's tool makes too live in the protocol package, so both draw alike.
-export { connectionError, connectNodes, disconnectNodes, newNode, removeNode } from "@apx/protocol/flow-edit";
+export { connectionError, connectNodes, disconnectNodes, newNode, removeNode } from "@colonia/protocol/flow-edit";
 export type NodeKind = FlowNode["kind"];
 
 /** A check in the form that has cases: one drawn before them keeps its value as its "yes" case. */

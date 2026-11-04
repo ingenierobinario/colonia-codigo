@@ -1,11 +1,11 @@
 {
   "shape": "package",
-  "pkg": "@apx/ui",
-  "globalName": "ApxUI",
-  "buildCmd": "pnpm --filter @apx/ui build",
+  "pkg": "@colonia/ui",
+  "globalName": "ColoniaUI",
+  "buildCmd": "pnpm --filter @colonia/ui build",
   "cssEntry": "dist/styles.css",
   "provider": {
-    "component": "ApxProvider",
+    "component": "ColoniaProvider",
     "props": {
       "look": "minimal",
       "mode": "light"
@@ -31,7 +31,7 @@
       "cardMode": "single",
       "viewport": "360x160"
     },
-    "ApxProvider": {
+    "ColoniaProvider": {
       "cardMode": "column"
     },
     "Icons": {

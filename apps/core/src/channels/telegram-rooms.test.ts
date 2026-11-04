@@ -7,7 +7,7 @@ import { fakeTelegram } from "./fake-telegram.test-support.ts";
 import { callsBot, telegramAdapter } from "./telegram.ts";
 
 const TOKEN = "123456:TEST-rooms-token";
-const BOT = { id: 1, username: "apx_test_bot" };
+const BOT = { id: 1, username: "colonia_test_bot" };
 const OWNER = { id: 1001, name: "Owner", username: "owner_acme" };
 const ANA = { id: 2002, name: "Ana", username: "ana_acme" };
 const GROUPS = { team: -1001234500001, all: -1001234500002, unlisted: -1001234500009 };
@@ -87,14 +87,14 @@ after(async () => {
 });
 
 test("a group message calls the bot by @mention, a command to it, or a reply to its message", () => {
-  const text = "hey @apx_test_bot";
+  const text = "hey @colonia_test_bot";
   assert.equal(callsBot({ message_id: 1, chat: { id: -1, type: "group" }, text, ...mention(text) }, BOT), true);
   const other = "hey @someone_else";
   assert.equal(
     callsBot({ message_id: 1, chat: { id: -1, type: "group" }, text: other, ...mention(other, "@someone_else") }, BOT),
     false,
   );
-  const cmd = "/help@apx_test_bot";
+  const cmd = "/help@colonia_test_bot";
   const entities = [{ type: "bot_command", offset: 0, length: cmd.length }];
   assert.equal(callsBot({ message_id: 1, chat: { id: -1, type: "group" }, text: cmd, entities }, BOT), true);
   const reply = { message_id: 1, chat: { id: -1, type: "group" }, text: "ok", reply_to_message: { from: BOT } };
@@ -102,7 +102,7 @@ test("a group message calls the bot by @mention, a command to it, or a reply to 
 });
 
 test("an unlisted group is neither kept nor answered, but it is offered in the rooms picker", async () => {
-  tg.message(ANA, "hello @apx_test_bot", { id: GROUPS.unlisted, type: "supergroup", title: "Northwind" });
+  tg.message(ANA, "hello @colonia_test_bot", { id: GROUPS.unlisted, type: "supergroup", title: "Northwind" });
   await waitFor(async () => {
     const { rooms } = await env.client.call("channels.rooms", { channel: "tg" });
     return rooms.some((r) => r.id === String(GROUPS.unlisted) && r.name === "Northwind");
@@ -128,7 +128,7 @@ test("a mention group keeps every message and answers only when called, in the g
   await pause(150);
   assert.equal(posts(GROUPS.team).length, 0, "not called, not answered");
 
-  const text = "@apx_test_bot what is Acme Notes?";
+  const text = "@colonia_test_bot what is Acme Notes?";
   const asked = tg.message(ANA, text, chat, mention(text));
   await waitFor(() => posts(GROUPS.team).length === 1, "answered when @mentioned");
   assert.ok(kept(GROUPS.team).includes("what is Acme Notes?"), "the bot's own @mention is dropped from the text");

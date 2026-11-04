@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { type TestContext, test } from "node:test";
-import { Task, type TaskColumn } from "@apx/protocol";
+import { Task, type TaskColumn } from "@colonia/protocol";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 

@@ -10,7 +10,7 @@ import { removeDir } from "../testkit/platform.ts";
 import { isWindowsShim, type OneshotId, oneshotHarness, oneshotStatus } from "./oneshot.ts";
 import type { TurnIO } from "./types.ts";
 
-const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-oneshot-test-")));
+const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-oneshot-test-")));
 after(() => removeDir(root));
 const fixture = fileURLToPath(new URL("./fake-oneshot.test-support.mjs", import.meta.url));
 
@@ -78,13 +78,13 @@ for (const id of ["aider", "antigravity"] as const) {
     assert.equal(harnessOf(`${id}/acme-model`), id);
     assert.equal(isCliRef(id), true);
     const { harness, io, events } = setup(id);
-    process.env.APX_ONESHOT_TEST_SECRET = "must not reach child";
+    process.env.COLONIA_ONESHOT_TEST_SECRET = "must not reach child";
     process.env.ONESHOT_TEST_CREDENTIAL = "must not reach child";
     try {
       const result = await harness.run(io);
       const body = JSON.parse(result.text);
       assert.equal(body.cwd, root);
-      assert.equal(body.apx, undefined);
+      assert.equal(body.colonia, undefined);
       assert.equal(body.credential, undefined);
       assert.ok(!JSON.stringify(body.args).includes("System rules"));
       assert.ok(body.prompt.includes("System rules"));
@@ -101,7 +101,7 @@ for (const id of ["aider", "antigravity"] as const) {
         assert.equal(fs.existsSync(body.args[body.args.indexOf("--message-file") + 1]), false);
       }
     } finally {
-      delete process.env.APX_ONESHOT_TEST_SECRET;
+      delete process.env.COLONIA_ONESHOT_TEST_SECRET;
       delete process.env.ONESHOT_TEST_CREDENTIAL;
     }
   });

@@ -43,7 +43,7 @@ export async function fakeMatrix(): Promise<FakeBridge> {
     if (req.headers.authorization !== `Bearer ${TOKEN}`)
       return json(res, 401, { errcode: "M_UNKNOWN_TOKEN", error: "bad token" });
     const p = url.pathname;
-    if (p.endsWith("/account/whoami")) return json(res, 200, { user_id: "@apx:example.org" });
+    if (p.endsWith("/account/whoami")) return json(res, 200, { user_id: "@colonia:example.org" });
     if (p.includes("/profile/")) return json(res, 200, { displayname: "Someone" });
     if (p.endsWith("/sync")) {
       if (!queue.length)
@@ -98,7 +98,7 @@ export async function fakeMattermost(): Promise<FakeBridge> {
   const dm = (user: string) => `dm-${user}`;
   const server = http.createServer(async (req, res) => {
     if (req.headers.authorization !== `Bearer ${TOKEN}`) return json(res, 401, { message: "bad token" });
-    if (req.url === "/api/v4/users/me") return json(res, 200, { id: "bot1", username: "apx" });
+    if (req.url === "/api/v4/users/me") return json(res, 200, { id: "bot1", username: "colonia" });
     if (req.url === "/api/v4/posts" && req.method === "POST") {
       const b = await body(req);
       sent.push({ channel: String(b.channel_id), text: String(b.message ?? "") });

@@ -28,4 +28,4 @@ editor and for the read-only canvas of a run.
 <FlowStepTile icon={<Icons.Zap />} tone="warning" size="lg" />
 ```
 
-Its styles ship apart, in `@apx/ui/flow.css`: import it in the lazy screen that uses it.
+Its styles ship apart, in `@colonia/ui/flow.css`: import it in the lazy screen that uses it.

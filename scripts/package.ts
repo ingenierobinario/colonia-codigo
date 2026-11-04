@@ -35,19 +35,19 @@ const step = (cmd: string, cmdArgs: string[], cwd = repo, env: NodeJS.ProcessEnv
   execFileSync(cmd, cmdArgs, { cwd, env, stdio: "inherit", shell: win });
 };
 
-// A release's tag (CI sets package.json from it), or here the last tag and the commits past it; APX_VERSION names it
+// A release's tag (CI sets package.json from it), or here the last tag and the commits past it; COLONIA_VERSION names it
 // outright (two builds to try an update between).
 const version =
-  process.env.APX_VERSION ||
+  process.env.COLONIA_VERSION ||
   buildVersion(
     (JSON.parse(fs.readFileSync(path.join(desktop, "package.json"), "utf8")) as { version: string }).version,
     repo,
   );
-const env = { ...process.env, APX_VERSION: version };
+const env = { ...process.env, COLONIA_VERSION: version };
 
 step("pnpm", ["build:web"], repo, env);
-step("pnpm", ["--filter", "@apx/desktop", "build"]);
-step("node", ["apps/desktop/scripts/stage.ts"], repo, { ...env, APX_TARGET: `${os}-${arch}` });
+step("pnpm", ["--filter", "@colonia/desktop", "build"]);
+step("node", ["apps/desktop/scripts/stage.ts"], repo, { ...env, COLONIA_TARGET: `${os}-${arch}` });
 // A cross-built bundle's native modules cannot load here; its own platform's build starts it.
 if (host?.os === os && host.arch === arch) step("node", ["apps/desktop/scripts/smoke.ts"]);
 else console.log(`\nstaged core not started: built for ${os}-${arch} on ${host?.os}-${host?.arch}`);
@@ -88,5 +88,5 @@ for (const f of fs.readdirSync(out)) {
   if (/-unpacked$|^mac(-arm64)?$|^builder-|\.blockmap$|\.yml$/.test(f))
     fs.rmSync(path.join(out, f), { recursive: true, force: true });
 }
-console.log(`\nAPX ${version} for ${os}-${arch} in out/:`);
+console.log(`\nColonia ${version} for ${os}-${arch} in out/:`);
 for (const f of fs.readdirSync(out).sort()) console.log(`  ${f}`);

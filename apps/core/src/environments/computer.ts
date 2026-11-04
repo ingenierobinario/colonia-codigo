@@ -1,4 +1,4 @@
-import { COMPUTER_GRANT, type TabInfo } from "@apx/protocol";
+import { COMPUTER_GRANT, type TabInfo } from "@colonia/protocol";
 import type { ApprovalTarget } from "../domain/approvals.ts";
 import type { Store } from "../domain/store.ts";
 import { audienceOf } from "../engine/audience.ts";
@@ -52,7 +52,7 @@ export type ComputerConfig = {
 /** The grant that lets one agent use the computer: for good, or for one chat (DECISIONS.md#d-151). */
 export const computerApproval: ApprovalTarget = {
   key: COMPUTER_GRANT,
-  server: "apx",
+  server: "colonia",
   tool: "computer",
   permanent: false,
 };
@@ -446,7 +446,7 @@ export function createComputer(store: Store, config: ComputerConfig) {
     /** Someone holds a screen, or the owner has one of the agents' screens in hand. */
     inUse: () =>
       ledger.pending() > 0 || ledger.claims().length > 0 || [...leases.values()].some((lease) => lease.human()),
-    /** Every agent screen that is up follows APX's light or dark mode. */
+    /** Every agent screen that is up follows Colonia's light or dark mode. */
     async appearance(look: Appearance) {
       const changed = store.settings.get("vm_appearance") !== look;
       store.settings.set("vm_appearance", look);

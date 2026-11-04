@@ -1,8 +1,8 @@
 {
-  "name": "@apx/ui",
+  "name": "@colonia/ui",
   "version": "0.1.0",
   "private": true,
-  "description": "APX design system — one component set, two looks (minimal · classic), light and dark.",
+  "description": "Colonia design system — one component set, two looks (minimal · classic), light and dark.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

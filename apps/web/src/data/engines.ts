@@ -1,12 +1,12 @@
 // Engines (who runs an agent's turns): installed, signed in, default. The core may predate engines.*: degrade quietly.
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { type MessageKey, t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";
 import { data } from "./state.ts";
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
-const missing = (e: unknown) => e instanceof ApxError && e.code === "unknown_method";
+const missing = (e: unknown) => e instanceof ColoniaError && e.code === "unknown_method";
 
 /** Installed / logged-in state of each engine. `refresh` asks the core to re-probe the CLIs. */
 export async function loadEngines(refresh = false): Promise<void> {

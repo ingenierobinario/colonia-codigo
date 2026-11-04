@@ -1,5 +1,5 @@
 // Synced from packages/ui/src/engine-marks.ts by scripts/sync-design-assets.mjs.
-// Official marks of the engines APX can drive, used only to identify each app (never altered or recoloured).
+// Official marks of the engines Colonia can drive, used only to identify each app (never altered or recoloured).
 // Path data from @lobehub/icons-static-svg (MIT); the marks belong to their owners.
 
 export const ENGINE_MARKS = {

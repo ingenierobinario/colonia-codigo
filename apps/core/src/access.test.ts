@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { parseCoreEnv } from "@apx/protocol";
+import { parseCoreEnv } from "@colonia/protocol";
 import { createAccess, type TailscaleRun, tailscaleRunner } from "./access.ts";
 
 const fakeTailscale = (calls: string[][], connected = true): TailscaleRun => {
@@ -18,7 +18,7 @@ const fakeTailscale = (calls: string[][], connected = true): TailscaleRun => {
 };
 
 function setup(o: { tailscale?: TailscaleRun; restart?: () => void; running?: { host: string; publicUrl?: string } }) {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-access-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-access-"));
   const access = createAccess({
     home,
     running: { host: o.running?.host ?? "127.0.0.1", publicUrl: o.running?.publicUrl, token: undefined },
@@ -37,8 +37,8 @@ test("the local network: saved with a token, and a supervised core restarts to t
   assert.equal((await s.access.state()).mode, "local");
   const r = await s.access.set("lan");
   assert.deepEqual([r.mode, r.saved, r.restart_needed, r.restarting], ["local", "lan", true, true]);
-  assert.equal(s.env().APX_HOST, "0.0.0.0");
-  assert.ok(s.env().APX_TOKEN);
+  assert.equal(s.env().COLONIA_HOST, "0.0.0.0");
+  assert.ok(s.env().COLONIA_TOKEN);
   const mode = fs.statSync(path.join(s.home, "core.env")).mode & 0o777;
   // Windows exposes the writable bit, not POSIX owner/group permissions.
   assert.equal(mode, process.platform === "win32" ? 0o666 : 0o600);
@@ -53,14 +53,14 @@ test("Tailscale: serves the core on the tailnet's https name, and back to local 
   const r = await s.access.set("tailscale");
   assert.equal(r.saved, "tailscale");
   assert.equal(r.restarting, false, "nothing restarts an unsupervised core");
-  assert.equal(s.env().APX_PUBLIC_URL, "https://box.tail0.ts.net");
+  assert.equal(s.env().COLONIA_PUBLIC_URL, "https://box.tail0.ts.net");
   const serves = () => calls.filter((c) => c[0] === "serve");
   assert.deepEqual(serves(), [["serve", "--bg", "--https=443", "http://127.0.0.1:7440"]]);
-  const token = s.env().APX_TOKEN;
+  const token = s.env().COLONIA_TOKEN;
   await s.access.set("local");
   assert.deepEqual(serves().at(-1), ["serve", "--https=443", "off"]);
-  assert.equal(s.env().APX_PUBLIC_URL, undefined);
-  assert.equal(s.env().APX_TOKEN, token, "the token stays");
+  assert.equal(s.env().COLONIA_PUBLIC_URL, undefined);
+  assert.equal(s.env().COLONIA_TOKEN, token, "the token stays");
   s.done();
 });
 

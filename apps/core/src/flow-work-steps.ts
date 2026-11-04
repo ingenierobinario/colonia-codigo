@@ -7,7 +7,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { FlowBinding, FlowGraph, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowBinding, FlowGraph, FlowNode } from "@colonia/protocol/flow-graph";
 import type { FlowGraphRun, FlowStepKey } from "./domain/flow-graph-runs.ts";
 import {
   boundedFlowValue,
@@ -18,12 +18,12 @@ import {
 import { FLOW_ENV_REFUSED, flowDatabaseProblem } from "./domain/flow-graph-validate.ts";
 import { flowSecretVars, secretTemplate } from "./domain/flow-secret-vars.ts";
 import { flowSqlShape, SQL_READS, SQL_WRITES } from "./domain/flow-sql.ts";
-import { type FlowApx, parseFlowTemplate, renderFlowTemplate } from "./domain/flow-template.ts";
+import { type FlowColonia, parseFlowTemplate, renderFlowTemplate } from "./domain/flow-template.ts";
 import type { Store } from "./domain/store.ts";
 import type { RunTimers } from "./engine/engine.ts";
 import { runStep } from "./engine/pipeline.ts";
 import { SECRET_REF } from "./flow-outward.ts";
-import { flowApx, secretScrubber } from "./flow-outward-steps.ts";
+import { flowColonia, secretScrubber } from "./flow-outward-steps.ts";
 import { commandEnv } from "./harness/env.ts";
 import { nodeChildEnv } from "./node-runtime.ts";
 import { isInside, real, realpath, tildeHome } from "./paths.ts";
@@ -79,14 +79,14 @@ function templateValue(
   template: string,
   resolve: (b: FlowBinding) => unknown,
   graph: FlowGraph,
-  apx: FlowApx,
+  colonia: FlowColonia,
 ): unknown {
   const parts = parseFlowTemplate(template, flowVarIndex(graph));
   const only = parts.length === 1 ? parts[0] : undefined;
-  return only && "binding" in only ? resolve(only.binding) : renderFlowTemplate(parts, resolve, { apx }).text;
+  return only && "binding" in only ? resolve(only.binding) : renderFlowTemplate(parts, resolve, { colonia }).text;
 }
-const templateText = (template: string, resolve: (b: FlowBinding) => unknown, graph: FlowGraph, apx: FlowApx) =>
-  renderFlowTemplate(parseFlowTemplate(template, flowVarIndex(graph)), resolve, { apx }).text;
+const templateText = (template: string, resolve: (b: FlowBinding) => unknown, graph: FlowGraph, colonia: FlowColonia) =>
+  renderFlowTemplate(parseFlowTemplate(template, flowVarIndex(graph)), resolve, { colonia }).text;
 
 /** Steps on every path before `id`. */
 function ancestors(graph: FlowGraph, id: string): Set<string> {
@@ -187,7 +187,7 @@ function runChild(
 
 /**
  * Where a Flow's commands run and its databases are: its project's folder, real. A project without a folder of its
- * own gets APX's side folder for it, made on first use; a folder that is gone is undefined.
+ * own gets Colonia's side folder for it, made on first use; a folder that is gone is undefined.
  */
 type CodeRequest = { code: string; input: unknown; vars: Record<string, unknown>; timeoutMs: number };
 type SqlRequest = {
@@ -227,8 +227,8 @@ export function flowFolder(store: Store, home: string | undefined, projectId: st
 }
 
 /**
- * The database file a step names, inside its project's folder, never a link and never one of APX's own (its database,
- * its secrets): inside APX's folder only a project's own side folder is a step's. A read needs the file; a write may
+ * The database file a step names, inside its project's folder, never a link and never one of Colonia's own (its database,
+ * its secrets): inside Colonia's folder only a project's own side folder is a step's. A read needs the file; a write may
  * make it, in a folder that is there.
  */
 export function flowDatabaseFile(folder: string, home: string | undefined, node: Sql): string | undefined {
@@ -242,8 +242,8 @@ export function flowDatabaseFile(folder: string, home: string | undefined, node:
   if (link) return undefined;
   const file = real(named);
   if (!isInside(folder, file) || file === folder) return undefined;
-  const apx = home ? real(home) : undefined;
-  if (apx && isInside(apx, file) && !isInside(path.join(apx, "projects"), folder)) return undefined;
+  const colonia = home ? real(home) : undefined;
+  if (colonia && isInside(colonia, file) && !isInside(path.join(colonia, "projects"), folder)) return undefined;
   const exists = fs.existsSync(file);
   if (exists ? !fs.statSync(file).isFile() : node.mode === "read" || !fs.existsSync(path.dirname(file)))
     return undefined;
@@ -261,7 +261,7 @@ const CONNECTION_NAME = /(DSN|DATABASE_URL|_URI$|CONNECTION|_PAT$|^PAT$|PASSWD|C
 export function createWorkSteps(deps: {
   store: Store;
   timers: RunTimers;
-  /** APX's own folder: a project without a folder of its own works in it, and its database is never a step's. */
+  /** Colonia's own folder: a project without a folder of its own works in it, and its database is never a step's. */
   home: string | undefined;
   /** Registers a process in flight so a stop or the deadline ends it. */
   track(ac: AbortController, run: FlowGraphRun): () => void;
@@ -368,7 +368,7 @@ export function createWorkSteps(deps: {
         Object.fromEntries(
           node.params.map((p) => [
             p.name,
-            templateValue(p.value, resolve, run.graph, flowApx(store, run, now())) ?? null,
+            templateValue(p.value, resolve, run.graph, flowColonia(store, run, now())) ?? null,
           ]),
         ),
       ) as Record<string, unknown>;
@@ -419,7 +419,7 @@ export function createWorkSteps(deps: {
     const env: Record<string, string> = {};
     const shownEnv: Record<string, string> = {};
     const used: string[] = [];
-    const apx = flowApx(store, run, now());
+    const colonia = flowColonia(store, run, now());
     const project = store.flows.get(run.flow)?.projectId ?? "";
     let stdin: string;
     const secretVars = flowSecretVars(run.graph);
@@ -430,7 +430,7 @@ export function createWorkSteps(deps: {
         if (!parts) throw new StepRefused(W.missing);
         // A secret is read only in the owner's own text, never in a value the payload brought (DECISIONS.md#d-172).
         env[e.name] = renderFlowTemplate(parts, resolve, {
-          apx,
+          colonia,
           literal: (t) =>
             t.replace(SECRET_REF, (ref) => {
               const value = deps.secret?.(ref, project);
@@ -439,9 +439,9 @@ export function createWorkSteps(deps: {
               return value;
             }),
         }).text;
-        shownEnv[e.name] = renderFlowTemplate(parts, resolve, { apx }).text;
+        shownEnv[e.name] = renderFlowTemplate(parts, resolve, { colonia }).text;
       }
-      stdin = templateText(node.stdin, resolve, run.graph, apx);
+      stdin = templateText(node.stdin, resolve, run.graph, colonia);
       if (Buffer.byteLength(stdin) > INPUT_LIMIT || Buffer.byteLength(JSON.stringify(env)) > INPUT_LIMIT)
         throw new StepRefused(W.value);
     } catch (err) {

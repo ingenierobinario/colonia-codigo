@@ -106,5 +106,5 @@ test("a muted, supervised contact's card keeps its three buttons on one row, Sav
   expect(save && mute && Math.abs(save.y - mute.y) < 4).toBe(true);
   // A label cut short still says what it does in its tooltip.
   await supervise.hover();
-  await expect(page.locator(".apx-tooltip")).toContainText("te llega la respuesta sugerida");
+  await expect(page.locator(".colonia-tooltip")).toContainText("te llega la respuesta sugerida");
 });

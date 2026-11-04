@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { UPLOAD_LIMITS } from "@apx/protocol";
+import { UPLOAD_LIMITS } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
 import { fakeWhatsApp } from "./fake-whatsapp.test-support.ts";
@@ -79,7 +79,7 @@ test("a person's profile picture comes from the channel, kept as media; one who 
 
 test("codes keep coming for a few rounds while nobody scans, then linking waits for the owner", async () => {
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
   const adapter = whatsappAdapter({ dir, lib: async () => fake.lib });
   const codes: string[] = [];
   const states: string[] = [];
@@ -436,7 +436,7 @@ test("removing the channel unlinks the device and drops its folder", async () =>
 
 test("adapter: options go out numbered, a number back presses that option; Markdown reads as WhatsApp", async () => {
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
   const adapter = whatsappAdapter({ dir, selfOwner: true, lib: async () => fake.lib });
   const actions: string[] = [];
   const ac = new AbortController();

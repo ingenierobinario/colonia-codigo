@@ -1,5 +1,5 @@
-import type { Notification } from "@apx/protocol";
-import { Button, IconButton, Icons, Popover } from "@apx/ui";
+import type { Notification } from "@colonia/protocol";
+import { Button, IconButton, Icons, Popover } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { pairingChannel } from "../data/channels.ts";
@@ -52,7 +52,7 @@ export function AttentionTray() {
     };
   }, []);
   useEffect(() => {
-    window.apxDesktop?.setAttention?.(unread);
+    window.coloniaDesktop?.setAttention?.(unread);
   }, [unread]);
   const list = useMemo(
     () =>

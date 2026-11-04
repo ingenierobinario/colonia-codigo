@@ -34,7 +34,7 @@ const outputOf = (run: Result<"flows.run_get">, node: string) =>
 test("a read makes its table and a column with no save in the Flow, and a run reads it empty", async ({ page }) => {
   await rpc("setup.finish");
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Tables from read" })).project.id;
-  await page.addInitScript(() => localStorage.setItem("apx.prefs", JSON.stringify({ language: "en" })));
+  await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en" })));
   await open(page, `#view=flows&scope=${project}`);
   await page.getByRole("button", { name: "New flow" }).first().click();
   const editor = page.getByRole("dialog").filter({ has: page.getByRole("button", { name: "Add Incoming webhook" }) });
@@ -83,7 +83,7 @@ test("a read makes its table and a column with no save in the Flow, and a run re
 test("Tables adds a column and a row, and a Flow run reads that row", async ({ page }) => {
   await rpc("setup.finish");
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Tables view" })).project.id;
-  await page.addInitScript(() => localStorage.setItem("apx.prefs", JSON.stringify({ language: "en" })));
+  await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en" })));
   await open(page, `#view=flows&scope=${project}`);
   await page.getByRole("radio", { name: "Tables" }).click();
   await expect(page.getByText("No tables yet")).toBeVisible();

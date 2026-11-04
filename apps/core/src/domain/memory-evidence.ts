@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { Memory, MemoryEvidence } from "@apx/protocol";
+import type { Memory, MemoryEvidence } from "@colonia/protocol";
 import { memoryEligibleChat } from "./chat-access.ts";
 import { memorySensitive } from "./memories.ts";
 import { isMemoryGreeting } from "./memory-content.ts";

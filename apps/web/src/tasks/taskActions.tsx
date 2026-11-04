@@ -1,6 +1,6 @@
 // What can be done to a task from the list: drop it on a group, or pick an action from its right-click menu.
-import type { Agent, Task, TaskColumn } from "@apx/protocol";
-import { AgentAvatar, Icons, type MenuEntry } from "@apx/ui";
+import type { Agent, Task, TaskColumn } from "@colonia/protocol";
+import { AgentAvatar, Icons, type MenuEntry } from "@colonia/ui";
 import { availableAgents } from "../common/pickers/agents.ts";
 import { taskStateActions } from "../common/taskStateActions.tsx";
 import { blobOf } from "../data/identity.ts";

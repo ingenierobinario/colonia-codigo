@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { type MethodName, methodAccess, methods } from "@apx/protocol";
+import { type MethodName, methodAccess, methods } from "@colonia/protocol";
 import { createLog } from "../log.ts";
 import type { CallContext } from "./context.ts";
 import { createRouter, type Handlers } from "./router.ts";

@@ -1,10 +1,10 @@
-// The panel's own build, served to the window as apx-app://app/… without any core: the first-run page (server or
-// client) is the same web app, with the same design, before an APX is chosen.
+// The panel's own build, served to the window as colonia-app://app/… without any core: the first-run page (server or
+// client) is the same web app, with the same design, before an Colonia is chosen.
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { app, net, protocol, session } from "electron";
 
-export const APP_SCHEME = "apx-app";
+export const APP_SCHEME = "colonia-app";
 export const FIRST_RUN_URL = `${APP_SCHEME}://app/index.html?connect`;
 
 /** Before the app is ready: the scheme behaves like https (modules, fetch, storage). */
@@ -17,7 +17,7 @@ export function registerAppScheme(): void {
 /** The built panel the app carries (installed) or the checkout's (pnpm app). */
 export function webDist(dist: string): string {
   return app.isPackaged
-    ? path.join(process.resourcesPath, "apx", "apps", "web", "dist")
+    ? path.join(process.resourcesPath, "colonia", "apps", "web", "dist")
     : path.resolve(dist, "../../web/dist");
 }
 

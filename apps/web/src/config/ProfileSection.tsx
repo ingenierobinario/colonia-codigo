@@ -1,4 +1,4 @@
-import { Button, Icons, SettingRow } from "@apx/ui";
+import { Button, Icons, SettingRow } from "@colonia/ui";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";

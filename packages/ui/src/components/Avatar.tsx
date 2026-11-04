@@ -43,24 +43,24 @@ export function Avatar({
 }: AvatarProps) {
   const hue = HUES[hashSeed(name) % HUES.length];
   let content: ReactNode;
-  if (src) content = <img src={src} alt="" className="apx-avatar__img" />;
-  else if (emoji) content = <span className="apx-avatar__emoji">{emoji}</span>;
+  if (src) content = <img src={src} alt="" className="colonia-avatar__img" />;
+  else if (emoji) content = <span className="colonia-avatar__emoji">{emoji}</span>;
   else content = <span>{initials(name)}</span>;
   return (
     <span
-      className={cx("apx-avatar", `apx-avatar--${shape}`, !src && !emoji && "apx-avatar--initials", className)}
+      className={cx("colonia-avatar", `colonia-avatar--${shape}`, !src && !emoji && "colonia-avatar--initials", className)}
       style={{
         width: size,
         height: size,
         fontSize: Math.round(size * 0.38),
-        ["--apx-avatar-hue" as string]: hue,
+        ["--colonia-avatar-hue" as string]: hue,
         ...style,
       }}
       role="img"
       aria-label={status ? `${name} (${statusLabel ?? status})` : name}
     >
       {content}
-      {status && <span className={cx("apx-avatar__status", `is-${status}`)} />}
+      {status && <span className={cx("colonia-avatar__status", `is-${status}`)} />}
     </span>
   );
 }

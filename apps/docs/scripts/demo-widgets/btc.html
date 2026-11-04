@@ -4,29 +4,29 @@
 <style>
 :root{--up:#1fb866;--down:#e5534b}
 .w{max-width:860px;margin:0 auto;padding:16px 24px 14px;font-variant-numeric:tabular-nums}
-.k{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--apx-fg-muted)}
+.k{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--colonia-fg-muted)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .px{font-size:32px;font-weight:700;letter-spacing:-.01em;margin:4px 0 2px}
-.sub{font-size:12px;color:var(--apx-fg-muted)}
-.pill{border:1px solid var(--apx-border);border-radius:999px;padding:6px 12px;font-size:12px;display:flex;gap:7px;align-items:center;white-space:nowrap}
+.sub{font-size:12px;color:var(--colonia-fg-muted)}
+.pill{border:1px solid var(--colonia-border);border-radius:999px;padding:6px 12px;font-size:12px;display:flex;gap:7px;align-items:center;white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--up)}
-.card{border:1px solid var(--apx-border);border-radius:12px;background:var(--apx-surface);padding:12px 14px}
+.card{border:1px solid var(--colonia-border);border-radius:12px;background:var(--colonia-surface);padding:12px 14px}
 .range{margin:12px 0 10px;padding:10px 14px}
-.bar{position:relative;height:6px;border-radius:3px;background:var(--apx-fill);margin-top:10px}
+.bar{position:relative;height:6px;border-radius:3px;background:var(--colonia-fill);margin-top:10px}
 .bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:linear-gradient(90deg,var(--down),#e3a33b,var(--up))}
-.bar b{position:absolute;top:-3px;width:3px;height:12px;border-radius:2px;background:var(--apx-fg)}
+.bar b{position:absolute;top:-3px;width:3px;height:12px;border-radius:2px;background:var(--colonia-fg)}
 .chips{display:flex;gap:6px;align-items:center}
-.chips button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--apx-border);background:transparent;color:var(--apx-fg);border-radius:8px;padding:5px 11px;cursor:pointer}
+.chips button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--colonia-border);background:transparent;color:var(--colonia-fg);border-radius:8px;padding:5px 11px;cursor:pointer}
 .chips button[aria-pressed=true]{background:var(--up);border-color:var(--up);color:#06210f}
 svg{display:block;width:100%;height:auto}
-svg text{font-size:11px;fill:var(--apx-fg-subtle)}
-.grid{stroke:var(--apx-border)}
+svg text{font-size:11px;fill:var(--colonia-fg-subtle)}
+.grid{stroke:var(--colonia-border)}
 .rsi{display:flex;gap:10px;align-items:center;margin:10px 0 6px}
-.tag{border:1px solid var(--apx-border);border-radius:8px;padding:2px 8px;font-size:13px}
+.tag{border:1px solid var(--colonia-border);border-radius:8px;padding:2px 8px;font-size:13px}
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}
 .stats .card{padding:8px 12px}
 .stats b{display:block;font-size:16px;margin-top:2px}
-.note{font-size:12px;color:var(--apx-fg-muted);margin:8px 0 0}
+.note{font-size:12px;color:var(--colonia-fg-muted);margin:8px 0 0}
 @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -118,7 +118,7 @@ svg text{font-size:11px;fill:var(--apx-fg-subtle)}
     $("price").textContent = money(last);
     $("updated").textContent = (data.live ? "Updated " : "Sample from ") + clock(t.closeTime || Date.now());
     $("feed").textContent = (data.live ? "Live · " : "Sample · ") + interval + " candles";
-    document.querySelector(".dot").style.background = data.live ? "var(--up)" : "var(--apx-fg-subtle)";
+    document.querySelector(".dot").style.background = data.live ? "var(--up)" : "var(--colonia-fg-subtle)";
     $("range").textContent = money(low) + " to " + money(high);
     var pos = Math.max(0, Math.min(100, ((last - low) / (high - low || 1)) * 100));
     $("fill").style.width = pos + "%";
@@ -161,7 +161,7 @@ svg text{font-size:11px;fill:var(--apx-fg-subtle)}
     rs.textContent = "";
     var ry = function (v) { return 4 + ((100 - v) / 100) * 64; };
     [70, 50, 30].forEach(function (v) {
-      el(rs, "line", { x1: 0, x2: W, y1: ry(v), y2: ry(v), stroke: v === 50 ? "var(--apx-border)" : "var(--down)", "stroke-dasharray": "4 4", opacity: v === 50 ? 1 : 0.6 });
+      el(rs, "line", { x1: 0, x2: W, y1: ry(v), y2: ry(v), stroke: v === 50 ? "var(--colonia-border)" : "var(--down)", "stroke-dasharray": "4 4", opacity: v === 50 ? 1 : 0.6 });
       el(rs, "text", { x: W + 6, y: ry(v) + 4 }).textContent = String(v);
     });
     var rstep = W / r.length;

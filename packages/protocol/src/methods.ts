@@ -24,7 +24,7 @@ export const SubsystemStatus = z.object({
 });
 
 export const Health = z.object({
-  name: z.literal("apx-core"),
+  name: z.literal("colonia-core"),
   version: z.string(),
   /** Git sha of the running code: answers "is the daemon running my code?". */
   code_sha: z.string(),

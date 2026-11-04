@@ -14,8 +14,8 @@ export type DesktopPrefs = { shortcut: string; launchAtLogin: boolean };
 
 /** The menu-bar icon's right-click menu, in the system's language (the main process has no panel i18n). */
 const MENU = {
-  en: { open: "Open APX", quick: "Quick chat", quit: "Quit APX" },
-  es: { open: "Abrir APX", quick: "Chat rápido", quit: "Salir de APX" },
+  en: { open: "Open Colonia", quick: "Quick chat", quit: "Quit Colonia" },
+  es: { open: "Abrir Colonia", quick: "Chat rápido", quit: "Salir de Colonia" },
 };
 
 export function createQuick(opts: {
@@ -56,7 +56,7 @@ export function createQuick(opts: {
     tray?.setImage(trayImage());
     if (process.platform === "darwin") tray?.setTitle(text, { fontType: "monospacedDigit" });
     const suffix = app.getLocale().startsWith("es") ? "avisos pendientes" : "unread notifications";
-    tray?.setToolTip(unreadCount > 0 ? `APX · ${unreadCount} ${suffix}` : "APX");
+    tray?.setToolTip(unreadCount > 0 ? `Colonia · ${unreadCount} ${suffix}` : "Colonia");
     app.dock?.setBadge(text);
   }
 
@@ -155,7 +155,7 @@ export function createQuick(opts: {
           if (!win?.isFocused() && !win?.webContents.isDevToolsOpened()) win?.hide();
         });
       }
-      // One click opens the quick chat; a double click opens APX. The click waits a moment so a double click does
+      // One click opens the quick chat; a double click opens Colonia. The click waits a moment so a double click does
       // not flash the quick chat first.
       tray.on("click", (_event, bounds, point) => {
         clearTimeout(dismiss);

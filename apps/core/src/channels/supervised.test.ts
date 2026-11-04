@@ -2,7 +2,7 @@
 // it, writes their own or drops it.
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { methodAccess } from "@apx/protocol";
+import { methodAccess } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
 import { fakeTelegram } from "./fake-telegram.test-support.ts";

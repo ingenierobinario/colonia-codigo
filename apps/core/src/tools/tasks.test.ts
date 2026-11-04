@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { boardText } from "./tasks.ts";
 

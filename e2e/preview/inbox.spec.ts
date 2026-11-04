@@ -82,9 +82,9 @@ for (const lang of ["en", "es"]) {
     const consult = page.locator('.delegated[data-thread="consult"]');
     const listAvatar = consult.locator(".threadavatar").first();
     await listAvatar.getByRole("img", { name: "Researcher", exact: true }).hover();
-    await expect(page.locator(".apx-tooltip")).toHaveText("Researcher · Northwind");
+    await expect(page.locator(".colonia-tooltip")).toHaveText("Researcher · Northwind");
     await listAvatar.getByRole("img", { name: "Assistant", exact: true }).hover();
-    await expect(page.locator(".apx-tooltip")).toHaveText("Assistant · Default");
+    await expect(page.locator(".colonia-tooltip")).toHaveText("Assistant · Default");
     await consult.locator(":scope > .delegated__head .tree__session").click();
     const header = page.locator(".chat__header");
     await expect(header.getByRole("img", { name: "Researcher", exact: true })).toBeVisible();
@@ -95,7 +95,7 @@ for (const lang of ["en", "es"]) {
     ]) {
       const face = header.getByRole("button", { name: `${lang === "es" ? "Ver a" : "View"} ${name}`, exact: true });
       await face.hover();
-      await expect(page.locator(".apx-tooltip")).toHaveText(
+      await expect(page.locator(".colonia-tooltip")).toHaveText(
         `${name} · ${project}. ${lang === "es" ? "Hacé clic para abrir el editor." : "Click to open the editor."}`,
       );
       await face.click();
@@ -103,7 +103,7 @@ for (const lang of ["en", "es"]) {
     }
     const title = header.locator(".chat__namebtn");
     await title.hover();
-    await expect(page.locator(".apx-tooltip")).toContainText("Researcher · Northwind");
+    await expect(page.locator(".colonia-tooltip")).toContainText("Researcher · Northwind");
     await title.click();
     await expect(page.locator(".inboxpreview__agent")).toContainText("Researcher");
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);

@@ -1,4 +1,4 @@
-// What APX's own processes take in memory, by what the owner can act on (the panel, a browser tab and its site, the
+// What Colonia's own processes take in memory, by what the owner can act on (the panel, a browser tab and its site, the
 // GPU…), and a word when the whole goes past a limit. Pure: main.ts feeds it Electron's app.getAppMetrics().
 
 /** Electron's process metric, the part used here (sizes in kilobytes). */
@@ -33,7 +33,7 @@ export const size = (mb: number) => (mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB`
 const TEXT = {
   en: {
     kinds: {
-      main: "APX (main)",
+      main: "Colonia (main)",
       gpu: "GPU",
       panel: "Panel",
       quick: "Quick chat",
@@ -42,11 +42,11 @@ const TEXT = {
       app: "App",
       helper: "Helper",
     } satisfies Record<ProcessKind, string>,
-    warn: (total: string, top: string) => `APX is using ${total}; the most: ${top}.`,
+    warn: (total: string, top: string) => `Colonia is using ${total}; the most: ${top}.`,
   },
   es: {
     kinds: {
-      main: "APX (principal)",
+      main: "Colonia (principal)",
       gpu: "GPU",
       panel: "Panel",
       quick: "Chat rápido",
@@ -55,7 +55,7 @@ const TEXT = {
       app: "App",
       helper: "Ayudante",
     } satisfies Record<ProcessKind, string>,
-    warn: (total: string, top: string) => `APX está usando ${total}; el que más: ${top}.`,
+    warn: (total: string, top: string) => `Colonia está usando ${total}; el que más: ${top}.`,
   },
 };
 export type MemoryText = (typeof TEXT)["en"];
@@ -64,7 +64,7 @@ export const itemName = (i: Pick<MemoryItem, "kind" | "site">, text: MemoryText)
   `${text.kinds[i.kind]}${i.site ? ` · ${i.site}` : ""}`;
 
 /**
- * Past `limitMb`, says once (then not again for `quietMs`) how much APX takes and which process takes the most —
+ * Past `limitMb`, says once (then not again for `quietMs`) how much Colonia takes and which process takes the most —
  * the clue to act on (close that tab, reload the panel) — with the whole list for the log.
  */
 export function memoryWatch(o: {
@@ -90,8 +90,8 @@ export function memoryWatch(o: {
   };
 }
 
-/** The name the panel gives an artifact's iframe (SurfaceFrame.tsx): `apx-artifact:<title>`. */
-const ARTIFACT_FRAME = "apx-artifact:";
+/** The name the panel gives an artifact's iframe (SurfaceFrame.tsx): `colonia-artifact:<title>`. */
+const ARTIFACT_FRAME = "colonia-artifact:";
 
 /**
  * The artifacts running in their own processes, named by title (several in one process are listed together). One that

@@ -32,12 +32,12 @@ test("a widget plays its project's MP4 behind it and shows the project's images"
     pinned: true,
     thread: chat.id,
     html: `<div style="position:relative;height:220px">
-  <video data-apx-src="reels/take-1.mp4" autoplay muted loop playsinline
+  <video data-colonia-src="reels/take-1.mp4" autoplay muted loop playsinline
     style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
   <p style="position:relative">Toma 1: gancho en el primer segundo</p>
 </div>
-<img alt="Portada" data-apx-src="reels/cover.jpg">
-<img alt="Cuadro" data-apx-src="media:${stored.media.id}">`,
+<img alt="Portada" data-colonia-src="reels/cover.jpg">
+<img alt="Cuadro" data-colonia-src="media:${stored.media.id}">`,
   });
 
   await open(page);

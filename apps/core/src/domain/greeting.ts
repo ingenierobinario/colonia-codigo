@@ -1,6 +1,6 @@
 // The super-agent's first words, once the setup is over: a welcome in the owner's language that asks who they are and
 // offers a few personalities to pick. Written from a template (no model call), and kept as the agent's own message.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { postAgentWords } from "./agent-words.ts";
 import { HOME_THREAD_ID } from "./seed.ts";
 import type { Store } from "./store.ts";
@@ -60,7 +60,7 @@ export function greetOwner(store: Store, language: string): { thread: string; se
       agent_id: boss.id,
       text,
       parts,
-      note: "[APX: the owner just finished the setup; you greet them for the first time.]",
+      note: "[Colonia: the owner just finished the setup; you greet them for the first time.]",
       said: `${text}\n\n${offered}`,
       unread: false,
     });

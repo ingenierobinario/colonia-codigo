@@ -1,4 +1,4 @@
-import { DayDivider, Message } from "@apx/ui";
+import { DayDivider, Message } from "@colonia/ui";
 
 export function BetweenMessages() {
   return (

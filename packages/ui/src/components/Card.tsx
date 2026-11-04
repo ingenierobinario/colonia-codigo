@@ -26,17 +26,17 @@ export function Card({
   ...rest
 }: CardProps) {
   return (
-    <div className={cx("apx-card", `apx-card--${variant}`, `apx-card--pad-${padding}`, className)} {...rest}>
+    <div className={cx("colonia-card", `colonia-card--${variant}`, `colonia-card--pad-${padding}`, className)} {...rest}>
       {(title || aside) && (
-        <div className="apx-card__head">
-          <div className="apx-card__titles">
-            {title && <div className="apx-card__title">{title}</div>}
-            {description && <div className="apx-card__desc">{description}</div>}
+        <div className="colonia-card__head">
+          <div className="colonia-card__titles">
+            {title && <div className="colonia-card__title">{title}</div>}
+            {description && <div className="colonia-card__desc">{description}</div>}
           </div>
           {aside}
         </div>
       )}
-      {!title && description && <div className="apx-card__desc">{description}</div>}
+      {!title && description && <div className="colonia-card__desc">{description}</div>}
       {children}
     </div>
   );

@@ -4,7 +4,7 @@
 // there (DECISIONS.md#d-101), and an @mention of anyone else opens a short consult
 // (the question and its answer, under the task's conversation, shown there as a card); an hourly pickup starts what was
 // assigned and never began. An agent's @mention on a task is a consult whose answer comes back to it (DECISIONS.md#d-132).
-import type { Author, Part, Task, Thread } from "@apx/protocol";
+import type { Author, Part, Task, Thread } from "@colonia/protocol";
 import { ownerIdentity } from "../domain/owner.ts";
 import type { Origin, RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
@@ -421,7 +421,7 @@ function askerOfCreation(store: Store, task: Task): Asker {
 }
 
 /**
- * A task just put in review: an agent named to check it is asked to, in a consult shown on the task (APX asks, not
+ * A task just put in review: an agent named to check it is asked to, in a consult shown on the task (Colonia asks, not
  * the owner: no new budget window); otherwise it is the owner's to check, and their tray says so.
  */
 export function reviewRequested(store: Store, admit: AdmitFn, task: Task): RunRecord | undefined {

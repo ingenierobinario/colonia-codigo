@@ -30,7 +30,7 @@ test("session listings support both engines, mark imported chats and provide JSO
   for (const engine of ["codex", "claude"]) {
     const { client, calls } = recordingClient({ "sessions.projects": { projects: [project] } });
     const out = await printed(() => sessions(client, ["projects", engine], {}));
-    assert.match(out, /Acme {2}\/work\/acme {2}\(APX project prj_1\)/);
+    assert.match(out, /Acme {2}\/work\/acme {2}\(Colonia project prj_1\)/);
     assert.match(out, /\* s1 {2}2026-01-01 {2}Review/);
     assert.deepEqual(calls, [["sessions.projects", { engine }]]);
     assert.deepEqual(JSON.parse(await printed(() => sessions(client, ["list", engine], { json: true }))), {
@@ -107,8 +107,8 @@ test("digest, adoption and page import preserve refresh and presentation choices
 test("invalid engines and incomplete session commands fail before touching core; help stays offline", async () => {
   const { client, calls } = recordingClient({});
   for (const args of [["projects", "unknown"], ["import", "claude"], ["digest"], ["adopt", "thr_1"], ["page", "prj_1"]])
-    await assert.rejects(sessions(client, args, {}), /apx sessions/);
-  assert.match(await printed(() => sessions(client, [], {})), /^apx sessions projects/);
+    await assert.rejects(sessions(client, args, {}), /colonia sessions/);
+  assert.match(await printed(() => sessions(client, [], {})), /^colonia sessions projects/);
   assert.deepEqual(calls, []);
 });
 

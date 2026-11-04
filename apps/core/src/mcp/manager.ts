@@ -1,10 +1,10 @@
-// Connections to MCP servers, opened when an agent's turn needs them and closed when idle, and their tools as APX
+// Connections to MCP servers, opened when an agent's turn needs them and closed when idle, and their tools as Colonia
 // tools: same argument check, same policy, results marked as outside data.
 
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
@@ -95,7 +95,7 @@ function mcpConfirm(readOnly: boolean, destructive: boolean | undefined, scope: 
 /** MCP tool names become `mcp_<server>_<tool>`, within what every model accepts. */
 const toolName = (server: string, tool: string) => `mcp_${server}_${tool}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64);
 
-/** Whether a failed check only trips on file references (`apx-file:…`, med_ ids), which are filled in at run. */
+/** Whether a failed check only trips on file references (`colonia-file:…`, med_ ids), which are filled in at run. */
 function onlyRefs(error: z.ZodError, raw: Record<string, unknown>): boolean {
   const at = (path: PropertyKey[]) =>
     path.reduce<unknown>(
@@ -156,7 +156,7 @@ export function createMcp(deps: {
       import("@modelcontextprotocol/sdk/client/stdio.js"),
       import("@modelcontextprotocol/sdk/client/streamableHttp.js"),
     ]);
-    const client = new Client({ name: "apx", version: "2" });
+    const client = new Client({ name: "colonia", version: "2" });
     let timer: ReturnType<typeof setTimeout> | undefined;
     let fail!: (err: Error) => void;
     const deadline = new Promise<never>((_, reject) => {
@@ -324,7 +324,7 @@ export function createMcp(deps: {
     if (!c.client)
       throw new Error(
         c.status === "needs-sign-in"
-          ? `${d.name} waits for the owner to sign in (APX panel → MCP → ${d.name} → Sign in)`
+          ? `${d.name} waits for the owner to sign in (Colonia panel → MCP → ${d.name} → Sign in)`
           : `${d.name} is not connected${c.error ? `: ${c.error}` : ""}`,
       );
     const next = defsFor(project).find((x) => keyOf(x) === keyOf(d));

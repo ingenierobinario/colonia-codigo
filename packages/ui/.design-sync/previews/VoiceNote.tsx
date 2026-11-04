@@ -1,4 +1,4 @@
-import { ApxProvider, Message, VoiceNote } from "@apx/ui";
+import { ColoniaProvider, Message, VoiceNote } from "@colonia/ui";
 
 export function Default() {
   return <VoiceNote duration={10} detail="42 KB" />;
@@ -20,8 +20,8 @@ export function InMessage() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
       <VoiceNote duration={10} label="Nota de voz" detail="42 KB" />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

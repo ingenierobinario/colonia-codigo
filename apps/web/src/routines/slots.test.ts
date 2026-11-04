@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { RoutineRun } from "@apx/protocol";
+import type { RoutineRun } from "@colonia/protocol";
 import { weeklyCron, weeklyOf } from "./cron.ts";
 import { activationSlots, expectedTimes } from "./slots.ts";
 

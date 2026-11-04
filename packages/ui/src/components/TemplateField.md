@@ -5,7 +5,7 @@ category: Forms
 
 A text field where values are inserted without knowing their syntax: a Flow step's message, header or variable. Typing
 a trigger (`{{`, `$` or `secret://` by default) or pressing the braces button opens the values, grouped (what arrived,
-earlier steps, variables, APX's own, secrets). A chosen value is written into the text and every placeholder the
+earlier steps, variables, Colonia's own, secrets). A chosen value is written into the text and every placeholder the
 `pattern` matches reads as a badge; secrets (`secretPattern`) in the warning tone. Arrows choose, Enter or Tab writes
 it, Escape closes the list.
 
@@ -20,7 +20,7 @@ it, Escape closes the list.
   value={text}
   onValueChange={setText}
   pickLabel="Insert a value"
-  pattern={/\$(trigger|steps|vars|apx)(\.[\w-]+)*|secret:\/\/[\w.~/-]+/g}
+  pattern={/\$(trigger|steps|vars|colonia)(\.[\w-]+)*|secret:\/\/[\w.~/-]+/g}
   secretPattern={/^secret:/}
   groups={[
     { label: "What arrived", values: [{ insert: "$trigger.email", label: "email" }] },

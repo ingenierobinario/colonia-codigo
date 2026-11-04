@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { RouterConfig } from "@apx/protocol";
+import type { RouterConfig } from "@colonia/protocol";
 import { harnessOf, parseRef } from "../domain/refs.ts";
 import { candidates, type TurnFeatures } from "./choice.ts";
 

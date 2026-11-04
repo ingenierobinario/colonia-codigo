@@ -1,6 +1,6 @@
 // What the core says about Flow tests and runs while the panel is open (`flow.test`, `flow.run`, DECISIONS.md#d-178):
 // the editor follows its test, a Flow's page reads its runs again as they move. Ids and states only.
-import type { CoreEvent } from "@apx/protocol";
+import type { CoreEvent } from "@colonia/protocol";
 import { createStore, useSlice } from "./createStore.ts";
 
 export type FlowTestHeard = Extract<CoreEvent, { type: "flow.test" }> & { seq: number };

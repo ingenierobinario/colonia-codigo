@@ -9,7 +9,7 @@ import { Aside, Steps, Tabs, TabItem, CardGrid, LinkCard } from "@astrojs/starli
 import Shot from "../../../components/Shot.astro";
 import Terminal from "../../../components/Terminal.astro";
 
-Memory in APX is a set of short notes: "Alex prefers numbers before prose", "Deploys go out on Fridays", "The
+Memory in Colonia is a set of short notes: "Alex prefers numbers before prose", "Deploys go out on Fridays", "The
 supplier's contact is Northwind". Each note has an author and a scope. Automatic recall, capture and AutoDream have
 separate controls in **Settings › Memory**; saved quotes and changes are visible in **Sources and history**.
 
@@ -28,7 +28,7 @@ never write it: it is the place for fixed rules you don't want any agent to edit
 
 Three ways, all visible:
 
-- **You.** Add a note in a project's **Memory** tab, or with `apx memory add`. Or just tell an agent "remember that…".
+- **You.** Add a note in a project's **Memory** tab, or with `colonia memory add`. Or just tell an agent "remember that…".
 - **An agent**, with its `remember` tool, when it learns something worth keeping: a correction, something you repeat,
   or an approach you confirmed. It writes the note in its own words; for a correction or a way of working, the rule
   first; a `Why:` line only when you gave the reason, and `How to apply:` only when supported. Inside a project it saves to the project by default, otherwise
@@ -36,12 +36,12 @@ Three ways, all visible:
 
 - **Automatic capture.** After an ordinary owner turn, the helper can select durable preferences, corrections,
   decisions and references. It considers up to three eligible owner turns and keeps up to four exact supporting
-  quotes with their sources. APX checks names, numbers and negations, then asks the helper separately whether every
+  quotes with their sources. Colonia checks names, numbers and negations, then asks the helper separately whether every
   claim follows from those quotes, including paired assignments, exceptions and reasons. Unclear or contradicted
   candidates are dropped. Reasons are never required when you did not state one. Notes stay private to that agent
   in the same project. This review reduces mistakes; it does not guarantee that the model understands every case.
 - **Verified procedure history.** A recovered turn leaves a procedure note only when you confirm the actual work
-  ("great, it worked", including a closing channel reply), or APX observes a complete file read matching its earlier
+  ("great, it worked", including a closing channel reply), or Colonia observes a complete file read matching its earlier
   write. An `ok` tool call alone is insufficient. The note keeps the successful method and safe targets, output
   paths and any failed attempts in a separate section. Its sources include the actual confirmation or write/read
   references. Other outcomes still need your confirmation. Old procedure notes without that evidence remain
@@ -52,7 +52,7 @@ Three ways, all visible:
   left out, attempts that failed before the method worked are listed as "Tried first, failed" with a short reason,
   and the notes index names the request and its decisive steps (for example `snapinsta.to → page script → curl`).
 
-Capture uses the helper model already configured for APX. With the helper off, no automatic notes are extracted;
+Capture uses the helper model already configured for Colonia. With the helper off, no automatic notes are extracted;
 explicit `remember` and automatic chat retrieval still work. Capture jobs persist across core restarts and retries
 cannot create another copy of the same note. What you write on a channel as the owner (Telegram, WhatsApp…) counts
 the same as what you write in the app. Contacts, rooms, external-client chats, subthreads, workers and direct engine
@@ -129,7 +129,7 @@ agent is idle. It:
   they are.
 
 Retiring a note requires a separate review of the same subject and scope; a newer date alone proves nothing.
-The helper model only names notes; APX does the rewriting itself and never changes owner notes or promotes anything to
+The helper model only names notes; Colonia does the rewriting itself and never changes owner notes or promotes anything to
 global memory. Contradictions, different numbers and different preferences stay separate. A pass that would forget
 more than a fifth of the notebook at once (at least one note) is refused whole, and that share counts per day. Retired notes go to **Forgotten** with
 the reason in their history, and revision checks reject proposals made stale by an edit or deletion.
@@ -155,7 +155,7 @@ A project's **Memory** tab shows its notes and lets you switch between **This pr
   deletes the note and its revision text; a minimal exclusion fingerprint and source IDs prevent recreation.
 - **Sources and history** shows exact quotes and revisions. **Restore this revision** can undo a merge or an edit.
   Original chats remain in conversation history; deleting a memory does not delete the conversation.
-- APX 2.7.0's automatic capture also saved passing requests and questions ("can you finish that review?") as
+- Colonia 2.7.0's automatic capture also saved passing requests and questions ("can you finish that review?") as
   notes. The first start after updating retires the ones its agent never edited and today's capture would refuse;
   they wait in **Forgotten**, marked *Retired by capture cleanup* in their history, and **Bring back** restores any
   you want. Notes you or `remember` wrote are not touched, and the same fact can be taught again.
@@ -164,18 +164,18 @@ A project's **Memory** tab shows its notes and lets you switch between **This pr
 
 List the newest notes, or the best matches for some words:
 
-<Terminal command="apx memory deploy">{`mem_2a9f4c01d7b6e358  project:p_3f9a1c0d7e21   you   Deploys go out on Fridays.
+<Terminal command="colonia memory deploy">{`mem_2a9f4c01d7b6e358  project:p_3f9a1c0d7e21   you   Deploys go out on Fridays.
 mem_81c3e0b5a4f2d917  agent:3f9a1c0d7e21-tomas 3f9a  Run the checkout tests before any deploy.`}</Terminal>
 
 Add one. The scope defaults to global, or to project or agent when you pass `--project` or `--agent`:
 
-<Terminal command={'apx memory add project "Free shipping starts at $50." --project p_3f9a1c0d7e21'}>{`mem_c47e19a20b85f6d3  project:p_3f9a1c0d7e21`}</Terminal>
+<Terminal command={'colonia memory add project "Free shipping starts at $50." --project p_3f9a1c0d7e21'}>{`mem_c47e19a20b85f6d3  project:p_3f9a1c0d7e21`}</Terminal>
 
 Remove notes by id:
 
-<Terminal command="apx memory rm mem_c47e19a20b85f6d3">{`mem_c47e19a20b85f6d3  removed`}</Terminal>
+<Terminal command="colonia memory rm mem_c47e19a20b85f6d3">{`mem_c47e19a20b85f6d3  removed`}</Terminal>
 
-`apx memory --json` prints the notes as JSON.
+`colonia memory --json` prints the notes as JSON.
 
 <CardGrid>
   <LinkCard title="Conversations" description="Threads, runs and compaction." href="/concepts/conversations/" />

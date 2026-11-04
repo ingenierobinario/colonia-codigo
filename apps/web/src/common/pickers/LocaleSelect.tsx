@@ -1,4 +1,4 @@
-import type { SelectOption } from "@apx/ui";
+import type { SelectOption } from "@colonia/ui";
 import { useMemo } from "react";
 import { LOCALES, type MessageKey, useLanguage, useT } from "../../i18n/index.ts";
 import { SearchSelect } from "./SearchSelect.tsx";

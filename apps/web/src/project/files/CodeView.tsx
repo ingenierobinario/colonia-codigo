@@ -102,35 +102,35 @@ const colors = HighlightStyle.define([
   { tag: [tags.link, tags.url], color: "var(--code-string)", textDecoration: "underline" },
   { tag: [tags.emphasis], fontStyle: "italic" },
   { tag: [tags.strong], fontWeight: "700" },
-  { tag: [tags.invalid], color: "var(--apx-danger)" },
+  { tag: [tags.invalid], color: "var(--colonia-danger)" },
 ]);
 
 const theme = EditorView.theme({
   "&": {
     height: "100%",
-    fontSize: "calc(12.5px * var(--apx-text-scale, 1))",
+    fontSize: "calc(12.5px * var(--colonia-text-scale, 1))",
     backgroundColor: "transparent",
-    color: "var(--apx-fg)",
+    color: "var(--colonia-fg)",
   },
-  ".cm-scroller": { fontFamily: "var(--apx-font-mono)", lineHeight: "1.6" },
-  ".cm-content": { padding: "10px 0", caretColor: "var(--apx-fg)" },
+  ".cm-scroller": { fontFamily: "var(--colonia-font-mono)", lineHeight: "1.6" },
+  ".cm-content": { padding: "10px 0", caretColor: "var(--colonia-fg)" },
   ".cm-gutters": {
     backgroundColor: "transparent",
-    color: "var(--apx-fg-subtle)",
+    color: "var(--colonia-fg-subtle)",
     border: "none",
     paddingLeft: "8px",
   },
   ".cm-lineNumbers .cm-gutterElement": { padding: "0 10px 0 6px", minWidth: "32px" },
   ".cm-activeLine": { backgroundColor: "var(--code-active-line)" },
-  ".cm-activeLineGutter": { backgroundColor: "transparent", color: "var(--apx-fg)" },
+  ".cm-activeLineGutter": { backgroundColor: "transparent", color: "var(--colonia-fg)" },
   "&.cm-focused": { outline: "none" },
   ".cm-selectionBackground, &.cm-focused .cm-selectionBackground, ::selection": {
     backgroundColor: "var(--code-selection) !important",
   },
-  ".cm-cursor": { borderLeftColor: "var(--apx-fg)" },
-  ".cm-foldGutter .cm-gutterElement": { color: "var(--apx-fg-subtle)", cursor: "pointer" },
+  ".cm-cursor": { borderLeftColor: "var(--colonia-fg)" },
+  ".cm-foldGutter .cm-gutterElement": { color: "var(--colonia-fg-subtle)", cursor: "pointer" },
   ".cm-searchMatch": { backgroundColor: "var(--code-selection)" },
-  ".cm-panels": { backgroundColor: "var(--apx-surface)", color: "var(--apx-fg)", borderColor: "var(--apx-border)" },
+  ".cm-panels": { backgroundColor: "var(--colonia-surface)", color: "var(--colonia-fg)", borderColor: "var(--colonia-border)" },
 });
 
 /**

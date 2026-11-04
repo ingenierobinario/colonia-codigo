@@ -3,21 +3,21 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  background: var(--apx-bg);
+  background: var(--colonia-bg);
 }
 .fc .react-flow {
   --xy-background-color: transparent;
-  --xy-node-border-radius: var(--apx-radius-lg);
-  --xy-edge-stroke: var(--apx-border-strong);
-  --xy-edge-stroke-selected: var(--apx-fg-muted);
-  --xy-handle-background-color: var(--apx-fg-muted);
-  --xy-handle-border-color: var(--apx-surface-raised);
-  --xy-minimap-background-color: var(--apx-surface);
-  --xy-minimap-mask-background-color: color-mix(in srgb, var(--apx-bg) 60%, transparent);
+  --xy-node-border-radius: var(--colonia-radius-lg);
+  --xy-edge-stroke: var(--colonia-border-strong);
+  --xy-edge-stroke-selected: var(--colonia-fg-muted);
+  --xy-handle-background-color: var(--colonia-fg-muted);
+  --xy-handle-border-color: var(--colonia-surface-raised);
+  --xy-minimap-background-color: var(--colonia-surface);
+  --xy-minimap-mask-background-color: color-mix(in srgb, var(--colonia-bg) 60%, transparent);
   background: transparent;
 }
 .fc .fc-grid {
-  --xy-background-pattern-color: var(--apx-border-strong);
+  --xy-background-pattern-color: var(--colonia-border-strong);
 }
 .fc .react-flow__node-step {
   padding: 0;
@@ -29,44 +29,44 @@
 .fc .react-flow__node-step:focus-visible {
   outline: none;
 }
-.fc .react-flow__node-step:focus-visible .apx-flowstep {
+.fc .react-flow__node-step:focus-visible .colonia-flowstep {
   box-shadow:
-    0 0 0 3px var(--apx-fill-strong),
-    var(--apx-shadow-md);
+    0 0 0 3px var(--colonia-fill-strong),
+    var(--colonia-shadow-md);
 }
 .fc .fc-handle {
   width: 9px;
   height: 9px;
-  border: 1.5px solid var(--apx-surface-raised);
-  background: var(--apx-fg-muted);
+  border: 1.5px solid var(--colonia-surface-raised);
+  background: var(--colonia-fg-muted);
 }
 .fc .fc-handle--in {
-  border-color: var(--apx-fg-subtle);
-  background: var(--apx-surface-raised);
+  border-color: var(--colonia-fg-subtle);
+  background: var(--colonia-surface-raised);
 }
 .fc:not(.is-edit) .fc-handle {
   visibility: hidden;
 }
 .fc .fc-handle--yes {
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 .fc .fc-handle--no {
-  background: var(--apx-fg-subtle);
+  background: var(--colonia-fg-subtle);
 }
 .fc .fc-edge .react-flow__edge-text {
   font-size: 11px;
-  fill: var(--apx-fg-muted);
+  fill: var(--colonia-fg-muted);
 }
 .fc .fc-edge .react-flow__edge-textbg {
-  fill: var(--apx-surface-raised);
-  stroke: var(--apx-border);
+  fill: var(--colonia-surface-raised);
+  stroke: var(--colonia-border);
 }
 .fc .fc-edge .react-flow__edge-path {
-  stroke: var(--apx-border-strong);
+  stroke: var(--colonia-border-strong);
   stroke-width: 1.5;
 }
 .fc .fc-edge.is-ran .react-flow__edge-path {
-  stroke: var(--apx-brand);
+  stroke: var(--colonia-brand);
 }
 .fc .fc-edge.is-no .react-flow__edge-path {
   stroke-dasharray: 5 4;
@@ -89,42 +89,42 @@
 .fc-zoom__buttons {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
   overflow: hidden;
 }
 .fc-zoom__buttons > * + * {
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
 .fc-zoom__level {
   padding: 2px 8px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
   font-size: 11px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fc .fc-minimap {
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
   overflow: hidden;
-  box-shadow: var(--apx-shadow-sm);
+  box-shadow: var(--colonia-shadow-sm);
 }
 .fc-mini {
-  fill: var(--apx-fill-strong);
+  fill: var(--colonia-fill-strong);
 }
 .fc-mini--warning {
-  fill: var(--apx-warning);
+  fill: var(--colonia-warning);
 }
 .fc-mini--info {
-  fill: var(--apx-info);
+  fill: var(--colonia-info);
 }
 .fc-mini--violet {
-  fill: var(--apx-violet);
+  fill: var(--colonia-violet);
 }
 .fc-mini--brand {
-  fill: var(--apx-brand);
+  fill: var(--colonia-brand);
 }
 
 @media (max-width: 640px) {
@@ -145,27 +145,27 @@
   padding: 1px 14px 1px 0;
   font-size: 11px;
   line-height: 18px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .fc .fc-out.is-no {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fc .fc-out .fc-handle {
   right: 0;
 }
 /* A connection picked in the editor stands out, with its bin beside it. */
 .fc .fc-edge.is-picked .react-flow__edge-path {
-  stroke: var(--apx-brand);
+  stroke: var(--colonia-brand);
   stroke-width: 2.5;
 }
 .fc-edgebin {
   position: absolute;
   pointer-events: all;
   border-radius: 50%;
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
 }

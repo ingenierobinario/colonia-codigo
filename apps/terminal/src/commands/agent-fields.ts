@@ -1,7 +1,7 @@
-// `apx agents set` and `apx agents limits`: an agent's settings as key=value, typed from the protocol's own schema, so
+// `colonia agents set` and `colonia agents limits`: an agent's settings as key=value, typed from the protocol's own schema, so
 // a field the editor has is settable here without a list of our own to keep in step.
-import { methods } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import { methods } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 type Def = { type: string; innerType?: unknown; entries?: Record<string, string> };
 const defOf = (schema: unknown): Def => (schema as { _zod: { def: Def } })._zod.def;
@@ -66,7 +66,7 @@ export function agentPatch(agent: string, pairs: string[], extra: Record<string,
   return checked.data;
 }
 
-const LIMITS_USAGE = "usage: apx agents limits [<agent> runs=… tokens=… | <agent> clear | default runs=… tokens=…]";
+const LIMITS_USAGE = "usage: colonia agents limits [<agent> runs=… tokens=… | <agent> clear | default runs=… tokens=…]";
 
 const budget = (b: { runs?: number | undefined; tokens?: number | undefined }) =>
   [b.runs ? `${b.runs} turns` : "", b.tokens ? `${b.tokens} tokens` : ""].filter(Boolean).join(" · ") || "no limit";
@@ -87,7 +87,7 @@ function numbers(pairs: string[]): { runs?: number; tokens?: number } {
 /**
  * How far agents go without the owner in one conversation: the install's default, and an agent's own budget (or none).
  */
-export async function agentLimits(client: ApxClient, [target, ...pairs]: string[]) {
+export async function agentLimits(client: ColoniaClient, [target, ...pairs]: string[]) {
   if (!target) {
     const l = await client.call("agents.limits", {});
     console.log(`Default: ${budget(l)}`);

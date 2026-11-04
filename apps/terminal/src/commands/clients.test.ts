@@ -33,7 +33,7 @@ test("revoking an app reports whether it existed; malformed commands never call 
     assert.deepEqual(calls, [["clients.revoke", { id: "app_1" }]]);
   }
   const { client, calls } = recordingClient({});
-  for (const args of [["add"], ["rm"], ["unknown"]]) await assert.rejects(clients(client, args, {}), /apx clients/);
+  for (const args of [["add"], ["rm"], ["unknown"]]) await assert.rejects(clients(client, args, {}), /colonia clients/);
   assert.deepEqual(calls, []);
 });
 

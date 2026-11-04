@@ -12,8 +12,8 @@ export interface SystemNoteProps {
 /** Centered, muted event line inside a thread: routine created, memory updated, agents joined. */
 export function SystemNote({ children, icon, className }: SystemNoteProps) {
   return (
-    <div className={cx("apx-sysnote", className)} role="note">
-      {icon && <span className="apx-sysnote__icon">{icon}</span>}
+    <div className={cx("colonia-sysnote", className)} role="note">
+      {icon && <span className="colonia-sysnote__icon">{icon}</span>}
       <span>{children}</span>
     </div>
   );

@@ -1,12 +1,12 @@
-// `apx mcp --run <token>`: stdio MCP server bound to one agent run. External harnesses that cannot host APX
+// `colonia mcp --run <token>`: stdio MCP server bound to one agent run. External harnesses that cannot host Colonia
 // tools in process (Codex) launch it; every call goes back to the core and runs inside that run's context.
-import type { ApxClient } from "@apx/protocol/client";
+import type { ColoniaClient } from "@colonia/protocol/client";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
-export async function runRunMcp(client: ApxClient, token: string): Promise<void> {
-  const server = new Server({ name: "apx", version: "0.1.0" }, { capabilities: { tools: {} } });
+export async function runRunMcp(client: ColoniaClient, token: string): Promise<void> {
+  const server = new Server({ name: "colonia", version: "0.1.0" }, { capabilities: { tools: {} } });
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const { tools } = await client.call("harness.tools", { token });
     return {

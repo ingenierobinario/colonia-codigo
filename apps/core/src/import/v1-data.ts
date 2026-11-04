@@ -1,8 +1,8 @@
-// What APX v1 keeps on disk (~/.apx and each project's .apc/), read as v1 wrote it so the setup can bring it into v2.
+// What Colonia v1 keeps on disk (~/.colonia and each project's .apc/), read as v1 wrote it so the setup can bring it into v2.
 // Read-only: nothing here writes to v1's folder. Secrets are read only to be stored in v2's own secret store.
 import fs from "node:fs";
 import path from "node:path";
-import { ChannelRooms, type PersonRelation, RoomMode, type ServiceSettings } from "@apx/protocol";
+import { ChannelRooms, type PersonRelation, RoomMode, type ServiceSettings } from "@colonia/protocol";
 
 /** A JSON file of v1's, parsed; throws like JSON.parse. Windows editors and PowerShell 5 may start it with a BOM. */
 export const jsonFile = (file: string): unknown => JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
@@ -48,7 +48,7 @@ export const v1Config = (home: string) => obj(readJson(path.join(home, "config.j
 
 /**
  * The projects v1 really has: each registered folder that is an APC project, with its storage under
- * ~/.apx/projects/<apx_id> (named by .apc/project.json, never derived from the path).
+ * ~/.colonia/projects/<colonia_id> (named by .apc/project.json, never derived from the path).
  */
 export function v1Projects(home: string): V1Project[] {
   const out: V1Project[] = [];
@@ -56,7 +56,7 @@ export function v1Projects(home: string): V1Project[] {
     const dir = str(obj(p).path);
     if (!dir || !fs.existsSync(path.join(dir, ".apc"))) continue;
     const meta = obj(readJson(path.join(dir, ".apc", "project.json")));
-    const id = str(meta.apx_id);
+    const id = str(meta.colonia_id);
     out.push({
       path: dir,
       name: str(meta.name) ?? path.basename(dir),
@@ -75,7 +75,7 @@ export function v1AgentCount(project: V1Project): number {
   }
 }
 
-/** v1's own skills (~/.apx/skills/<name>/SKILL.md). */
+/** v1's own skills (~/.colonia/skills/<name>/SKILL.md). */
 export function v1SkillCount(home: string): number {
   try {
     return fs
@@ -174,7 +174,7 @@ export type V1Routine = {
 };
 
 /** v1 sent a routine's news itself with these; v2 delivers it to the owner's channel, and has no such command. */
-const V1_SEND = /^apx\s+(telegram|whatsapp|discord)\s+send\b/;
+const V1_SEND = /^colonia\s+(telegram|whatsapp|discord)\s+send\b/;
 
 /** A project's routines (routines.json). */
 export function v1Routines(storage: string): V1Routine[] {
@@ -380,7 +380,7 @@ export function v1WhatsApp(home: string): V1WhatsApp | undefined {
   return { selfOwner, owner, contacts };
 }
 
-/** Variables in v1's flat name → value file: the global one (~/.apx/vars.json) or a project's (its storage's). */
+/** Variables in v1's flat name → value file: the global one (~/.colonia/vars.json) or a project's (its storage's). */
 function varsFile(file: string): Array<{ name: string; value: string }> {
   return Object.entries(obj(readJson(file))).flatMap(([name, v]) => {
     const value = typeof v === "string" ? v : str(obj(v).value);
@@ -391,7 +391,7 @@ function varsFile(file: string): Array<{ name: string; value: string }> {
 /** v1's global variables, for v2's secret store. */
 export const v1Vars = (home: string) => varsFile(path.join(home, "vars.json"));
 
-/** A v1 project's own variables (~/.apx/projects/<apx_id>/vars.json): v1 let them win over the global ones there. */
+/** A v1 project's own variables (~/.colonia/projects/<colonia_id>/vars.json): v1 let them win over the global ones there. */
 export const v1ProjectVars = (storage: string) => (storage ? varsFile(path.join(storage, "vars.json")) : []);
 
 export type V1Embedder = { id: string; service: ServiceSettings; api_key?: string };

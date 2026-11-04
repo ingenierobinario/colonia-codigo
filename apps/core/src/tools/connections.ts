@@ -1,6 +1,6 @@
 // Asked for something an app or channel the owner has not connected would do (a Figma file, a WhatsApp message), an
 // agent offers to connect it instead of only saying it cannot: a card in the chat opens that one's form.
-import type { ConnectOffer } from "@apx/protocol";
+import type { ConnectOffer } from "@colonia/protocol";
 import { z } from "zod";
 import { defineTool, type Tool } from "./types.ts";
 
@@ -29,7 +29,7 @@ export function connectionTools(): Tool[] {
         const { found } = await ctx.call("integrations.find", { query: a.query });
         const top = found[0];
         if (!top)
-          return `Nothing APX connects matches "${a.query}". Try the app's name; if it is none, tell the owner APX does not connect to it yet.`;
+          return `Nothing Colonia connects matches "${a.query}". Try the app's name; if it is none, tell the owner Colonia does not connect to it yet.`;
         if (top.connected) {
           const others = found.slice(1).map(named).join(", ");
           return `${named(top)} is already connected: use it.${others ? `\nAlso found: ${others}.` : ""}`;

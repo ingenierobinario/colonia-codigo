@@ -1,4 +1,4 @@
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 
 /**
  * What the sidebar keeps of the computer: its view shows on a host that can run it once the owner allowed an agent

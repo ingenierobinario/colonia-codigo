@@ -27,23 +27,23 @@ export interface TabsProps {
 export function Tabs({ items, value, defaultValue, onValueChange, variant = "underline", className }: TabsProps) {
   return (
     <BaseTabs.Root
-      className={cx("apx-tabs", `apx-tabs--${variant}`, className)}
+      className={cx("colonia-tabs", `colonia-tabs--${variant}`, className)}
       value={value}
       defaultValue={defaultValue ?? items[0]?.value}
       onValueChange={(v) => onValueChange?.(String(v))}
     >
-      <BaseTabs.List className="apx-tabs__list">
+      <BaseTabs.List className="colonia-tabs__list">
         {items.map((t) => (
-          <BaseTabs.Tab key={t.value} value={t.value} disabled={t.disabled} className="apx-tabs__tab">
+          <BaseTabs.Tab key={t.value} value={t.value} disabled={t.disabled} className="colonia-tabs__tab">
             {t.icon}
             {t.label}
-            {t.count != null && <span className="apx-tabs__count">{t.count}</span>}
+            {t.count != null && <span className="colonia-tabs__count">{t.count}</span>}
           </BaseTabs.Tab>
         ))}
       </BaseTabs.List>
       {items.map((t) =>
         t.content != null ? (
-          <BaseTabs.Panel key={t.value} value={t.value} className="apx-tabs__panel">
+          <BaseTabs.Panel key={t.value} value={t.value} className="colonia-tabs__panel">
             {t.content}
           </BaseTabs.Panel>
         ) : null,

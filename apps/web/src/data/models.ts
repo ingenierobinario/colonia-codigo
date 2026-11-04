@@ -1,7 +1,7 @@
 // Model catalog, install default and router (D-011). Model names only ever come from the core.
-import type { CatalogEngine, ModelChoice, ModelRef, RouterConfig } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
-import { registerIntegrationMarks, registerMarks } from "@apx/ui";
+import type { CatalogEngine, ModelChoice, ModelRef, RouterConfig } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
+import { registerIntegrationMarks, registerMarks } from "@colonia/ui";
 import { isKey, t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
@@ -24,7 +24,7 @@ export function useModels<T>(select: (s: ModelsState) => T): T {
 }
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
-const missing = (e: unknown) => e instanceof ApxError && e.code === "unknown_method";
+const missing = (e: unknown) => e instanceof ColoniaError && e.code === "unknown_method";
 
 let marks: Promise<void> | undefined;
 /**
@@ -32,7 +32,7 @@ let marks: Promise<void> | undefined;
  * after it, or with the integrations list if that opens first.
  */
 export function loadMarks(): void {
-  marks ??= import("@apx/ui/marks")
+  marks ??= import("@colonia/ui/marks")
     .then((m) => {
       registerMarks({ ...m.ACP_MARKS, ...m.PROVIDER_MARKS });
       registerIntegrationMarks(m.INTEGRATION_MARKS, m.drawMarkArt);
@@ -140,7 +140,7 @@ function shortRef(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
 }
 
 /**
- * What agents, the router and a chat may run on: model APIs that answer now (the plans signed in from APX among
+ * What agents, the router and a chat may run on: model APIs that answer now (the plans signed in from Colonia among
  * them). Claude Code, Codex and ACP agents run only in their own sessions (DECISIONS.md#d-043).
  */
 export const forAgents = (e: CatalogEngine): boolean => e.kind === "provider" && e.available;

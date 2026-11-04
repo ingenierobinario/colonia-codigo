@@ -1,4 +1,4 @@
-import { ApxProvider } from "@apx/ui";
+import { ColoniaProvider } from "@colonia/ui";
 import { useState } from "react";
 import { ChatHeader } from "../chat/ChatHeader.tsx";
 import { data } from "../data/state.ts";
@@ -24,7 +24,7 @@ export default function InboxPreview() {
   const thread = previewThreads.find((th) => th.id === selected);
   const [narrow, setNarrow] = useState(false);
   return (
-    <ApxProvider mode="dark" fill>
+    <ColoniaProvider mode="dark" fill>
       <main className="inboxpreview">
         <header className="inboxpreview__header">
           <h1>{t("inbox.preview.title")}</h1>
@@ -55,6 +55,6 @@ export default function InboxPreview() {
           })}
         </output>
       </main>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

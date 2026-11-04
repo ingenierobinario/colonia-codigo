@@ -1,4 +1,4 @@
-// The canonical conversation format inside APX is OpenAI chat completions: every transport converts from it.
+// The canonical conversation format inside Colonia is OpenAI chat completions: every transport converts from it.
 // Items carry provider extras (e.g. Gemini thought signatures) that must be echoed back verbatim.
 import { errorMessage } from "../errors.ts";
 
@@ -74,7 +74,7 @@ export class ProviderError extends Error {
     return this.kind === "rate_limit" || this.kind === "overloaded" || this.kind === "network" || this.kind === "empty";
   }
   /**
-   * The provider's usage limit (its plan or its rate), not a fault of the request or of APX. A rate limit that lifts
+   * The provider's usage limit (its plan or its rate), not a fault of the request or of Colonia. A rate limit that lifts
    * within a few minutes is a pause, not a stall worth telling the owner.
    */
   get limit(): boolean {

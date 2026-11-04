@@ -1,7 +1,7 @@
 // The desktop app itself (Electron), against the same sandboxed core as the panel's specs: its window shows the
 // panel, it lends its embedded browser to the core as a node, a tab an agent opens shows in the panel, and the
-// menu-bar quick chat talks to the super-agent. Its data folder is a temp one (APX_DESKTOP_DATA; on a Mac the system
-// ignores HOME for it): the owner's APX, its sessions and its single-instance lock are never touched.
+// menu-bar quick chat talks to the super-agent. Its data folder is a temp one (COLONIA_DESKTOP_DATA; on a Mac the system
+// ignores HOME for it): the owner's Colonia, its sessions and its single-instance lock are never touched.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -16,7 +16,7 @@ let home: string;
 
 test.beforeAll(async () => {
   await rpc("setup.finish");
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-desktop-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-desktop-"));
   // Keep the native tray reachable by the test, without adding a bridge to the product.
   const entry = path.join(home, "tray-test.cjs");
   fs.writeFileSync(
@@ -25,18 +25,18 @@ test.beforeAll(async () => {
     const { Tray } = require("electron");
     const on = Tray.prototype.on;
     Tray.prototype.on = function (...args) {
-      globalThis.apxTestTray = this;
+      globalThis.coloniaTestTray = this;
       return on.apply(this, args);
     };
     const setImage = Tray.prototype.setImage;
     Tray.prototype.setImage = function (image) {
-      globalThis.apxTestTrayImage = image.toDataURL();
-      globalThis.apxTestTrayTemplate = image.isTemplateImage();
+      globalThis.coloniaTestTrayImage = image.toDataURL();
+      globalThis.coloniaTestTrayTemplate = image.isTemplateImage();
       return setImage.call(this, image);
     };
     const setToolTip = Tray.prototype.setToolTip;
     Tray.prototype.setToolTip = function (text) {
-      globalThis.apxTestTrayTooltip = text;
+      globalThis.coloniaTestTrayTooltip = text;
       return setToolTip.call(this, text);
     };
     void import(${JSON.stringify(path.join(root, "apps/desktop/dist/main.js"))});
@@ -52,14 +52,14 @@ test.beforeAll(async () => {
       ...process.env,
       HOME: home,
       XDG_CONFIG_HOME: path.join(home, ".config"),
-      APX_DESKTOP_DATA: path.join(home, "desktop"),
-      APX_QUIT_CONFIRM: "off",
-      APX_CONNECTION: "local",
-      APX_URL: "",
-      APX_HOME: (await world.info()).home,
-      APX_PORT: process.env.E2E_PORT ?? "7460",
+      COLONIA_DESKTOP_DATA: path.join(home, "desktop"),
+      COLONIA_QUIT_CONFIRM: "off",
+      COLONIA_CONNECTION: "local",
+      COLONIA_URL: "",
+      COLONIA_HOME: (await world.info()).home,
+      COLONIA_PORT: process.env.E2E_PORT ?? "7460",
       // No dev server: the window falls back to the panel the core serves.
-      APX_WEB_URL: "http://127.0.0.1:9",
+      COLONIA_WEB_URL: "http://127.0.0.1:9",
     },
   });
 });
@@ -72,7 +72,7 @@ test.afterAll(async () => {
 /** The menu-bar icon, which the app makes with the quick chat once it is up (the entry script keeps it for tests). */
 async function trayReady(): Promise<void> {
   await expect
-    .poll(() => app.evaluate(() => Boolean((globalThis as unknown as { apxTestTray?: unknown }).apxTestTray)))
+    .poll(() => app.evaluate(() => Boolean((globalThis as unknown as { coloniaTestTray?: unknown }).coloniaTestTray)))
     .toBe(true);
 }
 
@@ -121,7 +121,7 @@ test("a full-screen layer's bar clears the window controls and keeps its control
   const main = await page("main");
   // The welcome and corner cards would cover the screen: seen already, as in the panel's own specs.
   await main.evaluate(() => {
-    localStorage.setItem("apx.corner", JSON.stringify({ discord: true, star: true, welcome: true }));
+    localStorage.setItem("colonia.corner", JSON.stringify({ discord: true, star: true, welcome: true }));
     location.hash = "#view=flows";
     location.reload();
   });
@@ -166,7 +166,7 @@ test("a full-screen layer's bar clears the window controls and keeps its control
 test("the app lends its browser to the core, and a tab opened through the core is listed", async () => {
   await until(async () => {
     const h = await rpc<{ subsystems: Record<string, { status: string; detail?: string }> }>("system.health");
-    return h.subsystems.browser?.status === "ok" && h.subsystems.browser.detail === "apx-desktop";
+    return h.subsystems.browser?.status === "ok" && h.subsystems.browser.detail === "colonia-desktop";
   }, 20_000);
   // The app's own origins are blocked in tabs: the sandbox's control API is an ordinary page.
   const page = `http://127.0.0.1:${process.env.E2E_CONTROL_PORT ?? 7461}/info`;
@@ -192,7 +192,7 @@ test("the app lends its browser to the core, and a tab opened through the core i
       by: "e2e",
       origin: "https://northwind.example",
       document,
-      script: "document.body.dataset.apxProbe = 'bad'",
+      script: "document.body.dataset.coloniaProbe = 'bad'",
     }),
   ).rejects.toThrow(/origin changed/);
   const untouched = await rpc<{ json: string }>("browser.evaluate", {
@@ -200,7 +200,7 @@ test("the app lends its browser to the core, and a tab opened through the core i
     by: "e2e",
     origin: new URL(page).origin,
     document,
-    script: "document.body.dataset.apxProbe ?? null",
+    script: "document.body.dataset.coloniaProbe ?? null",
   });
   expect(untouched.json).toBe("null");
   await rpc("browser.control", { tab, mode: "user" });
@@ -223,7 +223,7 @@ test("the app lends its browser to the core, and a tab opened through the core i
       by: "e2e",
       origin: new URL(page).origin,
       document,
-      script: "document.body.dataset.apxProbe = 'bad'",
+      script: "document.body.dataset.coloniaProbe = 'bad'",
     }),
   ).rejects.toThrow(/URL changed/);
   await rpc("browser.history", { tab, by: "e2e", action: "reload" });
@@ -233,7 +233,7 @@ test("the app lends its browser to the core, and a tab opened through the core i
       by: "e2e",
       origin: new URL(page).origin,
       document,
-      script: "document.body.dataset.apxProbe = 'bad'",
+      script: "document.body.dataset.coloniaProbe = 'bad'",
     }),
   ).rejects.toThrow(/context|object|document/i);
   await rpc("browser.close", { tab });
@@ -242,7 +242,7 @@ test("the app lends its browser to the core, and a tab opened through the core i
 test("native tab destruction during CDP invalidation removes only that tab and the browser keeps working", async () => {
   await until(async () => {
     const h = await rpc<{ subsystems: Record<string, { status: string; detail?: string }> }>("system.health");
-    return h.subsystems.browser?.status === "ok" && h.subsystems.browser.detail === "apx-desktop";
+    return h.subsystems.browser?.status === "ok" && h.subsystems.browser.detail === "colonia-desktop";
   }, 20_000);
   const url = `http://127.0.0.1:${process.env.E2E_CONTROL_PORT ?? 7461}/info`;
   const first = await rpc<{ tab: string }>("browser.open", { url: `${url}#survivor`, by: "e2e" });
@@ -289,7 +289,7 @@ test("the quick chat opens from Window ▸ Quick chat and talks to the super-age
   await expect(quick.getByText("Got it: Desde la barra de menú")).toBeVisible();
 });
 
-test("closing the window hides it: APX keeps running, and Dock/activate brings it back", async () => {
+test("closing the window hides it: Colonia keeps running, and Dock/activate brings it back", async () => {
   // The main window is the only one that is not a BrowserWindow (the quick chat is).
   const mainShown = () =>
     app.evaluate(({ BaseWindow, BrowserWindow }) =>
@@ -319,8 +319,8 @@ test("tray clicks keep their display even if the pointer moves during the double
     await app.evaluate(async ({ BrowserWindow, screen }, area) => {
       const quick = BrowserWindow.getAllWindows().find((w) => w.webContents.getURL().includes("quick=1"));
       quick?.hide();
-      const tray = (globalThis as unknown as { apxTestTray: { emit: (event: string, ...args: unknown[]) => void } })
-        .apxTestTray;
+      const tray = (globalThis as unknown as { coloniaTestTray: { emit: (event: string, ...args: unknown[]) => void } })
+        .coloniaTestTray;
       const point = { x: area.x + area.width / 2, y: area.y - 10 };
       const original = screen.getCursorScreenPoint;
       try {
@@ -361,7 +361,7 @@ test("one tray click closes a visible quick chat even when the native click blur
     BrowserWindow.getAllWindows()
       .find((w) => w.webContents.getURL().includes("quick=1"))
       ?.hide();
-    const tray = (globalThis as unknown as { apxTestTray: { emit: (event: string) => void } }).apxTestTray;
+    const tray = (globalThis as unknown as { coloniaTestTray: { emit: (event: string) => void } }).coloniaTestTray;
     tray.emit("click");
   });
   await expect.poll(visible).toBe(true);
@@ -369,14 +369,14 @@ test("one tray click closes a visible quick chat even when the native click blur
     const quick = BrowserWindow.getAllWindows().find((w) => w.webContents.getURL().includes("quick=1"));
     quick?.emit("blur");
     await new Promise((resolve) => setTimeout(resolve, 30));
-    const tray = (globalThis as unknown as { apxTestTray: { emit: (event: string) => void } }).apxTestTray;
+    const tray = (globalThis as unknown as { coloniaTestTray: { emit: (event: string) => void } }).coloniaTestTray;
     tray.emit("click");
   });
   await expect.poll(visible).toBe(false);
   await new Promise((resolve) => setTimeout(resolve, 400));
   expect(await visible()).toBe(false);
   await app.evaluate(() => {
-    (globalThis as unknown as { apxTestTray: { emit: (event: string) => void } }).apxTestTray.emit("click");
+    (globalThis as unknown as { coloniaTestTray: { emit: (event: string) => void } }).coloniaTestTray.emit("click");
   });
   await expect.poll(visible).toBe(true);
 });
@@ -402,7 +402,7 @@ test("a held tray click closes the popup with stale bounds; clicking outside sti
         }
       });
     };
-    const tray = (globalThis as unknown as { apxTestTray: import("electron").Tray }).apxTestTray;
+    const tray = (globalThis as unknown as { coloniaTestTray: import("electron").Tray }).coloniaTestTray;
     const originalPoint = screen.getCursorScreenPoint;
     const originalBounds = tray.getBounds;
     const area = screen.getPrimaryDisplay().workArea;
@@ -440,17 +440,17 @@ test("notifications add and clear the integrated tray indicator, menu-bar count 
   const badge = async (count: number) => {
     await main.evaluate(
       (count) =>
-        (window as unknown as { apxDesktop: { setAttention: (count: number) => void } }).apxDesktop.setAttention(count),
+        (window as unknown as { coloniaDesktop: { setAttention: (count: number) => void } }).coloniaDesktop.setAttention(count),
       count,
     );
     return app.evaluate(({ app, nativeImage }) => {
       const state = globalThis as unknown as {
-        apxTestTray: import("electron").Tray;
-        apxTestTrayImage: string;
-        apxTestTrayTemplate: boolean;
-        apxTestTrayTooltip: string;
+        coloniaTestTray: import("electron").Tray;
+        coloniaTestTrayImage: string;
+        coloniaTestTrayTemplate: boolean;
+        coloniaTestTrayTooltip: string;
       };
-      const image = nativeImage.createFromDataURL(state.apxTestTrayImage);
+      const image = nativeImage.createFromDataURL(state.coloniaTestTrayImage);
       const size = image.getSize();
       const pixels = image.toBitmap();
       let bodyPixels = 0;
@@ -471,10 +471,10 @@ test("notifications add and clear the integrated tray indicator, menu-bar count 
         }
       }
       return {
-        title: process.platform === "darwin" ? state.apxTestTray.getTitle() : "",
-        tooltip: state.apxTestTrayTooltip,
-        image: state.apxTestTrayImage,
-        template: state.apxTestTrayTemplate,
+        title: process.platform === "darwin" ? state.coloniaTestTray.getTitle() : "",
+        tooltip: state.coloniaTestTrayTooltip,
+        image: state.coloniaTestTrayImage,
+        template: state.coloniaTestTrayTemplate,
         size,
         bodyPixels,
         orangePixels,
@@ -483,9 +483,9 @@ test("notifications add and clear the integrated tray indicator, menu-bar count 
     });
   };
   const empty = await badge(0);
-  expect(empty.tooltip).toBe("APX");
+  expect(empty.tooltip).toBe("Colonia");
   const unread = await badge(3);
-  expect(unread.tooltip).toMatch(/^APX · 3 /);
+  expect(unread.tooltip).toMatch(/^Colonia · 3 /);
   expect(unread.image).not.toBe(empty.image);
   expect(empty.bodyPixels).toBeGreaterThan(0);
   expect(unread.size).toEqual(empty.size);
@@ -540,8 +540,8 @@ test("double-click opens the existing main window in front and cancels the quick
       main.once("minimize", resolve);
       main.minimize();
     });
-    const tray = (globalThis as unknown as { apxTestTray: { emit: (event: string, ...args: unknown[]) => void } })
-      .apxTestTray;
+    const tray = (globalThis as unknown as { coloniaTestTray: { emit: (event: string, ...args: unknown[]) => void } })
+      .coloniaTestTray;
     tray.emit("click", {});
     tray.emit("double-click", {});
     // The pending single-click deadline must pass without reopening the quick chat.
@@ -568,13 +568,13 @@ test("double-click opens the existing main window in front and cancels the quick
     .toEqual({ ids: [id], visible: true, minimized: false, focused: true, quickVisible: false });
 });
 
-test("an .apxart opened from the system opens the install dialog with it, also when APX already runs", async () => {
+test("an .coloniaart opened from the system opens the install dialog with it, also when Colonia already runs", async () => {
   const made = await rpc<{ id: string }>("surfaces.show", {
     name: "opened-file",
     title: "Opened file",
     html: "<h1>Opened</h1>",
   });
-  const file = path.join(home, "opened-file.apxart");
+  const file = path.join(home, "opened-file.coloniaart");
   fs.writeFileSync(file, JSON.stringify(await rpc<object>("surfaces.export", { surface: made.id, memory: false })));
   const main = await page("main");
   const dialog = main.getByRole("dialog", { name: /Instalar un artefacto|Install an artifact/ });
@@ -585,7 +585,7 @@ test("an .apxart opened from the system opens the install dialog with it, also w
   await dialog.getByRole("button", { name: /Cancelar|Cancel/ }).click();
   await expect(dialog).toBeHidden();
 
-  await app.evaluate(({ app }, file) => app.emit("second-instance", {}, ["APX", file], "/"), file);
+  await app.evaluate(({ app }, file) => app.emit("second-instance", {}, ["Colonia", file], "/"), file);
   await expect(dialog.getByText("Opened file", { exact: true })).toBeVisible();
   await dialog.getByRole("button", { name: /Cancelar|Cancel/ }).click();
 });

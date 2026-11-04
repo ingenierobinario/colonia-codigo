@@ -8,7 +8,7 @@ import {
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { t } from "../i18n";
-import type { ApxClient } from "../protocol";
+import type { ColoniaClient } from "../protocol";
 import type { Attachment } from "./useAttachments";
 
 /**
@@ -21,7 +21,7 @@ export function useVoiceNote({
   upload,
   onWords,
 }: {
-  client: ApxClient;
+  client: ColoniaClient;
   /** Undefined for a new chat not made yet: the audio goes with its first message. */
   threadId: string | undefined;
   upload: (uri: string, name: string, mime: string) => Promise<Attachment | undefined>;

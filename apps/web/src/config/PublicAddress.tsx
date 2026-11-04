@@ -1,5 +1,5 @@
-import type { HookError, HookMode, WebhooksState } from "@apx/protocol";
-import { Badge, Button, IconButton, Icons, Input, SegmentedControl, SettingRow, Skeleton } from "@apx/ui";
+import type { HookError, HookMode, WebhooksState } from "@colonia/protocol";
+import { Badge, Button, IconButton, Icons, Input, SegmentedControl, SettingRow, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

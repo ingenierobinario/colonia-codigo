@@ -19,7 +19,7 @@ test("a phone pairs with the panel's code and is listed; removing it cuts its ke
   const connection = await page.getByRole("heading", { name: "Conexión" }).boundingBox();
   const empty = await page.getByText("Todavía no hay dispositivos vinculados.").boundingBox();
   expect(connection && empty && connection.y > empty.y).toBeTruthy();
-  const badge = await page.locator(".access__status .apx-badge").boundingBox();
+  const badge = await page.locator(".access__status .colonia-badge").boundingBox();
   const check = await page.getByRole("button", { name: "Revisar", exact: true }).boundingBox();
   expect(badge && check && Math.abs(badge.y + badge.height / 2 - check.y - check.height / 2) < 2).toBeTruthy();
   const heading = await page.getByRole("heading", { name: "Dispositivos vinculados" }).boundingBox();
@@ -58,7 +58,7 @@ test("a phone pairs with the panel's code and is listed; removing it cuts its ke
   // A phone without Expo push takes an ntfy address, set here.
   await page
     .getByRole("textbox", { name: "Dirección de push para Teléfono de prueba" })
-    .fill("https://ntfy.example.com/apx-e2e");
+    .fill("https://ntfy.example.com/colonia-e2e");
   await page.getByRole("button", { name: "Usar para push" }).click();
   await expect(page.getByText("Push (ntfy)")).toBeVisible();
   await page.getByRole("button", { name: "Quitar Teléfono de prueba" }).click();
@@ -77,7 +77,7 @@ test("the account menu opens this chat on the phone: its dialog loads when asked
   await expect(dialog).toBeHidden();
 });
 
-test("who may reach this APX: the local network is saved for the next start, and this computer only undoes it", async ({
+test("who may reach this Colonia: the local network is saved for the next start, and this computer only undoes it", async ({
   page,
 }) => {
   await open(page);

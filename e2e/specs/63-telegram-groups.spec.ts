@@ -34,7 +34,7 @@ test("Telegram groups: a group the bot is in is picked from the list, and the bo
     ),
   );
   await world.telegramGroup(ana, group, "anyone around today?");
-  await world.telegramGroup(ana, group, "@apx_test_bot what is Acme Notes?", "@apx_test_bot");
+  await world.telegramGroup(ana, group, "@colonia_test_bot what is Acme Notes?", "@colonia_test_bot");
   // A group waits a few seconds for one person's quick messages before it answers; only the @mention gets one.
   const post = await until(async () => (await world.sentTo(group.id))[0], 20_000);
   expect(post.text).toContain("Got it");

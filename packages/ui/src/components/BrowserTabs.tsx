@@ -36,7 +36,7 @@ export function BrowserTabs({
   className,
 }: BrowserTabsProps) {
   return (
-    <div className={cx("apx-btabs", className)} role="tablist">
+    <div className={cx("colonia-btabs", className)} role="tablist">
       {tabs.map((t) => (
         <div
           key={t.id}
@@ -44,7 +44,7 @@ export function BrowserTabs({
           tabIndex={0}
           aria-selected={t.id === value}
           title={t.url}
-          className={cx("apx-btabs__tab", t.id === value && "is-active")}
+          className={cx("colonia-btabs__tab", t.id === value && "is-active")}
           onClick={() => onValueChange?.(t.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -53,12 +53,12 @@ export function BrowserTabs({
             }
           }}
         >
-          <span className={cx("apx-btabs__dot", `is-${t.holder ?? "idle"}`)} aria-hidden="true" />
-          <span className="apx-btabs__title">{t.title}</span>
+          <span className={cx("colonia-btabs__dot", `is-${t.holder ?? "idle"}`)} aria-hidden="true" />
+          <span className="colonia-btabs__title">{t.title}</span>
           {onClose && (
             <button
               type="button"
-              className="apx-btabs__close"
+              className="colonia-btabs__close"
               aria-label={closeLabel}
               onClick={(e) => {
                 e.stopPropagation();
@@ -71,7 +71,7 @@ export function BrowserTabs({
         </div>
       ))}
       {onNew && (
-        <button type="button" className="apx-btabs__new" aria-label={newLabel} title={newLabel} onClick={onNew}>
+        <button type="button" className="colonia-btabs__new" aria-label={newLabel} title={newLabel} onClick={onNew}>
           <Plus size={16} />
         </button>
       )}

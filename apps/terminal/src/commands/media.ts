@@ -1,13 +1,13 @@
-// apx image / transcribe / say: one-shot media through the core's image, speech and voice services.
+// colonia image / transcribe / say: one-shot media through the core's image, speech and voice services.
 import fs from "node:fs";
 import path from "node:path";
-import { type ApxClient, UPLOAD_LIMITS } from "@apx/protocol/client";
+import { type ColoniaClient, UPLOAD_LIMITS } from "@colonia/protocol/client";
 
 export const USAGE = {
-  image: `apx image "<prompt>" [--out file] [--size WxH]   Draw an image with the first image service that answers
+  image: `colonia image "<prompt>" [--out file] [--size WxH]   Draw an image with the first image service that answers
                                                   (default file: <media id>.<ext> in this folder)`,
-  transcribe: "apx transcribe <audio file>                       Speech to text; prints the words",
-  say: `apx say "<text>" [--out file]                     Speak text with the first voice service that answers
+  transcribe: "colonia transcribe <audio file>                       Speech to text; prints the words",
+  say: `colonia say "<text>" [--out file]                     Speak text with the first voice service that answers
                                                   (default file: <media id>.<ext> in this folder)`,
 };
 
@@ -38,7 +38,7 @@ export function sizeOf(size: string): { width: number; height: number } {
 }
 
 /** Fetches a media's bytes from the core and writes them to `out`, or to <id>.<ext> here. */
-async function save(client: ApxClient, media: { id: string; mime: string }, out: string | undefined) {
+async function save(client: ColoniaClient, media: { id: string; mime: string }, out: string | undefined) {
   const { data } = await client.call("media.get", { id: media.id });
   const file = out ?? `${media.id}.${extensionOf(media.mime)}`;
   fs.writeFileSync(file, Buffer.from(data, "base64"));
@@ -49,7 +49,7 @@ const said = (r: { service: string; model?: string | undefined; skipped: string[
   `${r.service}${r.model ? ` · ${r.model}` : ""}${r.skipped.length ? `  (skipped: ${r.skipped.join("; ")})` : ""}`;
 
 export async function image(
-  client: ApxClient,
+  client: ColoniaClient,
   words: string[],
   o: { out?: string | undefined; size?: string | undefined },
 ) {
@@ -59,14 +59,14 @@ export async function image(
   for (const m of r.media) console.log(`${await save(client, m, o.out)}  ${said(r)}`);
 }
 
-export async function say(client: ApxClient, words: string[], o: { out?: string | undefined }) {
+export async function say(client: ColoniaClient, words: string[], o: { out?: string | undefined }) {
   const text = words.join(" ").trim();
   if (!text || text === "help") return help(USAGE.say, !text);
   const r = await client.call("media.speak", { text });
   console.log(`${await save(client, r.media, o.out)}  ${said(r)}`);
 }
 
-export async function transcribe(client: ApxClient, [file]: string[]) {
+export async function transcribe(client: ColoniaClient, [file]: string[]) {
   if (!file || file === "help") return help(USAGE.transcribe, !file);
   const mime = AUDIO_MIME[path.extname(file).toLowerCase()];
   if (!mime) throw new Error(`unknown audio type: ${file} (${Object.keys(AUDIO_MIME).join(" ")})`);

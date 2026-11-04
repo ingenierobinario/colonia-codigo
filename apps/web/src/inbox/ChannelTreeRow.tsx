@@ -1,5 +1,5 @@
-import type { Agent, Thread } from "@apx/protocol";
-import { ContextMenu, Icons, Spinner } from "@apx/ui";
+import type { Agent, Thread } from "@colonia/protocol";
+import { ContextMenu, Icons, Spinner } from "@colonia/ui";
 import { KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";

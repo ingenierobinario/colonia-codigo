@@ -1,5 +1,5 @@
 import "../styles/corner.css";
-import { Button, ChannelIcon, IconButton, Icons, ProjectTile } from "@apx/ui";
+import { Button, ChannelIcon, IconButton, Icons, ProjectTile } from "@colonia/ui";
 import type { CSSProperties, ReactNode } from "react";
 import { closeCard, useClosedCards } from "../data/cornerCards.ts";
 import { LINKS } from "../data/links.ts";
@@ -9,7 +9,7 @@ import { useV1Running } from "../data/v1Running.ts";
 import { useT } from "../i18n/index.ts";
 
 /**
- * A small deck: a newer APX, the Discord, a star on GitHub. Only the first that still applies shows; the next peeks
+ * A small deck: a newer Colonia, the Discord, a star on GitHub. Only the first that still applies shows; the next peeks
  * out behind it and comes forward when it is closed. Each one is said once per device (the update card once per
  * version), never as a modal. At the foot of the sidebar; floating beside it when the sidebar is a rail, away from the
  * composer.
@@ -27,7 +27,7 @@ export function CornerCards({ floating = false }: { floating?: boolean }) {
   const ask = useTelemetry((s) => s.state?.enabled === true && s.state.usage === null);
 
   const cards: ReactNode[] = [];
-  // First: two APX daemons run the same routines and answer the same bots. Closed, it shows again next time.
+  // First: two Colonia daemons run the same routines and answer the same bots. Closed, it shows again next time.
   if (v1.running && !closed.v1)
     cards.push(
       <CornerCard
@@ -56,7 +56,7 @@ export function CornerCards({ floating = false }: { floating?: boolean }) {
             ? "update.cardReady"
             : update.target === "both"
               ? "update.cardTitleBoth"
-              : update.target === "core" && window.apxDesktop?.coreLocal === false
+              : update.target === "core" && window.coloniaDesktop?.coreLocal === false
                 ? "update.cardTitleServer"
                 : "update.cardTitle",
           { v: version },

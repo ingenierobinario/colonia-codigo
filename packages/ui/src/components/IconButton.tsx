@@ -45,10 +45,10 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-label={label}
       aria-pressed={active || undefined}
       className={cx(
-        "apx-iconbtn",
-        `apx-iconbtn--${variant}`,
-        `apx-iconbtn--${size}`,
-        `apx-iconbtn--${shape}`,
+        "colonia-iconbtn",
+        `colonia-iconbtn--${variant}`,
+        `colonia-iconbtn--${size}`,
+        `colonia-iconbtn--${shape}`,
         active && "is-active",
         className,
       )}

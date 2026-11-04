@@ -7,7 +7,7 @@ import { bootFiles, bootProblems, bootReport, moduleBytes, owner } from "./bundl
 
 /** A built panel: an entry that imports a shared chunk, a lazy screen and two language chunks. */
 function dist(files: Record<string, string>): string {
-  const dir = tempDir("apx-bundle-").path;
+  const dir = tempDir("colonia-bundle-").path;
   fs.mkdirSync(path.join(dir, "assets"));
   fs.writeFileSync(
     path.join(dir, "index.html"),
@@ -61,7 +61,7 @@ test("zod or a lazy screen pulled onto the first load is named", (t) => {
   const boot = bootFiles(dir);
   assert.ok(boot);
   assert.deepEqual(bootProblems(dir, boot, ["ProjectScreen"]), [
-    "zod is on the first load: import a subpath of @apx/protocol that has no schemas",
+    "zod is on the first load: import a subpath of @colonia/protocol that has no schemas",
     "ProjectScreen has no chunk of its own: something on the first screen imports it",
   ]);
 });
@@ -84,7 +84,7 @@ test("a sourcemap names the packages and files that weigh the most", (t) => {
   const boot = bootFiles(dir);
   assert.ok(boot);
   // index-A.js has no map: the report says how to get one instead of naming nothing.
-  assert.match(bootReport(dir, boot), /APX_TEST_COVERAGE=1/);
+  assert.match(bootReport(dir, boot), /COLONIA_TEST_COVERAGE=1/);
   assert.match(bootReport(dir, boot), /KB gz {2}assets\/es-E\.js/);
 });
 
@@ -94,7 +94,7 @@ test("a source file belongs to its npm package, a workspace package's build or i
     "@base-ui/react",
   );
   assert.equal(owner("/r/node_modules/react-dom/cjs/react-dom.js"), "react-dom");
-  assert.equal(owner("/r/packages/ui/dist/chunk-X.js"), "@apx/ui");
+  assert.equal(owner("/r/packages/ui/dist/chunk-X.js"), "@colonia/ui");
   assert.equal(owner("/r/apps/web/src/i18n/es.ts"), "apps/web/src/i18n/es.ts");
   // A path resolved on Windows.
   assert.equal(owner("D:\\r\\node_modules\\.pnpm\\zod@4.0.0\\node_modules\\zod\\v4\\core.js"), "zod");

@@ -2,31 +2,31 @@
 .received__table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
 .received__table td {
   padding: 3px 0;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .received__table td:last-child {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .received__table .is-part td:first-child {
   padding-left: 14px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .received__text {
   margin-top: 10px;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
 .received__text pre {
   margin: 6px 0 0;
   padding: 10px;
   max-height: 320px;
   overflow: auto;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 8px;
   font-size: 12px;
   white-space: pre-wrap;

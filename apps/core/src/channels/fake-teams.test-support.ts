@@ -133,7 +133,7 @@ export async function fakeTeams() {
     },
     /** `from` presses the Action.Submit button carrying `id` on the card message `ref`. */
     click: (from: string, id: string, ref: string) =>
-      activity(from, { type: "message", value: { apx: id }, replyToId: ref, conversation: personal(from) }),
+      activity(from, { type: "message", value: { colonia: id }, replyToId: ref, conversation: personal(from) }),
     /** The bot is added to the team channel. */
     added: () =>
       activity("owner", {

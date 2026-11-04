@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { IconButton, Icons, Menu } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { IconButton, Icons, Menu } from "@colonia/ui";
 import { type DragEvent, useCallback, useMemo, useState } from "react";
 import { inProject } from "../data/identity.ts";
 import { setBoard, usePrefs } from "../data/prefs.ts";

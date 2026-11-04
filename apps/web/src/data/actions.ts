@@ -1,6 +1,6 @@
 // Every write the panel makes. Components call these; they never call the client directly.
-import type { ApprovalScope, Message, Part, SurfaceState, Thread } from "@apx/protocol";
-import { ApxError, secureRequestKey } from "@apx/protocol/client";
+import type { ApprovalScope, Message, Part, SurfaceState, Thread } from "@colonia/protocol";
+import { ColoniaError, secureRequestKey } from "@colonia/protocol/client";
 import { computersOf, NO_COMPUTERS } from "../computers/summary.ts";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
@@ -30,7 +30,7 @@ export async function bootstrap(): Promise<void> {
       .call("environments.status", {})
       .then((status) => ({ chats: status.enabled ? (status.chats ?? []) : [], computers: computersOf(status) }))
       .catch((error: unknown) => {
-        if (error instanceof ApxError && error.code === "unknown_method") return { chats: [], computers: NO_COMPUTERS };
+        if (error instanceof ColoniaError && error.code === "unknown_method") return { chats: [], computers: NO_COMPUTERS };
         return { chats: data.get().vmThreads, computers: data.get().computers };
       }),
   ]);

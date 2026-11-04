@@ -1,7 +1,7 @@
-// apx_flow's publishing and running: when the owner asks in the chat, the super-agent makes a Flow's draft what runs
+// colonia_flow's publishing and running: when the owner asks in the chat, the super-agent makes a Flow's draft what runs
 // and starts it by hand, each once the owner approves a card that says what it will send, call, run and change, as the
 // editor asks before it publishes (DECISIONS.md#d-184).
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { flowOutward } from "../flow-outward.ts";
 import { inlineName } from "./result.ts";

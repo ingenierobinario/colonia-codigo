@@ -1,6 +1,6 @@
 import "../styles/screens.css";
-import { AGENTS_MD_LIMIT, Autonomy, DEFAULT_AUTONOMY, type ProjectKind } from "@apx/protocol";
-import { Button, Dialog, Field, Icons, Input, Select, type SelectOption, Textarea } from "@apx/ui";
+import { AGENTS_MD_LIMIT, Autonomy, DEFAULT_AUTONOMY, type ProjectKind } from "@colonia/protocol";
+import { Button, Dialog, Field, Icons, Input, Select, type SelectOption, Textarea } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { formatNumber } from "../common/format.ts";
 import type { ProjectEntry } from "../data/identity.ts";
@@ -28,7 +28,7 @@ export function ProjectSettings({
   const t = useT();
   const real = useData((s) => s.projects.find((p) => p.id === project.id));
   const base = useData((s) => s.base);
-  // The base project has no folder: APX keeps its name, description and kind.
+  // The base project has no folder: Colonia keeps its name, description and kind.
   const full = useMemo(
     () => (project.isDefault ? { ...base, id: project.id, present: true, path: undefined } : real),
     [project.isDefault, project.id, base, real],

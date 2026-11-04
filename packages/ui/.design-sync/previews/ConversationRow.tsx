@@ -1,4 +1,4 @@
-import { AgentAvatar, ApxProvider, AvatarStack, ConversationRow, Icons, Tag } from "@apx/ui";
+import { AgentAvatar, ColoniaProvider, AvatarStack, ConversationRow, Icons, Tag } from "@colonia/ui";
 
 const list = { width: 300, display: "flex", flexDirection: "column" as const, gap: 2 };
 
@@ -42,7 +42,7 @@ export function Minimal() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 8, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 8, borderRadius: 12 }}>
       <div style={list}>
         <ConversationRow
           avatar={<AgentAvatar name="Roby" blob="noche" size={34} />}
@@ -79,6 +79,6 @@ export function ClassicLook() {
           unread={2}
         />
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

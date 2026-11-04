@@ -71,7 +71,7 @@ test("importing the executive team into the base project sets the company up in 
   const cfo = (await rpc<{ agent: { name: string; role: string } }>("agents.get", { agent: "cfo" })).agent;
   expect(cfo.role).toBe("Chief Financial Officer");
   expect(cfo.name).not.toBe("Chief Financial Officer");
-  await expect(page.locator(`.apx-agentnode__name:text-is("${cfo.name}")`)).toBeVisible();
+  await expect(page.locator(`.colonia-agentnode__name:text-is("${cfo.name}")`)).toBeVisible();
   const tab = page.locator(".team__tabs").getByRole("tab", { name: "Áreas y roles" });
   await tab.click();
   await expect(page.locator(".org__area", { hasText: "Finance" })).toContainText("Chief Financial Officer");

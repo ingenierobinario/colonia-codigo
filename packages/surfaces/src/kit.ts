@@ -1,8 +1,8 @@
-/** Where a surface asks for the APX Kit. Nothing is fetched from there: hosts inline the kit in place of the tag. */
-export const KIT_PATH = "/_apx/kit@1.js";
+/** Where a surface asks for the Colonia Kit. Nothing is fetched from there: hosts inline the kit in place of the tag. */
+export const KIT_PATH = "/_colonia/kit@1.js";
 
-/** `<script src="/_apx/kit@1.js"></script>`, with or without quotes, other attributes or a minor version (kit@1.2.js). */
-const KIT_TAG = /<script\b[^>]*\bsrc\s*=\s*["']?\/_apx\/kit@1(?:\.\d+){0,2}\.js["']?[^>]*>\s*<\/script\s*>/gi;
+/** `<script src="/_colonia/kit@1.js"></script>`, with or without quotes, other attributes or a minor version (kit@1.2.js). */
+const KIT_TAG = /<script\b[^>]*\bsrc\s*=\s*["']?\/_colonia\/kit@1(?:\.\d+){0,2}\.js["']?[^>]*>\s*<\/script\s*>/gi;
 
 export function usesKit(html: string): boolean {
   KIT_TAG.lastIndex = 0;
@@ -19,14 +19,14 @@ export function inlineKit(html: string, kit: string): string {
   return html.replace(KIT_TAG, () => {
     if (!first) return "";
     first = false;
-    return `<script data-apx-kit>${body}</script>`;
+    return `<script data-colonia-kit>${body}</script>`;
   });
 }
 
-/** `<meta name="apx-surface" content="app">` or `<html data-ax-surface="app">`: the page was written as a full app. */
+/** `<meta name="colonia-surface" content="app">` or `<html data-ax-surface="app">`: the page was written as a full app. */
 export function declaresApp(html: string): boolean {
   return (
-    /<meta\b(?=[^>]*\bname\s*=\s*["']?apx-surface\b)(?=[^>]*\bcontent\s*=\s*["']?app\b)[^>]*>/i.test(html) ||
+    /<meta\b(?=[^>]*\bname\s*=\s*["']?colonia-surface\b)(?=[^>]*\bcontent\s*=\s*["']?app\b)[^>]*>/i.test(html) ||
     /<html\b[^>]*\bdata-ax-surface\s*=\s*["']?app\b/i.test(html)
   );
 }
@@ -44,11 +44,11 @@ export function parseLiveDuration(value: string): number | undefined {
 }
 
 /**
- * `<meta name="apx-live" content="on">` (or a duration): the page keeps running while hidden, for that long after it
+ * `<meta name="colonia-live" content="on">` (or a duration): the page keeps running while hidden, for that long after it
  * was last seen. Returns that time in ms, or undefined when the page is not live (no tag, "off", unreadable).
  */
 export function declaresLive(html: string): number | undefined {
-  const tag = /<meta\b(?=[^>]*\bname\s*=\s*["']?apx-live\b)[^>]*>/i.exec(html)?.[0];
+  const tag = /<meta\b(?=[^>]*\bname\s*=\s*["']?colonia-live\b)[^>]*>/i.exec(html)?.[0];
   if (!tag) return undefined;
   const content = /\bcontent\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(tag);
   return content ? parseLiveDuration(content[1] ?? content[2] ?? content[3] ?? "") : undefined;

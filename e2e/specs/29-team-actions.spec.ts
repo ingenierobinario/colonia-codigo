@@ -12,7 +12,7 @@ test("a global agent is created from the team, edited and deleted from its right
 
   await page.getByRole("button", { name: "Agente", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo agente" });
-  // It opens with a person's name from APX's generator, none the crew uses; the dice draws another.
+  // It opens with a person's name from Colonia's generator, none the crew uses; the dice draws another.
   const name = dialog.getByLabel("Nombre", { exact: true });
   const drawn = await name.inputValue();
   expect(AGENT_NAMES as readonly string[]).toContain(drawn);
@@ -46,7 +46,7 @@ test("a global agent is created from the team, edited and deleted from its right
   await expect(card).toHaveCount(0);
 
   // The super-agent says why it cannot go.
-  await page.locator(".teamcanvas__node:has(.apx-agentnode.is-lead)").click({ button: "right" });
+  await page.locator(".teamcanvas__node:has(.colonia-agentnode.is-lead)").click({ button: "right" });
   await expect(page.getByRole("menuitem", { name: "Borrar agente" })).toBeDisabled();
   await expect(page.getByText("El super-agente no se puede borrar")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -63,7 +63,7 @@ test("a project agent is written to .apc/agents/ and, deleted, archived with its
   page,
 }) => {
   await rpc("setup.finish", {});
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-team-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-team-")));
   const agents = path.join(repo, ".apc", "agents");
   fs.mkdirSync(agents, { recursive: true });
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
@@ -113,7 +113,7 @@ test("in the base project the super-agent is on top and a global agent can repor
   expect(saved.agent.parent).toBe(lead.id);
 
   // The super-agent's detail says it reports to nobody.
-  await page.locator(".teamcanvas__node:has(.apx-agentnode.is-lead)").click({ button: "right" });
+  await page.locator(".teamcanvas__node:has(.colonia-agentnode.is-lead)").click({ button: "right" });
   await page.getByRole("menuitem", { name: "Ver detalle" }).click();
   await expect(detail.getByText("A nadie: es el super-agente, arriba de todos.")).toBeVisible();
 

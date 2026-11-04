@@ -121,9 +121,9 @@ test("a video kept only as a placeholder: 'Recover files' asks the phone again a
   page,
 }) => {
   const mp4 = Buffer.concat([Buffer.from("000000186674797069736f6d", "hex"), Buffer.alloc(32 * 1024, 2)]);
-  // What APX kept of a video before it read media: the words only. The phone still has the video.
+  // What Colonia kept of a video before it read media: the words only. The phone still has the video.
   const answers = (await world.whatsapp.sentTo(FRIEND.phone)).length;
-  const id = await world.whatsapp.message(FRIEND, "[video — APX cannot read this kind of message yet]");
+  const id = await world.whatsapp.message(FRIEND, "[video — Colonia cannot read this kind of message yet]");
   await until(async () => (await world.whatsapp.sentTo(FRIEND.phone)).length > answers);
   await world.whatsapp.keep(id, { videoMessage: { mimetype: "video/mp4" }, bytes: mp4.toString("base64") });
   await open(page);

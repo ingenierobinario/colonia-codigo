@@ -20,7 +20,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     <textarea
       ref={ref}
       rows={rows}
-      className={cx("apx-textarea", invalid && "is-invalid", className)}
+      className={cx("colonia-textarea", invalid && "is-invalid", className)}
       aria-invalid={invalid || undefined}
       {...rest}
     />

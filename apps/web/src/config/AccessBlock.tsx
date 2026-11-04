@@ -1,5 +1,5 @@
-import type { AccessState, Result } from "@apx/protocol";
-import { Badge, Button, Icons, SegmentedControl, SettingRow, Skeleton } from "@apx/ui";
+import type { AccessState, Result } from "@colonia/protocol";
+import { Badge, Button, Icons, SegmentedControl, SettingRow, Skeleton } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -25,7 +25,7 @@ async function reloadWhenBack(): Promise<void> {
   window.location.reload();
 }
 
-/** Who may reach this APX: this computer only, the local network, or the owner's tailnet. */
+/** Who may reach this Colonia: this computer only, the local network, or the owner's tailnet. */
 export function AccessBlock() {
   const t = useT();
   const [state, setState] = useState<AccessState>();

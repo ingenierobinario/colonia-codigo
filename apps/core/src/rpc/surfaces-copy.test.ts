@@ -8,7 +8,7 @@ import { removeDir } from "../testkit/platform.ts";
 
 test("a widget is copied into another project as the owner's, never over one there by its name", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-surface-copy-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-surface-copy-"));
   try {
     fs.writeFileSync(path.join(root, "AGENTS.md"), "# Northwind\n");
     const { project } = await env.client.call("projects.register", { path: root });

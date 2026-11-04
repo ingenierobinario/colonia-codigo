@@ -57,7 +57,7 @@ class FakeSsh {
       if (child.ExitCode != 0 || answer != "s3cret") return Denied();
     }
     File.WriteAllText(Path.Combine(state, "authorized"), "");
-    Console.WriteLine("APX_KEY_OK");
+    Console.WriteLine("COLONIA_KEY_OK");
     return 0;
   }
   static int Denied() {

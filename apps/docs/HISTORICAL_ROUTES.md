@@ -49,7 +49,7 @@ The real v1 build contains 80 documentation pages: the 40 relative addresses bel
 | `surfaces/voice/` | Historical |
 | `surfaces/web/` | Historical |
 
-The assembled-site browser suite enumerates the actual v1 build and requires exactly these totals. For every page it verifies `/v1/` HTML bytes against the original build, browser destinations for `/docs/`, `/apx/docs/` and `/docs/…/index.html`, preserved queries/fragments and visible content. It writes the complete expanded inventory as `historical-route-inventory.json` in the Playwright report. The root and `index.html` forms use their normal static-file resolution; compatibility aliases relying on the 404 script require JavaScript. Unknown pages remain 404. Non-page resources are copied with the complete v1 build, outside the documentation-page inventory.
+The assembled-site browser suite enumerates the actual v1 build and requires exactly these totals. For every page it verifies `/v1/` HTML bytes against the original build, browser destinations for `/docs/`, `/colonia/docs/` and `/docs/…/index.html`, preserved queries/fragments and visible content. It writes the complete expanded inventory as `historical-route-inventory.json` in the Playwright report. The root and `index.html` forms use their normal static-file resolution; compatibility aliases relying on the 404 script require JavaScript. Unknown pages remain 404. Non-page resources are copied with the complete v1 build, outside the documentation-page inventory.
 
 ## Resumen en español
 

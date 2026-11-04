@@ -6,7 +6,7 @@ import { tempDir } from "../../../core/src/testkit/platform.ts";
 import { updateLog } from "./update-log.ts";
 
 test("update steps are appended one per line and an old log moves aside once it is large", async () => {
-  await using dir = tempDir("apx-update-log-test-");
+  await using dir = tempDir("colonia-update-log-test-");
   const file = path.join(dir.path, "logs", "update.log");
   const log = updateLog(file);
   log("restart: 2.1.0");
@@ -19,7 +19,7 @@ test("update steps are appended one per line and an old log moves aside once it 
 });
 
 test("a log that cannot be written never throws", async () => {
-  await using dir = tempDir("apx-update-log-test-");
+  await using dir = tempDir("colonia-update-log-test-");
   const blocked = path.join(dir.path, "file");
   fs.writeFileSync(blocked, "");
   assert.doesNotThrow(() => updateLog(path.join(blocked, "update.log"))("restart: 2.1.0"));

@@ -31,24 +31,24 @@ export function MenuEntries({
   portal: RefObject<HTMLDivElement | null>;
 }): ReactNode {
   return keyed(items, (it) => (it.type === "separator" ? "" : it.label)).map(({ item: it, key }) => {
-    if (it.type === "separator") return <BaseMenu.Separator key={key} className="apx-menu__sep" />;
+    if (it.type === "separator") return <BaseMenu.Separator key={key} className="colonia-menu__sep" />;
     if (it.type === "label")
       return (
-        <div key={key} className="apx-menu__label">
+        <div key={key} className="colonia-menu__label">
           {it.label}
         </div>
       );
     if (it.type === "submenu")
       return (
         <BaseMenu.SubmenuRoot key={key}>
-          <BaseMenu.SubmenuTrigger className="apx-menu__item" disabled={it.disabled}>
-            <span className="apx-menu__icon">{it.icon}</span>
-            <span className="apx-menu__text">{it.label}</span>
-            <ChevronRight className="apx-menu__chevron" size={14} />
+          <BaseMenu.SubmenuTrigger className="colonia-menu__item" disabled={it.disabled}>
+            <span className="colonia-menu__icon">{it.icon}</span>
+            <span className="colonia-menu__text">{it.label}</span>
+            <ChevronRight className="colonia-menu__chevron" size={14} />
           </BaseMenu.SubmenuTrigger>
           <BaseMenu.Portal container={portal}>
             <BaseMenu.Positioner side="right" align="start" sideOffset={4} alignOffset={-5}>
-              <BaseMenu.Popup className="apx-menu">
+              <BaseMenu.Popup className="colonia-menu">
                 <MenuEntries items={it.items} portal={portal} />
               </BaseMenu.Popup>
             </BaseMenu.Positioner>
@@ -58,15 +58,15 @@ export function MenuEntries({
     return (
       <BaseMenu.Item
         key={key}
-        className={cx("apx-menu__item", it.danger && "is-danger")}
+        className={cx("colonia-menu__item", it.danger && "is-danger")}
         disabled={it.disabled}
         closeOnClick={!it.keepOpen}
         onClick={it.onSelect}
       >
-        <span className="apx-menu__icon">{it.icon}</span>
-        <span className="apx-menu__text">{it.label}</span>
-        {it.shortcut && <span className="apx-menu__shortcut">{it.shortcut}</span>}
-        {it.checked && <Check className="apx-menu__check" size={14} />}
+        <span className="colonia-menu__icon">{it.icon}</span>
+        <span className="colonia-menu__text">{it.label}</span>
+        {it.shortcut && <span className="colonia-menu__shortcut">{it.shortcut}</span>}
+        {it.checked && <Check className="colonia-menu__check" size={14} />}
       </BaseMenu.Item>
     );
   });

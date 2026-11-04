@@ -2,7 +2,7 @@
 // owner for days, a commitment about to fall due or already late, a project with open work and no movement, a task set
 // up so it cannot move (see `brokenTask`). A watch routine calls its agent only when one of them is new, and the agent
 // decides whether it is worth interrupting for.
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import type { Store } from "./store.ts";
 
 /** Fixed thresholds; the rest come from the running profile (waiting hours, a commitment's lead, a quiet project). */

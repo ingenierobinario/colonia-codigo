@@ -54,7 +54,7 @@ function native(t: TestContext) {
       }
     },
   };
-  const key = Symbol.for("apx.native-storage-test");
+  const key = Symbol.for("colonia.native-storage-test");
   const id = sequence++;
   Reflect.set(globalThis, key, api);
   const exports: Record<string, string[]> = {
@@ -65,15 +65,15 @@ function native(t: TestContext) {
   const hooks = registerHooks({
     resolve(specifier, context, next) {
       return specifier in exports
-        ? { url: `apx-native-storage:${id}/${specifier}`, shortCircuit: true }
+        ? { url: `colonia-native-storage:${id}/${specifier}`, shortCircuit: true }
         : next(specifier, context);
     },
     load(url, context, next) {
-      if (!url.startsWith("apx-native-storage:")) return next(url, context);
+      if (!url.startsWith("colonia-native-storage:")) return next(url, context);
       return {
         format: "module",
         shortCircuit: true,
-        source: `const api = globalThis[Symbol.for("apx.native-storage-test")];\n${exports[
+        source: `const api = globalThis[Symbol.for("colonia.native-storage-test")];\n${exports[
           url.slice(url.indexOf("/") + 1)
         ]
           ?.map(
@@ -114,7 +114,7 @@ test("pairing credentials round trip through secure storage and reject corrupted
   const creds = { url: "https://core.example.com", token: "test-device-key", device: "phone" };
   await saveCreds(creds);
   assert.deepEqual(await loadCreds(), creds);
-  assert.deepEqual(JSON.parse(n.secure.get("apx.pairing") ?? "null"), creds);
+  assert.deepEqual(JSON.parse(n.secure.get("colonia.pairing") ?? "null"), creds);
   await clearCreds();
   assert.equal(await loadCreds(), undefined);
   for (const raw of [
@@ -125,7 +125,7 @@ test("pairing credentials round trip through secure storage and reject corrupted
     '{"url":1,"token":"key","device":"p"}',
     '{"url":"https://core.example.com","token":"","device":"p"}',
   ]) {
-    n.secure.set("apx.pairing", raw);
+    n.secure.set("colonia.pairing", raw);
     assert.equal(await loadCreds(), undefined, raw);
   }
   n.failReads();
@@ -140,13 +140,13 @@ test("appearance loads only valid values, falls back on locked storage and appli
     ["dark", "dark", "dark"],
     ["invalid", "system", "unspecified"],
   ]) {
-    n.secure.set("apx.appearance", raw ?? "");
+    n.secure.set("colonia.appearance", raw ?? "");
     assert.equal(await loadAppearance(), expected);
     assert.equal(currentAppearance(), expected);
     assert.equal(n.schemes.at(-1), scheme);
   }
   await saveAppearance("dark");
-  assert.equal(n.secure.get("apx.appearance"), "dark");
+  assert.equal(n.secure.get("colonia.appearance"), "dark");
   assert.equal(currentAppearance(), "dark");
   n.failReads();
   assert.equal(await loadAppearance(), "system");

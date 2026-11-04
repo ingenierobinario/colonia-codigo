@@ -9,10 +9,10 @@
   flex-direction: column;
   gap: 8px;
 }
-.fe-rules__join.apx-segmented {
+.fe-rules__join.colonia-segmented {
   align-self: center;
 }
-.fe-rules__add.apx-btn {
+.fe-rules__add.colonia-btn {
   align-self: flex-start;
 }
 .fe-rule {
@@ -23,10 +23,10 @@
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
 }
-.fe-rule > .apx-segmented {
+.fe-rule > .colonia-segmented {
   align-self: flex-start;
 }
 .fe-rule__head {

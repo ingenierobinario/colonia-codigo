@@ -1,4 +1,4 @@
-import { Icons, type MenuEntry } from "@apx/ui";
+import { Icons, type MenuEntry } from "@colonia/ui";
 import { markAllRead } from "../data/actions.ts";
 import type { ProjectEntry } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";

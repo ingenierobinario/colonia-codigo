@@ -6,22 +6,22 @@ The core runs deterministic filtering and table operations first; an optional fi
 
 ## Operate a Flow
 
-Open **Flows** in the global sidebar beside Tasks and Resources. It lists all projects; the project menu narrows it. **New flow** opens the full-screen editor (blank or from a starter) and the new Flow starts disabled in the chosen project (the active filter prefills it); editing keeps the saved project fixed and the identifier is derived from the name once. See [Panel editor](#panel-editor) for how a drawing becomes the definition. Direct panel links use `#view=flows`, `#view=flows&scope=<project-id>`, `#view=flows&flow=<flow-id>` (its runs) or `#view=flows&flow=<flow-id>&edit=1` (its editor); chat links use `apx:flows`, `apx:flows/<project-id>`, `apx:flows/<project-id>/<flow-id>` or `apx:flows/<project-id>/<flow-id>/edit`. The project's Routines tab has a shortcut to the same global screen, not an embedded second screen. Choose a stable identifier, name, equality predicates, a destination table key and an action:
+Open **Flows** in the global sidebar beside Tasks and Resources. It lists all projects; the project menu narrows it. **New flow** opens the full-screen editor (blank or from a starter) and the new Flow starts disabled in the chosen project (the active filter prefills it); editing keeps the saved project fixed and the identifier is derived from the name once. See [Panel editor](#panel-editor) for how a drawing becomes the definition. Direct panel links use `#view=flows`, `#view=flows&scope=<project-id>`, `#view=flows&flow=<flow-id>` (its runs) or `#view=flows&flow=<flow-id>&edit=1` (its editor); chat links use `colonia:flows`, `colonia:flows/<project-id>`, `colonia:flows/<project-id>/<flow-id>` or `colonia:flows/<project-id>/<flow-id>/edit`. The project's Routines tab has a shortcut to the same global screen, not an embedded second screen. Choose a stable identifier, name, equality predicates, a destination table key and an action:
 
 - **Table only:** persist matching data without calling a model.
 - **Agent:** a fixed agent and fixed prompt. Each event gets its own ordinary chat; incoming data is framed as an untrusted external request, never as the owner's instruction.
 - **Routine:** a fixed manual-only routine in the same project. Existing scheduler admission and routine history are reused. A busy routine leaves the event pending until a run ends. The event does not change the routine's prompt or introduce a schedule. The run receives the immutable event ID, Flow ID and data/read snapshot inside an explicitly untrusted `flow_event` envelope; it never needs to guess which version of the latest table row woke it.
 
-A global agent or an agent in the Flow's project is allowed. Cross-project bindings are rejected and checked again before admission. Public payloads cannot select an agent, routine, tool, shell command or identity. Changes require the owner, either directly or through an approved `apx_settings` change. Route token rotation and revocation remain owner-only.
+A global agent or an agent in the Flow's project is allowed. Cross-project bindings are rejected and checked again before admission. Public payloads cannot select an agent, routine, tool, shell command or identity. Changes require the owner, either directly or through an approved `colonia_settings` change. Route token rotation and revocation remain owner-only.
 
 The Flow detail shows, read-only, the drawing the chosen run used with what each step did (graph runs: each step's
 recorded times, input, output and reason; legacy runs: the checks up to the one that stopped it, the save and the run
 it linked), a log built only from recorded times, and a resizable runs rail (50 per page, **Show older runs** pages back). Selecting the save step shows up to 20 table rows,
-read-only; manual row writes are CLI/protocol only (`apx flows write`). It is not a complete export or inspection view. The private `flows.rows` and `flows.events` methods page through the complete table/history with a limit up to 100 and a `nextCursor`; see the export procedure below. Retirement is available through CLI or approved settings changes, not the panel. Equality predicates traverse own properties only; prototype-related paths are rejected. Optional `readKeys` in the protocol/CLI definition snapshots up to 16 fixed table keys before writing the matching event to `tableKey`. The agent receives those snapshots together with the event. No payload text is evaluated as code. Editing the Flow or its table does not rewrite an already accepted event's action or snapshots.
+read-only; manual row writes are CLI/protocol only (`colonia flows write`). It is not a complete export or inspection view. The private `flows.rows` and `flows.events` methods page through the complete table/history with a limit up to 100 and a `nextCursor`; see the export procedure below. Retirement is available through CLI or approved settings changes, not the panel. Equality predicates traverse own properties only; prototype-related paths are rejected. Optional `readKeys` in the protocol/CLI definition snapshots up to 16 fixed table keys before writing the matching event to `tableKey`. The agent receives those snapshots together with the event. No payload text is evaluated as code. Editing the Flow or its table does not rewrite an already accepted event's action or snapshots.
 
 ## Public entry
 
-The shared [public ingress](PUBLIC_INGRESS.md) registers only enabled Flow paths. Each address has its own key, made in the webhook step's card ([D-182](DECISIONS.md#d-182)): `flows.token {flow}` reads it (null before it has one) and `flows.token_rotate {flow, token?}` (owner-only, idempotency key; refused for a schedule Flow) makes a new one, APX's (`apxp_` and 64 hex) or the owner's own (24–200 of `A-Z a-z 0-9 . _ ~ -`), revoking the old one at once; it works whether the Flow is on or off. Settings → Devices → Endpoints still lists enabled addresses. Configure the public tunnel independently; enabling a Flow does not publish the private panel or RPC.
+The shared [public ingress](PUBLIC_INGRESS.md) registers only enabled Flow paths. Each address has its own key, made in the webhook step's card ([D-182](DECISIONS.md#d-182)): `flows.token {flow}` reads it (null before it has one) and `flows.token_rotate {flow, token?}` (owner-only, idempotency key; refused for a schedule Flow) makes a new one, Colonia's (`coloniap_` and 64 hex) or the owner's own (24–200 of `A-Z a-z 0-9 . _ ~ -`), revoking the old one at once; it works whether the Flow is on or off. Settings → Devices → Endpoints still lists enabled addresses. Configure the public tunnel independently; enabling a Flow does not publish the private panel or RPC.
 
 ```
 POST /flows/<path>
@@ -51,7 +51,7 @@ Event ID deduplication is scoped to the Flow. Event admission, fixed action snap
 
 History distinguishes deterministic no-op/write, pending work, failed admission and admission with a run ID/state. Follow the run link for completion or a runtime error. Failed admission errors are generic and do not copy webhook/provider bodies into logs. Retry only a failed event with no admitted run; its original binding is preserved. Restoring a removed binding can make a retry possible. Editing the Flow does not silently redirect old pending events.
 
-This is **not exactly-once delivery to external services**. A run can fail after an external send succeeded, or its provider can time out after accepting an operation. Do not blindly repeat the run or mint a new source ID. Reconcile the destination and use the service's own idempotency mechanism where available. Sending/posting still follows APX's normal permission and confirmation policy.
+This is **not exactly-once delivery to external services**. A run can fail after an external send succeeded, or its provider can time out after accepting an operation. Do not blindly repeat the run or mint a new source ID. Reconcile the destination and use the service's own idempotency mechanism where available. Sending/posting still follows Colonia's normal permission and confirmation policy.
 
 ## Resource bounds and data handling
 
@@ -61,9 +61,9 @@ This is **not exactly-once delivery to external services**. A run can fail after
 - At most 32 pending/unfinished events per Flow and 256 across the install at public admission.
 - At most 32 predicates with path depth 16 and 16 deterministic reads.
 
-These are MVP safety limits, not a retention service. At capacity, ingestion refuses new work instead of evicting IDs and risking a duplicate effect. For explicit recovery, disable the Flow, finish/cancel its active runs, stop manual edits, then export and verify the complete table/history before using `apx flows retire <id> confirm-exported` or an approved `apx_settings` retirement with `confirm:true, exported:true`. Without both explicit acknowledgements the private protocol refuses deletion. The export acknowledgement is the caller's assertion; APX cannot verify that an external backup file exists or is readable. Retirement permanently removes its table and events (including pending work), revokes its credential and reserves its old identifier; it cannot reopen the old URL. Existing run chats remain under their ordinary history policy. A new Flow needs a new identifier and credential. Retired identifiers are capped at 10,000. If credential cleanup fails after the data is retired, the route remains absent and the identifier reserved; retry retirement to finish deleting the residual credential. This is deliberate rotation, not automatic replay of the old source backlog.
+These are MVP safety limits, not a retention service. At capacity, ingestion refuses new work instead of evicting IDs and risking a duplicate effect. For explicit recovery, disable the Flow, finish/cancel its active runs, stop manual edits, then export and verify the complete table/history before using `colonia flows retire <id> confirm-exported` or an approved `colonia_settings` retirement with `confirm:true, exported:true`. Without both explicit acknowledgements the private protocol refuses deletion. The export acknowledgement is the caller's assertion; Colonia cannot verify that an external backup file exists or is readable. Retirement permanently removes its table and events (including pending work), revokes its credential and reserves its old identifier; it cannot reopen the old URL. Existing run chats remain under their ordinary history policy. A new Flow needs a new identifier and credential. Retired identifiers are capped at 10,000. If credential cleanup fails after the data is retired, the route remains absent and the identifier reserved; retry retirement to finish deleting the residual credential. This is deliberate rotation, not automatic replay of the old source backlog.
 
-Credential-named fields (including nested credential objects) and recognizable token shapes are redacted before filtering, table/event persistence or model input. This uses the shared log credential matcher, including APX tokens. Credentials in definitions or event IDs are rejected; use secret references for owner configuration. These rules cannot recognize arbitrary secrets or personally identifying prose without a known field/shape: send only necessary data and do not place credentials in otherwise ordinary fields. Table values and pending snapshots are local durable data. Transport bearer tokens live in the secret store, never in the event envelope.
+Credential-named fields (including nested credential objects) and recognizable token shapes are redacted before filtering, table/event persistence or model input. This uses the shared log credential matcher, including Colonia tokens. Credentials in definitions or event IDs are rejected; use secret references for owner configuration. These rules cannot recognize arbitrary secrets or personally identifying prose without a known field/shape: send only necessary data and do not place credentials in otherwise ordinary fields. Table values and pending snapshots are local durable data. Transport bearer tokens live in the secret store, never in the event envelope.
 
 Empty objects, non-object values, nonmatching events and duplicates do not invoke an action. Idle Flows make no model calls. HTTP requests and deterministic processing still have infrastructure costs. A matching action may use models and tools according to the selected agent/routine's limits.
 
@@ -91,18 +91,18 @@ dry run with the admission rule (a nonempty object that matches every predicate)
 admits no run and calls no model. Sample data is limited to 32 KiB.
 
 ```bash
-apx flows list --project p_example
-apx flows set '{"id":"inbox","projectId":"p_example","name":"Inbox","enabled":false,"predicates":[{"path":["type"],"equals":"message"}],"tableKey":"latest","readKeys":["config"],"action":{"kind":"none"}}'
-apx flows rows inbox
-apx flows write inbox config '{"language":"en"}'
-apx flows events inbox
-apx flows retry inbox source-event-1
-apx flows run inbox '{"type":"message"}'   # Run now (owner only; refused inside an agent's command)
-apx flows stop inbox owner:<uuid>          # Stop run
+colonia flows list --project p_example
+colonia flows set '{"id":"inbox","projectId":"p_example","name":"Inbox","enabled":false,"predicates":[{"path":["type"],"equals":"message"}],"tableKey":"latest","readKeys":["config"],"action":{"kind":"none"}}'
+colonia flows rows inbox
+colonia flows write inbox config '{"language":"en"}'
+colonia flows events inbox
+colonia flows retry inbox source-event-1
+colonia flows run inbox '{"type":"message"}'   # Run now (owner only; refused inside an agent's command)
+colonia flows stop inbox owner:<uuid>          # Stop run
 # Disable the Flow, finish/cancel active runs and stop manual edits before export.
-apx flows export inbox --project p_example > inbox-backup.json
+colonia flows export inbox --project p_example > inbox-backup.json
 # Verify the saved definition, row count, event count and file readability before deletion.
-apx flows retire inbox confirm-exported
+colonia flows retire inbox confirm-exported
 ```
 
 ### Complete reads and export
@@ -122,14 +122,14 @@ or a replay mechanism, and does not remove the retained-event cap. To inspect pa
 argument is JSON (a quoted string for rows, an object for events).
 
 **Español:** El panel muestra 50 rondas por página y hasta 20 filas de la tabla, solo para leer. Para recuperar todos los datos, desactivá el Flow,
-terminá o cancelá sus runs activos y detené las ediciones manuales. `apx flows export <id> --project <proyecto>`
+terminá o cancelá sus runs activos y detené las ediciones manuales. `colonia flows export <id> --project <proyecto>`
 recorre todas las páginas y emite definición, tabla e historial de eventos en JSON. Verificá el archivo y los conteos
 antes de usar `retire <id> confirm-exported`; el protocolo exige `confirm:true, exported:true`, pero esa declaración
 no prueba que exista un respaldo externo válido. Los cursores se devuelven en `nextCursor`; continuá hasta `null`.
 No hay snapshot entre solicitudes, importación ni replay: no se exportan los chats ni los payloads privados de acciones
 pendientes, que se descartan al retirar el Flow. El límite de eventos retenidos sigue vigente.
 
-The super-agent reaches the same operations through its `apx_flow` tool (areas `flows` and `tables`), and draws
+The super-agent reaches the same operations through its `colonia_flow` tool (areas `flows` and `tables`), and draws
 drafts there too ([Agents drawing Flows](#agents-drawing-flows), [D-181](DECISIONS.md#d-181)). No custom script
 language, polling model, public RPC proxy or duplicate scheduler is introduced.
 
@@ -206,7 +206,7 @@ confirmá la exportación.
 
 ## Notify and outgoing HTTP steps
 
-See [D-169](DECISIONS.md#d-169). Both act outside APX, so each goes out at most once and its destination is a fixed
+See [D-169](DECISIONS.md#d-169). Both act outside Colonia, so each goes out at most once and its destination is a fixed
 field of the published revision.
 
 **Templates.** `notify.text`, `http.headers[].value` and `http.body` are text with placeholders: `$trigger[.path]` (the
@@ -253,7 +253,7 @@ once more after a network error with no answer. Any HTTP answer succeeds, so a c
 when it fits 24 KiB, else up to 16 KiB of text; binary (by type, NUL or invalid UTF-8) only said. Resolved secret values
 are cut from the answer as sent, URL-encoded and JSON-escaped, in the text and in every string of parsed JSON
 (`[secret]`), and the shared redactor runs on every stored value; the recorded input shows
-`secret://name`. Logs carry no URL, payload or answer. `APX_FLOW_HTTP_ALLOW` (exact loopback `host:port`, comma-separated,
+`secret://name`. Logs carry no URL, payload or answer. `COLONIA_FLOW_HTTP_ALLOW` (exact loopback `host:port`, comma-separated,
 config-injected) lets a test core reach its own fake service; a real core leaves it empty.
 
 **Consent.** `flows.outward {flow, graph}` lists what a drawing does outside: `sends` (channel label and kind, `to`:
@@ -264,9 +264,9 @@ published revision's list, and publishes with the keys they allowed; Not now kee
 
 A body whose `Content-Type` says JSON must be valid JSON (`body_not_json`), so values are never pasted into JSON text.
 
-**Known limit.** `apx flows run|stop` refuse when `APX_AGENT` is set, a courtesy check: the core can't tell an agent's
-own loopback call from the owner's, as for every owner method; what stops an agent's shell from calling APX's API is
-D-106's "APX's own API always asks".
+**Known limit.** `colonia flows run|stop` refuse when `COLONIA_AGENT` is set, a courtesy check: the core can't tell an agent's
+own loopback call from the owner's, as for every owner method; what stops an agent's shell from calling Colonia's API is
+D-106's "Colonia's own API always asks".
 
 **Schedules that outrun their interval.** A beat that finds a time due while the Flow still has a pending run skips it:
 `since` moves on, `flow_schedules.skipped` counts it and `skipped_at` keeps when, logged without payload. Nothing queues
@@ -315,8 +315,8 @@ starting and waiting steps become `cancelled` (`owner_cancelled`), a model step 
 `uncertain` (`cancelled_after_send`, never re-sent); the run ends `uncertain` if any step is, else `cancelled`. The
 executor then aborts its model call in flight and asks runs its steps started to stop (as at a deadline). An ended run
 returns `{cancelled: false}`. A notify or non-GET HTTP step already `dispatched` is left `uncertain` the same way. The
-CLI calls both (`apx flows run|stop`, refused inside an agent's command); they stay out of the super-agent's
-`apx_flow` reach, since a run can now send as the owner.
+CLI calls both (`colonia flows run|stop`, refused inside an agent's command); they stay out of the super-agent's
+`colonia_flow` reach, since a run can now send as the owner.
 
 **Simulate** (formerly *Try a run*). `flows.try_graph {graph, data}` walks the run's own planner over sample data (≤ 32 KiB): triggers and
 checks are evaluated, a branch not taken is skipped, a step that does work is `would_run`, a step whose binding needs an
@@ -383,7 +383,7 @@ from the owner's own lists. Every template field (message, headers, body, SQL va
 lists for that field, and placeholders read as badges. Secrets are offered only where the core resolves them
 (`SECRET_FIELDS`: headers and command variables). What a step receives (the `input` binding of JavaScript, AI model,
 direct model and routine steps, `InputPicker.tsx`) is the same `{}` field kept as a binding (`bindingOfTemplate`):
-empty is everything that arrived, one placeholder its value, other text a literal; it offers no `$apx.*`, which a
+empty is everything that arrived, one placeholder its value, other text a literal; it offers no `$colonia.*`, which a
 binding can't hold. Instructions, code, SQL, commands and the outgoing URL stay plain text by design: values reach them
 as data, parameters or variables, never inside their text. The top bar keeps the name at the left (past the window-controls
 inset) and **Exit** at the right, through the same unsaved-changes guard. The project drives the side panel: the AI
@@ -409,7 +409,7 @@ The newest 50 per Flow are kept, plus every published entry whose revision a run
 Flow's entries go with it.
 
 - `flows.history {flow}` and `flows.history_get {flow, entry}`: the owner, and an agent's own tool for its project
-  (D-174's reach). The super-agent reads them through `apx_flow`'s `flows.history {flow, entry?}`, asked like
+  (D-174's reach). The super-agent reads them through `colonia_flow`'s `flows.history {flow, entry?}`, asked like
   `flows.graph_get` while outside content is in the turn.
 - `flows.history_restore {flow, entry, expectedVersion, confirm: true}` (owner-only, effect): the entry's drawing
   becomes the draft with the draft version read (a stale one is a conflict) and never publishes. An entry an agent drew
@@ -423,20 +423,20 @@ Flow's entries go with it.
 
 `kind: "agent"` is the panel's **AI model** block (DECISIONS.md#d-172). Its source is `agent` (an agent of the Flow's
 project or a global one) or `bot` (`{name, system}`), exactly one. `model` is an optional `engine/model#effort` ref;
-`autonomy` (manual, auto, total) applies on APX's loop, `write` (ask, auto, read-only) on a CLI's, and `delegate`
-(agents on APX's loop only) turns the team tools back on. Validation: `ai_source`, `ai_mode`; a native `model` must be a
+`autonomy` (manual, auto, total) applies on Colonia's loop, `write` (ask, auto, read-only) on a CLI's, and `delegate`
+(agents on Colonia's loop only) turns the team tools back on. Validation: `ai_source`, `ai_mode`; a native `model` must be a
 set-up model API (`model_unavailable`). A drawing with any of these fields is not the legacy shape.
 
 `planFlowAiStep` (`apps/core/src/flow-ai-step.ts`) decides the chat: a loose thread with the agent, or with the
 super-agent as a worker under the bot's prompt (`flowBotPrompt`), or a code thread with `engine` for a CLI; it merges
 `model_choice`, `worker` and `flow_step` into the thread's context before the first `threads.send`. `turnTools` drops
 `TEAM_TOOLS` for a step's chat and keeps only `BOT_KEEPS` (and no MCP) for a bot, CLI sessions included (they reach
-APX's tools through its MCP bridge); `buildContext` skips the roster and,
+Colonia's tools through its MCP bridge); `buildContext` skips the roster and,
 for a bot, recall; `permissions.agentIn` takes `flow_step.autonomy` over the agent's mode. `flows.run_get` adds
 `answered: {harness, model}` from the run each step started.
 
-Templates also read `$apx.project`, `$apx.now` and `$apx.run` (`FLOW_APX` in `domain/flow-template.ts`); every
-step that renders a template passes `flowApx(store, run, now)`. A command's variables resolve `secret://name` in their
+Templates also read `$colonia.project`, `$colonia.now` and `$colonia.run` (`FLOW_Colonia` in `domain/flow-template.ts`); every
+step that renders a template passes `flowColonia(store, run, now)`. A command's variables resolve `secret://name` in their
 literal text (`deps.http.secret`), scrub stdout and stderr with `secretScrubber`, show the reference, and
 `flows.outward` lists the names under `commands[].secrets`.
 
@@ -486,7 +486,7 @@ restart runs it again.
 **SQL** (`sql {database, mode: read|write, query, params: [{name, value}], maxRows 1–500, timeoutMs 1–30 s}`): one
 statement on a SQLite file inside the Flow's project folder (relative path, no `..`, `~`, `file:` or absolute;
 `database_invalid`). At run time the path must not be a link (even a dangling one), its real path must be inside the
-folder, never one of APX's own files (inside APX's folder only a project's side folder counts), and a read needs the
+folder, never one of Colonia's own files (inside Colonia's folder only a project's side folder counts), and a read needs the
 file (`database_unavailable`). Parameters are templates bound as `:name` values (a lone placeholder keeps its JSON
 type; objects go as JSON text, booleans as 0/1); `?` and a `:name` without a value are refused. It runs in a child
 Node (killed at its limit) with `node:sqlite`, which ignores the permission model, so an authorizer decides: reads
@@ -558,7 +558,7 @@ and add columns ("New column") on the spot (`TableFields.tsx`, `tables-data.ts`)
 its whole value is one `{}` field (`bindingOfTemplate`, `values.ts`); the `{}` picker offers a read's chosen columns. The Flows screen's **Tables** (`TablesView.tsx`, lazy) shows a project's tables,
 their columns and rows; rows, tables and columns are added, edited, renamed and removed there, and a column's menu
 marks it required. The super-agent reaches
-them through `apx_flow`'s `tables` area (D-176, D-181); `tables.column_required` waits for the owner's OK.
+them through `colonia_flow`'s `tables` area (D-176, D-181); `tables.column_required` waits for the owner's OK.
 
 `domain/flow-secret-vars.ts`: `flowSecretVars` finds variables whose literal is exactly `secret://name`;
 `secretTemplate` parses a header or command variable and swaps each `$vars.name` part of one for a text part holding
@@ -574,8 +574,8 @@ comando; en un mensaje, un cuerpo o una instrucción se rechaza.
 
 ## Agents drawing Flows
 
-See [D-174](DECISIONS.md#d-174) and [D-181](DECISIONS.md#d-181). The super-agent draws through `apx_flow`'s `flows`
-area (`tools/flow-tool-drafts.ts`); the step fields it needs are in the `apx-flows` skill (`skills/apx/apx-flows`), read
+See [D-174](DECISIONS.md#d-174) and [D-181](DECISIONS.md#d-181). The super-agent draws through `colonia_flow`'s `flows`
+area (`tools/flow-tool-drafts.ts`); the step fields it needs are in the `colonia-flows` skill (`skills/colonia/colonia-flows`), read
 with `load_skill`, never in the prompt.
 
 - `flows.list {project?}` (read): one line per Flow, on or off, its published revision and whether a draft waits.
@@ -604,11 +604,11 @@ project's is `not_found`); a call with no agent behind it (`actor: agent` over H
 An agent's draft may not set or change an AI step's `autonomy`, `write` or `delegate`, nor change the `agent`, `bot` or
 `model` of, or remove, a step the owner limited (`ownersFieldChange`). Drafts keep `saved_by` (`draftBy`: the agent,
 null for the owner); the panel's on switch (`publishSaved`) never publishes an agent's draft and opens its editor
-instead. When the owner asks in the chat, `apx_flow`'s `flows.publish {flow, expectedDraftVersion}` and
+instead. When the owner asks in the chat, `colonia_flow`'s `flows.publish {flow, expectedDraftVersion}` and
 `flows.run_now` do it as the owner, each after a card (`tools/flow-tool-publish.ts`, [D-184](DECISIONS.md#d-184)):
 the publish card lists the draft's `flowOutward` lines and its AI steps, and on approval reads the draft again, passes
 `flows.outward`'s keys to `flows.publish` and turns the Flow on; a changed draft version stops it. `flows.set` refuses
-to turn on a Flow whose drawing was never published. In `apx_flow` these are `own` methods: a change and `flows.graph_get` are `confirm: "untrusted"` (they
+to turn on a Flow whose drawing was never published. In `colonia_flow` these are `own` methods: a change and `flows.graph_get` are `confirm: "untrusted"` (they
 ask the owner only while outside content is in the turn), `flows.validate` asks nobody, and all run with `ctx.call`,
 never `callAsOwner`. `flows.create` revokes a route credential left under its new id.
 
@@ -622,7 +622,7 @@ read the drawing again. The open editor takes them too (below).
 **Asking from the editor** ([D-175](DECISIONS.md#d-175), `flows/useFlowChat.ts`). **Ask {name}** opens `FlowChat` (`flows/FlowChat.tsx`), a
 loose thread with the super-agent in the Flow's project, in the step card's place (one `Drawer inset` card at a time;
 the canvas `focus.card` makes the fit leave it out). Threads are remembered per Flow in `localStorage`
-(`apx.flowChats`, `flows/flowChat.ts`). The composer's `prepare` hook runs before each message: unsaved edits go first
+(`colonia.flowChats`, `flows/flowChat.ts`). The composer's `prepare` hook runs before each message: unsaved edits go first
 as the owner's draft (`flows.draft_save`, with `unreviewed: true` over an agent's draft so `draftBy` keeps the agent;
 `flows.create` for a new Flow with changed steps), unfinished steps included, and the words go as typed. The chat is bound with `threads.flow_editor {thread, editor: {project, flow?} | null}`
 (owner-only; thread context `flow_editor`): each owner turn there gets a `[flow editor]` line in its input
@@ -635,7 +635,7 @@ given to `takeAgentDraft` (`flows/agentDraft.ts`): `same`, `keep` (unsaved local
 ones). A new Flow the editor waits for adopts the next one the super-agent makes in its project. The owner's Save still
 makes the draft theirs (`draftBy` null).
 
-**Español:** El super-agente dibuja y cambia borradores de Flows desde cualquier chat con `apx_flow` (área
+**Español:** El super-agente dibuja y cambia borradores de Flows desde cualquier chat con `colonia_flow` (área
 `flows`): crear, leer, editar por pasos, revisar. Un borrador no corre: publicarlo (guardar con el flow prendido, o
 prenderlo) es del dueño en el editor, o del super-agente cuando el dueño se lo pide y aprueba la tarjeta que dice lo que
 sale (mensajes, llamadas, comandos, escrituras); correrlo a mano para probarlo también pasa por una tarjeta.
@@ -652,8 +652,8 @@ cambia a **Lo que corre** cuando hay un dibujo que corre.
 
 ### Agents reach it
 
-A Flow change is not done until the super-agent can use it. `apx_flow` (`apps/core/src/tools/flow-tool.ts`, built on
-`apx_settings`' `areaTool`) is the agents' one way into Flows and tables; the panel and the agent read the same
+A Flow change is not done until the super-agent can use it. `colonia_flow` (`apps/core/src/tools/flow-tool.ts`, built on
+`colonia_settings`' `areaTool`) is the agents' one way into Flows and tables; the panel and the agent read the same
 protocol. Every change to Flows checks, in the same commit:
 
 - **A new `flows.*` or `tables.*` method**: add it to `tools/flow-tool-flows.ts`, `flow-tool-drafts.ts` or
@@ -661,17 +661,17 @@ protocol. Every change to Flows checks, in the same commit:
   `tools/settings-reach.ts`: `OWNER_ONLY` (it changes something the owner keeps) or `FLOW_ELSEWHERE` (a read only the
   editor needs), with the reason. `flow-tool.test.ts` and `settings.test.ts` fail on one left out.
 - **A new step kind** (`packages/protocol/src/flow-graph.ts`): a row in the step table of
-  `skills/apx/apx-flows/SKILL.md` with its fields; `flow-tool.test.ts` fails without it.
+  `skills/colonia/colonia-flows/SKILL.md` with its fields; `flow-tool.test.ts` fails without it.
 - **A new or changed field, case, binding or template placeholder**: the skill's table and examples say it as the
   editor does, and `flow-tool-drafts.ts`' `add`/`update` keep it (a draft keeps empty ones, D-177).
 - **What the owner keeps** (tests, an address and its key, an AI step's autonomy; publishing and running by hand only
   through their card): refused in the handler for an
   agent, listed in `OWNER_ONLY`, and the skill says to leave it to the owner.
-- **The agent-facing words**: `engine/flow-editor.ts`' `[flow editor]` line and the skill's calls name `apx_flow`.
+- **The agent-facing words**: `engine/flow-editor.ts`' `[flow editor]` line and the skill's calls name `colonia_flow`.
 
 **Español:** un cambio en Flows no está terminado hasta que el super-agente lo puede usar. Cada método `flows.*` o
 `tables.*` nuevo va en `tools/flow-tool-*.ts` o se ubica en `settings-reach.ts` con su motivo; cada tipo de paso nuevo
-lleva su fila en la skill `apx-flows`; cada campo nuevo se explica ahí como lo muestra el editor. `flow-tool.test.ts`
+lleva su fila en la skill `colonia-flows`; cada campo nuevo se explica ahí como lo muestra el editor. `flow-tool.test.ts`
 falla si falta un método o un tipo de paso.
 
 ## Verification and rollout

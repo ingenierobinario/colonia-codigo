@@ -20,7 +20,7 @@ else if (mode !== "empty") {
       args,
       prompt,
       cwd: process.cwd(),
-      apx: process.env.APX_ONESHOT_TEST_SECRET,
+      colonia: process.env.COLONIA_ONESHOT_TEST_SECRET,
       credential: process.env.ONESHOT_TEST_CREDENTIAL,
       mode: args.includes("--message-file") ? fs.statSync(promptFile).mode & 0o777 : null,
     }),

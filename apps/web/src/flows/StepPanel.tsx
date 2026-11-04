@@ -1,5 +1,5 @@
 // A Flow page's panel under the canvas: the chosen step's input and output, and the run's log (DECISIONS.md#d-178).
-import { Button, FlowStepTile, IconButton, Icons, SegmentedControl } from "@apx/ui";
+import { Button, FlowStepTile, IconButton, Icons, SegmentedControl } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

@@ -4,7 +4,7 @@ import { clearCreds, loadCreds } from "../src/creds";
 import * as workspace from "../src/hooks/useWorkspace";
 import { t } from "../src/i18n";
 import { startPhoneNode } from "../src/phone";
-import { ApxClient } from "../src/protocol";
+import { ColoniaClient } from "../src/protocol";
 
 // The contacts' pictures come through the media cache, which needs the phone's gallery module.
 jest.mock("../src/chat/mediaFiles", () => ({}));
@@ -22,15 +22,15 @@ jest.mock("../src/phone", () => ({ startPhoneNode: jest.fn() }));
 jest.mock("../src/PairScreen", () => ({ PairScreen: () => null }));
 jest.mock("../src/WorkspaceScreen", () => ({ WorkspaceScreen: () => null }));
 
-const previous = process.env.EXPO_PUBLIC_APX_INBOX_PREVIEW;
+const previous = process.env.EXPO_PUBLIC_COLONIA_INBOX_PREVIEW;
 afterEach(() => {
-  if (previous === undefined) delete process.env.EXPO_PUBLIC_APX_INBOX_PREVIEW;
-  else process.env.EXPO_PUBLIC_APX_INBOX_PREVIEW = previous;
+  if (previous === undefined) delete process.env.EXPO_PUBLIC_COLONIA_INBOX_PREVIEW;
+  else process.env.EXPO_PUBLIC_COLONIA_INBOX_PREVIEW = previous;
 });
 
 test("native preview renders the real inbox without credentials, subscriptions or network; callbacks remain local", async () => {
-  process.env.EXPO_PUBLIC_APX_INBOX_PREVIEW = "1";
-  const call = jest.spyOn(ApxClient.prototype, "call");
+  process.env.EXPO_PUBLIC_COLONIA_INBOX_PREVIEW = "1";
+  const call = jest.spyOn(ColoniaClient.prototype, "call");
   const hook = jest.spyOn(workspace, "useWorkspace");
   const ui = await render(<App />);
   expect(ui.getByText(t("inboxPreview"))).toBeVisible();
@@ -61,8 +61,8 @@ test("native preview renders the real inbox without credentials, subscriptions o
 });
 
 test.each([undefined, "0", "true"])("preview is opt-in: flag %s opens the actual app", async (flag) => {
-  if (flag === undefined) delete process.env.EXPO_PUBLIC_APX_INBOX_PREVIEW;
-  else process.env.EXPO_PUBLIC_APX_INBOX_PREVIEW = flag;
+  if (flag === undefined) delete process.env.EXPO_PUBLIC_COLONIA_INBOX_PREVIEW;
+  else process.env.EXPO_PUBLIC_COLONIA_INBOX_PREVIEW = flag;
   const ui = await render(<App />);
   expect(ui.queryByText(t("inboxPreview"))).toBeNull();
   expect(loadCreds).toHaveBeenCalledTimes(1);

@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { Button, Icons } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { Button, Icons } from "@colonia/ui";
 import { appPlace } from "../chat/appLinks.ts";
 import { type MessageKey, usePack, useT } from "../i18n/index.ts";
 import { HandBack } from "./HandBack.tsx";

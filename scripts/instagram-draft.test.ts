@@ -39,8 +39,8 @@ test("Instagram helper composes once, fails closed on a recipient mismatch, and 
     const run = (args: object) =>
       page.evaluate(async (a) => {
         const helper = (
-          globalThis as unknown as { apxInstagramDraft: (args: object) => Promise<{ status: string; sent: boolean }> }
-        ).apxInstagramDraft;
+          globalThis as unknown as { coloniaInstagramDraft: (args: object) => Promise<{ status: string; sent: boolean }> }
+        ).coloniaInstagramDraft;
         return helper(a);
       }, args);
     await assert.rejects(run({ ...options, recipient: "northwind" }), /expected recipient/);
@@ -75,7 +75,7 @@ test("Instagram helper composes once, fails closed on a recipient mismatch, and 
     await page.evaluate(
       (args) => {
         const state = globalThis as unknown as {
-          apxInstagramDraft: (args: object) => Promise<{ status: string }>;
+          coloniaInstagramDraft: (args: object) => Promise<{ status: string }>;
           clicks: number;
           outcomes: Promise<PromiseSettledResult<{ status: string }>[]>;
         };
@@ -93,7 +93,7 @@ test("Instagram helper composes once, fails closed on a recipient mismatch, and 
             editor.textContent = "";
           }, 500);
         });
-        state.outcomes = Promise.allSettled([state.apxInstagramDraft(args), state.apxInstagramDraft(args)]);
+        state.outcomes = Promise.allSettled([state.coloniaInstagramDraft(args), state.coloniaInstagramDraft(args)]);
       },
       { ...options, text: "Concurrent test draft", send: true, confirmSend: "SEND acme" },
     );

@@ -1,11 +1,11 @@
 {
-  "name": "@apx/core",
+  "name": "@colonia/core",
   "version": "0.0.0",
   "private": true,
-  "description": "The head of APX: the daemon. Owns state, agents, threads, channels, scheduler and the protocol server.",
+  "description": "The head of Colonia: the daemon. Owns state, agents, threads, channels, scheduler and the protocol server.",
   "type": "module",
   "bin": {
-    "apx-core": "./src/main.ts"
+    "colonia-core": "./src/main.ts"
   },
   "scripts": {
     "dev": "NODE_COMPILE_CACHE=${NODE_COMPILE_CACHE:-../../node_modules/.cache/node-compile} node --watch src/main.ts",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.286",
-    "@apx/protocol": "workspace:*",
+    "@colonia/protocol": "workspace:*",
     "@openai/codex-sdk": "0.159.3",
     "@whiskeysockets/baileys": "7.0.0-rc14",
     "kysely": "0.29.6",
@@ -23,7 +23,7 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@apx/config": "workspace:*",
+    "@colonia/config": "workspace:*",
     "@modelcontextprotocol/sdk": "1.31.0",
     "@types/ws": "^8.18.1"
   }

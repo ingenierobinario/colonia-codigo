@@ -17,9 +17,9 @@ ssh:
   forwardAgent: false
 propagateProxyEnv: false
 user:
-  name: apx
-  comment: APX
-  home: /home/apx
+  name: colonia
+  comment: Colonia
+  home: /home/colonia
   uid: 1000
 provision:
   - mode: system
@@ -30,6 +30,6 @@ provision:
       apt-get update
       dpkg --configure -a || apt-get -f install -y --no-install-recommends
       apt-get install -y --no-install-recommends xfce4 xfce4-terminal tigervnc-standalone-server dbus-x11 xauth chromium xdotool x11-utils netcat-openbsd python3 fonts-dejavu nftables
-      mkdir -p /home/apx/work /home/apx/.config/autostart
-      chown -R apx:apx /home/apx/work /home/apx/.config
-      usermod --comment 'APX Lab' apx
+      mkdir -p /home/colonia/work /home/colonia/.config/autostart
+      chown -R colonia:colonia /home/colonia/work /home/colonia/.config
+      usermod --comment 'Colonia Lab' colonia

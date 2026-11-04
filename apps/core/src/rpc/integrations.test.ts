@@ -12,7 +12,7 @@ let repo = "";
 
 before(async () => {
   env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-int-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-int-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
 });
 after(async () => {

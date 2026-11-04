@@ -1,7 +1,7 @@
 // Channels, the people on them and pairing: owner-only methods (the router refuses anyone else).
 
 import fs from "node:fs";
-import { type ChannelType, ErrorCode } from "@apx/protocol";
+import { type ChannelType, ErrorCode } from "@colonia/protocol";
 import { CHANNEL_CATALOG } from "../channels/catalog.ts";
 import { pairingRef } from "../channels/inbound.ts";
 import type { Channels } from "../channels/manager.ts";

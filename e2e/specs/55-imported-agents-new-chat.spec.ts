@@ -8,7 +8,7 @@ import { expect, open, rpc, test } from "./kit.ts";
 type Agent = { id: string; name: string; kind: string; project_id?: string };
 
 function repoWith(...agents: Array<[string, string]>): string {
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-import-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-import-")));
   const dir = path.join(repo, ".apc", "agents");
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");

@@ -19,7 +19,7 @@ test("avatar stacks cap visible participants and preserve the hidden participant
   assert.match(html, /Northwind/);
   assert.doesNotMatch(html, /Hidden/);
   assert.match(html, />\+1</);
-  assert.equal((html.match(/class="apx-avatar-stack__item"/g) ?? []).length, 2);
+  assert.equal((html.match(/class="colonia-avatar-stack__item"/g) ?? []).length, 2);
 });
 
 test("entity cards keep repeated field names, escape draft contents and expose recovery actions", () => {
@@ -59,7 +59,7 @@ test("live browser handoffs expose the page name, human action and warning witho
   );
   assert.match(html, /aria-label="Acme sign in"/);
   assert.match(html, /Waiting for you/);
-  assert.match(html, /apx-livebrowser__status is-warning/);
+  assert.match(html, /colonia-livebrowser__status is-warning/);
   assert.match(html, />Take control</);
   assert.match(html, />Live</);
   assert.doesNotMatch(html, /<img/);

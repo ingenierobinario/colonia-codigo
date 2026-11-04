@@ -157,7 +157,7 @@ export const browserMethods = {
     effect: false,
     access: "human",
   },
-  /** Copies the chosen domains' cookies into an APX profile. Values stay on the desktop. Human-only. */
+  /** Copies the chosen domains' cookies into an Colonia profile. Values stay on the desktop. Human-only. */
   "browser.import_cookies": {
     params: z
       .object({

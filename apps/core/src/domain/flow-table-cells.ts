@@ -1,9 +1,9 @@
 // A save's value per column and what a read gives later steps (DECISIONS.md#d-176): `$steps.<read>.<column>` is the
 // first row's cell, empty (null) when the table has no row, so an empty table reads nothing and fails no step.
-import type { FlowBinding } from "@apx/protocol/flow-graph";
-import { tableCells } from "@apx/protocol/table-cells";
+import type { FlowBinding } from "@colonia/protocol/flow-graph";
+import { tableCells } from "@colonia/protocol/table-cells";
 import type { FlowVarIndex } from "./flow-expr.ts";
-import { type FlowApx, parseFlowTemplate, renderFlowTemplate } from "./flow-template.ts";
+import { type FlowColonia, parseFlowTemplate, renderFlowTemplate } from "./flow-template.ts";
 
 /**
  * The cells a save fills: a column whose template is one placeholder alone gets that value as it is (absent: null),
@@ -12,7 +12,7 @@ import { type FlowApx, parseFlowTemplate, renderFlowTemplate } from "./flow-temp
 export function flowRowCells(
   columns: readonly { name: string; value: string }[],
   reads: { resolve: (b: FlowBinding) => unknown; vars: FlowVarIndex },
-  apx?: FlowApx,
+  colonia?: FlowColonia,
 ): Record<string, unknown> {
   const cells: Record<string, unknown> = {};
   for (const c of columns) {
@@ -27,7 +27,7 @@ export function flowRowCells(
         value = null;
       }
       cells[c.name] = value === undefined ? null : value;
-    } else cells[c.name] = renderFlowTemplate(parts, reads.resolve, { missing: "empty", apx }).text;
+    } else cells[c.name] = renderFlowTemplate(parts, reads.resolve, { missing: "empty", colonia }).text;
   }
   return cells;
 }

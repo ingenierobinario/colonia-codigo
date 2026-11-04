@@ -1,5 +1,5 @@
 // iMessage on the owner's Mac, as tools (not a channel): reading recent messages from Messages' own database and
-// sending one through the Messages app. Reading needs Full Disk Access for the process running APX; sending asks
+// sending one through the Messages app. Reading needs Full Disk Access for the process running Colonia; sending asks
 // macOS once for permission to control Messages. Addresses and text go as arguments, never inside a script.
 import { execFile } from "node:child_process";
 import os from "node:os";
@@ -67,7 +67,7 @@ export function systemIMessage(o: { db?: string; run?: Run } = {}): IMessageOps 
         conn = new DatabaseSync(db, { readOnly: true });
       } catch (err) {
         throw new Error(
-          `cannot read Messages (${(err as Error).message}): give the app running APX Full Disk Access in System Settings › Privacy & Security`,
+          `cannot read Messages (${(err as Error).message}): give the app running Colonia Full Disk Access in System Settings › Privacy & Security`,
         );
       }
       try {

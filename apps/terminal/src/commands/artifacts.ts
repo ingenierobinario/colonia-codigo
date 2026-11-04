@@ -1,18 +1,18 @@
-// apx artifacts: list them, show a built page as one (push), where a built artifact keeps its source (dir), and move
-// one between APX installs as an .apxart file (export, import).
+// colonia artifacts: list them, show a built page as one (push), where a built artifact keeps its source (dir), and move
+// one between Colonia installs as an .coloniaart file (export, import).
 import fs from "node:fs";
 import path from "node:path";
-import { ARTIFACT_FILE_EXT, type ArtifactBundle } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
-import { apxHome } from "./local.ts";
+import { ARTIFACT_FILE_EXT, type ArtifactBundle } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
+import { coloniaHome } from "./local.ts";
 
 const NAME = /^[a-z0-9][a-z0-9-]{0,59}$/;
 const USAGE = `usage:
-  apx artifacts list [--project <id>] [--json]
-  apx artifacts push <name> <file.html> [--title <title>] [--app] [--connect <origin,…>] [--project <id>]
-  apx artifacts dir <name> [--project <id>]
-  apx artifacts export <name> [--memory] [--out <file>] [--project <id>]
-  apx artifacts import <file.apxart> [--project <id>]`;
+  colonia artifacts list [--project <id>] [--json]
+  colonia artifacts push <name> <file.html> [--title <title>] [--app] [--connect <origin,…>] [--project <id>]
+  colonia artifacts dir <name> [--project <id>]
+  colonia artifacts export <name> [--memory] [--out <file>] [--project <id>]
+  colonia artifacts import <file.coloniaart> [--project <id>]`;
 
 export type ArtifactOpts = {
   project?: string | undefined;
@@ -30,14 +30,14 @@ function named(name: string | undefined): string {
   return name;
 }
 
-/** Where a built artifact's source lives: beside its memory in APX's home, never in the owner's project. */
+/** Where a built artifact's source lives: beside its memory in Colonia's home, never in the owner's project. */
 export function artifactSourceDir(home: string, name: string, project?: string): string {
   const scope = project ?? "global";
   if (!/^[A-Za-z0-9_-]+$/.test(scope)) throw new Error(`not a project id: ${scope}`);
   return path.join(home, "artifact-sources", scope, named(name));
 }
 
-export async function artifacts(client: ApxClient, [sub, ...rest]: string[], opts: ArtifactOpts): Promise<void> {
+export async function artifacts(client: ColoniaClient, [sub, ...rest]: string[], opts: ArtifactOpts): Promise<void> {
   switch (sub ?? "list") {
     case "list": {
       const { surfaces } = await client.call("surfaces.list", opts.project ? { project_id: opts.project } : {});
@@ -76,7 +76,7 @@ export async function artifacts(client: ApxClient, [sub, ...rest]: string[], opt
       return;
     }
     case "dir": {
-      const dir = artifactSourceDir(apxHome(), rest[0] ?? "", opts.project);
+      const dir = artifactSourceDir(coloniaHome(), rest[0] ?? "", opts.project);
       fs.mkdirSync(dir, { recursive: true });
       console.log(dir);
       return;

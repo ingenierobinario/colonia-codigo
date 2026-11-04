@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import type { Harness } from "../harness/index.ts";
 import { createLog } from "../log.ts";
 import type { CallContext } from "../rpc/context.ts";
@@ -314,8 +314,8 @@ test("assigning an existing draft to self also transfers execution", async () =>
   }
 });
 
-test("external harness handoff refuses further APX and native tools and preserves the source workspace", async () => {
-  const folder = tempDir("apx-handoff-");
+test("external harness handoff refuses further Colonia and native tools and preserves the source workspace", async () => {
+  const folder = tempDir("colonia-handoff-");
   let approvals: boolean[] = [];
   let target = "";
   const claude: Harness = {
@@ -339,7 +339,7 @@ test("external harness handoff refuses further APX and native tools and preserve
     },
   };
   const env = await startCore({ llm: scriptedLlm(() => say("Task session ready.")), harnesses: { claude } });
-  const ws = await new ApxClient({ url: env.core.url }).connect();
+  const ws = await new ColoniaClient({ url: env.core.url }).connect();
   try {
     const project = await ws.call("projects.register", { path: folder.path, init: true });
     const chat = await ws.call("threads.create", {

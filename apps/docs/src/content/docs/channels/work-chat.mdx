@@ -8,7 +8,7 @@ sidebar:
 ## Google Chat
 
 This is a **channel**, not the Gmail or Calendar integration. It receives messages through Google Cloud Pub/Sub:
-APX needs outbound access, not a public webhook URL. You need permission to configure the Cloud project and Chat app.
+Colonia needs outbound access, not a public webhook URL. You need permission to configure the Cloud project and Chat app.
 
 1. Enable the **Google Chat** and **Pub/Sub** APIs in Google Cloud. Create a topic and a **pull subscription**.
    Give `chat-api-push@system.gserviceaccount.com` the Publisher role on the topic.
@@ -24,20 +24,20 @@ space with a simple mention. If nothing arrives, check topic delivery, subscript
 
 ## Nextcloud Talk
 
-1. Create a separate Nextcloud user for the bot. APX sends as that user.
+1. Create a separate Nextcloud user for the bot. Colonia sends as that user.
 2. Signed in as that user, create an app password in **Personal settings › Security**.
 3. In **Settings › Channels › Add channel › Nextcloud Talk**, enter the server address, user and app password.
 4. Write to the bot and enter its code in **This is my Nextcloud Talk** to link your account.
 5. For shared conversations, invite the bot and add their identifiers under **Rooms**; choose an answer mode.
 
-This supports direct chats and listed conversations. It does not grant APX general access to every Nextcloud file
+This supports direct chats and listed conversations. It does not grant Colonia general access to every Nextcloud file
 or conversation. If connection fails, check the server address, app password and the bot user's Talk access.
 
 ## Use and boundaries
 
-Try “Summarize what was discussed in this listed room” from APX, or ask for a draft before posting publicly. A room
+Try “Summarize what was discussed in this listed room” from Colonia, or ask for a draft before posting publicly. A room
 is public to its participants: replies are sealed and never include your private memory or file access. Optional
 public-web research is controlled separately by **Search the web**, not by adding the room.
 
 These channels do not establish owner authority in the same way as Telegram, WhatsApp or Signal. Risky requests
-may be checked in APX. See [identity, contacts and rooms](/channels/overview/) before using a bot for owner actions.
+may be checked in Colonia. See [identity, contacts and rooms](/channels/overview/) before using a bot for owner actions.

@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside, CardGrid, LinkCard } from "@astrojs/starlight/components";
 
-An **artifact** is what an agent makes for you to look at or use: one page of HTML that APX shows in a safe frame.
+An **artifact** is what an agent makes for you to look at or use: one page of HTML that Colonia shows in a safe frame.
 It comes in two kinds:
 
 | Kind | What it is | Where it shows |
@@ -19,12 +19,12 @@ Agents make a plain widget unless you ask for an app or the thing must keep reco
 inventory). A widget made to show you something during a chat is a simple page, nothing more.
 
 Every artifact belongs to one project (or is global when it was made outside one), keeps its name across versions,
-and updates live wherever it is open. Both kinds are built with **APX Kit**, APX's own components and theme, which
-APX adds to the page wherever it shows: no downloads, nothing outside your machine.
+and updates live wherever it is open. Both kinds are built with **Colonia Kit**, Colonia's own components and theme, which
+Colonia adds to the page wherever it shows: no downloads, nothing outside your machine.
 
 ## What an artifact remembers
 
-Each artifact has its own memory, kept on your APX across openings, reloads and new versions. Nothing is shared
+Each artifact has its own memory, kept on your Colonia across openings, reloads and new versions. Nothing is shared
 between artifacts.
 
 | Layer | Holds | Who sees it |
@@ -39,7 +39,7 @@ you choose what to forget. Copying an artifact to another project does not copy 
 ### Credentials
 
 An artifact that reads an API with a key never holds the key. You save it once as a secret named
-`artifact.<artifact name>.<key>` (for example `artifact.weather.token`), and the page asks APX to make the call: APX
+`artifact.<artifact name>.<key>` (for example `artifact.weather.token`), and the page asks Colonia to make the call: Colonia
 adds the key on its side and the page only gets the answer. The call can only go to the sites the artifact declared,
 and the key is never shown to the page, to its agent or in a shared link.
 
@@ -50,25 +50,25 @@ How an artifact behaves when you leave and come back:
 - **Static** (most of them): it shows what it was made with, and runs only while on screen.
 - **Cached**: it keeps its last reading in its store, so when you open it again you see that reading at once (marked
   as stale) while it fetches a fresh one.
-- **Live**: a page that must keep running while hidden (a ticker, a timer) can ask APX to keep it alive. APX keeps at
+- **Live**: a page that must keep running while hidden (a ticker, a timer) can ask Colonia to keep it alive. Colonia keeps at
   most three such pages running at once. Pages should pause unnecessary work when hidden; a hidden page can expire
   or be evicted when another needs a slot. See [Live apps](/apps/live-apps/) for the separate six-app pool and limits.
 
-**Apps stay open; widgets close.** An app you open keeps running while you go elsewhere in APX, like an app on your
-desktop: come back and it is exactly as you left it, until you close it (Close app) or quit APX. Up to six run at
+**Apps stay open; widgets close.** An app you open keeps running while you go elsewhere in Colonia, like an app on your
+desktop: come back and it is exactly as you left it, until you close it (Close app) or quit Colonia. Up to six run at
 once, each marked with a dot in the sidebar's Apps. A widget is a view: open it full screen, look, leave, and it
 closes. Pin a widget to Apps to make it an app. "Open in a new window" moves an app to a window of its own; the
 panel shows where it went and brings it back when that window closes.
 
 ## Export and import
 
-An artifact travels as one **`.apxart`** file, widget or app alike. Right-click it in Apps (or its More menu) ›
-**Download (.apxart)** › **The artifact alone**, or **With what it remembers** to take your choices, cache and records
-too (for a backup or a move to another APX). **Install artifact** (the upload button in Apps, or a project board's +)
+An artifact travels as one **`.coloniaart`** file, widget or app alike. Right-click it in Apps (or its More menu) ›
+**Download (.coloniaart)** › **The artifact alone**, or **With what it remembers** to take your choices, cache and records
+too (for a backup or a move to another Colonia). **Install artifact** (the upload button in Apps, or a project board's +)
 opens a dialog: drop the file or choose it, see what it is (widget or app, what it connects to, which secrets it will
 ask for, whether it brings data), pick the project, pin it to Apps or not, and only then **Install**. If the name is
-taken there, it installs beside it with a number. From a terminal: `apx artifacts export <name> [--memory]` and
-`apx artifacts import <file.apxart>`. Files saved earlier as `.apx-artifact.json` install the same way.
+taken there, it installs beside it with a number. From a terminal: `colonia artifacts export <name> [--memory]` and
+`colonia artifacts import <file.coloniaart>`. Files saved earlier as `.colonia-artifact.json` install the same way.
 
 <Aside type="caution">
 An export that includes memory carries what you typed and the app's records. Share only exports made without memory.
@@ -80,12 +80,12 @@ Most apps are one page an agent writes by hand. For a large one, an agent can bu
 Vite) into the same single page and show it with the terminal:
 
 ```bash
-apx artifacts dir expenses --project <project-id>     # where its source lives
-apx artifacts push expenses dist/index.html --app --project <project-id>
-apx artifacts list
+colonia artifacts dir expenses --project <project-id>     # where its source lives
+colonia artifacts push expenses dist/index.html --app --project <project-id>
+colonia artifacts list
 ```
 
-The source lives in APX's folder, under `artifact-sources/<project>/<name>`, never in your project's own files. Your
+The source lives in Colonia's folder, under `artifact-sources/<project>/<name>`, never in your project's own files. Your
 records stay in the app's database, so rebuilding it never loses them.
 
 ## Marketplace (coming)

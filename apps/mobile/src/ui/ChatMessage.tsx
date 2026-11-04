@@ -5,7 +5,7 @@ import { type MediaItem, mediaRows } from "../chat/media";
 import { clock } from "../format";
 import type { Agent } from "../hooks/useWorkspace";
 import { t } from "../i18n";
-import type { ApxClient, Message } from "../protocol";
+import type { ColoniaClient, Message } from "../protocol";
 import { ActionGroup } from "./ActionGroup";
 import { AgentEventCard } from "./chat/AgentEventCard";
 import { BrowserCard } from "./chat/BrowserCard";
@@ -64,7 +64,7 @@ export function ChatMessage({
   projects?: ReadonlyArray<{ id: string; name: string }>;
   /** The chat's newest message: offers (choices) wait only there. */
   last?: boolean;
-  client?: ApxClient;
+  client?: ColoniaClient;
   /** Says something in this chat as the owner. */
   send?: (text: string) => Promise<unknown>;
   respond: Respond;
@@ -87,7 +87,7 @@ export function ChatMessage({
         ? author.name
         : author.kind === "surface"
           ? author.title
-          : "APX";
+          : "Colonia";
   const hasText = message.parts.some((part) => part.type === "text" && part.text.trim());
   const rows = useMemo(() => mediaRows(message.parts), [message.parts]);
   const generating = tools.some((part) => isGeneratingImage(part, runState));

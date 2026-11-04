@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { Organization, ProjectKind } from "@apx/protocol";
+import type { Organization, ProjectKind } from "@colonia/protocol";
 import { declaresApp } from "../../../../packages/surfaces/src/kit.ts";
 import { readOrganization, writeOrganization } from "../apc/org.ts";
 import type { ApcSync } from "../apc/sync.ts";
@@ -178,7 +178,7 @@ export function appHandlers(deps: {
         }
         store.projects.setReadOnlyFolders(id, folders);
       }
-      // Autonomy is APX's, not the folder's: it changes even with the folder away.
+      // Autonomy is Colonia's, not the folder's: it changes even with the folder away.
       if (autonomy !== undefined) store.projects.setAutonomy(id, autonomy ?? undefined);
       const meta = name !== undefined || description !== undefined || kind !== undefined;
       if (meta && !project.path) throw badRequest(`${project.name} has no folder to keep its settings in`);
@@ -236,7 +236,7 @@ export function appHandlers(deps: {
           thread_id: thread?.id,
           created_by: ctx.agent?.id ?? "owner",
           pinned: p.pinned,
-          // A page written as an app (its apx-surface meta) is one unless the call says otherwise.
+          // A page written as an app (its colonia-surface meta) is one unless the call says otherwise.
           app: p.app ?? (declaresApp(p.html) ? true : undefined),
           connect: p.connect,
         }),
@@ -311,7 +311,7 @@ const desktopPrefs = (store: Store) => store.settings.read("desktop");
 
 /**
  * A new project in `path` (made if missing, kept as it is otherwise) or, without one, in a free folder of its own
- * inside APX's home; registered. Throws a bad request the owner can act on.
+ * inside Colonia's home; registered. Throws a bad request the owner can act on.
  */
 export function createProject(
   apc: ApcSync,

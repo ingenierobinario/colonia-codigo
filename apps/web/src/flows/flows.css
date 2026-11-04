@@ -42,7 +42,7 @@
   margin: 0;
   max-width: 680px;
   font-size: 13px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-wrap: pretty;
 }
 /* The project picker keeps the right edge whatever the view: "New flow" comes and goes beside it. */
@@ -52,7 +52,7 @@
   align-items: center;
   gap: 8px;
 }
-.flows__tools .apx-select {
+.flows__tools .colonia-select {
   min-width: 180px;
 }
 
@@ -73,9 +73,9 @@
 }
 .flowlist__head {
   padding: 0 104px 8px 12px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .flowlist__rows {
   margin: 0;
@@ -87,11 +87,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid var(--apx-border);
-  border-radius: var(--apx-row-radius);
+  border-bottom: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-row-radius);
 }
 .flowrow:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .flowrow__open {
   flex: 1;
@@ -105,9 +105,9 @@
   cursor: pointer;
 }
 .flowrow__open:focus-visible {
-  outline: 2px solid var(--apx-focus-ring, var(--apx-fg));
+  outline: 2px solid var(--colonia-focus-ring, var(--colonia-fg));
   outline-offset: -2px;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
 }
 .flowrow.is-off .flowrow__open > :not(.flowrow__next) {
   opacity: 0.5;
@@ -133,7 +133,7 @@
 .flowrow__text span,
 .flowrow__muted {
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -151,7 +151,7 @@
   gap: 8px;
   min-width: 0;
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .flowrow__model > span:last-child {
   white-space: nowrap;
@@ -175,10 +175,10 @@
   text-overflow: ellipsis;
 }
 .flowrow__last {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .flowrow__last.is-failed {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .flowrow__actions {
   flex: none;
@@ -194,17 +194,17 @@
   gap: 14px;
   padding: 14px 12px 0;
   font-size: 11px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .flowlist__legend > span {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
-.flowlist__legend .apx-runbars__bar {
+.flowlist__legend .colonia-runbars__bar {
   height: 14px;
 }
-.flowlist__legend .apx-runbars__bar--cut {
+.flowlist__legend .colonia-runbars__bar--cut {
   height: 8px;
 }
 .flowlist__spacer {
@@ -218,8 +218,8 @@
   align-items: center;
   gap: 16px;
   padding: 48px 16px;
-  border: 1px dashed var(--apx-border-strong);
-  border-radius: var(--apx-radius-lg);
+  border: 1px dashed var(--colonia-border-strong);
+  border-radius: var(--colonia-radius-lg);
   text-align: center;
 }
 .flows__emptyart {
@@ -230,7 +230,7 @@
 .flows__emptyart > span:empty {
   width: 22px;
   height: 1px;
-  background: var(--apx-border-strong);
+  background: var(--colonia-border-strong);
 }
 .flows__emptytext {
   display: flex;
@@ -246,7 +246,7 @@
 .flows__emptytext p {
   margin: 0;
   font-size: 13px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-wrap: pretty;
 }
 .flows__starters {
@@ -261,17 +261,17 @@
   flex-direction: column;
   gap: 10px;
   padding: 14px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 .flows__starter:hover {
-  border-color: var(--apx-border-strong);
-  background: var(--apx-surface-raised);
+  border-color: var(--colonia-border-strong);
+  background: var(--colonia-surface-raised);
 }
 .flows__startertext {
   display: flex;
@@ -284,7 +284,7 @@
 }
 .flows__startertext span {
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-wrap: pretty;
 }
 
@@ -295,7 +295,7 @@
   .flows__tools {
     width: 100%;
   }
-  .flows__tools .apx-select {
+  .flows__tools .colonia-select {
     flex: 1;
     min-width: 0;
   }
@@ -338,23 +338,23 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
   font-size: 13px;
   overflow-wrap: anywhere;
 }
 .fe-outward li svg {
   flex: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fe-outward__code {
   display: block;
   margin-top: 6px;
   padding: 6px 8px;
-  border-radius: var(--apx-radius-sm);
-  background: var(--apx-surface);
-  font-family: var(--apx-font-mono);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-surface);
+  font-family: var(--colonia-font-mono);
   font-size: 12px;
   white-space: pre-wrap;
   max-height: 120px;

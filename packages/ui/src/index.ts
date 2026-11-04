@@ -1,4 +1,4 @@
-// @apx/ui — APX design system. Import the stylesheet once: import "@apx/ui/styles.css".
+// @colonia/ui — Colonia design system. Import the stylesheet once: import "@colonia/ui/styles.css".
 
 export { BLOB_NAMES, BLOBS, type BlobName } from "./blobs/catalog";
 export { ActionGroup, type ActionGroupProps, type ActionItem } from "./components/ActionGroup";
@@ -7,7 +7,7 @@ export { AgentAvatar, type AgentAvatarProps } from "./components/AgentAvatar";
 export { AgentChip, type AgentChipProps } from "./components/AgentChip";
 export { AgentGrid, type AgentGridOption, type AgentGridProps } from "./components/AgentGrid";
 export { AgentNode, type AgentNodeProps, type AgentNodeStat } from "./components/AgentNode";
-export { type ApxLook, type ApxMode, ApxProvider, type ApxProviderProps, useApx } from "./components/ApxProvider";
+export { type ColoniaLook, type ColoniaMode, ColoniaProvider, type ColoniaProviderProps, useColonia } from "./components/ColoniaProvider";
 export { Avatar, type AvatarProps } from "./components/Avatar";
 export { AvatarStack, type AvatarStackProps } from "./components/AvatarStack";
 export { Badge, type BadgeProps } from "./components/Badge";

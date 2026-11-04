@@ -1,4 +1,4 @@
-import { AgentAvatar, Button, Icons, Menu } from "@apx/ui";
+import { AgentAvatar, Button, Icons, Menu } from "@colonia/ui";
 import { type PointerEvent as ReactPointerEvent, useState } from "react";
 import { blobOf } from "../data/identity.ts";
 import { useT } from "../i18n/index.ts";

@@ -1,6 +1,6 @@
-import type { ArtifactBundle } from "@apx/protocol";
-import { ARTIFACT_FILE_EXT } from "@apx/protocol/client";
-import { Badge, Button, Dialog, Field, Icons, Select, SettingRow, Switch } from "@apx/ui";
+import type { ArtifactBundle } from "@colonia/protocol";
+import { ARTIFACT_FILE_EXT } from "@colonia/protocol/client";
+import { Badge, Button, Dialog, Field, Icons, Select, SettingRow, Switch } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { installArtifact } from "../data/artifacts.ts";
 import { baseName } from "../data/identity.ts";
@@ -10,7 +10,7 @@ import { go } from "../shell/nav.ts";
 import { closeInstall, useInstallRequest } from "./installRequest.ts";
 import "../styles/artifacts.css";
 
-// Installing an .apxart file: drop or pick it, see what it is and what it asks for, choose where it goes, then install.
+// Installing an .coloniaart file: drop or pick it, see what it is and what it asks for, choose where it goes, then install.
 
 const GLOBAL = "";
 
@@ -45,7 +45,7 @@ function InstallForm({ initialProject, file }: { initialProject: string; file: F
     try {
       // A light look here; the core checks the whole file when it installs it.
       const raw = JSON.parse(await file.text()) as ArtifactBundle;
-      if (raw?.format !== "apx-artifact@1" || typeof raw.html !== "string" || typeof raw.manifest?.name !== "string")
+      if (raw?.format !== "colonia-artifact@1" || typeof raw.html !== "string" || typeof raw.manifest?.name !== "string")
         throw new Error(t("artifact.installNotArtifact"));
       setBundle(raw);
       setPin(raw.manifest.kind === "app");
@@ -157,7 +157,7 @@ function InstallForm({ initialProject, file }: { initialProject: string; file: F
                 ) : null}
                 <li>
                   {m.name} · v{m.version}
-                  {m.kit ? ` · APX Kit v${m.kit}` : ""}
+                  {m.kit ? ` · Colonia Kit v${m.kit}` : ""}
                   {m.live ? ` · ${t("artifact.installLive")}` : ""}
                 </li>
                 {m.connect?.length ? <li>{t("artifact.installConnects", { origins: m.connect.join(", ") })}</li> : null}

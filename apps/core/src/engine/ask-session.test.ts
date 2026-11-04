@@ -29,7 +29,7 @@ let env: Awaited<ReturnType<typeof startCore>>;
 let project = "";
 before(async () => {
   env = await startCore({ llm });
-  root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-ask-session-")));
+  root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ask-session-")));
   fs.writeFileSync(path.join(root, "AGENTS.md"), "# Project\n");
   project = (await env.client.call("projects.register", { path: root, init: true })).project.id;
 });

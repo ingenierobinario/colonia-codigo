@@ -1,4 +1,4 @@
-import { Skeleton } from "@apx/ui";
+import { Skeleton } from "@colonia/ui";
 
 function Row() {
   return (

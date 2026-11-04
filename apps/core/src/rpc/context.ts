@@ -1,4 +1,4 @@
-import type { Actor, ClientRole, ClientScope } from "@apx/protocol";
+import type { Actor, ClientRole, ClientScope } from "@colonia/protocol";
 import type { Log } from "../log.ts";
 
 /** Who is calling. Every handler gets it explicitly — no ambient/implicit identity. */

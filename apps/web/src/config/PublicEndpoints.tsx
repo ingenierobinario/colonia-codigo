@@ -1,5 +1,5 @@
-import type { PublicEndpointInfo } from "@apx/protocol";
-import { Badge, Button, EmptyState, IconButton, Icons, Input, SettingRow, Skeleton } from "@apx/ui";
+import type { PublicEndpointInfo } from "@colonia/protocol";
+import { Badge, Button, EmptyState, IconButton, Icons, Input, SettingRow, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

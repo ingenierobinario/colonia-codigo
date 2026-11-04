@@ -2,7 +2,7 @@
 // stores them) before the next poll confirms them to Telegram, so a crash never loses a message; a redelivery is
 // dropped by the inbox's unique key. Groups are read only when the owner listed them (rooms, like Discord's); the Bot
 // API cannot list a bot's groups, so the ones it is in are learned from updates and offered to pick from.
-import { UPLOAD_LIMITS } from "@apx/protocol";
+import { UPLOAD_LIMITS } from "@colonia/protocol";
 import type { Presentation } from "../domain/channels.ts";
 import { errorMessage } from "../errors.ts";
 import { causeCode, neverSent, sleep } from "./net.ts";
@@ -149,7 +149,7 @@ function mediaNote(m: TgMessage): string | undefined {
             : m.sticker
               ? "sticker"
               : undefined;
-  return kind ? `[${kind} — APX cannot read this kind of message yet]` : undefined;
+  return kind ? `[${kind} — Colonia cannot read this kind of message yet]` : undefined;
 }
 
 /** The name and type a message's file is kept under (Telegram names few of them, and types not all). */

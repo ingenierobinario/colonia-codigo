@@ -31,17 +31,17 @@ for (const look of ["minimal", "classic"]) {
         .getByRole("radio", { name: "130%", exact: true })
         .evaluate((el) => el.clientHeight - parseFloat(getComputedStyle(el).lineHeight)),
     ).toBeGreaterThanOrEqual(0);
-    const composerMetrics = await page.locator(".apx-composer textarea").evaluate((el) => ({
+    const composerMetrics = await page.locator(".colonia-composer textarea").evaluate((el) => ({
       font: parseFloat(getComputedStyle(el).fontSize),
       line: parseFloat(getComputedStyle(el).lineHeight),
     }));
     expect(composerMetrics.line / composerMetrics.font).toBeGreaterThan(1.4);
     expect(
-      await page.locator(".apx-composer textarea").evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+      await page.locator(".colonia-composer textarea").evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
     ).toBeCloseTo(normalComposer * 1.3, 1);
     expect(
       await page
-        .locator(".apx-fill")
+        .locator(".colonia-fill")
         .first()
         .evaluate((el) => getComputedStyle(el).zoom),
     ).toBe("1");
@@ -70,7 +70,7 @@ for (const look of ["minimal", "classic"]) {
 test("invalid persisted text sizes use normal text", async ({ page }) => {
   await rpc("setup.finish");
   await page.addInitScript(() => {
-    localStorage.setItem("apx.prefs", JSON.stringify({ textSize: -400, language: "en" }));
+    localStorage.setItem("colonia.prefs", JSON.stringify({ textSize: -400, language: "en" }));
   });
   await open(page);
   await page.getByRole("button", { name: /^Account/ }).click();

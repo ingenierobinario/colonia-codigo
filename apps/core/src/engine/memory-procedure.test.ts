@@ -148,7 +148,7 @@ test("a step's gist keeps hosts, programs and relative paths, never a credential
   );
   assert.equal(stepGist(step("shell", { command: "echo password=hunter2" })), "echo");
   // Windows paths are reduced the same way, said with `/`.
-  const winScratch = "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\apx-scratch-7a73e6c1\\th_0228b35f049a4337";
+  const winScratch = "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\colonia-scratch-7a73e6c1\\th_0228b35f049a4337";
   assert.equal(
     stepGist(step("shell", { command: `curl -L --fail https://dl.example.com/f -o ${winScratch}\\reel.mp4` })),
     "curl -L --fail <dl.example.com> -o <scratch>/reel.mp4",

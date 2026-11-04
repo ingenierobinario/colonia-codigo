@@ -1,4 +1,4 @@
-// A flow that acts outside APX: an incoming webhook calls another service and tells the owner on their chat app.
+// A flow that acts outside Colonia: an incoming webhook calls another service and tells the owner on their chat app.
 // The service is the sandbox's own on this computer (the only one a test core may call) and the chat app is the
 // emulated Telegram the owner linked in the setup; nothing real is called or written to.
 import type { Result } from "../../packages/protocol/src/index.ts";
@@ -61,7 +61,7 @@ for (const lang of ["en", "es"] as const) {
     const { service } = await world.info();
     const project = (await rpc<{ project: { id: string } }>("projects.create", { name: `Outward ${lang}` })).project.id;
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     const name = `Acme leads ${lang}`;
     const email = `lu-${lang}@northwind.example`;

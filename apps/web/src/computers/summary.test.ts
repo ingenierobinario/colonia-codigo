@@ -6,7 +6,7 @@ import { computersOf } from "./summary.ts";
 const status = {
   enabled: true,
   ready: true,
-  name: "apx-computer",
+  name: "colonia-computer",
   workspace: "~/work",
   supported: true,
   allowed_agents: 2,

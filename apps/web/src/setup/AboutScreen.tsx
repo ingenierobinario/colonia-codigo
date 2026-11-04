@@ -1,5 +1,5 @@
 import "../styles/wizard.css";
-import { AgentAvatar } from "@apx/ui";
+import { AgentAvatar } from "@colonia/ui";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import logo from "../assets/logo.png";
 import { elapsed } from "../common/format.ts";
@@ -94,17 +94,17 @@ export function AboutScreen() {
     ["about.system", params.get("os")],
   ];
   return (
-    <div className="wiz about" data-apx-look="minimal" data-apx-mode="dark">
+    <div className="wiz about" data-colonia-look="minimal" data-colonia-mode="dark">
       <h1 className="about__brand">
         <img src={logo} alt="" width={22} height={22} />
-        APX
+        Colonia
       </h1>
       <div className="about__cols">
         <GlyphPortrait />
         <div className="about__info">
           <span className="wiz__pill about__version">
             <img src={logo} alt="" width={14} height={14} />
-            APX {version}
+            Colonia {version}
           </span>
           <p className="about__tag">{t("about.foot")}</p>
           <dl className="about__list">

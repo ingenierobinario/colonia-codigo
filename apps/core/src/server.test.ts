@@ -4,13 +4,13 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { assertSafeBind, testConfig } from "./config.ts";
 import { createCore } from "./server.ts";
 import { removeDir } from "./testkit/platform.ts";
 
 let core: Awaited<ReturnType<typeof createCore>>;
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-test-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-test-"));
 
 before(async () => {
   core = await createCore(testConfig({ home }), { quiet: true });
@@ -21,9 +21,9 @@ after(async () => {
 });
 
 test("health over HTTP carries code_sha and a stable home id", async () => {
-  const client = new ApxClient({ url: core.url });
+  const client = new ColoniaClient({ url: core.url });
   const h = await client.call("system.health", {});
-  assert.equal(h.name, "apx-core");
+  assert.equal(h.name, "colonia-core");
   assert.ok(h.code_sha.length > 0);
   assert.equal(h.home_id, fs.readFileSync(path.join(home, "home-id"), "utf8").trim());
 });
@@ -41,7 +41,7 @@ test("an idle connection stays open far longer than a client reuses one", async 
 });
 
 test("the socket and HTTP reach the same handler", async () => {
-  const client = new ApxClient({ url: core.url });
+  const client = new ColoniaClient({ url: core.url });
   const socket = await client.connect();
   assert.equal(socket.welcome?.server.code_sha, core.identity.code_sha);
   const viaWs = await socket.call("system.ping", { echo: "hola" });
@@ -76,7 +76,7 @@ test("system.logs reads this home's core log", async () => {
   const file = path.join(home, "logs", "core.log");
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, `${JSON.stringify({ level: "error", scope: "core", msg: "channel down" })}\n`);
-  const r = await new ApxClient({ url: core.url }).call("system.logs", { level: "error" });
+  const r = await new ColoniaClient({ url: core.url }).call("system.logs", { level: "error" });
   assert.equal(r.path, file);
   assert.deepEqual(
     r.lines.map((l) => l.msg),

@@ -16,7 +16,7 @@ const common: BuildOptions = {
   sourcemap: true,
   logLevel: "warning",
   define: {
-    APX_VERSION: JSON.stringify(
+    COLONIA_VERSION: JSON.stringify(
       buildVersion(JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version, root),
     ),
   },

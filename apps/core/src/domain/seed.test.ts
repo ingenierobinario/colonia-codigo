@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { AGENT_NAMES, SUPER_AGENT_ID } from "@apx/protocol";
+import { AGENT_NAMES, SUPER_AGENT_ID } from "@colonia/protocol";
 import { createBus } from "../bus.ts";
 import { testConfig } from "../config.ts";
 import { openDb } from "../db/db.ts";
@@ -14,7 +14,7 @@ import { createStore } from "./store.ts";
 
 test("a fresh install names its super-agent from the list, unless the install says which name", async () => {
   for (const agentName of [undefined, "Ada"]) {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-seed-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-seed-"));
     const core = await createCore(testConfig({ home, agentName }), { quiet: true });
     const boss = core.store.agents.list().find((a) => a.kind === "secretary");
     await core.close();
@@ -25,7 +25,7 @@ test("a fresh install names its super-agent from the list, unless the install sa
 });
 
 test("a fresh install's super-agent gets the super-agent id; an older install keeps the id it has", async () => {
-  const dir = tempDir("apx-seed-id-");
+  const dir = tempDir("colonia-seed-id-");
   const db = openDb(dir.path);
   try {
     const store = createStore(db, createBus());
@@ -36,7 +36,7 @@ test("a fresh install's super-agent gets the super-agent id; an older install ke
     db.close();
     await dir.remove();
   }
-  const old = tempDir("apx-seed-old-");
+  const old = tempDir("colonia-seed-old-");
   const oldDb = openDb(old.path);
   try {
     const store = createStore(oldDb, createBus());

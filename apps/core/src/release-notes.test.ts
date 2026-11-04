@@ -14,7 +14,7 @@ test("versions compare by number, with or without their v and a build suffix", (
 
 test("each commit people read becomes a sentence; chores are left out", () => {
   assert.equal(sentence("fix(core): a chat turn gets 60 steps"), "A chat turn gets 60 steps");
-  assert.equal(sentence("feat: apx chat shows the step limit"), "apx chat shows the step limit");
+  assert.equal(sentence("feat: colonia chat shows the step limit"), "colonia chat shows the step limit");
   const log =
     "abc1234\0feat(web): mark every chat read\x1e\ndef5678\0chore: tidy\x1e\n0a1b2c3\0perf!: faster lists\x1e";
   assert.deepEqual(changesIn(log), [
@@ -24,7 +24,7 @@ test("each commit people read becomes a sentence; chores are left out", () => {
 });
 
 test("a checkout reads each release's notes from its tags, newest first", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-notes-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-notes-"));
   const git = (...args: string[]) =>
     execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...args], { cwd: dir, stdio: "pipe" });
   try {
@@ -62,7 +62,7 @@ test("a checkout reads each release's notes from its tags, newest first", () => 
 });
 
 test("outside git there is no release to tell", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-notes-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-notes-"));
   try {
     assert.equal(localReleases(dir).version(), undefined);
     assert.equal(localReleases(dir).notes(), undefined);

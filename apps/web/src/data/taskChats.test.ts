@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { type TestContext, test } from "node:test";
-import { Task, Thread } from "@apx/protocol";
+import { Task, Thread } from "@colonia/protocol";
 
 Object.defineProperty(globalThis, "window", {
   configurable: true,

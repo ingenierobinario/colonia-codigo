@@ -31,7 +31,7 @@ test("multiple delegated reports remain separate cards and nested requests do no
     await page.goto(`${env.core.url}/#thread=${chat.id}`);
     await env.client.call("threads.send", { thread: chat.id, text: "Consult both helpers" });
     await env.settle(chat.id);
-    const cards = page.locator(".transcript .apx-subthread");
+    const cards = page.locator(".transcript .colonia-subthread");
     await expect(cards).toHaveCount(2);
     await expect(cards.nth(0)).toContainText("Respuesta de Alpha");
     await expect(cards.nth(0)).toContainText("Alpha report:");

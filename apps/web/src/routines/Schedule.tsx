@@ -1,5 +1,5 @@
-import type { Schedule } from "@apx/protocol";
-import { Button, Input, SegmentedControl, Select } from "@apx/ui";
+import type { Schedule } from "@colonia/protocol";
+import { Button, Input, SegmentedControl, Select } from "@colonia/ui";
 import { useState } from "react";
 import { aheadLabel } from "../common/format.ts";
 import { DAY_KEY, WeekDays } from "../common/pickers/WeekDays.tsx";

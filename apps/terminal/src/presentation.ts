@@ -2,10 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { inflateSync } from "node:zlib";
-import { apxHome } from "./commands/local.ts";
+import { coloniaHome } from "./commands/local.ts";
 
 export type TerminalTheme = { name: string; blob: string };
-const DEFAULT_THEME: TerminalTheme = { name: "APX", blob: "ovni" };
+const DEFAULT_THEME: TerminalTheme = { name: "Colonia", blob: "ovni" };
 
 /** Outside names and errors cannot write escape sequences or terminal control codes. */
 export const clean = (s: string) => s.replace(/[\p{Cc}\p{Cf}]/gu, " ");
@@ -100,7 +100,7 @@ export function card(
   const dim = (s: string) => (color ? `\u001b[2m${s}\u001b[0m` : s);
   const bold = (s: string) => (color ? `\u001b[1m${s}\u001b[0m` : s);
   const art = [...portrait(theme.blob, color), "", dim("Your crew, on your machine")];
-  const heading = "APX / Your crew, at a glance";
+  const heading = "Colonia / Your crew, at a glance";
   const option = `Seeing ${clean(title)}`;
   const output: string[] = [];
   if (width >= 74) {
@@ -159,12 +159,12 @@ export function rememberTheme(home: string, theme: TerminalTheme): void {
 }
 
 export function themedCard(title: string, lines: string[], columns?: number, accent?: number[]): string {
-  return card(title, lines, columns, accent, readTheme(apxHome()));
+  return card(title, lines, columns, accent, readTheme(coloniaHome()));
 }
 
 /** An error for stderr: the card, or one plain line when the caller asked for machine output (--plain, --json). */
 export function failure(title: string, lines: string[], plain = false): string {
-  return !plain ? themedCard(title, lines) : `apx: ${clean(title)}: ${lines.map(clean).join(" · ")}`;
+  return !plain ? themedCard(title, lines) : `colonia: ${clean(title)}: ${lines.map(clean).join(" · ")}`;
 }
 
 /** The system error code behind a failed request: fetch wraps it in `cause`, a dual-stack connect in `errors`. */
@@ -189,11 +189,11 @@ export function unreachableCore(err: unknown): { title: string; lines: string[] 
       title: "Core unreachable",
       lines: [
         "This process is not allowed to connect to the core, probably a sandbox blocking local network.",
-        "Run apx outside the sandbox, or allow network access for this runtime.",
+        "Run colonia outside the sandbox, or allow network access for this runtime.",
       ],
     };
   if (codes.includes("ECONNREFUSED"))
-    return { title: "Core not running", lines: ["See why and what to do: apx doctor"] };
+    return { title: "Core not running", lines: ["See why and what to do: colonia doctor"] };
   return undefined;
 }
 

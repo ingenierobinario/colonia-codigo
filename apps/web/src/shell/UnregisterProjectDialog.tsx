@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { Button, Dialog } from "@apx/ui";
+import { Button, Dialog } from "@colonia/ui";
 import { useState } from "react";
 import type { ProjectEntry } from "../data/identity.ts";
 import { unregisterProject } from "../data/projects.ts";

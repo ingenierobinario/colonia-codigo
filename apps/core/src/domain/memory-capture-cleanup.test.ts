@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import type { Memory } from "@apx/protocol";
+import type { Memory } from "@colonia/protocol";
 import { createBus } from "../bus.ts";
 import { openDb } from "../db/db.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
@@ -11,7 +11,7 @@ import { CAPTURE_CLEANUP_REASON, cleanUpCapturedNotes } from "./memory-capture-c
 import { createStore, type Store } from "./store.ts";
 
 function tempStore() {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-capture-cleanup-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-capture-cleanup-"));
   const db = openDb(home);
   return { home, db, store: createStore(db, createBus()) };
 }

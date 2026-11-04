@@ -1,4 +1,4 @@
-import { ProjectTile } from "@apx/ui";
+import { ProjectTile } from "@colonia/ui";
 import { DEFAULT_PID, projectEntries, projectInitial, projectTone } from "../../data/identity.ts";
 import { useData } from "../../data/state.ts";
 import { useT } from "../../i18n/index.ts";

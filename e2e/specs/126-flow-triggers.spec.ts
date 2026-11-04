@@ -20,7 +20,7 @@ async function shot(page: Page, name: string, focus: Locator) {
   await page.screenshot({ path: path.join(shots, `${name}-phone.png`) });
   if (size) await page.setViewportSize(size);
 }
-const HOST = "https://apx.example.com";
+const HOST = "https://colonia.example.com";
 const docOf = (flow: string) => rpc<Result<"flows.graph_get">>("flows.graph_get", { flow });
 
 test.afterEach(async () => {
@@ -64,7 +64,7 @@ test("a schedule is set by days and times, switched to a webhook in place, which
   const sunday = "2026-11-01T12:00:00Z";
   await world.clock(sunday);
   await page.clock.setFixedTime(sunday);
-  await page.addInitScript(() => localStorage.setItem("apx.prefs", JSON.stringify({ language: "en" })));
+  await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en" })));
   await open(page, `#view=flows&scope=${project}&flow=${flow}&edit=1`);
   const editor = page.locator(".fe");
   const trigger = editor.locator('.react-flow__node[data-id="start"]');
@@ -105,7 +105,7 @@ test("a schedule is set by days and times, switched to a webhook in place, which
 
   // The key: made from the card, shown, then replaced after a warning; the old one stops.
   await card.getByRole("button", { name: "Create key" }).click();
-  await expect(card.locator(".trg-key")).toHaveText(/^apxp_[a-f0-9]{64}$/);
+  await expect(card.locator(".trg-key")).toHaveText(/^coloniap_[a-f0-9]{64}$/);
   const first = (await rpc<Result<"flows.token">>("flows.token", { flow })).token ?? "";
   await expect(card.locator(".trg-key")).toHaveText(first);
   await shot(page, "webhook-card", card.getByRole("button", { name: "New key" }));
@@ -161,7 +161,7 @@ test("what a step receives is picked with {} like every other value: a field of 
       ],
     },
   });
-  await page.addInitScript(() => localStorage.setItem("apx.prefs", JSON.stringify({ language: "en" })));
+  await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en" })));
   await open(page, `#view=flows&scope=${project}&flow=${made.flow.id}&edit=1`);
   const editor = page.locator(".fe");
   await editor.locator('.react-flow__node[data-id="tier"]').click();
@@ -170,7 +170,7 @@ test("what a step receives is picked with {} like every other value: a field of 
   // Empty is everything that arrived; the picker offers it, and a field typed after it narrows it.
   await card.getByRole("button", { name: "Insert a value" }).first().click();
   await page.getByRole("option", { name: /Everything that arrived/ }).click();
-  await expect(card.locator(".apx-tfield").first()).toContainText("$trigger");
+  await expect(card.locator(".colonia-tfield").first()).toContainText("$trigger");
   await receives.fill("$trigger.form.tier");
   await shot(page, "receives-picker", receives);
   await editor.getByRole("button", { name: "Save draft" }).click();

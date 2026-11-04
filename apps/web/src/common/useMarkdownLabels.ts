@@ -1,4 +1,4 @@
-import type { MarkdownLabels } from "@apx/ui";
+import type { MarkdownLabels } from "@colonia/ui";
 import { useMemo } from "react";
 import { useT } from "../i18n/index.ts";
 

@@ -1,4 +1,4 @@
-import type { ApxClient } from "@apx/protocol/client";
+import type { ColoniaClient } from "@colonia/protocol/client";
 import { clean } from "../presentation.ts";
 import { mcps } from "./threads.ts";
 
@@ -13,21 +13,21 @@ type Options = {
   header?: string[] | undefined;
 };
 
-export const MCPS_USAGE = `apx mcps [list [project]]                      MCP servers agents may use, and their state
-apx mcps tools|run|check <server> …            Its tools, run one, or test that it starts (apx mcp tools …)
-apx mcps signin <server> [--project p]         Sign in to one that asked for it (its page opens in your browser)
-apx mcps logs <server> [--project p] [-n 100]  What it printed on stderr since the core started (secrets masked)
-apx mcps trust|untrust <project> <server>      Approve a project's server as its .apc/mcps.json defines it
-apx mcps on|off <server> --project p           Turn one of your servers on or off inside a project
-apx mcps show <name> [--project p]             Its definition (secrets show as secret://NAME)
-apx mcps add <name> [--env K=V…] -- <command…|url>   Add one of your own (--header K=V for a url)
-apx mcps copy <from> <to> [--env K=V…]         A copy of one under a new name, with the variables you change
-apx mcps set <name> --env K=V…                 Change variables (or --header) of one, keeping the rest
-apx mcps rename <name> <new-name>              The same server under another name
-apx mcps rm <name>                             Remove one of your own
+export const MCPS_USAGE = `colonia mcps [list [project]]                      MCP servers agents may use, and their state
+colonia mcps tools|run|check <server> …            Its tools, run one, or test that it starts (colonia mcp tools …)
+colonia mcps signin <server> [--project p]         Sign in to one that asked for it (its page opens in your browser)
+colonia mcps logs <server> [--project p] [-n 100]  What it printed on stderr since the core started (secrets masked)
+colonia mcps trust|untrust <project> <server>      Approve a project's server as its .apc/mcps.json defines it
+colonia mcps on|off <server> --project p           Turn one of your servers on or off inside a project
+colonia mcps show <name> [--project p]             Its definition (secrets show as secret://NAME)
+colonia mcps add <name> [--env K=V…] -- <command…|url>   Add one of your own (--header K=V for a url)
+colonia mcps copy <from> <to> [--env K=V…]         A copy of one under a new name, with the variables you change
+colonia mcps set <name> --env K=V…                 Change variables (or --header) of one, keeping the rest
+colonia mcps rename <name> <new-name>              The same server under another name
+colonia mcps rm <name>                             Remove one of your own
   Live from the next message: nothing restarts. --project p works on that project's .apc/mcps.json instead.`;
 
-export async function mcpCommand(client: ApxClient, args: string[], o: Options): Promise<void> {
+export async function mcpCommand(client: ColoniaClient, args: string[], o: Options): Promise<void> {
   const [sub, server, tool, raw] = args;
   if (sub === "help") {
     console.log(MCPS_USAGE);
@@ -43,8 +43,8 @@ export async function mcpCommand(client: ApxClient, args: string[], o: Options):
   if (!server)
     throw new Error(
       sub === "logs"
-        ? "usage: apx mcps logs <server> [--project <id>] [-n 100]"
-        : `usage: apx mcp ${sub} <server> [<tool>] [--project <id>]`,
+        ? "usage: colonia mcps logs <server> [--project <id>] [-n 100]"
+        : `usage: colonia mcp ${sub} <server> [<tool>] [--project <id>]`,
     );
   const { servers } = await client.call("mcp.list", o.project ? { project: o.project } : {});
   const matches = servers.filter((s) => s.name === server && (!o.scope || s.scope === o.scope));
@@ -63,7 +63,7 @@ export async function mcpCommand(client: ApxClient, args: string[], o: Options):
     else for (const l of r.lines) console.log(`${new Date(l.at).toLocaleTimeString()}  ${clean(l.text)}`);
     if (!r.lines.length && !o.json)
       console.log(
-        `(${clean(server)} printed nothing since the core started; it runs when an agent uses it or with apx mcp check)`,
+        `(${clean(server)} printed nothing since the core started; it runs when an agent uses it or with colonia mcp check)`,
       );
     return;
   }
@@ -95,12 +95,12 @@ export async function mcpCommand(client: ApxClient, args: string[], o: Options):
     else
       for (const t of tools) {
         console.log(
-          `${clean(server)} · ${clean(t.name)}\n  ${clean(t.description ?? "")}\n  Schema: ${JSON.stringify(t.inputSchema)}\n  Run: apx mcp run ${quote(clean(server))} ${quote(clean(t.name))} '<json>'${target.project ? ` --project ${quote(target.project)}` : ""} --scope ${target.scope}`,
+          `${clean(server)} · ${clean(t.name)}\n  ${clean(t.description ?? "")}\n  Schema: ${JSON.stringify(t.inputSchema)}\n  Run: colonia mcp run ${quote(clean(server))} ${quote(clean(t.name))} '<json>'${target.project ? ` --project ${quote(target.project)}` : ""} --scope ${target.scope}`,
         );
       }
     return;
   }
-  if (!tool) throw new Error("usage: apx mcp run <server> <tool> [<json>|-]");
+  if (!tool) throw new Error("usage: colonia mcp run <server> <tool> [<json>|-]");
   let input = raw ?? "{}";
   if (input === "-") {
     input = "";

@@ -36,7 +36,7 @@ test("a bubble copies, forks the chat from it and says when there is no voice to
     }
 
     // Copy: the words of that bubble.
-    const answer = main.locator(".apx-msg--agent", { hasText: "Got it: Northwind uno" });
+    const answer = main.locator(".colonia-msg--agent", { hasText: "Got it: Northwind uno" });
     await answer.hover();
     await answer.getByRole("button", { name: "Copiar" }).click();
     await expect(answer.getByRole("button", { name: "Copiado" })).toBeVisible();
@@ -54,7 +54,7 @@ test("a bubble copies, forks the chat from it and says when there is no voice to
 
     // Fork at the owner's message: up to just before it, its words ready in the new chat's composer.
     await open(page, `#view=inbox&thread=${t.id}`);
-    const mine = main.locator(".apx-msg--user", { hasText: "Northwind dos" });
+    const mine = main.locator(".colonia-msg--user", { hasText: "Northwind dos" });
     await mine.hover();
     // The owner's own words are not read aloud.
     await expect(mine.getByRole("button", { name: "Leer en voz alta" })).toHaveCount(0);

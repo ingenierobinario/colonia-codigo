@@ -1,5 +1,5 @@
 // What an agent may offer the owner to connect for what they asked: integrations and channels found by words.
-import type { ConnectOffer } from "@apx/protocol";
+import type { ConnectOffer } from "@colonia/protocol";
 
 export type Connectable = ConnectOffer & { connected: boolean };
 

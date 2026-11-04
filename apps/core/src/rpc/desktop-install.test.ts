@@ -5,8 +5,8 @@ import { request } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { PROTOCOL_VERSION } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
+import { PROTOCOL_VERSION } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
 import WebSocket from "ws";
 import { createDesktopInstaller } from "../../../../packages/install/src/desktop.ts";
 import { testConfig } from "../config.ts";
@@ -14,7 +14,7 @@ import { createCore } from "../server.ts";
 import { removeDir } from "../testkit/platform.ts";
 
 test("desktop installation is local, human-only and single-flight across HTTP and WS", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-desktop-rpc-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-rpc-"));
   let downloads = 0;
   const installer = createDesktopInstaller({
     platform: "linux",
@@ -34,7 +34,7 @@ test("desktop installation is local, human-only and single-flight across HTTP an
     quiet: true,
     desktopInstaller: installer,
   });
-  const client = new ApxClient({ url: core.url, token: "owner-test" });
+  const client = new ColoniaClient({ url: core.url, token: "owner-test" });
   const socket = await client.connect();
   const post = (method: string, headers: Record<string, string> = {}, body: unknown = {}) =>
     fetch(`${core.url}/rpc/${method}`, {
@@ -56,7 +56,7 @@ test("desktop installation is local, human-only and single-flight across HTTP an
     assert.equal(downloads, 1);
     const forbiddenHeaders: Record<string, string>[] = [
       { "x-forwarded-for": "100.64.0.7" },
-      { "x-apx-actor": "agent" },
+      { "x-colonia-actor": "agent" },
     ];
     for (const headers of forbiddenHeaders) {
       const denied = await post("desktop.install", headers);
@@ -110,7 +110,7 @@ test("desktop installation is local, human-only and single-flight across HTTP an
     assert.equal(JSON.parse(String(cancelRaw)).error.code, "unauthorized");
     remote.close();
     await once(remote, "close");
-    const deniedCancel = await post("desktop.install_cancel", { "x-apx-actor": "agent" });
+    const deniedCancel = await post("desktop.install_cancel", { "x-colonia-actor": "agent" });
     assert.equal(deniedCancel.status, 401);
     assert.equal((await post("desktop.install_cancel", { "x-forwarded-for": "100.64.0.7" })).status, 401);
     const cancelled = await post("desktop.install_cancel");

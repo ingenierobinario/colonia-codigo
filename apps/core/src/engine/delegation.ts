@@ -1,7 +1,7 @@
 // The one way an agent asks another: a sub-thread with a durable child run. The caller may wait for it inside its
 // turn; past that (or when the caller's turn ends for any reason) the result comes back to the caller's thread as
 // a new input. See DECISIONS.md#d-009
-import { DEFAULT_AUTONOMY, type Part, type Thread, type WritePolicy } from "@apx/protocol";
+import { DEFAULT_AUTONOMY, type Part, type Thread, type WritePolicy } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import { type Origin, type RunRecord, TERMINAL } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
@@ -53,7 +53,7 @@ export function workspaceOf(
   projectId: string | undefined,
   req: Pick<DelegateTo, "folder" | "write">,
 ): Workspace | undefined | string {
-  // Asked for nothing, no folder of its own: our loop works in its project anyway, an outside engine on APX's side.
+  // Asked for nothing, no folder of its own: our loop works in its project anyway, an outside engine on Colonia's side.
   if (req.folder === undefined && !req.write) return undefined;
   let cwd: string;
   try {
@@ -122,16 +122,16 @@ export const endNote = (
   const what = run.end_reason === "step_limit" ? "steps" : "time";
   const where = how.session ? `with session="${how.session}"` : "in its session";
   const next = how.stopped
-    ? `APX stopped going on with it on its own: ${how.stopped}. Do not go on with it yourself: tell the owner in one line what is left and why it stopped; they go on with Continue on its notice in APX, or by telling you.`
+    ? `Colonia stopped going on with it on its own: ${how.stopped}. Do not go on with it yourself: tell the owner in one line what is left and why it stopped; they go on with Continue on its notice in Colonia, or by telling you.`
     : `To go on, delegate only the rest ${where} (it keeps its context), without asking the owner while it is making progress; to drop it, tell the owner.`;
   return `It ran out of ${what} before finishing: this is a progress report, not its final result. What it says is left is not done; never record it as a verdict. ${next}\n`;
 };
 
 /** What a continuation asks the delegate whose turn a limit cut short. */
 const continueText = (run: RunRecord) =>
-  `APX stopped your last turn on this task before you finished (${run.end_reason === "step_limit" ? "it used all its steps" : (run.error ?? "it ran out of time").replace(/^Could not finish: /, "")}). Go on from where you stopped: do only what is left, without redoing what is done, then give your final answer.`;
+  `Colonia stopped your last turn on this task before you finished (${run.end_reason === "step_limit" ? "it used all its steps" : (run.error ?? "it ran out of time").replace(/^Could not finish: /, "")}). Go on from where you stopped: do only what is left, without redoing what is done, then give your final answer.`;
 
-/** The calls with an effect APX recorded in a run, and how each ended ("show_widget ok", "message_contact error ×2"). */
+/** The calls with an effect Colonia recorded in a run, and how each ended ("show_widget ok", "message_contact error ×2"). */
 export function actionsOf(store: Store, run: RunRecord): string[] {
   const counts = new Map<string, number>();
   for (const s of store.runs.steps(run.id)) {
@@ -143,11 +143,11 @@ export function actionsOf(store: Store, run: RunRecord): string[] {
   return [...counts].map(([k, n]) => (n > 1 ? `${k} ×${n}` : k));
 }
 
-/** APX's own account of what a delegated run did, beside the agent's words, so the caller need not check it again. */
+/** Colonia's own account of what a delegated run did, beside the agent's words, so the caller need not check it again. */
 export const actionsNote = (actions: readonly string[]) =>
   actions.length
-    ? `APX recorded these actions in its run: ${actions.join(", ")}. The ok ones are done; do not check them again.`
-    : "APX recorded no action with an effect in its run.";
+    ? `Colonia recorded these actions in its run: ${actions.join(", ")}. The ok ones are done; do not check them again.`
+    : "Colonia recorded no action with an effect in its run.";
 
 /** A delegate does its own part and names who owns the rest (it cannot ask them): the caller asks. See DECISIONS.md#d-074 */
 export const REDIRECT_NOTE =
@@ -181,7 +181,7 @@ export function createDelegations(deps: {
   /** Answers still being written, by run. */
   live: Map<string, Display>;
   /** Admits the result as a new input on the caller's thread. */
-  /** `stopped`: why APX stopped going on with a run a limit cut short, for the caller to tell the owner. */
+  /** `stopped`: why Colonia stopped going on with a run a limit cut short, for the caller to tell the owner. */
   deliver(parent: RunRecord, child: RunRecord, answer: string, stopped?: string, outcome?: Outcome): void;
   /** The engine's end of a run (its waiters, then this module's `childEnded`). */
   ended(run: RunRecord): void;
@@ -327,7 +327,7 @@ export function createDelegations(deps: {
     store.threads.context(run.thread_id).worker?.name ?? store.agents.get(run.agent_id)?.name ?? run.agent_id;
 
   /**
-   * The parts APX started on its own in a row up to `run`, and the agent that asked for the work: an owner's Continue
+   * The parts Colonia started on its own in a row up to `run`, and the agent that asked for the work: an owner's Continue
    * starts the count over, and the first part (the delegation itself) is not one.
    */
   function autoParts(run: RunRecord): { count: number; origin: Extract<Origin, { kind: "agent" }> | undefined } {
@@ -338,7 +338,7 @@ export function createDelegations(deps: {
       const o = r.input?.origin;
       if (!origin && o?.kind === "agent") origin = o;
       if (!r.input?.continues) break;
-      // A part APX started keeps the asking agent's origin; the owner's Continue is theirs.
+      // A part Colonia started keeps the asking agent's origin; the owner's Continue is theirs.
       if (o?.kind !== "agent") counting = false;
       else if (counting) count++;
       r = store.runs.get(r.input.continues);
@@ -349,7 +349,7 @@ export function createDelegations(deps: {
   /**
    * A delegated run a limit cut short, with its caller not waiting for it: the same session goes on with its context,
    * as a supervisor would, while each part progresses (engine/progress.ts); the first part always goes on once, and
-   * agents paused stop it. The new run reports to the same caller. `stopped`: why APX let the owner decide instead.
+   * agents paused stop it. The new run reports to the same caller. `stopped`: why Colonia let the owner decide instead.
    */
   function continueCut(parent: RunRecord, child: RunRecord): { next: RunRecord } | { stopped: string } | undefined {
     if (!cutShort(child)) return undefined;
@@ -359,7 +359,7 @@ export function createDelegations(deps: {
     const top = sub?.parent_id;
     if (!sub || !top || !store.threads.get(top)) return undefined;
     if (tripped(store, top) || agentTripped(store, top, child.agent_id, whoDid(child))) return undefined;
-    if (count >= MAX_AUTO_PARTS) return { stopped: `APX already went on with it ${count} times on its own` };
+    if (count >= MAX_AUTO_PARTS) return { stopped: `Colonia already went on with it ${count} times on its own` };
     const before = child.input?.continues ? store.runs.steps(child.input.continues) : [];
     const why = count > 0 ? stalled(store.runs.steps(child.id), before) : undefined;
     if (why) return { stopped: why };
@@ -385,7 +385,7 @@ export function createDelegations(deps: {
           type: "notice",
           level: "info",
           code: "delegation.continued",
-          text: "APX continued this session after a limit stopped it.",
+          text: "Colonia continued this session after a limit stopped it.",
         },
       ],
     });
@@ -396,8 +396,8 @@ export function createDelegations(deps: {
 
   /**
    * The owner hears that a delegated run hit a limit: which agent, which limit, what it reported so far, and whether
-   * APX went on with it, stopped because it looked stuck (with Continue on the notice), or its caller has the report.
-   * Only a stop or a report to the caller reaches the tray and their channel: going on is APX's own business.
+   * Colonia went on with it, stopped because it looked stuck (with Continue on the notice), or its caller has the report.
+   * Only a stop or a report to the caller reaches the tray and their channel: going on is Colonia's own business.
    */
   function limitNotice(
     parent: RunRecord,
@@ -414,9 +414,9 @@ export function createDelegations(deps: {
     const sofar = previewOf(answer).slice(0, 200);
     const text =
       how === "continued"
-        ? `${who} ran out of ${limit} on “${task}” and is making progress; APX had it go on in session ${session}. So far: ${sofar}`
+        ? `${who} ran out of ${limit} on “${task}” and is making progress; Colonia had it go on in session ${session}. So far: ${sofar}`
         : how === "stopped"
-          ? `${who} ran out of ${limit} on “${task}” and its last part made no progress, so APX did not go on by itself. Continue if it should. So far: ${sofar}`
+          ? `${who} ran out of ${limit} on “${task}” and its last part made no progress, so Colonia did not go on by itself. Continue if it should. So far: ${sofar}`
           : `${who} ran out of ${limit} on “${task}”. ${caller} has its report and decides how to go on. So far: ${sofar}`;
     store.messages.add({
       thread_id: parent.thread_id,
@@ -625,7 +625,7 @@ export function createDelegations(deps: {
         return;
       }
       const waiting = inline.get(child.id);
-      // Cut off by APX shutting down: it resumes on the next boot and reports then. A caller still waiting is let go.
+      // Cut off by Colonia shutting down: it resumes on the next boot and reports then. A caller still waiting is let go.
       if (!TERMINAL.has(child.state)) {
         inline.delete(child.id);
         waiting?.resolve(child);

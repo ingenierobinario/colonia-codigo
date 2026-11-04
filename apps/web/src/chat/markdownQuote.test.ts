@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MarkdownView } from "@apx/ui";
+import { MarkdownView } from "@colonia/ui";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -11,7 +11,7 @@ test("quoted lines render as one quote with its own paragraphs, not as raw > mar
   assert.ok(!html.includes("&gt;"), html);
   assert.match(
     html,
-    /<blockquote class="apx-md__quote"><p>Hi <strong>team<\/strong>!<\/p><p>Docs: <a [^>]*>site<\/a><\/p><\/blockquote>/,
+    /<blockquote class="colonia-md__quote"><p>Hi <strong>team<\/strong>!<\/p><p>Docs: <a [^>]*>site<\/a><\/p><\/blockquote>/,
   );
   assert.match(html, /<p>Lo dejaría así\.<\/p><\/div>$/);
 });
@@ -28,5 +28,5 @@ test("a quote's renderer wraps the quote, as many times as there are quotes", ()
     }),
   );
   assert.equal(wrapped, 2);
-  assert.match(html, /<div class="wrap"><blockquote class="apx-md__quote">/);
+  assert.match(html, /<div class="wrap"><blockquote class="colonia-md__quote">/);
 });

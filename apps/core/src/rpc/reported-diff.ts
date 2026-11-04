@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { FILE_READ_LIMIT, type Params, type Result } from "@apx/protocol";
+import { FILE_READ_LIMIT, type Params, type Result } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { badRequest, notFound } from "../errors.ts";
 import { insideReal, real } from "../paths.ts";

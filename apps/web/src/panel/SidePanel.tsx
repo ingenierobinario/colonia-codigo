@@ -1,4 +1,4 @@
-import { IconButton, Icons, ResizeHandle } from "@apx/ui";
+import { IconButton, Icons, ResizeHandle } from "@colonia/ui";
 import { type ReactNode, Suspense } from "react";
 import { setPrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
@@ -111,7 +111,7 @@ export function SidePanel() {
           )}
           {thread && panel === "files" && (
             <Suspense fallback={null}>
-              {/* The folder the chat's agent works in (with no project, APX's work folder) and its temp folder. */}
+              {/* The folder the chat's agent works in (with no project, Colonia's work folder) and its temp folder. */}
               <ChatFiles
                 key={thread.id}
                 thread={thread.id}

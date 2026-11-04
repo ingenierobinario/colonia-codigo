@@ -1,6 +1,6 @@
-// The channels APX can run, as the owner and their agents read about them: a name and what it is. The panel has its
+// The channels Colonia can run, as the owner and their agents read about them: a name and what it is. The panel has its
 // own translated texts; these are the core's, for agents (integrations.find) and default labels.
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 
 export const CHANNEL_CATALOG: Record<ChannelType, { label: string; description: string }> = {
   telegram: { label: "Telegram", description: "A Telegram bot to chat with your agents and get their messages." },

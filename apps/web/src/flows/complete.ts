@@ -1,5 +1,5 @@
 // What the editor asks of each step before a drawing can run; a draft keeps steps either way (DECISIONS.md#d-177).
-import { flowStepGap } from "@apx/protocol/flow-complete";
+import { flowStepGap } from "@colonia/protocol/flow-complete";
 import type { FlowNode } from "../../../../packages/protocol/src/flow-graph.ts";
 import { ownTable } from "./values.ts";
 

@@ -10,8 +10,8 @@ test("pairing on loopback explains exposure without inventing a usable link", as
   const out = await printed(() => pair(client));
   assert.match(out, /Pairing code: 123456/);
   assert.match(out, /about 1 min/);
-  assert.match(out, /apx expose tailscale \| lan/);
-  assert.doesNotMatch(out, /apx:\/\/pair/);
+  assert.match(out, /colonia expose tailscale \| lan/);
+  assert.doesNotMatch(out, /colonia:\/\/pair/);
   assert.deepEqual(calls, [["devices.pair_start", {}]]);
 });
 
@@ -22,7 +22,7 @@ test("pairing prints every reachable URL and a link encoding both URLs and the o
   });
   const out = await printed(() => pair(client));
   for (const url of urls) assert.ok(out.includes(`  ${url}`));
-  const match = out.match(/apx:\/\/pair\?\S+/)?.[0];
+  const match = out.match(/colonia:\/\/pair\?\S+/)?.[0];
   assert.ok(match, out);
   const link = new URL(match);
   assert.equal(link.searchParams.get("c"), "123456");

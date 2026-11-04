@@ -20,7 +20,7 @@ const io = (codes: string[]): AdapterIO => ({
 });
 
 test("logout drains credential writes before deleting the session and cancels the linking restart", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-logout-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-logout-"));
   const fake = fakeWhatsApp();
   const codes: string[] = [];
   let writing = false;
@@ -78,7 +78,7 @@ test("logout drains credential writes before deleting the session and cancels th
 });
 
 test("phone revocation drains a pending save before reporting that the old session was discarded", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-revoked-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-revoked-"));
   const fake = fakeWhatsApp();
   const codes: string[] = [];
   let writing = false;
@@ -126,7 +126,7 @@ test("phone revocation drains a pending save before reporting that the old sessi
 });
 
 test("logout during socket initialization waits for disk work and never opens the old session", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-init-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-init-"));
   const fake = fakeWhatsApp();
   let release = () => {};
   let initializing = false;
@@ -161,7 +161,7 @@ test("logout during socket initialization waits for disk work and never opens th
 });
 
 test("removing a stopped WhatsApp channel survives core restart without reusing credentials or touching another account", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-core-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-core-"));
   const fakes = new Map([
     ["whatsapp", fakeWhatsApp()],
     ["work", fakeWhatsApp()],

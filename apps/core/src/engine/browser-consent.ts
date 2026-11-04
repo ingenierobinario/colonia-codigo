@@ -1,4 +1,4 @@
-import type { ApprovalScope } from "@apx/protocol";
+import type { ApprovalScope } from "@colonia/protocol";
 import type { ApprovalTarget } from "../domain/approvals.ts";
 import type { Store } from "../domain/store.ts";
 

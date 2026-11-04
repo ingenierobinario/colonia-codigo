@@ -1,4 +1,4 @@
-import { shapeOfDefinition } from "@apx/protocol/flow-shape";
+import { shapeOfDefinition } from "@colonia/protocol/flow-shape";
 import {
   AgentAvatar,
   Badge,
@@ -12,7 +12,7 @@ import {
   Select,
   Skeleton,
   Switch,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useFlowsChanged } from "../data/flowDrafts.ts";
 import { blobOf } from "../data/identity.ts";
@@ -36,7 +36,7 @@ import { OutwardConfirm } from "./outward.tsx";
 import { nextWhen, OUTCOME, outcomeOf, runWhen } from "./run-view.ts";
 import { STARTERS, type Starter } from "./starters.ts";
 import { chipsOf, type Flow, type FlowRun, isTrigger, STEP, type StepKind, scheduleName } from "./steps.tsx";
-import "@apx/ui/flow.css";
+import "@colonia/ui/flow.css";
 import "./flows.css";
 
 /** Flows across projects: a list, a flow's runs, and the full-screen editor, all on this one screen. */
@@ -253,13 +253,13 @@ function FlowList(props: {
             </ul>
             <div className="flowlist__legend">
               <span>
-                <span className="apx-runbars__bar" /> {t("flow.legend.ran")}
+                <span className="colonia-runbars__bar" /> {t("flow.legend.ran")}
               </span>
               <span>
-                <span className="apx-runbars__bar apx-runbars__bar--cut" /> {t("flow.legend.cut")}
+                <span className="colonia-runbars__bar colonia-runbars__bar--cut" /> {t("flow.legend.cut")}
               </span>
               <span>
-                <span className="apx-runbars__bar apx-runbars__bar--failed" /> {t("flow.legend.failed")}
+                <span className="colonia-runbars__bar colonia-runbars__bar--failed" /> {t("flow.legend.failed")}
               </span>
               <span className="flowlist__spacer" />
               <Button variant="link" size="sm" onClick={() => go.config("devices")}>

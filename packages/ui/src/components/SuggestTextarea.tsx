@@ -1,14 +1,14 @@
 import { type CSSProperties, type KeyboardEvent, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cx } from "../cx";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 import { Textarea, type TextareaProps } from "./Textarea";
 
 /** The list's height at most (its CSS max-height): below the field when it fits there, above otherwise. */
 const LIST_MAX = 220;
 
 export interface Suggestion {
-  /** What is written in place of the word being typed ("$APX_LLM_OUTPUT", "{{pre_output}}"). */
+  /** What is written in place of the word being typed ("$COLONIA_LLM_OUTPUT", "{{pre_output}}"). */
   insert: string;
   /** What it holds, shown beside it. */
   hint?: string;
@@ -43,7 +43,7 @@ export function SuggestTextarea({
   ...rest
 }: SuggestTextareaProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   const [place, setPlace] = useState<CSSProperties>();
   const [caret, setCaret] = useState(0);
   const [active, setActive] = useState(0);
@@ -111,7 +111,7 @@ export function SuggestTextarea({
     setActive(0);
   };
   return (
-    <div className={cx("apx-suggest", className)}>
+    <div className={cx("colonia-suggest", className)}>
       <Textarea
         {...rest}
         ref={ref}
@@ -131,14 +131,14 @@ export function SuggestTextarea({
       {shown &&
         place &&
         createPortal(
-          <ul className="apx-suggest__list" style={place}>
+          <ul className="colonia-suggest__list" style={place}>
             {matches.map((s, i) => (
               <li key={s.insert}>
                 <button
                   type="button"
                   tabIndex={-1}
                   aria-current={i === active || undefined}
-                  className={cx("apx-suggest__item", i === active && "is-active")}
+                  className={cx("colonia-suggest__item", i === active && "is-active")}
                   // Chosen before the textarea loses focus.
                   onMouseDown={(e) => {
                     e.preventDefault();

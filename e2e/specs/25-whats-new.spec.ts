@@ -18,7 +18,7 @@ test("See what's new opens the chat that tells the update, and goes once it is r
   const chat = await rpc<{ id: string }>("threads.create", {
     kind: "agent",
     agent_id: "superagent",
-    title: "Novedades de APX 9.9.9",
+    title: "Novedades de Colonia 9.9.9",
   });
   await page.route("**/rpc/threads.list", async (route: Route) => {
     const res = await route.fetch();
@@ -29,10 +29,10 @@ test("See what's new opens the chat that tells the update, and goes once it is r
   await open(page);
   const pill = page.getByRole("button", { name: "Ver cambios" });
   await pill.hover();
-  const hint = page.locator(".apx-tooltip", { hasText: "Novedades de APX 9.9.9" });
+  const hint = page.locator(".colonia-tooltip", { hasText: "Novedades de Colonia 9.9.9" });
   await expect(hint).toBeVisible();
   await expect(hint).toBeInViewport();
   await pill.click();
-  await expect(page.locator(".topbar__crumb.is-last")).toHaveText("Novedades de APX 9.9.9");
+  await expect(page.locator(".topbar__crumb.is-last")).toHaveText("Novedades de Colonia 9.9.9");
   await expect(pill).toBeHidden();
 });

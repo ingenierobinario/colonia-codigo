@@ -28,7 +28,7 @@ result or a concrete blocker.
 To record an idea without starting work, ask for a capture-only task and leave it **unassigned**. A task with an
 assignee and a description starts its own work session unless it is proposed, scheduled for later or paused by
 agent limits. Assignment and delegation are alternative ways to start work, not two steps to perform together.
-Within one turn (including a restart recovery), APX prevents mixing task execution and delegation for the same
+Within one turn (including a restart recovery), Colonia prevents mixing task execution and delegation for the same
 teammate and project, even when the wording differs. Genuinely different work can use the delegation tool's explicit
 `independent` flag and a brief naming the separate outcome; it is not for retries or the same goal. This distinction
 is recorded with the delegated run. The guard is not semantic duplicate detection across chats or later turns, and
@@ -68,7 +68,7 @@ project or shows **All projects**; this browser remembers the choice for the nex
 Tasks can keep selected screenshots and files as independent snapshots, when created or later. Preview or download
 them from the task. Each task holds up to 50 files, at most 20 MB each. Deleting the original chat does not delete
 the task's copy; removing the attachment deletes that copy, not copies already shared elsewhere. Authorized agents
-can inspect task attachments without gaining access to private contact chats. Sending a file outside APX remains
+can inspect task attachments without gaining access to private contact chats. Sending a file outside Colonia remains
 a separate owner action.
 
 Use the task chat group's actions button or right-click menu to change its column, mark it waiting, close or reopen
@@ -100,16 +100,16 @@ before, and where to read it.
 
 Assigned tasks that never started are picked up on their own: once an hour, the most pressing few get started, as
 whoever gave them: a task an agent gave counts against that agent's limits, never as your own request. To
-have one start later (tomorrow morning, after a release), set **Starts** in its drawer, or `apx tasks add … --start
+have one start later (tomorrow morning, after a release), set **Starts** in its drawer, or `colonia tasks add … --start
 2026-10-23T09:00`: its agent starts then, not when you assign it.
 
 ### Moving the current work into a task
 
 **Since 2.11.1**, when an agent immediately assigns its current work to itself as a new
-task, APX transfers execution to the task's chat. The originating turn stops executing tools; the task chat gets a
+task, Colonia transfers execution to the task's chat. The originating turn stops executing tools; the task chat gets a
 bounded handoff of the request and recent findings so it can continue rather than repeat the investigation.
 This does not prohibit unrelated parallel chats. If the current turn already has helpers or other active work,
-or cannot transfer safely, APX refuses the handoff and the agent must continue there, not start a second executor.
+or cannot transfer safely, Colonia refuses the handoff and the agent must continue there, not start a second executor.
 
 ### Comments and @mentions
 
@@ -202,26 +202,26 @@ how they went, and the agent records your answer (see [Secretary](/office/secret
 
 ## From the terminal
 
-<Terminal command="apx tasks help">{`apx tasks [--project p]                 Open tasks by column
-apx tasks add <title…> [--project p] [--agent a] [--person name --owed me|them] [--due 2026-10-05]
-apx tasks commitments                    What you owe and what you are owed
-apx tasks move <id> <column>
-apx tasks done|drop|reopen <id>
-apx tasks say <id> <text…>               Comment; @agent asks that agent there`}</Terminal>
+<Terminal command="colonia tasks help">{`colonia tasks [--project p]                 Open tasks by column
+colonia tasks add <title…> [--project p] [--agent a] [--person name --owed me|them] [--due 2026-10-05]
+colonia tasks commitments                    What you owe and what you are owed
+colonia tasks move <id> <column>
+colonia tasks done|drop|reopen <id>
+colonia tasks say <id> <text…>               Comment; @agent asks that agent there`}</Terminal>
 
-A few examples (agent and project ids are the ones `apx agents` and `apx projects` print):
+A few examples (agent and project ids are the ones `colonia agents` and `colonia projects` print):
 
 ```bash
 # A task for Tomás in Acme Store: he starts on it at once
-apx tasks add Write the shipping rates page --project <acme-id> --agent <tomas-id>
+colonia tasks add Write the shipping rates page --project <acme-id> --agent <tomas-id>
 
 # You promised Marta (a contact at Northwind) a quote by Friday
-apx tasks add Send the wholesale quote --person Marta --owed me --due 2026-10-10
+colonia tasks add Send the wholesale quote --person Marta --owed me --due 2026-10-10
 
 # Move it, comment on it, close it
-apx tasks move <task-id> review
-apx tasks say <task-id> @Lucía please check the copy before Friday
-apx tasks done <task-id>
+colonia tasks move <task-id> review
+colonia tasks say <task-id> @Lucía please check the copy before Friday
+colonia tasks done <task-id>
 ```
 
 Columns for `move` are `backlog`, `todo`, `doing` and `review`.

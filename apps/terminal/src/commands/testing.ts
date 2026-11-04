@@ -1,8 +1,8 @@
 // Test helpers for commands: a client that records calls and answers from a table, and captured output.
 
 import { Readable } from "node:stream";
-import { isMethodName, methods } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import { isMethodName, methods } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 export function recordingClient(answers: Record<string, unknown>) {
   const calls: [string, Record<string, unknown>][] = [];
@@ -16,7 +16,7 @@ export function recordingClient(answers: Record<string, unknown>) {
       if (answers[method] instanceof Error) throw answers[method];
       return answers[method];
     },
-  } as unknown as ApxClient;
+  } as unknown as ColoniaClient;
   return { client, calls };
 }
 

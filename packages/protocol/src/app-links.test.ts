@@ -4,11 +4,11 @@ import { withoutAppLinks } from "./app-links.ts";
 
 test("a channel message keeps an app link's label and drops where it pointed; web links stay", () => {
   assert.equal(
-    withoutAppLinks("Prendelo en [Config › Escritorio](apx:settings/desktop)."),
+    withoutAppLinks("Prendelo en [Config › Escritorio](colonia:settings/desktop)."),
     "Prendelo en Config › Escritorio.",
   );
   assert.equal(
-    withoutAppLinks("[docs](https://example.com) y [tareas](APX:tasks)"),
+    withoutAppLinks("[docs](https://example.com) y [tareas](Colonia:tasks)"),
     "[docs](https://example.com) y tareas",
   );
 });

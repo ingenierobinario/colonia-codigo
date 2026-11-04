@@ -1,5 +1,5 @@
-import type { Agent, AgentTemplate, TeamTemplate } from "@apx/protocol";
-import { Badge, Button, Checkbox, Dialog, EmptyState, Icons, SegmentedControl, Skeleton, Switch } from "@apx/ui";
+import type { Agent, AgentTemplate, TeamTemplate } from "@colonia/protocol";
+import { Badge, Button, Checkbox, Dialog, EmptyState, Icons, SegmentedControl, Skeleton, Switch } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { notify } from "../../data/notices.ts";
 import { cloneAgents, installTemplates, loadTemplates } from "../../data/team.ts";
@@ -10,7 +10,7 @@ import { CloneFromProject } from "./CloneFromProject.tsx";
 type Templates = { teams: TeamTemplate[]; singles: AgentTemplate[] };
 
 /**
- * Import into a project: APX's templates (teams or single agents), or copies of the agents of another project. When
+ * Import into a project: Colonia's templates (teams or single agents), or copies of the agents of another project. When
  * the project already has a top agent and the pick brings a lead of its own, the new lead hangs under the current one
  * by default, so the project keeps one tree.
  */

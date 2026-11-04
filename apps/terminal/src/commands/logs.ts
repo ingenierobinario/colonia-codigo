@@ -1,7 +1,7 @@
-// apx logs: the core's log through the core (filtered there), so it works for a remote core too. With no core answering,
-// the local file instead (`apx service logs`).
-import type { ApxClient } from "@apx/protocol/client";
-import { apxHome, coreUp } from "./local.ts";
+// colonia logs: the core's log through the core (filtered there), so it works for a remote core too. With no core answering,
+// the local file instead (`colonia service logs`).
+import type { ColoniaClient } from "@colonia/protocol/client";
+import { coloniaHome, coreUp } from "./local.ts";
 import { logs as localLogs } from "./service.ts";
 
 const LEVELS = ["info", "warn", "error"] as const;
@@ -15,13 +15,13 @@ export type LogsOptions = {
   json?: boolean | undefined;
 };
 
-export async function logsCommand(client: ApxClient, url: string, opts: LogsOptions): Promise<void> {
+export async function logsCommand(client: ColoniaClient, url: string, opts: LogsOptions): Promise<void> {
   const limit = Number(opts.lines ?? 100);
   if (!Number.isInteger(limit) || limit < 1 || limit > 1000) throw new Error("-n is a number of lines, 1 to 1000");
   if (opts.level && !LEVELS.includes(opts.level as Level)) throw new Error("--level is info, warn or error");
   if (!(await coreUp(url))) {
     console.error(`the core does not answer on ${url}: reading the log file on this computer`);
-    return localLogs(apxHome(), limit, false);
+    return localLogs(coloniaHome(), limit, false);
   }
   const r = await client.call("system.logs", {
     limit,

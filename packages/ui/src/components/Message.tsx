@@ -39,28 +39,28 @@ export function Message({
   return (
     <div
       className={cx(
-        "apx-msg",
-        `apx-msg--${from}`,
+        "colonia-msg",
+        `colonia-msg--${from}`,
         grouped && "is-grouped",
         actions != null && "has-actions",
         className,
       )}
     >
-      {from === "agent" && avatar && <span className="apx-msg__avatar">{avatar}</span>}
-      <div className="apx-msg__col">
-        <div className={cx(variant === "bubble" ? "apx-msg__bubble" : "apx-msg__bare")}>
+      {from === "agent" && avatar && <span className="colonia-msg__avatar">{avatar}</span>}
+      <div className="colonia-msg__col">
+        <div className={cx(variant === "bubble" ? "colonia-msg__bubble" : "colonia-msg__bare")}>
           {children}
-          {reactions && <span className="apx-msg__reactions">{reactions}</span>}
+          {reactions && <span className="colonia-msg__reactions">{reactions}</span>}
         </div>
         {meta ? (
-          <div className="apx-msg__meta">
+          <div className="colonia-msg__meta">
             {meta}
-            {actions != null && <div className="apx-msg__actions">{actions}</div>}
+            {actions != null && <div className="colonia-msg__actions">{actions}</div>}
           </div>
         ) : (
           actions != null && (
-            <div className="apx-msg__reveal">
-              <div className="apx-msg__actions">{actions}</div>
+            <div className="colonia-msg__reveal">
+              <div className="colonia-msg__actions">{actions}</div>
             </div>
           )
         )}

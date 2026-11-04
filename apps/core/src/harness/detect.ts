@@ -1,5 +1,5 @@
 // Which engines can run a turn on this machine: installed → logged in. Login is asked to each CLI itself;
-// APX never reads, copies or refreshes their tokens.
+// Colonia never reads, copies or refreshes their tokens.
 
 import { execFile } from "node:child_process";
 import fs from "node:fs";

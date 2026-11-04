@@ -1,5 +1,5 @@
 // Installed extensions: the manifest as it was read at install, the copy's folder and fingerprint, on or off.
-import type { ExtensionManifest } from "@apx/protocol";
+import type { ExtensionManifest } from "@colonia/protocol";
 import { now, qb, type Sql } from "./sql.ts";
 
 export type ExtensionRecord = {

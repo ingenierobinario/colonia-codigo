@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { Button, IconButton, Icons, Menu, type MenuEntry } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { Button, IconButton, Icons, Menu, type MenuEntry } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { shareSurface } from "../data/actions.ts";
 import { client } from "../data/client.ts";

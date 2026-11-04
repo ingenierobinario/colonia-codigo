@@ -1,12 +1,12 @@
-import type { EmailSignatureEntry, EmailSignatureValue } from "@apx/protocol";
-import { Button, SegmentedControl, SettingRow, Switch, Textarea } from "@apx/ui";
+import type { EmailSignatureEntry, EmailSignatureValue } from "@colonia/protocol";
+import { Button, SegmentedControl, SettingRow, Switch, Textarea } from "@colonia/ui";
 import { useCallback, useEffect, useId, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
 import { usePack, useT } from "../i18n/index.ts";
 import { SubHead } from "./SectionHead.tsx";
 
-/** `importable`: Gmail lets APX read the signature it keeps (the owner's own Google client). */
+/** `importable`: Gmail lets Colonia read the signature it keeps (the owner's own Google client). */
 type Target = Pick<EmailSignatureEntry, "transport" | "account" | "sender"> & { label: string; importable?: boolean };
 const keyOf = (e: Target) => JSON.stringify([e.transport, e.account, e.sender]);
 

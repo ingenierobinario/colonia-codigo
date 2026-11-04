@@ -5,8 +5,8 @@
   z-index: 42;
   display: flex;
   flex-direction: column;
-  background: var(--apx-bg);
-  color: var(--apx-fg);
+  background: var(--colonia-bg);
+  color: var(--colonia-fg);
 }
 .fe-top {
   height: 52px;
@@ -15,8 +15,8 @@
   align-items: center;
   gap: 10px;
   padding: 0 calc(12px + var(--window-controls-end, 0px)) 0 calc(12px + var(--window-controls-start, 0px));
-  border-bottom: 1px solid var(--apx-border);
-  background: var(--apx-surface);
+  border-bottom: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
 }
 .fe-top .fe-top__name {
   width: min(320px, 36vw);
@@ -27,12 +27,12 @@
 }
 .fe-top .fe-top__name:hover,
 .fe-top .fe-top__name:focus {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .fe-top__project {
   padding: 3px 10px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -41,14 +41,14 @@
 }
 .fe-top__status {
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
 }
 .fe-top__status.is-dirty {
-  color: var(--apx-warning-soft-fg);
+  color: var(--colonia-warning-soft-fg);
 }
 .fe-top__status.is-error {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .fe-top__status {
   min-width: 0;
@@ -79,10 +79,10 @@
   width: fit-content;
   max-width: 640px;
   margin: 0 auto;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 18px;
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-md);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-md);
   font-size: 13px;
 }
 /* Centred in what an open card leaves visible (the card's column plus its gap). */
@@ -94,11 +94,11 @@
   flex-direction: column;
   gap: 6px;
   padding: 12px 14px 8px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .fe-dock.is-listening .fe-dock__more,
 .fe-dock.is-running .fe-dock__more {
-  color: var(--apx-info-soft-fg);
+  color: var(--colonia-info-soft-fg);
 }
 .fe-dock__line {
   display: flex;
@@ -108,7 +108,7 @@
 }
 .fe-dock__to,
 .fe-dock__left {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fe-dock__left {
   margin-left: auto;
@@ -116,9 +116,9 @@
 .fe-dock__url {
   min-width: 0;
   padding: 2px 8px;
-  border-radius: var(--apx-radius-sm);
-  background: var(--apx-surface);
-  color: var(--apx-fg);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-surface);
+  color: var(--colonia-fg);
   font-size: 12px;
   overflow-wrap: anywhere;
 }
@@ -142,8 +142,8 @@
   height: var(--fe-log, 240px);
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--apx-border);
-  background: var(--apx-bg);
+  border-top: 1px solid var(--colonia-border);
+  background: var(--colonia-bg);
 }
 .fe-log.is-folded {
   height: auto;
@@ -157,8 +157,8 @@
   align-items: center;
   gap: 8px;
   padding: 4px 8px 4px 12px;
-  border-bottom: 1px solid var(--apx-border);
-  background: var(--apx-surface);
+  border-bottom: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
   font-size: 13px;
 }
 .fe-log > .rlog {
@@ -170,15 +170,15 @@
   gap: 4px;
   padding: 0 4px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
   font: inherit;
   cursor: pointer;
 }
 .fe-path:hover,
 .fe-path:focus-visible {
-  outline: 1px solid var(--apx-brand);
+  outline: 1px solid var(--colonia-brand);
 }
 .fe-pathedit {
   display: flex;
@@ -186,7 +186,7 @@
   gap: 6px;
 }
 .fe-pathedit__error {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
   font-size: 12px;
 }
 .fe-pathedit__actions {
@@ -211,15 +211,15 @@
   max-height: 260px;
   overflow: auto;
   padding: 8px 10px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
-  font-family: var(--apx-font-mono);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
+  font-family: var(--colonia-font-mono);
   font-size: 12px;
   white-space: pre-wrap;
   word-break: break-word;
 }
 .fe-tstep__io pre.is-failed {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .fe-body {
   flex: 1;
@@ -234,8 +234,8 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  border-right: 1px solid var(--apx-border);
-  background: var(--apx-surface);
+  border-right: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
 }
 .fe-pal__group {
   display: flex;
@@ -246,7 +246,7 @@
   padding: 0 8px 6px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fe-pal__item {
   display: flex;
@@ -254,7 +254,7 @@
   gap: 10px;
   padding: 7px 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -262,7 +262,7 @@
   cursor: pointer;
 }
 .fe-pal__item:hover:not(:disabled) {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .fe-pal__item:disabled {
   cursor: default;
@@ -284,7 +284,7 @@
 }
 .fe-pal__body {
   font-size: 11.5px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   text-wrap: pretty;
 }
 .fe-pal__hint {
@@ -292,7 +292,7 @@
   padding: 10px 8px 0;
   font-size: 11.5px;
   line-height: 1.5;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   text-wrap: pretty;
 }
 .fe-canvas {
@@ -319,7 +319,7 @@
 .fe-blank span:last-child {
   max-width: 320px;
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 /* The chosen step's card floats over the canvas; the minimap under it steps aside. */
 .fe-card .fe-ins {
@@ -329,7 +329,7 @@
 .fe-canvas:has(> .fe-card) .fc-minimap {
   display: none;
 }
-.fe-pal-toggle.apx-btn {
+.fe-pal-toggle.colonia-btn {
   display: none;
 }
 /* While the super-agent works in its chat the canvas is its: a quiet note at the top, the steps still. */
@@ -344,11 +344,11 @@
   max-width: calc(100% - 24px);
   padding: 6px 12px;
   transform: translateX(-50%);
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
-  color: var(--apx-fg-muted);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
+  color: var(--colonia-fg-muted);
   font-size: 12.5px;
   white-space: nowrap;
 }
@@ -356,30 +356,30 @@
   left: calc(50% - 206px);
 }
 /* A step the agent just added or changed. */
-.fc .apx-flowstep.fc-mark {
-  border-color: var(--apx-brand);
+.fc .colonia-flowstep.fc-mark {
+  border-color: var(--colonia-brand);
   box-shadow:
-    0 0 0 3px var(--apx-brand-soft),
-    var(--apx-shadow-sm);
+    0 0 0 3px var(--colonia-brand-soft),
+    var(--colonia-shadow-sm);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .fc .apx-flowstep.fc-mark {
-    animation: fc-mark-in 0.6s var(--apx-ease);
+  .fc .colonia-flowstep.fc-mark {
+    animation: fc-mark-in 0.6s var(--colonia-ease);
   }
 }
 @keyframes fc-mark-in {
   from {
     box-shadow:
       0 0 0 10px transparent,
-      var(--apx-shadow-sm);
+      var(--colonia-shadow-sm);
     transform: scale(0.96);
   }
 }
 .fe-chat__hint {
   margin: auto 0;
   padding: 0 8px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
   text-align: center;
   text-wrap: pretty;
 }
@@ -387,17 +387,17 @@
   flex: none;
   margin: 0;
   padding: 8px 12px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-warning-soft);
-  color: var(--apx-warning-soft-fg);
-  font-size: var(--apx-text-sm);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
+  font-size: var(--colonia-text-sm);
 }
 .fe-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 0 0;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
 .fe-list .fe-ins__title {
   padding: 0 8px;
@@ -421,7 +421,7 @@
 .fe-ins__title span,
 .fe-ins__muted {
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fe-ins__head {
   display: flex;
@@ -436,15 +436,15 @@
 }
 .fe-ins__kind span:first-child {
   font-size: 11px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fe-ins__kind span:last-child {
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fe-ins__label {
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fe-order {
   display: flex;
@@ -457,7 +457,7 @@
   gap: 10px;
   padding: 7px 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -465,12 +465,12 @@
   cursor: pointer;
 }
 .fe-order__row:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .fe-order__i {
   width: 18px;
   font-size: 11px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   text-align: right;
 }
 .fe-order__name {
@@ -483,26 +483,26 @@
 }
 .fe-shape {
   padding: 12px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
   font-size: 12.5px;
   line-height: 1.5;
 }
 .fe-shape.is-draft {
-  background: var(--apx-warning-soft);
-  color: var(--apx-warning-soft-fg);
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
 }
 .fe-note {
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   text-wrap: pretty;
 }
 .fe .fe-mono,
-.apx-popover .fe-mono {
-  font-family: var(--apx-font-mono);
+.colonia-popover .fe-mono {
+  font-family: var(--colonia-font-mono);
   font-size: 12.5px;
 }
 .fe-outs {
@@ -516,19 +516,19 @@
   gap: 8px;
   min-height: 32px;
   padding: 0 4px 0 10px;
-  border-radius: var(--apx-control-radius);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-control-radius);
+  background: var(--colonia-fill);
   font-size: 12.5px;
 }
 .fe-outs__row .fe-outs__when {
   flex: none;
 }
 /* A check's way out, picked in the row: a raised chip, so it reads on the row's fill. */
-.fe-outs__row .fe-outs__when .apx-field {
+.fe-outs__row .fe-outs__when .colonia-field {
   height: 24px;
   min-height: 24px;
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
 }
 .fe-outs__row > span:not(.fe-outs__when) {
   flex: 1;
@@ -547,8 +547,8 @@
   align-items: center;
   gap: 6px;
   padding: 4px 4px 4px 12px;
-  border-radius: var(--apx-control-radius);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-control-radius);
+  background: var(--colonia-fill);
 }
 .fe-copy__box code {
   flex: 1;
@@ -570,10 +570,10 @@
 .fe-try p {
   margin: 0;
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fe-try .fe-try__answer {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .fe-try > button {
   align-self: flex-start;
@@ -589,7 +589,7 @@
 .fe-hist p {
   margin: 0;
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fe-hist__list {
   max-height: min(360px, 50vh);
@@ -625,9 +625,9 @@
     z-index: 6;
     height: min(var(--fe-log, 240px), 55%);
     border-radius: 14px 14px 0 0;
-    box-shadow: var(--apx-shadow-md);
+    box-shadow: var(--colonia-shadow-md);
   }
-  .fe-log > .apx-resize {
+  .fe-log > .colonia-resize {
     display: none;
   }
   /* One sheet at a time: a step's card covers the log until it closes. */
@@ -678,14 +678,14 @@
   .fe-pal.is-open {
     display: flex;
   }
-  .fe-pal-toggle.apx-btn {
+  .fe-pal-toggle.colonia-btn {
     display: inline-flex;
     position: absolute;
     top: 12px;
     left: 12px;
     z-index: 5;
   }
-  .fe-pal.is-open ~ .fe-canvas .fe-pal-toggle.apx-btn {
+  .fe-pal.is-open ~ .fe-canvas .fe-pal-toggle.colonia-btn {
     left: calc(min(300px, 85%) + 12px);
     z-index: 8;
   }
@@ -696,7 +696,7 @@
   gap: 6px;
 }
 /* Four presets do not fit one line of the side panel: they wrap instead of overflowing. */
-.fe-presets .apx-segmented {
+.fe-presets .colonia-segmented {
   flex-wrap: wrap;
   height: auto;
 }
@@ -707,7 +707,7 @@
   font-size: 13px;
 }
 .fe-next__error {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 /* A check's cases and a variables step's values: a flat list, a hairline between items, never cards in the panel. */
 .fe-list {
@@ -721,7 +721,7 @@
   gap: 10px;
   min-width: 0;
   padding: 10px 0 12px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
 .fe-item__head {
   display: flex;
@@ -735,14 +735,14 @@
   margin-left: -10px;
   background: transparent;
   border-color: transparent;
-  font-weight: var(--apx-weight-medium);
+  font-weight: var(--colonia-weight-medium);
 }
 .fe .fe-item__name:hover {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .fe .fe-item__name:focus-within {
-  background: var(--apx-input-bg);
-  border-color: var(--apx-border-strong);
+  background: var(--colonia-input-bg);
+  border-color: var(--colonia-border-strong);
 }
 .fe-item.is-otherwise {
   flex-direction: row;
@@ -767,16 +767,16 @@
   flex-wrap: wrap;
   gap: 6px 10px;
 }
-.fe-value .apx-segmented {
+.fe-value .colonia-segmented {
   align-self: flex-start;
 }
 /* What a step needs a project for, before one is chosen. */
 .fe-needs {
   margin: 0;
   padding: 10px 12px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
-  color: var(--apx-fg-muted);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-muted);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -800,7 +800,7 @@
   display: flex;
   gap: 8px;
 }
-.fe-ai__model > .apx-formfield {
+.fe-ai__model > .colonia-formfield {
   flex: 1;
   min-width: 0;
 }

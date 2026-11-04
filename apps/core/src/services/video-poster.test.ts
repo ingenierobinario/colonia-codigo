@@ -6,7 +6,7 @@ import { tempDir } from "../testkit/platform.ts";
 import { videoPosters } from "./video-poster.ts";
 
 test("a video's poster is made once and kept; one that fails is not tried again", async () => {
-  await using tmp = tempDir("apx-posters-");
+  await using tmp = tempDir("colonia-posters-");
   const dir = tmp.path;
   const video = path.join(dir, "clip.mp4");
   fs.writeFileSync(video, "mp4");
@@ -31,7 +31,7 @@ test("a video's poster is made once and kept; one that fails is not tried again"
 });
 
 test("a screen of cards makes posters two at a time", async () => {
-  await using tmp = tempDir("apx-posters-");
+  await using tmp = tempDir("colonia-posters-");
   const dir = tmp.path;
   const video = path.join(dir, "clip.mp4");
   fs.writeFileSync(video, "mp4");

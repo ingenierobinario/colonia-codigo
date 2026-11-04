@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { PendingInput } from "@apx/protocol";
+import type { PendingInput } from "@colonia/protocol";
 import { callTool, inputOrEnd, inputsOrEnd, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -98,28 +98,28 @@ test("command risk: reading runs, changing asks, destroying always asks", () => 
     "/bin/rm -rf /",
   ];
   for (const c of destroys) assert.equal(commandRisk(c), "always", c);
-  // Reaching APX's own API from a command is always the owner's call.
+  // Reaching Colonia's own API from a command is always the owner's call.
   assert.equal(commandRisk("curl -s 127.0.0.1:7440/rpc/runs.respond", 7440), "always");
   assert.equal(commandRisk("curl -s localhost:3000/health", 7440), "ask");
-  // So does APX's own CLI, which reaches the API without naming the port.
-  assert.equal(commandRisk("apx routines add x y --agent roby"), "always");
-  assert.equal(commandRisk("ls && apx notifications read"), "always");
-  assert.equal(commandRisk("~/.local/bin/apx tasks"), "always");
+  // So does Colonia's own CLI, which reaches the API without naming the port.
+  assert.equal(commandRisk("colonia routines add x y --agent roby"), "always");
+  assert.equal(commandRisk("ls && colonia notifications read"), "always");
+  assert.equal(commandRisk("~/.local/bin/colonia tasks"), "always");
   assert.equal(commandRisk("node apps/terminal/src/main.ts routines"), "always");
-  assert.equal(commandRisk("cat apx-notes.md"), "never");
+  assert.equal(commandRisk("cat colonia-notes.md"), "never");
   for (const c of [
-    "APX_AGENT=x apx tasks",
-    "echo x | xargs apx",
-    "bash -c 'apx tasks'",
-    "pnpm exec apx",
-    "(apx tasks)",
+    "COLONIA_AGENT=x colonia tasks",
+    "echo x | xargs colonia",
+    "bash -c 'colonia tasks'",
+    "pnpm exec colonia",
+    "(colonia tasks)",
   ])
     assert.equal(commandRisk(c), "always", c);
-  // A folder named apx is only read: going into it or listing it is not running the CLI.
+  // A folder named colonia is only read: going into it or listing it is not running the CLI.
   for (const c of [
-    "cd /code/agentprojectcontext/apx && rg -n teams docs | head -100",
-    "ls -la /code/agentprojectcontext/apx",
-    "git -C ~/code/apx status --short",
+    "cd /code/ingenierobinario/colonia && rg -n teams docs | head -100",
+    "ls -la /code/ingenierobinario/colonia",
+    "git -C ~/code/colonia status --short",
   ])
     assert.equal(commandRisk(c), "never", c);
 });
@@ -138,7 +138,7 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
   if (afterTool) return say(`Result: ${String(req.messages.at(-1)?.content).slice(0, 300)}`);
   if (said.includes("list then write")) return callTool("l1", "shell", { command: "ls" });
   if (said.includes("echo please")) return callTool("s1", "shell", { command: "echo hi-from-shell" });
-  if (said.includes("whose please")) return callTool("s9", "shell", { command: "echo agent=$APX_AGENT" });
+  if (said.includes("whose please")) return callTool("s9", "shell", { command: "echo agent=$COLONIA_AGENT" });
   if (said.includes("background please"))
     return callTool("s2", "shell", { command: "sleep 0.2 && echo bg-done", background: true });
   if (said.includes("long please")) return callTool("s3", "shell", { command: "sleep 30", background: true });
@@ -331,8 +331,8 @@ test("a folder that is a symlink pointing outside the project is refused", async
   const fs = await import("node:fs");
   const os = await import("node:os");
   const path = await import("node:path");
-  const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-link-")));
-  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-out-")));
+  const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-link-")));
+  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-out-")));
   fs.symlinkSync(outside, path.join(root, "escape"));
   fs.mkdirSync(path.join(root, "src"));
   assert.equal(insideReal(root, "src"), true);
@@ -353,7 +353,7 @@ test("reading the agent's own folder does not count as outside content: a write 
 test("a build or a test run's output is the project's own; a command that reaches the network brings outside text", () => {
   for (const c of [
     "pnpm test",
-    "pnpm --filter @apx/web build",
+    "pnpm --filter @colonia/web build",
     "node --test src/a.test.ts",
     "git commit -qm x",
     "go test ./...",
@@ -370,7 +370,7 @@ test("a build or a test run's output is the project's own; a command that reache
     assert.equal(reachesOut(c), true, c);
 });
 
-test("an agent's command says whose it is, so the apx CLI does not speak as the owner there", async () => {
+test("an agent's command says whose it is, so the colonia CLI does not speak as the owner there", async () => {
   const t = await thread();
   await env.client.call("threads.send", { thread: t, text: "whose please" });
   await env.settle(t);

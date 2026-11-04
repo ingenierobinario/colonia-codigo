@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import {
   ActionGroup,
   AgentGrid,
-  ApxProvider,
+  ColoniaProvider,
   BrowserTabs,
   Checkbox,
   Composer,
@@ -40,7 +40,7 @@ function Fixture() {
   const [agent, setAgent] = useState<string | null>("a8");
   const [key, setKey] = useState("");
   return h(
-    ApxProvider,
+    ColoniaProvider,
     {},
     h(
       "main",
@@ -53,8 +53,8 @@ function Fixture() {
         value: suggestion,
         onValueChange: setSuggestion,
         suggestions: [
-          { insert: "$APX_HOME", hint: "Home" },
-          { insert: "$APX_PORT", hint: "Port" },
+          { insert: "$COLONIA_HOME", hint: "Home" },
+          { insert: "$COLONIA_PORT", hint: "Port" },
         ],
       }),
       h(Select, {

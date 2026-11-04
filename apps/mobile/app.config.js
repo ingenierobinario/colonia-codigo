@@ -2,11 +2,11 @@
 const { versionCode } = require("./plugins/version-code.js");
 
 module.exports = ({ config: base }) => {
-  // A local build can name its version (APX_VERSION=2.3.0) without editing app.json; CI writes app.json from the tag.
-  const config = { ...base, version: process.env.APX_VERSION?.trim() || base.version };
+  // A local build can name its version (COLONIA_VERSION=2.3.0) without editing app.json; CI writes app.json from the tag.
+  const config = { ...base, version: process.env.COLONIA_VERSION?.trim() || base.version };
   const build = versionCode(config.version);
-  const projectId = process.env.APX_EAS_PROJECT_ID?.trim();
-  const googleServices = process.env.APX_GOOGLE_SERVICES_FILE?.trim();
+  const projectId = process.env.COLONIA_EAS_PROJECT_ID?.trim();
+  const googleServices = process.env.COLONIA_GOOGLE_SERVICES_FILE?.trim();
   return {
     ...config,
     ios: { ...config.ios, buildNumber: String(build) },

@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { IconButton, Icons } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { IconButton, Icons } from "@colonia/ui";
 import { useState } from "react";
 import { Drawer } from "../common/Drawer.tsx";
 import { useT } from "../i18n/index.ts";

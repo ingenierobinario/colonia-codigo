@@ -1,6 +1,6 @@
-import type { CalendarReminders as Reminders } from "@apx/protocol";
-import { CALENDAR_LEAD, CHECK_EVERY } from "@apx/protocol/client";
-import { SettingRow, Skeleton, Switch } from "@apx/ui";
+import type { CalendarReminders as Reminders } from "@colonia/protocol";
+import { CALENDAR_LEAD, CHECK_EVERY } from "@colonia/protocol/client";
+import { SettingRow, Skeleton, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

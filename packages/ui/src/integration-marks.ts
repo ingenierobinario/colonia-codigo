@@ -1,5 +1,5 @@
 // Official marks of the apps an integration connects, used only to say which app it is (never altered). The panel
-// loads them after its first screen (`@apx/ui/marks`); Slack's is the channel mark, already there. Path data from
+// loads them after its first screen (`@colonia/ui/marks`); Slack's is the channel mark, already there. Path data from
 // simple-icons 16.35.0 (CC0; Canva's from 15.22.0, which dropped it); Google's are their 2026 app icons whole
 // (gradients, masks) from thesvg.org, which also supplied the logos of AWS, Amplitude, Attio, Figma and monday.com;
 // Semgrep's is its site icon and Microsoft's the four squares of its logo guidelines. The marks belong to their

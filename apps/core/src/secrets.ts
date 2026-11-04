@@ -38,12 +38,12 @@ export function splitSecretName(key: string): { project_id?: string; name: strin
 }
 
 /**
- * The Keychain service of a home: "apx2" for the default one (as before it moved into ~/.apx, so its secrets stay
+ * The Keychain service of a home: "colonia2" for the default one (as before it moved into ~/.colonia, so its secrets stay
  * found), its own for any other (a test home never overwrites).
  */
 export function keychainService(home: string, main = defaultHome()): string {
   const at = path.resolve(home);
-  return at === path.resolve(main) ? "apx2" : `apx2:${at}`;
+  return at === path.resolve(main) ? "colonia2" : `colonia2:${at}`;
 }
 
 export function createSecrets(

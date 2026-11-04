@@ -1,5 +1,5 @@
-import type { ModelRef } from "@apx/protocol";
-import { Popover } from "@apx/ui";
+import type { ModelRef } from "@colonia/protocol";
+import { Popover } from "@colonia/ui";
 import { Suspense, useState } from "react";
 import { inCatalog, refLabel, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";

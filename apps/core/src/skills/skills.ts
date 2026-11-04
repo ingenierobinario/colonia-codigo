@@ -1,5 +1,5 @@
-// Skills: folders with a SKILL.md (frontmatter `name`, `description`; the body is the know-how). APX's own come with the
-// core (`skills/apx/`), the owner's live in APX's home (`skills/`), a project's in `.apc/skills/`; the other agent
+// Skills: folders with a SKILL.md (frontmatter `name`, `description`; the body is the know-how). Colonia's own come with the
+// core (`skills/colonia/`), the owner's live in Colonia's home (`skills/`), a project's in `.apc/skills/`; the other agent
 // apps' (Claude Code, Codex, Cursor, ~/.agents) are read where those apps keep them. Agents see a short catalog; the
 // body loads on demand.
 import fs from "node:fs";
@@ -10,7 +10,7 @@ import type { Store } from "../domain/store.ts";
 import { isInside, realpath, tildeHome } from "../paths.ts";
 import { type RuntimeHomes, runtimes, shippedNames } from "./runtimes.ts";
 
-/** The other agent apps whose skills APX reads: `~/.<app>/skills`, and `.<app>/skills` inside a project. */
+/** The other agent apps whose skills Colonia reads: `~/.<app>/skills`, and `.<app>/skills` inside a project. */
 export const APPS = ["claude", "codex", "cursor", "agents"] as const;
 export type App = (typeof APPS)[number];
 
@@ -20,9 +20,9 @@ export type Skill = {
   scope: "global" | "project";
   project_id?: string | undefined;
   dir: string;
-  /** Where its files live: APX itself, the owner's or a project's folder, an extension, or another agent app. */
-  source: "apx" | "owner" | "project" | "extension" | App;
-  /** In the owner's or the project's APX folder (a link there included): the Resources screen may write it. */
+  /** Where its files live: Colonia itself, the owner's or a project's folder, an extension, or another agent app. */
+  source: "colonia" | "owner" | "project" | "extension" | App;
+  /** In the owner's or the project's Colonia folder (a link there included): the Resources screen may write it. */
   own: boolean;
   /** The same name found elsewhere, hidden behind this one. */
   copies: SkillCopy[];
@@ -31,12 +31,12 @@ export type Skill = {
 /** Another folder with a skill of the same name; `same` when its SKILL.md is identical. */
 export type SkillCopy = Pick<Skill, "source" | "scope" | "dir"> & { same: boolean };
 
-/** Where skills are looked for: APX's home and, when given, the homes of the other agent apps. */
+/** Where skills are looked for: Colonia's home and, when given, the homes of the other agent apps. */
 export type SkillRoots = { home: string; apps?: RuntimeHomes | undefined };
 
-/** APX's own guides to changing APX itself: shipped with the core, always on, read-only, and they keep their names. */
-export const APX_SKILLS_DIR = path.join(import.meta.dirname, "apx");
-const isApx = (s: Skill) => s.source === "apx";
+/** Colonia's own guides to changing Colonia itself: shipped with the core, always on, read-only, and they keep their names. */
+export const COLONIA_SKILLS_DIR = path.join(import.meta.dirname, "colonia");
+const isColonia = (s: Skill) => s.source === "colonia";
 
 /** Skills the owner turned off: "*" everywhere, or per project id. Kept in settings, never in the skill's folder. */
 type OffList = Record<string, string[]>;
@@ -74,7 +74,7 @@ const CATALOG_MAX = 60;
 const NAME = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/;
 
 /**
- * Reads one skills folder. `allowLinks`: folders in the owner's home (APX's and the other apps') may link skills from
+ * Reads one skills folder. `allowLinks`: folders in the owner's home (Colonia's and the other apps') may link skills from
  * elsewhere; a project's may not (a repo must not pull another file of the machine into a prompt).
  */
 function scan(
@@ -136,15 +136,15 @@ const sameText = (a: string, b: string) => {
 /** Skills an agent of this project may load: everything found, minus what the owner turned off. */
 export function skillsFor(store: Store, roots: SkillRoots, projectId: string | undefined): Skill[] {
   const off = skillsOff(store);
-  return allSkills(store, roots, projectId).filter((s) => isApx(s) || skillOn(off, s.name, projectId, s.scope));
+  return allSkills(store, roots, projectId).filter((s) => isColonia(s) || skillOn(off, s.name, projectId, s.scope));
 }
 
 /**
- * Every skill visible from a project (or globally), one per name. The first found wins it: APX's, the project's own,
+ * Every skill visible from a project (or globally), one per name. The first found wins it: Colonia's, the project's own,
  * the project's other apps' folders, the owner's, the other apps' folders in the home, then extensions'.
  */
 export function allSkills(store: Store, roots: SkillRoots, projectId: string | undefined): Skill[] {
-  const apx = scan(APX_SKILLS_DIR, false, { scope: "global", source: "apx", own: false });
+  const colonia = scan(COLONIA_SKILLS_DIR, false, { scope: "global", source: "colonia", own: false });
   const project = projectId ? store.projects.get(projectId) : undefined;
   const repo = project?.path && project.present ? project.path : undefined;
   // `top` is the repo's `.apc` or `.<app>`: a link there would read a folder outside the project.
@@ -157,7 +157,7 @@ export function allSkills(store: Store, roots: SkillRoots, projectId: string | u
           own: source === "project",
         })
       : [];
-  // The other apps keep copies of the skills APX writes for them (runtimes.ts): those are APX's, not theirs.
+  // The other apps keep copies of the skills Colonia writes for them (runtimes.ts): those are Colonia's, not theirs.
   const shipped = roots.apps ? shippedNames() : NONE;
   const apps = roots.apps
     ? runtimes(roots.apps).flatMap((r) =>
@@ -172,7 +172,7 @@ export function allSkills(store: Store, roots: SkillRoots, projectId: string | u
         : [],
     );
   return firstPerName([
-    ...apx,
+    ...colonia,
     ...inRepo(".apc", "project"),
     ...APPS.flatMap((app) => inRepo(`.${app}`, app)),
     ...scan(path.join(roots.home, "skills"), true, { scope: "global", source: "owner", own: true }),
@@ -183,13 +183,13 @@ export function allSkills(store: Store, roots: SkillRoots, projectId: string | u
 
 /**
  * Keeps the first skill of each name; later ones with that name become its copies (one folder reached twice, through a
- * link, is not a copy). A name of one of APX's own is APX's alone: another would change how agents learn to change APX.
+ * link, is not a copy). A name of one of Colonia's own is Colonia's alone: another would change how agents learn to change Colonia.
  */
 function firstPerName(found: Skill[]): Skill[] {
-  const reserved = new Set(found.filter(isApx).map((s) => s.name));
+  const reserved = new Set(found.filter(isColonia).map((s) => s.name));
   const first = new Map<string, { skill: Skill; dirs: Set<string> }>();
   for (const s of found) {
-    if (!isApx(s) && reserved.has(s.name)) continue;
+    if (!isColonia(s) && reserved.has(s.name)) continue;
     const dir = realDir(s.dir);
     const kept = first.get(s.name);
     if (!kept) {
@@ -207,25 +207,25 @@ function firstPerName(found: Skill[]): Skill[] {
 export const skillPath = (dir: string) => tildeHome(path.join(dir, "SKILL.md"));
 
 /**
- * The agent's `skills:` list narrows the catalog (APX's own always stay); an empty list (or one naming nothing found)
+ * The agent's `skills:` list narrows the catalog (Colonia's own always stay); an empty list (or one naming nothing found)
  * means all.
  */
 export function agentSkills(agent: AgentRecord, all: Skill[]): Skill[] {
   const wanted = new Set((agent.skills ?? []).map((s) => s.toLowerCase()));
   const named = (s: Skill) => wanted.has(s.name.toLowerCase());
-  return all.some(named) ? all.filter((s) => isApx(s) || named(s)) : all;
+  return all.some(named) ? all.filter((s) => isColonia(s) || named(s)) : all;
 }
 
 /**
- * For the system prompt: APX's own guides by name in one sentence (they are always there, so they must cost little),
+ * For the system prompt: Colonia's own guides by name in one sentence (they are always there, so they must cost little),
  * then one line per other skill (first sentence of the description, capped).
  */
 export function skillCatalog(skills: Skill[]): string {
-  const apx = skills.filter(isApx).map((s) => s.name);
-  const guides = apx.length
-    ? `APX guides (${apx.join(", ")}): load_skill the right one first. Change APX via its tools or \`apx\`, never by editing files.`
+  const colonia = skills.filter(isColonia).map((s) => s.name);
+  const guides = colonia.length
+    ? `Colonia guides (${colonia.join(", ")}): load_skill the right one first. Change Colonia via its tools or \`colonia\`, never by editing files.`
     : "";
-  const own = skills.filter((s) => !isApx(s));
+  const own = skills.filter((s) => !isColonia(s));
   if (!own.length) return guides ? `## Skills\n${guides}` : "";
   const line = (s: Skill) => {
     const first = s.description.split(/(?<=[.!?])\s/)[0] ?? "";

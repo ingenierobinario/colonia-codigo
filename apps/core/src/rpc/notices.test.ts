@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const llm = scriptedLlm((req, { said, afterTool }) => {
@@ -47,6 +47,6 @@ test("not from a routine (its answer already reaches the owner), and only an age
   assert.match(await lastText(thread_id), /already reaches the owner/);
   await assert.rejects(
     env.client.call("notices.notify", { text: "hi" }),
-    (e: unknown) => e instanceof ApxError && e.code === "unauthorized",
+    (e: unknown) => e instanceof ColoniaError && e.code === "unauthorized",
   );
 });

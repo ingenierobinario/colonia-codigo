@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "./engine/testkit.ts";
 import { tempDir, waitFor } from "./testkit/platform.ts";
 
@@ -101,7 +101,7 @@ test("authenticated webhook persists, filters and deduplicates concurrent events
       await socket.closed;
     }
     const external = await env.client.call("clients.create", { name: "Acme", scopes: ["chat"] });
-    const client = new ApxClient({ url: env.core.url, clientToken: external.token });
+    const client = new ColoniaClient({ url: env.core.url, clientToken: external.token });
     await assert.rejects(client.call("flows.list", { project }), /outside/);
     await env.client.call("flows.set", { ...draft(project), enabled: false });
     assert.equal((await post("disabled", malicious)).status, 404);

@@ -1,4 +1,4 @@
-// A project's MCP servers, memory notes, open tasks and automations brought from Claude Code or Codex, through APX's
+// A project's MCP servers, memory notes, open tasks and automations brought from Claude Code or Codex, through Colonia's
 // own methods (the same checks as the owner's). Each is brought once; a server whose file holds a credential is only
 // reported: its value never goes to the project's file.
 import type { Store } from "../domain/store.ts";
@@ -13,7 +13,7 @@ export type ExtrasResult = {
   tasks: number;
   /** Brought turned off: the engine may still run them, and twice is never wanted. */
   routines: string[];
-  /** What APX refused (a note that still reads as a credential, a task or routine it could not take), with why. */
+  /** What Colonia refused (a note that still reads as a credential, a task or routine it could not take), with why. */
   skipped: string[];
 };
 
@@ -45,7 +45,7 @@ export async function applyExtras(
     skipped: [],
   };
   const done = (key: string) => `native_extra:${o.engine}:${o.project_id}:${key}`;
-  /** Brings one thing once; one APX refuses is noted and left for a later import, never stopping the rest. */
+  /** Brings one thing once; one Colonia refuses is noted and left for a later import, never stopping the rest. */
   const once = async (key: string, what: string, bring: () => Promise<unknown>) => {
     if (store.settings.get(done(key))) return false;
     try {

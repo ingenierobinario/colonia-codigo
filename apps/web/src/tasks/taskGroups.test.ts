@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import { groupOf, groupTasks, moveTo, nestTasks } from "./taskGroups.ts";
 
 const task = (over: Partial<Task>): Task => ({

@@ -167,9 +167,9 @@ for (const [name, source] of Object.entries(trays)) {
   write(`${D}/${name}@2x.png`, await png(source, 44));
 }
 const FILES = [
-  ["apxart", "art", "#12B2BD"],
-  ["apxapp", "app", "#7228D3"],
-  ["apxext", "ext", "#07BB9C"],
+  ["coloniaart", "art", "#12B2BD"],
+  ["coloniaapp", "app", "#7228D3"],
+  ["coloniaext", "ext", "#07BB9C"],
 ];
 const ICNS = [["ic11", 32], ["ic12", 64], ["ic07", 128], ["ic08", 256], ["ic13", 256], ["ic09", 512], ["ic14", 512], ["ic10", 1024]];
 for (const [ext, type, color] of FILES) {

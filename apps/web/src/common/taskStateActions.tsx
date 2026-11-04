@@ -1,5 +1,5 @@
-import type { Task, TaskColumn } from "@apx/protocol";
-import { Icons, type MenuEntry } from "@apx/ui";
+import type { Task, TaskColumn } from "@colonia/protocol";
+import { Icons, type MenuEntry } from "@colonia/ui";
 import { closeTask, updateTask } from "../data/tasks.ts";
 import type { T } from "../i18n/index.ts";
 import { columnLabel } from "./taskStatus.ts";

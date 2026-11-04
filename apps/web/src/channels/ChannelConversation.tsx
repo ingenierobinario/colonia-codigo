@@ -1,4 +1,4 @@
-import type { ChannelInfo, Message, Person, Thread } from "@apx/protocol";
+import type { ChannelInfo, Message, Person, Thread } from "@colonia/protocol";
 import {
   Button,
   EmptyState,
@@ -9,7 +9,7 @@ import {
   StickyScroll,
   Textarea,
   Tooltip,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { Suspense, useEffect, useState } from "react";
 import { FilePart } from "../chat/parts/FilePart.tsx";
 import { AudioPart } from "../chat/parts/lazyAudio.tsx";
@@ -30,7 +30,7 @@ import { isSignal } from "./signal.ts";
 
 /** What a file that never arrived left in its message (the core asks for it again: channels.recover). */
 const LOST_FILE =
-  /\[(?:(?:photo|video|file|sticker) — APX cannot read this kind of message yet|attachment could not be downloaded: [^\]\n]*)\]/;
+  /\[(?:(?:photo|video|file|sticker) — Colonia cannot read this kind of message yet|attachment could not be downloaded: [^\]\n]*)\]/;
 
 /**
  * The chat with one contact. Their words on the left; what was sent to them (by the agent or by the owner) on the

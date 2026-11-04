@@ -120,7 +120,7 @@ test("an image of a few megabytes uploads over HTTP; over 5 MB it is refused wit
   );
 });
 
-test("only this chat's uploads attach: not another chat's, not media APX made, not a mislabeled image", async () => {
+test("only this chat's uploads attach: not another chat's, not media Colonia made, not a mislabeled image", async () => {
   const other = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
   const { media } = await env.client.call("media.upload", {
     name: "a.txt",
@@ -154,11 +154,11 @@ test("a PDF is available byte-for-byte in the chat's temp folder, with a safe na
   assert.equal(path.relative(path.join(scratchRoot(env.home), "home"), path.dirname(path.dirname(at))), "attachments");
   assert.match(at, /[\\/]upload-[^\\/]+[\\/]receipt\.pdf$/);
   assert.deepEqual(fs.readFileSync(at), pdf);
-  assert.equal(fs.existsSync(path.join(env.home, "work", ".apx-attachments")), false);
+  assert.equal(fs.existsSync(path.join(env.home, "work", ".colonia-attachments")), false);
 });
 
 test("an attachment destination symlink cannot write outside the temp folder", async (t) => {
-  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "apx-attachment-outside-"));
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-attachment-outside-"));
   const local = await startCore({ llm: scriptedLlm(() => say("ok")) });
   t.after(async () => {
     await local.core.close();

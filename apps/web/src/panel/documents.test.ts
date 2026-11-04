@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { CoreEvent, Message, Part } from "@apx/protocol";
-import { MarkdownView } from "@apx/ui";
+import type { CoreEvent, Message, Part } from "@colonia/protocol";
+import { MarkdownView } from "@colonia/ui";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { chatDocuments, documentToOpen, withStored } from "./documents.ts";

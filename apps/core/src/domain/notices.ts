@@ -1,6 +1,6 @@
 // The owner's notice preferences, stored in settings and always read through the schema (bad values fall back), and
 // the quiet hours they set.
-import { type NoticePrefs, noticeChannelChoice } from "@apx/protocol";
+import { type NoticePrefs, noticeChannelChoice } from "@colonia/protocol";
 import { localTime, minutesOf } from "./hours.ts";
 import { ownerTimeZone } from "./owner.ts";
 import type { Origin } from "./runs.ts";
@@ -16,7 +16,7 @@ export function saveNoticePrefs(store: Store, prefs: NoticePrefs): NoticePrefs {
 }
 
 /**
- * No chat app takes what APX says unasked: the tray and paired phones only. A phone picked before every phone was told
+ * No chat app takes what Colonia says unasked: the tray and paired phones only. A phone picked before every phone was told
  * is the same choice (DECISIONS.md#d-161).
  */
 export const appOnly = (prefs: Pick<NoticePrefs, "channel">): boolean => noticeChannelChoice(prefs.channel) === "none";

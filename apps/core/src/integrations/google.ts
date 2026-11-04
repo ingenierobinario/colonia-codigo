@@ -1,4 +1,4 @@
-// The owner's Google account for Calendar, Gmail and Drive: the OAuth client (APX's own, or the owner's with the id in
+// The owner's Google account for Calendar, Gmail and Drive: the OAuth client (Colonia's own, or the owner's with the id in
 // settings and the secret in the secret store), one refresh token per integration (a secret), and authenticated calls
 // to Google's REST APIs. Google sends the browser back to the panel (/oauth/google), which hands the code to
 // `integrations.oauth_finish`: no route of its own in the core.
@@ -29,8 +29,8 @@ const accountKey = (id: GoogleId) => `google_account:${id}`;
 /** Which client signed an integration in: its refresh token works only with that one. */
 const clientKey = (id: GoogleId) => `google_client:${id}`;
 
-/** APX's own client, or the one the owner made in Cloud Console. */
-export type ClientKind = "apx" | "own";
+/** Colonia's own client, or the one the owner made in Cloud Console. */
+export type ClientKind = "colonia" | "own";
 
 export type Google = ReturnType<typeof createGoogle>;
 
@@ -63,9 +63,9 @@ export function createGoogle(deps: {
     const clientSecret = secrets.resolve(`secret://${CLIENT_SECRET}`);
     return clientId && clientSecret ? { clientId, clientSecret } : undefined;
   };
-  const creds = (kind: ClientKind) => (kind === "apx" ? deps.builtin : own());
-  // Signed in before APX shipped a client: it was the owner's.
-  const kindOf = (id: GoogleId): ClientKind => (store.settings.get(clientKey(id)) === "apx" ? "apx" : "own");
+  const creds = (kind: ClientKind) => (kind === "colonia" ? deps.builtin : own());
+  // Signed in before Colonia shipped a client: it was the owner's.
+  const kindOf = (id: GoogleId): ClientKind => (store.settings.get(clientKey(id)) === "colonia" ? "colonia" : "own");
   const refreshToken = (id: GoogleId) => secrets.resolve(`secret://${refreshName(id)}`);
   const redirectUri = () => `${deps.origin().replace(/\/$/, "")}${OAUTH_PATH}`;
 
@@ -74,7 +74,7 @@ export function createGoogle(deps: {
     redirectUri,
     /**
      * The owner's OAuth client as the panel may see it (the id, and only whether a secret is stored), and whether
-     * this build ships APX's own.
+     * this build ships Colonia's own.
      */
     client(): { client_id: string | undefined; secret: boolean; builtin: boolean } {
       return {
@@ -90,13 +90,13 @@ export function createGoogle(deps: {
     emailSignature: () => signatureFor(store, "gmail", g.account("gmail"), g.account("gmail")),
     /** Its tools are offered in a thread: connected, and not turned off in the thread's project. */
     usable: (id: GoogleId, project: string | undefined) => g.connected(id) && !(project && deps.offIn(project, id)),
-    /** Signed in with the owner's own client: every scope (reading all mail and all of Drive), not APX's narrower set. */
+    /** Signed in with the owner's own client: every scope (reading all mail and all of Drive), not Colonia's narrower set. */
     full: (id: GoogleId) => g.clientOf(id) === "own",
 
     /**
      * The consent URL for one integration, and for `also` in the same consent (one sign-in, one refresh token kept
      * for each). `client` "own" saves the owner's client (what is typed; empty keeps what is stored); without it,
-     * APX's own client is used when this build has one and nothing was typed.
+     * Colonia's own client is used when this build has one and nothing was typed.
      */
     start(
       id: GoogleId,
@@ -106,10 +106,10 @@ export function createGoogle(deps: {
       const typedId = values.client_id?.trim();
       const typedSecret = values.client_secret?.trim();
       const kind: ClientKind =
-        values.client === "apx" || values.client === "own"
+        values.client === "colonia" || values.client === "own"
           ? values.client
           : deps.builtin && !typedId && !typedSecret
-            ? "apx"
+            ? "colonia"
             : "own";
       if (kind === "own") {
         if (typedId) store.settings.set(CLIENT_ID, typedId);
@@ -118,8 +118,8 @@ export function createGoogle(deps: {
       const c = creds(kind);
       if (!c)
         throw new Error(
-          kind === "apx"
-            ? "this APX build has no Google client of its own; use your own OAuth client"
+          kind === "colonia"
+            ? "this Colonia build has no Google client of its own; use your own OAuth client"
             : "Google needs the client id and the client secret of your OAuth client",
         );
       for (const [k, f] of flows) if (f.exp < now()) flows.delete(k);
@@ -129,7 +129,7 @@ export function createGoogle(deps: {
       const more = [...new Set(also)].filter((x) => x !== id);
       flows.set(nonce, { id, also: more, kind, verifier, redirect, exp: now() + FLOW_TTL_MS });
       const wanted = GOOGLE_INTEGRATIONS.filter((x) => x.id === id || more.includes(x.id));
-      const scopes = ["openid", "email", ...wanted.flatMap((e) => (kind === "apx" ? e.apxScopes : e.scopes))];
+      const scopes = ["openid", "email", ...wanted.flatMap((e) => (kind === "colonia" ? e.coloniaScopes : e.scopes))];
       return authUrl(endpoints, {
         clientId: c.clientId,
         redirectUri: redirect,
@@ -147,7 +147,7 @@ export function createGoogle(deps: {
       const data = signer.verify(state);
       const flow = data?.nonce ? flows.get(data.nonce) : undefined;
       if (!data || !flow || flow.id !== data.id || flow.exp < now())
-        throw new Error("this sign-in link is not valid or expired; start it again from APX");
+        throw new Error("this sign-in link is not valid or expired; start it again from Colonia");
       flows.delete(data.nonce ?? "");
       const c = creds(flow.kind);
       if (!c) throw new Error("the Google client is gone; enter it again");

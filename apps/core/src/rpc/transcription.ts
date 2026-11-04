@@ -1,5 +1,5 @@
 // Local transcription from the app: what this machine runs well, and installing a model for it (see local-whisper.ts).
-import type { LocalTranscription } from "@apx/protocol";
+import type { LocalTranscription } from "@colonia/protocol";
 import { badRequest, errorMessage } from "../errors.ts";
 import { installHint, LOCAL_MODELS, type ModelInstaller, machine, recommend } from "../services/local-whisper.ts";
 import type { Services } from "../services/registry.ts";

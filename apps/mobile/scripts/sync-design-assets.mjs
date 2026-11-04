@@ -130,9 +130,9 @@ const block = (selector) => {
   const start = css.indexOf(`${selector} {`);
   if (start < 0) throw new Error(`tokens.css: no ${selector} block`);
   const body = css.slice(start, css.indexOf("}", start));
-  return Object.fromEntries([...body.matchAll(/--apx-([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
+  return Object.fromEntries([...body.matchAll(/--colonia-([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 };
-const light = block('.apx,\n[data-apx-look="minimal"]');
+const light = block('.colonia,\n[data-colonia-look="minimal"]');
 // Hermes reads rgba(), not the CSS4 space syntax the stylesheet uses.
 const native = (value) =>
   value.replace(/rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)/, (_, r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${a})`);
@@ -148,7 +148,7 @@ const nativeTokens = (vars) => {
 };
 const palettes = {
   light: nativeTokens(light),
-  dark: nativeTokens({ ...light, ...block('[data-apx-look="minimal"][data-apx-mode="dark"]') }),
+  dark: nativeTokens({ ...light, ...block('[data-colonia-look="minimal"][data-colonia-mode="dark"]') }),
 };
 writeFileSync(
   resolve(target, "tokens.ts"),
@@ -162,7 +162,7 @@ writeFileSync(resolve(mobile, "assets/logo.png"), readFileSync(resolve(mobile, "
 mkdirSync(resolve(mobile, "src/routines"), { recursive: true });
 for (const file of ["slots.ts", "cron.ts"]) {
   const code = readFileSync(resolve(mobile, "../web/src/routines", file), "utf8").replace(
-    'from "@apx/protocol"',
+    'from "@colonia/protocol"',
     'from "../../../../packages/protocol/src/index.ts"',
   );
   writeFileSync(
@@ -175,7 +175,7 @@ for (const file of ["slots.ts", "cron.ts"]) {
 mkdirSync(resolve(mobile, "src/tasks"), { recursive: true });
 for (const file of ["when.ts", "history.ts"]) {
   const code = readFileSync(resolve(mobile, "../web/src/tasks", file), "utf8").replace(
-    'from "@apx/protocol"',
+    'from "@colonia/protocol"',
     'from "../../../../packages/protocol/src/index.ts"',
   );
   writeFileSync(

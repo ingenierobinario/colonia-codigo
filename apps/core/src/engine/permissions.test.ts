@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { PendingInput } from "@apx/protocol";
+import type { PendingInput } from "@colonia/protocol";
 import { fakeTelegram } from "../channels/fake-telegram.test-support.ts";
 import { telegramAdapter } from "../channels/telegram.ts";
 import { realpath } from "../paths.ts";
@@ -40,12 +40,12 @@ before(async () => {
     channel: { type: "telegram", agent_id: "superagent" },
     token: "123456:TEST-perms",
   });
-  elsewhere = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-reels-")));
+  elsewhere = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-reels-")));
   video = path.join(elsewhere, "reel-es.mp4");
   picture = path.join(elsewhere, "cover.png");
   fs.writeFileSync(video, Buffer.from("not really a video"));
   fs.writeFileSync(picture, Buffer.from(PNG, "base64"));
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-acme-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-acme-")));
   project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   await env.client.call("agents.create", { slug: "clerk", name: "Clerk" });
 });
@@ -158,7 +158,7 @@ test("temp files never ask, even in manual: a file written there or a command ru
 });
 
 test("delegating with a project's id finds the project and never reads the id as a folder", async () => {
-  // As the owner's core runs from inside the APX project: the id once resolved against it as a sub-folder.
+  // As the owner's core runs from inside the Colonia project: the id once resolved against it as a sub-folder.
   const was = process.cwd();
   process.chdir(env.core.store.projects.get(project)?.path ?? was);
   try {

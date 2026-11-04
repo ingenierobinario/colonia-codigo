@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { IconButton, Icons } from "@apx/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { useEffect } from "react";
 import { ensureTask, useTasks } from "../data/tasks.ts";
 import { useT } from "../i18n/index.ts";

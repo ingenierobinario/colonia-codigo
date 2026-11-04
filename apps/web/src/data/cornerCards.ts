@@ -1,6 +1,6 @@
 // What the corner cards have already said on this device. Its own key, apart from the prefs: closing a card is not a
 // preference anyone edits, and nothing else resets it. A closed update card is kept for this session only: an update
-// left for later must show again when APX opens, or it is never seen.
+// left for later must show again when Colonia opens, or it is never seen.
 import { createStore, useSlice } from "./createStore.ts";
 
 type Closed = {
@@ -14,7 +14,7 @@ type Closed = {
   welcome: boolean;
 };
 
-const KEY = "apx.corner";
+const KEY = "colonia.corner";
 
 function load(): Closed {
   try {

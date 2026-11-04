@@ -74,7 +74,7 @@ export function ResizeHandle({
       aria-valuemin={min}
       aria-valuemax={max}
       tabIndex={0}
-      className={cx("apx-resize", `apx-resize--${edge}`, className)}
+      className={cx("colonia-resize", `colonia-resize--${edge}`, className)}
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}

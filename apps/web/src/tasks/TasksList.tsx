@@ -1,4 +1,4 @@
-import type { Run, Task } from "@apx/protocol";
+import type { Run, Task } from "@colonia/protocol";
 import {
   AgentAvatar,
   Button,
@@ -9,7 +9,7 @@ import {
   ProjectTile,
   SegmentedControl,
   Spinner,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
 import { aheadLabel, dueLabel, shortWhen } from "../common/format.ts";
 import { SearchSelect } from "../common/pickers/SearchSelect.tsx";

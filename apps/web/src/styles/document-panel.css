@@ -15,16 +15,16 @@
 .documentpanel__head h2 {
   width: 100%;
   margin: 0;
-  font-size: calc(22px * var(--apx-text-scale, 1));
+  font-size: calc(22px * var(--colonia-text-scale, 1));
   overflow-wrap: anywhere;
 }
 .documentpanel__filename {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-family: var(--apx-font-mono);
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  color: var(--colonia-fg-muted);
+  font-family: var(--colonia-font-mono);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -41,13 +41,13 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   cursor: pointer;
 }
 .documentpanel__back:hover {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .documentpanel__list {
   display: flex;
@@ -64,9 +64,9 @@
   width: 100%;
   padding: 10px 12px;
   border: 0;
-  border-radius: var(--apx-radius-md);
+  border-radius: var(--colonia-radius-md);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -81,8 +81,8 @@
   right: 6px;
   display: flex;
   gap: 2px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
   opacity: 0;
   pointer-events: none;
 }
@@ -92,15 +92,15 @@
   pointer-events: auto;
 }
 .documentpanel__row:hover .documentpanel__item {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .documentpanel__item:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .documentpanel__item > svg {
   flex: none;
   margin-top: 2px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .documentpanel__itemtext {
   display: flex;
@@ -110,13 +110,13 @@
   min-width: 0;
 }
 .documentpanel__itemtitle {
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   font-weight: 500;
   overflow-wrap: anywhere;
 }
 .documentpanel__source {
-  font-family: var(--apx-font-mono);
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  font-family: var(--colonia-font-mono);
+  font-size: calc(12px * var(--colonia-text-scale, 1));
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -124,5 +124,5 @@
   overflow-wrap: anywhere;
 }
 .documentpanel__status {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }

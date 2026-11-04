@@ -1,8 +1,8 @@
 {
-  "name": "@apx/desktop",
+  "name": "@colonia/desktop",
   "version": "2.0.0",
   "private": true,
-  "description": "APX desktop: Electron shell around the web panel, plus the embedded browser it lends to the core as a node.",
+  "description": "Colonia desktop: Electron shell around the web panel, plus the embedded browser it lends to the core as a node.",
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
@@ -12,10 +12,10 @@
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
-    "@apx/protocol": "workspace:*"
+    "@colonia/protocol": "workspace:*"
   },
   "devDependencies": {
-    "@apx/config": "workspace:*",
+    "@colonia/config": "workspace:*",
     "electron": "^44.5.1",
     "esbuild": "^0.25.12"
   }

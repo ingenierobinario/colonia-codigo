@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { ActionGroup, type ActionItem, Icons, Spinner } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { ActionGroup, type ActionItem, Icons, Spinner } from "@colonia/ui";
 import { useT } from "../../i18n/index.ts";
 import { ComputerIcon } from "./ComputerIcon.tsx";
 

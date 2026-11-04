@@ -1,6 +1,6 @@
 // How a finished turn went, for whoever reads its result (its caller, the owner's tray): done, done with something
 // to check, or not done. A completed run is not a good one when it said nothing or some of its actions failed.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 
@@ -34,7 +34,7 @@ export function outcomeOf(
 export const outcomeNote = (o: { level: Outcome["level"]; why?: string }): string =>
   o.level === "ok"
     ? ""
-    : `APX marks this result as ${o.level === "error" ? "an error" : "a warning"}: ${o.why}. Check what did not work or is unverified, and tell the owner plainly; never report it as done without checking.\n`;
+    : `Colonia marks this result as ${o.level === "error" ? "an error" : "a warning"}: ${o.why}. Check what did not work or is unverified, and tell the owner plainly; never report it as done without checking.\n`;
 
 /** A completed turn that wrote nothing and ran no tool. */
 export const silent = (store: Store, run: RunRecord): boolean =>

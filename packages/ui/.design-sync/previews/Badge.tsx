@@ -1,4 +1,4 @@
-import { ApxProvider, Badge } from "@apx/ui";
+import { ColoniaProvider, Badge } from "@colonia/ui";
 
 const row = { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const };
 
@@ -36,7 +36,7 @@ export function CountersAndOutline() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12 }}>
       <div style={row}>
         <Badge tone="brand">Activo</Badge>
         <Badge tone="warning" dot>
@@ -46,6 +46,6 @@ export function ClassicLook() {
           5
         </Badge>
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

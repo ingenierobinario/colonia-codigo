@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { expect, open, rpc, test } from "./kit.ts";
 
 const starter = fs.readFileSync(
-  new URL("../../apps/core/src/skills/apx/apx-artifacts/assets/starter.html", import.meta.url),
+  new URL("../../apps/core/src/skills/colonia/colonia-artifacts/assets/starter.html", import.meta.url),
   "utf8",
 );
 
@@ -26,10 +26,10 @@ test("the widget kit filters work in an edge-to-edge app and in published fragme
     return el.getBoundingClientRect().top - parent.getBoundingClientRect().top;
   });
   expect(inset).toBeGreaterThanOrEqual(16);
-  await expect(app.locator(".apx-widget")).toHaveCSS("max-width", "1100px");
+  await expect(app.locator(".colonia-widget")).toHaveCSS("max-width", "1100px");
   await rpc("surfaces.update", { surface: widget.id, app: true });
   await expect(frame.locator("..")).toHaveCSS("padding", "0px");
-  await expect(app.locator(".apx-widget")).toHaveCSS("max-width", "none");
+  await expect(app.locator(".colonia-widget")).toHaveCSS("max-width", "none");
   await expect(page.locator(".appscreen__body")).toHaveCSS("padding", "0px");
   await app.getByRole("searchbox").fill("dashboard");
   await expect(app.getByRole("status")).toHaveText("1 of 3 items");
@@ -51,8 +51,8 @@ test("the widget kit filters work in an edge-to-edge app and in published fragme
       await page.emulateMedia({ colorScheme: mode });
       for (const width of [1100, 360]) {
         await page.setViewportSize({ width, height: 800 });
-        const layout = await page.locator(".apx-widget").evaluate((el) => {
-          const grid = el.querySelector(".apx-grid");
+        const layout = await page.locator(".colonia-widget").evaluate((el) => {
+          const grid = el.querySelector(".colonia-grid");
           return {
             top: el.getBoundingClientRect().top + scrollY,
             overflow: document.documentElement.scrollWidth > innerWidth,

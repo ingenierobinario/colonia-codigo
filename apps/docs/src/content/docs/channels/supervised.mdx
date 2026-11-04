@@ -15,7 +15,7 @@ the reply it would send and doesn't send it. You get the draft and decide.
 ## What happens when they write
 
 1. Their message is kept in their chat, unanswered. Voice notes are transcribed, since the draft needs the words.
-2. APX waits for their burst of messages to settle (about 15 seconds), so three quick lines get one draft.
+2. Colonia waits for their burst of messages to settle (about 15 seconds), so three quick lines get one draft.
 3. The agent drafts one reply with the same sealed prompt their chat always uses: who they are, your rules for them,
    the relation and the chat so far. It has no tools and it sends nothing. The draft uses the agent's own model.
 4. You get a notice on your channel (Telegram, WhatsApp…) and in the app's tray. It shows who wrote (with their
@@ -24,7 +24,7 @@ the reply it would send and doesn't send it. You get the draft and decide.
 | Button | What it does |
 |---|---|
 | **Send this** | Sends the draft to them in their chat, as the agent's message. The agent reads it next time as its own words. |
-| **I'll answer** | Your next message in that chat with APX (within 10 minutes) goes to them exactly as you typed it, as your own words. Send "cancel" to send nothing. |
+| **I'll answer** | Your next message in that chat with Colonia (within 10 minutes) goes to them exactly as you typed it, as your own words. Send "cancel" to send nothing. |
 | **Ignore** | Nothing is sent. They stay supervised, and what they said isn't drafted again. |
 
 If they write again before you decide, a new draft answers everything they said, and the old one can't be sent any
@@ -49,14 +49,14 @@ other: turning one on turns the other off. A supervised contact shows an eye nex
 From the terminal:
 
 ```bash
-apx contacts supervise "Ana Pérez"     # or the contact's id; unsupervise to go back
-apx contacts suggestions               # drafts waiting for you
-apx contacts suggestions send <id>     # send one as it is
-apx contacts suggestions send <id> Friday at 10 works
-apx contacts suggestions drop <id>
+colonia contacts supervise "Ana Pérez"     # or the contact's id; unsupervise to go back
+colonia contacts suggestions               # drafts waiting for you
+colonia contacts suggestions send <id>     # send one as it is
+colonia contacts suggestions send <id> Friday at 10 works
+colonia contacts suggestions drop <id>
 ```
 
-<Terminal command="apx contacts suggestions">{`sug_3f2a9c1d0b7e4a51  Ana Pérez: hi / can we meet tomorrow?
+<Terminal command="colonia contacts suggestions">{`sug_3f2a9c1d0b7e4a51  Ana Pérez: hi / can we meet tomorrow?
     → Hi Ana! I'll check with them and get back to you today.`}</Terminal>
 
 ## From another app (RPC)

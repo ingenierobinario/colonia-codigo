@@ -8,8 +8,8 @@ import { createCore } from "../server.ts";
 import { removeDir } from "../testkit/platform.ts";
 
 let core: Awaited<ReturnType<typeof createCore>>;
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-guard-"));
-const dist = fs.mkdtempSync(path.join(os.tmpdir(), "apx-dist-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-guard-"));
+const dist = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-dist-"));
 
 before(async () => {
   fs.writeFileSync(path.join(dist, "index.html"), "<p>panel</p>");

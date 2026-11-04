@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { Button, Icons } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { Button, Icons } from "@colonia/ui";
 import { ProfilePicker } from "../../../config/ProfilePicker.tsx";
 import { DEFAULT_PID } from "../../../data/identity.ts";
 import { useT } from "../../../i18n/index.ts";

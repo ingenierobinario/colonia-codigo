@@ -1,6 +1,6 @@
 ---
-title: El comando apx
-description: Todos los comandos de apx, agrupados según para qué sirven, con sus opciones y el entorno que leen.
+title: El comando colonia
+description: Todos los comandos de colonia, agrupados según para qué sirven, con sus opciones y el entorno que leen.
 sidebar:
   order: 1
 ---
@@ -8,120 +8,120 @@ sidebar:
 import { Aside } from "@astrojs/starlight/components";
 import Terminal from "../../../../components/Terminal.astro";
 
-`apx` es la terminal de APX. No tiene lógica propia: cada comando es una llamada al core que está corriendo, las mismas
+`colonia` es la terminal de Colonia. No tiene lógica propia: cada comando es una llamada al core que está corriendo, las mismas
 que hace el panel. Así que todo lo que hacés acá lo podés hacer también en el panel, y casi todo al revés.
 
-`apx --help` muestra la lista completa. `apx tasks help` y `apx routines help` muestran el detalle de esos dos grupos.
+`colonia --help` muestra la lista completa. `colonia tasks help` y `colonia routines help` muestran el detalle de esos dos grupos.
 
 <Aside type="tip">
-Lo que va entre ángulos lo completás vos: `<id>` es un id que sale del comando que lista eso (`apx agents`,
-`apx threads`, `apx tasks`…), `<agent>` el id de un agente, `<project>` el de un proyecto.
+Lo que va entre ángulos lo completás vos: `<id>` es un id que sale del comando que lista eso (`colonia agents`,
+`colonia threads`, `colonia tasks`…), `<agent>` el id de un agente, `<project>` el de un proyecto.
 </Aside>
 
 ## La consola interactiva
 
-Corré `apx` sin argumentos en una terminal interactiva (o `apx wizard`) y tenés una consola con autocompletado con Tab
+Corré `colonia` sin argumentos en una terminal interactiva (o `colonia wizard`) y tenés una consola con autocompletado con Tab
 e historial:
 
 | Comando | Qué hace |
 |---|---|
-| `/status` | Core, equipo y proyectos (igual que `apx status`). |
+| `/status` | Core, equipo y proyectos (igual que `colonia status`). |
 | `/devices` | Dispositivos vinculados. |
 | `/tailscale` | El acceso por red y el estado de Tailscale. |
-| `/connect` | Expone APX por Tailscale. |
+| `/connect` | Expone Colonia por Tailscale. |
 | `/pair` | Un código para conectar un dispositivo nuevo. |
-| `/updates` | Busca un APX más nuevo. |
+| `/updates` | Busca un Colonia más nuevo. |
 | `/panel` | La dirección del panel web. |
 | `/help`, `/quit` | El menú de nuevo; volver a tu shell. |
 
 Los números del `1` al `6` son atajos de las opciones del menú y el `0` sale. Fuera de una terminal (un script, un
-pipe) la consola no arranca: `apx` muestra la ayuda.
+pipe) la consola no arranca: `colonia` muestra la ayuda.
 
 ## Estado y mantenimiento
 
 | Comando | Qué hace |
 |---|---|
-| `apx status` | La versión y el commit del core, cuánto lleva prendido, memoria, URL, cada subsistema, el equipo, los proyectos, los servidores MCP, los dispositivos, el acceso y los chats. También `apx --status`. |
-| `apx --version` | La versión y el commit de esta CLI (`-v`). Anda sin el core. |
-| `apx ping [text]` | Una ida y vuelta por el socket en vivo. |
-| `apx open` | Abre el panel en tu navegador. |
-| `apx desktop` | Abre la app de escritorio (la primera vez baja y abre el instalador). |
-| `apx wizard` | Configuración y mantenimiento guiados en la terminal. |
-| `apx upgrade --check` | ¿Hay un APX más nuevo? |
-| `apx upgrade` | Aplicarlo, igual que **Actualizar ahora** en el panel. Si el core no responde, un APX instalado con el script de instalación se actualiza igual: baja el paquete más nuevo, lo verifica y hace que el servicio lo arranque. `apx update` es el mismo comando. |
-| `apx doctor` | Por qué el core no responde en esta computadora (qué dice su log, el servicio, si hay una versión más nueva) y el comando a correr. Funciona sin el core; `--json`. |
-| `apx logs` | Las líneas más nuevas del log del core, a través del core: `-n 200`, `--level info\|warn\|error`, `--grep texto`, `--scope core\|output`, `--json`. Si ningún core responde, el archivo de esta computadora. |
-| `apx service logs` | El archivo de log de esta computadora (`<home>/logs/core.log`); `-n 100`, `-f` para seguirlo. |
-| `apx daemon` | Explica qué comando `apx service` usar (el core en segundo plano ahora es un servicio). |
-| `apx --help` | La lista completa (`-h`). |
+| `colonia status` | La versión y el commit del core, cuánto lleva prendido, memoria, URL, cada subsistema, el equipo, los proyectos, los servidores MCP, los dispositivos, el acceso y los chats. También `colonia --status`. |
+| `colonia --version` | La versión y el commit de esta CLI (`-v`). Anda sin el core. |
+| `colonia ping [text]` | Una ida y vuelta por el socket en vivo. |
+| `colonia open` | Abre el panel en tu navegador. |
+| `colonia desktop` | Abre la app de escritorio (la primera vez baja y abre el instalador). |
+| `colonia wizard` | Configuración y mantenimiento guiados en la terminal. |
+| `colonia upgrade --check` | ¿Hay un Colonia más nuevo? |
+| `colonia upgrade` | Aplicarlo, igual que **Actualizar ahora** en el panel. Si el core no responde, un Colonia instalado con el script de instalación se actualiza igual: baja el paquete más nuevo, lo verifica y hace que el servicio lo arranque. `colonia update` es el mismo comando. |
+| `colonia doctor` | Por qué el core no responde en esta computadora (qué dice su log, el servicio, si hay una versión más nueva) y el comando a correr. Funciona sin el core; `--json`. |
+| `colonia logs` | Las líneas más nuevas del log del core, a través del core: `-n 200`, `--level info\|warn\|error`, `--grep texto`, `--scope core\|output`, `--json`. Si ningún core responde, el archivo de esta computadora. |
+| `colonia service logs` | El archivo de log de esta computadora (`<home>/logs/core.log`); `-n 100`, `-f` para seguirlo. |
+| `colonia daemon` | Explica qué comando `colonia service` usar (el core en segundo plano ahora es un servicio). |
+| `colonia --help` | La lista completa (`-h`). |
 
-`apx status`, `apx devices`, `apx tailscale status`, `apx upgrade`, `apx mcp tools`, `apx mcp check` y `apx memory`
-aceptan `--json`. `apx status --plain` saca la tarjeta y el retrato.
+`colonia status`, `colonia devices`, `colonia tailscale status`, `colonia upgrade`, `colonia mcp tools`, `colonia mcp check` y `colonia memory`
+aceptan `--json`. `colonia status --plain` saca la tarjeta y el retrato.
 
-<Terminal command="apx --version">{`APX v2 · 2.2.0 · 1a2b3c4d5e6f`}</Terminal>
+<Terminal command="colonia --version">{`Colonia v2 · 2.2.0 · 1a2b3c4d5e6f`}</Terminal>
 
 ## Servicio, acceso y dispositivos
 
 | Comando | Qué hace |
 |---|---|
-| `apx service install` | Corre el core en segundo plano: una unidad de usuario de systemd (Linux), un agente de launchd (macOS) o una entrada de inicio de sesión (Windows), que arranca al iniciar sesión y de nuevo si se cae. |
-| `apx service status` | Si el servicio está instalado y corriendo, y si el core responde. |
-| `apx service restart` | Lo reinicia (el core lee `core.env` al arrancar). `apx service start` hace lo mismo, o lo instala si todavía no está instalado. |
-| `apx service uninstall` | Saca el servicio. |
-| `apx expose tailscale` | Publica el core en tu tailnet en `https://<machine>.<tailnet>.ts.net`; el core queda en loopback. |
-| `apx expose lan` | Escucha en todas las direcciones de red de esta máquina. |
-| `apx expose off` | De nuevo solo esta compu (el token queda). |
-| `apx expose status` | Qué está en vigor, el puerto, el token (si hay o no) y el archivo de configuración. |
-| `apx tailscale [status]` | El estado de Tailscale y el modo de acceso, preguntándole al core. |
-| `apx tailscale connect` | Expone APX por Tailscale (tiene que tener la sesión iniciada). |
-| `apx tailscale off` | Vuelve al acceso local. |
-| `apx pair` | Un código de un solo uso, las direcciones y un enlace `apx://pair` para un teléfono u otra compu. |
-| `apx devices [list]` | Dispositivos vinculados. |
-| `apx devices pair` | Igual que `apx pair`. |
-| `apx devices revoke <id>` | Revoca la llave de un dispositivo. |
-| `apx setup --headless` | Un servidor sin escritorio: servicio, importación opcional (`--import`), exposición opcional (`--expose tailscale` o `--expose lan`) y después un código para vincular. |
-| `apx import-v1` | Registra las carpetas de proyecto que conoce un APX v1 local (solo lee v1). `--keys` también copia sus claves de API de modelos, `--skills` sus skills, `--services` sus motores de imágenes y voces. |
-| `apx v1` | ¿Sigue APX v1 acá y corriendo? `apx v1 off` detiene su daemon para siempre y hace que `apx` sea este. |
+| `colonia service install` | Corre el core en segundo plano: una unidad de usuario de systemd (Linux), un agente de launchd (macOS) o una entrada de inicio de sesión (Windows), que arranca al iniciar sesión y de nuevo si se cae. |
+| `colonia service status` | Si el servicio está instalado y corriendo, y si el core responde. |
+| `colonia service restart` | Lo reinicia (el core lee `core.env` al arrancar). `colonia service start` hace lo mismo, o lo instala si todavía no está instalado. |
+| `colonia service uninstall` | Saca el servicio. |
+| `colonia expose tailscale` | Publica el core en tu tailnet en `https://<machine>.<tailnet>.ts.net`; el core queda en loopback. |
+| `colonia expose lan` | Escucha en todas las direcciones de red de esta máquina. |
+| `colonia expose off` | De nuevo solo esta compu (el token queda). |
+| `colonia expose status` | Qué está en vigor, el puerto, el token (si hay o no) y el archivo de configuración. |
+| `colonia tailscale [status]` | El estado de Tailscale y el modo de acceso, preguntándole al core. |
+| `colonia tailscale connect` | Expone Colonia por Tailscale (tiene que tener la sesión iniciada). |
+| `colonia tailscale off` | Vuelve al acceso local. |
+| `colonia pair` | Un código de un solo uso, las direcciones y un enlace `colonia://pair` para un teléfono u otra compu. |
+| `colonia devices [list]` | Dispositivos vinculados. |
+| `colonia devices pair` | Igual que `colonia pair`. |
+| `colonia devices revoke <id>` | Revoca la llave de un dispositivo. |
+| `colonia setup --headless` | Un servidor sin escritorio: servicio, importación opcional (`--import`), exposición opcional (`--expose tailscale` o `--expose lan`) y después un código para vincular. |
+| `colonia import-v1` | Registra las carpetas de proyecto que conoce un Colonia v1 local (solo lee v1). `--keys` también copia sus claves de API de modelos, `--skills` sus skills, `--services` sus motores de imágenes y voces. |
+| `colonia v1` | ¿Sigue Colonia v1 acá y corriendo? `colonia v1 off` detiene su daemon para siempre y hace que `colonia` sea este. |
 
-`apx expose` edita `<home>/core.env` directamente; después reiniciá el core (`apx service restart`). `apx tailscale`
+`colonia expose` edita `<home>/core.env` directamente; después reiniciá el core (`colonia service restart`). `colonia tailscale`
 pasa por el core que está corriendo, que se reinicia solo cuando corre bajo un supervisor como el servicio, y si no te
-avisa que lo reinicies. Más en [APX en un servidor](/es/devices/server/).
+avisa que lo reinicies. Más en [Colonia en un servidor](/es/devices/server/).
 
-<Terminal command="apx expose status">{`only this computer can reach the core
+<Terminal command="colonia expose status">{`only this computer can reach the core
 port     7440
 token    none (the core only accepts this computer)
-settings ~/.apx/v2/core.env (none yet)`}</Terminal>
+settings ~/.colonia/v2/core.env (none yet)`}</Terminal>
 
 ## Chats y corridas
 
 | Comando | Qué hace |
 |---|---|
-| `apx chat "<text>"` | Hablale a Home (la secretaria) y mirá la respuesta mientras se arma: pasos de herramientas, subhilos, widgets, preguntas. |
-| `apx chat "<text>" --agent <id>` | Hablale a un agente, en su última conversación con vos (`--new` arranca otra). |
-| `apx chat "<text>" --thread <id>` | Escribí en un hilo puntual. |
-| `apx chat "<text>" --code` | Un hilo de código en el proyecto registrado que contiene la carpeta actual (`--cwd <folder>` para otra, `--write ask`, `auto` o `read-only`, `--agent <id>`). |
-| `apx threads [list]` | Los hilos con su estado y tipo. |
-| `apx threads get <thread>` | Los últimos 20 mensajes de un hilo. |
-| `apx threads search <words…>` | Mensajes con todas las palabras, el mejor resultado primero. |
-| `apx threads cancel <thread>` | Frena lo que esté corriendo ahí. |
-| `apx runs get <run>` | Una corrida, en JSON. |
-| `apx runs wait <run>` | Espera a que termine (`--timeout 60`, en segundos). |
-| `apx runs pending [thread]` | Lo que los agentes esperan de vos: confirmaciones y preguntas. |
-| `apx runs respond <input> approve` | Aprobar (o `deny`), con una nota opcional y `--scope once`, `session` o `always`. |
-| `apx runs respond <input> "<answer>"` | Responder una pregunta. |
-| `apx jobs [list]` | El trabajo en segundo plano que corre ahora y los últimos 10 terminados. |
-| `apx jobs get <job>` | El estado y la salida de un trabajo. |
-| `apx jobs cancel <job>` | Lo frena. |
-| `apx compact <thread>` | Resume ya los turnos viejos de un hilo (el loop propio de APX). |
-| `apx notifications` | Lo que te está esperando. |
-| `apx notifications read` | Marca todo como leído. |
-| `apx news` | Las novedades que trae APX: si ya se contaron y si te aplican. |
-| `apx news tell [id…]` | Contar novedades ahora (esas de nuevo, o las que te aplican y faltan), con las palabras de tu super-agente. |
+| `colonia chat "<text>"` | Hablale a Home (la secretaria) y mirá la respuesta mientras se arma: pasos de herramientas, subhilos, widgets, preguntas. |
+| `colonia chat "<text>" --agent <id>` | Hablale a un agente, en su última conversación con vos (`--new` arranca otra). |
+| `colonia chat "<text>" --thread <id>` | Escribí en un hilo puntual. |
+| `colonia chat "<text>" --code` | Un hilo de código en el proyecto registrado que contiene la carpeta actual (`--cwd <folder>` para otra, `--write ask`, `auto` o `read-only`, `--agent <id>`). |
+| `colonia threads [list]` | Los hilos con su estado y tipo. |
+| `colonia threads get <thread>` | Los últimos 20 mensajes de un hilo. |
+| `colonia threads search <words…>` | Mensajes con todas las palabras, el mejor resultado primero. |
+| `colonia threads cancel <thread>` | Frena lo que esté corriendo ahí. |
+| `colonia runs get <run>` | Una corrida, en JSON. |
+| `colonia runs wait <run>` | Espera a que termine (`--timeout 60`, en segundos). |
+| `colonia runs pending [thread]` | Lo que los agentes esperan de vos: confirmaciones y preguntas. |
+| `colonia runs respond <input> approve` | Aprobar (o `deny`), con una nota opcional y `--scope once`, `session` o `always`. |
+| `colonia runs respond <input> "<answer>"` | Responder una pregunta. |
+| `colonia jobs [list]` | El trabajo en segundo plano que corre ahora y los últimos 10 terminados. |
+| `colonia jobs get <job>` | El estado y la salida de un trabajo. |
+| `colonia jobs cancel <job>` | Lo frena. |
+| `colonia compact <thread>` | Resume ya los turnos viejos de un hilo (el loop propio de Colonia). |
+| `colonia notifications` | Lo que te está esperando. |
+| `colonia notifications read` | Marca todo como leído. |
+| `colonia news` | Las novedades que trae Colonia: si ya se contaron y si te aplican. |
+| `colonia news tell [id…]` | Contar novedades ahora (esas de nuevo, o las que te aplican y faltan), con las palabras de tu super-agente. |
 
-`apx chat` también acepta `--detach` (manda y vuelve sin esperar), y `--interrupt` o `--steer` para cuando el agente ya
+`colonia chat` también acepta `--detach` (manda y vuelve sin esperar), y `--interrupt` o `--steer` para cuando el agente ya
 está trabajando (frenarlo, o meter el mensaje en el turno que corre). Sin esas opciones, el mensaje espera su turno.
 
-<Terminal command={`apx chat "¿Qué hay abierto en Acme Store?"`}>{`  ✓ List tasks
+<Terminal command={`colonia chat "¿Qué hay abierto en Acme Store?"`}>{`  ✓ List tasks
 Hay dos tareas abiertas en Acme Store: el catálogo de primavera (en curso, Lucía) y las tarifas de envío (te esperan a vos).
 — completed · thread home`}</Terminal>
 
@@ -129,41 +129,41 @@ Hay dos tareas abiertas en Acme Store: el catálogo de primavera (en curso, Luc�
 
 | Comando | Qué hace |
 |---|---|
-| `apx agents` | Los agentes y el modelo con que corre cada uno (★ marca a Home). |
-| `apx agents show <agent>` | Sus campos y su prompt completo. |
-| `apx agents new <slug> "<Name>"` | Un agente nuevo; `--project <id>` lo pone en un proyecto (se escribe en `.apc/agents/<slug>.md`), `--role "<role>"` le da un rol. |
-| `apx agents set <agent> key=value…` | Cambia cualquier campo del editor de agentes (uno desconocido los lista todos). Listas como `tools=web_search,shell` (`tools=` es todas), `orchestrator=true`, `rules='{"write":"ask"}'`; `autonomy=` o `rules=` vuelven al valor por defecto. |
-| `apx agents set <agent> --prompt-file <file>` | Reemplaza su prompt desde un archivo (`-` lee stdin). |
-| `apx agents limits [<agent> runs=… tokens=… \| <agent> clear \| default runs=… tokens=…]` | Hasta dónde avanzan los agentes sin vos en un chat: el valor por defecto y el presupuesto propio de un agente (`0` = sin límite). |
-| `apx agents clone <agent…>` | Copia agentes a un proyecto (`--project <id>`); `--rename` le da a cada uno un nombre libre, `--under <slug>` fija el padre. |
-| `apx agents archive <agent>` | Archiva un agente (el archivo de un agente de proyecto pasa a `.apc/agents/.archived/`). |
-| `apx agents archived` | Agentes archivados; `apx agents restore <agent>` trae uno de vuelta. |
-| `apx agents model <agent> <ref>` | Su modelo: `<engine>/<model>`, `<engine>`, `router` o `default`; `--router` deja el router como respaldo. |
-| `apx projects [list]` | Los proyectos (un `!` marca una carpeta que no está). |
-| `apx projects register <folder>` | Registra una carpeta con `AGENTS.md` y/o `.apc/`. |
-| `apx projects create "<Name>"` | Un proyecto nuevo, en `--path <folder>` (se crea si falta) o en una carpeta propia en el home de APX; `--kind personal\|app\|company\|software\|other`, `--desc "…"`. |
-| `apx projects set <project>` | Cambia `--name`, `--kind`, `--desc` o `--autonomy manual\|auto\|accept_edits\|plan\|total` (hasta dónde llegan sus agentes sin preguntar). |
-| `apx projects folders list\|add\|rm <project> [folder]` | Carpetas que sus agentes pueden leer y nunca cambiar (otro checkout, documentación): `file_read` y `shell` leen ahí, nada escribe. |
-| `apx projects rm <project>` | Lo olvida en APX; su carpeta y sus archivos nunca se borran. |
-| `apx init [folder]` | Convierte una carpeta (esta por defecto) en un proyecto APC y la registra; solo escribe lo que falta (`AGENTS.md`, `.apc/`). |
-| `apx projects sync [project]` | Vuelve a leer los archivos del proyecto. |
+| `colonia agents` | Los agentes y el modelo con que corre cada uno (★ marca a Home). |
+| `colonia agents show <agent>` | Sus campos y su prompt completo. |
+| `colonia agents new <slug> "<Name>"` | Un agente nuevo; `--project <id>` lo pone en un proyecto (se escribe en `.apc/agents/<slug>.md`), `--role "<role>"` le da un rol. |
+| `colonia agents set <agent> key=value…` | Cambia cualquier campo del editor de agentes (uno desconocido los lista todos). Listas como `tools=web_search,shell` (`tools=` es todas), `orchestrator=true`, `rules='{"write":"ask"}'`; `autonomy=` o `rules=` vuelven al valor por defecto. |
+| `colonia agents set <agent> --prompt-file <file>` | Reemplaza su prompt desde un archivo (`-` lee stdin). |
+| `colonia agents limits [<agent> runs=… tokens=… \| <agent> clear \| default runs=… tokens=…]` | Hasta dónde avanzan los agentes sin vos en un chat: el valor por defecto y el presupuesto propio de un agente (`0` = sin límite). |
+| `colonia agents clone <agent…>` | Copia agentes a un proyecto (`--project <id>`); `--rename` le da a cada uno un nombre libre, `--under <slug>` fija el padre. |
+| `colonia agents archive <agent>` | Archiva un agente (el archivo de un agente de proyecto pasa a `.apc/agents/.archived/`). |
+| `colonia agents archived` | Agentes archivados; `colonia agents restore <agent>` trae uno de vuelta. |
+| `colonia agents model <agent> <ref>` | Su modelo: `<engine>/<model>`, `<engine>`, `router` o `default`; `--router` deja el router como respaldo. |
+| `colonia projects [list]` | Los proyectos (un `!` marca una carpeta que no está). |
+| `colonia projects register <folder>` | Registra una carpeta con `AGENTS.md` y/o `.apc/`. |
+| `colonia projects create "<Name>"` | Un proyecto nuevo, en `--path <folder>` (se crea si falta) o en una carpeta propia en el home de Colonia; `--kind personal\|app\|company\|software\|other`, `--desc "…"`. |
+| `colonia projects set <project>` | Cambia `--name`, `--kind`, `--desc` o `--autonomy manual\|auto\|accept_edits\|plan\|total` (hasta dónde llegan sus agentes sin preguntar). |
+| `colonia projects folders list\|add\|rm <project> [folder]` | Carpetas que sus agentes pueden leer y nunca cambiar (otro checkout, documentación): `file_read` y `shell` leen ahí, nada escribe. |
+| `colonia projects rm <project>` | Lo olvida en Colonia; su carpeta y sus archivos nunca se borran. |
+| `colonia init [folder]` | Convierte una carpeta (esta por defecto) en un proyecto APC y la registra; solo escribe lo que falta (`AGENTS.md`, `.apc/`). |
+| `colonia projects sync [project]` | Vuelve a leer los archivos del proyecto. |
 
 ## Modelos y consumo
 
 | Comando | Qué hace |
 |---|---|
-| `apx models` | Cada motor y los modelos que ofrece (`--refresh` les vuelve a preguntar). |
-| `apx models config` | El predeterminado de la instalación, la cadena del router y sus reglas. |
-| `apx models default <ref>` | El predeterminado: `<engine>/<model>`, `<engine>` o `router` (`--router` para dejar el router de respaldo). |
-| `apx models chain <ref> [<ref>…]` | La cadena de respaldo del router, en orden. |
-| `apx models rules < rules.json` | Las reglas del router, como un array JSON por stdin. |
-| `apx usage [days]` | Turnos y tokens por modelo en los últimos días (30 por defecto), y si entraron en un plan o se pagaron por token. |
-| `apx image "<prompt>"` | Dibuja una imagen y la guarda (`--out <file>`, `--size WxH`). |
-| `apx say "<text>"` | Dice un texto en voz alta y guarda el audio (`--out <file>`). |
-| `apx transcribe <audio file>` | De voz a texto. |
-| `apx owner [set key=value…]` | Quién sos para tus agentes: nombre, sobre vos, idioma, zona horaria. |
-| `apx org [set] --project <id>` | Las áreas y roles de un proyecto (`set` lee JSON por stdin). |
-| `apx profiles [list]` | Para qué sirve el super-agente. `use <id> [key=value…]`, `off`, `restore <routine>`. |
+| `colonia models` | Cada motor y los modelos que ofrece (`--refresh` les vuelve a preguntar). |
+| `colonia models config` | El predeterminado de la instalación, la cadena del router y sus reglas. |
+| `colonia models default <ref>` | El predeterminado: `<engine>/<model>`, `<engine>` o `router` (`--router` para dejar el router de respaldo). |
+| `colonia models chain <ref> [<ref>…]` | La cadena de respaldo del router, en orden. |
+| `colonia models rules < rules.json` | Las reglas del router, como un array JSON por stdin. |
+| `colonia usage [days]` | Turnos y tokens por modelo en los últimos días (30 por defecto), y si entraron en un plan o se pagaron por token. |
+| `colonia image "<prompt>"` | Dibuja una imagen y la guarda (`--out <file>`, `--size WxH`). |
+| `colonia say "<text>"` | Dice un texto en voz alta y guarda el audio (`--out <file>`). |
+| `colonia transcribe <audio file>` | De voz a texto. |
+| `colonia owner [set key=value…]` | Quién sos para tus agentes: nombre, sobre vos, idioma, zona horaria. |
+| `colonia org [set] --project <id>` | Las áreas y roles de un proyecto (`set` lee JSON por stdin). |
+| `colonia profiles [list]` | Para qué sirve el super-agente. `use <id> [key=value…]`, `off`, `restore <routine>`. |
 
 Qué es una referencia de modelo y el router está en [Modelos](/es/concepts/models/).
 
@@ -171,24 +171,24 @@ Qué es una referencia de modelo y el router está en [Modelos](/es/concepts/mod
 
 | Comando | Qué hace |
 |---|---|
-| `apx tasks` | Las tareas abiertas por columna (`--project <id>` para un proyecto). |
-| `apx tasks add <title…>` | Una tarea nueva: `--project <id>`, `--agent <id>` (asignarla), `--due 2026-10-05`. Con `--person <name> --owed me` o `--owed them` es un compromiso. |
-| `apx tasks commitments` | Lo que debés y lo que te deben. |
-| `apx tasks move <id> <column>` | La pasa a otra columna. |
-| `apx tasks done <id>` | La cierra como hecha (también `drop` y `reopen`). |
-| `apx tasks say <id> <text…>` | Un comentario; un `@agente` en el texto le pregunta a ese agente ahí. |
-| `apx routines` | Las rutinas y cuándo corren (`--project <id>`). |
-| `apx routines add <name> <prompt…> --agent <id>` | Una rutina nueva. Horario con `--cron "30 8 * * 1-5"`, `--every 60` (minutos) o `--at <fecha ISO>`; sin ninguno es a mano. También `--project`, `--pre "<command>"`, `--post "<command>"`, `--call always`, `output`, `fails` o `never`. |
-| `apx routines run <id>` | La corre ya. |
-| `apx routines on <id>` | La prende (`off` la apaga). |
-| `apx routines rm <id>` | La borra. |
-| `apx routines log <id>` | Sus últimas corridas. |
-| `apx flows run <flow> ['<JSON>']` | Corre ahora un flow publicado; uno con webhook recibe el JSON como cuerpo. No corre dentro del comando de un agente. |
-| `apx flows stop <flow> <evento>` | Detiene una ronda que está corriendo; un mensaje o llamada ya mandados quedan para revisar. No corre dentro del comando de un agente. |
-| `apx memory [words]` | Las notas que guardan los agentes, de la más nueva a la más vieja, o las que mejor coinciden con las palabras (`--project`, `--agent`, `--json`). |
-| `apx memory add [scope] <text>` | Agrega una nota. El alcance es `global`, `project` o `agent` (con `--project <id>` o `--agent <id>`); sin alcance sigue esas opciones, y si no, `global`. |
-| `apx memory edit <id> <text…>` | Reescribe una nota en el lugar. |
-| `apx memory rm <id…>` | Borra notas. |
+| `colonia tasks` | Las tareas abiertas por columna (`--project <id>` para un proyecto). |
+| `colonia tasks add <title…>` | Una tarea nueva: `--project <id>`, `--agent <id>` (asignarla), `--due 2026-10-05`. Con `--person <name> --owed me` o `--owed them` es un compromiso. |
+| `colonia tasks commitments` | Lo que debés y lo que te deben. |
+| `colonia tasks move <id> <column>` | La pasa a otra columna. |
+| `colonia tasks done <id>` | La cierra como hecha (también `drop` y `reopen`). |
+| `colonia tasks say <id> <text…>` | Un comentario; un `@agente` en el texto le pregunta a ese agente ahí. |
+| `colonia routines` | Las rutinas y cuándo corren (`--project <id>`). |
+| `colonia routines add <name> <prompt…> --agent <id>` | Una rutina nueva. Horario con `--cron "30 8 * * 1-5"`, `--every 60` (minutos) o `--at <fecha ISO>`; sin ninguno es a mano. También `--project`, `--pre "<command>"`, `--post "<command>"`, `--call always`, `output`, `fails` o `never`. |
+| `colonia routines run <id>` | La corre ya. |
+| `colonia routines on <id>` | La prende (`off` la apaga). |
+| `colonia routines rm <id>` | La borra. |
+| `colonia routines log <id>` | Sus últimas corridas. |
+| `colonia flows run <flow> ['<JSON>']` | Corre ahora un flow publicado; uno con webhook recibe el JSON como cuerpo. No corre dentro del comando de un agente. |
+| `colonia flows stop <flow> <evento>` | Detiene una ronda que está corriendo; un mensaje o llamada ya mandados quedan para revisar. No corre dentro del comando de un agente. |
+| `colonia memory [words]` | Las notas que guardan los agentes, de la más nueva a la más vieja, o las que mejor coinciden con las palabras (`--project`, `--agent`, `--json`). |
+| `colonia memory add [scope] <text>` | Agrega una nota. El alcance es `global`, `project` o `agent` (con `--project <id>` o `--agent <id>`); sin alcance sigue esas opciones, y si no, `global`. |
+| `colonia memory edit <id> <text…>` | Reescribe una nota en el lugar. |
+| `colonia memory rm <id…>` | Borra notas. |
 
 En una rutina, la salida del pre-comando llega al prompt donde escribas `{{pre_output}}`. Más en
 [Tareas](/es/office/tasks/), [Rutinas](/es/office/routines/) y [Memoria](/es/concepts/memory/).
@@ -197,20 +197,20 @@ En una rutina, la salida del pre-comando llega al prompt donde escribas `{{pre_o
 
 | Comando | Qué hace |
 |---|---|
-| `apx channels` | Los canales y su estado. |
-| `apx channels add telegram <id> --agent <agent>` | Agrega un bot de Telegram. El token sale de `APX_CHANNEL_TOKEN`, nunca de la línea de comandos. |
-| `apx channels rm <id>` | Borra un canal y su token. |
-| `apx channels outbox` | Lo que se mandó últimamente y cómo salió. |
-| `apx channels send <channel> <contact> <text…>` | Le escribís vos a un contacto, en su chat de ese canal. |
-| `apx channels recover <thread>` | Le vuelve a pedir al canal los archivos que nunca llegaron a un chat (WhatsApp: tu teléfono vuelve a mandar esos mensajes; tiene que estar en línea). |
-| `apx contacts` | Las personas y sus direcciones. |
-| `apx contacts add <name…>` | Agrega un contacto. |
-| `apx contacts block <id>` | Bloquea a una persona (`unblock` para deshacerlo). |
-| `apx contacts rm <id>` | Borra a una persona. |
-| `apx pairing` | Desconocidos esperando aprobación. |
-| `apx pairing me <code>` | Esta dirección es mía (del dueño). |
-| `apx pairing ok <code> [name…]` | Aprobar como contacto. |
-| `apx pairing no <code>` | Rechazarlo. |
+| `colonia channels` | Los canales y su estado. |
+| `colonia channels add telegram <id> --agent <agent>` | Agrega un bot de Telegram. El token sale de `COLONIA_CHANNEL_TOKEN`, nunca de la línea de comandos. |
+| `colonia channels rm <id>` | Borra un canal y su token. |
+| `colonia channels outbox` | Lo que se mandó últimamente y cómo salió. |
+| `colonia channels send <channel> <contact> <text…>` | Le escribís vos a un contacto, en su chat de ese canal. |
+| `colonia channels recover <thread>` | Le vuelve a pedir al canal los archivos que nunca llegaron a un chat (WhatsApp: tu teléfono vuelve a mandar esos mensajes; tiene que estar en línea). |
+| `colonia contacts` | Las personas y sus direcciones. |
+| `colonia contacts add <name…>` | Agrega un contacto. |
+| `colonia contacts block <id>` | Bloquea a una persona (`unblock` para deshacerlo). |
+| `colonia contacts rm <id>` | Borra a una persona. |
+| `colonia pairing` | Desconocidos esperando aprobación. |
+| `colonia pairing me <code>` | Esta dirección es mía (del dueño). |
+| `colonia pairing ok <code> [name…]` | Aprobar como contacto. |
+| `colonia pairing no <code>` | Rechazarlo. |
 
 Los demás canales (WhatsApp, Discord, Slack) se configuran en el panel. Mirá [Canales](/es/channels/overview/).
 
@@ -218,58 +218,58 @@ Los demás canales (WhatsApp, Discord, Slack) se configuran en el panel. Mirá [
 
 | Comando | Qué hace |
 |---|---|
-| `apx skills [project]` | Las skills que pueden cargar los agentes. |
-| `apx skills on\|off <skill>` | Activa o desactiva una skill en todos lados, o en un proyecto (`--project <id>`). |
-| `apx skills save <skill>` | Crea o reemplaza una skill: su `SKILL.md` por stdin (`--project <id>`). |
-| `apx skills install-runtimes` | Actualiza ya las skills que le enseñan a Claude Code, Codex, Cursor y `~/.agents` a usar APX (el core también lo hace en cada arranque). `--dry-run` muestra qué cambiaría. |
-| `apx mcps [list [project]]` | Los servidores MCP, con su estado y cantidad de herramientas. |
-| `apx mcps add <name> <command…>` | Agrega uno propio: un comando con sus argumentos, o una URL. |
-| `apx mcps rm <name>` | Lo saca. |
-| `apx mcps show <name>` | Su definición (las variables salen como `secret://NAME`, nunca sus valores). |
-| `apx mcps set <name> --env K=V` | Cambia solo lo que pasás (`--env`, `--header`) y deja el resto. |
-| `apx mcps on\|off <server> --project <id>` | Activa o desactiva uno de tus servidores dentro de un proyecto. |
-| `apx mcps logs <server>` | Lo que un servidor imprimió por stderr desde que arrancó el core (`--project`, `-n 100`). |
-| `apx sessions projects codex\|claude` | Proyectos y chats de Claude Code o Codex en esta computadora. |
-| `apx sessions import codex\|claude <project>` | Los trae como un proyecto de APX (`--only <id,…>`, `--name "…"`); también `digest`, `adopt` y `page`. |
-| `apx mcps trust <project> <server>` | Aprueba un servidor que nombra el `.apc/mcps.json` de un proyecto (`untrust` para deshacerlo). |
-| `apx mcp tools <server> [<tool>]` | Las descripciones de las herramientas y sus esquemas JSON. |
-| `apx mcp run <server> <tool> '<json>'` | Llama a una herramienta directo y muestra el resultado crudo; `-` lee los argumentos de stdin. |
-| `apx mcp check <server>` | Una prueba de conexión. |
-| `apx mcp signin <server>` | Iniciar sesión en un servidor que lo pidió; su página se abre en tu navegador. |
-| `apx extensions` | Las extensiones instaladas. |
-| `apx extensions inspect <folder>` | Qué traería una carpeta; no instala nada. |
-| `apx extensions install <folder>` | La copia, apagada. |
-| `apx extensions on <id>` | La prende (`off` la apaga). |
-| `apx extensions secret <id> <name>` | Le da un secreto, con el valor por stdin (`--clear` lo borra). |
-| `apx extensions rm <id>` | La saca. |
-| `apx clients` | Las apps de afuera con un token propio. |
-| `apx clients add <name>` | Un token para una (se muestra una vez), `--scopes chat,browser` (por defecto `chat`). |
-| `apx clients rm <id>` | Lo revoca. |
-| `apx secrets [list]` | Los nombres de los secretos y cuándo cambiaron (nunca los valores). |
-| `apx secrets set <name>` | Guarda un secreto; el valor llega por stdin. |
-| `apx secrets rm <name>` | Lo borra. |
+| `colonia skills [project]` | Las skills que pueden cargar los agentes. |
+| `colonia skills on\|off <skill>` | Activa o desactiva una skill en todos lados, o en un proyecto (`--project <id>`). |
+| `colonia skills save <skill>` | Crea o reemplaza una skill: su `SKILL.md` por stdin (`--project <id>`). |
+| `colonia skills install-runtimes` | Actualiza ya las skills que le enseñan a Claude Code, Codex, Cursor y `~/.agents` a usar Colonia (el core también lo hace en cada arranque). `--dry-run` muestra qué cambiaría. |
+| `colonia mcps [list [project]]` | Los servidores MCP, con su estado y cantidad de herramientas. |
+| `colonia mcps add <name> <command…>` | Agrega uno propio: un comando con sus argumentos, o una URL. |
+| `colonia mcps rm <name>` | Lo saca. |
+| `colonia mcps show <name>` | Su definición (las variables salen como `secret://NAME`, nunca sus valores). |
+| `colonia mcps set <name> --env K=V` | Cambia solo lo que pasás (`--env`, `--header`) y deja el resto. |
+| `colonia mcps on\|off <server> --project <id>` | Activa o desactiva uno de tus servidores dentro de un proyecto. |
+| `colonia mcps logs <server>` | Lo que un servidor imprimió por stderr desde que arrancó el core (`--project`, `-n 100`). |
+| `colonia sessions projects codex\|claude` | Proyectos y chats de Claude Code o Codex en esta computadora. |
+| `colonia sessions import codex\|claude <project>` | Los trae como un proyecto de Colonia (`--only <id,…>`, `--name "…"`); también `digest`, `adopt` y `page`. |
+| `colonia mcps trust <project> <server>` | Aprueba un servidor que nombra el `.apc/mcps.json` de un proyecto (`untrust` para deshacerlo). |
+| `colonia mcp tools <server> [<tool>]` | Las descripciones de las herramientas y sus esquemas JSON. |
+| `colonia mcp run <server> <tool> '<json>'` | Llama a una herramienta directo y muestra el resultado crudo; `-` lee los argumentos de stdin. |
+| `colonia mcp check <server>` | Una prueba de conexión. |
+| `colonia mcp signin <server>` | Iniciar sesión en un servidor que lo pidió; su página se abre en tu navegador. |
+| `colonia extensions` | Las extensiones instaladas. |
+| `colonia extensions inspect <folder>` | Qué traería una carpeta; no instala nada. |
+| `colonia extensions install <folder>` | La copia, apagada. |
+| `colonia extensions on <id>` | La prende (`off` la apaga). |
+| `colonia extensions secret <id> <name>` | Le da un secreto, con el valor por stdin (`--clear` lo borra). |
+| `colonia extensions rm <id>` | La saca. |
+| `colonia clients` | Las apps de afuera con un token propio. |
+| `colonia clients add <name>` | Un token para una (se muestra una vez), `--scopes chat,browser` (por defecto `chat`). |
+| `colonia clients rm <id>` | Lo revoca. |
+| `colonia secrets [list]` | Los nombres de los secretos y cuándo cambiaron (nunca los valores). |
+| `colonia secrets set <name>` | Guarda un secreto; el valor llega por stdin. |
+| `colonia secrets rm <name>` | Lo borra. |
 
-`apx mcp tools`, `run` y `check` aceptan `--project <id>` y `--scope global` o `--scope project`. Las llamadas MCP
+`colonia mcp tools`, `run` y `check` aceptan `--project <id>` y `--scope global` o `--scope project`. Las llamadas MCP
 directas son operaciones tuyas: no arrancan un turno de un agente.
 
 Los valores nunca van en la línea de comandos, donde quedarían en el historial de tu shell:
 
 ```bash
-printf '%s' "$KEY" | apx secrets set gemini
+printf '%s' "$KEY" | colonia secrets set gemini
 ```
 
-<Terminal command="apx mcp check github">{`github: OK · 412 ms · 26 tools`}</Terminal>
+<Terminal command="colonia mcp check github">{`github: OK · 412 ms · 26 tools`}</Terminal>
 
-### apx como servidor MCP
+### colonia como servidor MCP
 
 | Comando | Qué hace |
 |---|---|
-| `apx mcp` | Un servidor MCP por stdio con las herramientas `browser_*`, para Claude Code, Codex y otros clientes (`--by <agent>` dice quién lo usa). Con `APX_CLIENT_TOKEN` además ofrece `apx_agents`, `apx_ask` y `apx_read`. |
-| `apx mcp --run` | Las herramientas de una corrida de un agente, para un harness de afuera (lee `APX_RUN_TOKEN`). Lo usa APX mismo. |
+| `colonia mcp` | Un servidor MCP por stdio con las herramientas `browser_*`, para Claude Code, Codex y otros clientes (`--by <agent>` dice quién lo usa). Con `COLONIA_CLIENT_TOKEN` además ofrece `colonia_agents`, `colonia_ask` y `colonia_read`. |
+| `colonia mcp --run` | Las herramientas de una corrida de un agente, para un harness de afuera (lee `COLONIA_RUN_TOKEN`). Lo usa Colonia mismo. |
 
 ```bash
-apx clients add claude-code
-claude mcp add apx -e APX_CLIENT_TOKEN=<token> -- apx mcp
+colonia clients add claude-code
+claude mcp add colonia -e COLONIA_CLIENT_TOKEN=<token> -- colonia mcp
 ```
 
 Más en [Clientes de afuera](/es/extend/outside-clients/).
@@ -278,18 +278,18 @@ Más en [Clientes de afuera](/es/extend/outside-clients/).
 
 | Comando | Qué hace |
 |---|---|
-| `apx browser tabs` | Las pestañas abiertas. |
-| `apx browser open <url>` | Abre una pestaña: `--profile shared`, `incognito` o `agent:<id>`; `--by <agent>`. |
-| `apx browser nav <tab> <url>` | Va a una página. |
-| `apx browser snapshot <tab>` | Los elementos de la página, con refs para hacer clic o escribir. |
-| `apx browser click <tab> <ref>` | Hace clic en un elemento. |
-| `apx browser type <tab> <ref> <text>` | Escribe en él (`--submit` para apretar Enter). |
-| `apx browser shot <tab> <file.jpg>` | Guarda una captura. |
-| `apx browser close <tab>` | Cierra la pestaña. |
-| `apx browser control <tab> user` | Te quedás vos con la pestaña; `idle` o `done` en vez de `user` para soltarla. |
-| `apx browser cookies` | Los navegadores cuyas sesiones se pueden importar. |
-| `apx browser cookies <source> [filter]` | Los dominios con cookies en uno de ellos (solo cantidades). |
-| `apx browser import <source> <domain,…>` | Importa las cookies de esos dominios (`--profile shared` o `agent:<id>`). |
+| `colonia browser tabs` | Las pestañas abiertas. |
+| `colonia browser open <url>` | Abre una pestaña: `--profile shared`, `incognito` o `agent:<id>`; `--by <agent>`. |
+| `colonia browser nav <tab> <url>` | Va a una página. |
+| `colonia browser snapshot <tab>` | Los elementos de la página, con refs para hacer clic o escribir. |
+| `colonia browser click <tab> <ref>` | Hace clic en un elemento. |
+| `colonia browser type <tab> <ref> <text>` | Escribe en él (`--submit` para apretar Enter). |
+| `colonia browser shot <tab> <file.jpg>` | Guarda una captura. |
+| `colonia browser close <tab>` | Cierra la pestaña. |
+| `colonia browser control <tab> user` | Te quedás vos con la pestaña; `idle` o `done` en vez de `user` para soltarla. |
+| `colonia browser cookies` | Los navegadores cuyas sesiones se pueden importar. |
+| `colonia browser cookies <source> [filter]` | Los dominios con cookies en uno de ellos (solo cantidades). |
+| `colonia browser import <source> <domain,…>` | Importa las cookies de esos dominios (`--profile shared` o `agent:<id>`). |
 
 Mirá [Navegador](/es/office/browser/).
 
@@ -297,13 +297,13 @@ Mirá [Navegador](/es/office/browser/).
 
 | Variable | Por defecto | Qué hace |
 |---|---|---|
-| `APX_URL` | `http://127.0.0.1:7440` | El core con el que habla esta terminal. El puerto sigue a `APX_PORT`, después a `core.env`. |
-| `APX_TOKEN` | el de `<home>/core.env` | El token del core, para un core que lo pide. |
-| `APX_HOME` | `~/.apx/v2` | La carpeta de APX: donde se lee y se escribe `core.env`. |
+| `COLONIA_URL` | `http://127.0.0.1:7440` | El core con el que habla esta terminal. El puerto sigue a `COLONIA_PORT`, después a `core.env`. |
+| `COLONIA_TOKEN` | el de `<home>/core.env` | El token del core, para un core que lo pide. |
+| `COLONIA_HOME` | `~/.colonia/v2` | La carpeta de Colonia: donde se lee y se escribe `core.env`. |
 
-Los comandos que necesitan un secreto lo leen del entorno o de stdin, nunca de los argumentos: `APX_CHANNEL_TOKEN` para
-`apx channels add`, `APX_CLIENT_TOKEN` para `apx mcp`. Todas las variables que lee el core están en
+Los comandos que necesitan un secreto lo leen del entorno o de stdin, nunca de los argumentos: `COLONIA_CHANNEL_TOKEN` para
+`colonia channels add`, `COLONIA_CLIENT_TOKEN` para `colonia mcp`. Todas las variables que lee el core están en
 [Configuración](/es/reference/configuration/).
 
-Un comando u opción desconocidos muestran un error corto y `Try: apx --help`. Si el core está caído vas a ver
-`apx: the core is not running`; mirá [Problemas frecuentes](/es/reference/troubleshooting/).
+Un comando u opción desconocidos muestran un error corto y `Try: colonia --help`. Si el core está caído vas a ver
+`colonia: the core is not running`; mirá [Problemas frecuentes](/es/reference/troubleshooting/).

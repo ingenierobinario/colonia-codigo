@@ -1,8 +1,8 @@
 // Before a drawing runs, the owner sees where it sends as them, what it calls, the commands it runs and the databases
 // it changes (DECISIONS.md#d-169, #d-170). Publishing passes back the list they saw; the core refuses a drawing that
 // does any of it without that list.
-import type { Result } from "@apx/protocol";
-import { Button, ChannelIcon, Dialog, Icons } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, ChannelIcon, Dialog, Icons } from "@colonia/ui";
 import { client } from "../data/client.ts";
 import { createStore, useSlice } from "../data/createStore.ts";
 import { useT } from "../i18n/index.ts";

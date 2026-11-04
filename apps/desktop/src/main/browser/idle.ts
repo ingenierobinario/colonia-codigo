@@ -1,5 +1,5 @@
 // Which tabs to close because nobody uses them: an open page keeps running (and taking memory) until it is closed.
-import { BROWSER_TAB_IDLE_MIN } from "@apx/protocol/client";
+import { BROWSER_TAB_IDLE_MIN } from "@colonia/protocol/client";
 
 /** How long a tab stays open off screen with no agent or owner using it. */
 export const TAB_IDLE_MS = BROWSER_TAB_IDLE_MIN * 60_000;

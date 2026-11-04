@@ -1,7 +1,7 @@
 // Outside apps the owner connected. The token is random and shown once; only its sha256 is stored, so a copy of the
 // database does not hand out access.
 import { createHash, randomBytes } from "node:crypto";
-import type { ApiClient, ClientScope } from "@apx/protocol";
+import type { ApiClient, ClientScope } from "@colonia/protocol";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";
 
 const hashOf = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -23,7 +23,7 @@ export function clientsRepo({ one, all, run }: Sql) {
     },
     create(name: string, scopes: ClientScope[]): { client: ApiClient; token: string } {
       const id = newId("cli");
-      const token = `apxc_${randomBytes(24).toString("hex")}`;
+      const token = `coloniac_${randomBytes(24).toString("hex")}`;
       run(
         qb.insertInto("api_clients").values({
           id,

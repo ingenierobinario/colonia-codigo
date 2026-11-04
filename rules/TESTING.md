@@ -71,7 +71,7 @@ machine it was written on is a broken test. The helpers live in `apps/core/src/t
 | A temp folder | `tempDir(prefix)` → `{ path, remove() }`; `removeDir(dir)` for a folder made otherwise | `fs.rmSync(dir, { recursive: true })` |
 | A child to be gone | `await stopped(child)` (or the product's `await stopTree(pid)`) before removing its folder | Removing the folder while it runs |
 | Compare paths | `isInside`, `samePath` (`paths.ts`), `assertPath` in tests | ``startsWith(`${root}/`)``, `===` on paths |
-| End a process | `exitWhenClosed(code)` (`@apx/protocol/exit`) | `process.exit` with handles open |
+| End a process | `exitWhenClosed(code)` (`@colonia/protocol/exit`) | `process.exit` with handles open |
 
 `TEST_TIME_SCALE` (default 1) stretches every `waitFor`, `stopped` and `removeDir` budget on a slow runner; it
 never changes what a test decides. A failure seen only on Windows is first classified: product (the probe read a
@@ -88,8 +88,8 @@ runner that would time out.
 ## 1. Build / typecheck
 ```bash
 pnpm typecheck                     # tsc (TS 7) in every package
-pnpm --filter @apx/web build       # Vite production build
-pnpm --filter @apx/ui build        # design system dist/ (what web and design-sync consume)
+pnpm --filter @colonia/web build       # Vite production build
+pnpm --filter @colonia/ui build        # design system dist/ (what web and design-sync consume)
 ```
 
 ## 2. Static checks
@@ -153,13 +153,13 @@ Package test globs use double quotes so Node receives the same pattern in POSIX 
 
 ## 4. Real path
 ```bash
-pnpm dev                                    # or: APX_HOME=$(mktemp -d) node apps/core/src/main.ts
+pnpm dev                                    # or: COLONIA_HOME=$(mktemp -d) node apps/core/src/main.ts
 node apps/terminal/src/main.ts status       # code_sha must match `git rev-parse --short=12 HEAD`
 node apps/terminal/src/main.ts ping hola    # proves the WS path
 curl -s 127.0.0.1:7440/health               # raw HTTP
-pnpm --filter @apx/web dev                  # open http://127.0.0.1:7441 — badge shows the core's code_sha
+pnpm --filter @colonia/web dev                  # open http://127.0.0.1:7441 — badge shows the core's code_sha
 ```
-While developing against a scratch state, set `APX_HOME` to a temp dir so `~/.apx/v2` stays clean.
+While developing against a scratch state, set `COLONIA_HOME` to a temp dir so `~/.colonia/v2` stays clean.
 
 ## 5. All at once
 ```bash
@@ -170,8 +170,8 @@ pnpm verify --stream               # the same, with every step's output as it ru
 Both run through `scripts/verify.ts`, which expands the root scripts they name (`preflight:static`, `test`,
 `test:coverage:all`) into steps and stops at the first failure with its exit code. In a terminal it keeps one status
 line: step k of N, a bar, time for the step and in total, and the time left estimated from each step's last passing
-duration (`node_modules/.cache/apx-verify/history.json`; none on the first run). The steps' output goes to
-`node_modules/.cache/apx-verify/logs/`, and only a failing step's is shown. Outside a terminal (CI, a log file) or with
+duration (`node_modules/.cache/colonia-verify/history.json`; none on the first run). The steps' output goes to
+`node_modules/.cache/colonia-verify/logs/`, and only a failing step's is shown. Outside a terminal (CI, a log file) or with
 `--stream`, the output streams and the status is one plain line per step start and end.
 
 ## 5a. End to end (Playwright)
@@ -182,12 +182,12 @@ E2E_KEEP=1 node e2e/env.ts         # the sandbox by hand (core :7460, control :7
 E2E_CHROMIUM=/path/to/chrome pnpm e2e   # a Chromium other than the one Playwright pins (container, distro build)
 pnpm e2e:desktop                   # the Electron app (e2e/desktop) against the same sandbox; Linux: xvfb-run -a …
 ```
-The desktop specs launch the real app with a temp `HOME` and `APX_DESKTOP_DATA` (its data folder, sessions and
-single-instance lock never touch the owner's running APX; macOS ignores `HOME` for that folder), the panel
+The desktop specs launch the real app with a temp `HOME` and `COLONIA_DESKTOP_DATA` (its data folder, sessions and
+single-instance lock never touch the owner's running Colonia; macOS ignores `HOME` for that folder), the panel
 served by the sandbox's core, and check the window, the browser it lends to the core as a node, and the quick chat.
-`e2e/env.ts` is a whole APX apart from the owner's: a temp home and port, `APX_SECRETS=file`, a fake
+`e2e/env.ts` is a whole Colonia apart from the owner's: a temp home and port, `COLONIA_SECRETS=file`, a fake
 OpenAI-compatible model (`e2e/fake-llm.ts`, answers "Got it: <what you wrote>"), an emulated Telegram Bot API
-(`APX_TELEGRAM_API`), an APX v1 and Claude Code / Codex sessions to import (`e2e/fixtures.ts`). Specs act as the
+(`COLONIA_TELEGRAM_API`), an Colonia v1 and Claude Code / Codex sessions to import (`e2e/fixtures.ts`). Specs act as the
 outside world through its control API (`world.telegram(...)`, `world.sentTo(chat)`). Specs run in file order on
 one core, like one owner from the first-run setup on. CI splits them into three parts (`--shard=i/3`), each on a core
 of its own, so a spec may build only on what the `setup` project leaves (`01-setup`, `06-telegram`, `10-whatsapp`,
@@ -204,7 +204,7 @@ npm run test:ui                         # React hooks and native components unde
 npx expo export --platform android     # Metro bundles the app: proof it resolves, without a device
 ```
 It installs outside the pnpm workspace (React Native never weighs on the rest). On a device: pair it from
-Config › Devices with the core listening on the network (`APX_HOST=0.0.0.0` and `APX_TOKEN`, or Tailscale).
+Config › Devices with the core listening on the network (`COLONIA_HOST=0.0.0.0` and `COLONIA_TOKEN`, or Tailscale).
 Jest Expo, its Jest version, Jest types and React Native Testing Library are development dependencies required to
 exercise mounted hooks, component events and effect cleanup. Plain Node tests cannot execute React Native's
 native modules or TSX screens. Their install does not change production dependency versions.
@@ -229,7 +229,7 @@ The first load is read from the built `apps/web/dist` (`scripts/bundle.ts`), nev
 heavier language chunk `main.tsx` waits for, with its own static imports — what a first screen really downloads.
 `perf.ts` also fails when zod reaches that set or a named lazy screen (`ProjectScreen`, `ConfigModal`…) loses its own
 chunk. Over budget or failing, it prints each first-load chunk's size and, with a sourcemap (CI's perf job builds
-with `APX_TEST_COVERAGE=1`), the five packages or files that weigh the most: split the module it names.
+with `COLONIA_TEST_COVERAGE=1`), the five packages or files that weigh the most: split the module it names.
 Code loaded late is declared only in `apps/web/src/lazy.ts` (AGENTS.md rule 27); `biome.json` fails a first-screen
 file (`App`, `main`, `shell/`, `inbox/`, `chat/`) that imports one of its modules directly, and
 `e2e/specs/89-first-load.spec.ts` checks what opening the inbox fetches, its own late parts included.
@@ -266,15 +266,15 @@ without running the suites again. Tag only a commit that run already passed: `pn
 
 Reports are kept 14 days: `verify-reports` carries Playwright HTML, failed-test snapshots and coverage;
 `perf-reports` explicitly includes `e2e/.out/perf.json`, even though its directory is hidden. The `autofix` job is
-off by default: with the repo variable `APX_AUTOFIX=true` and the secret `ANTHROPIC_API_KEY`, a failure on main
+off by default: with the repo variable `COLONIA_AUTOFIX=true` and the secret `ANTHROPIC_API_KEY`, a failure on main
 hands the reports to an agent that fixes the cause and opens a pull request (never merged on its own, never by
 weakening a gate).
 
 ## 6. Embedded browser (real path)
 ```bash
 pnpm dev                                         # core
-pnpm --filter @apx/web dev                       # panel
-pnpm --filter @apx/desktop dev                   # Electron; `apx status` must show "browser ok — apx-desktop"
+pnpm --filter @colonia/web dev                       # panel
+pnpm --filter @colonia/desktop dev                   # Electron; `colonia status` must show "browser ok — colonia-desktop"
 node apps/terminal/src/main.ts browser open https://example.com --by Roby
 node apps/terminal/src/main.ts browser snapshot t1
 node apps/terminal/src/main.ts browser shot t1 /tmp/t1.jpg
@@ -291,7 +291,7 @@ For site edits, from `apps/docs` (a standalone install, outside the root workspa
 
 ```bash
 pnpm install --frozen-lockfile
-DOCS_BASE=/apx pnpm build
+DOCS_BASE=/colonia pnpm build
 pnpm check                 # EN/ES page and heading structure, built internal routes and fragment targets
 ```
 

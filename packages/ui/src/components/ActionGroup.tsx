@@ -44,26 +44,26 @@ export function ActionGroup({
   className,
 }: ActionGroupProps) {
   return (
-    <Collapsible.Root defaultOpen={defaultOpen} className={cx("apx-actions", className)}>
-      <Collapsible.Trigger className="apx-actions__head">
-        <ChevronRight size={14} className="apx-actions__chevron" />
-        <span className="apx-actions__icon">{icon ?? <Wrench size={14} />}</span>
-        <span className="apx-actions__title">{title}</span>
+    <Collapsible.Root defaultOpen={defaultOpen} className={cx("colonia-actions", className)}>
+      <Collapsible.Trigger className="colonia-actions__head">
+        <ChevronRight size={14} className="colonia-actions__chevron" />
+        <span className="colonia-actions__icon">{icon ?? <Wrench size={14} />}</span>
+        <span className="colonia-actions__title">{title}</span>
         {failed > 0 && (
-          <span className="apx-actions__failed">
+          <span className="colonia-actions__failed">
             · {failed} {failedLabel}
           </span>
         )}
       </Collapsible.Trigger>
-      <Collapsible.Panel className="apx-actions__panel">
+      <Collapsible.Panel className="colonia-actions__panel">
         {children ?? (
-          <ul className="apx-actions__list">
+          <ul className="colonia-actions__list">
             {keyed(items ?? [], (it) => it.name).map(({ item: it, key }) => (
-              <li key={key} className={cx("apx-actions__item", it.status === "failed" && "is-failed")}>
+              <li key={key} className={cx("colonia-actions__item", it.status === "failed" && "is-failed")}>
                 <StatusIcon status={it.status ?? "done"} />
-                <span className="apx-actions__name">{it.name}</span>
-                {it.detail && <span className="apx-actions__detail">{it.detail}</span>}
-                {it.aside && <span className="apx-actions__aside">{it.aside}</span>}
+                <span className="colonia-actions__name">{it.name}</span>
+                {it.detail && <span className="colonia-actions__detail">{it.detail}</span>}
+                {it.aside && <span className="colonia-actions__aside">{it.aside}</span>}
               </li>
             ))}
           </ul>

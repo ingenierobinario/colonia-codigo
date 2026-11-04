@@ -1,4 +1,4 @@
-import { Button, EmptyState, Icons, Skeleton, useApx } from "@apx/ui";
+import { Button, EmptyState, Icons, Skeleton, useColonia } from "@colonia/ui";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { usePageVisible } from "../common/useInView.ts";
 import { useScreenshot } from "../common/useScreenshot.ts";
@@ -11,7 +11,7 @@ const POLL_MS = 1500;
 
 /** The page area: the desktop app's real browser view when embedded, else a polled screenshot. */
 export function BrowserViewport({ tab }: { tab: string }) {
-  const desktop = typeof window !== "undefined" ? window.apxDesktop : undefined;
+  const desktop = typeof window !== "undefined" ? window.coloniaDesktop : undefined;
   const poppedOut = useBrowserPoppedOut();
   if (desktop && poppedOut) return <PoppedOut />;
   return desktop ? <DesktopSlot desktop={desktop} /> : <ScreenshotView tab={tab} />;
@@ -37,7 +37,7 @@ function PoppedOut() {
   );
 }
 
-function DesktopSlot({ desktop }: { desktop: NonNullable<Window["apxDesktop"]> }) {
+function DesktopSlot({ desktop }: { desktop: NonNullable<Window["coloniaDesktop"]> }) {
   const ref = useRef<HTMLDivElement>(null);
   const dragging = useSlice(nativeCover, (s) => s.on);
   const overlaid = usePopupOver(ref);
@@ -79,7 +79,7 @@ function DesktopSlot({ desktop }: { desktop: NonNullable<Window["apxDesktop"]> }
  * layer, so it steps behind while one is open instead of hiding it.
  */
 function usePopupOver(slot: RefObject<HTMLDivElement | null>): boolean {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   const [over, setOver] = useState(false);
   useEffect(() => {
     const portal = portalRef.current;
@@ -92,7 +92,7 @@ function usePopupOver(slot: RefObject<HTMLDivElement | null>): boolean {
         if (!el) return setOver(false);
         const a = el.getBoundingClientRect();
         const hit = [
-          ...portal.querySelectorAll<HTMLElement>("[role=menu], [role=dialog], [role=listbox], .apx-menu"),
+          ...portal.querySelectorAll<HTMLElement>("[role=menu], [role=dialog], [role=listbox], .colonia-menu"),
         ].some((p) => {
           const b = p.getBoundingClientRect();
           return (

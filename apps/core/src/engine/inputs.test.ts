@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import { z } from "zod";
 import { removeDir } from "../testkit/platform.ts";
 import { defineTool } from "../tools/types.ts";
@@ -41,8 +41,8 @@ let careful = "";
 let root = "";
 
 /** A project agent whose file says `autonomy: ask`: every call that changes something waits for the owner. */
-async function carefulAgent(client: ApxClient): Promise<string> {
-  root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-inputs-"));
+async function carefulAgent(client: ColoniaClient): Promise<string> {
+  root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-inputs-"));
   fs.mkdirSync(path.join(root, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(root, ".apc", "project.json"), JSON.stringify({ name: "Northwind" }));
   fs.writeFileSync(
@@ -110,7 +110,7 @@ test("denying returns 'not run' to the model and nothing happens; a second answe
   assert.match(String(seen?.content), /not run: the owner declined \(their note: not now\)/);
   await assert.rejects(
     env.client.call("runs.respond", { input: input?.id ?? "", decision: "approve" }),
-    (e: unknown) => e instanceof ApxError && e.code === "conflict",
+    (e: unknown) => e instanceof ColoniaError && e.code === "conflict",
   );
 });
 
@@ -139,10 +139,10 @@ test("ask_owner waits for the owner's words, which come back to the model", asyn
 });
 
 test("only the owner answers: an agent client is refused", async () => {
-  const agentClient = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agentClient = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(
     agentClient.call("runs.respond", { input: "inp_x", decision: "approve" }),
-    (e: unknown) => e instanceof ApxError && e.code === "unauthorized",
+    (e: unknown) => e instanceof ColoniaError && e.code === "unauthorized",
   );
 });
 

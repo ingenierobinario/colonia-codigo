@@ -54,7 +54,7 @@ test("a server restarting after an update is waited for on screen, then its pane
   const remote: Remote = { where: "ops@box (SSH)", url: "http://127.0.0.1:7440", tunnel: ssh };
   assert.equal(await reachRemote(remote, w.deps), true);
   assert.deepEqual(w.loaded, ["http://127.0.0.1:7440"]);
-  // Once while ssh cannot log in (with what ssh said), once while the server's APX is still starting.
+  // Once while ssh cannot log in (with what ssh said), once while the server's Colonia is still starting.
   assert.equal(w.shown.length, 2);
   assert.match(w.shown[0] ?? "", /ops@box \(SSH\).*Connection refused/);
   assert.match(w.shown[1] ?? "", /SSH connection is up/);
@@ -82,10 +82,10 @@ test("changing connection ends the wait without loading anything", async () => {
   assert.deepEqual(w.loaded, []);
 });
 
-test("the waiting text says how to pick another APX, in the app's language", () => {
+test("the waiting text says how to pick another Colonia, in the app's language", () => {
   const remote: Remote = { where: "ops@box (SSH)", url: "http://127.0.0.1:7440" };
-  assert.match(waitingText(waiting(remote, true, false)), /APX menu › Change connection/);
-  assert.match(waitingText(waiting(remote, true, true)), /menú APX › Cambiar conexión/);
+  assert.match(waitingText(waiting(remote, true, false)), /Colonia menu › Change connection/);
+  assert.match(waitingText(waiting(remote, true, true)), /menú Colonia › Cambiar conexión/);
 });
 
 test("the waiting page keeps ssh's words apart and escaped", () => {
@@ -94,7 +94,7 @@ test("the waiting page keeps ssh's words apart and escaped", () => {
     waiting({ where: "ops@box (SSH)", url: "http://127.0.0.1:7440", tunnel: ssh }, false, true),
     true,
   );
-  assert.match(html, /<h1>Conectando con APX<\/h1>/);
+  assert.match(html, /<h1>Conectando con Colonia<\/h1>/);
   assert.match(html, /class="detail"><span>Detalle<\/span>ssh: &lt;host&gt; refused/);
 });
 

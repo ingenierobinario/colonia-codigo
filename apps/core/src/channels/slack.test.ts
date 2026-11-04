@@ -81,7 +81,7 @@ test("the app runs as its bot; the owner pairs with a code and their words reach
   // Written as soon as the channel says it runs: "running" means its socket is there to receive it.
   const env1 = await pairOwner();
   const info = (await env.client.call("channels.list", {})).channels[0];
-  assert.equal(info?.account, "@apx · Northwind");
+  assert.equal(info?.account, "@colonia · Northwind");
   assert.equal(texts(OWNER).length, 1, "one pairing message");
   assert.ok(sl.acked.includes(env1), "the envelope is acknowledged once stored");
 

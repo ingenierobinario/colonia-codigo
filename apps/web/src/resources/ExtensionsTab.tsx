@@ -1,5 +1,5 @@
-import type { ExtensionInfo } from "@apx/protocol";
-import { Badge, Button, Dialog, EmptyState, IconButton, Icons, Input, Switch } from "@apx/ui";
+import type { ExtensionInfo } from "@colonia/protocol";
+import { Badge, Button, Dialog, EmptyState, IconButton, Icons, Input, Switch } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SubHead } from "../config/SectionHead.tsx";
 import { client } from "../data/client.ts";

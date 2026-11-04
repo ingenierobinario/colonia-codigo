@@ -3,8 +3,8 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { FILE_READ_LIMIT, type Part } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
+import { FILE_READ_LIMIT, type Part } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const llm = scriptedLlm((req, { afterTool }) => {
@@ -55,7 +55,7 @@ test("legacy records read labeled current text, bounded, only for their chat's r
   await assert.rejects(env.client.call("files.diff", { ...params, part: 1 }), /not found/);
   await assert.rejects(env.client.call("files.diff", await record("Old.txt", work, "user")), /not found/);
   await assert.rejects(
-    new ApxClient({ url: env.core.url, actor: "agent" }).call("files.diff", params),
+    new ColoniaClient({ url: env.core.url, actor: "agent" }).call("files.diff", params),
     /reserved to the owner/,
   );
 });

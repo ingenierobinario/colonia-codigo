@@ -3,7 +3,7 @@
 // code; a space is offered to pick and read only once listed, its answer joining the thread.
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 import { z } from "zod";
 import { callTool, say, scriptedLlm, startCore, throughOwnerCheck } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
@@ -90,7 +90,7 @@ test("the secret is the subscription and the key's JSON, in either order; anythi
 
 test("the app runs as its service account; the owner pairs and talks, each event acknowledged once stored", async () => {
   const info = (await env.client.call("channels.list", {})).channels[0];
-  assert.equal(info?.account, "apx-chat@acme.iam.gserviceaccount.com");
+  assert.equal(info?.account, "colonia-chat@acme.iam.gserviceaccount.com");
   await pairOwner();
   const ack = gc.message("owner", "what is up");
   await waitFor(() => texts("owner").some((t) => t.includes("You said: what is up")), "reply");

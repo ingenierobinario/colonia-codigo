@@ -1,15 +1,15 @@
-// apx owner / org / profiles: who the owner is, a project's areas and roles, and what the super-agent is for.
-import type { ApxClient } from "@apx/protocol/client";
+// colonia owner / org / profiles: who the owner is, a project's areas and roles, and what the super-agent is for.
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 export const USAGE = {
-  owner: `apx owner                                  Who you are, for your agents
-apx owner set key=value…                   name, about, language (es, en…), timezone (America/New_York; "" = this machine's)`,
-  org: `apx org [--project p]                      A project's areas and roles (no project: the base project's)
-apx org set [--project p] < org.json       Replace them: {"areas": [{"slug", "name"}], "roles": [{"slug", "name", "area"}]}`,
-  profiles: `apx profiles [list]                        Profiles, the one the super-agent runs and the routines it keeps
-apx profiles use <id> [key=value…]         Run a profile; values are its settings (apx profiles lists them)
-apx profiles off                           Run none: the super-agent only answers
-apx profiles restore <routine>             Put back a profile routine's default prompt`,
+  owner: `colonia owner                                  Who you are, for your agents
+colonia owner set key=value…                   name, about, language (es, en…), timezone (America/New_York; "" = this machine's)`,
+  org: `colonia org [--project p]                      A project's areas and roles (no project: the base project's)
+colonia org set [--project p] < org.json       Replace them: {"areas": [{"slug", "name"}], "roles": [{"slug", "name", "area"}]}`,
+  profiles: `colonia profiles [list]                        Profiles, the one the super-agent runs and the routines it keeps
+colonia profiles use <id> [key=value…]         Run a profile; values are its settings (colonia profiles lists them)
+colonia profiles off                           Run none: the super-agent only answers
+colonia profiles restore <routine>             Put back a profile routine's default prompt`,
 };
 
 const OWNER_KEYS = ["name", "about", "language", "timezone"] as const;
@@ -25,7 +25,7 @@ export function pairsOf(pairs: string[]): Record<string, string> {
   return out;
 }
 
-/** owner.set params for `apx owner set`: only the identity's own keys. */
+/** owner.set params for `colonia owner set`: only the identity's own keys. */
 export function ownerPatchOf(pairs: string[]) {
   const patch = pairsOf(pairs);
   const unknown = Object.keys(patch).filter((k) => !(OWNER_KEYS as readonly string[]).includes(k));
@@ -34,7 +34,7 @@ export function ownerPatchOf(pairs: string[]) {
   return patch;
 }
 
-export async function owner(client: ApxClient, [sub, ...pairs]: string[]) {
+export async function owner(client: ColoniaClient, [sub, ...pairs]: string[]) {
   if (sub === "help") {
     console.log(USAGE.owner);
     return;
@@ -53,7 +53,7 @@ async function readStdin(): Promise<string> {
   return raw;
 }
 
-export async function org(client: ApxClient, [sub]: string[], o: { project?: string | undefined }, read = readStdin) {
+export async function org(client: ColoniaClient, [sub]: string[], o: { project?: string | undefined }, read = readStdin) {
   if (sub === "help") {
     console.log(USAGE.org);
     return;
@@ -75,7 +75,7 @@ export async function org(client: ApxClient, [sub]: string[], o: { project?: str
   if (!organization.areas.length && !organization.roles.length) console.log(`(no areas or roles)\n\n${USAGE.org}`);
 }
 
-export async function profiles(client: ApxClient, [sub, id, ...pairs]: string[]) {
+export async function profiles(client: ColoniaClient, [sub, id, ...pairs]: string[]) {
   if (sub === "help") {
     console.log(USAGE.profiles);
     return;

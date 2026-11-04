@@ -50,7 +50,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Automation;
 
-public static class ApxWin {
+public static class ColoniaWin {
   [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X; public int Y; }
   [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L; public int T; public int R; public int B; }
   [StructLayout(LayoutKind.Sequential)] public struct MOUSEINPUT { public int dx; public int dy; public uint data; public uint flags; public uint time; public IntPtr extra; }
@@ -310,7 +310,7 @@ public static class ApxWin {
   static void Send(List<INPUT> list) {
     if (list.Count == 0) return;
     uint sent = SendInput((uint)list.Count, list.ToArray(), Marshal.SizeOf(typeof(INPUT)));
-    // Windows refuses input into a window running as administrator (or on the secure desktop) when APX is not.
+    // Windows refuses input into a window running as administrator (or on the secure desktop) when Colonia is not.
     if (sent != list.Count) throw new Exception("Windows did not take the input (error " + Marshal.GetLastWin32Error() + "): the app may be running as administrator");
   }
 
@@ -432,12 +432,12 @@ public static class ApxWin {
   }
 }
 '@
-[ApxWin]::Init()
+[ColoniaWin]::Init()
 [Console]::Out.WriteLine("ready")
 while ($true) {
   $line = [Console]::In.ReadLine()
   if ($null -eq $line) { break }
-  [Console]::Out.WriteLine([ApxWin]::Handle($line))
+  [Console]::Out.WriteLine([ColoniaWin]::Handle($line))
 }
 `;
 

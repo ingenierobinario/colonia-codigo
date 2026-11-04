@@ -9,17 +9,17 @@
   height: 30px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--apx-control-radius);
+  border-radius: var(--colonia-control-radius);
   background: transparent;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 .engine-usage-trigger:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .engine-usage__engine {
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
   padding-top: 10px;
 }
 .engine-usage-quick,
@@ -54,7 +54,7 @@
 .usage-loading {
   min-height: 300px;
 }
-.usage-loading .apx-skeleton {
+.usage-loading .colonia-skeleton {
   flex: none;
 }
 .topbar .usage-btn {
@@ -71,7 +71,7 @@
   gap: 12px;
   padding: 4px 2px 0;
 }
-.usage-dialog.apx-dialog {
+.usage-dialog.colonia-dialog {
   max-width: 820px;
 }
 .usage__cols {
@@ -109,39 +109,39 @@
   align-items: center;
   gap: 6px;
   margin: 0;
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-semibold);
-  color: var(--apx-fg);
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-semibold);
+  color: var(--colonia-fg);
 }
 .usage__head svg {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .usage__figure {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .usage__note {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
   margin: 0;
 }
 .usage__error {
   margin: 0;
-  font-size: var(--apx-text-sm);
-  color: var(--apx-danger-soft-fg);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-danger-soft-fg);
 }
 .usage__state {
-  font-size: var(--apx-text-2xs);
+  font-size: var(--colonia-text-2xs);
   padding: 1px 8px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
-  color: var(--apx-fg-muted);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-muted);
 }
 .usage__state.is-on {
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
 }
 .usage__list {
   display: flex;
@@ -157,34 +157,34 @@
   align-items: center;
   gap: 10px;
   padding: 4px 0;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
 .usage--compact .usage__row {
   grid-template-columns: minmax(0, 1fr) 48px 56px;
   padding: 2px 0;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
 }
 .usage__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .usage__bar {
   height: 4px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
   overflow: hidden;
 }
 .usage__bar > span {
   display: block;
   height: 100%;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 .usage__value {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .usage__more {
   display: inline-flex;
@@ -194,15 +194,15 @@
   margin: 2px -4px -4px;
   padding: 8px;
   border: 0;
-  border-top: 1px solid var(--apx-border);
-  border-radius: 0 0 var(--apx-row-radius) var(--apx-row-radius);
+  border-top: 1px solid var(--colonia-border);
+  border-radius: 0 0 var(--colonia-row-radius) var(--colonia-row-radius);
   background: transparent;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
 }
 .usage__more:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .usage-popover {
   max-height: var(--available-height, calc(100dvh - 80px));

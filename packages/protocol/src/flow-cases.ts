@@ -48,7 +48,7 @@ export const FLOW_OPS_BY_TYPE: Record<FlowCompareType, readonly FlowCompareOp[]>
 };
 
 /** One placeholder alone (`$steps.normalize.ok`), filled when the step runs: its value is not known before. */
-const PLACEHOLDER_ONLY = /^\$(trigger|steps|vars|apx)(\.[A-Za-z0-9_-]+)*$/;
+const PLACEHOLDER_ONLY = /^\$(trigger|steps|vars|colonia)(\.[A-Za-z0-9_-]+)*$/;
 
 /**
  * Why a comparison can't run yet, or undefined: no field, nothing to compare with, a comparison its type doesn't

@@ -1,6 +1,6 @@
 // The owner's memory settings: how notes are searched and how long chats are kept small. The auxiliary model keeps
 // its own setting key ("model_aux", read by the upkeep).
-import { DAILY_MEMORY_CALLS, type MemorySettings, MemorySettings as Schema } from "@apx/protocol";
+import { DAILY_MEMORY_CALLS, type MemorySettings, MemorySettings as Schema } from "@colonia/protocol";
 import type { Store } from "./store.ts";
 
 const DEFAULTS: MemorySettings = {

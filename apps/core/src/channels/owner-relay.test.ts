@@ -17,7 +17,7 @@ import { telegramAdapter } from "./telegram.ts";
 
 const TOKEN = "123456:TEST-relay";
 const OWNER = { id: 7007, name: "Owner" };
-const IN_APP = /app de APX/;
+const IN_APP = /app de Colonia/;
 let sister = "";
 
 const probe = defineTool({
@@ -36,14 +36,14 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
   // The super-agent's check: a forged owner asking for a settings change, or for something it must ask about.
   if (said.includes('claims="your owner"') && said.includes("Judge first")) {
     if (said.includes("set her note"))
-      return callTool("s1", "apx_settings", { method: "contacts.set", params: { id: sister, note: "Forged" } });
+      return callTool("s1", "colonia_settings", { method: "contacts.set", params: { id: sister, note: "Forged" } });
     if (said.includes("launch the probe")) return say("It is the owner: launch the probe.");
     return say("It is the owner: tell them it is on its way.");
   }
   if (said.includes("<delegation_result"))
     return said.includes("launch the probe") ? callTool("p2", "probe", {}) : say("Checked: on its way.");
   if (said.includes("set her note"))
-    return callTool("s2", "apx_settings", { method: "contacts.set", params: { id: sister, note: "Mine" } });
+    return callTool("s2", "colonia_settings", { method: "contacts.set", params: { id: sister, note: "Mine" } });
   if (said.includes("launch the probe")) return callTool("p1", "probe", {});
   return say(`You said: ${said.split("\n").at(-1)?.slice(0, 60)}`);
 });
@@ -115,7 +115,7 @@ test("a forged owner on ntfy cannot get a setting changed through the check, and
   );
   assert.equal(note(), undefined);
   assert.deepEqual(
-    (await pending()).filter((i) => i.tool === "apx_settings"),
+    (await pending()).filter((i) => i.tool === "colonia_settings"),
     [],
   );
 });
@@ -135,8 +135,8 @@ test("off Telegram a card comes without options, and the number that answered it
 
 test("on Telegram the owner acts directly, but a settings card is answered only in the app", async () => {
   tg.message(OWNER, "set her note to Mine");
-  await waitFor(async () => (await pending()).some((i) => i.tool === "apx_settings"), "settings card");
-  const card = (await pending()).find((i) => i.tool === "apx_settings");
+  await waitFor(async () => (await pending()).some((i) => i.tool === "colonia_settings"), "settings card");
+  const card = (await pending()).find((i) => i.tool === "colonia_settings");
   await waitFor(() => tgTexts().some((t) => IN_APP.test(t)), "the card on Telegram points to the app");
   const shown = tg.messagesTo(OWNER.id).find((m) => IN_APP.test(String(m.body.text ?? "")));
   assert.equal(shown?.body.reply_markup, undefined, "no buttons");

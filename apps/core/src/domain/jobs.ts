@@ -1,6 +1,6 @@
 // Terminal jobs: shell commands agents started. The row is written before the process starts; the process's
 // output lives in a file next to the database.
-import type { Job, RunState } from "@apx/protocol";
+import type { Job, RunState } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { Bus } from "../bus.ts";
 import type { JobsTable } from "../db/schema.ts";

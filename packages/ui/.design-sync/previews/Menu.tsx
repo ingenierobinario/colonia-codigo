@@ -1,4 +1,4 @@
-import { IconButton, Icons, Menu } from "@apx/ui";
+import { IconButton, Icons, Menu } from "@colonia/ui";
 
 export function Open() {
   return (

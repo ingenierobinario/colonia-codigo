@@ -8,7 +8,7 @@ import {
   SearchField,
   SegmentedControl,
   Skeleton,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { Suspense, useMemo, useState } from "react";
 import { markAllRead } from "../data/actions.ts";
 import { DEFAULT_PID, findProject, projectInitial, projectTone, threadAgent } from "../data/identity.ts";

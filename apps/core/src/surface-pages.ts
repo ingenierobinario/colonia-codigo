@@ -35,7 +35,7 @@ function artifactPage(title: string, html: string, app = false): string {
     html,
     `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc}</title>
 <style>:root{${WIDGET_TOKENS.light};color-scheme:light}@media(prefers-color-scheme:dark){:root{${WIDGET_TOKENS.dark};color-scheme:dark}}
-body{margin:0;padding:var(--apx-page-padding);background:var(--apx-bg);color:var(--apx-fg);font:14px/1.5 var(--apx-font-sans);display:flow-root}*{box-sizing:border-box}
+body{margin:0;padding:var(--colonia-page-padding);background:var(--colonia-bg);color:var(--colonia-fg);font:14px/1.5 var(--colonia-font-sans);display:flow-root}*{box-sizing:border-box}
 ${WIDGET_KIT_CSS}
 ${surfaceLayoutCss(app ? "app" : "widget")}</style>`,
   );
@@ -61,7 +61,7 @@ export function surfacePage(pathname: string, pages: PublicPages, restricted = f
       },
     };
   }
-  if (/^\/_apx\/kit@1(?:\.\d+){0,2}\.js$/.test(pathname) && pages.kit)
+  if (/^\/_colonia\/kit@1(?:\.\d+){0,2}\.js$/.test(pathname) && pages.kit)
     return {
       status: 200,
       body: pages.kit(),

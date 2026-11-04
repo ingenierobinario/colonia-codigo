@@ -1,6 +1,6 @@
-import type { Person } from "@apx/protocol";
-import { PERSON_RELATIONS } from "@apx/protocol/client";
-import { Button, Help, IconButton, Icons, Input, Select, Switch, Textarea, Tooltip } from "@apx/ui";
+import type { Person } from "@colonia/protocol";
+import { PERSON_RELATIONS } from "@colonia/protocol/client";
+import { Button, Help, IconButton, Icons, Input, Select, Switch, Textarea, Tooltip } from "@colonia/ui";
 import { useState } from "react";
 import { claimAddress, saveContact, useChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";

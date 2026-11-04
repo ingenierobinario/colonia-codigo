@@ -19,7 +19,7 @@ for (const lang of ["en", "es"] as const) {
     const terminal = page.locator("#terminal");
     await expect(terminal.locator(".sec-label")).toContainText("05");
     await expect(terminal.locator(".term-demo__screen")).toContainText(
-      lang === "es" ? 'apx chat "¿Qué tengo para hoy?"' : 'apx chat "What\'s on my plate today?"',
+      lang === "es" ? 'colonia chat "¿Qué tengo para hoy?"' : 'colonia chat "What\'s on my plate today?"',
     );
     await expect(terminal.locator(".term-demo__screen")).toContainText(
       lang === "es" ? "Nada vence hoy." : "Nothing is due today.",
@@ -40,11 +40,11 @@ test("the terminal demo plays its commands in turn, and keeps its size", async (
   await page.evaluate(() => document.fonts.ready);
   await screen.scrollIntoViewIfNeeded();
   await expect(screen).toHaveAttribute("aria-hidden", "true");
-  await expect(page.locator("#terminal .visually-hidden")).toContainText("apx status");
+  await expect(page.locator("#terminal .visually-hidden")).toContainText("colonia status");
   // Layout height, not the box on screen: blocks rise in scaled while they appear.
   const height = () => screen.evaluate((el) => (el as HTMLElement).offsetHeight);
   const before = await height();
-  await expect(screen).toContainText("apx tasks --project acme-store", { timeout: 25_000 });
+  await expect(screen).toContainText("colonia tasks --project acme-store", { timeout: 25_000 });
   expect(await height()).toBe(before);
 });
 
@@ -52,10 +52,10 @@ test("with reduced motion the terminal demo shows its first command, still", asy
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/es/");
   const screen = page.locator("#terminal .term-demo__screen");
-  await expect(screen).toContainText('apx chat "¿Qué tengo para hoy?"');
+  await expect(screen).toContainText('colonia chat "¿Qué tengo para hoy?"');
   await expect(screen).toContainText("Nada vence hoy.");
   await page.waitForTimeout(3000);
-  await expect(screen).not.toContainText("apx tasks");
+  await expect(screen).not.toContainText("colonia tasks");
 });
 
 for (const pre of ["", "/es"]) {
@@ -68,9 +68,9 @@ for (const pre of ["", "/es"]) {
     const panes = box.locator("[data-cli-pane]:visible");
     await expect(panes).toHaveCount(1);
     for (const [id, cmd] of [
-      ["server", "curl -fsSL https://apxagent.app/install.sh | bash -s -- --server"],
-      ["unix", "curl -fsSL https://apxagent.app/install.sh | bash"],
-      ["win", "irm https://apxagent.app/install.ps1 | iex"],
+      ["server", "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --server"],
+      ["unix", "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash"],
+      ["win", "irm https://colonia.ingenierobinario.com/install.ps1 | iex"],
     ] as const) {
       await box.locator(`[data-cli='${id}']`).click();
       await expect(box.locator(`[data-cli='${id}']`)).toHaveAttribute("aria-pressed", "true");
@@ -89,7 +89,7 @@ for (const pre of ["", "/es"]) {
     }
     const unsigned = page.locator("#download .dl-unsigned");
     await expect(unsigned).toBeVisible();
-    await expect(unsigned).toContainText("xattr -dr com.apple.quarantine /Applications/APX.app");
+    await expect(unsigned).toContainText("xattr -dr com.apple.quarantine /Applications/Colonia.app");
     await expect(unsigned.locator("dt")).toHaveCount(4);
   });
 }

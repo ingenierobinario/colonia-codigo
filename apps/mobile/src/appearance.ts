@@ -4,7 +4,7 @@ import { Appearance } from "react-native";
 
 export type AppearancePref = "system" | "light" | "dark";
 
-const KEY = "apx.appearance";
+const KEY = "colonia.appearance";
 let current: AppearancePref = "system";
 
 const apply = (pref: AppearancePref) => {

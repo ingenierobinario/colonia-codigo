@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import { registerHooks } from "node:module";
 import { after, test } from "node:test";
-import { PROTOCOL_VERSION } from "@apx/protocol/client";
+import { PROTOCOL_VERSION } from "@colonia/protocol/client";
 import type { BaseWindow } from "electron";
 import { tempDir, waitFor } from "../../../core/src/testkit/platform.ts";
 import { updateCredentials } from "./update-credentials.ts";
 import type { createDesktopUpdater } from "./updater.ts";
 
-const temporary = tempDir("apx-native-updates-test-");
+const temporary = tempDir("colonia-native-updates-test-");
 const directory = temporary.path;
 const messages: Record<string, unknown>[] = [];
 const encryption = {
@@ -16,7 +16,7 @@ const encryption = {
   encrypt: (value: string) => Buffer.from(value.split("").reverse().join("")),
   decrypt: (value: Buffer) => value.toString().split("").reverse().join(""),
 };
-const boundary = Symbol.for("apx.test.native-updates");
+const boundary = Symbol.for("colonia.test.native-updates");
 Object.assign(globalThis, {
   [boundary]: {
     app: { getPath: () => directory, getVersion: () => "2.0.0", getLocale: () => "en" },
@@ -38,7 +38,7 @@ const hooks = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
       return {
-        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("apx.test.native-updates")]; export const app = n.app; export const dialog = n.dialog; export const safeStorage = n.safeStorage;')}`,
+        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("colonia.test.native-updates")]; export const app = n.app; export const dialog = n.dialog; export const safeStorage = n.safeStorage;')}`,
         shortCircuit: true,
       };
     return next(specifier, context);

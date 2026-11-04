@@ -1,7 +1,7 @@
 // Browser tools: the agent drives the embedded browser through the desktop node, in its own profile and tabs.
 // Every call goes through the router (browser.* methods), the same door the panel uses.
 import { setTimeout } from "node:timers/promises";
-import { BROWSER_CAP, type TabInfo } from "@apx/protocol";
+import { BROWSER_CAP, type TabInfo } from "@colonia/protocol";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { Store } from "../domain/store.ts";
@@ -107,7 +107,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_open",
       description:
-        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the APX app is open (they can watch it), APX's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
+        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
       args: z.object({
         url: z.string().describe("http(s) URL"),
         tab: tabArg.optional().describe("tab id to load it in"),

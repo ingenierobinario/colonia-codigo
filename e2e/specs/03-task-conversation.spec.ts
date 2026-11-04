@@ -20,7 +20,7 @@ test("tarea: equipo del proyecto, menciones, respuesta, estados y comentario sep
         // Assigned, Builder starts in its chat for the task; asked to review, it moves the task and says so.
         if (said.includes("please review"))
           return callTool("review", "task_update", { task: taskId, status: "review" });
-        // The next part APX starts on its own while the task is in progress: nothing more to do yet.
+        // The next part Colonia starts on its own while the task is in progress: nothing more to do yet.
         return say(said.includes("still in progress") ? "Still waiting for the review request." : "On it.");
       }
       return say("@owner please approve the review.");
@@ -117,8 +117,8 @@ test("tarea: equipo del proyecto, menciones, respuesta, estados y comentario sep
     await drawer.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(drawer.getByText("Review completed. @roby please check.", { exact: true })).toBeVisible();
     // Mentions read as badges, in the owner's comment and in an agent's answer.
-    await expect(drawer.locator(".apx-msg--user .apx-mention", { hasText: "@builder" }).first()).toBeVisible();
-    await expect(drawer.locator(".apx-msg--agent .apx-mention", { hasText: "@roby" }).first()).toBeVisible();
+    await expect(drawer.locator(".colonia-msg--user .colonia-mention", { hasText: "@builder" }).first()).toBeVisible();
+    await expect(drawer.locator(".colonia-msg--agent .colonia-mention", { hasText: "@roby" }).first()).toBeVisible();
     await expect.poll(async () => (await env.client.call("tasks.get", { task: task.id })).task.status).toBe("review");
     // Builder's @roby asks nobody: an agent asks with delegate (DECISIONS.md#d-078).
     expect((await env.client.call("tasks.get", { task: task.id })).consults).toHaveLength(0);
@@ -141,7 +141,7 @@ test("tarea: equipo del proyecto, menciones, respuesta, estados y comentario sep
     await expect(drawer.getByText("On it.", { exact: true })).toHaveCount(0);
     await expect(drawer.getByRole("button", { name: "Ver a Builder" }).first()).toBeVisible();
     // Answering a bubble quotes it and asks its agent again.
-    const answer = drawer.locator(".apx-msg--agent", { hasText: "Review completed. @roby please check." });
+    const answer = drawer.locator(".colonia-msg--agent", { hasText: "Review completed. @roby please check." });
     await answer.hover();
     await answer.getByRole("button", { name: "Responder", exact: true }).click();
     await expect(comment).toHaveValue("> Builder: Review completed. @roby please check.\n\n@builder ");

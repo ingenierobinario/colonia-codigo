@@ -25,7 +25,7 @@ test("pairing probes addresses, trims the code and saves credentials before hand
   });
   const hook = await renderHook(() => usePairing(undefined, paired));
   await act(() => hook.result.current.pair(["http://offline.local", core], " 123456 "));
-  expect(save).toHaveBeenCalledWith("apx.pairing", JSON.stringify(credentials));
+  expect(save).toHaveBeenCalledWith("colonia.pairing", JSON.stringify(credentials));
   expect(paired).toHaveBeenCalledWith(credentials);
   expect(order).toEqual(["saved", "paired"]);
   const request = fetch.mock.calls.find(([url]) => String(url).endsWith("/rpc/devices.pair"));
@@ -49,7 +49,7 @@ test("an incoming QR is consumed once even when the completion callback changes"
         ? reply({})
         : reply({ ok: true, result: { token: credentials.token, device: { id: credentials.device } } }),
     );
-  const link = `apx://pair?c=123456&u=${encodeURIComponent(core)}`;
+  const link = `colonia://pair?c=123456&u=${encodeURIComponent(core)}`;
   const first = jest.fn();
   const second = jest.fn();
   const hook = await renderHook((onPaired: typeof first) => usePairing(link, onPaired), { initialProps: first });

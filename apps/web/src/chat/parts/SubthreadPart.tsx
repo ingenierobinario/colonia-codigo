@@ -1,5 +1,5 @@
-import type { Agent, Part } from "@apx/protocol";
-import { AgentAvatar, Icons, MarkdownView, SubthreadCard } from "@apx/ui";
+import type { Agent, Part } from "@colonia/protocol";
+import { AgentAvatar, Icons, MarkdownView, SubthreadCard } from "@colonia/ui";
 import { duration } from "../../common/format.ts";
 import { useMarkdownLabels } from "../../common/useMarkdownLabels.ts";
 import { blobOf } from "../../data/identity.ts";

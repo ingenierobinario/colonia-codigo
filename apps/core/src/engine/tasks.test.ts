@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { realpath } from "../paths.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
 import { mentioned, taskBlock } from "./office.ts";
@@ -25,7 +25,7 @@ const llm = scriptedLlm(async (req, { said, afterTool }) => {
     await bridgeHeld;
     return callTool("b1", "task_list", {});
   }
-  // Works until stopped: the owner interrupts it from the task (a part APX goes on with is not that work).
+  // Works until stopped: the owner interrupts it from the task (a part Colonia goes on with is not that work).
   if (said.includes("Translate the onboarding guide") && !said.includes("still in progress") && !afterTool) {
     await new Promise((r) => req.signal.addEventListener("abort", r, { once: true }));
     return say("Stopped");
@@ -85,7 +85,7 @@ let repo = "";
 let project = "";
 before(async () => {
   env = await startCore({ llm });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-tasks-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-tasks-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
   project = (await env.client.call("projects.register", { path: repo })).project.id;
 });
@@ -117,7 +117,7 @@ test("a task keeps its history: created, moved, assigned, done, reopened", async
   assert.equal(task.state, "open");
   await assert.rejects(
     env.client.call("tasks.update", { task: t.id, status: "nowhere" }),
-    (e: unknown) => e instanceof ApxError && /no column/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /no column/.test(e.message),
   );
 });
 
@@ -205,7 +205,7 @@ test("the owner writing in a task's conversation reaches its agent's working tur
     assignee: "vera",
   });
   const work = env.core.store.threads.byTask(t.id)[0]?.id ?? "";
-  // A part APX goes on with on its own (engine/task-continue.ts) is not a second turn for the owner's words.
+  // A part Colonia goes on with on its own (engine/task-continue.ts) is not a second turn for the owner's words.
   const vera = () =>
     [t.thread_id, ...env.core.store.threads.byTask(t.id).map((s) => s.id)]
       .flatMap((id) => env.core.store.runs.list(id))
@@ -251,7 +251,7 @@ test("the owner writing in a task's conversation reaches its agent's working tur
 });
 
 /** Vera's runs in a task's work chat, oldest first. */
-/** Vera's turns on the task, besides the parts APX goes on with on its own (engine/task-continue.ts). */
+/** Vera's turns on the task, besides the parts Colonia goes on with on its own (engine/task-continue.ts). */
 const workRuns = (task: string) =>
   env.core.store.threads
     .byTask(task)
@@ -544,7 +544,7 @@ test("an agent's tasks go to its thread's project and it sees no other project's
   assert.ok(tasks.some((x) => x.title === "Draft the launch post" && x.created_by === "superagent"));
 
   await env.client.call("tasks.update", { task: other.id, title: "Secret elsewhere" });
-  const p2 = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-tasks2-")));
+  const p2 = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-tasks2-")));
   fs.writeFileSync(path.join(p2, "AGENTS.md"), "# Globex\n");
   const project2 = (await env.client.call("projects.register", { path: p2 })).project.id;
   await env.client.call("tasks.create", { title: "Globex only", project: project2 });
@@ -585,7 +585,7 @@ test("what an agent wrote in a task reaches other turns as the team's words, not
 });
 
 test("an agent of one project is not assigned another project's task", async () => {
-  const p2 = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-tasks3-")));
+  const p2 = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-tasks3-")));
   fs.writeFileSync(path.join(p2, "AGENTS.md"), "# Initech\n");
   const other = (await env.client.call("projects.register", { path: p2 })).project.id;
   const milton = await env.client.call("agents.create", { project_id: other, slug: "milton", name: "Milton" });
@@ -600,7 +600,7 @@ test("an agent of one project is not assigned another project's task", async () 
   assert.equal(comment.runs.length, 0);
   await assert.rejects(
     env.client.call("tasks.create", { title: "Elsewhere", project, assignee: milton.id }),
-    (e: unknown) => e instanceof ApxError && /another project/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /another project/.test(e.message),
   );
   await removeDir(p2);
 });

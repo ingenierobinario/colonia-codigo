@@ -1,6 +1,6 @@
 // What a shared file's card and preview both show: its kind's icon, who sent it, when, and what can be done with it.
-import type { Author, SharedFile, SharedKind } from "@apx/protocol";
-import { AgentAvatar, Avatar, Button, IconButton, Icons, Tooltip } from "@apx/ui";
+import type { Author, SharedFile, SharedKind } from "@colonia/protocol";
+import { AgentAvatar, Avatar, Button, IconButton, Icons, Tooltip } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { client } from "../data/client.ts";
 import { mediaUrl } from "../data/media.ts";

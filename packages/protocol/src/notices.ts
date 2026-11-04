@@ -35,13 +35,13 @@ export const noticeEn = {
   "notice.breaker.release": "Let them finish this round",
   "notice.breaker.wentOn": "Agents went on",
   "notice.delegation.limit.continuedSteps":
-    "{who} ran out of steps on “{task}” and is making progress; APX had it go on in session {session}. So far: {sofar}",
+    "{who} ran out of steps on “{task}” and is making progress; Colonia had it go on in session {session}. So far: {sofar}",
   "notice.delegation.limit.continuedTime":
-    "{who} ran out of time on “{task}” and is making progress; APX had it go on in session {session}. So far: {sofar}",
+    "{who} ran out of time on “{task}” and is making progress; Colonia had it go on in session {session}. So far: {sofar}",
   "notice.delegation.limit.stoppedSteps":
-    "{who} ran out of steps on “{task}” and its last part made no progress, so APX did not go on by itself. Continue if it should. So far: {sofar}",
+    "{who} ran out of steps on “{task}” and its last part made no progress, so Colonia did not go on by itself. Continue if it should. So far: {sofar}",
   "notice.delegation.limit.stoppedTime":
-    "{who} ran out of time on “{task}” and its last part made no progress, so APX did not go on by itself. Continue if it should. So far: {sofar}",
+    "{who} ran out of time on “{task}” and its last part made no progress, so Colonia did not go on by itself. Continue if it should. So far: {sofar}",
   "notice.delegation.limit.returnedSteps":
     "{who} ran out of steps on “{task}”. {caller} has its report and decides how to go on. So far: {sofar}",
   "notice.delegation.limit.returnedTime":
@@ -61,9 +61,9 @@ export const noticeEn = {
   "notice.delegation.limit.stop": "Stop it",
   "notice.delegation.limit.stopped": "Stopped",
   "notice.delegation.limit.ended": "It had already ended",
-  "notice.delegation.continued": "APX continued this session after a limit stopped it.",
-  "notice.run.interrupted": "Interrupted by a restart of APX.",
-  "notice.run.resumed": "Interrupted by a restart of APX; picking it back up.",
+  "notice.delegation.continued": "Colonia continued this session after a limit stopped it.",
+  "notice.run.interrupted": "Interrupted by a restart of Colonia.",
+  "notice.run.resumed": "Interrupted by a restart of Colonia; picking it back up.",
   "notice.run.canceled": "Canceled.",
   "notice.run.failed": "Could not finish.",
   "notice.run.empty": "Finished without a message.",
@@ -74,7 +74,7 @@ export const noticeEn = {
   "notice.engine.fallback.title": "Switched model",
   "notice.thread.compacted":
     "Earlier turns were summarized to keep this chat's context small. Nothing new was started.",
-  "notice.task.stalled": "Nothing was running on this task: APX asked the agent to go on or say what it waits for.",
+  "notice.task.stalled": "Nothing was running on this task: Colonia asked the agent to go on or say what it waits for.",
   "notice.pairing.request": "Someone new wants to talk on a channel: approve them in Settings → Channels.",
 };
 
@@ -115,13 +115,13 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.breaker.release": "Liberar en esta ronda",
   "notice.breaker.wentOn": "Los agentes siguieron",
   "notice.delegation.limit.continuedSteps":
-    "{who} se quedó sin pasos con «{task}» y viene avanzando; APX lo hizo seguir en la sesión {session}. Hasta ahora: {sofar}",
+    "{who} se quedó sin pasos con «{task}» y viene avanzando; Colonia lo hizo seguir en la sesión {session}. Hasta ahora: {sofar}",
   "notice.delegation.limit.continuedTime":
-    "{who} se quedó sin tiempo con «{task}» y viene avanzando; APX lo hizo seguir en la sesión {session}. Hasta ahora: {sofar}",
+    "{who} se quedó sin tiempo con «{task}» y viene avanzando; Colonia lo hizo seguir en la sesión {session}. Hasta ahora: {sofar}",
   "notice.delegation.limit.stoppedSteps":
-    "{who} se quedó sin pasos con «{task}» y su último tramo no avanzó, así que APX no siguió solo. Tocá Continuar si tiene que seguir. Hasta ahora: {sofar}",
+    "{who} se quedó sin pasos con «{task}» y su último tramo no avanzó, así que Colonia no siguió solo. Tocá Continuar si tiene que seguir. Hasta ahora: {sofar}",
   "notice.delegation.limit.stoppedTime":
-    "{who} se quedó sin tiempo con «{task}» y su último tramo no avanzó, así que APX no siguió solo. Tocá Continuar si tiene que seguir. Hasta ahora: {sofar}",
+    "{who} se quedó sin tiempo con «{task}» y su último tramo no avanzó, así que Colonia no siguió solo. Tocá Continuar si tiene que seguir. Hasta ahora: {sofar}",
   "notice.delegation.limit.returnedSteps":
     "{who} se quedó sin pasos con «{task}». {caller} tiene su informe y decide cómo seguir. Hasta ahora: {sofar}",
   "notice.delegation.limit.returnedTime":
@@ -141,9 +141,9 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.delegation.limit.stop": "Detenerla",
   "notice.delegation.limit.stopped": "Detenida",
   "notice.delegation.limit.ended": "Ya había terminado",
-  "notice.delegation.continued": "APX siguió esta sesión después de que un límite la detuviera.",
-  "notice.run.interrupted": "Se interrumpió por un reinicio de APX.",
-  "notice.run.resumed": "Se interrumpió por un reinicio de APX; lo retomo.",
+  "notice.delegation.continued": "Colonia siguió esta sesión después de que un límite la detuviera.",
+  "notice.run.interrupted": "Se interrumpió por un reinicio de Colonia.",
+  "notice.run.resumed": "Se interrumpió por un reinicio de Colonia; lo retomo.",
   "notice.run.canceled": "Cancelado.",
   "notice.run.failed": "No pude terminar.",
   "notice.run.empty": "Terminó sin mensaje.",
@@ -154,7 +154,7 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.engine.fallback.title": "Cambió de modelo",
   "notice.thread.compacted":
     "Se resumieron los turnos anteriores para que el contexto de este chat sea más chico. No se empezó nada nuevo.",
-  "notice.task.stalled": "No había nada corriendo en esta tarea: APX le pidió al agente que siga o diga qué espera.",
+  "notice.task.stalled": "No había nada corriendo en esta tarea: Colonia le pidió al agente que siga o diga qué espera.",
   "notice.pairing.request": "Alguien nuevo quiere hablar por un canal: aprobalo en Configuración › Canales.",
 };
 

@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { AgentAvatar, Button, Checkbox, EmptyState, Icons, ProjectTile, Switch } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { AgentAvatar, Button, Checkbox, EmptyState, Icons, ProjectTile, Switch } from "@colonia/ui";
 import { useMemo } from "react";
 import { blobOf, DEFAULT_PID, projectInitial, projectTone, realProjectId } from "../../data/identity.ts";
 import { useData } from "../../data/state.ts";

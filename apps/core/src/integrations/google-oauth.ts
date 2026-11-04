@@ -146,7 +146,7 @@ export async function exchangeCode(
   if (!data.refresh_token)
     throw new GoogleAuthError(
       "no_refresh_token",
-      "no refresh token came back; remove APX at myaccount.google.com/permissions and sign in again",
+      "no refresh token came back; remove Colonia at myaccount.google.com/permissions and sign in again",
     );
   return {
     refreshToken: data.refresh_token,

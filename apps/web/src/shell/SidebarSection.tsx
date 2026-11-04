@@ -1,4 +1,4 @@
-import { Icons, Popover, SectionLabel } from "@apx/ui";
+import { Icons, Popover, SectionLabel } from "@colonia/ui";
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useRef } from "react";
 import { SIDEBAR_MIN_ROWS, type SidebarRows, setSidebarRows, useSidebarRows } from "../data/prefs.ts";
 import { useT } from "../i18n/index.ts";
@@ -38,7 +38,7 @@ export function SidebarSection({
             >
               {title}
               <Icons.ChevronDown size={12} className="sidebar__chev" />
-              {folded && unread > 0 && <span className="apx-nav__count is-attention">{unread}</span>}
+              {folded && unread > 0 && <span className="colonia-nav__count is-attention">{unread}</span>}
             </button>
           ) : (
             title
@@ -83,14 +83,14 @@ export function SidebarOverflow({
       trigger={
         <SidebarTooltipButton
           label={label}
-          className={`apx-nav sidebar__more${rail ? " apx-nav--collapsed" : ""}${active ? " is-active" : ""}`}
+          className={`colonia-nav sidebar__more${rail ? " colonia-nav--collapsed" : ""}${active ? " is-active" : ""}`}
         >
-          <span className="apx-nav__icon">
+          <span className="colonia-nav__icon">
             <span className="sidebar__moretile">+{count}</span>
           </span>
-          {!rail && <span className="apx-nav__label">{text ?? title}</span>}
-          {!rail && unread > 0 && <span className="apx-nav__count is-attention">{unread}</span>}
-          {rail && unread > 0 && <span className="apx-nav__dot" aria-hidden="true" />}
+          {!rail && <span className="colonia-nav__label">{text ?? title}</span>}
+          {!rail && unread > 0 && <span className="colonia-nav__count is-attention">{unread}</span>}
+          {rail && unread > 0 && <span className="colonia-nav__dot" aria-hidden="true" />}
         </SidebarTooltipButton>
       }
     >

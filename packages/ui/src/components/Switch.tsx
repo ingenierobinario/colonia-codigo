@@ -33,22 +33,22 @@ export function Switch({
   const control = (
     <BaseSwitch.Root
       id={id}
-      className={cx("apx-switch", `apx-switch--${size}`)}
+      className={cx("colonia-switch", `colonia-switch--${size}`)}
       checked={checked}
       defaultChecked={defaultChecked}
       onCheckedChange={(v) => onCheckedChange?.(v)}
       disabled={disabled}
       aria-label={label ? undefined : ariaLabel}
     >
-      <BaseSwitch.Thumb className="apx-switch__thumb" />
+      <BaseSwitch.Thumb className="colonia-switch__thumb" />
     </BaseSwitch.Root>
   );
   if (!label) return <span className={className}>{control}</span>;
   return (
-    <label htmlFor={id} className={cx("apx-choice", disabled && "is-disabled", className)}>
-      <span className="apx-choice__text">
-        <span className="apx-choice__label">{label}</span>
-        {description && <span className="apx-choice__desc">{description}</span>}
+    <label htmlFor={id} className={cx("colonia-choice", disabled && "is-disabled", className)}>
+      <span className="colonia-choice__text">
+        <span className="colonia-choice__label">{label}</span>
+        {description && <span className="colonia-choice__desc">{description}</span>}
       </span>
       {control}
     </label>

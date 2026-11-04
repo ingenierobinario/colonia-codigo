@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Message, Thread } from "@apx/protocol";
+import { Message, Thread } from "@colonia/protocol";
 import { isAgentEvent, responseOf } from "./agentEvent.ts";
 
 const thread = Thread.parse({

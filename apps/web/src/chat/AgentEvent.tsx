@@ -1,6 +1,6 @@
 import "./AgentEvent.css";
-import type { Agent, Message } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Agent, Message } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";

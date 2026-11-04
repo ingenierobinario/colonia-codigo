@@ -1,4 +1,4 @@
-import { Button, Dialog, Spinner } from "@apx/ui";
+import { Button, Dialog, Spinner } from "@colonia/ui";
 import { applyUpdate, closeUpdate, loadUpdates, restartApp, updatedByApp, useUpdates } from "../data/updates.ts";
 import { useT } from "../i18n/index.ts";
 
@@ -86,7 +86,7 @@ export function UpdateDialog() {
       )}
       {phase === "ready" && (
         <p className="update__note">
-          {t(window.apxDesktop?.platform === "win32" ? "update.readyLaterMenu" : "update.readyLater")}
+          {t(window.coloniaDesktop?.platform === "win32" ? "update.readyLaterMenu" : "update.readyLater")}
         </p>
       )}
       {phase === "stalled" && <p className="update__note">{t("update.restartStalled")}</p>}

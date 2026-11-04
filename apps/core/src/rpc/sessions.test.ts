@@ -24,7 +24,7 @@ const line = (o: unknown) => `${JSON.stringify(o)}\n`;
 
 before(async () => {
   env = await startCore({ llm: scriptedLlm(() => say("ok")), harnesses: { claude } });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-native-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-native-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
   const claudeDir = path.join(env.home, "claude-home", "projects", "-work-acme");
   fs.mkdirSync(claudeDir, { recursive: true });
@@ -50,9 +50,9 @@ before(async () => {
       }) +
       line({ type: "custom-title", customTitle: "Login form", sessionId: "s-mine" }),
   );
-  // A turn APX itself ran on Claude Code for an agent: not one of the owner's sessions.
+  // A turn Colonia itself ran on Claude Code for an agent: not one of the owner's sessions.
   fs.writeFileSync(
-    path.join(claudeDir, "s-apx.jsonl"),
+    path.join(claudeDir, "s-colonia.jsonl"),
     line({ type: "user", cwd: repo, message: { role: "user", content: "[context: Friday · channel: app]\nhello" } }),
   );
   const codexDir = path.join(env.home, "codex-home", "sessions", "2026", "10", "02");
@@ -90,7 +90,7 @@ after(async () => {
   await removeDir(repo);
 });
 
-test("the owner's own sessions are listed, titled, without APX's own runs", async () => {
+test("the owner's own sessions are listed, titled, without Colonia's own runs", async () => {
   const c = await env.client.call("sessions.native", { engine: "claude" });
   assert.deepEqual(
     c.sessions.map((s) => [s.id, s.title, s.cwd]),
@@ -128,7 +128,7 @@ test("going on with a session: Claude Code itself, in its folder, resuming its t
   assert.doesNotMatch(String(io?.system), /Roby/, "no agent persona");
 });
 
-test("an engine session started in APX is a code thread set to that engine", async () => {
+test("an engine session started in Colonia is a code thread set to that engine", async () => {
   const project = (await env.client.call("projects.register", { path: repo })).project.id;
   const t = await env.client.call("threads.create", {
     kind: "code",

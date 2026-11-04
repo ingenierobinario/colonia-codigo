@@ -1,4 +1,4 @@
-import { MarkdownView } from "@apx/ui";
+import { MarkdownView } from "@colonia/ui";
 import { useEffect } from "react";
 import { useMarkdownLabels } from "../common/useMarkdownLabels.ts";
 import { ensureTask, useTasks } from "../data/tasks.ts";

@@ -1,6 +1,6 @@
-import type { MailCheck as Check } from "@apx/protocol";
-import { CHECK_EVERY } from "@apx/protocol/client";
-import { SettingRow, Skeleton, Switch } from "@apx/ui";
+import type { MailCheck as Check } from "@colonia/protocol";
+import { CHECK_EVERY } from "@colonia/protocol/client";
+import { SettingRow, Skeleton, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { SubHead } from "../config/SectionHead.tsx";
 import { client } from "../data/client.ts";

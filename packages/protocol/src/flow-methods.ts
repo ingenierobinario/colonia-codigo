@@ -149,7 +149,7 @@ export const flowMethods = {
     access: "human",
   },
   /**
-   * A new key for a webhook Flow's address, made by APX or the owner's own (`token`, 24 to 200 letters, digits, `.`,
+   * A new key for a webhook Flow's address, made by Colonia or the owner's own (`token`, 24 to 200 letters, digits, `.`,
    * `_`, `~` or `-`); the old one stops working at once.
    */
   "flows.token_rotate": {

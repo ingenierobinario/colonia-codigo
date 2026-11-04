@@ -1,7 +1,7 @@
 // Media services the owner runs or uses: image generators (a homelab's A1111 or stable-diffusion.cpp, an
 // OpenAI-compatible API) and voices (QVox or any OpenAI-compatible speech server, Gemini). Each service speaks one
 // dialect; the registry keeps them in the owner's order and the first reachable one answers.
-import type { ServiceSettings } from "@apx/protocol";
+import type { ServiceSettings } from "@colonia/protocol";
 
 /** A service as the owner configured it (the protocol's settings plus its id). The key lives in the secret store. */
 export type ServiceConfig = ServiceSettings & { id: string };
@@ -17,7 +17,7 @@ export type ImageOptions = {
   sampler: string;
 };
 
-/** An image a drawing works from: a media file APX keeps. */
+/** An image a drawing works from: a media file Colonia keeps. */
 export type ImageReference = { path: string; mime: string };
 
 export type GeneratedImage = { bytes: Buffer; mime: string; seed?: number | undefined };

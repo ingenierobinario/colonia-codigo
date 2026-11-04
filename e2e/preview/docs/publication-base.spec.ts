@@ -16,7 +16,7 @@ test("published base keeps navigation, documentation redirects, search and insta
     await page.goto(`${origin}${base}${pre}/start/introduction/?old=1#_top`);
     await expect(page).toHaveURL(`${origin}${base}${pre}/docs/start/introduction/?old=1#_top`);
     await page.locator("site-search button[data-open-modal]").click();
-    await page.getByRole("dialog").getByRole("textbox").fill("APX");
+    await page.getByRole("dialog").getByRole("textbox").fill("Colonia");
     const result = page.locator(".pagefind-ui__result-link").first();
     await expect(result).toBeVisible();
     await expect(result).toHaveAttribute("href", new RegExp(`^${base}${pre}/docs/`));

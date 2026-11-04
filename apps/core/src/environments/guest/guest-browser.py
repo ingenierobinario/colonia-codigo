@@ -7,19 +7,19 @@ import sys
 from pathlib import Path
 import signal
 import subprocess
-from apx_vm_session import desktop_environment
+from colonia_vm_session import desktop_environment
 
 incoming, command = os.pipe()
 reply, outgoing = os.pipe()
 environment = desktop_environment()
 # Each screen user's own log: a shared one in /tmp would belong to the first agent and lock out the rest.
-log_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(pwd.getpwuid(os.getuid()).pw_dir) / ".cache/apx/browser.log"
+log_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(pwd.getpwuid(os.getuid()).pw_dir) / ".cache/colonia/browser.log"
 log_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
 with open(log_path, "ab", buffering=0) as log:
     child = subprocess.Popen(
-        ["/bin/bash", "-c", 'exec 3<&"$1" 4>&"$2"; shift 2; exec "$@"', "apx-browser",
+        ["/bin/bash", "-c", 'exec 3<&"$1" 4>&"$2"; shift 2; exec "$@"', "colonia-browser",
          str(incoming), str(outgoing), "/usr/bin/chromium", "--remote-debugging-pipe",
-         f"--user-data-dir={pwd.getpwuid(os.getuid()).pw_dir}/.config/apx-agent-browser", "--ozone-platform=x11",
+         f"--user-data-dir={pwd.getpwuid(os.getuid()).pw_dir}/.config/colonia-agent-browser", "--ozone-platform=x11",
          "--no-first-run", "--no-default-browser-check", "--disable-session-crashed-bubble",
          "--proxy-server=http://127.0.0.1:3128", "--proxy-bypass-list=localhost;127.0.0.1;[::1]",
          "--disable-dev-shm-usage", "--disable-gpu", "--disable-sync", "--disable-extensions",

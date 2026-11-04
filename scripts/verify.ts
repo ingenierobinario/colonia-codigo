@@ -238,7 +238,7 @@ async function main(argv: string[]) {
     name,
     steps: expand(plan, scripts),
     root,
-    cacheDir: path.join(root, "node_modules", ".cache", "apx-verify"),
+    cacheDir: path.join(root, "node_modules", ".cache", "colonia-verify"),
     out,
     live: Boolean(out.isTTY) && !argv.includes("--stream") && !process.env.CI,
     every: 1000,

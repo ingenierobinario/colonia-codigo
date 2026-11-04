@@ -2,7 +2,7 @@ import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { EngineUsageWindow } from "@apx/protocol";
+import type { EngineUsageWindow } from "@colonia/protocol";
 import { z } from "zod";
 import { stopTree } from "../processes.ts";
 import { commandEnv } from "./env.ts";
@@ -128,7 +128,7 @@ export async function readClaudeUsage(
   command: string,
   options: Options = {},
 ): Promise<EngineUsageWindow[] | undefined> {
-  const cwd = await mkdtemp(join(tmpdir(), "apx-usage-"));
+  const cwd = await mkdtemp(join(tmpdir(), "colonia-usage-"));
   try {
     const version = await capture(command, ["--version"], cwd, {
       ...options,

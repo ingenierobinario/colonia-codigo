@@ -1,4 +1,4 @@
-import { IconButton, Icons } from "@apx/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { dismiss, useNotices } from "../data/notices.ts";
 import { useT } from "../i18n/index.ts";
 

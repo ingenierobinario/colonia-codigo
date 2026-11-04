@@ -1,4 +1,4 @@
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import type { Store } from "./store.ts";
 
 /** A waiting task is noticed once; subsequent edits keep its read state. */

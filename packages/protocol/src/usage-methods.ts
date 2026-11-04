@@ -1,9 +1,9 @@
-// What the computer has and what APX takes of it: memory, CPU, disk, the APX home by part, and the Linux VM when
+// What the computer has and what Colonia takes of it: memory, CPU, disk, the Colonia home by part, and the Linux VM when
 // there is one. Read-only; the home's sizes are measured in the background and kept a while (a walk is slow).
 import { z } from "zod";
 
 export const DiskSpace = z.object({
-  /** "home": the volume holding the APX home; "system": the system's. One volume can be both. */
+  /** "home": the volume holding the Colonia home; "system": the system's. One volume can be both. */
   roles: z.array(z.enum(["home", "system"])),
   path: z.string(),
   total_mb: z.number(),
@@ -11,7 +11,7 @@ export const DiskSpace = z.object({
 });
 export type DiskSpace = z.infer<typeof DiskSpace>;
 
-/** Parts of the APX home, each a set of its top-level folders and files. */
+/** Parts of the Colonia home, each a set of its top-level folders and files. */
 export const HOME_PARTS = ["databases", "logs", "models", "files", "browser", "projects", "computer", "other"] as const;
 export const HomePart = z.enum(HOME_PARTS);
 export type HomePart = z.infer<typeof HomePart>;
@@ -27,7 +27,7 @@ export const HomeUsage = z.object({
 });
 export type HomeUsage = z.infer<typeof HomeUsage>;
 
-/** The Linux VM APX runs agents in, when there is one. */
+/** The Linux VM Colonia runs agents in, when there is one. */
 export const VmUsage = z.object({
   running: z.boolean(),
   name: z.string().optional(),
@@ -66,7 +66,7 @@ export const SystemUsage = z.object({
 export type SystemUsage = z.infer<typeof SystemUsage>;
 
 export const usageMethods = {
-  /** Memory, CPU and disk of the computer, and what the core takes; `disk` adds the APX home's size by part. */
+  /** Memory, CPU and disk of the computer, and what the core takes; `disk` adds the Colonia home's size by part. */
   "system.usage": {
     params: z.object({ disk: z.boolean().default(false) }).strict(),
     result: SystemUsage,

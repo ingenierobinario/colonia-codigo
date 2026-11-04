@@ -6,7 +6,7 @@ import path from "node:path";
 import { openDb } from "../src/db/db.ts";
 
 const target = path.resolve(import.meta.dirname, "../src/db/schema.ts");
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-schema-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-schema-"));
 const db = openDb(home, {});
 
 type Column = { name: string; type: string; notnull: number; dflt_value: unknown; pk: number };

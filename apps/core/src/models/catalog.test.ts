@@ -11,7 +11,7 @@ import { createSecrets } from "../secrets.ts";
 import { createCatalog } from "./catalog.ts";
 
 test("the catalog asks each engine for its models, caches them and keeps the last good list on failure", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-catalog-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-catalog-"));
   const db = openDb(home);
   try {
     const store = createStore(db, createBus());
@@ -41,7 +41,7 @@ test("the catalog asks each engine for its models, caches them and keeps the las
         },
       },
     });
-    // A list an older APX kept (fresh, but read before efforts existed) is asked again, not served for a day.
+    // A list an older Colonia kept (fresh, but read before efforts existed) is asked again, not served for a day.
     store.settings.set(
       "catalog:claude",
       JSON.stringify({
@@ -78,7 +78,7 @@ test("the catalog asks each engine for its models, caches them and keeps the las
 });
 
 test("a signed-in plan's models are asked to the plan with its sign-in, never read from a CLI", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-catalog-plan-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-catalog-plan-"));
   const db = openDb(home);
   try {
     const store = createStore(db, createBus());

@@ -28,7 +28,7 @@ async function leads(page: Page, name: string) {
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name })).project.id;
   await rpc("tables.create", { project, name: "leads", columns: ["email", "name", "phone"] });
   await rpc("tables.column_required", { project, table: "leads", column: "phone", required: true });
-  await page.addInitScript(() => localStorage.setItem("apx.prefs", JSON.stringify({ language: "en" })));
+  await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en" })));
   await open(page, `#view=flows&scope=${project}`);
   return project;
 }

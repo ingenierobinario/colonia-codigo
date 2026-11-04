@@ -10,7 +10,7 @@ import { callTool, say, scriptedLlm, startCore } from "./testkit.ts";
 
 for (const workspace of ["read-only", "no folder"] as const) {
   test(`an update handoff from ${workspace} never reuses an older writable task session`, async () => {
-    const folder = tempDir("apx-handoff-session-");
+    const folder = tempDir("colonia-handoff-session-");
     const previousFolder = path.join(folder.path, "previous");
     const currentFolder = path.join(folder.path, "current");
     fs.mkdirSync(previousFolder);
@@ -137,7 +137,7 @@ for (const creator of ["superagent", "vera", "owner"] as const) {
 
 for (const delegated of [false, true]) {
   test(`a due task does not transfer its still-running creator${delegated ? " after delegation" : ""}`, async () => {
-    const folder = tempDir("apx-handoff-schedule-");
+    const folder = tempDir("colonia-handoff-schedule-");
     let ready = false;
     const leave = Promise.withResolvers<void>();
     let task = "";

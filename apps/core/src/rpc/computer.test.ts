@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient, type ApxSocket } from "@apx/protocol/client";
+import { ColoniaClient, type ColoniaSocket } from "@colonia/protocol/client";
 import { testConfig } from "../config.ts";
 import { callTool, inputOrEnd, say, scriptedLlm } from "../engine/testkit.ts";
 import { createCore } from "../server.ts";
@@ -52,12 +52,12 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
 
 let core: Awaited<ReturnType<typeof createCore>>;
 let home = "";
-let owner: ApxClient;
-let desktop: ApxSocket | undefined;
+let owner: ColoniaClient;
+let desktop: ColoniaSocket | undefined;
 const calls: string[] = [];
 
 before(async () => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-computer-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-computer-"));
   core = await createCore(testConfig({ home }), { quiet: true, llm });
   core.store.settings.set("model_default", JSON.stringify({ model: "fake/fake-1", router: false }));
   core.store.settings.write("memory", {
@@ -67,7 +67,7 @@ before(async () => {
     auto_capture: false,
     auto_dream: false,
   });
-  owner = new ApxClient({ url: core.url });
+  owner = new ColoniaClient({ url: core.url });
 });
 after(async () => {
   desktop?.close();
@@ -98,7 +98,7 @@ test("computer use exists only while the desktop lends it; in Auto a look at the
   await settle(thread);
   assert.doesNotMatch(await last(thread), /screen_snapshot/);
 
-  desktop = await new ApxClient({ url: core.url }).connect("node", ["browser", "computer"]);
+  desktop = await new ColoniaClient({ url: core.url }).connect("node", ["browser", "computer"]);
   desktop.onRequest(async (method, params) => {
     calls.push(method);
     if (method === "computer.snapshot")

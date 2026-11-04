@@ -4,7 +4,7 @@ import { fakeTelegram } from "../channels/fake-telegram.test-support.ts";
 import { telegramAdapter } from "../channels/telegram.ts";
 import { settingsCore } from "./settings.test-support.ts";
 
-// Attention hours are changed from chat through apx_settings: a channel's hours with channels.set, a contact let
+// Attention hours are changed from chat through colonia_settings: a channel's hours with channels.set, a contact let
 // through them with contacts.set. The owner's card reads them in words.
 const TOKEN = "123456:TEST-hours";
 const WEEKDAYS = { days: [1, 2, 3, 4, 5], from: "09:00", to: "18:00" };
@@ -32,10 +32,10 @@ after(async () => {
 const channel = async () => (await h.env.client.call("channels.list", {})).channels.find((c) => c.id === "tg");
 const person = async (id: string) => (await h.env.client.call("contacts.list", {})).persons.find((p) => p.id === id);
 
-test("only apx_settings sets hours: there is no tool of their own", async () => {
+test("only colonia_settings sets hours: there is no tool of their own", async () => {
   await h.ask("hello");
   const offered = h.llm.calls.at(-1)?.tools.map((t) => t.function.name) ?? [];
-  assert.ok(offered.includes("apx_settings"));
+  assert.ok(offered.includes("colonia_settings"));
   assert.ok(!offered.includes("attention_hours"));
   assert.match((await h.ask({ method: "channels.list" })).answer, /Acme bot \[tg\] \(.*any hour/);
 });

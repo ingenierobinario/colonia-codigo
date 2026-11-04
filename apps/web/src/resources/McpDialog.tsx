@@ -1,5 +1,5 @@
-import type { McpServerStatus } from "@apx/protocol";
-import { Button, Dialog, Input, SegmentedControl } from "@apx/ui";
+import type { McpServerStatus } from "@colonia/protocol";
+import { Button, Dialog, Input, SegmentedControl } from "@colonia/ui";
 import { useState } from "react";
 import { type McpDraft, setMcp } from "../data/resources.ts";
 import { useT } from "../i18n/index.ts";

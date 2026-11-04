@@ -1,6 +1,6 @@
 import "../../styles/screens.css";
-import type { ApprovalScope, FileChange, Part } from "@apx/protocol";
-import { ActionGroup, Button, Icons, MarkdownView } from "@apx/ui";
+import type { ApprovalScope, FileChange, Part } from "@colonia/protocol";
+import { ActionGroup, Button, Icons, MarkdownView } from "@colonia/ui";
 import { Fragment, useId, useState } from "react";
 import { ApprovalText } from "../../common/ApprovalText.tsx";
 import { useMarkdownLabels } from "../../common/useMarkdownLabels.ts";

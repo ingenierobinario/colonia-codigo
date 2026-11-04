@@ -2,7 +2,7 @@
 // (a watcher on each project's .apc/). Files are the truth; the database is the index the rest of the core reads.
 import fs from "node:fs";
 import path from "node:path";
-import type { ModelChoice } from "@apx/protocol";
+import type { ModelChoice } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import type { Log } from "../log.ts";
 import { listField, textField } from "./frontmatter.ts";
@@ -11,7 +11,7 @@ import { type ApcAgent, type ApcProject, isApcProject, readAgents, readProject }
 
 /**
  * An agent file's `autonomy:`, with the names files written before the five modes used (DECISIONS.md#d-106): a file in
- * someone's repository is not APX's to rewrite, and reading `ask` as the default would let that agent act unasked.
+ * someone's repository is not Colonia's to rewrite, and reading `ask` as the default would let that agent act unasked.
  */
 const FILE_MODES: Record<string, string> = {
   ask: "manual",
@@ -84,11 +84,11 @@ export function createApcSync(deps: {
 
   function apply(abs: string, p: ApcProject, agents: ApcAgent[]): SyncResult {
     // One folder is one project: the record registered here keeps its id, chats and tasks even when project.json's
-    // apx_id changed (another tool rewrote it) or cannot be read. One removed from APX does not outrank the apx_id.
+    // colonia_id changed (another tool rewrote it) or cannot be read. One removed from Colonia does not outrank the colonia_id.
     const records = store.projects.atPath(abs);
     const indexed = records.find((r) => r.registered !== false) ?? (p.metaError ? records[0] : undefined);
     const duplicates = records.filter((r) => r !== indexed);
-    // A clone or worktree carries the same committed apx_id: while the first folder is still there, this one is a
+    // A clone or worktree carries the same committed colonia_id: while the first folder is still there, this one is a
     // different project (its own id from its path), not a replacement.
     const holder = indexed ? undefined : store.projects.get(projectIdOf(p.id));
     const taken = holder?.path && holder.path !== abs && fs.existsSync(holder.path);
@@ -99,7 +99,7 @@ export function createApcSync(deps: {
     if (p.metaError) log.warn({ root: abs, err: p.metaError }, "could not read .apc/project.json");
     const present = new Set(agents.map((a) => a.slug));
     return store.tx(() => {
-      // A second record an earlier apx_id change left at this folder stops being listed, and its agents with it;
+      // A second record an earlier colonia_id change left at this folder stops being listed, and its agents with it;
       // its chats and tasks stay.
       for (const d of duplicates)
         if (d.registered !== false && d.id !== projectId) {
@@ -176,7 +176,7 @@ export function createApcSync(deps: {
       reading.set(root, pending);
       void pending
         .then((files) => {
-          // Closed, or removed from APX while it was read: nothing to write.
+          // Closed, or removed from Colonia while it was read: nothing to write.
           if (closed || store.projects.get(id)?.registered === false) return;
           const r = settle(id, root, files);
           if (r) log.info({ project: r.project, agents: r.agents }, "project read");

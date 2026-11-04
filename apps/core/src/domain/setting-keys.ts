@@ -22,7 +22,7 @@ import {
   TaskColumn,
   TelemetryEvent,
   TelemetryStage,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { z } from "zod";
 import { DEFAULT_COLUMNS } from "./tasks.ts";
 
@@ -91,7 +91,7 @@ export const SETTINGS = {
    */
   agent_limits: entry(AgentLimits.partial().extend({ agents: AgentBudgets.optional() }), {}),
   /**
-   * The quick chat's shortcut, start at login (on: APX is meant to be always there) and whether agents may use this
+   * The quick chat's shortcut, start at login (on: Colonia is meant to be always there) and whether agents may use this
    * computer's screen (off until the owner turns it on); each field falls back alone.
    */
   desktop: entry(
@@ -178,7 +178,7 @@ export const SETTINGS = {
   acp_agents: entry(listOf(AcpAgent), []),
   /** The owner's media services, in the order they are tried. */
   services: entry(listOf(ServiceSettings.extend({ id: z.string() })), []),
-  /** Services APX added on its own once (Codex's images): one the owner removed is not added again. */
+  /** Services Colonia added on its own once (Codex's images): one the owner removed is not added again. */
   services_offered: entry(z.array(z.string()).catch([]), []),
   channels: entry(listOf(Channel), []),
   /**

@@ -1,6 +1,6 @@
 # What every verify job starts with after checkout: Node, the pnpm install and, when the job needs them, Playwright's
 # Chromium and the mobile app's own install, both cached (rules/TESTING.md#ci).
-name: Set up APX
+name: Set up Colonia
 description: Node, pnpm install, and optionally a cached Chromium and the mobile app's npm install
 
 inputs:
@@ -48,8 +48,8 @@ runs:
       run: |
         chrome=$(node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log(chromium.executablePath())')
         test -x "$chrome"
-        printf 'abi <abi/4.0>,\ninclude <tunables/global>\nprofile apx-test-chromium "%s" flags=(unconfined) {\n  userns,\n}\n' "$chrome" | sudo tee /etc/apparmor.d/apx-test-chromium >/dev/null
-        sudo apparmor_parser -r /etc/apparmor.d/apx-test-chromium
+        printf 'abi <abi/4.0>,\ninclude <tunables/global>\nprofile colonia-test-chromium "%s" flags=(unconfined) {\n  userns,\n}\n' "$chrome" | sudo tee /etc/apparmor.d/colonia-test-chromium >/dev/null
+        sudo apparmor_parser -r /etc/apparmor.d/colonia-test-chromium
         node --test apps/core/src/nodes/headless-browser.test.ts
 
     # node_modules itself, keyed by the lockfile and Node: a hit needs no npm ci at all.

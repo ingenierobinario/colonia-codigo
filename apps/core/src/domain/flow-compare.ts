@@ -1,15 +1,15 @@
 // A check's comparisons (DECISIONS.md#d-180): each side is a template filled from the run, read as text, a number or
 // yes or no. A field that is not there is empty; nothing is evaluated.
-import type { FlowCase, FlowComparison } from "@apx/protocol/flow-cases";
-import type { FlowBinding } from "@apx/protocol/flow-graph";
+import type { FlowCase, FlowComparison } from "@colonia/protocol/flow-cases";
+import type { FlowBinding } from "@colonia/protocol/flow-graph";
 import type { FlowVarIndex } from "./flow-expr.ts";
 import { FlowFieldUnavailable } from "./flow-graph-validate.ts";
-import { emptyFlowValue, type FlowApx, flowValueText, parseFlowTemplate, renderFlowTemplate } from "./flow-template.ts";
+import { emptyFlowValue, type FlowColonia, flowValueText, parseFlowTemplate, renderFlowTemplate } from "./flow-template.ts";
 
 export type FlowOperandReads = {
   resolve: (b: FlowBinding) => unknown;
   vars: FlowVarIndex;
-  apx?: FlowApx | undefined;
+  colonia?: FlowColonia | undefined;
 };
 
 /**
@@ -28,7 +28,7 @@ export function flowOperand(template: string, reads: FlowOperandReads): unknown 
   const parts = parseFlowTemplate(template.trim(), reads.vars);
   const only = parts.length === 1 ? parts[0] : undefined;
   if (only && "binding" in only) return resolve(only.binding);
-  return renderFlowTemplate(parts, resolve, { apx: reads.apx }).text;
+  return renderFlowTemplate(parts, resolve, { colonia: reads.colonia }).text;
 }
 
 const asNumber = (v: unknown): number =>

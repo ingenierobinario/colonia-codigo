@@ -1,5 +1,5 @@
-import type { Part, Result } from "@apx/protocol";
-import { Badge, Button, Icons, Skeleton } from "@apx/ui";
+import type { Part, Result } from "@colonia/protocol";
+import { Badge, Button, Icons, Skeleton } from "@colonia/ui";
 import { Suspense, useCallback, useContext, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { useFlowDraft } from "../data/flowDrafts.ts";
@@ -11,7 +11,7 @@ import { FlowCanvas, type StepLook } from "./FlowCanvas.tsx";
 import { stepDetail } from "./look.tsx";
 import { OpenFlow } from "./openFlow.ts";
 import type { FlowNode } from "./steps.tsx";
-import "@apx/ui/flow.css";
+import "@colonia/ui/flow.css";
 import "./flow-card.css";
 
 type Doc = Result<"flows.graph_get">;

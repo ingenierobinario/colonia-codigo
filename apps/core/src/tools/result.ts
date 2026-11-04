@@ -22,11 +22,11 @@ export function cap(text: string, max = RESULT_CAP): string {
 /** What every untrusted envelope carries: finding it in a turn's context means outside content is there. */
 export const UNTRUSTED_MARK = 'trust="untrusted"';
 
-// Tags only APX writes: outside text that carries them is defused.
+// Tags only Colonia writes: outside text that carries them is defused.
 const RESERVED_TAGS = "system_note|owner_instruction";
 
 /**
- * A name from outside (a contact's, a room's) set inside a sentence APX writes: one line, no tags or quotes, capped,
+ * A name from outside (a contact's, a room's) set inside a sentence Colonia writes: one line, no tags or quotes, capped,
  * so it cannot start a line of its own or pose as markup.
  */
 export function inlineName(name: string, max = 60): string {
@@ -51,7 +51,7 @@ export function untrusted(source: string, attrs: Record<string, string>, body: s
 
 /**
  * Text one of the owner's own agents wrote (a request, a delegated answer, a task it made): the owner's side, so it
- * does not count as outside content (DECISIONS.md#d-071). Still enveloped, so it cannot pose as APX or the owner.
+ * does not count as outside content (DECISIONS.md#d-071). Still enveloped, so it cannot pose as Colonia or the owner.
  */
 export function fromTeam(source: string, attrs: Record<string, string>, body: string): string {
   return envelope(source, attrs, body, 'trust="team"');
@@ -61,7 +61,7 @@ function envelope(source: string, attrs: Record<string, string>, body: string, m
   const a = Object.entries(attrs)
     .map(([k, v]) => ` ${k}="${oneLine(v).replace(/["<>]/g, "'")}"`)
     .join("");
-  // The body cannot close its own envelope or pose as APX or the owner.
+  // The body cannot close its own envelope or pose as Colonia or the owner.
   const safe = body.replace(new RegExp(`<(/?)(${source}|${RESERVED_TAGS})\\b`, "gi"), "&lt;$1$2");
   return `<${source}${a} ${mark}>\n${safe}\n</${source}>`;
 }

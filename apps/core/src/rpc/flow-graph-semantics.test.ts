@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const graph: FlowGraph = {

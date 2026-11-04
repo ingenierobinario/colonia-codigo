@@ -1,11 +1,11 @@
-// A chat in a project keeps its temporary files apart: in a temp folder of its own, outside the project and APX's home,
+// A chat in a project keeps its temporary files apart: in a temp folder of its own, outside the project and Colonia's home,
 // where writing never waits for the owner, even with outside content in the turn.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { z } from "zod";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
@@ -49,7 +49,7 @@ let root = "";
 let agent = "";
 before(async () => {
   env = await startCore({ llm, extraTools: [readPage] });
-  root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-scratch-project-")));
+  root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-scratch-project-")));
   fs.mkdirSync(path.join(root, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(root, ".apc", "project.json"), JSON.stringify({ name: "Northwind" }));
   fs.writeFileSync(

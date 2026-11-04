@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import { createLog } from "../log.ts";
 import type { CallContext } from "../rpc/context.ts";
 import { callTool, say, scriptedLlm, startCore, texts } from "./testkit.ts";

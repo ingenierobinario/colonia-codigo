@@ -12,7 +12,7 @@ test("an agent's words outside a turn show in the chat, open its history after a
       thread_id: chat.id,
       agent_id: "superagent",
       text: "Hello",
-      note: "[APX: a note]",
+      note: "[Colonia: a note]",
       unread: false,
     });
     postAgentWords(store, {
@@ -20,7 +20,7 @@ test("an agent's words outside a turn show in the chat, open its history after a
       agent_id: "superagent",
       text: "News",
       said: "News\n\n1. Act",
-      note: "[APX: news]",
+      note: "[Colonia: news]",
       unread: true,
     });
     const messages = store.messages.list(chat.id);
@@ -37,9 +37,9 @@ test("an agent's words outside a turn show in the chat, open its history after a
         return [item.role, item.content];
       }),
       [
-        ["user", "[APX: a note]"],
+        ["user", "[Colonia: a note]"],
         ["assistant", "Hello"],
-        ["user", "[APX: news]"],
+        ["user", "[Colonia: news]"],
         ["assistant", "News\n\n1. Act"],
       ],
     );

@@ -1,6 +1,6 @@
-// apx_settings, the people the owner talks to and how: contacts, channels and their stickers, the owner's own profile
+// colonia_settings, the people the owner talks to and how: contacts, channels and their stickers, the owner's own profile
 // and when they are notified. A channel's sign-in and what its sealed chats may do stay the owner's (DECISIONS.md#d-138).
-import { CHANNEL_DEFAULTS, type ChannelHours, type Person } from "@apx/protocol";
+import { CHANNEL_DEFAULTS, type ChannelHours, type Person } from "@colonia/protocol";
 import { autoApproves } from "../channels/stickers.ts";
 import { noticePrefs } from "../domain/notices.ts";
 import { ownerIdentity, ownerTimeZone } from "../domain/owner.ts";
@@ -187,7 +187,7 @@ export const PEOPLE: Readonly<Record<string, Setting>> = {
     shows: () => "saved; channels.list shows it now",
   },
   "imessage.set": {
-    does: "turn the iMessage channel on or off (on), on a Mac that lets APX read Messages",
+    does: "turn the iMessage channel on or off (on), on a Mac that lets Colonia read Messages",
     says: (p) => `Turn iMessage ${p.on ? "on" : "off"}`,
     now: (_p, { store }) => ({ on: store.settings.read("imessage").on }),
   },

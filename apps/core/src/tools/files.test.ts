@@ -4,7 +4,7 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { z } from "zod";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { fileTools } from "./files.ts";
@@ -19,7 +19,7 @@ const calls: Record<string, [string, object]> = {
   "write new": ["file_write", { path: "pages/new.html", content: "<p>$1</p>\n<p>$1</p>\n" }],
   "edit new": ["file_edit", { path: "pages/new.html", old: "$1", new: "$2", all: true }],
   escape: ["file_write", { path: "../outside.txt", content: "no" }],
-  absolute: ["file_write", { path: "/apx-absolute.txt", content: "no" }],
+  absolute: ["file_write", { path: "/colonia-absolute.txt", content: "no" }],
   git: ["file_write", { path: ".git/config", content: "no" }],
   "read page": ["file_read", { path: "pages/btc.html", offset: 2, limit: 1 }],
   "read binary": ["file_read", { path: "pages/blob.bin" }],
@@ -117,11 +117,11 @@ test("an agent writes and edits a file in the folder it works in, never outside 
   assert.match(await said(t.id, "edit twice"), /found 2 times .*nothing changed/);
   assert.match(await said(t.id, "edit all"), /replaced 2 occurrences/);
   assert.equal(fs.readFileSync(file, "utf8"), "<h1>BTC $&2</h1>\n<p>$3</p>\n<p>$3</p>\n");
-  // Fenced in by its own rule it is refused outside its folders; on total it writes anywhere but APX's home (DECISIONS.md#d-102).
+  // Fenced in by its own rule it is refused outside its folders; on total it writes anywhere but Colonia's home (DECISIONS.md#d-102).
   await env.client.call("agents.update", { agent: "superagent", autonomy: "auto", rules: { outside: "off" } });
   try {
     for (const [ask, why] of [
-      ["escape", /APX's own folder/],
+      ["escape", /Colonia's own folder/],
       ["absolute", /outside the folder/],
       ["git", /\.git folder is off limits/],
     ] as const)
@@ -130,7 +130,7 @@ test("an agent writes and edits a file in the folder it works in, never outside 
     await env.client.call("agents.update", { agent: "superagent", autonomy: "total", rules: null });
   }
   assert.equal(fs.existsSync(path.join(env.home, "outside.txt")), false);
-  assert.equal(fs.existsSync("/apx-absolute.txt"), false);
+  assert.equal(fs.existsSync("/colonia-absolute.txt"), false);
 });
 
 test("file tools take shell's cwd: a relative path in a worktree lands in it, never in the root checkout", async () => {
@@ -152,8 +152,8 @@ test("file tools take shell's cwd: a relative path in a worktree lands in it, ne
   assert.equal(fs.readFileSync(path.join(root, "docs", "spec.md"), "utf8"), "root\n");
   assert.equal(fs.existsSync(path.join(root, "docs", "new.md")), false);
   for (const [ask, why] of [
-    ["tree escape", /APX's own folder/],
-    ["cwd outside", /APX's own folder/],
+    ["tree escape", /Colonia's own folder/],
+    ["cwd outside", /Colonia's own folder/],
     ["cwd missing", /^(?!.*refused).*no-such-tree does not exist/s],
     ["cwd git", /\.git folder is off limits/],
   ] as const)
@@ -239,7 +239,7 @@ test("an agent reads a text file by lines, as data; a binary one or one outside 
   assert.match(page, /pages\/btc\.html: lines 2-2 of 4 \(more: offset=3\)/);
   assert.match(page, /<file path="pages\/btc\.html" trust="untrusted">\ntwo\n<\/file>/);
   assert.match(await said(t.id, "read binary"), /is not a text file/);
-  assert.match(await said(t.id, "read outside"), /APX's own folder/);
+  assert.match(await said(t.id, "read outside"), /Colonia's own folder/);
 });
 
 test("an agent that reads an image file sees it", async () => {
@@ -280,7 +280,7 @@ test("an agent that reads an audio file gets its transcript, as data; only the o
       await said(t.id, "read memo"),
       /pages\/memo\.mp3: audio \(audio\/mpeg\), transcribed:\n<transcript path="pages\/memo\.mp3" trust="untrusted">\nbuy milk on the way home\n<\/transcript>/,
     );
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(
       agent.call("media.transcribe", { data: Buffer.from("x").toString("base64"), mime: "audio/webm" }),
       /only audio attached in its own chat/,

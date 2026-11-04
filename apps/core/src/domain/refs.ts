@@ -1,7 +1,7 @@
 // Model refs: "<engine>/<model>" ("claude/opus", "gemini/gemini-3.6-flash", "acp:opencode/big-pickle"), or an
 // engine alone when it has a default model of its own; "#<effort>" at the end asks for that reasoning effort
 // ("codex/gpt-6-sol#high"). One parser for every place that reads them.
-import type { HarnessId } from "@apx/protocol";
+import type { HarnessId } from "@colonia/protocol";
 
 export function parseRef(ref: string): {
   engine: string;

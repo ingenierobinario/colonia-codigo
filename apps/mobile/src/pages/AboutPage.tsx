@@ -25,7 +25,7 @@ const BADGE = 30;
 const BAR = 56;
 const SMALL = 44;
 
-/** What APX is, drawn as on the landing, with this build and the core it talks to (as `apx status` says it). */
+/** What Colonia is, drawn as on the landing, with this build and the core it talks to (as `colonia status` says it). */
 export function AboutPage({
   data,
   url,
@@ -84,7 +84,7 @@ export function AboutPage({
         >
           {/* Room for the portrait, which floats over the page; the badge scrolls away under the title bar. */}
           <Animated.View pointerEvents="none" style={[s.badgeRow, { opacity: badge }]}>
-            <Text style={s.badge}>{t("apxVersion", { version: config?.version ?? "" })}</Text>
+            <Text style={s.badge}>{t("coloniaVersion", { version: config?.version ?? "" })}</Text>
           </Animated.View>
           <Text style={s.label}>{t("thisApp")}</Text>
           <ListGroup>

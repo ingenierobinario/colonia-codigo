@@ -23,13 +23,13 @@ const ROOMS = {
 
 test("the secret is the bot's login, its token with or without oauth: and the channel", () => {
   const token = "abcdefghijklmnopqrstuvwxyz0123";
-  assert.deepEqual(twitchSecret(`ApxBot oauth:${token} #Acme_Stream`), {
-    login: "apxbot",
+  assert.deepEqual(twitchSecret(`ColoniaBot oauth:${token} #Acme_Stream`), {
+    login: "coloniabot",
     token,
     channel: "#acme_stream",
   });
-  assert.deepEqual(twitchSecret(`apxbot ${token} acme_stream`), { login: "apxbot", token, channel: "#acme_stream" });
-  assert.deepEqual(twitchSecret("apxbot short #acme_stream"), { login: "apxbot", channel: "#acme_stream" });
+  assert.deepEqual(twitchSecret(`coloniabot ${token} acme_stream`), { login: "coloniabot", token, channel: "#acme_stream" });
+  assert.deepEqual(twitchSecret("coloniabot short #acme_stream"), { login: "coloniabot", channel: "#acme_stream" });
 });
 
 describe("twitch channel", () => {
@@ -48,7 +48,7 @@ describe("twitch channel", () => {
     await env.client.call("channels.set", {
       id: "twitch",
       channel: { type: "twitch", agent_id: "superagent", rooms: ROOMS },
-      token: `apxbot oauth:${tw.token} ${CHANNEL}`,
+      token: `coloniabot oauth:${tw.token} ${CHANNEL}`,
     });
     await waitFor(
       async () => (await env.client.call("channels.list", {})).channels[0]?.status === "running",
@@ -69,7 +69,7 @@ describe("twitch channel", () => {
     tw.message("viewer", "first time here, hi chat");
     await pause(200);
     assert.equal(posts().length, 0, "not called, not answered");
-    const asked = tw.message("viewer", "@apxbot when is the next stream?");
+    const asked = tw.message("viewer", "@coloniabot when is the next stream?");
     await waitFor(() => posts().length === 1, "answered when @mentioned");
     assert.equal(posts()[0]?.tags["reply-parent-msg-id"], asked);
     const room = env.core.store.threads.byConversation("twitch", CHANNEL);
@@ -88,7 +88,7 @@ describe("twitch channel", () => {
       "running",
     );
     await pause(100);
-    tw.message("viewer2", "@apxbot still there?");
+    tw.message("viewer2", "@coloniabot still there?");
     await waitFor(() => posts().length === 2, "answered after reconnecting");
   });
 });
@@ -97,12 +97,12 @@ test("a refused token stops the channel; there is no one-to-one chat to write to
   const tw = await fakeTwitch(CHANNEL);
   const config = { id: "twitch", type: "twitch", agent_id: "superagent" } as Parameters<typeof twitchAdapter>[0];
   const io = { receive() {}, action() {}, status() {}, signal: new AbortController().signal };
-  const bad = twitchAdapter(config, `apxbot oauth:${"z".repeat(30)} ${CHANNEL}`, tw.url);
+  const bad = twitchAdapter(config, `coloniabot oauth:${"z".repeat(30)} ${CHANNEL}`, tw.url);
   await assert.rejects(bad.start(io), /refused the bot's token/);
   await bad.stop();
 
-  const good = twitchAdapter(config, `apxbot ${tw.token} ${CHANNEL}`, tw.url);
-  assert.deepEqual(await good.start(io), { account: "apxbot" });
+  const good = twitchAdapter(config, `coloniabot ${tw.token} ${CHANNEL}`, tw.url);
+  assert.deepEqual(await good.start(io), { account: "coloniabot" });
   await assert.rejects(good.send("viewer", { text: "hi" }), /whispers are not supported/);
   await good.stop();
   await tw.close();

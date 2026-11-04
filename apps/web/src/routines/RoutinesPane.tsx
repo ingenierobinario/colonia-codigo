@@ -1,5 +1,5 @@
-import type { Routine } from "@apx/protocol";
-import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu, Switch } from "@apx/ui";
+import type { Routine } from "@colonia/protocol";
+import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { aheadLabel, shortWhen } from "../common/format.ts";
 import { blobOf, DEFAULT_PID } from "../data/identity.ts";

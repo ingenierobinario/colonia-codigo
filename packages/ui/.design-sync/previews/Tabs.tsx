@@ -1,11 +1,11 @@
-import { ApxProvider, Icons, Tabs } from "@apx/ui";
+import { ColoniaProvider, Icons, Tabs } from "@colonia/ui";
 
 const sections = [
   {
     value: "chat",
     label: "Chat",
     icon: <Icons.MessageCircle />,
-    content: <p style={{ margin: 0, color: "var(--apx-fg-muted)" }}>3 agents are talking in this project.</p>,
+    content: <p style={{ margin: 0, color: "var(--colonia-fg-muted)" }}>3 agents are talking in this project.</p>,
   },
   { value: "tasks", label: "Tasks", icon: <Icons.ListChecks />, count: 12 },
   { value: "board", label: "Board", icon: <Icons.LayoutGrid /> },
@@ -36,8 +36,8 @@ export function Pill() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 592 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 592 }}>
       <Tabs items={sections} defaultValue="tasks" />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

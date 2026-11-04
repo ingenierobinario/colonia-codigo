@@ -1,6 +1,6 @@
 // Channels the owner runs (channels.*), the people on them (contacts.*) and who waits for approval (pairing.*).
-import type { ChannelInfo, NoticePrefs, OutboxItem, PairingRequest, Person, Sticker, Thread } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
+import type { ChannelInfo, NoticePrefs, OutboxItem, PairingRequest, Person, Sticker, Thread } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
 import { type MessageKey, t } from "../i18n/index.ts";
 import { loadThread } from "./actions.ts";
 import { client } from "./client.ts";
@@ -147,7 +147,7 @@ export async function respondPairing(code: string, decision: "owner" | "contact"
   try {
     await client.call("pairing.respond", { code, decision });
   } catch (e) {
-    const was = e instanceof ApxError ? (e.detail as { pairing?: string } | undefined)?.pairing : undefined;
+    const was = e instanceof ColoniaError ? (e.detail as { pairing?: string } | undefined)?.pairing : undefined;
     const key = was ? PAIRING_WAS[was] : undefined;
     notify(key ? t(key, { code }) : t("error.channels", { error: errText(e) }));
   }

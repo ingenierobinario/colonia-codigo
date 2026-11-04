@@ -59,7 +59,7 @@ for (const lang of ["en", "es"] as const) {
     const project = (await rpc<{ project: { id: string } }>("projects.create", { name: `Schedule ${lang}` })).project
       .id;
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     const name = `Northwind hourly ${lang}`;
     await open(page, `#view=flows&scope=${project}`);
@@ -156,7 +156,7 @@ for (const lang of ["en", "es"] as const) {
     const def = (await rpc<Result<"flows.list">>("flows.list", { project })).flows[0];
     await rpc("flows.set", { ...def, enabled: true });
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     await open(page, `#view=flows&flow=${flow}`);
     await page.getByRole("button", { name: l.runNow }).click();

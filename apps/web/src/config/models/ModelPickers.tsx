@@ -1,5 +1,5 @@
-import type { CatalogEngine, ModelChoice } from "@apx/protocol";
-import { Button, Icons, Popover } from "@apx/ui";
+import type { CatalogEngine, ModelChoice } from "@colonia/protocol";
+import { Button, Icons, Popover } from "@colonia/ui";
 import { type ReactNode, Suspense, useState } from "react";
 import { choiceLabel, effectiveChoice, inCatalog, refLabel, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";

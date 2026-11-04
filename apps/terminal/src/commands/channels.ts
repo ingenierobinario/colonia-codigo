@@ -1,30 +1,30 @@
-// apx channels / contacts / pairing: the owner's channels, the people on them and who is waiting to be approved.
-import type { ApxClient } from "@apx/protocol/client";
+// colonia channels / contacts / pairing: the owner's channels, the people on them and who is waiting to be approved.
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 const USAGE = {
-  channels: `apx channels                                  List channels and their state
-apx channels add telegram <id> --agent <agent>  Add a Telegram bot; reads its token from APX_CHANNEL_TOKEN
-apx channels rm <id>                            Remove a channel (and its token)
-apx channels outbox                             What was sent lately and how it went
-apx channels send <channel> <contact> <text…>   Write to a contact yourself, in their chat on that channel
-                                                (contact: an id or name from apx contacts)
-apx channels recover <thread>                   Ask the channel again for files that never arrived in a chat
+  channels: `colonia channels                                  List channels and their state
+colonia channels add telegram <id> --agent <agent>  Add a Telegram bot; reads its token from COLONIA_CHANNEL_TOKEN
+colonia channels rm <id>                            Remove a channel (and its token)
+colonia channels outbox                             What was sent lately and how it went
+colonia channels send <channel> <contact> <text…>   Write to a contact yourself, in their chat on that channel
+                                                (contact: an id or name from colonia contacts)
+colonia channels recover <thread>                   Ask the channel again for files that never arrived in a chat
                                                 (WhatsApp: your phone sends those messages again; it must be online)`,
-  contacts: `apx contacts                                  People and their addresses
-apx contacts add <name…>                        Add a contact (link addresses with pairing)
-apx contacts block|unblock <id>
-apx contacts supervise|unsupervise <contact>     Their answers wait for your OK (contact: an id or name)
-apx contacts suggestions                        Suggested answers waiting for you
-apx contacts suggestions send <id> [text…]      Send one (your text instead, when given)
-apx contacts suggestions drop <id>              Drop one: nothing is sent
-apx contacts rm <id>`,
-  pairing: `apx pairing                                   Strangers waiting for approval
-apx pairing me <code>                           This address is mine (the owner's)
-apx pairing ok <code> [name…]                   Approve as a contact
-apx pairing no <code>`,
+  contacts: `colonia contacts                                  People and their addresses
+colonia contacts add <name…>                        Add a contact (link addresses with pairing)
+colonia contacts block|unblock <id>
+colonia contacts supervise|unsupervise <contact>     Their answers wait for your OK (contact: an id or name)
+colonia contacts suggestions                        Suggested answers waiting for you
+colonia contacts suggestions send <id> [text…]      Send one (your text instead, when given)
+colonia contacts suggestions drop <id>              Drop one: nothing is sent
+colonia contacts rm <id>`,
+  pairing: `colonia pairing                                   Strangers waiting for approval
+colonia pairing me <code>                           This address is mine (the owner's)
+colonia pairing ok <code> [name…]                   Approve as a contact
+colonia pairing no <code>`,
 };
 
-export async function channels(client: ApxClient, [sub, ...rest]: string[], opts: { agent?: string | undefined }) {
+export async function channels(client: ColoniaClient, [sub, ...rest]: string[], opts: { agent?: string | undefined }) {
   if (sub === "help") {
     console.log(USAGE.channels);
     return;
@@ -32,7 +32,7 @@ export async function channels(client: ApxClient, [sub, ...rest]: string[], opts
   if (sub === "add") {
     const [type, id] = rest;
     // The token comes in the environment, never on the command line (it would stay in the shell history).
-    const token = process.env.APX_CHANNEL_TOKEN;
+    const token = process.env.COLONIA_CHANNEL_TOKEN;
     if (type !== "telegram" || !id || !opts.agent || !token) throw new Error(USAGE.channels);
     await client.call("channels.set", { id, channel: { type, agent_id: opts.agent }, token });
   } else if (sub === "rm") {
@@ -71,7 +71,7 @@ export async function channels(client: ApxClient, [sub, ...rest]: string[], opts
 }
 
 /** A contact by id, or by name when exactly one has it (case does not matter). */
-async function contactOf(client: ApxClient, idOrName: string) {
+async function contactOf(client: ColoniaClient, idOrName: string) {
   const { persons } = await client.call("contacts.list", {});
   const byId = persons.find((p) => p.id === idOrName);
   if (byId) return byId;
@@ -79,12 +79,12 @@ async function contactOf(client: ApxClient, idOrName: string) {
   if (named.length === 1 && named[0]) return named[0];
   throw new Error(
     named.length
-      ? `${named.length} contacts are named ${idOrName}: use the id (apx contacts)`
+      ? `${named.length} contacts are named ${idOrName}: use the id (colonia contacts)`
       : `no contact ${idOrName}`,
   );
 }
 
-export async function contacts(client: ApxClient, [sub, ...rest]: string[]) {
+export async function contacts(client: ColoniaClient, [sub, ...rest]: string[]) {
   if (sub === "suggestions") return suggestions(client, rest);
   if ((sub === "supervise" || sub === "unsupervise") && rest.length) {
     const p = await contactOf(client, rest.join(" "));
@@ -106,7 +106,7 @@ export async function contacts(client: ApxClient, [sub, ...rest]: string[]) {
 }
 
 /** A supervised contact's suggested answers: listed, sent (as is or with the owner's text) or dropped. */
-async function suggestions(client: ApxClient, [sub, id, ...text]: string[]) {
+async function suggestions(client: ColoniaClient, [sub, id, ...text]: string[]) {
   if (sub === "send" && id) {
     const r = await client.call("contacts.suggestions.send", { id, ...(text.length ? { text: text.join(" ") } : {}) });
     console.log(`sent (${r.delivery.state}${r.delivery.error ? `: ${r.delivery.error}` : ""})`);
@@ -126,7 +126,7 @@ async function suggestions(client: ApxClient, [sub, id, ...text]: string[]) {
   }
 }
 
-export async function pairing(client: ApxClient, [sub, code, ...rest]: string[]) {
+export async function pairing(client: ColoniaClient, [sub, code, ...rest]: string[]) {
   const decision = sub === "me" ? "owner" : sub === "ok" ? "contact" : sub === "no" ? "deny" : undefined;
   if (sub && (!decision || !code)) throw new Error(USAGE.pairing);
   if (decision && code) {

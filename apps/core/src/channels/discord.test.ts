@@ -61,7 +61,7 @@ after(async () => {
 
 test("the bot identifies for direct messages; the owner pairs with a code and talks to Home", async () => {
   const info = (await env.client.call("channels.list", {})).channels[0];
-  assert.equal(info?.account, "@apx_test_bot");
+  assert.equal(info?.account, "@colonia_test_bot");
   assert.equal(dc.identified[0]?.intents, (1 << 12) | (1 << 15));
 
   dc.message(OWNER, "hola");

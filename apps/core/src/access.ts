@@ -11,7 +11,7 @@ import {
   planExposure,
   serializeCoreEnv,
   tailscaleDnsName,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { CallError } from "./errors.ts";
 
 const MAC_TAILSCALE = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
@@ -91,7 +91,7 @@ export function createAccess(deps: {
 
   async function state(): Promise<AccessState> {
     const vars = read();
-    const mode = accessOf({ APX_HOST: deps.running.host, APX_PUBLIC_URL: deps.running.publicUrl });
+    const mode = accessOf({ COLONIA_HOST: deps.running.host, COLONIA_PUBLIC_URL: deps.running.publicUrl });
     const saved = accessOf(vars);
     const run = tailscaleRun();
     const dns = await tailscaleName(run);
@@ -100,7 +100,7 @@ export function createAccess(deps: {
       saved,
       restart_needed: mode !== saved,
       urls: mode === "local" ? [] : deps.addresses(),
-      token_set: Boolean(deps.running.token || vars.APX_TOKEN),
+      token_set: Boolean(deps.running.token || vars.COLONIA_TOKEN),
       tailscale: { installed: Boolean(run), connected: Boolean(dns), ...(dns ? { url: `https://${dns}` } : {}) },
     };
   }
@@ -124,8 +124,8 @@ export function createAccess(deps: {
             code: "bad_request",
             message: "tailscale serve failed: HTTPS may need turning on for your tailnet",
           });
-      } else if (current.APX_PUBLIC_URL && run) {
-        // Only undo what APX set up: other serve configs on this machine are not APX's.
+      } else if (current.COLONIA_PUBLIC_URL && run) {
+        // Only undo what Colonia set up: other serve configs on this machine are not Colonia's.
         await run(["serve", "--https=443", "off"]);
       }
       const plan = planExposure(current, mode === "local" ? "off" : mode, tailscaleUrl ? { tailscaleUrl } : {});

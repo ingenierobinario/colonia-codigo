@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { useT } from "../../i18n/index.ts";
 
 /** What a code thread's folder has uncommitted after the turn, as git sees it, or the files the agent wrote in it. */

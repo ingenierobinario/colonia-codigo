@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { type TestContext, test } from "node:test";
-import { UPLOAD_LIMITS } from "@apx/protocol";
+import { UPLOAD_LIMITS } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
 import { scratchRoot } from "../tools/folders.ts";

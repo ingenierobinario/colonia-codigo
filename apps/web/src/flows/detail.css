@@ -32,7 +32,7 @@
 }
 .fd__name span {
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fd__tools {
   display: flex;
@@ -42,7 +42,7 @@
 }
 .fd__on {
   font-size: 13px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fd__runline {
   display: flex;
@@ -50,12 +50,12 @@
   gap: 10px;
   flex-wrap: wrap;
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fd__runline strong {
   font-size: 14px;
   font-weight: 600;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .fd__drafts {
   display: flex;
@@ -66,16 +66,16 @@
 .fd__draft {
   margin: 0;
   font-size: 12px;
-  color: var(--apx-warning-soft-fg);
+  color: var(--colonia-warning-soft-fg);
 }
 .fd__canvas {
   position: relative;
   height: clamp(280px, 42vh, 420px);
   flex: none;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-lg);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
   overflow: hidden;
-  background: var(--apx-bg);
+  background: var(--colonia-bg);
 }
 .fd__legend {
   position: absolute;
@@ -85,11 +85,11 @@
   display: flex;
   gap: 12px;
   padding: 4px 10px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-surface-raised);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-surface-raised);
   font-size: 11px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fd__legend span {
   display: inline-flex;
@@ -103,16 +103,16 @@
   border-radius: 50%;
 }
 .fd__legend .is-ran::before {
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 .fd__legend .is-skipped::before {
-  border: 1px dashed var(--apx-fg-subtle);
+  border: 1px dashed var(--colonia-fg-subtle);
 }
 .fd__legend .is-failed::before {
-  background: var(--apx-danger);
+  background: var(--colonia-danger);
 }
 .fd__version.is-draft {
-  color: var(--apx-warning-soft-fg);
+  color: var(--colonia-warning-soft-fg);
 }
 .fd__version {
   position: absolute;
@@ -120,25 +120,25 @@
   top: 12px;
   z-index: 5;
   padding: 3px 10px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-surface-raised);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-surface-raised);
   font-size: 11px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fd__version.is-old {
-  border-color: var(--apx-warning);
-  color: var(--apx-fg);
+  border-color: var(--colonia-warning);
+  color: var(--colonia-fg);
 }
 .fd__version.is-test {
-  border-color: var(--apx-warning);
-  color: var(--apx-warning-soft-fg);
+  border-color: var(--colonia-warning);
+  color: var(--colonia-warning-soft-fg);
 }
 .fd__runlog {
   max-height: 360px;
   display: flex;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
   overflow: hidden;
 }
 .fd__runlog > .rlog {
@@ -149,9 +149,9 @@
   flex-direction: column;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-lg);
-  background: var(--apx-surface);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface);
 }
 .fd__panelhead {
   position: relative;
@@ -169,7 +169,7 @@
   min-width: 0;
 }
 .fd__panelstep span {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fd__spacer {
   flex: 1;
@@ -200,10 +200,10 @@
 }
 .fd__label {
   font-size: 11px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fd__value {
-  font-family: var(--apx-font-mono);
+  font-family: var(--colonia-font-mono);
   font-size: 12px;
   line-height: 1.55;
   white-space: pre-wrap;
@@ -211,14 +211,14 @@
 }
 .fd__answered {
   font-size: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .fd__value.is-failed {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .fd__value.is-muted,
 .fd__none {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fd__none {
   margin: 0;
@@ -236,10 +236,10 @@
   max-height: 260px;
   overflow: auto;
   padding: 8px 0;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-bg);
-  font-family: var(--apx-font-mono);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-bg);
+  font-family: var(--colonia-font-mono);
   font-size: 11.5px;
   line-height: 1.7;
 }
@@ -251,7 +251,7 @@
 }
 .fd__logline > span:first-child,
 .fd__logline > span:nth-child(2):not(:last-child) {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
 }
 .fd__logline > span:last-child {
@@ -259,13 +259,13 @@
   word-break: break-word;
 }
 .fd__logline.is-ok > span:last-child {
-  color: var(--apx-brand-soft-fg);
+  color: var(--colonia-brand-soft-fg);
 }
 .fd__logline.is-err > span:last-child {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .fd__logline.is-muted {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   display: block;
 }
 .fd__row {
@@ -273,7 +273,7 @@
   grid-template-columns: minmax(80px, auto) minmax(0, 1fr);
   gap: 10px;
   padding: 6px 0;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
   font-size: 12px;
 }
 .fd__row pre {
@@ -293,7 +293,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-left: 1px solid var(--apx-border);
+  border-left: 1px solid var(--colonia-border);
 }
 .fd__railhead {
   padding: 14px 12px 10px 16px;
@@ -314,13 +314,13 @@
 }
 .fd__railtitle > span {
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
 }
 .fd__railnext {
   margin-top: -6px;
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fd__runs {
   flex: 1;
@@ -341,7 +341,7 @@
   align-items: center;
   padding: 9px 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -350,13 +350,13 @@
   cursor: pointer;
 }
 .fd__run:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .fd__run.is-on {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .fd__run > svg {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .fd__runwhen {
   display: flex;
@@ -368,16 +368,16 @@
   width: 4px;
   height: 14px;
   border-radius: 2px;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 .fd__runmark.is-cut {
-  background: var(--apx-fg-subtle);
+  background: var(--colonia-fg-subtle);
 }
 .fd__runmark.is-failed {
-  background: var(--apx-danger);
+  background: var(--colonia-danger);
 }
 .fd__runmark.is-live {
-  background: var(--apx-info);
+  background: var(--colonia-info);
 }
 .fd__runtags {
   display: flex;
@@ -386,7 +386,7 @@
   min-width: 0;
 }
 .fd__runtook {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
   text-align: right;
 }
@@ -402,10 +402,10 @@
 }
 .fd__vertext strong {
   font-weight: 500;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .fd__vertext span {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -416,7 +416,7 @@
   padding-top: 12px;
   display: flex;
   justify-content: center;
-  border-left: 1px solid var(--apx-border);
+  border-left: 1px solid var(--colonia-border);
 }
 
 @media (max-width: 760px) {
@@ -442,9 +442,9 @@
     width: auto;
     min-width: 0;
     border-left: 0;
-    border-top: 1px solid var(--apx-border);
+    border-top: 1px solid var(--colonia-border);
   }
-  .fd__rail .apx-resize {
+  .fd__rail .colonia-resize {
     display: none;
   }
   .fd__runs {
@@ -453,12 +453,12 @@
   .fd__railclosed {
     width: auto;
     border-left: 0;
-    border-top: 1px solid var(--apx-border);
+    border-top: 1px solid var(--colonia-border);
     padding: 8px;
   }
 }
 .fd__late {
-  color: var(--apx-warning-soft-fg);
+  color: var(--colonia-warning-soft-fg);
   text-wrap: pretty;
 }
 .fd__stop {
@@ -472,15 +472,15 @@
 .fd__now p {
   margin: 0;
   font-size: 13px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-wrap: pretty;
 }
 .fd__mono {
-  font-family: var(--apx-font-mono);
+  font-family: var(--colonia-font-mono);
   font-size: 12.5px;
 }
 .fd__now .fd__nowerr {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 
 /* Times a schedule skipped because its last run was still going. */
@@ -488,6 +488,6 @@
   margin: 0;
   padding: 0 16px 8px;
   font-size: 12.5px;
-  color: var(--apx-warning-soft-fg);
+  color: var(--colonia-warning-soft-fg);
   text-wrap: pretty;
 }

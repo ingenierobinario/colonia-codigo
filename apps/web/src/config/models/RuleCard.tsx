@@ -1,5 +1,5 @@
-import type { RouterRule } from "@apx/protocol";
-import { IconButton, Icons, Input, SegmentedControl } from "@apx/ui";
+import type { RouterRule } from "@colonia/protocol";
+import { IconButton, Icons, Input, SegmentedControl } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import { type MessageKey, useT } from "../../i18n/index.ts";
 import { ModelRefPicker } from "./ModelRefPicker.tsx";

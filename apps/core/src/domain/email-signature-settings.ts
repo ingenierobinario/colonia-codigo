@@ -1,4 +1,4 @@
-import { type EmailSignatureEntry, EmailSignatures, type EmailSignatureValue } from "@apx/protocol";
+import { type EmailSignatureEntry, EmailSignatures, type EmailSignatureValue } from "@colonia/protocol";
 import { conflict } from "../errors.ts";
 import type { Store } from "./store.ts";
 

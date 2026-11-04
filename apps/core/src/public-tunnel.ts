@@ -4,13 +4,13 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import { type HookError, type HookMode, tailscaleDnsName, type WebhooksState } from "@apx/protocol";
+import { type HookError, type HookMode, tailscaleDnsName, type WebhooksState } from "@colonia/protocol";
 import { findTailscale, type TailscaleRun, tailscaleRunner } from "./access.ts";
 import type { Store } from "./domain/store.ts";
 import { CallError } from "./errors.ts";
 import type { Log } from "./log.ts";
 
-/** Funnel's own HTTPS port for webhooks: 443 stays what `apx tailscale connect` serves to the tailnet. */
+/** Funnel's own HTTPS port for webhooks: 443 stays what `colonia tailscale connect` serves to the tailnet. */
 const FUNNEL_PORT = 8443;
 /** How long ngrok may take to say its address before the owner is told it failed. */
 export const NGROK_WAIT_MS = 15_000;
@@ -116,7 +116,7 @@ async function saveChoice(store: Store, tailscale: () => TailscaleRun | undefine
   if (choice.mode === "ngrok" && choice.domain && !/^[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?$/.test(choice.domain))
     throw new CallError({ code: "bad_request", message: "a reserved domain must be a hostname" });
   const { mode: before, ngrok_last } = store.settings.read("webhooks");
-  // Only undo APX's public Funnel port; private Serve and other tunnels are not APX's.
+  // Only undo Colonia's public Funnel port; private Serve and other tunnels are not Colonia's.
   if (before === "tailscale" && choice.mode !== "tailscale") {
     const stopped = await tailscale()?.(["funnel", `--https=${FUNNEL_PORT}`, "off"]);
     if (!stopped?.ok)

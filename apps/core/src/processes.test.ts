@@ -61,7 +61,7 @@ test("Windows without Git Bash runs PowerShell with the command encoded, quotes 
 });
 
 test("the chosen shell executes a command and returns its output", async () => {
-  const child = spawnCommand("echo apx-ready", {
+  const child = spawnCommand("echo colonia-ready", {
     cwd: process.cwd(),
     env: { ...process.env } as Record<string, string>,
     stdio: "pipe",
@@ -75,7 +75,7 @@ test("the chosen shell executes a command and returns its output", async () => {
     child.once("error", reject);
   });
   assert.equal(code, 0);
-  assert.match(output, /apx-ready/);
+  assert.match(output, /colonia-ready/);
 });
 
 test("a command's tree is stopped, and its start time names it while it runs", { timeout: 20_000 }, async () => {

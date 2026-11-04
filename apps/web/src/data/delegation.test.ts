@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, beforeEach, type TestContext, test } from "node:test";
-import { methods, Run, Thread } from "@apx/protocol";
+import { methods, Run, Thread } from "@colonia/protocol";
 import { data } from "./state.ts";
 
 const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");

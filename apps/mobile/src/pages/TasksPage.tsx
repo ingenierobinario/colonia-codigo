@@ -140,7 +140,7 @@ function TaskRow({
   const s = useStyles();
   const agent = data.agents.find((item) => item.id === task.assignee);
   const project = data.projects.find((item) => item.id === task.project_id)?.name ?? t("defaultProject");
-  const who = agent?.name ?? task.assignee ?? "APX";
+  const who = agent?.name ?? task.assignee ?? "Colonia";
   return (
     <Pressable
       accessibilityRole="button"

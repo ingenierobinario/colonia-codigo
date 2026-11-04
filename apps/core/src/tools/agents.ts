@@ -1,9 +1,9 @@
 // Finding and asking other agents. `delegate` is the only way an agent talks to another one.
 import path from "node:path";
-import { WritePolicy } from "@apx/protocol";
+import { WritePolicy } from "@colonia/protocol";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
-import { APX_SERVER } from "../domain/approvals.ts";
+import { COLONIA_SERVER } from "../domain/approvals.ts";
 import type { ProjectRecord } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
 import { budgetLeft } from "../engine/breaker.ts";
@@ -100,8 +100,8 @@ export function agentTools(store: Store): Tool[] {
         const notMine: string[] = [];
         for (const n of names) {
           const target = ctx.approvalFor?.(n);
-          // APX's own tools are the owner's to allow, from the confirmation or the agent's permissions.
-          if (!target || target.server === APX_SERVER) missing.push(n);
+          // Colonia's own tools are the owner's to allow, from the confirmation or the agent's permissions.
+          if (!target || target.server === COLONIA_SERVER) missing.push(n);
           // Nobody hands on more than they hold: a tool this agent must ask the owner for is not its to grant.
           else if (!ctx.usesFreely?.(n)) notMine.push(n);
           else {

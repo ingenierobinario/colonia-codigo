@@ -1,7 +1,7 @@
 // A project's tables (DECISIONS.md#d-173, #d-176): created by name, empty or not, with their columns in order, and rows
-// by key. Flows save and read them, the owner fills them on the Flows screen and their agents through apx_flow.
-import { FLOW_TABLE_COLUMNS, FlowColumnName } from "@apx/protocol/flow-graph";
-import { tableCells } from "@apx/protocol/table-cells";
+// by key. Flows save and read them, the owner fills them on the Flows screen and their agents through colonia_flow.
+import { FLOW_TABLE_COLUMNS, FlowColumnName } from "@colonia/protocol/flow-graph";
+import { tableCells } from "@colonia/protocol/table-cells";
 import type { Db } from "../db/db.ts";
 import { redactedJson } from "../log.ts";
 import { FlowCapacityError } from "./flow-events.ts";

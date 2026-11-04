@@ -1,6 +1,6 @@
 // A chat the owner opened but has not written in yet. It lives only here, under an id of its own, and the core makes
 // it with its first message: opening "New chat" and leaving leaves nothing behind.
-import type { ModelChoice, Thread } from "@apx/protocol";
+import type { ModelChoice, Thread } from "@colonia/protocol";
 import { useMemo } from "react";
 import { useT } from "../i18n/index.ts";
 import { createStore, useSlice } from "./createStore.ts";

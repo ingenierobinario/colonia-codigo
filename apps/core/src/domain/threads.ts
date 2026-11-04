@@ -1,6 +1,6 @@
 // Threads, what was said in them (messages, for people) and what the model saw (model_log, for the model).
 // Two projections of one conversation: the UI never reads the model log and the model never reads display parts.
-import type { Author, Message, MessageDelivery, MessageReaction, ModelChoice, Part, Thread } from "@apx/protocol";
+import type { Author, Message, MessageDelivery, MessageReaction, ModelChoice, Part, Thread } from "@colonia/protocol";
 import type { Selectable, Updateable } from "kysely";
 import { sql } from "kysely";
 import type { Bus } from "../bus.ts";
@@ -82,7 +82,7 @@ export type ThreadContext = {
   handoff_from?: { thread: string; run: string };
   /** Native tool permissions cannot be revoked or reliably correlated with completion by every harness. */
   external_grant_run?: string;
-  /** A task chat that stalled: when APX last asked its agent to go on, and the stop since then the owner was told of. */
+  /** A task chat that stalled: when Colonia last asked its agent to go on, and the stop since then the owner was told of. */
   stall?: { revived_at: string; told?: string };
   /** Tasks agents gave from this chat while it was paused: each starts once the owner lets agents go on. */
   held?: HeldTask[];
@@ -117,7 +117,7 @@ export type HeldTask = { task: string; agent: string; run: string; depth: number
 /** A throwaway helper an agent starts for one task: a name, its instructions and (optionally) fewer tools. */
 /**
  * A Flow step's chat: whether it may hand work to or message other agents, whether it is a bot of the Flow (no memory,
- * history or team) and the mode it acts in on APX's harness, over the agent's own.
+ * history or team) and the mode it acts in on Colonia's harness, over the agent's own.
  */
 export type FlowStepContext = { delegate: boolean; bot?: boolean; autonomy?: "manual" | "auto" | "total" };
 export type Worker = { name: string; instructions: string; tools?: string[] | undefined };

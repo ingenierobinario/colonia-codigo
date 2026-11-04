@@ -2,9 +2,9 @@
 // POST, checked as the Flow's own address checks it, and runs the drawing pinned when they started. Not listening, it
 // runs nothing. Listening lives in memory: a restart stops it, and nothing waits or ticks while nobody listens.
 import { randomUUID } from "node:crypto";
-import type { CoreEvent } from "@apx/protocol";
-import { hookMethods } from "@apx/protocol/flow-edit";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import type { CoreEvent } from "@colonia/protocol";
+import { hookMethods } from "@colonia/protocol/flow-edit";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import type { HookRequest, HookResponse } from "./channels/types.ts";
 import { FlowCapacityError } from "./domain/flow-events.ts";
 import type { FlowEventSource } from "./domain/flow-graphs.ts";

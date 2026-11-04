@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { digestChat } from "./native-digest.ts";
 
 const msg = (seq: number, kind: "user" | "agent", text: string): Message => ({

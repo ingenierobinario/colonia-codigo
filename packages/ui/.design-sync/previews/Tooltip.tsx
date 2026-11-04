@@ -1,4 +1,4 @@
-import { ApxProvider, IconButton, Icons, Tooltip } from "@apx/ui";
+import { ColoniaProvider, IconButton, Icons, Tooltip } from "@colonia/ui";
 
 export function Open() {
   return (
@@ -12,10 +12,10 @@ export function Open() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: "48px 80px", borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: "48px 80px", borderRadius: 12 }}>
       <Tooltip content="Herramientas" defaultOpen>
         <IconButton label="Tools" icon={<Icons.Wrench />} variant="secondary" />
       </Tooltip>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

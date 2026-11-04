@@ -1,5 +1,5 @@
 // Runs one extension's plugin in its own process (started with Node's permission model: it reads its folder, writes
-// its data folder, starts no processes). Lines of JSON on stdin/stdout are the only way to talk with APX.
+// its data folder, starts no processes). Lines of JSON on stdin/stdout are the only way to talk with Colonia.
 // Node does not restrict the network, so this runner also allows only a short list of built-in modules and gives the
 // plugin a fetch that checks every address it connects to. See DECISIONS.md#d-018
 import dns from "node:dns";
@@ -11,8 +11,8 @@ import { createInterface } from "node:readline";
 import { pathToFileURL } from "node:url";
 
 const [entry] = process.argv.slice(2);
-const network = process.env.APX_PLUGIN_NETWORK === "1";
-const localNetwork = process.env.APX_PLUGIN_LOCAL_NETWORK === "1";
+const network = process.env.COLONIA_PLUGIN_NETWORK === "1";
+const localNetwork = process.env.COLONIA_PLUGIN_LOCAL_NETWORK === "1";
 const MAX_BODY = 20 * 1024 * 1024;
 
 const ALLOWED = new Set([
@@ -37,17 +37,17 @@ const bare = (s) => String(s).replace(/^node:/, "");
 const refused = (id) => isBuiltin(String(id)) && !ALLOWED.has(bare(id));
 registerHooks({
   resolve(spec, ctx, next) {
-    if (refused(spec)) throw new Error(`${spec} is not available to APX plugins`);
+    if (refused(spec)) throw new Error(`${spec} is not available to Colonia plugins`);
     return next(spec, ctx);
   },
 });
 const builtin = process.getBuiltinModule.bind(process);
 process.getBuiltinModule = (id) => {
-  if (refused(id) || !isBuiltin(String(id))) throw new Error(`${id} is not available to APX plugins`);
+  if (refused(id) || !isBuiltin(String(id))) throw new Error(`${id} is not available to Colonia plugins`);
   return builtin(id);
 };
 
-// This machine (APX listens on it), unspecified and link-local (cloud metadata) addresses are never reachable.
+// This machine (Colonia listens on it), unspecified and link-local (cloud metadata) addresses are never reachable.
 const closed = new net.BlockList();
 closed.addSubnet("127.0.0.0", 8, "ipv4");
 closed.addSubnet("0.0.0.0", 8, "ipv4");
@@ -156,10 +156,10 @@ const send = (msg) => process.stdout.write(`${JSON.stringify(msg)}\n`);
 const handlers = new Map();
 let contextFn;
 const api = {
-  dataDir: process.env.APX_DATA_DIR,
+  dataDir: process.env.COLONIA_DATA_DIR,
   secrets: Object.fromEntries(
     Object.entries(process.env)
-      .filter(([k]) => k.startsWith("APX_SECRET_"))
+      .filter(([k]) => k.startsWith("COLONIA_SECRET_"))
       .map(([k, v]) => [k.slice(11).toLowerCase(), v]),
   ),
   fetch: pluginFetch,
@@ -173,7 +173,7 @@ const api = {
     send({ t: "log", text: String(text).slice(0, 2000) });
   },
 };
-for (const k of Object.keys(process.env)) if (k.startsWith("APX_SECRET_")) delete process.env[k];
+for (const k of Object.keys(process.env)) if (k.startsWith("COLONIA_SECRET_")) delete process.env[k];
 
 const mod = await import(pathToFileURL(entry).href);
 await (mod.default ?? mod.activate)?.(api);

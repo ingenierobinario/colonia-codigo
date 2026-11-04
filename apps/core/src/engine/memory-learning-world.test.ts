@@ -16,7 +16,7 @@ async function exercise(o: {
   inspectAfterDelivery?: boolean;
   route?: "correct" | "wrong" | "missing";
 }) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-world-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-world-"));
   try {
     const world = learningWorld(dir, {
       id: 1,
@@ -67,7 +67,7 @@ test("learning evaluation requires a real current artifact and a read after expo
 });
 
 test("a paired delivery creates actual CSV and PDF files, not only format labels", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-formats-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-formats-"));
   try {
     const world = learningWorld(dir, {
       id: 4,
@@ -103,7 +103,7 @@ for (const drift of [
   "parent-presents",
 ] as const)
   test(`delegated method scoring checks the recipient's first attempt: ${drift}`, async () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-handoff-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-handoff-"));
     const producer = { agent: { slug: "producer" } } as ToolContext;
     try {
       const world = learningWorld(dir, {
@@ -161,7 +161,7 @@ for (const route of ["correct", "wrong", "missing"] as const)
   });
 
 test("the artifact tool accepts the standard Markdown extension alias", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-markdown-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-markdown-"));
   try {
     const world = learningWorld(dir, {
       id: 19,
@@ -182,7 +182,7 @@ test("the artifact tool accepts the standard Markdown extension alias", async ()
 });
 
 test("the delivery tool declares and enforces boolean result fields", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-flags-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-flags-"));
   try {
     const world = learningWorld(dir, { id: 10, name: "Flags", teach: [], queries: [] });
     const deliver = world.tools.find((t) => t.name === "deliver_report");
@@ -199,7 +199,7 @@ test("the delivery tool declares and enforces boolean result fields", () => {
 
 for (const variant of ["producer", "parent-summary", "parent-only", "wrong-producer", "review-only"] as const)
   test(`production scoring evaluates the responsible agent's artifact: ${variant}`, async () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-producer-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-producer-"));
     try {
       const world = learningWorld(dir, {
         id: 19,
@@ -238,7 +238,7 @@ for (const heading of [
   "Decisiones",
 ])
   test(`confirmed-style scoring respects heading word boundaries: ${heading}`, async () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-heading-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-heading-"));
     try {
       const scenarios = JSON.parse(
         fs.readFileSync(new URL("../../../../scripts/memory-learning.scenarios.json", import.meta.url), "utf8"),

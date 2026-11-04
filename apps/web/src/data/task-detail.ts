@@ -1,4 +1,4 @@
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import { client } from "./client.ts";
 
 /** A task's history, chats, consults, subtasks and usage, loaded with its panel. */

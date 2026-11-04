@@ -8,9 +8,9 @@ import { createCore } from "../server.ts";
 import { exposedOrigins } from "../server-wiring.ts";
 import { removeDir } from "../testkit/platform.ts";
 
-const PUBLIC = "https://apx.example.ts.net";
+const PUBLIC = "https://colonia.example.ts.net";
 let core: Awaited<ReturnType<typeof createCore>>;
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-origins-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-origins-"));
 
 before(async () => {
   core = await createCore(testConfig({ home, publicUrl: PUBLIC }), { quiet: true });

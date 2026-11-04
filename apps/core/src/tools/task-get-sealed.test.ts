@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 test("task_get never exposes sealed client conversations to the global secretary", async () => {
@@ -36,7 +36,7 @@ test("task_get never exposes sealed client conversations to the global secretary
     assert.equal(owner.comments.length, 1);
     assert.equal(owner.sessions.length, 1);
     assert.equal(owner.consults.length, 1);
-    const model = new ApxClient({ url: env.core.url, actor: "agent" });
+    const model = new ColoniaClient({ url: env.core.url, actor: "agent" });
     const socket = await model.connect();
     try {
       for (const caller of [model, socket]) {

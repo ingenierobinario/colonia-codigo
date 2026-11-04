@@ -1,4 +1,4 @@
-import type { Message, Part } from "@apx/protocol";
+import type { Message, Part } from "@colonia/protocol";
 
 export type ChangePart = Extract<Part, { type: "changes" }>;
 export type ChangeRow = {

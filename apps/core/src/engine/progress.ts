@@ -1,8 +1,8 @@
-// Whether a delegated run a limit cut short was getting somewhere, as a supervisor would judge it: APX goes on with it
+// Whether a delegated run a limit cut short was getting somewhere, as a supervisor would judge it: Colonia goes on with it
 // on its own while it is, and stops for the owner only when a part looks stuck (DECISIONS.md#d-116).
 import type { Step } from "../domain/runs.ts";
 
-/** Parts APX starts on its own in a row after the first one: a ceiling far past real work, not the usual stop. */
+/** Parts Colonia starts on its own in a row after the first one: a ceiling far past real work, not the usual stop. */
 export const MAX_AUTO_PARTS = 8;
 
 const signature = (s: Step) => `${s.tool}:${JSON.stringify(s.args)}`;

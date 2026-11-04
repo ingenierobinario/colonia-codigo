@@ -74,8 +74,8 @@ function card(lang: Lang) {
 </style></head><body>
   <div class="aura"></div><div class="dots"></div>
   <div class="beam" style="left:92px"></div><div class="beam" style="right:92px"></div>
-  <div class="brand"><img src="${logo}" alt="">APX <i>v2</i></div>
-  <div class="site">apxagent.app</div>
+  <div class="brand"><img src="${logo}" alt="">Colonia <i>v2</i></div>
+  <div class="site">colonia.ingenierobinario.com</div>
   <h1><span>${t.meet}</span><span class="word">${blob("brasa", 82)}<span class="grad">${word}</span></span></h1>
   <p class="sub"><b>${t.sub.strong}</b></p>
   <div class="stage"></div>

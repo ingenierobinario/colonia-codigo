@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, Checkbox, Dialog, Field, Icons, Input, SegmentedControl, Spinner } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, Checkbox, Dialog, Field, Icons, Input, SegmentedControl, Spinner } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { client as api } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -7,9 +7,9 @@ import { type MessageKey, useT } from "../i18n/index.ts";
 
 type Integration = Result<"integrations.list">["integrations"][number];
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
-/** What APX's own sign-in leaves out (scopes Google keeps for verified security reviews). */
-const APX_LIMIT: Record<string, MessageKey> = { gmail: "int.apxLimit.gmail", "google-drive": "int.apxLimit.drive" };
-/** Parts whose full use needs the owner's own client: APX's reaches only part of them (no paid security review). */
+/** What Colonia's own sign-in leaves out (scopes Google keeps for verified security reviews). */
+const COLONIA_LIMIT: Record<string, MessageKey> = { gmail: "int.coloniaLimit.gmail", "google-drive": "int.coloniaLimit.drive" };
+/** Parts whose full use needs the owner's own client: Colonia's reaches only part of them (no paid security review). */
 const OWN_FIRST = new Set(["gmail", "google-drive"]);
 /** Creating one's own client in Google Cloud, step by step, each with the console page it happens on. */
 const GUIDE: Array<{ text: MessageKey; href: string }> = [
@@ -50,7 +50,7 @@ function returned(address: string): { code: string; state: string } | undefined 
  * once the core gave the address.
  */
 async function openConsent(url: () => Promise<string>): Promise<void> {
-  if (window.apxDesktop) {
+  if (window.coloniaDesktop) {
     window.open(await url(), "_blank");
     return;
   }
@@ -68,8 +68,8 @@ async function openConsent(url: () => Promise<string>): Promise<void> {
 }
 
 /**
- * An integration the owner signs in to (Google): "Sign in with Google" with the client APX ships, or with one of their
- * own (its JSON or its id and secret). Calendar starts on APX's; Gmail and Drive on the owner's, which reaches all of
+ * An integration the owner signs in to (Google): "Sign in with Google" with the client Colonia ships, or with one of their
+ * own (its JSON or its id and secret). Calendar starts on Colonia's; Gmail and Drive on the owner's, which reaches all of
  * them, and one sign-in can connect the other parts with it. Google sends the browser back to the panel's
  * /oauth/google page; this dialog closes once the core says it is connected.
  */
@@ -90,8 +90,8 @@ export function GoogleSignInForm({
   );
   const builtin = Boolean(i.oauth?.builtin);
   const ownFirst = OWN_FIRST.has(i.id);
-  const [client, setClient] = useState<"apx" | "own">(
-    !builtin ? "own" : i.connected && i.oauth?.client ? i.oauth.client : ownFirst ? "own" : "apx",
+  const [client, setClient] = useState<"colonia" | "own">(
+    !builtin ? "own" : i.connected && i.oauth?.client ? i.oauth.client : ownFirst ? "own" : "colonia",
   );
   const [busy, setBusy] = useState(false);
   const [waiting, setWaiting] = useState(false);
@@ -108,7 +108,7 @@ export function GoogleSignInForm({
   const saved = i.fields.every((f) => f.value || f.set);
   const ownUsers = others.filter((x) => x.connected && x.oauth?.client === "own");
   const joinable = others.filter((x) => !(x.connected && x.oauth?.client === "own"));
-  const ok = client === "apx" || i.fields.every((f) => values[f.name]?.trim() || f.set);
+  const ok = client === "colonia" || i.fields.every((f) => values[f.name]?.trim() || f.set);
 
   const upload = async (picked: File | undefined) => {
     if (!picked) return;
@@ -135,7 +135,7 @@ export function GoogleSignInForm({
   const signIn = async () => {
     setBusy(true);
     try {
-      const sent = client === "apx" ? { client } : { ...values, client };
+      const sent = client === "colonia" ? { client } : { ...values, client };
       const more = client === "own" ? also.filter((id) => joinable.some((x) => x.id === id)) : [];
       await openConsent(
         async () =>
@@ -197,19 +197,19 @@ export function GoogleSignInForm({
               ownFirst
                 ? [
                     { value: "own", label: t("int.clientOwn") },
-                    { value: "apx", label: t("int.clientApxLimited") },
+                    { value: "colonia", label: t("int.clientColoniaLimited") },
                   ]
                 : [
-                    { value: "apx", label: t("int.clientApx") },
+                    { value: "colonia", label: t("int.clientColonia") },
                     { value: "own", label: t("int.clientOwn") },
                   ]
             }
             value={client}
-            onValueChange={(v) => setClient(v === "own" ? "own" : "apx")}
+            onValueChange={(v) => setClient(v === "own" ? "own" : "colonia")}
           />
         )}
-        {client === "apx" && <p className="int__desc">{t("int.apxNote")}</p>}
-        {client === "apx" && APX_LIMIT[i.id] && <p className="int__desc">{t(APX_LIMIT[i.id] as MessageKey)}</p>}
+        {client === "colonia" && <p className="int__desc">{t("int.coloniaNote")}</p>}
+        {client === "colonia" && COLONIA_LIMIT[i.id] && <p className="int__desc">{t(COLONIA_LIMIT[i.id] as MessageKey)}</p>}
         {client === "own" &&
           (saved ? (
             <p className="int__desc">

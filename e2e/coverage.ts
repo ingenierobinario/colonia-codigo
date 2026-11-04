@@ -29,7 +29,7 @@ export function localBrowserScripts(
 
 /** Off during normal E2E runs; the coverage runner supplies a private output folder. */
 export async function startPageCoverage(page: Page): Promise<() => Promise<void>> {
-  const dir = process.env.APX_TEST_COVERAGE_DIR;
+  const dir = process.env.COLONIA_TEST_COVERAGE_DIR;
   if (!dir) return async () => {};
   const origins = new Set<string>();
   const navigation = (frame: Frame) => {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { COMPUTER_GRANT } from "@apx/protocol";
+import { COMPUTER_GRANT } from "@colonia/protocol";
 import { settingsCore } from "./settings.test-support.ts";
 
 let h: Awaited<ReturnType<typeof settingsCore>>;

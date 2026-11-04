@@ -81,7 +81,7 @@ const REPORTER = path.join(import.meta.dirname, "failed-files-reporter.ts");
  * it crashes before reporting, and then no file may count as flaky).
  */
 export function runFiles(cwd: string, flags: string[], files: string[], stdio: "inherit" | "ignore" = "inherit") {
-  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "apx-shard-")), "failed.txt");
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-shard-")), "failed.txt");
   const reporters = ["--test-reporter=spec", "--test-reporter-destination=stdout"];
   const failedFiles = [`--test-reporter=${pathToFileURL(REPORTER).href}`, `--test-reporter-destination=${out}`];
   // A run started from inside another test run must not report to it instead of running on its own.

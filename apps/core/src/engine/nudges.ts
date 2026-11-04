@@ -1,10 +1,10 @@
-// The interruption budget: the one gate every message APX sends the owner unasked goes through (routine news, the
+// The interruption budget: the one gate every message Colonia sends the owner unasked goes through (routine news, the
 // reminders they set). Anchors always arrive; another agent's news waits for the super-agent's team news while a
 // relay routine runs (one voice, a few times a day); in quiet hours the rest waits and goes together when they end;
 // past the day's cap, too soon after another about the same project or of the same kind, or of a kind the owner keeps
 // marking 👎, it stays in the tray only. Answers to the owner's own messages never come here.
 
-import type { Nudge } from "@apx/protocol";
+import type { Nudge } from "@colonia/protocol";
 import { dayStart } from "../domain/hours.ts";
 import { inQuietHours, noticePrefs, quietEnd } from "../domain/notices.ts";
 import { nudgeId } from "../domain/nudges.ts";
@@ -43,7 +43,7 @@ const MEANWHILE_CHARS = 600;
 const MEANWHILE_FIRST_MS = 12 * 3600_000;
 
 /**
- * What APX sent the owner unasked since this chat's previous turn (routine news, the team news): they answer it on
+ * What Colonia sent the owner unasked since this chat's previous turn (routine news, the team news): they answer it on
  * the same channel, so the turn must know what they are answering. Agents' words, so outside data.
  */
 export function sentMeanwhile(store: Store, threadId: string, runId: string, at = new Date()): string | undefined {

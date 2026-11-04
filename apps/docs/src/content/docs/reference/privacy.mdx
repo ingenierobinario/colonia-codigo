@@ -15,14 +15,14 @@ Colonia runs on your computer and keeps your chats, agents, files and keys there
   does with them is governed by its terms: review them.
 - **To the services you connect**: if you connect Telegram, WhatsApp or other channels, messages go through them. If an
   agent browses, the websites it visits receive those visits.
-- **Update checks**: every few hours Colonia checks whether there is a new version. `APX_UPDATES=off` turns it off.
+- **Update checks**: every few hours Colonia checks whether there is a new version. `COLONIA_UPDATES=off` turns it off.
 
 ## Telemetry: off by default
 
 Colonia has no telemetry destination configured, so it sends usage statistics to nobody. Even if the app shows a question
 about usage statistics, without a destination nothing leaves your computer.
 
-Data is only sent if someone sets the `APX_TELEMETRY` variable to a destination on the computer where Colonia runs.
+Data is only sent if someone sets the `COLONIA_TELEMETRY` variable to a destination on the computer where Colonia runs.
 
 ## If a destination is set
 
@@ -36,6 +36,6 @@ models or providers you use; or your keys.
 ## How to make sure it stays off
 
 <Aside>
-Any of these turns everything off, even with a destination: `APX_TELEMETRY=off` in the environment or in `core.env`,
+Any of these turns everything off, even with a destination: `COLONIA_TELEMETRY=off` in the environment or in `core.env`,
 `DO_NOT_TRACK=1` or a `CI` variable.
 </Aside>

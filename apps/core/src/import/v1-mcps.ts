@@ -1,4 +1,4 @@
-// v1's MCP servers (~/.apx/mcps.json and each project's mcps.json in its v1 storage) as the owner's own servers in
+// v1's MCP servers (~/.colonia/mcps.json and each project's mcps.json in its v1 storage) as the owner's own servers in
 // v2: a project's runs only in that project. Values never stay in plain text when they look like a credential.
 import path from "node:path";
 import { jsonFile } from "./v1-data.ts";

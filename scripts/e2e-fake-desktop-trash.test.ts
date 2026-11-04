@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fakeDesktopTrash } from "../e2e/fake-desktop-trash.ts";
 
 test("the fake trash moves top-level files but refuses the project root", async () => {
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "apx-fake-trash-root-"));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-fake-trash-root-"));
   const root = path.join(temp, "project");
   const record = path.join(temp, "trash.jsonl");
   fs.mkdirSync(root);
@@ -30,7 +30,7 @@ test("the fake trash moves top-level files but refuses the project root", async 
 });
 
 test("the fake trash refuses traversal and symlinks outside its temp project before recording or moving", async () => {
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "apx-fake-trash-"));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-fake-trash-"));
   const root = path.join(temp, "project");
   const outside = path.join(temp, "outside");
   const record = path.join(temp, "trash.jsonl");

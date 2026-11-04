@@ -1,9 +1,9 @@
-// Reading and writing a skill's SKILL.md for the Resources screen. The owner's skills live in APX's home; a project's
-// in `.apc/skills/`, written without following a symlink out of the repo. APX's, extensions' and the other apps' skills
-// are read-only here (one of those is copied into APX to be changed).
+// Reading and writing a skill's SKILL.md for the Resources screen. The owner's skills live in Colonia's home; a project's
+// in `.apc/skills/`, written without following a symlink out of the repo. Colonia's, extensions' and the other apps' skills
+// are read-only here (one of those is copied into Colonia to be changed).
 import fs from "node:fs";
 import path from "node:path";
-import type { SkillInfo } from "@apx/protocol";
+import type { SkillInfo } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { realpath, writeAtomic } from "../paths.ts";
 import { NO_GLOBALS, type Skill, skillOn, skillPath, skillsOff } from "./skills.ts";
@@ -21,9 +21,9 @@ export function skillInfo(store: Store, s: Skill, projectId: string | undefined)
     scope: s.scope,
     ...(s.project_id ? { project_id: s.project_id } : {}),
     source: s.source,
-    on: s.source === "apx" || skillOn(off, s.name, projectId, s.scope),
-    off_in: s.source === "apx" ? [] : offIn,
-    off_everywhere: s.source !== "apx" && Boolean(off["*"]?.includes(s.name)),
+    on: s.source === "colonia" || skillOn(off, s.name, projectId, s.scope),
+    off_in: s.source === "colonia" ? [] : offIn,
+    off_everywhere: s.source !== "colonia" && Boolean(off["*"]?.includes(s.name)),
     editable: s.own,
     path: skillPath(s.dir),
     copies: s.copies.map((c) => ({ source: c.source, scope: c.scope, path: skillPath(c.dir), same: c.same })),

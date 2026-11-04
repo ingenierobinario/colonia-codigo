@@ -1,5 +1,5 @@
-import type { Job } from "@apx/protocol";
-import { Dialog, Icons, Spinner, Tooltip } from "@apx/ui";
+import type { Job } from "@colonia/protocol";
+import { Dialog, Icons, Spinner, Tooltip } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { elapsed, formatNumber } from "../common/format.ts";
 import { cancelJob } from "../data/actions.ts";

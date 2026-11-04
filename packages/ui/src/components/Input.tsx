@@ -25,11 +25,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   return (
     <label
-      className={cx("apx-field", `apx-field--${size}`, invalid && "is-invalid", disabled && "is-disabled", className)}
+      className={cx("colonia-field", `colonia-field--${size}`, invalid && "is-invalid", disabled && "is-disabled", className)}
     >
-      {leadingIcon && <span className="apx-field__icon">{leadingIcon}</span>}
-      <input ref={ref} className="apx-field__input" aria-invalid={invalid || undefined} disabled={disabled} {...rest} />
-      {trailing && <span className="apx-field__trailing">{trailing}</span>}
+      {leadingIcon && <span className="colonia-field__icon">{leadingIcon}</span>}
+      <input ref={ref} className="colonia-field__input" aria-invalid={invalid || undefined} disabled={disabled} {...rest} />
+      {trailing && <span className="colonia-field__trailing">{trailing}</span>}
     </label>
   );
 });

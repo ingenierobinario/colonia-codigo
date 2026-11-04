@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
 import { fakeWhatsApp } from "./fake-whatsapp.test-support.ts";
@@ -11,7 +11,7 @@ import type { AdapterIO } from "./types.ts";
 import { whatsappAdapter } from "./whatsapp.ts";
 
 const ANA = { phone: "5491100000002@s.whatsapp.net", name: "Ana" };
-const LOST_VIDEO = "[video — APX cannot read this kind of message yet]";
+const LOST_VIDEO = "[video — Colonia cannot read this kind of message yet]";
 const MP4 = Buffer.concat([Buffer.from("000000186674797069736f6d", "hex"), Buffer.alloc(64 * 1024, 7)]);
 const PDF = Buffer.from("%PDF-1.4 an invoice");
 
@@ -61,7 +61,7 @@ after(async () => {
 });
 
 test("a video and a document kept as placeholders get their files from the phone again, with no new turn", async () => {
-  // What APX kept before it read media: the words only. The phone still has the real messages.
+  // What Colonia kept before it read media: the words only. The phone still has the real messages.
   const video = await anaSays(LOST_VIDEO);
   wa.phoneKeeps(video, {
     videoMessage: { mimetype: "video/mp4", fileLength: MP4.length },
@@ -133,7 +133,7 @@ test("a chat off any channel is told so; asked again with the phone back, the fi
 test("adapter: after a restart, a message that came under someone's private id is asked again under it", async () => {
   const BOB = { phone: "5491100000003@s.whatsapp.net", name: "Bob", lid: "200000000000003@lid" };
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-wa-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
   const got: string[] = [];
   const linked = async () => {
     const adapter = whatsappAdapter({ dir, selfOwner: true, lib: async () => fake.lib, resendWaitMs: 200 });

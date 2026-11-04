@@ -1,11 +1,11 @@
 // Keeps the desktop connected to the core as a node lending "browser" (and "computer" when the owner turned it on).
 // Reconnects with backoff, forever; turning computer use on or off reconnects at once with the new capabilities.
-import { BROWSER_CAP, COMPUTER_CAP } from "@apx/protocol";
-import { ApxClient, type ApxSocket } from "@apx/protocol/client";
+import { BROWSER_CAP, COMPUTER_CAP } from "@colonia/protocol";
+import { ColoniaClient, type ColoniaSocket } from "@colonia/protocol/client";
 import type { BrowserHost } from "./browser/host.ts";
 
 export type ComputerHandler = (method: string, params: unknown) => Promise<unknown>;
-type NodeSocket = Pick<ApxSocket, "onRequest" | "emit" | "close" | "closed">;
+type NodeSocket = Pick<ColoniaSocket, "onRequest" | "emit" | "close" | "closed">;
 type NodeHost = Pick<BrowserHost, "list" | "handle" | "dropHolds"> & {
   on(event: "changed", listener: () => void): unknown;
   off(event: "changed", listener: () => void): unknown;
@@ -20,10 +20,10 @@ export function startNodeLink(
   connect?: (caps: string[], signal: AbortSignal) => Promise<NodeSocket>,
 ): { refresh(): void; emit(type: string, payload?: unknown): void; stop(): void } {
   const controller = new AbortController();
-  const client = new ApxClient({
+  const client = new ColoniaClient({
     url,
     ...(token ? { token } : {}),
-    client: { name: "apx-desktop", version: "0.0.0" },
+    client: { name: "colonia-desktop", version: "0.0.0" },
     timeoutMs: 5_000,
     signal: controller.signal,
   });

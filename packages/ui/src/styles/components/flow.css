@@ -1,5 +1,5 @@
 /* Flow steps on a canvas and the run bars of an automation. */
-.apx-flowstep {
+.colonia-flowstep {
   position: relative;
   width: 230px;
   box-sizing: border-box;
@@ -7,37 +7,37 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 12px;
-  border: 1px solid var(--apx-border-strong);
-  border-radius: var(--apx-radius-lg);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-sm);
-  color: var(--apx-fg);
-  font-size: calc(13px * var(--apx-text-scale, 1));
+  border: 1px solid var(--colonia-border-strong);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-sm);
+  color: var(--colonia-fg);
+  font-size: calc(13px * var(--colonia-text-scale, 1));
   text-align: left;
 }
-.apx-flowstep--ran {
-  border: 1.5px solid var(--apx-brand);
+.colonia-flowstep--ran {
+  border: 1.5px solid var(--colonia-brand);
 }
-.apx-flowstep--failed {
-  border: 1.5px solid var(--apx-danger);
+.colonia-flowstep--failed {
+  border: 1.5px solid var(--colonia-danger);
 }
-.apx-flowstep--live {
-  border: 1.5px solid var(--apx-info);
+.colonia-flowstep--live {
+  border: 1.5px solid var(--colonia-info);
 }
-.apx-flowstep--skipped {
-  border: 1.5px dashed var(--apx-border-strong);
+.colonia-flowstep--skipped {
+  border: 1.5px dashed var(--colonia-border-strong);
   opacity: 0.5;
 }
-.apx-flowstep--muted {
+.colonia-flowstep--muted {
   border-style: dashed;
   opacity: 0.6;
 }
-.apx-flowstep--selected {
+.colonia-flowstep--selected {
   box-shadow:
-    0 0 0 3px var(--apx-fill-strong),
-    var(--apx-shadow-md);
+    0 0 0 3px var(--colonia-fill-strong),
+    var(--colonia-shadow-md);
 }
-.apx-flowstep__order {
+.colonia-flowstep__order {
   position: absolute;
   left: -9px;
   top: -9px;
@@ -47,73 +47,73 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--apx-brand);
-  color: var(--apx-bg);
+  background: var(--colonia-brand);
+  color: var(--colonia-bg);
   font-size: 10px;
   font-weight: 600;
 }
-.apx-flowstep--failed .apx-flowstep__order {
-  background: var(--apx-danger);
+.colonia-flowstep--failed .colonia-flowstep__order {
+  background: var(--colonia-danger);
 }
-.apx-flowstep__head {
+.colonia-flowstep__head {
   display: flex;
   align-items: center;
   gap: 7px;
   min-width: 0;
 }
-.apx-flowstep__kind {
+.colonia-flowstep__kind {
   flex: 1;
   min-width: 0;
-  font-size: calc(11px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-subtle);
+  font-size: calc(11px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.apx-flowstep__badge {
+.colonia-flowstep__badge {
   flex: none;
   padding: 1px 7px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill);
-  color: var(--apx-fg-subtle);
-  font-size: calc(10.5px * var(--apx-text-scale, 1));
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-subtle);
+  font-size: calc(10.5px * var(--colonia-text-scale, 1));
   white-space: nowrap;
 }
-.apx-flowstep--ran .apx-flowstep__badge {
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
+.colonia-flowstep--ran .colonia-flowstep__badge {
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
 }
-.apx-flowstep--failed .apx-flowstep__badge {
-  background: var(--apx-danger-soft);
-  color: var(--apx-danger-soft-fg);
+.colonia-flowstep--failed .colonia-flowstep__badge {
+  background: var(--colonia-danger-soft);
+  color: var(--colonia-danger-soft-fg);
 }
-.apx-flowstep--live .apx-flowstep__badge {
-  background: var(--apx-info-soft);
-  color: var(--apx-info-soft-fg);
+.colonia-flowstep--live .colonia-flowstep__badge {
+  background: var(--colonia-info-soft);
+  color: var(--colonia-info-soft-fg);
 }
-.apx-flowstep__title {
+.colonia-flowstep__title {
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.apx-flowstep__detail {
+.colonia-flowstep__detail {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-family: var(--apx-font-mono);
-  font-size: calc(11.5px * var(--apx-text-scale, 1));
-  color: var(--apx-fg-muted);
+  font-family: var(--colonia-font-mono);
+  font-size: calc(11.5px * var(--colonia-text-scale, 1));
+  color: var(--colonia-fg-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.apx-flowstep__detail--plain {
+.colonia-flowstep__detail--plain {
   font-family: inherit;
-  font-size: calc(12px * var(--apx-text-scale, 1));
+  font-size: calc(12px * var(--colonia-text-scale, 1));
 }
-.apx-flowstep__tile {
+.colonia-flowstep__tile {
   flex: none;
   width: 20px;
   height: 20px;
@@ -121,44 +121,44 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg-muted);
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg-muted);
 }
-.apx-flowstep__tile svg {
+.colonia-flowstep__tile svg {
   width: 12px;
   height: 12px;
 }
-.apx-flowstep__tile--sm {
+.colonia-flowstep__tile--sm {
   width: 22px;
   height: 22px;
 }
-.apx-flowstep__tile--lg {
+.colonia-flowstep__tile--lg {
   width: 28px;
   height: 28px;
   border-radius: 8px;
 }
-.apx-flowstep__tile--lg svg {
+.colonia-flowstep__tile--lg svg {
   width: 14px;
   height: 14px;
 }
-.apx-flowstep__tile--brand {
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg);
+.colonia-flowstep__tile--brand {
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
 }
-.apx-flowstep__tile--violet {
-  background: var(--apx-violet-soft);
-  color: var(--apx-violet-soft-fg);
+.colonia-flowstep__tile--violet {
+  background: var(--colonia-violet-soft);
+  color: var(--colonia-violet-soft-fg);
 }
-.apx-flowstep__tile--info {
-  background: var(--apx-info-soft);
-  color: var(--apx-info-soft-fg);
+.colonia-flowstep__tile--info {
+  background: var(--colonia-info-soft);
+  color: var(--colonia-info-soft-fg);
 }
-.apx-flowstep__tile--warning {
-  background: var(--apx-warning-soft);
-  color: var(--apx-warning-soft-fg);
+.colonia-flowstep__tile--warning {
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
 }
 
-.apx-runbars {
+.colonia-runbars {
   margin: 0;
   padding: 0;
   border: 0;
@@ -169,41 +169,41 @@
   height: 20px;
   overflow: hidden;
 }
-.apx-runbars--lg {
+.colonia-runbars--lg {
   height: 24px;
   padding: 4px 3px 0;
   overflow: visible;
 }
-.apx-runbars__bar {
+.colonia-runbars__bar {
   flex: none;
   width: 6px;
   height: 18px;
   padding: 0;
   border: 0;
   border-radius: 2px;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
-.apx-runbars--lg .apx-runbars__bar {
+.colonia-runbars--lg .colonia-runbars__bar {
   width: 9px;
   height: 24px;
 }
-.apx-runbars__bar--cut {
+.colonia-runbars__bar--cut {
   height: 8px;
-  background: var(--apx-fg-subtle);
+  background: var(--colonia-fg-subtle);
 }
-.apx-runbars--lg .apx-runbars__bar--cut {
+.colonia-runbars--lg .colonia-runbars__bar--cut {
   height: 10px;
 }
-.apx-runbars__bar--failed {
-  background: var(--apx-danger);
+.colonia-runbars__bar--failed {
+  background: var(--colonia-danger);
 }
-.apx-runbars__bar--live {
-  background: var(--apx-info);
+.colonia-runbars__bar--live {
+  background: var(--colonia-info);
 }
-button.apx-runbars__bar {
+button.colonia-runbars__bar {
   cursor: pointer;
 }
-.apx-runbars__bar.is-selected {
-  outline: 1.5px solid var(--apx-fg);
+.colonia-runbars__bar.is-selected {
+  outline: 1.5px solid var(--colonia-fg);
   outline-offset: 2px;
 }

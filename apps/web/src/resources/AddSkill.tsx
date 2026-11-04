@@ -1,5 +1,5 @@
-import { SKILL_ZIP_MAX } from "@apx/protocol";
-import { Button, Checkbox, Dialog, Input, SegmentedControl, Tag, Textarea } from "@apx/ui";
+import { SKILL_ZIP_MAX } from "@colonia/protocol";
+import { Button, Checkbox, Dialog, Input, SegmentedControl, Tag, Textarea } from "@colonia/ui";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { notify } from "../data/notices.ts";
 import {
@@ -17,7 +17,7 @@ type Kind = SkillImportSource["kind"];
 /** Found this many new skills or fewer, all start ticked. */
 const PRESELECT = 3;
 
-/** Opens on Import with this source already read (another app's skill being copied into APX). */
+/** Opens on Import with this source already read (another app's skill being copied into Colonia). */
 export type ImportStart = {
   source: SkillImportSource;
   project: string | undefined;
@@ -38,7 +38,7 @@ export function AddSkill(props: {
   const t = useT();
   const [mode, setMode] = useState(props.start ? "import" : "create");
   const create = useCreate(props.projectId, props.onDone);
-  // Copying a skill goes where it belongs (a global one into APX's skills, even from a project's screen).
+  // Copying a skill goes where it belongs (a global one into Colonia's skills, even from a project's screen).
   const imp = useImport(props.start ? props.start.project : props.projectId, props.start, props.onDone);
   const creating = mode === "create";
   return (
@@ -50,7 +50,7 @@ export function AddSkill(props: {
         creating
           ? t("res.newSkill")
           : props.start
-            ? t(props.start.replace ? "res.useThis" : "res.copyToApx")
+            ? t(props.start.replace ? "res.useThis" : "res.copyToColonia")
             : t("res.skill.import")
       }
       description={

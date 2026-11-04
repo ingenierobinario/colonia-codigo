@@ -1,5 +1,5 @@
 /* ── AgentNode ─────────────────────────────────────────────────────────────── */
-.apx-agentnode {
+.colonia-agentnode {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -9,35 +9,35 @@
   height: 100%;
   overflow: hidden;
   padding: 12px 12px 10px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 14px;
-  background: var(--apx-surface);
-  box-shadow: var(--apx-shadow-sm);
+  background: var(--colonia-surface);
+  box-shadow: var(--colonia-shadow-sm);
   transition:
-    border-color var(--apx-duration) var(--apx-ease),
-    box-shadow var(--apx-duration) var(--apx-ease),
-    opacity var(--apx-duration) var(--apx-ease),
-    transform var(--apx-duration) var(--apx-ease);
+    border-color var(--colonia-duration) var(--colonia-ease),
+    box-shadow var(--colonia-duration) var(--colonia-ease),
+    opacity var(--colonia-duration) var(--colonia-ease),
+    transform var(--colonia-duration) var(--colonia-ease);
 }
-.apx-agentnode:hover {
-  border-color: var(--apx-border-strong, var(--apx-fg-subtle));
-  box-shadow: var(--apx-shadow-md);
+.colonia-agentnode:hover {
+  border-color: var(--colonia-border-strong, var(--colonia-fg-subtle));
+  box-shadow: var(--colonia-shadow-md);
   transform: translateY(-1px);
 }
-.apx-agentnode.is-selected {
-  border-color: var(--apx-brand);
+.colonia-agentnode.is-selected {
+  border-color: var(--colonia-brand);
   box-shadow:
-    0 0 0 3px var(--apx-brand-soft),
-    var(--apx-shadow-md);
+    0 0 0 3px var(--colonia-brand-soft),
+    var(--colonia-shadow-md);
 }
-.apx-agentnode.is-dimmed {
+.colonia-agentnode.is-dimmed {
   opacity: 0.45;
 }
-.apx-agentnode.is-lead {
-  background: linear-gradient(180deg, var(--apx-brand-soft) 0, var(--apx-surface) 64px);
+.colonia-agentnode.is-lead {
+  background: linear-gradient(180deg, var(--colonia-brand-soft) 0, var(--colonia-surface) 64px);
 }
 /* The whole card opens the agent; the buttons inside sit above this layer. */
-.apx-agentnode__hit {
+.colonia-agentnode__hit {
   position: absolute;
   inset: 0;
   border: 0;
@@ -45,136 +45,136 @@
   background: transparent;
   cursor: pointer;
 }
-.apx-agentnode__top,
-.apx-agentnode__role,
-.apx-agentnode__desc,
-.apx-agentnode__stats {
+.colonia-agentnode__top,
+.colonia-agentnode__role,
+.colonia-agentnode__desc,
+.colonia-agentnode__stats {
   pointer-events: none;
 }
-.apx-agentnode__top {
+.colonia-agentnode__top {
   display: flex;
   flex: none;
   align-items: center;
   gap: 10px;
   min-width: 0;
 }
-.apx-agentnode__avatar {
+.colonia-agentnode__avatar {
   position: relative;
   flex: none;
   border-radius: 50%;
 }
-.apx-agentnode.is-running .apx-agentnode__avatar::after {
+.colonia-agentnode.is-running .colonia-agentnode__avatar::after {
   content: "";
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 2px solid var(--apx-brand);
-  animation: apx-agentnode-pulse 1.6s var(--apx-ease) infinite;
+  border: 2px solid var(--colonia-brand);
+  animation: colonia-agentnode-pulse 1.6s var(--colonia-ease) infinite;
 }
-.apx-agentnode__wait {
+.colonia-agentnode__wait {
   position: absolute;
   right: -2px;
   bottom: -2px;
   width: 10px;
   height: 10px;
-  border: 2px solid var(--apx-surface);
+  border: 2px solid var(--colonia-surface);
   border-radius: 50%;
-  background: var(--apx-warning);
+  background: var(--colonia-warning);
 }
-.apx-agentnode__names {
+.colonia-agentnode__names {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.apx-agentnode__name {
+.colonia-agentnode__name {
   overflow: hidden;
-  font-size: var(--apx-text-md);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-md);
+  font-weight: var(--colonia-weight-semibold);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.apx-agentnode__slug {
+.colonia-agentnode__slug {
   overflow: hidden;
-  color: var(--apx-fg-subtle);
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-2xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.apx-agentnode__role {
+.colonia-agentnode__role {
   display: flex;
   min-width: 0;
 }
-.apx-agentnode__chip,
-.apx-agentnode__lead {
+.colonia-agentnode__chip,
+.colonia-agentnode__lead {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   max-width: 100%;
   overflow: hidden;
   padding: 2px 8px;
-  border-radius: var(--apx-radius-pill);
-  font-size: var(--apx-text-xs);
+  border-radius: var(--colonia-radius-pill);
+  font-size: var(--colonia-text-xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 /* Text only: a block that can end in an ellipsis (an inline-flex one cannot). */
-.apx-agentnode__chip {
+.colonia-agentnode__chip {
   display: inline-block;
-  background: var(--apx-fill);
-  color: var(--apx-fg-muted);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-muted);
 }
-.apx-agentnode__lead {
-  background: var(--apx-brand-soft);
-  color: var(--apx-brand-soft-fg, var(--apx-brand));
-  font-weight: var(--apx-weight-medium);
+.colonia-agentnode__lead {
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg, var(--colonia-brand));
+  font-weight: var(--colonia-weight-medium);
 }
-.apx-agentnode__desc {
+.colonia-agentnode__desc {
   display: -webkit-box;
   flex: none;
-  min-height: calc(var(--apx-text-xs) * 1.4 * 2);
+  min-height: calc(var(--colonia-text-xs) * 1.4 * 2);
   margin: 0;
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   line-height: 1.4;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.apx-agentnode__desc.is-empty {
-  color: var(--apx-fg-subtle);
+.colonia-agentnode__desc.is-empty {
+  color: var(--colonia-fg-subtle);
   font-style: italic;
 }
-.apx-agentnode__stats {
+.colonia-agentnode__stats {
   display: flex;
   gap: 12px;
   margin: auto 0 0;
   padding: 0;
   list-style: none;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
   font-variant-numeric: tabular-nums;
 }
-.apx-agentnode__stats li {
+.colonia-agentnode__stats li {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
-.apx-agentnode__stats svg {
-  width: var(--apx-icon-xs);
-  height: var(--apx-icon-xs);
+.colonia-agentnode__stats svg {
+  width: var(--colonia-icon-xs);
+  height: var(--colonia-icon-xs);
 }
 /* Long labels (other languages, engine names) shrink the engine pill, never push past the card. */
-.apx-agentnode__foot {
+.colonia-agentnode__foot {
   position: relative;
   display: flex;
   align-items: center;
   gap: 2px;
   min-width: 0;
   padding-top: 8px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
-.apx-agentnode__act {
+.colonia-agentnode__act {
   display: inline-flex;
   flex: none;
   align-items: center;
@@ -182,19 +182,19 @@
   height: 24px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: transparent;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
-.apx-agentnode__act:hover {
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+.colonia-agentnode__act:hover {
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
 }
-.apx-agentnode__act.is-chat {
-  color: var(--apx-brand);
+.colonia-agentnode__act.is-chat {
+  color: var(--colonia-brand);
 }
-.apx-agentnode__engine {
+.colonia-agentnode__engine {
   display: inline-flex;
   align-items: center;
   flex: 0 1 auto;
@@ -204,23 +204,23 @@
   margin-left: auto;
   overflow: hidden;
   padding: 2px 8px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
-  color: var(--apx-fg-muted);
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-2xs);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
+  color: var(--colonia-fg-muted);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-2xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.apx-agentnode__engine > svg {
+.colonia-agentnode__engine > svg {
   flex: none;
 }
-.apx-agentnode__enginelabel {
+.colonia-agentnode__enginelabel {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-@keyframes apx-agentnode-pulse {
+@keyframes colonia-agentnode-pulse {
   0% {
     opacity: 0.9;
     transform: scale(1);
@@ -231,13 +231,13 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .apx-agentnode,
-  .apx-agentnode.is-running .apx-agentnode__avatar::after {
+  .colonia-agentnode,
+  .colonia-agentnode.is-running .colonia-agentnode__avatar::after {
     animation: none;
     transition: none;
   }
 }
-.apx-agentnode__stats,
-.apx-agentnode__foot {
+.colonia-agentnode__stats,
+.colonia-agentnode__foot {
   flex: none;
 }

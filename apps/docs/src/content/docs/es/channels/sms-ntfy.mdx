@@ -8,14 +8,14 @@ sidebar:
 ## SMS mediante Twilio
 
 1. En Twilio, comprá o elegí un número que pueda enviar SMS. Siguen vigentes los límites de tu cuenta y operador;
-   APX no vuelve gratuitos los SMS.
+   Colonia no vuelve gratuitos los SMS.
 2. Copiá **Account SID** y **Auth Token** desde Account Info de la consola.
 3. Abrí **Configuración › Canales › Agregar canal › SMS** e ingresá esos datos y el número. Elegí el agente.
-4. Enviá un SMS al número. APX consulta mensajes cada pocos segundos; este adaptador **no necesita webhook**.
+4. Enviá un SMS al número. Colonia consulta mensajes cada pocos segundos; este adaptador **no necesita webhook**.
 5. Vinculá tu remitente con el código del SMS; aprobá a los demás como contactos, no como vos.
 
 Probá primero con texto corto. Un número no prueba autoridad del dueño: las instrucciones riesgosas pueden requerir
-confirmación en APX. No asumas que botones, imágenes, confirmaciones de lectura o mensajes largos funcionan como en
+confirmación en Colonia. No asumas que botones, imágenes, confirmaciones de lectura o mensajes largos funcionan como en
 WhatsApp. Si no llega nada, revisá capacidad SMS, restricciones de la cuenta, credenciales y error del canal. Las
 respuestas salen desde el número de Twilio configurado y pueden generar cargos del proveedor.
 
@@ -30,8 +30,8 @@ configurar una dirección push ntfy para un [teléfono vinculado](/es/devices/ph
 3. Abrí **Configuración › Canales › Agregar canal › ntfy**. Ingresá servidor, tema y token si hace falta.
 4. Respondé en el tema para hablar con el agente. Probá una respuesta y un mensaje del agente antes de usarlo para avisos.
 
-El tema no es una sesión autenticada del dueño. Las confirmaciones pueden indicarte que uses la app de APX en vez
-de aprobar desde ntfy. Si falla la entrega, revisá permisos del servidor, nombre del tema y token tanto en APX como en ntfy.
+El tema no es una sesión autenticada del dueño. Las confirmaciones pueden indicarte que uses la app de Colonia en vez
+de aprobar desde ntfy. Si falla la entrega, revisá permisos del servidor, nombre del tema y token tanto en Colonia como en ntfy.
 
 ## Uso sin abrir permisos nuevos
 

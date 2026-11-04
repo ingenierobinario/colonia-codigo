@@ -5,8 +5,8 @@ import {
   type Params,
   type Result,
   type ToolApproval,
-} from "@apx/protocol";
-import { AgentAvatar, Button, Dialog, Icons, Kbd, NavItem, SearchField, Skeleton } from "@apx/ui";
+} from "@colonia/protocol";
+import { AgentAvatar, Button, Dialog, Icons, Kbd, NavItem, SearchField, Skeleton } from "@colonia/ui";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { client } from "../../data/client.ts";
 import { blobOf } from "../../data/identity.ts";
@@ -208,7 +208,7 @@ export function AgentEditor({
   const metaOf = (id: PageId): string => {
     if (!d) return "";
     if (id === "tools") {
-      // Only what APX knows counts; names another app wrote restrict nothing.
+      // Only what Colonia knows counts; names another app wrote restrict nothing.
       const names = new Set([...(catalog ?? []).map((x) => x.name), ...(catalog ?? []).flatMap((x) => x.group ?? [])]);
       const n = d.tools.filter((x) => names.has(x) || x.toLowerCase().startsWith("mcp_")).length;
       return n ? String(n) : t("agentedit.all");

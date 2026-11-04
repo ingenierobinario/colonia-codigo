@@ -1,4 +1,4 @@
-import type { MemoryEvidence } from "@apx/protocol";
+import type { MemoryEvidence } from "@colonia/protocol";
 import { memoryEligibleChat } from "./chat-access.ts";
 import { memorySensitive } from "./memories.ts";
 import { memoryPlain } from "./memory-content.ts";

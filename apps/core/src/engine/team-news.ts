@@ -1,6 +1,6 @@
 // The team news: what the other agents' routines and notices had for the owner, waiting (engine/nudges.ts) for the
 // super-agent's relay routine to tell it in one message. Taking it marks it told, so each piece is told once.
-import type { Nudge } from "@apx/protocol";
+import type { Nudge } from "@colonia/protocol";
 import { ownerTimeZone } from "../domain/owner.ts";
 import type { Store } from "../domain/store.ts";
 

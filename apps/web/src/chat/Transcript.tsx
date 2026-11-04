@@ -1,4 +1,4 @@
-import type { Message as Msg, Thread } from "@apx/protocol";
+import type { Message as Msg, Thread } from "@colonia/protocol";
 import {
   ActivityPill,
   AgentAvatar,
@@ -10,7 +10,7 @@ import {
   type StickyScrollHandle,
   SystemNote,
   withMentions,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { type ReactNode, Suspense, useEffect, useMemo, useRef } from "react";
 import { ReactionList } from "../channels/MessageMarks.tsx";
 import { dayLabel, sameDay } from "../common/format.ts";
@@ -212,7 +212,7 @@ export function Transcript({ thread, comments = false, via }: { thread: Thread; 
   );
 }
 
-/** What APX itself says in a thread: notices (paused, summarized) and plain notes. */
+/** What Colonia itself says in a thread: notices (paused, summarized) and plain notes. */
 function SystemMessage({ message }: { message: Msg }) {
   const notices = message.parts.filter((p) => p.type === "notice");
   if (!notices.length) return <SystemNote>{textOf(message)}</SystemNote>;

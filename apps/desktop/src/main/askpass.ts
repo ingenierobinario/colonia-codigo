@@ -43,9 +43,9 @@ export async function openAskpass(opts: {
   platform?: NodeJS.Platform;
 }): Promise<Askpass> {
   const platform = opts.platform ?? process.platform;
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-askpass-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-askpass-"));
   const endpoint =
-    process.platform === "win32" ? `\\\\.\\pipe\\apx-askpass-${randomBytes(12).toString("hex")}` : path.join(dir, "s");
+    process.platform === "win32" ? `\\\\.\\pipe\\colonia-askpass-${randomBytes(12).toString("hex")}` : path.join(dir, "s");
   const key = randomBytes(24).toString("hex");
   const server = net.createServer((socket) => serve(socket, key, opts.ask));
   server.maxConnections = 1;
@@ -66,8 +66,8 @@ export async function openAskpass(opts: {
       ...(platform === "win32" ? windowsHelper(dir, opts.exe) : {}),
       SSH_ASKPASS: program,
       SSH_ASKPASS_REQUIRE: "force",
-      APX_ASKPASS: endpoint,
-      APX_ASKPASS_KEY: key,
+      COLONIA_ASKPASS: endpoint,
+      COLONIA_ASKPASS_KEY: key,
       // Older Linux builds only use SSH_ASKPASS when a display is named, even when forced.
       ...(platform === "linux" && !process.env.DISPLAY ? { DISPLAY: ":0" } : {}),
     },
@@ -135,7 +135,7 @@ export function requestAnswer(endpoint: string, key: string, prompt: string, tim
 }
 
 /**
- * Askpass mode (the executable started by ssh with APX_ASKPASS set): the question is the last argument, the answer
+ * Askpass mode (the executable started by ssh with COLONIA_ASKPASS set): the question is the last argument, the answer
  * goes to stdout. Exit code 1 tells ssh there is none.
  */
 export async function runAskpass(
@@ -143,8 +143,8 @@ export async function runAskpass(
   argv: string[],
   out: NodeJS.WritableStream = process.stdout,
 ): Promise<number> {
-  const endpoint = env.APX_ASKPASS;
-  const key = env.APX_ASKPASS_KEY;
+  const endpoint = env.COLONIA_ASKPASS;
+  const key = env.COLONIA_ASKPASS_KEY;
   if (!endpoint || !key) return 1;
   const answer = await requestAnswer(endpoint, key, argv.length > 1 ? (argv.at(-1) ?? "") : "");
   if (answer === undefined) return 1;
@@ -157,13 +157,13 @@ export async function runAskpass(
  * with nothing to import, so it runs from the login's private folder.
  */
 const HELPER_JS = `const net = require("node:net");
-const { APX_ASKPASS: endpoint, APX_ASKPASS_KEY: key } = process.env;
+const { COLONIA_ASKPASS: endpoint, COLONIA_ASKPASS_KEY: key } = process.env;
 if (!endpoint || !key) process.exit(1);
 const socket = net.connect(endpoint);
 let buf = "";
 const timer = setTimeout(() => socket.destroy(), 10 * 60_000);
 socket.setEncoding("utf8");
-const prompt = process.env.APX_ASKPASS_PROMPT ?? (process.argv.length > 2 ? process.argv.at(-1) : "");
+const prompt = process.env.COLONIA_ASKPASS_PROMPT ?? (process.argv.length > 2 ? process.argv.at(-1) : "");
 socket.on("connect", () => socket.write(JSON.stringify({ key, prompt }) + "\\n"));
 socket.on("data", (chunk) => { buf += chunk; if (buf.length > ${MAX_FRAME}) socket.destroy(); });
 socket.on("error", () => {});
@@ -191,13 +191,13 @@ export function nodeHelper(dir: string, exe: string): string {
  * argument. Node already took that argument for a script path; this undoes it, runs HELPER_JS with the question in the
  * environment and exits before Node looks for that script. Only the app's own executable acts on it.
  */
-const WINDOWS_PRELOAD_JS = `const { APX_ASKPASS, APX_ASKPASS_EXE, APX_ASKPASS_JS } = process.env;
-if (APX_ASKPASS && APX_ASKPASS_JS && process.execPath.toLowerCase() === String(APX_ASKPASS_EXE).toLowerCase()) {
+const WINDOWS_PRELOAD_JS = `const { COLONIA_ASKPASS, COLONIA_ASKPASS_EXE, COLONIA_ASKPASS_JS } = process.env;
+if (COLONIA_ASKPASS && COLONIA_ASKPASS_JS && process.execPath.toLowerCase() === String(COLONIA_ASKPASS_EXE).toLowerCase()) {
   const path = require("node:path");
   const arg = process.argv[1] ? path.relative(process.cwd(), process.argv[1]).replaceAll("\\\\", "/") : "";
-  const env = { ...process.env, APX_ASKPASS_PROMPT: arg };
+  const env = { ...process.env, COLONIA_ASKPASS_PROMPT: arg };
   delete env.NODE_OPTIONS;
-  const run = require("node:child_process").spawnSync(process.execPath, [APX_ASKPASS_JS], {
+  const run = require("node:child_process").spawnSync(process.execPath, [COLONIA_ASKPASS_JS], {
     env, stdio: ["ignore", "pipe", "ignore"], windowsHide: true, timeout: 11 * 60_000,
   });
   if (run.stdout && run.stdout.length) require("node:fs").writeSync(1, run.stdout);
@@ -218,8 +218,8 @@ export function windowsHelper(dir: string, exe: string): Record<string, string> 
   return {
     ELECTRON_RUN_AS_NODE: "1",
     NODE_OPTIONS: `--require "${preload.replaceAll("\\", "/")}"`,
-    APX_ASKPASS_EXE: exe,
-    APX_ASKPASS_JS: js,
+    COLONIA_ASKPASS_EXE: exe,
+    COLONIA_ASKPASS_JS: js,
   };
 }
 

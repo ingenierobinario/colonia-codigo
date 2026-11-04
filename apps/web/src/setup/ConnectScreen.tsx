@@ -1,7 +1,7 @@
 import "../styles/wizard.css";
-import { Button, Icons, Input, SegmentedControl } from "@apx/ui";
+import { Button, Icons, Input, SegmentedControl } from "@colonia/ui";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
-import type { SshPrompt } from "../apx-desktop.d.ts";
+import type { SshPrompt } from "../colonia-desktop.d.ts";
 import logo from "../assets/logo.png";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { useDesktopClass } from "../shell/desktop.ts";
@@ -19,8 +19,8 @@ type Answer =
 
 /** How long the intro holds the hero alone before the question unrolls under it. */
 const INTRO_MS = 3400;
-/** What puts the APX daemon on a server that has none (install.sh, attached to every release). */
-const INSTALL = "curl -fsSL https://apxagent.app/install.sh | bash\napx setup --headless";
+/** What puts the Colonia daemon on a server that has none (install.sh, attached to every release). */
+const INSTALL = "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash\napx setup --headless";
 
 const ACCESS: Array<{ id: Access; icon: typeof Icons.Lock; title: MessageKey; body: MessageKey }> = [
   { id: "none", icon: Icons.Lock, title: "connect.access.none", body: "connect.access.noneBody" },
@@ -53,8 +53,8 @@ const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").ma
 const TERM_LINES = 400;
 
 /**
- * The desktop app's first run, before any APX is reached: this computer runs APX (server), or the app connects to one
- * elsewhere (client). Shown only inside the desktop app, which answers through window.apxConnect.
+ * The desktop app's first run, before any Colonia is reached: this computer runs Colonia (server), or the app connects to one
+ * elsewhere (client). Shown only inside the desktop app, which answers through window.coloniaConnect.
  */
 export function ConnectScreen() {
   const t = useT();
@@ -65,8 +65,8 @@ export function ConnectScreen() {
   const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  // The server has no APX: it can be installed from here or by hand (then the command shows).
-  const [noApx, setNoApx] = useState(false);
+  // The server has no Colonia: it can be installed from here or by hand (then the command shows).
+  const [noColonia, setNoColonia] = useState(false);
   const [byHand, setByHand] = useState(false);
   // Over SSH, once connecting starts, the screen is a terminal: steps, the server's output and ssh's questions.
   const [term, setTerm] = useState(false);
@@ -78,7 +78,7 @@ export function ConnectScreen() {
   const [ready, setReady] = useState<{ linger?: string | undefined }>();
   // The website's hero first; then, like a blind, it rises and the question unrolls under it (at once with less motion).
   const [revealed, setRevealed] = useState(reduced);
-  // Closing the window only hides it (APX stays in the tray): shown again on the first question, the intro plays again.
+  // Closing the window only hides it (Colonia stays in the tray): shown again on the first question, the intro plays again.
   const [intro, setIntro] = useState(0);
   useEffect(() => {
     if (step !== "start") return;
@@ -108,7 +108,7 @@ export function ConnectScreen() {
     setBusy(true);
     setError(undefined);
     setKey(undefined);
-    const c = window.apxConnect;
+    const c = window.coloniaConnect;
     const stops = [
       c?.onStep?.((id) => {
         const text = STEPS[id];
@@ -126,7 +126,7 @@ export function ConnectScreen() {
     }
     if (r?.ok && r.ready) {
       setBusy(false);
-      setNoApx(false);
+      setNoColonia(false);
       setReady({ linger: r.linger });
       return;
     }
@@ -134,31 +134,31 @@ export function ConnectScreen() {
     if (!r || r.ok) return;
     setBusy(false);
     // Not an error: the next step is to install it.
-    if (r.reason === "sshNoApx") {
-      setNoApx(true);
+    if (r.reason === "sshNoColonia") {
+      setNoColonia(true);
       return;
     }
-    setNoApx(false);
+    setNoColonia(false);
     // A target that is not user@server is fixed in the field, not in the terminal.
     if (r.reason === "badSsh") setTerm(false);
     setKey(r.key);
     const reason = r.reason && REASONS[r.reason] ? t(REASONS[r.reason] as MessageKey) : undefined;
     setError([reason, r.error].filter(Boolean).join(" ") || r.reason);
   };
-  const goOn = () => void answer(() => window.apxConnect?.ssh(address));
-  const installThere = () => void answer(() => window.apxConnect?.installSsh(address));
-  const startServer = () => void answer(() => window.apxConnect?.local(access));
+  const goOn = () => void answer(() => window.coloniaConnect?.ssh(address));
+  const installThere = () => void answer(() => window.coloniaConnect?.installSsh(address));
+  const startServer = () => void answer(() => window.coloniaConnect?.local(access));
   const connect = (e: FormEvent) => {
     e.preventDefault();
     if (!address.trim() || busy) return;
-    setNoApx(false);
+    setNoColonia(false);
     setByHand(false);
     setReady(undefined);
     if (via === "ssh") {
       setLines([]);
       setTerm(true);
     }
-    void answer(() => (via === "url" ? window.apxConnect?.url(address) : window.apxConnect?.ssh(address)));
+    void answer(() => (via === "url" ? window.coloniaConnect?.url(address) : window.coloniaConnect?.ssh(address)));
   };
   /** The owner answered ssh's question (undefined: cancelled). A password never reaches the log, only its question. */
   const reply = (value: string | undefined) => {
@@ -167,13 +167,13 @@ export function ConnectScreen() {
     const last = asked.pop() ?? "";
     for (const text of asked) push({ kind: "out", text });
     push({ kind: "said", text: value === undefined ? `${last}^C` : prompt.secret ? last : `${last}${value}` });
-    window.apxConnect?.answer?.(prompt.id, value);
+    window.coloniaConnect?.answer?.(prompt.id, value);
     setPrompt(undefined);
   };
   const back = () => {
     setStep("start");
     setError(undefined);
-    setNoApx(false);
+    setNoColonia(false);
     setTerm(false);
   };
   /** From the terminal back to the server field, to try again or another one. */
@@ -182,17 +182,17 @@ export function ConnectScreen() {
     setLines([]);
     setError(undefined);
     setKey(undefined);
-    setNoApx(false);
+    setNoColonia(false);
     setByHand(false);
     setReady(undefined);
   };
 
   return (
-    <div className="wiz is-connect" data-apx-look="minimal" data-apx-mode="dark">
+    <div className="wiz is-connect" data-colonia-look="minimal" data-colonia-mode="dark">
       <header className={`wiz__head${desktop}`}>
         <div className="wiz__brand">
           <img src={logo} alt="" width={24} height={24} />
-          <span>APX</span>
+          <span>Colonia</span>
         </div>
       </header>
       <div className="wiz__scroll">
@@ -268,12 +268,12 @@ export function ConnectScreen() {
           {step === "client" && term && (
             <div className="wiz__main connect__termstep">
               <ConnectTerminal target={address.trim()} lines={lines} prompt={prompt} onAnswer={reply} busy={busy}>
-                {noApx && !busy && (
-                  <span id="client-noapx" className="wiz__hintline">
-                    {t("connect.noApx")}
+                {noColonia && !busy && (
+                  <span id="client-nocolonia" className="wiz__hintline">
+                    {t("connect.noColonia")}
                   </span>
                 )}
-                {noApx && byHand && (
+                {noColonia && byHand && (
                   <>
                     <span className="wiz__hintline">{t("connect.byHandHint")}</span>
                     <pre className="connect__install">{INSTALL}</pre>
@@ -314,7 +314,7 @@ export function ConnectScreen() {
                           {t("connect.continue")}
                         </Button>
                       ) : (
-                        noApx && (
+                        noColonia && (
                           <>
                             {!byHand && (
                               <Button id="install-hand" variant="ghost" size="lg" onClick={() => setByHand(true)}>

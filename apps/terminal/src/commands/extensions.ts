@@ -1,13 +1,13 @@
-// apx extensions: install a folder with apx-extension.json, turn it on or off, give it its secrets.
-import type { ExtensionInfo } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+// colonia extensions: install a folder with colonia-extension.json, turn it on or off, give it its secrets.
+import type { ExtensionInfo } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
-const USAGE = `apx extensions                         Installed extensions
-apx extensions inspect <folder>        What a folder would bring (nothing is installed)
-apx extensions install <folder>        Copy it in, off
-apx extensions on|off <id>
-apx extensions secret <id> <name>      Value on stdin (rm: --clear)
-apx extensions rm <id>`;
+const USAGE = `colonia extensions                         Installed extensions
+colonia extensions inspect <folder>        What a folder would bring (nothing is installed)
+colonia extensions install <folder>        Copy it in, off
+colonia extensions on|off <id>
+colonia extensions secret <id> <name>      Value on stdin (rm: --clear)
+colonia extensions rm <id>`;
 
 function show(e: ExtensionInfo): void {
   console.log(`${e.id}  ${e.name} v${e.version}  · ${e.enabled ? "on" : "off"}  · ${e.hash}`);
@@ -24,7 +24,7 @@ function show(e: ExtensionInfo): void {
 }
 
 export async function extensions(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, arg, name]: string[],
   opts: { clear?: boolean | undefined },
 ): Promise<void> {
@@ -32,7 +32,7 @@ export async function extensions(
   if (sub === "install" && arg) {
     const e = await client.call("extensions.install", { path: arg });
     show(e);
-    if (!e.enabled) console.log(`\nTurn it on with: apx extensions on ${e.id}`);
+    if (!e.enabled) console.log(`\nTurn it on with: colonia extensions on ${e.id}`);
     return;
   }
   if ((sub === "on" || sub === "off") && arg)
@@ -48,7 +48,7 @@ export async function extensions(
       let raw = "";
       for await (const chunk of process.stdin) raw += String(chunk);
       value = raw.trim();
-      if (!value) throw new Error(`pipe the value in: … | apx extensions secret ${arg} ${name}`);
+      if (!value) throw new Error(`pipe the value in: … | colonia extensions secret ${arg} ${name}`);
     }
     show(await client.call("extensions.set_secret", { id: arg, name, value }));
     return;

@@ -1,5 +1,5 @@
-import type { Agent, Result, Run } from "@apx/protocol";
-import { Badge, Button, EmptyState, Icons, Skeleton } from "@apx/ui";
+import type { Agent, Result, Run } from "@colonia/protocol";
+import { Badge, Button, EmptyState, Icons, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { formatSeconds, shortWhen } from "../../common/format.ts";
 import { agentRuns } from "../../data/team.ts";

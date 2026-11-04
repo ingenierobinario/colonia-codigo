@@ -1,4 +1,4 @@
-import { Badge, Button, Input } from "@apx/ui";
+import { Badge, Button, Input } from "@colonia/ui";
 import { useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { botSpec, useTokens } from "../config/BotSection.tsx";

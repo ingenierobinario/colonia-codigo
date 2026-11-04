@@ -239,7 +239,7 @@ function stepSchema(fill: Fill) {
     /**
      * An AI model step: one of the owner's agents (its instructions, memory and tools), or a bot of this Flow alone
      * (`bot`: a name and a system prompt, no memory or history). `model` picks the harness, model and effort in one ref;
-     * absent, the agent's own choice. `autonomy` (APX's harness) or `write` (a CLI's) is how freely it acts; `delegate`
+     * absent, the agent's own choice. `autonomy` (Colonia's harness) or `write` (a CLI's) is how freely it acts; `delegate`
      * lets it hand work to or message other agents, off unless set (DECISIONS.md#d-172).
      */
     z

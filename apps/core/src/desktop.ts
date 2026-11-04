@@ -1,4 +1,4 @@
-// What the owner's machine does with a file outside APX: show it in Finder (Explorer, the file manager), open it in its
+// What the owner's machine does with a file outside Colonia: show it in Finder (Explorer, the file manager), open it in its
 // default app or move it to the system trash, where it can still be recovered. Paths go as arguments or environment, never inside a script.
 import { execFile } from "node:child_process";
 import path from "node:path";
@@ -43,9 +43,9 @@ export const systemDesktop: DesktopOps = {
         [
           "-NoProfile",
           "-Command",
-          "Add-Type -AssemblyName Microsoft.VisualBasic; $p=$env:APX_TRASH_PATH; if (Test-Path $p -PathType Container) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($p,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($p,'OnlyErrorDialogs','SendToRecycleBin') }",
+          "Add-Type -AssemblyName Microsoft.VisualBasic; $p=$env:COLONIA_TRASH_PATH; if (Test-Path $p -PathType Container) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($p,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($p,'OnlyErrorDialogs','SendToRecycleBin') }",
         ],
-        { APX_TRASH_PATH: abs },
+        { COLONIA_TRASH_PATH: abs },
       );
     return run("gio", ["trash", abs]);
   },

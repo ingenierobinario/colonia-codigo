@@ -21,7 +21,7 @@ const NOTIFY_STATE = {
 function actionResult(r: InputRecord): string {
   const note = r.answer ? ` Their note: ${r.answer}` : "";
   if (r.state === "approved")
-    return `The owner accepted this action: do it now, as proposed.${note} If a call in it still waits for their OK, APX asks them for it.`;
+    return `The owner accepted this action: do it now, as proposed.${note} If a call in it still waits for their OK, Colonia asks them for it.`;
   if (r.state === "denied") return `The owner declined this action: do not do it.${note}`;
   if (r.state === "pending")
     return `The owner has not answered yet. The card stays open in the chat (id ${r.id}) and their answer will reach you in a new turn; if it is no longer needed, take it back with ask_owner withdraw=${r.id}. End this turn now: say briefly what waits on them and do not do the action.`;
@@ -52,7 +52,7 @@ export function ownerTools(store: Store): Tool[] {
             .max(1000)
             .optional()
             .describe(
-              "Instead of a question: the one concrete action you would take (what, where, when), for the owner to accept or decline. Not for a single call: APX asks for those.",
+              "Instead of a question: the one concrete action you would take (what, where, when), for the owner to accept or decline. Not for a single call: Colonia asks for those.",
             ),
           withdraw: z.string().min(1).max(64).optional().describe("Instead: id of your open question to take back"),
         })

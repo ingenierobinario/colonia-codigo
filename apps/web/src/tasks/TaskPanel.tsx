@@ -1,4 +1,4 @@
-import type { Message, Task, TaskEvent } from "@apx/protocol";
+import type { Message, Task, TaskEvent } from "@colonia/protocol";
 import {
   AgentAvatar,
   Badge,
@@ -12,7 +12,7 @@ import {
   Tabs,
   TagInput,
   Textarea,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { QuoteContext, quoteBlock } from "../chat/quote.ts";
 import { Transcript } from "../chat/Transcript.tsx";

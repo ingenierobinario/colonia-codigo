@@ -1,4 +1,4 @@
-import type { Routine, RoutineRun } from "@apx/protocol";
+import type { Routine, RoutineRun } from "@colonia/protocol";
 import { useEffect, useMemo, useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { useNow } from "../common/useNow.ts";

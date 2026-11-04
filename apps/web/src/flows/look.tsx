@@ -1,6 +1,6 @@
-import type { Agent, Routine } from "@apx/protocol";
-import { flowCases } from "@apx/protocol/flow-cases";
-import { AgentAvatar } from "@apx/ui";
+import type { Agent, Routine } from "@colonia/protocol";
+import { flowCases } from "@colonia/protocol/flow-cases";
+import { AgentAvatar } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { blobOf } from "../data/identity.ts";
 import type { MessageKey } from "../i18n/index.ts";

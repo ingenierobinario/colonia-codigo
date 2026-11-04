@@ -66,20 +66,20 @@ export function Calendar({ selected, onPick, min, locale, weekStartsOn = 1, labe
   const shift = (n: number) => setMonth((m) => new Date(m.getFullYear(), m.getMonth() + n, 1));
 
   return (
-    <div className="apx-cal">
-      <div className="apx-cal__head">
-        <button type="button" className="apx-cal__nav" aria-label={l.prevMonth} onClick={() => shift(-1)}>
+    <div className="colonia-cal">
+      <div className="colonia-cal__head">
+        <button type="button" className="colonia-cal__nav" aria-label={l.prevMonth} onClick={() => shift(-1)}>
           <ChevronLeft size={16} />
         </button>
-        <span className="apx-cal__title">{title}</span>
-        <button type="button" className="apx-cal__nav" aria-label={l.nextMonth} onClick={() => shift(1)}>
+        <span className="colonia-cal__title">{title}</span>
+        <button type="button" className="colonia-cal__nav" aria-label={l.nextMonth} onClick={() => shift(1)}>
           <ChevronRight size={16} />
         </button>
       </div>
-      <div className="apx-cal__grid">
+      <div className="colonia-cal__grid">
         {weekdays.map((w, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: narrow weekday names repeat (S, S).
-          <span key={i} className="apx-cal__weekday" aria-hidden="true">
+          <span key={i} className="colonia-cal__weekday" aria-hidden="true">
             {w}
           </span>
         ))}
@@ -92,7 +92,7 @@ export function Calendar({ selected, onPick, min, locale, weekStartsOn = 1, labe
               key={s}
               type="button"
               className={cx(
-                "apx-cal__day",
+                "colonia-cal__day",
                 d.getMonth() !== month.getMonth() && "is-outside",
                 s === today && "is-today",
                 isSel && "is-selected",
@@ -161,37 +161,37 @@ export function DatePicker({
     : l.placeholder;
 
   return (
-    <span className={cx("apx-datewrap", className)}>
+    <span className={cx("colonia-datewrap", className)}>
       <Popover
         open={open}
         onOpenChange={setOpen}
         label={label}
-        className="apx-datepop"
+        className="colonia-datepop"
         trigger={
           <button
             type="button"
             aria-label={label}
             disabled={disabled}
             className={cx(
-              "apx-field",
-              `apx-field--${size}`,
-              "apx-datefield",
+              "colonia-field",
+              `colonia-field--${size}`,
+              "colonia-datefield",
               !day && "is-placeholder",
               day && "has-clear",
             )}
           >
-            <CalendarDays size={14} className="apx-datefield__icon" />
-            <span className="apx-datefield__text">{text}</span>
+            <CalendarDays size={14} className="colonia-datefield__icon" />
+            <span className="colonia-datefield__text">{text}</span>
           </button>
         }
       >
         {presets && presets.length > 0 && (
-          <div className="apx-datepop__presets">
+          <div className="colonia-datepop__presets">
             {presets.map((p) => (
               <button
                 key={p.label}
                 type="button"
-                className={cx("apx-datepop__preset", value?.startsWith(p.value) && "is-on")}
+                className={cx("colonia-datepop__preset", value?.startsWith(p.value) && "is-on")}
                 onClick={() => {
                   set(p.value);
                   if (!withTime) setOpen(false);
@@ -214,11 +214,11 @@ export function DatePicker({
           labels={l}
         />
         {withTime && (
-          <label className="apx-datepop__time">
+          <label className="colonia-datepop__time">
             <span>{l.time}</span>
             <input
               type="time"
-              className="apx-field apx-field--sm apx-datepop__timeinput"
+              className="colonia-field colonia-field--sm colonia-datepop__timeinput"
               value={time ?? ""}
               disabled={!day}
               onChange={(e) => set(value ? dayString(day as Date) : undefined, e.target.value || undefined)}
@@ -229,7 +229,7 @@ export function DatePicker({
       {day && !disabled && (
         <button
           type="button"
-          className="apx-datefield__clear"
+          className="colonia-datefield__clear"
           aria-label={l.clear}
           onClick={() => onValueChange(undefined)}
         >
@@ -275,15 +275,15 @@ export function DateRangePicker({
       open={open}
       onOpenChange={setOpen}
       label={label}
-      className="apx-datepop"
+      className="colonia-datepop"
       trigger={
         <button
           type="button"
           aria-label={label}
-          className={cx("apx-field", `apx-field--${size}`, "apx-datefield", !from && "is-placeholder", className)}
+          className={cx("colonia-field", `colonia-field--${size}`, "colonia-datefield", !from && "is-placeholder", className)}
         >
-          <CalendarDays size={14} className="apx-datefield__icon" />
-          <span className="apx-datefield__text">{text}</span>
+          <CalendarDays size={14} className="colonia-datefield__icon" />
+          <span className="colonia-datefield__text">{text}</span>
         </button>
       }
     >
@@ -302,8 +302,8 @@ export function DateRangePicker({
         labels={l}
       />
       {from && (
-        <div className="apx-datepop__presets">
-          <button type="button" className="apx-datepop__preset" onClick={() => onValueChange({})}>
+        <div className="colonia-datepop__presets">
+          <button type="button" className="colonia-datepop__preset" onClick={() => onValueChange({})}>
             {l.clear}
           </button>
         </div>

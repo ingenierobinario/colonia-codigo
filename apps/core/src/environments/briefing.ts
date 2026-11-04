@@ -1,6 +1,6 @@
 // What an agent allowed the computer reads about it each turn, in its input (never the system prompt, which stays
 // byte-stable): built from the same status the panel and the Computers view show, so it believes what the owner sees.
-import type { ComputerScreen } from "@apx/protocol";
+import type { ComputerScreen } from "@colonia/protocol";
 
 type Sizes = { memory_gib?: number | undefined; cpus?: number | undefined; disk_gib?: number | undefined };
 /** What it reads of the computer's status (`Computer.status`, as last seen). */

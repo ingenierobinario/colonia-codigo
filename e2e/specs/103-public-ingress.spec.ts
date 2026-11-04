@@ -26,7 +26,7 @@ test("published widget renders in a real browser without private state or networ
   const surface = await rpc<{ id: string }>("surfaces.show", {
     name: "public-readonly-proof",
     title: "Public page",
-    html: '<script src="/_apx/kit@1.js"></script><h1>Read-only proof</h1><p id="state"></p><script>document.getElementById("state").textContent = JSON.stringify(window.APX?.state ?? {});</script>',
+    html: '<script src="/_colonia/kit@1.js"></script><h1>Read-only proof</h1><p id="state"></p><script>document.getElementById("state").textContent = JSON.stringify(window.Colonia?.state ?? {});</script>',
   });
   await rpc("surfaces.set_state", { surface: surface.id, patch: { privateMarker: "never-public" } });
   const { share_path } = await rpc<{ share_path: string }>("surfaces.share", { surface: surface.id, shared: true });
@@ -39,7 +39,7 @@ test("published widget renders in a real browser without private state or networ
     expect(response?.status()).toBe(200);
     await expect(page.getByRole("heading", { name: "Read-only proof" })).toBeVisible();
     expect(await page.locator("#state").textContent()).not.toContain("never-public");
-    expect(await page.evaluate(() => typeof (window as unknown as { APX?: unknown }).APX)).toBe("object");
+    expect(await page.evaluate(() => typeof (window as unknown as { Colonia?: unknown }).Colonia)).toBe("object");
     const blocked = await page.evaluate(async () => {
       try {
         await fetch("/rpc/surfaces.set_state", { method: "POST", body: "{}" });

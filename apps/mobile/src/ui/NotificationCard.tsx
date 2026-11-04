@@ -41,7 +41,7 @@ export function NotificationCard({ status, enable }: { status: NotificationStatu
                       : "notificationsError",
         )}
       </Text>
-      {/* Only a build without Firebase needs the ntfy route to reach the phone with APX closed. */}
+      {/* Only a build without Firebase needs the ntfy route to reach the phone with Colonia closed. */}
       {status.state === "local" && !pushBuild() ? <Text style={type.meta}>{translate("pushPending")}</Text> : null}
       {status.state === "error" && status.detail ? (
         <Text selectable style={s.error}>

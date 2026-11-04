@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { parseSha256, type ReleaseAsset } from "@apx/protocol";
+import { parseSha256, type ReleaseAsset } from "@colonia/protocol";
 
 const MAX_DOWNLOAD = 1024 * 1024 * 1024;
 

@@ -38,7 +38,7 @@ test("a Linux host without QEMU is told what to install", () => {
   assert.equal(ubuntu?.reason, "qemu");
   assert.equal(ubuntu?.command, "sudo apt install qemu-system-x86 qemu-utils");
   assert.match(ubuntu?.message ?? "", /QEMU.*qemu-system-x86/);
-  // A distribution APX cannot tell gets the step without a command it might get wrong.
+  // A distribution Colonia cannot tell gets the step without a command it might get wrong.
   const unknown = missingPrerequisite(linux, "/nonexistent", () => "ID=nixos\n");
   assert.equal(unknown?.reason, "qemu");
   assert.equal(unknown?.command, undefined);

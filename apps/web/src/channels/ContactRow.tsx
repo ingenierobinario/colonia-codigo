@@ -1,5 +1,5 @@
-import type { ChannelType, Person, Thread } from "@apx/protocol";
-import { Icons, Tooltip } from "@apx/ui";
+import type { ChannelType, Person, Thread } from "@colonia/protocol";
+import { Icons, Tooltip } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { shortWhen } from "../common/format.ts";
 import type { PresenceState } from "../data/channels.ts";

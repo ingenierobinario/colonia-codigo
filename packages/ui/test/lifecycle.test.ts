@@ -11,10 +11,10 @@ test("date ranges navigate months, restart before the start date, finish a range
     await page.getByRole("button", { name: "Next month", exact: true }).click();
     await expect(page.getByText("March 2024", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Previous month", exact: true }).click();
-    await page.locator(".apx-cal__day:not(.is-outside)").filter({ hasText: /^5$/ }).click();
+    await page.locator(".colonia-cal__day:not(.is-outside)").filter({ hasText: /^5$/ }).click();
     await expect(page.getByTestId("range")).toHaveText('{"from":"2024-02-05"}');
     await page.getByRole("button", { name: "20", exact: true }).hover();
-    await expect(page.locator(".apx-cal__day.is-inrange")).toHaveCount(14);
+    await expect(page.locator(".colonia-cal__day.is-inrange")).toHaveCount(14);
     await page.getByRole("button", { name: "20", exact: true }).click();
     await expect(page.getByTestId("range")).toHaveText('{"from":"2024-02-05","to":"2024-02-20"}');
     await expect(page.getByText("February 2024", { exact: true })).toHaveCount(0);
@@ -29,12 +29,12 @@ test("master detail remembers a resized width across remount and reset restores 
     await splitter.focus();
     await splitter.press("ArrowRight");
     await expect(splitter).toHaveAttribute("aria-valuenow", "356");
-    assert.equal(await page.evaluate(() => localStorage.getItem("apx.mdetail.coverage-fixture")), "356");
+    assert.equal(await page.evaluate(() => localStorage.getItem("colonia.mdetail.coverage-fixture")), "356");
     await page.reload();
     await expect(splitter).toHaveAttribute("aria-valuenow", "356");
     await splitter.dblclick();
     await expect(splitter).toHaveAttribute("aria-valuenow", "340");
-    assert.equal(await page.evaluate(() => localStorage.getItem("apx.mdetail.coverage-fixture")), "340");
+    assert.equal(await page.evaluate(() => localStorage.getItem("colonia.mdetail.coverage-fixture")), "340");
   }));
 
 test("voice playback updates progress, stops on end and removes exact media listeners on replacement and unmount", async () =>
@@ -77,7 +77,7 @@ test("voice playback updates progress, stops on end and removes exact media list
         },
       });
     });
-    const voice = page.locator(".apx-voice");
+    const voice = page.locator(".colonia-voice");
     await expect(voice.getByRole("button", { name: "Play", exact: true })).toBeDisabled();
     await page.getByRole("button", { name: "Load voice", exact: true }).click();
     await voice.getByRole("button", { name: "Play", exact: true }).click();
@@ -92,8 +92,8 @@ test("voice playback updates progress, stops on end and removes exact media list
         current.audio.dispatchEvent(new Event(event));
       }, event);
     await update("timeupdate");
-    await expect(voice.locator(".apx-voice__time")).toHaveText("0:30 / 2:00");
-    await expect(voice.locator(".apx-voice__fill")).toHaveAttribute("style", "width: 25%;");
+    await expect(voice.locator(".colonia-voice__time")).toHaveText("0:30 / 2:00");
+    await expect(voice.locator(".colonia-voice__fill")).toHaveAttribute("style", "width: 25%;");
     await voice.getByRole("button", { name: "Pause", exact: true }).click();
     await voice.getByRole("button", { name: "Play", exact: true }).click();
     await update("ended");

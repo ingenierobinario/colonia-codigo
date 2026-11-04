@@ -1,4 +1,4 @@
-// APX's own About window: this build's versions, credits and the repo, instead of the system panel
+// Colonia's own About window: this build's versions, credits and the repo, instead of the system panel
 // (which, run from a checkout, shows Electron's version).
 import { app, BrowserWindow, shell } from "electron";
 import { APP_SCHEME } from "./app-scheme.ts";
@@ -7,7 +7,7 @@ import { isWebUrl } from "./browser/external.ts";
 const SYSTEMS: Partial<Record<NodeJS.Platform, string>> = { darwin: "macOS", win32: "Windows", linux: "Linux" };
 
 /** Set by the bundler (scripts/build.ts): the release's tag, or in a checkout the last tag and commits past it. */
-declare const APX_VERSION: string;
+declare const COLONIA_VERSION: string;
 
 let win: BrowserWindow | undefined;
 
@@ -59,7 +59,7 @@ export async function showAbout(
     }
   });
   // A checkout's package.json version is a placeholder; releases set the real one from their tag.
-  const version = app.isPackaged ? app.getVersion() : APX_VERSION;
+  const version = app.isPackaged ? app.getVersion() : COLONIA_VERSION;
   const health = await coreHealth(coreUrl);
   const query = new URLSearchParams({
     v: version,

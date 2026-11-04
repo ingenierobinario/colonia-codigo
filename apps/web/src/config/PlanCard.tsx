@@ -1,5 +1,5 @@
-import type { ChatgptStatus, ProviderInfo } from "@apx/protocol";
-import { Badge, Button, EngineIcon, Switch } from "@apx/ui";
+import type { ChatgptStatus, ProviderInfo } from "@colonia/protocol";
+import { Badge, Button, EngineIcon, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { chatgptStatus } from "../data/chatgpt.ts";
 import { useModels } from "../data/models.ts";
@@ -9,7 +9,7 @@ import { EngineUsageSwitch } from "./EngineUsageSwitch.tsx";
 import { PlanLogin } from "./PlanLogin.tsx";
 
 /**
- * The ChatGPT plan as a model API of APX's own loop, shown as Codex: first among the APIs, fixed (signed in or out,
+ * The ChatGPT plan as a model API of Colonia's own loop, shown as Codex: first among the APIs, fixed (signed in or out,
  * switched on or off, never removed). Claude's plan has no counterpart: it runs only in Claude Code (D-043).
  */
 export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: boolean }) {

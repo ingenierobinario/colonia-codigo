@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { Button, EmptyState, Icons, Spinner } from "@apx/ui";
+import { Button, EmptyState, Icons, Spinner } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { useT } from "../i18n/index.ts";

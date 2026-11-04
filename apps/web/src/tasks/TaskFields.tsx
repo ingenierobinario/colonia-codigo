@@ -1,5 +1,5 @@
-import type { Person, TaskKind, TaskPriority } from "@apx/protocol";
-import { ChannelIcon, DatePicker, Icons, SegmentedControl, Select } from "@apx/ui";
+import type { Person, TaskKind, TaskPriority } from "@colonia/protocol";
+import { ChannelIcon, DatePicker, Icons, SegmentedControl, Select } from "@colonia/ui";
 import { useEffect } from "react";
 import { SearchSelect } from "../common/pickers/SearchSelect.tsx";
 import { loadChannels, useChannels } from "../data/channels.ts";

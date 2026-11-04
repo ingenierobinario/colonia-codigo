@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { ServiceSettings } from "@apx/protocol";
+import type { ServiceSettings } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
 import { createModelInstaller } from "../services/local-whisper.ts";

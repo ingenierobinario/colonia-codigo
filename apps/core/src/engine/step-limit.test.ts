@@ -2,7 +2,7 @@
 // so, its chat says so, and an agent that delegated it reads it as progress, not as the result.
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import { callTool, say, scriptedLlm, startCore, texts } from "./testkit.ts";
 
 const looper = { name: "Looper", instructions: "Search until it is all found." };

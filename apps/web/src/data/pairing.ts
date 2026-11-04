@@ -33,7 +33,7 @@ export async function checkAccess(): Promise<void> {
 
 /** This device as the owner's list names it. */
 export function thisDevice(browser: (os: string) => string, desktop: string) {
-  if (window.apxDesktop) return { name: desktop, platform: "desktop" as const };
+  if (window.coloniaDesktop) return { name: desktop, platform: "desktop" as const };
   return { name: browser(osName(navigator.userAgent) ?? "web"), platform: "other" as const };
 }
 

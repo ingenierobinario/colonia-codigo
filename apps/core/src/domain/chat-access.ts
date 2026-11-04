@@ -1,4 +1,4 @@
-import type { Memory, Thread } from "@apx/protocol";
+import type { Memory, Thread } from "@colonia/protocol";
 import type { AgentRecord } from "./agents.ts";
 import { OWNER_ID } from "./persons.ts";
 import type { Store } from "./store.ts";

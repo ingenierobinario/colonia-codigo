@@ -10,7 +10,7 @@ DeepWiki, a custom MCP server) gets the letter tile. Used wherever an integratio
 
 - `id`: the integration id or MCP server name; `integrationBrand(id)` tells which mark it maps to.
 - `name`: the app's name, whose first letter fills the tile when there is no mark.
-- The marks (all but Slack's, which is the channel mark) come from `@apx/ui/marks` after the first screen:
+- The marks (all but Slack's, which is the channel mark) come from `@colonia/ui/marks` after the first screen:
   `registerIntegrationMarks(INTEGRATION_MARKS)`. Until then a known app shows its empty tile, never a letter.
 - Marks are never recoloured or altered: they only identify the app.
 

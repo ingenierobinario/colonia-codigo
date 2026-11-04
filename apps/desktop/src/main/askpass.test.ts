@@ -76,7 +76,7 @@ test("a cancelled question exits 1 and prints nothing; a wrong key gets no answe
     });
     assert.equal(await runAskpass(pass.env, ["exe", "Password: "], out), 1);
     assert.equal(printed, "");
-    assert.equal(await requestAnswer(pass.env.APX_ASKPASS ?? "", "0".repeat(48), "Password: "), undefined);
+    assert.equal(await requestAnswer(pass.env.COLONIA_ASKPASS ?? "", "0".repeat(48), "Password: "), undefined);
     assert.equal(calls, 1);
   } finally {
     pass.close();
@@ -87,21 +87,21 @@ test("from a checkout, ssh runs a wrapper that hands Electron the app's folder; 
   const pass = await openAskpass({
     ask: async () => "x",
     exe: "/opt/Acme Apps/electron",
-    appDir: "/work/it's/apx",
+    appDir: "/work/it's/colonia",
     platform: "darwin",
   });
   const wrapper = pass.env.SSH_ASKPASS ?? "";
   try {
     assert.match(
       fs.readFileSync(wrapper, "utf8"),
-      /^#!\/bin\/sh\nexec '\/opt\/Acme Apps\/electron' '\/work\/it'\\''s\/apx' "\$@"\n$/,
+      /^#!\/bin\/sh\nexec '\/opt\/Acme Apps\/electron' '\/work\/it'\\''s\/colonia' "\$@"\n$/,
     );
     if (process.platform !== "win32") assert.equal(fs.statSync(wrapper).mode & 0o777, 0o700);
   } finally {
     pass.close();
   }
   assert.equal(fs.existsSync(wrapper), false);
-  assert.equal(fs.existsSync(pass.env.APX_ASKPASS ?? ""), false);
+  assert.equal(fs.existsSync(pass.env.COLONIA_ASKPASS ?? ""), false);
 });
 
 test("on Linux ssh runs the app as Node over a small helper: the question and the answer make the same round trip", async () => {
@@ -113,7 +113,7 @@ test("on Linux ssh runs the app as Node over a small helper: the question and th
     },
     exe: process.execPath,
   });
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-helper-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-helper-"));
   try {
     const helper = nodeHelper(dir, process.execPath);
     const run = (env: Record<string, string>) =>
@@ -128,7 +128,7 @@ test("on Linux ssh runs the app as Node over a small helper: the question and th
     assert.deepEqual(await run(pass.env), { code: 0, out: "s3cret\n" });
     assert.deepEqual(asked, ["ops@box's password: "]);
     // A wrong key gets nothing: ssh hears there is no answer.
-    assert.equal((await run({ ...pass.env, APX_ASKPASS_KEY: "0".repeat(48) })).code, 1);
+    assert.equal((await run({ ...pass.env, COLONIA_ASKPASS_KEY: "0".repeat(48) })).code, 1);
   } finally {
     pass.close();
     fs.rmSync(dir, { recursive: true, force: true });
@@ -144,7 +144,7 @@ test("on Windows ssh runs the app itself as Node with a preload: the question ar
     },
     exe: process.execPath,
   });
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-helper-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-helper-"));
   try {
     const env = { ...process.env, ...pass.env, ...windowsHelper(dir, process.execPath) };
     // ssh hands the question as the only argument; Node takes it for a script that is never run.

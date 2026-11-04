@@ -1,4 +1,4 @@
-import { Button, Icons } from "@apx/ui";
+import { Button, Icons } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { formatBytes } from "../../common/format.ts";
 import { coreOnThisComputer, downloadFile, type FileWhere, revealFile } from "../../data/files.ts";

@@ -28,8 +28,8 @@
   gap: 10px;
   min-height: 0;
   padding: 14px 12px 0;
-  border-right: 1px solid var(--apx-border);
-  background: var(--apx-bg);
+  border-right: 1px solid var(--colonia-border);
+  background: var(--colonia-bg);
 }
 .chan__head,
 .chan__chathead {
@@ -43,8 +43,8 @@
 }
 .chan__name {
   overflow: hidden;
-  font-size: var(--apx-text-md);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-md);
+  font-weight: var(--colonia-weight-semibold);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -53,8 +53,8 @@
   align-items: center;
   gap: 6px;
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -62,13 +62,13 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--apx-fg-subtle);
+  background: var(--colonia-fg-subtle);
 }
 .chan__status.is-running {
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 .chan__status.is-error {
-  background: var(--apx-danger);
+  background: var(--colonia-danger);
 }
 .chan__rows {
   display: flex;
@@ -89,20 +89,20 @@
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   text-align: left;
 }
 .chan__row:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .chan__row.is-selected {
-  background: var(--apx-fill-strong);
+  background: var(--colonia-fill-strong);
 }
 .chan__pending {
   margin-bottom: 6px;
   padding-bottom: 8px;
   border-radius: 12px;
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .chan__pendingact {
   display: flex;
@@ -110,14 +110,14 @@
   gap: 6px;
   padding: 0 10px 0 52px;
 }
-.chan__pendingact .apx-input,
+.chan__pendingact .colonia-input,
 .chan__pendingact input {
   width: 96px;
 }
 .chan__pendinghint {
   margin: 6px 10px 0 52px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-2xs);
 }
 .chan__avatar.has-picture {
   overflow: hidden;
@@ -129,8 +129,8 @@
   object-fit: cover;
 }
 .chan__avatar.is-owner {
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg);
 }
 .chan__pending.is-flash {
   animation: chan-flash 2.4s ease-out;
@@ -138,7 +138,7 @@
 @keyframes chan-flash {
   0%,
   40% {
-    box-shadow: 0 0 0 2px var(--apx-accent, var(--apx-fg-muted));
+    box-shadow: 0 0 0 2px var(--colonia-accent, var(--colonia-fg-muted));
   }
   100% {
     box-shadow: 0 0 0 2px transparent;
@@ -162,24 +162,24 @@
   gap: 8px;
   margin-top: 20px;
   padding: 12px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 10px;
-  background: var(--apx-fill);
-  font-size: var(--apx-text-xs);
+  background: var(--colonia-fill);
+  font-size: var(--colonia-text-xs);
 }
 .chan__minehead {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--apx-warning);
-  font-weight: var(--apx-weight-semibold);
+  color: var(--colonia-warning);
+  font-weight: var(--colonia-weight-semibold);
 }
 .chan__mine p {
   margin: 0;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .chan__mine .chan__minehint {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .chan__mineact {
   display: flex;
@@ -202,21 +202,21 @@
   gap: 8px;
   margin-bottom: 8px;
   padding: 12px;
-  border: 1px dashed var(--apx-border);
+  border: 1px dashed var(--colonia-border);
   border-radius: 12px;
 }
 .chan__linktitle {
   display: flex;
   gap: 6px;
   align-items: center;
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-semibold);
 }
 .chan__linksteps {
   margin: 0;
   padding-left: 18px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   line-height: 1.6;
 }
 .chan__linkbot {
@@ -226,7 +226,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
   text-align: left;
   text-decoration: underline;
@@ -243,10 +243,10 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--apx-violet-soft);
-  color: var(--apx-violet-soft-fg);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-semibold);
+  background: var(--colonia-violet-soft);
+  color: var(--colonia-violet-soft-fg);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-semibold);
 }
 .chan__rowmain {
   display: flex;
@@ -264,29 +264,29 @@
 .chan__rowname {
   flex: 1;
   overflow: hidden;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 .chan__row.is-unread .chan__rowname {
-  font-weight: var(--apx-weight-semibold);
+  font-weight: var(--colonia-weight-semibold);
 }
 .chan__rowphone {
   flex: none;
-  color: var(--apx-fg-subtle);
-  font-family: var(--apx-meta-font);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-family: var(--colonia-meta-font);
+  font-size: var(--colonia-text-2xs);
 }
 .chan__rowtime {
   flex: none;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-2xs);
 }
 .chan__preview {
   flex: 1;
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -297,15 +297,15 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
-  font-size: var(--apx-text-2xs);
-  font-weight: var(--apx-weight-semibold);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
+  font-size: var(--colonia-text-2xs);
+  font-weight: var(--colonia-weight-semibold);
 }
 .chan__rel {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-2xs);
 }
 .chan__rel:empty {
   flex: 1;
@@ -316,7 +316,7 @@
   flex: none;
   gap: 4px;
   margin-left: auto;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .chan__flag {
   display: inline-grid;
@@ -334,9 +334,9 @@
   bottom: -1px;
   width: 10px;
   height: 10px;
-  border: 2px solid var(--apx-bg);
+  border: 2px solid var(--colonia-bg);
   border-radius: 50%;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 /* The name in a chat's header opens their card. */
 .chan__who {
@@ -356,7 +356,7 @@
   cursor: pointer;
 }
 .chan__who:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .chan__who .chan__name,
 .chan__who .chan__meta {
@@ -364,15 +364,15 @@
 }
 .chan__nobody {
   padding: 12px;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-sm);
 }
 .chan__foot {
   margin: 0 -12px;
   padding: 12px 16px;
-  border-top: 1px solid var(--apx-border);
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  border-top: 1px solid var(--colonia-border);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 
 /* ── Chat ──────────────────────────────────────────────────────────────────── */
@@ -381,12 +381,12 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--apx-surface);
+  background: var(--colonia-surface);
 }
 .chan__chathead {
   height: var(--shell-header-h);
   padding: 0 16px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .chan__back {
   display: none;
@@ -417,19 +417,19 @@
   margin: 0;
   padding: 10px 14px;
   border-radius: 18px;
-  background: var(--apx-fill);
-  font-size: var(--apx-text-md);
+  background: var(--colonia-fill);
+  font-size: var(--colonia-text-md);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .chan__bubble.is-out .chan__text {
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
 }
 .chan__bubble.is-instruction .chan__text {
-  border: 1px dashed var(--apx-border-strong);
+  border: 1px dashed var(--colonia-border-strong);
   background: transparent;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 /* Their emoji (and the agent's) sit on the bubble's lower edge, as the chat apps show them: above a sticker too. */
 .chan__reactions {
@@ -440,12 +440,12 @@
   gap: 2px;
   margin: -12px 0 0 10px;
   padding: 2px 6px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-surface);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-surface);
   box-shadow:
-    var(--apx-shadow-sm),
-    0 0 0 1px var(--apx-border);
-  font-size: var(--apx-text-md);
+    var(--colonia-shadow-sm),
+    0 0 0 1px var(--colonia-border);
+  font-size: var(--colonia-text-md);
   line-height: 1;
 }
 .chan__bubble.is-out .chan__reactions {
@@ -453,8 +453,8 @@
   margin: -12px 10px 0 0;
 }
 .chan__when {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-2xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-2xs);
 }
 .chan__note {
   display: flex;
@@ -462,8 +462,8 @@
   align-self: center;
   gap: 6px;
   margin: 2px 0;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 .chan__composer {
   display: flex;
@@ -471,9 +471,9 @@
   gap: 8px;
   margin: 0 24px 20px;
   padding: 10px 12px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 18px;
-  background: var(--apx-surface);
+  background: var(--colonia-surface);
 }
 .chan__composer textarea {
   border: 0;
@@ -487,8 +487,8 @@
 }
 .chan__hint {
   margin: 0;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
 }
 .chan__spacer {
   flex: 1;
@@ -500,8 +500,8 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  border-left: 1px solid var(--apx-border);
-  background: var(--apx-bg);
+  border-left: 1px solid var(--colonia-border);
+  background: var(--colonia-bg);
 }
 .chan__cardhead {
   display: flex;
@@ -509,8 +509,8 @@
   justify-content: space-between;
   height: var(--shell-header-h);
   padding: 0 16px;
-  border-bottom: 1px solid var(--apx-border);
-  font-weight: var(--apx-weight-semibold);
+  border-bottom: 1px solid var(--colonia-border);
+  font-weight: var(--colonia-weight-semibold);
 }
 .chan__cardbody {
   display: flex;
@@ -543,16 +543,16 @@
   align-items: center;
   gap: 4px;
   padding: 12px 16px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
 }
-.chan__cardfoot > .apx-btn--ghost {
+.chan__cardfoot > .colonia-btn--ghost {
   min-width: 0;
   padding-inline: 8px;
 }
-.chan__cardfoot > .apx-btn:not(.apx-btn--ghost) {
+.chan__cardfoot > .colonia-btn:not(.colonia-btn--ghost) {
   flex-shrink: 0;
 }
-.chan__cardfoot > .apx-btn--ghost .apx-btn__label {
+.chan__cardfoot > .colonia-btn--ghost .colonia-btn__label {
   overflow: hidden;
 }
 .chan__cardfoot-text {
@@ -577,9 +577,9 @@
     bottom: 8px;
     z-index: 15;
     width: min(360px, calc(100vw - 16px));
-    border: 1px solid var(--apx-border);
+    border: 1px solid var(--colonia-border);
     border-radius: 16px;
-    box-shadow: var(--apx-shadow-md);
+    box-shadow: var(--colonia-shadow-md);
   }
 }
 @media (max-width: 767px) {
@@ -618,15 +618,15 @@
   min-width: 220px;
 }
 .waqr__hint {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
 }
 .waqr__wait {
   display: flex;
   gap: 8px;
   align-items: center;
   padding: 8px 0;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 
 /* The "?" after "What this conversation may do". */

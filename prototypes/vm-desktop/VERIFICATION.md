@@ -8,7 +8,7 @@ The original prototype and its runtime are retained independently. Integration s
 - Root-owned nftables blocks direct worker IPv4/IPv6 egress except guest loopback. The user service requires the firewall. Firewall reload replaces only its own table atomically; repeated setup does not duplicate rules.
 - A host proxy reached through a private SSH reverse forward permits public HTTP(S). Every DNS answer must be public, the socket uses a pinned IP, and current host interfaces/subnets are excluded. Policy changes close existing connections. Request, socket, header, idle and lookup limits constrain resource use.
 - Real guest probes refused direct host/LAN/public sockets and private HTTP/CONNECT destinations. A harmless host HTTP canary received zero requests; public HTTPS succeeded.
-- Real `environments.command` ran as UID 1001 in `/home/apx-worker/work`. Guest work survives shutdown/restart; closing the core disconnects networking without deleting or stopping the guest disk.
+- Real `environments.command` ran as UID 1001 in `/home/colonia-worker/work`. Guest work survives shutdown/restart; closing the core disconnects networking without deleting or stopping the guest disk.
 - Protocol regressions cover owner-only activation, incompatible task-chat binding, stopped-chat deletion/rebinding, guest-only tools, no host fallback, control transfer, local process teardown, and device revocation of pending/live displays and established RPC sockets.
 - Mounted browser regressions cover guest browser references, control/appearance/stop/restart, an old status response arriving after shutdown, and office startup when optional VM status fails.
 
@@ -20,8 +20,8 @@ python3 prototypes/vm-desktop/test_guest_session.py
 pnpm preflight
 pnpm test:coverage:all
 pnpm perf
-node prototypes/vm-desktop/verify-security.ts /tmp/apx-vm-lab-example
-node prototypes/vm-desktop/verify-lifecycle.ts /tmp/apx-vm-lab-example
+node prototypes/vm-desktop/verify-security.ts /tmp/colonia-vm-lab-example
+node prototypes/vm-desktop/verify-lifecycle.ts /tmp/colonia-vm-lab-example
 ```
 
 Use a separately launched lab for the last two commands. Security verification refuses an unready guest or a lab with active agent turns. Lifecycle verification writes only lab files, checks theme/persistence, and leaves its VM stopped. Neither command is intended for the owner's original working VM.

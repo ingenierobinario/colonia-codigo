@@ -9,12 +9,12 @@ test("a worker's report shows in the chat, folded, with how long it took", async
   await composer.fill("start a worker to check the sources");
   await composer.press("Enter");
 
-  const card = main.locator(".apx-subthread").last();
+  const card = main.locator(".colonia-subthread").last();
   await expect(card.getByText("Listo")).toBeVisible();
   await expect(card.getByText(/→ Researcher · Ayudante/)).toBeVisible();
   await expect(card.getByText(/^Tardó \d+ s$/)).toBeVisible();
   // Clipped text still counts as visible to the browser: the fold is read from the report's own state.
-  const report = card.locator(".apx-subthread__summary");
+  const report = card.locator(".colonia-subthread__summary");
   await expect(report).toHaveClass(/is-folded/);
   await card.getByRole("button", { name: "Mostrar más" }).click();
   await expect(report).not.toHaveClass(/is-folded/);

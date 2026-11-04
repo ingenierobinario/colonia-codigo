@@ -46,16 +46,16 @@ xattr -dr com.apple.quarantine /Applications/Colonia.app
 ## Instalar en un servidor
 
 Sólo si quieres que Colonia funcione siempre, aunque apagues tu ordenador, y tienes un servidor propio. En esa máquina,
-este comando instala Colonia y el comando `apx`:
+este comando instala Colonia y el comando `colonia`:
 
 <InstallCommand labels={["macOS y Linux", "Windows"]} />
 
-Después, `apx setup --headless` termina la configuración y te da un código para emparejar tu aplicación o tu móvil. Todos
+Después, `colonia setup --headless` termina la configuración y te da un código para emparejar tu aplicación o tu móvil. Todos
 los detalles están en [Colonia en un servidor](/es/devices/server/).
 
 ## Dónde se guardan tus datos
 
-Todo lo que guarda Colonia está en una carpeta de tu ordenador, `~/.apx/v2`. Tus proyectos siguen donde estaban; Colonia
+Todo lo que guarda Colonia está en una carpeta de tu ordenador, `~/.colonia/v2`. Tus proyectos siguen donde estaban; Colonia
 sólo les añade `AGENTS.md` y `.apc/`. Las claves van al llavero de tu sistema cuando lo hay. Más en
 [Privacidad](/es/reference/privacy/).
 
@@ -63,12 +63,12 @@ sólo les añade `AGENTS.md` y `.apc/`. Las claves van al llavero de tu sistema 
 
 Colonia busca versiones nuevas cada pocas horas y, cuando hay una, muestra un aviso **Actualización** en la barra de
 arriba. Tus datos se conservan. En Windows y Linux la versión nueva se instala sola; en macOS se abre el disco nuevo para
-que arrastres la aplicación. En un servidor, `apx upgrade --check` te dice si hay versión nueva y `apx upgrade` la
-instala. Con `APX_UPDATES=off` se apagan las comprobaciones.
+que arrastres la aplicación. En un servidor, `colonia upgrade --check` te dice si hay versión nueva y `colonia upgrade` la
+instala. Con `COLONIA_UPDATES=off` se apagan las comprobaciones.
 
 ## Desinstalar
 
-Desinstalar quita el programa. **Tus datos se quedan** en `~/.apx/v2`: borra esa carpeta si quieres empezar de cero.
+Desinstalar quita el programa. **Tus datos se quedan** en `~/.colonia/v2`: borra esa carpeta si quieres empezar de cero.
 
 <Tabs syncKey="install">
 <TabItem label="Aplicación de escritorio">
@@ -80,7 +80,7 @@ Desinstalar quita el programa. **Tus datos se quedan** en `~/.apx/v2`: borra esa
 </TabItem>
 <TabItem label="Servidor">
 
-`apx service uninstall` quita el servicio. Para quitar también el programa, vuelve a ejecutar el instalador con
+`colonia service uninstall` quita el servicio. Para quitar también el programa, vuelve a ejecutar el instalador con
 `--uninstall` (en Windows, `-Uninstall`).
 
 </TabItem>

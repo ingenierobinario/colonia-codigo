@@ -1,5 +1,5 @@
-import type { ImageDefaults, ServiceInfo, ServiceKind, ServiceTest } from "@apx/protocol";
-import { Badge, Button, EmptyState, IconButton, Icons, Input, SettingRow, Switch, Textarea } from "@apx/ui";
+import type { ImageDefaults, ServiceInfo, ServiceKind, ServiceTest } from "@colonia/protocol";
+import { Badge, Button, EmptyState, IconButton, Icons, Input, SettingRow, Switch, Textarea } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { mediaUrl } from "../data/media.ts";

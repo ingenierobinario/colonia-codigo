@@ -14,7 +14,7 @@
   flex: none;
   min-height: 0;
 }
-.apx-resize.listcol__resize {
+.colonia-resize.listcol__resize {
   right: -4px;
 }
 
@@ -30,10 +30,10 @@
   vertical-align: -2px;
 }
 .chan__ticks.is-read {
-  color: var(--apx-info);
+  color: var(--colonia-info);
 }
 .chan__ticks.is-failed {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 /* A QR code's box, also while it loads. */
 .qrcode {
@@ -51,13 +51,13 @@
   height: 28px;
   padding: 0 10px;
   border: 0;
-  border-radius: var(--apx-control-radius);
-  background: var(--apx-fill);
-  font-size: var(--apx-text-xs);
+  border-radius: var(--colonia-control-radius);
+  background: var(--colonia-fill);
+  font-size: var(--colonia-text-xs);
 }
 .selectbtn:hover,
 .selectbtn[data-popup-open] {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .selectbtn__text {
   overflow: hidden;
@@ -66,14 +66,14 @@
 }
 /* The code the phone types to pair. */
 .devices__code {
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-lg);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-lg);
   letter-spacing: 0.12em;
 }
 
 .selectbtn__warn {
   flex: none;
-  color: var(--apx-warning);
+  color: var(--colonia-warning);
 }
 
 /* Catalog list inside a picker */
@@ -99,8 +99,8 @@
 }
 .mlist__empty {
   margin: 8px 4px;
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
 }
 .mlist__group {
   display: flex;
@@ -114,10 +114,10 @@
   align-items: center;
   gap: 8px;
   padding: 6px 8px 4px;
-  background: var(--apx-surface-raised);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-medium);
-  color: var(--apx-fg-subtle);
+  background: var(--colonia-surface-raised);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-medium);
+  color: var(--colonia-fg-subtle);
 }
 .mlist__opt {
   display: flex;
@@ -127,17 +127,17 @@
   min-height: 30px;
   padding: 4px 8px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: transparent;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
 }
 .mlist__opt:hover,
 .mlist__opt:focus-visible {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
   outline: none;
 }
 .mlist__check {
@@ -145,7 +145,7 @@
   display: inline-grid;
   place-items: center;
   width: 14px;
-  color: var(--apx-brand);
+  color: var(--colonia-brand);
 }
 .mlist__name {
   flex: 1;
@@ -160,9 +160,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-2xs);
-  color: var(--apx-fg-subtle);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-2xs);
+  color: var(--colonia-fg-subtle);
 }
 
 /* Model choice popover */
@@ -179,16 +179,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
 .mchoice__title {
-  font-weight: var(--apx-weight-medium);
+  font-weight: var(--colonia-weight-medium);
 }
 .mchoice__label {
   padding: 10px 4px 0;
-  border-top: 1px solid var(--apx-border);
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  border-top: 1px solid var(--colonia-border);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
 .mchoice__fallback {
   display: flex;
@@ -196,7 +196,7 @@
   align-items: center;
   gap: 6px 12px;
   padding: 0 4px;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
 .mchoice__fallback .mchoice__title {
   flex: 1 1 auto;
@@ -210,8 +210,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-brand);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-brand);
 }
 .mlist__effort {
   display: flex;
@@ -220,11 +220,11 @@
   gap: 8px;
   min-width: 0;
   padding: 8px 4px 2px;
-  border-top: 1px solid var(--apx-border);
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  border-top: 1px solid var(--colonia-border);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
 }
-.mlist__effort .apx-select {
+.mlist__effort .colonia-select {
   width: 160px;
 }
 @media (max-width: 480px) {
@@ -232,7 +232,7 @@
     display: none;
   }
 }
-.mlist__engine .apx-engine {
+.mlist__engine .colonia-engine {
   flex: none;
 }
 /* A chat's queued turns, nested under its working turn (running popover, chat processes). */
@@ -242,7 +242,7 @@
   gap: 2px;
   margin-left: 24px;
   padding-left: 10px;
-  border-left: 1px solid var(--apx-border);
+  border-left: 1px solid var(--colonia-border);
 }
 .turns__row {
   display: flex;
@@ -250,18 +250,18 @@
   gap: 8px;
   padding: 6px 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: transparent;
-  color: var(--apx-fg);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-sm);
   text-align: left;
 }
 button.turns__row:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .turns__icon {
   flex: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .turns__name {
   flex: 1;
@@ -273,6 +273,6 @@ button.turns__row:hover {
 .turns__state,
 .turns__time {
   flex: none;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }

@@ -9,7 +9,7 @@ export const ProjectKind = z.enum(["personal", "app", "company", "software", "ot
 
 /**
  * An agent's permission mode, in the order the owner picks from (DECISIONS.md#d-106). `manual`: every call that changes
- * something waits for the owner. `auto` (the default): reads anywhere but APX's home, writes and runs commands in the
+ * something waits for the owner. `auto` (the default): reads anywhere but Colonia's home, writes and runs commands in the
  * folder it works in and its temp folder, and asks only for strong actions. `accept_edits`: as auto, but a command that
  * changes something asks. `plan`: reads and proposes, changes nothing. `total`: nothing waits (DECISIONS.md#d-047).
  */
@@ -75,7 +75,7 @@ export const OrgRole = z.object({
   area: OrgSlug.optional(),
   description: z.string().max(500).optional(),
 });
-/** A project's areas and roles: `.apc/organization.json` (v1's format), the base project's in APX's settings. */
+/** A project's areas and roles: `.apc/organization.json` (v1's format), the base project's in Colonia's settings. */
 export const Organization = z.object({ areas: z.array(OrgArea).max(40), roles: z.array(OrgRole).max(200) });
 export type Organization = z.infer<typeof Organization>;
 export type ProjectKind = z.infer<typeof ProjectKind>;
@@ -98,16 +98,16 @@ export const Project = z.object({
   /** false when the registered folder is not on disk (moved, unmounted drive). */
   present: z.boolean().default(true),
   /**
-   * Why a folder that is there could not be read: `waiting`, the system has not let APX in yet (a macOS privacy
+   * Why a folder that is there could not be read: `waiting`, the system has not let Colonia in yet (a macOS privacy
    * prompt nobody answered); `denied`, it refused. Known only to the running core.
    */
   unreadable: z.enum(["waiting", "denied"]).optional(),
   /** Blob name from the design system catalog, used as the project's avatar. */
   blob: z.string().optional(),
   path: z.string().optional(),
-  /** How far its agents go on their own when they set nothing themselves; kept by APX, never in the folder. */
+  /** How far its agents go on their own when they set nothing themselves; kept by Colonia, never in the folder. */
   autonomy: Autonomy.optional(),
-  /** Absolute folders its agents may read and never change (another checkout, docs); kept by APX. */
+  /** Absolute folders its agents may read and never change (another checkout, docs); kept by Colonia. */
   read_only_folders: z.array(z.string()).optional(),
   /** AGENTS.md's length when it is past AGENTS_MD_LIMIT: its agents get the head and tail, not all of it. */
   agents_md_chars: z.number().int().optional(),
@@ -199,7 +199,7 @@ export const Agent = z.object({
   /** Group it belongs to in the team view ("product", "sports"). From `area:`. */
   area: z.string().optional(),
   description: z.string().optional(),
-  /** "apc" = defined by a file in the project; "local" = defined in APX itself. */
+  /** "apc" = defined by a file in the project; "local" = defined in Colonia itself. */
   source: z.enum(["apc", "local"]).default("local"),
   /** The engine of the agent's own model, when it has one (derived from `model_choice`). */
   harness: HarnessId.optional(),
@@ -264,7 +264,7 @@ export type RunState = z.infer<typeof RunState>;
 export const TERMINAL_RUN_STATES: readonly RunState[] = ["completed", "failed", "canceled"];
 
 /**
- * Why a run ended, when APX knows: `step_limit` is a turn on APX's own loop that used all its steps (its answer is
+ * Why a run ended, when Colonia knows: `step_limit` is a turn on Colonia's own loop that used all its steps (its answer is
  * a progress report, not a final result); `provider_limit` is the model provider's usage limit (its plan or rate),
  * not a fault of the agent; `deadline` is the run's time running out. Absent on runs older than the field and on
  * outside engines' completed turns, which cannot tell.
@@ -491,7 +491,7 @@ const KnownPart = z.discriminatedUnion("type", [
     state: z.enum(["agent", "handoff", "user", "done"]),
     reason: z.string().optional(),
   }),
-  /** An image: one from the web (`url`) or one APX made (`media_id`, its bytes from media.get). */
+  /** An image: one from the web (`url`) or one Colonia made (`media_id`, its bytes from media.get). */
   z.object({
     type: z.literal("image"),
     url: z.string().optional(),
@@ -612,7 +612,7 @@ const KNOWN_PARTS: ReadonlySet<string> = new Set(KnownPart.options.map((o) => o.
 export const Part = z.preprocess((v) => {
   const type = (v as { type?: unknown } | null)?.type;
   return typeof type === "string" && !KNOWN_PARTS.has(type)
-    ? { type: "notice", level: "info", code: "part.unknown", text: `This part (${type}) needs a newer version of APX.` }
+    ? { type: "notice", level: "info", code: "part.unknown", text: `This part (${type}) needs a newer version of Colonia.` }
     : v;
 }, KnownPart);
 export type Part = z.infer<typeof KnownPart>;
@@ -731,7 +731,7 @@ export const RunContext = z.object({
   input: z.string(),
   tools: z.array(z.string()),
   sizes: z.object({
-    /** The system prompt by part ("base" is APX's own text); they add up to its length. */
+    /** The system prompt by part ("base" is Colonia's own text); they add up to its length. */
     system: z.array(PromptPart),
     /** The turn's input by block ("message" is what was said); they add up to its length. */
     input: z.array(PromptPart),
@@ -810,14 +810,14 @@ export type Job = z.infer<typeof Job>;
 export const ProviderTransport = z.enum(["openai-chat", "anthropic-messages", "chatgpt-responses"]);
 export type ProviderTransport = z.infer<typeof ProviderTransport>;
 
-/** The ChatGPT plan's sign-in for APX's own loop. */
+/** The ChatGPT plan's sign-in for Colonia's own loop. */
 export const ChatgptStatus = z.object({
   connected: z.boolean(),
   account: z.string().optional(),
   /** A sign-in in progress: the code the owner types at the address. */
   pending: z.object({ user_code: z.string(), verification_url: z.string(), expires_at: z.string() }).optional(),
   error: z.string().optional(),
-  /** APX v1 has a ChatGPT sign-in of its own that can be taken over. */
+  /** Colonia v1 has a ChatGPT sign-in of its own that can be taken over. */
   v1_available: z.boolean(),
 });
 export type ChatgptStatus = z.infer<typeof ChatgptStatus>;
@@ -889,7 +889,7 @@ export const Memory = z.object({
 export type Memory = z.infer<typeof Memory>;
 
 /**
- * People APX talks to. The owner is one person with addresses on each channel; a contact gets a sealed conversation
+ * People Colonia talks to. The owner is one person with addresses on each channel; a contact gets a sealed conversation
  * (no tools, no memory, nothing of the owner's); anyone else is a stranger until the owner approves a pairing code.
  */
 export const PersonRole = z.enum(["owner", "contact", "blocked"]);
@@ -975,7 +975,7 @@ export const ChannelStrangers = z.enum(["pair", "ask", "answer", "ignore"]);
 export type ChannelStrangers = z.infer<typeof ChannelStrangers>;
 
 /** A channel instance as the owner configured it, and how it is doing. */
-/** The channels APX can run: a bot or account the owner connects. */
+/** The channels Colonia can run: a bot or account the owner connects. */
 export const ChannelType = z.enum([
   "telegram",
   "whatsapp",
@@ -1005,7 +1005,7 @@ export const RoomMode = z.enum(["always", "mention", "useful", "read"]);
 export type RoomMode = z.infer<typeof RoomMode>;
 
 /**
- * Public rooms (a Discord server's channels, Telegram groups). Deny by default: a room that is not listed does not exist for APX. People
+ * Public rooms (a Discord server's channels, Telegram groups). Deny by default: a room that is not listed does not exist for Colonia. People
  * there are strangers in public: the agent answers sealed (no tools, no memory, nothing of the owner's), by the owner's
  * knowledge and rules.
  */
@@ -1104,7 +1104,7 @@ export const ChannelInfo = z.object({
    * a notice asking the owner first, an answer right away as a new contact, or nothing.
    */
   strangers: ChannelStrangers,
-  /** A new message while the agent is working: wait for it, stop it, or (APX's own loop) slip into it. */
+  /** A new message while the agent is working: wait for it, stop it, or (Colonia's own loop) slip into it. */
   concurrency: z.enum(["queue", "interrupt", "steer"]),
   /** The owner's messages go to the Home chat (one conversation everywhere) or to a chat of this channel. */
   owner_thread: z.enum(["home", "own"]),
@@ -1308,7 +1308,7 @@ export const MemorySettings = z.object({
 });
 export type MemorySettings = z.infer<typeof MemorySettings>;
 
-/** How APX reaches the owner when they are not looking at the app. */
+/** How Colonia reaches the owner when they are not looking at the app. */
 export const NoticePrefs = z.object({
   /**
    * Which chat app the super-agent also writes to unasked: a channel (its id), "none" for the app only, or unset for the
@@ -1316,7 +1316,7 @@ export const NoticePrefs = z.object({
    */
   channel: z.string().optional(),
   /**
-   * Quiet hours ("HH:MM" in the owner's time zone): what APX would say unasked waits until they end (and then goes together); answers
+   * Quiet hours ("HH:MM" in the owner's time zone): what Colonia would say unasked waits until they end (and then goes together); answers
    * and questions still arrive, without sound.
    */
   quiet_from: z
@@ -1329,7 +1329,7 @@ export const NoticePrefs = z.object({
     .optional(),
   /** A confirmation or question unanswered in the app this long also goes to the channel (0 = never). */
   inputs_after_s: z.number().int().min(0).max(86_400).default(120),
-  /** Messages APX may send unasked in a day, besides the ones that always arrive (0 = no cap). */
+  /** Messages Colonia may send unasked in a day, besides the ones that always arrive (0 = no cap). */
   budget_per_day: z.number().int().min(0).max(50).default(3),
   /** Least time between two unasked messages about the same project, and of the same kind (minutes; 0 = none). */
   project_gap_min: z.number().int().min(0).max(1440).default(180),
@@ -1340,7 +1340,7 @@ export const NoticePrefs = z.object({
 });
 export type NoticePrefs = z.infer<typeof NoticePrefs>;
 
-/** One message APX meant to send unasked, and what the interruption budget did with it. */
+/** One message Colonia meant to send unasked, and what the interruption budget did with it. */
 export const Nudge = z.object({
   id: Id,
   at: z.string(),
@@ -1408,7 +1408,7 @@ export const McpServerStatus = z.object({
   /** A global server turned off inside the project asked about. */
   off_here: z.boolean().default(false),
   /**
-   * As it is defined, to edit it: one the owner added in APX (values hold secret:// references, never the secrets) or
+   * As it is defined, to edit it: one the owner added in Colonia (values hold secret:// references, never the secrets) or
    * a project's file. Absent for an extension's servers (they come with the extension).
    */
   definition: z
@@ -1436,7 +1436,7 @@ export const SurfaceOrigin = z
 
 /** Where an installed artifact came from: who made it, and where, as its file said. Absent for one made here. */
 export const ArtifactOrigin = z.object({
-  /** The person whose APX it was exported from. */
+  /** The person whose Colonia it was exported from. */
   author: z.string().max(80).optional(),
   /** The agent that made it there. */
   agent: z.string().max(80).optional(),
@@ -1465,7 +1465,7 @@ export const Surface = z.object({
   share_path: z.string().optional(),
   /** Origins it may connect to for live data (shown to the owner); absent: no network at all. */
   connect: z.array(SurfaceOrigin).max(5).optional(),
-  /** What it remembers (APX.state): kept across openings and new versions, read and written by it and its agent. */
+  /** What it remembers (Colonia.state): kept across openings and new versions, read and written by it and its agent. */
   state: SurfaceState.optional(),
   /** Installed from a file: who made it and where. */
   origin: ArtifactOrigin.optional(),
@@ -1474,9 +1474,9 @@ export type Surface = z.infer<typeof Surface>;
 export const SurfaceSummary = Surface.omit({ html: true, state: true });
 export type SurfaceSummary = z.infer<typeof SurfaceSummary>;
 
-/** Most an artifact's store (APX.store) may hold, as JSON bytes of every value together. */
+/** Most an artifact's store (Colonia.store) may hold, as JSON bytes of every value together. */
 export const ARTIFACT_STORE_MAX = 5_000_000;
-/** Largest an artifact's database file (APX.db) may grow. */
+/** Largest an artifact's database file (Colonia.db) may grow. */
 export const ARTIFACT_DB_MAX = 50_000_000;
 /** An artifact's own secret key (its full name is `artifact.<name>.<key>`). */
 export const ArtifactSecretKey = z
@@ -1494,7 +1494,7 @@ export const ArtifactManifest = z.object({
   title: z.string().min(1).max(120),
   kind: z.enum(["widget", "app"]),
   version: z.number().int().min(1),
-  /** The kit version its HTML loads (/_apx/kit@<version>.js). */
+  /** The kit version its HTML loads (/_colonia/kit@<version>.js). */
   kit: z.string().max(40).optional(),
   connect: z.array(SurfaceOrigin).max(5).optional(),
   /** Secret keys it expects, never their values. */
@@ -1503,7 +1503,7 @@ export const ArtifactManifest = z.object({
   /** Schema version of its database, for future migrations. */
   data_version: z.number().int().min(0).optional(),
   source: z.object({ framework: z.enum(["preact", "html"]).optional(), built_at: z.string().optional() }).optional(),
-  /** Who made it: the person whose APX exported it, its agent and its project there (kept through later exports). */
+  /** Who made it: the person whose Colonia exported it, its agent and its project there (kept through later exports). */
   author: z.string().max(80).optional(),
   agent: z.string().max(80).optional(),
   project: z.string().max(120).optional(),
@@ -1512,7 +1512,7 @@ export const ArtifactManifest = z.object({
 export type ArtifactManifest = z.infer<typeof ArtifactManifest>;
 /** One artifact as a file: its page and, only when asked, its memory (state, store, base64 database). */
 export const ArtifactBundle = z.object({
-  format: z.literal("apx-artifact@1"),
+  format: z.literal("colonia-artifact@1"),
   manifest: ArtifactManifest,
   html: z.string().min(1).max(400_000),
   state: SurfaceState.optional(),

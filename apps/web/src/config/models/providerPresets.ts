@@ -1,5 +1,5 @@
 // Kinds of model APIs the owner can add, with their usual address. Only a starting point: every field is editable.
-import type { TileTone } from "@apx/ui";
+import type { TileTone } from "@colonia/ui";
 
 export type ProviderPreset = {
   id: string;

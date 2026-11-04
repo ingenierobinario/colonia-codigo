@@ -1,4 +1,4 @@
-// whisper.cpp's `whisper-server`, run by APX itself: started on the first voice note, stopped after a while unused,
+// whisper.cpp's `whisper-server`, run by Colonia itself: started on the first voice note, stopped after a while unused,
 // listening on loopback only. The owner points it at a ggml model file; ffmpeg converts the audio (--convert).
 import { type ChildProcess, spawn } from "node:child_process";
 import fs from "node:fs";

@@ -28,7 +28,7 @@ test("right-click a session: pin it to the top, rename it, archive and unarchive
 
   // By chat: rename through the menu's dialog; an empty name goes back to the automatic title.
   await page.getByRole("radio", { name: "Por chat" }).click();
-  const row = (text: string) => page.locator(".inbox__list .apx-convrow", { hasText: text });
+  const row = (text: string) => page.locator(".inbox__list .colonia-convrow", { hasText: text });
   await row("Sesión Alfa").click({ button: "right" });
   await menuItem("Renombrar").click();
   const rename = page.getByRole("dialog", { name: "Renombrar chat" });
@@ -48,7 +48,7 @@ test("right-click a session: pin it to the top, rename it, archive and unarchive
   await menuItem("Archivar").click();
   await expect(row("Sesión Alfa")).toBeHidden();
   await page.getByRole("button", { name: /Archivados/ }).click();
-  const archived = page.locator(".inbox__archived .apx-convrow", { hasText: "Sesión Alfa" });
+  const archived = page.locator(".inbox__archived .colonia-convrow", { hasText: "Sesión Alfa" });
   await expect(archived).toBeVisible();
   await archived.click({ button: "right" });
   await menuItem("Desarchivar").click();

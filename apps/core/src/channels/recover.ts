@@ -1,7 +1,7 @@
-// Files lost on the way in: a message kept as a placeholder ("[video — APX cannot read…]", "[attachment could not be
+// Files lost on the way in: a message kept as a placeholder ("[video — Colonia cannot read…]", "[attachment could not be
 // downloaded…]") gets its file from the platform again (WhatsApp: the owner's phone sends the message again), in place.
 // It starts no turn: the agent already answered those words.
-import { type Message, type Part, UPLOAD_LIMITS } from "@apx/protocol";
+import { type Message, type Part, UPLOAD_LIMITS } from "@colonia/protocol";
 import { partOfMedia } from "../domain/media.ts";
 import type { Store } from "../domain/store.ts";
 import { errorMessage } from "../errors.ts";
@@ -11,7 +11,7 @@ import type { ChannelAdapter } from "./types.ts";
 
 /** What a lost file left in its message instead of itself (the caption, if any, stays around it). */
 const LOST =
-  /\n?\[(?:(?:photo|video|file|sticker) — APX cannot read this kind of message yet|attachment could not be downloaded: [^\]\n]*)\]/;
+  /\n?\[(?:(?:photo|video|file|sticker) — Colonia cannot read this kind of message yet|attachment could not be downloaded: [^\]\n]*)\]/;
 /** A placeholder message is stored a moment after its inbox row; this much earlier is not it. */
 const SKEW_MS = 60_000;
 /** The platform's answers and the downloads, all of them (the client waits 170 s). */

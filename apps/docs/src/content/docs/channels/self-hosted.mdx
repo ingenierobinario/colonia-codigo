@@ -9,17 +9,17 @@ sidebar:
 
 Open **Settings › Channels › Add channel**, choose the service and the agent that answers. You need an account or
 bot on a server reachable from the computer running the core. These adapters connect out to the server; they do
-not need APX's public webhook address. Keep access tokens in the connection form, never in a chat or artifact.
+not need Colonia's public webhook address. Keep access tokens in the connection form, never in a chat or artifact.
 
 ## Matrix
 
 1. Create a Matrix account for the agent on your homeserver.
 2. Sign in as that account in Element and copy its access token from **Settings › Help & About**.
-3. In APX, choose **Matrix**, enter the homeserver's address and the access token, and connect.
+3. In Colonia, choose **Matrix**, enter the homeserver's address and the access token, and connect.
 4. Start a **direct chat with encryption off**, send a message and enter its pairing code in **This is my Matrix**
    if it is your account. Approve other people as contacts instead.
 
-APX reads direct rooms with two members. It can join direct invitations, but **does not decrypt end-to-end encrypted
+Colonia reads direct rooms with two members. It can join direct invitations, but **does not decrypt end-to-end encrypted
 rooms**. Do not switch a sensitive conversation to plaintext merely to make a bot work; choose another channel if
 encryption is required. Group-room automation is not supported by this adapter.
 
@@ -30,7 +30,7 @@ make a multi-person or encrypted room readable.
 
 1. Ask the server administrator to enable bot accounts in **System Console › Integrations › Bot accounts**.
 2. In **Integrations › Bot accounts**, create the bot and copy its token.
-3. Choose **Mattermost** in APX and enter the server URL and token.
+3. Choose **Mattermost** in Colonia and enter the server URL and token.
 4. Write a direct message to the bot. Enter its code in **This is my Mattermost** to link your own account.
 
 Only direct messages are read; this is not a bot for every public channel in the workspace. If a message does not
@@ -39,7 +39,7 @@ arrive, check the bot's access and token and test in a direct chat, not a team c
 ## First useful check
 
 Send “Reply with a short connection check” from your own linked account. Find the conversation under **Channels** in
-APX and confirm the answer arrives on the same service. Then choose **Your messages › Home** or **Own chat**, and
+Colonia and confirm the answer arrives on the same service. Then choose **Your messages › Home** or **Own chat**, and
 review **Strangers** before sharing the bot address. An outgoing reply uses the bot account, not your human account.
 
 The shared [channel boundaries](/channels/overview/) and [supervised replies](/channels/supervised/) still apply.

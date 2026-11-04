@@ -70,7 +70,7 @@ export function oneshotHarness(
         callId,
         title: `Run ${ONESHOT[id].label} (unmediated CLI)`,
         kind: "other",
-        detail: `This CLI can read files, edit files and execute commands with your OS permissions, including reading credentials from local CLI configuration. APX cannot approve its individual tools or restrict them to this folder. Credential-like environment variables are removed.\nFolder: ${cwd}\nModel: ${ref}\nSending system instructions, projected text history and the current request (${prompt.length} characters).\nSystem preview:\n${io.system.slice(0, 500)}\nHistory preview (tail):\n${history
+        detail: `This CLI can read files, edit files and execute commands with your OS permissions, including reading credentials from local CLI configuration. Colonia cannot approve its individual tools or restrict them to this folder. Credential-like environment variables are removed.\nFolder: ${cwd}\nModel: ${ref}\nSending system instructions, projected text history and the current request (${prompt.length} characters).\nSystem preview:\n${io.system.slice(0, 500)}\nHistory preview (tail):\n${history
           .map((item) => `[${item.role}] ${item.content ?? ""}`)
           .join("\n")
           .slice(-1000)}\nCurrent request preview:\n${io.input.content.slice(0, 2000)}`,
@@ -84,7 +84,7 @@ export function oneshotHarness(
       });
       io.signal.throwIfAborted();
       if (!approved) throw new Error(`${id} invocation was not approved`);
-      const dir = await mkdtemp(path.join(os.tmpdir(), "apx-oneshot-"));
+      const dir = await mkdtemp(path.join(os.tmpdir(), "colonia-oneshot-"));
       io.observe({ callId, title: `Run ${ONESHOT[id].label}`, kind: "execute", status: "running" });
       try {
         const args: string[] = [];

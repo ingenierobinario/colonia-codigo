@@ -120,7 +120,7 @@ export function writeDemoWorld(dir: string) {
     'import { total, type Item } from "./cart";\n\nexport function applyCoupon(items: Item[], code: string) {\n  if (items.length === 0) return 0;\n  const sum = total(items);\n  return code.trim().toUpperCase() === "FRIDAY" ? sum * 0.9 : sum;\n}\n',
   );
 
-  // A Claude Code and a Codex session started outside APX, for "External sessions".
+  // A Claude Code and a Codex session started outside Colonia, for "External sessions".
   const claude = path.join(dir, "claude");
   const codex = path.join(dir, "codex");
   write(
@@ -165,14 +165,14 @@ const WIDGET_LAUNCH = `<!doctype html><html><body style="margin:0;font:14px syst
 <li>✅ Freeze the catalog</li><li>✅ Fix the checkout</li><li>⏳ Landing page and emails</li><li>⬜ Black Friday campaign</li></ul>
 </body></html>`;
 
-/** Global skills APX keeps in its home (written before the core starts). */
-export function writeHomeSkills(apxHome: string) {
+/** Global skills Colonia keeps in its home (written before the core starts). */
+export function writeHomeSkills(coloniaHome: string) {
   write(
-    path.join(apxHome, "skills", "weekly-brief", "SKILL.md"),
+    path.join(coloniaHome, "skills", "weekly-brief", "SKILL.md"),
     "---\nname: weekly-brief\ndescription: Turn a week of tasks and chats into a five-line brief for the owner.\n---\nDecisions first, then risks, then what is next.\n",
   );
   write(
-    path.join(apxHome, "skills", "customer-reply", "SKILL.md"),
+    path.join(coloniaHome, "skills", "customer-reply", "SKILL.md"),
     "---\nname: customer-reply\ndescription: Answer a customer kindly and briefly, without promising refunds.\n---\nThank them, answer, and say who follows up.\n",
   );
 }

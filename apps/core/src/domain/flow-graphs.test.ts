@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { openDb } from "../db/db.ts";
 import { MIGRATIONS } from "../db/migrations.ts";
 import { tempDir } from "../testkit/platform.ts";
@@ -82,7 +82,7 @@ test("publishing needs the exact draft and revision, keeps revisions immutable a
       () =>
         repo.saveDraft("f", 5, {
           ...graph,
-          nodes: [{ id: "start", kind: "webhook", label: "Bearer apx_test_secret_123456789012345678901234567890" }],
+          nodes: [{ id: "start", kind: "webhook", label: "Bearer colonia_test_secret_123456789012345678901234567890" }],
         }),
       /credentials/,
     );
@@ -168,7 +168,7 @@ test("admission pins the revision, payload and deadline atomically with the dedu
 
 test("additive migration leaves legacy pending payload, action, rows and deduplication unchanged", async () => {
   const temp = tempDir();
-  let db = new DatabaseSync(path.join(temp.path, "apx.db"));
+  let db = new DatabaseSync(path.join(temp.path, "colonia.db"));
   try {
     db.exec("PRAGMA foreign_keys=ON; CREATE TABLE meta(key TEXT PRIMARY KEY,value TEXT NOT NULL)");
     const graphs = MIGRATIONS.findIndex((m) => m.includes("CREATE TABLE flow_graph_drafts"));

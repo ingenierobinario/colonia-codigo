@@ -28,7 +28,7 @@ export type McpDef = {
   cwd?: string | undefined;
   /** An owner's server that runs only in this project (v1's per-project servers come in like this). */
   only?: string | undefined;
-  /** One the owner added in APX (not a project's file nor an extension's): the owner can edit it. */
+  /** One the owner added in Colonia (not a project's file nor an extension's): the owner can edit it. */
   own?: boolean | undefined;
   /** Stable fingerprint of what would run: an approval is for this exact definition. */
   hash: string;

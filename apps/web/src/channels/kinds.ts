@@ -1,7 +1,7 @@
 import type { MessageKey } from "../i18n/index.ts";
 
 /**
- * The kinds of channel APX knows, in the order they are offered; `soon` ones cannot be connected yet. The list follows
+ * The kinds of channel Colonia knows, in the order they are offered; `soon` ones cannot be connected yet. The list follows
  * what openclaw and hermes connect to.
  */
 export const CHANNEL_KINDS = {

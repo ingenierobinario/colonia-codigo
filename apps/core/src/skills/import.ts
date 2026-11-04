@@ -6,10 +6,10 @@ import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { SkillCandidate, SkillImportSource } from "@apx/protocol";
+import type { SkillCandidate, SkillImportSource } from "@colonia/protocol";
 import { parseFrontmatter, textField } from "../apc/frontmatter.ts";
 import { expandHome, isInside } from "../paths.ts";
-import { APX_SKILLS_DIR } from "./skills.ts";
+import { COLONIA_SKILLS_DIR } from "./skills.ts";
 import { readZip } from "./zip.ts";
 
 /** What one skill may bring: more than this is left out and said in its notes. */
@@ -24,7 +24,7 @@ const CLONE_MS = 60_000;
 const NAME = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/;
 const NEVER = new Set([".git", "node_modules"]);
 const SCRIPT = /\.(sh|bash|zsh|fish|py|js|mjs|cjs|ts|rb|pl|php|ps1|psm1|bat|cmd|exe|bin|jar)$/i;
-/** Frontmatter APX reads or that only describes the skill; any other key is another app's setting. */
+/** Frontmatter Colonia reads or that only describes the skill; any other key is another app's setting. */
 const PLAIN_KEYS = new Set(["name", "description", "license", "metadata", "version", "compatibility", "tags"]);
 
 /** Runs git; tests pass their own. Resolves with the exit code and the tail of its output. */
@@ -74,7 +74,7 @@ export function parseRepoUrl(input: string): RepoRef {
 /** A source read in a folder; `done` removes what reading it left behind. */
 type Staged = { root: string; label: string; done(): void };
 
-const tempDir = (kind: string) => fs.mkdtempSync(path.join(os.tmpdir(), `apx-skill-${kind}-`));
+const tempDir = (kind: string) => fs.mkdtempSync(path.join(os.tmpdir(), `colonia-skill-${kind}-`));
 
 async function stage(source: SkillImportSource, git: GitRunner): Promise<Staged> {
   if (source.kind === "folder") {
@@ -182,9 +182,9 @@ export type ImportTarget = {
   repo?: string | undefined;
 };
 
-/** Names of APX's own skills: never taken by an imported one. */
-const apxNames = () =>
-  new Set(fs.readdirSync(APX_SKILLS_DIR).filter((n) => fs.existsSync(path.join(APX_SKILLS_DIR, n, "SKILL.md"))));
+/** Names of Colonia's own skills: never taken by an imported one. */
+const coloniaNames = () =>
+  new Set(fs.readdirSync(COLONIA_SKILLS_DIR).filter((n) => fs.existsSync(path.join(COLONIA_SKILLS_DIR, n, "SKILL.md"))));
 
 type Read = Omit<SkillCandidate, "files"> & { files: Found[] };
 
@@ -231,7 +231,7 @@ async function read<T>(
 ): Promise<T> {
   const staged = await stage(source, git);
   try {
-    const reserved = apxNames();
+    const reserved = coloniaNames();
     const dirs = findSkillDirs(staged.root);
     if (!dirs.length) throw new Error("no SKILL.md found there");
     return then(dirs.map((rel) => readCandidate(staged.root, rel, staged.label, target, reserved)));
@@ -275,7 +275,7 @@ export function importSkills(
         : c.status === "invalid"
           ? `"${c.name}" is not a usable skill name`
           : c.status === "reserved"
-            ? `${c.name} is one of APX's own skills`
+            ? `${c.name} is one of Colonia's own skills`
             : c.status === "exists" && !opts.replace
               ? `${c.name} is already there`
               : undefined;

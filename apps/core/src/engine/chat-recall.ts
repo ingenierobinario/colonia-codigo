@@ -1,4 +1,4 @@
-import type { Message, Thread } from "@apx/protocol";
+import type { Message, Thread } from "@colonia/protocol";
 import { canRecallOwnChat, memoryEligibleChat } from "../domain/chat-access.ts";
 import { ftsQuery, type MemoryView, memorySensitive } from "../domain/memories.ts";
 import { isMemoryGreeting } from "../domain/memory-content.ts";

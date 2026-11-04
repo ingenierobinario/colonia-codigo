@@ -9,7 +9,7 @@ import { toAnthropic } from "./anthropic-messages.ts";
 import { createLlm, retryWait } from "./llm.ts";
 import { ProviderError, resetOf } from "./types.ts";
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-llm-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-llm-"));
 const secrets = createSecrets(home, "file", {});
 secrets.set("a", "key-a");
 secrets.set("b", "key-b");

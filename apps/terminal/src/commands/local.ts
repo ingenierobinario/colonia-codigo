@@ -2,10 +2,10 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { CORE_ENV_FILE, parseCoreEnv, serializeCoreEnv } from "@apx/protocol";
+import { CORE_ENV_FILE, parseCoreEnv, serializeCoreEnv } from "@colonia/protocol";
 
-export const apxHome = (env: NodeJS.ProcessEnv = process.env) => {
-  const home = path.resolve(env.APX_HOME || path.join(os.homedir(), ".apx", "v2"));
+export const coloniaHome = (env: NodeJS.ProcessEnv = process.env) => {
+  const home = path.resolve(env.COLONIA_HOME || path.join(os.homedir(), ".colonia", "v2"));
   return fs.existsSync(home) ? fs.realpathSync(home) : home;
 };
 
@@ -29,13 +29,13 @@ export function writeCoreEnvFile(home: string, vars: Record<string, string>): vo
 
 /** The port the core listens on: the environment, then core.env, then the default. */
 export function corePort(env: NodeJS.ProcessEnv = process.env): number {
-  return Number(env.APX_PORT || readCoreEnvFile(apxHome(env)).APX_PORT || 7440);
+  return Number(env.COLONIA_PORT || readCoreEnvFile(coloniaHome(env)).COLONIA_PORT || 7440);
 }
 
 /** The local core's URL and token; the token comes from core.env when the environment has none. */
 export function localConnection(env: NodeJS.ProcessEnv = process.env): { url: string; token?: string } {
-  const url = env.APX_URL ?? `http://127.0.0.1:${corePort(env)}`;
-  const token = env.APX_TOKEN || readCoreEnvFile(apxHome(env)).APX_TOKEN;
+  const url = env.COLONIA_URL ?? `http://127.0.0.1:${corePort(env)}`;
+  const token = env.COLONIA_TOKEN || readCoreEnvFile(coloniaHome(env)).COLONIA_TOKEN;
   return token ? { url, token } : { url };
 }
 
@@ -58,5 +58,5 @@ export async function waitForCore(url: string, ms = 30_000): Promise<boolean> {
 
 /** Service commands always address this machine, regardless of the CLI's RPC connection. */
 export function serviceConnection(env: NodeJS.ProcessEnv = process.env): { url: string; token?: string } {
-  return localConnection({ ...env, APX_URL: undefined });
+  return localConnection({ ...env, COLONIA_URL: undefined });
 }

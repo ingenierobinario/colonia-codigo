@@ -1,5 +1,5 @@
-import type { ChannelInfo, PairingRequest, Person } from "@apx/protocol";
-import { Button, Icons, Input } from "@apx/ui";
+import type { ChannelInfo, PairingRequest, Person } from "@colonia/protocol";
+import { Button, Icons, Input } from "@colonia/ui";
 import { useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { useFlash } from "../common/useFlash.ts";

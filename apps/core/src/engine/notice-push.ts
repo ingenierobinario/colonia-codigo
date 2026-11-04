@@ -1,6 +1,6 @@
-// Every tray notice also reaches the owner's phones with the app closed: the app is where APX always tells them, whatever
+// Every tray notice also reaches the owner's phones with the app closed: the app is where Colonia always tells them, whatever
 // chat app they also picked (DECISIONS.md#d-161). In quiet hours only what needs them now: a question, an error.
-import type { CoreEvent, Notification } from "@apx/protocol";
+import type { CoreEvent, Notification } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
 import { quietNow } from "../domain/notices.ts";
 import type { Store } from "../domain/store.ts";
@@ -26,7 +26,7 @@ export function createNoticePush(deps: { store: Store; bus: Bus; push: Push; now
       void deps.push(target, {
         title: n.title,
         body: n.body.slice(0, 3500),
-        data: { source: "apx-notice", notice_id: n.id, ...(n.thread_id ? { thread_id: n.thread_id } : {}) },
+        data: { source: "colonia-notice", notice_id: n.id, ...(n.thread_id ? { thread_id: n.thread_id } : {}) },
       });
     }
   }

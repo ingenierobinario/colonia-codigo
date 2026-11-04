@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { type TestContext, test } from "node:test";
-import type { McpServerStatus } from "@apx/protocol";
+import type { McpServerStatus } from "@colonia/protocol";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { useNotices } from "./notices.ts";

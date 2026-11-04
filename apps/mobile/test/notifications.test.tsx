@@ -187,12 +187,12 @@ test("concurrent live events schedule one OS notification, and a later read even
   expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(1);
   expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith(
     expect.objectContaining({
-      identifier: "apx-deduplicated",
+      identifier: "colonia-deduplicated",
       content: expect.objectContaining({ title: notice.title, body: notice.body }),
     }),
   );
   await showLiveNotice({ ...notice, read_at: "2026-10-18T10:00:00Z" }, credentials.device);
-  expect(Notifications.dismissNotificationAsync).toHaveBeenCalledWith("apx-deduplicated");
+  expect(Notifications.dismissNotificationAsync).toHaveBeenCalledWith("colonia-deduplicated");
 });
 
 test("an OS scheduling failure may retry the same notice instead of marking an undelivered event as delivered", async () => {
@@ -213,7 +213,7 @@ test("denied notification permission schedules nothing and a silent preview has 
   await notificationPreview();
   expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith(
     expect.objectContaining({
-      content: expect.objectContaining({ title: "APX", sound: false, data: { source: "apx-live", sound: false } }),
+      content: expect.objectContaining({ title: "Colonia", sound: false, data: { source: "colonia-live", sound: false } }),
     }),
   );
 });

@@ -15,7 +15,7 @@ const SECRET_KEY =
 const SECRET_SHAPE = new RegExp(
   [
     String.raw`\bsk-[A-Za-z0-9_-]{16,}`,
-    String.raw`\bapx[pc]_[a-f0-9]{48,64}`,
+    String.raw`\bcolonia[pc]_[a-f0-9]{48,64}`,
     String.raw`\bgh[pousr]_[A-Za-z0-9]{20,}`,
     String.raw`\bgithub_pat_[A-Za-z0-9_]{20,}`,
     String.raw`\bxox[abprs]-[A-Za-z0-9-]{10,}`,

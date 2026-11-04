@@ -1,4 +1,4 @@
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 
 /** The selected chat and its loaded callers; malformed cycles cannot trap the list. */
 export function selectionPath(threads: Record<string, Thread>, selected: string | undefined): Set<string> {

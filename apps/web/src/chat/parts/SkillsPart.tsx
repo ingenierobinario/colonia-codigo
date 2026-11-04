@@ -1,5 +1,5 @@
-import type { Part, SkillInfo } from "@apx/protocol";
-import { Icons, Popover, Tag, Tooltip } from "@apx/ui";
+import type { Part, SkillInfo } from "@colonia/protocol";
+import { Icons, Popover, Tag, Tooltip } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { listSkills } from "../../data/resources.ts";
 import { type MessageKey, useT } from "../../i18n/index.ts";

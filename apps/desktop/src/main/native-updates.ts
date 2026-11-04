@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ApxClient, PROTOCOL_VERSION } from "@apx/protocol/client";
+import { ColoniaClient, PROTOCOL_VERSION } from "@colonia/protocol/client";
 import { app, type BaseWindow, dialog, safeStorage } from "electron";
 import { createUpdateCoordinator, type PendingUpdate } from "./update-coordinator.ts";
 import { updateCredentials } from "./update-credentials.ts";
@@ -24,10 +24,10 @@ function updateRecovery(
       void dialog
         .showMessageBox(window, {
           type: "warning",
-          message: es ? "La actualización de APX está bloqueada" : "APX update is blocked",
+          message: es ? "La actualización de Colonia está bloqueada" : "Colonia update is blocked",
           detail: es
-            ? `${error}\n\nLa app no se aplicó. Reconectate y elegí Buscar actualizaciones en el menú APX para reintentar. Si el servidor es anterior, actualizalo primero. Podés cambiar de conexión desde el menú APX.`
-            : `${error}\n\nThe app was not applied. Reconnect and choose Check for updates in the APX menu to retry. If the server is older, update it first. You can change connections from the APX menu.`,
+            ? `${error}\n\nLa app no se aplicó. Reconectate y elegí Buscar actualizaciones en el menú Colonia para reintentar. Si el servidor es anterior, actualizalo primero. Podés cambiar de conexión desde el menú Colonia.`
+            : `${error}\n\nThe app was not applied. Reconnect and choose Check for updates in the Colonia menu to retry. If the server is older, update it first. You can change connections from the Colonia menu.`,
           buttons: [
             es ? "Reintentar" : "Retry",
             es ? "Cambiar conexión" : "Change connection",
@@ -101,10 +101,10 @@ export function nativeUpdates(
       coordinator.connect(undefined);
       return;
     }
-    const client = new ApxClient({
+    const client = new ColoniaClient({
       url: connection.url,
       token: connection.token ?? credentials.read(connection.identity),
-      client: { name: "apx-desktop", version: app.getVersion() },
+      client: { name: "colonia-desktop", version: app.getVersion() },
       timeoutMs: 130_000,
     });
     const os = process.platform === "darwin" ? "mac" : process.platform === "win32" ? "win" : "linux";

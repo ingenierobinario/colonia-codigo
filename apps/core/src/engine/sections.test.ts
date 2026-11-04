@@ -19,7 +19,7 @@ test("what the system prompt told once, a turn names only as a datum", () => {
   const system = sectionLines(home).join("\n");
   for (const said of [
     "## Permission mode: Auto",
-    "APX asks them: make the call",
+    "Colonia asks them: make the call",
     "## Phone chats (channel: whatsapp)",
     "Plain text on a phone",
     "When your owner writes on whatsapp: Their whatsapp and the app are this one chat",

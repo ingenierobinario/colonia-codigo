@@ -1,4 +1,4 @@
-import { Badge, Button, Icons, Skeleton } from "@apx/ui";
+import { Badge, Button, Icons, Skeleton } from "@colonia/ui";
 import { useEffect } from "react";
 import { loadHealth } from "../data/engines.ts";
 import { useData } from "../data/state.ts";

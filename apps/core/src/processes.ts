@@ -1,4 +1,4 @@
-// Commands APX runs for agents and routines, on every system: which shell runs them and how a whole process tree is
+// Commands Colonia runs for agents and routines, on every system: which shell runs them and how a whole process tree is
 // stopped. Unix runs sh in a process group of its own; Windows runs Git Bash when it is installed, else PowerShell.
 import { type ChildProcess, execFile, type StdioOptions, spawn } from "node:child_process";
 import fs from "node:fs";
@@ -147,7 +147,7 @@ export async function stopTree(
 
 /**
  * What the system says of a process: `running` with when it started (with the pid, it says the process is still the
- * one APX started), `gone`, or `unknown` when the probe itself failed or timed out (a cold PowerShell can take
+ * one Colonia started), `gone`, or `unknown` when the probe itself failed or timed out (a cold PowerShell can take
  * seconds): never read as gone.
  */
 export type ProcessProbe = { state: "running"; start: string } | { state: "gone" } | { state: "unknown"; why: string };

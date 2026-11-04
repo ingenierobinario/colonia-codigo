@@ -1,4 +1,4 @@
 {
-  "extends": "@apx/config/tsconfig.node.json",
+  "extends": "@colonia/config/tsconfig.node.json",
   "include": ["src"]
 }

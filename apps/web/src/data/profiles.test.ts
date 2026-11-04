@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { type TestContext, test } from "node:test";
-import type { ProfileInfo } from "@apx/protocol";
+import type { ProfileInfo } from "@colonia/protocol";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ProfilesState } from "./profiles.ts";
@@ -23,7 +23,7 @@ const secretary: ProfileInfo = {
   prompt: "",
   settings: [],
   routines: [],
-  source: "apx",
+  source: "colonia",
 };
 const listed = (id: string | null): ProfilesState => ({
   profiles: [secretary],

@@ -9,7 +9,7 @@ import { lastLines, logs, stopCore } from "./service.ts";
 import { NODE_FLAGS, windowsRunCommand, windowsStopScript } from "./service-files.ts";
 import { printed } from "./testing.ts";
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-logs-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-logs-"));
 after(() => fs.rmSync(home, { recursive: true, force: true }));
 
 test("lastLines reads the end of a log, across read blocks, without a trailing empty line", () => {
@@ -71,15 +71,15 @@ test("stopCore with no core running only closes the log", async () => {
 });
 
 test("on Windows only an exact home supervisor and its child core may be stopped", () => {
-  const home = "C:\\APX's data\\v2";
+  const home = "C:\\Colonia's data\\v2";
   const command = windowsRunCommand({
-    node: "C:\\APX\\node.exe",
-    terminal: "C:\\APX\\apps\\terminal\\src\\main.ts",
+    node: "C:\\Colonia\\node.exe",
+    terminal: "C:\\Colonia\\apps\\terminal\\src\\main.ts",
     home,
     electron: false,
   });
   const script = windowsStopScript(home, command);
-  assert.ok(script.includes("APX''s data"), "the exact home argument, quoted for PowerShell");
+  assert.ok(script.includes("Colonia''s data"), "the exact home argument, quoted for PowerShell");
   assert.ok(script.includes("$parents -contains $_.ParentProcessId"), "only children of the selected supervisor");
   assert.ok(script.includes("$_.CommandLine -imatch"), "only complete command lines authorize a stop");
   assert.ok(!script.includes(".Contains("), "substrings never authorize a stop");
@@ -92,16 +92,16 @@ for (const packaged of [false, true]) {
     for (const feed of [undefined, "https://updates.example.com/feed"]) {
       for (const electron of [false, true]) {
         test(`Windows stop uses the registered command: packaged=${packaged}, port=${port}, feed=${Boolean(feed)}, electron=${electron}`, () => {
-          const root = packaged ? "C:\\Program Files\\APX\\current" : "C:\\work\\apx";
+          const root = packaged ? "C:\\Program Files\\Colonia\\current" : "C:\\work\\colonia";
           const node = `${root}\\${electron ? "electron.exe" : "node.exe"}`;
           const terminal = `${root}\\apps\\terminal\\src\\main.ts`;
-          const home = "C:\\APX's data\\v2";
+          const home = "C:\\Colonia's data\\v2";
           const command = windowsRunCommand({
             node,
             terminal,
             home,
             electron,
-            env: { ...(port ? { APX_PORT: port } : {}), ...(feed ? { APX_RELEASES: feed } : {}) },
+            env: { ...(port ? { COLONIA_PORT: port } : {}), ...(feed ? { COLONIA_RELEASES: feed } : {}) },
           });
           const script = windowsStopScript(home, command);
           const searchedCommand = /-ceq '((?:''|[^'])*)'/.exec(script)?.[1]?.replaceAll("''", "'");
@@ -127,8 +127,8 @@ for (const packaged of [false, true]) {
 
 test("Windows stop refuses unknown commands and entries registered for another home", () => {
   const command = windowsRunCommand({
-    node: "C:\\APX\\node.exe",
-    terminal: "C:\\APX\\apps\\terminal\\src\\main.ts",
+    node: "C:\\Colonia\\node.exe",
+    terminal: "C:\\Colonia\\apps\\terminal\\src\\main.ts",
     home: "C:\\data\\one",
     electron: false,
   });

@@ -180,7 +180,7 @@ test("a Flow an agent made shows its draft steps in the list and on its page, ne
   await open(page, `#view=flows&scope=${project}`);
   const row = page.locator(".flowrow").filter({ hasText: "New leads" });
   // The draft's save, code and AI steps, not the placeholder's lone save.
-  await expect(row.locator(".flowrow__chips .apx-flowstep__tile")).toHaveCount(3);
+  await expect(row.locator(".flowrow__chips .colonia-flowstep__tile")).toHaveCount(3);
   await expect(row.locator(".flowrow__chips")).toContainText("Borrador");
   await expect(row.locator(".flowrow__model")).toContainText("Con IA · 1");
   await shot(page, "list-agent-draft-desktop");

@@ -12,9 +12,9 @@ const memory = (init: Record<string, string> = {}): KeyStore => {
 };
 
 test("a token the panel paired for itself wins; the desktop app's comes next; else none", () => {
-  assert.deepEqual(pickToken("core-tok", memory({ [TOKEN_KEY]: "apxd_x" })), { token: "apxd_x", from: "stored" });
+  assert.deepEqual(pickToken("core-tok", memory({ [TOKEN_KEY]: "coloniad_x" })), { token: "coloniad_x", from: "stored" });
   assert.deepEqual(pickToken("core-tok", memory()), { token: "core-tok", from: "desktop" });
-  assert.deepEqual(pickToken(undefined, memory({ [TOKEN_KEY]: "apxd_x" })), { token: "apxd_x", from: "stored" });
+  assert.deepEqual(pickToken(undefined, memory({ [TOKEN_KEY]: "coloniad_x" })), { token: "coloniad_x", from: "stored" });
   assert.deepEqual(pickToken("", memory()), { token: undefined, from: "none" });
   assert.deepEqual(pickToken(undefined, undefined), { token: undefined, from: "none" });
 });

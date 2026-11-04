@@ -4,7 +4,7 @@
 // See DECISIONS.md#d-025
 import fs from "node:fs";
 import path from "node:path";
-import { UPLOAD_LIMITS } from "@apx/protocol";
+import { UPLOAD_LIMITS } from "@colonia/protocol";
 import type { Inbound, Presentation } from "../domain/channels.ts";
 import { errorMessage } from "../errors.ts";
 import type { Log } from "../log.ts";
@@ -20,7 +20,7 @@ import {
 } from "./types.ts";
 import { type Menu, menuText, optionNamed, readMenu, tapFor, WA_CONTAINERS } from "./whatsapp-menus.ts";
 
-/** The part of the library APX uses, so a test can hand in its own. */
+/** The part of the library Colonia uses, so a test can hand in its own. */
 export type WaLib = {
   makeWASocket(opts: Record<string, unknown>): WaSocket;
   useMultiFileAuthState(dir: string): Promise<{ state: unknown; saveCreds: () => Promise<void> | void }>;
@@ -315,7 +315,7 @@ export function whatsappAdapter(opts: {
       logger: quiet(log),
       // A web companion on macOS, as WhatsApp Web is. The second field picks the platform the phone links: anything
       // but a browser name (e.g. "Desktop", the native app) makes the phone start linking and then refuse it.
-      browser: lib.Browsers?.macOS("APX") ?? ["Mac OS", "APX", "14.4.1"],
+      browser: lib.Browsers?.macOS("Colonia") ?? ["Mac OS", "Colonia", "14.4.1"],
       // The phone stays the one that is online: announcing ourselves would mute its notifications.
       markOnlineOnConnect: false,
       syncFullHistory: false,

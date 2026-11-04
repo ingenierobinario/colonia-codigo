@@ -6,7 +6,7 @@ import { Asset, type GranularPermission, getPermissionsAsync, requestPermissions
 import * as Sharing from "expo-sharing";
 import { Alert, Linking } from "react-native";
 import { t } from "../i18n";
-import type { ApxClient } from "../protocol";
+import type { ColoniaClient } from "../protocol";
 import { flash } from "../ui/Flash";
 import { fileName, galleryFileName, type MediaItem } from "./media";
 
@@ -19,7 +19,7 @@ const folder = () => {
 };
 
 /** A file:// uri for the item; the same promise for every view that shows it, retried after a failure. */
-export function mediaFile(client: ApxClient, item: MediaItem): Promise<string> {
+export function mediaFile(client: ColoniaClient, item: MediaItem): Promise<string> {
   const id = item.media_id ?? item.url ?? item.key;
   let p = loading.get(id);
   if (p) return p;
@@ -53,7 +53,7 @@ const failed = (title: string) => (error: unknown) =>
   Alert.alert(title, error instanceof Error ? error.message : String(error));
 
 /** The system share sheet with the file itself: send it, open it in another app or keep it in Files. */
-export async function shareMedia(client: ApxClient, item: MediaItem): Promise<void> {
+export async function shareMedia(client: ColoniaClient, item: MediaItem): Promise<void> {
   try {
     const uri = await mediaFile(client, item);
     await Sharing.shareAsync(uri, { mimeType: item.mime, dialogTitle: item.name });
@@ -63,7 +63,7 @@ export async function shareMedia(client: ApxClient, item: MediaItem): Promise<vo
 }
 
 /** A copy in the phone's gallery (pictures and videos). */
-export async function saveMedia(client: ApxClient, item: MediaItem): Promise<void> {
+export async function saveMedia(client: ColoniaClient, item: MediaItem): Promise<void> {
   try {
     const name = galleryFileName(item);
     if (!name) {

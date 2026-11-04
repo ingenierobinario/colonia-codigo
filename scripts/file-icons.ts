@@ -1,4 +1,4 @@
-// Document icons for the files APX opens (.apxart, .apxapp, .apxext): each source image in apps/desktop/assets
+// Document icons for the files Colonia opens (.coloniaart, .coloniaapp, .coloniaext): each source image in apps/desktop/assets
 // (file-<kind>.webp) scaled to the sizes the systems ask for, then packed as .icns (macOS, through iconutil) and .ico
 // (Windows, PNG entries).
 import { execFileSync } from "node:child_process";
@@ -8,7 +8,7 @@ import path from "node:path";
 import { chromium } from "@playwright/test";
 
 const assets = path.resolve(import.meta.dirname, "../apps/desktop/assets");
-const KINDS = ["apxart", "apxapp", "apxext"] as const;
+const KINDS = ["coloniaart", "coloniaapp", "coloniaext"] as const;
 const ICNS = [16, 32, 128, 256, 512] as const;
 const ICO = [16, 24, 32, 48, 64, 128, 256] as const;
 
@@ -74,7 +74,7 @@ try {
       console.warn(`file-${kind}.icns needs macOS's iconutil: kept as it is`);
       continue;
     }
-    const set = await fs.mkdtemp(path.join(os.tmpdir(), "apx-icons-"));
+    const set = await fs.mkdtemp(path.join(os.tmpdir(), "colonia-icons-"));
     const iconset = path.join(set, `file-${kind}.iconset`);
     await fs.mkdir(iconset);
     for (const s of ICNS) {

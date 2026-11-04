@@ -22,7 +22,7 @@ test("an agent's table keeps its columns, scrolls in its frame, maximizes and co
   await box.fill(`show a table for ${task.id}`);
   await box.press("Enter");
 
-  const frame = main.locator(".apx-md__table").first();
+  const frame = main.locator(".colonia-md__table").first();
   await expect(frame.locator(".taskchip")).toBeVisible();
 
   // Headers keep their words on one line: never one letter per line.
@@ -37,12 +37,12 @@ test("an agent's table keeps its columns, scrolls in its frame, maximizes and co
   }
 
   // The table never spills out of the bubble: it scrolls sideways inside its frame.
-  const bubble = main.locator(".apx-msg--agent").filter({ has: page.locator(".apx-md__table") });
+  const bubble = main.locator(".colonia-msg--agent").filter({ has: page.locator(".colonia-md__table") });
   const [frameBox, bubbleBox] = await Promise.all([frame.boundingBox(), bubble.boundingBox()]);
   expect((frameBox?.x ?? 0) + (frameBox?.width ?? 0)).toBeLessThanOrEqual(
     (bubbleBox?.x ?? 0) + (bubbleBox?.width ?? 0) + 1,
   );
-  const scroller = frame.locator(".apx-md__scroll");
+  const scroller = frame.locator(".colonia-md__scroll");
   expect(await scroller.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
   await scroller.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
   await expect.poll(() => scroller.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);

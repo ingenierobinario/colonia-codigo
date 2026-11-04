@@ -1,10 +1,10 @@
 // An artifact's own memory beside its row: <home>/artifacts/<project|global>/<name>/data.sqlite holds the `kv` table
-// behind APX.store and every other table is the artifact's own (APX.db). Each call opens and closes its connection.
+// behind Colonia.store and every other table is the artifact's own (Colonia.db). Each call opens and closes its connection.
 // Statement time is not capped: a slow query holds the core's thread until it ends (the file is at most 50 MB).
 import fs from "node:fs";
 import path from "node:path";
 import { constants as C, DatabaseSync, type SQLInputValue, type StatementSync } from "node:sqlite";
-import { ARTIFACT_DB_MAX, ARTIFACT_STORE_MAX, type ArtifactMemory } from "@apx/protocol";
+import { ARTIFACT_DB_MAX, ARTIFACT_STORE_MAX, type ArtifactMemory } from "@colonia/protocol";
 import { badRequest, CallError } from "../errors.ts";
 
 /** Which artifact: its stable name within a project (none: a global one). */
@@ -32,7 +32,7 @@ export function artifactDir(home: string, a: ArtifactRef): string {
 
 /**
  * Refuses what could reach past the artifact's file: ATTACH/DETACH, PRAGMAs other than reading a table's shape,
- * load_extension, temp objects and writes to sqlite_* tables; `guardKv` also keeps APX.db off the store's table.
+ * load_extension, temp objects and writes to sqlite_* tables; `guardKv` also keeps Colonia.db off the store's table.
  */
 function authorizer(guardKv: boolean) {
   return (action: number, a: string | null, b: string | null): number => {

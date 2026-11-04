@@ -73,25 +73,25 @@ test("an integration off in a project is not usable there; disconnecting the las
   assert.deepEqual(g.client(), { client_id: undefined, secret: false, builtin: false });
 });
 
-test("with APX's own client the owner signs in without one, and each integration keeps the client it signed in with", async () => {
+test("with Colonia's own client the owner signs in without one, and each integration keeps the client it signed in with", async () => {
   const { g, fake, vault, settings, tick } = setup({ builtin: true });
   assert.equal(g.client().builtin, true);
   const url = new URL(g.start("google-calendar", {}));
-  assert.equal(url.searchParams.get("client_id"), "apx.apps.googleusercontent.com", "nothing typed: APX's client");
-  // APX's client asks for no restricted scope: Google verifies it without a security assessment.
-  const apxGmail = new URL(g.start("gmail", {})).searchParams.get("scope") ?? "";
-  assert.match(apxGmail, /gmail\.send/);
-  assert.doesNotMatch(apxGmail, /gmail\.(readonly|compose)/);
-  const apxDrive = new URL(g.start("google-drive", {})).searchParams.get("scope") ?? "";
-  assert.match(apxDrive, /drive\.file/);
-  assert.doesNotMatch(apxDrive, /drive\.readonly/);
+  assert.equal(url.searchParams.get("client_id"), "colonia.apps.googleusercontent.com", "nothing typed: Colonia's client");
+  // Colonia's client asks for no restricted scope: Google verifies it without a security assessment.
+  const coloniaGmail = new URL(g.start("gmail", {})).searchParams.get("scope") ?? "";
+  assert.match(coloniaGmail, /gmail\.send/);
+  assert.doesNotMatch(coloniaGmail, /gmail\.(readonly|compose)/);
+  const coloniaDrive = new URL(g.start("google-drive", {})).searchParams.get("scope") ?? "";
+  assert.match(coloniaDrive, /drive\.file/);
+  assert.doesNotMatch(coloniaDrive, /drive\.readonly/);
   fake.setChallenge(url.searchParams.get("code_challenge") ?? "");
   await g.finish("good-code", url.searchParams.get("state") ?? "");
-  assert.equal(g.clientOf("google-calendar"), "apx");
-  assert.equal(settings.get("google_client_id"), undefined, "APX's client is never stored as the owner's");
+  assert.equal(g.clientOf("google-calendar"), "colonia");
+  assert.equal(settings.get("google_client_id"), undefined, "Colonia's client is never stored as the owner's");
   assert.equal(vault.has("google-client_secret"), false);
 
-  // Gmail on the owner's own client, beside Calendar on APX's.
+  // Gmail on the owner's own client, beside Calendar on Colonia's.
   const own = new URL(
     g.start("gmail", { client: "own", client_id: "123-abc.apps.googleusercontent.com", client_secret: "s3cret" }),
   );
@@ -109,7 +109,7 @@ test("with APX's own client the owner signs in without one, and each integration
   const refreshes = fake.seen.filter((s) => s.form?.get("grant_type") === "refresh_token");
   assert.deepEqual(
     refreshes.map((s) => s.form?.get("client_id")),
-    ["apx.apps.googleusercontent.com", "123-abc.apps.googleusercontent.com"],
+    ["colonia.apps.googleusercontent.com", "123-abc.apps.googleusercontent.com"],
     "a refresh token goes to the client that issued it",
   );
 
@@ -143,10 +143,10 @@ test("one sign-in connects several Google parts: their scopes in one consent, th
   assert.equal(g.client().client_id, "123-abc.apps.googleusercontent.com", "Drive still uses the owner's client");
 });
 
-test("without a client of APX's own, a sign-in with nothing typed says to bring one", () => {
+test("without a client of Colonia's own, a sign-in with nothing typed says to bring one", () => {
   const { g } = setup();
   assert.throws(() => g.start("google-calendar", {}), /client id and the client secret/);
-  assert.throws(() => g.start("google-calendar", { client: "apx" }), /no Google client of its own/);
+  assert.throws(() => g.start("google-calendar", { client: "colonia" }), /no Google client of its own/);
 });
 
 test("an event is flattened to what a prompt needs; free gaps fall between busy blocks", () => {
@@ -644,7 +644,7 @@ test("Drive writes a Doc as one upload, rewrites one by id, and shares it with e
   assert.equal(new URL(made?.url ?? "").searchParams.get("uploadType"), "multipart");
   const raw = String(made?.body);
   assert.match(raw, /"name":"Agenda","mimeType":"application\/vnd\.google-apps\.document","parents":\["f1"\]/);
-  assert.match(raw, /Content-Type: text\/plain; charset=UTF-8\r\n\r\n1\. Budget\n2\. Dates\r\n--apx-/);
+  assert.match(raw, /Content-Type: text\/plain; charset=UTF-8\r\n\r\n1\. Budget\n2\. Dates\r\n--colonia-/);
 
   await api.writeDoc({ id: "d9", content: "new text" });
   const rewrite = fake.seen.at(-1);
@@ -669,7 +669,7 @@ test("Drive writes a Doc as one upload, rewrites one by id, and shares it with e
   assert.equal(new URL(grants[0]?.url ?? "").searchParams.get("emailMessage"), "For Monday");
 });
 
-test("Gmail send with APX's client posts one UTF-8 message, never a draft", async () => {
+test("Gmail send with Colonia's client posts one UTF-8 message, never a draft", async () => {
   const { g, fake } = setup({ builtin: true });
   const url = new URL(g.start("gmail", {}));
   fake.setChallenge(url.searchParams.get("code_challenge") ?? "");

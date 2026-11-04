@@ -1,6 +1,6 @@
 import "../styles/screens.css";
-import type { Result, Thread } from "@apx/protocol";
-import { Button, Dialog, EmptyState, EngineIcon, Field, IconButton, Icons, SearchField, Skeleton } from "@apx/ui";
+import type { Result, Thread } from "@colonia/protocol";
+import { Button, Dialog, EmptyState, EngineIcon, Field, IconButton, Icons, SearchField, Skeleton } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { ProjectSelect } from "../common/pickers/ProjectSelect.tsx";
@@ -15,11 +15,11 @@ import { go, useNav } from "../shell/nav.ts";
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 type Native = Result<"sessions.native">["sessions"][number];
-/** Engines whose own sessions on this machine APX can read and go on with. */
+/** Engines whose own sessions on this machine Colonia can read and go on with. */
 const NATIVE = new Set(["claude", "codex"]);
 
 /**
- * An outside engine's sessions (Claude Code, Codex, an ACP agent), the engine itself: those started in APX, newest
+ * An outside engine's sessions (Claude Code, Codex, an ACP agent), the engine itself: those started in Colonia, newest
  * first, and below them the owner's own sessions on this Mac, to go on with here. "New session" asks for the project
  * it works in.
  */
@@ -47,7 +47,7 @@ export function EngineSessions() {
       live = false;
     };
   }, [engineId, count, t]);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: one gone on with in APX leaves this list: read again.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: one gone on with in Colonia leaves this list: read again.
   useEffect(() => {
     let live = true;
     setNative(undefined);

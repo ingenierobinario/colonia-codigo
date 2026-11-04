@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { Harness, TurnIO } from "../harness/index.ts";
 import { realpath } from "../paths.ts";
 import { waitFor } from "../testkit/platform.ts";
@@ -56,7 +56,7 @@ after(async () => {
 });
 
 test("a Claude Code session reads a delegate's late result framed, with what to do with it", async () => {
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-loop-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-loop-")));
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   const t = await env.client.call("threads.create", {
     kind: "code",
@@ -87,7 +87,7 @@ test("a delegate that ends without an answer is a warning on its card and in its
   const reply = String(
     llm.calls.flatMap((c) => c.messages).find((m) => m.role === "tool" && m.tool_call_id === "m1")?.content,
   );
-  assert.match(reply, /APX marks this result as a warning: it ended without an answer/);
+  assert.match(reply, /Colonia marks this result as a warning: it ended without an answer/);
   assert.match(reply, /never report it as done/);
 });
 
@@ -161,7 +161,7 @@ test("a task whose work stopped is asked once to go on, then the owner hears it 
   revives.length = 0;
   assert.deepEqual(reviveStalled(store, admit, at(STALL_AFTER_MS / 2)), { revived: 0, told: 0 }, "not yet");
   assert.deepEqual(reviveStalled(store, admit, at(STALL_AFTER_MS + 60_000)), { revived: 1, told: 0 });
-  // APX's ask is not the owner writing: no new budget window, nothing the breaker holds released.
+  // Colonia's ask is not the owner writing: no new budget window, nothing the breaker holds released.
   assert.equal(revives[0]?.trigger, "system");
   assert.equal(revives[0]?.origin.kind, "stalled_task");
   assert.ok(

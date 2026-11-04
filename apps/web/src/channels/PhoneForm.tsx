@@ -1,4 +1,4 @@
-import { Button, Input } from "@apx/ui";
+import { Button, Input } from "@colonia/ui";
 import { useState } from "react";
 import { addOwnerAddress } from "../data/channels.ts";
 import { useT } from "../i18n/index.ts";

@@ -13,7 +13,7 @@ export type AcpAgent = {
   command: string;
   args: string[];
   /**
-   * The command that signs the CLI in, for the error a session that needs it ends with. APX never signs it in itself:
+   * The command that signs the CLI in, for the error a session that needs it ends with. Colonia never signs it in itself:
    * its auth methods open the owner's browser, from turns and model listings nobody is watching.
    */
   login?: string;
@@ -24,7 +24,7 @@ export type AcpAgent = {
   env?: Record<string, string>;
 };
 
-/** ACP CLIs APX knows how to start. An owner adds others with the `acp_agents` setting. */
+/** ACP CLIs Colonia knows how to start. An owner adds others with the `acp_agents` setting. */
 export const KNOWN_ACP_AGENTS: AcpAgent[] = [
   {
     id: "opencode",
@@ -116,8 +116,8 @@ export async function openSession(
   o: {
     binary: string;
     cwd: string;
-    /** The APX agent it runs for: its commands carry it as APX_AGENT, as ours do. */
-    apxAgent?: string | undefined;
+    /** The Colonia agent it runs for: its commands carry it as COLONIA_AGENT, as ours do. */
+    coloniaAgent?: string | undefined;
     mcpServers?: Array<{ name: string; command: string; args: string[]; env: Array<{ name: string; value: string }> }>;
     resume?: string | undefined;
     /** Stops the setup too: a canceled turn does not wait for the agent to start. */
@@ -128,7 +128,7 @@ export async function openSession(
 ): Promise<AcpSession> {
   const child = spawn(o.binary, agent.args, {
     cwd: o.cwd,
-    env: { ...childEnv(), ...agent.env, ...(o.apxAgent ? { APX_AGENT: o.apxAgent } : {}) },
+    env: { ...childEnv(), ...agent.env, ...(o.coloniaAgent ? { COLONIA_AGENT: o.coloniaAgent } : {}) },
     stdio: ["pipe", "pipe", "pipe"],
     // Its own process group: closing it also stops what it started (the MCP proxy, its shells). Not on Windows,
     // where that opens a console window; taskkill reaches the tree there.

@@ -1,4 +1,4 @@
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { conflict } from "../errors.ts";

@@ -1,6 +1,6 @@
-// Settings of the steps that act outside APX: a message sent as the owner, a call to another service. Who gets the
+// Settings of the steps that act outside Colonia: a message sent as the owner, a call to another service. Who gets the
 // message is picked from the owner's own channels and contacts, never typed (DECISIONS.md#d-169).
-import { Button, ChannelIcon, Field, Input, SegmentedControl, Select, Switch } from "@apx/ui";
+import { Button, ChannelIcon, Field, Input, SegmentedControl, Select, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { loadChannels, useChannels } from "../data/channels.ts";
 import { useT } from "../i18n/index.ts";

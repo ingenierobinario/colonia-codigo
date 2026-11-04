@@ -8,9 +8,9 @@ import {
   createTabHolds,
   type TabControl,
   type TabInfo,
-} from "@apx/protocol";
-import { assertNavigable as checkNavigable } from "@apx/protocol/cdp";
-import { ApxError } from "@apx/protocol/client";
+} from "@colonia/protocol";
+import { assertNavigable as checkNavigable } from "@colonia/protocol/cdp";
+import { ColoniaError } from "@colonia/protocol/client";
 import { app, type Session, session, type WebContents, WebContentsView } from "electron";
 import type { ProcessOwner } from "../memory.ts";
 import { CdpTab } from "./cdp.ts";
@@ -35,18 +35,18 @@ const NAV_TIMEOUT_MS = 8_000;
 
 /** The honest Chromium UA: no "Electron/x" or app token. Client hints stay untouched (removing them breaks Google login). */
 function cleanUserAgent(): string {
-  return app.userAgentFallback.replace(/\sElectron\/\S+/, "").replace(/\s@?apx[^\s]*\/\S+/i, "");
+  return app.userAgentFallback.replace(/\sElectron\/\S+/, "").replace(/\s@?colonia[^\s]*\/\S+/i, "");
 }
 
 function partitionFor(profile: BrowserProfile, seq: number): string {
-  if (profile === "shared") return "persist:apx-shared";
-  if (profile === "incognito") return `apx-incog-${seq}`; // no "persist:" → memory only
-  return `persist:apx-agent-${profile.slice("agent:".length)}`;
+  if (profile === "shared") return "persist:colonia-shared";
+  if (profile === "incognito") return `colonia-incog-${seq}`; // no "persist:" → memory only
+  return `persist:colonia-agent-${profile.slice("agent:".length)}`;
 }
 
 let blockedPorts = new Set<string>();
 
-/** APX's own core and panel must never load inside a tab: a driven tab would hold the owner's controls. */
+/** Colonia's own core and panel must never load inside a tab: a driven tab would hold the owner's controls. */
 export function blockAppOrigins(urls: string[]): void {
   blockedPorts = new Set(urls.map((u) => new URL(u).port || "80"));
 }
@@ -209,7 +209,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         const p = browserMethods["browser.handoff"].params.parse(raw);
         const tab = this.#get(p.tab);
         if (tab.control.kind === "handoff" || this.#handoffs.has(tab.id)) {
-          throw new ApxError({ code: "paused_by_user", message: "this tab is already waiting for the human" });
+          throw new ColoniaError({ code: "paused_by_user", message: "this tab is already waiting for the human" });
         }
         tab.control = { kind: "handoff", by: p.by, reason: p.reason, since: new Date().toISOString() };
         this.select(tab.id);
@@ -249,14 +249,14 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         return { ok: true };
       }
       default:
-        throw new ApxError({ code: "unknown_method", message: `browser node does not serve ${method}` });
+        throw new ColoniaError({ code: "unknown_method", message: `browser node does not serve ${method}` });
     }
   }
 
   async open(url: string, profile: BrowserProfile, control: TabControl): Promise<Tab> {
     assertNavigable(url);
     if (this.#tabs.size >= MAX_TABS)
-      throw new ApxError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
+      throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
     const id = `t${++this.#seq}`;
     const ses = session.fromPartition(partitionFor(profile, this.#seq));
     this.#configure(ses);
@@ -372,7 +372,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
 
   #source(id: string) {
     const src = discoverSources().find((s) => s.id === id);
-    if (!src) throw new ApxError({ code: "bad_request", message: `unknown cookie source ${id}` });
+    if (!src) throw new ColoniaError({ code: "bad_request", message: `unknown cookie source ${id}` });
     return src;
   }
 
@@ -380,14 +380,14 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
   #readable(id: string): Tab {
     const tab = this.#get(id);
     if (tab.control.kind === "user" || tab.control.kind === "handoff") {
-      throw new ApxError({ code: "paused_by_user", message: "the human has this tab right now; wait for them" });
+      throw new ColoniaError({ code: "paused_by_user", message: "the human has this tab right now; wait for them" });
     }
     return tab;
   }
 
   #get(id: string): Tab {
     const tab = this.#tabs.get(id);
-    if (!tab || tab.wc.isDestroyed()) throw new ApxError({ code: "bad_request", message: `unknown tab ${id}` });
+    if (!tab || tab.wc.isDestroyed()) throw new ColoniaError({ code: "bad_request", message: `unknown tab ${id}` });
     tab.used = Date.now();
     return tab;
   }
@@ -440,7 +440,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
   #drive(id: string, by: string): Tab {
     const tab = this.#get(id);
     if (tab.control.kind === "user" || tab.control.kind === "handoff") {
-      throw new ApxError({ code: "paused_by_user", message: "the human has this tab right now; wait or ask them" });
+      throw new ColoniaError({ code: "paused_by_user", message: "the human has this tab right now; wait or ask them" });
     }
     if (tab.control.kind !== "agent" || tab.control.by !== by) {
       tab.control = { kind: "agent", by, since: new Date().toISOString() };

@@ -1,4 +1,4 @@
-import { Badge, Button, Dialog, Icons, MarkdownView, SegmentedControl, Skeleton, Switch, Tag, Textarea } from "@apx/ui";
+import { Badge, Button, Dialog, Icons, MarkdownView, SegmentedControl, Skeleton, Switch, Tag, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { useMarkdownLabels } from "../common/useMarkdownLabels.ts";
 import { projectName } from "../data/identity.ts";
@@ -25,7 +25,7 @@ export function SkillDetail({
   skill: SkillInfo;
   projectId: string | undefined;
   onChanged(next?: SkillInfo): Promise<void> | void;
-  /** Copies another app's skill into APX, to change it here. */
+  /** Copies another app's skill into Colonia, to change it here. */
   onCopy?(): void;
   /** Makes one of its copies (by its SKILL.md path) the one agents use. */
   onUseCopy?(path: string): void;
@@ -63,7 +63,7 @@ export function SkillDetail({
     await onChanged(next);
   };
   const tag = sourceTag(skill, t);
-  const apx = skill.source === "apx";
+  const colonia = skill.source === "colonia";
   const app = engineOf(skill.source);
 
   return (
@@ -74,7 +74,7 @@ export function SkillDetail({
         {inherited && <Badge>{t("res.inherited")}</Badge>}
         {tag && <Tag>{tag}</Tag>}
         <span className="resd__spacer" />
-        {!apx && (
+        {!colonia && (
           <Switch
             checked={skill.on}
             label={t("res.active")}
@@ -127,18 +127,18 @@ export function SkillDetail({
         )}
       </dl>
       {/* Another app's skill: said before its text, which may be long, with the way to change it here. */}
-      {!skill.editable && app !== "apx" && (
+      {!skill.editable && app !== "colonia" && (
         <p className="resd__note resd__noteaction">
           {t("res.appReadOnly", { app: ENGINE_LABEL[app] })}
           {onCopy && (
             <Button size="sm" variant="secondary" leadingIcon={<Icons.Copy size={14} />} onClick={onCopy}>
-              {t("res.copyToApx")}
+              {t("res.copyToColonia")}
             </Button>
           )}
         </p>
       )}
 
-      {!apx && !projectId && skill.scope === "global" && projects.some((p) => p.path) && (
+      {!colonia && !projectId && skill.scope === "global" && projects.some((p) => p.path) && (
         <section className="resd__section">
           <h3 className="resd__h3">{t("res.availableIn")}</h3>
           <ul className="resd__toggles">
@@ -198,8 +198,8 @@ export function SkillDetail({
           onChange={(e) => setDraft(e.currentTarget.value)}
         />
       )}
-      {!skill.editable && app === "apx" && (
-        <p className="resd__note">{t(apx ? "res.apxSkillNote" : "res.extensionReadOnly")}</p>
+      {!skill.editable && app === "colonia" && (
+        <p className="resd__note">{t(colonia ? "res.coloniaSkillNote" : "res.extensionReadOnly")}</p>
       )}
 
       {asking && (

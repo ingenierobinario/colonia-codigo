@@ -1,4 +1,4 @@
-import type { QuoteRenderer } from "@apx/ui";
+import type { QuoteRenderer } from "@colonia/ui";
 import { type ReactElement, useRef } from "react";
 import { CopyButton } from "./MessageActions.tsx";
 

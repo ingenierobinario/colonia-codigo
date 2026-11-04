@@ -1,13 +1,13 @@
 // agent_set: the super-agent runs the team for the owner (create, rename, rewrite a prompt, archive), each change once
 // the owner says yes. Autonomy and models stay the owner's own (DECISIONS.md#d-060).
-import { type Organization, randomAgentName } from "@apx/protocol";
+import { type Organization, randomAgentName } from "@colonia/protocol";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { Store } from "../domain/store.ts";
 import { defineTool, type Tool } from "./types.ts";
 
 /** Tools only the super-agent is offered (see policy.ts). */
-export const SUPER_AGENT_TOOLS: ReadonlySet<string> = new Set(["agent_set", "apx_settings", "apx_flow"]);
+export const SUPER_AGENT_TOOLS: ReadonlySet<string> = new Set(["agent_set", "colonia_settings", "colonia_flow"]);
 
 const Slug = z
   .string()
@@ -38,7 +38,7 @@ function projectOf(store: Store, ref: string): { id: string; name: string } | st
   const named = hits.length ? hits : list.filter((p) => p.name.toLowerCase() === ref.toLowerCase());
   if (named.length === 1 && named[0]) return named[0];
   if (named.length > 1) return `"${ref}" matches ${named.map((p) => p.id).join(", ")}; use the id`;
-  return `unknown project "${ref}"; run \`apx projects\` for the ids`;
+  return `unknown project "${ref}"; run \`colonia projects\` for the ids`;
 }
 
 const slugOf = (name: string) =>
@@ -134,7 +134,7 @@ export function agentSetTools(store: Store): Tool[] {
           cur = found.agent;
         }
         if (cur && a.project)
-          return `${cur.name} stays in its project; to copy it into another, run \`apx agents clone ${cur.id} --project <project-id>\``;
+          return `${cur.name} stays in its project; to copy it into another, run \`colonia agents clone ${cur.id} --project <project-id>\``;
         if (cur && !changes(a)) return card(store, cur);
         if (!ctx.callAsOwner) return "not run: the owner did not approve it";
         const asOwner = ctx.callAsOwner;
@@ -177,7 +177,7 @@ export function agentSetTools(store: Store): Tool[] {
           const made = await asOwner("agents.create", {
             ...(projectId ? { project_id: projectId } : {}),
             slug: a.slug,
-            // A person's name from APX's generator unless the owner gave one; the job is its role.
+            // A person's name from Colonia's generator unless the owner gave one; the job is its role.
             name: a.name ?? randomAgentName(store.agents.list().map((x) => x.name)),
             role: a.role ?? "",
             ...(a.description ? { description: a.description } : {}),
@@ -194,7 +194,7 @@ export function agentSetTools(store: Store): Tool[] {
         if (a.archive) {
           const r = await asOwner("agents.archive", { agent: cur.id });
           // What the agent tells the owner: it is gone from the team, and where to bring it back or delete it.
-          return `removed ${cur.name}: it is off the team and out of every list${r.moved_to ? ` (its file is kept in ${r.moved_to})` : ""}. Tell the owner they can bring it back whenever they want, or delete it for good, in [Config › Agents](apx:settings/agents).`;
+          return `removed ${cur.name}: it is off the team and out of every list${r.moved_to ? ` (its file is kept in ${r.moved_to})` : ""}. Tell the owner they can bring it back whenever they want, or delete it for good, in [Config › Agents](colonia:settings/agents).`;
         }
         const { agent: _a, archive: _x, project: _p, area: _ar, ...fields } = a;
         const now = await asOwner("agents.update", {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
 
@@ -17,7 +17,7 @@ test("revocation during the last tab ownership check prevents JavaScript dispatc
           }),
     ),
   });
-  const desktop = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+  const desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
   let evaluations = 0;
   let revoked = false;
   let tabsAfterContext = 0;

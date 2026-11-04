@@ -1,4 +1,4 @@
-import { IconButton, Icons } from "@apx/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, getSmoothStepPath } from "@xyflow/react";
 
 /** A connection; picked in the editor, it shows a bin to take it away. */

@@ -36,17 +36,17 @@ export function PickRow({
   return (
     <button
       type="button"
-      className={cx("apx-pickrow", selected && "is-selected", muted && "is-muted", className)}
+      className={cx("colonia-pickrow", selected && "is-selected", muted && "is-muted", className)}
       aria-current={selected || undefined}
       onClick={onClick}
     >
-      {leading && <span className="apx-pickrow__lead">{leading}</span>}
-      <span className="apx-pickrow__main">
-        <span className={cx("apx-pickrow__title", mono && "is-mono")}>{title}</span>
-        {description && <span className="apx-pickrow__desc">{description}</span>}
+      {leading && <span className="colonia-pickrow__lead">{leading}</span>}
+      <span className="colonia-pickrow__main">
+        <span className={cx("colonia-pickrow__title", mono && "is-mono")}>{title}</span>
+        {description && <span className="colonia-pickrow__desc">{description}</span>}
       </span>
-      {trailing && <span className="apx-pickrow__trail">{trailing}</span>}
-      {dot && <span className={`apx-pickrow__dot is-${dot}`} />}
+      {trailing && <span className="colonia-pickrow__trail">{trailing}</span>}
+      {dot && <span className={`colonia-pickrow__dot is-${dot}`} />}
     </button>
   );
 }

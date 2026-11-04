@@ -1,5 +1,5 @@
-import type { EngineStatus } from "@apx/protocol";
-import { Button, EmptyState, EngineIcon, IconButton, Icons, Menu, Skeleton } from "@apx/ui";
+import type { EngineStatus } from "@colonia/protocol";
+import { Button, EmptyState, EngineIcon, IconButton, Icons, Menu, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { loadEngines } from "../data/engines.ts";
 import { loadCatalog } from "../data/models.ts";
@@ -97,7 +97,7 @@ export function ExternalSection() {
   );
 }
 
-/** What to type in a terminal to sign a CLI in or out (APX never signs the owner's CLI out by itself). */
+/** What to type in a terminal to sign a CLI in or out (Colonia never signs the owner's CLI out by itself). */
 const SIGN: Record<string, { in: string; out: string }> = {
   claude: { in: "claude", out: "claude /logout" },
   codex: { in: "codex login", out: "codex logout" },

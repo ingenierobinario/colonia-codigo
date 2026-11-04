@@ -1,5 +1,5 @@
-import { FLOW_OTHERWISE } from "@apx/protocol/flow-cases";
-import { FlowStep, type FlowStepState, IconButton, Icons } from "@apx/ui";
+import { FLOW_OTHERWISE } from "@colonia/protocol/flow-cases";
+import { FlowStep, type FlowStepState, IconButton, Icons } from "@colonia/ui";
 import {
   Background,
   BackgroundVariant,

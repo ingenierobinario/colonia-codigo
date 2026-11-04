@@ -1,6 +1,6 @@
 // Quoting a bubble into a reply: the quote is plain "> " lines at the top of the text, so whoever reads the reply
 // (the owner, an agent) sees what it answers without any field of its own.
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { createContext } from "react";
 
 /** Where a bubble's quote goes; given only where the chat takes comments that can quote (a task's conversation). */

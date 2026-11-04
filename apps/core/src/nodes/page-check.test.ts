@@ -4,7 +4,7 @@ import { type PageCdp, runPageCheck, withBridge } from "./page-check.ts";
 
 test("the bridge goes first in the page, before any of its own scripts", () => {
   const page = withBridge(`<html><head><script>own()</script></head></html>`);
-  assert.ok(page.indexOf("window.apx=") < page.indexOf("own()"));
+  assert.ok(page.indexOf("window.colonia=") < page.indexOf("own()"));
   assert.match(withBridge("<h1>fragment</h1>"), /^<script>.*<\/script><h1>/s);
 });
 
@@ -46,7 +46,7 @@ test("a check reports what the page threw, answers its bridge calls and closes i
     {
       method: "Runtime.bindingCalled",
       params: {
-        name: "__apxCheck",
+        name: "__coloniaCheck",
         payload: JSON.stringify({ id: 7, method: "db_query", params: { sql: "SELECT 1" } }),
       },
     },
@@ -67,7 +67,7 @@ test("a check reports what the page threw, answers its bridge calls and closes i
     sent.some(
       (s) =>
         s.method === "Runtime.evaluate" &&
-        String((s.params as { expression: string }).expression).includes("__apxResult(7,true"),
+        String((s.params as { expression: string }).expression).includes("__coloniaResult(7,true"),
     ),
   );
   // No network, and the tab and its context are gone afterwards.

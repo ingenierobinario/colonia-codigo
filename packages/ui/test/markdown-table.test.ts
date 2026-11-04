@@ -20,8 +20,8 @@ test("a table renders in a scrolling frame with its toolbar named by the app", (
       labels: { copy: "Copiar tabla", maximize: "Maximizar tabla" },
     }),
   );
-  assert.match(html, /class="apx-md__table"/);
-  assert.match(html, /class="apx-md__scroll"><table>/);
+  assert.match(html, /class="colonia-md__table"/);
+  assert.match(html, /class="colonia-md__scroll"><table>/);
   assert.match(html, /aria-label="Copiar tabla"/);
   assert.match(html, /aria-label="Maximizar tabla"/);
 });

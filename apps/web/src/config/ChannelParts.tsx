@@ -1,8 +1,8 @@
 // What every channel's settings share: who answers and how, who waits to be let in, the people on it, what was sent,
 // and how notices reach the owner.
-import type { ChannelClosers, ChannelHours, ChannelInfo, ChannelResearch, OutboxItem, Person } from "@apx/protocol";
-import { CHANNEL_DEFAULTS } from "@apx/protocol/client";
-import { Badge, Button, IconButton, Icons, Input, Menu, SegmentedControl, SettingRow, Switch } from "@apx/ui";
+import type { ChannelClosers, ChannelHours, ChannelInfo, ChannelResearch, OutboxItem, Person } from "@colonia/protocol";
+import { CHANNEL_DEFAULTS } from "@colonia/protocol/client";
+import { Badge, Button, IconButton, Icons, Input, Menu, SegmentedControl, SettingRow, Switch } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { ownerOn, PairingRow } from "../channels/StartRows.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";

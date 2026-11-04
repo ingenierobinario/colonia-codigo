@@ -1,4 +1,4 @@
-import { Button, Checkbox, EmptyState, Icons, SearchField, SegmentedControl } from "@apx/ui";
+import { Button, Checkbox, EmptyState, Icons, SearchField, SegmentedControl } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { cookieDomains, cookieSources, importCookies } from "../data/actions.ts";
 import { useT } from "../i18n/index.ts";
@@ -16,7 +16,7 @@ const BROWSER_NAMES: Record<string, string> = {
   edge: "Edge",
 };
 
-/** Browser: copy sessions from a local browser into APX's shared profile (runs in the desktop app). */
+/** Browser: copy sessions from a local browser into Colonia's shared profile (runs in the desktop app). */
 export function BrowserSection() {
   const t = useT();
   return (

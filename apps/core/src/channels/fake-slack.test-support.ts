@@ -37,7 +37,7 @@ export async function fakeSlack(tokens: { bot: string; app: string }) {
       const forced = failures.get(method)?.shift();
       if (forced) return reply(forced.status, forced.body, forced.headers);
       const body = (raw ? JSON.parse(raw) : {}) as Record<string, unknown>;
-      if (method === "auth.test") return reply(200, { ok: true, user: "apx", team: "Northwind" });
+      if (method === "auth.test") return reply(200, { ok: true, user: "colonia", team: "Northwind" });
       if (method === "apps.connections.open") {
         opens++;
         return reply(200, { ok: true, url: socketUrl });
@@ -107,7 +107,7 @@ export async function fakeSlack(tokens: { bot: string; app: string }) {
         user: { id: from.id },
         channel: { id: dm(from.id) },
         container: { message_ts: messageTs, channel_id: dm(from.id) },
-        actions: [{ action_id: "apx_0", value }],
+        actions: [{ action_id: "colonia_0", value }],
       });
     },
     /** Slack asks the app to reconnect (it does so every few hours). */

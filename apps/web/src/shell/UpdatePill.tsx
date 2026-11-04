@@ -1,4 +1,4 @@
-import { Icons, Tooltip } from "@apx/ui";
+import { Icons, Tooltip } from "@colonia/ui";
 import { Suspense } from "react";
 import { useData } from "../data/state.ts";
 import { newerOf, openUpdate, useUpdates } from "../data/updates.ts";
@@ -7,7 +7,7 @@ import { CoreBehind, UpdateDialog } from "../lazy.ts";
 import { go } from "./nav.ts";
 
 /**
- * In the top bar, only when there is something: a newer panel to reload, a newer desktop app, or a newer APX for the
+ * In the top bar, only when there is something: a newer panel to reload, a newer desktop app, or a newer Colonia for the
  * core this panel talks to (here or on a server) — its changes, and "Update now". Never a modal on its own.
  */
 export function UpdatePill() {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { EngineUsageReport } from "@apx/protocol";
+import type { EngineUsageReport } from "@colonia/protocol";
 import { cachedEngineUsage } from "./cache.ts";
 
 const report = (reset?: number): EngineUsageReport => ({

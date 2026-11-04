@@ -1,12 +1,12 @@
-// apx sessions: the owner's Claude Code and Codex work brought into APX as projects whose chats agents take over.
-import type { ApxClient } from "@apx/protocol/client";
+// colonia sessions: the owner's Claude Code and Codex work brought into Colonia as projects whose chats agents take over.
+import type { ColoniaClient } from "@colonia/protocol/client";
 
-const USAGE = `apx sessions projects codex|claude              Projects there and their chats ("*" = already in APX)
-apx sessions import codex|claude <project> [--only <id,…>] [--name "…"]
+const USAGE = `colonia sessions projects codex|claude              Projects there and their chats ("*" = already in Colonia)
+colonia sessions import codex|claude <project> [--only <id,…>] [--name "…"]
                                                 Bring a project's chats in (again: only what is new)
-apx sessions digest <thread> [--refresh]        What an imported chat is about, for the agent that takes it over
-apx sessions adopt <thread> <agent>             That agent answers in the chat from now on
-apx sessions page <project> <file.html> [--name n] [--title "…"]   A page the chats wrote, as a pinned widget
+colonia sessions digest <thread> [--refresh]        What an imported chat is about, for the agent that takes it over
+colonia sessions adopt <thread> <agent>             That agent answers in the chat from now on
+colonia sessions page <project> <file.html> [--name n] [--title "…"]   A page the chats wrote, as a pinned widget
 <project> is the folder or the name the list shows`;
 
 type Opts = {
@@ -24,7 +24,7 @@ const engineOf = (v: string | undefined) => {
 
 const day = (iso: string) => iso.slice(0, 10);
 
-export async function sessions(client: ApxClient, [sub, ...rest]: string[], opts: Opts): Promise<void> {
+export async function sessions(client: ColoniaClient, [sub, ...rest]: string[], opts: Opts): Promise<void> {
   const out = (v: unknown, text: () => void) => (opts.json ? console.log(JSON.stringify(v, null, 2)) : text());
   switch (sub) {
     case "projects":
@@ -34,7 +34,7 @@ export async function sessions(client: ApxClient, [sub, ...rest]: string[], opts
       return out(r, () => {
         if (!r.projects.length) console.log(`No ${engine} sessions on this computer.`);
         for (const p of r.projects) {
-          console.log(`${p.name}  ${p.cwd}${p.project_id ? `  (APX project ${p.project_id})` : ""}`);
+          console.log(`${p.name}  ${p.cwd}${p.project_id ? `  (Colonia project ${p.project_id})` : ""}`);
           for (const s of p.sessions)
             console.log(`  ${s.thread ? "*" : " "} ${s.id}  ${day(s.updated_at)}  ${s.title}`);
         }
@@ -54,7 +54,7 @@ export async function sessions(client: ApxClient, [sub, ...rest]: string[], opts
         throw new Error(
           hits.length
             ? `"${which}" matches ${hits.map((p) => p.cwd).join(", ")}; use the folder`
-            : `no ${engine} project "${which}"; run \`apx sessions projects ${engine}\``,
+            : `no ${engine} project "${which}"; run \`colonia sessions projects ${engine}\``,
         );
       const only = opts.only
         ?.split(",")
@@ -86,7 +86,7 @@ export async function sessions(client: ApxClient, [sub, ...rest]: string[], opts
             console.log(`Routines, turned off (turn off the original first): ${x.routines.join(", ")}`);
         }
         if (r.pages.length) {
-          console.log("Pages these chats wrote (apx sessions page <project> <file>):");
+          console.log("Pages these chats wrote (colonia sessions page <project> <file>):");
           for (const p of r.pages) console.log(`  ${p}`);
         }
       });

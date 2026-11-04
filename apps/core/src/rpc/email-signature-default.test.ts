@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { signatureFor } from "../domain/email-signature-settings.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
@@ -68,7 +68,7 @@ test("the optional default is independent of connections, owner-only and protect
       env.client.call("email.signature_default_set", { signature: null, expected: null }),
       /Default signature changed/,
     );
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(agent.call("email.signature_default_get", {}), /reserved to the owner/);
     await assert.rejects(
       agent.call("email.signature_default_set", { signature: null, expected: fallback }),

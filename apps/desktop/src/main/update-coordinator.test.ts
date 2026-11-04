@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { PROTOCOL_VERSION } from "@apx/protocol";
+import { PROTOCOL_VERSION } from "@colonia/protocol";
 import {
   createUpdateCoordinator,
   type PendingUpdate,
@@ -17,7 +17,7 @@ function harness(saved?: PendingUpdate, current = "2.0.0") {
   const errors: string[] = [];
   let state: UpdateState = { running: "2.0.0", coordination: null, coordination_protocol: 1, supported: true };
   const endpoint: UpdateEndpoint = {
-    identity: "https://apx.example.com",
+    identity: "https://colonia.example.com",
     local: false,
     health: async () => ({ home_id: "installation-a", protocol: PROTOCOL_VERSION }),
     state: async () => state,
@@ -96,7 +96,7 @@ test("a restart that cannot go ahead says why instead of leaving the panel waiti
   lost.coordinator.connect(undefined);
   assert.deepEqual(await lost.coordinator.restart(), {
     ok: false,
-    error: "APX lost its connection. Quit APX and open it again to update.",
+    error: "Colonia lost its connection. Quit Colonia and open it again to update.",
   });
   const nothing = harness();
   assert.deepEqual(await nothing.coordinator.restart(), {
@@ -131,13 +131,13 @@ test("a lost apply response succeeds only after exact running version confirmati
 });
 
 test("persisted interrupted target wins over a newer feed after process restart", async () => {
-  const h = harness({ identity: "https://apx.example.com", home: "installation-a", target: "2.1.0" });
+  const h = harness({ identity: "https://colonia.example.com", home: "installation-a", target: "2.1.0" });
   assert.equal((await h.coordinator.install("2.2.0")).ok, true);
   assert.equal(h.state().running, "2.1.0");
 });
 
 test("a completed release does not pin an up-to-date app to the previous target", async () => {
-  for (const saved of [undefined, { identity: "https://apx.example.com", home: "installation-a", target: "2.1.0" }]) {
+  for (const saved of [undefined, { identity: "https://colonia.example.com", home: "installation-a", target: "2.1.0" }]) {
     const h = harness(saved, "2.1.0");
     h.setState({
       ...h.state(),
@@ -176,7 +176,7 @@ test("corrupt server intent surfaces its recovery error without downloading", as
 });
 
 test("a reconnect cannot reuse a persisted target against a replacement server", async () => {
-  const h = harness({ identity: "https://apx.example.com", home: "previous-installation", target: "2.1.0" });
+  const h = harness({ identity: "https://colonia.example.com", home: "previous-installation", target: "2.1.0" });
   assert.equal((await h.coordinator.install("2.1.0")).ok, false);
   assert.equal(h.stages(), 0);
   assert.equal(h.applies(), 0);

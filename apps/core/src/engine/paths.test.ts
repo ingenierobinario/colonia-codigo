@@ -7,8 +7,8 @@ import { insideReal, realpath } from "../paths.ts";
 import { guarded, pathsOf } from "./paths.ts";
 
 test("paths: inside means inside once links are resolved; git, APC and AGENTS.md are guarded, a worktree under .apc is not", () => {
-  const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-paths-")));
-  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-out-")));
+  const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-paths-")));
+  const outside = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-out-")));
   fs.mkdirSync(path.join(root, "src"));
   fs.symlinkSync(outside, path.join(root, "link"));
   try {

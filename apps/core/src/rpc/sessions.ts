@@ -1,4 +1,4 @@
-// The owner's own Claude Code and Codex sessions: listed from where those CLIs keep them, gone on with in APX as an
+// The owner's own Claude Code and Codex sessions: listed from where those CLIs keep them, gone on with in Colonia as an
 // engine session (the engine itself, in the session's folder, resuming its own transcript), or brought in as a
 // project whose chats agents take over (import, digest, adopt).
 import fs from "node:fs";
@@ -20,7 +20,7 @@ import { createProject } from "./app.ts";
 import type { InternalCall } from "./internal.ts";
 import type { Handlers } from "./router.ts";
 
-/** What bringing a project in needs beyond the store: where APX keeps files, projects, and the auxiliary model. */
+/** What bringing a project in needs beyond the store: where Colonia keeps files, projects, and the auxiliary model. */
 export type SessionDeps = {
   home: string;
   apc: ApcSync;
@@ -30,7 +30,7 @@ export type SessionDeps = {
   call: InternalCall;
 };
 
-/** What is copied into the APX chat so the owner sees where they left off (the engine has it all already). */
+/** What is copied into the Colonia chat so the owner sees where they left off (the engine has it all already). */
 const SHOWN_TURNS = 40;
 const TURN_CHARS = 8000;
 
@@ -61,7 +61,7 @@ const pageName = (file: string) =>
 
 export function sessionHandlers(store: Store, homes: NativeHomes, deps: SessionDeps) {
   const superAgent = () => store.agents.list().find((a) => a.kind === "secretary") ?? store.agents.list()[0];
-  /** The project a folder brought in lands in: the one APX has there, else the folder made one (or, gone, a new one). */
+  /** The project a folder brought in lands in: the one Colonia has there, else the folder made one (or, gone, a new one). */
   const projectFor = (cwd: string, name: string): string => {
     const known = projectAt(store, cwd);
     if (known) return known;

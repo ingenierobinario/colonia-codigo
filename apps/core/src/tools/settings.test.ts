@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { methodAccess, methods } from "@apx/protocol";
+import { methodAccess, methods } from "@colonia/protocol";
 import { SPANISH_TITLES } from "../engine/tool-titles.ts";
 import { FLOW_SETTINGS } from "./flow-tool.ts";
 import { settingsCore } from "./settings.test-support.ts";
@@ -25,13 +25,13 @@ const tellHer = () => ({
 });
 const sister = async () => (await h.env.client.call("contacts.list", {})).persons.find((p) => p.id === northwind);
 
-test("only the super-agent is offered apx_settings", async () => {
+test("only the super-agent is offered colonia_settings", async () => {
   const offered = async (agent: string) => {
     await h.ask("hello", undefined, agent);
     return h.llm.calls.at(-1)?.tools.map((t) => t.function.name) ?? [];
   };
-  assert.ok((await offered("superagent")).includes("apx_settings"));
-  assert.ok(!(await offered("acme-writer")).includes("apx_settings"));
+  assert.ok((await offered("superagent")).includes("colonia_settings"));
+  assert.ok(!(await offered("acme-writer")).includes("colonia_settings"));
 });
 
 test("reading what it can change, the contacts and a method's fields asks nobody", async () => {
@@ -98,13 +98,13 @@ test("a change the method would refuse, or a method out of reach, never reaches 
 });
 
 test("the card's title names the area, not the method", () => {
-  const title = SPANISH_TITLES.apx_settings;
+  const title = SPANISH_TITLES.colonia_settings;
   assert.equal(title?.({ method: "channels.set", params: {} }), "Cambió un canal");
   assert.equal(title?.({ method: "contacts.remove", params: {} }), "Quitó un contacto");
   assert.equal(title?.({ method: "contacts.list", params: { query: "x" } }), "Revisó la configuración");
 });
 
-test("every owner method that changes something is placed: apx_settings, a tool of its own, the owner's, or not yet", () => {
+test("every owner method that changes something is placed: colonia_settings, a tool of its own, the owner's, or not yet", () => {
   const placed = [
     Object.keys(SETTINGS),
     Object.keys(FLOW_SETTINGS),

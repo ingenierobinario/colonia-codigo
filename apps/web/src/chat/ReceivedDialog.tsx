@@ -1,8 +1,8 @@
 // What the model received on a turn (runs.context): the size of each part, then the system prompt, the turn's input
 // and the tools as they were sent.
 import "./ReceivedDialog.css";
-import type { PromptPart, RunContext } from "@apx/protocol";
-import { Dialog, Skeleton } from "@apx/ui";
+import type { PromptPart, RunContext } from "@colonia/protocol";
+import { Dialog, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { type MessageKey, usePack, useT } from "../i18n/index.ts";

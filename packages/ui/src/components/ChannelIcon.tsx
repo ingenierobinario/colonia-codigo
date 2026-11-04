@@ -22,11 +22,11 @@ export function ChannelIcon({ channel, size = 16, label, className }: ChannelIco
   const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": true as const };
   // Each icon's gradients get ids of their own: two icons on a page never draw with each other's.
   const prefix = `c${useId().replace(/[^\w-]/g, "")}-`;
-  const cls = cx("apx-chanicon", className);
+  const cls = cx("colonia-chanicon", className);
   if (!isBrand(channel)) {
     const Icon = channel === "email" ? Mail : channel === "sms" ? Smartphone : MessageCircle;
     return (
-      <span className={cx(cls, "apx-chanicon--none")} style={box} {...a11y}>
+      <span className={cx(cls, "colonia-chanicon--none")} style={box} {...a11y}>
         <Icon size={size} />
       </span>
     );

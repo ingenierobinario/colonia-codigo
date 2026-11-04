@@ -3,8 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import type { Routine } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import type { Routine } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 import { editOf, findRoutine, routines } from "./routines.ts";
 import { printed, recordingClient } from "./testing.ts";
 
@@ -75,7 +75,7 @@ function fakeClient() {
       if (method === "routines.run") return { thread_id: "thr_1" };
       return { removed: true };
     },
-  } as unknown as ApxClient;
+  } as unknown as ColoniaClient;
   return { client, calls };
 }
 
@@ -174,20 +174,20 @@ test("adding a routine sends its schedule, command policies and model limit thro
 test("invalid routine creation and conflicting prompt inputs make no protocol calls", async () => {
   const { client, calls } = recordingClient({});
   for (const [args, options, error] of [
-    [["add", "name", "prompt"], {}, /apx routines/],
-    [["add", "name"], { agent: "april" }, /apx routines/],
+    [["add", "name", "prompt"], {}, /colonia routines/],
+    [["add", "name"], { agent: "april" }, /colonia routines/],
     [["add", "name", "prompt"], { agent: "april", call: "bad" }, /--call/],
     [["add", "name", "prompt"], { agent: "april", maxSteps: "201" }, /--max-steps/],
     [["add", "name", "prompt"], { agent: "april", at: "not a date" }, /Invalid time value/],
     [["edit", "check", "prompt"], { promptFile: "missing-file" }, /not both/],
-    [["unknown"], {}, /apx routines/],
+    [["unknown"], {}, /colonia routines/],
   ] as const)
     await assert.rejects(routines(client, [...args], options), error);
   assert.deepEqual(calls, []);
 });
 
 test("editing a routine reads an exact UTF-8 prompt file and preserves its existing identity and schedule", async (t) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-routine-prompt-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-routine-prompt-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const file = path.join(dir, "prompt.txt");
   const prompt = "Revisá cambios\nKeep the next line.\n";

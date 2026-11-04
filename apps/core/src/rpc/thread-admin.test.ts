@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, before, test } from "node:test";
-import type { CoreEvent } from "@apx/protocol";
+import type { CoreEvent } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 let release: (() => void) | undefined;

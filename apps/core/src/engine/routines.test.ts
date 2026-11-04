@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import { fakeTelegram } from "../channels/fake-telegram.test-support.ts";
 import { telegramAdapter } from "../channels/telegram.ts";
 import { waitFor } from "../testkit/platform.ts";
@@ -125,7 +125,7 @@ test("run now, a failed run is reported, and bad schedules are refused", async (
       schedule: { kind: "cron", cron: "99 * * * *" },
       prompt: "p",
     }),
-    (e: unknown) => e instanceof ApxError && /outside/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /outside/.test(e.message),
   );
   await assert.rejects(
     env.client.call("routines.set", {
@@ -134,7 +134,7 @@ test("run now, a failed run is reported, and bad schedules are refused", async (
       schedule: { kind: "once", at: new Date(2020, 0, 1).toISOString() },
       prompt: "p",
     }),
-    (e: unknown) => e instanceof ApxError && /passed/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /passed/.test(e.message),
   );
 });
 
@@ -154,7 +154,7 @@ test("a new routine keeps an imminent slot; a running one is not started again; 
   if (rec) env.core.store.runs.setState(rec, "input-required");
   await assert.rejects(
     env.client.call("routines.run", { routine: r.id }),
-    (e: unknown) => e instanceof ApxError && /running already/.test(e.message),
+    (e: unknown) => e instanceof ColoniaError && /running already/.test(e.message),
   );
   clock = new Date(2026, 9, 7, 11, 0);
   env.core.scheduler.tick();
@@ -162,11 +162,11 @@ test("a new routine keeps an imminent slot; a running one is not started again; 
 });
 
 test("an agent cannot touch routines, notices or read marks", async () => {
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   for (const call of [
     () => agent.call("routines.list", {}),
     () => agent.call("notifications.read", {}),
     () => agent.call("threads.read", { thread: "home" }),
   ])
-    await assert.rejects(call(), (e: unknown) => e instanceof ApxError && /reserved to the owner/.test(e.message));
+    await assert.rejects(call(), (e: unknown) => e instanceof ColoniaError && /reserved to the owner/.test(e.message));
 });

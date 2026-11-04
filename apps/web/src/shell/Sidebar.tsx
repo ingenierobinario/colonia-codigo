@@ -1,4 +1,4 @@
-import { ContextMenu, Icons, NavItem, ResizeHandle } from "@apx/ui";
+import { ContextMenu, Icons, NavItem, ResizeHandle } from "@colonia/ui";
 import { Suspense, useEffect, useMemo } from "react";
 import { markAllRead } from "../data/actions.ts";
 import { loadChannels } from "../data/channels.ts";
@@ -124,7 +124,7 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
           <CornerCards />
         </Suspense>
       )}
-      {!window.apxDesktop && (
+      {!window.coloniaDesktop && (
         <Suspense fallback={null}>
           <DesktopInstallNotice rail={rail} />
         </Suspense>

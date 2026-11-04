@@ -12,7 +12,7 @@ import { claudeHarness } from "./claude.ts";
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
 test("mobile uploads reach the Claude SDK subprocess as pixels and a temp-folder copy", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-image-sdk-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-image-sdk-"));
   const capture = path.join(dir, "input.json");
   // A .js file: the SDK starts it through node on every system (a .cjs it would run as a native program).
   const bin = path.join(dir, "claude.js");
@@ -50,7 +50,7 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
     const create = () =>
       client.call("threads.create", { kind: "code", agent_id: "superagent", project_id: project.id, engine: "claude" });
     for (const existing of [false, true]) {
-      let thread: import("@apx/protocol").Thread | undefined = existing ? await create() : undefined;
+      let thread: import("@colonia/protocol").Thread | undefined = existing ? await create() : undefined;
       if (thread) {
         await client.call("threads.send", { thread: thread.id, text: "Hello" });
         const first = await env.settle(thread.id, 20_000);

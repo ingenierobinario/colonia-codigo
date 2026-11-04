@@ -19,7 +19,7 @@ async function mockVmDisplay(page: Page) {
         init.writeUInt16BE(64, 2);
         init.set([32, 24, 0, 1, 0, 255, 0, 255, 0, 255, 16, 8, 0], 4);
         init.writeUInt32BE(3, 20);
-        init.write("APX", 24);
+        init.write("Colonia", 24);
         socket.send(init);
       }
       handshake++;

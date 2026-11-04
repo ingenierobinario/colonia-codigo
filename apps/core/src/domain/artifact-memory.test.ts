@@ -3,10 +3,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { ARTIFACT_DB_MAX, ARTIFACT_STORE_MAX } from "@apx/protocol";
+import { ARTIFACT_DB_MAX, ARTIFACT_STORE_MAX } from "@colonia/protocol";
 import { artifactDir, artifactMemory, memorySummary, QUERY_MAX_ROWS } from "./artifact-memory.ts";
 
-const tmpHome = () => fs.mkdtempSync(path.join(os.tmpdir(), "apx-artifact-mem-"));
+const tmpHome = () => fs.mkdtempSync(path.join(os.tmpdir(), "colonia-artifact-mem-"));
 const sales = { name: "sales", project_id: "prj_acme" };
 
 test("the store keeps JSON values by key in the artifact's own folder, and a null removes one", () => {

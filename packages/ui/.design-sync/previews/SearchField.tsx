@@ -1,4 +1,4 @@
-import { ApxProvider, SearchField } from "@apx/ui";
+import { ColoniaProvider, SearchField } from "@colonia/ui";
 
 export function Sidebar() {
   return (
@@ -18,8 +18,8 @@ export function WithShortcut() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12, width: 284 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12, width: 284 }}>
       <SearchField size="sm" placeholder="Buscar" />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

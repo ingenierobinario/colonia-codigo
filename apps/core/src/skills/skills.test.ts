@@ -11,7 +11,7 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
   if (said.includes("use the skill")) return callTool("k1", "load_skill", { name: "brief-writer" });
   if (said.includes("empty file")) return callTool("k3", "load_skill", { name: "brief-writer", file: "" });
   if (said.includes("folder")) return callTool("k4", "load_skill", { name: "brief-writer", file: "refs" });
-  if (said.includes("how do I add an MCP")) return callTool("k5", "load_skill", { name: "apx-mcps" });
+  if (said.includes("how do I add an MCP")) return callTool("k5", "load_skill", { name: "colonia-mcps" });
   if (said.includes("escape"))
     return callTool("k2", "load_skill", { name: "brief-writer", file: "../../secrets.index.json" });
   return say("ok");
@@ -37,7 +37,7 @@ after(async () => {
 test("agents see a one-line catalog and load the body on demand; files outside the skill are refused", async () => {
   const { skills } = await env.client.call("skills.list", {});
   assert.deepEqual(
-    skills.filter((s) => s.source !== "apx").map((s) => s.name),
+    skills.filter((s) => s.source !== "colonia").map((s) => s.name),
     ["brief-writer"],
   );
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "skills" });
@@ -52,31 +52,31 @@ test("agents see a one-line catalog and load the body on demand; files outside t
   assert.match(String(llm.calls.at(-1)?.messages.at(-1)?.content), /outside the skill/);
 });
 
-test("APX's own skills: named in one sentence, loaded on demand, always on, read-only, and they keep their names", async () => {
-  // The owner's skill with the same name as one of APX's does not replace it.
-  const dir = path.join(env.home, "skills", "apx-mcps");
+test("Colonia's own skills: named in one sentence, loaded on demand, always on, read-only, and they keep their names", async () => {
+  // The owner's skill with the same name as one of Colonia's does not replace it.
+  const dir = path.join(env.home, "skills", "colonia-mcps");
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, "SKILL.md"), "---\nname: apx-mcps\ndescription: Edit ~/.apx/mcps.json.\n---\n");
+  fs.writeFileSync(path.join(dir, "SKILL.md"), "---\nname: colonia-mcps\ndescription: Edit ~/.colonia/mcps.json.\n---\n");
   const { skills } = await env.client.call("skills.list", {});
-  const apx = skills.filter((s) => s.source === "apx");
-  assert.ok(apx.some((s) => s.name === "apx-mcps") && apx.some((s) => s.name === "apx-variables"));
-  assert.ok(apx.every((s) => s.on && !s.editable));
-  assert.equal(skills.filter((s) => s.name === "apx-mcps").length, 1);
-  await assert.rejects(env.client.call("skills.toggle", { name: "apx-mcps", on: false }), /always on/);
+  const colonia = skills.filter((s) => s.source === "colonia");
+  assert.ok(colonia.some((s) => s.name === "colonia-mcps") && colonia.some((s) => s.name === "colonia-variables"));
+  assert.ok(colonia.every((s) => s.on && !s.editable));
+  assert.equal(skills.filter((s) => s.name === "colonia-mcps").length, 1);
+  await assert.rejects(env.client.call("skills.toggle", { name: "colonia-mcps", on: false }), /always on/);
   await assert.rejects(
-    env.client.call("skills.save", { name: "apx-mcps", target: "global", content: "---\nname: apx-mcps\n---\n" }),
-    /comes with APX/,
+    env.client.call("skills.save", { name: "colonia-mcps", target: "global", content: "---\nname: colonia-mcps\n---\n" }),
+    /comes with Colonia/,
   );
 
-  const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "apx skills" });
+  const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "colonia skills" });
   await env.client.call("threads.send", { thread: t.id, text: "how do I add an MCP" });
   await env.settle(t.id);
   const system = String(llm.calls.at(-1)?.messages[0]?.content);
-  assert.match(system, /APX guides \(apx-[^)]*apx-mcps[^)]*apx-projects[^)]*\): load_skill the right one first/);
-  assert.doesNotMatch(system, /- apx-mcps:/, "not one catalog line each");
+  assert.match(system, /Colonia guides \(colonia-[^)]*colonia-mcps[^)]*colonia-projects[^)]*\): load_skill the right one first/);
+  assert.doesNotMatch(system, /- colonia-mcps:/, "not one catalog line each");
   const loaded = String(llm.calls.at(-1)?.messages.at(-1)?.content);
-  assert.match(loaded, /apx mcps add/);
-  assert.doesNotMatch(loaded, /Edit ~\/\.apx\/mcps\.json/);
+  assert.match(loaded, /colonia mcps add/);
+  assert.doesNotMatch(loaded, /Edit ~\/\.colonia\/mcps\.json/);
   await removeDir(dir);
 });
 

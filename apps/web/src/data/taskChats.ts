@@ -1,4 +1,4 @@
-import type { Task, Thread } from "@apx/protocol";
+import type { Task, Thread } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";

@@ -1,5 +1,5 @@
 // The office board: tasks (tasks.*), kept current by task.updated events.
-import type { Params, Task, TaskColumn, TaskState } from "@apx/protocol";
+import type { Params, Task, TaskColumn, TaskState } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";

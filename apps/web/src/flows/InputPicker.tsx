@@ -1,6 +1,6 @@
 // What a step receives: one `{}` field, like every other value of a step (DECISIONS.md#d-180): everything that arrived,
 // a field of it, an earlier step's result or a variable, picked or typed; empty is everything that arrived.
-import { Field } from "@apx/ui";
+import { Field } from "@colonia/ui";
 import { useT } from "../i18n/index.ts";
 import type { FlowBinding, FlowGraph } from "./steps.tsx";
 import { Template, type Values } from "./Template.tsx";

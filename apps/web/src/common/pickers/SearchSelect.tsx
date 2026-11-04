@@ -1,5 +1,5 @@
 import "../../styles/searchselect.css";
-import { Icons, type SelectOption, useApx } from "@apx/ui";
+import { Icons, type SelectOption, useColonia } from "@colonia/ui";
 import { Combobox } from "@base-ui/react/combobox";
 import { type ReactElement, useMemo, useRef } from "react";
 
@@ -39,7 +39,7 @@ function matches(o: SelectOption, query: string): boolean {
 }
 
 /** A Select for lists that grow (agents, projects, contacts, time zones, languages): the same field, with a search box
- * at the top of the list. Kept out of @apx/ui so the combobox loads with the screens that pick, not the first one. */
+ * at the top of the list. Kept out of @colonia/ui so the combobox loads with the screens that pick, not the first one. */
 export function SearchSelect({
   value,
   onValueChange,
@@ -53,7 +53,7 @@ export function SearchSelect({
   className,
   trigger,
 }: SearchSelectProps) {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   const search = useRef<HTMLInputElement>(null);
   const current = options.find((o) => o.value === value) ?? null;
   const groups = useMemo<Group[]>(() => {
@@ -67,12 +67,12 @@ export function SearchSelect({
     return out;
   }, [options]);
   const item = (o: SelectOption) => (
-    <Combobox.Item key={o.value} value={o} disabled={o.disabled} className="apx-menu__item apx-select__item">
-      {o.icon && <span className="apx-select__icon">{o.icon}</span>}
-      <span className="apx-menu__text">{o.label}</span>
-      {o.hint && <span className="apx-select__hint">{o.hint}</span>}
-      {o.trailing && <span className="apx-select__trailing">{o.trailing}</span>}
-      <Combobox.ItemIndicator className="apx-select__check">
+    <Combobox.Item key={o.value} value={o} disabled={o.disabled} className="colonia-menu__item colonia-select__item">
+      {o.icon && <span className="colonia-select__icon">{o.icon}</span>}
+      <span className="colonia-menu__text">{o.label}</span>
+      {o.hint && <span className="colonia-select__hint">{o.hint}</span>}
+      {o.trailing && <span className="colonia-select__trailing">{o.trailing}</span>}
+      <Combobox.ItemIndicator className="colonia-select__check">
         <Icons.Check size={14} />
       </Combobox.ItemIndicator>
     </Combobox.Item>
@@ -92,33 +92,33 @@ export function SearchSelect({
       ) : (
         <Combobox.Trigger
           aria-label={label}
-          className={["apx-field", `apx-field--${size}`, "apx-select", disabled && "is-disabled", className]
+          className={["colonia-field", `colonia-field--${size}`, "colonia-select", disabled && "is-disabled", className]
             .filter(Boolean)
             .join(" ")}
         >
-          {current?.icon && <span className="apx-select__icon">{current.icon}</span>}
-          <span className={current ? "apx-select__value" : "apx-select__value is-placeholder"}>
+          {current?.icon && <span className="colonia-select__icon">{current.icon}</span>}
+          <span className={current ? "colonia-select__value" : "colonia-select__value is-placeholder"}>
             {current?.label ?? placeholder}
           </span>
-          <Combobox.Icon className="apx-select__chevron">
+          <Combobox.Icon className="colonia-select__chevron">
             <Icons.ChevronDown size={14} />
           </Combobox.Icon>
         </Combobox.Trigger>
       )}
       <Combobox.Portal container={portalRef}>
-        <Combobox.Positioner sideOffset={6} align="end" className="apx-select__positioner">
+        <Combobox.Positioner sideOffset={6} align="end" className="colonia-select__positioner">
           {/* Typing goes to the search however the list opened: on the list itself, letters would jump between items. */}
-          <Combobox.Popup className="apx-menu apx-searchselect__popup" aria-label={label} initialFocus={search}>
-            <div className="apx-searchselect__search">
+          <Combobox.Popup className="colonia-menu colonia-searchselect__popup" aria-label={label} initialFocus={search}>
+            <div className="colonia-searchselect__search">
               <Icons.Search size={14} />
-              <Combobox.Input ref={search} className="apx-searchselect__input" placeholder={searchPlaceholder} />
+              <Combobox.Input ref={search} className="colonia-searchselect__input" placeholder={searchPlaceholder} />
             </div>
-            <Combobox.Empty className="apx-searchselect__empty">{emptyLabel}</Combobox.Empty>
-            <Combobox.List className="apx-searchselect__list">
+            <Combobox.Empty className="colonia-searchselect__empty">{emptyLabel}</Combobox.Empty>
+            <Combobox.List className="colonia-searchselect__list">
               {(g: Group) =>
                 g.value ? (
                   <Combobox.Group key={g.value} items={g.items}>
-                    <Combobox.GroupLabel className="apx-menu__label">{g.value}</Combobox.GroupLabel>
+                    <Combobox.GroupLabel className="colonia-menu__label">{g.value}</Combobox.GroupLabel>
                     <Combobox.Collection>{item}</Combobox.Collection>
                   </Combobox.Group>
                 ) : (

@@ -73,7 +73,7 @@ import { officeMethods } from "./office-methods.ts";
 import { resourceMethods } from "./resource-methods.ts";
 import { teamMethods } from "./team-methods.ts";
 
-/** The parts of APX v1 the setup can bring in. */
+/** The parts of Colonia v1 the setup can bring in. */
 const V1Group = z.enum([
   "projects",
   "skills",
@@ -137,13 +137,13 @@ export const appMethods = {
   ...filesMethods,
   ...gitMethods,
   /**
-   * Read-only import from a local APX v1: registers the project folders it knows (their .apc/ is read from disk)
+   * Read-only import from a local Colonia v1: registers the project folders it knows (their .apc/ is read from disk)
    * and, when asked, copies once into v2's own home: its model API keys (`keys`), its skills (`skills`), and its image
    * engines and voices (`services`).
    */
   /**
    * Where the owner is in the first-run setup: done or not, whether this install is new (nothing said in it yet) and
-   * the APX v1 found on this machine, if any (counts only).
+   * the Colonia v1 found on this machine, if any (counts only).
    */
   "setup.status": {
     params: z.object({}).strict(),
@@ -161,17 +161,17 @@ export const appMethods = {
           projects: z.number().int(),
         })
         .nullable(),
-      /** This APX's own home, where its data lives (as the owner knows it: ~/…). */
+      /** This Colonia's own home, where its data lives (as the owner knows it: ~/…). */
       home: z.string(),
-      /** The folder of this APX's command (apps/terminal), to put `apx` on the PATH from there. */
+      /** The folder of this Colonia's command (apps/terminal), to put `colonia` on the PATH from there. */
       terminal: z.string().optional(),
-      /** APX v1's daemon still answers beside this one: routines and bots would run twice. */
+      /** Colonia v1's daemon still answers beside this one: routines and bots would run twice. */
       v1_running: z.boolean().optional(),
     }),
     effect: false,
     access: "human",
   },
-  /** What APX v1 has, per group: how many (and, for projects, their agents; for channels, their contacts). */
+  /** What Colonia v1 has, per group: how many (and, for projects, their agents; for channels, their contacts). */
   "setup.v1_scan": {
     params: z.object({}).strict(),
     result: z.object({
@@ -192,7 +192,7 @@ export const appMethods = {
   },
   /** The setup is over: it does not open again by itself. */
   /**
-   * Makes the `apx` command this APX: v1's global package is removed and this checkout's terminal is linked in its
+   * Makes the `colonia` command this Colonia: v1's global package is removed and this checkout's terminal is linked in its
    * place. v1's files stay where they are.
    */
   "setup.take_over_cli": {
@@ -218,7 +218,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Whether a newer APX is out: for a checkout, commits on main it does not have; for a daemon installed from a bundle,
+   * Whether a newer Colonia is out: for a checkout, commits on main it does not have; for a daemon installed from a bundle,
    * newer releases; for the core the desktop app carries (`app`), newer releases the app installs. `check` asks now.
    */
   "system.updates": {
@@ -235,9 +235,9 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Brings the newer APX in: a checkout pulls (fast-forward only), installs and builds the panel; a bundle install
+   * Brings the newer Colonia in: a checkout pulls (fast-forward only), installs and builds the panel; a bundle install
    * downloads the newer bundle, checks it and makes it current. `restart`: the core starts again with it now; otherwise
-   * the owner restarts APX.
+   * the owner restarts Colonia.
    */
   "system.update": {
     params: z
@@ -254,7 +254,7 @@ export const appMethods = {
     access: "human",
   },
   // Release news the super-agent tells the owner (DECISIONS.md#d-116).
-  /** The news APX carries: whether each was told (or known from the start) and whether it applies to this owner. */
+  /** The news Colonia carries: whether each was told (or known from the start) and whether it applies to this owner. */
   "system.news": {
     params: z.object({}).strict(),
     result: z.object({
@@ -330,7 +330,7 @@ export const appMethods = {
   },
   /**
    * Creates an agent. With a project it is written as .apc/agents/<slug>.md in that project's folder (the file is
-   * the definition); without one it is a global agent kept by APX.
+   * the definition); without one it is a global agent kept by Colonia.
    */
   "agents.create": {
     params: z
@@ -385,7 +385,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * APX's own tools an agent's list may name, with the group each belongs to; `kept` ones every agent keeps. MCP
+   * Colonia's own tools an agent's list may name, with the group each belongs to; `kept` ones every agent keeps. MCP
    * tools are named as `mcp_<server>_*` or one by one.
    */
   "agents.tools": {
@@ -490,7 +490,7 @@ export const appMethods = {
     }),
     effect: false,
   },
-  /** Internal: an external harness calls one APX tool inside the run that owns `token`. */
+  /** Internal: an external harness calls one Colonia tool inside the run that owns `token`. */
   "harness.call": {
     params: z
       .object({ token: z.string().min(32).max(128), tool: z.string(), args: z.record(z.string(), z.unknown()) })
@@ -525,7 +525,7 @@ export const appMethods = {
     result: Organization,
     effect: false,
   },
-  /** Replaces a project's areas and roles: written to its .apc/organization.json (the base project's: in APX). */
+  /** Replaces a project's areas and roles: written to its .apc/organization.json (the base project's: in Colonia). */
   "org.set": {
     params: z.object({ project: Id.optional(), organization: Organization }).strict(),
     result: Organization,
@@ -547,7 +547,7 @@ export const appMethods = {
   },
   /**
    * A new project: in a folder (made if missing; a plain one gets an AGENTS.md and .apc/), or, without one, in a folder
-   * of its own inside APX's home (`projects/<name>`). Name, kind and description go to its .apc/project.json; a project
+   * of its own inside Colonia's home (`projects/<name>`). Name, kind and description go to its .apc/project.json; a project
    * in a folder with no name given keeps the folder's.
    */
   "projects.create": {
@@ -575,9 +575,9 @@ export const appMethods = {
         name: z.string().trim().min(1).max(80).optional(),
         description: z.string().trim().max(500).nullable().optional(),
         kind: ProjectKind.nullable().optional(),
-        /** How far agents without one of their own go here; null = auto. Kept by APX, not in the folder. */
+        /** How far agents without one of their own go here; null = auto. Kept by Colonia, not in the folder. */
         autonomy: Autonomy.nullable().optional(),
-        /** Replaces the folders its agents may only read: absolute (or "~/…"), existing, outside APX's home. */
+        /** Replaces the folders its agents may only read: absolute (or "~/…"), existing, outside Colonia's home. */
         read_only_folders: z.array(z.string().trim().min(1).max(1024)).max(20).optional(),
       })
       .strict(),
@@ -703,7 +703,7 @@ export const appMethods = {
         text: z.string().min(1).max(50_000),
         /**
          * queue: after what is running. interrupt: stop the running turn, then this. steer: into the running turn
-         * at its next step (APX's own loop); when nothing can take it, it queues.
+         * at its next step (Colonia's own loop); when nothing can take it, it queues.
          */
         mode: z.enum(["queue", "interrupt", "steer"]).default("queue"),
         /** Owner-only: continue this stopped delegated run, only if it is still the session's latest run. */
@@ -764,7 +764,7 @@ export const appMethods = {
     result: z.object({ canceled: z.boolean() }),
     effect: true,
   },
-  /** Whether the ChatGPT plan is signed in for APX's own loop, and a sign-in in progress. */
+  /** Whether the ChatGPT plan is signed in for Colonia's own loop, and a sign-in in progress. */
   "chatgpt.status": {
     params: z.object({}).strict(),
     result: ChatgptStatus,
@@ -773,7 +773,7 @@ export const appMethods = {
   },
   /**
    * Signs the plan in: `device` gives a code to type at OpenAI's address (the core waits for it); `v1` takes over
-   * APX v1's own sign-in. Never Codex CLI's.
+   * Colonia v1's own sign-in. Never Codex CLI's.
    */
   "chatgpt.connect": {
     params: z.object({ via: z.enum(["device", "v1"]) }).strict(),
@@ -1034,7 +1034,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * The channels as an agent sees them: each app APX talks through, whether it is up, and the rooms (shared places such
+   * The channels as an agent sees them: each app Colonia talks through, whether it is up, and the rooms (shared places such
    * as a Discord #channel) it reads. No tokens, accounts or QR. Open to agents; people are in `contacts.list`.
    */
   "channels.overview": {
@@ -1215,7 +1215,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Files that never arrived in a channel chat (kept as "[video — APX cannot read…]" or "[attachment could not be
+   * Files that never arrived in a channel chat (kept as "[video — Colonia cannot read…]" or "[attachment could not be
    * downloaded…]") asked of the platform again — on WhatsApp the owner's phone sends each message again, so it has to
    * be online — and put in their messages. Starts no turn. `missing` says why each one did not come.
    */
@@ -1245,7 +1245,7 @@ export const appMethods = {
     effect: true,
     access: "human",
   },
-  /** The desktop app's settings: the global shortcut of the quick chat and whether APX starts at login. */
+  /** The desktop app's settings: the global shortcut of the quick chat and whether Colonia starts at login. */
   /** The desktop app's settings: quick chat shortcut, start at login, and computer use on this computer. */
   "desktop.get": {
     params: z.object({}).strict(),
@@ -1253,7 +1253,7 @@ export const appMethods = {
       shortcut: z.string(),
       launch_at_login: z.boolean(),
       computer_use: z.boolean(),
-      /** The Mac stays awake while APX works for the owner (macOS). */
+      /** The Mac stays awake while Colonia works for the owner (macOS). */
       keep_awake: z.boolean(),
     }),
     effect: false,
@@ -1406,7 +1406,7 @@ export const appMethods = {
     }),
     effect: true,
   },
-  /** The bytes of an image or audio APX made, base64. */
+  /** The bytes of an image or audio Colonia made, base64. */
   "media.get": {
     params: z.object({ id: Id }).strict(),
     result: z.object({ mime: z.string(), data: z.string(), bytes: z.number().int() }),
@@ -1418,14 +1418,14 @@ export const appMethods = {
     effect: false,
     access: "human",
   },
-  /** The latest messages APX meant to send unasked (newest first), and how many count today against the cap. */
+  /** The latest messages Colonia meant to send unasked (newest first), and how many count today against the cap. */
   "notices.log": {
     params: z.object({ limit: z.number().int().min(1).max(200).default(50) }).strict(),
     result: z.object({ items: z.array(Nudge), today: z.object({ sent: z.number().int(), cap: z.number().int() }) }),
     effect: false,
     access: "human",
   },
-  /** The owner's 👍/👎 on a message APX sent unasked (null takes it back). A kind marked 👎 again and again stops. */
+  /** The owner's 👍/👎 on a message Colonia sent unasked (null takes it back). A kind marked 👎 again and again stops. */
   "notices.feedback": {
     params: z.object({ id: Id, feedback: z.enum(["up", "down"]).nullable() }).strict(),
     result: Nudge,
@@ -1551,7 +1551,7 @@ export const appMethods = {
   },
   /**
    * The owner's own Claude Code or Codex sessions on this machine (read from ~/.claude, ~/.codex), newest first;
-   * those APX already goes on with are left out (they are its chats).
+   * those Colonia already goes on with are left out (they are its chats).
    */
   "sessions.native": {
     params: z
@@ -1564,7 +1564,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Goes on with one of those sessions in APX: a chat with that engine itself, in the session's folder, with what was
+   * Goes on with one of those sessions in Colonia: a chat with that engine itself, in the session's folder, with what was
    * said there; the engine picks up its own session. Again: the chat it already has.
    */
   "sessions.resume": {
@@ -1575,7 +1575,7 @@ export const appMethods = {
   },
   /**
    * The engine's work on this machine grouped by project (Codex's own projects, else the folders sessions ran in),
-   * newest first; `project_id` when APX already has that folder, `thread` for a session already brought in.
+   * newest first; `project_id` when Colonia already has that folder, `thread` for a session already brought in.
    */
   "sessions.projects": {
     params: z.object({ engine: z.enum(["claude", "codex"]) }).strict(),
@@ -1595,7 +1595,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Brings a project's sessions (all, or `sessions`) into APX: the folder becomes a project if it is not one, each
+   * Brings a project's sessions (all, or `sessions`) into Colonia: the folder becomes a project if it is not one, each
    * session a chat with its whole history, images, artifacts (as widgets) and documents, answered by the project's
    * orchestrator (else the super-agent) until an agent of its area takes it (sessions.adopt). Again: only what is new.
    * `pages` are the HTML files those sessions wrote (surfaces.import_page).
@@ -1626,7 +1626,7 @@ export const appMethods = {
           notes: z.number().int(),
           tasks: z.number().int(),
           routines: z.array(z.string()),
-          /** What APX refused, with why (a note that reads as a credential); the next import tries it again. */
+          /** What Colonia refused, with why (a note that reads as a credential); the next import tries it again. */
           skipped: z.array(z.string()),
         })
         .optional(),
@@ -1756,7 +1756,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Summarizes the thread's older turns now (APX's own loop sees the summary plus the newest turns verbatim). Claude
+   * Summarizes the thread's older turns now (Colonia's own loop sees the summary plus the newest turns verbatim). Claude
    * Code and Codex keep and compact their own transcript.
    */
   "threads.compact": {
@@ -1805,7 +1805,7 @@ export const appMethods = {
   },
   /**
    * A media file a widget shows (an image, video or audio, up to 15 MB), read-only and scoped to the widget's project:
-   * `ref` is a path in the project's folder (the base project's for a global widget) or `media:<id>` for a file APX
+   * `ref` is a path in the project's folder (the base project's for a global widget) or `media:<id>` for a file Colonia
    * stored in one of that project's chats. Only refs written in the widget's own HTML resolve.
    */
   "surfaces.media": {
@@ -1833,7 +1833,7 @@ export const appMethods = {
         /** Origins it may read live data from ([] removes them; absent keeps the current ones). */
         connect: z.array(SurfaceOrigin).max(5).optional(),
         thread: Id.optional(),
-        /** Without a thread (`apx artifacts push`): the project it belongs to; none makes it global. */
+        /** Without a thread (`colonia artifacts push`): the project it belongs to; none makes it global. */
         project: Id.optional(),
       })
       .strict(),
@@ -1852,7 +1852,7 @@ export const appMethods = {
   },
   /**
    * An HTML page in a project's folder (one an imported session wrote) as a widget of that project: its local
-   * scripts and styles inlined, its images and videos loaded from the folder (data-apx-src). Again: a new version.
+   * scripts and styles inlined, its images and videos loaded from the folder (data-colonia-src). Again: a new version.
    */
   "surfaces.import_page": {
     params: z
@@ -1879,7 +1879,7 @@ export const appMethods = {
     effect: true,
   },
   /**
-   * Deletes a widget for good, with what it remembers (APX.store, APX.db): the chats that showed it keep their messages.
+   * Deletes a widget for good, with what it remembers (Colonia.store, Colonia.db): the chats that showed it keep their messages.
    * Owner only.
    */
   "surfaces.remove": {
@@ -1896,7 +1896,7 @@ export const appMethods = {
     access: "human",
   },
   /**
-   * Changes what a widget remembers (APX.state): `patch` keys are set, a null removes one; `replace` starts from empty.
+   * Changes what a widget remembers (Colonia.state): `patch` keys are set, a null removes one; `replace` starts from empty.
    * Refused past SURFACE_STATE_MAX characters of JSON. The page and its version stay as they are.
    */
   "surfaces.set_state": {

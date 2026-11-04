@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { callTool, say, scriptedLlm, startCore } from "./testkit.ts";
 
 // An action card: the agent puts one concrete action to the owner, who accepts or declines it (DECISIONS.md#d-142).

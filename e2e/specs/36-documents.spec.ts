@@ -72,7 +72,7 @@ test("documentos: txt como Markdown, apertura explícita, fuente, descarga y rec
     await list.getByRole("button", { name: /Report\.txt/ }).click();
     await page.reload();
     await expect(panel.getByRole("cell", { name: "Ready", exact: true })).toBeVisible();
-    await page.screenshot({ path: "/tmp/apx-documents.png", fullPage: true });
+    await page.screenshot({ path: "/tmp/colonia-documents.png", fullPage: true });
   } finally {
     // Detach the browser before stopping its server; reconnect timers must not outlive the fixture.
     await page.goto("about:blank");

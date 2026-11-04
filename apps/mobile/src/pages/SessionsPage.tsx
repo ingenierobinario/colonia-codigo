@@ -104,7 +104,7 @@ function EngineCard({
     .filter((thread) => thread.engine === engine.id && !thread.archived)
     .sort((a, b) => textOrder(b.updated_at, a.updated_at))
     .slice(0, 5);
-  // Sessions started outside APX (sessions.native already leaves out the ones APX resumed).
+  // Sessions started outside Colonia (sessions.native already leaves out the ones Colonia resumed).
   const native = (data.sessions[engine.id] ?? []).slice(0, 3);
   const status = engine.logged_in ? "engineConnected" : engine.installed ? "engineSignedOut" : "engineMissing";
   return (

@@ -40,24 +40,24 @@ export function NavItem({
   className,
 }: NavItemProps) {
   const cls = cx(
-    "apx-nav",
-    depth === 1 && "apx-nav--nested",
-    collapsed && "apx-nav--collapsed",
+    "colonia-nav",
+    depth === 1 && "colonia-nav--nested",
+    collapsed && "colonia-nav--collapsed",
     active && "is-active",
     disabled && "is-disabled",
     className,
   );
   const name = collapsed && typeof label === "string" ? label : undefined;
   const badge = count != null && count > 0 && (
-    <span className={cx("apx-nav__count", attention && "is-attention")}>{count}</span>
+    <span className={cx("colonia-nav__count", attention && "is-attention")}>{count}</span>
   );
   const inner = (
     <>
-      {icon && <span className="apx-nav__icon">{icon}</span>}
-      {!collapsed && <span className="apx-nav__label">{label}</span>}
+      {icon && <span className="colonia-nav__icon">{icon}</span>}
+      {!collapsed && <span className="colonia-nav__label">{label}</span>}
       {!collapsed && badge}
-      {!collapsed && trailing && <span className="apx-nav__trailing">{trailing}</span>}
-      {collapsed && count != null && count > 0 && <span className="apx-nav__dot" aria-hidden="true" />}
+      {!collapsed && trailing && <span className="colonia-nav__trailing">{trailing}</span>}
+      {collapsed && count != null && count > 0 && <span className="colonia-nav__dot" aria-hidden="true" />}
     </>
   );
   const el = href ? (

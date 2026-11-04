@@ -1,15 +1,15 @@
-// apx expose: who may reach the core (this computer, the network, or the owner's tailnet). Edits <home>/core.env.
+// colonia expose: who may reach the core (this computer, the network, or the owner's tailnet). Edits <home>/core.env.
 import fs from "node:fs";
 import path from "node:path";
-import { CORE_ENV_KEYS } from "@apx/protocol";
+import { CORE_ENV_KEYS } from "@colonia/protocol";
 import { describeExposure, type ExposeMode, planExposure, tailscaleDnsName } from "./expose-plan.ts";
-import { apxHome, coreEnvPath, corePort, readCoreEnvFile, writeCoreEnvFile } from "./local.ts";
+import { coloniaHome, coreEnvPath, corePort, readCoreEnvFile, writeCoreEnvFile } from "./local.ts";
 import { sh } from "./service.ts";
 
-const USAGE = `apx expose tailscale   Reach the core at https://<this machine>.ts.net from your tailnet (the core stays on loopback)
-apx expose lan         Listen on every network address of this machine (needs a token, created if missing)
-apx expose off         Back to this computer only (the token is kept)
-apx expose status`;
+const USAGE = `colonia expose tailscale   Reach the core at https://<this machine>.ts.net from your tailnet (the core stays on loopback)
+colonia expose lan         Listen on every network address of this machine (needs a token, created if missing)
+colonia expose off         Back to this computer only (the token is kept)
+colonia expose status`;
 
 const MAC_TAILSCALE = "/Applications/Tailscale.app/Contents/MacOS/Tailscale";
 
@@ -29,7 +29,7 @@ export async function expose(sub: string | undefined): Promise<void> {
 
 /** Changes core.env for a mode; returns once the file is written (the core picks it up when it starts again). */
 export async function setExposure(mode: ExposeMode): Promise<void> {
-  const home = apxHome();
+  const home = coloniaHome();
   const current = readCoreEnvFile(home);
   const port = corePort();
   const tailscale = findTailscale();
@@ -53,20 +53,20 @@ export async function setExposure(mode: ExposeMode): Promise<void> {
     const r = sh(tailscale, ["serve", "--bg", "--https=443", `http://127.0.0.1:${port}`], true, cliEnv);
     if (!r.ok)
       throw new Error("`tailscale serve` failed; HTTPS may need enabling for your tailnet in Tailscale's admin");
-    console.log(`APX is at ${tailscaleUrl} for every device in your tailnet`);
-  } else if (mode === "off" && tailscale && current.APX_PUBLIC_URL) {
-    // Only undo what `expose tailscale` set up: other serve configs on this machine are not APX's.
+    console.log(`Colonia is at ${tailscaleUrl} for every device in your tailnet`);
+  } else if (mode === "off" && tailscale && current.COLONIA_PUBLIC_URL) {
+    // Only undo what `expose tailscale` set up: other serve configs on this machine are not Colonia's.
     sh(tailscale, ["serve", "--https=443", "off"], false, cliEnv);
   }
   console.log(describeExposure(plan.vars));
   console.log(
     [
       "",
-      "The core reads this when it starts: restart it (apx service restart, when installed as a service).",
+      "The core reads this when it starts: restart it (colonia service restart, when installed as a service).",
       mode === "off"
         ? "Local clients keep using the token: the terminal and the desktop app read it from core.env."
         : "Local clients now need the token: the terminal and the desktop app read it from core.env on their own.",
-      mode === "off" ? "" : "Then connect a phone or another computer with: apx pair",
+      mode === "off" ? "" : "Then connect a phone or another computer with: colonia pair",
     ]
       .filter(Boolean)
       .join("\n"),
@@ -74,7 +74,7 @@ export async function setExposure(mode: ExposeMode): Promise<void> {
 }
 
 function exposeStatus() {
-  const home = apxHome();
+  const home = coloniaHome();
   const file = readCoreEnvFile(home);
   const effective: Record<string, string> = { ...file };
   const overridden: string[] = [];
@@ -85,8 +85,8 @@ function exposeStatus() {
     effective[k] = v;
   }
   console.log(describeExposure(effective));
-  console.log(`port     ${corePort()}${process.env.APX_URL ? ` (this terminal talks to ${process.env.APX_URL})` : ""}`);
-  console.log(`token    ${effective.APX_TOKEN ? "set" : "none (the core only accepts this computer)"}`);
+  console.log(`port     ${corePort()}${process.env.COLONIA_URL ? ` (this terminal talks to ${process.env.COLONIA_URL})` : ""}`);
+  console.log(`token    ${effective.COLONIA_TOKEN ? "set" : "none (the core only accepts this computer)"}`);
   console.log(`settings ${coreEnvPath(home)}${Object.keys(file).length ? "" : " (none yet)"}`);
   if (overridden.length) console.log(`the environment overrides: ${overridden.join(", ")}`);
 }

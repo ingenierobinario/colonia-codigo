@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { ContextMenu, Icons, ProjectTile, Spinner } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { ContextMenu, Icons, ProjectTile, Spinner } from "@colonia/ui";
 import { Suspense } from "react";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";

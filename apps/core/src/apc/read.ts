@@ -3,15 +3,15 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { AGENTS_MD_LIMIT } from "@apx/protocol";
+import { AGENTS_MD_LIMIT } from "@colonia/protocol";
 import { type Fields, listField, parseFrontmatter, textField } from "./frontmatter.ts";
 
 export const SLUG_RE = /^[a-z][a-z0-9_-]*$/;
 
 export type ApcProject = {
-  /** Stable id: the committed apx_id when there is one, else derived from the path. */
+  /** Stable id: the committed colonia_id when there is one, else derived from the path. */
   id: string;
-  /** Derived from the folder's path: used when another folder already holds the same apx_id (clone, worktree). */
+  /** Derived from the folder's path: used when another folder already holds the same colonia_id (clone, worktree). */
   pathId: string;
   root: string;
   name: string;
@@ -23,7 +23,7 @@ export type ApcProject = {
   contextChars?: number | undefined;
   /** .apc/memory.md (written by the owner), capped. */
   memory?: string | undefined;
-  /** Why .apc/project.json is there but unreadable: its name, kind and apx_id are then unknown, not absent. */
+  /** Why .apc/project.json is there but unreadable: its name, kind and colonia_id are then unknown, not absent. */
   metaError?: string | undefined;
 };
 
@@ -109,7 +109,7 @@ export function isApcProject(root: string): boolean {
 
 export function readProject(root: string): ApcProject {
   const abs = path.resolve(root);
-  let meta: { name?: string; description?: string; apx_id?: string; kind?: string } = {};
+  let meta: { name?: string; description?: string; colonia_id?: string; kind?: string } = {};
   let metaError: string | undefined;
   const metaText = readText(path.join(abs, ".apc", "project.json"));
   if (metaText !== undefined) {
@@ -122,7 +122,7 @@ export function readProject(root: string): ApcProject {
     }
   }
   const pathId = createHash("sha256").update(abs).digest("hex").slice(0, 12);
-  const id = meta.apx_id && /^[a-z0-9]{6,32}$/.test(meta.apx_id) ? meta.apx_id : pathId;
+  const id = meta.colonia_id && /^[a-z0-9]{6,32}$/.test(meta.colonia_id) ? meta.colonia_id : pathId;
   const agentsMd = readText(path.join(abs, "AGENTS.md"));
   const apc = path.join(abs, ".apc");
   const memoryMd = isLink(apc) ? undefined : readText(path.join(apc, "memory.md"));

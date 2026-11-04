@@ -1,6 +1,6 @@
 // The owner's paired devices. A device's token is random and handed over once; only its sha256 is stored.
 import { createHash, randomBytes } from "node:crypto";
-import type { Device, DevicePlatform, PushTarget } from "@apx/protocol";
+import type { Device, DevicePlatform, PushTarget } from "@colonia/protocol";
 import { newId, now, opt, qb, type Sql } from "./sql.ts";
 
 const hashOf = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -41,7 +41,7 @@ export function devicesRepo({ one, all, run }: Sql) {
     },
     create(name: string, platform: DevicePlatform): { device: Device; token: string } {
       const id = newId("dev");
-      const token = `apxd_${randomBytes(32).toString("base64url")}`;
+      const token = `coloniad_${randomBytes(32).toString("base64url")}`;
       run(qb.insertInto("devices").values({ id, name, platform, token_hash: hashOf(token), created_at: now() }));
       const r = one(qb.selectFrom("devices").selectAll().where("id", "=", id));
       if (!r) throw new Error("device not stored");
@@ -49,7 +49,7 @@ export function devicesRepo({ one, all, run }: Sql) {
     },
     /** The live device a token belongs to (its use noted at most once a minute); undefined when unknown or revoked. */
     byToken(token: string): Device | undefined {
-      if (!token.startsWith("apxd_")) return undefined;
+      if (!token.startsWith("coloniad_")) return undefined;
       const r = one(
         qb.selectFrom("devices").selectAll().where("token_hash", "=", hashOf(token)).where("revoked_at", "is", null),
       );

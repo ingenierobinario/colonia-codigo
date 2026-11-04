@@ -5,7 +5,7 @@ import type { Params } from "../../../packages/protocol/src/index.ts";
 import { APP_CLIENT } from "./appInfo";
 import type { Creds } from "./creds";
 import { t } from "./i18n";
-import { ApxClient, type Surface } from "./protocol";
+import { ColoniaClient, type Surface } from "./protocol";
 import { readSurfaceMessage, surfaceDoc, surfaceResult } from "./surfaceDoc";
 import { EmptyState, IconTile, ListGroup, ListRow, Screen, Spinner, SubHeader } from "./ui/kit";
 import { makeStyles, useTheme } from "./ui/theme";
@@ -20,7 +20,7 @@ type Summary = Omit<Surface, "html">;
 /** The owner's pinned widgets and apps; one opens full screen, live from the core. */
 export function SurfacesScreen({ creds, onBack }: { creds: Creds; onBack: () => void }) {
   const styles = useStyles();
-  const client = useMemo(() => new ApxClient({ url: creds.url, token: creds.token, client: APP_CLIENT }), [creds]);
+  const client = useMemo(() => new ColoniaClient({ url: creds.url, token: creds.token, client: APP_CLIENT }), [creds]);
   const [list, setList] = useState<Summary[]>();
   const [open, setOpen] = useState<Surface>();
   useEffect(() => {
@@ -59,7 +59,7 @@ export function SurfacesScreen({ creds, onBack }: { creds: Creds; onBack: () => 
   );
 }
 
-function SurfaceView({ surface, client, onBack }: { surface: Surface; client: ApxClient; onBack: () => void }) {
+function SurfaceView({ surface, client, onBack }: { surface: Surface; client: ColoniaClient; onBack: () => void }) {
   const theme = useTheme();
   const styles = useStyles();
   // A widget is drawn in the app's scheme.

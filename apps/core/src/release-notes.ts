@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// What changed in each APX release: the commits between two v2 tags, each subject as a sentence (the same sentences
-// the Discord announcement and the issue replies use). A packaged APX carries them in release-notes.json beside
+// What changed in each Colonia release: the commits between two v2 tags, each subject as a sentence (the same sentences
+// the Discord announcement and the issue replies use). A packaged Colonia carries them in release-notes.json beside
 // build.json, written when it is staged; a checkout reads them from its own git. See DECISIONS.md#d-100
 //   node apps/core/src/release-notes.ts <file>     writes this checkout's notes (stage.ts calls it)
 import { execFileSync } from "node:child_process";
@@ -16,11 +16,11 @@ const KINDS = ["feat", "fix", "perf"] as const;
 export type Change = { kind: (typeof KINDS)[number]; text: string; sha: string };
 export type Release = { version: string; previous?: string; changes: Change[] };
 export type ReleaseNotes = {
-  /** The release this APX is ("2.3.33"). */
+  /** The release this Colonia is ("2.3.33"). */
   version: string;
   /** The branch it was built from ("main"). */
   branch?: string;
-  /** A checkout's folder, where `git log` reads the commits; none for a packaged APX. */
+  /** A checkout's folder, where `git log` reads the commits; none for a packaged Colonia. */
   repo_dir?: string;
   /** Newest first. */
   releases: Release[];
@@ -50,10 +50,10 @@ export function previousTag(tag: string, tags: string[]): string | undefined {
     .sort((a, b) => compareVersions(b, a))[0];
 }
 
-/** `fix(core): a chat turn gets 60 steps` → "A chat turn gets 60 steps"; a command keeps its case (`apx …`). */
+/** `fix(core): a chat turn gets 60 steps` → "A chat turn gets 60 steps"; a command keeps its case (`colonia …`). */
 export function sentence(subject: string): string {
   const s = subject.replace(/^[a-z]+(\([^)]*\))?!?:\s*/, "");
-  return s.startsWith("apx ") ? s : `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
+  return s.startsWith("colonia ") ? s : `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
 }
 
 /** The changes people read in `git log --format=%h%x00%s%x1e`: what is new, fixed or faster. */
@@ -126,7 +126,7 @@ function readFile(file: string): ReleaseNotes | undefined {
   }
 }
 
-/** This APX's notes: the file a packaged build carries at `root`, else the checkout's git. */
+/** This Colonia's notes: the file a packaged build carries at `root`, else the checkout's git. */
 export function localReleases(root: string): ReleaseSource {
   const file = path.join(root, "release-notes.json");
   if (fs.existsSync(file)) {
@@ -146,7 +146,7 @@ if (import.meta.main) {
   const out = process.argv[2];
   if (!out) throw new Error("usage: node apps/core/src/release-notes.ts <file>");
   const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const notes = notesFromGit(repo, process.env.APX_BRANCH || undefined);
+  const notes = notesFromGit(repo, process.env.COLONIA_BRANCH || undefined);
   if (notes) fs.writeFileSync(out, `${JSON.stringify(notes, null, 2)}\n`);
   process.stdout.write(notes ? `release notes for ${notes.version} in ${out}\n` : "no v2 tag here: no release notes\n");
 }

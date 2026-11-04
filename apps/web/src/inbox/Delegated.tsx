@@ -1,5 +1,5 @@
-import type { Thread } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Thread } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { loadDelegated } from "../data/actions.ts";
 import { DELEGATED_SHOWN } from "../data/identity.ts";

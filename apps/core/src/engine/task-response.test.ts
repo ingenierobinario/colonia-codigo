@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "./testkit.ts";
 
 for (const failure of ["empty", "failed"] as const) {
@@ -35,9 +35,9 @@ for (const failure of ["empty", "failed"] as const) {
       assert.ok(response);
       assert.equal(response.thread_id, child);
       const made = await env.client.call("clients.create", { name: "Scoped reader", scopes: ["chat"] });
-      const scoped = new ApxClient({ url: env.core.url, clientToken: made.token });
+      const scoped = new ColoniaClient({ url: env.core.url, clientToken: made.token });
       await assert.rejects(scoped.call("threads.get", { thread: response.thread_id }), /only use the chats it started/);
-      const socket = await new ApxClient({ url: env.core.url, token: made.token }).connect();
+      const socket = await new ColoniaClient({ url: env.core.url, token: made.token }).connect();
       try {
         await assert.rejects(
           socket.call("threads.get", { thread: response.thread_id }),

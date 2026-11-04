@@ -1,5 +1,5 @@
 // Google Drive's REST API, flattened to what a prompt needs: finding files, reading one as text (a Doc, a Sheet, a
-// Slides deck or a text file), writing a Doc and sharing what APX wrote.
+// Slides deck or a text file), writing a Doc and sharing what Colonia wrote.
 import { randomUUID } from "node:crypto";
 import type { Google } from "./google.ts";
 
@@ -65,7 +65,7 @@ const FIELDS = "id,name,mimeType,modifiedTime,webViewLink,size,owners(emailAddre
 
 /** A multipart/related upload: the file's metadata, then its content. */
 function multipart(meta: unknown, content: string, type: string): { type: string; data: string } {
-  const b = `apx-${randomUUID()}`;
+  const b = `colonia-${randomUUID()}`;
   return {
     type: `multipart/related; boundary=${b}`,
     data: [
@@ -110,7 +110,7 @@ export function driveApi(g: Google) {
       const as = EXPORTS[mime];
       const textual = mime.startsWith("text/") || /json|xml|csv|markdown|yaml/.test(mime);
       if (!as && !textual)
-        throw new Error(`${file.name} is a ${mime || "binary"} file APX cannot read as text; open ${file.link ?? id}`);
+        throw new Error(`${file.name} is a ${mime || "binary"} file Colonia cannot read as text; open ${file.link ?? id}`);
       const text = await g.call<string>(ID, as ? `${fileUrl(id)}/export` : fileUrl(id), {
         query: as ? { mimeType: as } : { alt: "media", supportsAllDrives: true },
         text: true,
@@ -118,7 +118,7 @@ export function driveApi(g: Google) {
       return { file, text: text.length > TEXT_CAP ? `${text.slice(0, TEXT_CAP)}\n…[cut]` : text };
     },
 
-    /** A new Google Doc from text, or a Doc APX made written over (drive.file reaches only those). */
+    /** A new Google Doc from text, or a Doc Colonia made written over (drive.file reaches only those). */
     async writeDoc(o: {
       id?: string | undefined;
       title?: string | undefined;
@@ -141,7 +141,7 @@ export function driveApi(g: Google) {
       return flattenFile(data);
     },
 
-    /** Shares a file APX wrote with people, who get Google's email about it. */
+    /** Shares a file Colonia wrote with people, who get Google's email about it. */
     async share(o: {
       id: string;
       emails: string[];

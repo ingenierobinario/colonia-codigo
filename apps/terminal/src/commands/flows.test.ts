@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { ApxClient } from "@apx/protocol/client";
+import type { ColoniaClient } from "@colonia/protocol/client";
 import { flows } from "./flows.ts";
 
 test("export follows every row and event cursor and refuses a live Flow", async (t) => {
@@ -39,7 +39,7 @@ test("export follows every row and event cursor and refuses a live Flow", async 
       if (method === "flows.run_get") return { event: params.event, steps: [] };
       throw new Error(`Unexpected method: ${method}`);
     },
-  } as unknown as ApxClient;
+  } as unknown as ColoniaClient;
   await assert.rejects(flows(client, ["export", "f"], "p"), /disabled/);
   assert.equal(calls.length, 1, "no partial export from an enabled Flow");
   enabled = false;
@@ -71,7 +71,7 @@ test("Flow commands call the canonical protocol and reject malformed input befor
       calls.push([method, params]);
       return {};
     },
-  } as unknown as ApxClient;
+  } as unknown as ColoniaClient;
   await flows(client, ["list"], "p");
   await flows(client, ["rows", "f"]);
   await flows(client, ["events", "f"]);
@@ -104,7 +104,7 @@ test("run and stop call the owner's methods, and refuse inside an agent's comman
         ? { event: "owner:1", state: "pending" }
         : { cancelled: true, state: "cancelled" };
     },
-  } as unknown as ApxClient;
+  } as unknown as ColoniaClient;
   await flows(client, ["run", "f", '{"type":"message"}']);
   await flows(client, ["run", "s"]);
   await flows(client, ["stop", "f", "owner:1"]);
@@ -113,14 +113,14 @@ test("run and stop call the owner's methods, and refuse inside an agent's comman
     { method: "flows.run_now", params: { flow: "s" } },
     { method: "flows.cancel_run", params: { flow: "f", event: "owner:1" } },
   ]);
-  const inherited = process.env.APX_AGENT;
-  process.env.APX_AGENT = "builder";
+  const inherited = process.env.COLONIA_AGENT;
+  process.env.COLONIA_AGENT = "builder";
   try {
     await assert.rejects(flows(client, ["run", "f"]), /inside an agent's command/);
     await assert.rejects(flows(client, ["stop", "f", "owner:1"]), /inside an agent's command/);
   } finally {
-    if (inherited === undefined) delete process.env.APX_AGENT;
-    else process.env.APX_AGENT = inherited;
+    if (inherited === undefined) delete process.env.COLONIA_AGENT;
+    else process.env.COLONIA_AGENT = inherited;
   }
   assert.equal(calls.length, 3, "nothing ran from an agent's command");
 });

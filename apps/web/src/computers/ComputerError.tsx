@@ -1,4 +1,4 @@
-import type { ComputerMemoryRefusal, ComputerNeed } from "@apx/protocol";
+import type { ComputerMemoryRefusal, ComputerNeed } from "@colonia/protocol";
 import { CopyButton } from "../chat/MessageActions.tsx";
 import { useLanguage, useT } from "../i18n/index.ts";
 

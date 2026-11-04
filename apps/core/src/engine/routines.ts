@@ -2,7 +2,7 @@
 // slow run never makes a routine run twice; a missed time (the core was off) runs once when it comes back. Each run
 // gets a conversation of its own. The owner hears back only when the agent has something to say; a quiet run's
 // conversation is archived.
-import type { Routine, RoutineRun } from "@apx/protocol";
+import type { Routine, RoutineRun } from "@colonia/protocol";
 import { meansOwner } from "../domain/persons.ts";
 import { type FlowRoutineEvent, type RunRecord, TERMINAL } from "../domain/runs.ts";
 import { MIN_GAP_MIN, nextRun } from "../domain/schedule.ts";

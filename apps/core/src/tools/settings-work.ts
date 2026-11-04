@@ -1,4 +1,4 @@
-// apx_settings, where the work happens and what it draws on: projects, memory, skills, MCP servers and extensions on
+// colonia_settings, where the work happens and what it draws on: projects, memory, skills, MCP servers and extensions on
 // or off, media services and widgets. A project's autonomy and read-only folders and memory's model stay the owner's
 // (DECISIONS.md#d-060). An MCP server names its keys as secret://NAME, never their value (DECISIONS.md#d-141).
 import { memorySettings } from "../domain/memory-settings.ts";
@@ -69,13 +69,13 @@ export const WORK: Readonly<Record<string, Setting>> = {
       store.projects
         .list()
         .map((p) => {
-          const bits = [p.kind ?? "", p.path ? `folder ${p.path}` : "kept by APX", p.present ? "" : "folder away"];
+          const bits = [p.kind ?? "", p.path ? `folder ${p.path}` : "kept by Colonia", p.present ? "" : "folder away"];
           return `- ${inlineName(p.name)} [${p.id}] (${bits.filter(Boolean).join(", ")})${p.description ? `: ${p.description.slice(0, 160)}` : ""}`;
         })
         .join("\n") || "no projects yet.",
   },
   "projects.create": {
-    does: "create a project (name, kind, description) in a folder (path, made if missing) or kept by APX",
+    does: "create a project (name, kind, description) in a folder (path, made if missing) or kept by Colonia",
     named: ["name", "path"],
     says: (p) => `Create the project ${inlineName(str(p.name) || str(p.path))}${p.path ? ` in ${str(p.path)}` : ""}`,
   },
@@ -175,12 +175,12 @@ export const WORK: Readonly<Record<string, Setting>> = {
     says: (p, { store }) => `Turn the skill ${str(p.name)} ${on(p.on)}${scopeOf(p, store)}`,
   },
   "skills.runtimes": {
-    does: "copy APX's skills into the other agent apps on this computer (Claude Code, Codex…); dry_run only lists",
+    does: "copy Colonia's skills into the other agent apps on this computer (Claude Code, Codex…); dry_run only lists",
     named: ["dry_run"],
     says: (p) =>
       p.dry_run
-        ? "List what copying APX's skills into the other agent apps would change"
-        : "Copy APX's skills into the other agent apps on this computer",
+        ? "List what copying Colonia's skills into the other agent apps would change"
+        : "Copy Colonia's skills into the other agent apps on this computer",
   },
   "resources.inherit": {
     does: "whether a project uses the global skills or MCP servers too (project, kind, on)",
@@ -215,7 +215,7 @@ export const WORK: Readonly<Record<string, Setting>> = {
     refuse: (p) => {
       const key = pastedKey(p.server);
       if (key)
-        return `${key} looks like a key's value: the owner saves it once in Variables (or apx secrets set NAME), and the server names it as secret://NAME`;
+        return `${key} looks like a key's value: the owner saves it once in Variables (or colonia secrets set NAME), and the server names it as secret://NAME`;
       const args = (p.server as McpRaw | null)?.args;
       if (args && JSON.stringify(args).includes("secret://"))
         return "a variable in args shows in the process list: put it in env instead";

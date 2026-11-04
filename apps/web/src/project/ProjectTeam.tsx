@@ -1,5 +1,5 @@
-import type { Agent } from "@apx/protocol";
-import { AgentAvatar, Button, ContextMenu, EmptyState, IconButton, Icons, Menu, SegmentedControl, Tabs } from "@apx/ui";
+import type { Agent } from "@colonia/protocol";
+import { AgentAvatar, Button, ContextMenu, EmptyState, IconButton, Icons, Menu, SegmentedControl, Tabs } from "@colonia/ui";
 import { type ReactNode, useMemo, useState } from "react";
 import { AgentModelPicker } from "../config/models/AgentModelPicker.tsx";
 import { PROFILE_KEY } from "../data/engines.ts";

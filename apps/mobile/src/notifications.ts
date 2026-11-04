@@ -6,12 +6,12 @@ import type { Creds } from "./creds";
 import { t } from "./i18n";
 import { soundsFor } from "./noticeSound";
 import { permissionState, shouldAsk } from "./notificationPermission";
-import { ApxClient } from "./protocol";
+import { ColoniaClient } from "./protocol";
 import { soundPrefs } from "./sounds";
 
-/** Android fixes a channel's sound when it is made: one with APX's sound, one quiet, picked per notice. */
-const SOUND_CHANNEL = "apx-sound";
-const QUIET_CHANNEL = "apx-quiet";
+/** Android fixes a channel's sound when it is made: one with Colonia's sound, one quiet, picked per notice. */
+const SOUND_CHANNEL = "colonia-sound";
+const QUIET_CHANNEL = "colonia-quiet";
 const SOUND_FILE = "message.wav";
 
 export type NotificationStatus = {
@@ -62,7 +62,7 @@ async function dismissThread(threadId: string) {
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
     const data = notification.request.content.data;
-    const local = data?.source === "apx-live";
+    const local = data?.source === "colonia-live";
     // In the app, a remote push repeats the live notice; about the chat on screen, neither sounds.
     const thread = typeof data?.thread_id === "string" ? data.thread_id : undefined;
     const show = !(remoteDevice && AppState.currentState === "active" && !local) && !onScreen(thread);
@@ -75,14 +75,14 @@ Notifications.setNotificationHandler({
 async function permission(request: boolean) {
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
-      name: "APX",
+      name: "Colonia",
       // No `sound`: a name here means a bundled file; leaving it out keeps the system's notification sound.
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 150, 250],
       lightColor: "#3ec98b",
     });
     await Notifications.setNotificationChannelAsync(SOUND_CHANNEL, {
-      name: "APX",
+      name: "Colonia",
       sound: SOUND_FILE,
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 150, 250],
@@ -150,7 +150,7 @@ export function refreshNotifications(creds?: Creds, request = false): Promise<vo
 }
 
 async function registerPush(creds: Creds): Promise<NotificationStatus> {
-  const client = new ApxClient({ url: creds.url, token: creds.token, client: APP_CLIENT });
+  const client = new ColoniaClient({ url: creds.url, token: creds.token, client: APP_CLIENT });
   const id = projectId();
   if (!id) return viaNtfy(client, creds);
   try {
@@ -173,7 +173,7 @@ function withDeadline<T>(work: Promise<T>, message: string): Promise<T> {
 }
 
 /** A build without Expo push still reaches the owner when the panel gave this phone an ntfy address. */
-async function viaNtfy(client: ApxClient, creds: Creds): Promise<NotificationStatus> {
+async function viaNtfy(client: ColoniaClient, creds: Creds): Promise<NotificationStatus> {
   try {
     const { devices } = await client.call("devices.list", {});
     if (devices.find((device) => device.id === creds.device)?.push !== "unifiedpush")
@@ -196,7 +196,7 @@ export async function showLiveNotice(
 ): Promise<void> {
   const key = `${device}:${notice.id}`;
   if (notice.read_at) {
-    if (delivered.has(key)) await Notifications.dismissNotificationAsync(`apx-${notice.id}`);
+    if (delivered.has(key)) await Notifications.dismissNotificationAsync(`colonia-${notice.id}`);
     return;
   }
   if (delivered.has(key) || onScreen(notice.thread_id)) return;
@@ -210,12 +210,12 @@ export async function showLiveNotice(
   const sound = soundsFor(notice.kind, soundPrefs().notice);
   try {
     await Notifications.scheduleNotificationAsync({
-      identifier: `apx-${notice.id}`,
+      identifier: `colonia-${notice.id}`,
       content: {
         title: notice.title,
         body: notice.body,
         sound: sound ? SOUND_FILE : false,
-        data: { thread_id: notice.thread_id, source: "apx-live", sound },
+        data: { thread_id: notice.thread_id, source: "colonia-live", sound },
       },
       trigger: Platform.OS === "android" ? { channelId: sound ? SOUND_CHANNEL : QUIET_CHANNEL } : null,
     });
@@ -229,10 +229,10 @@ export function notificationPreview() {
   const sound = soundPrefs().notice !== "off";
   return Notifications.scheduleNotificationAsync({
     content: {
-      title: "APX",
+      title: "Colonia",
       body: t("notificationPreview"),
       sound: sound ? SOUND_FILE : false,
-      data: { source: "apx-live", sound },
+      data: { source: "colonia-live", sound },
     },
     trigger: Platform.OS === "android" ? { channelId: sound ? SOUND_CHANNEL : QUIET_CHANNEL } : null,
   });

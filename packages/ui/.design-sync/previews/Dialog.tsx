@@ -1,4 +1,4 @@
-import { ApxProvider, Button, Dialog, Input } from "@apx/ui";
+import { ColoniaProvider, Button, Dialog, Input } from "@colonia/ui";
 
 // The dialog is position:fixed; a transformed provider becomes its containing block,
 // so the open dialog and backdrop render inside this frame instead of the viewport.
@@ -13,7 +13,7 @@ const frame = {
 
 export function Confirm() {
   return (
-    <ApxProvider fill style={frame}>
+    <ColoniaProvider fill style={frame}>
       <Dialog
         defaultOpen
         size="sm"
@@ -26,17 +26,17 @@ export function Confirm() {
           </>
         }
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }
 
 export function Form() {
   return (
-    <ApxProvider fill style={{ ...frame, height: 380 }}>
+    <ColoniaProvider fill style={{ ...frame, height: 380 }}>
       <Dialog
         defaultOpen
         title="New project"
-        description="Point APX at a folder. Agents and memory live in its .apc/ directory."
+        description="Point Colonia at a folder. Agents and memory live in its .apc/ directory."
         footer={
           <>
             <Button variant="secondary">Cancel</Button>
@@ -49,13 +49,13 @@ export function Form() {
           <Input placeholder="Folder" defaultValue="~/work/acme" />
         </div>
       </Dialog>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={frame}>
+    <ColoniaProvider look="classic" mode="dark" fill style={frame}>
       <Dialog
         defaultOpen
         size="sm"
@@ -68,6 +68,6 @@ export function ClassicLook() {
           </>
         }
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

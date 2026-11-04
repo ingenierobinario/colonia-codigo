@@ -1,4 +1,4 @@
-import { BLOBS, type BlobName } from "@apx/ui";
+import { BLOBS, type BlobName } from "@colonia/ui";
 import type { Language } from "../i18n/index.ts";
 
 /** One portrait: the blob it draws and the text of the file it is drawn with. */

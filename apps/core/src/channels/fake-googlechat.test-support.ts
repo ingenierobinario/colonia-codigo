@@ -4,7 +4,7 @@ import { generateKeyPairSync, verify } from "node:crypto";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 
-const SUBSCRIPTION = "projects/acme/subscriptions/apx-chat";
+const SUBSCRIPTION = "projects/acme/subscriptions/colonia-chat";
 const TOKEN = "ya29.fake-access-token";
 
 type Sent = { space: string; body: { text?: string; cardsV2?: unknown[]; thread?: { name?: string } }; name: string };
@@ -99,7 +99,7 @@ export async function fakeGoogleChat() {
       : { name: dm(from), type: "DM", spaceType: "DIRECT_MESSAGE" };
   const key = {
     type: "service_account",
-    client_email: "apx-chat@acme.iam.gserviceaccount.com",
+    client_email: "colonia-chat@acme.iam.gserviceaccount.com",
     private_key: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
     token_uri: `${base}/token`,
   };
@@ -115,7 +115,7 @@ export async function fakeGoogleChat() {
     message(from: string, text: string, opts: { group?: boolean } = {}): string {
       const message = {
         name: `${space(from, opts.group).name}/messages/in${n++}`,
-        text: opts.group ? `@APX ${text}` : text,
+        text: opts.group ? `@Colonia ${text}` : text,
         ...(opts.group
           ? {
               argumentText: ` ${text}`,
@@ -134,7 +134,7 @@ export async function fakeGoogleChat() {
         space: space(from),
         message: { name },
         user: userOf(from),
-        common: { invokedFunction: "apx", parameters: { id } },
+        common: { invokedFunction: "colonia", parameters: { id } },
       });
     },
     /** What the app sent to `to`'s direct space. */

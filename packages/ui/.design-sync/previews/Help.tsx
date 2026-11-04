@@ -1,4 +1,4 @@
-import { Help } from "@apx/ui";
+import { Help } from "@colonia/ui";
 
 export function Open() {
   return (

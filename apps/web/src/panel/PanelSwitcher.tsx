@@ -1,4 +1,4 @@
-import { IconButton, Icons, Menu } from "@apx/ui";
+import { IconButton, Icons, Menu } from "@colonia/ui";
 import { useT } from "../i18n/index.ts";
 import { go, useNav } from "../shell/nav.ts";
 import { PANELS, panelDef } from "./panels.tsx";

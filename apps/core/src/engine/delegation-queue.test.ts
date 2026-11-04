@@ -2,7 +2,7 @@
 // any other, die with their caller and outlive a restart.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import type { AssistantItem, ChatItem } from "../providers/types.ts";
@@ -48,7 +48,7 @@ function gated(o: GateOpts = {}) {
         req.signal.addEventListener("abort", () => reject(req.signal.reason), { once: true });
       });
     if (system.startsWith("You are Scout")) {
-      // The task it was given last (a resumed turn's last words are APX's note, not the task).
+      // The task it was given last (a resumed turn's last words are Colonia's note, not the task).
       const task = req.messages.findLast((m) => m.role === "user" && /look into [\w-]+/.test(String(m.content)));
       const key = String(task?.content ?? said).match(/look into ([\w-]+)/)?.[1] ?? "";
       if (o.askOwner?.includes(key) && !afterTool) {

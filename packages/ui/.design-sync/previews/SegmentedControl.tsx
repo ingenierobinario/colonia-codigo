@@ -1,4 +1,4 @@
-import { ApxProvider, Icons, SegmentedControl } from "@apx/ui";
+import { ColoniaProvider, Icons, SegmentedControl } from "@colonia/ui";
 
 export function Views() {
   return (
@@ -41,7 +41,7 @@ export function Small() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12 }}>
       <SegmentedControl
         options={[
           { value: "chat", label: "Chat" },
@@ -49,6 +49,6 @@ export function ClassicLook() {
           { value: "board", label: "Board" },
         ]}
       />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

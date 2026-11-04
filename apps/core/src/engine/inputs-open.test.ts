@@ -25,7 +25,7 @@ let root = "";
 before(async () => {
   // The turn stops waiting almost at once, so what happens after the wait is what these tests see.
   env = await startCore({ llm, inputWaits: { turn: 150, external: 150 } });
-  root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-inputs-open-"));
+  root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-inputs-open-"));
   fs.mkdirSync(path.join(root, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(root, ".apc", "project.json"), JSON.stringify({ name: "Northwind" }));
   fs.writeFileSync(

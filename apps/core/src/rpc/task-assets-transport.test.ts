@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 test("HTTP and WebSocket use the same durable task attachments contract", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("Ready")) });
-  const socket = await new ApxClient({ url: env.core.url }).connect();
+  const socket = await new ColoniaClient({ url: env.core.url }).connect();
   try {
     const upload = await env.client.call("media.upload", {
       name: "evidence.txt",

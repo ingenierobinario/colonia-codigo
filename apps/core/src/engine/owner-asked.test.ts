@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { waitFor } from "../testkit/platform.ts";
 import { callTool, say, scriptedLlm, startCore } from "./testkit.ts";
 
@@ -10,7 +10,7 @@ let sister = "";
 const llm = scriptedLlm((req, { said, afterTool }) => {
   if (afterTool) return say(String(req.messages.at(-1)?.content));
   if (said.includes("Their answer: go ahead"))
-    return callTool("c1", "apx_settings", { method: "contacts.set", params: { id: sister, note: "Changed" } });
+    return callTool("c1", "colonia_settings", { method: "contacts.set", params: { id: sister, note: "Changed" } });
   if (said.includes("check with the owner")) return callTool("q1", "ask_owner", { question: "Change her note?" });
   return say("ok");
 });
@@ -45,7 +45,7 @@ async function answerLate(thread: string): Promise<void> {
 
 test("the owner's answer to a question another agent's request raised does not let it change their settings", async () => {
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "Laundered" });
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await agent.call("threads.send", { thread: t.id, text: "check with the owner, then change her note" });
   await answerLate(t.id);
   await env.settle(t.id);
@@ -61,5 +61,5 @@ test("the owner's answer to a question in their own request still lets the chang
   await env.client.call("threads.send", { thread: t.id, text: "check with the owner, then change her note" });
   await answerLate(t.id);
   const [card] = (await pendingIn(t.id)).filter((i) => i.kind === "confirm");
-  assert.equal(card?.tool, "apx_settings");
+  assert.equal(card?.tool, "colonia_settings");
 });

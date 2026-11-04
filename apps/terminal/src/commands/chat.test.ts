@@ -4,18 +4,18 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import { setImmediate } from "node:timers/promises";
-import { CoreEvent, Message, Run } from "@apx/protocol";
+import { CoreEvent, Message, Run } from "@colonia/protocol";
 import { chat, latestConversation } from "./chat.ts";
 import { printed, recordingClient } from "./testing.ts";
 
 // Mock owner clients must not inherit the test runner's agent identity; the guard case sets its own.
-const inheritedAgent = process.env.APX_AGENT;
+const inheritedAgent = process.env.COLONIA_AGENT;
 beforeEach(() => {
-  delete process.env.APX_AGENT;
+  delete process.env.COLONIA_AGENT;
 });
 afterEach(() => {
-  if (inheritedAgent === undefined) delete process.env.APX_AGENT;
-  else process.env.APX_AGENT = inheritedAgent;
+  if (inheritedAgent === undefined) delete process.env.COLONIA_AGENT;
+  else process.env.COLONIA_AGENT = inheritedAgent;
 });
 
 function fixture(answers: Record<string, unknown>) {
@@ -104,7 +104,7 @@ test("chat selects the named agent's newest owner conversation and creates a fre
 
 test("chat rejects empty text and unknown agents before opening a socket", async () => {
   const f = fixture({ "agents.list": { agents: [] } });
-  await assert.rejects(chat(f.client, "", {}), /usage: apx chat/);
+  await assert.rejects(chat(f.client, "", {}), /usage: colonia chat/);
   await assert.rejects(chat(f.client, "Hello", { agent: "missing" }), /unknown agent missing/);
   assert.equal(f.closes, 0);
   assert.deepEqual(f.calls, [["agents.list", {}]]);
@@ -189,7 +189,7 @@ test("chat streams useful parts once, ignores other runs and prints the complete
 });
 
 test("code chat selects the closest registered project and preserves working directory and write policy", async (t) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-code-chat-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-code-chat-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const project = path.join(dir, "app");
   const cwd = path.join(project, "src");
@@ -217,11 +217,11 @@ test("code chat selects the closest registered project and preserves working dir
 
 test("inside an agent's command, chat refuses to speak as the owner and points to delegate", async () => {
   const { client, calls } = fixture({});
-  process.env.APX_AGENT = "builder";
+  process.env.COLONIA_AGENT = "builder";
   try {
     await assert.rejects(chat(client, "please review", { agent: "noor" }), /use your delegate tool/);
   } finally {
-    delete process.env.APX_AGENT;
+    delete process.env.COLONIA_AGENT;
   }
   assert.deepEqual(calls, [], "nothing was sent");
 });

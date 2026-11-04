@@ -15,7 +15,7 @@ medio. El agente escribe la respuesta que mandaría y no la manda. Te llega el b
 ## Qué pasa cuando te escribe
 
 1. Su mensaje queda en su chat, sin respuesta. Los audios se transcriben, porque el borrador necesita las palabras.
-2. APX espera a que termine de mandar mensajes seguidos (unos 15 segundos), así tres líneas rápidas llevan un solo
+2. Colonia espera a que termine de mandar mensajes seguidos (unos 15 segundos), así tres líneas rápidas llevan un solo
    borrador.
 3. El agente escribe una respuesta con el mismo prompt sellado que usa siempre su chat: quién es, tus reglas para esa
    persona, la relación y la charla hasta ahora. No tiene herramientas y no manda nada. Usa el modelo del agente.
@@ -25,7 +25,7 @@ medio. El agente escribe la respuesta que mandaría y no la manda. Te llega el b
 | Botón | Qué hace |
 |---|---|
 | **Mandar esta** | Le manda el borrador en su chat, como mensaje del agente. La próxima vez el agente lo lee como palabras suyas. |
-| **Contestar yo** | Lo próximo que le escribas a APX en ese chat (dentro de 10 minutos) le llega tal cual, como palabras tuyas. Mandá «cancelar» para no enviarle nada. |
+| **Contestar yo** | Lo próximo que le escribas a Colonia en ese chat (dentro de 10 minutos) le llega tal cual, como palabras tuyas. Mandá «cancelar» para no enviarle nada. |
 | **Ignorar** | No se manda nada. Sigue supervisado, y lo que dijo no vuelve a tener borrador. |
 
 Si escribe de nuevo antes de que decidas, un borrador nuevo contesta todo lo que dijo, y el anterior ya no se puede
@@ -51,14 +51,14 @@ activar uno apaga el otro. Un contacto supervisado muestra un ojo al lado del no
 Desde la terminal:
 
 ```bash
-apx contacts supervise "Ana Pérez"     # o el id del contacto; unsupervise para volver atrás
-apx contacts suggestions               # borradores que te esperan
-apx contacts suggestions send <id>     # mandar uno tal cual
-apx contacts suggestions send <id> El viernes a las 10 me viene bien
-apx contacts suggestions drop <id>
+colonia contacts supervise "Ana Pérez"     # o el id del contacto; unsupervise para volver atrás
+colonia contacts suggestions               # borradores que te esperan
+colonia contacts suggestions send <id>     # mandar uno tal cual
+colonia contacts suggestions send <id> El viernes a las 10 me viene bien
+colonia contacts suggestions drop <id>
 ```
 
-<Terminal command="apx contacts suggestions">{`sug_3f2a9c1d0b7e4a51  Ana Pérez: hola / ¿nos vemos mañana?
+<Terminal command="colonia contacts suggestions">{`sug_3f2a9c1d0b7e4a51  Ana Pérez: hola / ¿nos vemos mañana?
     → ¡Hola Ana! Lo consulto y te confirmo hoy.`}</Terminal>
 
 ## Desde otra app (RPC)

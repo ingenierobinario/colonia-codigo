@@ -4,7 +4,7 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import type { CoreEvent } from "@apx/protocol";
+import type { CoreEvent } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
 import type { ExtensionRecord } from "../domain/extensions.ts";
 import type { ContextInput, Hooks } from "../engine/hooks.ts";
@@ -62,15 +62,15 @@ export function createPlugins(deps: {
     fs.mkdirSync(raw, { recursive: true });
     const data = realpath(raw);
     const env: Record<string, string> = {
-      APX_DATA_DIR: data,
-      APX_PLUGIN_NETWORK: plugin.network ? "1" : "0",
-      APX_PLUGIN_LOCAL_NETWORK: plugin.network && plugin.local_network ? "1" : "0",
+      COLONIA_DATA_DIR: data,
+      COLONIA_PLUGIN_NETWORK: plugin.network ? "1" : "0",
+      COLONIA_PLUGIN_LOCAL_NETWORK: plugin.network && plugin.local_network ? "1" : "0",
       PATH: process.env.PATH ?? "",
       ...nodeChildEnv(),
     };
     for (const s of ext.manifest.secrets) {
       const value = deps.secrets.resolve(`secret://${extSecret(ext.id, s.name)}`);
-      if (value) env[`APX_SECRET_${s.name.toUpperCase()}`] = value;
+      if (value) env[`COLONIA_SECRET_${s.name.toUpperCase()}`] = value;
     }
     const child = spawn(
       process.execPath,
@@ -212,7 +212,7 @@ export function createPlugins(deps: {
       live.delete(id);
     },
     contextOwner: () => deps.hooks.contextOwner(),
-    /** Marks a plugin as failed (it could not start); APX goes on without it. */
+    /** Marks a plugin as failed (it could not start); Colonia goes on without it. */
     fail(id: string, error: string): void {
       errors.set(id, error);
       deps.hooks.release(id);

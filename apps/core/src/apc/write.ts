@@ -1,4 +1,4 @@
-// Writing agent files in a project's .apc/agents/. Only the fields APX changes are rewritten; every other
+// Writing agent files in a project's .apc/agents/. Only the fields Colonia changes are rewritten; every other
 // frontmatter line and the layout of the file stay as the owner (or another tool) left them. Nothing is deleted:
 // removing an agent moves its file to .apc/agents/.archived/.
 import fs from "node:fs";
@@ -36,7 +36,7 @@ const isLink = (p: string) => {
   }
 };
 
-/** Refuses to write through a symlink: a repo must not be able to redirect APX's writes outside .apc/agents. */
+/** Refuses to write through a symlink: a repo must not be able to redirect Colonia's writes outside .apc/agents. */
 function guard(root: string, ...files: string[]): void {
   for (const p of [path.join(root, ".apc"), agentsDir(root), ...files])
     if (isLink(p)) throw new Error(`refusing to write through a symlink: ${path.relative(root, p)}`);
@@ -206,7 +206,7 @@ export function deleteArchivedAgentFiles(root: string, slug: string): number {
 export type ProjectMeta = { name?: string | undefined; description?: string | null; kind?: string | null };
 
 /**
- * Changes .apc/project.json: given keys are set ("" or null removes one), every other key (apx_id, what other tools
+ * Changes .apc/project.json: given keys are set ("" or null removes one), every other key (colonia_id, what other tools
  * keep there) stays. Refuses a symlinked .apc or file, like the agent files.
  */
 export function writeProjectMeta(root: string, meta: ProjectMeta): void {

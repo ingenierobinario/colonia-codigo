@@ -31,7 +31,7 @@ export async function checkConsent(page: Page, origin: string, pre: string, path
     const win = window as Window & { dataLayer?: ArrayLike<unknown>[] };
     return win.dataLayer?.map((entry) => Array.from(entry)).find((entry) => entry[0] === "event");
   });
-  expect(event?.[2]).toEqual({ page_location: `${origin}${pre}${path}`, page_referrer: "", page_title: "APX website" });
+  expect(event?.[2]).toEqual({ page_location: `${origin}${pre}${path}`, page_referrer: "", page_title: "Colonia website" });
   await page.goto(`${origin}${privacy}`);
   await expect(panel).toBeHidden();
   await page.locator("[data-cookie-settings]").click();

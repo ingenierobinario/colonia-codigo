@@ -177,7 +177,7 @@ for (const width of [412, 1280]) {
           .locator(
             view === "Árbol" && item.channel
               ? ".inbox__list .tree__channel"
-              : ".inbox__list .tree__session, .inbox__list .activity__row, .inbox__list .apx-convrow",
+              : ".inbox__list .tree__session, .inbox__list .activity__row, .inbox__list .colonia-convrow",
           )
           .filter({ hasText: item.title })
           .first();
@@ -240,7 +240,7 @@ for (const width of [412, 1280]) {
       }
     }
     for (const item of cases) {
-      const row = page.locator(".inbox__list .apx-convrow").filter({ hasText: item.title }).first();
+      const row = page.locator(".inbox__list .colonia-convrow").filter({ hasText: item.title }).first();
       await row.click();
       const header = page.locator(".chat__header, .chan__chathead").first();
       await expect(header).toBeVisible();

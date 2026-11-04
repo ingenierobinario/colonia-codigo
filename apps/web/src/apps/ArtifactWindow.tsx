@@ -1,4 +1,4 @@
-import { EmptyState, Icons } from "@apx/ui";
+import { EmptyState, Icons } from "@colonia/ui";
 import { useEffect } from "react";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";

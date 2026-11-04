@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
 import type { CallContext } from "./context.ts";
@@ -75,7 +75,7 @@ test("a complete agent subtask starts exactly once; agents cannot erase its owne
     const session = sessions[0];
     assert.ok(session);
     await env.settle(session.id);
-    // One start; a part APX goes on with on its own (engine/task-continue.ts) is not a second one.
+    // One start; a part Colonia goes on with on its own (engine/task-continue.ts) is not a second one.
     const starts = () =>
       env.core.store.runs.list(session.id).filter((r) => r.input?.origin.kind !== "task_continue").length;
     assert.equal(starts(), 1);
@@ -165,7 +165,7 @@ test("moving an agent subtask cannot silently clear its project-scoped assignee"
 
 test("model clients cannot bypass subtask ownership through HTTP or WebSocket", async () => {
   const { env, parent } = await fixture();
-  const model = new ApxClient({ url: env.core.url, actor: "agent" });
+  const model = new ColoniaClient({ url: env.core.url, actor: "agent" });
   const socket = await model.connect();
   try {
     const params = { title: "Prepare follow-up", parent: parent.id, description: "Review after delivery." };

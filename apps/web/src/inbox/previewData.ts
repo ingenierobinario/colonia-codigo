@@ -1,4 +1,4 @@
-import { Agent, Project, Thread } from "@apx/protocol";
+import { Agent, Project, Thread } from "@colonia/protocol";
 
 const at = new Date();
 const ago = (hours: number) => new Date(at.getTime() - hours * 3_600_000).toISOString();

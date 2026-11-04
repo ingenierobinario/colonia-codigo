@@ -22,19 +22,19 @@ test("tags accept pasted lists, deduplicate case-insensitively, enforce limits a
 test("suggestions replace only the current word with keyboard and mouse and Escape dismisses", async () =>
   mounted(async (page) => {
     const input = page.getByRole("textbox", { name: "Command", exact: true });
-    await input.fill("echo $apx_");
-    await expect(page.getByRole("button", { name: "$APX_HOME Home", exact: true })).toBeVisible();
+    await input.fill("echo $colonia_");
+    await expect(page.getByRole("button", { name: "$COLONIA_HOME Home", exact: true })).toBeVisible();
     await input.press("ArrowUp");
     await input.press("Tab");
-    await expect(input).toHaveValue("echo $APX_PORT");
+    await expect(input).toHaveValue("echo $COLONIA_PORT");
     await input.fill("echo $");
     await input.press("Escape");
-    await expect(page.locator(".apx-suggest__list")).toHaveCount(0);
-    await input.fill("echo $APX_H");
-    await page.getByRole("button", { name: "$APX_HOME Home", exact: true }).click();
-    await expect(input).toHaveValue("echo $APX_HOME");
+    await expect(page.locator(".colonia-suggest__list")).toHaveCount(0);
+    await input.fill("echo $COLONIA_H");
+    await page.getByRole("button", { name: "$COLONIA_HOME Home", exact: true }).click();
+    await expect(input).toHaveValue("echo $COLONIA_HOME");
     await input.fill("echo $NO_MATCH");
-    await expect(page.locator(".apx-suggest__list")).toHaveCount(0);
+    await expect(page.locator(".colonia-suggest__list")).toHaveCount(0);
   }));
 
 test("composer preserves newlines, sends queued text and clears only its uncontrolled draft", async () =>
@@ -148,7 +148,7 @@ test("date presets commit and close, clear restores the empty value, and action 
     await expect(page.getByTestId("date")).toHaveText("None");
     await page.getByRole("button", { name: /Worked/ }).click();
     await expect(page.getByText("Refused", { exact: true })).toBeVisible();
-    await expect(page.locator("li.apx-actions__item.is-failed")).toBeVisible();
+    await expect(page.locator("li.colonia-actions__item.is-failed")).toBeVisible();
   }));
 
 test("agent cards choose by click and arrows, keep the chosen one in sight and show the rest on demand", async () =>

@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside, Steps } from "@astrojs/starlight/components";
 
-Los dos se conectan sin URL pública ni bibliotecas extra: APX abre el socket de la propia plataforma desde tu máquina.
+Los dos se conectan sin URL pública ni bibliotecas extra: Colonia abre el socket de la propia plataforma desde tu máquina.
 Por mensaje directo funcionan como Telegram: te emparejás con un código, los desconocidos esperan tu aprobación y el
 outbox guarda cada respuesta. Discord además puede atender salas de tu servidor.
 
@@ -23,7 +23,7 @@ outbox guarda cada respuesta. Discord además puede atender salas de tu servidor
 
 3. En **Installation**, agregá el bot a tu cuenta (o a un servidor donde estés) para poder escribirle.
 
-4. En APX, abrí **Configuración › Canales**, **Agregar canal › Discord**. Pegá el token en **Token del bot**, elegí
+4. En Colonia, abrí **Configuración › Canales**, **Agregar canal › Discord**. Pegá el token en **Token del bot**, elegí
    **Quién responde** y tocá **Conectar bot**.
 
 5. Escribile al bot por mensaje directo. Te contesta con un código: ponelo en **Este es mi Discord** y tocá
@@ -36,7 +36,7 @@ desconocidos y siguen la opción **Desconocidos** del canal.
 
 ### Salas del servidor
 
-Las salas de Discord se eligen una por una. Una sala que no está en la lista no existe para APX: ni se lee ni se
+Las salas de Discord se eligen una por una. Una sala que no está en la lista no existe para Colonia: ni se lee ni se
 guarda. En **Salas del servidor**, elegí cada una en **Agregar una sala del servidor…**, que lista las salas de los
 servidores del bot mientras corre y dice dónde no puede escribir. Cuando no se pueden leer, **Agregar por ID** pide
 **Nombre de la sala** e **ID de la sala**, y después **Agregar sala**.
@@ -75,12 +75,12 @@ las personas de la sala que nombra; nadie más puede hacer que mencione a alguie
 vos; no se publica nada.
 </Aside>
 
-Cada mensaje de una sala de la lista queda en el chat de esa sala en APX. Los agentes pueden leer una sala (por
+Cada mensaje de una sala de la lista queda en el chat de esa sala en Colonia. Los agentes pueden leer una sala (por
 ejemplo, "¿qué dijeron hoy en #general?") y publicar en una por su nombre exacto; un nombre parecido solo recibe una
 sugerencia, porque una publicación pública no se puede deshacer.
 
 <Aside type="note">
-Discord no vuelve a mandar un mensaje que llegó mientras APX estaba desconectado, así que un mensaje directo enviado
+Discord no vuelve a mandar un mensaje que llegó mientras Colonia estaba desconectado, así que un mensaje directo enviado
 en ese hueco se pierde.
 </Aside>
 
@@ -98,14 +98,14 @@ A tus agentes solo les llegan los mensajes directos a la app; los canales del es
 
 3. En **App Home**, permití mensajes en la pestaña **Messages**. Instalá la app y copiá el token del bot (`xoxb-…`).
 
-4. En APX, abrí **Configuración › Canales**, **Agregar canal › Slack**. Pegá los dos tokens (**Token del bot** y
+4. En Colonia, abrí **Configuración › Canales**, **Agregar canal › Slack**. Pegá los dos tokens (**Token del bot** y
    **Token de la app**), elegí **Quién responde** y tocá **Conectar bot**.
 
 5. Escribile a la app y poné su código en **Este es mi Slack**.
 
 </Steps>
 
-APX guarda los dos tokens juntos como un solo secreto. El emparejamiento, los desconocidos, los contactos y el outbox
+Colonia guarda los dos tokens juntos como un solo secreto. El emparejamiento, los desconocidos, los contactos y el outbox
 funcionan como en los demás canales; como en todos salvo Telegram, WhatsApp y Signal, lo que pedís ahí pasa primero por tu super-agente, y
 las tarjetas se responden en la app ([qué canales actúan con tu palabra](/es/channels/overview/#qué-canales-actúan-con-tu-palabra)).
 

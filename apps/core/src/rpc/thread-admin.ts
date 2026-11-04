@@ -3,7 +3,7 @@
 // Forking copies a chat up to a message into a new one.
 import fs from "node:fs";
 import path from "node:path";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { HOME_THREAD_ID } from "../domain/seed.ts";
 import type { Store } from "../domain/store.ts";
 import { previewOf } from "../domain/threads.ts";

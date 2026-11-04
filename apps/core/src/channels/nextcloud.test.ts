@@ -25,12 +25,12 @@ const ROOMS = {
 };
 
 test("the secret is the server's address, the bot's user and its app password", () => {
-  assert.deepEqual(nextcloudSecret("https://cloud.example.org/ apxbot Abcde-Fghij-Klmno-Pqrst-Uvwxy"), {
+  assert.deepEqual(nextcloudSecret("https://cloud.example.org/ coloniabot Abcde-Fghij-Klmno-Pqrst-Uvwxy"), {
     server: "https://cloud.example.org",
-    user: "apxbot",
+    user: "coloniabot",
     password: "Abcde-Fghij-Klmno-Pqrst-Uvwxy",
   });
-  assert.deepEqual(nextcloudSecret("apxbot"), { user: "apxbot" });
+  assert.deepEqual(nextcloudSecret("coloniabot"), { user: "coloniabot" });
 });
 
 describe("nextcloud channel", () => {
@@ -44,7 +44,7 @@ describe("nextcloud channel", () => {
 
   before(async () => {
     nc = await fakeNextcloud();
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-nextcloud-"));
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-nextcloud-"));
     nc.message("owner", "an old message from before");
     nc.group("grpacme", "Acme team");
     nc.group("grpnorthwind", "Northwind");
@@ -108,7 +108,7 @@ describe("nextcloud channel", () => {
 
 test("the place reached survives a restart, and reactions go on and come off", async () => {
   const nc = await fakeNextcloud();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-nextcloud-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-nextcloud-"));
   const config = { id: "nc", type: "nextcloud", agent_id: "superagent" } as Parameters<typeof nextcloudAdapter>[0];
   const got: string[] = [];
   const io = (): AdapterIO => ({

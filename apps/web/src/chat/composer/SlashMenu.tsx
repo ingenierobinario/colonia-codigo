@@ -1,5 +1,5 @@
-import type { Agent, Thread } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Agent, Thread } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useState } from "react";
 import { cancel, compactThread } from "../../data/actions.ts";
 import { setThreadModel } from "../../data/composer.ts";
@@ -42,7 +42,7 @@ export function useSlashMenu(o: {
   const [active, setActive] = useState(0);
   const [closedFor, setClosedFor] = useState<string | undefined>();
   const open = text.startsWith("/") && !text.includes("\n") && closedFor !== text;
-  // An engine session (Claude Code, Codex) has its own skills and context: APX's are not offered there.
+  // An engine session (Claude Code, Codex) has its own skills and context: Colonia's are not offered there.
   const direct = Boolean(thread.engine);
   // A new chat not made yet has nothing to compact.
   const fresh = isNewChat(thread.id);

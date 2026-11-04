@@ -1,5 +1,5 @@
-import { FLOW_OTHERWISE, flowCases } from "@apx/protocol/flow-cases";
-import type { FlowStepState, RunBar } from "@apx/ui";
+import { FLOW_OTHERWISE, flowCases } from "@colonia/protocol/flow-cases";
+import type { FlowStepState, RunBar } from "@colonia/ui";
 import { formatNumber, formatSeconds, shortWhen } from "../common/format.ts";
 import { currentLocale, isKey, type MessageKey } from "../i18n/index.ts";
 import { rulesText } from "./compare.ts";
@@ -544,7 +544,7 @@ export function viewGraphRun(run: RunDetail, flow: string, t: T, who: (n: FlowNo
               who: who(n),
               harness:
                 r.answered.harness === "native"
-                  ? t("flow.ai.apx")
+                  ? t("flow.ai.colonia")
                   : r.answered.harness.charAt(0).toUpperCase() + r.answered.harness.slice(1),
               model: r.answered.model ?? t("flow.ai.ownModel"),
             }),

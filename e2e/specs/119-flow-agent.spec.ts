@@ -14,7 +14,7 @@ async function shot(page: Page, name: string) {
   const size = page.viewportSize();
   for (const mode of ["dark", "light"] as const) {
     await page.evaluate((m) => {
-      for (const el of document.querySelectorAll("[data-apx-mode]")) el.setAttribute("data-apx-mode", m);
+      for (const el of document.querySelectorAll("[data-colonia-mode]")) el.setAttribute("data-colonia-mode", m);
     }, mode);
     await page.screenshot({ path: path.join(shots, `${name}-${mode}.png`) });
     await page.setViewportSize({ width: 390, height: 844 });

@@ -27,7 +27,7 @@ test("an ACP agent's session runs the turn: model picked, its edit asks the owne
   // In manual mode its edit asks; auto would let it edit its folder unasked (DECISIONS.md#d-106).
   await env.client.call("agents.update", { agent: "scout", autonomy: "manual" });
   // The executable is node itself; the agent's args point at the fake.
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-acp-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-acp-")));
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   const t = await env.client.call("threads.create", {
     kind: "code",
@@ -61,8 +61,8 @@ test("an ACP agent's session runs the turn: model picked, its edit asks the owne
   assert.ok(texts(after2.messages).includes("model=m2 edit=rejected instructions=false"));
 });
 
-test("a CLI nobody signed in to ends the session with how to sign in, and APX never signs it in itself", async () => {
-  const dir = tempDir("apx-acp-auth-");
+test("a CLI nobody signed in to ends the session with how to sign in, and Colonia never signs it in itself", async () => {
+  const dir = tempDir("colonia-acp-auth-");
   const log = path.join(dir.path, "auth.log");
   const agent = {
     id: "fake",

@@ -1,4 +1,4 @@
-import { StatusIcon } from "@apx/ui";
+import { StatusIcon } from "@colonia/ui";
 
 export function AllStates() {
   const s = { display: "flex", gap: 6, alignItems: "center", fontSize: 13 };

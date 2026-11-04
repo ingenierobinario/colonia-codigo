@@ -37,7 +37,7 @@ let rollout = "";
 
 before(async () => {
   env = await startCore({ llm, aux: true });
-  acme = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-import-")));
+  acme = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-import-")));
   fs.mkdirSync(path.join(acme, "reel"));
   fs.writeFileSync(path.join(acme, "reel", "clip.mp4"), Buffer.from("not really a video"));
   fs.writeFileSync(path.join(acme, "reel", "look.css"), "body { color: red; }");
@@ -269,7 +269,7 @@ test("a page a chat wrote becomes a pinned widget that loads its media from the 
   assert.equal(s.pinned, true);
   const full = await env.client.call("surfaces.get", { surface: s.id });
   assert.match(full.html, /<style>\nbody \{ color: red; \}\n<\/style>/);
-  assert.match(full.html, /<video data-apx-src="reel\/clip\.mp4">/);
+  assert.match(full.html, /<video data-colonia-src="reel\/clip\.mp4">/);
   await assert.rejects(
     env.client.call("surfaces.import_page", { project_id, path: "../outside.html" }),
     /not in the project/,

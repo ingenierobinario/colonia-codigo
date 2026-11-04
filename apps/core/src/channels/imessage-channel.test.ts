@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { after, before, describe, test } from "node:test";
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
 import { imessageAdapter } from "./imessage.ts";
@@ -135,7 +135,7 @@ describe("the adapter alone", () => {
   let add: ReturnType<typeof messagesDb>;
   let db: string;
   before(() => {
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-imessage-channel-"));
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-imessage-channel-"));
     db = path.join(dir, "Library", "Messages", "chat.db");
     fs.mkdirSync(path.dirname(db), { recursive: true });
     add = messagesDb(db);

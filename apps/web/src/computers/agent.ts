@@ -1,5 +1,5 @@
 // What only the computer's own screens and an agent's card read: kept off the first load (AGENTS.md rule 27).
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import type { Computers } from "./summary.ts";
 
 /**

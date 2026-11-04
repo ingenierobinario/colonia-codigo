@@ -50,7 +50,7 @@ class TalkError extends Error {
   }
 }
 
-/** The server, the bot's user and its app password, stored as one secret: "https://cloud.example.org apxbot xxxxx-…". */
+/** The server, the bot's user and its app password, stored as one secret: "https://cloud.example.org coloniabot xxxxx-…". */
 export function nextcloudSecret(secret: string | undefined): { server?: string; user?: string; password?: string } {
   const words = (secret ?? "").split(/\s+/).filter(Boolean);
   const server = words.find((w) => /^https?:\/\//.test(w));

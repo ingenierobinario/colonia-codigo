@@ -13,8 +13,8 @@ const PER_SECTION = 25;
 
 // Always English: the notes are commit sentences, and a frame in another language around them reads broken.
 const WORDS = {
-  title: (v: string) => `What's new in APX ${v}`,
-  intro: (v: string) => `APX was updated to ${v}. This is what changed:`,
+  title: (v: string) => `What's new in Colonia ${v}`,
+  intro: (v: string) => `Colonia was updated to ${v}. This is what changed:`,
   sections: { feat: "New", fix: "Fixed", perf: "Faster" },
   more: (n: number) => `…and ${n} more`,
   internal: "Internal changes only.",
@@ -92,7 +92,7 @@ export function announceRelease(store: Store, source: ReleaseSource): { thread?:
       thread_id: thread.id,
       agent_id: boss.id,
       text,
-      note: `[APX: APX was updated to ${version}; you posted what changed for the owner.]`,
+      note: `[Colonia: Colonia was updated to ${version}; you posted what changed for the owner.]`,
       unread: true,
     });
     store.settings.set(SEEN_KEY, version);

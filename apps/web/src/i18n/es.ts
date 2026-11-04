@@ -1,7 +1,7 @@
 import { esHelper } from "./es-helper.ts";
 // UI strings, Spanish (España). A missing key falls back to English.
 
-import { noticeEs } from "@apx/protocol/notices";
+import { noticeEs } from "@colonia/protocol/notices";
 import type { MessageKey } from "./en.ts";
 import { esChannels } from "./es-channels.ts";
 import { esChat } from "./es-chat.ts";
@@ -254,7 +254,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "community.title": "Únete a la comunidad",
   "v1.cardTitle": "Colonia v1 sigue encendida",
   "v1.cardDesc":
-    "Tus rutinas y bots pueden ejecutarse dos veces. Apaga v1 y que apx sea esta versión; los archivos de v1 quedan.",
+    "Tus rutinas y bots pueden ejecutarse dos veces. Apaga v1 y que colonia sea esta versión; los archivos de v1 quedan.",
   "v1.cardCta": "Apagar v1",
   "community.desc": "Hay más gente usando Colonia. Pregunta, muestra lo que armaste y entérate de lo que viene en Discord.",
   "community.cta": "Entrar a Discord",
@@ -340,7 +340,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "project.new.where": "Dónde vive",
   "project.new.inFolder": "En una carpeta",
   "project.new.noFolder": "Sin carpeta",
-  "project.new.apxHint": "Se crea dentro de la carpeta de Colonia:",
+  "project.new.coloniaHint": "Se crea dentro de la carpeta de Colonia:",
   "project.new.example": "Mi proyecto",
   "project.new.nameFromFolder": "El de la carpeta",
   "project.new.path": "Carpeta",
@@ -519,7 +519,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "chat.pick.title": "Elige un chat",
   "chat.pick.body": "O empieza uno nuevo con tu super-agente.",
   "chat.offline.title": "Sin conexión con el core",
-  "chat.offline.body": "Revisa que el core esté ejecutándose (apx status).",
+  "chat.offline.body": "Revisa que el core esté ejecutándose (colonia status).",
   "chat.notFound.title": "No encontramos este chat",
   "chat.notFound.body": "Puede que se haya borrado o que el core no esté disponible.",
   "chat.readOnly": "Conversación entre agentes · solo lectura",
@@ -618,17 +618,17 @@ export const es: Partial<Record<MessageKey, string>> = {
   "artifact.kindApp": "App",
   "artifact.kindWidget": "Widget",
   "artifact.pinned": "Fijada",
-  "artifact.download": "Descargar (.apxart)",
+  "artifact.download": "Descargar (.coloniaart)",
   "artifact.downloadPlain": "Solo el artefacto",
   "artifact.downloadMemory": "Con lo que recuerda",
   "artifact.install": "Instalar artefacto",
   "artifact.installAction": "Instalar",
   "artifact.installTitle": "Instalar un artefacto",
-  "artifact.installHint": "Arrastra un archivo .apxart aquí o elígelo. Antes de instalarlo ves qué es.",
+  "artifact.installHint": "Arrastra un archivo .coloniaart aquí o elígelo. Antes de instalarlo ves qué es.",
   "artifact.fileNotYet": "{name} es una app o extensión de Colonia: todavía no se instalan desde un archivo.",
   "artifact.fileTooBig": "{name} es demasiado grande para ser un artefacto de Colonia.",
   "artifact.fileUnreadable": "Colonia no pudo leer {name}.",
-  "artifact.installDrop": "Arrastra un archivo .apxart aquí",
+  "artifact.installDrop": "Arrastra un archivo .coloniaart aquí",
   "artifact.installPick": "Elegir archivo",
   "artifact.installNotArtifact": "Este archivo no es un artefacto de Colonia.",
   "artifact.installLive": "sigue ejecutándose oculto",
@@ -782,7 +782,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "browser.reopen": "Abrir de nuevo",
   "browser.openWindow": "Abrir en una ventana aparte",
   "browser.openMenu": "Abrir en otro lugar",
-  "link.openApx": "Abrir en el navegador de Colonia",
+  "link.openColonia": "Abrir en el navegador de Colonia",
   "link.copy": "Copiar enlace",
   "link.copied": "Enlace copiado",
   "link.go.settings": "Abrir Configuración",
@@ -1754,7 +1754,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "devices.code": "O escribe el código:",
   "devices.localOnly": "Tu teléfono todavía no llega a este core",
   "devices.localOnlyBody":
-    "Solo escucha en este ordenador. Arráncalo con APX_HOST=0.0.0.0 y un APX_TOKEN para llegar por tu red o por Tailscale, y vincula de nuevo.",
+    "Solo escucha en este ordenador. Arráncalo con COLONIA_HOST=0.0.0.0 y un COLONIA_TOKEN para llegar por tu red o por Tailscale, y vincula de nuevo.",
   "devices.paired": "Dispositivos vinculados",
   "devices.none": "Todavía no hay dispositivos vinculados.",
   "devices.lastSeen": "Visto {when}",
@@ -1829,7 +1829,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "prof.noneHint": "Sin rutinas de perfil. Las capacidades de secretaría conservan sus propios interruptores.",
   "prof.installed": "Instalado",
   "prof.install": "Instalar perfil",
-  "prof.installHint": "Una carpeta de esta máquina con un apx-profile.json: su rol, rutinas y ajustes.",
+  "prof.installHint": "Una carpeta de esta máquina con un colonia-profile.json: su rol, rutinas y ajustes.",
   "prof.installDo": "Instalar",
   "prof.folder": "Carpeta del perfil",
   "prof.storeSoon": "Más perfiles van a llegar desde una tienda; por ahora se instalan desde una carpeta.",

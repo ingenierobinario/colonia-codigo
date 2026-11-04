@@ -1,4 +1,4 @@
-// Frontmatter of APC files: flat `key: value` (what APX writes), plus what other tools write and we must read —
+// Frontmatter of APC files: flat `key: value` (what Colonia writes), plus what other tools write and we must read —
 // quoted values, block scalars (`|`, `>`), YAML lists (`- item`) and nested maps flattened to dotted keys.
 // Not a YAML library on purpose: the format stays predictable for the models that read these files too.
 

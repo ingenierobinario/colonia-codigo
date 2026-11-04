@@ -33,7 +33,7 @@ for (const lang of ["en", "es"] as const) {
 test("on a phone the footer's columns stack in two, Compare folds, and links are full size @phone", async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.setItem("apx-website-analytics-v1", "declined"));
+  await page.addInitScript(() => localStorage.setItem("colonia-website-analytics-v1", "declined"));
   await page.goto("/es/");
   const groups = page.locator(".web-footer");
   await groups.locator(".web-footer__row").first().scrollIntoViewIfNeeded();

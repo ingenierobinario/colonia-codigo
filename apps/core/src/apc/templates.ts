@@ -9,7 +9,7 @@ import {
   type TeamTemplate,
   TemplateRoutine,
   type TemplateSource,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { z } from "zod";
 import { parseFrontmatter, textField } from "./frontmatter.ts";
 import { type ApcAgent, readAgentDir, readText, SLUG_RE } from "./read.ts";

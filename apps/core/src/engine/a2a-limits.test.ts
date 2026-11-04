@@ -1,9 +1,9 @@
 // A delegated run works while it makes progress, stops at its cap, and when a limit cuts it short it is not lost:
-// APX goes on in the same session while each part progresses, the owner hears when it stops, and the caller can stop it.
+// Colonia goes on in the same session while each part progresses, the owner hears when it stops, and the caller can stop it.
 import assert from "node:assert/strict";
 import { after, afterEach, before, beforeEach, type TestContext, test } from "node:test";
-import type { Part } from "@apx/protocol";
-import type { ApxSocket } from "@apx/protocol/client";
+import type { Part } from "@colonia/protocol";
+import type { ColoniaSocket } from "@colonia/protocol/client";
 import { z } from "zod";
 import { fakeTelegram } from "../channels/fake-telegram.test-support.ts";
 import { telegramAdapter } from "../channels/telegram.ts";
@@ -58,7 +58,7 @@ const buildStep = defineTool({
   },
 });
 const worker = (name: string) => ({ name, instructions: `${name} works on it.` });
-const CONTINUED = "APX stopped your last turn on this task";
+const CONTINUED = "Colonia stopped your last turn on this task";
 
 const llm = scriptedLlm(async (req, { system, said, afterTool }) => {
   const steps = req.messages.filter((m) => m.role === "tool").length;
@@ -67,7 +67,7 @@ const llm = scriptedLlm(async (req, { system, said, afterTool }) => {
   if (system.startsWith("You are Steady")) return steps < 8 ? step() : say("Steady finished.");
   // Never stops making progress: only the cap ends it.
   if (system.startsWith("You are Endless") || system.startsWith("You are Forever")) return step();
-  // Builds something new at every step and finishes in its third part: progress APX keeps going on with.
+  // Builds something new at every step and finishes in its third part: progress Colonia keeps going on with.
   if (system.startsWith("You are Builder")) {
     const parts = req.messages.filter((m) => m.role === "user" && String(m.content).includes(CONTINUED)).length;
     return parts >= 2 ? say("Builder finished.") : callTool(`b${req.messages.length}`, "build_step", { n: steps });
@@ -77,7 +77,7 @@ const llm = scriptedLlm(async (req, { system, said, afterTool }) => {
     await sleep(IDLE_MS * 4, req.signal);
     return say("late");
   }
-  // Goes quiet once, then finishes what is left when APX continues it.
+  // Goes quiet once, then finishes what is left when Colonia continues it.
   if (system.startsWith("You are Napper")) {
     if (said.includes(CONTINUED)) return say("Napper finished the rest.");
     if (!afterTool) return callTool("n1", "slow_step", { n: 0 });
@@ -99,7 +99,7 @@ const llm = scriptedLlm(async (req, { system, said, afterTool }) => {
 });
 
 let env: Awaited<ReturnType<typeof startCore>>;
-let operator: ApxSocket;
+let operator: ColoniaSocket;
 let stopClock = () => {};
 before(async () => {
   env = await startCore({
@@ -190,7 +190,7 @@ test("a delegated run that never stops is ended at its cap, however much progres
   const [first, second] = runs;
   assert.equal(first?.end_reason, "deadline");
   assert.match(first?.error ?? "", /a delegated run may work/);
-  // APX went on once in the same session; that part only looked things up again, so APX stopped there.
+  // Colonia went on once in the same session; that part only looked things up again, so Colonia stopped there.
   assert.equal(second?.input?.continues, first?.id);
   assert.equal(second?.end_reason, "deadline");
   const result = await woke(thread);
@@ -224,7 +224,7 @@ test("a run cut short goes on once in the same session, with its context, and re
   const result = await woke(thread);
   assert.equal(result.input?.origin.kind === "delegation_result" && result.input.origin.state, "completed");
   assert.equal(card(thread)?.state, "completed");
-  // The chat says it hit its limit and APX went on with it; going on is APX's own business, so nothing reaches the tray.
+  // The chat says it hit its limit and Colonia went on with it; going on is Colonia's own business, so nothing reaches the tray.
   const [notice] = notices(thread);
   assert.equal(notice?.vars?.variant, "continuedTime");
   assert.equal(notice?.level, "info");
@@ -273,8 +273,8 @@ test("a part that made no progress stops: the caller tells the owner, who gets C
   const text = String(framed?.content);
   assert.match(text, /state="out_of_time"/);
   assert.match(text, /ran out of time before finishing: this is a progress report, not its final result/);
-  assert.match(text, /APX stopped going on with it on its own: none of its calls worked/);
-  assert.match(text, /Continue on its notice in APX/);
+  assert.match(text, /Colonia stopped going on with it on its own: none of its calls worked/);
+  assert.match(text, /Continue on its notice in Colonia/);
   assert.doesNotMatch(text, /delegate only the rest/);
   assert.deepEqual(
     notices(thread).map((n) => n.vars?.variant),
@@ -285,7 +285,7 @@ test("a part that made no progress stops: the caller tells the owner, who gets C
   assert.equal(card(thread)?.end_reason, "deadline");
 });
 
-test("a caller still waiting gets the progress report itself, and APX neither goes on nor adds a notice", async () => {
+test("a caller still waiting gets the progress report itself, and Colonia neither goes on nor adds a notice", async () => {
   const t = await operator.call("threads.create", { kind: "loose", agent_id: "superagent", title: "inline" });
   await operator.call("threads.send", { thread: t.id, text: "delegate quiet inline" });
   await ended(t.id, 1);
@@ -297,7 +297,7 @@ test("a caller still waiting gets the progress report itself, and APX neither go
   );
   assert.match(reply, /state="out_of_time"/);
   assert.match(reply, /delegate only the rest with session="quiet"/);
-  assert.doesNotMatch(reply, /APX stopped going on/);
+  assert.doesNotMatch(reply, /Colonia stopped going on/);
   // The owner reads it in the answer being written, with the card: no separate notice.
   assert.equal(notices(t.id).length, 0);
   assert.equal(card(t.id)?.end_reason, "deadline");
@@ -317,7 +317,7 @@ test("the caller can stop a session it started, and the tool is offered only whi
   const [run] = await ended(sub, 1);
   assert.equal(run?.state, "canceled");
   assert.match(offered("stop forever"), /stop_session/);
-  // Stopped by its caller: nobody is woken and APX does not go on with it, an idle window later either.
+  // Stopped by its caller: nobody is woken and Colonia does not go on with it, an idle window later either.
   timers.tick(IDLE_MS);
   await new Promise((r) => setTimeout(r, scaled(200)));
   assert.equal(runsOf(sub).length, 1);
@@ -359,7 +359,7 @@ test("the owner hears of the limit on the channel their chat lives on, in their 
     "the notice on Telegram",
   );
   assert.match(String(sent.body.text), /^Quiet se quedó sin tiempo con «Quiet task» y su último tramo no avanzó/);
-  // APX going on with it on its own (the first part) is not news for the owner's phone.
+  // Colonia going on with it on its own (the first part) is not news for the owner's phone.
   assert.ok(!tg.messagesTo(OWNER).some((m) => String(m.body.text).includes("viene avanzando")));
   // Continue is a button under the notice: pressing it gives the session one more turn, with nothing to write.
   const markup = sent.body.reply_markup as { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> };

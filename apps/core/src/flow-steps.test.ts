@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import type { FlowGraph, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowGraph, FlowNode } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "./engine/testkit.ts";
 import { flowOutward } from "./flow-outward.ts";
 import { FLOW_COMMANDS_PER_HOUR } from "./flow-work-steps.ts";
@@ -541,7 +541,7 @@ test("commands have an hourly limit; one over it never starts", async () => {
   }
 });
 
-test("review: a database link, even one that points nowhere yet, and APX's own files are never a step's", async () => {
+test("review: a database link, even one that points nowhere yet, and Colonia's own files are never a step's", async () => {
   const env = await core();
   const outside = tempDir();
   try {
@@ -554,18 +554,18 @@ test("review: a database link, even one that points nowhere yet, and APX's own f
     fs.symlinkSync(path.join(outside.path, "made-there.db"), path.join(folder, "data", "new.db"));
     assert.ok((await write("data/new.db")).issues.some((i) => i.code === "database_unavailable"));
     assert.ok(!fs.existsSync(path.join(outside.path, "made-there.db")));
-    // A project whose folder holds APX's own: APX's database is not one of its databases.
-    const apx = (await env.client.call("projects.create", { name: "Home", path: env.home })).project.id;
+    // A project whose folder holds Colonia's own: Colonia's database is not one of its databases.
+    const colonia = (await env.client.call("projects.create", { name: "Home", path: env.home })).project.id;
     await env.client.call("flows.set", {
       id: "home-db",
-      projectId: apx,
+      projectId: colonia,
       name: "home-db",
       enabled: false,
       predicates: [],
       tableKey: "latest",
       action: { kind: "none" },
     });
-    for (const database of ["apx.db", "apx.db-wal"]) {
+    for (const database of ["colonia.db", "colonia.db-wal"]) {
       const { issues } = await env.client.call("flows.validate", {
         flow: "home-db",
         graph: chain(hook, { ...sqlStep("x", "read", "SELECT * FROM sqlite_master"), database } as FlowNode),
@@ -641,7 +641,7 @@ test("a command reads a secret only from its own environment text, never keeps i
       env: [
         { name: "KEY", value: "Bearer secret://acme_key" },
         { name: "ECHO", value: "$trigger.ref" },
-        { name: "RUN", value: "$apx.run" },
+        { name: "RUN", value: "$colonia.run" },
       ],
     });
     const { flow } = await publish(env, "keyed", chain(hook, step));

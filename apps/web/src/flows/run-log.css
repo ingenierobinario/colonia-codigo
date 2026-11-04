@@ -2,8 +2,8 @@
   min-height: 0;
   overflow: auto;
   padding: 8px 0;
-  background: var(--apx-bg);
-  font-family: var(--apx-font-mono);
+  background: var(--colonia-bg);
+  font-family: var(--colonia-font-mono);
   font-size: 11.5px;
   line-height: 1.6;
 }
@@ -17,7 +17,7 @@
 }
 .rlog__at,
 .rlog__mark {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   white-space: nowrap;
 }
 .rlog__title {
@@ -26,18 +26,18 @@
 }
 .rlog__entry.is-ok .rlog__mark,
 .rlog__entry.is-ok .rlog__title {
-  color: var(--apx-brand-soft-fg);
+  color: var(--colonia-brand-soft-fg);
 }
 .rlog__entry.is-err .rlog__mark,
 .rlog__entry.is-err .rlog__title {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .rlog__entry.is-live .rlog__mark,
 .rlog__entry.is-live .rlog__title {
-  color: var(--apx-info-soft-fg);
+  color: var(--colonia-info-soft-fg);
 }
 .rlog__entry.is-muted {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .rlog__block {
   margin: 2px 0 6px 84px;
@@ -46,7 +46,7 @@
   gap: 2px;
 }
 .rlog__label {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   font-size: 10.5px;
 }
 .rlog__text {
@@ -54,8 +54,8 @@
   max-height: 14em;
   overflow: auto;
   padding: 6px 8px;
-  border-radius: var(--apx-radius-sm);
-  background: var(--apx-fill);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-fill);
   white-space: pre-wrap;
   word-break: break-word;
   font: inherit;

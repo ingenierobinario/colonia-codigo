@@ -4,7 +4,7 @@
 // What it remembers (the mailbox's UIDVALIDITY, the last UID read, each sender's thread) lives in the channel's folder.
 import fs from "node:fs";
 import path from "node:path";
-import type { ChannelEmail } from "@apx/protocol";
+import type { ChannelEmail } from "@colonia/protocol";
 import { type EmailSignature, renderEmailDraft, withEmailSignature } from "../domain/email-signature.ts";
 import { errorMessage } from "../errors.ts";
 import { Imap, ImapRefused } from "./email-imap.ts";
@@ -309,7 +309,7 @@ export function emailAdapter(
       const out = composeMail({
         from: { address: mail.address, name: mail.name },
         to,
-        subject: thread ? reSubject(thread.subject) : mail.name || "APX",
+        subject: thread ? reSubject(thread.subject) : mail.name || "Colonia",
         ...body,
         inReplyTo: thread?.ids.at(-1),
         references: thread?.ids,
@@ -324,7 +324,7 @@ export function emailAdapter(
       );
       // The next mail in this conversation answers this one, so the thread stays one in their mail app.
       state.threads[to] = {
-        subject: thread?.subject ?? (mail.name || "APX"),
+        subject: thread?.subject ?? (mail.name || "Colonia"),
         ids: [...(thread?.ids ?? []), out.id].slice(-10),
         at: Date.now(),
       };

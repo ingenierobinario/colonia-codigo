@@ -2,7 +2,7 @@
 // (links that point out are left out) and never .git's insides (by any name or case).
 import fs from "node:fs";
 import path from "node:path";
-import { FILE_DOWNLOAD_LIMIT, FILE_MEDIA_LIMIT, FILE_READ_LIMIT, type FileEntry } from "@apx/protocol";
+import { FILE_DOWNLOAD_LIMIT, FILE_MEDIA_LIMIT, FILE_READ_LIMIT, type FileEntry } from "@colonia/protocol";
 import type { DesktopOps } from "../desktop.ts";
 import type { Store } from "../domain/store.ts";
 import { gitDiff, gitStatus } from "../engine/changes.ts";
@@ -49,7 +49,7 @@ const MEDIA: Record<string, string> = {
 const WIDGET_MEDIA = /^(image|video|audio)\//;
 export const mediaType = (name: string) => MEDIA[name.split(".").pop()?.toLowerCase() ?? ""];
 
-/** The folder a chat works in: a code session's own, its project's, or else APX's work folder. */
+/** The folder a chat works in: a code session's own, its project's, or else Colonia's work folder. */
 export function threadFolder(store: Store, home: string, threadId: string): string {
   if (store.settings.read("computer_chats").includes(threadId))
     throw conflict("this chat works inside its computer; use the terminal in the Computer panel");
@@ -95,7 +95,7 @@ export function fileHandlers(
   home: string,
   posters = videoPosters(path.join(home, "media", "posters")),
 ) {
-  /** The folder browsed: a project's, or a chat's (APX's work folder is made when first opened, as an agent would). */
+  /** The folder browsed: a project's, or a chat's (Colonia's work folder is made when first opened, as an agent would). */
   const baseOf = ({ project, base, thread, scratch }: Where) => {
     if (thread && scratch) {
       const t = store.threads.get(thread);
@@ -107,7 +107,7 @@ export function fileHandlers(
     if (scratch) throw badRequest("a temp folder is a chat's");
     if (thread) {
       const dir = threadFolder(store, home, thread);
-      // APX's own folders (its work folder, a project's side) are made when first opened; the owner's never are.
+      // Colonia's own folders (its work folder, a project's side) are made when first opened; the owner's never are.
       const rel = path.relative(home, dir);
       if (rel && !rel.startsWith("..") && !path.isAbsolute(rel)) fs.mkdirSync(dir, { recursive: true });
       return dir;

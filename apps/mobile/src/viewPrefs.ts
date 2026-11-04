@@ -3,9 +3,9 @@
 import * as SecureStore from "expo-secure-store";
 import { useCallback, useEffect, useState } from "react";
 
-const ROUTINES = "apx.view.routines";
-const TASKS = "apx.view.tasks";
-const AGENTS = "apx.view.agents";
+const ROUTINES = "colonia.view.routines";
+const TASKS = "colonia.view.tasks";
+const AGENTS = "colonia.view.agents";
 
 /** What Chats lists: routine runs and task chats (both on unless turned off), and only some agents' chats. */
 export type ChatFilter = { routines: boolean; tasks: boolean; agents: string[] };

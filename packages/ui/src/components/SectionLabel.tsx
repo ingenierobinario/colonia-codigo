@@ -11,7 +11,7 @@ export interface SectionLabelProps {
 /** Small heading that groups sidebar or list sections ("Projects", "Loose chats"). */
 export function SectionLabel({ children, action, className }: SectionLabelProps) {
   return (
-    <div className={cx("apx-section-label", className)}>
+    <div className={cx("colonia-section-label", className)}>
       <span>{children}</span>
       {action}
     </div>

@@ -1,4 +1,4 @@
-/* APX web shell. Colors/spacing come from --apx-* tokens (@apx/ui); layout sizes from --shell-* (shell/layout.ts). */
+/* Colonia web shell. Colors/spacing come from --colonia-* tokens (@colonia/ui); layout sizes from --shell-* (shell/layout.ts). */
 
 html,
 body,
@@ -14,30 +14,30 @@ html {
 body {
   overflow: clip;
 }
-:where(.apx) :where(button, input, textarea, select) {
+:where(.colonia) :where(button, input, textarea, select) {
   font: inherit;
   color: inherit;
 }
-:where(.apx) ::placeholder {
-  color: var(--apx-fg-subtle);
+:where(.colonia) ::placeholder {
+  color: var(--colonia-fg-subtle);
 }
 /* Thin thumbs with air around them: the transparent border is the padding (background-clip keeps it clear). */
-.apx ::-webkit-scrollbar {
+.colonia ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
-.apx ::-webkit-scrollbar-thumb {
+.colonia ::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 10px;
-  background: var(--apx-fill-strong);
+  background: var(--colonia-fill-strong);
   background-clip: padding-box;
 }
-.apx ::-webkit-scrollbar-thumb:hover {
+.colonia ::-webkit-scrollbar-thumb:hover {
   border-width: 2px;
-  background-color: var(--apx-fg-subtle);
+  background-color: var(--colonia-fg-subtle);
 }
-.apx ::-webkit-scrollbar-track,
-.apx ::-webkit-scrollbar-corner {
+.colonia ::-webkit-scrollbar-track,
+.colonia ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
@@ -49,11 +49,11 @@ body {
   height: 100vh;
   min-height: 620px;
   overflow: hidden;
-  background: var(--apx-bg);
-  color: var(--apx-fg);
-  font-family: var(--apx-font-sans);
-  font-size: var(--apx-text-md);
-  line-height: var(--apx-leading);
+  background: var(--colonia-bg);
+  color: var(--colonia-fg);
+  font-family: var(--colonia-font-sans);
+  font-size: var(--colonia-text-md);
+  line-height: var(--colonia-leading);
 }
 .shell__body {
   flex: 1;
@@ -64,7 +64,7 @@ body {
   flex: 1;
   min-width: 0;
   display: flex;
-  background: var(--apx-bg);
+  background: var(--colonia-bg);
 }
 
 /* ── Offline banner / toasts ───────────────────────────────────────────────── */
@@ -74,10 +74,10 @@ body {
   align-items: center;
   gap: 10px;
   padding: 6px 14px;
-  background: var(--apx-warning-soft);
-  color: var(--apx-warning-soft-fg);
-  font-size: var(--apx-text-sm);
-  border-bottom: 1px solid var(--apx-border);
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
+  font-size: var(--colonia-text-sm);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .offline__text {
   flex: 1;
@@ -105,18 +105,18 @@ body {
   align-items: center;
   gap: 10px;
   padding: 8px 8px 8px 14px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  border: 1px solid var(--apx-border);
-  box-shadow: var(--apx-shadow-md);
-  color: var(--apx-danger-soft-fg);
-  font-size: var(--apx-text-sm);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  border: 1px solid var(--colonia-border);
+  box-shadow: var(--colonia-shadow-md);
+  color: var(--colonia-danger-soft-fg);
+  font-size: var(--colonia-text-sm);
 }
 .toast.is-info {
-  color: var(--apx-brand-soft-fg);
+  color: var(--colonia-brand-soft-fg);
 }
 .toast__text {
   flex: 1;
   min-width: 0;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }

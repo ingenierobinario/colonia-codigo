@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Run } from "@apx/protocol";
+import type { Run } from "@colonia/protocol";
 import { contextOf, spentOf, tokens, usageStamp } from "./context.ts";
 
 const run = (id: string, usage?: Run["usage"]) => ({ id, usage }) as Run;

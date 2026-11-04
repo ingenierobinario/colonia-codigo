@@ -6,7 +6,7 @@ category: Forms
 Single-line text field with optional `leadingIcon` and `trailing` slot. Soft filled pill in minimal, bordered box in classic.
 
 - `size`: `sm` in sidebars/filters, `md` in forms, `lg` in onboarding.
-- `invalid` for errors — pair with a helper line in `--apx-danger`.
+- `invalid` for errors — pair with a helper line in `--colonia-danger`.
 - For search boxes use SearchField; for multi-line use Textarea; for chat use Composer.
 
 ```tsx

@@ -1,5 +1,5 @@
-import type { ProjectKind } from "@apx/protocol";
-import { Button, Dialog, Field, Icons, Input, SegmentedControl, Select, Textarea } from "@apx/ui";
+import type { ProjectKind } from "@colonia/protocol";
+import { Button, Dialog, Field, Icons, Input, SegmentedControl, Select, Textarea } from "@colonia/ui";
 import { type KeyboardEvent, useEffect, useState } from "react";
 import { bootstrap } from "../data/actions.ts";
 import { client } from "../data/client.ts";
@@ -9,7 +9,7 @@ import { useT } from "../i18n/index.ts";
 import { kindOptions, NO_KIND } from "../project/projectKind.ts";
 import { go } from "./nav.ts";
 
-type Where = "folder" | "apx" | "import";
+type Where = "folder" | "colonia" | "import";
 type Engine = "codex" | "claude";
 type Found = { name: string; cwd: string; chats: number };
 
@@ -29,7 +29,7 @@ const baseName = (p: string) =>
     .at(-1) ?? "";
 
 /**
- * A new project: in a folder (typed or picked; made if missing) or, without one, in a folder of its own inside APX's.
+ * A new project: in a folder (typed or picked; made if missing) or, without one, in a folder of its own inside Colonia's.
  * Its name (the folder's when left empty), kind and description are the ones its settings show. Opens it once made.
  */
 export function NewProjectDialog({ onClose }: { onClose(): void }) {
@@ -73,7 +73,7 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
   }, [where, engine]);
   const ready = where === "folder" ? Boolean(path.trim()) : where === "import" ? Boolean(source) : Boolean(name.trim());
   const pick = async () => {
-    const dir = await window.apxDesktop?.pickFolder?.();
+    const dir = await window.coloniaDesktop?.pickFolder?.();
     if (dir) setPath(dir);
   };
   const bring = async () => {
@@ -145,7 +145,7 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
           onValueChange={(v) => setWhere(v as Where)}
           options={[
             { value: "folder", label: t("project.new.inFolder") },
-            { value: "apx", label: t("project.new.noFolder") },
+            { value: "colonia", label: t("project.new.noFolder") },
             { value: "import", label: t("project.new.import") },
           ]}
         />
@@ -188,7 +188,7 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
                   onChange={(e) => setPath(e.currentTarget.value)}
                   onKeyDown={submitOnEnter}
                 />
-                {window.apxDesktop?.pickFolder && (
+                {window.coloniaDesktop?.pickFolder && (
                   <Button variant="secondary" leadingIcon={<Icons.FolderOpen size={14} />} onClick={() => void pick()}>
                     {t("setup.project.pick")}
                   </Button>
@@ -198,14 +198,14 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
           </Field>
         ) : (
           <p className="newproject__hint">
-            {t("project.new.apxHint")} <code>~/.apx/v2/projects/{slugOf(name.trim() || t("project.new.example"))}</code>
+            {t("project.new.coloniaHint")} <code>~/.colonia/v2/projects/{slugOf(name.trim() || t("project.new.example"))}</code>
           </p>
         )}
         <Field label={t("project.settings.name")}>
           {(id) => (
             <Input
               id={id}
-              {...(where === "apx" ? { autoFocus: true } : {})}
+              {...(where === "colonia" ? { autoFocus: true } : {})}
               placeholder={
                 where === "import"
                   ? (found?.find((p) => p.cwd === source)?.name ?? "")

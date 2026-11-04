@@ -71,7 +71,7 @@ test("tools: a list of MCP tools still restricts once they come through mcp_sear
   );
 });
 
-test("tools: a list naming nothing APX knows does not strip the agent of every tool", () => {
+test("tools: a list naming nothing Colonia knows does not strip the agent of every tool", () => {
   assert.deepEqual(
     names(agent({ tools: ["Bash", "Edit"] })),
     ALL.map((t) => t.name),
@@ -181,7 +181,7 @@ test("rules: a delegated helper keeps its own rules over its caller's mode, and 
 });
 
 test("shell: a command that only reads here never waits, outside content in the turn or not, in any mode", () => {
-  const shell = shellTools({} as never, "/nonexistent-apx-home", () => 7440).find((t) => t.name === "shell");
+  const shell = shellTools({} as never, "/nonexistent-colonia-home", () => 7440).find((t) => t.name === "shell");
   assert.ok(shell);
   const run = (command: string, a: AgentRecord) => authorize(shell, { command }, a, true).kind;
   const reads = [

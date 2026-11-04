@@ -1,5 +1,5 @@
-import type { OwnerIdentity } from "@apx/protocol";
-import { Badge, EmptyState, Icons, Input, SegmentedControl, SettingRow, Textarea } from "@apx/ui";
+import type { OwnerIdentity } from "@colonia/protocol";
+import { Badge, EmptyState, Icons, Input, SegmentedControl, SettingRow, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS, type ChannelKind } from "../channels/kinds.ts";

@@ -23,7 +23,7 @@ async function turn(thread: string, text: string): Promise<string> {
 
 const MEANWHILE = /\[sent to the owner since your last turn here/;
 
-test("the owner's next turn in Home knows what APX sent them meanwhile, once", async () => {
+test("the owner's next turn in Home knows what Colonia sent them meanwhile, once", async () => {
   assert.doesNotMatch(await turn("home", "hola"), MEANWHILE);
   const store = env.core.store;
   store.nudges.add({

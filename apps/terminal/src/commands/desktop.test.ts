@@ -9,23 +9,23 @@ import { desktopCandidates, localDesktopTarget } from "./desktop.ts";
 
 test("the desktop app is looked for where each installer puts it", () => {
   assert.deepEqual(desktopCandidates("darwin", {}, "/Users/user"), [
-    "/Applications/APX.app",
-    "/Users/user/Applications/APX.app",
+    "/Applications/Colonia.app",
+    "/Users/user/Applications/Colonia.app",
   ]);
   const installed = [
-    "C:\\Users\\u\\AppData\\Local\\Programs\\apx\\APX.exe",
-    "C:\\Users\\u\\AppData\\Local\\Programs\\@apxdesktop\\APX.exe",
+    "C:\\Users\\u\\AppData\\Local\\Programs\\colonia\\Colonia.exe",
+    "C:\\Users\\u\\AppData\\Local\\Programs\\@coloniadesktop\\Colonia.exe",
   ];
   assert.deepEqual(
     desktopCandidates("win32", { LOCALAPPDATA: "C:\\Users\\u\\AppData\\Local" }, "C:\\Users\\u"),
     installed,
   );
   assert.deepEqual(desktopCandidates("win32", {}, "C:\\Users\\u"), installed);
-  assert.deepEqual(desktopCandidates("linux", {}, "/home/u"), ["/home/u/Applications/APX.AppImage"]);
+  assert.deepEqual(desktopCandidates("linux", {}, "/home/u"), ["/home/u/Applications/Colonia.AppImage"]);
 });
 
 test("desktop handoff refuses a port belonging to another home", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-desktop-cli-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-cli-"));
   fs.writeFileSync(path.join(home, "home-id"), "selected-home");
   let identity = "other-home";
   const server = createServer((_req, res) => {
@@ -36,12 +36,12 @@ test("desktop handoff refuses a port belonging to another home", async () => {
   await once(server, "listening");
   const address = server.address();
   assert.ok(address && typeof address !== "string");
-  const env = { APX_HOME: home, APX_PORT: String(address.port) };
+  const env = { COLONIA_HOME: home, COLONIA_PORT: String(address.port) };
   try {
     await assert.rejects(localDesktopTarget(env), /another installation/);
     identity = "selected-home";
     assert.equal((await localDesktopTarget(env))?.home_id, "selected-home");
-    assert.equal(await localDesktopTarget({ ...env, APX_URL: "https://remote.example" }), undefined);
+    assert.equal(await localDesktopTarget({ ...env, COLONIA_URL: "https://remote.example" }), undefined);
   } finally {
     server.closeAllConnections();
     await new Promise<void>((resolve) => server.close(() => resolve()));

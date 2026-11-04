@@ -1,7 +1,7 @@
 // search_chats / read_chat: what was said in the owner's other chats (a channel room, another agent's thread), so an
 // agent can pick up a conversation it was not in, and this chat's own turns older than the model's view. Owner turns
 // only: a contact's sealed turn never gets these.
-import type { Message, Thread } from "@apx/protocol";
+import type { Message, Thread } from "@colonia/protocol";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
 import { canReadChat as canRead } from "../domain/chat-access.ts";
@@ -50,7 +50,7 @@ function authorOf(store: Store, m: Message): string {
   if (a.kind === "agent") return store.agents.get(a.id)?.name ?? a.id;
   if (a.kind === "person") return `${a.name} (${a.channel})`;
   if (a.kind === "surface") return a.title;
-  return "APX";
+  return "Colonia";
 }
 
 const textOf = (m: Message) =>

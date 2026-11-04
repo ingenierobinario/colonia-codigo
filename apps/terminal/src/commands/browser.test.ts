@@ -117,7 +117,7 @@ test("tabs distinguish owner and agent control; empty lists and cookie sources s
 });
 
 test("a screenshot writes the returned bytes to the requested file", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-cli-shot-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-cli-shot-"));
   try {
     const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
     const file = path.join(dir, "shot.png");

@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside, Steps } from "@astrojs/starlight/components";
 
-iMessage works two ways on the Mac where APX runs, each turned on by itself. It lends your agents two tools:
+iMessage works two ways on the Mac where Colonia runs, each turned on by itself. It lends your agents two tools:
 
 - **Read** your recent iMessages: all chats, or one person's by phone number or email. Other people's words come back
   as outside data, never as instructions.
@@ -30,13 +30,13 @@ are never answered, and pictures (PNG, JPEG, GIF, WebP) reach the agent while ot
 
 1. Open **Settings › Channels**, **Add channel › iMessage**, and turn on **Agents may use iMessage**.
 
-2. For reading: give the app running APX **Full Disk Access** in **System Settings › Privacy & Security**.
+2. For reading: give the app running Colonia **Full Disk Access** in **System Settings › Privacy & Security**.
 
-3. For sending: the first time, macOS asks whether APX may control Messages. Say yes.
+3. For sending: the first time, macOS asks whether Colonia may control Messages. Say yes.
 
 </Steps>
 
-It only works on a Mac signed in to your iMessage account, and only when the APX core runs on that Mac. A core on a
+It only works on a Mac signed in to your iMessage account, and only when the Colonia core runs on that Mac. A core on a
 server or another system shows **Only on a Mac** instead.
 
 ## Sending asks you
@@ -51,5 +51,5 @@ The switch in Settings turns the tools off. To make sure a core never offers the
 start it with:
 
 ```bash
-APX_IMESSAGE=off
+COLONIA_IMESSAGE=off
 ```

@@ -49,13 +49,13 @@ export function TagInput({
     } else if (e.key === "Backspace" && !draft && value.length) onValueChange(value.slice(0, -1));
   };
   return (
-    <div className={cx("apx-field", "apx-field--md", "apx-taginput", className)}>
+    <div className={cx("colonia-field", "colonia-field--md", "colonia-taginput", className)}>
       {value.map((t) => (
-        <span key={t} className="apx-taginput__chip">
+        <span key={t} className="colonia-taginput__chip">
           {t}
           <button
             type="button"
-            className="apx-taginput__remove"
+            className="colonia-taginput__remove"
             aria-label={removeLabel.replace("{tag}", t)}
             onClick={() => onValueChange(value.filter((x) => x !== t))}
           >
@@ -64,7 +64,7 @@ export function TagInput({
         </span>
       ))}
       <input
-        className="apx-field__input apx-taginput__input"
+        className="colonia-field__input colonia-taginput__input"
         aria-label={label}
         placeholder={value.length ? undefined : placeholder}
         value={draft}

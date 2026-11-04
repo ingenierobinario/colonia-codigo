@@ -1,5 +1,5 @@
-import type { Agent, SurfaceSummary } from "@apx/protocol";
-import { AgentAvatar, Icons, type MenuEntry } from "@apx/ui";
+import type { Agent, SurfaceSummary } from "@colonia/protocol";
+import { AgentAvatar, Icons, type MenuEntry } from "@colonia/ui";
 import { useMemo } from "react";
 import { copySurface, setSurfaceFlags } from "../data/actions.ts";
 import { blobOf, projectEntries, realProjectId, teamOf } from "../data/identity.ts";

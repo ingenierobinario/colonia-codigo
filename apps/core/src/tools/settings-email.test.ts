@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { signatureFor } from "../domain/email-signature-settings.ts";
 import { SPANISH_TITLES } from "../engine/tool-titles.ts";
 import { waitFor } from "../testkit/platform.ts";
@@ -83,7 +83,7 @@ test("signature settings discover identities, require approval, and preserve oth
 });
 
 test("RPC rejects unapproved agents, stale snapshots, unknown accounts, aliases and unsafe markup", async () => {
-  const agent = new ApxClient({ url: h.env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: h.env.core.url, actor: "agent" });
   await assert.rejects(
     agent.call("email.signature_upsert", { signature: gmail, expected: null }),
     /reserved to the owner/,
@@ -144,7 +144,7 @@ test("sealed contacts cannot read signature settings or request their modificati
   ]) {
     await h.env.client.call("threads.send", { thread: thread.id, text: JSON.stringify(call) });
     await h.env.settle(thread.id);
-    assert.ok(!h.llm.calls.at(-1)?.tools.some((t) => t.function.name === "apx_settings"));
+    assert.ok(!h.llm.calls.at(-1)?.tools.some((t) => t.function.name === "colonia_settings"));
     assert.deepEqual((await h.env.client.call("runs.pending", { thread: thread.id })).inputs, []);
     assert.deepEqual(await all(), before);
   }
@@ -152,11 +152,11 @@ test("sealed contacts cannot read signature settings or request their modificati
 
 test("email signature tool titles identify edits and removals in Spanish", () => {
   assert.equal(
-    SPANISH_TITLES.apx_settings?.({ method: "email.signature_upsert", params: {} }),
+    SPANISH_TITLES.colonia_settings?.({ method: "email.signature_upsert", params: {} }),
     "Cambió una firma de email",
   );
   assert.equal(
-    SPANISH_TITLES.apx_settings?.({ method: "email.signature_remove", params: {} }),
+    SPANISH_TITLES.colonia_settings?.({ method: "email.signature_remove", params: {} }),
     "Quitó una firma de email",
   );
 });
@@ -196,7 +196,7 @@ test("even Total requires owner approval, and an edit during approval fails clos
     let input = "";
     await waitFor(async () => {
       input =
-        (await client.call("runs.pending", { thread: thread.id })).inputs.find((i) => i.tool === "apx_settings")?.id ??
+        (await client.call("runs.pending", { thread: thread.id })).inputs.find((i) => i.tool === "colonia_settings")?.id ??
         "";
       return !!input;
     }, "signature owner approval");

@@ -12,18 +12,18 @@ test("an answer shows what its turn received: the parts' sizes, the system promp
   const box = page.getByRole("textbox", { name: /^Escribile a/ });
   await box.fill("Northwind hola");
   await box.press("Enter");
-  const answer = main.locator(".apx-msg--agent", { hasText: "Got it: Northwind hola" });
+  const answer = main.locator(".colonia-msg--agent", { hasText: "Got it: Northwind hola" });
   await expect(answer).toBeVisible();
   await answer.hover();
   await answer.getByRole("button", { name: "Ver lo que recibió" }).click();
 
   const dialog = page.getByRole("dialog", { name: "Lo que recibió" });
   await expect(dialog.getByRole("cell", { name: "Prompt de sistema" }).first()).toBeVisible();
-  await expect(dialog.getByRole("cell", { name: "Texto propio de APX" })).toBeVisible();
+  await expect(dialog.getByRole("cell", { name: "Texto propio de Colonia" })).toBeVisible();
   await expect(dialog.getByRole("cell", { name: "El mensaje" })).toBeVisible();
   await expect(dialog.getByRole("cell", { name: /^Herramientas \(\d+\)$/ }).first()).toBeVisible();
   await dialog.locator("summary", { hasText: "Prompt de sistema" }).click();
-  await expect(dialog.locator("pre").first()).toContainText("an agent in APX");
+  await expect(dialog.locator("pre").first()).toContainText("an agent in Colonia");
   await dialog.locator("summary", { hasText: "Entrada del turno" }).click();
   await expect(dialog.locator("pre").nth(1)).toContainText("Northwind hola");
   await page.keyboard.press("Escape");

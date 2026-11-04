@@ -12,7 +12,7 @@ export interface SpinnerProps {
 export function Spinner({ size = 16, className, label }: SpinnerProps) {
   return (
     <svg
-      className={cx("apx-spinner", className)}
+      className={cx("colonia-spinner", className)}
       width={size}
       height={size}
       viewBox="0 0 24 24"

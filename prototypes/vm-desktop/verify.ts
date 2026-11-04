@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { chromium, expect } from "@playwright/test";
-import { ApxClient } from "../../packages/protocol/src/client.ts";
+import { ColoniaClient } from "../../packages/protocol/src/client.ts";
 
 const runtime = path.resolve(process.argv[2] ?? "");
 const info = JSON.parse(fs.readFileSync(path.join(runtime, "running.json"), "utf8")) as { url: string };
-const client = new ApxClient({ url: new URL(info.url).origin });
+const client = new ColoniaClient({ url: new URL(info.url).origin });
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1640, height: 1050 } });
 const errors: string[] = [];
@@ -14,7 +14,7 @@ page.on("pageerror", (e) => errors.push(e.message));
 try {
   await page.goto(info.url);
   await page.evaluate(() =>
-    localStorage.setItem("apx.prefs", JSON.stringify({ language: "es", panelW: 1000, sidebarCollapsed: true })),
+    localStorage.setItem("colonia.prefs", JSON.stringify({ language: "es", panelW: 1000, sidebarCollapsed: true })),
   );
   await page.reload();
   await expect(page.locator(".computer__status.is-on")).toBeVisible({ timeout: 30_000 });
@@ -24,7 +24,7 @@ try {
   const command = page.getByRole("textbox", { name: /Comando dentro|Command inside/ });
   await command.fill("printf 'VM-RUNTIME-PROOF\\n'; uname -s; pwd");
   await page.getByRole("button", { name: /^(Enviar|Send)$/ }).click();
-  await expect(page.locator(".computer__console pre")).toContainText("VM-RUNTIME-PROOF\nLinux\n/home/apx-a1/work", {
+  await expect(page.locator(".computer__console pre")).toContainText("VM-RUNTIME-PROOF\nLinux\n/home/colonia-a1/work", {
     timeout: 20_000,
   });
   const reports = page.getByText("Demo programada terminada.", { exact: false });
@@ -38,7 +38,7 @@ try {
   await client.call("environments.control", { screen: 1, mode: "human" });
   await expect(page.getByRole("button", { name: /Devolver control|Return control/ })).toBeVisible();
   await command.fill(
-    "set -e; systemctl --user is-active apx-demo-browser.service apx-demo-terminal.service; cat report.txt; xdotool search --sync --onlyvisible --name 'Acme workspace' windowactivate --sync; xdotool search --onlyvisible --name '^APX-VM$' windowactivate --sync",
+    "set -e; systemctl --user is-active colonia-demo-browser.service colonia-demo-terminal.service; cat report.txt; xdotool search --sync --onlyvisible --name 'Acme workspace' windowactivate --sync; xdotool search --onlyvisible --name '^Colonia-VM$' windowactivate --sync",
   );
   await page.getByRole("button", { name: /^(Enviar|Send)$/ }).click();
   await expect(page.locator(".computer__console pre")).toContainText("active\nactive\nAcme Store", { timeout: 20_000 });
@@ -64,7 +64,7 @@ try {
   await command.fill("cat interactive.txt");
   await page.getByRole("button", { name: /^(Enviar|Send)$/ }).click();
   await expect(page.locator(".computer__console pre")).toContainText("KEYBOARD-PROOF", { timeout: 20_000 });
-  await page.screenshot({ path: path.join(runtime, "apx-vm-prototype.png"), fullPage: true });
+  await page.screenshot({ path: path.join(runtime, "colonia-vm-prototype.png"), fullPage: true });
   assert.deepEqual(errors, []);
   process.stdout.write("PASS: real desktop, VM command, scripted native turn and browser console\n");
 } finally {

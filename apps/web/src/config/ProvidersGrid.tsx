@@ -1,5 +1,5 @@
-import type { ProviderInfo } from "@apx/protocol";
-import { Badge, Button, Dialog, EngineIcon, engineBrand, IconButton, Icons, Input, ProjectTile, Switch } from "@apx/ui";
+import type { ProviderInfo } from "@colonia/protocol";
+import { Badge, Button, Dialog, EngineIcon, engineBrand, IconButton, Icons, Input, ProjectTile, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { createStore, useSlice } from "../data/createStore.ts";
 import { useModels } from "../data/models.ts";
@@ -19,7 +19,7 @@ import { PlanCard } from "./PlanCard.tsx";
 const editor = createStore<{ open: { id?: string; preset?: string } | undefined }>({ open: undefined });
 
 /** Known kinds the owner took off the list of suggestions (kept per device). */
-const HIDDEN_KEY = "apx.providers.hidden";
+const HIDDEN_KEY = "colonia.providers.hidden";
 const hidden = createStore<{ ids: string[] }>({ ids: readHidden() });
 function readHidden(): string[] {
   try {

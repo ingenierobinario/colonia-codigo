@@ -1,6 +1,6 @@
 // When a routine runs next. Cron (five fields, local time: minute hour day-of-month month day-of-week, with *, lists,
 // ranges and steps), every N minutes, once at a moment, or only by hand.
-import type { Schedule } from "@apx/protocol";
+import type { Schedule } from "@colonia/protocol";
 
 type Field = { min: number; max: number };
 const FIELDS: Field[] = [

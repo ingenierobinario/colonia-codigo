@@ -2,7 +2,7 @@
 // together) the office clock hands it to the task's agent in its chat for the task, or to the super-agent when nobody
 // has the task. The comment shows how far it got, as a channel message does: sent, handed to an agent, read. A turn
 // that answers the owner (this hand-off, an @mention, words written in the task) posts its answer back on the task.
-import type { Task } from "@apx/protocol";
+import type { Task } from "@colonia/protocol";
 import type { RunRecord } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import type { AdmitFn } from "./engine.ts";

@@ -71,7 +71,7 @@ export function engineBrand(id: string | undefined): EngineBrand | undefined {
 type LateBrand = AcpBrand | ProviderBrand;
 
 /**
- * The ACP agents' and model APIs' marks arrive after the first screen (`@apx/ui/marks`): until then such an engine
+ * The ACP agents' and model APIs' marks arrive after the first screen (`@colonia/ui/marks`): until then such an engine
  * shows the neutral bot, then every icon draws its mark.
  */
 let lateMarks: Partial<Record<LateBrand, AcpMark>> = {};
@@ -119,10 +119,10 @@ export function EngineIcon({ engine, size = 16, tile = false, label, className }
   const gid = useId().replace(/:/g, "");
   const box: CSSProperties = { width: size, height: size };
   const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": true as const };
-  const cls = cx("apx-engine", tile && "apx-engine--tile", brand && `apx-engine--${brand}`, className);
+  const cls = cx("colonia-engine", tile && "colonia-engine--tile", brand && `colonia-engine--${brand}`, className);
   if (!brand)
     return (
-      <span className={cx(cls, "apx-engine--none")} style={box} {...a11y}>
+      <span className={cx(cls, "colonia-engine--none")} style={box} {...a11y}>
         <Bot size={Math.round(size * (tile ? 0.6 : 0.9))} />
       </span>
     );
@@ -140,9 +140,9 @@ export function EngineIcon({ engine, size = 16, tile = false, label, className }
       />
     ));
     return (
-      <span className={cx(cls, "apx-engine--acp")} style={box} {...a11y}>
+      <span className={cx(cls, "colonia-engine--acp")} style={box} {...a11y}>
         <svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">
-          {tile && <circle className="apx-engine__tile" cx="12" cy="12" r="12" />}
+          {tile && <circle className="colonia-engine__tile" cx="12" cy="12" r="12" />}
           <svg
             x={tile ? 4 : 0}
             y={tile ? 4 : 0}

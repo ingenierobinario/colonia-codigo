@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { skillsFor } from "../skills/skills.ts";
@@ -21,10 +21,10 @@ const skill = (dir: string, name: string, description: string) => {
 };
 
 before(async () => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-res-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-res-"));
   skill(path.join(home, "skills"), "brief", "Writes a morning brief.");
   env = await startCore({ llm: scriptedLlm(() => say("ok")), home });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-res-repo-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-res-repo-")));
   fs.mkdirSync(path.join(repo, ".apc"), { recursive: true });
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");
   project = (await env.client.call("projects.register", { path: repo })).project.id;
@@ -129,7 +129,7 @@ test("a skill whose folder and name differ is edited in its own folder", async (
 test("a planted temp-file symlink cannot redirect a skill write", async () => {
   const dir = path.join(repo, ".apc", "skills", "safe");
   fs.mkdirSync(dir, { recursive: true });
-  const outside = path.join(os.tmpdir(), `apx-outside-${process.pid}.txt`);
+  const outside = path.join(os.tmpdir(), `colonia-outside-${process.pid}.txt`);
   fs.writeFileSync(outside, "untouched");
   for (let i = 0; i < 5; i++) fs.symlinkSync(outside, path.join(dir, `SKILL.md.tmp-${process.pid + i}`));
   await env.client.call("skills.save", {
@@ -206,20 +206,20 @@ test("a project can take none of the owner's global skills or servers; its own s
 test("the owner can see a variable's value; an agent client cannot", async () => {
   await env.client.call("secrets.set", { name: "NORTHWIND_TOKEN", value: "nw-123456" });
   assert.deepEqual(await env.client.call("secrets.reveal", { name: "NORTHWIND_TOKEN" }), { value: "nw-123456" });
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(agent.call("secrets.reveal", { name: "NORTHWIND_TOKEN" }));
   await assert.rejects(env.client.call("secrets.reveal", { name: "NOT_THERE" }));
 });
 
-test("other agent apps get APX's skills: only the installed ones, and a dry run writes nothing", async () => {
+test("other agent apps get Colonia's skills: only the installed ones, and a dry run writes nothing", async () => {
   const claude = path.join(home, "claude-home");
   fs.mkdirSync(claude, { recursive: true });
   const dry = await env.client.call("skills.runtimes", { dry_run: true });
   assert.ok(dry.steps.every((s) => s.runtime === "Claude Code" && s.action === "create"));
   assert.ok(dry.missing.some((m) => m.runtime === "Codex"));
-  assert.ok(!fs.existsSync(path.join(claude, "skills", "apx")));
+  assert.ok(!fs.existsSync(path.join(claude, "skills", "colonia")));
   await env.client.call("skills.runtimes", {});
-  assert.match(fs.readFileSync(path.join(claude, "skills", "apx", "SKILL.md"), "utf8"), /^---\nname: apx\n/);
+  assert.match(fs.readFileSync(path.join(claude, "skills", "colonia", "SKILL.md"), "utf8"), /^---\nname: colonia\n/);
   const again = await env.client.call("skills.runtimes", {});
   assert.ok(again.steps.every((s) => s.action === "unchanged"));
 });

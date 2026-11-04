@@ -148,13 +148,13 @@ test("integrations: GitHub is connected with a token, then disconnected", async 
     page
       .getByRole("dialog")
       .getByRole("button", { name: /^GitHub/ })
-      .locator(".apx-intmark svg"),
+      .locator(".colonia-intmark svg"),
   ).toBeVisible();
   await expect(
     page
       .getByRole("dialog")
       .getByRole("button", { name: /Linear/ })
-      .locator(".apx-intmark svg"),
+      .locator(".colonia-intmark svg"),
   ).toBeVisible();
   await page
     .getByRole("dialog")
@@ -220,17 +220,17 @@ test("an extension's routine says what and when, waits to be added, and once in 
   await expect(page.getByText("Morning brief").first()).toBeVisible();
 });
 
-test("APX's own skills are listed with an APX tag, always on and read-only", async ({ page }) => {
+test("Colonia's own skills are listed with an Colonia tag, always on and read-only", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Skills/ }).click();
-  await page.getByRole("button", { name: /^apx-mcps/ }).click();
+  await page.getByRole("button", { name: /^colonia-mcps/ }).click();
   const detail = page.getByRole("article");
-  await expect(detail.getByRole("heading", { name: "apx-mcps" })).toBeVisible();
-  await expect(detail.getByText("APX", { exact: true })).toBeVisible();
+  await expect(detail.getByRole("heading", { name: "colonia-mcps" })).toBeVisible();
+  await expect(detail.getByText("Colonia", { exact: true })).toBeVisible();
   await expect(detail.getByRole("switch")).toHaveCount(0);
-  await expect(detail.getByText(/^Viene con APX y les enseña a los agentes a cambiar APX/)).toBeVisible();
-  await expect(detail.getByText(/apx mcps add/).first()).toBeVisible();
+  await expect(detail.getByText(/^Viene con Colonia y les enseña a los agentes a cambiar Colonia/)).toBeVisible();
+  await expect(detail.getByText(/colonia mcps add/).first()).toBeVisible();
 });
 
 test("other apps' skills show their tag and duplicates; the engines filter narrows; a folder is read, then imported", async ({
@@ -251,7 +251,7 @@ test("other apps' skills show their tag and duplicates; the engines filter narro
   await rpc("skills.save", {
     name: "acme-memo",
     target: "global",
-    content: "---\nname: acme-memo\ndescription: APX's memo.\n---\nHow.\n",
+    content: "---\nname: acme-memo\ndescription: Colonia's memo.\n---\nHow.\n",
   });
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
@@ -265,7 +265,7 @@ test("other apps' skills show their tag and duplicates; the engines filter narro
   await page.getByRole("menuitem", { name: "Claude" }).click();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: /^acme-deck/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /^apx-mcps/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^colonia-mcps/ })).toHaveCount(0);
   // In Claude only as an unused copy: listed, with Claude's tag dimmed and saying so.
   await expect(page.getByTitle("Copia en Claude: los agentes no la usan")).toBeVisible();
   await expect(page.getByText(/Mostrando las de Claude/)).toBeVisible();
@@ -273,7 +273,7 @@ test("other apps' skills show their tag and duplicates; the engines filter narro
   await page.getByRole("menuitem", { name: "Claude" }).click();
   await page.keyboard.press("Escape");
 
-  // "Use this one" on Claude's copy: it takes the place of APX's, and the copy is now the same.
+  // "Use this one" on Claude's copy: it takes the place of Colonia's, and the copy is now the same.
   await page.getByRole("article").getByRole("button", { name: "Usar esta" }).click();
   const use = page.getByRole("dialog", { name: "Usar esta" });
   await expect(use.getByRole("checkbox", { name: "Reemplazar las que ya existen" })).toBeChecked();
@@ -291,13 +291,13 @@ test("other apps' skills show their tag and duplicates; the engines filter narro
   await dialog.getByRole("button", { name: "Leer" }).click();
   await expect(dialog.getByText("Trae scripts que un agente podría ejecutar: scripts/run.sh")).toBeVisible();
   await expect(dialog.getByRole("checkbox", { name: "northwind-notes" })).toBeChecked();
-  expect(fs.existsSync(path.join(dir, "apx-home", "skills", "northwind-notes")), "a preview copies nothing").toBe(
+  expect(fs.existsSync(path.join(dir, "colonia-home", "skills", "northwind-notes")), "a preview copies nothing").toBe(
     false,
   );
   await dialog.getByRole("button", { name: "Importar 1" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("button", { name: /^northwind-notes/ })).toBeVisible();
-  expect(fs.readFileSync(path.join(dir, "apx-home", "skills", "northwind-notes", "scripts", "run.sh"), "utf8")).toBe(
+  expect(fs.readFileSync(path.join(dir, "colonia-home", "skills", "northwind-notes", "scripts", "run.sh"), "utf8")).toBe(
     "echo hi\n",
   );
 });

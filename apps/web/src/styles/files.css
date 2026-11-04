@@ -21,7 +21,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 /* In a project the bar lines up with its tabs, and the switch keeps its own width. */
 .chatfiles__bar--project {
@@ -58,12 +58,12 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-left: 1px solid var(--apx-border);
-  background: var(--apx-surface);
+  border-left: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
 }
 .projwidgets__head {
   padding: 8px 10px 8px 14px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .projwidgets__frame {
   flex: 1;
@@ -72,8 +72,8 @@
 }
 .chatfiles__note {
   margin: 0;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 .files__back {
   display: inline-flex;
@@ -82,16 +82,16 @@
   margin: 8px 10px 0;
   padding: 2px 6px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font: inherit;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
 }
 .files__back:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .files--empty {
   display: flex;
@@ -103,7 +103,7 @@
   min-height: 0;
   overflow: auto;
   padding: 10px 6px;
-  border-right: 1px solid var(--apx-border);
+  border-right: 1px solid var(--colonia-border);
 }
 .files--stacked .files__tree {
   border-right: 0;
@@ -113,9 +113,9 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px 8px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-semibold);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-semibold);
 }
 .files__list {
   margin: 0;
@@ -130,24 +130,24 @@
   height: 28px;
   padding-right: 8px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
 }
 .files__row:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .files__row.is-on {
-  background: var(--apx-fill);
-  font-weight: var(--apx-weight-semibold);
+  background: var(--colonia-fill);
+  font-weight: var(--colonia-weight-semibold);
 }
 .files__row svg {
   flex: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .files__name {
   overflow: hidden;
@@ -157,12 +157,12 @@
 .files__more,
 .files__error {
   padding: 6px 10px;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
   list-style: none;
 }
 .files__error {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 .files__loading {
   margin: 4px 10px;
@@ -180,14 +180,14 @@
   gap: 10px;
   min-height: 44px;
   padding: 6px 16px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .files__path {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
 }
 /* Narrow: the path takes its own line over the size and the view's controls. */
 .files--stacked .files__head {
@@ -199,8 +199,8 @@
 }
 .files__size {
   flex: none;
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
 }
 .files__spacer {
   flex: 1;
@@ -220,14 +220,14 @@
 .files__source {
   margin: 0;
   padding: 16px;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
   line-height: 1.55;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .files__body.is-split .files__source {
-  border-right: 1px solid var(--apx-border);
+  border-right: 1px solid var(--colonia-border);
 }
 .files__md {
   min-width: 0;
@@ -236,7 +236,7 @@
   padding: 16px 24px;
 }
 .files__body.is-split .codeview {
-  border-right: 1px solid var(--apx-border);
+  border-right: 1px solid var(--colonia-border);
 }
 .codeview {
   min-width: 0;
@@ -248,8 +248,8 @@
 }
 /* Editing reads as editing: the code sits on a field, with the app's focus color around it. */
 .codeview.is-editing {
-  background: var(--apx-fill);
-  box-shadow: inset 0 0 0 1px var(--apx-border);
+  background: var(--colonia-fill);
+  box-shadow: inset 0 0 0 1px var(--colonia-border);
 }
 
 /* Code colors, close to the app's own: muted in light, softer and brighter in dark. */
@@ -266,7 +266,7 @@
   --code-active-line: rgba(0, 0, 0, 0.035);
   --code-selection: rgba(84, 132, 242, 0.22);
 }
-[data-apx-mode="dark"] {
+[data-colonia-mode="dark"] {
   --code-keyword: #c79bff;
   --code-string: #8fd694;
   --code-number: #f5a65b;
@@ -287,7 +287,7 @@
   }
   .files__tree {
     border-right: 0;
-    border-bottom: 1px solid var(--apx-border);
+    border-bottom: 1px solid var(--colonia-border);
   }
   .files__body.is-split {
     grid-template-columns: 1fr;
@@ -308,10 +308,10 @@
 .files__media video {
   max-width: 100%;
   max-height: 100%;
-  border-radius: var(--apx-radius-md);
+  border-radius: var(--colonia-radius-md);
 }
 .files__media.is-image {
-  background: repeating-conic-gradient(var(--apx-fill) 0% 25%, transparent 0% 50%) 50% / 16px 16px;
+  background: repeating-conic-gradient(var(--colonia-fill) 0% 25%, transparent 0% 50%) 50% / 16px 16px;
 }
 .files__media audio {
   width: min(480px, 100%);
@@ -328,8 +328,8 @@
 }
 .files__confirm {
   margin: 0;
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
   overflow-wrap: anywhere;
 }
 
@@ -362,15 +362,15 @@
   display: flex;
   flex-direction: column;
   padding: 10px 10px 16px;
-  border-right: 1px solid var(--apx-border);
+  border-right: 1px solid var(--colonia-border);
 }
 .git__historyhead {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 2px 4px 8px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-sm);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
 }
 /* The magic button sits in the message box's corner. */
 .git__message {
@@ -391,11 +391,11 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 10px 16px;
-  border-right: 1px solid var(--apx-border);
+  border-right: 1px solid var(--colonia-border);
 }
 .git__branchname {
   overflow: hidden;
-  font-family: var(--apx-font-mono);
+  font-family: var(--colonia-font-mono);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -407,8 +407,8 @@
 }
 .git__sync {
   gap: 6px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 .git__commit {
   display: flex;
@@ -416,7 +416,7 @@
   gap: 6px;
   padding: 4px 4px 8px;
 }
-.git__commit .apx-button {
+.git__commit .colonia-button {
   align-self: stretch;
 }
 .git__label {
@@ -431,9 +431,9 @@
   min-width: 18px;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--apx-fill);
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   text-align: center;
 }
 .git__files,
@@ -446,11 +446,11 @@
   position: relative;
   display: flex;
   align-items: center;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
 }
 .git__file:hover,
 .git__file.is-on {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .git__filebtn {
   flex: 1;
@@ -461,29 +461,29 @@
   padding: 4px 6px;
   border: 0;
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
 }
 .git__letter {
   flex: none;
   width: 12px;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-semibold);
-  color: var(--apx-fg-muted);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-semibold);
+  color: var(--colonia-fg-muted);
 }
 .git__letter.is-M {
-  color: var(--apx-warning, #d4a72c);
+  color: var(--colonia-warning, #d4a72c);
 }
 .git__letter.is-A,
 .git__letter.is-U {
-  color: var(--apx-success, #3fb950);
+  color: var(--colonia-success, #3fb950);
 }
 .git__letter.is-D {
-  color: var(--apx-danger, #f85149);
+  color: var(--colonia-danger, #f85149);
 }
 .git__name {
   flex: none;
@@ -496,8 +496,8 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -506,14 +506,14 @@
   display: inline-flex;
   gap: 4px;
   margin-left: auto;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
 }
 .git__counts .is-add {
-  color: var(--apx-success, #3fb950);
+  color: var(--colonia-success, #3fb950);
 }
 .git__counts .is-del {
-  color: var(--apx-danger, #f85149);
+  color: var(--colonia-danger, #f85149);
 }
 /* The stage/unstage button shows on hover or focus, so rows stay quiet. */
 .git__move {
@@ -526,8 +526,8 @@
 }
 .git__clean {
   margin: 4px 6px;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
 }
 .git__commitrow {
   position: relative;
@@ -535,16 +535,16 @@
   display: flex;
   padding: 0 6px 0 2px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 .git__commitrow:hover,
 .git__commitrow.is-on {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 /* The history's graph sits in each row's own height, so its lines join from one row to the next. */
 .git__graph {
@@ -571,7 +571,7 @@
   padding: 0 6px;
   border: 1px solid;
   border-radius: 999px;
-  font-size: calc(10.5px * var(--apx-text-scale, 1));
+  font-size: calc(10.5px * var(--colonia-text-scale, 1));
   line-height: 16px;
   white-space: nowrap;
 }
@@ -580,15 +580,15 @@
 }
 .git__subject {
   overflow: hidden;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 .git__meta {
   margin: 0;
   overflow: hidden;
-  color: var(--apx-fg-muted);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -604,7 +604,7 @@
   display: flex;
   flex-direction: column;
 }
-.git__view > .apx-empty {
+.git__view > .colonia-empty {
   margin: auto;
 }
 .git__diff {
@@ -618,13 +618,13 @@
 }
 .git__commithead h3 {
   margin: 0 0 6px;
-  font-size: var(--apx-text-md, 15px);
+  font-size: var(--colonia-text-md, 15px);
 }
 .git__body {
   margin: 0 0 6px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   white-space: pre-wrap;
 }
 .git__loading {

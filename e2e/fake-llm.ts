@@ -7,7 +7,7 @@
 // folder" reads outside the project's folder (a folder card); "show a widget" makes one; "open a
 // report" writes one and opens it as a document; "show a table for task_…" answers with a wide table whose last
 // column holds that task's chip; "connect <app> for me" offers that app or channel to connect; "draw a flow in
-// <project id>" makes a Flow there with apx_flow (a draft the chat shows as a card); asked from a Flow's editor,
+// <project id>" makes a Flow there with colonia_flow (a draft the chat shows as a card); asked from a Flow's editor,
 // "add a cleanup step" adds one to that Flow's draft and "make this flow" makes the new one in its project. It also
 // embeds texts (Ollama's /api/embed) for the skills picked by meaning.
 import http from "node:http";
@@ -15,7 +15,7 @@ import type { AddressInfo } from "node:net";
 
 type Message = { role: string; content?: unknown };
 
-/** The owner's words in the last user message, without the framing APX puts around them. */
+/** The owner's words in the last user message, without the framing Colonia puts around them. */
 function lastWords(messages: Message[]): string {
   const last = [...messages].reverse().find((m) => m.role === "user");
   const text =
@@ -165,7 +165,7 @@ function toolCall(messages: Message[], said: string): { name: string; arguments:
   const flowIn = /^draw a flow in (\S+)/i.exec(said);
   if (flowIn)
     return {
-      name: "apx_flow",
+      name: "colonia_flow",
       arguments: JSON.stringify({
         method: "flows.create",
         params: {
@@ -193,7 +193,7 @@ function toolCall(messages: Message[], said: string): { name: string; arguments:
   const editing = /\(id ([A-Za-z0-9_-]+)\)/.exec(textOf(messages.findLast((m) => m.role === "user")))?.[1];
   if (editing && /^add a cleanup step/i.test(said))
     return {
-      name: "apx_flow",
+      name: "colonia_flow",
       arguments: JSON.stringify({
         method: "flows.draft_save",
         params: {
@@ -210,7 +210,7 @@ function toolCall(messages: Message[], said: string): { name: string; arguments:
     };
   if (editing && /^make this flow/i.test(said))
     return {
-      name: "apx_flow",
+      name: "colonia_flow",
       arguments: JSON.stringify({
         method: "flows.create",
         params: {
@@ -307,7 +307,7 @@ export async function fakeLlm() {
               ? "Part checked."
               : /^suggest a command/i.test(said)
                 ? SUGGESTION
-                : // The owner's words in a contact's chat come before APX's note on them: the whole message is read.
+                : // The owner's words in a contact's chat come before Colonia's note on them: the whole message is read.
                   /react with a heart/i.test(JSON.stringify(body.messages?.findLast((m) => m.role === "user")?.content))
                   ? "REACT ❤️"
                   : (reviewTable(said) ?? `Got it: ${said || "(nothing)"}`);

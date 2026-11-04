@@ -1,0 +1,52 @@
+<main class="colonia-widget colonia-stack">
+  <header class="colonia-row">
+    <div class="colonia-stack">
+      <p class="colonia-eyebrow">Colonia · Workspace</p>
+      <h1>Project overview</h1>
+      <p class="colonia-muted">Sample snapshot. Filter the work below.</p>
+    </div>
+    <span class="colonia-badge" data-tone="brand">Sample data</span>
+  </header>
+  <section class="colonia-grid" aria-label="Summary">
+    <article class="colonia-card colonia-stack"><h2>Open work</h2><p class="colonia-stat">3</p><p class="colonia-muted">Across two areas</p></article>
+    <article class="colonia-card colonia-stack"><h2>Ready</h2><p class="colonia-stat">1</p><p class="colonia-muted">Waiting for review</p></article>
+    <article class="colonia-card colonia-stack"><h2>Next milestone</h2><p class="colonia-stat">Friday</p><p class="colonia-muted">Interface review</p></article>
+  </section>
+  <section class="colonia-toolbar" aria-label="Filters">
+    <label class="colonia-field">Search<input id="search" type="search" placeholder="Find work…"></label>
+    <label class="colonia-field">Status<select id="status"><option value="all">All</option><option value="Open">Open</option><option value="Ready">Ready</option></select></label>
+    <button id="reset" type="button">Reset filters</button>
+  </section>
+  <p id="count" class="colonia-muted" role="status"></p>
+  <section id="work" class="colonia-stack" aria-label="Work items">
+    <article class="colonia-card colonia-stack" data-status="Open"><div class="colonia-row"><h2>Refine the dashboard</h2><span class="colonia-badge">Open</span></div><p class="colonia-muted">Design · Clarify the next action and leave room around the content.</p></article>
+    <article class="colonia-card colonia-stack" data-status="Ready"><div class="colonia-row"><h2>Review the first release</h2><span class="colonia-badge" data-tone="brand">Ready</span></div><p class="colonia-muted">Product · Check the responsive layout and keyboard navigation.</p></article>
+    <article class="colonia-card colonia-stack" data-status="Open"><div class="colonia-row"><h2>Write the quick guide</h2><span class="colonia-badge">Open</span></div><p class="colonia-muted">Product · Explain the workflow with one concrete example.</p></article>
+  </section>
+  <p id="empty" class="colonia-muted" hidden>No matching work. Try another filter.</p>
+</main>
+<script>
+const search = document.getElementById('search');
+const status = document.getElementById('status');
+const items = [...document.querySelectorAll('#work > article')];
+function filter() {
+  const query = search.value.trim().toLocaleLowerCase();
+  let visible = 0;
+  for (const item of items) {
+    const matches = item.textContent.toLocaleLowerCase().includes(query) &&
+      (status.value === 'all' || item.dataset.status === status.value);
+    item.hidden = !matches;
+    if (matches) visible++;
+  }
+  document.getElementById('count').textContent = `${visible} of ${items.length} items`;
+  document.getElementById('empty').hidden = visible !== 0;
+}
+search.addEventListener('input', filter);
+status.addEventListener('change', filter);
+document.getElementById('reset').addEventListener('click', () => {
+  search.value = '';
+  status.value = 'all';
+  filter();
+});
+filter();
+</script>

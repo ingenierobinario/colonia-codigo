@@ -46,16 +46,16 @@ xattr -dr com.apple.quarantine /Applications/Colonia.app
 ## Install on a server
 
 Only if you want Colonia always on, even with your computer off, and you have your own server. On that machine, this
-command installs Colonia and the `apx` command:
+command installs Colonia and the `colonia` command:
 
 <InstallCommand labels={["macOS and Linux", "Windows"]} />
 
-Then `apx setup --headless` finishes the setup and gives you a code to pair your app or phone. All the details are in
+Then `colonia setup --headless` finishes the setup and gives you a code to pair your app or phone. All the details are in
 [Colonia on a server](/devices/server/).
 
 ## Where your data lives
 
-Everything Colonia keeps is in one folder on your computer, `~/.apx/v2`. Your projects stay where they were; Colonia only
+Everything Colonia keeps is in one folder on your computer, `~/.colonia/v2`. Your projects stay where they were; Colonia only
 adds `AGENTS.md` and `.apc/` to them. Keys go to your system's keychain when there is one. More in
 [Privacy](/reference/privacy/).
 
@@ -63,12 +63,12 @@ adds `AGENTS.md` and `.apc/` to them. Keys go to your system's keychain when the
 
 Colonia looks for new versions every few hours and, when there is one, shows an **Update** notice in the top bar. Your
 data is kept. On Windows and Linux the new version installs itself; on macOS the new disk image opens for you to drag the
-app. On a server, `apx upgrade --check` tells you whether there is a new version and `apx upgrade` installs it.
-`APX_UPDATES=off` turns the checks off.
+app. On a server, `colonia upgrade --check` tells you whether there is a new version and `colonia upgrade` installs it.
+`COLONIA_UPDATES=off` turns the checks off.
 
 ## Uninstall
 
-Uninstalling removes the program. **Your data stays** in `~/.apx/v2`: delete that folder if you want to start over.
+Uninstalling removes the program. **Your data stays** in `~/.colonia/v2`: delete that folder if you want to start over.
 
 <Tabs syncKey="install">
 <TabItem label="Desktop app">
@@ -80,7 +80,7 @@ Uninstalling removes the program. **Your data stays** in `~/.apx/v2`: delete tha
 </TabItem>
 <TabItem label="Server">
 
-`apx service uninstall` removes the service. To remove the program too, run the installer again with `--uninstall` (on
+`colonia service uninstall` removes the service. To remove the program too, run the installer again with `--uninstall` (on
 Windows, `-Uninstall`).
 
 </TabItem>

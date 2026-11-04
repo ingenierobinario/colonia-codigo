@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { TaskEvent } from "@apx/protocol";
+import type { TaskEvent } from "@colonia/protocol";
 import { historyLines } from "./history.ts";
 
 const columns = [

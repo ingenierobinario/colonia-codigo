@@ -5,20 +5,20 @@ import { ErrorCode } from "./constants.ts";
 
 export { ErrorCode, PROTOCOL_VERSION } from "./constants.ts";
 
-export const ApxErrorShape = z.object({
+export const ColoniaErrorShape = z.object({
   code: z.enum(Object.values(ErrorCode) as [ErrorCode, ...ErrorCode[]]),
   message: z.string(),
   detail: z.unknown().optional(),
   /** true → the same call may succeed later (timeout, node offline); false or absent → do not retry as is. */
   retryable: z.boolean().optional(),
 });
-export type ApxErrorShape = z.infer<typeof ApxErrorShape>;
+export type ColoniaErrorShape = z.infer<typeof ColoniaErrorShape>;
 
 export const ClientRole = z.enum(["operator", "node"]);
 export type ClientRole = z.infer<typeof ClientRole>;
 
 /**
- * Who is behind an operator connection. An agent client (e.g. `apx mcp` used by another tool) never gets the
+ * Who is behind an operator connection. An agent client (e.g. `colonia mcp` used by another tool) never gets the
  * human's controls. Self-declared on loopback; scoped tokens replace it when pairing lands.
  */
 export const Actor = z.enum(["human", "agent"]);
@@ -60,7 +60,7 @@ export type ReqFrame = z.infer<typeof ReqFrame>;
 
 export const ResFrame = z.discriminatedUnion("ok", [
   z.object({ t: z.literal("res"), id: z.string(), ok: z.literal(true), result: z.unknown() }),
-  z.object({ t: z.literal("res"), id: z.string(), ok: z.literal(false), error: ApxErrorShape }),
+  z.object({ t: z.literal("res"), id: z.string(), ok: z.literal(false), error: ColoniaErrorShape }),
 ]);
 export type ResFrame = z.infer<typeof ResFrame>;
 

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { AGENT_NAMES } from "@apx/protocol";
+import { AGENT_NAMES } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -14,7 +14,7 @@ let from = "";
 let to = "";
 
 const repo = (agents: Record<string, string>) => {
-  const dir = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-clone-")));
+  const dir = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-clone-")));
   repos.push(dir);
   fs.mkdirSync(path.join(dir, ".apc", "agents"), { recursive: true });
   for (const [slug, text] of Object.entries(agents))

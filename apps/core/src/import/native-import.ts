@@ -1,9 +1,9 @@
-// The owner's Claude Code and Codex work brought into APX as projects: each session a chat with its whole history, its
+// The owner's Claude Code and Codex work brought into Colonia as projects: each session a chat with its whole history, its
 // images and the tools the engine ran, under the project of the folder it ran in. Importing again adds only what is
 // new, so the owner can keep working there while moving. Read-only on the CLIs' folders.
 import fs from "node:fs";
 import path from "node:path";
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { isInside } from "../paths.ts";
 import { saveUpload } from "../services/uploads.ts";

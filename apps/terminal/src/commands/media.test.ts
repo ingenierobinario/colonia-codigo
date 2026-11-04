@@ -6,7 +6,7 @@ import { after, test } from "node:test";
 import { extensionOf, image, say, sizeOf, transcribe } from "./media.ts";
 import { printed, recordingClient } from "./testing.ts";
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-media-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-media-"));
 after(() => fs.rmSync(dir, { recursive: true, force: true }));
 const png = Buffer.from("not really a png");
 
@@ -61,10 +61,10 @@ test("transcribe sends the file's bytes with its type and prints the words", asy
 
 test("help prints the usage and no argument is a usage error, without calling the core", async () => {
   const { client, calls } = recordingClient({});
-  assert.match(await printed(() => image(client, ["help"], {})), /^apx image "<prompt>"/);
-  assert.match(await printed(() => say(client, ["help"], {})), /^apx say "<text>"/);
-  assert.match(await printed(() => transcribe(client, ["help"])), /^apx transcribe <audio file>/);
-  await assert.rejects(image(client, [], {}), /apx image/);
-  await assert.rejects(transcribe(client, []), /apx transcribe/);
+  assert.match(await printed(() => image(client, ["help"], {})), /^colonia image "<prompt>"/);
+  assert.match(await printed(() => say(client, ["help"], {})), /^colonia say "<text>"/);
+  assert.match(await printed(() => transcribe(client, ["help"])), /^colonia transcribe <audio file>/);
+  await assert.rejects(image(client, [], {}), /colonia image/);
+  await assert.rejects(transcribe(client, []), /colonia transcribe/);
   assert.equal(calls.length, 0);
 });

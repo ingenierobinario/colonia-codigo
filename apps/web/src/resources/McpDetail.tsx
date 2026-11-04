@@ -1,5 +1,5 @@
-import type { McpServerStatus } from "@apx/protocol";
-import { Badge, Button, Icons, Switch } from "@apx/ui";
+import type { McpServerStatus } from "@colonia/protocol";
+import { Badge, Button, Icons, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { projectName } from "../data/identity.ts";
 import { listMcp, signInMcp, testMcp, toggleMcp, trustMcp } from "../data/resources.ts";

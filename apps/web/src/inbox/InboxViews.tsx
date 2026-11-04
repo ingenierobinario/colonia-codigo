@@ -1,5 +1,5 @@
-import type { Agent, Thread } from "@apx/protocol";
-import { AgentAvatar, ContextMenu, EngineIcon, Icons, ProjectTile, Spinner, Tooltip } from "@apx/ui";
+import type { Agent, Thread } from "@colonia/protocol";
+import { AgentAvatar, ContextMenu, EngineIcon, Icons, ProjectTile, Spinner, Tooltip } from "@colonia/ui";
 import { Suspense, useRef, useState } from "react";
 import { KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";

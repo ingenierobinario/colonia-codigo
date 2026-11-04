@@ -11,7 +11,7 @@ const widget = (connect?: string[]) => ({
   ...(connect ? { connect } : {}),
 });
 const KIT_APP =
-  '<meta name="apx-surface" content="app"><script src="/_apx/kit@1.js"></script><div class="ax-app"><div class="ax-shell"><header class="ax-topbar">Habits</header></div></div>';
+  '<meta name="colonia-surface" content="app"><script src="/_colonia/kit@1.js"></script><div class="ax-app"><div class="ax-shell"><header class="ax-topbar">Habits</header></div></div>';
 const calls: Record<string, object | [string, object]> = {
   "live widget": widget(["https://api.binance.com", "wss://stream.binance.com:9443"]),
   "same widget": widget(),
@@ -259,18 +259,18 @@ test("an agent converts a published app to a widget without reading or replacing
   assert.equal((await env.client.call("surfaces.get", { surface: original.id })).app, true);
 });
 
-test("a page written with the APX Kit is an app by its meta tag and gets the kit inline wherever it is served", async () => {
+test("a page written with the Colonia Kit is an app by its meta tag and gets the kit inline wherever it is served", async () => {
   const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent", title: "kit" });
   assert.match(await said(t.id, "kit app"), /widget "habits" v1 shown.*listed as an app/);
   const id = (await env.client.call("surfaces.list", {})).surfaces.find((s) => s.name === "habits")?.id ?? "";
   const doc = await env.client.call("surfaces.get", { surface: id });
   assert.equal(doc.app, true);
-  assert.match(doc.html, /^<meta name="apx-surface" content="app"><script data-apx-kit>\/\*! APX Kit v1/);
-  assert.doesNotMatch(doc.html, /<script src="\/_apx\/kit@1\.js"><\/script>/);
+  assert.match(doc.html, /^<meta name="colonia-surface" content="app"><script data-colonia-kit>\/\*! Colonia Kit v1/);
+  assert.doesNotMatch(doc.html, /<script src="\/_colonia\/kit@1\.js"><\/script>/);
   // The agent reads and edits the page as written, never the kit.
   assert.match(
     await said(t.id, "read habits"),
-    /<html_source>\n<meta name="apx-surface" content="app"><script src="\/_apx\/kit@1\.js">/,
+    /<html_source>\n<meta name="colonia-surface" content="app"><script src="\/_colonia\/kit@1\.js">/,
   );
 
   const shared = await env.client.call("surfaces.share", { surface: id, shared: true });
@@ -279,11 +279,11 @@ test("a page written with the APX Kit is an app by its meta tag and gets the kit
     res.headers.get("content-security-policy") ?? "",
     /^sandbox allow-scripts allow-popups allow-forms;.*form-action 'none';/,
   );
-  assert.match(await res.text(), /<script data-apx-kit>\/\*! APX Kit v1/);
+  assert.match(await res.text(), /<script data-colonia-kit>\/\*! Colonia Kit v1/);
   await env.client.call("surfaces.share", { surface: id, shared: false });
-  const kit = await fetch(new URL("/_apx/kit@1.js", env.core.url));
+  const kit = await fetch(new URL("/_colonia/kit@1.js", env.core.url));
   assert.match(kit.headers.get("content-type") ?? "", /^text\/javascript/);
-  assert.match(await kit.text(), /window\.APX = Object\.assign/);
+  assert.match(await kit.text(), /window\.Colonia = Object\.assign/);
 });
 
 test("a widget remembers between openings and versions; its agent reads it as data and changes it", async () => {

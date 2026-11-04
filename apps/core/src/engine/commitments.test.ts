@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "./testkit.ts";
 
 let settling = "";
@@ -87,7 +87,7 @@ test("an agent records what a contact owes the owner", async () => {
 
 test("unknown people, the owner and bad dates are refused", async () => {
   const refused = (p: Promise<unknown>, re: RegExp) =>
-    assert.rejects(p, (e: unknown) => e instanceof ApxError && re.test(e.message));
+    assert.rejects(p, (e: unknown) => e instanceof ColoniaError && re.test(e.message));
   await refused(env.client.call("tasks.create", { title: "x", person: "Nobody" }), /contacts first/);
   const owner = env.core.store.persons.owner();
   await refused(env.client.call("tasks.create", { title: "x", person: owner.id }), /not with the owner/);

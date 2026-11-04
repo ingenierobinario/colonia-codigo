@@ -1,6 +1,6 @@
 // Execution and creation provenance can differ after reassignment: a delivery reaches the current handoff's source
 // as well as a different historical creator. See HISTORY.md#task-execution-handoff.
-import type { Task, Thread } from "@apx/protocol";
+import type { Task, Thread } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { Origin, RunRecord } from "../domain/runs.ts";
 import { HOME_THREAD_ID } from "../domain/seed.ts";

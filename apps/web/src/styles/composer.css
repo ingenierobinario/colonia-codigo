@@ -1,6 +1,6 @@
 /* ── Chat composer: toolbar, attachments, context chip ────────────────────── */
-.chat__composer.is-dropping .apx-composer {
-  outline: 2px dashed var(--apx-accent);
+.chat__composer.is-dropping .colonia-composer {
+  outline: 2px dashed var(--colonia-accent);
   outline-offset: 2px;
 }
 
@@ -14,19 +14,19 @@
   height: 26px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--apx-radius-pill);
+  border-radius: var(--colonia-radius-pill);
   background: none;
-  color: var(--apx-fg-muted);
-  font-family: var(--apx-meta-font);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-muted);
+  font-family: var(--colonia-meta-font);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
 }
 .composer__model:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .composer__model.is-own {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .composer__model .selectbtn__text {
   min-width: 0;
@@ -42,10 +42,10 @@
 /* While recording the mic turns into a stop button */
 .composer__mic.is-recording,
 .composer__mic.is-recording:hover {
-  color: var(--apx-danger);
-  background: var(--apx-danger-soft);
+  color: var(--colonia-danger);
+  background: var(--colonia-danger-soft);
 }
-.chat__composer.is-recording .apx-composer.is-disabled {
+.chat__composer.is-recording .colonia-composer.is-disabled {
   opacity: 1;
 }
 .composer__mic.is-transcribing svg {
@@ -61,14 +61,14 @@
   gap: 12px;
   min-height: 36px;
   padding: 6px 12px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-fill);
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-fill);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
 }
 .voice-recording.is-recording {
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 /* The words heard so far: read-only, they give way to the final transcript */
 .voice-recording__heard {
@@ -76,9 +76,9 @@
   margin: 0;
   max-height: 7.5em;
   overflow-y: auto;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   line-height: 1.5;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font-style: italic;
   user-select: none;
 }
@@ -98,7 +98,7 @@
 .voice-recording__bars > span {
   width: 3px;
   height: 24px;
-  border-radius: var(--apx-radius-pill);
+  border-radius: var(--colonia-radius-pill);
   background: currentColor;
   transition: transform 80ms ease-out;
 }
@@ -129,34 +129,34 @@
   height: 26px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--apx-radius-pill);
+  border-radius: var(--colonia-radius-pill);
   background: none;
-  color: var(--apx-fg-subtle);
-  font-family: var(--apx-meta-font);
-  font-size: var(--apx-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-family: var(--colonia-meta-font);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
 }
 .ctxchip:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .ctxchip.is-open {
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg);
 }
 .ctxchip__track {
   fill: none;
-  stroke: var(--apx-border);
+  stroke: var(--colonia-border);
   stroke-width: 2.5;
 }
 .ctxchip__fill {
   fill: none;
-  stroke: var(--apx-accent);
+  stroke: var(--colonia-accent);
   stroke-width: 2.5;
   stroke-linecap: round;
 }
 .ctxchip.is-full .ctxchip__fill {
-  stroke: var(--apx-warning);
+  stroke: var(--colonia-warning);
 }
 
 /* Files in a sent message */
@@ -178,15 +178,15 @@
   max-width: 260px;
   height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-sm);
-  background: var(--apx-surface);
-  color: var(--apx-fg);
-  font-size: var(--apx-text-xs);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-surface);
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
 }
 .filepart:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .filepart__name {
   overflow: hidden;
@@ -195,7 +195,7 @@
 }
 .filepart__size {
   flex: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 
 @media (max-width: 640px) {
@@ -222,10 +222,10 @@
   max-height: 300px;
   overflow-y: auto;
   padding: 5px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  border: 1px solid var(--apx-border);
-  box-shadow: var(--apx-shadow-md);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  border: 1px solid var(--colonia-border);
+  box-shadow: var(--colonia-shadow-md);
 }
 .slash__row {
   display: grid;
@@ -234,30 +234,30 @@
   gap: 10px;
   min-height: 32px;
   padding: 0 8px;
-  border-radius: calc(var(--apx-radius-md) - 4px);
+  border-radius: calc(var(--colonia-radius-md) - 4px);
   cursor: default;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
 .slash__row.is-active {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .slash__icon {
   display: inline-flex;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .slash__name {
-  font-family: var(--apx-font-mono);
-  color: var(--apx-fg);
+  font-family: var(--colonia-font-mono);
+  color: var(--colonia-fg);
   white-space: nowrap;
 }
 .slash__desc {
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .chat__composer-hint {
   margin: 6px 4px 0;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-muted);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
 }

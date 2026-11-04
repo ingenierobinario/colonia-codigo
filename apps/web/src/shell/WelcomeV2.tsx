@@ -1,5 +1,5 @@
 import "../styles/welcome.css";
-import { Button, Dialog } from "@apx/ui";
+import { Button, Dialog } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import poster from "../assets/welcome-v2.jpg";
@@ -10,11 +10,11 @@ import { esWelcome } from "../i18n/welcome-es.ts";
 
 // The launch film: no voice, so one cut serves every language. Played from the docs site with no player chrome; where
 // it cannot load, YouTube's no-cookie player plays it in the same place.
-const FILM = "https://apxagent.app/media/apx-v2.mp4";
+const FILM = "https://colonia.ingenierobinario.com/media/colonia-v2.mp4";
 const YOUTUBE = "https://www.youtube-nocookie.com/embed/biFjPPuvg9o?rel=0&modestbranding=1";
 const YOUTUBE_URL = "https://youtu.be/biFjPPuvg9o";
 
-/** Said once per device: v2 is the release. The one celebration APX shows as a dialog; closing it in any way is seen. */
+/** Said once per device: v2 is the release. The one celebration Colonia shows as a dialog; closing it in any way is seen. */
 export function WelcomeV2() {
   const seen = useClosedCards((s) => s.welcome);
   return seen ? null : <Welcome />;
@@ -73,7 +73,7 @@ function Welcome() {
   );
 }
 
-const TONES = ["--apx-brand", "--apx-accent", "--apx-info", "--apx-warning", "--apx-danger"];
+const TONES = ["--colonia-brand", "--colonia-accent", "--colonia-info", "--colonia-warning", "--colonia-danger"];
 
 /** One burst from the top of the window, drawn on a canvas that leaves once the last piece has fallen. */
 function Confetti() {

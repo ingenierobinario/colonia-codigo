@@ -1,4 +1,4 @@
-// What this APX tells the APX project about itself: a few lifecycle steps (installed, opened, set up, first used,
+// What this Colonia tells the Colonia project about itself: a few lifecycle steps (installed, opened, set up, first used,
 // updated) under a random install id, and — only if the owner said yes — a daily count of tokens and of what it holds.
 // Nothing the owner wrote, no names, paths, models or keys. See rules/DECISIONS.md#d-092.
 import { z } from "zod";
@@ -8,7 +8,7 @@ export const TELEMETRY_STAGES = ["installed", "opened", "consent", "setup", "fir
 export const TelemetryStage = z.enum(TELEMETRY_STAGES);
 export type TelemetryStage = z.infer<typeof TelemetryStage>;
 
-/** Where this APX came from: a git checkout, an install.sh/ps1 bundle, the desktop app. */
+/** Where this Colonia came from: a git checkout, an install.sh/ps1 bundle, the desktop app. */
 export const TelemetryChannel = z.enum(["source", "bundle", "app", "other", "test"]);
 export type TelemetryChannel = z.infer<typeof TelemetryChannel>;
 
@@ -54,7 +54,7 @@ export const TelemetryEvent = z.discriminatedUnion("kind", [
 export type TelemetryEvent = z.infer<typeof TelemetryEvent>;
 
 export const TelemetryState = z.object({
-  /** false when this APX sends nothing at all (APX_TELEMETRY=off, DO_NOT_TRACK=1, CI). */
+  /** false when this Colonia sends nothing at all (COLONIA_TELEMETRY=off, DO_NOT_TRACK=1, CI). */
   enabled: z.boolean(),
   install_id: z.string(),
   /** The owner's answer on usage statistics; null until they gave one (the panel asks then). */

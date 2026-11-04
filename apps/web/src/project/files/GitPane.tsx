@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, EmptyState, IconButton, Icons, Select, Skeleton, Spinner, Tag, Textarea } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, EmptyState, IconButton, Icons, Select, Skeleton, Spinner, Tag, Textarea } from "@colonia/ui";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { client } from "../../data/client.ts";
 import { notify } from "../../data/notices.ts";
@@ -14,8 +14,8 @@ type Log = Result<"git.log">;
 
 const PAGE = 50;
 /** The history column's state and the files' view, remembered on this browser. */
-const HISTORY_KEY = "apx.git.history";
-const VIEW_KEY = "apx.git.view";
+const HISTORY_KEY = "colonia.git.history";
+const VIEW_KEY = "colonia.git.view";
 const stored = (key: string) => {
   try {
     return localStorage.getItem(key);

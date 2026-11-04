@@ -2,7 +2,7 @@
 // read. Routines come in turned off (v1 may still run them) and a Telegram bot v2 already has is kept.
 import fs from "node:fs";
 import path from "node:path";
-import type { CallModel, RoutineAction, Schedule, TaskPriority } from "@apx/protocol";
+import type { CallModel, RoutineAction, Schedule, TaskPriority } from "@colonia/protocol";
 import type { ApcSync } from "../apc/sync.ts";
 import type { Channels } from "../channels/manager.ts";
 import { memorySettings, saveMemorySettings } from "../domain/memory-settings.ts";
@@ -62,7 +62,7 @@ export type V1ImportDeps = {
   channels: Pick<Channels, "set" | "info">;
   services: Pick<Services, "set" | "has" | "order">;
   providers: Pick<ProviderRegistry, "all" | "set">;
-  /** Runs a profile on the super-agent (its routines seeded); false when APX has no profile of that id. */
+  /** Runs a profile on the super-agent (its routines seeded); false when Colonia has no profile of that id. */
   runProfile: (id: string, values: Record<string, string | number>) => boolean;
   /** Indexes notes by meaning in the background (what is missing); its failure is only logged. */
   reindex?: () => void;
@@ -70,7 +70,7 @@ export type V1ImportDeps = {
   v2Home: string;
 };
 
-/** v1's default project: its storage is ~/.apx/projects/default and it maps to v2's Default (no project). */
+/** v1's default project: its storage is ~/.colonia/projects/default and it maps to v2's Default (no project). */
 const defaultSpace = (home: string): V1Project => ({
   path: "",
   name: "Default",
@@ -547,8 +547,8 @@ function importWhatsApp(deps: V1ImportDeps, agentId: string): number {
 }
 
 /** A v1 agent in v2: Default's are global (by slug), a project's by its project and slug. */
-function agentFor(store: Store, apxId: string | undefined, slug: string) {
-  const projectId = apxId ? `p_${apxId}` : undefined;
+function agentFor(store: Store, coloniaId: string | undefined, slug: string) {
+  const projectId = coloniaId ? `p_${coloniaId}` : undefined;
   return store.agents
     .list()
     .find((a) => a.project_id === projectId && a.kind === "agent" && (a.slug === slug || a.id === slug));

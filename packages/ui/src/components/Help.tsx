@@ -30,27 +30,27 @@ export function Help({ label, title, items, children, align = "start", width = 3
       align={align}
       width={width}
       label={label}
-      className="apx-help__panel"
+      className="colonia-help__panel"
       openOnHover
       trigger={
-        <button type="button" className={cx("apx-help", className)} aria-label={label}>
+        <button type="button" className={cx("colonia-help", className)} aria-label={label}>
           <CircleHelp size={13} />
         </button>
       }
     >
-      {title && <div className="apx-help__title">{title}</div>}
+      {title && <div className="colonia-help__title">{title}</div>}
       {items && items.length > 0 && (
-        <dl className="apx-help__items">
+        <dl className="colonia-help__items">
           {items.map((item, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list given by the caller
-            <div key={i} className="apx-help__item">
+            <div key={i} className="colonia-help__item">
               <dt>{item.term}</dt>
               <dd>{item.text}</dd>
             </div>
           ))}
         </dl>
       )}
-      {children && <div className="apx-help__body">{children}</div>}
+      {children && <div className="colonia-help__body">{children}</div>}
     </Popover>
   );
 }

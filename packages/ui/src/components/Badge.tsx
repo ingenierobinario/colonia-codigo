@@ -13,8 +13,8 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 /** Status pill or counter: "Draft", "● You're in control", unread "5". For metadata chips use Tag. */
 export function Badge({ tone = "neutral", variant = "soft", dot = false, className, children, ...rest }: BadgeProps) {
   return (
-    <span className={cx("apx-badge", `apx-badge--${variant}`, `apx-tone--${tone}`, className)} {...rest}>
-      {dot && <span className="apx-badge__dot" aria-hidden="true" />}
+    <span className={cx("colonia-badge", `colonia-badge--${variant}`, `colonia-tone--${tone}`, className)} {...rest}>
+      {dot && <span className="colonia-badge__dot" aria-hidden="true" />}
       {children}
     </span>
   );

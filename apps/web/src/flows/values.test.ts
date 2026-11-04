@@ -51,28 +51,28 @@ test("secrets are offered only in fields a step reads them itself: a header, a c
     assert.ok(!inserts("call", field).some((v) => v.startsWith("secret://")), `${field} offers no secret`);
 });
 
-test("a field offers what arrived, the steps before it, their variables and APX's own values", () => {
+test("a field offers what arrived, the steps before it, their variables and Colonia's own values", () => {
   assert.deepEqual(inserts("tell", "message"), [
     "$trigger",
     "$trigger.email",
     "$steps.ask.text",
     "$steps.call.json",
     "$vars.tier",
-    "$apx.project",
-    "$apx.now",
-    "$apx.run",
+    "$colonia.project",
+    "$colonia.now",
+    "$colonia.run",
   ]);
   // A step sees nothing of what comes after it.
   assert.ok(!inserts("ask", "message").some((v) => v.startsWith("$steps.")));
   assert.deepEqual(
     groups("tell", "message").map((g) => g.label),
-    ["flow.v.arrived", "flow.v.steps", "flow.v.vars", "flow.v.apx"],
+    ["flow.v.arrived", "flow.v.steps", "flow.v.vars", "flow.v.colonia"],
   );
 });
 
 test("placeholders and secret references show as badges, secrets apart", () => {
-  const found = "Hi $trigger.name, $steps.ask.text at $apx.now with secret://acme_key".match(TEMPLATE_PATTERN);
-  assert.deepEqual(found, ["$trigger.name", "$steps.ask.text", "$apx.now", "secret://acme_key"]);
+  const found = "Hi $trigger.name, $steps.ask.text at $colonia.now with secret://acme_key".match(TEMPLATE_PATTERN);
+  assert.deepEqual(found, ["$trigger.name", "$steps.ask.text", "$colonia.now", "secret://acme_key"]);
   assert.ok(SECRET_PATTERN.test("secret://acme_key") && !SECRET_PATTERN.test("$vars.tier"));
 });
 
@@ -105,8 +105,8 @@ test("a variable holding a secret is offered, as a secret, only where secrets ar
     assert.equal(at(field), undefined, field);
 });
 
-test("a formula offers what arrived, steps and variables, but not APX's own values", () => {
-  assert.ok(!inserts("tell", "formula").some((v) => v.startsWith("$apx")));
+test("a formula offers what arrived, steps and variables, but not Colonia's own values", () => {
+  assert.ok(!inserts("tell", "formula").some((v) => v.startsWith("$colonia")));
   assert.ok(inserts("tell", "formula").includes("$vars.tier"));
 });
 

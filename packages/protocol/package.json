@@ -1,5 +1,5 @@
 {
-  "name": "@apx/protocol",
+  "name": "@colonia/protocol",
   "version": "0.0.0",
   "private": true,
   "description": "The one typed contract spoken by core, terminal, web, desktop, mobile and nodes: frames, methods, events and the client SDK.",
@@ -30,6 +30,6 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@apx/config": "workspace:*"
+    "@colonia/config": "workspace:*"
   }
 }

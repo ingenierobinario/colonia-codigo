@@ -7,7 +7,7 @@ import { defineConfig } from "astro/config";
 import { sitePath } from "./src/doc-routes.mjs";
 
 // Where the site is published. Pages write absolute links ("/concepts/agents/"); withBase() below puts this prefix in
-// front of them, so moving the site (e.g. under /apx/docs/) only changes these two values.
+// front of them, so moving the site (e.g. under /colonia/docs/) only changes these two values.
 const site = process.env.DOCS_SITE ?? "https://colonia.ingenierobinario.com";
 // Web publicada: portada y /empezar/. COLONIA_DOCS=1 (y quitar el _ de src/pages/_[...legacy].astro y _llms.txt.ts) devuelve la documentación.
 const fullDocs = process.env.COLONIA_DOCS === "1";

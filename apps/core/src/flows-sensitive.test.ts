@@ -8,7 +8,7 @@ test("nested credential fields and known credential shapes are removed before st
   const folder = tempDir();
   const llm = scriptedLlm(() => say("Done"));
   const env = await startCore({ llm });
-  const marker = `apxp_${"a1".repeat(32)}`;
+  const marker = `coloniap_${"a1".repeat(32)}`;
   const payload = {
     message: `See ${marker}`,
     [marker]: { text: "Drop credential-shaped property names" },

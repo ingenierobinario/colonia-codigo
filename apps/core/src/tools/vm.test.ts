@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
-import { COMPUTER_GRANT } from "@apx/protocol";
-import { ApxClient, type ApxError } from "@apx/protocol/client";
+import { COMPUTER_GRANT } from "@colonia/protocol";
+import { ColoniaClient, type ColoniaError } from "@colonia/protocol/client";
 import { callTool, computerChat, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createVmLifecycle } from "../environments/lifecycle.ts";
 import type { LlmRequest } from "../providers/llm.ts";
@@ -42,7 +42,7 @@ const toolNames = (req: LlmRequest) => req.tools.map((t) => t.function.name);
 const results = (req: LlmRequest) => req.messages.filter((m) => m.role === "tool").map((m) => String(m.content));
 
 test("an agent the owner did not allow is never offered the computer; the owner cannot give its chat the computer", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const seen: string[][] = [];
   const llm = scriptedLlm((req) => {
     seen.push(toolNames(req));
@@ -68,7 +68,7 @@ test("an agent the owner did not allow is never offered the computer; the owner 
 });
 
 test("Home never goes on the computer: an allowed super-agent there keeps its tools and is told to use a task", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const seen: string[][] = [];
   const inputs: string[] = [];
   const systems: string[] = [];
@@ -87,7 +87,7 @@ test("Home never goes on the computer: an allowed super-agent there keeps its to
       /Home stays on this machine/,
     );
     assert.equal((await env.client.call("environments.status", { thread: "home" })).chat, undefined);
-    await env.client.call("threads.send", { thread: "home", text: "Publish APX on three sites" });
+    await env.client.call("threads.send", { thread: "home", text: "Publish Colonia on three sites" });
     await env.settle("home");
     assert.equal(seen[0]?.includes("computer"), false, "no computer tool in Home");
     for (const kept of ["task_create", "delegate", "remember", "web_search", "web_read"])
@@ -104,7 +104,7 @@ test("Home never goes on the computer: an allowed super-agent there keeps its to
 });
 
 test("once set up, only an allowed agent is offered the computer: it starts it, takes its own screen and leaves", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const vm = fakeComputer(home);
   const seen: string[][] = [];
   const llm = scriptedLlm((req) => {
@@ -158,7 +158,7 @@ test("once set up, only an allowed agent is offered the computer: it starts it, 
 });
 
 test("starting refuses when free memory cannot hold the VM and its reserve, and says why", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const free = { bytes: 5 * GIB };
   const vm = fakeComputer(home, free);
   const llm = scriptedLlm((req) =>
@@ -180,7 +180,7 @@ test("starting refuses when free memory cannot hold the VM and its reserve, and 
     const refused = results(llm.calls.at(-1) as LlmRequest)[0] ?? "";
     assert.match(refused, /not enough free memory on this computer/);
     // Told how to say it to the owner, with the way to fix it: never left to retry in a loop.
-    assert.match(refused, /in their language.+\[Computer\]\(apx:computer\).+do not try again/);
+    assert.match(refused, /in their language.+\[Computer\]\(colonia:computer\).+do not try again/);
     assert.deepEqual(vm.calls, []);
     // The owner starts it anyway: only the VM's own 4 GiB must be free, and 5 GiB are.
     await env.client.call("environments.enable", { thread: chat, appearance: "light", past_reserve: true });
@@ -192,12 +192,12 @@ test("starting refuses when free memory cannot hold the VM and its reserve, and 
 });
 
 test("only the owner or the allowed agent's own run starts and stops it; taking the permission away ends its turns", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const llm = scriptedLlm(() => say("ok"));
   const env = await startCore({ home, llm, computer: fakeComputer(home).config });
   try {
     const chat = await computerChat(env);
-    const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+    const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(agent.call("environments.start", { thread: chat }), { code: "unauthorized" });
     await assert.rejects(agent.call("environments.release", { thread: chat }), { code: "unauthorized" });
     await assert.rejects(agent.call("environments.permit", { agent: "superagent", on: true }), {
@@ -222,7 +222,7 @@ test("only the owner or the allowed agent's own run starts and stops it; taking 
 });
 
 test("the owner's resources are held to the host's limits, and the disk only grows", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const config = { ...fakeComputer(home).config, applied: () => ({ memory_gib: 4, cpus: 2, disk_gib: 32 }) };
   const env = await startCore({ home, llm: scriptedLlm(() => say("ok")), computer: config });
   try {
@@ -240,7 +240,7 @@ test("the owner's resources are held to the host's limits, and the disk only gro
 });
 
 test("a screen that does not start in time leaves the agent a clear 'still starting', not a tool timeout", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const llm = scriptedLlm((req) =>
     results(req).length ? say("Waiting") : callTool("start", "computer", { action: "start" }),
   );
@@ -266,7 +266,7 @@ test("a screen that does not start in time leaves the agent a clear 'still start
 });
 
 test("a computer that takes minutes to come up ends the turn, and its chat gets one turn the moment it is ready", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   let boot = () => {};
   const vm = fakeComputer(home, undefined, { boot: new Promise<void>((resolve) => (boot = resolve)) });
   const llm = scriptedLlm((req, { said }) => {
@@ -301,7 +301,7 @@ test("a computer that takes minutes to come up ends the turn, and its chat gets 
 });
 
 test("the computer's status says what it runs with now and, apart, what the owner set for its next start", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const llm = scriptedLlm((req) =>
     results(req).length ? say("ok") : callTool("look", "computer", { action: "status" }),
   );
@@ -330,7 +330,7 @@ test("the computer's status says what it runs with now and, apart, what the owne
 });
 
 test("on the computer, the owner's own agents' results run in its chat; a contact's message is refused in words", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const llm = scriptedLlm(() => say("Te cuento lo que hizo Scout"));
   const env = await startCore({ home, llm, computer: fakeComputer(home).config });
   try {
@@ -391,7 +391,7 @@ test("on the computer, the owner's own agents' results run in its chat; a contac
 });
 
 test("the owner starts the computer, the agent only looks: once it is up the agent is on its screen and carries on", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   let boot = () => {};
   const vm = fakeComputer(home, undefined, { boot: new Promise<void>((resolve) => (boot = resolve)) });
   let screenInReadyTurn: number | undefined;
@@ -430,7 +430,7 @@ test("the owner starts the computer, the agent only looks: once it is up the age
 });
 
 test("the computer already coming up for no chat: the agent's start waits on it and it carries on on its screen", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   let boot = () => {};
   const vm = fakeComputer(home, undefined, { boot: new Promise<void>((resolve) => (boot = resolve)) });
   const llm = scriptedLlm((req, { said }) => {
@@ -463,7 +463,7 @@ test("the computer already coming up for no chat: the agent's start waits on it 
 });
 
 test("the owner stops the computer while the agent waits for it: the agent is not woken to hear it", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   let boot = () => {};
   const vm = fakeComputer(home, undefined, { boot: new Promise<void>((resolve) => (boot = resolve)) });
   const llm = scriptedLlm((req) =>
@@ -489,7 +489,7 @@ test("the owner stops the computer while the agent waits for it: the agent is no
 });
 
 test("control the owner took ends with the computer: stopped and started again, the agent goes on", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const llm = scriptedLlm(() => say("Sigo con la instalación"));
   const env = await startCore({ home, llm, computer: fakeComputer(home).config });
   const running = async () => (await env.client.call("environments.status", {})).phase === "running";
@@ -528,7 +528,7 @@ test("control the owner took ends with the computer: stopped and started again, 
 });
 
 test("an agent allowed the computer reads its state each turn in its input; one not allowed reads nothing of it", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const inputs: string[] = [];
   const llm = scriptedLlm((req) => {
     inputs.push(String(req.messages.findLast((m) => m.role === "user")?.content ?? ""));
@@ -559,7 +559,7 @@ test("an agent allowed the computer reads its state each turn in its input; one 
 });
 
 test("the owner turns an allowed agent's screen on with no run, never past the cap, and off again", async () => {
-  const home = tempDir("apx-vm-tool-").path;
+  const home = tempDir("colonia-vm-tool-").path;
   const env = await startCore({ home, llm: scriptedLlm(() => say("ok")), computer: fakeComputer(home).config });
   const screens = async () =>
     (await env.client.call("environments.status", {})).screens?.map((s) => [s.screen, s.agent, Boolean(s.run)]);
@@ -577,7 +577,7 @@ test("the owner turns an allowed agent's screen on with no run, never past the c
       [2, "scout", false],
     ]);
     // Two screens is what a 4 GiB computer holds: a third is refused, saying which are up, and none is taken.
-    await assert.rejects(env.client.call("environments.screen", { agent: "vera", on: true }), (e: ApxError) => {
+    await assert.rejects(env.client.call("environments.screen", { agent: "vera", on: true }), (e: ColoniaError) => {
       assert.deepEqual(e.detail, { reason: "screens_full", max: 2, up: ["Roby", "Scout"] });
       return true;
     });

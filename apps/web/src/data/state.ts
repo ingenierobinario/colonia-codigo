@@ -12,7 +12,7 @@ import type {
   SurfaceSummary,
   TabInfo,
   Thread,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { useMemo } from "react";
 import { type Computers, NO_COMPUTERS } from "../computers/summary.ts";
 import { createStore, useSlice } from "./createStore.ts";
@@ -44,7 +44,7 @@ export type DataState = {
   surfaces: Record<string, SurfaceSummary>;
   /** Full surface documents (html), fetched on demand; without their state, which changes apart. */
   surfaceDocs: Record<string, Surface>;
-  /** What each open surface remembers (APX.state), kept live by surface.state events. */
+  /** What each open surface remembers (Colonia.state), kept live by surface.state events. */
   surfaceStates: Record<string, SurfaceState>;
   tabs: TabInfo[];
   /** The chats on the shared computer, including browser messages saved before guest tags existed. */

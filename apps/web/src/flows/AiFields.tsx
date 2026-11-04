@@ -1,7 +1,7 @@
 // Settings of the AI model step: who answers (an agent of the crew, or a bot just for this flow), on which harness,
 // model and effort, how freely it acts, and whether it may hand work to other agents (DECISIONS.md#d-172).
-import type { Agent, CatalogEngine } from "@apx/protocol";
-import { AgentGrid, EngineIcon, Field, Input, SegmentedControl, Select, Switch, Textarea } from "@apx/ui";
+import type { Agent, CatalogEngine } from "@colonia/protocol";
+import { AgentGrid, EngineIcon, Field, Input, SegmentedControl, Select, Switch, Textarea } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { blobOf } from "../data/identity.ts";
 import { baseRef, effortLabel, forAgents, modelOf, splitRef, useModels, withEffort } from "../data/models.ts";
@@ -11,9 +11,9 @@ import type { FlowNode } from "./steps.tsx";
 
 type Ai = Extract<FlowNode, { kind: "agent" }>;
 const NATIVE = "native";
-/** CLIs run in their own sessions; every other engine is a model API on APX's own loop. */
+/** CLIs run in their own sessions; every other engine is a model API on Colonia's own loop. */
 const isCli = (engine: string) => /^(claude|codex|aider|antigravity|acp:)/.test(engine);
-/** The harness a step runs on: the engine of its model when that is a CLI, else APX's. */
+/** The harness a step runs on: the engine of its model when that is a CLI, else Colonia's. */
 export const harnessOf = (n: Pick<Ai, "model">) => {
   const engine = n.model ? splitRef(n.model).engine : "";
   return isCli(engine) ? engine : NATIVE;
@@ -30,7 +30,7 @@ const WRITE: { value: NonNullable<Ai["write"]>; label: MessageKey }[] = [
   { value: "read-only", label: "flow.ai.readOnly" },
 ];
 
-/** The models a harness offers: APX's, every model API set up; a CLI's, its own. */
+/** The models a harness offers: Colonia's, every model API set up; a CLI's, its own. */
 function modelOptions(harness: string, catalog: readonly CatalogEngine[]) {
   const engines = harness === NATIVE ? catalog.filter(forAgents) : catalog.filter((e) => e.id === harness);
   return engines.flatMap((e) =>
@@ -65,7 +65,7 @@ export function AiFields({
   const harness = harnessOf(n);
   const cli = harness !== NATIVE;
   const clis = catalog.filter((e) => e.kind === "harness" && e.available && isCli(e.id));
-  const harnesses = [{ id: NATIVE, label: t("flow.ai.apx") }, ...clis.map((e) => ({ id: e.id, label: e.label }))];
+  const harnesses = [{ id: NATIVE, label: t("flow.ai.colonia") }, ...clis.map((e) => ({ id: e.id, label: e.label }))];
   // A harness picked before that is not on this computer now stays shown, so the owner sees what will run.
   if (cli && !harnesses.some((h) => h.id === harness)) harnesses.push({ id: harness, label: harness });
   const own = cli

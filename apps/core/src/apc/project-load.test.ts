@@ -48,8 +48,8 @@ const health = (url: string) =>
 
 /** A home with two registered projects, its core closed again: the next start reads both folders. */
 async function homeWithProjects() {
-  const ok = tempDir("apx-load-ok-");
-  const held = tempDir("apx-load-held-");
+  const ok = tempDir("colonia-load-ok-");
+  const held = tempDir("colonia-load-held-");
   makeProject(ok.path, "Acme");
   makeProject(held.path, "Northwind");
   const first = await startCore({ llm: scriptedLlm(() => say("ok")) });
@@ -138,8 +138,8 @@ test("a project folder the system refuses shows as denied, the others load", asy
 });
 
 test("the reader's threads keep a held read from holding up the next one", async () => {
-  const held = tempDir("apx-reader-held-");
-  const ok = tempDir("apx-reader-ok-");
+  const held = tempDir("colonia-reader-held-");
+  const ok = tempDir("colonia-reader-ok-");
   const reader = createProjectReader();
   try {
     makeProject(held.path, "Northwind");
@@ -188,7 +188,7 @@ test("a core whose project read is held still starts and answers", async () => {
 });
 
 test("a folder that is gone reads as missing", async () => {
-  const dir = tempDir("apx-reader-gone-");
+  const dir = tempDir("colonia-reader-gone-");
   const gone = path.join(dir.path, "gone");
   try {
     assert.deepEqual(readProjectFiles(gone), { state: "missing" });

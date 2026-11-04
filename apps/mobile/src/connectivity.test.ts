@@ -10,7 +10,7 @@ test("a core's address tells a tailnet from the home network", () => {
   assert.equal(addressKind("http://172.20.0.5:7440"), "local");
   assert.equal(addressKind("http://acme-mac.local:7440"), "local");
   assert.equal(addressKind("http://100.10.0.1:7440"), "other");
-  assert.equal(addressKind("https://apx.example.com"), "other");
+  assert.equal(addressKind("https://colonia.example.com"), "other");
   assert.equal(addressKind("not a url"), "other");
 });
 

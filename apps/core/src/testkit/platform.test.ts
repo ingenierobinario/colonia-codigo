@@ -27,7 +27,7 @@ test("waitFor returns what the check found, and fails on wall-clock time, not on
 });
 
 test("a folder Windows still holds is removed once it lets go; any other failure is not waited out", async (t) => {
-  const dir = tempDir("apx-platform-");
+  const dir = tempDir("colonia-platform-");
   fs.writeFileSync(path.join(dir.path, "a.txt"), "x");
   const rm = fs.promises.rm;
   let attempts = 0;
@@ -85,7 +85,7 @@ test("a manual clock fires timers in order only when told, and moves on by itsel
 });
 
 test("paths are asserted as the system compares them", () => {
-  const dir = tempDir("apx-platform-");
+  const dir = tempDir("colonia-platform-");
   try {
     assertPath(path.join(dir.path, "x", ".."), dir.path);
     assert.throws(() => assertPath(`${dir.path}-other`, dir.path));

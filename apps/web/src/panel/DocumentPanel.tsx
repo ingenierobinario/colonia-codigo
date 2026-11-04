@@ -1,6 +1,6 @@
 import "../styles/document-panel.css";
-import { DOCUMENT_MAX_BYTES } from "@apx/protocol/client";
-import { Button, EmptyState, IconButton, Icons, MarkdownView } from "@apx/ui";
+import { DOCUMENT_MAX_BYTES } from "@colonia/protocol/client";
+import { Button, EmptyState, IconButton, Icons, MarkdownView } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { useMarkdownLabels } from "../common/useMarkdownLabels.ts";
 import { client } from "../data/client.ts";

@@ -1,4 +1,4 @@
-import { AgentAvatar, Avatar, AvatarStack } from "@apx/ui";
+import { AgentAvatar, Avatar, AvatarStack } from "@colonia/ui";
 
 export function Agents() {
   return (

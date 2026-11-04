@@ -2,7 +2,7 @@
 // (Electron's debugger) or the core's own headless Chrome. Refs are backendNodeIds from the accessibility tree
 // (stable while the document lives, DOM untouched).
 import { captureDocument, evaluatePage } from "./cdp-evaluate.ts";
-import { ApxError } from "./client.ts";
+import { ColoniaError } from "./client.ts";
 
 type AXNode = {
   nodeId: string;
@@ -31,7 +31,7 @@ const SHOT_WIDTH = 1280;
 const LOOPBACK = new Set(["127.0.0.1", "localhost", "[::1]", "0.0.0.0"]);
 
 /**
- * Where a tab may go: http(s) only, no credentials in the address, never APX itself (a driven tab would hold the
+ * Where a tab may go: http(s) only, no credentials in the address, never Colonia itself (a driven tab would hold the
  * owner's controls) nor link-local or cloud-metadata addresses.
  */
 export function assertNavigable(url: string, blockedPorts: ReadonlySet<string>): void {
@@ -39,16 +39,16 @@ export function assertNavigable(url: string, blockedPorts: ReadonlySet<string>):
   try {
     u = new URL(url);
   } catch {
-    throw new ApxError({ code: "bad_request", message: `not a URL: ${url}` });
+    throw new ColoniaError({ code: "bad_request", message: `not a URL: ${url}` });
   }
   if (u.protocol !== "http:" && u.protocol !== "https:")
-    throw new ApxError({ code: "bad_request", message: `navigation blocked: only http(s), got ${u.protocol}` });
+    throw new ColoniaError({ code: "bad_request", message: `navigation blocked: only http(s), got ${u.protocol}` });
   if (u.username || u.password)
-    throw new ApxError({ code: "bad_request", message: "navigation blocked: credentials in URL" });
+    throw new ColoniaError({ code: "bad_request", message: "navigation blocked: credentials in URL" });
   if (LOOPBACK.has(u.hostname) && blockedPorts.has(u.port || "80"))
-    throw new ApxError({ code: "bad_request", message: "navigation blocked: that is APX itself" });
+    throw new ColoniaError({ code: "bad_request", message: "navigation blocked: that is Colonia itself" });
   if (/^169\.254\./.test(u.hostname) || u.hostname === "metadata.google.internal")
-    throw new ApxError({ code: "bad_request", message: "navigation blocked: link-local/metadata address" });
+    throw new ColoniaError({ code: "bad_request", message: "navigation blocked: link-local/metadata address" });
 }
 
 export class CdpPage {
@@ -78,7 +78,7 @@ export class CdpPage {
   async approvalContext(origin: string, document: string): Promise<{ epoch: string }> {
     const epoch = this.#epoch;
     if (this.#review?.document !== document || this.#review.epoch !== epoch)
-      throw new ApxError({ code: "bad_request", message: "Page review changed; take a new snapshot" });
+      throw new ColoniaError({ code: "bad_request", message: "Page review changed; take a new snapshot" });
     await withTimeout(evaluatePage(this.#send, "null", origin, document), 7_000);
     this.#assertEpoch(epoch);
     return { epoch };
@@ -86,7 +86,7 @@ export class CdpPage {
 
   #assertEpoch(epoch: string): void {
     if (epoch !== this.#epoch)
-      throw new ApxError({ code: "bad_request", message: "Browser permission expired; inspect and approve again" });
+      throw new ColoniaError({ code: "bad_request", message: "Browser permission expired; inspect and approve again" });
   }
 
   async snapshot(maxChars: number): Promise<{ tree: string; refs: number; truncated: boolean; document: string }> {
@@ -137,7 +137,7 @@ export class CdpPage {
     if (epoch !== undefined) {
       this.#assertEpoch(epoch);
       if (this.#review?.document !== document || this.#review.epoch !== epoch)
-        throw new ApxError({ code: "bad_request", message: "Page review changed; take a new snapshot" });
+        throw new ColoniaError({ code: "bad_request", message: "Page review changed; take a new snapshot" });
     }
     return withTimeout(evaluatePage(this.#send, script, origin, document), 7_000);
   }
@@ -190,7 +190,7 @@ export class CdpPage {
   #backend(ref: string): number {
     const id = this.#refs.get(ref);
     if (!id)
-      throw new ApxError({ code: "bad_request", message: `ref ${ref} is stale or unknown: take a new snapshot` });
+      throw new ColoniaError({ code: "bad_request", message: `ref ${ref} is stale or unknown: take a new snapshot` });
     return id;
   }
 
@@ -199,7 +199,7 @@ export class CdpPage {
     await this.#send("DOM.scrollIntoViewIfNeeded", { backendNodeId });
     const { quads } = await this.#send<{ quads: number[][] }>("DOM.getContentQuads", { backendNodeId });
     const q = quads[0];
-    if (!q || q.length < 8) throw new ApxError({ code: "bad_request", message: `ref ${ref} is not visible` });
+    if (!q || q.length < 8) throw new ColoniaError({ code: "bad_request", message: `ref ${ref} is not visible` });
     const xs = [q[0], q[2], q[4], q[6]] as number[];
     const ys = [q[1], q[3], q[5], q[7]] as number[];
     return { x: xs.reduce((a, b) => a + b) / 4, y: ys.reduce((a, b) => a + b) / 4 };
@@ -216,7 +216,7 @@ export class CdpPage {
     const type = attrs.get("type") ?? "";
     const autocomplete = attrs.get("autocomplete") ?? "";
     if (type === "password" || CREDENTIAL_AUTOCOMPLETE.test(autocomplete)) {
-      throw new ApxError({
+      throw new ColoniaError({
         code: "credential_field",
         message: "this field takes a password, one-time code or card data: ask the human to take control",
       });
@@ -241,7 +241,7 @@ export function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     p,
     new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new ApxError({ code: "timeout", message: `timed out after ${ms}ms` })), ms);
+      timer = setTimeout(() => reject(new ColoniaError({ code: "timeout", message: `timed out after ${ms}ms` })), ms);
     }),
   ]).finally(() => clearTimeout(timer));
 }

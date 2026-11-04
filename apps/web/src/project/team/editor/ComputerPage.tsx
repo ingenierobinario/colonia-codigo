@@ -1,5 +1,5 @@
-import { type Agent, COMPUTER_GRANT, type ToolApproval } from "@apx/protocol";
-import { Switch } from "@apx/ui";
+import { type Agent, COMPUTER_GRANT, type ToolApproval } from "@colonia/protocol";
+import { Switch } from "@colonia/ui";
 import { useState } from "react";
 import { computersOf } from "../../../computers/summary.ts";
 import { client } from "../../../data/client.ts";

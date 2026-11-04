@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore, texts } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
@@ -77,12 +77,12 @@ after(async () => {
 
 /** A Claude Code or Codex session of the owner's, in a fresh project folder. */
 async function session(engine: "claude" | "codex") {
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-harness-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-harness-")));
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   return env.client.call("threads.create", { kind: "code", agent_id: "superagent", project_id: project, engine });
 }
 
-test("a Claude Code session runs there, with APX tools, cards, usage and its own session kept", async () => {
+test("a Claude Code session runs there, with Colonia tools, cards, usage and its own session kept", async () => {
   const t0 = await session("claude");
   await env.client.call("threads.send", { thread: t0.id, text: "hello" });
   const t = await env.settle(t0.id);
@@ -92,7 +92,7 @@ test("a Claude Code session runs there, with APX tools, cards, usage and its own
   assert.ok(answer?.parts.some((p) => p.type === "text" && p.text === "widget ok=true"));
   assert.equal(t.runs[0]?.harness, "claude");
   assert.deepEqual(t.runs[0]?.usage, { input: 10, output: 5 });
-  assert.match(seen.at(-1)?.io.system ?? "", /running inside APX/);
+  assert.match(seen.at(-1)?.io.system ?? "", /running inside Colonia/);
   await env.client.call("threads.send", { thread: t0.id, text: "again" });
   await env.settle(t0.id);
   assert.equal(seen.at(-1)?.io.sessionId, "sess-1");
@@ -100,26 +100,26 @@ test("a Claude Code session runs there, with APX tools, cards, usage and its own
   assert.equal(env.core.store.runs.steps(t.runs[0]?.id ?? "")[0]?.tool, "show_widget");
 });
 
-test("a CLI is never an agent's model, the router or the install default; one saved by an older APX is skipped", async () => {
+test("a CLI is never an agent's model, the router or the install default; one saved by an older Colonia is skipped", async () => {
   for (const bad of ["claude", "codex/gpt-x"]) {
     const asRouter = await env.client
       .call("models.set_config", { router: { rules: [], chain: [bad] } })
       .catch((e: unknown) => e);
-    assert.ok(asRouter instanceof ApxError && /own sessions/.test(asRouter.message), bad);
+    assert.ok(asRouter instanceof ColoniaError && /own sessions/.test(asRouter.message), bad);
     const asDefault = await env.client
       .call("models.set_config", { default: { model: bad, router: false } })
       .catch((e: unknown) => e);
-    assert.ok(asDefault instanceof ApxError && asDefault.code === "bad_request", bad);
+    assert.ok(asDefault instanceof ColoniaError && asDefault.code === "bad_request", bad);
     const asAgent = await env.client
       .call("agents.update", { agent: "superagent", model_choice: { model: bad, router: false } })
       .catch((e: unknown) => e);
-    assert.ok(asAgent instanceof ApxError && asAgent.code === "bad_request", bad);
+    assert.ok(asAgent instanceof ColoniaError && asAgent.code === "bad_request", bad);
     const inChat = await env.client
       .call("threads.model", { thread: "home", model_choice: { model: bad, router: false } })
       .catch((e: unknown) => e);
-    assert.ok(inChat instanceof ApxError && inChat.code === "bad_request", bad);
+    assert.ok(inChat instanceof ColoniaError && inChat.code === "bad_request", bad);
   }
-  // As an older APX saved them: the router and the default name CLIs; the turn runs on the model API behind them.
+  // As an older Colonia saved them: the router and the default name CLIs; the turn runs on the model API behind them.
   env.core.store.settings.write("model_default", { model: "claude", router: true });
   env.core.store.settings.write("model_router", {
     rules: [{ when: {}, model: "codex" }],
@@ -143,7 +143,7 @@ test("an engine session runs its own CLI only: another engine's model is refused
     const err = await env.client
       .call("threads.model", { thread: t.id, model_choice: { model: other, router: false } })
       .catch((e: unknown) => e);
-    assert.ok(err instanceof ApxError && err.code === "bad_request", other);
+    assert.ok(err instanceof ColoniaError && err.code === "bad_request", other);
   }
   await env.client.call("threads.model", { thread: t.id, model_choice: { model: "claude/opus", router: false } });
   const before_ = seen.length;
@@ -185,17 +185,17 @@ test("a model ref nothing can run is refused when it is set", async () => {
     const err = await env.client
       .call("models.set_config", { router: { rules: [], chain: [bad] } })
       .catch((e: unknown) => e);
-    assert.ok(err instanceof ApxError && err.code === "bad_request", bad);
+    assert.ok(err instanceof ColoniaError && err.code === "bad_request", bad);
   }
   const err = await env.client
     .call("agents.update", { agent: "superagent", model_choice: { model: "nope/x", router: false } })
     .catch((e: unknown) => e);
-  assert.ok(err instanceof ApxError && err.code === "bad_request");
+  assert.ok(err instanceof ColoniaError && err.code === "bad_request");
 });
 
 test("harness tool gates refuse unknown tokens", async () => {
   const err = await env.client.call("harness.tools", { token: "x".repeat(48) }).catch((e: unknown) => e);
-  assert.ok(err instanceof ApxError);
+  assert.ok(err instanceof ColoniaError);
   assert.equal(err.code, "unauthorized");
 });
 
@@ -222,7 +222,7 @@ test("the per-run MCP proxy (used by Codex) lists and calls that run's tools thr
     new StdioClientTransport({
       command: process.execPath,
       args: [terminal, "mcp", "--run"],
-      env: { ...process.env, APX_URL: env.core.url, APX_RUN_TOKEN: token } as Record<string, string>,
+      env: { ...process.env, COLONIA_URL: env.core.url, COLONIA_RUN_TOKEN: token } as Record<string, string>,
     }),
   );
   const { tools } = await mcp.listTools();
@@ -252,9 +252,9 @@ test("Claude Code gets each tool's real schema: arrays stay arrays, limits stay 
   assert.ok(!schema.safeParse({ question: "" }).success);
 });
 
-test("Claude Code reads the folder's CLAUDE.md through APX, never through a link", async () => {
+test("Claude Code reads the folder's CLAUDE.md through Colonia, never through a link", async () => {
   const { folderClaudeMd } = await import("./claude.ts");
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-claude-md-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-claude-md-"));
   assert.equal(folderClaudeMd(dir), "");
   fs.writeFileSync(path.join(dir, "CLAUDE.md"), "Use pnpm.");
   assert.match(folderClaudeMd(dir), /CLAUDE\.md\n\nUse pnpm\.$/);
@@ -413,7 +413,7 @@ test("an outside agent's edit of APC files or AGENTS.md always asks, even when i
 
 test("an outside agent's command that writes outside its folders is put to the owner, as our shell's is", async () => {
   const t0 = await session("claude");
-  await using tmp = tempDir("apx-away-");
+  await using tmp = tempDir("colonia-away-");
   const away = tmp.path;
   await env.client.call("agents.update", { agent: "superagent", autonomy: "manual" });
   try {
@@ -434,7 +434,7 @@ test("an outside agent's command that writes outside its folders is put to the o
 
 test("an outside agent whose rules turn acting outside off keeps to its folders, even in total, as ours does", async () => {
   const t0 = await session("claude");
-  await using tmp = tempDir("apx-away-");
+  await using tmp = tempDir("colonia-away-");
   const away = tmp.path;
   fs.writeFileSync(path.join(away, "notes.txt"), "elsewhere");
   await env.client.call("agents.update", { agent: "superagent", autonomy: "total", rules: { outside: "off" } });
@@ -455,7 +455,7 @@ test("an outside agent whose rules turn acting outside off keeps to its folders,
 
 test("an outside agent reads its project's read-only folders without asking and may never change them", async () => {
   const t0 = await session("claude");
-  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-ref-")));
+  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ref-")));
   await env.client.call("projects.update", { project: t0.project_id ?? "", read_only_folders: [ref] });
   const asks = [
     { kind: "read", path: path.join(ref, "a.ts") },
@@ -472,8 +472,8 @@ test("an outside agent reads its project's read-only folders without asking and 
 
 test("an outside agent's commands follow the shell tool's folder rule and reach: total reads and writes anywhere, never a read-only folder", async () => {
   const t0 = await session("claude");
-  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-ref-")));
-  const away = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-away-")));
+  const ref = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ref-")));
+  const away = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-away-")));
   await env.client.call("projects.update", { project: t0.project_id ?? "", read_only_folders: [ref] });
   // Total autonomy: nothing is put to the owner, so only the folder rule says no.
   await env.client.call("agents.update", { agent: "superagent", autonomy: "total" });
@@ -487,10 +487,10 @@ test("an outside agent's commands follow the shell tool's folder rule and reach:
       [`cp a.ts ${sh(ref)}/a.ts`, false],
       [`cd ${sh(ref)} && npm install`, false],
       [`echo x > $(echo ${sh(ref)})/y`, false],
-      // Total reaches every folder but APX's own, through Claude Code's tools as through ours (DECISIONS.md#d-115).
+      // Total reaches every folder but Colonia's own, through Claude Code's tools as through ours (DECISIONS.md#d-115).
       [`cat ${sh(away)}/secret.txt`, true],
       [`touch ${sh(away)}/made.txt`, true],
-      [`cat ${sh(env.home)}/apx.db`, false],
+      [`cat ${sh(env.home)}/colonia.db`, false],
     ];
     const asks = commands.map(([command]) => ({ kind: "execute", command }));
     await env.client.call("threads.send", { thread: t0.id, text: `probe ${JSON.stringify(asks)}` });

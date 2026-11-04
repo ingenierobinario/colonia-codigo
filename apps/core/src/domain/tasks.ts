@@ -1,6 +1,6 @@
 // Tasks: the row is the task as it is now; every change is also an event, so its history can be told. The board's
 // columns are a setting; "done" and "dropped" are states, never columns.
-import type { CommitmentOutcome, Task, TaskColumn, TaskEvent, TaskKind, TaskPriority, TaskState } from "@apx/protocol";
+import type { CommitmentOutcome, Task, TaskColumn, TaskEvent, TaskKind, TaskPriority, TaskState } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import { sql as raw } from "kysely";
 import type { Bus } from "../bus.ts";

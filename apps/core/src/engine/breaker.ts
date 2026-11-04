@@ -118,7 +118,7 @@ export function heldNotice(store: Store, threadId: string, who: string, task: st
     level: "warn" as const,
     code: "breaker.held",
     text: `Paused: ${why}. ${who} starts "${task}" once you let them go on.`,
-    vars: { variant, spent: t.spent, who, task, thread: threadId, link: "apx:settings/agents" },
+    vars: { variant, spent: t.spent, who, task, thread: threadId, link: "colonia:settings/agents" },
   };
 }
 
@@ -131,7 +131,7 @@ export function pausedNotice(store: Store, threadId: string, who: string) {
     level: "warn" as const,
     code: "breaker.paused",
     text: `Paused: ${tripped(store, threadId)}. ${who} finished; write to continue.`,
-    vars: { variant: t.limit, spent: t.spent, who, thread: threadId, link: "apx:settings/agents" },
+    vars: { variant: t.limit, spent: t.spent, who, thread: threadId, link: "colonia:settings/agents" },
   };
 }
 

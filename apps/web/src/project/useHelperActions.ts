@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { secureRequestKey } from "@apx/protocol/client";
+import type { Result } from "@colonia/protocol";
+import { secureRequestKey } from "@colonia/protocol/client";
 import { useEffect, useRef, useState } from "react";
 import { createThread } from "../data/actions.ts";
 import { client } from "../data/client.ts";

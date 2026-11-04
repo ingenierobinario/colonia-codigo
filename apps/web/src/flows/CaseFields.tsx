@@ -7,8 +7,8 @@ import {
   type FlowCase,
   type FlowComparison,
   flowCases,
-} from "@apx/protocol/flow-cases";
-import { Button, IconButton, Icons, SegmentedControl, Select } from "@apx/ui";
+} from "@colonia/protocol/flow-cases";
+import { Button, IconButton, Icons, SegmentedControl, Select } from "@colonia/ui";
 import { useT } from "../i18n/index.ts";
 import { newComparison, OP_LABEL, type RulesMatch, TYPE_LABEL, withOp, withType } from "./compare.ts";
 import { nextCaseId, withCases } from "./graph-edit.ts";

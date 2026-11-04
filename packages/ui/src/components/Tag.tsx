@@ -16,7 +16,7 @@ export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
 /** Metadata chip: agent role, project/channel context, skill reference. */
 export function Tag({ kind = "meta", icon, className, children, ...rest }: TagProps) {
   return (
-    <span className={cx("apx-tag", `apx-tag--${kind}`, className)} {...rest}>
+    <span className={cx("colonia-tag", `colonia-tag--${kind}`, className)} {...rest}>
       {icon}
       {children}
     </span>

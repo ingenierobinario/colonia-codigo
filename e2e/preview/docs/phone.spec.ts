@@ -13,7 +13,7 @@ for (const path of [
   test(`${path}: every control is at least 44 px tall to tap and the page keeps the screen's width`, async ({
     page,
   }) => {
-    await page.addInitScript(() => localStorage.setItem("apx-website-analytics-v1", "declined"));
+    await page.addInitScript(() => localStorage.setItem("colonia-website-analytics-v1", "declined"));
     await page.goto(path);
     expect(await page.evaluate(() => innerWidth)).toBe(page.viewportSize()?.width);
     // Each control is probed 21 px above and below its centre: what a finger there would hit.
@@ -50,11 +50,11 @@ for (const pre of ["", "/es"]) {
   test(`${pre || "en"}: the hero's download menu and install panel fit on the screen`, async ({ page }) => {
     await page.goto(`${pre}/`);
     const width = page.viewportSize()?.width ?? 0;
-    await page.locator(".hero .getapx__more").tap();
-    const menu = await page.locator(".hero .getapx__menu").boundingBox();
+    await page.locator(".hero .getcolonia__more").tap();
+    const menu = await page.locator(".hero .getcolonia__menu").boundingBox();
     expect(menu?.x ?? -1).toBeGreaterThanOrEqual(0);
     expect((menu?.x ?? 0) + (menu?.width ?? 0)).toBeLessThanOrEqual(width);
-    await page.locator(".hero .getapx__more").tap();
+    await page.locator(".hero .getcolonia__more").tap();
     await page.locator(".hero__term").tap();
     const panel = await page.locator("#heroInstall").boundingBox();
     expect(panel?.x ?? -1).toBeGreaterThanOrEqual(0);

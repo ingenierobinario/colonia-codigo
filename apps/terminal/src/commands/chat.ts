@@ -1,7 +1,7 @@
-// apx chat: the one way to talk to an agent from the terminal. Sends with threads.send and prints the answer as
+// colonia chat: the one way to talk to an agent from the terminal. Sends with threads.send and prints the answer as
 // it builds (tool steps, sub-threads, widgets, notices), until this send's own run ends.
-import { CoreEvent, type Part } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import { CoreEvent, type Part } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 export type ChatOptions = {
   thread?: string | undefined;
@@ -17,14 +17,14 @@ export type ChatOptions = {
 };
 
 /** The thread to write in: explicit, the agent's latest (or a new one), or Home. */
-async function pickThread(client: ApxClient, o: ChatOptions): Promise<string> {
+async function pickThread(client: ColoniaClient, o: ChatOptions): Promise<string> {
   if (o.thread) return o.thread;
   if (o.code) return codeThread(client, o);
   if (!o.agent) return "home";
   const { agents } = await client.call("agents.list", {});
   const agent =
     agents.find((a) => a.id === o.agent) ?? agents.filter((a) => a.name.toLowerCase() === o.agent?.toLowerCase())[0];
-  if (!agent) throw new Error(`unknown agent ${o.agent} (see apx agents)`);
+  if (!agent) throw new Error(`unknown agent ${o.agent} (see colonia agents)`);
   if (!o.new) {
     if (agent.kind === "secretary") return "home";
     const mine = latestConversation((await client.call("threads.list", {})).threads, agent.id);
@@ -45,7 +45,7 @@ export function latestConversation(
 }
 
 /** A new code thread for the agent (default: the secretary) in the registered project that holds the folder. */
-async function codeThread(client: ApxClient, o: ChatOptions): Promise<string> {
+async function codeThread(client: ColoniaClient, o: ChatOptions): Promise<string> {
   const { resolve, relative, sep } = await import("node:path");
   const { realpathSync } = await import("node:fs");
   const dir = realpathSync(resolve(o.cwd ?? "."));
@@ -54,7 +54,7 @@ async function codeThread(client: ApxClient, o: ChatOptions): Promise<string> {
   const project = projects
     .filter((p) => p.path && inside(realpathSync(p.path)))
     .sort((a, b) => (b.path?.length ?? 0) - (a.path?.length ?? 0))[0];
-  if (!project?.path) throw new Error(`${dir} is not inside a registered project (apx projects register <folder>)`);
+  if (!project?.path) throw new Error(`${dir} is not inside a registered project (colonia projects register <folder>)`);
   const { agents } = await client.call("agents.list", {});
   const agent = o.agent
     ? agents.find((a) => a.id === o.agent || a.name.toLowerCase() === o.agent?.toLowerCase())
@@ -91,21 +91,21 @@ function line(p: Part): string | undefined {
         .join(", ")}`;
     case "input":
       return p.state === "pending"
-        ? `  ? ${p.prompt}${p.detail ? `\n    ${p.detail}` : ""}${p.options?.length ? `\n    options: ${p.options.join(" / ")}` : ""}\n    answer: apx runs respond ${p.input_id} ${p.kind === "confirm" ? "approve|deny" : '"<text>"'}`
+        ? `  ? ${p.prompt}${p.detail ? `\n    ${p.detail}` : ""}${p.options?.length ? `\n    options: ${p.options.join(" / ")}` : ""}\n    answer: colonia runs respond ${p.input_id} ${p.kind === "confirm" ? "approve|deny" : '"<text>"'}`
         : `  ? ${p.kind === "confirm" ? "confirmation" : "question"} ${p.state}${p.answer ? `: ${p.answer}` : ""}`;
     default:
       return undefined;
   }
 }
 
-export async function chat(client: ApxClient, text: string, o: ChatOptions): Promise<void> {
+export async function chat(client: ColoniaClient, text: string, o: ChatOptions): Promise<void> {
   // Run inside an agent's command, its words would reach the other agent as the owner's, past every check: agents ask
   // with delegate, whose answer comes back to them (DECISIONS.md#d-127).
-  if (process.env.APX_AGENT !== undefined)
+  if (process.env.COLONIA_AGENT !== undefined)
     throw new Error(
-      "apx chat speaks as the owner, so it does not run inside an agent's command. To ask another agent, use your delegate tool: its answer comes back to you, in one session per agent.",
+      "colonia chat speaks as the owner, so it does not run inside an agent's command. To ask another agent, use your delegate tool: its answer comes back to you, in one session per agent.",
     );
-  if (!text) throw new Error('usage: apx chat "<text>" [--agent <id> | --thread <id>] [--new] [--detach]');
+  if (!text) throw new Error('usage: colonia chat "<text>" [--agent <id> | --thread <id>] [--new] [--detach]');
   const thread = await pickThread(client, o);
   const socket = await client.connect();
   try {

@@ -1,5 +1,5 @@
-import type { ProjectKind } from "@apx/protocol";
-import { Icons, type SelectOption } from "@apx/ui";
+import type { ProjectKind } from "@colonia/protocol";
+import { Icons, type SelectOption } from "@colonia/ui";
 import type { T } from "../i18n/index.ts";
 
 // A project's kind, as names, icons and picker options: apart from the settings dialog (loaded late) so the new-project

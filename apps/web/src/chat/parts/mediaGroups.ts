@@ -1,5 +1,5 @@
 // A message's pictures and videos as blocks of their own: side by side they form one grid or one carousel.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 
 export type ImageLike = Extract<Part, { type: "image" }> | Extract<Part, { type: "file" }>;
 export type VideoPart = Extract<Part, { type: "file" }>;

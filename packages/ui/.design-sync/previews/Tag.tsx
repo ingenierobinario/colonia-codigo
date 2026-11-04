@@ -1,4 +1,4 @@
-import { ApxProvider, Icons, Tag } from "@apx/ui";
+import { ColoniaProvider, Icons, Tag } from "@colonia/ui";
 
 const row = { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" as const };
 
@@ -29,8 +29,8 @@ export function Minimal() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 12 }}>
       <Set />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

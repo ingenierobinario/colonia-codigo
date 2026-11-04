@@ -6,7 +6,7 @@ import {
   type Autonomy,
   type RulePolicy,
   type ToolRisk,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 
 export type Draft = {
   name: string;

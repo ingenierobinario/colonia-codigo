@@ -1,4 +1,4 @@
-import { IconButton, Icons, Menu } from "@apx/ui";
+import { IconButton, Icons, Menu } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { addChannelItems } from "../channels/KindIcon.tsx";
 import { CHANNEL_KIND_IDS } from "../channels/kinds.ts";

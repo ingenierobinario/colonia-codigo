@@ -1,5 +1,5 @@
-import type { Agent, Part } from "@apx/protocol";
-import { Button, Icons, LiveBrowserCard } from "@apx/ui";
+import type { Agent, Part } from "@colonia/protocol";
+import { Button, Icons, LiveBrowserCard } from "@colonia/ui";
 import { hostPath } from "../../common/format.ts";
 import { useInView } from "../../common/useInView.ts";
 import { useScreenshot } from "../../common/useScreenshot.ts";

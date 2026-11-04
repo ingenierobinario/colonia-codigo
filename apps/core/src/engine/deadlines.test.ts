@@ -83,7 +83,7 @@ before(async () => {
     turnIdleMs: IDLE_MS,
     runTimers: timers,
   });
-  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-deadline-")));
+  const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-deadline-")));
   project = (await call("projects.register", { path: repo, init: true }, owner)).project.id;
 });
 after(async () => {

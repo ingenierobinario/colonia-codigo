@@ -1,4 +1,4 @@
-import type { TabInfo } from "@apx/protocol";
+import type { TabInfo } from "@colonia/protocol";
 import type { BrowserConsentContext } from "../domain/browser-consents.ts";
 import type { Store } from "../domain/store.ts";
 import { bindBrowserEpoch, browserEpochBackend } from "./browser-consent-binding.ts";

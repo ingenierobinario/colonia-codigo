@@ -1,4 +1,4 @@
-import { ResizeHandle } from "@apx/ui";
+import { ResizeHandle } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { setPrefs } from "../data/prefs.ts";
 import { useT } from "../i18n/index.ts";

@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Button, IconButton, Icons } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Button, IconButton, Icons } from "@colonia/ui";
 import { useMemo } from "react";
 import { shortWhen } from "../../common/format.ts";
 import { useT } from "../../i18n/index.ts";
@@ -67,7 +67,7 @@ export function GitHistory({
                       cx={x(row.col)}
                       cy={DOT_Y}
                       r={c.parents.length > 1 ? 3 : 4}
-                      fill={c.parents.length > 1 ? color : "var(--apx-bg)"}
+                      fill={c.parents.length > 1 ? color : "var(--colonia-bg)"}
                       stroke={color}
                     />
                   </svg>

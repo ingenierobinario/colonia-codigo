@@ -3,7 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { emptyWorkspace } from "../src/hooks/useWorkspace";
 import { t } from "../src/i18n";
 import { type SharedActions, SharedFilesPage } from "../src/pages/SharedFilesPage";
-import type { ApxClient, SharedFile } from "../src/protocol";
+import type { ColoniaClient, SharedFile } from "../src/protocol";
 import { MediaClient } from "../src/ui/media/context";
 
 // Pictures come from the phone's media cache, and videos play in expo-video: neither runs under jest.
@@ -56,7 +56,7 @@ const actions = (): SharedActions & { list: jest.Mock; poster: jest.Mock } => ({
 const mount = (api: SharedActions, openMessage = jest.fn()) =>
   render(
     <SafeAreaProvider initialMetrics={metrics}>
-      <MediaClient.Provider value={{} as ApxClient}>
+      <MediaClient.Provider value={{} as ColoniaClient}>
         <SharedFilesPage data={data} back={jest.fn()} actions={api} openMessage={openMessage} />
       </MediaClient.Provider>
     </SafeAreaProvider>,

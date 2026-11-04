@@ -29,18 +29,18 @@ for (const lang of ["en", "es"]) {
     await expect(page.locator("main h1")).toBeVisible();
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      `https://apxagent.app${pre}/docs/start/introduction/`,
+      `https://colonia.ingenierobinario.com${pre}/docs/start/introduction/`,
     );
     await expect(page.locator("nav.sidebar a[href*='/docs/']").first()).toBeAttached();
   });
 
   test(`${lang}: every shared web footer exposes the official YouTube channel`, async ({ page }, testInfo) => {
-    const destination = "https://www.youtube.com/@apx-agents";
+    const destination = "https://www.youtube.com/@colonia-agents";
     for (const path of ["/", "/compare/", "/compare/hermes-agent/", "/compare/openclaw/", "/compare/openbot/"]) {
       await page.goto(`${pre}${path}`);
       const community = page
         .locator(".web-footer")
-        .getByRole("navigation", { name: lang === "es" ? "APX en redes" : "APX on social media", exact: true });
+        .getByRole("navigation", { name: lang === "es" ? "Colonia en redes" : "Colonia on social media", exact: true });
       const youtube = community.getByRole("link", { name: "YouTube", exact: true });
       await expect(youtube).toHaveCount(1);
       await expect(youtube).toHaveAttribute("href", destination);
@@ -65,7 +65,7 @@ for (const lang of ["en", "es"]) {
         await page.goto(`${pre}${path}`);
         const footer = page.locator(".web-footer");
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-        await expect(footer.locator(".brand")).toHaveText("APX");
+        await expect(footer.locator(".brand")).toHaveText("Colonia");
         await expect(footer.locator(".web-footer__origin")).toHaveText(
           lang === "es" ? "Hecho con ♥ en Argentina" : "Made with ♥ in Argentina",
         );
@@ -94,7 +94,7 @@ for (const lang of ["en", "es"]) {
         });
         // The brand, its legal lines and the platforms come first; the links below; the big mark right after.
         expect(layout.groups.y).toBeGreaterThanOrEqual(layout.brand.bottom);
-        // Where APX runs and where it is made share one line under the brand and the website's links.
+        // Where Colonia runs and where it is made share one line under the brand and the website's links.
         expect(layout.availability.y).toBeGreaterThanOrEqual(layout.brand.bottom);
         expect(layout.availability.bottom).toBeLessThanOrEqual(layout.groups.y);
         expect(layout.origin.bottom).toBeLessThanOrEqual(layout.groups.y);
@@ -111,9 +111,9 @@ for (const lang of ["en", "es"]) {
           expect(new Set(layout.docColumns).size).toBe(5);
         }
         for (const [name, url] of [
-          ["GitHub", "https://github.com/agentprojectcontext/apx"],
+          ["GitHub", "https://github.com/ingenierobinario/colonia"],
           ["Discord", "https://discord.gg/vxdZuT5WuE"],
-          ["YouTube", "https://www.youtube.com/@apx-agents"],
+          ["YouTube", "https://www.youtube.com/@colonia-agents"],
         ] as const) {
           const link = footer.getByRole("link", { name, exact: true });
           await expect(link).toHaveAttribute("href", url);
@@ -163,7 +163,7 @@ for (const lang of ["en", "es"]) {
     await selector.selectOption(`${lang === "es" ? "" : "/es"}/docs/start/introduction/`);
     await expect(page).toHaveURL(`${lang === "es" ? "" : "/es"}/docs/start/introduction/`);
     await page.locator("site-search button[data-open-modal]").click();
-    await page.getByRole("dialog").getByRole("textbox").fill("APX");
+    await page.getByRole("dialog").getByRole("textbox").fill("Colonia");
     await expect(page.locator(".pagefind-ui__result-link").first()).toBeVisible();
     await expect(page.locator(".pagefind-ui__result-link").first()).toHaveAttribute("href", /\/docs\//);
     await page.locator(".pagefind-ui__result-link").first().click();

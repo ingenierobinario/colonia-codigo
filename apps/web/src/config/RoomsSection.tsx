@@ -1,5 +1,5 @@
-import type { ChannelInfo, ChannelRooms, RoomMode } from "@apx/protocol";
-import { Button, Icons, Input, Select, SettingRow, Switch, Tag, Textarea } from "@apx/ui";
+import type { ChannelInfo, ChannelRooms, RoomMode } from "@colonia/protocol";
+import { Button, Icons, Input, Select, SettingRow, Switch, Tag, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { useData } from "../data/state.ts";
@@ -95,7 +95,7 @@ function useServerRooms(channel: ChannelInfo): ServerRoom[] | undefined {
 
 /**
  * The server rooms a Discord bot (or the groups a Telegram bot) reads and may speak in, each with its mode; the words
- * that call it, the owner's notes for that community, its rules and limits. A room not listed does not exist for APX.
+ * that call it, the owner's notes for that community, its rules and limits. A room not listed does not exist for Colonia.
  * Rooms are picked from the bot's servers (each says whether the bot may write there), or from the groups a Telegram
  * bot was seen in; typing an id is the fallback.
  */

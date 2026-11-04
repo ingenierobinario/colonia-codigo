@@ -1,7 +1,7 @@
 // The owner's computer, as a node, when they turned computer use on in the desktop app: a picture of the screen and
 // a click or typing on the app in front. The core only routes; the desktop checks the app is still the one approved.
 // The emergency stop (the desktop says so) ends the turns that were using the computer: only those, only that time.
-import { COMPUTER_CAP } from "@apx/protocol";
+import { COMPUTER_CAP } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { CallError } from "../errors.ts";
 import type { NodeBroker } from "../nodes/broker.ts";

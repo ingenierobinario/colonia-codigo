@@ -1,5 +1,5 @@
-import type { Result } from "@apx/protocol";
-import { Select, SettingRow } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { Select, SettingRow } from "@colonia/ui";
 import { useState } from "react";
 import { client } from "../data/client.ts";
 import { useT } from "../i18n/index.ts";

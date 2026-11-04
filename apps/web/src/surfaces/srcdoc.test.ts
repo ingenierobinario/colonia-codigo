@@ -23,7 +23,7 @@ test("a widget reaches no network unless it declared origins, and then only thos
 });
 
 test("project media reaches a widget as its own blob: URLs, so its CSP names no server", () => {
-  const csp = cspOf(buildSrcdoc('<video data-apx-src="clips/reel.mp4"></video>', opts));
+  const csp = cspOf(buildSrcdoc('<video data-colonia-src="clips/reel.mp4"></video>', opts));
   assert.match(csp, /img-src data: blob:;/);
   assert.match(csp, /media-src data: blob:$/);
   assert.doesNotMatch(csp, /https?:|'self'|\*/);
@@ -49,7 +49,7 @@ test("the frame starts in the panel's mode and with what the widget remembered, 
   assert.deepEqual(JSON.parse(initial), { note: "</script><img src=x onerror=alert(1)>", n: 2 });
   assert.match(
     bridge,
-    /window\.apx=Object\.freeze\(\{host:"apx",sendPrompt:sendPrompt,media:media,state:state,call:call,/,
+    /window\.colonia=Object\.freeze\(\{host:"colonia",sendPrompt:sendPrompt,media:media,state:state,call:call,/,
   );
 });
 

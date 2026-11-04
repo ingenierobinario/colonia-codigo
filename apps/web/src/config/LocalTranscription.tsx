@@ -1,5 +1,5 @@
-import type { LocalTranscription as Local } from "@apx/protocol";
-import { Button, Icons, Select } from "@apx/ui";
+import type { LocalTranscription as Local } from "@colonia/protocol";
+import { Button, Icons, Select } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

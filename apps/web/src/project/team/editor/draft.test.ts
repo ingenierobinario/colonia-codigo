@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Autonomy } from "@apx/protocol";
+import { Autonomy } from "@colonia/protocol";
 import { backToProject, leaveProject } from "./draft.ts";
 
 test("leaving the project's mode keeps that mode and saves only the changed case", () => {

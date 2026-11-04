@@ -13,9 +13,9 @@ import {
   createTabHolds,
   type TabControl,
   type TabInfo,
-} from "@apx/protocol";
-import { assertNavigable, CdpPage } from "@apx/protocol/cdp";
-import { ApxError } from "@apx/protocol/client";
+} from "@colonia/protocol";
+import { assertNavigable, CdpPage } from "@colonia/protocol/cdp";
+import { ColoniaError } from "@colonia/protocol/client";
 import { findProgram } from "../programs.ts";
 import { type PageCall, type PageCheck, runPageCheck } from "./page-check.ts";
 
@@ -26,7 +26,7 @@ const START_TIMEOUT_MS = 20_000;
 const TAB_IDLE_MS = 15 * 60_000;
 const IDLE_MS = 5 * 60_000;
 
-/** Chrome, Chromium or Edge where they usually are; APX_CHROME (config) wins. */
+/** Chrome, Chromium or Edge where they usually are; COLONIA_CHROME (config) wins. */
 export function findChrome(configured?: string): string | undefined {
   if (configured) return fs.existsSync(configured) ? configured : undefined;
   const fixed =
@@ -97,14 +97,14 @@ class Pipe {
         const waiting = m.id === undefined ? undefined : this.#pending.get(m.id);
         if (waiting && m.id !== undefined) {
           this.#pending.delete(m.id);
-          if (m.error) waiting.reject(new ApxError({ code: "unavailable", message: m.error.message }));
+          if (m.error) waiting.reject(new ColoniaError({ code: "unavailable", message: m.error.message }));
           else waiting.resolve(m.result);
         } else if (m.method) onEvent(m);
       }
     });
   }
   send<T>(method: string, params: object = {}, sessionId?: string): Promise<T> {
-    if (this.#failure) return Promise.reject(new ApxError({ code: "unavailable", message: this.#failure }));
+    if (this.#failure) return Promise.reject(new ColoniaError({ code: "unavailable", message: this.#failure }));
     const id = ++this.#id;
     return new Promise<T>((resolve, reject) => {
       this.#pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
@@ -115,7 +115,7 @@ class Pipe {
         });
       } catch (error) {
         this.#pending.delete(id);
-        reject(new ApxError({ code: "unavailable", message: error instanceof Error ? error.message : String(error) }));
+        reject(new ColoniaError({ code: "unavailable", message: error instanceof Error ? error.message : String(error) }));
       }
     });
   }
@@ -127,7 +127,7 @@ class Pipe {
   }
   failAll(why: string) {
     this.#failure ??= why;
-    for (const p of this.#pending.values()) p.reject(new ApxError({ code: "unavailable", message: this.#failure }));
+    for (const p of this.#pending.values()) p.reject(new ColoniaError({ code: "unavailable", message: this.#failure }));
     this.#pending.clear();
   }
 }
@@ -149,7 +149,7 @@ export function createHeadlessBrowser(deps: {
   dir: string;
   chrome?: string | undefined;
   spawn?: typeof spawn;
-  /** APX's own ports: a tab never loads APX itself. */
+  /** Colonia's own ports: a tab never loads Colonia itself. */
   blockedPorts: () => ReadonlySet<string>;
   onChange: (tabs: TabInfo[]) => void;
   /** A visible guest browser connected over private SSH pipes, without a host Chrome fallback. */
@@ -237,7 +237,7 @@ export function createHeadlessBrowser(deps: {
       const { child, input, output } = deps.remote.launch();
       return connect(child, input, output);
     }
-    if (!chrome) throw new ApxError({ code: "unavailable", message: "no Chrome, Chromium or Edge on this machine" });
+    if (!chrome) throw new ColoniaError({ code: "unavailable", message: "no Chrome, Chromium or Edge on this machine" });
     const profile = path.join(deps.dir, "shared");
     fs.mkdirSync(profile, { recursive: true });
     const child = (deps.spawn ?? spawn)(
@@ -294,7 +294,7 @@ export function createHeadlessBrowser(deps: {
         p.send("Browser.getVersion"),
         new Promise((_, reject) => {
           timer = setTimeout(
-            () => reject(new ApxError({ code: "unavailable", message: "Chrome did not start" })),
+            () => reject(new ColoniaError({ code: "unavailable", message: "Chrome did not start" })),
             START_TIMEOUT_MS,
           );
         }),
@@ -387,7 +387,7 @@ export function createHeadlessBrowser(deps: {
 
   async function open(url: string, profile: BrowserProfile, control: TabControl): Promise<Tab> {
     assertNavigable(url, deps.blockedPorts());
-    if (tabs.size >= MAX_TABS) throw new ApxError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
+    if (tabs.size >= MAX_TABS) throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
     const p = await ready();
     const browserContextId = await contextFor(p, profile);
     const { targetId } = await p.send<{ targetId: string }>("Target.createTarget", {
@@ -431,7 +431,7 @@ export function createHeadlessBrowser(deps: {
 
   function get(id: string): Tab {
     const t = tabs.get(id);
-    if (!t) throw new ApxError({ code: "not_found", message: `no tab ${id}` });
+    if (!t) throw new ColoniaError({ code: "not_found", message: `no tab ${id}` });
     t.used = Date.now();
     return t;
   }
@@ -440,15 +440,15 @@ export function createHeadlessBrowser(deps: {
   function drive(id: string, by: string): Tab {
     const t = get(id);
     if (t.control.kind === "agent" && t.control.by !== by)
-      throw new ApxError({ code: "paused_by_user", message: `tab ${id} is in use by ${t.control.by}` });
+      throw new ColoniaError({ code: "paused_by_user", message: `tab ${id} is in use by ${t.control.by}` });
     t.control = { kind: "agent", by, since: new Date().toISOString() };
     return t;
   }
 
   const noHuman = () =>
-    new ApxError({
+    new ColoniaError({
       code: "unavailable",
-      message: "this is APX's headless browser: nobody can take over here. Ask the owner to open the APX app for that.",
+      message: "this is Colonia's headless browser: nobody can take over here. Ask the owner to open the Colonia app for that.",
     });
 
   return {
@@ -571,7 +571,7 @@ export function createHeadlessBrowser(deps: {
           // An isolated world: the page's scripts cannot see or patch this read.
           const { executionContextId } = await pp.send<{ executionContextId: number }>(
             "Page.createIsolatedWorld",
-            { frameId: tree.frameTree.frame.id, worldName: "apx" },
+            { frameId: tree.frameTree.frame.id, worldName: "colonia" },
             t.session,
           );
           const r = await pp.send<{ result: { value?: unknown } }>(
@@ -601,9 +601,9 @@ export function createHeadlessBrowser(deps: {
           return { sources: [] };
         case "browser.cookie_domains":
         case "browser.import_cookies":
-          throw new ApxError({
+          throw new ColoniaError({
             code: "unavailable",
-            message: "the owner's logins come from the APX app on their computer: open it to bring them in",
+            message: "the owner's logins come from the Colonia app on their computer: open it to bring them in",
           });
         case "browser.close": {
           const p = browserMethods["browser.close"].params.parse(raw);
@@ -611,7 +611,7 @@ export function createHeadlessBrowser(deps: {
           return { ok: true };
         }
         default:
-          throw new ApxError({ code: "unknown_method", message: `the headless browser does not serve ${method}` });
+          throw new ColoniaError({ code: "unknown_method", message: `the headless browser does not serve ${method}` });
       }
     },
   };

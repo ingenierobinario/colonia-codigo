@@ -1,4 +1,4 @@
-// Starts the staged core (apps/desktop/.stage/apx) on an empty home and waits for /health: a bundle whose core cannot
+// Starts the staged core (apps/desktop/.stage/colonia) on an empty home and waits for /health: a bundle whose core cannot
 // start never ships. See HISTORY.md#protocol-subpaths.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 
 const repo = path.resolve(import.meta.dirname, "../../..");
-const stage = path.join(repo, "apps/desktop/.stage/apx");
+const stage = path.join(repo, "apps/desktop/.stage/colonia");
 const DEADLINE_MS = 90_000;
 
 const port = await new Promise<number>((resolve, reject) => {
@@ -16,17 +16,17 @@ const port = await new Promise<number>((resolve, reject) => {
     server.close(() => (typeof address === "object" && address ? resolve(address.port) : reject(new Error("no port"))));
   });
 });
-const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-smoke-"));
+const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-smoke-"));
 const core = spawn(process.execPath, ["--disable-warning=ExperimentalWarning", "apps/core/src/main.ts"], {
   cwd: stage,
   env: {
     ...process.env,
-    APX_HOME: home,
-    APX_PORT: String(port),
-    APX_SECRETS: "file",
-    APX_UPDATES: "off",
-    APX_TELEMETRY: "off",
-    APX_RUNTIME_SKILLS: "off",
+    COLONIA_HOME: home,
+    COLONIA_PORT: String(port),
+    COLONIA_SECRETS: "file",
+    COLONIA_UPDATES: "off",
+    COLONIA_TELEMETRY: "off",
+    COLONIA_RUNTIME_SKILLS: "off",
   },
   stdio: ["ignore", "pipe", "pipe"],
 });

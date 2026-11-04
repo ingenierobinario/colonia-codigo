@@ -1,10 +1,10 @@
-// system.usage: the computer's memory, CPU and disk, what the core takes, the APX home by part (measured in the
+// system.usage: the computer's memory, CPU and disk, what the core takes, the Colonia home by part (measured in the
 // background, kept, cut at its deadline) and the VM's slot, filled by whatever provider the core was given.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { testConfig } from "./config.ts";
 import { createCore } from "./server.ts";
 import { removeDir, tempDir, waitFor } from "./testkit/platform.ts";
@@ -13,7 +13,7 @@ import { availableFromMeminfo, availableFromVmStat, createUsage, measureHome, pa
 const MB = 1048576;
 let core: Awaited<ReturnType<typeof createCore>>;
 let home = "";
-let owner: ApxClient;
+let owner: ColoniaClient;
 let vm: { running: boolean; memory_assigned_mb: number; memory_used_mb: number } | undefined;
 
 function write(rel: string, bytes: number) {
@@ -23,9 +23,9 @@ function write(rel: string, bytes: number) {
 }
 
 before(async () => {
-  home = tempDir("apx-usage-").path;
+  home = tempDir("colonia-usage-").path;
   core = await createCore(testConfig({ home }), { quiet: true, vmUsage: () => vm });
-  owner = new ApxClient({ url: core.url });
+  owner = new ColoniaClient({ url: core.url });
   write("models/ggml-base.bin", 3 * MB);
   write("media/2026-01-01/a.jpg", 2 * MB);
   write("artifacts/global/x/index.html", MB);
@@ -113,7 +113,7 @@ test("a walk past its deadline stops and says it is partial", async () => {
 });
 
 test("parts by name, and memory as macOS and Linux count it", () => {
-  assert.equal(partOf("apx.db-wal"), "databases");
+  assert.equal(partOf("colonia.db-wal"), "databases");
   assert.equal(partOf("daemon-lock.sqlite"), "databases");
   assert.equal(partOf("jobs"), "logs");
   assert.equal(partOf("codex-images"), "files");

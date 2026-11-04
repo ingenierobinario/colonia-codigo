@@ -1,6 +1,6 @@
 // The super-agent's profile (profiles.*): one copy for every screen that shows or switches it, so Settings, the
 // super-agent's editor and its card stay in step.
-import type { Localized, Result } from "@apx/protocol";
+import type { Localized, Result } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";

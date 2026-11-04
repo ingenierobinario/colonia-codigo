@@ -54,7 +54,7 @@ test("each public route requires its own secure, rotatable and revocable credent
     assert.throws(() => credentials.rotate("/flows/unknown"), /registered/);
     const first = credentials.rotate("/flows/acme");
     const token = tokenOf(first.secret_ref);
-    assert.match(token, /^apxp_[a-f0-9]{64}$/);
+    assert.match(token, /^coloniap_[a-f0-9]{64}$/);
     assert.equal(JSON.stringify(first).includes(token), false, "idempotency responses contain references only");
     assert.equal(env.core.store.settings.get("public-route-credentials")?.includes(token), false);
     assert.equal((await send("/flows/acme", "wrong")).status, 401);
@@ -97,7 +97,7 @@ test("public credential management stays owner-only behind the private RPC", asy
     await assert.rejects(env.client.call("public_routes.rotate", { path: "/flows/missing" }), /registered/);
     const response = await fetch(`${env.core.url}/rpc/public_routes.list`, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-apx-actor": "agent" },
+      headers: { "content-type": "application/json", "x-colonia-actor": "agent" },
       body: "{}",
     });
     assert.equal(response.status, 401);

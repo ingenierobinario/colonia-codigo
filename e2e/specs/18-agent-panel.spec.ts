@@ -26,7 +26,7 @@ test("the super-agent's face opens its block beside the chat; its prompt and pro
   // The super-agent's own editor: what it is, no role, area or description, and its prompt adds to its role.
   const editor = page.getByRole("dialog", { name: "Editar super-agente" });
   await editor.getByRole("button", { name: "Identidad" }).click();
-  await expect(editor.getByText(/El agente principal de APX/)).toBeVisible();
+  await expect(editor.getByText(/El agente principal de Colonia/)).toBeVisible();
   await expect(editor.getByLabel("Nombre")).toBeVisible();
   await expect(editor.getByLabel("Rol")).toHaveCount(0);
   await expect(editor.getByLabel("Área")).toHaveCount(0);

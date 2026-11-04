@@ -91,7 +91,7 @@ test("the listener hands a channel's webhook to its adapter, bytes as they came,
 
   assert.equal((await post("/hooks/teams", "{}")).status, 401, "the adapter refuses what it cannot verify");
   assert.equal(
-    (await post("/apx/hooks/teams/files/1", "{}", { "x-sig": "ok" })).status,
+    (await post("/colonia/hooks/teams/files/1", "{}", { "x-sig": "ok" })).status,
     404,
     "unregistered prefixes and suffixes are denied",
   );

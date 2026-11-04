@@ -1,4 +1,4 @@
-import { Button, Icons, Tooltip } from "@apx/ui";
+import { Button, Icons, Tooltip } from "@colonia/ui";
 import { useEffect } from "react";
 import { agentComputer } from "../../computers/agent.ts";
 import { computersOf } from "../../computers/summary.ts";

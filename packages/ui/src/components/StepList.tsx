@@ -21,16 +21,16 @@ export interface StepListProps {
 /** Compact run report inside a message: one line per integration/step with its status. */
 export function StepList({ steps, arrow = "→", className }: StepListProps) {
   return (
-    <ul className={cx("apx-steps", className)}>
+    <ul className={cx("colonia-steps", className)}>
       {keyed(steps, (s) => s.label).map(({ item: s, key }) => (
-        <li key={key} className={cx("apx-steps__row", `is-${s.status ?? "done"}`)}>
+        <li key={key} className={cx("colonia-steps__row", `is-${s.status ?? "done"}`)}>
           <StatusIcon status={s.status ?? "done"} />
           <span>
-            <strong className="apx-steps__label">{s.label}</strong>
+            <strong className="colonia-steps__label">{s.label}</strong>
             {s.detail && (
               <>
-                <span className="apx-steps__arrow"> {arrow} </span>
-                <span className="apx-steps__detail">{s.detail}</span>
+                <span className="colonia-steps__arrow"> {arrow} </span>
+                <span className="colonia-steps__detail">{s.detail}</span>
               </>
             )}
           </span>

@@ -1,5 +1,5 @@
 {
-  "extends": "@apx/config/tsconfig.node.json",
+  "extends": "@colonia/config/tsconfig.node.json",
   "compilerOptions": { "lib": ["ES2024", "DOM"] },
   "include": ["src", "scripts"]
 }

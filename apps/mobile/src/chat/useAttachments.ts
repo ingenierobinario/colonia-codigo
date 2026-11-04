@@ -4,7 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { t } from "../i18n";
-import { type ApxClient, UPLOAD_LIMITS } from "../protocol";
+import { type ColoniaClient, UPLOAD_LIMITS } from "../protocol";
 
 /** A file on its way into the chat: uploading until it has the media id the message will carry. */
 export type Attachment = {
@@ -23,7 +23,7 @@ const kindOf = (mime: string): Attachment["kind"] =>
 
 /** Picks photos, takes pictures or picks files, and uploads each with media.upload as soon as it is chosen. */
 /** `threadId` is undefined for a new chat not made yet: the files go with its first message all the same. */
-export function useAttachments(client: ApxClient, threadId: string | undefined) {
+export function useAttachments(client: ColoniaClient, threadId: string | undefined) {
   const [items, setItems] = useState<Attachment[]>([]);
   const upload = useCallback(
     async (uri: string, name: string, mime: string, size?: number): Promise<Attachment | undefined> => {

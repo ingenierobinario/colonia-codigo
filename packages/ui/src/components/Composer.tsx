@@ -108,18 +108,18 @@ export function Composer({
   };
   const boxed = toolbar != null;
   const attach = onAttach && (
-    <button type="button" className="apx-composer__btn" aria-label={l.attach} onClick={onAttach} disabled={disabled}>
+    <button type="button" className="colonia-composer__btn" aria-label={l.attach} onClick={onAttach} disabled={disabled}>
       <Plus size={18} />
     </button>
   );
   const primary = busy ? (
-    <button type="button" className="apx-composer__send" aria-label={l.stop} onClick={onStop}>
+    <button type="button" className="colonia-composer__send" aria-label={l.stop} onClick={onStop}>
       <Square size={12} fill="currentColor" />
     </button>
   ) : canSend || !onVoice ? (
     <button
       type="button"
-      className="apx-composer__send"
+      className="colonia-composer__send"
       aria-label={l.send}
       title={sendHint}
       onClick={() => submit()}
@@ -130,7 +130,7 @@ export function Composer({
   ) : (
     <button
       type="button"
-      className={cx("apx-composer__send", boxed && "is-quiet")}
+      className={cx("colonia-composer__send", boxed && "is-quiet")}
       aria-label={l.voice}
       onClick={onVoice}
       disabled={disabled}
@@ -141,7 +141,7 @@ export function Composer({
   const field = (
     <textarea
       ref={inputRef}
-      className="apx-composer__input"
+      className="colonia-composer__input"
       rows={boxed ? 2 : 1}
       aria-label={inputLabel ?? placeholder}
       placeholder={placeholder}
@@ -160,19 +160,19 @@ export function Composer({
   return (
     <div
       className={cx(
-        "apx-composer",
-        boxed ? "apx-composer--box" : "apx-composer--pill",
+        "colonia-composer",
+        boxed ? "colonia-composer--box" : "colonia-composer--pill",
         disabled && "is-disabled",
         className,
       )}
     >
-      {popup && <div className="apx-composer__popup">{popup}</div>}
-      {header && <div className="apx-composer__header">{header}</div>}
-      <div className="apx-composer__row">
+      {popup && <div className="colonia-composer__popup">{popup}</div>}
+      {header && <div className="colonia-composer__header">{header}</div>}
+      <div className="colonia-composer__row">
         {!boxed && attach}
         {highlight ? (
-          <div className="apx-composer__field">
-            <div className="apx-composer__mirror" ref={mirror} aria-hidden="true">
+          <div className="colonia-composer__field">
+            <div className="colonia-composer__mirror" ref={mirror} aria-hidden="true">
               {highlight(text)}
               {"\n"}
             </div>
@@ -184,10 +184,10 @@ export function Composer({
         {!boxed && primary}
       </div>
       {boxed && (
-        <div className="apx-composer__toolbar">
+        <div className="colonia-composer__toolbar">
           {attach}
           {toolbar}
-          <span className="apx-composer__spacer" />
+          <span className="colonia-composer__spacer" />
           {primary}
         </div>
       )}

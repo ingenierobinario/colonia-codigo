@@ -1,5 +1,5 @@
-import type { Job, Thread } from "@apx/protocol";
-import { AgentAvatar, EmptyState, IconButton, Icons, Skeleton } from "@apx/ui";
+import type { Job, Thread } from "@colonia/protocol";
+import { AgentAvatar, EmptyState, IconButton, Icons, Skeleton } from "@colonia/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Transcript } from "../chat/Transcript.tsx";
 import { useNow } from "../common/useNow.ts";

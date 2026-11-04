@@ -8,7 +8,7 @@ import { expect, open, rpc, test } from "./kit.ts";
 
 test("a suggested command runs in a terminal from the chat and its end wakes the agent", async ({ page }) => {
   await rpc("setup.finish", {});
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-run-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-run-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
   const project = (await rpc<{ project: { id: string } }>("projects.register", { path: repo })).project.id;
   const chat = await rpc<{ id: string }>("threads.create", {
@@ -70,7 +70,7 @@ test("a late attach snapshot does not undo the command's exit event", async ({ p
   await expect(out.getByText("Salió con 0")).toBeVisible();
 });
 
-test("in a chat with no project the block runs too, in APX's work folder", async ({ page }) => {
+test("in a chat with no project the block runs too, in Colonia's work folder", async ({ page }) => {
   await open(page, "#thread=home");
   await page.getByRole("textbox", { name: /^Escribile a/ }).fill("suggest a command");
   await page.getByRole("button", { name: "Enviar" }).click();

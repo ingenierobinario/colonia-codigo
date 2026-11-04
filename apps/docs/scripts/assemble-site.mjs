@@ -23,15 +23,15 @@ export async function assembleSite({ v1, v2, out }) {
     join(out, "v2", "index.html"),
     `<!doctype html>
 <meta charset="utf-8">
-<title>APX</title>
+<title>Colonia</title>
 <noscript><meta http-equiv="refresh" content="0; url=/"></noscript>
 <script>location.replace("/"+location.search+location.hash)</script>
-<link rel="canonical" href="https://apxagent.app/">
-<a href="/">APX</a>
+<link rel="canonical" href="https://colonia.ingenierobinario.com/">
+<a href="/">Colonia</a>
 `,
   );
   const page = await readFile(join(out, "404.html"), "utf8");
   if (!page.includes("<head>")) throw new Error("The current 404 page has no head");
-  const hop = `<script>{const p=location.pathname,r=location.search+location.hash;let target;if(p.startsWith("/apx/"))target=p.slice(4);else if(p.startsWith("/docs/"))target="/v1/"+p.slice(6);else if(p.startsWith("/v2/"))target="/"+p.slice(4);if(target){const url=new URL(target+r,location.origin);if(url.origin===location.origin)location.replace(url.href)}}</script>`;
+  const hop = `<script>{const p=location.pathname,r=location.search+location.hash;let target;if(p.startsWith("/colonia/"))target=p.slice(4);else if(p.startsWith("/docs/"))target="/v1/"+p.slice(6);else if(p.startsWith("/v2/"))target="/"+p.slice(4);if(target){const url=new URL(target+r,location.origin);if(url.origin===location.origin)location.replace(url.href)}}</script>`;
   await writeFile(join(out, "404.html"), page.replace("<head>", `<head>${hop}`));
 }

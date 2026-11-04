@@ -49,7 +49,7 @@ export function PairScreen({ link, onPaired }: { link: string | undefined; onPai
     >
       <View style={s.brand}>
         <Image source={require("../assets/logo.png")} style={s.logo} />
-        <Text style={s.brandName}>APX</Text>
+        <Text style={s.brandName}>Colonia</Text>
       </View>
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <View style={s.kickerRow}>
@@ -142,7 +142,7 @@ export function PairScreen({ link, onPaired }: { link: string | undefined; onPai
           <Text style={s.primaryText}>{t(busy ? "pairing" : "pair")}</Text>
         </Pressable>
       </ScrollView>
-      <Text style={s.version}>APX v{Constants.expoConfig?.version}</Text>
+      <Text style={s.version}>Colonia v{Constants.expoConfig?.version}</Text>
     </KeyboardAvoidingView>
   );
 }

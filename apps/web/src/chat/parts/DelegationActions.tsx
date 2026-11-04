@@ -1,4 +1,4 @@
-import { Button } from "@apx/ui";
+import { Button } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../../data/client.ts";
 import {

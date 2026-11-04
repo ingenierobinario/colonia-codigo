@@ -47,12 +47,12 @@ export function AgentGrid({
   // The chosen agent stays in sight even when it is past the first cards.
   if (!all && extra && chosen >= limit) shown = [...agents.slice(0, limit - 1), agents[chosen] as AgentGridOption];
   return (
-    <div className={cx("apx-agentgrid", className)}>
+    <div className={cx("colonia-agentgrid", className)}>
       <RadioGroup
         value={value ?? ""}
         onValueChange={(v: string) => onValueChange(v)}
         aria-label={label}
-        className="apx-agentgrid__cards"
+        className="colonia-agentgrid__cards"
       >
         {shown.map((a) => (
           <Radio.Root
@@ -60,18 +60,18 @@ export function AgentGrid({
             value={a.id}
             nativeButton
             render={<button type="button" />}
-            className={cx("apx-agentgrid__card", a.id === value && "is-selected")}
+            className={cx("colonia-agentgrid__card", a.id === value && "is-selected")}
           >
             <AgentAvatar name={a.name} blob={a.blob} size={24} animated={false} />
-            <span className="apx-agentgrid__text">
-              <span className="apx-agentgrid__name">{a.name}</span>
-              {a.role && <span className="apx-agentgrid__role">{a.role}</span>}
+            <span className="colonia-agentgrid__text">
+              <span className="colonia-agentgrid__name">{a.name}</span>
+              {a.role && <span className="colonia-agentgrid__role">{a.role}</span>}
             </span>
           </Radio.Root>
         ))}
       </RadioGroup>
       {extra && (
-        <button type="button" className="apx-agentgrid__more" onClick={() => setAll(!all)}>
+        <button type="button" className="colonia-agentgrid__more" onClick={() => setAll(!all)}>
           {all ? lessLabel : moreLabel(agents.length)}
         </button>
       )}

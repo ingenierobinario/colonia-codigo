@@ -13,7 +13,7 @@ test("chat processes open A2A beside its parent, maximize and stay scoped to eac
   const composer = mainChat.getByRole("textbox").last();
   await composer.fill("start a worker to check the sources");
   await composer.press("Enter");
-  const card = mainChat.locator(".apx-subthread").last();
+  const card = mainChat.locator(".colonia-subthread").last();
   await expect(card.getByText("Listo")).toBeVisible();
   await card.getByRole("button", { name: /Abrir conversación con Researcher/ }).click();
   const side = page.getByRole("complementary", { name: "Panel lateral" });

@@ -1,7 +1,7 @@
 // What the channels tell the owner. The app's tray (and with it their phones) always hears it; the chat app they picked
 // hears it too, buttons only where they may answer there (DECISIONS.md#d-144, DECISIONS.md#d-161). Every notice for the
 // owner from this folder goes through `tell`, a card or news through `notifyOwner`.
-import type { ChannelInfo, Part } from "@apx/protocol";
+import type { ChannelInfo, Part } from "@colonia/protocol";
 import { type OutboxRow, ownerActsOn, type Presentation } from "../domain/channels.ts";
 import { appOnly, noticePrefs, quietNow } from "../domain/notices.ts";
 import type { NewNotification } from "../domain/notifications.ts";

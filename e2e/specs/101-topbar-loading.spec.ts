@@ -46,7 +46,7 @@ test("el consumo IA mantiene tarjetas skeleton al cargar, actualizar y reabrir",
   expect(codeRequested).toBe(false);
   await expect.poll(() => calls).toBe(1);
   await expect(trigger).toHaveAttribute("aria-busy", "true");
-  await expect(trigger.locator(".apx-skeleton")).toBeVisible();
+  await expect(trigger.locator(".colonia-skeleton")).toBeVisible();
   await expect(trigger).toHaveText("");
   await trigger.click();
   await expect.poll(() => codeRequested).toBe(true);
@@ -55,13 +55,13 @@ test("el consumo IA mantiene tarjetas skeleton al cargar, actualizar y reabrir",
   await expect(preview.getByRole("heading")).toHaveCount(0);
   await expect(preview.locator("section")).toHaveCount(1);
   expect((await preview.boundingBox())?.height).toBeGreaterThanOrEqual(300);
-  await expect(preview.locator(".apx-skeleton").first()).toBeVisible();
+  await expect(preview.locator(".colonia-skeleton").first()).toBeVisible();
   const summary = page.getByTestId("engine-usage-summary");
   await expect(summary).toHaveCount(0);
   code.release();
   await expect(summary).toHaveAttribute("aria-busy", "true");
   await expect(summary.getByRole("button", { name: "Actualizar" })).toBeDisabled();
-  await expect(summary.locator(".apx-meter")).toHaveCount(0);
+  await expect(summary.locator(".colonia-meter")).toHaveCount(0);
   expect(calls).toBe(1);
   pending.release();
   await expect(summary.getByText("63% disponible")).toBeVisible();
@@ -110,7 +110,7 @@ for (const outcome of ["ready", "empty", "failed"] as const) {
     await expect(trigger).toHaveAttribute("aria-busy", "true");
     for (const width of [1836, 1280, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
-      await expect(trigger.locator(".apx-skeleton")).toBeVisible();
+      await expect(trigger.locator(".colonia-skeleton")).toBeVisible();
       const overflow = await page.locator(".topbar").evaluate((bar) => bar.scrollWidth - bar.clientWidth);
       expect(overflow, `loading overflow ${width}`).toBeLessThanOrEqual(1);
     }
@@ -119,7 +119,7 @@ for (const outcome of ["ready", "empty", "failed"] as const) {
     await expect(page.getByTestId("engine-usage-summary")).toHaveCount(0);
     pending.release();
     await expect(trigger).toHaveAttribute("aria-busy", "false");
-    await expect(trigger.locator(".apx-skeleton")).toHaveCount(0);
+    await expect(trigger.locator(".colonia-skeleton")).toHaveCount(0);
     await expect(page.getByTestId("engine-usage-quick")).toHaveCount(outcome === "ready" ? 1 : 0);
     if (outcome === "ready") await expect(page.getByTestId("engine-usage-quick")).toHaveText("63%");
     await expect(page.getByTestId("engine-usage-summary")).toHaveCount(0);
@@ -180,11 +180,11 @@ test("los botones de consumo muestran tooltips con teclado y hover sin perder su
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Tab");
   await expect(ai).toBeFocused();
-  await expect(page.locator(".apx-tooltip[data-open]")).toHaveText("Cuotas de IA");
+  await expect(page.locator(".colonia-tooltip[data-open]")).toHaveText("Cuotas de IA");
   await expect(ai).toHaveAccessibleName("Cuotas de IA");
   const system = page.getByTestId("usage-button");
   await system.hover();
-  await expect(page.locator(".apx-tooltip[data-open]")).toContainText("Sistema");
+  await expect(page.locator(".colonia-tooltip[data-open]")).toContainText("Sistema");
   await expect(system).toHaveAccessibleName(/Sistema/);
 });
 
@@ -211,11 +211,11 @@ test("cuatro engines se ven de un vistazo y colapsan en una barra ocupada y con 
   await expect(quick.first()).toBeVisible();
   await expect(quick.first()).toHaveText("20%");
   for (const item of [quick.nth(0), quick.nth(1)]) {
-    await expect(item.locator(".apx-engine--tile")).toBeVisible();
+    await expect(item.locator(".colonia-engine--tile")).toBeVisible();
     await expect(item.locator("[stroke-dasharray]")).toHaveCount(0);
   }
   await page.getByTestId("engine-usage-button").hover();
-  await expect(page.locator(".apx-tooltip[data-open]")).toContainText("claude: 20% disponible · 10080 min");
+  await expect(page.locator(".colonia-tooltip[data-open]")).toContainText("claude: 20% disponible · 10080 min");
   // Exercise the real bar's optional occupants without depending on an updater or a live run.
   await page.locator(".topbar__right").evaluate((right) => {
     for (const name of ["updatepill", "updatepill", "running"]) {

@@ -1,5 +1,5 @@
-import type { Memory, MemorySettings } from "@apx/protocol";
-import { Button, EmptyState, Icons, Input, SegmentedControl, SettingRow, Switch } from "@apx/ui";
+import type { Memory, MemorySettings } from "@colonia/protocol";
+import { Button, EmptyState, Icons, Input, SegmentedControl, SettingRow, Switch } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

@@ -1,5 +1,5 @@
 import "../styles/quick.css";
-import { AgentAvatar, IconButton, Icons, Skeleton } from "@apx/ui";
+import { AgentAvatar, IconButton, Icons, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { ChatComposer } from "../chat/composer/ChatComposer.tsx";
 import { Transcript } from "../chat/Transcript.tsx";
@@ -41,9 +41,9 @@ export function QuickChat() {
   return (
     <section className="quick" aria-label={t("quick.title")}>
       <header className="quick__head">
-        <AgentAvatar name={agent?.name ?? "APX"} blob={blobOf(agent)} size={28} status="online" />
+        <AgentAvatar name={agent?.name ?? "Colonia"} blob={blobOf(agent)} size={28} status="online" />
         <div className="quick__titles">
-          <div className="quick__name">{agent?.name ?? "APX"}</div>
+          <div className="quick__name">{agent?.name ?? "Colonia"}</div>
           <div className="quick__sub">{threadId === "home" ? t("quick.home") : t("quick.new")}</div>
         </div>
         {threadId !== "home" && (
@@ -55,12 +55,12 @@ export function QuickChat() {
           />
         )}
         <IconButton size="sm" label={t("chat.new")} icon={<Icons.SquarePen size={14} />} onClick={startNew} />
-        {window.apxDesktop?.openMain && (
+        {window.coloniaDesktop?.openMain && (
           <IconButton
             size="sm"
             label={t("quick.openApp")}
             icon={<Icons.ExternalLink size={14} />}
-            onClick={() => window.apxDesktop?.openMain?.(threadId)}
+            onClick={() => window.coloniaDesktop?.openMain?.(threadId)}
           />
         )}
       </header>

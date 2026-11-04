@@ -1,4 +1,4 @@
-// The first run asks how APX is used on this computer (server or client); the answer is kept.
+// The first run asks how Colonia is used on this computer (server or client); the answer is kept.
 import fs from "node:fs";
 import net, { type AddressInfo } from "node:net";
 import os from "node:os";
@@ -23,18 +23,18 @@ const launch = (env: Record<string, string> = {}) =>
       ...process.env,
       HOME: home,
       XDG_CONFIG_HOME: path.join(home, ".config"),
-      APX_DESKTOP_DATA: path.join(home, "desktop"),
-      APX_QUIT_CONFIRM: "off",
-      APX_URL: "",
-      APX_HOME: coreHome,
-      APX_PORT: process.env.E2E_PORT ?? "7460",
-      APX_WEB_URL: "http://127.0.0.1:9",
+      COLONIA_DESKTOP_DATA: path.join(home, "desktop"),
+      COLONIA_QUIT_CONFIRM: "off",
+      COLONIA_URL: "",
+      COLONIA_HOME: coreHome,
+      COLONIA_PORT: process.env.E2E_PORT ?? "7460",
+      COLONIA_WEB_URL: "http://127.0.0.1:9",
       ...env,
     },
   });
 
 /**
- * A stand-in for ssh: the server takes only a password (s3cret) until this app's key is in, then has APX (the e2e's
+ * A stand-in for ssh: the server takes only a password (s3cret) until this app's key is in, then has Colonia (the e2e's
  * core, reached through an actual TCP forward). The question goes through the app's real askpass; each run's arguments land
  * in `calls`.
  */
@@ -55,7 +55,7 @@ esac
 answer=$("$SSH_ASKPASS" "ops@box's password: ") || exit 255
 [ "$answer" = "s3cret" ] || { echo "ops@box: Permission denied (publickey,password)." >&2; exit 255; }
 touch "$state/authorized"
-echo APX_KEY_OK
+echo COLONIA_KEY_OK
 `;
 
 async function freePort(): Promise<number> {
@@ -83,7 +83,7 @@ async function windowAt(app: ElectronApplication, test: (url: string) => boolean
 
 test.beforeAll(async () => {
   coreHome = (await world.info()).home;
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-connect-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-connect-"));
   fs.mkdirSync(path.join(home, "desktop"), { recursive: true });
 });
 test.afterAll(() => fs.rmSync(home, { recursive: true, force: true }));
@@ -96,7 +96,7 @@ test("desktop installed from the web reopens the same core without another conne
     home_id: fs.readFileSync(path.join(coreHome, "home-id"), "utf8").trim(),
   });
   for (let attempt = 0; attempt < 2; attempt++) {
-    const app = await launch({ APX_HOME: "", APX_PORT: "", APX_DESKTOP_DATA: dataDir });
+    const app = await launch({ COLONIA_HOME: "", COLONIA_PORT: "", COLONIA_DESKTOP_DATA: dataDir });
     await windowAt(app, (url) => url.startsWith(core));
     expect(app.windows().some((page) => page.url().includes("?connect"))).toBe(false);
     const target = JSON.parse(fs.readFileSync(path.join(dataDir, "connection.json"), "utf8"));
@@ -111,7 +111,7 @@ test("an explicit local handoff asks an already running desktop to relaunch into
   const dataDir = path.join(home, "running-desktop");
   fs.mkdirSync(dataDir, { recursive: true });
   fs.writeFileSync(path.join(dataDir, "connection.json"), JSON.stringify({ mode: "url", url: core }));
-  const app = await launch({ APX_DESKTOP_DATA: dataDir });
+  const app = await launch({ COLONIA_DESKTOP_DATA: dataDir });
   await windowAt(app, (url) => url.startsWith(core));
   saveLocalTarget(dataDir, {
     home: coreHome,
@@ -128,7 +128,7 @@ test("an explicit local handoff asks an already running desktop to relaunch into
     app.quit = () => {
       calls.push("quit");
     };
-    app.emit("second-instance", {} as Electron.Event, ["APX", "--apx-adopt-local"], "", {});
+    app.emit("second-instance", {} as Electron.Event, ["Colonia", "--colonia-adopt-local"], "", {});
     app.relaunch = relaunch;
     app.quit = quit;
     return calls;
@@ -148,12 +148,12 @@ test("the first run asks server or client; a new server opens its installed welc
   const fresh = await createCore(testConfig({ home: freshHome, port, webDist: path.join(root, "apps/web/dist") }), {
     quiet: true,
   });
-  const env = { APX_HOME: freshHome, APX_PORT: String(port), APX_DESKTOP_DATA: dataDir };
+  const env = { COLONIA_HOME: freshHome, COLONIA_PORT: String(port), COLONIA_DESKTOP_DATA: dataDir };
   let first: ElectronApplication | undefined;
   let again: ElectronApplication | undefined;
   try {
     first = await launch(env);
-    const chooser = await question(await windowAt(first, (u) => u.startsWith("apx-app://")));
+    const chooser = await question(await windowAt(first, (u) => u.startsWith("colonia-app://")));
     await expect(chooser.locator("#pick-server")).toBeVisible();
     await expect(chooser.locator("#pick-client")).toBeVisible();
     await chooser.locator("#pick-server").click();
@@ -164,7 +164,7 @@ test("the first run asks server or client; a new server opens its installed welc
     const language = await panel.locator("html").getAttribute("lang");
     expect(["en", "es"]).toContain(language);
     await expect(panel.locator(".wiz__pill")).toContainText(
-      language === "es" ? "APX está instalado" : "APX is installed",
+      language === "es" ? "Colonia está instalado" : "Colonia is installed",
     );
     expect(JSON.parse(fs.readFileSync(path.join(dataDir, "connection.json"), "utf8"))).toEqual({ mode: "local" });
     await first.close();
@@ -173,8 +173,8 @@ test("the first run asks server or client; a new server opens its installed welc
     again = await launch(env);
     const reopened = await windowAt(again, (u) => u.startsWith(fresh.url));
     await expect(reopened.locator(".wiz")).toBeVisible();
-    await expect(reopened.locator(".wiz__pill")).not.toContainText(/APX (?:está instalado|is installed)/);
-    expect(again.windows().some((p) => p.url().startsWith("apx-app://"))).toBe(false);
+    await expect(reopened.locator(".wiz__pill")).not.toContainText(/Colonia (?:está instalado|is installed)/);
+    expect(again.windows().some((p) => p.url().startsWith("colonia-app://"))).toBe(false);
     expect(again.windows().some((p) => p.url().includes("welcome="))).toBe(false);
   } finally {
     await first?.close();
@@ -188,7 +188,7 @@ test("choosing an already configured local server opens its panel without repeat
   fs.rmSync(path.join(home, "desktop", "connection.json"), { force: true });
   const app = await launch();
   try {
-    const chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
+    const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-server").click();
     await chooser.locator("#server-go").click();
     const panel = await windowAt(app, (url) => url.startsWith(core));
@@ -205,7 +205,7 @@ test("choosing an already configured local server opens its panel without repeat
 test("a client address that does not answer is refused on the spot", async () => {
   fs.rmSync(path.join(home, "desktop", "connection.json"), { force: true });
   const app = await launch();
-  const chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
+  const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
   await chooser.locator("#pick-client").click();
   await chooser.locator("#url").fill("http://127.0.0.1:9");
   await chooser.locator("#client-go").click();
@@ -227,10 +227,10 @@ test("changing connection revokes the old desktop node before choosing a new ser
       };
       return health.result.subsystems.browser.detail;
     };
-    await expect.poll(browserNode).toBe("apx-desktop");
+    await expect.poll(browserNode).toBe("colonia-desktop");
     await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById("change-connection")?.click());
-    let chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
-    await expect.poll(browserNode).not.toBe("apx-desktop");
+    let chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
+    await expect.poll(browserNode).not.toBe("colonia-desktop");
     expect(fs.existsSync(path.join(home, "desktop", "connection.json"))).toBe(false);
     // The checkout's core is still the one the e2e started: nothing took it down.
     expect((await fetch(`${core}/health`)).ok).toBe(true);
@@ -239,26 +239,26 @@ test("changing connection revokes the old desktop node before choosing a new ser
     await chooser.locator("#client-go").click();
     expect((await windowAt(app, (u) => u.startsWith(core))) === panel).toBe(true);
     await expect(panel.locator(".shell")).toBeVisible();
-    expect(await browserNode()).not.toBe("apx-desktop");
+    expect(await browserNode()).not.toBe("colonia-desktop");
     await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById("change-connection")?.click());
-    chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
+    chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-server").click();
     await chooser.locator("#server-go").click();
     expect((await windowAt(app, (u) => u.startsWith(core))) === panel).toBe(true);
     await expect(panel.locator(".shell")).toBeVisible();
-    await expect.poll(browserNode).toBe("apx-desktop");
+    await expect.poll(browserNode).toBe("colonia-desktop");
   } finally {
     await app.close();
   }
 });
 
-test("About opens APX's own window with this build's versions and the repo", async () => {
+test("About opens Colonia's own window with this build's versions and the repo", async () => {
   fs.writeFileSync(path.join(home, "desktop", "connection.json"), JSON.stringify({ mode: "local" }));
   const app = await launch();
   await windowAt(app, (u) => u.startsWith(core));
   await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById("about")?.click());
   const about = await windowAt(app, (u) => u.includes("?about"));
-  await expect(about.locator(".about__version")).toContainText("APX");
+  await expect(about.locator(".about__version")).toContainText("Colonia");
   await expect(about.locator(".about__status")).toBeVisible();
   await expect(about.locator(".about__list")).toContainText("Protocol");
   await expect(about.locator(".about__repo")).toHaveAttribute("href", /github\.com/);
@@ -270,7 +270,7 @@ test("the panel runs the app menu's About, update and connection items (Windows 
   const app = await launch();
   const panel = await windowAt(app, (u) => u.startsWith(core));
   await panel.evaluate(() =>
-    (window as { apxDesktop?: { menuAction?(id: string): void } }).apxDesktop?.menuAction?.("about"),
+    (window as { coloniaDesktop?: { menuAction?(id: string): void } }).coloniaDesktop?.menuAction?.("about"),
   );
   await windowAt(app, (u) => u.includes("?about"));
   await app.close();
@@ -278,7 +278,7 @@ test("the panel runs the app menu's About, update and connection items (Windows 
 
 test("a direct remote connection blocks unsupported updates through the real native bridge", async () => {
   fs.writeFileSync(path.join(home, "desktop", "connection.json"), JSON.stringify({ mode: "url", url: core }));
-  const app = await launch({ APX_RELEASES: "off" });
+  const app = await launch({ COLONIA_RELEASES: "off" });
   try {
     const panel = await windowAt(app, (url) => url.startsWith(core));
     await app.evaluate(({ dialog }) => {
@@ -291,8 +291,8 @@ test("a direct remote connection blocks unsupported updates through the real nat
     });
     const result = await panel.evaluate(() =>
       (
-        window as { apxDesktop?: { installUpdate(): Promise<{ ok: boolean; error?: string }> } }
-      ).apxDesktop?.installUpdate(),
+        window as { coloniaDesktop?: { installUpdate(): Promise<{ ok: boolean; error?: string }> } }
+      ).coloniaDesktop?.installUpdate(),
     );
     expect(result?.ok).toBe(false);
     expect(result?.error).toContain("does not support coordinated updates");
@@ -303,7 +303,7 @@ test("a direct remote connection blocks unsupported updates through the real nat
     expect(dialogs?.[0]?.buttons).toHaveLength(3);
     expect(dialogs?.[0]?.detail).toMatch(/not applied|no se aplicó/);
     expect(fs.existsSync(path.join(home, "desktop", "pending-update.json"))).toBe(false);
-    await panel.evaluate(() => (window as { apxDesktop?: { restartToUpdate(): void } }).apxDesktop?.restartToUpdate());
+    await panel.evaluate(() => (window as { coloniaDesktop?: { restartToUpdate(): void } }).coloniaDesktop?.restartToUpdate());
     expect(app.process().exitCode).toBeNull();
   } finally {
     await app.close();
@@ -312,17 +312,17 @@ test("a direct remote connection blocks unsupported updates through the real nat
 
 test("a server that only takes a password asks for it in the terminal view, then this app's key logs in and opens it", async () => {
   fs.rmSync(path.join(home, "desktop", "connection.json"), { force: true });
-  const state = fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-ssh-"));
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-ssh-"));
   installFakeSsh(state, FAKE_SSH);
   const app = await launch({
     PATH: `${state}${path.delimiter}${process.env.PATH ?? ""}`,
     FAKE_SSH_STATE: state,
     FAKE_SSH_NODE: process.execPath,
     FAKE_SSH_CORE_PORT: process.env.E2E_PORT ?? "7460",
-    APX_PORT: "7441",
+    COLONIA_PORT: "7441",
   });
   try {
-    const chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
+    const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-client").click();
     await chooser.getByRole("radio", { name: "SSH" }).click();
     await chooser.locator("#ssh").fill("ops@box");
@@ -345,7 +345,7 @@ test("a server that only takes a password asks for it in the terminal view, then
     await chooser.locator("#client-go").click();
     await input.fill("s3cret");
     await input.press("Enter");
-    // Logged in with the key it just left there, the server's APX opens.
+    // Logged in with the key it just left there, the server's Colonia opens.
     await windowAt(app, (u) => u.startsWith("http://127.0.0.1:7441"));
     expect(JSON.parse(fs.readFileSync(path.join(home, "desktop", "connection.json"), "utf8"))).toEqual({
       mode: "ssh",
@@ -353,7 +353,7 @@ test("a server that only takes a password asks for it in the terminal view, then
     });
 
     // The key was made here, and every ssh after the login offers it.
-    const key = path.join(home, "desktop", "ssh", "apx_ed25519");
+    const key = path.join(home, "desktop", "ssh", "colonia_ed25519");
     expect(fs.existsSync(key)).toBe(true);
     const calls = fs.readFileSync(path.join(state, "calls"), "utf8").trim().split("\n");
     const after = calls.slice(calls.findLastIndex((c) => c.includes("BatchMode=no")) + 1);
@@ -368,7 +368,7 @@ test("a server that only takes a password asks for it in the terminal view, then
 });
 
 test("an occupied SSH forwarding port never adopts the unrelated local core", async () => {
-  const state = fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-ssh-busy-"));
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-ssh-busy-"));
   const dataDir = path.join(home, "ssh-busy-desktop");
   installFakeSsh(state, FAKE_SSH);
   fs.writeFileSync(path.join(state, "authorized"), "");
@@ -377,10 +377,10 @@ test("an occupied SSH forwarding port never adopts the unrelated local core", as
     FAKE_SSH_STATE: state,
     FAKE_SSH_NODE: process.execPath,
     FAKE_SSH_CORE_PORT: process.env.E2E_PORT ?? "7460",
-    APX_DESKTOP_DATA: dataDir,
+    COLONIA_DESKTOP_DATA: dataDir,
   });
   try {
-    const chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
+    const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-client").click();
     await chooser.getByRole("radio", { name: "SSH" }).click();
     await chooser.locator("#ssh").fill("ops@box");
@@ -394,18 +394,18 @@ test("an occupied SSH forwarding port never adopts the unrelated local core", as
   }
 });
 
-test("APX_URL stays connect-only even with a saved local choice", async () => {
+test("COLONIA_URL stays connect-only even with a saved local choice", async () => {
   fs.writeFileSync(path.join(home, "desktop", "connection.json"), JSON.stringify({ mode: "local" }));
-  const app = await launch({ APX_URL: core });
+  const app = await launch({ COLONIA_URL: core });
   try {
     const panel = await windowAt(app, (u) => u.startsWith(core));
     expect(
       await panel.evaluate(
-        () => (window as { apxDesktop?: { coreLocal: boolean; coreToken?: string } }).apxDesktop?.coreLocal,
+        () => (window as { coloniaDesktop?: { coreLocal: boolean; coreToken?: string } }).coloniaDesktop?.coreLocal,
       ),
     ).toBe(false);
     expect(
-      await panel.evaluate(() => (window as { apxDesktop?: { coreToken?: string } }).apxDesktop?.coreToken),
+      await panel.evaluate(() => (window as { coloniaDesktop?: { coreToken?: string } }).coloniaDesktop?.coreToken),
     ).toBeUndefined();
   } finally {
     await app.close();
@@ -417,9 +417,9 @@ test("a local port belonging to another home is not adopted", async () => {
   const other = path.join(home, "other-home");
   fs.mkdirSync(other, { recursive: true });
   fs.writeFileSync(path.join(other, "home-id"), "another-installation");
-  const app = await launch({ APX_HOME: other, APX_CONNECTION: "local" });
+  const app = await launch({ COLONIA_HOME: other, COLONIA_CONNECTION: "local" });
   try {
-    const page = await windowAt(app, (u) => u.startsWith("data:text/html") && u.endsWith("#apx-connecting"));
+    const page = await windowAt(app, (u) => u.startsWith("data:text/html") && u.endsWith("#colonia-connecting"));
     await expect(page.getByRole("status")).toContainText(/belongs to another home|pertenece a otra instalación/);
     await expect(page.getByRole("status")).not.toContainText(/is not answering yet|todavía no responde/);
     expect(app.windows().some((p) => p.url().startsWith(core))).toBe(false);
@@ -437,11 +437,11 @@ test("a local port belonging to another home is not adopted", async () => {
 });
 
 /**
- * A desktop that already chose a server over SSH (the fake ssh, already logged in), and that server's APX: its own
+ * A desktop that already chose a server over SSH (the fake ssh, already logged in), and that server's Colonia: its own
  * core on another port, started and stopped by the test as an update would.
  */
 async function sshClient(name: string) {
-  const temp = tempDir(`apx-e2e-${name}-`);
+  const temp = tempDir(`colonia-e2e-${name}-`);
   const state = temp.path;
   const dataDir = path.join(home, `${name}-desktop`);
   const remoteHome = path.join(home, `${name}-core`);
@@ -461,8 +461,8 @@ async function sshClient(name: string) {
         FAKE_SSH_STATE: state,
         FAKE_SSH_NODE: process.execPath,
         FAKE_SSH_CORE_PORT: String(remotePort),
-        APX_DESKTOP_DATA: dataDir,
-        APX_PORT: String(localPort),
+        COLONIA_DESKTOP_DATA: dataDir,
+        COLONIA_PORT: String(localPort),
       });
       return app;
     },
@@ -490,13 +490,13 @@ test("an SSH client waits for its server to come back after an update, then open
   fs.writeFileSync(path.join(client.state, "down"), "");
   try {
     const app = await client.launch();
-    const waiting = await windowAt(app, (u) => u.includes("#apx-connecting"));
+    const waiting = await windowAt(app, (u) => u.includes("#colonia-connecting"));
     await expect(waiting.locator("body")).toContainText("ops@box");
     await expect(waiting.locator("body")).toContainText("Connection refused");
-    // Logged in again, but the server's APX is not answering yet: still waiting, never the final error.
+    // Logged in again, but the server's Colonia is not answering yet: still waiting, never the final error.
     fs.rmSync(path.join(client.state, "down"));
     await expect(waiting.locator("body")).toContainText(/SSH (connection is up|está lista)/);
-    expect(app.windows().some((p) => p.url().includes("#apx-unreachable"))).toBe(false);
+    expect(app.windows().some((p) => p.url().includes("#colonia-unreachable"))).toBe(false);
     await client.serverUp();
     const panel = await windowAt(app, (u) => u.startsWith(client.panelUrl));
     await expect(panel.locator("#root > *").first()).toBeVisible();
@@ -512,10 +512,10 @@ test("a panel that reloads while its SSH server restarts waits for it instead of
     const app = await client.launch();
     const panel = await windowAt(app, (u) => u.startsWith(client.panelUrl));
     await expect(panel.locator("#root > *").first()).toBeVisible();
-    // The update restarts the server's APX, and the panel reloads for its new build meanwhile.
+    // The update restarts the server's Colonia, and the panel reloads for its new build meanwhile.
     await client.serverDown();
     await panel.evaluate(() => window.location.reload()).catch(() => {});
-    await windowAt(app, (u) => u.includes("#apx-connecting"));
+    await windowAt(app, (u) => u.includes("#colonia-connecting"));
     await client.serverUp();
     const back = await windowAt(app, (u) => u.startsWith(client.panelUrl));
     await expect(back.locator("#root > *").first()).toBeVisible();
@@ -532,7 +532,7 @@ test("Change connection back to the same SSH server shows its panel", async () =
     const panel = await windowAt(app, (u) => u.startsWith(client.panelUrl));
     await expect(panel.locator("#root > *").first()).toBeVisible();
     await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById("change-connection")?.click());
-    const chooser = await question(await windowAt(app, (u) => u.startsWith("apx-app://")));
+    const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-client").click();
     await chooser.getByRole("radio", { name: "SSH" }).click();
     await chooser.locator("#ssh").fill("ops@box");

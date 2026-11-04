@@ -1,4 +1,4 @@
-import { ApxProvider, MessageMeta } from "@apx/ui";
+import { ColoniaProvider, MessageMeta } from "@colonia/ui";
 
 export function Default() {
   return <MessageMeta agent="Roby" model="codex:gpt-6.1-sol" effort="medium" />;
@@ -14,8 +14,8 @@ export function WithExtras() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 10 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 12, borderRadius: 10 }}>
       <MessageMeta agent="Roby" model="chatgpt-codex:gpt-6.1-sol" effort="medium" />
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

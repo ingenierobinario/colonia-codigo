@@ -23,8 +23,8 @@ const REALISTIC = { system: 8_000, tools: 29_000, input: 600 };
 const llm = scriptedLlm(() => say("ok"));
 let env: Awaited<ReturnType<typeof startCore>>;
 // Exercise a long native temp path, then measure its canonical spelling in the captured prompt.
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), `apx-budget-${"long-".repeat(12)}`));
-const FIXED = { TMPDIR: temp, TEMP: temp, TMP: temp, APX_CODE_SHA: "0123456789ab" };
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), `colonia-budget-${"long-".repeat(12)}`));
+const FIXED = { TMPDIR: temp, TEMP: temp, TMP: temp, COLONIA_CODE_SHA: "0123456789ab" };
 const saved = Object.fromEntries(Object.keys(FIXED).map((k) => [k, process.env[k]]));
 const restore = () => {
   for (const [k, v] of Object.entries(saved)) {
@@ -51,7 +51,7 @@ test("a default turn's system prompt and tools stay within the prompt budget", a
   const prompt = String(call?.messages[0]?.content ?? "");
   const scratch = scratchDir(env.core.store, env.home, t);
   assert.ok(prompt.includes(scratch), "the captured prompt names the real chat temp folder");
-  const system = prompt.replace(scratch, `/tmp/apx-scratch-01234567/${t.id}`).length;
+  const system = prompt.replace(scratch, `/tmp/colonia-scratch-01234567/${t.id}`).length;
   const tools = JSON.stringify(call?.tools ?? []).length;
   assert.ok(system <= BUDGET.system, `system prompt: ${system} chars, budget ${BUDGET.system} (rules/PROMPT_SIZE.md)`);
   assert.ok(tools <= BUDGET.tools, `tools: ${tools} chars, budget ${BUDGET.tools} (rules/PROMPT_SIZE.md)`);
@@ -123,9 +123,9 @@ test("a realistic owner's turns stay within their own budget", async () => {
     const call = llm.calls.at(-1);
     const scratch = scratchDir(store, real.home, t);
     const prompt = String(call?.messages[0]?.content ?? "");
-    // The project's AGENTS.md reaches it whole and is not APX's to budget (DECISIONS.md#d-158).
+    // The project's AGENTS.md reaches it whole and is not Colonia's to budget (DECISIONS.md#d-158).
     assert.ok(prompt.includes(rules), "the whole AGENTS.md");
-    const system = prompt.replace(rules, "").replace(scratch, `/tmp/apx-scratch-01234567/${t.id}`).length;
+    const system = prompt.replace(rules, "").replace(scratch, `/tmp/colonia-scratch-01234567/${t.id}`).length;
     const tools = JSON.stringify(call?.tools ?? []).length;
     assert.ok(system <= REALISTIC.system, `system prompt: ${system} chars, budget ${REALISTIC.system}`);
     assert.ok(tools <= REALISTIC.tools, `tools: ${tools} chars, budget ${REALISTIC.tools}`);

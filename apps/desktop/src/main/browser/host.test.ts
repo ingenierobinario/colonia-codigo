@@ -53,7 +53,7 @@ const configuredSession = {
   setPermissionRequestHandler() {},
   on() {},
 };
-const key = Symbol.for("apx.test.browser-host");
+const key = Symbol.for("colonia.test.browser-host");
 Object.assign(globalThis, {
   [key]: {
     app: { userAgentFallback: "Chrome/1 Electron/1" },
@@ -65,7 +65,7 @@ const hook = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
       return {
-        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("apx.test.browser-host")]; export const app = n.app; export const session = n.session; export const WebContentsView = n.WebContentsView;')}`,
+        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("colonia.test.browser-host")]; export const app = n.app; export const session = n.session; export const WebContentsView = n.WebContentsView;')}`,
         shortCircuit: true,
       };
     return next(specifier, context);

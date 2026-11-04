@@ -1,7 +1,7 @@
 // v1's media engines as v2 services: image generators (images.*), voices (voice.tts.*) and speech-to-text
 // (transcription), in v1's order, with the shared image defaults and whether replies were spoken. v1's folder is only
 // read; keys go to v2's secret store under the service. A service v2 already has (same id) is left as it is.
-import { type ImageDefaults, type ServiceKind, ServiceSettings } from "@apx/protocol";
+import { type ImageDefaults, type ServiceKind, ServiceSettings } from "@colonia/protocol";
 import { HOME_THREAD_ID } from "../domain/seed.ts";
 import type { Store } from "../domain/store.ts";
 import type { Services } from "../services/registry.ts";

@@ -1,4 +1,4 @@
-// Imports sessions from the user's browsers into an APX profile. Runs only in the desktop process:
+// Imports sessions from the user's browsers into an Colonia profile. Runs only in the desktop process:
 // cookie values never reach the core, logs or a model. Reads copies of the databases, never the originals.
 import { execFile } from "node:child_process";
 import { createDecipheriv, createHash, pbkdf2Sync } from "node:crypto";
@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import type { CookiesSetDetails, Session } from "electron";
 
 const run = promisify(execFile);
@@ -78,7 +78,7 @@ function safeList(dir: string): string[] {
 
 /** Copies the db (+ WAL/SHM) to a private temp dir: browsers keep the live file locked and recent rows in the WAL. */
 async function withCopy<T>(db: string, fn: (copy: string) => Promise<T>): Promise<T> {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "apx-cookies-"));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-cookies-"));
   fs.chmodSync(tmp, 0o700);
   try {
     const copy = path.join(tmp, "cookies.db");
@@ -131,7 +131,7 @@ export async function importCookies(src: CookieSource, domains: string[], ses: S
   const clean = domains
     .map((d) => d.toLowerCase().replace(/^\.+/, ""))
     .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d));
-  if (!clean.length) throw new ApxError({ code: "bad_request", message: "no valid domains" });
+  if (!clean.length) throw new ColoniaError({ code: "bad_request", message: "no valid domains" });
   const details = src.family === "firefox" ? await readFirefox(src, clean) : await readChromium(src, clean);
   const nowS = Date.now() / 1000;
   const fresh = details.filter((d) => d.expirationDate === undefined || d.expirationDate > nowS);
@@ -212,10 +212,10 @@ async function readFirefox(src: CookieSource, domains: string[]): Promise<Cookie
 }
 
 async function readChromium(src: CookieSource, domains: string[]): Promise<CookiesSetDetails[]> {
-  if (!src.keychain) throw new ApxError({ code: "bad_request", message: "no keychain entry for this browser" });
+  if (!src.keychain) throw new ColoniaError({ code: "bad_request", message: "no keychain entry for this browser" });
   // macOS shows its own Keychain dialog here: that dialog is the user's consent.
   const { stdout } = await run("/usr/bin/security", ["find-generic-password", "-w", "-s", src.keychain]).catch(() => {
-    throw new ApxError({
+    throw new ColoniaError({
       code: "unavailable",
       message: `Keychain access to "${src.keychain}" was denied or not found`,
     });

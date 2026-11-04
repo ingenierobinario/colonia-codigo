@@ -1,7 +1,7 @@
 // The webhook step's card: the Flow's address as one line whose end the owner edits in place (DECISIONS.md#d-178),
 // production or test, one copy; the methods it takes and the key its callers send (DECISIONS.md#d-182).
-import { FLOW_PATH } from "@apx/protocol/flow-path";
-import { Button, Dialog, IconButton, Icons, Input, SegmentedControl } from "@apx/ui";
+import { FLOW_PATH } from "@colonia/protocol/flow-path";
+import { Button, Dialog, IconButton, Icons, Input, SegmentedControl } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";

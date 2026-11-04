@@ -4,7 +4,7 @@
 //
 //   node scripts/install/feed.ts out/ [more folders…] [--port 7480]
 //   curl -fsSL http://<this-computer>:7480/install.sh | bash -s -- --feed http://<this-computer>:7480
-//   APX_RELEASES=http://<this-computer>:7480 apx upgrade
+//   COLONIA_RELEASES=http://<this-computer>:7480 colonia upgrade
 //
 // GET /releases lists one release per version found in the file names; GET /download/v<x.y.z>/<file> serves it;
 // GET /install.sh and /install.ps1 serve the newest folder's scripts.
@@ -20,8 +20,8 @@ const port = at >= 0 ? Number(args[at + 1]) : 7480;
 const dirs = args.filter((a, i) => !a.startsWith("--") && (at < 0 || i !== at + 1)).map((d) => path.resolve(d));
 if (!dirs.length) throw new Error("usage: node scripts/install/feed.ts <folder…> [--port 7480]");
 
-// apx-core-2.2.0-linux-x64.tar.gz, APX-2.2.0-win-x64.exe(.sha256), APX-2.2.0-android.apk
-const VERSIONED = /^(?:apx-core|APX)-(\d+\.\d+\.\d+)-/;
+// colonia-core-2.2.0-linux-x64.tar.gz, Colonia-2.2.0-win-x64.exe(.sha256), Colonia-2.2.0-android.apk
+const VERSIONED = /^(?:colonia-core|Colonia)-(\d+\.\d+\.\d+)-/;
 
 function files(): Map<string, string> {
   const out = new Map<string, string>();
@@ -43,7 +43,7 @@ function releases(base: string) {
       tag_name: `v${v}`,
       draft: false,
       prerelease: false,
-      body: `- APX ${v} from a local feed`,
+      body: `- Colonia ${v} from a local feed`,
       assets: names.sort().map((name) => ({ name, browser_download_url: `${base}/download/v${v}/${name}` })),
     }));
 }

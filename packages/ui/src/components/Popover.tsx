@@ -1,7 +1,7 @@
 import { Popover as BasePopover } from "@base-ui/react/popover";
 import type { ReactElement, ReactNode } from "react";
 import { cx } from "../cx";
-import { useApx } from "./ApxProvider";
+import { useColonia } from "./ColoniaProvider";
 
 export interface PopoverProps {
   /** The element that toggles the popover. */
@@ -35,13 +35,13 @@ export function Popover({
   openOnHover,
   className,
 }: PopoverProps) {
-  const { portalRef } = useApx();
+  const { portalRef } = useColonia();
   return (
     <BasePopover.Root open={open} defaultOpen={defaultOpen} onOpenChange={(o) => onOpenChange?.(o)}>
       <BasePopover.Trigger render={trigger} openOnHover={openOnHover} delay={150} />
       <BasePopover.Portal container={portalRef}>
         <BasePopover.Positioner side={side} align={align} sideOffset={8}>
-          <BasePopover.Popup className={cx("apx-popover", className)} style={{ width }} aria-label={label}>
+          <BasePopover.Popup className={cx("colonia-popover", className)} style={{ width }} aria-label={label}>
             {children}
           </BasePopover.Popup>
         </BasePopover.Positioner>

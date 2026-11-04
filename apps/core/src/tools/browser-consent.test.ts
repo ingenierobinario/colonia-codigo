@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { nativeApproval, strictApproval } from "../domain/approvals.ts";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
@@ -19,7 +19,7 @@ for (const scope of ["tab", "turn"] as const) {
         : say("Done");
     });
     const env = await startCore({ llm });
-    const desktop = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+    const desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
     const evaluations: unknown[] = [];
     desktop.onRequest(async (method, params) => {
       if (method === "browser.tabs")

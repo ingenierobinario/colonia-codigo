@@ -8,7 +8,7 @@ import {
   type SkillInfo,
   STRICT_APPROVAL,
   type ToolApproval,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import {
   Button,
   Checkbox,
@@ -22,7 +22,7 @@ import {
   Skeleton,
   Switch,
   TagInput,
-} from "@apx/ui";
+} from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { aheadLabel, shortWhen } from "../../common/format.ts";
 import { listSkills } from "../../data/resources.ts";
@@ -93,7 +93,7 @@ export function ToolsTab({
   const groups = groupsOf(catalog);
   const known = new Set([...catalog.map((x) => x.name), ...groups.map(([g]) => g)]);
   const isMcp = (n: string) => n.toLowerCase().startsWith("mcp_");
-  // Names APX has no tool for (another app wrote them) restrict nothing; MCP names are patterns for later tools.
+  // Names Colonia has no tool for (another app wrote them) restrict nothing; MCP names are patterns for later tools.
   const mcp = value.filter((n) => !known.has(n) && isMcp(n));
   const unknown = value.filter((n) => !known.has(n) && !isMcp(n));
   const picked = expand(
@@ -377,7 +377,7 @@ function GrantRow({
       <div className="agentedit__granttext">
         <div className="agentedit__grantname">
           <code>{g.tool}</code>
-          {g.server !== "apx" && <span className="agentedit__chip">{serverLabel(g.server)}</span>}
+          {g.server !== "colonia" && <span className="agentedit__chip">{serverLabel(g.server)}</span>}
           {condition && <span className="agentedit__chip">{t("agentedit.onlyFor", { condition })}</span>}
           {g.key.endsWith(STRICT_APPROVAL) && <span className="agentedit__hint">{t("agentedit.strict")}</span>}
         </div>

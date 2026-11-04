@@ -43,7 +43,7 @@ test("saving an artifact's page with the file tools shows it, and editing it mak
     await env.settle(t.id);
     return String(llm.calls.at(-1)?.messages.at(-1)?.content);
   };
-  const page = `<!doctype html><title>Pantry</title><meta name="apx-surface" content="app"><h1>Pantry</h1>`;
+  const page = `<!doctype html><title>Pantry</title><meta name="colonia-surface" content="app"><h1>Pantry</h1>`;
   const wrote = await say("file_write", { path: file, content: page });
   assert.match(wrote, /Artifact "pantry" v1 shown \(app\)/);
   const made = env.core.store.surfaces.byName(undefined, "pantry");

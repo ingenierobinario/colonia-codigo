@@ -7,7 +7,7 @@ const Sql = z.string().trim().min(1).max(100_000);
 const SqlParams = z.array(ArtifactSqlParam).max(1000).optional();
 
 export const artifactMethods = {
-  /** Values of the artifact's store (APX.store): only `keys` when given, else every key. */
+  /** Values of the artifact's store (Colonia.store): only `keys` when given, else every key. */
   "surfaces.store_get": {
     params: z.object({ surface: Id, keys: z.array(z.string().min(1).max(200)).max(1000).optional() }).strict(),
     result: z.object({ values: z.record(z.string(), z.unknown()) }),
@@ -19,7 +19,7 @@ export const artifactMethods = {
     result: z.object({ keys: z.number().int(), bytes: z.number().int() }),
     effect: true,
   },
-  /** A read-only query on the artifact's database (APX.db); at most 2,000 rows / 2 MB come back. */
+  /** A read-only query on the artifact's database (Colonia.db); at most 2,000 rows / 2 MB come back. */
   "surfaces.db_query": {
     params: z.object({ surface: Id, sql: Sql, params: SqlParams }).strict(),
     result: z.object({ columns: z.array(z.string()), rows: z.array(z.array(z.unknown())) }),

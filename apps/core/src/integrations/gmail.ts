@@ -1,5 +1,5 @@
 // Gmail's REST API: searching and reading the owner's mail, writing a draft, and sending a draft the owner approved.
-// Direct sending is used only with APX's send-only OAuth client; drafts keep the owner's final approval path.
+// Direct sending is used only with Colonia's send-only OAuth client; drafts keep the owner's final approval path.
 import { emailMimeBody } from "../domain/email-body.ts";
 import { renderEmailDraft, withEmailSignature } from "../domain/email-signature.ts";
 import { pageText } from "../tools/web.ts";
@@ -223,7 +223,7 @@ export function gmailApi(g: Google) {
       return { draft: d.id ?? "", message: d.message?.id ?? "", subject };
     },
 
-    /** Sends a new message at once: what APX's own client can do, since drafts and reading need restricted scopes. */
+    /** Sends a new message at once: what Colonia's own client can do, since drafts and reading need restricted scopes. */
     async send(o: Composition & { to: string[]; cc?: string[] | undefined; subject: string }) {
       const raw = rawMessage({ to: o.to, cc: o.cc, subject: o.subject, ...signedBody(o) });
       const m = await g.call<GMessage>(ID, `${base()}/messages/send`, { method: "POST", body: { raw } });

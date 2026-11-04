@@ -33,7 +33,7 @@ async function picture(bounds: Bounds | undefined, max: number): Promise<NativeI
   if (!src || src.thumbnail.isEmpty())
     throw new Error(
       process.platform === "darwin"
-        ? "no picture of the screen: allow Screen Recording for APX in System Settings › Privacy"
+        ? "no picture of the screen: allow Screen Recording for Colonia in System Settings › Privacy"
         : "no picture of the screen",
     );
   let img = src.thumbnail;
@@ -65,12 +65,12 @@ const PERMISSION_EVERY_MS = 60_000;
 
 export type ComputerPermission = "screen" | "accessibility";
 
-/** What the agent hears when macOS has not allowed APX something: System Settings is already open for the owner. */
+/** What the agent hears when macOS has not allowed Colonia something: System Settings is already open for the owner. */
 const MISSING: Record<ComputerPermission, string> = {
   accessibility:
-    "not done: macOS has not given APX the Accessibility permission, so it cannot control apps. System Settings › Privacy & Security › Accessibility was just opened on the owner's Mac: tell them to turn APX on there (if it is already on, remove it with − and add it again: a reinstall leaves the old entry stale), then wait for them to say it is done before trying again",
+    "not done: macOS has not given Colonia the Accessibility permission, so it cannot control apps. System Settings › Privacy & Security › Accessibility was just opened on the owner's Mac: tell them to turn Colonia on there (if it is already on, remove it with − and add it again: a reinstall leaves the old entry stale), then wait for them to say it is done before trying again",
   screen:
-    "not done: macOS has not given APX the Screen Recording permission, so it cannot see the screen. System Settings › Privacy & Security › Screen Recording was just opened on the owner's Mac: tell them to turn APX on there (macOS may ask to reopen APX), then wait for them to say it is done before trying again",
+    "not done: macOS has not given Colonia the Screen Recording permission, so it cannot see the screen. System Settings › Privacy & Security › Screen Recording was just opened on the owner's Mac: tell them to turn Colonia on there (macOS may ask to reopen Colonia), then wait for them to say it is done before trying again",
 };
 /** osascript's words when the app that started it is not allowed to drive others (in the Mac's own language). */
 const ASSISTIVE = /assistive access|acceso de ayuda|-1719|-25211/i;
@@ -295,7 +295,7 @@ export function createComputer(o: {
   };
 }
 
-/** What macOS lets APX do: see the screen, and drive other apps (Accessibility). Windows asks for neither. */
+/** What macOS lets Colonia do: see the screen, and drive other apps (Accessibility). Windows asks for neither. */
 export function computerPermissions() {
   if (process.platform === "win32") return { screen: "granted", accessibility: true };
   if (process.platform !== "darwin") return { screen: "unsupported", accessibility: false };

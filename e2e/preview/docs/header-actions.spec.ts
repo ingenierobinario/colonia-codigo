@@ -13,7 +13,7 @@ for (const lang of ["en", "es"]) {
         await expect(action).toBeFocused();
       }
       const github = header.getByRole("link", { name: "GitHub", exact: true });
-      await expect(github).toHaveAttribute("href", "https://github.com/agentprojectcontext/apx");
+      await expect(github).toHaveAttribute("href", "https://github.com/ingenierobinario/colonia");
       await expect(github.locator("svg")).toBeVisible();
       const discord = header.getByRole("link", { name: "Discord", exact: true });
       await expect(discord).toHaveAttribute("href", "https://discord.gg/vxdZuT5WuE");

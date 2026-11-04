@@ -87,7 +87,7 @@ for (const lang of ["en", "es"] as const) {
     const file = path.join(folder, "data", "shop.db");
     new DatabaseSync(file).exec("CREATE TABLE orders (email TEXT, total REAL, tier TEXT)");
     await page.addInitScript((language) => {
-      localStorage.setItem("apx.prefs", JSON.stringify({ language }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language }));
     }, lang);
     const name = `Orders ${lang}`;
     await open(page, `#view=flows&scope=${project}`);

@@ -38,7 +38,7 @@ const writeServers = (extra: Record<string, unknown> = {}) =>
 before(async () => {
   process.env.OTHER_API_KEY = "must-not-leak";
   env = await startCore({ llm });
-  root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-mcp-"));
+  root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-mcp-"));
   fs.mkdirSync(path.join(root, ".apc"));
   fs.writeFileSync(path.join(root, "AGENTS.md"), "# Northwind\n");
   writeServers();
@@ -84,7 +84,7 @@ test("approved, its tools are found and run through two tools; results are outsi
   assert.match(found, /## mcp_notes_echo\n\[notes\]/);
   assert.match(found, /args: \{.*"text"/);
   assert.match(await turn("use echo"), /<mcp_result server="notes" tool="echo" trust="untrusted">\necho: hi/);
-  // The bridge runs MCP tools only: an APX tool keeps to its own name and its own checks.
+  // The bridge runs MCP tools only: an Colonia tool keeps to its own name and its own checks.
   assert.match(await turn("bridge shell"), /unknown tool shell; mcp_call runs a tool mcp_search found/);
   const { servers } = await env.client.call("mcp.list", { project });
   const notes = servers.find((s) => s.name === "notes");
@@ -203,11 +203,11 @@ test("terminal MCP calls describe schemas, validate arguments and preserve raw r
   const cli = path.resolve(import.meta.dirname, "../../../terminal/src/main.ts");
   const run = promisify(execFile);
   const listed = await run(process.execPath, [cli, "mcp", "tools", "mine", "--json"], {
-    env: { ...process.env, APX_URL: env.core.url },
+    env: { ...process.env, COLONIA_URL: env.core.url },
   });
   assert.ok(JSON.parse(listed.stdout).tools.some((t: { name: string }) => t.name === "echo"));
   const called = await run(process.execPath, [cli, "mcp", "run", "mine", "echo", '{"text":"cli"}'], {
-    env: { ...process.env, APX_URL: env.core.url },
+    env: { ...process.env, COLONIA_URL: env.core.url },
   });
   assert.equal(JSON.parse(called.stdout).content[0].text, "echo: cli");
   assert.equal(r.content?.[0]?.text, "echo: terminal");
@@ -230,8 +230,8 @@ test("direct MCP calls obey project toggles and cannot be made by an agent", asy
   } finally {
     await env.client.call("mcp.toggle", { project, server: "mine", on: true });
   }
-  const { ApxClient } = await import("@apx/protocol/client");
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const { ColoniaClient } = await import("@colonia/protocol/client");
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(agent.call("mcp.call", { ...target, tool: "echo", arguments: { text: "blocked" } }), /reserved/);
 });
 

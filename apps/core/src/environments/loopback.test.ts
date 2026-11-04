@@ -8,7 +8,7 @@ test("each agent's loopback listeners refuse new connections from any other agen
   assert.equal(
     rules,
     [
-      "table inet apx_loopback {",
+      "table inet colonia_loopback {",
       "  chain output {",
       "    type filter hook output priority -160; policy accept;",
       '    oifname "lo" meta skuid 2001 meta mark set 0x000007d1',
@@ -34,7 +34,7 @@ test("each agent's loopback listeners refuse new connections from any other agen
 
 test("an agent's processes run as its user, with its own groups only, inside its own slice; the probe user keeps plain sudo", () => {
   assert.equal(screenSlice(3), "user-2003.slice");
-  assert.deepEqual(screenArgs(3, "/usr/local/bin/apx-command", "--cancel", "op"), [
+  assert.deepEqual(screenArgs(3, "/usr/local/bin/colonia-command", "--cancel", "op"), [
     "sudo",
     "-n",
     "systemd-run",
@@ -43,28 +43,28 @@ test("an agent's processes run as its user, with its own groups only, inside its
     "--slice=user-2003.slice",
     "--",
     "setpriv",
-    "--reuid=apx-a3",
-    "--regid=apx-a3",
+    "--reuid=colonia-a3",
+    "--regid=colonia-a3",
     "--init-groups",
     "--",
     "env",
-    "HOME=/home/apx-a3",
-    "USER=apx-a3",
-    "LOGNAME=apx-a3",
+    "HOME=/home/colonia-a3",
+    "USER=colonia-a3",
+    "LOGNAME=colonia-a3",
     "XDG_RUNTIME_DIR=/run/user/2003",
-    "/usr/local/bin/apx-command",
+    "/usr/local/bin/colonia-command",
     "--cancel",
     "op",
   ]);
-  assert.deepEqual(workerArgs("id").slice(0, 4), ["sudo", "-n", "-u", "apx-worker"]);
+  assert.deepEqual(workerArgs("id").slice(0, 4), ["sudo", "-n", "-u", "colonia-worker"]);
 });
 
 test("each screen's browser logs in its own user's home, never in a folder other agents share", () => {
   const one = browserArgs(1);
   const two = browserArgs(2);
-  assert.equal(one.at(-2), "/usr/local/bin/apx-browser");
-  assert.equal(one.at(-1), "/home/apx-a1/.cache/apx/browser.log");
-  assert.equal(two.at(-1), "/home/apx-a2/.cache/apx/browser.log");
+  assert.equal(one.at(-2), "/usr/local/bin/colonia-browser");
+  assert.equal(one.at(-1), "/home/colonia-a1/.cache/colonia/browser.log");
+  assert.equal(two.at(-1), "/home/colonia-a2/.cache/colonia/browser.log");
   assert.ok(![...one, ...two].some((arg) => arg.startsWith("/tmp/")));
 });
 
@@ -73,7 +73,7 @@ test("on WSL, without socket matching, replies cross only between an agent and i
   assert.equal(
     rules,
     [
-      "table inet apx_loopback {",
+      "table inet colonia_loopback {",
       "  chain output {",
       "    type filter hook output priority -160; policy accept;",
       '    oifname "lo" ct state new meta skuid 2001 ct mark set 0x000007d1',

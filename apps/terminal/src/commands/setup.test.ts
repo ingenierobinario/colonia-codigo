@@ -31,7 +31,7 @@ test("v1 import avoids an empty effect and reports partial import failures", asy
   const empty = recordingClient({ "setup.v1_scan": { groups: [{ id: "keys", count: 1 }] } });
   assert.equal(
     await printed(() => importV1(empty.client, { keys: false, skills: false, services: false })),
-    "APX v1 has nothing to import here",
+    "Colonia v1 has nothing to import here",
   );
   assert.deepEqual(empty.calls, [["setup.v1_scan", {}]]);
   const errors: unknown[][] = [];
@@ -66,13 +66,13 @@ test("v1 status distinguishes absent, stopped and running installations", async 
       "setup.status": { v1: { version: "1.0", home: "/work/v1", projects: 2 }, v1_running },
     });
     const output = await printed(() => v1(client, []));
-    assert.match(output, /APX v1 1.0 in \/work\/v1 · 2 projects/);
+    assert.match(output, /Colonia v1 1.0 in \/work\/v1 · 2 projects/);
     assert.ok(output.includes(v1_running ? "routines and bots may run twice" : "its daemon is off"));
     assert.deepEqual(calls, [["setup.status", {}]]);
   }
   const absent = recordingClient({ "setup.status": {} });
-  assert.equal(await printed(() => v1(absent.client, [])), "APX v1 is not on this machine.");
-  await assert.rejects(v1(absent.client, ["unknown"]), /usage: apx v1/);
+  assert.equal(await printed(() => v1(absent.client, [])), "Colonia v1 is not on this machine.");
+  await assert.rejects(v1(absent.client, ["unknown"]), /usage: colonia v1/);
 });
 
 test("v1 takeover reports failure as a failing command and preserves the core's explanation", async () => {

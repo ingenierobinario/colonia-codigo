@@ -4,9 +4,9 @@ import type { ModelChoice } from "../chat/models";
 import type { Creds } from "../creds";
 import {
   type Answer,
-  ApxClient,
-  ApxError,
-  type ApxSocket,
+  ColoniaClient,
+  ColoniaError,
+  type ColoniaSocket,
   type CoreEvent,
   type Message,
   type Thread,
@@ -55,7 +55,7 @@ function remember(threadId: string, entry: { messages: Message[]; thread?: Threa
 }
 
 /** Subscribe before loading, fold streamed messages, and reconnect after interruptions. */
-function useThreadFeed(client: ApxClient, threadId: string, onUnpair: () => void) {
+function useThreadFeed(client: ColoniaClient, threadId: string, onUnpair: () => void) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [online, setOnline] = useState(false);
   const [state, setState] = useState("idle");
@@ -65,7 +65,7 @@ function useThreadFeed(client: ApxClient, threadId: string, onUnpair: () => void
   const [computer, setComputer] = useState<ComputerStage>();
   const reload = useRef<() => Promise<void>>(async () => {});
   useEffect(() => {
-    let socket: ApxSocket | undefined;
+    let socket: ColoniaSocket | undefined;
     let stopped = false;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let refetch: ReturnType<typeof setTimeout> | undefined;
@@ -102,7 +102,7 @@ function useThreadFeed(client: ApxClient, threadId: string, onUnpair: () => void
         setError("");
       } catch (err) {
         if (stopped) return;
-        if (err instanceof ApxError && err.code === "unauthorized") {
+        if (err instanceof ColoniaError && err.code === "unauthorized") {
           stopped = true;
           socket?.close();
           setOnline(false);
@@ -182,7 +182,7 @@ function useThreadFeed(client: ApxClient, threadId: string, onUnpair: () => void
         await socket.closed;
       } catch (err) {
         if (stopped) return;
-        if (err instanceof ApxError && err.code === "unauthorized") {
+        if (err instanceof ColoniaError && err.code === "unauthorized") {
           onUnpair();
           return;
         }
@@ -233,7 +233,7 @@ function useThreadFeed(client: ApxClient, threadId: string, onUnpair: () => void
 
 /** Native counterpart of the web's live store: subscribe, load, fold events, recover missing parts. */
 export function useThread(creds: Creds, threadId: string, onUnpair: () => void) {
-  const client = useMemo(() => new ApxClient({ url: creds.url, token: creds.token, client: APP_CLIENT }), [creds]);
+  const client = useMemo(() => new ColoniaClient({ url: creds.url, token: creds.token, client: APP_CLIENT }), [creds]);
   const sequence = useRef(0);
   const [stopping, setStopping] = useState(false);
   const stopPending = useRef(false);

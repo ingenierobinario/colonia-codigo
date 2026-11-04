@@ -1,6 +1,6 @@
-// A signature brought from Gmail: Gmail keeps it as rich HTML (styles, tables, fonts), and APX keeps only a small
+// A signature brought from Gmail: Gmail keeps it as rich HTML (styles, tables, fonts), and Colonia keeps only a small
 // inert subset (safeSignatureHtml). What fits is kept, the rest gives way to its text; nothing is saved here.
-import { safeSignatureHtml } from "@apx/protocol";
+import { safeSignatureHtml } from "@colonia/protocol";
 
 const KEEP = new Set(["p", "div", "span", "b", "strong", "em", "i", "u", "br", "a", "img"]);
 /** Layout tags Gmail's editor uses for lines and cells, kept as the nearest allowed one. */
@@ -37,7 +37,7 @@ const decode = (s: string) =>
   });
 const escapeText = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** An attribute APX accepts as it is, or undefined. */
+/** An attribute Colonia accepts as it is, or undefined. */
 function attrValue(tag: string, key: string, raw: string): string | undefined {
   if (!ATTRS[tag]?.includes(key)) return undefined;
   const value = decode(raw).trim();
@@ -47,7 +47,7 @@ function attrValue(tag: string, key: string, raw: string): string | undefined {
   return safeSignatureHtml(`<${tag} ${key}="${value}">${tag === "a" ? "</a>" : ""}`) ? value : undefined;
 }
 
-/** Gmail's signature HTML as APX's subset and as plain text; `html` is absent when only text remains. */
+/** Gmail's signature HTML as Colonia's subset and as plain text; `html` is absent when only text remains. */
 export function importedSignature(source: string): { text: string; html?: string } {
   const out: string[] = [];
   const text: string[] = [];
@@ -94,7 +94,7 @@ export function importedSignature(source: string): { text: string; html?: string
       if (value !== undefined && !kept.some((k) => k.startsWith(`${key}=`))) kept.push(`${key}="${value}"`);
     }
     if (tag === "img") {
-      // Gmail sizes images by style; its pixel width and height become the attributes APX keeps.
+      // Gmail sizes images by style; its pixel width and height become the attributes Colonia keeps.
       const style = /\bstyle\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs ?? "");
       for (const side of ["width", "height"])
         if (!kept.some((k) => k.startsWith(`${side}=`))) {
@@ -106,7 +106,7 @@ export function importedSignature(source: string): { text: string; html?: string
       if (kept.some((k) => k.startsWith("src="))) out.push(`<img ${kept.join(" ")}>`);
       continue;
     }
-    // Twenty open tags is APX's limit: deeper nesting keeps its text, not its tags.
+    // Twenty open tags is Colonia's limit: deeper nesting keeps its text, not its tags.
     if (open.length >= 19) continue;
     open.push(tag);
     out.push(kept.length ? `<${tag} ${kept.join(" ")}>` : `<${tag}>`);

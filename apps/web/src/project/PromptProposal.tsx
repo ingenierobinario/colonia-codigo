@@ -1,4 +1,4 @@
-import { Button, Dialog, Field, Textarea } from "@apx/ui";
+import { Button, Dialog, Field, Textarea } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../i18n/index.ts";
 import type { AgentDraft } from "./prompt-proposal.ts";

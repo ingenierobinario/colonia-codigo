@@ -171,7 +171,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.project.title": "¿Dónde trabaja",
   "setup.project.titleGreen": "tu crew?",
   "setup.project.body":
-    "Default es el espacio general de tu crew: no usa una carpeta tuya y sus agentes trabajan en la carpeta propia de Colonia (~/.apx/v2/work). Tus proyectos de v1 ya vienen con sus carpetas. Si quieres, añade una carpeta tuya ahora.",
+    "Default es el espacio general de tu crew: no usa una carpeta tuya y sus agentes trabajan en la carpeta propia de Colonia (~/.colonia/v2/work). Tus proyectos de v1 ya vienen con sus carpetas. Si quieres, añade una carpeta tuya ahora.",
   "setup.project.default": "Tu proyecto base · trabaja en la carpeta de Colonia · siempre está",
   "setup.project.baseName": "Nombre del proyecto base",
   "setup.project.baseHint":
@@ -180,7 +180,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.project.folderBody": "Un repo o una carpeta tuya. Los agentes leen y editan ahí.",
   "setup.project.later": "Usar la carpeta de Colonia",
   "setup.project.laterBody":
-    "Sin elegir nada: tu crew trabaja en la carpeta de Colonia (~/.apx/v2/work). Puedes añadir carpetas después.",
+    "Sin elegir nada: tu crew trabaja en la carpeta de Colonia (~/.colonia/v2/work). Puedes añadir carpetas después.",
   "setup.project.pick": "Elegir carpeta",
   "setup.project.pathPlaceholder": "/ruta/a/tu/proyecto",
   "setup.project.plain": "Es una carpeta común: se escribe ahí un AGENTS.md con su nombre.",
@@ -189,11 +189,11 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.done.body": "Tu crew queda en {home} y en el .apc/ de cada proyecto. Todo se cambia después desde Config.",
   "setup.done.opening": "Abriendo tu chat con {name}…",
   "setup.done.takeOverSkip": "Ahora no",
-  "setup.done.takeOver": "Que apx sea esta versión",
-  "setup.done.takeOverDo": "Usar v2 como apx",
-  "setup.done.takeOverDone": "Listo: apx ahora es v2.",
+  "setup.done.takeOver": "Que colonia sea esta versión",
+  "setup.done.takeOverDo": "Usar v2 como colonia",
+  "setup.done.takeOverDone": "Listo: colonia ahora es v2.",
   "setup.done.takeOverBody":
-    "Mientras v1 esté instalada, el comando apx es el de v1. Con un clic pasa a ser esta versión. Tus archivos de v1 quedan en ~/.apx; los comandos propios de v1 (como apx company) dejan de estar.",
+    "Mientras v1 esté instalada, el comando colonia es el de v1. Con un clic pasa a ser esta versión. Tus archivos de v1 quedan en ~/.colonia; los comandos propios de v1 (como colonia company) dejan de estar.",
   "setup.preview.engines": "MOTORES",
   "setup.preview.memory": "MEMORIA",
   "setup.preview.channels": "CANALES",
@@ -206,7 +206,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "pair.title": "Vincula este",
   "pair.titleEnd": "dispositivo.",
   "pair.body":
-    "Esta Colonia pide vincular este navegador o ordenador antes de abrirse. Pide un código en Colonia › Configuración › Conexiones › Dispositivos en la máquina donde se ejecuta, o con apx pair en un servidor.",
+    "Esta Colonia pide vincular este navegador o ordenador antes de abrirse. Pide un código en Colonia › Configuración › Conexiones › Dispositivos en la máquina donde se ejecuta, o con colonia pair en un servidor.",
   "pair.code": "Código de vinculación",
   "pair.placeholder": "ABCD2345",
   "pair.submit": "Vincular",
@@ -263,7 +263,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "connect.urlLabel": "Dirección de tu Colonia",
   "connect.sshLabel": "Servidor (usuario@servidor)",
   "connect.urlHint":
-    "Por ejemplo la de Tailscale. Te va a pedir un código: sácalo en esa Colonia en Config › Conexiones › Dispositivos, o con apx pair.",
+    "Por ejemplo la de Tailscale. Te va a pedir un código: sácalo en esa Colonia en Config › Conexiones › Dispositivos, o con colonia pair.",
   "connect.sshHint":
     "Usa tu ssh y tus claves, o la contraseña del servidor. El core queda en el servidor y no abre puertos.",
   "connect.connect": "Conectar",
@@ -272,7 +272,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "connect.step.probe": "Buscando Colonia en el servidor…",
   "connect.step.install": "Instalando Colonia en el servidor. Tarda un minuto o dos.",
   "connect.step.connect": "Conectando con tu Colonia recién instalada…",
-  "connect.noApx": "Ese servidor todavía no tiene Colonia. Se puede instalar desde aquí, o a mano.",
+  "connect.noColonia": "Ese servidor todavía no tiene Colonia. Se puede instalar desde aquí, o a mano.",
   "connect.installThere": "Instalarla por mí",
   "connect.installByHand": "Instalarla a mano",
   "connect.byHandHint": "Ejecuta esto en el servidor y vuelve a conectar:",

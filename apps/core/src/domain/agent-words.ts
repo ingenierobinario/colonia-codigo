@@ -1,6 +1,6 @@
 // An agent's words posted in a chat outside a turn (a greeting, release notes, the news it tells): shown there, and
 // in its history as its own words after a note of why it spoke, so it answers the owner's reply knowing it said them.
-import type { Part } from "@apx/protocol";
+import type { Part } from "@colonia/protocol";
 import type { Store } from "./store.ts";
 import { previewOf } from "./threads.ts";
 

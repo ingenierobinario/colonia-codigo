@@ -4,7 +4,7 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { UPLOAD_LIMITS } from "@apx/protocol";
+import { UPLOAD_LIMITS } from "@colonia/protocol";
 import type { MediaRecord } from "../domain/media.ts";
 import type { Store } from "../domain/store.ts";
 

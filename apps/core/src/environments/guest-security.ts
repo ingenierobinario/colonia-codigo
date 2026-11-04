@@ -12,7 +12,7 @@ const USERS = ["1001", "2001-2999"];
  */
 export const egressRules = () =>
   [
-    "table inet apx_computer {",
+    "table inet colonia_computer {",
     "  chain output {",
     "    type filter hook output priority -150; policy accept;",
     ...USERS.flatMap((u) => [
@@ -29,8 +29,8 @@ export const egressRules = () =>
   ].join("\n");
 
 export async function secureGuest(run: LimaRun, instance: string, signal?: AbortSignal) {
-  await run(["shell", instance, "--", "sudo", "-n", "install", "-d", "-m", "755", "/etc/apx-computer"], { signal });
-  await run(["shell", instance, "--", "sudo", "-n", "tee", "/etc/apx-computer/egress.nft"], {
+  await run(["shell", instance, "--", "sudo", "-n", "install", "-d", "-m", "755", "/etc/colonia-computer"], { signal });
+  await run(["shell", instance, "--", "sudo", "-n", "tee", "/etc/colonia-computer/egress.nft"], {
     input: egressRules(),
     signal,
   });
@@ -66,12 +66,12 @@ export async function verifyGuest(run: LimaRun, instance: string, signal?: Abort
       `
 import json,os,pwd,subprocess
 from pathlib import Path
-u=pwd.getpwnam('apx-worker')
-assert u.pw_uid==1001 and u.pw_dir=='/home/apx-worker'
-assert oct(Path('/home/apx').stat().st_mode & 0o777)=='0o700'
-assert Path('/etc/apx-computer/egress.nft').stat().st_uid==0
-assert Path('/etc/apx-computer/egress.nft').stat().st_mode & 0o022==0
-rules=json.loads(subprocess.check_output(['nft','-j','list','table','inet','apx_computer']))
+u=pwd.getpwnam('colonia-worker')
+assert u.pw_uid==1001 and u.pw_dir=='/home/colonia-worker'
+assert oct(Path('/home/colonia').stat().st_mode & 0o777)=='0o700'
+assert Path('/etc/colonia-computer/egress.nft').stat().st_uid==0
+assert Path('/etc/colonia-computer/egress.nft').stat().st_mode & 0o022==0
+rules=json.loads(subprocess.check_output(['nft','-j','list','table','inet','colonia_computer']))
 expressions=[r['rule']['expr'] for r in rules['nftables'] if 'rule' in r and r['rule']['chain']=='output']
 assert len(expressions)==6
 for first,owner in ((0,1001),(3,{'range':[2001,2999]})):
@@ -82,11 +82,11 @@ for first,owner in ((0,1001),(3,{'range':[2001,2999]})):
   assert rest[0]['match']['right']==owner and 'reject' in rest[1]
 forward=[r['chain'] for r in rules['nftables'] if 'chain' in r and r['chain']['name']=='forward']
 assert len(forward)==1 and forward[0]['policy']=='drop'
-egress=Path('/run/apx-egress').stat()
+egress=Path('/run/colonia-egress').stat()
 assert egress.st_uid==1000 and egress.st_mode & 0o777==0o700
 listen=subprocess.check_output(['ss','-Hltnp','src','127.0.0.1:3128'],text=True).strip().splitlines()
 assert len(listen)==1 and 'pid=1,' in listen[0]
-assert subprocess.run(['systemctl','is-enabled','--quiet','apx-agents-boot.service']).returncode==0
+assert subprocess.run(['systemctl','is-enabled','--quiet','colonia-agents-boot.service']).returncode==0
 assert oct(Path('/mnt').stat().st_mode & 0o777)=='0o700'
 if Path('/proc/sys/fs/binfmt_misc/WSLInterop').exists():
   import configparser
@@ -95,7 +95,7 @@ if Path('/proc/sys/fs/binfmt_misc/WSLInterop').exists():
   assert Path('/etc/wsl.conf').stat().st_uid==0 and Path('/etc/wsl.conf').stat().st_mode & 0o022==0
   assert wsl.get('interop','enabled',fallback='true').strip().lower()=='false'
   assert wsl.get('interop','appendWindowsPath',fallback='true').strip().lower()=='false'
-r=subprocess.run(['sudo','-n','-u','apx-worker','sudo','-n','true'],capture_output=True)
+r=subprocess.run(['sudo','-n','-u','colonia-worker','sudo','-n','true'],capture_output=True)
 assert r.returncode!=0
 print('isolated')`,
     ],
@@ -110,7 +110,7 @@ print('isolated')`,
       ...workerArgs(
         "python3",
         "-c",
-        "import os,socket;assert os.getuid()==1001;assert os.getgid()!=0 and set(os.getgroups())<={os.getgid()};assert not os.access('/home/apx/password',os.R_OK);s=socket.socket();s.settimeout(1);code=s.connect_ex(('192.168.5.2',9));assert code in (1,13,113),code",
+        "import os,socket;assert os.getuid()==1001;assert os.getgid()!=0 and set(os.getgroups())<={os.getgid()};assert not os.access('/home/colonia/password',os.R_OK);s=socket.socket();s.settimeout(1);code=s.connect_ex(('192.168.5.2',9));assert code in (1,13,113),code",
       ),
     ],
     { signal, timeout: 5000 },

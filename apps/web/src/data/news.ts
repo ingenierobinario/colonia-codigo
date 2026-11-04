@@ -1,4 +1,4 @@
-// What each APX release brought this owner: the Help menu's latest lines and the What's new dialog, from the same
+// What each Colonia release brought this owner: the Help menu's latest lines and the What's new dialog, from the same
 // entries the super-agent tells (DECISIONS.md#d-182).
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
@@ -6,7 +6,7 @@ import { createStore, useSlice } from "./createStore.ts";
 import type { NewsItem } from "./newsModel.ts";
 
 /** The entries there were the last time the menu opened on this device: what is newer gets the button's dot. */
-const LOOKED_KEY = "apx.newsLooked";
+const LOOKED_KEY = "colonia.newsLooked";
 
 function readLooked(): string[] | null {
   try {

@@ -49,7 +49,7 @@ test("a deleted chat's messages leave the index", async () => {
   await env.settle(t.id);
   assert.ok((await search("zanahoria")).hits.length > 0);
   // Nothing in the app deletes a chat yet: a second connection does, as a future method would.
-  const db = new DatabaseSync(path.join(env.home, "apx.db"));
+  const db = new DatabaseSync(path.join(env.home, "colonia.db"));
   db.exec("PRAGMA foreign_keys = ON");
   db.prepare("DELETE FROM threads WHERE id = ?").run(t.id);
   db.close();
@@ -57,9 +57,9 @@ test("a deleted chat's messages leave the index", async () => {
 });
 
 test("an install from before the index gets its old messages indexed when it upgrades", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-search-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-search-"));
   try {
-    const old = new DatabaseSync(path.join(home, "apx.db"));
+    const old = new DatabaseSync(path.join(home, "colonia.db"));
     old.exec("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
     for (const m of MIGRATIONS.slice(0, -1)) old.exec(m);
     old.prepare("INSERT INTO meta (key, value) VALUES ('schema_version', ?)").run(String(MIGRATIONS.length - 1));

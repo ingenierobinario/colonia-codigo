@@ -27,11 +27,11 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <div className={cx("apx-empty", `apx-empty--${variant}`, `apx-empty--${size}`, className)}>
-      {icon && <span className="apx-empty__icon">{icon}</span>}
-      {title && <div className="apx-empty__title">{title}</div>}
-      {children && <div className="apx-empty__text">{children}</div>}
-      {action && <div className="apx-empty__action">{action}</div>}
+    <div className={cx("colonia-empty", `colonia-empty--${variant}`, `colonia-empty--${size}`, className)}>
+      {icon && <span className="colonia-empty__icon">{icon}</span>}
+      {title && <div className="colonia-empty__title">{title}</div>}
+      {children && <div className="colonia-empty__text">{children}</div>}
+      {action && <div className="colonia-empty__action">{action}</div>}
     </div>
   );
 }

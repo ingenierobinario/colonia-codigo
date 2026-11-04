@@ -3,8 +3,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { Message, PendingInput } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
+import type { Message, PendingInput } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
 import type { TailscaleRun } from "../access.ts";
 import type { ReadProjectFiles } from "../apc/project-reader.ts";
 import type { AdapterFactory } from "../channels/types.ts";
@@ -38,7 +38,7 @@ export function scriptedLlm(script: Script): Llm & { calls: LlmRequest[] } {
     async complete(req) {
       calls.push({ ...req, messages: [...req.messages] });
       const system = String(req.messages[0]?.content ?? "");
-      // What was said in the last user item, without the per-turn context header (time, roster). APX's own notes
+      // What was said in the last user item, without the per-turn context header (time, roster). Colonia's own notes
       // mid-turn (a picture of the screen after a tool) are not the owner speaking.
       const note = (m: (typeof req.messages)[number]) =>
         m.role === "user" && String(m.content).startsWith("<system_note>");
@@ -136,7 +136,7 @@ export async function startCore(opts: {
   /** Reads a project folder at start instead of the worker threads (a test holds one or answers it). */
   projectRead?: ReadProjectFiles;
 }) {
-  const home = opts.home ?? fs.mkdtempSync(path.join(os.tmpdir(), "apx-engine-"));
+  const home = opts.home ?? fs.mkdtempSync(path.join(os.tmpdir(), "colonia-engine-"));
   // A provider named "fake" so refs like "fake/fake-1" are valid; the scripted model answers for it.
   const providers = [
     { id: "fake", transport: "openai-chat" as const, base_url: "http://fake.test", key: "none", models: [] },
@@ -201,7 +201,7 @@ export async function startCore(opts: {
     auto_capture: opts.memoryMaintenance ?? false,
     auto_dream: opts.memoryMaintenance ?? false,
   });
-  const client = new ApxClient({ url: core.url });
+  const client = new ColoniaClient({ url: core.url });
   const settle = async (
     thread: string,
     ms = 5000,
@@ -224,14 +224,14 @@ export async function startCore(opts: {
 
 /** The first input a run in `thread` waits on (a confirmation, a question); fails after `ms` (× TEST_TIME_SCALE). */
 /** A chat of Roby's the computer serves: Home stays on the Mac (DECISIONS.md#d-154). */
-export const computerChat = async (env: { client: ApxClient }): Promise<string> =>
+export const computerChat = async (env: { client: ColoniaClient }): Promise<string> =>
   (await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" })).id;
 
-export const pendingInput = (client: ApxClient, thread: string, ms = 10_000): Promise<PendingInput> =>
+export const pendingInput = (client: ColoniaClient, thread: string, ms = 10_000): Promise<PendingInput> =>
   waitFor(async () => (await client.call("runs.pending", { thread })).inputs[0], `an input in ${thread}`, { ms });
 
 /** Like pendingInput, but undefined once the thread's runs all ended without asking anything. */
-export const inputOrEnd = (client: ApxClient, thread: string, ms = 10_000): Promise<PendingInput | undefined> =>
+export const inputOrEnd = (client: ColoniaClient, thread: string, ms = 10_000): Promise<PendingInput | undefined> =>
   waitFor(
     async () => {
       const input = (await client.call("runs.pending", { thread })).inputs[0];
@@ -244,7 +244,7 @@ export const inputOrEnd = (client: ApxClient, thread: string, ms = 10_000): Prom
   ).then((r) => r.input);
 
 /** inputOrEnd as a list: the input, or none. */
-export const inputsOrEnd = async (client: ApxClient, thread: string, ms = 10_000): Promise<PendingInput[]> => {
+export const inputsOrEnd = async (client: ColoniaClient, thread: string, ms = 10_000): Promise<PendingInput[]> => {
   const input = await inputOrEnd(client, thread, ms);
   return input ? [input] : [];
 };

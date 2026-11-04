@@ -1,8 +1,8 @@
 // The Flow's address in the editor (DECISIONS.md#d-178): saved, or for a new Flow the one the owner chose, else the one
 // its name gives. Renaming a saved Flow's address takes effect at once; a new Flow's is kept until its first save.
 
-import { ApxError } from "@apx/protocol/client";
-import { flowPathOf } from "@apx/protocol/flow-path";
+import { ColoniaError } from "@colonia/protocol/client";
+import { flowPathOf } from "@colonia/protocol/flow-path";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -52,7 +52,7 @@ export function useFlowAddress(o: {
         notify(t("flow.addr.changed"), "info");
         return true;
       } catch (e) {
-        const taken = e instanceof ApxError && (e.detail as { reason?: string } | undefined)?.reason === "path_taken";
+        const taken = e instanceof ColoniaError && (e.detail as { reason?: string } | undefined)?.reason === "path_taken";
         notify(t(taken ? "flow.addr.taken" : "flow.addr.failed"));
         return false;
       }

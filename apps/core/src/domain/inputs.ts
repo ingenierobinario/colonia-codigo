@@ -1,6 +1,6 @@
 // What agents wait on from the owner. A row is written before the agent starts waiting, so a restart never loses
 // the question; answering is a compare-and-set on `pending`, so two answers cannot both win.
-import { ApprovalScope, type FileChange, type InputKind, type InputState, type PendingInput } from "@apx/protocol";
+import { ApprovalScope, type FileChange, type InputKind, type InputState, type PendingInput } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { PendingInputsTable } from "../db/schema.ts";
 import { type ApprovalTarget, approvalScopes } from "./approvals.ts";

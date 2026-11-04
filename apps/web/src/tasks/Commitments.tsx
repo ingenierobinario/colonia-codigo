@@ -1,5 +1,5 @@
-import type { Task } from "@apx/protocol";
-import { Badge, Icons } from "@apx/ui";
+import type { Task } from "@colonia/protocol";
+import { Badge, Icons } from "@colonia/ui";
 import { aheadLabel, shortWhen } from "../common/format.ts";
 import { useT } from "../i18n/index.ts";
 

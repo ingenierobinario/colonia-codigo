@@ -2,7 +2,7 @@
 // reads images, so the agent reads "[sticker: a bear holding a heart balloon]" and can answer with one it was sent.
 // See rules/DECISIONS.md#d-137
 import { createHash } from "node:crypto";
-import { UPLOAD_LIMITS } from "@apx/protocol";
+import { UPLOAD_LIMITS } from "@colonia/protocol";
 import type { AuxAbout } from "../domain/aux-calls.ts";
 import type { NewNotification } from "../domain/notifications.ts";
 import type { Sticker } from "../domain/stickers.ts";

@@ -1,4 +1,4 @@
-// An agent's own files in an MCP tool's arguments: `apx-file:<path>` or a med_ id of its chat becomes what the field
+// An agent's own files in an MCP tool's arguments: `colonia-file:<path>` or a med_ id of its chat becomes what the field
 // takes, base64 for a server elsewhere and a real path for one on this machine. See DECISIONS.md#d-107
 import fs from "node:fs";
 import type { Store } from "../domain/store.ts";
@@ -7,7 +7,7 @@ import { mimeOf } from "../services/attachment-files.ts";
 import { chatMedia, MEDIA_ID, mediaName, mediaToTemp } from "../services/media-temp.ts";
 import { type FolderThread, folderAccess } from "../tools/folders.ts";
 
-export const FILE_REF = "apx-file:";
+export const FILE_REF = "colonia-file:";
 
 /** Largest file sent inline: the same cap as a chat attachment, whatever a server claims to take. */
 export const INLINE_MAX_BYTES = 20 * 1024 * 1024;
@@ -22,7 +22,7 @@ type Form = "base64" | "data-url" | "url" | "path";
 const asObj = (v: unknown): Json | undefined =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as Json) : undefined;
 
-/** The file a value names: `apx-file:<path or med_ id>`, or a bare med_ id. */
+/** The file a value names: `colonia-file:<path or med_ id>`, or a bare med_ id. */
 export function refOf(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
   if (v.startsWith(FILE_REF)) return v.slice(FILE_REF.length).trim() || undefined;
@@ -123,7 +123,7 @@ export function fillFileArgs(args: Json, schema: unknown, o: { remote: boolean; 
     if (form === "url") {
       const other = encodedSibling();
       throw new Error(
-        `${key} takes a public link, and APX does not publish the owner's files: ${other ? `give the file in ${other} instead` : "the server needs its own way to receive a file (an upload link or a base64 field)"}`,
+        `${key} takes a public link, and Colonia does not publish the owner's files: ${other ? `give the file in ${other} instead` : "the server needs its own way to receive a file (an upload link or a base64 field)"}`,
       );
     }
     if (form === "path") {

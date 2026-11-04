@@ -11,8 +11,8 @@ import { keepWhilePaused } from "./breaker.ts";
 import { frameInput } from "./context.ts";
 import type { Admit, AdmitFn } from "./engine.ts";
 
-/** Set on an agent's commands, so the apx CLI knows an agent runs it, not the owner. */
-export const AGENT_ENV = "APX_AGENT";
+/** Set on an agent's commands, so the colonia CLI knows an agent runs it, not the owner. */
+export const AGENT_ENV = "COLONIA_AGENT";
 
 /** A job's output file stops growing here; the rest is dropped with a note. */
 const OUTPUT_CAP = 20 * 1024 * 1024;
@@ -108,9 +108,9 @@ export function createJobs(deps: {
       const write = (chunk: Buffer) => {
         if (written >= OUTPUT_CAP) return;
         written += chunk.length;
-        out.write(written > OUTPUT_CAP ? Buffer.concat([chunk, Buffer.from("\n[output cut by APX]\n")]) : chunk);
+        out.write(written > OUTPUT_CAP ? Buffer.concat([chunk, Buffer.from("\n[output cut by Colonia]\n")]) : chunk);
       };
-      // An agent's command says whose it is: `apx chat` run there refuses to speak as the owner (it asks with delegate).
+      // An agent's command says whose it is: `colonia chat` run there refuses to speak as the owner (it asks with delegate).
       const env = { ...commandEnv(), ...(o.agent_id ? { [AGENT_ENV]: o.agent_id } : {}) };
       const child = spawnCommand(o.command, { cwd: o.cwd, env, stdio: ["ignore", "pipe", "pipe"] });
       if (child.pid) {
@@ -155,7 +155,7 @@ export function createJobs(deps: {
       procs.set(job.id, { kill, done });
       if (o.background) {
         lifetime = setTimeout(() => {
-          write(Buffer.from(`\n[stopped by APX after ${MAX_BACKGROUND_MS / 3600_000} h]\n`));
+          write(Buffer.from(`\n[stopped by Colonia after ${MAX_BACKGROUND_MS / 3600_000} h]\n`));
           void kill();
         }, MAX_BACKGROUND_MS);
         lifetime.unref();
@@ -189,7 +189,7 @@ export function createJobs(deps: {
             (err) => log.warn({ job: j.id, pid, err: String(err) }, "could not tell whether a cut job still runs"),
           );
         }
-        fs.appendFileSync(fileOf(j.id), "\n[stopped by a restart of APX]\n");
+        fs.appendFileSync(fileOf(j.id), "\n[stopped by a restart of Colonia]\n");
         store.jobs.finish(j.id, "failed");
       }
     },

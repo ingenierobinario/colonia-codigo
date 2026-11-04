@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Agent } from "@apx/protocol";
+import type { Agent } from "@colonia/protocol";
 import { teamLead } from "./lead.ts";
 
 const a = (slug: string, extra: Partial<Agent> = {}): Agent => ({

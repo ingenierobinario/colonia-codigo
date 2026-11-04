@@ -1,6 +1,6 @@
 import "../styles/screens.css";
-import type { ChannelInfo, RoomMode, Thread } from "@apx/protocol";
-import { EmptyState, IconButton, Icons, ProjectTile, SearchField } from "@apx/ui";
+import type { ChannelInfo, RoomMode, Thread } from "@colonia/protocol";
+import { EmptyState, IconButton, Icons, ProjectTile, SearchField } from "@colonia/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatView } from "../chat/ChatView.tsx";
 import { shortWhen } from "../common/format.ts";

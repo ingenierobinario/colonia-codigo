@@ -7,10 +7,10 @@ import { tempDir } from "../apps/core/src/testkit/platform.ts";
 import { stageProtocol } from "../apps/desktop/scripts/stage-protocol.ts";
 
 test("the staged protocol exports execute outside the workspace", async () => {
-  const dir = tempDir("apx-staged-protocol-");
+  const dir = tempDir("colonia-staged-protocol-");
   try {
     const repo = path.resolve(import.meta.dirname, "..");
-    const out = path.join(dir.path, "node_modules/@apx/protocol");
+    const out = path.join(dir.path, "node_modules/@colonia/protocol");
     await stageProtocol(path.join(repo, "packages/protocol"), out, "1.2.3");
     fs.symlinkSync(path.join(repo, "apps/core/node_modules/zod"), path.join(dir.path, "node_modules/zod"), "junction");
     const result = execFileSync(
@@ -20,12 +20,12 @@ test("the staged protocol exports execute outside the workspace", async () => {
         "-e",
         `
       import assert from 'node:assert/strict';
-      import { exitWhenClosed } from '@apx/protocol/exit';
-      import { noticeEn } from '@apx/protocol/notices';
+      import { exitWhenClosed } from '@colonia/protocol/exit';
+      import { noticeEn } from '@colonia/protocol/notices';
       exitWhenClosed(0);
       assert.equal(process.exitCode, 0);
       assert.equal(noticeEn['notice.routine.shell'], 'Ran the command.');
-      for (const name of ['@apx/protocol', '@apx/protocol/client', '@apx/protocol/cdp']) {
+      for (const name of ['@colonia/protocol', '@colonia/protocol/client', '@colonia/protocol/cdp']) {
         assert.ok(Object.keys(await import(name)).length > 0);
       }
       console.log('staged exports ready');

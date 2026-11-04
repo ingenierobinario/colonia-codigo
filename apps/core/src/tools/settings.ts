@@ -1,8 +1,8 @@
-// apx_settings: the super-agent changes what the owner sets up in APX for them, through the owner's own methods, each
+// colonia_settings: the super-agent changes what the owner sets up in Colonia for them, through the owner's own methods, each
 // change once the owner approves it. One tool for every setting, read on demand, so the prompt does not grow with the
 // panel (rules/PROMPT_SIZE.md). Which methods it reaches is settings-reach.ts's to say. See DECISIONS.md#d-138
-// Flows and their tables are the owner's work, not settings: they have apx_flow (flow-tool.ts), built on areaTool here.
-import { isMethodName, type MethodName, methods } from "@apx/protocol";
+// Flows and their tables are the owner's work, not settings: they have colonia_flow (flow-tool.ts), built on areaTool here.
+import { isMethodName, type MethodName, methods } from "@colonia/protocol";
 import { z } from "zod";
 import type { TemplateRoot } from "../apc/templates.ts";
 import type { Store } from "../domain/store.ts";
@@ -253,14 +253,14 @@ export function settingsTools(
   return [
     areaTool(
       {
-        name: "apx_settings",
+        name: "colonia_settings",
         description:
-          "Read and change what the owner sets up in APX for them (contacts, channels, their profile, notices, projects, memory, which agents may use the isolated computer…). No args: the areas; method: an area's methods, or a method's fields; method + params: run it. Each change waits for the owner's OK.",
+          "Read and change what the owner sets up in Colonia for them (contacts, channels, their profile, notices, projects, memory, which agents may use the isolated computer…). No args: the areas; method: an area's methods, or a method's fields; method + params: run it. Each change waits for the owner's OK.",
         table: SETTINGS,
         areas: AREA,
         looked: "Looked at the settings",
         elsewhere:
-          "Agents' definitions, routines, Flows and the shared limits have tools of their own. Keys, sign-ins, models, how far agents may act and the machine APX runs on stay the owner's, in Settings.",
+          "Agents' definitions, routines, Flows and the shared limits have tools of their own. Keys, sign-ins, models, how far agents may act and the machine Colonia runs on stay the owner's, in Settings.",
       },
       deps,
     ),

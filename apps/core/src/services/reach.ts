@@ -1,5 +1,5 @@
 // Whether a service answers, why not when it does not, and the models it offers: what "Test connection" shows.
-import type { ServiceTest } from "@apx/protocol";
+import type { ServiceTest } from "@colonia/protocol";
 import { joinUrl, type ServiceConfig } from "./types.ts";
 
 type Fetch = typeof fetch;

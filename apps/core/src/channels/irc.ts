@@ -147,7 +147,7 @@ export function plainIrc(text: string): string {
   return out;
 }
 
-/** The network and the bot's nick, stored as one secret: "ircs://irc.example.org:6697 apxbot [password]". */
+/** The network and the bot's nick, stored as one secret: "ircs://irc.example.org:6697 coloniabot [password]". */
 export function ircSecret(secret: string | undefined): {
   host?: string;
   port?: number;
@@ -210,7 +210,7 @@ export const ircAdapter = ((config, secret): ChannelAdapter => {
       const id = roomId(to);
       io.room?.({ id, name: id });
       if (!listed.has(to.toLowerCase())) return;
-      // "apxbot: hi" is how IRC addresses someone: the address calls the bot and says nothing itself.
+      // "coloniabot: hi" is how IRC addresses someone: the address calls the bot and says nothing itself.
       const addressed = new RegExp(`^${escapeRe(me)}[:,]\\s*`, "i");
       io.receive({
         external_id,
@@ -256,7 +256,7 @@ export const ircAdapter = ((config, secret): ChannelAdapter => {
         clearTimeout(capWait);
         if (password && !sasl) write(ircLine("PASS", [password]));
         write(ircLine("NICK", [wanted]));
-        write(ircLine("USER", [nick, "0", "*", "APX"]));
+        write(ircLine("USER", [nick, "0", "*", "Colonia"]));
       };
       const authenticate = () => {
         const b64 = Buffer.from(`${nick}\0${nick}\0${password ?? ""}`).toString("base64");
@@ -270,7 +270,7 @@ export const ircAdapter = ((config, secret): ChannelAdapter => {
       const keepAlive = setInterval(() => {
         const idle = Date.now() - lastSeen;
         if (idle > DEAD_MS) s.destroy();
-        else if (idle > IDLE_MS) write("PING :apx");
+        else if (idle > IDLE_MS) write("PING :colonia");
       }, 30_000);
       keepAlive.unref();
       const onAbort = () => {

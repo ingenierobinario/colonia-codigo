@@ -8,7 +8,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, describe, test } from "node:test";
-import type { ChannelType } from "@apx/protocol";
+import type { ChannelType } from "@colonia/protocol";
 import { z } from "zod";
 import type { Inbound } from "../domain/channels.ts";
 import { callTool, say, scriptedLlm, startCore, throughOwnerCheck } from "../engine/testkit.ts";
@@ -189,7 +189,7 @@ describe("line adapter", () => {
   before(async () => {
     line = await fakeLine();
     line.person(OWNER, "Owner");
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-line-"));
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-line-"));
   });
   after(async () => {
     await line.close();

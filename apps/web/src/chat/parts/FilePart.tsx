@@ -1,5 +1,5 @@
-import type { Part } from "@apx/protocol";
-import { Icons, MediaLoader, mediaKindOf } from "@apx/ui";
+import type { Part } from "@colonia/protocol";
+import { Icons, MediaLoader, mediaKindOf } from "@colonia/ui";
 import { Suspense, useState } from "react";
 import { formatBytes } from "../../common/format.ts";
 import { audioEnded } from "../../data/audioEnd.ts";

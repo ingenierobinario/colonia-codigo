@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto";
 import type { Llm } from "../../apps/core/src/providers/llm.ts";
 
 const commands = [
-  "set -e; printf 'APX: checking the agent computer\\n'; uname -srmo; id; pwd; printf '\\nWorkspace files:\\n'; ls -lah",
-  "set -e; printf 'Acme Store — sample report\\nOrders: 128\\nCompleted tasks: 24\\nData: fictitious\\nEnvironment: Linux VM\\n' > report.txt; cat report.txt; systemctl --user restart apx-demo-terminal.service",
-  "set -e; systemctl --user restart apx-demo-browser.service; systemctl --user is-active apx-demo-browser.service apx-demo-terminal.service; printf 'Chromium opened inside the VM.\\n'; ls -lh report.txt acme.html",
+  "set -e; printf 'Colonia: checking the agent computer\\n'; uname -srmo; id; pwd; printf '\\nWorkspace files:\\n'; ls -lah",
+  "set -e; printf 'Acme Store — sample report\\nOrders: 128\\nCompleted tasks: 24\\nData: fictitious\\nEnvironment: Linux VM\\n' > report.txt; cat report.txt; systemctl --user restart colonia-demo-terminal.service",
+  "set -e; systemctl --user restart colonia-demo-browser.service; systemctl --user is-active colonia-demo-browser.service colonia-demo-terminal.service; printf 'Chromium opened inside the VM.\\n'; ls -lh report.txt acme.html",
 ];
 
 /** Deterministic fixture exercising the real native loop and shell tool without a paid model. */
@@ -44,7 +44,7 @@ export const demoModel: Llm = {
         },
       };
     const content =
-      "Demo programada terminada. Comandos ejecutados en Linux; informe ficticio guardado en /home/apx-worker/work/report.txt. Navegador y terminal abiertos en mi VM. Podés usar teclado y mouse sobre la pantalla, o ejecutar otro comando abajo. Esta demo no interpreta instrucciones libres: repite el recorrido de prueba.";
+      "Demo programada terminada. Comandos ejecutados en Linux; informe ficticio guardado en /home/colonia-worker/work/report.txt. Navegador y terminal abiertos en mi VM. Podés usar teclado y mouse sobre la pantalla, o ejecutar otro comando abajo. Esta demo no interpreta instrucciones libres: repite el recorrido de prueba.";
     req.onText?.(content);
     return { model: "custom/vm-demo", finish: "stop", message: { role: "assistant", content } };
   },

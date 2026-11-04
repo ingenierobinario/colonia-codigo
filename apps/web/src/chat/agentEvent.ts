@@ -1,4 +1,4 @@
-import type { Message, Thread } from "@apx/protocol";
+import type { Message, Thread } from "@colonia/protocol";
 
 export const isIndividualChat = (thread: Thread): boolean =>
   thread.kind === "home" || thread.kind === "agent" || thread.kind === "loose" || thread.kind === "code";

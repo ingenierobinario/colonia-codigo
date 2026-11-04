@@ -1,5 +1,5 @@
-import type { ConnectOffer, Part } from "@apx/protocol";
-import { Badge, Button, Icons, IntegrationIcon } from "@apx/ui";
+import type { ConnectOffer, Part } from "@colonia/protocol";
+import { Badge, Button, Icons, IntegrationIcon } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { KindTile } from "../../channels/KindIcon.tsx";
 import { CHANNEL_KINDS, isChannelKind } from "../../channels/kinds.ts";

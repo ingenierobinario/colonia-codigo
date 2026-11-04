@@ -47,7 +47,7 @@ connected, the agent is told and goes on.
 | n8n | Run the workflows of your n8n instance | Its address and its MCP access token |
 | Linear, Jira and Confluence, GitLab, Vercel, Supabase, Stripe, Todoist, Airtable, Figma, Cloudflare, Netlify, Neon, ClickUp, monday.com, Canva, Miro, Dropbox, Calendly, Datadog, Grafana, PayPal, WordPress.com, Hugging Face, Railway, Intercom, Attio, Close, Klaviyo, Mixpanel, Amplitude, Better Stack, Square, Fireflies, Strava, Semgrep, CircleCI, Postman, Prisma Postgres, Cloudinary, Craft, Webflow, Gamma | Each app's own MCP server | Nothing to type: you sign in in your browser |
 | Context7, DeepWiki, Wolfram, AWS Knowledge, Microsoft Learn | Documentation and knowledge | Nothing: no account |
-| Microsoft 365, Box | | Marked **Soon**: their sign-in needs an app APX registers with them |
+| Microsoft 365, Box | | Marked **Soon**: their sign-in needs an app Colonia registers with them |
 
 The catalog has a search box. An app you sign in to runs through `mcp-remote`: connecting starts it, it registers
 itself with the app and opens the app's sign-in page in your browser. Until you finish, the integration shows
@@ -55,7 +55,7 @@ itself with the app and opens the app's sign-in page in your browser. Until you 
 
 Asana uses the REST API directly, not an MCP server. Create a personal access token at
 [Asana developer apps](https://app.asana.com/0/my-apps) and enter it in the connection form.
-APX validates the token before saving `secret://asana-token`. An empty field keeps the saved token.
+Colonia validates the token before saving `secret://asana-token`. An empty field keeps the saved token.
 The native `asana_read` tool supports workspaces, projects, tasks and task details, with pagination.
 Task lists exclude completed tasks by default; pass `completed: true` to include them. Results include notes, links and sections.
 Create a task with an Asana `project` or a `workspace` (for a task without a project).
@@ -71,12 +71,12 @@ Each Google part connects on its own, so you choose what your agents reach: **Go
 **Google Drive**. The access Google grants stays in this computer's secret store, and you can remove it at
 [myaccount.google.com/permissions](https://myaccount.google.com/permissions).
 
-- **Calendar** starts on **APX sign-in**: click **Sign in with Google** and accept in your browser, with no Google
+- **Calendar** starts on **Colonia sign-in**: click **Sign in with Google** and accept in your browser, with no Google
   Cloud setup.
 - **Gmail and Drive** start on **My own OAuth client**, which reaches all of them. The dialog walks you through creating
   it in Google Cloud once (about 5 minutes); then upload the JSON Google gives you. Publish the app (**In production**):
   in Testing, Google ends the access after 7 days. One sign-in can connect the other parts too, with the same client.
-- **APX sign-in (limited)** is there for Gmail and Drive as well, for sending mail and the Docs APX writes.
+- **Colonia sign-in (limited)** is there for Gmail and Drive as well, for sending mail and the Docs Colonia writes.
 
 | Part | What agents can do | Asks you first |
 |---|---|---|
@@ -84,18 +84,18 @@ Each Google part connects on its own, so you choose what your agents reach: **Go
 | Gmail | Send mail. With your own client: also search and read mail, and write drafts | Sending always asks; writing a draft asks |
 | Google Drive | Write Docs and share them; find and read them. With your own client: find and read your whole Drive (Docs, Sheets, Slides, text files) | Sharing |
 
-APX's sign-in asks Google only for what it can get verified without a paid security review, so it cannot read your mail
+Colonia's sign-in asks Google only for what it can get verified without a paid security review, so it cannot read your mail
 or the rest of your Drive. To read mail, connect your mailbox in **Channels › Email**; for the whole of Gmail and Drive,
 use your own OAuth client.
 
 **Remind me of my events**, under **Configure integration** on Google Calendar's page, tells you of each event shortly
 before it starts (**How long before**: 30 minutes by default, from 5 minutes up to 7 days): when, how soon, what and where or the meeting
 link, in one line on your channel. All-day events and the ones you declined are left out, each event is told once (again
-if it moves), and no model is called. **How often to look at the calendar** sets how often APX asks Google (every 5
+if it moves), and no model is called. **How often to look at the calendar** sets how often Colonia asks Google (every 5
 minutes by default, from 1 minute up to 24 hours), never less often than the lead time so no event slips between two
 looks. It is off until you turn it on; your quiet hours hold reminders until they end.
 
-**Tell me about new mail**, under **Configure integration** on Gmail's page, has APX look at what reached your inbox
+**Tell me about new mail**, under **Configure integration** on Gmail's page, has Colonia look at what reached your inbox
 (**How often to check**: every 5 minutes by default, from 1 minute up to 24 hours). Ads, social and mailing lists are
 left out, and with **Important only** so is everything Gmail does not mark important. Asking Gmail costs nothing; only
 when mail worth a look came does your super-agent read it, as outside data, and tell you in a line or two what needs
@@ -108,7 +108,7 @@ never as instructions. With your own client, Google shows "Google hasn't verifie
 continue.
 
 GitHub is reached at GitHub's own server (`api.githubcopilot.com/mcp`) with your token. That server may ask for
-Copilot access: connecting asks it first, and if it refuses your token APX runs the earlier open GitHub server
+Copilot access: connecting asks it first, and if it refuses your token Colonia runs the earlier open GitHub server
 instead, with the same token. An integration connected
 before this change keeps its old server until you edit and save it.
 
@@ -121,7 +121,7 @@ removes it.
 
 ## Variables and secrets
 
-Variables are where APX keeps tokens, API keys and passwords for your MCP servers, model providers and channels.
+Variables are where Colonia keeps tokens, API keys and passwords for your MCP servers, model providers and channels.
 Anything that needs one refers to it by name, as `secret://NAME`; the value is read only by the code that uses it,
 right when it uses it. Agents can use a variable by name but never see its value, and it never goes into a prompt or a
 log.
@@ -136,7 +136,7 @@ a value to you, and each row says where it's used.
 - **macOS**: in your login Keychain.
 - **Linux**: in your keyring (GNOME Keyring, KWallet or any Secret Service).
 - **Windows**: in `secrets.dpapi`, which only your Windows account can decrypt.
-- A Linux server with no keyring, or any core started with `APX_SECRETS=file`: in `secrets.json` inside APX's home,
+- A Linux server with no keyring, or any core started with `COLONIA_SECRETS=file`: in `secrets.json` inside Colonia's home,
   readable only by your user (mode 600).
 
 ### A project's own value
@@ -151,13 +151,13 @@ The value is read from standard input, never from the command line, so it doesn'
 process list:
 
 ```bash
-pbpaste | apx secrets set github-token   # macOS: from the clipboard
-apx secrets set github-token < token.txt # or from a file
-apx secrets                              # names and when they changed; never the values
-apx secrets rm github-token
+pbpaste | colonia secrets set github-token   # macOS: from the clipboard
+colonia secrets set github-token < token.txt # or from a file
+colonia secrets                              # names and when they changed; never the values
+colonia secrets rm github-token
 ```
 
-<Terminal command="apx secrets">{`github-token         2026-10-08T09:12:44.120Z
+<Terminal command="colonia secrets">{`github-token         2026-10-08T09:12:44.120Z
 brave-search-key     2026-10-02T17:30:05.981Z`}</Terminal>
 
 <Aside type="caution">

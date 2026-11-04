@@ -2,7 +2,7 @@
 // thread from the durable queue (the runs table), and reports its end to whoever waits for it.
 // See DECISIONS.md#d-009
 
-import type { RunTrigger, Thread } from "@apx/protocol";
+import type { RunTrigger, Thread } from "@colonia/protocol";
 import { type Attachment, type Origin, type RunInput, type RunRecord, TERMINAL } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { Canceled, DeadlineExceeded, Shutdown, Superseded } from "../errors.ts";
@@ -195,12 +195,12 @@ export function createEngine(deps: {
   home: string;
   /** The other agent apps whose skills agents may load too. */
   skillApps?: RuntimeHomes | undefined;
-  /** The port this core listens on (known once the server listens): commands reaching it are APX's own door. */
-  apxPort: () => number;
+  /** The port this core listens on (known once the server listens): commands reaching it are Colonia's own door. */
+  coloniaPort: () => number;
   memory: MemoryIndex;
   /** Skills picked by meaning for each turn. */
   skills?: SkillPicker;
-  /** Where profiles are found (APX's own and the owner's). */
+  /** Where profiles are found (Colonia's own and the owner's). */
   profileRoots?: readonly ProfileRoot[];
   /** This core's version and commit, for the agents' prompt. */
   build?: { version: string; code_sha: string };
@@ -236,10 +236,10 @@ export function createEngine(deps: {
   const active = new Map<string, { ac: AbortController; thread: string; clock: Clock }>();
   const live = new Map<string, Display>();
   /**
-   * What reaches a running turn between its steps, not yet taken by its loop: the owner's words, or (`apx`) a result
+   * What reaches a running turn between its steps, not yet taken by its loop: the owner's words, or (`colonia`) a result
    * that would otherwise start a turn of its own, such as a background command's end (DECISIONS.md#d-162).
    */
-  const steered = new Map<string, Array<{ text: string; apx?: Admit }>>();
+  const steered = new Map<string, Array<{ text: string; colonia?: Admit }>>();
   /** The running turn of `agentId` in `threadId` whose loop takes text mid-turn (ours), if any. */
   const steerable = (threadId: string, agentId?: string): RunRecord | undefined => {
     for (const [runId, a] of active) {
@@ -254,7 +254,7 @@ export function createEngine(deps: {
   const steerResult = (a: Admit): boolean => {
     const run = steerable(a.thread_id, a.agent_id);
     if (!run) return false;
-    steered.set(run.id, [...(steered.get(run.id) ?? []), { text: frameInput(a.origin, a.text), apx: a }]);
+    steered.set(run.id, [...(steered.get(run.id) ?? []), { text: frameInput(a.origin, a.text), colonia: a }]);
     return true;
   };
   const waiters = new Map<string, Set<(run: RunRecord) => void>>();
@@ -406,7 +406,7 @@ export function createEngine(deps: {
       const takeSteered = () => {
         const taken = steered.get(run.id) ?? [];
         steered.set(run.id, []);
-        return taken.map((s) => (s.apx ? s.text : `[The owner adds, while you work]\n${s.text}`));
+        return taken.map((s) => (s.colonia ? s.text : `[The owner adds, while you work]\n${s.text}`));
       };
       // Waiting on a delegate at work is the turn at work too.
       const delegate: typeof delegations.delegate = (...a) => delegations.delegate(...a).finally(clock.busy());
@@ -416,7 +416,7 @@ export function createEngine(deps: {
         ac.signal,
       );
       ended(done);
-      // A turn APX's shutdown cut off is not over: the next boot closes and resumes it.
+      // A turn Colonia's shutdown cut off is not over: the next boot closes and resumes it.
       if (TERMINAL.has(done.state)) deps.afterRun?.(done);
       retryDropped(done);
     } finally {
@@ -425,7 +425,7 @@ export function createEngine(deps: {
       // Steered text the turn ended before taking is not lost: it runs next, as a normal message or result.
       for (const s of steered.get(run.id) ?? [])
         admit(
-          s.apx ?? {
+          s.colonia ?? {
             thread_id: run.thread_id,
             agent_id: run.agent_id,
             trigger: "user",

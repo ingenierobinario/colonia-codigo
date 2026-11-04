@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { type TestContext, test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
+import { ColoniaError } from "@colonia/protocol/client";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -9,7 +9,7 @@ import { registerChatTools } from "./mcp-chat.ts";
 
 async function tools(t: TestContext, answers: Record<string, unknown>) {
   const recorded = recordingClient(answers);
-  const server = new McpServer({ name: "apx-test", version: "1" });
+  const server = new McpServer({ name: "colonia-test", version: "1" });
   registerChatTools(server, recorded.client);
   const client = new Client({ name: "outside-app", version: "1" });
   const [outside, inside] = InMemoryTransport.createLinkedPair();
@@ -39,7 +39,7 @@ test("outside-app MCP lists agents through the protocol and explains an empty cr
     ],
   ]) {
     const { invoke, calls } = await tools(t, { "agents.list": { agents } });
-    const result = await invoke("apx_agents");
+    const result = await invoke("colonia_agents");
     assert.deepEqual(result.content, [
       {
         type: "text",
@@ -77,7 +77,7 @@ test("outside-app MCP distinguishes global agents and resolved project orchestra
       ],
     },
   });
-  const result = await invoke("apx_agents");
+  const result = await invoke("colonia_agents");
   assert.deepEqual(result.content, [
     {
       type: "text",
@@ -109,7 +109,7 @@ test("outside-app MCP creates a loose chat, sends the question and returns only 
       ],
     },
   });
-  const result = await invoke("apx_ask", { agent: "superagent", text: "Build this" });
+  const result = await invoke("colonia_ask", { agent: "superagent", text: "Build this" });
   assert.deepEqual(result.content, [
     {
       type: "text",
@@ -125,7 +125,7 @@ test("outside-app MCP creates a loose chat, sends the question and returns only 
 
 test("outside-app MCP continues a chat and distinguishes approval, failure, cancellation and an empty answer", async (t) => {
   for (const [state, expected] of [
-    ["input-required", "Waiting for the owner to approve something in APX (thread existing)."],
+    ["input-required", "Waiting for the owner to approve something in Colonia (thread existing)."],
     ["failed", "The run failed: Model unavailable"],
     ["canceled", "The run canceled: Model unavailable"],
     ["completed", "(no answer)"],
@@ -134,7 +134,7 @@ test("outside-app MCP continues a chat and distinguishes approval, failure, canc
       "threads.send": { run: { id: "run-1" } },
       "threads.get": { runs: [{ id: "run-1", state, error: "Model unavailable" }], messages: [] },
     });
-    const result = await invoke("apx_ask", { agent: "superagent", text: "Continue", thread: "existing" });
+    const result = await invoke("colonia_ask", { agent: "superagent", text: "Continue", thread: "existing" });
     assert.deepEqual(result.content, [{ type: "text", text: `${expected}\n\n(thread existing)` }]);
     assert.deepEqual(
       calls.map(([name]) => name),
@@ -153,22 +153,22 @@ test("outside-app MCP read limits messages, identifies authors and removes non-t
       ],
     },
   });
-  assert.deepEqual((await invoke("apx_read", { thread: "existing", last: 2 })).content, [
+  assert.deepEqual((await invoke("colonia_read", { thread: "existing", last: 2 })).content, [
     { type: "text", text: "superagent: Answer\n\nyou: Follow-up" },
   ]);
-  assert.deepEqual((await invoke("apx_read", { thread: "existing" })).content, [
+  assert.deepEqual((await invoke("colonia_read", { thread: "existing" })).content, [
     { type: "text", text: "owner: Earlier\n\nsuperagent: Answer\n\nyou: Follow-up" },
   ]);
 });
 
 test("outside-app MCP reports authorization errors without throwing or sending another request", async (t) => {
   for (const [name, args, method] of [
-    ["apx_agents", {}, "agents.list"],
-    ["apx_ask", { agent: "superagent", text: "Hello", thread: "forbidden" }, "threads.send"],
-    ["apx_read", { thread: "forbidden" }, "threads.get"],
+    ["colonia_agents", {}, "agents.list"],
+    ["colonia_ask", { agent: "superagent", text: "Hello", thread: "forbidden" }, "threads.send"],
+    ["colonia_read", { thread: "forbidden" }, "threads.get"],
   ] as const) {
     const { invoke, calls } = await tools(t, {
-      [method]: new ApxError({ code: "unauthorized", message: "Not shared with this app" }),
+      [method]: new ColoniaError({ code: "unauthorized", message: "Not shared with this app" }),
     });
     const result = await invoke(name, args);
     assert.equal(result.isError, true);
@@ -180,10 +180,10 @@ test("outside-app MCP reports authorization errors without throwing or sending a
 test("outside-app MCP enforces input bounds before a core call", async (t) => {
   const { invoke, calls } = await tools(t, {});
   for (const [name, args] of [
-    ["apx_ask", { agent: "superagent", text: "" }],
-    ["apx_ask", { agent: "superagent", text: "x".repeat(20_001) }],
-    ["apx_read", { thread: "chat", last: 0 }],
-    ["apx_read", { thread: "chat", last: 51 }],
+    ["colonia_ask", { agent: "superagent", text: "" }],
+    ["colonia_ask", { agent: "superagent", text: "x".repeat(20_001) }],
+    ["colonia_read", { thread: "chat", last: 0 }],
+    ["colonia_read", { thread: "chat", last: 51 }],
   ] as const)
     assert.equal((await invoke(name, args)).isError, true);
   assert.deepEqual(calls, []);

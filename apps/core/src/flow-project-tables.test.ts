@@ -2,7 +2,7 @@
 // read empty by a run, filled column by column, and reached by the super-agent without a Flow.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { FlowGraph, FlowNode } from "@apx/protocol/flow-graph";
+import type { FlowGraph, FlowNode } from "@colonia/protocol/flow-graph";
 import { callTool, say, scriptedLlm, startCore } from "./engine/testkit.ts";
 import { createLog } from "./log.ts";
 import { waitFor } from "./testkit/platform.ts";
@@ -214,13 +214,13 @@ test("a step naming a table that was renamed or removed is an issue, and its Flo
   }
 });
 
-/** A core whose model makes the apx_flow calls the owner's message lists, one after another. */
+/** A core whose model makes the colonia_flow calls the owner's message lists, one after another. */
 async function agentCore() {
   const llm = scriptedLlm((req, { said }) => {
     const calls = JSON.parse(said.startsWith("[") ? said : "[]") as object[];
     const done = req.messages.filter((m) => m.role === "tool").length;
     const next = calls[done];
-    return next ? callTool(`c${done}`, "apx_flow", next) : say(String(req.messages.at(-1)?.content));
+    return next ? callTool(`c${done}`, "colonia_flow", next) : say(String(req.messages.at(-1)?.content));
   });
   const env = await startCore({ llm });
   const ask = async (calls: object[], decision?: "approve" | "deny") => {
@@ -232,7 +232,7 @@ async function agentCore() {
         async () => (await env.client.call("runs.pending", { thread: thread.id })).inputs[0],
         "the owner to be asked",
       );
-      asked = pending.tool === "apx_flow";
+      asked = pending.tool === "colonia_flow";
       await env.client.call("runs.respond", { input: pending.id, decision });
     }
     await env.settle(thread.id);

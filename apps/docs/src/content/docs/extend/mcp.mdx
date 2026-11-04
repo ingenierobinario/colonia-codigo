@@ -10,10 +10,10 @@ import Shot from "../../../components/Shot.astro";
 import Terminal from "../../../components/Terminal.astro";
 
 MCP (Model Context Protocol) servers add tools: a GitHub server lets agents read issues, a database server lets them
-query, and so on. APX runs the servers your agents use and keeps each tool behind your permissions.
+query, and so on. Colonia runs the servers your agents use and keeps each tool behind your permissions.
 
 <Aside type="note">
-This page is about servers **APX's agents** use (`apx mcps`). To use APX **from** Claude Code, Codex or another MCP
+This page is about servers **Colonia's agents** use (`colonia mcps`). To use Colonia **from** Claude Code, Codex or another MCP
 client, see [Outside clients](/extend/outside-clients/).
 </Aside>
 
@@ -50,16 +50,16 @@ until you approve it; read the command first. **Test** starts it and lists its t
 <TabItem label="Terminal">
 
 ```bash
-apx mcps                                   # every server: status, tool count, error or target
-apx mcps list acme-store                   # as one project sees them
-apx mcps add github -- npx -y @modelcontextprotocol/server-github
-apx mcps add status https://mcp.example.com/status
-apx mcps trust acme-store docs             # approve a project's server as its file defines it now
-apx mcps untrust acme-store docs
-apx mcps rm github
+colonia mcps                                   # every server: status, tool count, error or target
+colonia mcps list acme-store                   # as one project sees them
+colonia mcps add github -- npx -y @modelcontextprotocol/server-github
+colonia mcps add status https://mcp.example.com/status
+colonia mcps trust acme-store docs             # approve a project's server as its file defines it now
+colonia mcps untrust acme-store docs
+colonia mcps rm github
 ```
 
-Put `--` before a command whose arguments start with `-` (like `npx -y`), so `apx` doesn't read them as its own
+Put `--` before a command whose arguments start with `-` (like `npx -y`), so `colonia` doesn't read them as its own
 options. Environment and headers are edited in the panel.
 
 </TabItem>
@@ -70,21 +70,21 @@ options. Environment and headers are edited in the panel.
 Servers don't run all the time: a server is **Ready** and starts only when an agent first uses it.
 
 A server that signs in through your browser (one run with `mcp-remote`, for example) opens its sign-in page the
-first time it starts. If you don't finish, it shows **Needs you to sign in** and APX doesn't start it again by
-itself, so your browser doesn't keep opening. Click **Sign in** on the server (or run `apx mcp signin <server>`) when
+first time it starts. If you don't finish, it shows **Needs you to sign in** and Colonia doesn't start it again by
+itself, so your browser doesn't keep opening. Click **Sign in** on the server (or run `colonia mcp signin <server>`) when
 you are ready, and finish on the page it opens.
 
 ## Try a server from the terminal
 
-`apx mcp tools`, `run` and `check` talk to a server directly, which is handy when something doesn't work:
+`colonia mcp tools`, `run` and `check` talk to a server directly, which is handy when something doesn't work:
 
-<Terminal command="apx mcp check github">{`github: OK · 812 ms · 26 tools`}</Terminal>
+<Terminal command="colonia mcp check github">{`github: OK · 812 ms · 26 tools`}</Terminal>
 
 ```bash
-apx mcp tools github                       # every tool with its schema and a ready-made run command
-apx mcp tools github search_issues         # just one
-apx mcp run github search_issues '{"q":"repo:acme/store is:open label:bug"}'
-echo '{"q":"is:open"}' | apx mcp run github search_issues -
+colonia mcp tools github                       # every tool with its schema and a ready-made run command
+colonia mcp tools github search_issues         # just one
+colonia mcp run github search_issues '{"q":"repo:acme/store is:open label:bug"}'
+echo '{"q":"is:open"}' | colonia mcp run github search_issues -
 ```
 
 Add `--project <id>` for a project's server, and `--scope global|project` when a name exists in both.
@@ -117,16 +117,16 @@ if the agent had called the tool directly.
 ## Files and images in MCP tools
 
 An agent can hand one of its files to an MCP tool: an image it drew, something you attached in the chat, or a file in
-the folders it works in. In the tool's arguments it writes the file's media id (`med_…`) or `apx-file:<path>`, and
-APX sends the file the way that field takes it:
+the folders it works in. In the tool's arguments it writes the file's media id (`med_…`) or `colonia-file:<path>`, and
+Colonia sends the file the way that field takes it:
 
 - To a server that runs **elsewhere** (an `http(s)` URL), the field gets the file's contents in base64, within what the
   field says it accepts ("images under 8 MB") and never more than 20 MB. The file's type and name fill the tool's
   `mime_type` and `file_name` fields when it has them and the agent left them empty.
 - To a server that runs **on this computer** (a command), a path field gets a real path. A drawing or an attachment is
-  first copied into the chat's temp folder, so the server never reads APX's own folder.
+  first copied into the chat's temp folder, so the server never reads Colonia's own folder.
 - A field that only takes a public link, or a path a remote server would read on its own disk, is refused with the
-  field to use instead. APX does not publish your files to get a link: for a large video, the service needs its own
+  field to use instead. Colonia does not publish your files to get a link: for a large video, the service needs its own
   way to receive it (an upload link it hands out, then `curl` from the agent's temp folder).
 
 The step keeps the reference, never the file's contents. Sending a file out waits for your OK while the turn has

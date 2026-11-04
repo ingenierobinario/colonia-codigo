@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { callTool, inputOrEnd, pendingInput, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -29,7 +29,7 @@ const llm = () =>
 
 async function setup() {
   const env = await startCore({ llm: llm() });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "apx-grants-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-grants-"));
   fs.mkdirSync(path.join(root, ".apc"));
   fs.writeFileSync(
     path.join(root, ".apc", "mcps.json"),
@@ -180,7 +180,7 @@ test("a denied approval or a question cannot acquire broader scope; agents canno
       e.client.call("runs.respond", { input: i.id, decision: "deny", scope: "always" }),
       /requires approving/,
     );
-    const agentClient = new ApxClient({ url: e.core.url, actor: "agent" });
+    const agentClient = new ColoniaClient({ url: e.core.url, actor: "agent" });
     await assert.rejects(
       agentClient.call("mcp.approveTool", { scope: "project", server: "notes", project: e.project, tool: "echo" }),
       /owner|human|not allowed|unauthorized/,

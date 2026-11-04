@@ -21,7 +21,7 @@ test("tool descriptions filter by name and print shell-safe invocation arguments
   const out = await printed(() => mcpCommand(client, ["tools", "owner's notes", "read"], { project: "acme" }));
   assert.match(out, /Read notes/);
   assert.ok(!out.includes("Write notes"));
-  assert.ok(out.includes(`apx mcp run 'owner'"'"'s notes' 'read' '<json>' --project 'acme' --scope project`));
+  assert.ok(out.includes(`colonia mcp run 'owner'"'"'s notes' 'read' '<json>' --project 'acme' --scope project`));
   assert.deepEqual(calls, [
     ["mcp.list", { project: "acme" }],
     ["mcp.describe", { scope: "project", server: "owner's notes", project: "acme" }],
@@ -32,7 +32,7 @@ test("tool descriptions filter by name and print shell-safe invocation arguments
   );
 });
 
-test("apx mcps logs finds the server and prints its last lines, cleaned", async () => {
+test("colonia mcps logs finds the server and prints its last lines, cleaned", async () => {
   const at = "2026-10-11T12:00:00.000Z";
   const { client, calls } = recordingClient({
     "mcp.list": { servers },
@@ -43,16 +43,16 @@ test("apx mcps logs finds the server and prints its last lines, cleaned", async 
   assert.equal(out, `${new Date(at).toLocaleTimeString()}  missing  [2Jconfig`);
 });
 
-test("apx mcps logs says when a server printed nothing, and checks -n and the server", async () => {
+test("colonia mcps logs says when a server printed nothing, and checks -n and the server", async () => {
   const { client, calls } = recordingClient({ "mcp.list": { servers }, "mcp.logs": { lines: [] } });
   assert.match(await printed(() => mcpCommand(client, ["logs", "github"], {})), /github printed nothing/);
   assert.deepEqual(calls.at(-1), ["mcp.logs", { scope: "global", server: "github", lines: 100 }]);
   await assert.rejects(mcpCommand(client, ["logs", "github"], { lines: "0" }), /-n is a number/);
-  await assert.rejects(mcpCommand(client, ["logs"], {}), /usage: apx mcps logs <server>/);
+  await assert.rejects(mcpCommand(client, ["logs"], {}), /usage: colonia mcps logs <server>/);
   await assert.rejects(mcpCommand(client, ["logs", "nobody"], {}), /MCP server nobody not found/);
 });
 
-test("apx mcps copy makes a server from another with the variables changed; set changes one in place", async () => {
+test("colonia mcps copy makes a server from another with the variables changed; set changes one in place", async () => {
   const cloud = {
     name: "cloudflare-acme",
     scope: "global",
@@ -100,7 +100,7 @@ test("apx mcps copy makes a server from another with the variables changed; set 
   await assert.rejects(mcpCommand(client, ["set", "cloudflare-acme"], { env: ["NOEQUALS"] }), /NAME=value/);
 });
 
-test("apx mcps add takes its variables with --env", async () => {
+test("colonia mcps add takes its variables with --env", async () => {
   const { client, calls } = recordingClient({ "mcp.set": { servers: [{ name: "notes", status: "starting" }] } });
   await printed(() => mcpCommand(client, ["add", "notes", "notes-mcp", "--stdio"], { env: ["TOKEN=secret://NOTES"] }));
   assert.deepEqual(calls.at(-1), [
@@ -109,7 +109,7 @@ test("apx mcps add takes its variables with --env", async () => {
   ]);
 });
 
-test("apx mcps rename saves the server under the new name before removing the old one", async () => {
+test("colonia mcps rename saves the server under the new name before removing the old one", async () => {
   const def = { command: "npx", args: ["x"], env: { TOKEN: "secret://T" }, headers: {} };
   const { client, calls } = recordingClient({
     "mcp.list": { servers: [{ name: "clodflare", scope: "global", enabled: true, status: "off", definition: def }] },

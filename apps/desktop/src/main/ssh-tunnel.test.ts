@@ -140,12 +140,12 @@ test("the server gets this app's version when it is a release, and the app's fee
     "http://192.168.0.10:7480",
   ]);
   // Anything a shell would read as more than one word stays out of the remote command line.
-  assert.deepEqual(installArgs("2.3.0", "acme/apx; rm -rf ~"), ["--server", "--version", "2.3.0"]);
+  assert.deepEqual(installArgs("2.3.0", "acme/colonia; rm -rf ~"), ["--server", "--version", "2.3.0"]);
 });
 
 test("once this app has its own key, every ssh offers it too (and never before the file exists)", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-key-"));
-  const key = path.join(dir, "apx_ed25519");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-key-"));
+  const key = path.join(dir, "colonia_ed25519");
   try {
     useIdentity(key);
     assert.ok(!sshCommand("ops@box", "true").includes("-i"));

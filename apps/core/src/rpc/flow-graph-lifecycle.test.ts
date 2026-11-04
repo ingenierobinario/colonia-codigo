@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import { ColoniaClient } from "@colonia/protocol/client";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { tempDir } from "../testkit/platform.ts";
 
@@ -35,7 +35,7 @@ test("explicit draft discard uses owner authorization and CAS across discard, re
     await env.client.call("flows.write", { flow: flow.id, key: "kept", value: { text: "Original" } });
     await env.client.call("flows.draft_save", { flow: flow.id, expectedVersion: null, graph });
     const external = await env.client.call("clients.create", { name: "Acme", scopes: ["chat"] });
-    const outsider = new ApxClient({ url: env.core.url, clientToken: external.token });
+    const outsider = new ColoniaClient({ url: env.core.url, clientToken: external.token });
     await assert.rejects(
       outsider.call("flows.draft_discard", { flow: flow.id, expectedVersion: 1, confirm: true }),
       /outside/,

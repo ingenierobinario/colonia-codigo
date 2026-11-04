@@ -202,7 +202,7 @@ export const slackAdapter = ((config, secret, apiBase = "https://slack.com/api")
             type: "actions",
             elements: buttons.slice(0, 5).map((b, i) => ({
               type: "button",
-              action_id: `apx_${i}`,
+              action_id: `colonia_${i}`,
               text: { type: "plain_text", text: b.label.slice(0, 75) },
               value: b.id.slice(0, 2000),
             })),

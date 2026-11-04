@@ -1,5 +1,5 @@
 // Any CLI that speaks the Agent Client Protocol as a harness: one process per turn in the thread's folder, its own
-// session resumed when the agent can, APX tools through the per-run MCP proxy, its permission requests through our
+// session resumed when the agent can, Colonia tools through the per-run MCP proxy, its permission requests through our
 // policy, its own tool calls shown as cards.
 import { engineOf } from "../../domain/refs.ts";
 import type { Usage } from "../../providers/types.ts";
@@ -51,14 +51,14 @@ export function acpHarness(opts: {
       // How full its context is, when the agent says (`usage_update`).
       let context: { used?: number; size?: number } = {};
       const session = await openSession(agent, {
-        apxAgent: io.agent.id,
+        coloniaAgent: io.agent.id,
         binary,
         cwd: opts.cwd(io),
         resume: io.sessionId,
         signal: io.signal,
         mcpServers: [
           {
-            name: "apx",
+            name: "colonia",
             command: gate.command.command,
             args: gate.command.args,
             env: Object.entries(gate.command.env).map(([name, value]) => ({ name, value })),

@@ -11,13 +11,13 @@ import { desktopDataDir, hasDesktop } from "./paths.ts";
 import type { ProcessRunner } from "./process.ts";
 
 function fixture(overrides: Partial<DesktopInstallOptions> = {}) {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "apx-install-test-"));
-  const app = path.join(home, "Applications", overrides.platform === "darwin" ? "APX.app" : "APX.AppImage");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-install-test-"));
+  const app = path.join(home, "Applications", overrides.platform === "darwin" ? "Colonia.app" : "Colonia.AppImage");
   const coreHome = path.join(home, "core");
   fs.mkdirSync(coreHome);
   fs.writeFileSync(path.join(coreHome, "home-id"), "selected-home");
   const bytes = Buffer.from("desktop binary");
-  const name = "APX-2.9.1-linux-x64.AppImage";
+  const name = "Colonia-2.9.1-linux-x64.AppImage";
   const calls: { command: string; args: string[]; env: NodeJS.ProcessEnv }[] = [];
   const requests: string[] = [];
   const fakeFetch: typeof fetch = async (input) => {
@@ -45,9 +45,9 @@ function fixture(overrides: Partial<DesktopInstallOptions> = {}) {
     userHome: home,
     env: {
       DISPLAY: ":1",
-      APX_DESKTOP_DATA: path.join(home, "desktop"),
-      APX_URL: "https://other.example",
-      APX_TOKEN: "private",
+      COLONIA_DESKTOP_DATA: path.join(home, "desktop"),
+      COLONIA_URL: "https://other.example",
+      COLONIA_TOKEN: "private",
       ELECTRON_RUN_AS_NODE: "1",
     },
     feed: "https://releases.example",
@@ -73,7 +73,7 @@ function fixture(overrides: Partial<DesktopInstallOptions> = {}) {
   };
 }
 
-test("missing desktop downloads once, reports bytes, installs, and opens the selected local APX", async () => {
+test("missing desktop downloads once, reports bytes, installs, and opens the selected local Colonia", async () => {
   const progress: number[] = [];
   const f = fixture({
     changed: (s) => {
@@ -92,7 +92,7 @@ test("missing desktop downloads once, reports bytes, installs, and opens the sel
     assert.equal(f.requests.filter((r) => r.includes("/releases?")).length, 1);
     assert.deepEqual(fs.readFileSync(f.app), f.bytes);
     fs.accessSync(f.app, fs.constants.X_OK);
-    const launcher = fs.readFileSync(path.join(f.home, ".local/share/applications/apx.desktop"), "utf8");
+    const launcher = fs.readFileSync(path.join(f.home, ".local/share/applications/colonia.desktop"), "utf8");
     const executable = /^Exec=(".*")$/m.exec(launcher)?.[1];
     assert.ok(executable, "the launcher quotes its executable path");
     assert.equal(JSON.parse(executable.replace(/\\([`$])/g, "$1")).replace(/%%/g, "%"), f.app);
@@ -104,9 +104,9 @@ test("missing desktop downloads once, reports bytes, installs, and opens the sel
     assert.equal(saved.token, undefined);
     assert.equal(f.calls.length, 1);
     assert.equal(f.calls[0]?.command, f.app);
-    assert.deepEqual(f.calls[0]?.args, ["--apx-adopt-local"]);
-    assert.equal(f.calls[0]?.env.APX_TOKEN, undefined);
-    assert.equal(f.calls[0]?.env.APX_URL, undefined);
+    assert.deepEqual(f.calls[0]?.args, ["--colonia-adopt-local"]);
+    assert.equal(f.calls[0]?.env.COLONIA_TOKEN, undefined);
+    assert.equal(f.calls[0]?.env.COLONIA_URL, undefined);
     assert.equal(f.calls[0]?.env.ELECTRON_RUN_AS_NODE, undefined);
   } finally {
     await f.close();
@@ -133,7 +133,7 @@ test("temporary cleanup failure cannot crash the daemon and retry opens the inst
   const remove = fs.rmSync;
   const leftovers: fs.PathLike[] = [];
   t.mock.method(fs, "rmSync", (file: fs.PathLike, options?: fs.RmOptions) => {
-    if (path.basename(String(file)).startsWith("apx-desktop-install-")) {
+    if (path.basename(String(file)).startsWith("colonia-desktop-install-")) {
       leftovers.push(file);
       throw new Error("Temporary download is locked");
     }
@@ -183,7 +183,7 @@ test("download errors, absent checksums and oversized payloads remain retryable 
           return Response.json([
             {
               tag_name: "v2.9.1",
-              assets: [{ name: "APX-2.9.1-linux-x64.AppImage", browser_download_url: "https://releases.example/app" }],
+              assets: [{ name: "Colonia-2.9.1-linux-x64.AppImage", browser_download_url: "https://releases.example/app" }],
             },
           ]);
         if (failure === "size" && !String(input).includes("/releases?") && !String(input).endsWith(".sha256"))
@@ -255,7 +255,7 @@ test("a cancelled download still reports a temporary cleanup failure", async (t)
   const remove = fs.rmSync;
   const leftovers: fs.PathLike[] = [];
   t.mock.method(fs, "rmSync", (file: fs.PathLike, options?: fs.RmOptions) => {
-    if (path.basename(String(file)).startsWith("apx-desktop-install-")) {
+    if (path.basename(String(file)).startsWith("colonia-desktop-install-")) {
       leftovers.push(file);
       throw new Error("Temporary download is locked");
     }
@@ -279,7 +279,7 @@ test("cancel closes a partial HTTP download, removes its files and permits a fre
   timeout: 10_000,
 }, async (t) => {
   const bytes = Buffer.from("verified desktop binary");
-  const name = "APX-2.9.1-linux-x64.AppImage";
+  const name = "Colonia-2.9.1-linux-x64.AppImage";
   let partial = true;
   let received: (() => void) | undefined;
   const progress = new Promise<void>((resolve) => {
@@ -293,7 +293,7 @@ test("cancel closes a partial HTTP download, removes its files and permits a fre
   const makeTemp = fs.mkdtempSync;
   t.mock.method(fs, "mkdtempSync", (prefix: string) => {
     const dir = makeTemp(prefix);
-    if (path.basename(dir).startsWith("apx-desktop-install-")) work.push(dir);
+    if (path.basename(dir).startsWith("colonia-desktop-install-")) work.push(dir);
     return dir;
   });
   const server = createServer((req, res) => {
@@ -421,11 +421,11 @@ test("a headless or SSH session never starts desktop installation", async () => 
   assert.equal(hasDesktop("linux", { DISPLAY: ":1", SSH_CONNECTION: "forwarded" }), false);
   assert.equal(
     desktopDataDir("darwin", {}, "/home/user"),
-    path.join("/home/user", "Library", "Application Support", "@apx", "desktop"),
+    path.join("/home/user", "Library", "Application Support", "@colonia", "desktop"),
   );
   assert.equal(
     desktopDataDir("linux", { XDG_CONFIG_HOME: "/custom" }, "/home/user"),
-    path.join("/custom", "@apx", "desktop"),
+    path.join("/custom", "@colonia", "desktop"),
   );
 });
 
@@ -450,7 +450,7 @@ test("macOS installs the verified zip into the user Applications folder, without
         return Response.json([
           {
             tag_name: "v2.9.1",
-            assets: ["APX-2.9.1-mac-x64.zip", "APX-2.9.1-mac-x64.zip.sha256"].map((name) => ({
+            assets: ["Colonia-2.9.1-mac-x64.zip", "Colonia-2.9.1-mac-x64.zip.sha256"].map((name) => ({
               name,
               browser_download_url: `https://releases.example/${name}`,
             })),
@@ -463,7 +463,7 @@ test("macOS installs the verified zip into the user Applications folder, without
     run: async (command, args) => {
       f.calls.push({ command, args, env: {} });
       if (args[0] === "-x") {
-        const executable = path.join(args[3] as string, "APX.app/Contents/MacOS/APX");
+        const executable = path.join(args[3] as string, "Colonia.app/Contents/MacOS/Colonia");
         fs.mkdirSync(path.dirname(executable), { recursive: true });
         fs.writeFileSync(executable, "app");
       } else if (command.endsWith("ditto")) fs.cpSync(args[0] as string, args[1] as string, { recursive: true });
@@ -472,8 +472,8 @@ test("macOS installs the verified zip into the user Applications folder, without
   try {
     f.installer.start();
     assert.equal((await f.installer.wait()).phase, "ready");
-    assert.equal(fs.readFileSync(path.join(f.home, "Applications/APX.app/Contents/MacOS/APX"), "utf8"), "app");
-    assert.deepEqual(f.calls.at(-1)?.args, ["-a", path.join(f.home, "Applications/APX.app")]);
+    assert.equal(fs.readFileSync(path.join(f.home, "Applications/Colonia.app/Contents/MacOS/Colonia"), "utf8"), "app");
+    assert.deepEqual(f.calls.at(-1)?.args, ["-a", path.join(f.home, "Applications/Colonia.app")]);
     assert.ok(!f.calls.some((c) => c.command.includes("xattr")));
   } finally {
     await f.close();
@@ -490,7 +490,7 @@ test("Windows waits for its installer before launching the installed executable"
         return Response.json([
           {
             tag_name: "v2.9.1",
-            assets: ["APX-2.9.1-win-x64.exe", "APX-2.9.1-win-x64.exe.sha256"].map((name) => ({
+            assets: ["Colonia-2.9.1-win-x64.exe", "Colonia-2.9.1-win-x64.exe.sha256"].map((name) => ({
               name,
               browser_download_url: `https://releases.example/${name}`,
             })),

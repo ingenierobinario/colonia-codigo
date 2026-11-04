@@ -1,6 +1,6 @@
-import type { Result } from "@apx/protocol";
-import { ApxError } from "@apx/protocol/client";
-import { Badge, Button, Dialog, IconButton, Icons, Popover, Skeleton } from "@apx/ui";
+import type { Result } from "@colonia/protocol";
+import { ColoniaError } from "@colonia/protocol/client";
+import { Badge, Button, Dialog, IconButton, Icons, Popover, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { useFlowDraft } from "../data/flowDrafts.ts";
@@ -118,7 +118,7 @@ export function RestoreDialog({
       onRestored(doc, entry);
       onClose();
     } catch (e) {
-      notify(t(e instanceof ApxError && e.code === "conflict" ? "flow.ed.conflict" : "flow.hist.failed"));
+      notify(t(e instanceof ColoniaError && e.code === "conflict" ? "flow.ed.conflict" : "flow.hist.failed"));
     } finally {
       setBusy(false);
     }

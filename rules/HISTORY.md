@@ -10,7 +10,7 @@ The long *why* behind rules the code enforces: quirks, fixes and workarounds tha
 ### A self-task transfers execution, not just a board entry
 **Rule:** an immediate self-assignment transfers execution to the task session. The source run stops using tools;
 its final response only acknowledges the transfer. A turn with delegated work, or a chat with active helpers,
-jobs or queued turns, keeps working there instead of creating another executor. Active APX calls must finish first.
+jobs or queued turns, keeps working there instead of creating another executor. Active Colonia calls must finish first.
 Native tools already authorized by an external harness cannot reliably be drained, so that turn (including its
 recovery) keeps execution in the source. Codex has no per-native-call permission intercept, so its immediate
 self-assignments also stay there. Fresh owner turns do not inherit another turn's grant guard. Drafts, proposals,
@@ -34,7 +34,7 @@ marked not present with `unreadable: "waiting"` (in memory only; the next start 
 still lands and the project comes back. A folder the system refuses reads as `unreadable: "denied"`.
 **Why:** on macOS, a read of ~/Documents, ~/Desktop, Downloads, iCloud Drive or a removable drive by the launchd
 core's `node` blocks inside the system call until someone answers the privacy prompt. The core read every project
-synchronously before `listen`, so one unanswered prompt left the desktop app on "Connecting to APX". Moving the
+synchronously before `listen`, so one unanswered prompt left the desktop app on "Connecting to Colonia". Moving the
 read after `listen` alone does not help: a blocked synchronous read stops the whole event loop, and `fs.promises`
 would park one of libuv's four pool threads per held folder (DNS and other async work share them). Code that reads
 project files later skips projects that are not present.
@@ -105,12 +105,12 @@ about 4 MB it never used. `process.getBuiltinModule("node:http")` returns the sa
 ## Repo hygiene
 
 <a id="cli-without-core"></a>
-### `apx doctor` and `apx update` work with the core down
-**Rule:** the terminal diagnoses a core that does not answer (`apx doctor`) and updates a bundle install without it
-(`apx update`), reading this machine directly instead of the protocol: the one exception to rule 3, since there is
+### `colonia doctor` and `colonia update` work with the core down
+**Rule:** the terminal diagnoses a core that does not answer (`colonia doctor`) and updates a bundle install without it
+(`colonia update`), reading this machine directly instead of the protocol: the one exception to rule 3, since there is
 no core to ask. The bundle install itself is the core's own code, shared from `packages/install/src/release.ts`.
-**Why:** the 2.12.0 and 2.12.1 bundles could not start their core; `apx update` then only said "Core not running"
-and pointed at `apx service install`, which started the same broken version again.
+**Why:** the 2.12.0 and 2.12.1 bundles could not start their core; `colonia update` then only said "Core not running"
+and pointed at `colonia service install`, which started the same broken version again.
 **Where:** `apps/terminal/src/commands/doctor.ts`, `packages/install/src/release.ts`.
 
 <a id="private-terms"></a>
@@ -121,10 +121,10 @@ fixtures and previews. On its first run in v2 it caught a real name in a design-
 **Where:** `scripts/check-private-terms.ts`.
 
 <a id="protocol-subpaths"></a>
-### The core imports the protocol only through `@apx/protocol` subpaths
+### The core imports the protocol only through `@colonia/protocol` subpaths
 **Rule:** `apps/core` and `apps/terminal` never import `packages/protocol/src/…` by path; a module they need becomes a
 subpath in the protocol's `exports`.
-**Why:** the installed core carries the protocol compiled into `node_modules/@apx/protocol` (one entry per export), not
+**Why:** the installed core carries the protocol compiled into `node_modules/@colonia/protocol` (one entry per export), not
 its source folder. Flow modules imported by path worked in a checkout but made the 2.12.0 and 2.12.1 bundles exit at
 start with `ERR_MODULE_NOT_FOUND`, in the desktop app and the service alike.
 **Where:** `packages/protocol/package.json` exports, `apps/desktop/scripts/stage-protocol.ts`, lint in `biome.json`.
@@ -155,7 +155,7 @@ key) once no install older than 2.7.1 needs upgrading.
 
 <a id="system-notes-as-user"></a>
 ### Mid-turn notes go to the model as tagged user items
-Notes from APX to the model during a turn (answer cut off, stuck, out of steps, interrupted) are sent as
+Notes from Colonia to the model during a turn (answer cut off, stuck, out of steps, interrupted) are sent as
 `<system_note>` user items, after all the results of a tool step. Some providers fold every `system` item into the
 system prompt, which reorders the conversation and breaks the cached prefix; and a note between a tool call and
 its results breaks the pairing every provider requires. Where: `apps/core/src/harness/native.ts`.
@@ -203,8 +203,8 @@ The first classifier split commands on `&& || ; |` and trusted a list of program
 `find -execdir`, `sort -o`, `git branch -D` or a path like `~/.ssh` slipped through as read-only. Now only simple
 commands of reading programs with plain, project-local arguments run without asking; any other shell syntax,
 quoting, variable assignment or outside path asks; destructive checks also run on a quote- and escape-free copy.
-Commands get an environment without credential-looking variables, cannot name APX's home, and any command that
-reaches APX's own API always asks. Where: `apps/core/src/tools/shell.ts`, `harness/env.ts`.
+Commands get an environment without credential-looking variables, cannot name Colonia's home, and any command that
+reaches Colonia's own API always asks. Where: `apps/core/src/tools/shell.ts`, `harness/env.ts`.
 
 <a id="policy-follows-thread"></a>
 ### Inherited permissions follow the thread, not the run
@@ -217,7 +217,7 @@ ancestors. Where: `apps/core/src/engine/ancestry.ts`.
 ### An ACP agent must be started in "ask" mode, or it acts without our policy
 OpenCode's default configuration lets it edit files without a permission request, so the first real test wrote a
 file the owner never approved. Each known ACP agent now says what puts it in ask mode (`OPENCODE_PERMISSION`,
-`qwen --approval-mode default`); its requests then go through the same `decide()` rule as APX's tools, commands
+`qwen --approval-mode default`); its requests then go through the same `decide()` rule as Colonia's tools, commands
 classified like the `shell` tool's. Where: `apps/core/src/harness/acp/agents.ts`, `engine/executor.ts`.
 
 <a id="acp-garbage"></a>
@@ -231,7 +231,7 @@ notification handlers and stdin, and caps line length. Where: `apps/core/src/har
 Reads were allowed anywhere (Claude's Read/Glob/Grep, ACP "read" kinds) and could be fetched out without asking;
 "auto" edits compared path strings, so a symlink or an edit to `.git/config` (`core.fsmonitor` runs at the next
 `git status`) or to the agent's own `.apc` file escaped the policy. Paths are now resolved through links, reading
-outside the folder asks, fetching asks in code threads, auto never edits `.git/`, `.apc/` or `AGENTS.md`, and APX
+outside the folder asks, fetching asks in code threads, auto never edits `.git/`, `.apc/` or `AGENTS.md`, and Colonia
 runs git with fsmonitor, hooks and external diff off. Where: `apps/core/src/engine/paths.ts`, `executor.ts`,
 `changes.ts`, `harness/claude.ts`.
 
@@ -244,7 +244,7 @@ Where: `apps/core/src/domain/threads.ts`, `engine/upkeep.ts`.
 
 <a id="system-notices"></a>
 ### A system message with only a notice rendered as an empty line
-The chat drew system messages from their text parts only, so notices APX posts on its own ("paused", "summarized")
+The chat drew system messages from their text parts only, so notices Colonia posts on its own ("paused", "summarized")
 never showed. System messages now render their notice parts. Where: `apps/web/src/chat/Transcript.tsx`.
 
 <a id="tainted-notes"></a>
@@ -308,9 +308,9 @@ and could send a real "Due" reminder. The field keeps a draft and commits on blu
 years before 2000 and anything but `YYYY-MM-DD` or an ISO date-time. Where: `apps/web/src/tasks/Commitments.tsx`,
 `apps/core/src/rpc/tasks.ts`.
 
-<a id="apx-cli-from-shell"></a>
-### An agent's shell command that runs APX's CLI is always asked
-Owner-only methods trust the client's `x-apx-actor`; `apx2 …` from the shell tool reaches the API without naming the
+<a id="colonia-cli-from-shell"></a>
+### An agent's shell command that runs Colonia's CLI is always asked
+Owner-only methods trust the client's `x-colonia-actor`; `colonia2 …` from the shell tool reaches the API without naming the
 port, so the port check missed it. Running the CLI is now always the owner's call. Where:
 `apps/core/src/tools/shell.ts`.
 
@@ -318,14 +318,14 @@ port, so the port check missed it. Running the CLI is now always the owner's cal
 ### Plugins get an allow-list of modules and a fetch that checks the connected address
 The first runner denied a list of network modules, but Node exposes others (`_http_client`, `_http_agent`,
 `_tls_wrap`) and the global `fetch` could be fooled (a URL object that changes on its second read, a `Request`
-subclass, `::ffff:7f00:1`), so a plugin without network reached APX's loopback API as the owner. The runner now allows
+subclass, `::ffff:7f00:1`), so a plugin without network reached Colonia's loopback API as the owner. The runner now allows
 a short list of built-ins and replaces `fetch` with one built on `http.request` whose lookup checks the address it
 actually connects to. Where: `apps/core/src/extensions/plugin-runner.mjs`.
 
 <a id="plugin-host-limits"></a>
-### A plugin cannot stall turns, crash APX or outlive its approval
+### A plugin cannot stall turns, crash Colonia or outlive its approval
 A non-text context answer threw before the turn's `try` and left runs `working`; a flood without newlines grew a
-buffer until APX crashed; a crash-looping context plugin let a second one be enabled and APX then failed to boot; a
+buffer until Colonia crashed; a crash-looping context plugin let a second one be enabled and Colonia then failed to boot; a
 reinstall while on kept the old process and its restart ran the new, unapproved files. Turn setup now fails the run,
 lines are capped (the plugin is stopped), plugin start never throws, the one-context rule is checked against every
 enabled extension, and every restart re-checks approval and fingerprint. Where: `apps/core/src/extensions/plugins.ts`,

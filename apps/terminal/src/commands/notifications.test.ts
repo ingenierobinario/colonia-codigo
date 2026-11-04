@@ -48,7 +48,7 @@ test("empty notifications and marking all read use their own protocol methods", 
 test("unknown notification commands have no effect; protocol failures remain failures", async () => {
   const error = new Error("core unavailable");
   const { client, calls } = recordingClient({ "notifications.read": error });
-  await assert.rejects(notifications(client, ["delete"]), /usage: apx notifications/);
+  await assert.rejects(notifications(client, ["delete"]), /usage: colonia notifications/);
   assert.deepEqual(calls, []);
   await assert.rejects(notifications(client, ["read"]), (e) => e === error);
 });

@@ -1,5 +1,5 @@
-import type { Agent, Message as Msg, Part, Thread } from "@apx/protocol";
-import { AgentAvatar, EngineIcon, IconButton, Icons, MarkdownView, Message, MessageMeta } from "@apx/ui";
+import type { Agent, Message as Msg, Part, Thread } from "@colonia/protocol";
+import { AgentAvatar, EngineIcon, IconButton, Icons, MarkdownView, Message, MessageMeta } from "@colonia/ui";
 import { type ReactNode, Suspense, useState } from "react";
 import { DeliveryTicks, ReactionList } from "../channels/MessageMarks.tsx";
 import { isSignal } from "../channels/signal.ts";

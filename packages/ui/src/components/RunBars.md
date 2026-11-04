@@ -21,4 +21,4 @@ early (a check said no, no tokens spent), red when it failed, blue while it runs
 />
 ```
 
-Its styles ship apart, in `@apx/ui/flow.css`: import it in the lazy screen that uses it.
+Its styles ship apart, in `@colonia/ui/flow.css`: import it in the lazy screen that uses it.

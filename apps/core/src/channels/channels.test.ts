@@ -116,7 +116,7 @@ test("formatting: Markdown becomes Telegram HTML; contacts never get paths or ke
 
 test("a stranger gets a code; the owner approves it as themselves; then their words reach Home and the answer returns", async () => {
   const info = (await env.client.call("channels.list", {})).channels[0];
-  assert.equal(info?.account, "@apx_test_bot");
+  assert.equal(info?.account, "@colonia_test_bot");
   assert.equal(info?.token_set, true);
   // The owner recognizes the stored token without it ever coming back whole.
   assert.equal(info?.token_hint, "123456:••••oken");
@@ -466,7 +466,7 @@ test("a message an agent sends the owner on a chat app arrives without sound in 
   }
 });
 
-test("a contact never sees what went wrong inside APX; the owner does", async () => {
+test("a contact never sees what went wrong inside Colonia; the owner does", async () => {
   tg.message(ANA, "break please");
   await waitFor(
     () => tg.messagesTo(ANA.id).some((m) => /can't answer right now|no puedo responder/.test(String(m.body.text))),
@@ -632,7 +632,7 @@ test("a teammate's question reaches the owner's chat app as one line saying who 
     await waitFor(() => tg.messagesTo(OWNER.id).length > before, "a line on Telegram");
     const line = tg.messagesTo(OWNER.id).at(-1)?.body;
     assert.match(String(line?.text), /^Vera te espera: /);
-    assert.match(String(line?.text), /Respondele en APX/);
+    assert.match(String(line?.text), /Respondele en Colonia/);
     assert.equal(line?.reply_markup, undefined, "no buttons: the card is answered in the app");
     const pending = (await env.client.call("runs.pending", { thread: t.id })).inputs[0];
     await env.client.call("runs.respond", { input: pending?.id ?? "", decision: "deny" });
@@ -729,7 +729,7 @@ test("with the app only chosen, an agent writing to the owner unasked reaches th
     assert.equal(pings(), before, "nothing reached Telegram");
     const told = await env.client.call("threads.get", { thread: run.thread_id });
     assert.ok(
-      told.messages.some((m) => m.parts.some((p) => p.type === "text" && p.text.includes("only in the APX app"))),
+      told.messages.some((m) => m.parts.some((p) => p.type === "text" && p.text.includes("only in the Colonia app"))),
       "the agent heard where it went",
     );
     const tray = (await env.client.call("notifications.list", {})).notifications;

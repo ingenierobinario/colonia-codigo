@@ -1,4 +1,4 @@
-import type { SurfaceSummary } from "@apx/protocol";
+import type { SurfaceSummary } from "@colonia/protocol";
 import { useSyncExternalStore } from "react";
 import { dropLive } from "./livePool.ts";
 
@@ -26,13 +26,13 @@ function subscribe(f: () => void): () => void {
 }
 
 // The desktop app says when one of its artifact windows opens or closes, however it was closed.
-window.apxDesktop?.onArtifactWindow?.((id, open) => mark(id, open));
+window.coloniaDesktop?.onArtifactWindow?.((id, open) => mark(id, open));
 
 /** The artifact alone in a window of its own: a desktop window in the app, a popup on the web. */
 export function popOut(s: SurfaceSummary): void {
   // The copy running in the panel stops: the window starts from the artifact's memory.
   dropLive(s.id);
-  const desktop = window.apxDesktop?.openArtifactWindow;
+  const desktop = window.coloniaDesktop?.openArtifactWindow;
   if (desktop) {
     desktop(s.id, s.title);
     mark(s.id, true);
@@ -40,7 +40,7 @@ export function popOut(s: SurfaceSummary): void {
   }
   const w = window.open(
     `${window.location.origin}/?artifact=${encodeURIComponent(s.id)}`,
-    `apx-artifact-${s.id}`,
+    `colonia-artifact-${s.id}`,
     "popup,width=1200,height=820",
   );
   if (!w) return;
@@ -56,7 +56,7 @@ export function popOut(s: SurfaceSummary): void {
 
 /** Closes the artifact's own window; it shows in the panel again. */
 export function bringBack(id: string): void {
-  const close = window.apxDesktop?.closeArtifactWindow;
+  const close = window.coloniaDesktop?.closeArtifactWindow;
   if (close) close(id);
   else popups.get(id)?.close();
   mark(id, false);

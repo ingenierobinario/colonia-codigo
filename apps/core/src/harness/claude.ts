@@ -1,5 +1,5 @@
 // Claude Code in its own sessions: the owner's own `claude` (their login, CLAUDE.md and settings) through the Agent
-// SDK; every APX tool call comes back through `io.execute`. See DECISIONS.md#d-007
+// SDK; every Colonia tool call comes back through `io.execute`. See DECISIONS.md#d-007
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
@@ -45,8 +45,8 @@ function subjectOf(input: Record<string, unknown>): string {
 const CLAUDE_MD_CAP = 12_000;
 
 /**
- * The folder's CLAUDE.md, read by APX: the repo's own .claude/settings files are not loaded, since their allow rules
- * and hooks would skip APX's approval. A link is not followed (it could point at any file of the owner's).
+ * The folder's CLAUDE.md, read by Colonia: the repo's own .claude/settings files are not loaded, since their allow rules
+ * and hooks would skip Colonia's approval. A link is not followed (it could point at any file of the owner's).
  */
 export function folderClaudeMd(cwd: string): string {
   const file = path.join(cwd, "CLAUDE.md");
@@ -61,7 +61,7 @@ export function folderClaudeMd(cwd: string): string {
   }
 }
 
-type Counts = { apx: number; builtins: number; permissions: number };
+type Counts = { colonia: number; builtins: number; permissions: number };
 
 /** A model call's tokens as the Messages API reports them; cached prompt tokens are counted apart. */
 type CallUsage = {
@@ -154,15 +154,15 @@ const loadSdk = () => {
   return sdkLoad;
 };
 
-/** APX's tools as an in-process MCP server: every call comes back through io.execute (cards, policy, steps). */
-function apxServer({ createSdkMcpServer, tool }: Sdk, io: TurnIO, counts: Counts) {
+/** Colonia's tools as an in-process MCP server: every call comes back through io.execute (cards, policy, steps). */
+function coloniaServer({ createSdkMcpServer, tool }: Sdk, io: TurnIO, counts: Counts) {
   return createSdkMcpServer({
-    name: "apx",
+    name: "colonia",
     version: "0.1.0",
     tools: io.tools.map((spec) =>
       tool(spec.function.name, spec.function.description, zodShape(spec.function.parameters), async (args) => {
-        counts.apx++;
-        const r = await io.execute(`${io.run.id}-c${counts.apx}`, spec.function.name, args as Record<string, unknown>);
+        counts.colonia++;
+        const r = await io.execute(`${io.run.id}-c${counts.colonia}`, spec.function.name, args as Record<string, unknown>);
         return { content: [{ type: "text" as const, text: r.text }], isError: !r.ok };
       }),
     ),
@@ -171,7 +171,7 @@ function apxServer({ createSdkMcpServer, tool }: Sdk, io: TurnIO, counts: Counts
 
 /** Every built-in tool (reads included: they may reach outside the folder) asks our policy through canUseTool. */
 function toolOptions(io: TurnIO, counts: Counts) {
-  const ours = io.tools.map((s) => `mcp__apx__${s.function.name}`);
+  const ours = io.tools.map((s) => `mcp__colonia__${s.function.name}`);
   return {
     tools: [...CLAUDE_BUILTINS, ...CODE_READ, ...CODE_WRITE],
     allowedTools: ours,
@@ -229,7 +229,7 @@ async function attempt(
         settingSources: ["user"],
         strictMcpConfig: true,
         settings: { disableClaudeAiConnectors: true, syncClaudeAiSkills: false, syncClaudeAiPlugins: false },
-        mcpServers: { apx: apxServer(sdk, io, o.counts) },
+        mcpServers: { colonia: coloniaServer(sdk, io, o.counts) },
         includePartialMessages: true,
         ...(o.resume ? { resume: o.resume } : {}),
         ...(o.chosen ? { model: o.chosen } : {}),
@@ -260,7 +260,7 @@ async function attempt(
         // Its own tools are shown as cards and recorded as steps; web tools also tell the policy that outside text
         // is now in the turn.
         for (const b of m.message.content)
-          if (b.type === "tool_use" && !b.name.startsWith("mcp__apx__")) {
+          if (b.type === "tool_use" && !b.name.startsWith("mcp__colonia__")) {
             o.counts.builtins++;
             io.observe({
               callId: b.id,
@@ -304,7 +304,7 @@ export function claudeHarness(opts: {
         chosen: modelPart(io.models[0]),
         effort: effortPart(io.models[0]),
       };
-      const counts: Counts = { apx: 0, builtins: 0, permissions: 0 };
+      const counts: Counts = { colonia: 0, builtins: 0, permissions: 0 };
       // Across a retry too: the first attempt's calls were spent all the same.
       const tally = claudeUsage((u) => io.onUsage?.(u));
       try {
@@ -314,7 +314,7 @@ export function claudeHarness(opts: {
         // but only for that, and never after any tool ran (ours or Claude's), since a rerun would repeat its effect.
         // See DECISIONS.md#d-007
         const gone = /session|conversation/i.test(errorMessage(err));
-        if (io.sessionId && gone && !io.signal.aborted && counts.apx === 0 && counts.builtins === 0)
+        if (io.sessionId && gone && !io.signal.aborted && counts.colonia === 0 && counts.builtins === 0)
           return attempt(io, { ...base, counts, tally, resume: undefined });
         throw err;
       }

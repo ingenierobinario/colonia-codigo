@@ -1,4 +1,4 @@
-import { Avatar } from "@apx/ui";
+import { Avatar } from "@colonia/ui";
 
 export function Initials() {
   return (

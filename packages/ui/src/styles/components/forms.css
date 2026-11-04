@@ -1,150 +1,150 @@
 /* ── Forms: Field, Select, TagInput, DatePicker/Calendar, menu extras ──────── */
-.apx-formfield {
+.colonia-formfield {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
-.apx-formfield__label {
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-medium);
-  color: var(--apx-fg-muted);
+.colonia-formfield__label {
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
+  color: var(--colonia-fg-muted);
 }
-.apx-formfield__hint,
-.apx-formfield__error {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+.colonia-formfield__hint,
+.colonia-formfield__error {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
-.apx-formfield__error {
-  color: var(--apx-danger);
+.colonia-formfield__error {
+  color: var(--colonia-danger);
 }
 
-.apx-menu__check {
+.colonia-menu__check {
   margin-left: auto;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-menu__chevron {
+.colonia-menu__chevron {
   margin-left: auto;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
-.apx-ctxmenu {
+.colonia-ctxmenu {
   display: contents;
 }
 
 /* Select: a field-looking trigger, a menu-looking list */
-.apx-select {
+.colonia-select {
   cursor: pointer;
   text-align: left;
   font: inherit;
 }
-.apx-field--sm.apx-select {
-  font-size: var(--apx-text-sm);
+.colonia-field--sm.colonia-select {
+  font-size: var(--colonia-text-sm);
 }
-.apx-select__value {
+.colonia-select__value {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-select__value.is-placeholder {
-  color: var(--apx-fg-subtle);
+.colonia-select__value.is-placeholder {
+  color: var(--colonia-fg-subtle);
 }
-.apx-select__icon {
+.colonia-select__icon {
   display: inline-flex;
   align-items: center;
   flex: none;
 }
-.apx-select__chevron {
+.colonia-select__chevron {
   display: inline-flex;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   flex: none;
 }
-.apx-select__popup {
+.colonia-select__popup {
   max-height: min(360px, var(--available-height, 360px));
   overflow-y: auto;
   min-width: var(--anchor-width, 200px);
 }
-.apx-select__trailing {
+.colonia-select__trailing {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 4px;
   margin-left: 8px;
 }
-.apx-select__item[data-selected] {
-  font-weight: var(--apx-weight-medium);
+.colonia-select__item[data-selected] {
+  font-weight: var(--colonia-weight-medium);
 }
 /* An option with a description: two lines, as tall as they need, no wider than the field (or 340px). */
-.apx-select__item:has(.apx-select__lines) {
+.colonia-select__item:has(.colonia-select__lines) {
   align-items: flex-start;
   height: auto;
   padding-top: 7px;
   padding-bottom: 7px;
 }
-.apx-select__item:has(.apx-select__lines) .apx-select__icon {
+.colonia-select__item:has(.colonia-select__lines) .colonia-select__icon {
   margin-top: 2px;
 }
-.apx-select__popup:has(.apx-select__lines) {
+.colonia-select__popup:has(.colonia-select__lines) {
   max-width: max(var(--anchor-width, 340px), 340px);
 }
-.apx-select__lines {
+.colonia-select__lines {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
 }
-.apx-select__desc {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-regular, 400);
+.colonia-select__desc {
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-regular, 400);
   line-height: 1.35;
   white-space: normal;
 }
 /* One line each: the name keeps its room, a long hint (an agent's role) ends in "…". */
-.apx-select__item > .apx-menu__text {
+.colonia-select__item > .colonia-menu__text {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-select__hint {
+.colonia-select__hint {
   flex: 0 1 auto;
   max-width: 45%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
-.apx-select__check {
+.colonia-select__check {
   display: inline-flex;
   margin-left: 4px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 
 /* TagInput */
 /* It grows to several lines of chips, so a pill's round ends would bulge: corners like a textarea's. */
-.apx-taginput {
+.colonia-taginput {
   flex-wrap: wrap;
   height: auto;
-  border-radius: var(--apx-radius-lg);
-  min-height: var(--apx-control-h-md);
+  border-radius: var(--colonia-radius-lg);
+  min-height: var(--colonia-control-h-md);
   padding-block: 4px;
   gap: 4px;
 }
-.apx-taginput__chip {
+.colonia-taginput__chip {
   display: inline-flex;
   align-items: center;
   gap: 2px;
   height: 22px;
   padding: 0 4px 0 8px;
-  border-radius: var(--apx-radius-pill);
-  background: var(--apx-fill-strong);
-  font-size: var(--apx-text-xs);
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-fill-strong);
+  font-size: var(--colonia-text-xs);
 }
-.apx-taginput__remove {
+.colonia-taginput__remove {
   display: inline-grid;
   place-items: center;
   width: 16px;
@@ -152,47 +152,47 @@
   border: 0;
   border-radius: 50%;
   background: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   cursor: pointer;
 }
-.apx-taginput__remove:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+.colonia-taginput__remove:hover {
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
-.apx-taginput__input {
+.colonia-taginput__input {
   min-width: 80px;
   height: 22px;
 }
 
 /* DatePicker */
-.apx-datewrap {
+.colonia-datewrap {
   position: relative;
   display: inline-flex;
   min-width: 0;
 }
-.apx-datefield {
+.colonia-datefield {
   cursor: pointer;
   font: inherit;
   text-align: left;
 }
-.apx-field--sm.apx-datefield {
-  font-size: var(--apx-text-sm);
+.colonia-field--sm.colonia-datefield {
+  font-size: var(--colonia-text-sm);
 }
-.apx-datefield__text {
+.colonia-datefield__text {
   flex: 1;
   white-space: nowrap;
 }
-.apx-datefield.has-clear {
+.colonia-datefield.has-clear {
   padding-right: 30px;
 }
-.apx-datefield.is-placeholder .apx-datefield__text {
-  color: var(--apx-fg-subtle);
+.colonia-datefield.is-placeholder .colonia-datefield__text {
+  color: var(--colonia-fg-subtle);
 }
-.apx-datefield__icon {
-  color: var(--apx-fg-subtle);
+.colonia-datefield__icon {
+  color: var(--colonia-fg-subtle);
   flex: none;
 }
-.apx-datefield__clear {
+.colonia-datefield__clear {
   position: absolute;
   right: 6px;
   top: 50%;
@@ -204,228 +204,228 @@
   border: 0;
   border-radius: 50%;
   background: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   cursor: pointer;
 }
-.apx-datefield__clear:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+.colonia-datefield__clear:hover {
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
-.apx-datepop {
+.colonia-datepop {
   padding: 10px;
 }
-.apx-datepop__presets {
+.colonia-datepop__presets {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
 }
-.apx-datepop__preset {
+.colonia-datepop__preset {
   height: 26px;
   padding: 0 10px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-pill);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-pill);
   background: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font: inherit;
-  font-size: var(--apx-text-xs);
+  font-size: var(--colonia-text-xs);
   cursor: pointer;
 }
-.apx-datepop__preset:hover,
-.apx-datepop__preset.is-on {
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+.colonia-datepop__preset:hover,
+.colonia-datepop__preset.is-on {
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
 }
-.apx-datepop__time {
+.colonia-datepop__time {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--apx-border);
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-muted);
+  border-top: 1px solid var(--colonia-border);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
 }
-.apx-datepop__timeinput {
+.colonia-datepop__timeinput {
   width: 110px;
   font: inherit;
 }
 
 /* Calendar */
-.apx-cal {
+.colonia-cal {
   width: 252px;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
 }
-.apx-cal__head {
+.colonia-cal__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 6px;
 }
-.apx-cal__title {
-  font-weight: var(--apx-weight-medium);
+.colonia-cal__title {
+  font-weight: var(--colonia-weight-medium);
 }
-.apx-cal__title::first-letter {
+.colonia-cal__title::first-letter {
   text-transform: uppercase;
 }
-.apx-cal__nav {
+.colonia-cal__nav {
   display: inline-grid;
   place-items: center;
   width: 28px;
   height: 28px;
   border: 0;
-  border-radius: var(--apx-radius-sm, 6px);
+  border-radius: var(--colonia-radius-sm, 6px);
   background: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   cursor: pointer;
 }
-.apx-cal__nav:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+.colonia-cal__nav:hover {
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
-.apx-cal__grid {
+.colonia-cal__grid {
   display: grid;
   grid-template-columns: repeat(7, 36px);
   row-gap: 2px;
 }
-.apx-cal__weekday {
+.colonia-cal__weekday {
   display: grid;
   place-items: center;
   height: 24px;
-  font-size: var(--apx-text-2xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-2xs);
+  color: var(--colonia-fg-subtle);
   text-transform: uppercase;
 }
-.apx-cal__day {
+.colonia-cal__day {
   height: 32px;
   border: 0;
-  border-radius: var(--apx-radius-sm, 6px);
+  border-radius: var(--colonia-radius-sm, 6px);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
-.apx-cal__day:hover:not(:disabled) {
-  background: var(--apx-fill-hover);
+.colonia-cal__day:hover:not(:disabled) {
+  background: var(--colonia-fill-hover);
 }
-.apx-cal__day.is-outside {
-  color: var(--apx-fg-subtle);
+.colonia-cal__day.is-outside {
+  color: var(--colonia-fg-subtle);
 }
-.apx-cal__day.is-today {
-  box-shadow: inset 0 0 0 1px var(--apx-border-strong);
+.colonia-cal__day.is-today {
+  box-shadow: inset 0 0 0 1px var(--colonia-border-strong);
 }
-.apx-cal__day.is-inrange {
+.colonia-cal__day.is-inrange {
   border-radius: 0;
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
-.apx-cal__day.is-selected,
-.apx-cal__day.is-selected:hover {
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
+.colonia-cal__day.is-selected,
+.colonia-cal__day.is-selected:hover {
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
 }
-.apx-cal__day:disabled {
+.colonia-cal__day:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
 /* SuggestTextarea: variables offered under the field */
-.apx-suggest {
+.colonia-suggest {
   position: relative;
 }
-.apx-suggest .apx-textarea {
+.colonia-suggest .colonia-textarea {
   width: 100%;
 }
 /* Placed by the component (fixed, in the portal) so a dialog's scroll area never clips it. */
-.apx-suggest__list {
+.colonia-suggest__list {
   z-index: 20;
   margin: 0;
   padding: 4px;
   list-style: none;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-md);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-md);
   max-height: 220px;
   overflow-y: auto;
 }
-.apx-suggest__item {
+.colonia-suggest__item {
   display: flex;
   align-items: baseline;
   gap: 10px;
   width: 100%;
   padding: 6px 8px;
   border: 0;
-  border-radius: calc(var(--apx-radius-md) - 4px);
+  border-radius: calc(var(--colonia-radius-md) - 4px);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
 }
-.apx-suggest__item.is-active,
-.apx-suggest__item:hover {
-  background: var(--apx-popup-hover, var(--apx-fill));
+.colonia-suggest__item.is-active,
+.colonia-suggest__item:hover {
+  background: var(--colonia-popup-hover, var(--colonia-fill));
 }
-.apx-suggest__item code {
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
+.colonia-suggest__item code {
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
 }
-.apx-suggest__item span {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+.colonia-suggest__item span {
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
 }
 
 /* TemplateField: a textarea over a mirror of its text, where placeholders read as badges */
-.apx-tfield {
+.colonia-tfield {
   position: relative;
 }
-.apx-tfield__mirror,
-.apx-tfield .apx-tfield__input {
+.colonia-tfield__mirror,
+.colonia-tfield .colonia-tfield__input {
   padding-right: 38px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   scrollbar-gutter: stable;
 }
-.apx-tfield__mirror {
+.colonia-tfield__mirror {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   resize: none;
 }
-.apx-tfield:focus-within .apx-tfield__mirror {
-  border-color: var(--apx-border-strong);
-  background: var(--apx-surface);
+.colonia-tfield:focus-within .colonia-tfield__mirror {
+  border-color: var(--colonia-border-strong);
+  background: var(--colonia-surface);
 }
 /* Only the caret and the selection show: the mirror under it draws the text. */
-.apx-tfield .apx-tfield__input,
-.apx-tfield .apx-tfield__input:focus {
+.colonia-tfield .colonia-tfield__input,
+.colonia-tfield .colonia-tfield__input:focus {
   position: relative;
   background: transparent;
   border-color: transparent;
   color: transparent;
-  caret-color: var(--apx-fg);
+  caret-color: var(--colonia-fg);
 }
-.apx-tfield .apx-tfield__input::selection {
-  background: var(--apx-info-soft);
+.colonia-tfield .colonia-tfield__input::selection {
+  background: var(--colonia-info-soft);
   color: transparent;
 }
 /* A badge keeps the text's own metrics: tint and a ring, no padding, so the caret stays where the letters are. */
-.apx-tfield__chip {
+.colonia-tfield__chip {
   border-radius: 4px;
-  background: var(--apx-info-soft);
-  box-shadow: 0 0 0 2px var(--apx-info-soft);
-  color: var(--apx-info-soft-fg);
+  background: var(--colonia-info-soft);
+  box-shadow: 0 0 0 2px var(--colonia-info-soft);
+  color: var(--colonia-info-soft-fg);
 }
-.apx-tfield__chip.is-secret {
-  background: var(--apx-warning-soft);
-  box-shadow: 0 0 0 2px var(--apx-warning-soft);
-  color: var(--apx-warning-soft-fg);
+.colonia-tfield__chip.is-secret {
+  background: var(--colonia-warning-soft);
+  box-shadow: 0 0 0 2px var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
 }
-.apx-tfield__pick {
+.colonia-tfield__pick {
   position: absolute;
   top: 6px;
   right: 6px;
@@ -435,169 +435,169 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: calc(var(--apx-radius-md) - 4px);
+  border-radius: calc(var(--colonia-radius-md) - 4px);
   background: transparent;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   cursor: pointer;
 }
-.apx-tfield__pick:hover {
-  background: var(--apx-fill-hover, var(--apx-fill));
-  color: var(--apx-fg);
+.colonia-tfield__pick:hover {
+  background: var(--colonia-fill-hover, var(--colonia-fill));
+  color: var(--colonia-fg);
 }
 /* Placed by the component (fixed, in the portal) so a side panel's scroll never clips it. */
-.apx-tfield__list {
+.colonia-tfield__list {
   z-index: 20;
   padding: 4px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  box-shadow: var(--apx-shadow-md);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  box-shadow: var(--colonia-shadow-md);
   max-height: 280px;
   overflow-y: auto;
 }
-.apx-tfield__set {
+.colonia-tfield__set {
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 }
-.apx-tfield__group {
+.colonia-tfield__group {
   padding: 8px 8px 4px;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
-.apx-tfield__item {
+.colonia-tfield__item {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
   padding: 6px 8px;
   border: 0;
-  border-radius: calc(var(--apx-radius-md) - 4px);
+  border-radius: calc(var(--colonia-radius-md) - 4px);
   background: none;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
 }
-.apx-tfield__item.is-active,
-.apx-tfield__item:hover {
-  background: var(--apx-popup-hover, var(--apx-fill));
+.colonia-tfield__item.is-active,
+.colonia-tfield__item:hover {
+  background: var(--colonia-popup-hover, var(--colonia-fill));
 }
-.apx-tfield__label {
+.colonia-tfield__label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-tfield__hint {
-  color: var(--apx-fg-subtle);
-  font-size: var(--apx-text-xs);
+.colonia-tfield__hint {
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
   white-space: nowrap;
 }
-.apx-tfield__item .apx-tfield__chip {
+.colonia-tfield__item .colonia-tfield__chip {
   margin-left: auto;
   max-width: 50%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--apx-font-mono);
-  font-size: var(--apx-text-xs);
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
 }
-.apx-tfield__item.is-action {
-  color: var(--apx-fg-muted);
+.colonia-tfield__item.is-action {
+  color: var(--colonia-fg-muted);
 }
-.apx-tfield__item.is-action:hover,
-.apx-tfield__item.is-action.is-active {
-  color: var(--apx-fg);
+.colonia-tfield__item.is-action:hover,
+.colonia-tfield__item.is-action.is-active {
+  color: var(--colonia-fg);
 }
 /* One line, shaped like an Input; a long value wraps and the field grows with it. */
-.apx-tfield.is-single .apx-tfield__mirror,
-.apx-tfield.is-single .apx-tfield__input {
-  min-height: var(--apx-control-h-md);
+.colonia-tfield.is-single .colonia-tfield__mirror,
+.colonia-tfield.is-single .colonia-tfield__input {
+  min-height: var(--colonia-control-h-md);
   padding-top: 6px;
   padding-bottom: 6px;
-  border-radius: var(--apx-control-radius);
+  border-radius: var(--colonia-control-radius);
   resize: none;
   field-sizing: content;
 }
-.apx-tfield.is-single .apx-tfield__pick {
+.colonia-tfield.is-single .colonia-tfield__pick {
   top: 4px;
   right: 4px;
   border-radius: 50%;
 }
-.apx-tfield__empty {
+.colonia-tfield__empty {
   padding: 8px;
-  font-size: var(--apx-text-sm);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-subtle);
 }
 
 /* AgentGrid: agents as cards in two columns, the chosen one outlined */
-.apx-agentgrid {
+.colonia-agentgrid {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
-.apx-agentgrid__cards {
+.colonia-agentgrid__cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
-.apx-agentgrid__card {
+.colonia-agentgrid__card {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
   padding: 7px 8px;
-  border: 1px solid var(--apx-border);
-  border-radius: var(--apx-radius-md);
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
   background: transparent;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   font: inherit;
   text-align: left;
   cursor: pointer;
   transition:
-    border-color var(--apx-duration),
-    background var(--apx-duration);
+    border-color var(--colonia-duration),
+    background var(--colonia-duration);
 }
-.apx-agentgrid__card:hover {
-  background: var(--apx-fill);
+.colonia-agentgrid__card:hover {
+  background: var(--colonia-fill);
 }
-.apx-agentgrid__card.is-selected {
-  border-color: var(--apx-fg);
-  background: var(--apx-fill);
+.colonia-agentgrid__card.is-selected {
+  border-color: var(--colonia-fg);
+  background: var(--colonia-fill);
 }
-.apx-agentgrid__text {
+.colonia-agentgrid__text {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.apx-agentgrid__name,
-.apx-agentgrid__role {
+.colonia-agentgrid__name,
+.colonia-agentgrid__role {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-agentgrid__name {
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-medium);
+.colonia-agentgrid__name {
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
 }
-.apx-agentgrid__role {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+.colonia-agentgrid__role {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
-.apx-agentgrid__more {
+.colonia-agentgrid__more {
   align-self: flex-start;
   padding: 2px 0;
   border: 0;
   background: transparent;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   cursor: pointer;
 }
-.apx-agentgrid__more:hover {
-  color: var(--apx-fg);
+.colonia-agentgrid__more:hover {
+  color: var(--colonia-fg);
 }

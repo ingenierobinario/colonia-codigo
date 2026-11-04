@@ -1,5 +1,5 @@
 // A folder (files.*), a project's or a chat's: browse, read, preview media and the owner's actions on a file.
-import type { Result } from "@apx/protocol";
+import type { Result } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";
@@ -28,7 +28,7 @@ const KINDS: Record<string, MediaKind> = {
 export const mediaKind = (path: string): MediaKind | undefined => KINDS[path.split(".").pop()?.toLowerCase() ?? ""];
 
 /**
- * Whose folder a file is in: a project's, the base project's (APX's work folder), the one a chat works in, or
+ * Whose folder a file is in: a project's, the base project's (Colonia's work folder), the one a chat works in, or
  * (`scratch`) that chat's temp folder.
  */
 export type FileWhere = { project: string } | { base: true } | { thread: string; scratch?: boolean };
@@ -46,7 +46,7 @@ const LOOPBACK = new Set(["localhost", "127.0.0.1", "[::1]"]);
  * a browser (or an older app) guesses from the address.
  */
 export const coreOnThisComputer = (): boolean =>
-  window.apxDesktop?.coreLocal ?? (LOOPBACK.has(location.hostname) || location.hostname.endsWith(".localhost"));
+  window.coloniaDesktop?.coreLocal ?? (LOOPBACK.has(location.hostname) || location.hostname.endsWith(".localhost"));
 
 /** Saves a file of the core's on this computer, wherever the core runs. */
 export async function downloadFile(where: FileWhere, path: string): Promise<void> {

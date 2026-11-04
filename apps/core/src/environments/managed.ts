@@ -93,7 +93,7 @@ export function managedVmConfig(store: Store, home: string, external?: ComputerC
       .filter(Boolean)
       .some((line) => (JSON.parse(line) as { status: string }).status === "Running");
   };
-  // UTF-8 for APX's own wsl.exe calls only: Lima reads wsl.exe's UTF-16 output.
+  // UTF-8 for Colonia's own wsl.exe calls only: Lima reads wsl.exe's UTF-16 output.
   const wsl = limaProcess(() => path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "wsl.exe"), {
     ...env,
     WSL_UTF8: "1",
@@ -143,7 +143,7 @@ export function managedVmConfig(store: Store, home: string, external?: ComputerC
       if (!host) throw new Error("Computer is not available on this system");
       const missing = missingPrerequisite(host, env.PATH);
       if (missing) throw new Error(missing.message);
-      if (limaHome.length > 70) throw new Error("APX home is too long for Lima's SSH sockets; use a shorter APX_HOME");
+      if (limaHome.length > 70) throw new Error("Colonia home is too long for Lima's SSH sockets; use a shorter COLONIA_HOME");
       fs.mkdirSync(root, { recursive: true, mode: 0o700 });
       fs.mkdirSync(limaHome, { recursive: true, mode: 0o700 });
       const wanted = ownerResources(store);

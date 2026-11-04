@@ -80,13 +80,13 @@ test("a plain folder becomes a project from the sidebar and opens", async ({ pag
   await expect(page.getByRole("button", { name: "AGENTS.md" })).toBeVisible();
 });
 
-test("a project without a folder is made inside APX's, with its name and kind", async ({ page }) => {
+test("a project without a folder is made inside Colonia's, with its name and kind", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Nuevo proyecto" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("radio", { name: "Sin carpeta" }).click();
   await dialog.getByRole("textbox", { name: "Nombre" }).fill("Ventas Q4");
-  await expect(dialog.getByText("~/.apx/v2/projects/ventas-q4")).toBeVisible();
+  await expect(dialog.getByText("~/.colonia/v2/projects/ventas-q4")).toBeVisible();
   await dialog.getByRole("combobox", { name: "Tipo" }).click();
   await page.getByRole("option", { name: /^Empresa/ }).click();
   await dialog.getByRole("button", { name: "Sumar" }).click();

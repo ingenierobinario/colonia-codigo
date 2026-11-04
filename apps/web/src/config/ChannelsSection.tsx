@@ -1,4 +1,4 @@
-import { Button, EmptyState, Icons, Menu, SegmentedControl } from "@apx/ui";
+import { Button, EmptyState, Icons, Menu, SegmentedControl } from "@colonia/ui";
 import { useEffect } from "react";
 import { addChannelItems } from "../channels/KindIcon.tsx";
 import { CHANNEL_KIND_IDS, CHANNEL_KINDS, type ChannelKind, isChannelKind } from "../channels/kinds.ts";

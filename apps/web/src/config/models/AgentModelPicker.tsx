@@ -1,4 +1,4 @@
-import type { Agent } from "@apx/protocol";
+import type { Agent } from "@colonia/protocol";
 import { agentChoiceLabel, setAgentModelChoice, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 import { ModelChoicePicker } from "./ModelPickers.tsx";

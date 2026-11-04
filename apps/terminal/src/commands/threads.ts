@@ -1,4 +1,4 @@
-// apx threads / runs / agents / secrets: reading and steering what the core holds.
+// colonia threads / runs / agents / secrets: reading and steering what the core holds.
 import os from "node:os";
 import path from "node:path";
 import {
@@ -9,8 +9,8 @@ import {
   DEFAULT_AUTONOMY,
   type Message,
   ProjectKind,
-} from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+} from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
 /** Who wrote a message, in one word: the agent's id, or the author's kind. */
 export const authorOf = (a: Author) => (a.kind === "agent" ? a.id : a.kind);
@@ -20,7 +20,7 @@ export const messageText = (m: Message) =>
   m.parts.map((p) => (p.type === "text" ? p.text : p.type === "notice" ? `[${p.text}]` : `[${p.type}]`)).join(" ");
 
 export async function threads(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, id, ...rest]: string[],
   o: { json?: boolean | undefined } = {},
 ): Promise<void> {
@@ -31,7 +31,7 @@ export async function threads(
   }
   if (sub === "search") {
     const query = [id, ...rest].filter(Boolean).join(" ").trim();
-    if (!query) throw new Error("usage: apx threads search <words…>");
+    if (!query) throw new Error("usage: colonia threads search <words…>");
     const { hits } = await client.call("threads.search", { query });
     for (const h of hits)
       console.log(
@@ -40,7 +40,7 @@ export async function threads(
     if (!hits.length) console.log("(no messages match)");
     return;
   }
-  if (!id) throw new Error(`usage: apx threads ${sub} <thread>`);
+  if (!id) throw new Error(`usage: colonia threads ${sub} <thread>`);
   if (sub === "get") {
     const t = await client.call("threads.get", { thread: id });
     if (o.json) {
@@ -62,7 +62,7 @@ export async function threads(
 }
 
 export async function runs(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, id, ...rest]: string[],
   timeoutS = 60,
   approvalScope?: string,
@@ -78,7 +78,7 @@ export async function runs(
   }
   if (sub === "respond") {
     const [answer, ...note] = rest;
-    if (!id || !answer) throw new Error('usage: apx runs respond <input> approve|deny ["note"] | "<answer text>"');
+    if (!id || !answer) throw new Error('usage: colonia runs respond <input> approve|deny ["note"] | "<answer text>"');
     const decision = answer === "approve" || answer === "deny" ? answer : undefined;
     const text = decision ? note.join(" ") || undefined : [answer, ...note].join(" ");
     const r = await client.call("runs.respond", {
@@ -90,7 +90,7 @@ export async function runs(
     console.log(`${r.id} ${r.state}${r.approval_scope ? ` (${r.approval_scope})` : ""}`);
     return;
   }
-  if (!id || (sub !== "get" && sub !== "wait")) throw new Error("usage: apx runs get|wait|pending|respond …");
+  if (!id || (sub !== "get" && sub !== "wait")) throw new Error("usage: colonia runs get|wait|pending|respond …");
   const r =
     sub === "get"
       ? await client.call("runs.get", { run: id })
@@ -98,7 +98,7 @@ export async function runs(
   console.log(JSON.stringify(r, null, 2));
 }
 
-export async function agents(client: ApxClient): Promise<void> {
+export async function agents(client: ColoniaClient): Promise<void> {
   const { agents } = await client.call("agents.list", {});
   for (const a of agents)
     console.log(
@@ -106,14 +106,14 @@ export async function agents(client: ApxClient): Promise<void> {
     );
 }
 
-export async function secrets(client: ApxClient, [sub, name]: string[]): Promise<void> {
+export async function secrets(client: ColoniaClient, [sub, name]: string[]): Promise<void> {
   if (!sub || sub === "list") {
     const { secrets } = await client.call("secrets.list", {});
     for (const s of secrets) console.log(`${s.name.padEnd(20)} ${s.updated_at}`);
     if (!secrets.length) console.log("(none)");
     return;
   }
-  if (!name) throw new Error(`usage: apx secrets ${sub} <name>`);
+  if (!name) throw new Error(`usage: colonia secrets ${sub} <name>`);
   if (sub === "rm") {
     await client.call("secrets.set", { name, value: null });
     console.log(`removed ${name}`);
@@ -124,7 +124,7 @@ export async function secrets(client: ApxClient, [sub, name]: string[]): Promise
   let value = "";
   for await (const chunk of process.stdin) value += String(chunk);
   value = value.trim();
-  if (!value) throw new Error("pipe the value in: … | apx secrets set <name>");
+  if (!value) throw new Error("pipe the value in: … | colonia secrets set <name>");
   await client.call("secrets.set", { name, value });
   console.log(`stored ${name}`);
 }
@@ -157,7 +157,7 @@ function kindOf(kind: string | undefined): ProjectKind | undefined {
   return k.data;
 }
 
-export async function projects(client: ApxClient, [sub, arg, ...more]: string[], o: ProjectFlags = {}): Promise<void> {
+export async function projects(client: ColoniaClient, [sub, arg, ...more]: string[], o: ProjectFlags = {}): Promise<void> {
   if (!sub || sub === "list") {
     const { projects } = await client.call("projects.list", {});
     for (const p of projects) {
@@ -170,7 +170,7 @@ export async function projects(client: ApxClient, [sub, arg, ...more]: string[],
     return;
   }
   if (sub === "register") {
-    if (!arg) throw new Error("usage: apx projects register <folder>");
+    if (!arg) throw new Error("usage: colonia projects register <folder>");
     const { resolve } = await import("node:path");
     const r = await client.call("projects.register", { path: resolve(arg) });
     console.log(`${r.project.name} (${r.project.id}): ${r.agents} agents`);
@@ -179,7 +179,7 @@ export async function projects(client: ApxClient, [sub, arg, ...more]: string[],
   if (sub === "create") {
     const name = [arg, ...more].filter(Boolean).join(" ") || undefined;
     if (!name && !o.path)
-      throw new Error('usage: apx projects create "<Name>" [--path <folder>] [--kind <kind>] [--desc "…"]');
+      throw new Error('usage: colonia projects create "<Name>" [--path <folder>] [--kind <kind>] [--desc "…"]');
     const kind = kindOf(o.kind);
     const { resolve } = await import("node:path");
     const { homedir } = await import("node:os");
@@ -195,7 +195,7 @@ export async function projects(client: ApxClient, [sub, arg, ...more]: string[],
   if (sub === "set") {
     if (!arg || (o.name === undefined && o.kind === undefined && o.desc === undefined && o.autonomy === undefined))
       throw new Error(
-        'usage: apx projects set <project> [--name "…"] [--kind <kind>] [--desc "…"] [--autonomy <level>]',
+        'usage: colonia projects set <project> [--name "…"] [--kind <kind>] [--desc "…"] [--autonomy <level>]',
       );
     const kind = kindOf(o.kind);
     const autonomy = autonomyOf(o.autonomy);
@@ -218,17 +218,17 @@ export async function projects(client: ApxClient, [sub, arg, ...more]: string[],
     return;
   }
   if (sub === "rm") {
-    if (!arg) throw new Error("usage: apx projects rm <project>");
+    if (!arg) throw new Error("usage: colonia projects rm <project>");
     await client.call("projects.unregister", { project: arg });
-    console.log(`${arg} is no longer a project in APX; its folder and files were not touched`);
+    console.log(`${arg} is no longer a project in Colonia; its folder and files were not touched`);
     return;
   }
   throw new Error(`unknown projects command: ${sub}`);
 }
 
-/** apx projects folders: the folders a project's agents may read and never change. */
-async function folders(client: ApxClient, sub: string | undefined, [project, dir]: string[]): Promise<void> {
-  const usage = "usage: apx projects folders list|add|rm <project> [folder]";
+/** colonia projects folders: the folders a project's agents may read and never change. */
+async function folders(client: ColoniaClient, sub: string | undefined, [project, dir]: string[]): Promise<void> {
+  const usage = "usage: colonia projects folders list|add|rm <project> [folder]";
   if (!sub || !project || !["list", "add", "rm"].includes(sub) || (sub !== "list" && !dir)) throw new Error(usage);
   const { projects } = await client.call("projects.list", {});
   const p = projects.find((x) => x.id === project);
@@ -246,7 +246,7 @@ async function folders(client: ApxClient, sub: string | undefined, [project, dir
   console.log(shown.length ? shown.join("\n") : `(${p.name} has no read-only folders)`);
 }
 
-export async function jobs(client: ApxClient, [sub, id]: string[]): Promise<void> {
+export async function jobs(client: ColoniaClient, [sub, id]: string[]): Promise<void> {
   if (!sub || sub === "list") {
     const { running, finished } = await client.call("jobs.list", { finished: 10 });
     const row = (j: (typeof running)[number]) =>
@@ -255,7 +255,7 @@ export async function jobs(client: ApxClient, [sub, id]: string[]): Promise<void
     if (finished.length) console.log(`\nfinished:\n${finished.map(row).join("\n")}`);
     return;
   }
-  if (!id) throw new Error(`usage: apx jobs ${sub} <job>`);
+  if (!id) throw new Error(`usage: colonia jobs ${sub} <job>`);
   if (sub === "get") {
     const r = await client.call("jobs.get", { job: id });
     console.log(`${r.job.title} · ${r.job.state}${r.job.cwd ? ` · ${r.job.cwd}` : ""}`);
@@ -270,7 +270,7 @@ export async function jobs(client: ApxClient, [sub, id]: string[]): Promise<void
   throw new Error(`unknown jobs command: ${sub}`);
 }
 
-/** apx mcps: MCP servers agents may use (list, approve a project's, add or remove the owner's own). */
+/** colonia mcps: MCP servers agents may use (list, approve a project's, add or remove the owner's own). */
 /** `K=V` pairs from repeated --env / --header options. */
 function pairs(list: string[] | undefined, flag: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -283,7 +283,7 @@ function pairs(list: string[] | undefined, flag: string): Record<string, string>
 }
 
 export async function mcps(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, a, b, ...rest]: string[],
   o: { project?: string | undefined; env?: string[] | undefined; header?: string[] | undefined } = {},
 ): Promise<void> {
@@ -302,13 +302,13 @@ export async function mcps(
     console.log(`${name}: ${s?.status ?? "saved"} · live from the next message`);
   };
   if (sub === "show") {
-    if (!a) throw new Error("usage: apx mcps show <name> [--project p]");
+    if (!a) throw new Error("usage: colonia mcps show <name> [--project p]");
     const { status, def } = await definition(a);
     console.log(JSON.stringify({ name: a, status: status.status, enabled: status.enabled, ...def }, null, 2));
     return;
   }
   if (sub === "copy") {
-    if (!a || !b) throw new Error("usage: apx mcps copy <from> <to> [--env K=V…] [--header K=V…]");
+    if (!a || !b) throw new Error("usage: colonia mcps copy <from> <to> [--env K=V…] [--header K=V…]");
     const { def } = await definition(a);
     await save(b, {
       ...(def.url
@@ -319,7 +319,7 @@ export async function mcps(
     return;
   }
   if (sub === "rename") {
-    if (!a || !b) throw new Error("usage: apx mcps rename <name> <new-name>");
+    if (!a || !b) throw new Error("usage: colonia mcps rename <name> <new-name>");
     const { status, def } = await definition(a);
     // The new one is saved before the old one goes: nothing is lost if either step fails.
     await save(b, {
@@ -333,7 +333,7 @@ export async function mcps(
   }
   if (sub === "set") {
     if (!a || (!o.env?.length && !o.header?.length))
-      throw new Error("usage: apx mcps set <name> --env K=V… [--header K=V…]");
+      throw new Error("usage: colonia mcps set <name> --env K=V… [--header K=V…]");
     const { status, def } = await definition(a);
     await save(a, {
       ...(def.url
@@ -354,22 +354,22 @@ export async function mcps(
     return;
   }
   if (sub === "trust" || sub === "untrust") {
-    if (!a || !b) throw new Error(`usage: apx mcps ${sub} <project> <server>`);
+    if (!a || !b) throw new Error(`usage: colonia mcps ${sub} <project> <server>`);
     const r = await client.call("mcp.trust", { project: a, server: b, trusted: sub === "trust" });
     console.log(`${r.server.name}: ${r.server.status}`);
     return;
   }
   if (sub === "on" || sub === "off") {
     // A global server is switched per project: the core keeps no install-wide off switch.
-    if (!a || !o.project) throw new Error(`usage: apx mcps ${sub} <server> --project <project>`);
+    if (!a || !o.project) throw new Error(`usage: colonia mcps ${sub} <server> --project <project>`);
     const r = await client.call("mcp.toggle", { project: o.project, server: a, on: sub === "on" });
     const s = r.servers.find((x) => x.name === a && x.scope === "global");
     console.log(`${a} in ${o.project}: ${sub}${s && sub === "on" ? ` · ${s.status}` : ""}`);
     return;
   }
   if (sub === "add") {
-    // apx mcps add <name> <command> [args…]   or   apx mcps add <name> https://…
-    if (!a || !b) throw new Error("usage: apx mcps add <name> <command> [args…] | <url>");
+    // colonia mcps add <name> <command> [args…]   or   colonia mcps add <name> https://…
+    if (!a || !b) throw new Error("usage: colonia mcps add <name> <command> [args…] | <url>");
     const env = pairs(o.env, "env");
     const server = /^https?:\/\//.test(b)
       ? { url: b, headers: pairs(o.header, "header"), env }
@@ -378,7 +378,7 @@ export async function mcps(
     return;
   }
   if (sub === "rm") {
-    if (!a) throw new Error("usage: apx mcps rm <name>");
+    if (!a) throw new Error("usage: colonia mcps rm <name>");
     await client.call("mcp.set", { name: a, ...where, server: null });
     console.log(`removed ${a}`);
     return;
@@ -386,7 +386,7 @@ export async function mcps(
   throw new Error(`unknown mcps command: ${sub}`);
 }
 
-export async function usage(client: ApxClient, [days]: string[]): Promise<void> {
+export async function usage(client: ColoniaClient, [days]: string[]): Promise<void> {
   const since = new Date(Date.now() - Number(days ?? 30) * 86_400_000).toISOString();
   const r = await client.call("usage.summary", { since });
   console.log(`since ${r.since.slice(0, 10)}`);
@@ -401,8 +401,8 @@ export async function usage(client: ApxClient, [days]: string[]): Promise<void> 
     );
 }
 
-/** The skills other agent apps get for APX: the core keeps them current at every start; this does it now. */
-export async function runtimeSkills(client: ApxClient, dryRun: boolean): Promise<void> {
+/** The skills other agent apps get for Colonia: the core keeps them current at every start; this does it now. */
+export async function runtimeSkills(client: ColoniaClient, dryRun: boolean): Promise<void> {
   const r = await client.call("skills.runtimes", { dry_run: dryRun });
   const home = os.homedir();
   // path.relative compares as the system does (any case on Windows).
@@ -419,21 +419,21 @@ export async function runtimeSkills(client: ApxClient, dryRun: boolean): Promise
   if (!r.steps.length) console.log("(no agent app found: nothing to do)");
 }
 
-/** apx, global or project for APX's folders; the app's name (claude, codex…) for a skill read from that app. */
+/** colonia, global or project for Colonia's folders; the app's name (claude, codex…) for a skill read from that app. */
 const placeOf = (s: { source: string; scope: string }) =>
-  s.source === "apx" ? "apx" : ["owner", "project", "extension"].includes(s.source) ? s.scope : s.source;
+  s.source === "colonia" ? "colonia" : ["owner", "project", "extension"].includes(s.source) ? s.scope : s.source;
 
 export async function skills(
-  client: ApxClient,
+  client: ColoniaClient,
   [sub, name]: string[],
   o: { project?: string | undefined } = {},
 ): Promise<void> {
   if (sub === "save") {
-    if (!name) throw new Error("usage: apx skills save <skill> [--project <project>] < SKILL.md");
+    if (!name) throw new Error("usage: colonia skills save <skill> [--project <project>] < SKILL.md");
     // The whole SKILL.md (frontmatter and body) on stdin: a body would not survive as an argument.
     let content = "";
     for await (const chunk of process.stdin) content += String(chunk);
-    if (!content.trim()) throw new Error("pipe the SKILL.md in: … | apx skills save <skill>");
+    if (!content.trim()) throw new Error("pipe the SKILL.md in: … | colonia skills save <skill>");
     const r = await client.call("skills.save", {
       name,
       target: o.project ? "project" : "global",
@@ -444,17 +444,17 @@ export async function skills(
     return;
   }
   if (sub === "on" || sub === "off") {
-    if (!name) throw new Error(`usage: apx skills ${sub} <skill> [--project <project>]`);
+    if (!name) throw new Error(`usage: colonia skills ${sub} <skill> [--project <project>]`);
     await client.call("skills.toggle", { name, on: sub === "on", ...(o.project ? { project: o.project } : {}) });
     console.log(`${name}: ${sub}${o.project ? ` in ${o.project}` : " everywhere"}`);
     return;
   }
-  // `apx skills`, `apx skills list [project]` or, as before, `apx skills <project>`.
+  // `colonia skills`, `colonia skills list [project]` or, as before, `colonia skills <project>`.
   const project = (sub === "list" ? name : sub) ?? o.project;
   const r = await client.call("skills.list", project ? { project } : {});
   for (const s of r.skills)
     console.log(
       `${s.name.padEnd(32)} ${placeOf(s).padEnd(8)} ${s.on ? "   " : "off"} ${s.description.slice(0, 90)}${s.copies.length ? ` (also in ${s.copies.map((c) => c.source).join(", ")})` : ""}`,
     );
-  if (!r.skills.length) console.log("(no skills: add folders with a SKILL.md under ~/.apx/v2/skills or .apc/skills)");
+  if (!r.skills.length) console.log("(no skills: add folders with a SKILL.md under ~/.colonia/v2/skills or .apc/skills)");
 }

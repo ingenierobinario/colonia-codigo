@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// Files the owner opens with APX (double-click, "Open with", dropped on the Dock icon): kept until the panel takes them.
+// Files the owner opens with Colonia (double-click, "Open with", dropped on the Dock icon): kept until the panel takes them.
 
-/** The file types APX registers; only .apxart installs today. */
-export const OPENED_EXTS = [".apxart", ".apxapp", ".apxext"] as const;
+/** The file types Colonia registers; only .coloniaart installs today. */
+export const OPENED_EXTS = [".coloniaart", ".coloniaapp", ".coloniaext"] as const;
 /** Larger than any artifact with its memory; a bigger file is refused unread. */
 export const OPENED_MAX_BYTES = 64 * 1024 * 1024;
 
@@ -12,7 +12,7 @@ export type OpenedFile = { name: string; text?: string; error?: "too-big" | "unr
 
 const isOpenable = (p: string) => OPENED_EXTS.some((ext) => p.toLowerCase().endsWith(ext));
 
-/** The APX files named in a launch's arguments (Windows and Linux pass an opened file this way). */
+/** The Colonia files named in a launch's arguments (Windows and Linux pass an opened file this way). */
 export function openedIn(argv: readonly string[], exists: (p: string) => boolean = fs.existsSync): string[] {
   return argv.filter((a) => !a.startsWith("-") && isOpenable(a) && exists(a)).map((a) => path.resolve(a));
 }

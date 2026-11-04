@@ -1,4 +1,4 @@
-// Whether APX v1's daemon still runs beside this one (its routines and bots would run twice), and turning it off.
+// Whether Colonia v1's daemon still runs beside this one (its routines and bots would run twice), and turning it off.
 import { useEffect, useState } from "react";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";

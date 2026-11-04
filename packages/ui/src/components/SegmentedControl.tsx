@@ -40,7 +40,7 @@ export function SegmentedControl({
         onValueChange?.(v);
       }}
       aria-label={label}
-      className={cx("apx-segmented", `apx-segmented--${size}`, className)}
+      className={cx("colonia-segmented", `colonia-segmented--${size}`, className)}
     >
       {options.map((o) => (
         <Radio.Root
@@ -48,7 +48,7 @@ export function SegmentedControl({
           value={o.value}
           nativeButton
           render={<button type="button" />}
-          className={cx("apx-segmented__item", current === o.value && "is-selected")}
+          className={cx("colonia-segmented__item", current === o.value && "is-selected")}
         >
           {o.icon}
           {o.label}

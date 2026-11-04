@@ -1,5 +1,5 @@
-import type { FileEntry } from "@apx/protocol";
-import { ContextMenu, EmptyState, IconButton, Icons, Skeleton } from "@apx/ui";
+import type { FileEntry } from "@colonia/protocol";
+import { ContextMenu, EmptyState, IconButton, Icons, Skeleton } from "@colonia/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { client } from "../../data/client.ts";
 import { coreOnThisComputer, type FileWhere, mediaKind, mediaOf, revealFile } from "../../data/files.ts";

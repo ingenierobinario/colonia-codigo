@@ -93,7 +93,7 @@ export function integrationBrand(id: string): IntegrationBrand | undefined {
   return ALIASES[k];
 }
 
-/** The marks arrive after the first screen (`@apx/ui/marks`); Slack's is the channel mark, here from the start. */
+/** The marks arrive after the first screen (`@colonia/ui/marks`); Slack's is the channel mark, here from the start. */
 let lateMarks: Partial<Record<LateIntegrationBrand, IntegrationMark>> = {};
 /** Draws a mark kept whole (MarkArt): it comes with the marks, so the first screen never carries it. */
 let drawArt: ((mark: MarkArt, prefix: string) => ReactNode) | undefined;
@@ -158,5 +158,5 @@ export function IntegrationIcon({ id, name, size = 32, tone = "info", label, cla
         ))}
       </svg>
     ));
-  return <ProjectTile tone="neutral" icon={icon} size={size} label={label} className={cx("apx-intmark", className)} />;
+  return <ProjectTile tone="neutral" icon={icon} size={size} label={label} className={cx("colonia-intmark", className)} />;
 }

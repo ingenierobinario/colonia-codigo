@@ -9,7 +9,7 @@ async function connect(page: Page, kind: "Discord" | "Slack", tokens: Array<[lab
   await page.getByRole("menuitem", { name: new RegExp(kind) }).click();
   for (const [label, value] of tokens) await page.getByRole("textbox", { name: label, exact: true }).fill(value);
   await page.getByRole("button", { name: "Conectar bot" }).click();
-  await expect(page.getByText("@apx", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("@colonia", { exact: false }).first()).toBeVisible();
   await expect(page.getByText(`Este es mi ${kind}`)).toBeVisible();
 }
 
@@ -139,10 +139,10 @@ test("new channels are offered; Google Chat takes its subscription and whole JSO
     await expect(page.getByRole("menuitem", { name, exact: true })).toBeEnabled();
   await page.getByRole("menuitem", { name: "Google Chat", exact: true }).click();
   const connect = page.getByRole("button", { name: "Conectar bot" });
-  await page.getByRole("textbox", { name: "Suscripción", exact: true }).fill("projects/acme/subscriptions/apx-chat");
+  await page.getByRole("textbox", { name: "Suscripción", exact: true }).fill("projects/acme/subscriptions/colonia-chat");
   await expect(connect).toBeDisabled();
   const key =
-    '{\n  "type": "service_account",\n  "client_email": "apx@acme.iam.gserviceaccount.com",\n  "private_key": "-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----\\n"\n}';
+    '{\n  "type": "service_account",\n  "client_email": "colonia@acme.iam.gserviceaccount.com",\n  "private_key": "-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----\\n"\n}';
   await page.getByRole("textbox", { name: "Clave de la cuenta de servicio (JSON)", exact: true }).fill(key);
   await expect(connect).toBeEnabled();
 });

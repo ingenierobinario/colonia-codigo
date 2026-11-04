@@ -1,7 +1,7 @@
 // What an imported chat is about, written by the auxiliary model for the agent that will take it over: the owner's
 // opening framing word for word, the role the chat played, its recurring tasks, formats, preferences and facts. A
 // chat too long for one call is read in stretches whose notes are then merged.
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { redactSecrets } from "../redact-secrets.ts";
 
 /** One call to the auxiliary model; undefined when there is none. */

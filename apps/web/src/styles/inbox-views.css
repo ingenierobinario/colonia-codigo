@@ -3,7 +3,7 @@
   display: flex;
   width: 100%;
 }
-.inbox__views .apx-segmented__item {
+.inbox__views .colonia-segmented__item {
   flex: 1;
   justify-content: center;
 }
@@ -15,16 +15,16 @@
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-medium);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-medium);
+  color: var(--colonia-fg-subtle);
 }
 .tree__unreaddot {
   width: 6px;
   height: 6px;
   margin: 0 5px;
   border-radius: 50%;
-  background: var(--apx-fg);
+  background: var(--colonia-fg);
 }
 .tree__unreadlist {
   display: flex;
@@ -40,7 +40,7 @@
   width: 100%;
   padding: 4px 8px;
   border: 0;
-  border-radius: var(--apx-radius-sm);
+  border-radius: var(--colonia-radius-sm);
   background: none;
   color: inherit;
   font: inherit;
@@ -48,14 +48,14 @@
   cursor: pointer;
 }
 .tree__agenthead:hover {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .tree__code,
 .tree__routine {
   display: inline-grid;
   place-items: center;
   flex: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .activity__via {
   display: inline-flex;
@@ -63,12 +63,12 @@
   gap: 4px;
 }
 .tree__agentname {
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-semibold);
 }
 .tree__agentmeta {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
 .tree__channel .tree__agentname {
   font-weight: normal;
@@ -90,7 +90,7 @@
 .tree__sessions > * {
   position: relative;
 }
-.tree__sessions > .apx-ctxmenu {
+.tree__sessions > .colonia-ctxmenu {
   display: flex;
   flex-direction: column;
 }
@@ -100,7 +100,7 @@
   top: 0;
   bottom: 0;
   left: -11px;
-  border-left: 1px solid var(--apx-border);
+  border-left: 1px solid var(--colonia-border);
   pointer-events: none;
 }
 /* Stop at the final row's center, even when that row has an expanded subtree. */
@@ -108,7 +108,7 @@
   bottom: auto;
   width: 10px;
   height: 15px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
   border-bottom-left-radius: 7px;
 }
 .tree__session {
@@ -119,25 +119,25 @@
   height: 30px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: transparent;
   text-align: left;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   cursor: pointer;
 }
 .tree__session:hover,
 .activity__row:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .tree__session.is-selected,
 .tree__channel.is-selected,
 .activity__row.is-selected {
-  background: var(--apx-row-selected-bg);
-  box-shadow: inset 0 0 0 1px var(--apx-row-selected-border);
+  background: var(--colonia-row-selected-bg);
+  box-shadow: inset 0 0 0 1px var(--colonia-row-selected-border);
 }
 .tree__sessionwho {
   flex: none;
-  font-weight: var(--apx-weight-medium);
+  font-weight: var(--colonia-weight-medium);
 }
 .taskbundle {
   padding: 2px 0 6px;
@@ -156,20 +156,20 @@
   height: 30px;
   padding: 0 8px 0 4px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: none;
   color: inherit;
   font: inherit;
-  font-size: var(--apx-text-sm);
+  font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
 }
 .taskbundle__task:hover {
-  background: var(--apx-fill-hover);
+  background: var(--colonia-fill-hover);
 }
 .taskbundle__chevron {
   flex: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 /* The guide line of the task's chats runs down from its chevron. */
 .taskbundle .tree__sessions {
@@ -190,14 +190,14 @@
   height: 24px;
   padding: 0;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
   cursor: pointer;
 }
 .delegated__fold:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .delegated__row {
   display: flex;
@@ -217,15 +217,15 @@
   margin: -2px 0 4px 12px;
   padding: 2px 6px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: none;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
   cursor: pointer;
 }
 .delegated__from:hover {
-  background: var(--apx-fill-hover);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .delegated__fromtext {
   min-width: 0;
@@ -235,7 +235,7 @@
 }
 .taskbundle__icon {
   flex: none;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .taskbundle__title {
   flex: 1;
@@ -243,10 +243,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: var(--apx-weight-semibold);
+  font-weight: var(--colonia-weight-semibold);
 }
 .taskbundle__head.is-unread .taskbundle__title {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .taskbundle__faces {
   display: inline-flex;
@@ -264,30 +264,30 @@
 }
 .tree__when {
   flex: none;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
 .tree__unread {
   flex: none;
   min-width: 16px;
   padding: 0 5px;
   border-radius: 8px;
-  background: var(--apx-fg);
-  color: var(--apx-bg);
-  font-size: var(--apx-text-2xs);
-  font-weight: var(--apx-weight-semibold);
+  background: var(--colonia-fg);
+  color: var(--colonia-bg);
+  font-size: var(--colonia-text-2xs);
+  font-weight: var(--colonia-weight-semibold);
   text-align: center;
 }
 .tree__waiting {
-  color: var(--apx-warning-soft-fg);
+  color: var(--colonia-warning-soft-fg);
 }
 .tree__more {
   align-self: flex-start;
   padding: 4px 8px;
   border: 0;
   background: none;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
   cursor: pointer;
 }
 .activity__group {
@@ -295,9 +295,9 @@
 }
 .activity__label {
   padding: 6px 8px;
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-medium);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-medium);
+  color: var(--colonia-fg-subtle);
 }
 .activity__row {
   display: flex;
@@ -306,7 +306,7 @@
   width: 100%;
   padding: 7px 8px;
   border: 0;
-  border-radius: var(--apx-row-radius);
+  border-radius: var(--colonia-row-radius);
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -323,8 +323,8 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: var(--apx-text-sm);
-  font-weight: var(--apx-weight-medium);
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
 }
 .activity__text,
 .activity__meta {
@@ -336,8 +336,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
 .activity__side {
   display: flex;
@@ -350,6 +350,6 @@
 .tree__session.is-unread .tree__sessiontitle,
 .tree__channel.is-unread .tree__agentname,
 .activity__row.is-unread .activity__text {
-  font-weight: var(--apx-weight-semibold);
-  color: var(--apx-fg);
+  font-weight: var(--colonia-weight-semibold);
+  color: var(--colonia-fg);
 }

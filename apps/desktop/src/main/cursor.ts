@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { BrowserWindow, screen } from "electron";
 
-/** APX's mark, inline (the cursor page loads nothing from outside). */
+/** Colonia's mark, inline (the cursor page loads nothing from outside). */
 function mark(): string {
   try {
     return fs
@@ -19,8 +19,8 @@ function mark(): string {
 }
 
 /**
- * APX's own pointer: a white arrow with a thick rounded green edge, a soft glow and three twinkling sparks, a dark
- * bubble with APX's mark for what the agent is doing, and a green ring when it clicks.
+ * Colonia's own pointer: a white arrow with a thick rounded green edge, a soft glow and three twinkling sparks, a dark
+ * bubble with Colonia's mark for what the agent is doing, and a green ring when it clicks.
  */
 const PAGE = () => `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font:600 12px/1.25 -apple-system,system-ui}

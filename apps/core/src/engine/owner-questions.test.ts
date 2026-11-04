@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { ownerQuestionProblem } from "../domain/owner-question.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
@@ -73,7 +73,7 @@ let repo = "";
 before(async () => {
   // The turn stops waiting almost at once: the question stays open for a later turn to withdraw.
   env = await startCore({ llm, inputWaits: { turn: 150, external: 150 }, unseenAfterMs: 0 });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-owner-q-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-owner-q-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
   project = (await env.client.call("projects.register", { path: repo })).project.id;
 });

@@ -5,13 +5,13 @@ import { expect, open, test } from "./kit.ts";
 test.use({ welcome: true });
 
 test("the welcome shows once with the film, and closed it does not come back", async ({ page }) => {
-  await page.route("https://apxagent.app/**", (route) => route.abort("aborted"));
+  await page.route("https://colonia.ingenierobinario.com/**", (route) => route.abort("aborted"));
   await page.route("https://www.youtube-nocookie.com/**", (route) => route.fulfill({ body: "<html></html>" }));
   await open(page);
-  const dialog = page.getByRole("dialog", { name: "APX v2 ya es la versión oficial" });
+  const dialog = page.getByRole("dialog", { name: "Colonia v2 ya es la versión oficial" });
   await expect(dialog).toBeVisible();
   // The docs copy could not load: YouTube's player takes its place, in the dialog.
-  await expect(dialog.locator('iframe[title="APX v2: el superagente y su equipo trabajando"]')).toBeVisible();
+  await expect(dialog.locator('iframe[title="Colonia v2: el superagente y su equipo trabajando"]')).toBeVisible();
 
   await dialog.getByRole("button", { name: "Vamos" }).click();
   await expect(dialog).toBeHidden();

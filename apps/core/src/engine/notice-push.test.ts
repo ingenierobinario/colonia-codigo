@@ -8,7 +8,7 @@ import { tempDir } from "../testkit/platform.ts";
 import { createNoticePush } from "./notice-push.ts";
 
 test("every tray notice reaches the owner's phones; in quiet hours only questions and errors", async () => {
-  const home = tempDir("apx-notice-push-");
+  const home = tempDir("colonia-notice-push-");
   const bus = createBus();
   const db = openDb(home.path);
   const store = createStore(db, bus);

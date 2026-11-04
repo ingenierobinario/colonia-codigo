@@ -1,6 +1,6 @@
-import { ApxError } from "@apx/protocol/client";
-import { shapeOfGraph } from "@apx/protocol/flow-shape";
-import { Button, FlowStepTile, IconButton, Icons, Input, Select, Spinner } from "@apx/ui";
+import { ColoniaError } from "@colonia/protocol/client";
+import { shapeOfGraph } from "@colonia/protocol/flow-shape";
+import { Button, FlowStepTile, IconButton, Icons, Input, Select, Spinner } from "@colonia/ui";
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { Drawer } from "../common/Drawer.tsx";
 import { client } from "../data/client.ts";
@@ -359,7 +359,7 @@ export function FlowEditor({
         error: true,
         text:
           issueText(e, clean, t) ??
-          t(e instanceof ApxError && e.code === "conflict" ? "flow.ed.conflict" : "flow.ed.saveFailed"),
+          t(e instanceof ColoniaError && e.code === "conflict" ? "flow.ed.conflict" : "flow.ed.saveFailed"),
       });
     } finally {
       setBusy(false);
@@ -427,7 +427,7 @@ export function FlowEditor({
         error: true,
         text:
           issueText(e, clean, t) ??
-          t(e instanceof ApxError && e.code === "conflict" ? "flow.ed.conflict" : "flow.ed.saveFailed"),
+          t(e instanceof ColoniaError && e.code === "conflict" ? "flow.ed.conflict" : "flow.ed.saveFailed"),
       });
       return undefined;
     } finally {

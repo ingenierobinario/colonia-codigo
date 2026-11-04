@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 import { createPush } from "./push.ts";
 
-test("an ntfy notice keeps its title in any language and opens its chat in APX when tapped", async (t) => {
+test("an ntfy notice keeps its title in any language and opens its chat in Colonia when tapped", async (t) => {
   const got: Array<{ headers: IncomingHttpHeaders; body: string }> = [];
   const server = createServer((req, res) => {
     let body = "";
@@ -16,7 +16,7 @@ test("an ntfy notice keeps its title in any language and opens its chat in APX w
   });
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   t.after(() => server.close());
-  const endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}/apx-topic`;
+  const endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}/colonia-topic`;
   const push = createPush({ expoUrl: "http://127.0.0.1:1/unused" });
 
   assert.equal(
@@ -26,12 +26,12 @@ test("an ntfy notice keeps its title in any language and opens its chat in APX w
     ),
     true,
   );
-  assert.equal(await push({ kind: "unifiedpush", endpoint }, { title: "APX", body: "Hola" }), true);
+  assert.equal(await push({ kind: "unifiedpush", endpoint }, { title: "Colonia", body: "Hola" }), true);
 
   const [first, second] = got;
   const title = /^=\?UTF-8\?B\?(.+)\?=$/.exec(String(first?.headers.title))?.[1] ?? "";
   assert.equal(Buffer.from(title, "base64").toString("utf8"), "Terminó: ñandú");
-  assert.equal(first?.headers.click, "apx://open?t=th%201");
+  assert.equal(first?.headers.click, "colonia://open?t=th%201");
   assert.equal(first?.body, "Listo");
-  assert.equal(second?.headers.click, "apx://open");
+  assert.equal(second?.headers.click, "colonia://open");
 });

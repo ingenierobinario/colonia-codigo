@@ -1,5 +1,5 @@
 // Which notices make a sound on this device. Pure, so node:test covers it (sounds.ts plays them).
-import type { NotificationKind } from "@apx/protocol";
+import type { NotificationKind } from "@colonia/protocol";
 
 /** Which notices make a sound: the ones asking for something, the ones telling something, both, or none. */
 export type NoticeSound = "all" | "requests" | "messages" | "off";

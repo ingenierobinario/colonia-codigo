@@ -7,7 +7,7 @@ import {
 } from "../../../packages/surfaces/src/widget-kit.ts";
 
 // A surface's HTML as the phone shows it: the panel's strict CSP (inline code only, no network), the phone's light or
-// dark colors, and a window.apx bridge that speaks to the app through ReactNativeWebView. Pure: tested under node:test.
+// dark colors, and a window.colonia bridge that speaks to the app through ReactNativeWebView. Pure: tested under node:test.
 
 /** Widgets are self-contained (the show_widget contract): inline code only, no network. */
 export const SURFACE_CSP =
@@ -17,7 +17,7 @@ function bridge(nonce: string, mode: "light" | "dark"): string {
   return `(function(){
 var N=${JSON.stringify(nonce)};
 document.documentElement.setAttribute("data-ax-mode",${JSON.stringify(mode)});
-function post(m){m.apx=N;window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}
+function post(m){m.colonia=N;window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}
 var touched=0;
 addEventListener("touchend",function(){touched=Date.now();},true);
 addEventListener("click",function(){touched=Date.now();},true);
@@ -25,8 +25,8 @@ function sendPrompt(t){post({kind:"prompt",text:String(t),gesture:Date.now()-tou
 var seq=0,calls={};
 function call(method,params){return new Promise(function(ok,no){var id=++seq;calls[id]={ok:ok,no:no};
 try{post({kind:"call",id:id,method:String(method),params:params&&typeof params==="object"?params:{}});}catch(err){delete calls[id];no(err);}});}
-window.__apxResult=function(n,m){if(n!==N||!m)return;var c=calls[m.id];if(!c)return;delete calls[m.id];if(m.ok)c.ok(m.value);else c.no(new Error(String(m.error||"call failed")));};
-window.apx=Object.freeze({host:"apx",sendPrompt:sendPrompt,call:call,visible:function(){return true;},onVisibility:function(){return function(){};}});
+window.__coloniaResult=function(n,m){if(n!==N||!m)return;var c=calls[m.id];if(!c)return;delete calls[m.id];if(m.ok)c.ok(m.value);else c.no(new Error(String(m.error||"call failed")));};
+window.colonia=Object.freeze({host:"colonia",sendPrompt:sendPrompt,call:call,visible:function(){return true;},onVisibility:function(){return function(){};}});
 window.sendPrompt=sendPrompt;
 })();`;
 }
@@ -39,8 +39,8 @@ export function surfaceDoc(
 <meta http-equiv="Content-Security-Policy" content="${SURFACE_CSP}">
 <style>:root{${WIDGET_TOKENS[opts.mode]}}
 html{color-scheme:${opts.mode}}
-html,body{margin:0;background:var(--apx-bg);color:var(--apx-fg);font-family:var(--apx-font-sans);font-size:15px;line-height:1.45}
-body{padding:var(--apx-page-padding);display:flow-root}*{box-sizing:border-box}
+html,body{margin:0;background:var(--colonia-bg);color:var(--colonia-fg);font-family:var(--colonia-font-sans);font-size:15px;line-height:1.45}
+body{padding:var(--colonia-page-padding);display:flow-root}*{box-sizing:border-box}
 ${WIDGET_KIT_CSS}
 ${surfaceLayoutCss(opts.layout)}</style>
 <script>${bridge(opts.nonce, opts.mode)}</script>`;
@@ -67,7 +67,7 @@ export function readSurfaceMessage(
   surface = "",
 ): { prompt: string } | { call: SurfaceCall } | { refused: number } | undefined {
   let m: {
-    apx?: unknown;
+    colonia?: unknown;
     kind?: unknown;
     text?: unknown;
     gesture?: unknown;
@@ -80,7 +80,7 @@ export function readSurfaceMessage(
   } catch {
     return undefined;
   }
-  if (!m || m.apx !== nonce) return undefined;
+  if (!m || m.colonia !== nonce) return undefined;
   if (m.kind === "call" && typeof m.id === "number") {
     const p = m.params;
     if (typeof m.method !== "string" || !Object.hasOwn(PHONE_METHODS, m.method)) return { refused: m.id };
@@ -99,5 +99,5 @@ export function surfaceResult(
   r: { id: number } & ({ ok: true; value: unknown } | { ok: false; error: string }),
 ): string {
   const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
-  return `window.__apxResult&&window.__apxResult(${json(nonce)},${json(r)});true;`;
+  return `window.__coloniaResult&&window.__coloniaResult(${json(nonce)},${json(r)});true;`;
 }

@@ -1,5 +1,5 @@
-import type { Agent, Run } from "@apx/protocol";
-import { Icons } from "@apx/ui";
+import type { Agent, Run } from "@colonia/protocol";
+import { Icons } from "@colonia/ui";
 import { useCallback, useEffect, useMemo } from "react";
 import { activeProfileName, loadProfiles, useProfiles } from "../../data/profiles.ts";
 import { loadRoutines, useRoutines } from "../../data/routines.ts";

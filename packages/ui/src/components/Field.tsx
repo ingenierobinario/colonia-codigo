@@ -16,15 +16,15 @@ export interface FieldProps {
 export function Field({ label, hint, error, children, className }: FieldProps) {
   const id = useId();
   return (
-    <div className={cx("apx-formfield", error ? "is-invalid" : undefined, className)}>
-      <label className="apx-formfield__label" htmlFor={typeof children === "function" ? id : undefined}>
+    <div className={cx("colonia-formfield", error ? "is-invalid" : undefined, className)}>
+      <label className="colonia-formfield__label" htmlFor={typeof children === "function" ? id : undefined}>
         {label}
       </label>
       {typeof children === "function" ? children(id) : children}
       {error ? (
-        <span className="apx-formfield__error">{error}</span>
+        <span className="colonia-formfield__error">{error}</span>
       ) : (
-        hint && <span className="apx-formfield__hint">{hint}</span>
+        hint && <span className="colonia-formfield__hint">{hint}</span>
       )}
     </div>
   );

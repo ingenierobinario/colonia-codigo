@@ -1,5 +1,5 @@
-import type { SurfaceSummary } from "@apx/protocol";
-import { ContextMenu, IconButton, Icons, NavItem, Popover, ProjectTile, SearchField } from "@apx/ui";
+import type { SurfaceSummary } from "@colonia/protocol";
+import { ContextMenu, IconButton, Icons, NavItem, Popover, ProjectTile, SearchField } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { setSurfaceFlags } from "../data/actions.ts";
 import { projectName } from "../data/identity.ts";

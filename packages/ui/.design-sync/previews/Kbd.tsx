@@ -1,8 +1,8 @@
-import { Kbd } from "@apx/ui";
+import { Kbd } from "@colonia/ui";
 
 export function Shortcuts() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--apx-fg-muted)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--colonia-fg-muted)" }}>
       <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <Kbd keys={["⌘", "K"]} /> Search everything
       </span>

@@ -1,6 +1,6 @@
 // The auxiliary model's calls (a chat's title, a long chat's summary, a room's "worth answering?", a commit message):
 // no run holds them, so each one's tokens are kept here, one row per call, for the last 90 days.
-import type { AuxPurpose } from "@apx/protocol";
+import type { AuxPurpose } from "@colonia/protocol";
 import type { Usage } from "../providers/types.ts";
 import { now, qb, type Sql } from "./sql.ts";
 

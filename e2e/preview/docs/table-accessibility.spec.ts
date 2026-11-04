@@ -42,7 +42,7 @@ for (const pre of ["", "/es"]) {
     ).toBe("table-row");
     expect(await table.locator("th[scope='row']").count()).toBe(8);
     expect(await table.locator("th[scope='col']").count()).toBe(3);
-    const region = page.getByRole("region", { name: /^APX vs Hermes Agent/ });
+    const region = page.getByRole("region", { name: /^Colonia vs Hermes Agent/ });
     await region.scrollIntoViewIfNeeded();
     await region.focus();
     const overflowing = await region.evaluate((element) => element.scrollWidth > element.clientWidth);

@@ -101,8 +101,8 @@ export function resourceHandlers(deps: {
     },
     "skills.save": ({ name, target, project, content }) => {
       const current = allSkills(store, roots, project).find((x) => x.name === name);
-      if (current?.source === "apx")
-        throw badRequest(`${name} comes with APX and changes with it; save your own skill under another name`);
+      if (current?.source === "colonia")
+        throw badRequest(`${name} comes with Colonia and changes with it; save your own skill under another name`);
       if (current?.source === "extension" && target === "global")
         throw badRequest(`${name} comes from an extension; save it as a copy in a project or under another name`);
       if (target === "project" && !rootOf(project))
@@ -144,7 +144,7 @@ export function resourceHandlers(deps: {
     },
     "skills.toggle": ({ name, project, on }) => {
       if (project && !store.projects.get(project)) throw notFound(`project ${project}`);
-      if (find(name, project).source === "apx") throw badRequest(`${name} comes with APX: it is always on`);
+      if (find(name, project).source === "colonia") throw badRequest(`${name} comes with Colonia: it is always on`);
       setSkillOn(store, name, project, on);
       return { ok: true as const };
     },

@@ -1,5 +1,5 @@
 // Resource calls return undefined on failure; screens with inline recovery can handle the notice themselves.
-import type { McpServerStatus, SecretInfo, SkillCandidate, SkillImportSource, SkillInfo } from "@apx/protocol";
+import type { McpServerStatus, SecretInfo, SkillCandidate, SkillImportSource, SkillInfo } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";
@@ -36,7 +36,7 @@ export const previewSkillImport = (source: SkillImportSource, project?: string) 
         .candidates,
   );
 
-/** Copies the picked skills (by candidate id) into APX's skills, or the project's with `project`. */
+/** Copies the picked skills (by candidate id) into Colonia's skills, or the project's with `project`. */
 export const importSkills = (source: SkillImportSource, pick: string[], replace: boolean, project?: string) =>
   attempt(() =>
     client.call("skills.import", { source, pick, replace, target: project ? "project" : "global", ...scoped(project) }),

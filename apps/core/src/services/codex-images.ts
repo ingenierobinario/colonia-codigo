@@ -3,16 +3,16 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { ServiceSettings } from "@apx/protocol";
+import type { ServiceSettings } from "@colonia/protocol";
 import { Codex } from "@openai/codex-sdk";
 import { errorMessage } from "../errors.ts";
 import type { ImageRequest } from "./images.ts";
 import { IMAGE_TIMEOUT_MS, type ImageResult, type ServiceConfig, ServiceError, sniffImage } from "./types.ts";
 
-/** The id APX gives the Codex image service it adds on its own. */
+/** The id Colonia gives the Codex image service it adds on its own. */
 export const CODEX_IMAGES = "codex";
 
-/** What APX adds once Codex is signed in on this machine: first of the image services. */
+/** What Colonia adds once Codex is signed in on this machine: first of the image services. */
 export const CODEX_IMAGE_SERVICE: ServiceSettings = {
   kind: "image",
   dialect: "codex-images",

@@ -1,4 +1,4 @@
-import { Icons, Menu } from "@apx/ui";
+import { Icons, Menu } from "@colonia/ui";
 import { setPrefs } from "../data/prefs.ts";
 import { LANGUAGE_NAMES, LANGUAGES, useLanguage, useT } from "../i18n/index.ts";
 

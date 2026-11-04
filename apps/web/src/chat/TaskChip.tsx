@@ -1,4 +1,4 @@
-import { Icons } from "@apx/ui";
+import { Icons } from "@colonia/ui";
 import { type ReactElement, type ReactNode, useEffect } from "react";
 import { ensureTask, useTasks } from "../data/tasks.ts";
 import { useT } from "../i18n/index.ts";

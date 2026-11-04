@@ -1,5 +1,5 @@
-import type { ToolApproval } from "@apx/protocol";
-import { Button, Dialog } from "@apx/ui";
+import type { ToolApproval } from "@colonia/protocol";
+import { Button, Dialog } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApprovalText } from "../common/ApprovalText.tsx";
 import { listApprovals, revokeApproval } from "../data/resources.ts";

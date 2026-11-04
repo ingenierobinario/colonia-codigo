@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { after, before, test } from "node:test";
-import type { Message } from "@apx/protocol";
+import type { Message } from "@colonia/protocol";
 import { askedSkill, choose } from "../skills/picker.ts";
 import { say, scriptedLlm, startCore } from "./testkit.ts";
 
@@ -128,7 +128,7 @@ test("askedSkill reads only a leading /name that is a skill", () => {
   const list = [{ name: "golf-tee" }, { name: "PDF" }];
   assert.equal(askedSkill("/golf-tee", list)?.name, "golf-tee");
   assert.equal(askedSkill("  /pdf leé esto", list)?.name, "PDF");
-  assert.equal(askedSkill("/golf-tee@ApxBot hola", list)?.name, "golf-tee");
+  assert.equal(askedSkill("/golf-tee@ColoniaBot hola", list)?.name, "golf-tee");
   assert.equal(askedSkill("usá /golf-tee", list), undefined);
   assert.equal(askedSkill("/golf-teetime", list), undefined);
 });

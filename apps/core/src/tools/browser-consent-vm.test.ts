@@ -3,8 +3,8 @@ import fs from "node:fs";
 import http, { type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
-import type { ToolApproval } from "@apx/protocol";
-import { ApxClient } from "@apx/protocol/client";
+import type { ToolApproval } from "@colonia/protocol";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { chromium } from "@playwright/test";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { RUNS_SCRIPTS, tempDir, waitFor } from "../testkit/platform.ts";
@@ -15,7 +15,7 @@ if (RUNS_SCRIPTS && fs.existsSync(chromium.executablePath())) {
   for (const scope of ["tab", "turn"] as const) {
     for (const change of ["unchanged", "closure", "reload", "owner takeover", "closure after activation"] as const) {
       test(`VM ${scope} consent respects ${change} before its successful result returns`, async () => {
-        const dir = tempDir("apx-vm-browser-consent-");
+        const dir = tempDir("colonia-vm-browser-consent-");
         let held: ServerResponse | undefined;
         const server = http.createServer((req, res) => {
           if (req.url === "/held") {
@@ -73,7 +73,7 @@ if (RUNS_SCRIPTS && fs.existsSync(chromium.executablePath())) {
             return callTool(`js${results.length}`, "browser_evaluate", { tab, document, origin, script: "42" });
           }),
         });
-        const desktop = await new ApxClient({ url: env.core.url }).connect("node", ["browser"]);
+        const desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
         desktop.onRequest(async () => ({ tabs: [] }));
         try {
           await env.client.call("environments.permit", { agent: "superagent", on: true });

@@ -35,7 +35,7 @@ usarla, no solo qué es. Los nombres usan letras, números, puntos, `-` y `_`.
 ## Skills globales y de proyecto
 
 <FileTree>
-- ~/.apx/v2/skills/ globales: las heredan todos los proyectos
+- ~/.colonia/v2/skills/ globales: las heredan todos los proyectos
   - weekly-report/
     - SKILL.md
 - ~/work/acme-store/.apc/skills/ solo de este proyecto
@@ -43,27 +43,27 @@ usarla, no solo qué es. Los nombres usan letras, números, puntos, `-` y `_`.
     - SKILL.md
 </FileTree>
 
-- Las **globales** viven en la carpeta de APX (`~/.apx/v2/skills/`). Las heredan todos los proyectos; un proyecto
+- Las **globales** viven en la carpeta de Colonia (`~/.colonia/v2/skills/`). Las heredan todos los proyectos; un proyecto
   puede apagar una para sí mismo, o dejar de usar las globales del todo.
 - Las **de proyecto** viven en `.apc/skills/` del proyecto, viajan con el repositorio y solo las ven sus agentes.
 - También pueden venir de una [extensión](/es/extend/extensions/).
 - **Las skills de otras apps de agentes** también están, leídas donde esas apps las guardan: `~/.claude/skills`,
   `~/.codex/skills`, `~/.cursor/skills` y `~/.agents/skills` (globales), y `.claude/skills`, `.codex/skills`… dentro de
-  un proyecto. Cada una muestra la etiqueta de su app (Claude, Codex, Cursor, Agents) y en APX es de solo lectura:
-  cambiala en su app, o **Copiar a APX**.
-- Un mismo nombre en dos lugares es una sola skill: gana la del proyecto, después la de APX, después las de otras apps
+  un proyecto. Cada una muestra la etiqueta de su app (Claude, Codex, Cursor, Agents) y en Colonia es de solo lectura:
+  cambiala en su app, o **Copiar a Colonia**.
+- Un mismo nombre en dos lugares es una sola skill: gana la del proyecto, después la de Colonia, después las de otras apps
   y por último las de extensiones. Las demás se marcan **Duplicada** y aparecen en **También en**, diciendo si cada una
   es igual o distinta.
 
 Se manejan en **Recursos › Skills**: leer, editar, crear (**+ Skill**) y prender o apagar cada una globalmente o por
-proyecto. Si editás una skill global desde adentro de un proyecto, APX te pregunta si cambiar la original o darle a
+proyecto. Si editás una skill global desde adentro de un proyecto, Colonia te pregunta si cambiar la original o darle a
 ese proyecto su propia copia. Arriba de la lista podés ver solo las del proyecto (**Todas** / **Proyecto**) y filtrar
-por motor (APX, Claude, Codex, Cursor, Agents; varios a la vez).
+por motor (Colonia, Claude, Codex, Cursor, Agents; varios a la vez).
 
 ## Importar skills
 
 **+ Skill › Importar** trae skills desde una carpeta, un `.zip` o un repositorio git (https o ssh; un link de GitHub a
-una carpeta trae solo esa carpeta). APX primero lo lee y no ejecuta nada: ves cada skill que encontró, sus archivos,
+una carpeta trae solo esa carpeta). Colonia primero lo lee y no ejecuta nada: ves cada skill que encontró, sus archivos,
 los scripts que trae, la configuración que solo lee otra app (como `allowed-tools`) y lo que quedó afuera (links,
 archivos demasiado grandes). Marcás las que querés copiar; un nombre que ya existe se mantiene salvo que elijas
 reemplazarlo. Dentro de un proyecto van a su `.apc/skills/`.
@@ -83,33 +83,33 @@ entra en ese turno, haya o no motor de embeddings. `/skills` abre la lista de sk
 
 <Aside type="note">
 Los chats con contactos en los canales y las sesiones de motores externos (Claude Code, Codex) no reciben las skills
-de APX.
+de Colonia.
 </Aside>
 
 ## Desde la terminal
 
-<Terminal command="apx skills">{`weekly-report                    global   Writes the Friday status report from this week's closed tasks. Use when asked for the week
+<Terminal command="colonia skills">{`weekly-report                    global   Writes the Friday status report from this week's closed tasks. Use when asked for the week
 daily-brief                      global   Writes a short morning brief from the owner's open tasks and commitments.`}</Terminal>
 
-`apx skills <proyecto>` las lista como las ve un proyecto.
+`colonia skills <proyecto>` las lista como las ve un proyecto.
 
 ```bash
-apx skills import https://github.com/acme/skills                 # lista lo que hay; no copia nada
-apx skills import https://github.com/acme/skills --only pdf --yes
-apx skills import ./pack.zip --project <proyecto> --yes          # a .apc/skills/ de ese proyecto
-apx skills import ~/.claude/skills/pdf --yes                     # copia a APX una skill de otra app
+colonia skills import https://github.com/acme/skills                 # lista lo que hay; no copia nada
+colonia skills import https://github.com/acme/skills --only pdf --yes
+colonia skills import ./pack.zip --project <proyecto> --yes          # a .apc/skills/ de ese proyecto
+colonia skills import ~/.claude/skills/pdf --yes                     # copia a Colonia una skill de otra app
 ```
 
-## Enseñale a otras apps de agentes a usar APX
+## Enseñale a otras apps de agentes a usar Colonia
 
-APX trae unas skills para **otras** apps de agentes, así Claude Code, Codex, Cursor y todo lo que lea `~/.agents` sabe
-usar APX (`apx`, `apx-mcp`, `apx-extensions`, `apc-context`). El core las copia en la carpeta de skills de cada app
+Colonia trae unas skills para **otras** apps de agentes, así Claude Code, Codex, Cursor y todo lo que lea `~/.agents` sabe
+usar Colonia (`colonia`, `colonia-mcp`, `colonia-extensions`, `apc-context`). El core las copia en la carpeta de skills de cada app
 cada vez que arranca, solo para las apps que tenés instaladas. Para actualizarlas ahora, o ver qué cambiaría:
 
 ```bash
-apx skills install-runtimes --dry-run
-apx skills install-runtimes
+colonia skills install-runtimes --dry-run
+colonia skills install-runtimes
 ```
 
-Solo toca las skills que trae APX (y quita las que ya no trae), nunca las de otros. Mirá
+Solo toca las skills que trae Colonia (y quita las que ya no trae), nunca las de otros. Mirá
 [Clientes externos](/es/extend/outside-clients/) para conectar esas apps a tus agentes.

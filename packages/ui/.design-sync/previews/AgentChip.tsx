@@ -1,4 +1,4 @@
-import { AgentChip } from "@apx/ui";
+import { AgentChip } from "@colonia/ui";
 
 export function Chips() {
   return (

@@ -41,34 +41,34 @@ export function LiveBrowserCard({
   className,
 }: LiveBrowserCardProps) {
   return (
-    <div className={cx("apx-livebrowser", className)}>
-      <button type="button" className="apx-livebrowser__preview" onClick={onOpen} aria-label={String(title ?? url)}>
+    <div className={cx("colonia-livebrowser", className)}>
+      <button type="button" className="colonia-livebrowser__preview" onClick={onOpen} aria-label={String(title ?? url)}>
         {typeof thumbnail === "string" ? (
-          <img className="apx-livebrowser__img" src={thumbnail} alt="" draggable={false} />
+          <img className="colonia-livebrowser__img" src={thumbnail} alt="" draggable={false} />
         ) : (
           (thumbnail ?? (
-            <span className="apx-livebrowser__placeholder">
+            <span className="colonia-livebrowser__placeholder">
               <Globe size={28} />
             </span>
           ))
         )}
         {live && (
-          <span className="apx-livebrowser__badge">
-            <span className="apx-livebrowser__dot" aria-hidden="true" />
+          <span className="colonia-livebrowser__badge">
+            <span className="colonia-livebrowser__dot" aria-hidden="true" />
             {liveLabel}
           </span>
         )}
       </button>
-      <div className="apx-livebrowser__foot">
-        <span className="apx-livebrowser__globe">
+      <div className="colonia-livebrowser__foot">
+        <span className="colonia-livebrowser__globe">
           <Globe size={16} />
         </span>
-        <span className="apx-livebrowser__text">
-          <span className="apx-livebrowser__title">{title ?? url}</span>
+        <span className="colonia-livebrowser__text">
+          <span className="colonia-livebrowser__title">{title ?? url}</span>
           {status ? (
-            <span className={cx("apx-livebrowser__status", statusTone === "warning" && "is-warning")}>{status}</span>
+            <span className={cx("colonia-livebrowser__status", statusTone === "warning" && "is-warning")}>{status}</span>
           ) : (
-            <span className="apx-livebrowser__status">{url}</span>
+            <span className="colonia-livebrowser__status">{url}</span>
           )}
         </span>
         {actionLabel && (

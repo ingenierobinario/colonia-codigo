@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApxError } from "@apx/protocol/client";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import { ColoniaError } from "@colonia/protocol/client";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const hook = { id: "start", kind: "webhook" as const, label: "Webhook" };
@@ -29,7 +29,7 @@ const unfinished: FlowGraph = {
   edges: [...runs.edges, { source: "save", target: "clean" }],
 };
 const refused = (code: string, node: string) => (error: unknown) => {
-  assert.ok(error instanceof ApxError);
+  assert.ok(error instanceof ColoniaError);
   const issues = (error.detail as { issues?: { code: string; node?: string }[] } | undefined)?.issues ?? [];
   assert.deepEqual(
     issues.map((i) => [i.code, i.node]),
@@ -97,8 +97,8 @@ test("a draft keeps a step not finished yet; publishing names it and what runs s
     assert.deepEqual(list.published.leads?.kinds, ["webhook", "table_write"]);
 
     // A try and what runs never take an unfinished step.
-    await assert.rejects(env.client.call("flows.try_graph", { graph: unfinished, data: { a: 1 } }), ApxError);
-    await assert.rejects(env.client.call("flows.outward", { flow: "leads", graph: unfinished }), ApxError);
+    await assert.rejects(env.client.call("flows.try_graph", { graph: unfinished, data: { a: 1 } }), ColoniaError);
+    await assert.rejects(env.client.call("flows.outward", { flow: "leads", graph: unfinished }), ColoniaError);
 
     // Finished, it publishes.
     const done = await env.client.call("flows.draft_save", {
@@ -140,7 +140,7 @@ test("a new Flow can start from an unfinished drawing, and its list row shows th
         expectedVersion: made.document.draftVersion,
         graph: { ...unfinished, nodes: [hook, { ...save, unknown: true }] } as unknown as FlowGraph,
       }),
-      ApxError,
+      ColoniaError,
     );
   } finally {
     await env.core.close();

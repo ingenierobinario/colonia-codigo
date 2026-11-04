@@ -1,147 +1,147 @@
 /* ── Overlays: Tooltip / Menu / Dialog ─────────────────────────────────────── */
-.apx-tooltip {
+.colonia-tooltip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 5px 9px;
   border-radius: 8px;
-  background: var(--apx-accent);
-  color: var(--apx-accent-fg);
-  font-size: var(--apx-text-xs);
-  font-weight: var(--apx-weight-medium);
-  box-shadow: var(--apx-shadow-md);
-  font-family: var(--apx-font-sans);
+  background: var(--colonia-accent);
+  color: var(--colonia-accent-fg);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-medium);
+  box-shadow: var(--colonia-shadow-md);
+  font-family: var(--colonia-font-sans);
   /* A label, never a target: it must not catch the click meant for the control it covers. */
   pointer-events: none;
 }
-.apx-tooltip--surface {
-  background: var(--apx-surface-raised);
-  color: var(--apx-fg);
-  border: 1px solid var(--apx-border-strong);
+.colonia-tooltip--surface {
+  background: var(--colonia-surface-raised);
+  color: var(--colonia-fg);
+  border: 1px solid var(--colonia-border-strong);
 }
-.apx-tooltip__kbd {
+.colonia-tooltip__kbd {
   opacity: 0.6;
 }
-.apx-menu {
+.colonia-menu {
   min-width: 200px;
   padding: 5px;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-surface-raised);
-  border: 1px solid var(--apx-border);
-  box-shadow: var(--apx-shadow-md);
-  font-family: var(--apx-font-sans);
-  font-size: var(--apx-text-md);
-  color: var(--apx-fg);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface-raised);
+  border: 1px solid var(--colonia-border);
+  box-shadow: var(--colonia-shadow-md);
+  font-family: var(--colonia-font-sans);
+  font-size: var(--colonia-text-md);
+  color: var(--colonia-fg);
   outline: 0;
 }
-.apx .apx-menu:focus-visible,
-.apx .apx-dialog:focus-visible {
+.colonia .colonia-menu:focus-visible,
+.colonia .colonia-dialog:focus-visible {
   outline: none;
 }
-.apx-menu__item {
+.colonia-menu__item {
   display: flex;
   align-items: center;
   gap: 10px;
   height: 32px;
   padding: 0 8px;
-  border-radius: calc(var(--apx-radius-md) - 4px);
+  border-radius: calc(var(--colonia-radius-md) - 4px);
   cursor: default;
   outline: 0;
   user-select: none;
 }
-.apx-menu__item[data-highlighted] {
-  background: var(--apx-popup-hover, var(--apx-fill));
+.colonia-menu__item[data-highlighted] {
+  background: var(--colonia-popup-hover, var(--colonia-fill));
 }
-.apx-menu__item[data-disabled] {
+.colonia-menu__item[data-disabled] {
   opacity: 0.45;
 }
-.apx-menu__item.is-danger {
-  color: var(--apx-danger);
+.colonia-menu__item.is-danger {
+  color: var(--colonia-danger);
 }
-.apx-menu__icon {
+.colonia-menu__icon {
   display: inline-grid;
   place-items: center;
   width: 16px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-menu__item.is-danger .apx-menu__icon {
+.colonia-menu__item.is-danger .colonia-menu__icon {
   color: inherit;
 }
-.apx-menu__icon svg {
-  width: var(--apx-icon-sm);
-  height: var(--apx-icon-sm);
+.colonia-menu__icon svg {
+  width: var(--colonia-icon-sm);
+  height: var(--colonia-icon-sm);
 }
-.apx-menu__text {
+.colonia-menu__text {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.apx-menu__shortcut {
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
+.colonia-menu__shortcut {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
 }
-.apx-menu__sep {
+.colonia-menu__sep {
   height: 1px;
   margin: 5px 4px;
-  background: var(--apx-border);
+  background: var(--colonia-border);
 }
-.apx-menu__label {
+.colonia-menu__label {
   padding: 6px 8px 4px;
-  font-size: var(--apx-text-xs);
-  color: var(--apx-fg-subtle);
-  font-weight: var(--apx-weight-medium);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
+  font-weight: var(--colonia-weight-medium);
 }
 
-.apx-dialog__backdrop {
+.colonia-dialog__backdrop {
   position: fixed;
   inset: 0;
-  background: var(--apx-overlay);
+  background: var(--colonia-overlay);
 }
-.apx-dialog {
+.colonia-dialog {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
-  padding: var(--apx-space-5);
-  border-radius: var(--apx-radius-xl);
-  background: var(--apx-surface-raised);
-  border: 1px solid var(--apx-card-border);
-  box-shadow: var(--apx-shadow-md);
-  color: var(--apx-fg);
-  font-family: var(--apx-font-sans);
-  font-size: var(--apx-text-md);
-  line-height: var(--apx-leading);
+  padding: var(--colonia-space-5);
+  border-radius: var(--colonia-radius-xl);
+  background: var(--colonia-surface-raised);
+  border: 1px solid var(--colonia-card-border);
+  box-shadow: var(--colonia-shadow-md);
+  color: var(--colonia-fg);
+  font-family: var(--colonia-font-sans);
+  font-size: var(--colonia-text-md);
+  line-height: var(--colonia-leading);
   outline: 0;
 }
 /* Head and footer stay put; a long body scrolls inside the dialog instead of off the screen. */
-.apx-dialog:not(.apx-dialog--bare) {
+.colonia-dialog:not(.colonia-dialog--bare) {
   display: flex;
   flex-direction: column;
 }
-.apx-dialog--sm {
+.colonia-dialog--sm {
   max-width: 380px;
 }
-.apx-dialog--md {
+.colonia-dialog--md {
   max-width: 480px;
 }
-.apx-dialog--lg {
+.colonia-dialog--lg {
   max-width: 640px;
 }
-.apx-dialog--xl {
+.colonia-dialog--xl {
   max-width: 1080px;
 }
-.apx-dialog--bare {
+.colonia-dialog--bare {
   display: flex;
   padding: 0;
   overflow: hidden;
-  background: var(--apx-surface);
-  border-color: var(--apx-border);
+  background: var(--colonia-surface);
+  border-color: var(--colonia-border);
 }
-.apx-dialog__close--float {
+.colonia-dialog__close--float {
   position: absolute;
   top: 14px;
   right: 14px;
@@ -150,7 +150,7 @@
   height: 30px;
   margin: 0;
 }
-.apx-sr-only {
+.colonia-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -161,18 +161,18 @@
   white-space: nowrap;
   border: 0;
 }
-.apx-dialog__head {
+.colonia-dialog__head {
   display: flex;
   align-items: flex-start;
   gap: 12px;
 }
-.apx-dialog__title {
+.colonia-dialog__title {
   flex: 1;
   margin: 0;
-  font-size: var(--apx-text-lg);
-  font-weight: var(--apx-weight-semibold);
+  font-size: var(--colonia-text-lg);
+  font-weight: var(--colonia-weight-semibold);
 }
-.apx-dialog__close {
+.colonia-dialog__close {
   display: grid;
   place-items: center;
   width: 28px;
@@ -181,53 +181,53 @@
   border: 0;
   border-radius: 8px;
   background: none;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
-.apx-dialog__close:hover {
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+.colonia-dialog__close:hover {
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
 }
-.apx-dialog__desc {
+.colonia-dialog__desc {
   margin: 6px 0 0;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 /* Room around the content so focus rings and borders are not clipped by the scroll box. */
-.apx-dialog__body {
-  --apx-dialog-gutter: 8px;
+.colonia-dialog__body {
+  --colonia-dialog-gutter: 8px;
   min-height: 0;
-  margin: calc(var(--apx-space-4) - var(--apx-dialog-gutter)) calc(-1 * var(--apx-dialog-gutter))
-    calc(-1 * var(--apx-dialog-gutter));
-  padding: var(--apx-dialog-gutter);
+  margin: calc(var(--colonia-space-4) - var(--colonia-dialog-gutter)) calc(-1 * var(--colonia-dialog-gutter))
+    calc(-1 * var(--colonia-dialog-gutter));
+  padding: var(--colonia-dialog-gutter);
   overflow-y: auto;
 }
 /* Only when it scrolls: a soft shadow under the header and over the footer where more content is hidden. */
 @supports (animation-timeline: scroll()) {
-  .apx-dialog__body {
-    --apx-dialog-shade: color-mix(in srgb, var(--apx-fg) 16%, transparent);
-    animation: apx-dialog-scroll linear both;
+  .colonia-dialog__body {
+    --colonia-dialog-shade: color-mix(in srgb, var(--colonia-fg) 16%, transparent);
+    animation: colonia-dialog-scroll linear both;
     animation-timeline: scroll(self);
   }
 }
-@keyframes apx-dialog-scroll {
+@keyframes colonia-dialog-scroll {
   0% {
-    box-shadow: inset 0 -10px 8px -8px var(--apx-dialog-shade);
+    box-shadow: inset 0 -10px 8px -8px var(--colonia-dialog-shade);
   }
   4%,
   96% {
     box-shadow:
-      inset 0 10px 8px -8px var(--apx-dialog-shade),
-      inset 0 -10px 8px -8px var(--apx-dialog-shade);
+      inset 0 10px 8px -8px var(--colonia-dialog-shade),
+      inset 0 -10px 8px -8px var(--colonia-dialog-shade);
   }
   100% {
-    box-shadow: inset 0 10px 8px -8px var(--apx-dialog-shade);
+    box-shadow: inset 0 10px 8px -8px var(--colonia-dialog-shade);
   }
 }
-.apx-dialog__footer {
+.colonia-dialog__footer {
   display: flex;
   flex: none;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--apx-space-2);
-  margin-top: var(--apx-space-5);
+  gap: var(--colonia-space-2);
+  margin-top: var(--colonia-space-5);
 }

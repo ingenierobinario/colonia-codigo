@@ -5,7 +5,7 @@
 // was brought once is not brought again.
 import fs from "node:fs";
 import path from "node:path";
-import type { Author, Part } from "@apx/protocol";
+import type { Author, Part } from "@colonia/protocol";
 import { parseFrontmatter } from "../apc/frontmatter.ts";
 import { readAgentDir } from "../apc/read.ts";
 import type { Store } from "../domain/store.ts";
@@ -60,7 +60,7 @@ function contactOf(r: Row): string | undefined {
   return str(m.contact_key) ?? str(m.chat_jid);
 }
 
-/** The super-agent's chats, from ~/.apx/messages/<channel>/<day>.jsonl: one per channel, a contact or a Telegram chat. */
+/** The super-agent's chats, from ~/.colonia/messages/<channel>/<day>.jsonl: one per channel, a contact or a Telegram chat. */
 function ledgerChats(home: string): V1Chat[] {
   const chats = new Map<string, V1Chat>();
   /** Telegram chats by size: the biggest is the owner's own, the rest (groups) are titled apart. */
@@ -148,7 +148,7 @@ function conversationRows(body: string): Row[] {
   return rows;
 }
 
-/** Project agents' web and agent-to-agent chats, from ~/.apx/projects/<id>/agents/<slug>/conversations/*.md. */
+/** Project agents' web and agent-to-agent chats, from ~/.colonia/projects/<id>/agents/<slug>/conversations/*.md. */
 function agentChats(home: string): V1Chat[] {
   const out: V1Chat[] = [];
   const root = path.join(home, "projects");
@@ -285,12 +285,12 @@ export function importV1Chats(
   return n;
 }
 
-/** Default's agents in v1 live under ~/.apx/projects/default/.apc/agents: in v2 they are global agents. */
+/** Default's agents in v1 live under ~/.colonia/projects/default/.apc/agents: in v2 they are global agents. */
 export function v1DefaultAgents(home: string) {
   return readAgentDir(path.join(home, "projects", "default", ".apc", "agents"));
 }
 
-/** Notes an agent kept for itself in v1 (~/.apx/projects/<id>/agents/<slug>/memory.md), one per line. */
+/** Notes an agent kept for itself in v1 (~/.colonia/projects/<id>/agents/<slug>/memory.md), one per line. */
 export function v1AgentNotes(home: string): Array<{ project: string; slug: string; file: string }> {
   const out: Array<{ project: string; slug: string; file: string }> = [];
   const root = path.join(home, "projects");

@@ -55,7 +55,7 @@ rl.on("line", async (line) => {
     process.stdout.write('null\n[1,2]\n"text"\n');
     out({ method: "session/update" });
     out({ method: "session/update", params: { update: null } });
-    // A reading command: allowed by the same classifier as APX's shell tool, without asking.
+    // A reading command: allowed by the same classifier as Colonia's shell tool, without asking.
     const ls = await ask("session/request_permission", {
       sessionId: sid,
       toolCall: { toolCallId: "t0", title: "ls", kind: "execute", rawInput: { command: "ls -la" } },
@@ -82,7 +82,7 @@ rl.on("line", async (line) => {
     });
     const allowed = perm?.outcome?.optionId === "yes";
     update(sid, { sessionUpdate: "tool_call_update", toolCallId: "t1", status: allowed ? "completed" : "failed" });
-    const hasInstructions = text.includes("<apx_instructions>");
+    const hasInstructions = text.includes("<colonia_instructions>");
     update(sid, { sessionUpdate: "agent_message_chunk", content: { type: "text", text: `model=${model} ` } });
     update(sid, {
       sessionUpdate: "agent_message_chunk",

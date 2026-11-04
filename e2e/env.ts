@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// A whole APX apart from the owner's: its own core on its own port and home (a temp folder), a model that answers
-// without calling anyone, an emulated Telegram, an APX v1 and Claude Code sessions to import, and a project folder.
-// Nothing here touches ~/.apx, the Keychain or a real service. Playwright starts it (webServer); `node e2e/env.ts`
+// A whole Colonia apart from the owner's: its own core on its own port and home (a temp folder), a model that answers
+// without calling anyone, an emulated Telegram, an Colonia v1 and Claude Code sessions to import, and a project folder.
+// Nothing here touches ~/.colonia, the Keychain or a real service. Playwright starts it (webServer); `node e2e/env.ts`
 // runs it by hand. A small control API lets tests act as the outside world (a Telegram user writing).
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -28,7 +28,7 @@ export const E2E = {
   slackTokens: { bot: "xoxb-1234-e2e-fake-bot", app: "xapp-1-e2e-fake-app" },
 };
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-"));
 const llm = await fakeLlm();
 // v1's embedding engine is the fake model's server (Ollama-style), never one running on this machine.
 const fx = writeFixtures(dir, { embedUrl: llm.url.replace(/\/v1$/, "") });
@@ -46,7 +46,7 @@ dc.guild.channels = [
 ];
 const sl = await fakeSlack(E2E.slackTokens);
 const google = await fakeGoogle();
-// A service on this computer that Flow HTTP steps may call (the only one: APX_FLOW_HTTP_ALLOW); it keeps what came.
+// A service on this computer that Flow HTTP steps may call (the only one: COLONIA_FLOW_HTTP_ALLOW); it keeps what came.
 const calls: { method?: string; url?: string; headers: http.IncomingHttpHeaders; body: string }[] = [];
 const service = http.createServer((req, res) => {
   let body = "";
@@ -73,35 +73,35 @@ const core = spawn(process.execPath, ["--no-warnings", "--import", hook, path.jo
     PATH: [fx.bin, "/usr/bin", "/bin"].join(path.delimiter),
     HOME: process.env.HOME ?? os.homedir(),
     ...compileCacheEnv(root),
-    APX_HOME: fx.home,
-    APX_PORT: String(E2E.port),
+    COLONIA_HOME: fx.home,
+    COLONIA_PORT: String(E2E.port),
     // Browser regression tests resolve this insecure origin to loopback. Only allowed as an origin: a public URL
     // would make the core count as exposed, and Devices would ask for a restart it never needs.
-    APX_ALLOWED_ORIGINS: `http://panel.test:${E2E.port}`,
-    APX_SECRETS: "file",
-    APX_UPDATES: "off",
-    // A sandbox never reports to the APX project.
-    APX_TELEMETRY: "off",
-    APX_AGENT_NAME: "Roby",
-    APX_V1_HOME: fx.v1,
-    APX_V1_URL: "http://127.0.0.1:9",
+    COLONIA_ALLOWED_ORIGINS: `http://panel.test:${E2E.port}`,
+    COLONIA_SECRETS: "file",
+    COLONIA_UPDATES: "off",
+    // A sandbox never reports to the Colonia project.
+    COLONIA_TELEMETRY: "off",
+    COLONIA_AGENT_NAME: "Roby",
+    COLONIA_V1_HOME: fx.v1,
+    COLONIA_V1_URL: "http://127.0.0.1:9",
     CLAUDE_CONFIG_DIR: fx.claude,
     // Never the owner's other agent apps' skills (~/.cursor, ~/.agents).
-    APX_APPS_HOME: dir,
+    COLONIA_APPS_HOME: dir,
     CODEX_HOME: fx.codex,
-    APX_LLM_BASE_URL: llm.url,
-    APX_LLM_KEY: "e2e",
-    APX_LLM_MODELS: "fake-1,fake-2",
-    APX_TELEGRAM_API: tg.url,
-    APX_DISCORD_API: dc.urls.api,
-    APX_DISCORD_GATEWAY: dc.urls.gateway,
-    APX_SLACK_API: sl.api,
-    APX_GOOGLE_API: google.url,
-    APX_FLOW_HTTP_ALLOW: serviceUrl.replace("http://", ""),
+    COLONIA_LLM_BASE_URL: llm.url,
+    COLONIA_LLM_KEY: "e2e",
+    COLONIA_LLM_MODELS: "fake-1,fake-2",
+    COLONIA_TELEGRAM_API: tg.url,
+    COLONIA_DISCORD_API: dc.urls.api,
+    COLONIA_DISCORD_GATEWAY: dc.urls.gateway,
+    COLONIA_SLACK_API: sl.api,
+    COLONIA_GOOGLE_API: google.url,
+    COLONIA_FLOW_HTTP_ALLOW: serviceUrl.replace("http://", ""),
     // Never the owner's own Messages, even when the sandbox runs on their Mac.
-    APX_IMESSAGE: "off",
+    COLONIA_IMESSAGE: "off",
     // Never the machine's own Ollama: memory's local embedding models are looked for where nothing answers.
-    APX_OLLAMA_URL: "http://127.0.0.1:9",
+    COLONIA_OLLAMA_URL: "http://127.0.0.1:9",
     E2E_WA_PORT: String(E2E.whatsapp),
     E2E_DESKTOP_TRASH_RECORD: desktopTrashRecord,
     E2E_PROJECT_ROOT: fx.repo,
@@ -213,7 +213,7 @@ await fetch(`http://127.0.0.1:${E2E.port}/rpc/models.set_config`, {
   body: JSON.stringify({ default: { model: "custom/fake-1", router: false } }),
 });
 console.log(
-  `apx e2e: core http://127.0.0.1:${E2E.port} · control :${(control.address() as AddressInfo).port} · ${dir}`,
+  `colonia e2e: core http://127.0.0.1:${E2E.port} · control :${(control.address() as AddressInfo).port} · ${dir}`,
 );
 
 const stop = async () => {
@@ -231,5 +231,5 @@ const stop = async () => {
 process.on("SIGINT", stop);
 process.on("SIGTERM", stop);
 core.on("exit", (code) => {
-  if (code) console.error(`apx e2e: the core stopped (${code}); see ${path.join(dir, "core.log")}`);
+  if (code) console.error(`colonia e2e: the core stopped (${code}); see ${path.join(dir, "core.log")}`);
 });

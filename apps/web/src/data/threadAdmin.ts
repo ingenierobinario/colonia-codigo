@@ -1,5 +1,5 @@
 // The owner's arrangement of chats and their management dialogs.
-import type { Thread, WritePolicy } from "@apx/protocol";
+import type { Thread, WritePolicy } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { discardAttachments } from "./attachmentDrafts.ts";
 import { client } from "./client.ts";

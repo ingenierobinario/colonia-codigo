@@ -1,4 +1,4 @@
-import { Badge, Button, Dialog, Icons, Input, ProjectTile, Select, Spinner, Switch } from "@apx/ui";
+import { Badge, Button, Dialog, Icons, Input, ProjectTile, Select, Spinner, Switch } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { QrCode } from "../common/QrCode.tsx";
@@ -311,7 +311,7 @@ function WhatsAppCard() {
 export function ProjectStep({ draft: d, set }: StepProps) {
   const t = useT();
   const pick = async () => {
-    const dir = await window.apxDesktop?.pickFolder?.();
+    const dir = await window.coloniaDesktop?.pickFolder?.();
     if (dir) set({ path: dir });
   };
   const choices: Array<{ id: Draft["projectChoice"]; title: MessageKey; body: MessageKey; icon: typeof Icons.Folder }> =
@@ -376,7 +376,7 @@ export function ProjectStep({ draft: d, set }: StepProps) {
             value={d.path}
             onChange={(e) => set({ path: e.currentTarget.value })}
           />
-          {window.apxDesktop?.pickFolder && (
+          {window.coloniaDesktop?.pickFolder && (
             <Button variant="secondary" leadingIcon={<Icons.FolderOpen size={14} />} onClick={() => void pick()}>
               {t("setup.project.pick")}
             </Button>
@@ -394,8 +394,8 @@ export function ProjectStep({ draft: d, set }: StepProps) {
 const DONE_MS = 2400;
 
 /**
- * The crew is ready: a moment to read it, then the app opens by itself. With v1's `apx` on this machine the owner
- * first says whether `apx` becomes this one (a real choice, so it waits for it).
+ * The crew is ready: a moment to read it, then the app opens by itself. With v1's `colonia` on this machine the owner
+ * first says whether `colonia` becomes this one (a real choice, so it waits for it).
  */
 export function DoneStep({ name, onFinish }: { name: string; onFinish: () => void }) {
   const t = useT();
@@ -425,7 +425,7 @@ export function DoneStep({ name, onFinish }: { name: string; onFinish: () => voi
         {name} <span className="is-green">{t("setup.done.ready")}</span>
       </h1>
       <p className="wiz__body">{t("setup.done.body", { home: dataHome ?? "" })}</p>
-      {/* With v1 installed, `apx` is v1's: one click makes it this one. */}
+      {/* With v1 installed, `colonia` is v1's: one click makes it this one. */}
       {home && terminal && (
         <div className="wiz__card wiz__takeover">
           <b>{t("setup.done.takeOver")}</b>

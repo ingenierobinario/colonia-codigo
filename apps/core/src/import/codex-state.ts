@@ -37,7 +37,7 @@ function stateFile(home: string): string | undefined {
 const firstLine = (s: string) => s.replace(/\s+/g, " ").trim().slice(0, 120);
 
 /**
- * Codex's projects and the owner's own threads (not archived, not a sub-agent's, not APX's runs through the SDK), or
+ * Codex's projects and the owner's own threads (not archived, not a sub-agent's, not Colonia's runs through the SDK), or
  * undefined when this Codex keeps no index.
  */
 export function codexState(home: string): { projects: CodexProject[]; threads: CodexThread[] } | undefined {

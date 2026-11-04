@@ -10,7 +10,7 @@ const TOKEN = "123456:TEST-news";
 const OWNER = { id: 3301, name: "Acme Owner" };
 
 const llm = scriptedLlm((_req, { said }) => {
-  if (said.startsWith("APX was updated.")) return say("Your widgets remember now. Want me to update them?");
+  if (said.startsWith("Colonia was updated.")) return say("Your widgets remember now. Want me to update them?");
   return say(`On it: ${said.slice(0, 60)}`);
 });
 
@@ -48,7 +48,7 @@ test("news reach the owner's channel with buttons; a press asks the super-agent 
   const { entries } = await env.client.call("system.news", {});
   const kit = entries.find((e) => e.id === "artifacts-kit");
   assert.equal(kit?.applies, true);
-  assert.equal(kit?.seen, false, "a test core tells nothing at start (APX_NEWS is off there)");
+  assert.equal(kit?.seen, false, "a test core tells nothing at start (COLONIA_NEWS is off there)");
 
   const calls = llm.calls.length;
   const r = await env.client.call("system.news_tell", {});

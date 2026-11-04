@@ -1,5 +1,5 @@
 // Who may reach the core, as core.env says it: this computer only, the local network, or the owner's tailnet. Pure,
-// shared by `apx expose` and the core's access.* methods.
+// shared by `colonia expose` and the core's access.* methods.
 
 import type { AccessMode } from "./device-methods.ts";
 
@@ -18,26 +18,26 @@ export function planExposure(
   o: { tailscaleUrl?: string; token?: () => string } = {},
 ): Exposure {
   const vars = { ...current };
-  delete vars.APX_HOST;
-  delete vars.APX_PUBLIC_URL;
+  delete vars.COLONIA_HOST;
+  delete vars.COLONIA_PUBLIC_URL;
   if (mode === "off") return { vars };
   let generatedToken: string | undefined;
-  if (!vars.APX_TOKEN) {
+  if (!vars.COLONIA_TOKEN) {
     generatedToken = (o.token ?? newToken)();
-    vars.APX_TOKEN = generatedToken;
+    vars.COLONIA_TOKEN = generatedToken;
   }
-  if (mode === "lan") vars.APX_HOST = "0.0.0.0";
+  if (mode === "lan") vars.COLONIA_HOST = "0.0.0.0";
   else {
     if (!o.tailscaleUrl) throw new Error("tailscale exposure needs this machine's Tailscale name");
-    vars.APX_PUBLIC_URL = o.tailscaleUrl;
+    vars.COLONIA_PUBLIC_URL = o.tailscaleUrl;
   }
   return generatedToken ? { vars, generatedToken } : { vars };
 }
 
 /** Which of the three a set of settings means (a public URL is the tailnet's; a non-loopback host, the network). */
-export function accessOf(vars: { APX_HOST?: string | undefined; APX_PUBLIC_URL?: string | undefined }): AccessMode {
-  if (vars.APX_PUBLIC_URL) return "tailscale";
-  if (vars.APX_HOST && !isLoopback(vars.APX_HOST)) return "lan";
+export function accessOf(vars: { COLONIA_HOST?: string | undefined; COLONIA_PUBLIC_URL?: string | undefined }): AccessMode {
+  if (vars.COLONIA_PUBLIC_URL) return "tailscale";
+  if (vars.COLONIA_HOST && !isLoopback(vars.COLONIA_HOST)) return "lan";
   return "local";
 }
 

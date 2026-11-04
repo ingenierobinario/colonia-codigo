@@ -1,5 +1,5 @@
-// Codex in its own sessions: the owner's own `codex` (their ChatGPT login and config). APX tools reach it through a
-// per-run MCP proxy (`apx mcp --run <token>`) that calls back into this core. See DECISIONS.md#d-007
+// Codex in its own sessions: the owner's own `codex` (their ChatGPT login and config). Colonia tools reach it through a
+// per-run MCP proxy (`colonia mcp --run <token>`) that calls back into this core. See DECISIONS.md#d-007
 import path from "node:path";
 import { Codex, type ModelReasoningEffort } from "@openai/codex-sdk";
 import { worksInFolder } from "../domain/threads.ts";
@@ -10,7 +10,7 @@ import { effortPart, type Harness, modelPart, type TurnIO, type TurnOutcome } fr
 import { linkedWorktreeWritableDirs } from "./worktree.ts";
 
 const READ_ONLY_NOTE =
-  "[APX: this turn is read-only: this agent works in manual or plan mode, or the thread does not let it write. Say so if a change is needed: the owner can make it, change the agent's mode or let the session write.]";
+  "[Colonia: this turn is read-only: this agent works in manual or plan mode, or the thread does not let it write. Say so if a change is needed: the owner can make it, change the agent's mode or let the session write.]";
 
 /**
  * Whether Codex may edit and run commands in the folder this turn, for the agent as it acts (TurnIO.agent): Codex never
@@ -43,13 +43,13 @@ export function codexHarness(opts: {
       const effort = effortPart(io.models[0]);
       const gate = opts.gate(io);
       try {
-        const apx = { ...gate.command, default_tools_approval_mode: "approve" };
+        const colonia = { ...gate.command, default_tools_approval_mode: "approve" };
         const env = harnessEnv(io.agent.id);
         const codex = new Codex({
           codexPathOverride: codexPath,
-          // With approval "never" Codex refuses every MCP call unless the server's tools are pre-approved; APX's gate
+          // With approval "never" Codex refuses every MCP call unless the server's tools are pre-approved; Colonia's gate
           // asks the owner itself when a tool needs it.
-          config: { mcp_servers: { apx } },
+          config: { mcp_servers: { colonia } },
           env,
         });
         const madeBefore = new Set(io.sessionId ? imagesIn(codexImageDir(env, io.sessionId)) : []);

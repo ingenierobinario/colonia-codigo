@@ -7,7 +7,7 @@ import { isNoticeSound, type NoticeSound } from "./noticeSound";
 
 export type SoundPrefs = { audioEnd: boolean; notice: NoticeSound };
 
-const KEY = "apx.sounds";
+const KEY = "colonia.sounds";
 let current: SoundPrefs = { audioEnd: true, notice: "all" };
 const listeners = new Set<(prefs: SoundPrefs) => void>();
 

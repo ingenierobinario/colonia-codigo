@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { ApxClient } from "@apx/protocol/client";
+import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 const quotedData = (prompt: string) => {
@@ -50,7 +50,7 @@ test("model callers cannot review context or enable helper mode", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
   try {
     const { project } = await env.client.call("projects.create", { name: "Acme" });
-    const model = new ApxClient({ url: env.core.url, actor: "agent" });
+    const model = new ColoniaClient({ url: env.core.url, actor: "agent" });
     await assert.rejects(model.call("projects.helper_review", { project: project.id, manual: true }), /human|owner/i);
     await assert.rejects(model.call("projects.helper_set", { project: project.id, enabled: true }), /human|owner/i);
     assert.equal((await env.client.call("projects.helper_review", { project: project.id })).enabled, false);

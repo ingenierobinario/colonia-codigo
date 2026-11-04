@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { ToolApproval } from "@apx/protocol";
+import type { ToolApproval } from "@colonia/protocol";
 
 export type BrowserConsentContext = {
   origin: string;
@@ -77,10 +77,10 @@ export function browserConsents(
         throw new Error("Browser approval was revoked or declined while waiting; request a new evaluation");
       if (!active(context.run, thread, agent)) throw new Error("Browser approval requires its original active turn");
       sweep();
-      const key = `apx:browser_evaluate:${randomUUID()}`;
+      const key = `colonia:browser_evaluate:${randomUUID()}`;
       grants.set(key, {
         key,
-        server: "apx",
+        server: "colonia",
         tool: "browser_evaluate",
         scope,
         thread_id: thread,

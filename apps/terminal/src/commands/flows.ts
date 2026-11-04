@@ -1,20 +1,20 @@
-import type { Params, Result } from "@apx/protocol";
-import type { ApxClient } from "@apx/protocol/client";
+import type { Params, Result } from "@colonia/protocol";
+import type { ColoniaClient } from "@colonia/protocol/client";
 
-export async function flows(client: ApxClient, [sub = "help", ...args]: string[], project?: string): Promise<void> {
+export async function flows(client: ColoniaClient, [sub = "help", ...args]: string[], project?: string): Promise<void> {
   let result: unknown;
   switch (sub) {
     case "list":
-      if (!project) throw new Error("usage: apx flows list --project <id>");
+      if (!project) throw new Error("usage: colonia flows list --project <id>");
       result = await client.call("flows.list", { project });
       break;
     case "set":
-      if (!args[0]) throw new Error("usage: apx flows set '<definition JSON>'");
+      if (!args[0]) throw new Error("usage: colonia flows set '<definition JSON>'");
       result = await client.call("flows.set", JSON.parse(args[0]) as Params<"flows.set">);
       break;
     case "rows":
     case "events": {
-      if (!args[0]) throw new Error(`usage: apx flows ${sub} <flow> [cursor]`);
+      if (!args[0]) throw new Error(`usage: colonia flows ${sub} <flow> [cursor]`);
       const cursor: unknown = args[1] ? JSON.parse(args[1]) : undefined;
       result =
         sub === "rows"
@@ -31,7 +31,7 @@ export async function flows(client: ApxClient, [sub = "help", ...args]: string[]
     case "export": {
       if (!args[0] || !project)
         throw new Error(
-          "usage: apx flows export <flow> --project <id> (disable the Flow and finish/cancel active runs first)",
+          "usage: colonia flows export <flow> --project <id> (disable the Flow and finish/cancel active runs first)",
         );
       const flow = args[0];
       const definition = (await client.call("flows.list", { project })).flows.find((f) => f.id === flow);
@@ -64,40 +64,40 @@ export async function flows(client: ApxClient, [sub = "help", ...args]: string[]
     }
     case "write":
       if (!args[0] || !args[1] || args[2] === undefined)
-        throw new Error("usage: apx flows write <flow> <key> '<value JSON>'");
+        throw new Error("usage: colonia flows write <flow> <key> '<value JSON>'");
       result = await client.call("flows.write", { flow: args[0], key: args[1], value: JSON.parse(args[2]) });
       break;
     case "retire":
       if (!args[0] || args[1] !== "confirm-exported")
         throw new Error(
-          "usage: apx flows retire <flow> confirm-exported (verify your export first; permanently removes Flow data; identifier cannot be reused)",
+          "usage: colonia flows retire <flow> confirm-exported (verify your export first; permanently removes Flow data; identifier cannot be reused)",
         );
       result = await client.call("flows.retire", { flow: args[0], confirm: true, exported: true });
       break;
     case "retry":
-      if (!args[0] || !args[1]) throw new Error("usage: apx flows retry <flow> <event>");
+      if (!args[0] || !args[1]) throw new Error("usage: colonia flows retry <flow> <event>");
       result = await client.call("flows.retry", { flow: args[0], event: args[1] });
       break;
     case "run":
     case "stop": {
       // A run may send messages as the owner and call other services: it is the owner's own, not an agent's.
-      if (process.env.APX_AGENT !== undefined)
-        throw new Error(`apx flows ${sub} acts as the owner, so it does not run inside an agent's command.`);
+      if (process.env.COLONIA_AGENT !== undefined)
+        throw new Error(`colonia flows ${sub} acts as the owner, so it does not run inside an agent's command.`);
       if (sub === "run") {
-        if (!args[0]) throw new Error("usage: apx flows run <flow> ['<sample body JSON>']");
+        if (!args[0]) throw new Error("usage: colonia flows run <flow> ['<sample body JSON>']");
         result = await client.call("flows.run_now", {
           flow: args[0],
           ...(args[1] === undefined ? {} : { data: JSON.parse(args[1]) as unknown }),
         });
       } else {
-        if (!args[0] || !args[1]) throw new Error("usage: apx flows stop <flow> <event>");
+        if (!args[0] || !args[1]) throw new Error("usage: colonia flows stop <flow> <event>");
         result = await client.call("flows.cancel_run", { flow: args[0], event: args[1] });
       }
       break;
     }
     default:
       console.log(
-        "apx flows list --project <id> | set '<definition JSON>' | rows <flow> [cursor JSON] | events <flow> [cursor JSON] | export <flow> --project <id> | write <flow> <key> '<JSON>' | retry <flow> <event> | run <flow> ['<JSON>'] | stop <flow> <event> | retire <flow> confirm-exported",
+        "colonia flows list --project <id> | set '<definition JSON>' | rows <flow> [cursor JSON] | events <flow> [cursor JSON] | export <flow> --project <id> | write <flow> <key> '<JSON>' | retry <flow> <event> | run <flow> ['<JSON>'] | stop <flow> <event> | retire <flow> confirm-exported",
       );
       return;
   }

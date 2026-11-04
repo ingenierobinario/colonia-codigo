@@ -1,5 +1,5 @@
-import type { Routine } from "@apx/protocol";
-import { Button, SettingRow, Skeleton, Switch, Textarea } from "@apx/ui";
+import type { Routine } from "@colonia/protocol";
+import { Button, SettingRow, Skeleton, Switch, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { loadRoutines, useRoutines } from "../data/routines.ts";

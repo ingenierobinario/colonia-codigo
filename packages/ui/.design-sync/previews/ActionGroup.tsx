@@ -1,4 +1,4 @@
-import { ActionGroup, ApxProvider, Icons } from "@apx/ui";
+import { ActionGroup, ColoniaProvider, Icons } from "@colonia/ui";
 
 const items = [
   { name: "crm.query", detail: "accounts where tier = A", aside: "0.8s" },
@@ -28,7 +28,7 @@ export function Reasoning() {
   return (
     <div style={{ width: 520 }}>
       <ActionGroup title="Thought for 14s" icon={<Icons.Sparkles size={14} />} defaultOpen>
-        <p style={{ margin: "0 12px 10px 34px", fontSize: 13, color: "var(--apx-fg-muted)" }}>
+        <p style={{ margin: "0 12px 10px 34px", fontSize: 13, color: "var(--colonia-fg-muted)" }}>
           The task says "in progress" but there's no running job. Check the job table first, then restart the render
           with the same brief.
         </p>
@@ -39,11 +39,11 @@ export function Reasoning() {
 
 export function ClassicLook() {
   return (
-    <ApxProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 560 }}>
+    <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 560 }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <ActionGroup title="Acciones 1–10 de 16" failedLabel="fallaron" items={items} />
         <ActionGroup title="Acciones 11–16 de 16" failed={2} failedLabel="fallaron" items={items} defaultOpen />
       </div>
-    </ApxProvider>
+    </ColoniaProvider>
   );
 }

@@ -1,5 +1,5 @@
-import { noticeChannelChoice } from "@apx/protocol/notices";
-import { Select } from "@apx/ui";
+import { noticeChannelChoice } from "@colonia/protocol/notices";
+import { Select } from "@colonia/ui";
 import { useEffect } from "react";
 import { loadChannels, saveNotices, useChannels } from "../data/channels.ts";
 import { useT } from "../i18n/index.ts";

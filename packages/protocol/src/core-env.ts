@@ -1,13 +1,13 @@
-// <APX home>/core.env: how the core is exposed (host, port, token, public URL), shared by the core, the terminal and
+// <Colonia home>/core.env: how the core is exposed (host, port, token, public URL), shared by the core, the terminal and
 // the desktop app. Pure text in, text out: each side does its own file access.
 
 export const CORE_ENV_FILE = "core.env";
 
 /** The only keys the file may set; anything else in it is ignored. */
-export const CORE_ENV_KEYS = ["APX_HOST", "APX_PORT", "APX_TOKEN", "APX_PUBLIC_URL", "APX_ALLOWED_ORIGINS"] as const;
+export const CORE_ENV_KEYS = ["COLONIA_HOST", "COLONIA_PORT", "COLONIA_TOKEN", "COLONIA_PUBLIC_URL", "COLONIA_ALLOWED_ORIGINS"] as const;
 export type CoreEnvKey = (typeof CORE_ENV_KEYS)[number];
 
-const HEADER = "# APX core settings (KEY=VALUE). Written by `apx expose`; the process environment wins over this file.";
+const HEADER = "# Colonia core settings (KEY=VALUE). Written by `colonia expose`; the process environment wins over this file.";
 
 export function parseCoreEnv(text: string): Record<string, string> {
   const vars: Record<string, string> = {};

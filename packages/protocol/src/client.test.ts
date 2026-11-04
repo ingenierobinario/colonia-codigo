@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import http from "node:http";
 import { afterEach, test } from "node:test";
-import { ApxClient, ApxError, ApxSocket, isRepeatableRead } from "./client.ts";
+import { ColoniaClient, ColoniaError, ColoniaSocket, isRepeatableRead } from "./client.ts";
 import { PROTOCOL_VERSION } from "./constants.ts";
 import { type MethodName, methods } from "./methods.ts";
 
@@ -29,7 +29,7 @@ test("a chat read survives one dropped response without retrying a one-time effe
   const address = server.address();
   assert.ok(address && typeof address !== "string");
   let keys = 0;
-  const client = new ApxClient({
+  const client = new ColoniaClient({
     url: `http://127.0.0.1:${address.port}`,
     token: "test-owner",
     clientToken: "test-client",
@@ -41,7 +41,7 @@ test("a chat read survives one dropped response without retrying a one-time effe
   assert.equal(keys, 1);
   assert.equal(reads[0]?.body, '{"thread":"th_acme"}');
   assert.equal(reads[1]?.body, reads[0]?.body);
-  for (const name of ["authorization", "x-apx-client", "x-apx-actor", "idempotency-key"])
+  for (const name of ["authorization", "x-colonia-client", "x-colonia-actor", "idempotency-key"])
     assert.equal(reads[1]?.headers[name], reads[0]?.headers[name]);
   await assert.rejects(client.call("clients.create", { name: "Acme", scopes: ["chat"] }), TypeError);
   assert.equal(effects, 1);
@@ -65,7 +65,7 @@ test("reads retry socket resets at most once within one deadline and request", a
     deadlines++;
     return timeout(ms);
   });
-  const client = new ApxClient({ url: "http://core.example.com" });
+  const client = new ColoniaClient({ url: "http://core.example.com" });
   for (const code of ["ECONNRESET", "UND_ERR_SOCKET"]) {
     const requests: RequestInit[] = [];
     const error = new TypeError("socket closed", { cause: { code } });
@@ -84,7 +84,7 @@ test("reads retry socket resets at most once within one deadline and request", a
 });
 
 test("chat read cancellation and non-socket failures never retry", async (t) => {
-  const client = new ApxClient({ url: "http://core.example.com" });
+  const client = new ColoniaClient({ url: "http://core.example.com" });
   for (const code of ["ENOTFOUND", "ERR_TLS_CERT_ALTNAME_INVALID", undefined]) {
     let attempts = 0;
     const error = new TypeError("network failed", { cause: { code } });
@@ -115,7 +115,7 @@ test("chat read cancellation and non-socket failures never retry", async (t) => 
 });
 
 test("effects and chat read response errors are never retried", async (t) => {
-  const client = new ApxClient({ url: "http://core.example.com" });
+  const client = new ColoniaClient({ url: "http://core.example.com" });
   let attempts = 0;
   const error = new TypeError("socket closed", { cause: { code: "ECONNRESET" } });
   t.mock.method(globalThis, "fetch", async () => {
@@ -152,7 +152,7 @@ test("HTTP client sends credentials, actor, exact params and explicit or fresh i
     return Response.json({ ok: true, result: { pong: "Acme" } });
   });
   let key = 0;
-  const client = new ApxClient({
+  const client = new ColoniaClient({
     url: "https://core.example.com/",
     token: "test-owner",
     clientToken: "test-client",
@@ -166,8 +166,8 @@ test("HTTP client sends credentials, actor, exact params and explicit or fresh i
   assert.deepEqual(requests[0]?.init?.headers, {
     "content-type": "application/json",
     authorization: "Bearer test-owner",
-    "x-apx-actor": "agent",
-    "x-apx-client": "test-client",
+    "x-colonia-actor": "agent",
+    "x-colonia-client": "test-client",
     "idempotency-key": "retry-key",
   });
   assert.equal(requests[0]?.init?.body, '{"echo":"Acme"}');
@@ -175,14 +175,14 @@ test("HTTP client sends credentials, actor, exact params and explicit or fresh i
 });
 
 test("HTTP errors preserve code, detail and retryability; malformed responses and network errors reject", async (t) => {
-  const client = new ApxClient({ url: "http://core.example.com" });
+  const client = new ColoniaClient({ url: "http://core.example.com" });
   for (const shape of [
     { code: "unavailable", message: "Node offline", detail: { node: "n1" }, retryable: true },
     { code: "unauthorized", message: "Owner required" },
   ]) {
     t.mock.method(globalThis, "fetch", async () => Response.json({ ok: false, error: shape }, { status: 403 }));
     await assert.rejects(client.call("system.health", {}), (e) => {
-      assert.ok(e instanceof ApxError);
+      assert.ok(e instanceof ColoniaError);
       assert.equal(e.code, shape.code);
       assert.equal(e.message, shape.message);
       assert.equal(e.retryable, "retryable" in shape ? shape.retryable : false);
@@ -191,7 +191,7 @@ test("HTTP errors preserve code, detail and retryability; malformed responses an
     });
   }
   t.mock.method(globalThis, "fetch", async () => Response.json({ ok: false }, { status: 502 }));
-  await assert.rejects(client.call("system.health", {}), { name: "ApxError", code: "internal", message: "HTTP 502" });
+  await assert.rejects(client.call("system.health", {}), { name: "ColoniaError", code: "internal", message: "HTTP 502" });
   t.mock.method(globalThis, "fetch", async () => new Response("not JSON"));
   await assert.rejects(client.call("system.health", {}), SyntaxError);
   const error = new TypeError("network failed");
@@ -210,7 +210,7 @@ test("cancelling a derived client cancels its requests without changing the orig
     signal.throwIfAborted();
     return Response.json({ ok: true, result: {} });
   });
-  const client = new ApxClient({ url: "http://core.example.com" });
+  const client = new ColoniaClient({ url: "http://core.example.com" });
   const controller = new AbortController();
   controller.abort(new Error("view closed"));
   await assert.rejects(client.withSignal(controller.signal).call("system.health", {}), /view closed/);
@@ -229,7 +229,7 @@ test("derived clients retain cancellation from both their parent and their new s
   for (const cancelled of ["parent", "child"]) {
     const parent = new AbortController();
     const child = new AbortController();
-    const client = new ApxClient({ url: "http://core.example.com", signal: parent.signal }).withSignal(child.signal);
+    const client = new ColoniaClient({ url: "http://core.example.com", signal: parent.signal }).withSignal(child.signal);
     (cancelled === "parent" ? parent : child).abort(new Error(`${cancelled} canceled`));
     await assert.rejects(client.call("system.health", {}), new RegExp(`${cancelled} canceled`));
   }
@@ -242,7 +242,7 @@ test("every long-running method gives its server time to finish and other method
     return new AbortController().signal;
   });
   t.mock.method(globalThis, "fetch", async () => Response.json({ ok: true, result: {} }));
-  const client = new ApxClient({ url: "http://core.example.com", timeoutMs: 1234 });
+  const client = new ColoniaClient({ url: "http://core.example.com", timeoutMs: 1234 });
   const cases: [MethodName, object, number][] = [
     ["browser.handoff", {}, 320_000],
     ["browser.handoff", { timeout_s: 1 }, 21_000],
@@ -316,7 +316,7 @@ afterEach(() => {
 
 async function openSocket(timeout = 1000) {
   globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
-  const socket = new ApxSocket("ws://core.example.com/ws", timeout, () => "fresh-key");
+  const socket = new ColoniaSocket("ws://core.example.com/ws", timeout, () => "fresh-key");
   const opening = socket.open({ t: "hello", protocol: PROTOCOL_VERSION });
   const wire = FakeWebSocket.latest;
   await Promise.resolve();
@@ -332,7 +332,7 @@ async function openSocket(timeout = 1000) {
 
 test("a socket handshake uses the configured client, encoded token, role and capabilities", async () => {
   globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
-  const client = new ApxClient({
+  const client = new ColoniaClient({
     url: "https://core.example.com/",
     token: "a+b&c",
     actor: "agent",
@@ -361,7 +361,7 @@ test("a socket handshake uses the configured client, encoded token, role and cap
 test("client cancellation closes a pending handshake and refuses an already canceled connection", async () => {
   globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
   const controller = new AbortController();
-  const client = new ApxClient({ url: "https://core.example.com", signal: controller.signal });
+  const client = new ColoniaClient({ url: "https://core.example.com", signal: controller.signal });
   const opening = client.connect("node", ["browser"]);
   const denied = assert.rejects(opening, /connection changed/);
   const wire = FakeWebSocket.latest;
@@ -376,7 +376,7 @@ test("client cancellation closes a pending handshake and refuses an already canc
 test("client cancellation closes an established socket and rejects its pending calls", async () => {
   globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
   const controller = new AbortController();
-  const client = new ApxClient({ url: "https://core.example.com" }).withSignal(controller.signal);
+  const client = new ColoniaClient({ url: "https://core.example.com" }).withSignal(controller.signal);
   const opening = client.connect("node", ["browser"]);
   await Promise.resolve();
   FakeWebSocket.latest.receive({ t: "welcome", session: "s1" });
@@ -407,7 +407,7 @@ test("socket calls correlate out-of-order responses, reject typed errors, and ig
       error: { code: "unauthorized", message: "Owner only", retryable: false },
     });
     assert.deepEqual(await second, { pong: "second" });
-    await assert.rejects(first, { name: "ApxError", code: "unauthorized", message: "Owner only" });
+    await assert.rejects(first, { name: "ColoniaError", code: "unauthorized", message: "Owner only" });
   } finally {
     socket.close();
   }
@@ -433,7 +433,7 @@ test("socket listeners unsubscribe and node events carry an increasing sequence"
   );
   socket.close();
   await socket.closed;
-  await new ApxSocket("ws://core.example.com", 10).closed;
+  await new ColoniaSocket("ws://core.example.com", 10).closed;
 });
 
 test("nodes answer inbound requests and preserve typed failures without exposing exception details", async () => {
@@ -456,7 +456,7 @@ test("nodes answer inbound requests and preserve typed failures without exposing
     result: { method: "browser.tabs", params: { by: "scout" } },
   });
   for (const [error, code, message] of [
-    [new ApxError({ code: "bad_request", message: "Invalid tab", detail: "private" }), "bad_request", "Invalid tab"],
+    [new ColoniaError({ code: "bad_request", message: "Invalid tab", detail: "private" }), "bad_request", "Invalid tab"],
     [new Error("Node failed"), "internal", "Node failed"],
     ["failed", "internal", "failed"],
   ] as const) {
@@ -484,13 +484,13 @@ test("closed sockets reject pending calls and new calls instead of leaving promi
 test("socket call and handshake deadlines reject, and closing before welcome rejects immediately", async (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const { socket, wire } = await openSocket(50);
-  const call = assert.rejects(socket.call("system.ping", {}), { name: "ApxError", code: "timeout" });
+  const call = assert.rejects(socket.call("system.ping", {}), { name: "ColoniaError", code: "timeout" });
   t.mock.timers.tick(50);
   await call;
   wire.receive({ t: "res", id: "r1", ok: true, result: {} });
   socket.close();
   for (const kind of ["timeout", "close", "error"] as const) {
-    const next = new ApxSocket("ws://core.example.com", 50);
+    const next = new ColoniaSocket("ws://core.example.com", 50);
     const failed = assert.rejects(
       next.open({}),
       kind === "timeout" ? /welcome timeout/ : kind === "close" ? /closed before welcome/ : /socket error/,
@@ -512,7 +512,7 @@ test("setting up the public address or remote access waits longer than the core 
     return timeout(ms);
   });
   t.mock.method(globalThis, "fetch", async () => Response.json({ ok: true, result: {} }));
-  const client = new ApxClient({ url: "http://core.example.com" });
+  const client = new ColoniaClient({ url: "http://core.example.com" });
   await client.call("webhooks.set", { mode: "off" });
   await client.call("access.set", { mode: "local" });
   await client.call("webhooks.get", {});

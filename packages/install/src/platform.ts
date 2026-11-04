@@ -22,18 +22,18 @@ export async function installDesktopFile(
     if (!app) throw new Error("The desktop installer did not finish. Try again or open the installer manually.");
     return app;
   }
-  const destination = path.join(opts.userHome, "Applications", opts.platform === "darwin" ? "APX.app" : "APX.AppImage");
+  const destination = path.join(opts.userHome, "Applications", opts.platform === "darwin" ? "Colonia.app" : "Colonia.AppImage");
   const staged = `${destination}.install-${randomUUID()}`;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   try {
     if (opts.platform === "darwin") {
       const unpacked = path.join(work, "unpacked");
       await run("/usr/bin/ditto", ["-x", "-k", file, unpacked], { signal, env: opts.env });
-      const source = path.join(unpacked, "APX.app");
-      if (!fs.existsSync(path.join(source, "Contents", "MacOS", "APX")))
-        throw new Error("The desktop archive has no APX app");
+      const source = path.join(unpacked, "Colonia.app");
+      if (!fs.existsSync(path.join(source, "Contents", "MacOS", "Colonia")))
+        throw new Error("The desktop archive has no Colonia app");
       await run("/usr/bin/ditto", [source, staged], { signal, env: opts.env });
-      if (fs.existsSync(destination)) throw new Error("APX was installed by another process; retry to open it");
+      if (fs.existsSync(destination)) throw new Error("Colonia was installed by another process; retry to open it");
       fs.renameSync(staged, destination);
     } else {
       fs.copyFileSync(file, staged, fs.constants.COPYFILE_EXCL);
@@ -43,8 +43,8 @@ export async function installDesktopFile(
       fs.mkdirSync(dir, { recursive: true });
       const executable = destination.replace(/%/g, "%%").replace(/[\\"`$]/g, "\\$&");
       fs.writeFileSync(
-        path.join(dir, "apx.desktop"),
-        `[Desktop Entry]\nType=Application\nName=APX\nExec="${executable}"\nIcon=applications-development\nTerminal=false\nCategories=Utility;\n`,
+        path.join(dir, "colonia.desktop"),
+        `[Desktop Entry]\nType=Application\nName=Colonia\nExec="${executable}"\nIcon=applications-development\nTerminal=false\nCategories=Utility;\n`,
       );
     }
   } finally {

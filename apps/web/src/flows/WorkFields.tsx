@@ -1,7 +1,7 @@
 // Settings of variables, code, SQL and commands (DECISIONS.md#d-170); a check's cases are in CaseFields.tsx. Values from what arrived reach
 // SQL and commands only as bound values, variables and input, so those fields take placeholders and the query and
 // the command's text never do.
-import { Button, Field, IconButton, Icons, Input, SegmentedControl, Switch, Textarea } from "@apx/ui";
+import { Button, Field, IconButton, Icons, Input, SegmentedControl, Switch, Textarea } from "@colonia/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";

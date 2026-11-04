@@ -1,5 +1,5 @@
-import type { ApiClient, ClientScope } from "@apx/protocol";
-import { Badge, Button, Checkbox, IconButton, Icons, Input } from "@apx/ui";
+import type { ApiClient, ClientScope } from "@colonia/protocol";
+import { Badge, Button, Checkbox, IconButton, Icons, Input } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -96,7 +96,7 @@ export function ApiTokensSection() {
           <span className="res__name">{t("clients.tokenFor", { name: made.name })}</span>
           <code className="soon__code">{made.token}</code>
           <span className="pform__hint">{t("clients.tokenOnce")}</span>
-          <code className="soon__code">{`APX_CLIENT_TOKEN=${made.token} apx mcp`}</code>
+          <code className="soon__code">{`COLONIA_CLIENT_TOKEN=${made.token} colonia mcp`}</code>
           <div className="pcard__actions">
             <span className="pcard__spacer" />
             <Button

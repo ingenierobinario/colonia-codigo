@@ -1,4 +1,4 @@
-import { ChannelIcon, type MenuEntry } from "@apx/ui";
+import { ChannelIcon, type MenuEntry } from "@colonia/ui";
 import type { T } from "../i18n/index.ts";
 import { CHANNEL_KIND_IDS, CHANNEL_KINDS, type ChannelKind } from "./kinds.ts";
 

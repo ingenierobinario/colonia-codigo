@@ -1,5 +1,5 @@
-import type { McpServerStatus } from "@apx/protocol";
-import { Button, ContextMenu, Dialog, EmptyState, Icons, MasterDetail, type MenuEntry, PickRow, Tag } from "@apx/ui";
+import type { McpServerStatus } from "@colonia/protocol";
+import { Button, ContextMenu, Dialog, EmptyState, Icons, MasterDetail, type MenuEntry, PickRow, Tag } from "@colonia/ui";
 import { useState } from "react";
 import { projectName } from "../data/identity.ts";
 import { setMcp, setMcpToolMode, toggleMcp, trustMcp } from "../data/resources.ts";

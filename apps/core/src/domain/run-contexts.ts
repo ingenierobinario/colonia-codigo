@@ -1,7 +1,7 @@
 // What the model received on a run's first call, kept for the owner to look at (runs.context). Only the latest runs
 // are kept; a chat's system prompt is the same on every turn, so each one is stored once by its hash.
 import { createHash } from "node:crypto";
-import type { RunContext } from "@apx/protocol";
+import type { RunContext } from "@colonia/protocol";
 import { qb, type Sql } from "./sql.ts";
 
 /** Runs whose context is kept; older ones are dropped as new ones come. */

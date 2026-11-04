@@ -1,5 +1,5 @@
 // What the owner chose so far in the setup, before each step saves it.
-import type { CatalogEngine, MemorySettings } from "@apx/protocol";
+import type { CatalogEngine, MemorySettings } from "@colonia/protocol";
 import type { V1Group } from "../data/setup.ts";
 
 export type Draft = {

@@ -26,7 +26,7 @@
   height: 820px;
   pointer-events: none;
   background:
-    radial-gradient(560px 360px at 50% 42%, color-mix(in srgb, var(--apx-brand) 14%, transparent), transparent 70%),
+    radial-gradient(560px 360px at 50% 42%, color-mix(in srgb, var(--colonia-brand) 14%, transparent), transparent 70%),
     radial-gradient(460px 280px at 32% 30%, rgba(139, 92, 246, 0.1), transparent 70%),
     radial-gradient(460px 280px at 68% 34%, rgba(255, 122, 26, 0.08), transparent 70%);
   transform: translateX(-50%);
@@ -67,14 +67,14 @@
 }
 .crew__title {
   margin: 0;
-  font-size: calc(clamp(56px, 9vw, 116px) * var(--apx-text-scale, 1));
+  font-size: calc(clamp(56px, 9vw, 116px) * var(--colonia-text-scale, 1));
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.055em;
   transition: font-size 0.9s cubic-bezier(0.7, 0, 0.2, 1);
 }
 .crew.is-compact .crew__title {
-  font-size: calc(clamp(36px, 4.6vw, 54px) * var(--apx-text-scale, 1));
+  font-size: calc(clamp(36px, 4.6vw, 54px) * var(--colonia-text-scale, 1));
 }
 .crew__row {
   display: flex;
@@ -101,12 +101,12 @@
 .crew__word {
   display: inline-block;
   padding-bottom: 0.08em;
-  color: var(--apx-brand);
+  color: var(--colonia-brand);
 }
 /* The sheen only once the word turns: letters easing in under a text-clipped background would not show. */
 .crew__word.is-sheen {
   color: transparent;
-  background: linear-gradient(95deg, var(--apx-fg) 10%, var(--apx-brand) 50%, var(--apx-fg) 90%);
+  background: linear-gradient(95deg, var(--colonia-fg) 10%, var(--colonia-brand) 50%, var(--colonia-fg) 90%);
   background-clip: text;
   background-size: 200% 100%;
   animation: crew-sheen 6s linear infinite;

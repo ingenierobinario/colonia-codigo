@@ -7,7 +7,7 @@ import { parseArgs } from "node:util";
 import { confirmsSuccess } from "../apps/core/src/domain/memory-verification.ts";
 import { type LearningScenario, learningWorld } from "../apps/core/src/engine/memory-learning-world.ts";
 import type { Llm, LlmRequest } from "../apps/core/src/providers/llm.ts";
-import { ApxClient } from "../packages/protocol/src/client.ts";
+import { ColoniaClient } from "../packages/protocol/src/client.ts";
 import {
   checkCorrectionTrace,
   checkDelegationPayload,
@@ -67,7 +67,7 @@ const secrets = createSecrets(config.home, config.secrets);
 const login = createChatgptLogin({ secrets });
 const providers = values["providers-from-core"]
   ? (
-      await new ApxClient({ url: `http://127.0.0.1:${config.port}`, token: config.token }).call("providers.list", {})
+      await new ColoniaClient({ url: `http://127.0.0.1:${config.port}`, token: config.token }).call("providers.list", {})
     ).providers
       .filter((p) => p.enabled)
       .map((p) => ({
@@ -91,7 +91,7 @@ const gateway = createLlm({
 const rules = values["prompt-rules"]
   ? (JSON.parse(fs.readFileSync(values["prompt-rules"], "utf8")) as string[])
   : undefined;
-// Keep the evaluated harness from writing a second memory store outside the isolated APX home.
+// Keep the evaluated harness from writing a second memory store outside the isolated Colonia home.
 process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
 let calls = 0;
 const auxiliaryReplies: Array<{ model: string; prompt: string; reply: unknown }> = [];
@@ -561,7 +561,7 @@ async function trainEpisode(
 }
 async function episode(scenario: LearningScenario, repetition: number): Promise<Episode> {
   const started = Date.now();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "apx-learning-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-learning-"));
   const world = learningWorld(path.join(dir, "world"), scenario);
   const tg = await fakeTelegram("100001:TEST-learning");
   const home = path.join(dir, "home");

@@ -1,5 +1,5 @@
 // Team screen writes: creating and removing agents, who one reports to, and installing templates into a project.
-import type { Agent, AgentTemplate, Params, Result, TeamTemplate } from "@apx/protocol";
+import type { Agent, AgentTemplate, Params, Result, TeamTemplate } from "@colonia/protocol";
 import { slugOf } from "../common/slug.ts";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
@@ -93,7 +93,7 @@ export async function getAgent(agent: string): Promise<Result<"agents.get"> | un
   }
 }
 
-/** APX's own tools an agent's list may name, with their groups (for the agent's editor). */
+/** Colonia's own tools an agent's list may name, with their groups (for the agent's editor). */
 export async function agentToolCatalog(): Promise<Result<"agents.tools">["tools"] | undefined> {
   try {
     return (await client.call("agents.tools", {})).tools;

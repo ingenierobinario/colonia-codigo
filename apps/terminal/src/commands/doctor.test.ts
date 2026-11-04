@@ -9,16 +9,16 @@ import { commandRunner, currentVersion, switchCurrent } from "../../../../packag
 import { tempDir } from "../../../core/src/testkit/platform.ts";
 import { type DoctorFacts, diagnose, updateWithoutCore } from "./doctor.ts";
 
-const bundle = { kind: "bundle" as const, app: "~/.apx/v2/app", version: "2.12.1" };
+const bundle = { kind: "bundle" as const, app: "~/.colonia/v2/app", version: "2.12.1" };
 const facts = (over: Partial<DoctorFacts>): DoctorFacts => ({
   url: "http://127.0.0.1:7440",
   install: bundle,
   service: "running",
-  releases: "https://github.com/acme/apx/releases/latest",
+  releases: "https://github.com/acme/colonia/releases/latest",
   ...over,
 });
 const missing = [
-  '{"msg":"apx core listening","url":"http://127.0.0.1:7440"}',
+  '{"msg":"colonia core listening","url":"http://127.0.0.1:7440"}',
   "Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/x/packages/protocol/src/flow-edit.ts'",
   "Node.js v24.11.1",
 ];
@@ -26,20 +26,20 @@ const missing = [
 test("a core that stops on missing files is told to update, the way its install updates", () => {
   const d = diagnose(facts({ log: missing, service: "stopped" }));
   assert.equal(d.ok, false);
-  assert.ok(d.lines.includes("Why: This APX version is missing files, so its core cannot start."));
-  assert.deepEqual(d.next, ["apx update"]);
+  assert.ok(d.lines.includes("Why: This Colonia version is missing files, so its core cannot start."));
+  assert.deepEqual(d.next, ["colonia update"]);
   assert.deepEqual(diagnose(facts({ log: missing, install: { kind: "app" } })).next, [
-    "Download the newest APX app: https://github.com/acme/apx/releases/latest",
+    "Download the newest Colonia app: https://github.com/acme/colonia/releases/latest",
   ]);
 });
 
 test("an error before the core's last start is history, not the cause", () => {
-  const d = diagnose(facts({ log: [...missing, '{"msg":"apx core listening"}'], service: "stopped" }));
+  const d = diagnose(facts({ log: [...missing, '{"msg":"colonia core listening"}'], service: "stopped" }));
   assert.equal(
     d.lines.some((l) => l.startsWith("Why:")),
     false,
   );
-  assert.deepEqual(d.next, ["apx service restart"]);
+  assert.deepEqual(d.next, ["colonia service restart"]);
 });
 
 test("a taken port names the command that shows who holds it", () => {
@@ -51,7 +51,7 @@ test("a taken port names the command that shows who holds it", () => {
 test("a bundle with no service and no log yet is told to install the service", () => {
   const d = diagnose(facts({ service: "none" }));
   assert.ok(d.lines.includes("Log: the core has not written one on this home yet"));
-  assert.deepEqual(d.next, ["apx service install"]);
+  assert.deepEqual(d.next, ["colonia service install"]);
 });
 
 test("a core that answers is fine, and a newer release is offered", () => {
@@ -59,8 +59,8 @@ test("a core that answers is fine, and a newer release is offered", () => {
   assert.deepEqual(diagnose(facts({ core })).next, []);
   const d = diagnose(facts({ core, latest: "2.12.3" }));
   assert.equal(d.ok, true);
-  assert.ok(d.lines.includes("Newer: APX 2.12.3 is out"));
-  assert.deepEqual(d.next, ["apx update"]);
+  assert.ok(d.lines.includes("Newer: Colonia 2.12.3 is out"));
+  assert.deepEqual(d.next, ["colonia update"]);
 });
 
 /** A bundle install at 2.12.1 and a feed that serves 2.12.2's bundle for linux-x64. */
@@ -69,11 +69,11 @@ async function feed(dir: string) {
   fs.mkdirSync(path.join(app, "versions", "2.12.1", "node", "bin"), { recursive: true });
   switchCurrent(app, "2.12.1");
   const src = path.join(dir, "src");
-  fs.mkdirSync(path.join(src, "apx", "node", "bin"), { recursive: true });
-  fs.writeFileSync(path.join(src, "apx", "node", "bin", "node"), "new");
-  const name = "apx-core-2.12.2-linux-x64.tar.gz";
+  fs.mkdirSync(path.join(src, "colonia", "node", "bin"), { recursive: true });
+  fs.writeFileSync(path.join(src, "colonia", "node", "bin", "node"), "new");
+  const name = "colonia-core-2.12.2-linux-x64.tar.gz";
   // Relative paths: Git's tar on Windows reads "C:" in a path as a remote host.
-  execFileSync("tar", ["-czf", name, "apx"], { cwd: src });
+  execFileSync("tar", ["-czf", name, "colonia"], { cwd: src });
   const tarball = fs.readFileSync(path.join(src, name));
   const digest = createHash("sha256").update(tarball).digest("hex");
   const server = http.createServer((req, res) => {
@@ -95,7 +95,7 @@ async function feed(dir: string) {
 }
 
 test("with the core down, update puts the newest bundle in place and has the service start it", async () => {
-  await using dir = tempDir("apx-doctor-");
+  await using dir = tempDir("colonia-doctor-");
   const f = await feed(dir.path);
   try {
     let restarts = 0;
@@ -114,15 +114,15 @@ test("with the core down, update puts the newest bundle in place and has the ser
     assert.equal(currentVersion(f.app), "2.12.2");
     assert.equal(fs.readFileSync(path.join(f.app, "current", "node", "bin", "node"), "utf8"), "new");
     assert.equal(restarts, 1);
-    assert.match(lines[0] ?? "", /^APX 2\.12\.2 is installed/);
-    assert.equal(lines[1], "The service is starting it: apx status");
+    assert.match(lines[0] ?? "", /^Colonia 2\.12\.2 is installed/);
+    assert.equal(lines[1], "The service is starting it: colonia status");
   } finally {
     await f.close();
   }
 });
 
 test("update without the core changes nothing when this is the newest, and never starts a missing service", async () => {
-  await using dir = tempDir("apx-doctor-");
+  await using dir = tempDir("colonia-doctor-");
   const f = await feed(dir.path);
   try {
     let restarts = 0;
@@ -137,12 +137,12 @@ test("update without the core changes nothing when this is the newest, and never
       },
     };
     assert.deepEqual(await updateWithoutCore({ ...o, current: "2.12.2", service: "running" }), [
-      "APX 2.12.2 is the newest for this computer.",
-      "To see why the core stops: apx doctor",
+      "Colonia 2.12.2 is the newest for this computer.",
+      "To see why the core stops: colonia doctor",
     ]);
     assert.equal(currentVersion(f.app), "2.12.1");
     const lines = await updateWithoutCore({ ...o, current: "2.12.1", service: "none" });
-    assert.equal(lines[1], "Start it: apx service install");
+    assert.equal(lines[1], "Start it: colonia service install");
     assert.equal(restarts, 0);
   } finally {
     await f.close();

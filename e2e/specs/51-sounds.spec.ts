@@ -46,7 +46,7 @@ test("a routine's news sounds with all notices and stays quiet when only request
   const dialog = page.getByRole("dialog", { name: "Configuración" });
   await dialog.getByRole("radio", { name: "Pedidos" }).click();
   await expect
-    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("apx.prefs") ?? "{}").noticeSound))
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("colonia.prefs") ?? "{}").noticeSound))
     .toBe("requests");
   await page.keyboard.press("Escape");
 
@@ -58,8 +58,8 @@ test("a routine's news sounds with all notices and stays quiet when only request
 
   // All notices: the next one sounds.
   await page.evaluate(() => {
-    const stored = JSON.parse(localStorage.getItem("apx.prefs") ?? "{}");
-    localStorage.setItem("apx.prefs", JSON.stringify({ ...stored, noticeSound: "all" }));
+    const stored = JSON.parse(localStorage.getItem("colonia.prefs") ?? "{}");
+    localStorage.setItem("colonia.prefs", JSON.stringify({ ...stored, noticeSound: "all" }));
   });
   await page.reload();
   await expect(page.getByRole("button", { name: "Inbox" })).toBeVisible();

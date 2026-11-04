@@ -9,7 +9,7 @@ let h: Awaited<ReturnType<typeof settingsCore>>;
 let flow = "";
 let version = 0;
 before(async () => {
-  h = await settingsCore({ tool: "apx_flow" });
+  h = await settingsCore({ tool: "colonia_flow" });
   const acme = (await h.env.client.call("projects.create", { name: "Acme" })).project.id;
   await h.env.client.call("tables.create", { project: acme, name: "leads", columns: ["email"] });
   const { answer } = await h.ask({

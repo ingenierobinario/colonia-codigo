@@ -14,7 +14,7 @@ danger past 92%); `segments` stack parts with their own tone (`brand`, `violet`,
   max={16}
   legend
   segments={[
-    { value: 2.1, tone: "brand", label: "APX 2.1 GB" },
+    { value: 2.1, tone: "brand", label: "Colonia 2.1 GB" },
     { value: 1.5, tone: "violet", label: "Linux VM 1.5 GB" },
     { value: 7.4, tone: "muted", label: "Other apps 7.4 GB" },
   ]}

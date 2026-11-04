@@ -1,21 +1,21 @@
-// apx tasks: the office board from the terminal.
+// colonia tasks: the office board from the terminal.
 import fs from "node:fs";
-import type { ApxClient } from "@apx/protocol/client";
+import type { ColoniaClient } from "@colonia/protocol/client";
 import { authorOf, messageText } from "./threads.ts";
 
-const USAGE = `apx tasks [--project p]                 Open tasks by column
-apx tasks add <title…> [--project p] [--agent a] [--person name --owed me|them] [--due 2026-10-05]
+const USAGE = `colonia tasks [--project p]                 Open tasks by column
+colonia tasks add <title…> [--project p] [--agent a] [--person name --owed me|them] [--due 2026-10-05]
                          [--start 2026-10-05T09:00]   Its agent starts then, not at once
-apx tasks show <id>                      Its fields, description and comments
-apx tasks edit <id> [--title t] [--desc d | --desc-file f|-] [--agent a] [--due d] [--start d] [--tags a,b]
+colonia tasks show <id>                      Its fields, description and comments
+colonia tasks edit <id> [--title t] [--desc d | --desc-file f|-] [--agent a] [--due d] [--start d] [--tags a,b]
                     [--reviewer owner|<agent>]   Change only what is given; --agent "", --due "", --start "" clear them
-apx tasks commitments                    What you owe and what you are owed
-apx tasks settle <id> kept|missed|dropped [note…]
-apx tasks settle <id> renegotiated --due <date> [note…]
+colonia tasks commitments                    What you owe and what you are owed
+colonia tasks settle <id> kept|missed|dropped [note…]
+colonia tasks settle <id> renegotiated --due <date> [note…]
                                          How a commitment went; renegotiated keeps it open with the new date
-apx tasks move <id> <column>
-apx tasks done|drop|reopen <id>
-apx tasks say <id> <text…>               Comment; @agent asks that agent there`;
+colonia tasks move <id> <column>
+colonia tasks done|drop|reopen <id>
+colonia tasks say <id> <text…>               Comment; @agent asks that agent there`;
 
 type Opts = {
   project?: string | undefined;
@@ -33,7 +33,7 @@ type Opts = {
 
 const when = (iso: string) => new Date(iso).toLocaleString();
 
-/** tasks.update params for `apx tasks edit`: only the fields given; "" clears the agent and the due date. */
+/** tasks.update params for `colonia tasks edit`: only the fields given; "" clears the agent and the due date. */
 export function taskEditOf(
   task: string,
   o: Opts,
@@ -61,7 +61,7 @@ export function taskEditOf(
   return { task, ...patch };
 }
 
-export async function tasks(client: ApxClient, [sub, id, ...rest]: string[], opts: Opts): Promise<void> {
+export async function tasks(client: ColoniaClient, [sub, id, ...rest]: string[], opts: Opts): Promise<void> {
   if (sub === "help") {
     console.log(USAGE);
     return;
@@ -152,9 +152,9 @@ export async function tasks(client: ApxClient, [sub, id, ...rest]: string[], opt
   }
   if ((sub === "done" || sub === "drop" || sub === "reopen") && id) {
     // From an agent's command it would close as the owner, with no note of what was verified (DECISIONS.md#d-162).
-    if (process.env.APX_AGENT !== undefined)
+    if (process.env.COLONIA_AGENT !== undefined)
       throw new Error(
-        `apx tasks ${sub} acts as the owner, so it does not run inside an agent's command: use task_close.`,
+        `colonia tasks ${sub} acts as the owner, so it does not run inside an agent's command: use task_close.`,
       );
     await client.call("tasks.close", {
       task: id,
@@ -164,9 +164,9 @@ export async function tasks(client: ApxClient, [sub, id, ...rest]: string[], opt
   }
   if (sub === "say" && id && rest.length) {
     // From an agent's command a comment would read as the owner's and reach the task's agent: agents use task_comment.
-    if (process.env.APX_AGENT !== undefined)
+    if (process.env.COLONIA_AGENT !== undefined)
       throw new Error(
-        "apx tasks say speaks as the owner, so it does not run inside an agent's command: use task_comment.",
+        "colonia tasks say speaks as the owner, so it does not run inside an agent's command: use task_comment.",
       );
     const r = await client.call("tasks.comment", { task: id, text: rest.join(" ") });
     console.log(r.runs.length ? `${r.runs.length} agent(s) will answer in the task` : "commented");

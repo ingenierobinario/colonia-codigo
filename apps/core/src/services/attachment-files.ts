@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { DOCUMENT_MAX_BYTES } from "@apx/protocol/client";
+import { DOCUMENT_MAX_BYTES } from "@colonia/protocol/client";
 import type { Store } from "../domain/store.ts";
 import { insideReal, real } from "../paths.ts";
 import { saveUpload } from "./uploads.ts";

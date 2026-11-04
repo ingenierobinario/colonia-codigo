@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { BROWSER_CAP, type HarnessId, TabInfo } from "@apx/protocol";
+import { BROWSER_CAP, type HarnessId, TabInfo } from "@colonia/protocol";
 import {
   createDesktopInstaller,
   type DesktopInstaller,
@@ -72,10 +72,10 @@ import { errorMessage } from "./errors.ts";
 import { flowHttpPolicy } from "./flow-http.ts";
 import { notifyDestination } from "./flow-outward.ts";
 import { createFlows } from "./flows.ts";
-import { thisRunner, writeApxCommand } from "./harness/apx-command.ts";
+import { thisRunner, writeColoniaCommand } from "./harness/colonia-command.ts";
 import type { CliStatus } from "./harness/detect.ts";
 import { which } from "./harness/detect.ts";
-import { harnessEnv, useApxCommand, useUsualDirs } from "./harness/env.ts";
+import { harnessEnv, useColoniaCommand, useUsualDirs } from "./harness/env.ts";
 import { createHarnesses, type Harness } from "./harness/index.ts";
 import { readIdentity } from "./identity.ts";
 import { createIdleTrim } from "./idle-memory.ts";
@@ -84,7 +84,7 @@ import { createAsana } from "./integrations/asana.ts";
 import { calendarApi } from "./integrations/calendar.ts";
 import { gmailApi } from "./integrations/gmail.ts";
 import { createGoogle } from "./integrations/google.ts";
-import { apxGoogleClient, clientFromPair } from "./integrations/google-client.ts";
+import { coloniaGoogleClient, clientFromPair } from "./integrations/google-client.ts";
 import { GOOGLE, googleAt } from "./integrations/google-oauth.ts";
 import { createLog, type Log } from "./log.ts";
 import { mcpConfig } from "./mcp/config.ts";
@@ -138,7 +138,7 @@ import { listenHooks } from "./transport/hooks.ts";
 import { createUpdates, type Runner } from "./updates.ts";
 import { createUsage, type UsageOptions } from "./usage.ts";
 
-/** `apx mcp --run` (token in APX_RUN_TOKEN): how an external harness (Codex) reaches the tools of its run. */
+/** `colonia mcp --run` (token in COLONIA_RUN_TOKEN): how an external harness (Codex) reaches the tools of its run. */
 const TERMINAL_MAIN = path.resolve(import.meta.dirname, "../../terminal/src/main.ts");
 
 /** What tests swap: the model, harnesses, extra tools, channel adapters and the scheduler's clock. */
@@ -194,7 +194,7 @@ export type CoreOptions = {
   telemetrySink?: TelemetrySink;
   /** Closes the core and asks its supervisor to start it again (after an update). */
   restart?: () => void;
-  /** What each release changed, instead of this APX's own (release-notes.ts); tests stand in a release. */
+  /** What each release changed, instead of this Colonia's own (release-notes.ts); tests stand in a release. */
   releases?: ReleaseSource;
   /** The Linux VM's memory and disk for system.usage; none until a VM is set up. */
   vmUsage?: UsageOptions["vm"];
@@ -273,8 +273,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       command: process.execPath,
       args: [TERMINAL_MAIN, "mcp", "--run"],
       env: {
-        APX_URL: selfUrl,
-        ...(config.token ? { APX_TOKEN: config.token } : {}),
+        COLONIA_URL: selfUrl,
+        ...(config.token ? { COLONIA_TOKEN: config.token } : {}),
         // Each harness session starts this CLI: with the core's compile cache it skips stripping TypeScript again.
         ...(process.env.NODE_COMPILE_CACHE ? { NODE_COMPILE_CACHE: process.env.NODE_COMPILE_CACHE } : {}),
         ...nodeChildEnv(),
@@ -310,8 +310,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     origin: () => `http://127.0.0.1:${listening}`,
     // An integration is off where the owner turned it off, and in a project that takes none of their globals.
     offIn: (project, id) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes(id),
-    // A stand-in Google never takes APX's real client.
-    builtin: clientFromPair(config.googleClient) ?? (config.googleApi ? undefined : apxGoogleClient()),
+    // A stand-in Google never takes Colonia's real client.
+    builtin: clientFromPair(config.googleClient) ?? (config.googleApi ? undefined : coloniaGoogleClient()),
   });
   const asana = createAsana({
     secrets,
@@ -339,14 +339,14 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     },
     onError: (err) => log.warn({ err }, "computer watchdog check failed"),
   });
-  // APX's own profiles, then the ones the owner installed (theirs win an id).
+  // Colonia's own profiles, then the ones the owner installed (theirs win an id).
   const profileRoots: ProfileRoot[] = [
-    { source: "apx", dir: path.resolve(import.meta.dirname, "../../../examples/profiles") },
+    { source: "colonia", dir: path.resolve(import.meta.dirname, "../../../examples/profiles") },
     { source: "owner", dir: path.join(config.home, "profiles") },
   ];
-  // APX's own templates, then the owner's v1 vault (read-only).
+  // Colonia's own templates, then the owner's v1 vault (read-only).
   const templateRoots: TemplateRoot[] = [
-    { source: "apx", dir: path.resolve(import.meta.dirname, "../../../examples/agents") },
+    { source: "colonia", dir: path.resolve(import.meta.dirname, "../../../examples/agents") },
     { source: "v1", dir: path.join(config.v1.home, "agents") },
   ];
   const tools = builtinTools(
@@ -558,7 +558,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     permissions,
     home: config.home,
     skillApps: config.runtimeSkills.homes,
-    apxPort: () => listening,
+    coloniaPort: () => listening,
     memory,
     skills,
     profileRoots,
@@ -582,7 +582,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       afterWorkTurn(store, engine.admit, run);
     },
   });
-  // The Mac stays awake while APX works for the owner: a turn, a command, or a computer coming up (engine/awake.ts).
+  // The Mac stays awake while Colonia works for the owner: a turn, a command, or a computer coming up (engine/awake.ts).
   const awake = keepAwake({
     busy: () =>
       store.runs.interrupted().some((r) => r.state === "working") || store.jobs.running().length > 0 || vm.starting(),
@@ -630,7 +630,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       mailCheck({
         store,
         admit: (a) => engine.admit(a),
-        // The inbox is read only with the owner's own Google client: APX's can only send.
+        // The inbox is read only with the owner's own Google client: Colonia's can only send.
         source: {
           readable: () => google.usable("gmail", undefined) && google.full("gmail"),
           historyId: () => gmailApi(google).historyId(),
@@ -755,12 +755,12 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
 
   const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm });
   listening = transport.port;
-  // Agents' shells and harnesses reach this core with `apx`, whatever the owner's PATH holds.
+  // Agents' shells and harnesses reach this core with `colonia`, whatever the owner's PATH holds.
   try {
-    useApxCommand(writeApxCommand(config.home, listening, thisRunner()));
+    useColoniaCommand(writeColoniaCommand(config.home, listening, thisRunner()));
     useUsualDirs(config.supervised);
   } catch (err) {
-    log.warn({ err: errorMessage(err) }, "apx command not written");
+    log.warn({ err: errorMessage(err) }, "colonia command not written");
   }
   const url = transport.url;
   selfUrl = url;
@@ -798,7 +798,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     // A core that looks after this machine's agent CLIs asks them once now, so a signed-in Codex can draw at once.
     void harnesses.status().catch(() => {});
   }
-  log.info({ url, code_sha: identity.code_sha, home: config.home, llm: llm.label() }, "apx core listening");
+  log.info({ url, code_sha: identity.code_sha, home: config.home, llm: llm.label() }, "colonia core listening");
 
   return {
     url,
@@ -822,7 +822,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       await watchdog.stop();
       await vm.close();
       await desktopInstaller.close();
-      useApxCommand(undefined);
+      useColoniaCommand(undefined);
       idleTrim.stop();
       terminals.closeAll();
       updates.stop();
@@ -854,7 +854,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   };
 }
 
-/** Other agent apps get this version's skills for APX; a folder APX cannot write is only logged. */
+/** Other agent apps get this version's skills for Colonia; a folder Colonia cannot write is only logged. */
 function keepRuntimeSkills(homes: Parameters<typeof syncRuntimeSkills>[0], log: Log): void {
   setImmediate(() => {
     try {
@@ -872,7 +872,7 @@ function keepRuntimeSkills(homes: Parameters<typeof syncRuntimeSkills>[0], log: 
   });
 }
 
-/** Where this APX came from, for telemetry: the desktop app's core, an install.sh/ps1 bundle, or a git checkout. */
+/** Where this Colonia came from, for telemetry: the desktop app's core, an install.sh/ps1 bundle, or a git checkout. */
 function telemetryChannel(config: CoreConfig): "source" | "bundle" | "app" | "other" {
   if (config.updates === "app") return "app";
   if (config.app) return "bundle";

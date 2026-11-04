@@ -7,7 +7,7 @@ import path from "node:path";
 import { after, test } from "node:test";
 import type { DesktopUpdate } from "./updater.ts";
 
-const directory = fs.mkdtempSync(path.join(os.tmpdir(), "apx-updater-test-"));
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-updater-test-"));
 const opened: string[] = [];
 const shown: string[] = [];
 let relaunches = 0;
@@ -28,13 +28,13 @@ const native = {
     showItemInFolder: (file: string) => shown.push(file),
   },
 };
-const key = Symbol.for("apx.test.updater");
+const key = Symbol.for("colonia.test.updater");
 Object.assign(globalThis, { [key]: native });
 const hook = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
       return {
-        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("apx.test.updater")]; export const app = n.app; export const shell = n.shell;')}`,
+        url: `data:text/javascript,${encodeURIComponent('const n = globalThis[Symbol.for("colonia.test.updater")]; export const app = n.app; export const shell = n.shell;')}`,
         shortCircuit: true,
       };
     return next(specifier, context);
@@ -45,19 +45,19 @@ hook.deregister();
 Reflect.deleteProperty(globalThis, key);
 const originalPlatform = Object.getOwnPropertyDescriptor(process, "platform");
 const originalImage = process.env.APPIMAGE;
-const originalFeed = process.env.APX_RELEASES;
+const originalFeed = process.env.COLONIA_RELEASES;
 Object.defineProperty(process, "platform", { value: "linux" });
 delete process.env.APPIMAGE;
-process.env.APX_RELEASES = "http://updates.test";
+process.env.COLONIA_RELEASES = "http://updates.test";
 after(() => {
   if (originalPlatform) Object.defineProperty(process, "platform", originalPlatform);
   if (originalImage === undefined) delete process.env.APPIMAGE;
   else process.env.APPIMAGE = originalImage;
-  if (originalFeed === undefined) delete process.env.APX_RELEASES;
-  else process.env.APX_RELEASES = originalFeed;
+  if (originalFeed === undefined) delete process.env.COLONIA_RELEASES;
+  else process.env.COLONIA_RELEASES = originalFeed;
   fs.rmSync(directory, { recursive: true, force: true });
 });
-const name = `APX-2.1.0-linux-${process.arch}.AppImage`;
+const name = `Colonia-2.1.0-linux-${process.arch}.AppImage`;
 const asset = (filename: string) => ({ name: filename, browser_download_url: `http://updates.test/${filename}` });
 const release = { tag_name: "v2.1.0", body: "- Better updates", assets: [asset(name), asset(`${name}.sha256`)] };
 const bytes = "Test installer bytes";
@@ -87,7 +87,7 @@ test("disabled updates stay offline and cannot claim an available installer", as
   });
   assert.equal(h.updater.enabled, false);
   assert.equal((await h.updater.check()).latest, undefined);
-  assert.deepEqual(await h.updater.install(), { ok: false, error: "No newer APX for this computer." });
+  assert.deepEqual(await h.updater.install(), { ok: false, error: "No newer Colonia for this computer." });
   h.updater.start(() => assert.fail("Disabled updater started"));
   h.updater.stop();
   assert.deepEqual(h.updater.restart(), {
@@ -191,7 +191,7 @@ test("a remote manual installer stays unopened until activation and uses the exa
 });
 
 test("AppImage download does not replace the running image until activation and quit is idempotent", async (t) => {
-  const image = path.join(directory, "APX.AppImage");
+  const image = path.join(directory, "Colonia.AppImage");
   fs.writeFileSync(image, "Previous installer");
   process.env.APPIMAGE = image;
   t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {

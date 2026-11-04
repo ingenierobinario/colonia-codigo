@@ -1,4 +1,4 @@
-import type { Thread } from "@apx/protocol";
+import type { Thread } from "@colonia/protocol";
 import { useChannels } from "../data/channels.ts";
 
 /** Person IDs are meaningful only on a channel where that person has an address. */

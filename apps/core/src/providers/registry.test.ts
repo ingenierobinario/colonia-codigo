@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import { ApxClient, ApxError } from "@apx/protocol/client";
+import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 let env: Awaited<ReturnType<typeof startCore>>;
@@ -56,7 +56,7 @@ test("harness ids cannot be added as providers", async () => {
         provider: { transport: "openai-chat", base_url: "https://acme.test/v1" },
         api_key: "test-key",
       }),
-      (e: unknown) => e instanceof ApxError && e.code === "bad_request" && /reserved/.test(e.message),
+      (e: unknown) => e instanceof ColoniaError && e.code === "bad_request" && /reserved/.test(e.message),
     );
     assert.ok(!(await env.client.call("providers.list", {})).providers.some((p) => p.id === id));
     assert.equal(env.core.secrets.resolve(`secret://${id}`), undefined);
@@ -66,10 +66,10 @@ test("harness ids cannot be added as providers", async () => {
 });
 
 test("only the owner manages providers", async () => {
-  const agent = new ApxClient({ url: env.core.url, actor: "agent" });
+  const agent = new ColoniaClient({ url: env.core.url, actor: "agent" });
   await assert.rejects(
     agent.call("providers.list", {}),
-    (e: unknown) => e instanceof ApxError && e.code === "unauthorized",
+    (e: unknown) => e instanceof ColoniaError && e.code === "unauthorized",
   );
 });
 

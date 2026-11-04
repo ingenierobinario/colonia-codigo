@@ -45,7 +45,7 @@ test("quoted lines become one quote holding their own blocks, with blank quoted 
 });
 
 test("a link into the desktop panel shows as its label on the phone", () => {
-  const blocks = parseMarkdown("Prendelo en [Config › Escritorio](apx:settings/desktop).");
+  const blocks = parseMarkdown("Prendelo en [Config › Escritorio](colonia:settings/desktop).");
   assert.deepEqual(blocks, parseMarkdown("Prendelo en Config › Escritorio."));
 });
 

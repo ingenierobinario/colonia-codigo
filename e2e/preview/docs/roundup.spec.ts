@@ -16,7 +16,7 @@ for (const lang of ["en", "es"] as const) {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(roundupTitle[lang]);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      `https://apxagent.app${pre}/compare/best-ai-agent-apps/`,
+      `https://colonia.ingenierobinario.com${pre}/compare/best-ai-agent-apps/`,
     );
     expect(roundupApps).toHaveLength(17);
     await expect(page.locator(".roundup-table tr.app-row")).toHaveCount(17);

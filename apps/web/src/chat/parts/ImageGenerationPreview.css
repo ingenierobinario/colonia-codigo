@@ -3,8 +3,8 @@
   width: min(184px, 100%);
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: var(--apx-radius-md);
-  background: var(--apx-brand-soft);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-brand-soft);
   margin-block: 8px;
 }
 
@@ -20,7 +20,7 @@
 
 .image-generation-preview__tiles i {
   border-radius: 4px;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
   opacity: 0;
   transform: scale(0.36);
   animation: image-generation-form 3.3s cubic-bezier(0.18, 0.75, 0.23, 1) infinite;
@@ -28,11 +28,11 @@
 }
 
 .image-generation-preview__tiles i:nth-child(3n) {
-  background: var(--apx-brand-soft-fg);
+  background: var(--colonia-brand-soft-fg);
 }
 
 .image-generation-preview__tiles i:nth-child(5n) {
-  background: var(--apx-brand-soft);
+  background: var(--colonia-brand-soft);
 }
 
 @keyframes image-generation-form {

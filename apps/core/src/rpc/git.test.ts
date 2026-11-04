@@ -16,8 +16,8 @@ const sh = (...args: string[]) => execFileSync("git", ["-C", repo, ...args], { e
 
 before(async () => {
   env = await startCore({ llm: scriptedLlm(() => say("ok")) });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-git-repo-")));
-  plain = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-git-plain-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-git-repo-")));
+  plain = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-git-plain-")));
   sh("init", "-q", "-b", "main");
   // Git for Windows converts line endings by default; this repo keeps files byte for byte everywhere.
   sh("config", "core.autocrlf", "false");
@@ -154,7 +154,7 @@ test("commit all and amend, merge, rename and delete branches, and the history c
 });
 
 test("a folder holding several repositories lists them, and each one is worked by its path", async () => {
-  const mono = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-git-mono-")));
+  const mono = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-git-mono-")));
   try {
     for (const name of ["apps/site", "tools/cli"]) {
       const dir = path.join(mono, name);
@@ -183,7 +183,7 @@ test("a folder holding several repositories lists them, and each one is worked b
 });
 
 test("a repository with no commits yet has an empty history", async () => {
-  const fresh = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-git-fresh-")));
+  const fresh = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-git-fresh-")));
   try {
     execFileSync("git", ["init", "-q", "-b", "main", fresh]);
     const id = (await env.client.call("projects.register", { path: fresh, init: true })).project.id;

@@ -1,7 +1,7 @@
 // "New table" / "New column" right where it is needed: a button that opens a name field; Enter or Add makes it at once.
 
-import { ApxError } from "@apx/protocol/client";
-import { Button, Icons, Input } from "@apx/ui";
+import { ColoniaError } from "@colonia/protocol/client";
+import { Button, Icons, Input } from "@colonia/ui";
 import { useState } from "react";
 import { useT } from "../i18n/index.ts";
 
@@ -45,7 +45,7 @@ export function NewName({
       setName("");
       setOpen(false);
     } catch (e) {
-      setError(e instanceof ApxError && e.code === "conflict" ? t("flow.tbl.taken") : t("flow.tbl.notMade"));
+      setError(e instanceof ColoniaError && e.code === "conflict" ? t("flow.tbl.taken") : t("flow.tbl.notMade"));
     } finally {
       setBusy(false);
     }

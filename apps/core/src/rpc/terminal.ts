@@ -7,7 +7,7 @@ import { workDir } from "../tools/folders.ts";
 import type { Handlers } from "./router.ts";
 
 export function terminalHandlers(store: Store, terminals: Terminals, home: string) {
-  /** Where the chat's agent runs its own commands: its folder, its project's, or else APX's work folder. */
+  /** Where the chat's agent runs its own commands: its folder, its project's, or else Colonia's work folder. */
   const folderOf = (threadId: string) => {
     if (store.settings.read("computer_chats").includes(threadId))
       throw badRequest("use the VM terminal in the Computer panel");

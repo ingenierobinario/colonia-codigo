@@ -283,7 +283,7 @@ export const MIGRATIONS: readonly string[] = [
   CREATE INDEX pairing_sender ON pairing(channel, external_id);
   `,
   `
-  -- Media APX made (images, speech): the bytes live in a file under the home, the row says what and where.
+  -- Media Colonia made (images, speech): the bytes live in a file under the home, the row says what and where.
   CREATE TABLE media (
     id TEXT PRIMARY KEY,
     kind TEXT NOT NULL,
@@ -411,7 +411,7 @@ export const MIGRATIONS: readonly string[] = [
   );
   `,
   `
-  -- What the owner tells APX about a contact: a nickname, how they relate, rules for answering them (last in the
+  -- What the owner tells Colonia about a contact: a nickname, how they relate, rules for answering them (last in the
   -- prompt), whether they are silenced (stored, never answered) and what their chat may do (JSON flags, all off).
   ALTER TABLE persons ADD COLUMN nickname TEXT;
   ALTER TABLE persons ADD COLUMN relation TEXT;
@@ -503,7 +503,7 @@ export const MIGRATIONS: readonly string[] = [
   );
   `,
   `
-  -- The interruption budget: every message APX meant to send the owner unasked, and what became of it. A routine may be
+  -- The interruption budget: every message Colonia meant to send the owner unasked, and what became of it. A routine may be
   -- an anchor (its news always arrives).
   CREATE TABLE nudges (
     n INTEGER PRIMARY KEY,
@@ -531,7 +531,7 @@ export const MIGRATIONS: readonly string[] = [
   ALTER TABLE routines ADD COLUMN origin TEXT;
   `,
   `
-  -- The owner's 👍/👎 on a message APX sent unasked: a kind marked unhelpful again and again stops reaching them.
+  -- The owner's 👍/👎 on a message Colonia sent unasked: a kind marked unhelpful again and again stops reaching them.
   ALTER TABLE nudges ADD COLUMN feedback TEXT;
   ALTER TABLE nudges ADD COLUMN feedback_at TEXT;
   `,
@@ -692,7 +692,7 @@ export const MIGRATIONS: readonly string[] = [
   ALTER TABLE persons ADD COLUMN unreviewed INTEGER NOT NULL DEFAULT 0;
   `,
   `
-  -- How far a project's agents go on their own when they set nothing (DECISIONS.md#d-072): kept by APX, so a folder
+  -- How far a project's agents go on their own when they set nothing (DECISIONS.md#d-072): kept by Colonia, so a folder
   -- someone else wrote cannot raise it.
   ALTER TABLE projects ADD COLUMN autonomy TEXT;
   `,
@@ -714,7 +714,7 @@ export const MIGRATIONS: readonly string[] = [
   ALTER TABLE routines ADD COLUMN max_steps INTEGER;
   `,
   `
-  -- Why a run ended when APX knows it (a provider's usage limit, its deadline…), and when a provider limit lifts.
+  -- Why a run ended when Colonia knows it (a provider's usage limit, its deadline…), and when a provider limit lifts.
   ALTER TABLE runs ADD COLUMN end_reason TEXT;
   ALTER TABLE runs ADD COLUMN resets_at TEXT;
   `,
@@ -737,7 +737,7 @@ export const MIGRATIONS: readonly string[] = [
   `,
   `
   -- Folders a project's agents may read and never change (tools/folders.ts rootsOf), a JSON array of absolute paths:
-  -- kept by APX, as autonomy is, so a folder someone else wrote cannot widen what its agents read.
+  -- kept by Colonia, as autonomy is, so a folder someone else wrote cannot widen what its agents read.
   ALTER TABLE projects ADD COLUMN read_only_folders TEXT;
   `,
   `
@@ -747,7 +747,7 @@ export const MIGRATIONS: readonly string[] = [
   `,
   `
   -- The five permission modes (DECISIONS.md#d-106): ask is manual; standard and accepting edits, which auto now
-  -- covers, are auto. Projects, the base project and APX's own agents keep the mode they had in the new names.
+  -- covers, are auto. Projects, the base project and Colonia's own agents keep the mode they had in the new names.
   UPDATE projects SET autonomy = CASE autonomy WHEN 'ask' THEN 'manual' WHEN 'standard' THEN 'auto' WHEN 'edits' THEN 'auto' END
     WHERE autonomy IN ('ask', 'standard', 'edits');
   UPDATE meta SET value = json_set(value, '$.autonomy',

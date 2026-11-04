@@ -11,9 +11,9 @@ test("Buscador mantiene input sin resaltado y separa Esc del cierre en ambos tem
   await open(page);
   for (const mode of ["dark", "light"]) {
     await page
-      .locator(".apx")
+      .locator(".colonia")
       .first()
-      .evaluate((root, mode) => root.setAttribute("data-apx-mode", mode), mode);
+      .evaluate((root, mode) => root.setAttribute("data-colonia-mode", mode), mode);
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 800 });
       await page.keyboard.press("ControlOrMeta+k");
@@ -23,7 +23,7 @@ test("Buscador mantiene input sin resaltado y separa Esc del cierre en ambos tem
       await expect(box).toHaveCSS("box-shadow", "none");
       const geometry = await page.locator(".palette").evaluate((palette) => {
         const badge = palette.querySelector("kbd")?.getBoundingClientRect();
-        const close = palette.querySelector(".apx-dialog__close")?.getBoundingClientRect();
+        const close = palette.querySelector(".colonia-dialog__close")?.getBoundingClientRect();
         return { gap: badge && close ? close.left - badge.right : -1 };
       });
       expect(geometry.gap).toBeGreaterThanOrEqual(8);
@@ -39,12 +39,12 @@ test("Cmd, Windows y Ctrl resaltan atajos; soltar o perder foco limpia resaltado
   const hint = page.locator(".topbar__search kbd");
   for (const mode of ["dark", "light"]) {
     await page
-      .locator(".apx")
+      .locator(".colonia")
       .first()
-      .evaluate((root, mode) => root.setAttribute("data-apx-mode", mode), mode);
+      .evaluate((root, mode) => root.setAttribute("data-colonia-mode", mode), mode);
     const resting = await hint.evaluate((el) => getComputedStyle(el).color);
     const active = await page
-      .locator(".apx")
+      .locator(".colonia")
       .first()
       .evaluate((el) => getComputedStyle(el).color);
     for (const key of ["Meta", "Control"]) {
@@ -226,9 +226,9 @@ test("Canales: tres visibles, orden persistente y sin leer visibles también en 
 }) => {
   await page.setViewportSize({ width: 1480, height: 800 });
   await page.addInitScript(() => {
-    if (!localStorage.getItem("apx.prefs"))
+    if (!localStorage.getItem("colonia.prefs"))
       localStorage.setItem(
-        "apx.prefs",
+        "colonia.prefs",
         JSON.stringify({
           channelOrder: ["telegram", "discord", "whatsapp", "slack", "email"],
           channelOrderAt: new Date().toISOString(),
@@ -295,12 +295,12 @@ test("Canales: tres visibles, orden persistente y sin leer visibles también en 
   await expect.poll(ids).toEqual(["telegram", "discord", "whatsapp"]);
   const more = page.getByRole("button", { name: "2 canales más · 5 sin leer" });
   await expect(more).toBeVisible();
-  await expect(more.locator(".apx-nav__count")).toHaveText("5");
+  await expect(more.locator(".colonia-nav__count")).toHaveText("5");
   const fold = page.locator(".sidebar__toggle").filter({ hasText: "Canales" });
   await expect(fold).toHaveAttribute("aria-expanded", "true");
   await fold.click();
   await expect(fold).toHaveAttribute("aria-expanded", "false");
-  await expect(fold.locator(".apx-nav__count")).toHaveText("5");
+  await expect(fold.locator(".colonia-nav__count")).toHaveText("5");
   await expect(fold).toHaveAccessibleName("Canales · 5 sin leer");
   await expect(rows).toHaveCount(0);
   await expect(more).toBeHidden();
@@ -309,16 +309,16 @@ test("Canales: tres visibles, orden persistente y sin leer visibles también en 
   await expect(rows).toHaveCount(0);
   await page.getByRole("button", { name: "Plegar la barra", exact: true }).click();
   await expect(rows).toHaveCount(3);
-  await expect(more.locator(".apx-nav__dot")).toBeVisible();
+  await expect(more.locator(".colonia-nav__dot")).toBeVisible();
   await page.getByRole("button", { name: "Desplegar la barra", exact: true }).click();
   await expect(rows).toHaveCount(0);
   await fold.focus();
   await page.keyboard.press("Enter");
   await expect(fold).toHaveAttribute("aria-expanded", "true");
   await expect(rows).toHaveCount(3);
-  await expect(fold.locator(".apx-nav__count")).toHaveCount(0);
+  await expect(fold.locator(".colonia-nav__count")).toHaveCount(0);
   await page.getByRole("button", { name: "Plegar la barra", exact: true }).click();
-  await expect(more.locator(".apx-nav__dot")).toBeVisible();
+  await expect(more.locator(".colonia-nav__dot")).toBeVisible();
   await page.getByRole("button", { name: "Desplegar la barra", exact: true }).click();
   await page
     .locator('[data-channel-id="whatsapp"]')
@@ -327,9 +327,9 @@ test("Canales: tres visibles, orden persistente y sin leer visibles también en 
   await page.reload();
   await expect.poll(ids).toEqual(["whatsapp", "telegram", "discord"]);
   await more.click();
-  const popup = page.locator('.apx-popover[aria-label="Canales"]');
+  const popup = page.locator('.colonia-popover[aria-label="Canales"]');
   await expect(popup.getByRole("button", { name: /^Slack/ })).toBeVisible();
-  await expect(popup.locator('[data-channel-id="slack"] .apx-nav__count')).toHaveText("3");
+  await expect(popup.locator('[data-channel-id="slack"] .colonia-nav__count')).toHaveText("3");
   await popup.getByRole("button", { name: /^Slack/ }).click();
   await expect(more).toHaveClass(/is-active/);
   await more.click();
@@ -343,6 +343,6 @@ test("Canales: tres visibles, orden persistente y sin leer visibles también en 
   await page.reload();
   const cleared = page.getByRole("button", { name: "2 canales más", exact: true });
   await expect(cleared).toBeVisible();
-  await expect(cleared.locator(".apx-nav__count")).toHaveCount(0);
+  await expect(cleared.locator(".colonia-nav__count")).toHaveCount(0);
   await expect.poll(ids).toEqual(["email", "whatsapp", "telegram"]);
 });

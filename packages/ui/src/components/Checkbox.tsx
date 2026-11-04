@@ -28,24 +28,24 @@ export function Checkbox({
 }: CheckboxProps) {
   const id = useId();
   return (
-    <label htmlFor={id} className={cx("apx-choice", "apx-choice--start", disabled && "is-disabled", className)}>
+    <label htmlFor={id} className={cx("colonia-choice", "colonia-choice--start", disabled && "is-disabled", className)}>
       <BaseCheckbox.Root
         id={id}
-        className="apx-checkbox"
+        className="colonia-checkbox"
         checked={checked}
         defaultChecked={defaultChecked}
         indeterminate={indeterminate}
         onCheckedChange={(v) => onCheckedChange?.(v)}
         disabled={disabled}
       >
-        <BaseCheckbox.Indicator className="apx-checkbox__indicator">
+        <BaseCheckbox.Indicator className="colonia-checkbox__indicator">
           {indeterminate ? <Minus size={12} strokeWidth={3} /> : <Check size={12} strokeWidth={3} />}
         </BaseCheckbox.Indicator>
       </BaseCheckbox.Root>
       {label && (
-        <span className="apx-choice__text">
-          <span className="apx-choice__label">{label}</span>
-          {description && <span className="apx-choice__desc">{description}</span>}
+        <span className="colonia-choice__text">
+          <span className="colonia-choice__label">{label}</span>
+          {description && <span className="colonia-choice__desc">{description}</span>}
         </span>
       )}
     </label>

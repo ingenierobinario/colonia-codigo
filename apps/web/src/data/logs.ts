@@ -1,5 +1,5 @@
 // The core's log (<home>/logs/core.log), read through the core: the panel never touches the file.
-import type { Params, Result } from "@apx/protocol";
+import type { Params, Result } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { notify } from "./notices.ts";

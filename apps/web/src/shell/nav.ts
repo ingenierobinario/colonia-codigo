@@ -1,5 +1,5 @@
 // UI navigation state (what is open), separate from data. Plain store so any component can navigate.
-import type { ApxMode } from "@apx/ui";
+import type { ColoniaMode } from "@colonia/ui";
 import type { ChannelKind } from "../channels/kinds.ts";
 import { createStore, useSlice } from "../data/createStore.ts";
 import { rememberSidebar } from "../data/prefs.ts";
@@ -88,7 +88,7 @@ export type NavState = {
   panelAgent: string | undefined;
   panelThread: string | undefined;
   panelParent: string | undefined;
-  mode: ApxMode;
+  mode: ColoniaMode;
   /** Show tool-call groups in transcripts (chat header wrench). */
   tools: boolean;
   /** Config modal section, or null when closed. */
@@ -97,7 +97,7 @@ export type NavState = {
   configChannel: ChannelKind | undefined;
   /** "Open on your phone" dialog. */
   phone: boolean;
-  /** The usage dialog (memory, CPU, disk; the computer's and APX's). */
+  /** The usage dialog (memory, CPU, disk; the computer's and Colonia's). */
   usageDialog: boolean;
   /** The ⌘K palette is open. */
   palette: boolean;
@@ -126,9 +126,9 @@ export type NavState = {
   peekTaskId: string | undefined;
 };
 
-const THEME_KEY = "apx.mode";
+const THEME_KEY = "colonia.mode";
 
-function initialMode(): ApxMode {
+function initialMode(): ColoniaMode {
   try {
     const v = localStorage.getItem(THEME_KEY);
     if (v === "light" || v === "dark") return v;
@@ -566,14 +566,14 @@ export const go = {
   toggleTools() {
     nav.set((s) => ({ tools: !s.tools }));
   },
-  setMode(mode: ApxMode) {
+  setMode(mode: ColoniaMode) {
     nav.set({ mode });
     try {
       localStorage.setItem(THEME_KEY, mode);
     } catch {
       // Not persisted: fine.
     }
-    window.apxDesktop?.setTitleBar?.(mode);
+    window.coloniaDesktop?.setTitleBar?.(mode);
   },
   toggleMode() {
     go.setMode(nav.get().mode === "dark" ? "light" : "dark");

@@ -1,11 +1,11 @@
-// apx service: keep the core running on this machine (systemd user unit, launchd agent, or a Windows login entry).
+// colonia service: keep the core running on this machine (systemd user unit, launchd agent, or a Windows login entry).
 // Local only: it never asks the core anything beyond /health.
 import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { exitWhenClosed } from "@apx/protocol/exit";
-import { apxHome, corePort, coreUp, serviceConnection } from "./local.ts";
+import { exitWhenClosed } from "@colonia/protocol/exit";
+import { coloniaHome, corePort, coreUp, serviceConnection } from "./local.ts";
 import {
   appRoot,
   bundleRun,
@@ -25,11 +25,11 @@ import {
   windowsStopScript,
 } from "./service-files.ts";
 
-const USAGE = `apx service install     Run the core in the background, started at login and again if it dies
-apx service uninstall
-apx service status
-apx service restart     (start: the same, or install when it is not installed yet)
-apx service logs [-n 100] [-f]   The core's log on this machine (<home>/logs/core.log; on Linux, the systemd journal)`;
+const USAGE = `colonia service install     Run the core in the background, started at login and again if it dies
+colonia service uninstall
+colonia service status
+colonia service restart     (start: the same, or install when it is not installed yet)
+colonia service logs [-n 100] [-f]   The core's log on this machine (<home>/logs/core.log; on Linux, the systemd journal)`;
 
 /** The core exits with this code to be started again after an update (apps/core/src/updates.ts). */
 const RESTART_CODE = 75;
@@ -61,7 +61,7 @@ const must = (cmd: string, args: string[]) => {
   return r.out;
 };
 
-const names = () => serviceNames(apxHome());
+const names = () => serviceNames(coloniaHome());
 
 const systemdFile = () => path.join(os.homedir(), ".config", "systemd", "user", names().systemd);
 const launchdFile = () => path.join(os.homedir(), "Library", "LaunchAgents", `${names().launchd}.plist`);
@@ -83,9 +83,9 @@ function refuseLegacyService(): void {
         : path.join(os.homedir(), ".config", "systemd", "user", SYSTEMD_UNIT);
     if (fs.existsSync(entry)) text = fs.readFileSync(entry, "utf8");
   }
-  if (text && serviceOwnsHome(text, process.platform, apxHome()))
+  if (text && serviceOwnsHome(text, process.platform, coloniaHome()))
     throw new Error(
-      `This home has a legacy fixed-name service at ${entry}. Stop and remove that entry with the OS service manager, then run apx service install --home "${apxHome()}". No service was changed.`,
+      `This home has a legacy fixed-name service at ${entry}. Stop and remove that entry with the OS service manager, then run colonia service install --home "${coloniaHome()}". No service was changed.`,
     );
 }
 
@@ -102,28 +102,28 @@ function installed(): boolean {
     if (!file || !fs.existsSync(file)) return false;
     text = fs.readFileSync(file, "utf8");
   }
-  if (!serviceOwnsHome(text, process.platform, apxHome()))
+  if (!serviceOwnsHome(text, process.platform, coloniaHome()))
     throw new Error(
-      `The local service entry belongs to another home. Inspect it with the OS service manager before changing it: ${apxHome()}`,
+      `The local service entry belongs to another home. Inspect it with the OS service manager before changing it: ${coloniaHome()}`,
     );
   return true;
 }
 
 function spec(home: string): ServiceSpec {
-  const env = { ...serviceEnv(process.env), APX_HOME: home, APX_PORT: String(corePort()) };
+  const env = { ...serviceEnv(process.env), COLONIA_HOME: home, COLONIA_PORT: String(corePort()) };
   const log = path.join(home, "logs", "core.log");
-  if (process.env.APX_APP) {
-    const b = bundleRun(process.env.APX_APP);
+  if (process.env.COLONIA_APP) {
+    const b = bundleRun(process.env.COLONIA_APP);
     return { node: b.node, main: b.core, cwd: b.cwd, env, log, label: names().launchd };
   }
   const main = coreMain();
   return { node: process.execPath, main, cwd: appRoot(main), env, log, label: names().launchd };
 }
 
-/** The terminal and the Node that run `apx service run` on Windows (through `current` for a bundle install). */
+/** The terminal and the Node that run `colonia service run` on Windows (through `current` for a bundle install). */
 const supervisorRun = () =>
-  process.env.APX_APP
-    ? { node: bundleRun(process.env.APX_APP).node, terminal: bundleRun(process.env.APX_APP).terminal }
+  process.env.COLONIA_APP
+    ? { node: bundleRun(process.env.COLONIA_APP).node, terminal: bundleRun(process.env.COLONIA_APP).terminal }
     : { node: process.execPath, terminal: terminalMain() };
 
 export async function service(
@@ -131,20 +131,20 @@ export async function service(
   opts: { home?: string | undefined; lines?: string | undefined; follow?: boolean | undefined } = {},
 ) {
   if (sub === "help") return console.log(USAGE);
-  if (opts.home) process.env.APX_HOME = path.resolve(opts.home);
-  if (sub !== "run") console.log(`Target: this machine, home ${apxHome()} (APX_URL does not control services).`);
+  if (opts.home) process.env.COLONIA_HOME = path.resolve(opts.home);
+  if (sub !== "run") console.log(`Target: this machine, home ${coloniaHome()} (COLONIA_URL does not control services).`);
   if (sub === "install") return install();
-  if (sub === "logs") return logs(apxHome(), Number(opts.lines ?? 100), Boolean(opts.follow));
+  if (sub === "logs") return logs(coloniaHome(), Number(opts.lines ?? 100), Boolean(opts.follow));
   if (sub === "uninstall") return uninstall();
   if (sub === "status") return status();
   if (sub === "restart") return restart();
   if (sub === "start") return installed() ? restart() : install();
-  if (sub === "run") return supervise(opts.home ?? apxHome());
+  if (sub === "run") return supervise(opts.home ?? coloniaHome());
   throw new Error(USAGE);
 }
 
 export async function install(): Promise<void> {
-  const home = apxHome();
+  const home = coloniaHome();
   const { url } = serviceConnection();
   const wasInstalled = installed();
   if (!wasInstalled && (await coreUp(url)))
@@ -195,7 +195,7 @@ export async function uninstall(): Promise<void> {
     sh("launchctl", ["bootout", `${launchdTarget()}/${names().launchd}`]);
     fs.rmSync(launchdFile(), { force: true });
   } else if (process.platform === "win32") {
-    if (wasInstalled) stopWindows(apxHome());
+    if (wasInstalled) stopWindows(coloniaHome());
     sh("reg", ["delete", RUN_KEY, "/v", names().windows, "/f"]);
   }
   console.log("the core no longer runs as a service");
@@ -210,7 +210,7 @@ export async function status(): Promise<void> {
     const r = sh("launchctl", ["print", `${launchdTarget()}/${names().launchd}`]);
     manager = r.ok ? `launchd: ${/^\s*state = (.+)$/m.exec(r.out)?.[1] ?? "loaded"}` : "launchd: installed, not loaded";
   } else if (process.platform === "win32" && installed()) manager = `login entry ${names().windows}`;
-  console.log(`target   local machine, home ${apxHome()}`);
+  console.log(`target   local machine, home ${coloniaHome()}`);
   console.log(`service  ${manager}`);
   console.log(`core     ${(await coreUp(url)) ? "answers" : "does not answer"} on ${url}`);
 }
@@ -232,12 +232,12 @@ export function serviceState(): "running" | "stopped" | "none" | "unknown" {
 }
 
 export async function restart(): Promise<void> {
-  if (!installed()) throw new Error("the service is not installed (apx service install)");
+  if (!installed()) throw new Error("the service is not installed (colonia service install)");
   if (process.platform === "linux") must("systemctl", ["--user", "restart", names().systemd]);
   else if (process.platform === "darwin")
     must("launchctl", ["kickstart", "-k", `${launchdTarget()}/${names().launchd}`]);
   else {
-    const command = stopWindows(apxHome());
+    const command = stopWindows(coloniaHome());
     startWindows(command);
   }
   console.log("restarting the core");
@@ -264,7 +264,7 @@ export function lastLines(file: string, n: number): string[] {
   }
 }
 
-/** `apx service logs`: this machine's core log, read from the file; never asks the core. */
+/** `colonia service logs`: this machine's core log, read from the file; never asks the core. */
 export async function logs(home: string, n: number, follow: boolean): Promise<void> {
   if (!Number.isInteger(n) || n < 1) throw new Error("-n is a number of lines, like -n 100");
   const file = path.join(home, "logs", "core.log");
@@ -276,7 +276,7 @@ export async function logs(home: string, n: number, follow: boolean): Promise<vo
       return;
     }
     throw new Error(
-      `no core log at ${file} yet: a core on this home writes it once it starts (desktop app, apx service install or pnpm dev)`,
+      `no core log at ${file} yet: a core on this home writes it once it starts (desktop app, colonia service install or pnpm dev)`,
     );
   }
   for (const line of lastLines(file, n)) console.log(line);
@@ -298,18 +298,18 @@ export async function logs(home: string, n: number, follow: boolean): Promise<vo
 
 /** The login entry's command; a release feed other than the public one goes in it, as systemd's unit keeps it. */
 function windowsCommand(home: string): string {
-  const feed = process.env.APX_RELEASES;
+  const feed = process.env.COLONIA_RELEASES;
   return windowsRunCommand({
     ...supervisorRun(),
     home,
     electron: Boolean(process.env.ELECTRON_RUN_AS_NODE),
-    env: { APX_PORT: String(corePort()), ...(feed ? { APX_RELEASES: feed } : {}) },
+    env: { COLONIA_PORT: String(corePort()), ...(feed ? { COLONIA_RELEASES: feed } : {}) },
   });
 }
 
 /**
  * Starts the login entry's command now, created by WMI rather than as a child: Windows' sshd ends every process of
- * the session when it closes, so a supervisor spawned from `apx service install` over SSH died at logout.
+ * the session when it closes, so a supervisor spawned from `colonia service install` over SSH died at logout.
  */
 function startWindows(command: string) {
   const ps = `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '${command.replace(/'/g, "''")}' } | Out-Null`;
@@ -325,9 +325,9 @@ function stopWindows(home: string) {
   return command;
 }
 
-/** `apx service run`: keeps one core alive, started again with backoff whenever it exits. */
+/** `colonia service run`: keeps one core alive, started again with backoff whenever it exits. */
 async function supervise(home: string): Promise<void> {
-  process.env.APX_HOME = home;
+  process.env.COLONIA_HOME = home;
   fs.mkdirSync(path.join(home, "logs"), { recursive: true });
   const log = fs.createWriteStream(path.join(home, "logs", "core.log"), { flags: "a" });
   const s = spec(home);

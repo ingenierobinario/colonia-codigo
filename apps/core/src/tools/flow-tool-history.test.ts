@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
-import type { FlowGraph } from "@apx/protocol/flow-graph";
+import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { createLog } from "../log.ts";
 import { flowTools } from "./flow-tool.ts";
 import { settingsCore } from "./settings.test-support.ts";
@@ -8,7 +8,7 @@ import { settingsCore } from "./settings.test-support.ts";
 let h: Awaited<ReturnType<typeof settingsCore>>;
 let acme = "";
 before(async () => {
-  h = await settingsCore({ tool: "apx_flow" });
+  h = await settingsCore({ tool: "colonia_flow" });
   acme = (await h.env.client.call("projects.create", { name: "Acme" })).project.id;
   await h.env.client.call("tables.create", { project: acme, name: "leads" });
 });

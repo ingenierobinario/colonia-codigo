@@ -6,7 +6,7 @@ import path from "node:path";
 import { expect, open, rpc, test } from "./kit.ts";
 
 test("changes are staged and committed from the Git view, and the commit opens from the history", async ({ page }) => {
-  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "apx-e2e-git-")));
+  const repo = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-git-")));
   const sh = (...args: string[]) => execFileSync("git", ["-C", repo, ...args]);
   sh("init", "-q", "-b", "main");
   sh("config", "user.name", "Acme Dev");

@@ -1,5 +1,5 @@
-import type { SharedFile } from "@apx/protocol";
-import { Dialog, EmptyState, IconButton, Icons, MediaLoader, mediaKindOf, ProjectTile } from "@apx/ui";
+import type { SharedFile } from "@colonia/protocol";
+import { Dialog, EmptyState, IconButton, Icons, MediaLoader, mediaKindOf, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { formatBytes } from "../common/format.ts";
 import { DEFAULT_PID, projectInitial, projectName, projectTone } from "../data/identity.ts";

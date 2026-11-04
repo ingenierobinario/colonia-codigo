@@ -13,7 +13,7 @@ import {
   type TelemetryStage,
   type TelemetryState,
   type UsageStats,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import type { Store } from "./domain/store.ts";
 import { errorMessage } from "./errors.ts";
 import type { Log } from "./log.ts";
@@ -31,7 +31,7 @@ export function createTelemetry(opts: {
   log: Log;
   version: string;
   channel: TelemetryChannel;
-  /** undefined: this APX sends nothing (APX_TELEMETRY=off, DO_NOT_TRACK, CI, a test). */
+  /** undefined: this Colonia sends nothing (COLONIA_TELEMETRY=off, DO_NOT_TRACK, CI, a test). */
   sink: TelemetrySink | undefined;
   now?: () => Date;
 }) {

@@ -9,7 +9,7 @@ export default defineConfig({
   webServer: {
     cwd: fileURLToPath(new URL("..", import.meta.url)),
     command: "node apps/web/node_modules/vite/bin/vite.js apps/web --host 127.0.0.1 --port 7491 --strictPort",
-    env: { VITE_APX_INBOX_PREVIEW: "1" },
+    env: { VITE_COLONIA_INBOX_PREVIEW: "1" },
     url: "http://127.0.0.1:7491",
     reuseExistingServer: !process.env.CI,
   },

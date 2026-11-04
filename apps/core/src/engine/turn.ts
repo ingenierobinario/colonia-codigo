@@ -10,7 +10,7 @@ import {
   type Result,
   type Routine,
   type Thread,
-} from "@apx/protocol";
+} from "@colonia/protocol";
 import { readOrganization } from "../apc/org.ts";
 import type { AgentRecord } from "../domain/agents.ts";
 import { memorySettings } from "../domain/memory-settings.ts";
@@ -104,18 +104,18 @@ export type TurnDeps = {
   log: Log;
   inputs: Inputs;
   jobs: Jobs;
-  /** APX's home: the owner's skills live under it. */
+  /** Colonia's home: the owner's skills live under it. */
   home: string;
   /** The other agent apps whose skills agents may load too. */
   skillApps?: RuntimeHomes | undefined;
-  apxPort: () => number;
+  coloniaPort: () => number;
   /** Notes by words and by meaning. */
   memory: MemoryIndex;
   /** Skills picked by meaning for this message. */
   skills?: SkillPicker | undefined;
   /** Where profiles are found: the running one adds its block to the super-agent's system prompt. */
   profileRoots?: readonly ProfileRoot[] | undefined;
-  /** This core's version and commit: agents can tell the owner which APX they run on. */
+  /** This core's version and commit: agents can tell the owner which Colonia they run on. */
   build?: { version: string; code_sha: string } | undefined;
   hooks?: Hooks | undefined;
   mcpTools?: ((thread: Thread) => Promise<Tool[]>) | undefined;
@@ -184,7 +184,7 @@ export async function runTurn(deps: TurnDeps, start: RunRecord, signal: AbortSig
               text: error,
               vars: {
                 agent: agent.name,
-                ...(code === "computer.notAllowed" ? { link: "apx:computer" } : {}),
+                ...(code === "computer.notAllowed" ? { link: "colonia:computer" } : {}),
                 ...extra,
               },
             }
@@ -204,7 +204,7 @@ export async function runTurn(deps: TurnDeps, start: RunRecord, signal: AbortSig
   if (store.settings.read("computer_chats").includes(thread.id) && !deps.vm)
     return preflightFailure("the assigned VM backend is unavailable; host fallback is forbidden");
   if (deps.vm?.hasThread(thread.id)) {
-    if (thread.engine) return preflightFailure("a computer chat runs only on APX's own harness");
+    if (thread.engine) return preflightFailure("a computer chat runs only on Colonia's own harness");
     if (!runsOnComputer(start.input.origin))
       return preflightFailure(
         `${agent.name} works on the computer in this chat: a message from a contact, a widget or another app does not run there`,
@@ -305,7 +305,7 @@ export async function runTurn(deps: TurnDeps, start: RunRecord, signal: AbortSig
     call: deps.call,
     jobs: deps.jobs,
     busy: deps.busy,
-    apxPort: deps.apxPort,
+    coloniaPort: deps.coloniaPort,
     workDir: harnessDir(store, deps.home, thread),
     permissions: deps.permissions,
     // Harnesses and delegations see the agent as it acts here (its project's and callers' mode), never its bare record.
@@ -355,7 +355,7 @@ export async function runTurn(deps: TurnDeps, start: RunRecord, signal: AbortSig
   try {
     const engine = enginePick(deps, turn, start, history);
     if (deps.vm?.hasThread(thread.id) && engine.harness !== "native")
-      throw new Error("a computer chat runs on APX's own harness only");
+      throw new Error("a computer chat runs on Colonia's own harness only");
     // The snapshot is taken while the turn is prepared, and done before anything can change the folder.
     await before;
     const outcome = await runEngine(deps, engine, {
@@ -404,7 +404,7 @@ function showImage(
 const OUTSIDE_IN_SESSION = untrusted(
   "session_note",
   {},
-  "This engine session read content from outside APX in an earlier turn; it is still in its context.",
+  "This engine session read content from outside Colonia in an earlier turn; it is still in its context.",
 );
 
 /** A message routine's text, as the run's answer: delivered to the owner like any routine's, with no model call. */
@@ -650,7 +650,7 @@ function sectionsFor(deps: TurnDeps, turn: Turn, mode: Autonomy): Sections {
 }
 
 /** "2.1.1 (commit 75d71df)"; a checkout's placeholder version reads as a development build. */
-export function apxBuild(b: { version: string; code_sha: string }): string {
+export function coloniaBuild(b: { version: string; code_sha: string }): string {
   const sha = b.code_sha && b.code_sha !== "unknown" ? `commit ${b.code_sha.slice(0, 7)}` : "";
   if (b.version === "0.0.0") return `a development build${sha ? ` (${sha})` : ""}`;
   return `${b.version}${sha ? ` (${sha})` : ""}`;
@@ -658,9 +658,9 @@ export function apxBuild(b: { version: string; code_sha: string }): string {
 
 /** All an engine session adds to the engine's own prompt (Claude Code appends it; the others take nothing). */
 const DIRECT_NOTE =
-  "You are running inside APX, the owner's local assistant app; they talk to you directly in this chat. APX's own tools (mcp__apx__*) are there if useful.";
+  "You are running inside Colonia, the owner's local assistant app; they talk to you directly in this chat. Colonia's own tools (mcp__colonia__*) are there if useful.";
 
-/** The system prompt and its parts (what the owner or a project wrote in it, and APX's own text: systemParts). */
+/** The system prompt and its parts (what the owner or a project wrote in it, and Colonia's own text: systemParts). */
 function systemFor(
   store: Store,
   turn: Turn,
@@ -707,7 +707,7 @@ function systemFor(
     skills,
     role,
     owner,
-    build ? apxBuild(build) : "",
+    build ? coloniaBuild(build) : "",
     scratch,
     computerOff,
     channelsOn(store),
@@ -798,7 +798,7 @@ async function runEngine(
 }
 
 /**
- * This turn's share of an outside session's running total. A session APX goes on with but holds no total for (one
+ * This turn's share of an outside session's running total. A session Colonia goes on with but holds no total for (one
  * brought in from outside) has spent an unknown part of it before: no figure rather than a wrong one.
  */
 export function turnShare(total: Usage, before: Usage | undefined, resumed: boolean): Usage | undefined {
@@ -879,7 +879,7 @@ const news = (run: RunRecord) => (run.trigger === "a2a" ? 0 : 1);
 
 /**
  * Canceled or failed: a notice saying why, the model log closed honestly, the run and thread marked. Cut off by
- * APX shutting down: left as it is for the next boot (see recovery.ts).
+ * Colonia shutting down: left as it is for the next boot (see recovery.ts).
  */
 function failRun(
   deps: TurnDeps,
@@ -887,7 +887,7 @@ function failRun(
 ): RunRecord {
   const { store } = deps;
   t.display.close();
-  // APX is stopping, not the turn failing: it stays open, and the next boot closes its log and picks it back up.
+  // Colonia is stopping, not the turn failing: it stays open, and the next boot closes its log and picks it back up.
   if (t.signal.reason instanceof Shutdown) return store.runs.get(t.run.id) ?? t.run;
   const canceled = t.signal.reason instanceof Canceled;
   // An engine killed for running out of time reports "aborted": the owner should read why.

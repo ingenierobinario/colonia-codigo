@@ -1,6 +1,6 @@
 // The editor while the owner tests with a real event (DECISIONS.md#d-178): the floating controls that say what the
 // test is doing, the log at the bottom and a step's card, read-only.
-import { Badge, Button, IconButton, Icons, ResizeHandle, Spinner } from "@apx/ui";
+import { Badge, Button, IconButton, Icons, ResizeHandle, Spinner } from "@colonia/ui";
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import { notify } from "../data/notices.ts";
 import { useT } from "../i18n/index.ts";

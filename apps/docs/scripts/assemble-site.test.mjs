@@ -6,7 +6,7 @@ import { tempDir } from "../../core/src/testkit/platform.ts";
 import { assembleSite } from "./assemble-site.mjs";
 
 test("assembly copies both builds and installers without modifying either input", async () => {
-  await using dir = tempDir("apx-site-assembly-");
+  await using dir = tempDir("colonia-site-assembly-");
   const v1 = join(dir.path, "historical");
   const v2 = join(dir.path, "current");
   const out = join(dir.path, "site");
@@ -29,7 +29,7 @@ test("assembly copies both builds and installers without modifying either input"
 });
 
 test("assembly refuses reserved version directories before creating output", async () => {
-  await using dir = tempDir("apx-site-assembly-");
+  await using dir = tempDir("colonia-site-assembly-");
   const v2 = join(dir.path, "current");
   const out = join(dir.path, "site");
   await mkdir(join(v2, "v1"), { recursive: true });

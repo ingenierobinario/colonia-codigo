@@ -13,7 +13,7 @@ let repo = "";
 let project = "";
 before(async () => {
   env = await startCore({ llm });
-  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "apx-org-")));
+  repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-org-")));
   fs.mkdirSync(path.join(repo, ".apc"), { recursive: true });
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Northwind\n");
   project = (await env.client.call("projects.register", { path: repo })).project.id;
@@ -88,7 +88,7 @@ test("a project's areas and roles live in .apc/organization.json, v1's format re
   );
 });
 
-test("the base project's areas and roles are kept by APX and reach the chats outside any project", async () => {
+test("the base project's areas and roles are kept by Colonia and reach the chats outside any project", async () => {
   await env.client.call("org.set", {
     organization: {
       areas: [{ slug: "direction", name: "Dirección" }],

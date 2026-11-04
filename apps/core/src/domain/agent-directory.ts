@@ -1,4 +1,4 @@
-import { type AgentListing, parentIn, reportsOf, teamHead } from "@apx/protocol";
+import { type AgentListing, parentIn, reportsOf, teamHead } from "@colonia/protocol";
 import { type AgentRecord, publicAgent } from "./agents.ts";
 import type { Store } from "./store.ts";
 

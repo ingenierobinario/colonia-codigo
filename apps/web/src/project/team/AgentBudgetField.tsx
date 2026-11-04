@@ -1,5 +1,5 @@
-import type { AgentBudget } from "@apx/protocol";
-import { Input } from "@apx/ui";
+import type { AgentBudget } from "@colonia/protocol";
+import { Input } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../../data/client.ts";
 import { useT } from "../../i18n/index.ts";

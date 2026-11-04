@@ -4,7 +4,7 @@ import { APP_CLIENT } from "../appInfo";
 import { type Creds, saveCreds } from "../creds";
 import { t } from "../i18n";
 import { firstReachable, parsePairingLink } from "../pairing";
-import { ApxClient, ApxError } from "../protocol";
+import { ColoniaClient, ColoniaError } from "../protocol";
 
 export function usePairing(link: string | undefined, onPaired: (creds: Creds) => void) {
   const [busy, setBusy] = useState(false);
@@ -23,7 +23,7 @@ export function usePairing(link: string | undefined, onPaired: (creds: Creds) =>
           setError(t("unreachable"));
           return;
         }
-        const client = new ApxClient({ url: reachable, client: APP_CLIENT });
+        const client = new ColoniaClient({ url: reachable, client: APP_CLIENT });
         const platform = Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other";
         const name = Platform.OS === "android" ? Platform.constants.Model : Platform.OS === "ios" ? "iPhone" : "Phone";
         const result = await client.call("devices.pair", { code: code.trim(), name, platform });
@@ -32,7 +32,7 @@ export function usePairing(link: string | undefined, onPaired: (creds: Creds) =>
         onPaired(creds);
       } catch (error) {
         setError(
-          error instanceof ApxError && error.code === "unauthorized"
+          error instanceof ColoniaError && error.code === "unauthorized"
             ? t(/too many/i.test(error.message) ? "lockedCode" : "badCode")
             : t("failed", { error: error instanceof Error ? error.message : String(error) }),
         );
