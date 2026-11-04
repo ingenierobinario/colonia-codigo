@@ -3,9 +3,9 @@ import type { enSysUsage } from "./sysusage-en.ts";
 export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "engines.showUsage": "Consumo",
   "engines.usageHint":
-    "Mostrar límites de cuenta en APX. Apagado por defecto. Sin una fuente compatible no se muestra un saldo. No enciende ni apaga el engine.",
+    "Mostrar límites de cuenta en Colonia. Apagado por defecto. Sin una fuente compatible no se muestra un saldo. No enciende ni apaga el engine.",
   "engines.usageCodexHint":
-    "Mostrar límites de cuenta en APX. Activado por defecto al vincular tu plan ChatGPT. La fuente de cuota también necesita una cuenta vinculada por separado a Codex CLI. No enciende ni apaga los modelos.",
+    "Mostrar límites de cuenta en Colonia. Activado por defecto al vincular tu plan ChatGPT. La fuente de cuota también necesita una cuenta vinculada por separado a Codex CLI. No enciende ni apaga los modelos.",
   "engines.usageLoadError": "No se pudieron cargar las preferencias de consumo. Reintentá para cargar el switch.",
   "engines.usageSaveError": "No se pudo guardar la preferencia de consumo. Se mantuvo tu elección anterior.",
   "engineUsage.help": "Ayuda sobre cuotas de IA",
@@ -13,7 +13,7 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "engineUsage.empty":
     "No hay engines seleccionados. Activá Consumo en la card de un engine para ver acá sus límites de cuenta.",
   "engineUsage.description":
-    "Límites de cuenta informados por los engines en el equipo donde corre el core, no solo por las sesiones de APX.",
+    "Límites de cuenta informados por los engines en el equipo donde corre el core, no solo por las sesiones de Colonia.",
   "engineUsage.disclaimer":
     "Los tokens de una sesión y los costos de API no son el saldo de una suscripción. Sin datos no significa consumo ilimitado.",
   "engineUsage.loading": "Consultando límites de cuenta…",
@@ -35,17 +35,17 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "engineUsage.unavailable": "Límites de cuenta no disponibles",
   "engineUsage.source": "Fuente: {source}",
   "engineUsage.claudeNote":
-    "Cuota del plan de Claude mediante Claude Code 2.1.273 o posterior. Iniciá sesión en el CLI; APX no lee tus credenciales.",
+    "Cuota del plan de Claude mediante Claude Code 2.1.273 o posterior. Iniciá sesión en el CLI; Colonia no lee tus credenciales.",
   "engineUsage.opencodeNote": "OpenCode usa la cuenta del proveedor elegido; no tiene un saldo único.",
   "engineUsage.antigravityNote":
     "Consultá tu cuota por modelo en Antigravity. Acá todavía no hay una integración de cuota compatible.",
   "engineUsage.engines": "Administrar engines",
   "sysUsage.title": "Recursos del sistema",
-  "sysUsage.description": "Lo que tiene esta computadora y cuánto usa APX.",
+  "sysUsage.description": "Lo que tiene esta computadora y cuánto usa Colonia.",
   "sysUsage.button": "Sistema: {pct}% de la memoria en uso",
   "sysUsage.memory": "Memoria",
   "sysUsage.memoryOf": "{used} de {total} en uso",
-  "sysUsage.apx": "APX {size}",
+  "sysUsage.apx": "Colonia {size}",
   "sysUsage.vm": "VM Linux {size}",
   "sysUsage.other": "Otras apps {size}",
   "sysUsage.free": "Libre {size}",
@@ -55,13 +55,13 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "sysUsage.coreCpu": "core {pct}% de CPU",
   "sysUsage.disk": "Disco",
   "sysUsage.diskFree": "{free} libres de {total}",
-  "sysUsage.disk.home": "Volumen de la carpeta de APX",
+  "sysUsage.disk.home": "Volumen de la carpeta de Colonia",
   "sysUsage.disk.system": "Volumen del sistema",
-  "sysUsage.disk.both": "Volumen del sistema, con APX",
-  "sysUsage.top": "Lo que más usa APX",
-  "sysUsage.processes": "Procesos de APX",
-  "sysUsage.home": "APX en el disco",
-  "sysUsage.homeTotal": "{total} en la carpeta de APX",
+  "sysUsage.disk.both": "Volumen del sistema, con Colonia",
+  "sysUsage.top": "Lo que más usa Colonia",
+  "sysUsage.processes": "Procesos de Colonia",
+  "sysUsage.home": "Colonia en el disco",
+  "sysUsage.homeTotal": "{total} en la carpeta de Colonia",
   "sysUsage.measuring": "Midiendo…",
   "sysUsage.partial": "Como mínimo: medir tardó demasiado.",
   "sysUsage.part.databases": "Bases de datos",

@@ -1,4 +1,4 @@
-// Where telemetry goes. The default is the APX project's Firestore, written through its REST API with no account: its
+// Where telemetry goes when APX_TELEMETRY names a sink: a Firestore project, written through its REST API with no account: its
 // security rules (firebase/firestore.rules) accept only these shapes, stamp the time themselves and allow no reads.
 // A plain https URL takes the same events as JSON instead (a backend of our own later, a test's fake one now).
 import type { TelemetryEvent } from "@apx/protocol";
@@ -6,8 +6,7 @@ import type { TelemetryEvent } from "@apx/protocol";
 /** Sends one event; throws when it did not land, so the step is tried again later. */
 export type TelemetrySink = (event: TelemetryEvent) => Promise<void>;
 
-/** The default sink: "firestore:<project id>". */
-export const TELEMETRY_SINK = "firestore:apx-agents";
+/** Sin destino por defecto: Colonia solo envía telemetría si APX_TELEMETRY indica uno propio. */
 
 const TIMEOUT_MS = 15_000;
 

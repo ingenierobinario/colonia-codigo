@@ -68,8 +68,8 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.show.projectNote.variables":
     "Solo las propias de {name}: valores guardados para este proyecto y los nombres que piden sus servidores.",
   "res.engines.note": "Mostrando las de {list}; un tag atenuado es una copia que los agentes no usan.",
-  "res.appReadOnly": "Vive en la carpeta de skills de {app}: cambiala ahí, o copiala a APX para editarla acá.",
-  "res.copyToApx": "Copiar a APX",
+  "res.appReadOnly": "Vive en la carpeta de skills de {app}: cambiala ahí, o copiala a Colonia para editarla acá.",
+  "res.copyToApx": "Copiar a Colonia",
   "res.skill.create": "Crear",
   "res.skill.import": "Importar",
   "res.import.from": "Desde",
@@ -81,11 +81,11 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.import.zipPick": "Elegir un .zip",
   "res.import.zipTooBig": "El zip pesa más de {mb} MB.",
   "res.import.read": "Leer",
-  "res.import.safe": "No se ejecuta nada: APX solo lee los archivos y los copia.",
+  "res.import.safe": "No se ejecuta nada: Colonia solo lee los archivos y los copia.",
   "res.import.found": "Encontradas: {n}",
   "res.import.status.new": "Nueva",
   "res.import.status.exists": "Ya existe",
-  "res.import.status.reserved": "Nombre de APX",
+  "res.import.status.reserved": "Nombre de Colonia",
   "res.import.status.invalid": "Nombre inválido",
   "res.import.files": "{n} archivos",
   "res.import.note.scripts": "Trae scripts que un agente podría ejecutar: {items}",
@@ -96,7 +96,7 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.import.go": "Importar {n}",
   "res.import.done": "Importadas: {names}",
   "res.import.skipped": "No se importaron: {list}",
-  "res.import.global": "En las skills de APX: todos los proyectos las heredan.",
+  "res.import.global": "En las skills de Colonia: todos los proyectos las heredan.",
   "res.import.project": "En .apc/skills/ de este proyecto.",
   "res.active": "Activa",
   "res.loads": "Cuándo se carga",
@@ -113,7 +113,7 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.discard": "Descartar",
   "res.extensionReadOnly": "Viene de una extensión: solo lectura. Guardá una copia en un proyecto para cambiarla ahí.",
   "res.apxSkillNote":
-    "Viene con APX y les enseña a los agentes a cambiar APX: siempre activa, solo lectura y se actualiza con APX.",
+    "Viene con Colonia y les enseña a los agentes a cambiar Colonia: siempre activa, solo lectura y se actualiza con Colonia.",
   "res.saveWhere": "¿Dónde va el cambio?",
   "res.saveWhereBody":
     "Es una skill global. Cambiá la original (la ven todos los proyectos) o dale a {name} su propia copia, que la reemplaza ahí.",
@@ -239,10 +239,10 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "ext.guide.routinesBody": "plantillas que sumás a Rutinas; vos elegís el agente.",
   "ext.guide.plugin": "Plugin (opcional)",
   "ext.guide.pluginBody":
-    "un .mjs que corre aparte, mira eventos y puede sumar contexto a tus turnos; no puede llamar a APX.",
+    "un .mjs que corre aparte, mira eventos y puede sumar contexto a tus turnos; no puede llamar a Colonia.",
   "ext.guide.install": "Instalarla",
   "ext.guide.step1":
-    "Armá la carpeta con su apx-extension.json (hay un ejemplo en examples/extensions/ del repo de APX).",
+    "Armá la carpeta con su apx-extension.json (hay un ejemplo en examples/extensions/ del repo de Colonia).",
   "ext.guide.step2":
     "Acá, Instalar: pegá la ruta de la carpeta, Revisar e Instalar (o apx extensions install <carpeta>).",
   "ext.guide.step3": "Llega apagada: completá sus variables y prendela.",
@@ -297,11 +297,11 @@ export const esResources: Partial<Record<MessageKey, string>> = {
     "Los tokens y claves se guardan de forma segura; los agentes los usan a través de su servidor y nunca los ven.",
   "int.oauthNote":
     "Usá un OAuth client tuyo de Google Cloud Console: tipo App de escritorio, o Aplicación web con la dirección de abajo como URI de redirección autorizado. Un mismo client sirve para Calendar, Gmail y Drive.",
-  "int.clientApx": "Acceso de APX",
+  "int.clientApx": "Acceso de Colonia",
   "int.clientOwn": "Mi propio OAuth client",
   "int.apxNote":
-    "Iniciá sesión con tu cuenta de Google: no hace falta configurar nada en Google Cloud. APX pide solo lo que necesita esta integración y el acceso queda en esta computadora. Lo podés quitar cuando quieras en myaccount.google.com/permissions.",
-  "int.clientApxLimited": "Acceso de APX (limitado)",
+    "Iniciá sesión con tu cuenta de Google: no hace falta configurar nada en Google Cloud. Colonia pide solo lo que necesita esta integración y el acceso queda en esta computadora. Lo podés quitar cuando quieras en myaccount.google.com/permissions.",
+  "int.clientApxLimited": "Acceso de Colonia (limitado)",
   "int.ownNote":
     "Tu propio OAuth client llega a todo Gmail y Drive. Crealo una vez en Google Cloud (unos 5 minutos) y subí su JSON acá; sirve para Calendar, Gmail y Drive.",
   "int.guide.project": "Creá un proyecto en Google Cloud.",
@@ -316,12 +316,12 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "int.ownSavedFor": "Ya conectaste {names} con tu propio OAuth client: solo iniciá sesión.",
   "int.alsoLabel": "Conectar también, con el mismo inicio de sesión",
   "int.apxLimit.gmail":
-    "Con el acceso de APX, los agentes pueden enviar mails desde tu Gmail, siempre con tu OK, pero no leerlos. Para leer el correo, conectalo en Canales › Email o usá tu propio OAuth client.",
+    "Con el acceso de Colonia, los agentes pueden enviar mails desde tu Gmail, siempre con tu OK, pero no leerlos. Para leer el correo, conectalo en Canales › Email o usá tu propio OAuth client.",
   "int.apxLimit.drive":
-    "Con el acceso de APX, los agentes llegan solo a los Docs que escriben. Para buscar y leer el resto de tu Drive, usá tu propio OAuth client.",
+    "Con el acceso de Colonia, los agentes llegan solo a los Docs que escriben. Para buscar y leer el resto de tu Drive, usá tu propio OAuth client.",
   "int.pasteLabel": "¿Iniciás sesión desde otro dispositivo?",
   "int.pasteHint":
-    "Google te devuelve al APX de esta computadora, que este dispositivo no puede abrir. Copiá la dirección de la página que no cargó y pegala acá.",
+    "Google te devuelve al Colonia de esta computadora, que este dispositivo no puede abrir. Copiá la dirección de la página que no cargó y pegala acá.",
   "int.pasteFinish": "Terminar",
   "int.pasteBad": "Esa dirección no trae el código de inicio de sesión de Google",
   "int.redirect": "URI de redirección",
@@ -334,10 +334,10 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "oauth.working": "Terminando de iniciar sesión…",
   "oauth.doneTitle": "{name} está conectado",
   "oauth.doneTitleMany": "{names} están conectados",
-  "oauth.doneBody": "Podés cerrar esta pestaña y volver a APX.",
+  "oauth.doneBody": "Podés cerrar esta pestaña y volver a Colonia.",
   "oauth.failTitle": "No se pudo terminar de iniciar sesión",
   "oauth.nothing": "Acá no hay ningún inicio de sesión para terminar.",
-  "oauth.open": "Abrir APX",
+  "oauth.open": "Abrir Colonia",
   "int.desc.github": "Repositorios, issues y pull requests.",
   "int.desc.notion": "Páginas y bases de datos de tu workspace.",
   "int.desc.slack": "Canales, mensajes e hilos de tu workspace.",

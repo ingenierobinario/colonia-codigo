@@ -8,7 +8,7 @@ export const esReceived: Record<ReceivedKey, string> = {
   "received.tools": "Herramientas ({n})",
   "received.history": "Conversación anterior ({n} elementos)",
   "received.size": "{chars} caracteres · unos {tokens} tokens",
-  "received.part.base": "Texto propio de APX",
+  "received.part.base": "Texto propio de Colonia",
   "received.part.profile": "Perfil",
   "received.part.personality": "Personalidad",
   "received.part.instructions": "Sus instrucciones",

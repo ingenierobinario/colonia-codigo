@@ -1,18 +1,18 @@
-// Usage: what the computer has and what APX takes of it (its dropdown, the dialog, Advanced): loaded with them
+// Usage: what the computer has and what Colonia takes of it (its dropdown, the dialog, Advanced): loaded with them
 // (usePack in index.ts). The topbar gauge's and menus' two strings stay in en.ts.
 export const enSysUsage = {
   "engines.showUsage": "Usage",
   "engines.usageHint":
-    "Show account limits in APX. Off by default. Without a supported source, no balance is shown. This does not turn the engine on or off.",
+    "Show account limits in Colonia. Off by default. Without a supported source, no balance is shown. This does not turn the engine on or off.",
   "engines.usageCodexHint":
-    "Show account limits in APX. On by default when you link your ChatGPT plan. The quota source also needs a separately linked Codex CLI account. This does not turn models on or off.",
+    "Show account limits in Colonia. On by default when you link your ChatGPT plan. The quota source also needs a separately linked Codex CLI account. This does not turn models on or off.",
   "engines.usageLoadError": "Could not load usage preferences. Retry to load the switch.",
   "engines.usageSaveError": "Could not save the usage preference. Your previous choice was kept.",
   "engineUsage.help": "About AI quotas",
   "engineUsage.engineHelp": "About {engine} quotas",
   "engineUsage.empty": "No engines selected. Turn on Usage on an engine card to show its account limits here.",
   "engineUsage.description":
-    "Account limits reported by engines on the computer running the core, not just sessions in APX.",
+    "Account limits reported by engines on the computer running the core, not just sessions in Colonia.",
   "engineUsage.disclaimer":
     "Session tokens and API costs are not a subscription balance. Missing limits do not mean unlimited usage.",
   "engineUsage.loading": "Checking account limits…",
@@ -34,18 +34,18 @@ export const enSysUsage = {
   "engineUsage.unavailable": "Account limits unavailable",
   "engineUsage.source": "Source: {source}",
   "engineUsage.claudeNote":
-    "Claude plan limits through Claude Code 2.1.273 or later. Sign in to the CLI; APX does not read your credentials.",
+    "Claude plan limits through Claude Code 2.1.273 or later. Sign in to the CLI; Colonia does not read your credentials.",
   "engineUsage.opencodeNote":
     "OpenCode uses the account of the selected provider; there is no single OpenCode balance.",
   "engineUsage.antigravityNote":
     "Check your model quota in Antigravity. No supported quota integration is available here.",
   "engineUsage.engines": "Manage engines",
   "sysUsage.title": "System resources",
-  "sysUsage.description": "What this computer has, and how much of it APX takes.",
+  "sysUsage.description": "What this computer has, and how much of it Colonia takes.",
   "sysUsage.button": "System: {pct}% of memory in use",
   "sysUsage.memory": "Memory",
   "sysUsage.memoryOf": "{used} of {total} in use",
-  "sysUsage.apx": "APX {size}",
+  "sysUsage.apx": "Colonia {size}",
   "sysUsage.vm": "Linux VM {size}",
   "sysUsage.other": "Other apps {size}",
   "sysUsage.free": "Free {size}",
@@ -55,13 +55,13 @@ export const enSysUsage = {
   "sysUsage.coreCpu": "core {pct}% CPU",
   "sysUsage.disk": "Disk",
   "sysUsage.diskFree": "{free} free of {total}",
-  "sysUsage.disk.home": "APX folder's volume",
+  "sysUsage.disk.home": "Colonia folder's volume",
   "sysUsage.disk.system": "System volume",
-  "sysUsage.disk.both": "System volume, with APX",
-  "sysUsage.top": "What APX uses most",
-  "sysUsage.processes": "APX processes",
-  "sysUsage.home": "APX on disk",
-  "sysUsage.homeTotal": "{total} in the APX folder",
+  "sysUsage.disk.both": "System volume, with Colonia",
+  "sysUsage.top": "What Colonia uses most",
+  "sysUsage.processes": "Colonia processes",
+  "sysUsage.home": "Colonia on disk",
+  "sysUsage.homeTotal": "{total} in the Colonia folder",
   "sysUsage.measuring": "Measuring…",
   "sysUsage.partial": "At least this much: measuring took too long.",
   "sysUsage.part.databases": "Databases",

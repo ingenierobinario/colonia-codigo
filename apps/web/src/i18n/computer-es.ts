@@ -39,7 +39,7 @@ export const esComputer: Record<ComputerKey, string> = {
   "computer.stopping": "Apagando VM…",
   "computer.unsupported": "La computadora no está disponible en este sistema",
   "computer.setupHint":
-    "Escritorio Linux opcional con navegador y terminal, aparte de este equipo. Descarga Lima solo si falta, Linux y paquetes del escritorio. Sin Docker. {memory} GiB de memoria mientras está encendida; dejá unos {disk} GiB libres de disco. Apariencia según APX.",
+    "Escritorio Linux opcional con navegador y terminal, aparte de este equipo. Descarga Lima solo si falta, Linux y paquetes del escritorio. Sin Docker. {memory} GiB de memoria mientras está encendida; dejá unos {disk} GiB libres de disco. Apariencia según Colonia.",
   "computer.closeHint": "Cerrar este panel la deja encendida. Se apaga sola cuando ningún agente la usa.",
   "computer.stepRuntime": "Preparando componentes de VM…",
   "computer.stepGuest": "Descargando o iniciando Linux…",

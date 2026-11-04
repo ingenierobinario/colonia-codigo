@@ -160,7 +160,7 @@ export const enFiles = {
   "files.noWidgets": "No widgets in this project",
   "files.noWidgetsBody": "Widgets the agents make in its chats show here, even when they are not on the board.",
   "files.tempNote": "The agent's temporary files. The system clears them after a few days: keep what you need.",
-  "files.workFolder": "APX work folder",
+  "files.workFolder": "Colonia work folder",
   "files.noFolder": "No folder on this machine",
   "files.noFolderBody": "This project has no folder on this machine, so there is nothing to browse.",
   "files.more": "More files than shown here.",

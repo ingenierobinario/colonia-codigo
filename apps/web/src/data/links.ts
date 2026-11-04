@@ -2,9 +2,9 @@
 export const LINKS = {
   discord: "https://discord.gg/vxdZuT5WuE",
   // The public repo: where the releases and the docs live.
-  repo: "https://github.com/agentprojectcontext/apx",
-  releases: "https://github.com/agentprojectcontext/apx/releases",
-  feedback: "https://github.com/agentprojectcontext/apx/issues/new/choose",
+  repo: "https://github.com/ingenierobinario/colonia",
+  releases: "https://github.com/ingenierobinario/colonia/releases",
+  feedback: "https://github.com/ingenierobinario/colonia/issues/new/choose",
   docs: "https://apxagent.app/",
 } as const;
 

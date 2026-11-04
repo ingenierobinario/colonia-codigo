@@ -2,14 +2,14 @@
 export const enTelemetry = {
   "telemetry.check": "Share anonymous usage statistics",
   "telemetry.checkHint":
-    "Anonymous usage statistics show us how APX is really used, so we know what to improve first. We never look at your chats, files or personal data.",
-  "telemetry.cardTitle": "Help improve APX",
+    "Anonymous usage statistics show us how Colonia is really used, so we know what to improve first. We never look at your chats, files or personal data.",
+  "telemetry.cardTitle": "Help improve Colonia",
   "telemetry.cardYes": "Share statistics",
   "telemetry.cardNo": "No, thanks",
   "telemetry.whatIsSent": "What is sent",
   "telemetry.title": "Usage statistics",
   "telemetry.lead":
-    "A random id, not linked to you, tells the APX project when this install was set up, first used and updated. With your yes it also sends the numbers below once a day.",
+    "A random id, not linked to you, tells the Colonia project when this install was set up, first used and updated. With your yes it also sends the numbers below once a day.",
   "telemetry.off": "Telemetry is off on this computer: nothing is sent.",
   "telemetry.preview": "Next report",
   "telemetry.last": "Last sent",

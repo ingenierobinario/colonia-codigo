@@ -383,7 +383,7 @@ export const esOffice: Partial<Record<MessageKey, string>> = {
   "error.clients": "Tokens de API: {error}",
   "clients.title": "Tokens de API",
   "clients.lead":
-    "Para conectar una app o un servicio externo a APX. Creá un token, elegí qué puede hacer y pegalo en esa app: con Chat habla con tus agentes, con Navegador usa el navegador de APX. Entra como un modelo externo, nunca como vos, y tus agentes reciben lo que escribe como dato externo.",
+    "Para conectar una app o un servicio externo a Colonia. Creá un token, elegí qué puede hacer y pegalo en esa app: con Chat habla con tus agentes, con Navegador usa el navegador de Colonia. Entra como un modelo externo, nunca como vos, y tus agentes reciben lo que escribe como dato externo.",
   "clients.name": "Nombre de la app",
   "clients.namePlaceholder": "Ej.: integración de Northwind",
   "clients.scope.chat": "Chat",

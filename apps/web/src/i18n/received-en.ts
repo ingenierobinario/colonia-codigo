@@ -8,7 +8,7 @@ export const enReceived = {
   "received.tools": "Tools ({n})",
   "received.history": "Earlier conversation ({n} items)",
   "received.size": "{chars} chars · about {tokens} tokens",
-  "received.part.base": "APX's own text",
+  "received.part.base": "Colonia's own text",
   "received.part.profile": "Profile",
   "received.part.personality": "Personality",
   "received.part.instructions": "Its instructions",

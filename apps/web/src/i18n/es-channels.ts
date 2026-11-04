@@ -9,7 +9,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "ch.concurrencyHint.interrupt":
     "Si le escribís mientras trabaja, corta lo que estaba haciendo y arranca de nuevo con tu mensaje.",
   "ch.concurrencyHint.steer":
-    "Si le escribís mientras trabaja, tu mensaje se suma a lo que está haciendo: lo lee entre pasos y sigue, sin empezar de cero (en el motor de APX; en otros motores espera).",
+    "Si le escribís mientras trabaja, tu mensaje se suma a lo que está haciendo: lo lee entre pasos y sigue, sin empezar de cero (en el motor de Colonia; en otros motores espera).",
   "ch.youNamed": "Vos ({name})",
   "ch.itsMe": "Soy yo",
   "ch.itsMyNumber": "Es mi número",
@@ -51,7 +51,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "ch.claim.do": "Sí, es mía",
   "ch.claimed": "Listo: esa cuenta ahora es tuya.",
   "ch.acceptContact": "Aceptar como contacto",
-  "ch.itsMeHint": "Escribí el código que te mandó el bot en tu Telegram: así APX sabe que ese chat es tuyo.",
+  "ch.itsMeHint": "Escribí el código que te mandó el bot en tu Telegram: así Colonia sabe que ese chat es tuyo.",
   "ch.ownerHome": "Tu chat con el bot — tus mensajes van a Home",
   "ch.homePart": "Solo lo que hablaron vos y {agent} por {channel}. En Home está todo, de todos los canales.",
   "ch.openHome": "Abrir Home",
@@ -124,7 +124,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
     "Fuera de él, el mensaje de un contacto queda sin leer y se responde, todo junto, cuando empieza. A vos siempre te responde.",
   "ch.hoursWhen": "Días y horas",
   "ch.hoursZone": "En {zone}, la zona horaria de tu cuenta.",
-  "ch.hoursZoneLocal": "Con el reloj de la computadora donde corre APX: tu cuenta no tiene zona horaria.",
+  "ch.hoursZoneLocal": "Con el reloj de la computadora donde corre Colonia: tu cuenta no tiene zona horaria.",
   "ch.closers": "Mensajes que no necesitan respuesta",
   "ch.closers.silent": "Silencio",
   "ch.closers.react": "Reaccionar",
@@ -240,7 +240,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "channel.twitch.name": "Twitch",
   "channel.twitch.text": "Un bot en el chat de un canal de Twitch.",
   "gc.lead":
-    "Hablá con tus agentes desde Google Chat, en mensajes directos y en los espacios que listes. Se conecta por Pub/Sub, así que APX no necesita una dirección pública.",
+    "Hablá con tus agentes desde Google Chat, en mensajes directos y en los espacios que listes. Se conecta por Pub/Sub, así que Colonia no necesita una dirección pública.",
   "gc.step1":
     "En Google Cloud, activá las APIs de Google Chat y de Pub/Sub. Creá un tema y una suscripción pull, y dale a chat-api-push@system.gserviceaccount.com el rol de Publicador en el tema.",
   "gc.step2": "Creá una cuenta de servicio, dale el rol de Suscriptor en la suscripción y descargá una clave JSON.",
@@ -255,7 +255,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "sms.step1": "En Twilio, comprá o elegí un número que mande SMS.",
   "sms.step2": "Copiá el Account SID y el Auth Token desde Account Info en la consola.",
   "sms.step3":
-    "Pegalos acá abajo junto con el número. No hace falta webhook: APX busca mensajes nuevos cada pocos segundos.",
+    "Pegalos acá abajo junto con el número. No hace falta webhook: Colonia busca mensajes nuevos cada pocos segundos.",
   "sms.sid": "Account SID",
   "sms.token": "Auth token",
   "nt.lead":
@@ -268,7 +268,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "nt.topic": "Tema",
   "nt.token": "Token de acceso (opcional)",
   "nc.lead": "Hablá con tus agentes desde Nextcloud Talk, en chats uno a uno y en las conversaciones que listes.",
-  "nc.step1": "En tu Nextcloud, creá un usuario para el bot (APX contesta como ese usuario).",
+  "nc.step1": "En tu Nextcloud, creá un usuario para el bot (Colonia contesta como ese usuario).",
   "nc.step2": "Con la sesión de ese usuario, creá una contraseña de aplicación en Configuración personal › Seguridad.",
   "nc.step3":
     "Pegá el servidor, el usuario y la contraseña de aplicación acá abajo, escribile al bot y poné su código en “Este es mi Nextcloud Talk”.",
@@ -289,7 +289,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "tw.channel": "Canal",
   "rooms.any.title": "Salas",
   "rooms.any.lead":
-    "Las salas donde el bot lee y puede hablar. Una sala que no está en la lista no existe para APX. Ahí contesta en público y sellado: sin memoria y sin nada tuyo, también cuando escribís vos; como mucho busca en la web, según diga “Buscar en la web”.",
+    "Las salas donde el bot lee y puede hablar. Una sala que no está en la lista no existe para Colonia. Ahí contesta en público y sellado: sin memoria y sin nada tuyo, también cuando escribís vos; como mucho busca en la web, según diga “Buscar en la web”.",
   "rooms.any.pick": "Sumar una sala donde está el bot…",
   "rooms.any.allListed": "Ya están todas las salas donde se vio al bot",
   "rooms.any.none": "Todavía no hay salas: sumá el bot a una o escribí ahí",

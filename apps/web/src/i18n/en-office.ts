@@ -380,7 +380,7 @@ export const enOffice = {
   "error.clients": "API tokens: {error}",
   "clients.title": "API tokens",
   "clients.lead":
-    "To connect an outside app or service to APX. Create a token, pick what it may do and paste it into that app: Chat lets it talk to your agents, Browser lets it use APX's browser. It comes in as an outside model, never as you, and your agents get what it writes as outside data.",
+    "To connect an outside app or service to Colonia. Create a token, pick what it may do and paste it into that app: Chat lets it talk to your agents, Browser lets it use Colonia's browser. It comes in as an outside model, never as you, and your agents get what it writes as outside data.",
   "clients.name": "App name",
   "clients.namePlaceholder": "e.g. Northwind integration",
   "clients.scope.chat": "Chat",

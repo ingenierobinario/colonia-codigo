@@ -17,7 +17,7 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "plans.manage": "Administrar",
   "plan.login.title": "Conectar Codex",
   "plan.login.lead":
-    "Tus agentes usan los modelos de tu plan de ChatGPT con las herramientas y reglas de APX. APX tiene su propio login, separado del de la app de Codex.",
+    "Tus agentes usan los modelos de tu plan de ChatGPT con las herramientas y reglas de Colonia. Colonia tiene su propio login, separado del de la app de Codex.",
   "plan.login.preTitle": "Si no te deja terminar",
   "plan.login.preBody":
     "ChatGPT pide activar «Autorización con código de dispositivo para Codex» en Configuración › Seguridad. Sin eso el login no se puede terminar.",
@@ -25,8 +25,8 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "plan.login.ifRefused":
     "¿ChatGPT no acepta el código? Puede que tengas que activar «Autorización con código de dispositivo para Codex».",
   "plan.login.start": "Iniciar sesión con ChatGPT",
-  "plan.login.fromV1": "Usar el login de APX v1",
-  "plan.login.fromV1Hint": "APX v1 ya tiene la sesión iniciada: APX la toma sin pedirte un código nuevo.",
+  "plan.login.fromV1": "Usar el login de Colonia v1",
+  "plan.login.fromV1Hint": "Colonia v1 ya tiene la sesión iniciada: Colonia la toma sin pedirte un código nuevo.",
   "plan.login.step1": "Abrí esta página:",
   "plan.login.step2": "Escribí este código ahí:",
   "plan.login.copy": "Copiar código",

@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RELEASE_REPO = "agentprojectcontext/apx";
+export const RELEASE_REPO = "ingenierobinario/colonia";
 /** How many releases a build carries: an install that skipped more is told the newest ones. */
 const CARRIED = 20;
 const KINDS = ["feat", "fix", "perf"] as const;

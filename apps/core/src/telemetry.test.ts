@@ -5,7 +5,7 @@ import { loadConfig } from "./config.ts";
 import { say, scriptedLlm, startCore } from "./engine/testkit.ts";
 import { createLog } from "./log.ts";
 import { createTelemetry } from "./telemetry.ts";
-import { firestoreWrite, TELEMETRY_SINK, type TelemetrySink } from "./telemetry-sink.ts";
+import { firestoreWrite, type TelemetrySink } from "./telemetry-sink.ts";
 
 let env: Awaited<ReturnType<typeof startCore>>;
 const sent: TelemetryEvent[] = [];
@@ -147,10 +147,10 @@ test("the Firestore write creates the record once and then only stamps steps", (
 });
 
 test("DO_NOT_TRACK, CI and APX_TELEMETRY=off turn telemetry off", () => {
-  assert.equal(loadConfig({}, false).telemetry, TELEMETRY_SINK);
+  assert.equal(loadConfig({}, false).telemetry, undefined);
   assert.equal(loadConfig({ DO_NOT_TRACK: "1" }, false).telemetry, undefined);
   assert.equal(loadConfig({ CI: "true" }, false).telemetry, undefined);
   assert.equal(loadConfig({ APX_TELEMETRY: "off" }, false).telemetry, undefined);
-  assert.equal(loadConfig({ DO_NOT_TRACK: "0" }, false).telemetry, TELEMETRY_SINK);
+  assert.equal(loadConfig({ DO_NOT_TRACK: "0" }, false).telemetry, undefined);
   assert.equal(loadConfig({ APX_TELEMETRY: "https://example.com/t" }, false).telemetry, "https://example.com/t");
 });

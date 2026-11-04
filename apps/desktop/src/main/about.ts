@@ -39,7 +39,7 @@ export async function showAbout(
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
-    title: "APX",
+    title: "Colonia",
     backgroundColor: "#161616",
     show: false,
     webPreferences: { partition, sandbox: true },

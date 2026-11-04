@@ -4,14 +4,14 @@ import type { MessageKey } from "./en.ts";
 export const esTelemetry: Partial<Record<MessageKey, string>> = {
   "telemetry.check": "Compartir estadísticas de uso anónimas",
   "telemetry.checkHint":
-    "Las estadísticas de uso anónimas nos muestran cómo se usa APX de verdad, para saber qué mejorar primero. Nunca miramos tus chats, archivos ni datos personales.",
-  "telemetry.cardTitle": "Ayudá a mejorar APX",
+    "Las estadísticas de uso anónimas nos muestran cómo se usa Colonia de verdad, para saber qué mejorar primero. Nunca miramos tus chats, archivos ni datos personales.",
+  "telemetry.cardTitle": "Ayudá a mejorar Colonia",
   "telemetry.cardYes": "Compartir estadísticas",
   "telemetry.cardNo": "No, gracias",
   "telemetry.whatIsSent": "Qué se envía",
   "telemetry.title": "Estadísticas de uso",
   "telemetry.lead":
-    "Un id al azar, no ligado a vos, le avisa al proyecto APX cuándo se configuró esta instalación, cuándo se usó por primera vez y cuándo se actualizó. Si decís que sí, además manda una vez por día los números de abajo.",
+    "Un id al azar, no ligado a vos, le avisa al proyecto Colonia cuándo se configuró esta instalación, cuándo se usó por primera vez y cuándo se actualizó. Si decís que sí, además manda una vez por día los números de abajo.",
   "telemetry.off": "La telemetría está apagada en esta computadora: no se envía nada.",
   "telemetry.preview": "Próximo reporte",
   "telemetry.last": "Último envío",

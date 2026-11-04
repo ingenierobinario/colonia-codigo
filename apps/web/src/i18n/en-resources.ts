@@ -64,8 +64,8 @@ export const enResources = {
   "res.show.projectNote.variables":
     "Only {name}'s own: values stored for this project, and names its own servers ask for.",
   "res.engines.note": "Showing those in {list}; a dimmed tag is a copy agents do not use.",
-  "res.appReadOnly": "It lives in {app}'s skills folder: change it there, or copy it into APX to edit it here.",
-  "res.copyToApx": "Copy to APX",
+  "res.appReadOnly": "It lives in {app}'s skills folder: change it there, or copy it into Colonia to edit it here.",
+  "res.copyToApx": "Copy to Colonia",
   "res.skill.create": "Create",
   "res.skill.import": "Import",
   "res.import.from": "From",
@@ -77,11 +77,11 @@ export const enResources = {
   "res.import.zipPick": "Choose a .zip",
   "res.import.zipTooBig": "The zip is over {mb} MB.",
   "res.import.read": "Read",
-  "res.import.safe": "Nothing in it runs: APX only reads the files and copies them.",
+  "res.import.safe": "Nothing in it runs: Colonia only reads the files and copies them.",
   "res.import.found": "Found: {n}",
   "res.import.status.new": "New",
   "res.import.status.exists": "Already there",
-  "res.import.status.reserved": "APX's own name",
+  "res.import.status.reserved": "Colonia's own name",
   "res.import.status.invalid": "Invalid name",
   "res.import.files": "{n} files",
   "res.import.note.scripts": "Brings scripts an agent could run: {items}",
@@ -92,7 +92,7 @@ export const enResources = {
   "res.import.go": "Import {n}",
   "res.import.done": "Imported: {names}",
   "res.import.skipped": "Not imported: {list}",
-  "res.import.global": "Into APX's skills: every project inherits them.",
+  "res.import.global": "Into Colonia's skills: every project inherits them.",
   "res.import.project": "Into this project's .apc/skills/.",
   "res.active": "On",
   "res.loads": "Loads",
@@ -109,7 +109,7 @@ export const enResources = {
   "res.discard": "Discard",
   "res.extensionReadOnly": "It comes from an extension: read only. Save a copy in a project to change it there.",
   "res.apxSkillNote":
-    "It comes with APX and teaches agents how to change APX itself: always on, read only, and updated with APX.",
+    "It comes with Colonia and teaches agents how to change Colonia itself: always on, read only, and updated with Colonia.",
   "res.saveWhere": "Where does the change go?",
   "res.saveWhereBody":
     "This is a global skill. Change the original (every project sees it) or give {name} its own copy, which takes its place there.",
@@ -234,10 +234,10 @@ export const enResources = {
   "ext.guide.routinesBody": "templates you add to Routines; you pick the agent.",
   "ext.guide.plugin": "Plugin (optional)",
   "ext.guide.pluginBody":
-    "a .mjs that runs apart, watches events and can add context to your turns; it cannot call APX.",
+    "a .mjs that runs apart, watches events and can add context to your turns; it cannot call Colonia.",
   "ext.guide.install": "Installing it",
   "ext.guide.step1":
-    "Make the folder with its apx-extension.json (there is an example in examples/extensions/ of the APX repo).",
+    "Make the folder with its apx-extension.json (there is an example in examples/extensions/ of the Colonia repo).",
   "ext.guide.step2":
     "Here, Install: paste the folder's path, Inspect and Install (or apx extensions install <folder>).",
   "ext.guide.step3": "It arrives off: fill in its variables and turn it on.",
@@ -291,11 +291,11 @@ export const enResources = {
   "int.formNote": "Tokens and keys are stored securely; agents use them through its server and never see them.",
   "int.oauthNote":
     "Use an OAuth client of your own from Google Cloud Console: type Desktop app, or Web application with the address below as an authorized redirect URI. One client serves Calendar, Gmail and Drive.",
-  "int.clientApx": "APX sign-in",
+  "int.clientApx": "Colonia sign-in",
   "int.clientOwn": "My own OAuth client",
   "int.apxNote":
-    "Sign in with your Google account: no setup in Google Cloud. APX asks only for what this integration needs, and the access stays on this computer. You can remove it any time at myaccount.google.com/permissions.",
-  "int.clientApxLimited": "APX sign-in (limited)",
+    "Sign in with your Google account: no setup in Google Cloud. Colonia asks only for what this integration needs, and the access stays on this computer. You can remove it any time at myaccount.google.com/permissions.",
+  "int.clientApxLimited": "Colonia sign-in (limited)",
   "int.ownNote":
     "Your own OAuth client reaches all of Gmail and Drive. Create it once in Google Cloud (about 5 minutes) and upload its JSON here; it serves Calendar, Gmail and Drive.",
   "int.guide.project": "Create a project in Google Cloud.",
@@ -310,12 +310,12 @@ export const enResources = {
   "int.ownSavedFor": "You already connected {names} with your own OAuth client: just sign in.",
   "int.alsoLabel": "Connect these too, with the same sign-in",
   "int.apxLimit.gmail":
-    "With APX's sign-in, agents can send mail from your Gmail, always with your OK, but not read it. To read mail, connect it in Channels › Email or use your own OAuth client.",
+    "With Colonia's sign-in, agents can send mail from your Gmail, always with your OK, but not read it. To read mail, connect it in Channels › Email or use your own OAuth client.",
   "int.apxLimit.drive":
-    "With APX's sign-in, agents reach only the Docs they write. To find and read the rest of your Drive, use your own OAuth client.",
+    "With Colonia's sign-in, agents reach only the Docs they write. To find and read the rest of your Drive, use your own OAuth client.",
   "int.pasteLabel": "Signing in from another device?",
   "int.pasteHint":
-    "Google sends you back to this computer's APX, which this device can't open. Copy the address of the page that failed to load and paste it here.",
+    "Google sends you back to this computer's Colonia, which this device can't open. Copy the address of the page that failed to load and paste it here.",
   "int.pasteFinish": "Finish",
   "int.pasteBad": "That address doesn't carry Google's sign-in code",
   "int.redirect": "Redirect URI",
@@ -328,10 +328,10 @@ export const enResources = {
   "oauth.working": "Finishing the sign-in…",
   "oauth.doneTitle": "{name} is connected",
   "oauth.doneTitleMany": "{names} are connected",
-  "oauth.doneBody": "You can close this tab and go back to APX.",
+  "oauth.doneBody": "You can close this tab and go back to Colonia.",
   "oauth.failTitle": "The sign-in did not finish",
   "oauth.nothing": "There is no sign-in to finish here.",
-  "oauth.open": "Open APX",
+  "oauth.open": "Open Colonia",
   "int.desc.github": "Repositories, issues and pull requests.",
   "int.desc.notion": "Pages and databases of your workspace.",
   "int.desc.slack": "Channels, messages and threads of your workspace.",

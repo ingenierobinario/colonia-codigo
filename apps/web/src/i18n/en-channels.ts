@@ -7,7 +7,7 @@ export const enChannels = {
   "ch.concurrencyHint.interrupt":
     "A message you send while it works stops what it was doing, and it starts over with your new message.",
   "ch.concurrencyHint.steer":
-    "A message you send while it works joins what it is doing: it reads it between steps and keeps going, without starting over (APX's own engine; other engines wait).",
+    "A message you send while it works joins what it is doing: it reads it between steps and keeps going, without starting over (Colonia's own engine; other engines wait).",
   "ch.youNamed": "You ({name})",
   "ch.itsMe": "It's me",
   "ch.itsMyNumber": "It's my number",
@@ -49,7 +49,7 @@ export const enChannels = {
   "ch.claim.do": "Yes, it's mine",
   "ch.claimed": "Done: that account is yours now.",
   "ch.acceptContact": "Accept as contact",
-  "ch.itsMeHint": "Type the code the bot sent you in your Telegram: that is how APX knows this chat is yours.",
+  "ch.itsMeHint": "Type the code the bot sent you in your Telegram: that is how Colonia knows this chat is yours.",
   "ch.ownerHome": "Your chat with the bot — your messages go to Home",
   "ch.homePart": "Only what you and {agent} said on {channel}. Home has every channel.",
   "ch.openHome": "Open Home",
@@ -120,7 +120,7 @@ export const enChannels = {
     "Outside them a contact's message waits unread and is answered, all together, when they begin. You are always answered.",
   "ch.hoursWhen": "Days and hours",
   "ch.hoursZone": "In {zone}, your account's time zone.",
-  "ch.hoursZoneLocal": "On the clock of the computer APX runs on: your account has no time zone set.",
+  "ch.hoursZoneLocal": "On the clock of the computer Colonia runs on: your account has no time zone set.",
   "ch.closers": "Messages that need no answer",
   "ch.closers.silent": "Silence",
   "ch.closers.react": "React",
@@ -223,7 +223,7 @@ export const enChannels = {
   "channel.twitch.name": "Twitch",
   "channel.twitch.text": "A bot in a Twitch channel's chat.",
   "gc.lead":
-    "Talk with your agents from Google Chat, in direct messages and in the spaces you list. It connects through Pub/Sub, so APX needs no public address.",
+    "Talk with your agents from Google Chat, in direct messages and in the spaces you list. It connects through Pub/Sub, so Colonia needs no public address.",
   "gc.step1":
     "In Google Cloud, turn on the Google Chat and Pub/Sub APIs. Create a topic and a pull subscription, and give chat-api-push@system.gserviceaccount.com the Publisher role on the topic.",
   "gc.step2": "Create a service account, give it the Subscriber role on the subscription and download a JSON key.",
@@ -237,7 +237,7 @@ export const enChannels = {
     "Talk with your agents by text message, through a Twilio number. Only the people you approve reach them; replies arrive within a few seconds.",
   "sms.step1": "In Twilio, buy or pick a number that sends SMS.",
   "sms.step2": "Copy the Account SID and Auth Token from the console's Account Info.",
-  "sms.step3": "Paste them and the number below. No webhook is needed: APX checks for new messages every few seconds.",
+  "sms.step3": "Paste them and the number below. No webhook is needed: Colonia checks for new messages every few seconds.",
   "sms.sid": "Account SID",
   "sms.token": "Auth token",
   "nt.lead":
@@ -250,7 +250,7 @@ export const enChannels = {
   "nt.topic": "Topic",
   "nt.token": "Access token (optional)",
   "nc.lead": "Talk with your agents from Nextcloud Talk, in one-to-one chats and the conversations you list.",
-  "nc.step1": "On your Nextcloud, create a user for the bot (APX answers as that user).",
+  "nc.step1": "On your Nextcloud, create a user for the bot (Colonia answers as that user).",
   "nc.step2": "Signed in as it, create an app password in Personal settings › Security.",
   "nc.step3":
     "Paste the server, the user and the app password below, write to the bot and type its code in “This is my Nextcloud Talk”.",
@@ -271,7 +271,7 @@ export const enChannels = {
   "tw.channel": "Channel",
   "rooms.any.title": "Rooms",
   "rooms.any.lead":
-    "The rooms where the bot reads and may speak. A room not on the list does not exist for APX. There it answers in public and sealed: no memory and nothing of yours, also when you write; at most it searches the web, as “Search the web” says.",
+    "The rooms where the bot reads and may speak. A room not on the list does not exist for Colonia. There it answers in public and sealed: no memory and nothing of yours, also when you write; at most it searches the web, as “Search the web” says.",
   "rooms.any.pick": "Add a room the bot is in…",
   "rooms.any.allListed": "Every room the bot was seen in is listed",
   "rooms.any.none": "No rooms yet: add the bot to one or write there",

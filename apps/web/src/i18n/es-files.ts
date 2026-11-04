@@ -162,7 +162,7 @@ export const esFiles: Partial<Record<MessageKey, string>> = {
   "files.noWidgetsBody": "Los widgets que hagan los agentes en sus chats aparecen acá, aunque no estén en el tablero.",
   "files.tempNote":
     "Los archivos temporales del agente. El sistema los borra después de unos días: guardá lo que necesites.",
-  "files.workFolder": "Carpeta de trabajo de APX",
+  "files.workFolder": "Carpeta de trabajo de Colonia",
   "files.noFolder": "Sin carpeta en esta máquina",
   "files.noFolderBody": "Este proyecto no tiene carpeta en esta máquina; no hay nada para recorrer.",
   "files.more": "Hay más archivos de los que se muestran.",

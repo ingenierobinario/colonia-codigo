@@ -38,7 +38,7 @@ export const enComputer = {
   "computer.stopping": "Shutting down VM…",
   "computer.unsupported": "The computer is not available on this system",
   "computer.setupHint":
-    "Optional Linux desktop with browser and terminal, apart from this machine. Downloads Lima only if missing, plus Linux and desktop packages. No Docker. {memory} GiB of memory while it runs; keep about {disk} GiB of disk free. Appearance follows APX.",
+    "Optional Linux desktop with browser and terminal, apart from this machine. Downloads Lima only if missing, plus Linux and desktop packages. No Docker. {memory} GiB of memory while it runs; keep about {disk} GiB of disk free. Appearance follows Colonia.",
   "computer.closeHint": "Closing this panel keeps the computer running. It shuts down by itself once no agent uses it.",
   "computer.stepRuntime": "Preparing VM components…",
   "computer.stepGuest": "Downloading or starting Linux…",

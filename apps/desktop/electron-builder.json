@@ -1,6 +1,6 @@
 {
-  "appId": "dev.apx.desktop",
-  "productName": "APX",
+  "appId": "com.ingenierobinario.colonia",
+  "productName": "Colonia",
   "extraMetadata": {
     "name": "apx"
   },
@@ -28,7 +28,7 @@
   "fileAssociations": [
     {
       "ext": "apxart",
-      "name": "APX artifact",
+      "name": "Colonia artifact",
       "description": "APX artifact",
       "role": "Viewer",
       "icon": "file-apxart",
@@ -36,7 +36,7 @@
     },
     {
       "ext": "apxapp",
-      "name": "APX app",
+      "name": "Colonia app",
       "description": "APX app",
       "role": "Viewer",
       "icon": "file-apxapp",
@@ -44,7 +44,7 @@
     },
     {
       "ext": "apxext",
-      "name": "APX extension",
+      "name": "Colonia extension",
       "description": "APX extension",
       "role": "Viewer",
       "icon": "file-apxext",

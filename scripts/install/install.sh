@@ -10,7 +10,7 @@
 # touched. If APX v1 is installed, its daemon is stopped and its `apx` command removed: this one takes its place.
 set -euo pipefail
 
-FEED="${APX_RELEASES:-agentprojectcontext/apx}"
+FEED="${APX_RELEASES:-ingenierobinario/colonia}"
 APP="${APX_APP:-$HOME/.apx/v2/app}"
 BIN="$HOME/.local/bin"
 FILE=""
@@ -185,12 +185,12 @@ for label in dev.apx.daemon dev.apx.desktop; do
 done
 # One started by hand (`apx daemon start`) has no service to stop.
 pkill -f "apx/src/host/daemon" >/dev/null 2>&1 || true
-if command -v npm >/dev/null 2>&1 && npm ls -g --depth=0 @agentprojectcontext/apx >/dev/null 2>&1; then
+if command -v npm >/dev/null 2>&1 && npm ls -g --depth=0 @ingenierobinario/colonia >/dev/null 2>&1; then
   say "Removing APX v1's apx command (its files in ~/.apx stay, to import them)"
   # A global installed with sudo needs sudo to go: tried only when it asks for no password.
-  npm uninstall -g @agentprojectcontext/apx >/dev/null 2>&1 ||
-    { command -v sudo >/dev/null 2>&1 && sudo -n npm uninstall -g @agentprojectcontext/apx >/dev/null 2>&1; } ||
-    warn "APX v1's apx is still in $(dirname "$(command -v apx)"). Remove it:  sudo npm uninstall -g @agentprojectcontext/apx"
+  npm uninstall -g @ingenierobinario/colonia >/dev/null 2>&1 ||
+    { command -v sudo >/dev/null 2>&1 && sudo -n npm uninstall -g @ingenierobinario/colonia >/dev/null 2>&1; } ||
+    warn "APX v1's apx is still in $(dirname "$(command -v apx)"). Remove it:  sudo npm uninstall -g @ingenierobinario/colonia"
 fi
 fi
 
@@ -223,7 +223,7 @@ case ":$PATH:" in
 esac
 
 printf '%s\n' "$MODE" >"$APP/install-mode"
-if [ "$FEED" != agentprojectcontext/apx ]; then export APX_RELEASES="$FEED"; fi
+if [ "$FEED" != ingenierobinario/colonia ]; then export APX_RELEASES="$FEED"; fi
 if [ "$MODE" = desktop ]; then
   say "Installing and opening APX desktop. Choose server or client in the app."
   APX_APP="$APP" APX_INSTALL_VERSION="$VERSION" "$BIN/apx" desktop || die "desktop setup failed; retry: apx desktop"
@@ -234,7 +234,7 @@ fi
 if [ "$SERVICE" = 1 ]; then
   say "Starting the APX daemon as a service"
   # A feed other than the public one (a test feed, a mirror) is where this install keeps updating from.
-  if [ "$FEED" != agentprojectcontext/apx ]; then export APX_RELEASES="$FEED"; fi
+  if [ "$FEED" != ingenierobinario/colonia ]; then export APX_RELEASES="$FEED"; fi
   APX_APP="$APP" "$BIN/apx" service install || warn "the service did not install; run: apx service install"
 fi
 

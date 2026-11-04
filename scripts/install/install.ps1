@@ -10,7 +10,7 @@
 param(
   [string]$File = "",
   [string]$Version = "",
-  [string]$Feed = $(if ($env:APX_RELEASES) { $env:APX_RELEASES } else { "agentprojectcontext/apx" }),
+  [string]$Feed = $(if ($env:APX_RELEASES) { $env:APX_RELEASES } else { "ingenierobinario/colonia" }),
   [switch]$NoService,
   [switch]$Server,
   [switch]$Desktop,
@@ -167,7 +167,7 @@ if not defined APX_APP set "APX_APP=$App"
   $env:Path = "$bin;$env:Path"
   $env:APX_APP = $App
   Set-Content -Path $previous -Value $mode -Encoding ASCII
-  if ($Feed -ne "agentprojectcontext/apx") { $env:APX_RELEASES = $Feed }
+  if ($Feed -ne "ingenierobinario/colonia") { $env:APX_RELEASES = $Feed }
   if ($mode -eq "desktop") {
     Say "Installing and opening APX desktop. Choose server or client in the app."
     $env:APX_INSTALL_VERSION = $Version
@@ -179,7 +179,7 @@ if not defined APX_APP set "APX_APP=$App"
   # 7. The daemon at login, started again if it stops.
   if (-not $NoService) {
     # A feed other than the public one (a test feed, a mirror) is where this install keeps updating from.
-    if ($Feed -ne "agentprojectcontext/apx") { $env:APX_RELEASES = $Feed }
+    if ($Feed -ne "ingenierobinario/colonia") { $env:APX_RELEASES = $Feed }
     Say "Starting the APX daemon"
     & (Join-Path $bin "apx.cmd") service install
     if ($LASTEXITCODE -ne 0) { Warn "the service did not install; run: apx service install" }
