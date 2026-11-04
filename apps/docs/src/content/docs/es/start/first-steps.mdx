@@ -1,133 +1,68 @@
 ---
 title: Primeros pasos
-description: Pasá por el asistente de configuración, conectá un modelo, saludá a Home, sumá un proyecto y hablale a tu equipo desde la terminal.
+description: Pasa por el asistente, conecta la IA, saluda a Home y añade tu primer proyecto.
 sidebar:
-  order: 3
+  order: 4
 ---
 
-import { Aside, CardGrid, LinkCard, Steps } from "@astrojs/starlight/components";
+import { CardGrid, LinkCard, Steps } from "@astrojs/starlight/components";
 import Shot from "../../../../components/Shot.astro";
-import Terminal from "../../../../components/Terminal.astro";
 
-La primera vez que abrís APX, un asistente corto arma tu equipo. Son unos minutos, todo se puede cambiar después en
-Config, y lo podés volver a abrir desde el menú de tu cuenta › **Configuración inicial**.
+La primera vez que abres Colonia, un asistente corto monta tu equipo. Son unos minutos, y todo se puede cambiar después en
+Config.
 
 ## El asistente de configuración
 
-<Shot name="wizard-welcome" alt="La configuración inicial en el paso de bienvenida, con las opciones Empezar de cero e Importar desde APX v1" caption="Bienvenida: arrancás de cero o traés tu equipo de v1" />
-
 <Steps>
 
-1. **Bienvenida.** Elegí **Empezar de cero**. Si APX encuentra un APX v1 en esta computadora, también te ofrece
-   **Importar desde APX v1**, con cuántos proyectos encontró. Importar suma un paso donde elegís qué traer (mirá
-   [Si venís de v1](/es/start/from-v1/)).
+1. **Bienvenida.** Elige empezar de cero.
 
-2. **Super-agente.** Es Home, tu secretaria: coordina al resto y atiende tus canales. Ponele un **Nombre** y elegí su
-   blobo, una de 35 caras. Va apareciendo al lado del formulario mientras elegís.
+2. **Tu secretaria.** Es Home: coordina al resto y atiende tus canales. Ponle un nombre y elige su cara.
 
-   <Shot name="wizard-agent" alt="El paso del agente: un campo de nombre, una grilla de caras de blobos y el blobo elegido en grande a la derecha" />
+3. **Motores.** Conecta tu IA. Si no lo tienes claro, lee antes [Conectar la IA](/es/start/connect-ai/).
 
-3. **Motores.** Conectá tus modelos: iniciá sesión con tu plan de ChatGPT o tocá **Agregar API key**
-   para Gemini, Anthropic, OpenAI, OpenRouter y otros. Los motores locales como Ollama no piden clave. Después ordená
-   la **Cadena de modelos** con las flechas: el primero es el de por defecto y, si falla, toma la posta el siguiente.
+4. **Memoria.** Si dudas, elige **Buscar por palabras**: no necesita nada más.
 
-4. **Memoria.** Elegí **Buscar por palabras** (las notas aparecen por las palabras que comparten con tu mensaje),
-   **Buscar por significado** (lo mismo, más las notas que lo dicen con otras palabras; necesita un motor de
-   embeddings como Ollama, Gemini u OpenAI) o **Sin memoria**. Abajo hay dos interruptores: elegir skills por
-   significado en cada mensaje y achicar los chats largos con resúmenes.
+5. **Canales.** Opcional, y puedes dejarlo para luego. Conecta un bot de Telegram o vincula WhatsApp con un QR, igual que
+   WhatsApp Web.
 
-5. **Canales.** Opcional. Pegá el token de un bot de Telegram que te da @BotFather y tocá **Conectar**, o vinculá
-   WhatsApp con un QR, como WhatsApp Web. Discord y Slack se configuran después en Config › Canales.
+6. **Proyectos.** Añade una carpeta ahora o déjalo para después.
 
-6. **Proyectos.** Tu proyecto base siempre está y no tiene carpeta propia; ahí viven Home y tus agentes globales. Le
-   podés cambiar el nombre, sumar una carpeta ahora con **Con carpeta** o saltearlo con **Por ahora no**. Tocá
-   **Crear crew**.
-
-7. **Listo.** Tu equipo está armado. Tocá **Abrir APX**.
+7. **Listo.** Abre Colonia.
 
 </Steps>
 
-<Aside type="tip">
-¿Sin escritorio? En un servidor, `apx setup --headless` hace lo mismo desde la terminal, y `apx wizard` abre una
-consola guiada para el estado, los dispositivos, Tailscale, el emparejamiento y las actualizaciones.
-</Aside>
+## Saluda a Home
 
-## Elegí un modelo
+El chat de Home está en la bandeja de entrada. Escríbele como a una persona y pulsa Intro.
 
-En el asistente elegiste una cadena de modelos por defecto. La cambiás cuando quieras:
+<Shot name="home-hero" alt="La bandeja con el chat de Home abierto y un intercambio corto con la secretaria" />
 
-- **Config › Motores y modelos** lista cada motor con sus modelos y te deja sumar claves o iniciar sesión.
-- **Config › Router** define reglas que eligen un modelo en cada turno (imágenes, mensajes largos, un canal, palabras
-  clave) y la cadena de respaldo.
-- En un chat, el selector de modelo del compositor cambia el modelo solo para ese chat, y `/model` hace lo mismo
-  desde el teclado.
+Prueba con algo de verdad:
 
-Desde la terminal, `apx models` lista cada motor con sus modelos y `apx models default` define el de la instalación.
-Más en [Modelos](/es/concepts/models/).
+- «¿Qué puedes hacer por mí?»
+- «Recuérdame llamar a Northwind por la factura el viernes a las 10.»
+- «Abre la web de mi tienda y cuéntame qué dice la portada.»
 
-## Saludá a Home
+## Añade un proyecto
 
-El chat de Home está en el **Inbox**. Escribí en el compositor ("Escribile a …" con el nombre de tu secretaria) y
-dale Enter.
+Un proyecto es una carpeta donde trabajan tus agentes: la de una tienda, un cliente o tu empresa. En la barra lateral,
+pulsa **Nuevo proyecto** y elige la carpeta, o créalo sin carpeta y Colonia lo guardará en la suya.
 
-<Shot name="home-hero" alt="El Inbox con el chat de Home abierto y un intercambio corto con la secretaria" />
+El proyecto aparece con sus pestañas: Resumen, Chats, Agentes, Tareas, Rutinas, Archivos, Memoria y Recursos. En
+**Agentes** puedes crear uno o traerlo de una plantilla. Más en [Proyectos](/es/concepts/projects/).
 
-Probá con algo de verdad:
+## Decide cuánto pueden hacer solos
 
-- "¿Qué podés hacer por mí?"
-- "Recordame llamar a Northwind por la factura el viernes a las 10."
-- "Abrí el sitio de Acme Store y contame qué dice la home."
-
-El chat de Home es una sola conversación en todos lados: cuando conectes Telegram o WhatsApp, lo que mandes por ahí
-también cae acá.
-
-## Sumá un proyecto
-
-Un proyecto es una carpeta donde trabajan tus agentes: un repo, una tienda, la carpeta de una empresa. En la barra
-lateral, tocá **Nuevo proyecto**. El diálogo **Sumar un proyecto** te pregunta **Dónde vive**:
-
-- **En una carpeta**: elegí una carpeta como `~/work/acme`. Si no tiene `AGENTS.md`, APX escribe uno con el nombre del
-  proyecto.
-- **Sin carpeta**: el proyecto se crea dentro de la carpeta de APX.
-
-O desde la terminal:
-
-<Terminal command="apx projects register ~/work/acme" />
-
-El proyecto aparece en la barra lateral con sus pestañas: Resumen, Chats, Agentes, Tareas, Rutinas, Archivos, Memoria
-y Recursos. Sumá agentes en la pestaña **Agentes** con **Agente**, o traé uno de una plantilla con **Importar**. Más en
-[Proyectos](/es/concepts/projects/).
-
-## Preguntá desde la terminal
-
-`apx chat` es la única forma de hablarle a un agente desde la terminal. Sin opciones, le escribe a Home:
-
-<Terminal command={`apx chat "¿Qué queda abierto en Acme Store?"`}>{`Hay dos tareas abiertas en Acme Store: Tomás está arreglando el bug del checkout
-y el newsletter de Vera espera tu revisión.
-— completed · thread home`}</Terminal>
-
-Hablale a un agente puntual con `--agent`, arrancá un chat nuevo con `--new` o abrí un hilo de código en la carpeta
-donde estás con `--code`:
-
-```bash
-apx chat "Armá las notas del release" --agent "Lucía"
-apx chat "¿Por qué falla el test del carrito?" --code --cwd ~/work/acme
-```
-
-Todo lo que escribís desde la terminal aparece en la app, y al revés.
-
-## Novedades y ayuda
-
-El **?** al pie de la barra lateral muestra lo que trajeron las últimas versiones. Elegí una para leer qué te permite
-hacer y pedirle a tu super-agente que te la configure, o abrí **Todas las novedades** para repasar cada versión. El mismo
-menú tiene las guías, el Discord y una forma de enviar comentarios. Cuando APX se actualiza, tu super-agente te cuenta en
-una línea lo que más importa; el resto queda en ese menú.
+Antes de encargar trabajo importante, revisa [Autonomía](/es/concepts/autonomy/): ahí decides qué acciones hacen
+directamente y cuáles necesitan tu confirmación. Empieza con poca y ve subiendo. La IA puede equivocarse: revisa lo
+importante.
 
 ## Para seguir
 
 <CardGrid>
-  <LinkCard title="Cómo funciona" description="El core, el protocolo y las piezas alrededor." href="/es/start/how-it-works/" />
-  <LinkCard title="Agentes" description="Dales roles, caras, skills y autonomía." href="/es/concepts/agents/" />
-  <LinkCard title="Chat" description="Comandos con barra, el panel lateral, adjuntos y volver atrás." href="/es/office/chat/" />
-  <LinkCard title="Canales" description="Hablale a tu equipo desde Telegram, WhatsApp, Discord o Slack." href="/es/channels/overview/" />
+  <LinkCard title="Agentes" description="Dales papeles, caras, habilidades y autonomía." href="/es/concepts/agents/" />
+  <LinkCard title="Chat" description="Comandos, panel lateral, adjuntos y volver atrás." href="/es/office/chat/" />
+  <LinkCard title="Rutinas" description="Trabajo programado." href="/es/office/routines/" />
+  <LinkCard title="Canales" description="Habla con tu equipo desde Telegram, WhatsApp, Discord o Slack." href="/es/channels/overview/" />
 </CardGrid>

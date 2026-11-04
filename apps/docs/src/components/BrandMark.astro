@@ -9,9 +9,9 @@ interface Props {
 }
 const { brand, size = 18 } = Astro.props;
 // Gradient ids must be unique per page; a build-time counter keeps them stable between builds.
-const g = globalThis as { __apxMarkId?: number };
-g.__apxMarkId = (g.__apxMarkId ?? 0) + 1;
-const gid = `apx-mark-${g.__apxMarkId}`;
+const g = globalThis as { __coloniaMarkId?: number };
+g.__coloniaMarkId = (g.__coloniaMarkId ?? 0) + 1;
+const gid = `colonia-mark-${g.__coloniaMarkId}`;
 const codex = ENGINE_MARKS.codex;
 const gemini = ENGINE_MARKS.gemini;
 ---

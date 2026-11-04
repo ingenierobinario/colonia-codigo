@@ -8,11 +8,13 @@ import { sitePath } from "./src/doc-routes.mjs";
 
 // Where the site is published. Pages write absolute links ("/concepts/agents/"); withBase() below puts this prefix in
 // front of them, so moving the site (e.g. under /apx/docs/) only changes these two values.
-const site = process.env.DOCS_SITE ?? "https://apxagent.app";
+const site = process.env.DOCS_SITE ?? "https://colonia.ingenierobinario.com";
+// Web publicada: portada y /empezar/. COLONIA_DOCS=1 (y quitar el _ de src/pages/_[...legacy].astro y _llms.txt.ts) devuelve la documentación.
+const fullDocs = process.env.COLONIA_DOCS === "1";
 const base = (process.env.DOCS_BASE ?? "/").replace(/\/?$/, "/");
 /** What a link to any page shows when it is shared (public/og.jpg, 1200×630, drawn by scripts/og-image.ts). */
 const ogImage = new URL(`${base}og.jpg`, site).href;
-const ogImageAlt = "Your own team of AI agents, on your machine.";
+const ogImageAlt = "Your own team of AI agents, on your computer.";
 
 /** A remark plugin: absolute links in Markdown and `href`s on components (LinkCard…) get the site's base. */
 function withBase() {
@@ -33,7 +35,7 @@ function withBase() {
 function installScripts() {
   const from = new URL("../../scripts/install/", import.meta.url);
   return {
-    name: "apx-install-scripts",
+    name: "colonia-install-scripts",
     hooks: {
       /** @param {{ dir: URL }} options */
       "astro:build:done": async ({ dir }) => {
@@ -58,17 +60,17 @@ export default defineConfig({
   markdown: { remarkPlugins: [withBase] },
   integrations: [
     sitemap({
-      i18n: { defaultLocale: "en", locales: { en: "en", es: "es" } },
       filter: (page) => {
         const path = new URL(page).pathname.slice(base.length - 1);
-        return sitePath(path) === path && !["/docs/", "/es/docs/"].includes(path);
+        if (path === "/empezar/") return false;
+        return fullDocs ? sitePath(path) === path && !["/docs/", "/es/docs/"].includes(path) : true;
       },
     }),
-    installScripts(),
-    starlight({
-      title: "APX",
-      description: "APX: your own team of AI agents, on your machine.",
-      logo: { src: "./src/assets/logo.png", alt: "APX" },
+    ...(fullDocs ? [installScripts()] : []),
+    ...(!fullDocs ? [] : [starlight({
+      title: "Colonia",
+      description: "Colonia: your own team of AI agents, on your computer.",
+      logo: { src: "./src/assets/logo.png", alt: "Colonia" },
       favicon: "/favicon.svg",
       customCss: ["./src/styles/theme.css"],
       head: [
@@ -87,10 +89,6 @@ export default defineConfig({
             href: "https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400;500;600&display=swap",
           },
         },
-      ],
-      social: [
-        { icon: "github", label: "GitHub", href: "https://github.com/agentprojectcontext/apx" },
-        { icon: "discord", label: "Discord", href: "https://discord.gg/vxdZuT5WuE" },
       ],
       defaultLocale: "root",
       locales: {
@@ -122,15 +120,15 @@ export default defineConfig({
         },
         {
           label: "Computers and browser",
-          translations: { es: "Computadoras y navegador" },
+          translations: { es: "Ordenadores y navegador" },
           collapsed: false,
           items: ["docs/computers/overview", "docs/office/computers", "docs/office/browser"],
         },
         section("Channels", "Canales", "channels"),
         section("Extend", "Extender", "extend"),
-        section("Everywhere", "En todos lados", "devices"),
+        section("Everywhere", "En todas partes", "devices"),
         section("Reference", "Referencia", "reference"),
       ],
-    }),
+    })]),
   ],
 });

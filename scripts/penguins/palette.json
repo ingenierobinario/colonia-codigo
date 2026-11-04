@@ -1,0 +1,142 @@
+{
+  "menta": {
+    "label": "Menta",
+    "color": "#07BB9C"
+  },
+  "parche": {
+    "label": "Parche",
+    "color": "#EE8912"
+  },
+  "trino": {
+    "label": "Trino",
+    "color": "#632CEE"
+  },
+  "cubi": {
+    "label": "Cubi",
+    "color": "#752AF1"
+  },
+  "nimbo": {
+    "label": "Nimbo",
+    "color": "#1064EB"
+  },
+  "papa": {
+    "label": "Papa",
+    "color": "#F16412"
+  },
+  "noche": {
+    "label": "Noche",
+    "color": "#191921"
+  },
+  "kiwi": {
+    "label": "Kiwi",
+    "color": "#0CC8A3"
+  },
+  "gajo": {
+    "label": "Gajo",
+    "color": "#E77414"
+  },
+  "campana": {
+    "label": "Campana",
+    "color": "#8238D6"
+  },
+  "cobalto": {
+    "label": "Cobalto",
+    "color": "#0E74E4"
+  },
+  "rubi": {
+    "label": "Rubí",
+    "color": "#DC4C42"
+  },
+  "trebol": {
+    "label": "Trébol",
+    "color": "#0DD2A6"
+  },
+  "saturno": {
+    "label": "Saturno",
+    "color": "#6A2FBB"
+  },
+  "onyx": {
+    "label": "Onyx",
+    "color": "#333437"
+  },
+  "perla": {
+    "label": "Perla",
+    "color": "#73B8A5"
+  },
+  "faro": {
+    "label": "Faro",
+    "color": "#6A29BD"
+  },
+  "brasa": {
+    "label": "Brasa",
+    "color": "#DD6D1A"
+  },
+  "aqua": {
+    "label": "Aqua",
+    "color": "#12B2BD"
+  },
+  "coral": {
+    "label": "Coral",
+    "color": "#DE4437"
+  },
+  "zafiro": {
+    "label": "Zafiro",
+    "color": "#136BD2"
+  },
+  "pino": {
+    "label": "Pino",
+    "color": "#30B782"
+  },
+  "eclipse": {
+    "label": "Eclipse",
+    "color": "#3E2A42"
+  },
+  "peon": {
+    "label": "Peón",
+    "color": "#0C6AD8"
+  },
+  "ovni": {
+    "label": "Ovni",
+    "color": "#CE7427"
+  },
+  "amatista": {
+    "label": "Amatista",
+    "color": "#6E24D2"
+  },
+  "volcan": {
+    "label": "Volcán",
+    "color": "#DE4436"
+  },
+  "quad": {
+    "label": "Quad",
+    "color": "#26D498"
+  },
+  "cometa": {
+    "label": "Cometa",
+    "color": "#D79B6F"
+  },
+  "lila": {
+    "label": "Lila",
+    "color": "#682AB4"
+  },
+  "orbita": {
+    "label": "Órbita",
+    "color": "#2D4341"
+  },
+  "caracol": {
+    "label": "Caracol",
+    "color": "#1165CE"
+  },
+  "iris": {
+    "label": "Iris",
+    "color": "#7228D3"
+  },
+  "laguna": {
+    "label": "Laguna",
+    "color": "#16A3AA"
+  },
+  "carbon": {
+    "label": "Carbón",
+    "color": "#513928"
+  }
+}

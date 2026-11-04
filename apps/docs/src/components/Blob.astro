@@ -23,7 +23,7 @@ const cy = e0 ? (e0.y + e0.h / 2) / 256 : 0.5;
 ---
 
 <span
-  class:list={["apx-blob", cls, { bob }]}
+  class:list={["colonia-blob", cls, { bob }]}
   style={`width:${dim};height:${dim};${style}`}
   data-cx={cx.toFixed(3)}
   data-cy={cy.toFixed(3)}
@@ -42,35 +42,35 @@ const cy = e0 ? (e0.y + e0.h / 2) / 256 : 0.5;
 </span>
 
 <style>
-  .apx-blob {
+  .colonia-blob {
     position: relative;
     display: inline-block;
     flex-shrink: 0;
     vertical-align: middle;
   }
-  .apx-blob img {
+  .colonia-blob img {
     width: 100%;
     height: 100%;
     margin: 0;
     pointer-events: none;
     user-select: none;
   }
-  .apx-blob svg {
+  .colonia-blob svg {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     overflow: visible;
   }
-  .apx-blob :global(.eye) {
+  .colonia-blob :global(.eye) {
     transform-box: fill-box;
     transform-origin: center;
     transition: transform 0.09s;
   }
   .bob {
-    animation: apx-bob 3.6s ease-in-out infinite;
+    animation: colonia-bob 3.6s ease-in-out infinite;
   }
-  @keyframes apx-bob {
+  @keyframes colonia-bob {
     0%,
     100% {
       transform: translateY(0) rotate(0);

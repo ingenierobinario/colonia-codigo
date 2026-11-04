@@ -1,0 +1,86 @@
+---
+// Destino tras el pago: no se enlaza desde el menú y lleva noindex.
+import { WINDOWS_INSTALLER_URL } from "../config/site";
+import Blob from "../components/Blob.astro";
+import OsIcon from "../components/OsIcon.astro";
+import PageMeta from "../components/web/PageMeta.astro";
+import WebFooter from "../components/web/WebFooter.astro";
+import WebHeader from "../components/web/WebHeader.astro";
+import "../components/home/home.css";
+---
+
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <PageMeta lang="es" title="Empieza con Colonia" description="Descarga Colonia para Windows, conecta tu IA y crea tu primer pingüino." path="/empezar/" esPath="/empezar/" enPath="/empezar/" imageAlt="Colonia" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400;500;600&display=swap"
+    />
+  </head>
+  <body class="h home home--sub">
+    <WebHeader lang="es" />
+    <main id="main">
+      <section class="sec onb">
+        <div class="wrap onb__wrap">
+          <Blob name="menta" size={64} />
+          <h1 class="h2">Te damos la bienvenida a Colonia.</h1>
+          <p class="lead">Son unos minutos y no hace falta saber programar. Sigue estos pasos en orden.</p>
+
+          <ol class="onb__steps">
+            <li class="onb__card">
+              <h2><span class="onb__n">1</span> Descarga Colonia para Windows</h2>
+              {WINDOWS_INSTALLER_URL ? (
+                <a class="btn btn-light onb__dl" href={WINDOWS_INSTALLER_URL}><OsIcon name="windows" size={18} /> Descargar para Windows</a>
+              ) : (
+                <p class="onb__pending"><OsIcon name="windows" size={18} /> <span><b>La descarga todavía no está disponible.</b> Estamos publicando el instalador; este botón aparecerá aquí en cuanto esté listo.</span></p>
+              )}
+            </li>
+            <li class="onb__card">
+              <h2><span class="onb__n">2</span> Instálala y acepta el aviso de Windows</h2>
+              <p>Abre el archivo que has descargado. El instalador todavía no está firmado, así que Windows te enseñará un aviso azul que dice que ha protegido tu PC. Es normal en un instalador sin firmar:</p>
+              <ol>
+                <li>Pulsa <b>Más información</b>.</li>
+                <li>Pulsa <b>Ejecutar de todas formas</b>.</li>
+              </ol>
+              <p>La primera vez, Colonia te pregunta dónde funciona: elige que funcione <b>en este ordenador</b> y que se use sólo desde él, que es lo más seguro.</p>
+            </li>
+            <li class="onb__card">
+              <h2><span class="onb__n">3</span> Conecta tu IA</h2>
+              <p>Colonia no incluye la IA: conectas la tuya y lo que cueste lo pagas directamente a tu proveedor. Se hace en el asistente de la primera vez, en el paso <b>Motores</b>.</p>
+              <ul>
+                <li><b>Si pagas ChatGPT:</b> inicia sesión con tu cuenta. Antes, en ChatGPT, ve a Settings › Security y activa «Device code authorization for Codex».</li>
+                <li><b>Si tienes una clave</b> de Gemini, Anthropic, OpenAI u otro proveedor: pégala con el botón de añadir clave.</li>
+                <li><b>Si usas Claude:</b> la suscripción sólo vale dentro de Claude Code; aquí necesitas una clave de Anthropic, que se paga aparte.</li>
+              </ul>
+            </li>
+            <li class="onb__card">
+              <h2><span class="onb__n">4</span> Crea tu primer pingüino</h2>
+              <p>El asistente te presenta a Home, tu secretaria: ponle nombre y elige su cara. Al terminar, escríbele como a una persona, por ejemplo: «Recuérdame llamar a mi gestor el viernes a las 10».</p>
+              <p>Para sumar otro pingüino a un proyecto, pulsa <b>Nuevo proyecto</b> en la barra lateral, elige una carpeta y, en la pestaña <b>Agentes</b>, crea uno con el papel que quieras.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+    </main>
+    <WebFooter lang="es" />
+  </body>
+</html>
+
+<style is:global>
+  .onb__wrap { max-width: 760px; padding-bottom: 64px; }
+  .onb__steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 16px; }
+  .onb__card { padding: 24px; border: 1px solid rgba(128, 128, 128, 0.25); border-radius: 16px; }
+  .onb__card h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font-size: 1.2rem; }
+  .onb__card p, .onb__card ul, .onb__card ol { margin: 0 0 10px; line-height: 1.55; }
+  .onb__card ul, .onb__card ol { padding-left: 20px; }
+  .onb__n { flex: none; display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid currentColor; font-size: 0.9rem; }
+  .onb__dl { display: inline-flex; align-items: center; gap: 8px; }
+  .onb__pending { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; background: rgba(128, 128, 128, 0.12); }
+  .onb__pending svg { flex: none; }
+</style>

@@ -153,7 +153,7 @@ export function startHorizon(canvas: HTMLCanvasElement, card: Card): boolean {
     const mode = document.documentElement.dataset.theme ?? "";
     if (mode !== theme) {
       theme = mode;
-      colors = ["var(--apx-brand)", "var(--apx-info)", "var(--apx-violet)"].map(probe);
+      colors = ["var(--colonia-brand)", "var(--colonia-info)", "var(--colonia-violet)"].map(probe);
     }
     const dpr = light ? 1 : Math.min(1.5, devicePixelRatio || 1);
     const w = Math.round(canvas.clientWidth * dpr);

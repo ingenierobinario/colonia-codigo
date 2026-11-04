@@ -28,7 +28,7 @@ const {
   alt,
   caption,
   frame = "window",
-  title = "APX",
+  title = "Colonia",
   split = false,
   labels = ["Light", "Dark"],
   eager = false,
@@ -40,21 +40,21 @@ const sizes = frame === "phone" ? "(max-width: 600px) 80vw, 340px" : "(max-width
 const loading = eager ? "eager" : "lazy";
 ---
 
-<figure class:list={["apx-shot", `apx-shot--${frame}`, { "apx-shot--split": split && dark, "has-dark": dark }]}>
-  <div class="apx-shot__frame">
+<figure class:list={["colonia-shot", `colonia-shot--${frame}`, { "colonia-shot--split": split && dark, "has-dark": dark }]}>
+  <div class="colonia-shot__frame">
     {
       frame === "window" && (
-        <div class="apx-shot__bar" aria-hidden="true">
+        <div class="colonia-shot__bar" aria-hidden="true">
           <span class="dot r" />
           <span class="dot y" />
           <span class="dot g" />
-          <span class="apx-shot__title">{title}</span>
+          <span class="colonia-shot__title">{title}</span>
         </div>
       )
     }
     {
       light ? (
-        <div class="apx-shot__img">
+        <div class="colonia-shot__img">
           <Image class="is-light" src={light} alt={alt} widths={widths} sizes={sizes} quality={86} loading={loading} />
           {dark && (
             <Image
@@ -69,16 +69,16 @@ const loading = eager ? "eager" : "lazy";
           )}
           {split && dark && (
             <>
-              <svg class="apx-shot__cut" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <svg class="colonia-shot__cut" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 <line x1="62" y1="0" x2="38" y2="100" />
               </svg>
-              <span class="apx-shot__tag apx-shot__tag--l">{labels[0]}</span>
-              <span class="apx-shot__tag apx-shot__tag--d">{labels[1]}</span>
+              <span class="colonia-shot__tag colonia-shot__tag--l">{labels[0]}</span>
+              <span class="colonia-shot__tag colonia-shot__tag--d">{labels[1]}</span>
             </>
           )}
         </div>
       ) : (
-        <div class="apx-shot__missing">
+        <div class="colonia-shot__missing">
           <span>Screenshot</span>
           <code>{name}</code>
         </div>
@@ -89,27 +89,27 @@ const loading = eager ? "eager" : "lazy";
 </figure>
 
 <style>
-  .apx-shot {
+  .colonia-shot {
     --bar: #eceef1;
     --bar-line: #dfe2e6;
     --bar-text: #6b7280;
     margin: 2rem 0;
   }
-  :global(:root[data-theme="dark"]) .apx-shot.has-dark:not(.apx-shot--split) {
+  :global(:root[data-theme="dark"]) .colonia-shot.has-dark:not(.colonia-shot--split) {
     --bar: #1a1c1f;
     --bar-line: #26292d;
     --bar-text: #8b939b;
   }
-  .apx-shot__frame {
+  .colonia-shot__frame {
     border-radius: 14px;
     overflow: hidden;
-    border: 1px solid var(--apx-line-2);
+    border: 1px solid var(--colonia-line-2);
     background: var(--bar);
     box-shadow:
-      0 30px 70px -30px var(--apx-shadow),
-      0 0 0 6px var(--apx-ring);
+      0 30px 70px -30px var(--colonia-shadow),
+      0 0 0 6px var(--colonia-ring);
   }
-  .apx-shot__bar {
+  .colonia-shot__bar {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -118,7 +118,7 @@ const loading = eager ? "eager" : "lazy";
     background: var(--bar);
     border-bottom: 1px solid var(--bar-line);
   }
-  .apx-shot--split .apx-shot__bar {
+  .colonia-shot--split .colonia-shot__bar {
     background: linear-gradient(105deg, #eceef1 0 52%, #1a1c1f 52% 100%);
     border-bottom-color: transparent;
   }
@@ -136,52 +136,52 @@ const loading = eager ? "eager" : "lazy";
   .dot.g {
     background: #28c840;
   }
-  .apx-shot__title {
+  .colonia-shot__title {
     margin-left: 10px;
     font: 500 12px/1 var(--sl-font-mono);
     color: var(--bar-text);
   }
-  .apx-shot__img {
+  .colonia-shot__img {
     position: relative;
   }
-  .apx-shot :global(img) {
+  .colonia-shot :global(img) {
     display: block;
     width: 100%;
     height: auto;
     margin: 0;
   }
   /* One capture, in the reader's theme. */
-  .apx-shot.has-dark:not(.apx-shot--split) :global(.is-dark) {
+  .colonia-shot.has-dark:not(.colonia-shot--split) :global(.is-dark) {
     display: none;
   }
-  :global(:root[data-theme="dark"]) .apx-shot.has-dark:not(.apx-shot--split) :global(.is-dark) {
+  :global(:root[data-theme="dark"]) .colonia-shot.has-dark:not(.colonia-shot--split) :global(.is-dark) {
     display: block;
   }
-  :global(:root[data-theme="dark"]) .apx-shot.has-dark:not(.apx-shot--split) :global(.is-light) {
+  :global(:root[data-theme="dark"]) .colonia-shot.has-dark:not(.colonia-shot--split) :global(.is-light) {
     display: none;
   }
   /* Both, cut on a diagonal: dark on the right. */
-  .apx-shot--split :global(.is-dark) {
+  .colonia-shot--split :global(.is-dark) {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     clip-path: polygon(62% 0, 100% 0, 100% 100%, 38% 100%);
   }
-  .apx-shot__cut {
+  .colonia-shot__cut {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
   }
-  .apx-shot__cut line {
+  .colonia-shot__cut line {
     stroke: #3fb950;
     stroke-width: 2px;
     vector-effect: non-scaling-stroke;
     filter: drop-shadow(0 0 6px rgba(63, 185, 80, 0.8));
   }
-  .apx-shot__tag {
+  .colonia-shot__tag {
     position: absolute;
     bottom: 14px;
     padding: 5px 11px;
@@ -190,29 +190,29 @@ const loading = eager ? "eager" : "lazy";
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
-  .apx-shot__tag--l {
+  .colonia-shot__tag--l {
     left: 14px;
     background: #0b0d0f;
     color: #fff;
   }
-  .apx-shot__tag--d {
+  .colonia-shot__tag--d {
     right: 14px;
     background: #fff;
     color: #0b0d0f;
   }
-  .apx-shot--phone .apx-shot__frame {
+  .colonia-shot--phone .colonia-shot__frame {
     max-width: 340px;
     margin: 0 auto;
     border-radius: 44px;
     border: 10px solid #121417;
     box-shadow:
       0 0 0 1px #2a2f35,
-      0 40px 80px -30px var(--apx-shadow);
+      0 40px 80px -30px var(--colonia-shadow);
   }
-  .apx-shot--none .apx-shot__frame {
-    box-shadow: 0 20px 50px -30px var(--apx-shadow);
+  .colonia-shot--none .colonia-shot__frame {
+    box-shadow: 0 20px 50px -30px var(--colonia-shadow);
   }
-  .apx-shot__missing {
+  .colonia-shot__missing {
     display: grid;
     place-items: center;
     gap: 0.4rem;

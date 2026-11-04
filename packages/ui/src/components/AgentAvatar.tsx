@@ -22,7 +22,7 @@ export interface AgentAvatarProps {
 }
 
 /**
- * The one avatar for agents — APX's silicone blobs with SVG eyes that look around and blink,
+ * The one avatar for agents — the colony's penguins with SVG eyes that look around and blink,
  * each agent desynced by a name-derived delay. Unknown blob → initials Avatar.
  */
 export function AgentAvatar({

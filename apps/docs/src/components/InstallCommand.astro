@@ -1,6 +1,7 @@
 ---
 // The one-line install, with a switch between macOS/Linux (curl) and Windows (PowerShell). It opens on the
 // reader's system, and every copy on the page follows the same choice.
+import { INSTALL_BASE_URL } from "../config/site";
 import OsIcon from "./OsIcon.astro";
 import Terminal from "./Terminal.astro";
 
@@ -9,20 +10,20 @@ interface Props {
   labels?: [string, string];
 }
 const { labels = ["macOS and Linux", "Windows"] } = Astro.props;
-const site = "https://apxagent.app";
+const site = INSTALL_BASE_URL;
 ---
 
-<div class="apx-oscmd not-content" data-os="unix">
-  <div class="apx-oscmd__tabs" role="group">
+<div class="colonia-oscmd not-content" data-os="unix">
+  <div class="colonia-oscmd__tabs" role="group">
     <button type="button" data-pick="unix" aria-pressed="true"><OsIcon name="mac" /><OsIcon name="linux" />{labels[0]}</button>
     <button type="button" data-pick="win" aria-pressed="false"><OsIcon name="windows" />{labels[1]}</button>
   </div>
-  <div class="apx-oscmd__pane" data-pane="unix"><Terminal command={`curl -fsSL ${site}/install.sh | bash`} /></div>
-  <div class="apx-oscmd__pane" data-pane="win"><Terminal command={`irm ${site}/install.ps1 | iex`} title="PowerShell" /></div>
+  <div class="colonia-oscmd__pane" data-pane="unix"><Terminal command={`curl -fsSL ${site}/install.sh | bash`} /></div>
+  <div class="colonia-oscmd__pane" data-pane="win"><Terminal command={`irm ${site}/install.ps1 | iex`} title="PowerShell" /></div>
 </div>
 
 <script>
-  const all = () => document.querySelectorAll<HTMLElement>(".apx-oscmd");
+  const all = () => document.querySelectorAll<HTMLElement>(".colonia-oscmd");
   const pick = (os: string) => {
     for (const box of all()) {
       box.dataset.os = os;
@@ -39,15 +40,15 @@ const site = "https://apxagent.app";
 </script>
 
 <style>
-  .apx-oscmd {
+  .colonia-oscmd {
     margin: 1.5rem 0;
   }
-  .apx-oscmd__tabs {
+  .colonia-oscmd__tabs {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
-  .apx-oscmd__tabs button {
+  .colonia-oscmd__tabs button {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -60,18 +61,18 @@ const site = "https://apxagent.app";
     font: 500 13px/1 var(--sl-font);
     cursor: pointer;
   }
-  .apx-oscmd__tabs button:hover {
+  .colonia-oscmd__tabs button:hover {
     color: var(--sl-color-white);
   }
-  .apx-oscmd__tabs button[aria-pressed="true"] {
+  .colonia-oscmd__tabs button[aria-pressed="true"] {
     color: var(--sl-color-white);
     border-color: var(--sl-color-gray-5);
   }
-  .apx-oscmd__pane :global(.apx-term) {
+  .colonia-oscmd__pane :global(.colonia-term) {
     margin-top: 0.6rem;
   }
-  .apx-oscmd[data-os="unix"] [data-pane="win"],
-  .apx-oscmd[data-os="win"] [data-pane="unix"] {
+  .colonia-oscmd[data-os="unix"] [data-pane="win"],
+  .colonia-oscmd[data-os="win"] [data-pane="unix"] {
     display: none;
   }
 </style>

@@ -1,23 +1,5 @@
-// Keep the public route contract independent of the build and the comparison catalog.
-export const publicMarketingRoutes = ["", "es/"].flatMap((locale) =>
-  [
-    "",
-    "compare/",
-    "compare/best-ai-agent-apps/",
-    "compare/chatgpt-dots/",
-    "compare/claude-cowork/",
-    "compare/devin/",
-    "compare/grok-bot/",
-    "compare/hermes-agent/",
-    "compare/instinct/",
-    "compare/manus/",
-    "compare/muse/",
-    "compare/openbot/",
-    "compare/openclaw/",
-    "compare/paperclip/",
-    "compare/viktor/",
-  ].map((route) => `/${locale}${route}`),
-);
+// Las páginas públicas fuera de la documentación: la portada en español y en inglés.
+export const publicMarketingRoutes = ["/", "/en/"];
 
 /** Compare sitemap addresses with the indexable HTML routes produced by the same build. */
 export function sitemapErrors(pages, urls, site, base = "/", requiredRoutes = []) {

@@ -76,13 +76,14 @@ test("explicit language switches and alternates declare the destination language
   const pages = new Map([
     [
       "/es/",
-      '<link rel="alternate" hreflang="en" href="/apx/"><a href="/apx/" hreflang="en">English</a><a hreflang="es" href="/apx/es/">Español</a>',
+      '<link rel="alternate" hreflang="en" href="/apx/en/"><a href="/apx/en/" hreflang="en">English</a><a hreflang="es" href="/apx/">Español</a>',
     ],
-    ["/", '<a href="/apx/es/" hreflang="es">Español</a>'],
+    ["/en/", '<a href="/apx/" hreflang="es">Español</a>'],
+    ["/", '<a href="/apx/en/" hreflang="en">English</a>'],
   ]);
   assert.deepEqual(linkErrors(pages), []);
-  pages.set("/es/", '<a href="/apx/" hreflang="es">Wrong language</a>');
-  assert.deepEqual(linkErrors(pages), ["/es/: link changes language: /apx/"]);
+  pages.set("/es/", '<a href="/apx/en/" hreflang="es">Wrong language</a>');
+  assert.deepEqual(linkErrors(pages), ["/es/: link changes language: /apx/en/"]);
 });
 
 test("external links and downloads are not reported as missing pages", () => {

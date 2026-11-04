@@ -1,4 +1,4 @@
-/* APX docs theme: the site's look (Geist, near-black, green) on Starlight, in dark and light. */
+/* Colonia docs theme: the site's look (Geist, near-black, green) on Starlight, in dark and light. */
 
 :root {
   --sl-font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -27,12 +27,12 @@
   --sl-color-hairline: rgba(255, 255, 255, 0.08);
   --sl-color-hairline-shade: rgba(255, 255, 255, 0.12);
 
-  --apx-line: rgba(255, 255, 255, 0.08);
-  --apx-line-2: rgba(255, 255, 255, 0.14);
-  --apx-card: #111315;
-  --apx-ring: rgba(255, 255, 255, 0.03);
-  --apx-shadow: rgba(0, 0, 0, 0.75);
-  --apx-glow: rgba(63, 185, 80, 0.14);
+  --colonia-line: rgba(255, 255, 255, 0.08);
+  --colonia-line-2: rgba(255, 255, 255, 0.14);
+  --colonia-card: #111315;
+  --colonia-ring: rgba(255, 255, 255, 0.03);
+  --colonia-shadow: rgba(0, 0, 0, 0.75);
+  --colonia-glow: rgba(63, 185, 80, 0.14);
 }
 
 :root[data-theme="light"] {
@@ -55,12 +55,12 @@
   --sl-color-hairline: rgba(0, 0, 0, 0.08);
   --sl-color-hairline-shade: rgba(0, 0, 0, 0.12);
 
-  --apx-line: rgba(0, 0, 0, 0.08);
-  --apx-line-2: rgba(0, 0, 0, 0.12);
-  --apx-card: #f7f8f9;
-  --apx-ring: rgba(0, 0, 0, 0.025);
-  --apx-shadow: rgba(15, 23, 42, 0.28);
-  --apx-glow: rgba(63, 185, 80, 0.12);
+  --colonia-line: rgba(0, 0, 0, 0.08);
+  --colonia-line-2: rgba(0, 0, 0, 0.12);
+  --colonia-card: #f7f8f9;
+  --colonia-ring: rgba(0, 0, 0, 0.025);
+  --colonia-shadow: rgba(15, 23, 42, 0.28);
+  --colonia-glow: rgba(63, 185, 80, 0.12);
 }
 
 body {
@@ -72,7 +72,7 @@ body {
 .page > header.header {
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border-bottom: 1px solid var(--apx-line);
+  border-bottom: 1px solid var(--colonia-line);
 }
 /* The wordmark in the text colour, like the site's; only the logo is green. */
 .site-title {
@@ -127,7 +127,7 @@ h1#_top {
   border-radius: 6px;
   padding: 0.1em 0.38em;
   background: var(--sl-color-gray-6);
-  border: 1px solid var(--apx-line);
+  border: 1px solid var(--colonia-line);
 }
 .expressive-code .frame {
   --ec-brdRad: 12px;
@@ -137,8 +137,8 @@ h1#_top {
 .sl-markdown-content .card,
 .sl-link-card {
   border-radius: 16px;
-  border-color: var(--apx-line);
-  background: var(--apx-card);
+  border-color: var(--colonia-line);
+  background: var(--colonia-card);
   transition:
     border-color 0.2s,
     transform 0.2s;
@@ -161,7 +161,7 @@ h1#_top {
 }
 
 /* Page hero blob next to the title (BlobTitle). */
-.apx-page-blob {
+.colonia-page-blob {
   float: right;
   margin: -0.4rem 0 0.6rem 1rem;
 }

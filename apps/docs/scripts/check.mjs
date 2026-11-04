@@ -50,11 +50,12 @@ export function linkErrors(pages, base = "/apx") {
         if (!path.posix.extname(target)) errors.push(`${route}: missing route: ${href}`);
         continue;
       }
-      const spanish = (value) => value === "/es" || value.startsWith("/es/");
+      // La portada española vive en la raíz; el logo de la documentación inglesa apunta allí sin ser un cambio de idioma.
+      const spanish = (value) => value === "/" || /^\/(que-puedes-hacer|novedades|tres-pasos|mapa|terminal|preguntas|comparar|descargar)\//.test(value) || value === "/es" || value.startsWith("/es/");
       const targetLanguage = spanish(target) ? "es" : "en";
       const declaredLanguage = tag[0].match(/\bhreflang="([^"]+)"/)?.[1];
       // Explicit language selectors and alternate links may cross locales; ordinary navigation may not.
-      if (spanish(route) !== spanish(target) && declaredLanguage !== targetLanguage) {
+      if (target !== "/" && spanish(route) !== spanish(target) && declaredLanguage !== targetLanguage) {
         errors.push(`${route}: link changes language: ${href}`);
       }
       if (url.hash) {

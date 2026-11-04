@@ -116,7 +116,7 @@ test("copy success waits for the write and never includes command content", asyn
   assert.deepEqual(fixture.events, []);
   finish();
   assert.equal(await copying, true);
-  assert.equal(fixture.events[0].type, "apx:install-copied");
+  assert.equal(fixture.events[0].type, "colonia:install-copied");
   assert.equal(fixture.events[0].bubbles, true);
   assert.ok(!JSON.stringify(fixture.events).includes("synthetic private command"));
 });

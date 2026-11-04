@@ -1,0 +1,48 @@
+---
+title: Conectar la IA
+description: Colonia funciona con tu propia IA. Qué opciones tienes, cuál elegir y cómo conectarla.
+sidebar:
+  order: 3
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Colonia no incluye la inteligencia artificial: sin una IA conectada, los agentes no pueden trabajar. Conectas la tuya y lo
+que cueste lo pagas directamente a tu proveedor, no a Colonia.
+
+## Qué opciones tienes
+
+| Opción | Qué es | Qué necesitas |
+| --- | --- | --- |
+| Plan de ChatGPT | Usas la suscripción que ya pagas | Iniciar sesión con tu cuenta |
+| Clave de un proveedor | Pagas según lo que uses | Una clave de Gemini, Anthropic, OpenAI, OpenRouter, Groq, Cerebras, DeepSeek, Mistral u OpenCode Zen |
+| Modelo en tu ordenador | La IA funciona en tu máquina, con Ollama o LM Studio | Instalarlo; no pide clave, y necesita un ordenador potente |
+
+## Cuál elegir
+
+Si ya pagas ChatGPT, empieza por ahí: es lo más sencillo. Si no, una clave de un proveedor te permite pagar sólo lo que
+gastas. Los modelos en tu ordenador son para quien quiere que nada salga de su máquina y dispone de un equipo con potencia.
+
+<Aside type="caution" title="Si usas Claude">
+La suscripción de Claude sólo vale dentro de Claude Code. Para que los agentes de Colonia usen Claude directamente
+necesitas una clave de Anthropic, que se paga aparte de la suscripción.
+</Aside>
+
+## Cómo conectarla
+
+Se hace en el asistente de la primera vez, en el paso **Motores**, o después en **Config › Motores y modelos**.
+
+- **Plan de ChatGPT**: pulsa iniciar sesión y sigue las instrucciones. Antes activa **Device code authorization for Codex**
+  en ChatGPT, en Settings › Security.
+- **Clave de un proveedor**: consíguela en la web de tu proveedor, pulsa el botón para añadir una clave y pégala.
+- **Modelo en tu ordenador**: instala Ollama o LM Studio; aparecerá como motor sin pedirte clave.
+
+## Qué modelo se usa
+
+Puedes conectar más de uno y ordenarlos con las flechas en la **Cadena de modelos**: el primero es el que se usa y, si
+falla, entra el siguiente. También puedes cambiar de modelo en un chat concreto. Más en [Modelos](/es/concepts/models/).
+
+## Cuidado con el gasto
+
+Con una clave, cada mensaje gasta según lo que use el modelo, y las rutinas y los agentes también gastan cuando trabajan
+solos. Si tu proveedor lo permite, fija allí un límite de gasto antes de dar más autonomía a los agentes.

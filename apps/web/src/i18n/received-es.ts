@@ -2,7 +2,7 @@ import type { ReceivedKey } from "./received-en.ts";
 
 export const esReceived: Record<ReceivedKey, string> = {
   "received.title": "Lo que recibió",
-  "received.description": "Lo que se le mandó al modelo en la primera llamada de este turno, tal cual.",
+  "received.description": "Lo que se le envió al modelo en la primera llamada de este turno, tal cual.",
   "received.system": "Prompt de sistema",
   "received.input": "Entrada del turno",
   "received.tools": "Herramientas ({n})",
@@ -12,7 +12,7 @@ export const esReceived: Record<ReceivedKey, string> = {
   "received.part.profile": "Perfil",
   "received.part.personality": "Personalidad",
   "received.part.instructions": "Sus instrucciones",
-  "received.part.owner": "Sobre vos",
+  "received.part.owner": "Sobre ti",
   "received.part.agentsMd": "AGENTS.md del proyecto",
   "received.part.org": "Áreas y roles",
   "received.part.projectMemory": "Notas del proyecto",

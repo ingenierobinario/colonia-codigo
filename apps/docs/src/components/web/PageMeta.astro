@@ -1,5 +1,5 @@
 ---
-// What search engines and link previews read on the website's own pages (home, compare, roundup): the title, a
+// What search engines and link previews read on the website's own pages (the home): the title, a
 // description short enough to show whole, the page's address in both languages, the preview image and structured data.
 import { sitePath } from "../../doc-routes.mjs";
 
@@ -7,7 +7,7 @@ interface Props {
   lang: "en" | "es";
   title: string;
   description: string;
-  /** The page's path in English ("/", "/compare/openclaw/"); the Spanish one is the same under /es. */
+  /** La portada: español en la raíz, inglés bajo /en. */
   path: string;
   type?: "website" | "article";
   imageAlt: string;
@@ -16,11 +16,12 @@ interface Props {
 }
 const { lang, title, description, path, type = "website", imageAlt, schema = [] } = Astro.props;
 const abs = (p: string) => new URL(sitePath(p, import.meta.env.BASE_URL), Astro.site).href;
-const en = abs(path);
-const es = abs(`/es${path}`);
+const { esPath, enPath } = Astro.props as { esPath?: string; enPath?: string };
+const es = abs(esPath ?? path);
+const en = abs(enPath ?? `/en${path}`);
 const canonical = lang === "es" ? es : en;
 const image = abs(lang === "es" ? "/og-es.jpg" : "/og.jpg");
-const locale = { en: "en_US", es: "es_AR" };
+const locale = { en: "en_US", es: "es_ES" };
 
 /** Whole sentences up to what Google shows (~160 characters); a first sentence longer than that is cut at a word. */
 function snippet(text: string, max = 160) {
@@ -41,10 +42,10 @@ const summary = snippet(description);
 <link rel="canonical" href={canonical} />
 <link rel="alternate" hreflang="en" href={en} />
 <link rel="alternate" hreflang="es" href={es} />
-<link rel="alternate" hreflang="x-default" href={en} />
+<link rel="alternate" hreflang="x-default" href={es} />
 <link rel="icon" href={sitePath("/favicon.svg", import.meta.env.BASE_URL)} type="image/svg+xml" />
 <link rel="apple-touch-icon" href={sitePath("/apple-touch-icon.png", import.meta.env.BASE_URL)} />
-<meta property="og:site_name" content="APX" />
+<meta property="og:site_name" content="Colonia" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={summary} />
 <meta property="og:type" content={type} />

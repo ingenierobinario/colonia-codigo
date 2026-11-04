@@ -1,0 +1,48 @@
+---
+title: Connect the AI
+description: Colonia runs on your own AI. What your options are, which to choose and how to connect it.
+sidebar:
+  order: 3
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Colonia does not include the artificial intelligence: without an AI connected, the agents cannot work. You connect yours
+and pay your provider directly, not Colonia.
+
+## What your options are
+
+| Option | What it is | What you need |
+| --- | --- | --- |
+| ChatGPT plan | You use the subscription you already pay for | To sign in with your account |
+| A provider's key | You pay for what you use | A key from Gemini, Anthropic, OpenAI, OpenRouter, Groq, Cerebras, DeepSeek, Mistral or OpenCode Zen |
+| Model on your computer | The AI runs on your machine, with Ollama or LM Studio | To install it; no key, and it needs a powerful computer |
+
+## Which to choose
+
+If you already pay for ChatGPT, start there: it is the simplest. If not, a provider's key lets you pay only for what you
+spend. Models on your computer are for people who want nothing to leave their machine and have a powerful computer.
+
+<Aside type="caution" title="If you use Claude">
+The Claude subscription only works inside Claude Code. For Colonia's agents to use Claude directly you need an Anthropic
+key, paid separately from the subscription.
+</Aside>
+
+## How to connect it
+
+You do it in the first-run wizard, on the **Engines** step, or later in **Config › Engines and models**.
+
+- **ChatGPT plan**: click sign in and follow the instructions. First turn on **Device code authorization for Codex** in
+  ChatGPT, under Settings › Security.
+- **A provider's key**: get it from your provider's website, click the button to add a key and paste it.
+- **Model on your computer**: install Ollama or LM Studio; it appears as an engine without asking for a key.
+
+## Which model is used
+
+You can connect more than one and order them with the arrows in the **Model chain**: the first is the one used and, if it
+fails, the next takes over. You can also change the model in a single chat. More in [Models](/concepts/models/).
+
+## Watch your spending
+
+With a key, each message costs according to what the model uses, and routines and agents also spend when they work alone.
+If your provider allows it, set a spending limit there before giving the agents more autonomy.

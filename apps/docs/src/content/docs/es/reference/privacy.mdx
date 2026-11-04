@@ -1,66 +1,43 @@
 ---
 title: Privacidad y telemetría
-description: Qué le cuenta APX al proyecto APX sobre tu instalación, qué manda solo si decís que sí, qué no manda nunca y cómo apagarlo todo.
+description: Dónde están tus datos, qué recibe la IA que conectas y por qué Colonia no envía telemetría salvo que tú indiques un destino.
 sidebar:
   order: 4
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-Para las cookies y la analítica opcional en apxagent.app, consultá [Privacidad del sitio](/es/reference/website-privacy/). Las opciones de abajo sólo corresponden a la aplicación.
+Colonia funciona en tu ordenador y guarda ahí tus chats, agentes, archivos y claves.
 
-APX corre en tu computadora y guarda ahí tus chats, agentes, archivos y claves. Para saber cuánta gente lo instala,
-termina el setup y lo sigue usando, le cuenta un poco de tu instalación al proyecto APX. Esta página lo lista todo.
+## Qué sale de tu ordenador
 
-## Toda instalación: los pasos que recorre
+- **A tu proveedor de IA**: lo que necesita cada petición, como tus mensajes y el contexto o los archivos que use el
+  agente. Lo que haga con ello se rige por sus condiciones: revísalas.
+- **A los servicios que conectes**: si conectas Telegram, WhatsApp u otros canales, los mensajes pasan por ellos. Si un
+  agente navega, las webs que visita reciben esas visitas.
+- **Comprobación de actualizaciones**: Colonia consulta cada pocas horas si hay una versión nueva. `APX_UPDATES=off` lo
+  apaga.
 
-Con un id al azar hecho solo para esto (no es tu id de home, ni tu nombre, ni nada de tu computadora), APX manda cada
-uno de estos una vez, cuando pasa:
+## Telemetría: apagada por defecto
 
-| Paso | Cuándo |
-|---|---|
-| Instalado | El core arranca por primera vez. |
-| Abierto | El panel se abre por primera vez. |
-| Respuesta sobre estadísticas | Respondés la pregunta de abajo (de nuevo si la cambiás). |
-| Setup terminado | Terminás el setup inicial. |
-| Primer uso | Mandás tu primer mensaje. |
-| Actualizado | APX arranca en una versión nueva. |
+Colonia no tiene ningún destino de telemetría configurado, así que no envía estadísticas de uso a nadie. Aunque en la
+aplicación aparezca una pregunta sobre estadísticas de uso, sin destino nada sale de tu ordenador.
 
-Cada uno lleva la versión de APX, el sistema operativo (`darwin`, `linux`, `win32`), el procesador (`arm64`, `x64`) y
-cómo se instaló APX (app de escritorio, script de instalación o checkout del código). La hora la pone el servidor que
-lo recibe, no tu computadora.
+Sólo se envían datos si alguien fija la variable `APX_TELEMETRY` con un destino en el ordenador donde funciona Colonia.
 
-## Solo si decís que sí: números de uso
+## Si se configura un destino
 
-El setup pregunta, con la casilla sin marcar: **Compartir estadísticas de uso anónimas**. Una instalación anterior a
-esta pregunta la hace una vez en la esquina de la ventana. Si decís que sí, APX manda un reporte por día, desde el día
-siguiente:
+Se envían los pasos de la instalación (instalada, abierta, configuración terminada, primer uso, actualizada), con un
+identificador al azar, la versión, el sistema operativo, el procesador y el tipo de instalación. Si además aceptas
+compartir estadísticas de uso, se añade un informe diario con el total de tokens, turnos y cuántos proyectos, agentes,
+canales y rutinas tienes.
 
-- tokens de entrada y de salida, sumando todos los modelos y proveedores;
-- cuántos turnos corrieron tus agentes;
-- cuántos proyectos, agentes, canales y rutinas tenés.
+Nunca se envían tus mensajes ni lo que escriban los agentes; nombres de personas, agentes, proyectos o archivos; rutas de
+carpetas; qué modelos o proveedores usas; ni tus claves.
 
-Solo esos números. Podés cambiar la respuesta cuando quieras en **Configuración › Avanzado › Estadísticas de uso**, que
-además muestra los números del próximo reporte y lo último que se mandó, tal cual salió.
-
-## Lo que nunca se manda
-
-Tus mensajes ni nada que haya escrito un agente; nombres de personas, agentes, proyectos o archivos; rutas de
-carpetas; qué modelos o proveedores usás; API keys, tokens o secretos; tu id de home; tu dirección IP a propósito (el
-servicio que recibe la ve para responder, como en cualquier pedido web, y APX no la guarda).
-
-## Adónde va
-
-A una base Google Cloud Firestore del proyecto APX (`apx-agents`, en Estados Unidos), escrita sin cuenta. Sus reglas
-aceptan solo las formas de arriba, ponen cada hora en el servidor y no dejan que nadie de afuera lea nada.
-
-## Apagarla
+## Cómo asegurarte de que sigue apagada
 
 <Aside>
-Cualquiera de estas frena todo, incluidos los pasos de la instalación: `APX_TELEMETRY=off` en el entorno del core o en
-`core.env`, `DO_NOT_TRACK=1` ([Console Do Not Track](https://consoledonottrack.com)), o una variable `CI`.
+Cualquiera de estas opciones lo apaga todo, aunque haya un destino: `APX_TELEMETRY=off` en el entorno o en `core.env`,
+`DO_NOT_TRACK=1` o una variable `CI`.
 </Aside>
-
-Para empezar de nuevo con otro id al azar, borrá `telemetry-id` en tu home de APX (`~/.apx/v2`). Para que se borren
-los registros de una instalación, abrí un issue en [GitHub](https://github.com/agentprojectcontext/apx/issues) con el
-id de telemetría que muestra Configuración › Avanzado.

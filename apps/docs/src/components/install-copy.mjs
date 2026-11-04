@@ -17,7 +17,7 @@ export async function copyInstallation(win, button) {
   if (!win.navigator.clipboard?.writeText) return false;
   try {
     await win.navigator.clipboard.writeText(button.dataset.copy ?? "");
-    button.dispatchEvent(new win.CustomEvent("apx:install-copied", { bubbles: true }));
+    button.dispatchEvent(new win.CustomEvent("colonia:install-copied", { bubbles: true }));
     return true;
   } catch {
     return false;

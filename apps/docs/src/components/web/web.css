@@ -1,63 +1,63 @@
 /* The site's pages outside the docs (home, comparisons): the panel's "classic" look, in dark and light.
  * Token values mirror packages/ui/src/styles/tokens.css (classic); subtle text is a step stronger so it keeps AA
- * contrast on the page background. Colours are read only through --apx-*. */
+ * contrast on the page background. Colours are read only through --colonia-*. */
 :root {
-  --apx-bg: hsl(222 22% 5%);
-  --apx-surface: hsl(222 16% 9%);
-  --apx-surface-raised: hsl(222 16% 11%);
-  --apx-fill: hsl(222 14% 12%);
-  --apx-fill-strong: hsl(222 14% 18%);
-  --apx-fg: hsl(210 16% 92%);
-  --apx-fg-muted: hsl(217 10% 64%);
-  --apx-fg-subtle: hsl(217 8% 50%);
-  --apx-border: hsl(222 14% 18%);
-  --apx-border-strong: hsl(222 12% 26%);
-  --apx-brand: hsl(152 58% 45%);
-  --apx-brand-soft: hsl(152 40% 45% / 0.14);
-  --apx-brand-soft-fg: hsl(152 58% 58%);
-  --apx-violet: hsl(262 80% 70%);
-  --apx-info: hsl(217 91% 60%);
-  --apx-info-soft: hsl(217 80% 60% / 0.14);
-  --apx-info-soft-fg: hsl(217 91% 72%);
-  --apx-warning: hsl(32 90% 58%);
-  --apx-warning-soft: hsl(32 90% 55% / 0.14);
-  --apx-warning-soft-fg: hsl(32 90% 66%);
-  --apx-danger: hsl(0 72% 58%);
-  --apx-shadow-md: 0 2px 8px rgb(0 0 0 / 0.45), 0 12px 32px rgb(0 0 0 / 0.5);
-  --apx-shadow-lift: 0 40px 120px -40px rgb(0 0 0 / 0.6);
-  --apx-font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --apx-font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --apx-discord: #5865f2;
-  --apx-discord-hover: #4752c4;
-  --apx-gutter: clamp(16px, 4vw, 24px);
-  --apx-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --apx-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --colonia-bg: hsl(222 22% 5%);
+  --colonia-surface: hsl(222 16% 9%);
+  --colonia-surface-raised: hsl(222 16% 11%);
+  --colonia-fill: hsl(222 14% 12%);
+  --colonia-fill-strong: hsl(222 14% 18%);
+  --colonia-fg: hsl(210 16% 92%);
+  --colonia-fg-muted: hsl(217 10% 64%);
+  --colonia-fg-subtle: hsl(217 8% 50%);
+  --colonia-border: hsl(222 14% 18%);
+  --colonia-border-strong: hsl(222 12% 26%);
+  --colonia-brand: hsl(152 58% 45%);
+  --colonia-brand-soft: hsl(152 40% 45% / 0.14);
+  --colonia-brand-soft-fg: hsl(152 58% 58%);
+  --colonia-violet: hsl(262 80% 70%);
+  --colonia-info: hsl(217 91% 60%);
+  --colonia-info-soft: hsl(217 80% 60% / 0.14);
+  --colonia-info-soft-fg: hsl(217 91% 72%);
+  --colonia-warning: hsl(32 90% 58%);
+  --colonia-warning-soft: hsl(32 90% 55% / 0.14);
+  --colonia-warning-soft-fg: hsl(32 90% 66%);
+  --colonia-danger: hsl(0 72% 58%);
+  --colonia-shadow-md: 0 2px 8px rgb(0 0 0 / 0.45), 0 12px 32px rgb(0 0 0 / 0.5);
+  --colonia-shadow-lift: 0 40px 120px -40px rgb(0 0 0 / 0.6);
+  --colonia-font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --colonia-font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --colonia-discord: #5865f2;
+  --colonia-discord-hover: #4752c4;
+  --colonia-gutter: clamp(16px, 4vw, 24px);
+  --colonia-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --colonia-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   color-scheme: dark;
 }
 :root[data-theme="light"] {
-  --apx-bg: hsl(220 20% 92%);
-  --apx-surface: hsl(220 24% 99%);
-  --apx-surface-raised: hsl(220 24% 99%);
-  --apx-fill: hsl(220 18% 94%);
-  --apx-fill-strong: hsl(220 22% 88%);
-  --apx-fg: hsl(222 24% 12%);
-  --apx-fg-muted: hsl(220 13% 34%);
-  --apx-fg-subtle: hsl(220 10% 42%);
-  --apx-border: hsl(220 16% 83%);
-  --apx-border-strong: hsl(220 14% 74%);
-  --apx-brand: hsl(152 62% 30%);
-  --apx-brand-soft: hsl(152 42% 90%);
-  --apx-brand-soft-fg: hsl(152 62% 24%);
-  --apx-violet: hsl(262 60% 52%);
-  --apx-info: hsl(220 70% 50%);
-  --apx-info-soft: hsl(220 80% 94%);
-  --apx-info-soft-fg: hsl(220 65% 40%);
-  --apx-warning: hsl(30 80% 42%);
-  --apx-warning-soft: hsl(34 90% 92%);
-  --apx-warning-soft-fg: hsl(28 80% 32%);
-  --apx-danger: hsl(0 72% 46%);
-  --apx-shadow-md: 0 2px 6px rgb(15 23 42 / 0.08), 0 12px 28px rgb(15 23 42 / 0.1);
-  --apx-shadow-lift: 0 40px 120px -40px rgb(15 23 42 / 0.35);
+  --colonia-bg: hsl(220 20% 92%);
+  --colonia-surface: hsl(220 24% 99%);
+  --colonia-surface-raised: hsl(220 24% 99%);
+  --colonia-fill: hsl(220 18% 94%);
+  --colonia-fill-strong: hsl(220 22% 88%);
+  --colonia-fg: hsl(222 24% 12%);
+  --colonia-fg-muted: hsl(220 13% 34%);
+  --colonia-fg-subtle: hsl(220 10% 42%);
+  --colonia-border: hsl(220 16% 83%);
+  --colonia-border-strong: hsl(220 14% 74%);
+  --colonia-brand: hsl(152 62% 30%);
+  --colonia-brand-soft: hsl(152 42% 90%);
+  --colonia-brand-soft-fg: hsl(152 62% 24%);
+  --colonia-violet: hsl(262 60% 52%);
+  --colonia-info: hsl(220 70% 50%);
+  --colonia-info-soft: hsl(220 80% 94%);
+  --colonia-info-soft-fg: hsl(220 65% 40%);
+  --colonia-warning: hsl(30 80% 42%);
+  --colonia-warning-soft: hsl(34 90% 92%);
+  --colonia-warning-soft-fg: hsl(28 80% 32%);
+  --colonia-danger: hsl(0 72% 46%);
+  --colonia-shadow-md: 0 2px 6px rgb(15 23 42 / 0.08), 0 12px 28px rgb(15 23 42 / 0.1);
+  --colonia-shadow-lift: 0 40px 120px -40px rgb(15 23 42 / 0.35);
   color-scheme: light;
 }
 
@@ -70,9 +70,9 @@ html {
 body.h {
   margin: 0;
   min-height: 100vh;
-  background: var(--apx-bg);
-  color: var(--apx-fg);
-  font-family: var(--apx-font-sans);
+  background: var(--colonia-bg);
+  color: var(--colonia-fg);
+  font-family: var(--colonia-font-sans);
   font-size: 17px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -89,7 +89,7 @@ body.h {
   cursor: pointer;
 }
 .h :focus-visible {
-  outline: 2px solid var(--apx-brand);
+  outline: 2px solid var(--colonia-brand);
   outline-offset: 3px;
 }
 .h img {
@@ -98,7 +98,7 @@ body.h {
 .wrap {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 0 var(--apx-gutter);
+  padding: 0 var(--colonia-gutter);
 }
 .visually-hidden {
   position: absolute;
@@ -114,32 +114,32 @@ body.h {
   left: 20px;
   z-index: 100;
   padding: 12px;
-  background: var(--apx-fg);
-  color: var(--apx-bg);
+  background: var(--colonia-fg);
+  color: var(--colonia-bg);
 }
 .h .skip-link:focus {
   top: 12px;
 }
 
-@keyframes apx-word-in {
+@keyframes colonia-word-in {
   from {
     opacity: 0;
     transform: translateY(0.22em);
     filter: blur(10px);
   }
 }
-@keyframes apx-pop {
+@keyframes colonia-pop {
   from {
     opacity: 0;
     transform: scale(0.3) rotate(-25deg);
   }
 }
-@keyframes apx-dot {
+@keyframes colonia-dot {
   50% {
     opacity: 0.25;
   }
 }
-@keyframes apx-fill {
+@keyframes colonia-fill {
   from {
     transform: scaleX(0);
   }
@@ -147,23 +147,23 @@ body.h {
     transform: scaleX(1);
   }
 }
-@keyframes apx-float {
+@keyframes colonia-float {
   50% {
     transform: translateY(-6px);
   }
 }
-@keyframes apx-marquee {
+@keyframes colonia-marquee {
   to {
     transform: translateX(-50%);
   }
 }
-@keyframes apx-aura {
+@keyframes colonia-aura {
   50% {
     opacity: 0.7;
     transform: translateX(-50%) scaleY(1.08);
   }
 }
-@keyframes apx-travel {
+@keyframes colonia-travel {
   from {
     transform: translateX(0);
   }
@@ -171,7 +171,7 @@ body.h {
     transform: translateX(76px);
   }
 }
-@keyframes apx-sheen {
+@keyframes colonia-sheen {
   to {
     background-position: -200% 0;
   }
@@ -187,8 +187,8 @@ body.h {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--apx-brand);
-  animation: apx-dot 1.2s ease-in-out infinite;
+  background: var(--colonia-brand);
+  animation: colonia-dot 1.2s ease-in-out infinite;
 }
 .dots i:nth-child(2) {
   animation-delay: 0.15s;
@@ -215,16 +215,16 @@ body.h {
   flex: none;
 }
 .h .btn-light {
-  background: var(--apx-fg);
-  color: var(--apx-bg);
+  background: var(--colonia-fg);
+  color: var(--colonia-bg);
 }
 .h .btn-discord {
-  background: var(--apx-discord);
+  background: var(--colonia-discord);
   color: #fff;
   transition: background 0.2s;
 }
 .h .btn-discord:hover {
-  background: var(--apx-discord-hover);
+  background: var(--colonia-discord-hover);
   color: #fff;
 }
 
@@ -234,17 +234,17 @@ body.h {
   align-items: center;
   gap: 12px;
   margin: 0;
-  font: 500 12px / 1 var(--apx-font-mono);
+  font: 500 12px / 1 var(--colonia-font-mono);
   letter-spacing: 0.06em;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .sec-label__n {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .sec-label__dash {
   width: 24px;
   height: 1px;
-  background: var(--apx-border-strong);
+  background: var(--colonia-border-strong);
 }
 .h2 {
   margin: 16px 0 0;
@@ -256,7 +256,7 @@ body.h {
 .lead {
   margin: 20px 0 0;
   font-size: 18px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-wrap: pretty;
 }
 
@@ -279,14 +279,14 @@ body.h {
   bottom: -28px;
   background: linear-gradient(
     to bottom,
-    var(--apx-bg) 0%,
-    color-mix(in srgb, var(--apx-bg) 70%, transparent) 55%,
+    var(--colonia-bg) 0%,
+    color-mix(in srgb, var(--colonia-bg) 70%, transparent) 55%,
     transparent 100%
   );
 }
 .web-header::after {
-  border-bottom: 1px solid var(--apx-border);
-  background: color-mix(in srgb, var(--apx-bg) 80%, transparent);
+  border-bottom: 1px solid var(--colonia-border);
+  background: color-mix(in srgb, var(--colonia-bg) 80%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   backdrop-filter: blur(18px) saturate(1.4);
   opacity: 0;
@@ -323,10 +323,10 @@ body.h {
 }
 .brand__v {
   padding: 4px 7px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 999px;
-  font: 500 11px / 1 var(--apx-font-mono);
-  color: var(--apx-fg-muted);
+  font: 500 11px / 1 var(--colonia-font-mono);
+  color: var(--colonia-fg-muted);
 }
 .nav__links {
   position: relative;
@@ -335,11 +335,11 @@ body.h {
   align-items: center;
   gap: 2px;
   padding: 4px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--apx-surface) 70%, transparent);
+  background: color-mix(in srgb, var(--colonia-surface) 70%, transparent);
   font-size: 14.5px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .nav__links > a,
 .nav__drop-link {
@@ -362,8 +362,8 @@ body.h {
 .nav__drop-link[aria-current],
 .nav__drop:hover .nav__drop-link,
 .nav__drop:focus-within .nav__drop-link {
-  background: var(--apx-fill-strong);
-  color: var(--apx-fg);
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg);
 }
 .nav__drop-link svg {
   transition: transform 0.25s;
@@ -383,7 +383,7 @@ body.h {
   transform: translateX(-50%) translateY(-6px);
   transition:
     opacity 0.22s 0.14s,
-    transform 0.3s var(--apx-ease) 0.14s,
+    transform 0.3s var(--colonia-ease) 0.14s,
     visibility 0s 0.36s;
 }
 .nav__drop:hover .nav__menu,
@@ -393,7 +393,7 @@ body.h {
   transform: translateX(-50%);
   transition:
     opacity 0.22s,
-    transform 0.3s var(--apx-ease),
+    transform 0.3s var(--colonia-ease),
     visibility 0s;
 }
 .nav__drop:hover .nav__drop-link svg,
@@ -433,13 +433,13 @@ body.h {
   padding: 8px 10px;
   border-radius: 12px;
   font-size: 14px;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   transition: background 0.2s;
 }
 .nav__menu-sections a:hover,
 .nav__menu-sections a:focus-visible,
 .nav__menu-sections a[aria-current] {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .nav__menu-list.nav__menu-list--docs {
   display: grid;
@@ -451,14 +451,14 @@ body.h {
 }
 .nav__feat--docs {
   background:
-    radial-gradient(120% 140% at 100% 0%, var(--apx-brand) 0%, transparent 55%),
-    radial-gradient(120% 140% at 0% 100%, var(--apx-info) 0%, transparent 60%), var(--apx-violet);
+    radial-gradient(120% 140% at 100% 0%, var(--colonia-brand) 0%, transparent 55%),
+    radial-gradient(120% 140% at 0% 100%, var(--colonia-info) 0%, transparent 60%), var(--colonia-violet);
 }
 .nav__menu-card {
   overflow: hidden;
-  border: 1px solid var(--apx-border-strong);
+  border: 1px solid var(--colonia-border-strong);
   border-radius: 22px;
-  background: color-mix(in srgb, var(--apx-bg) 90%, transparent);
+  background: color-mix(in srgb, var(--colonia-bg) 90%, transparent);
   -webkit-backdrop-filter: blur(20px) saturate(1.3);
   backdrop-filter: blur(20px) saturate(1.3);
   box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.55);
@@ -480,8 +480,8 @@ body.h {
   padding: 16px;
   border-radius: 16px;
   background:
-    radial-gradient(120% 140% at 0% 0%, var(--apx-info) 0%, transparent 55%),
-    radial-gradient(120% 140% at 100% 100%, var(--apx-brand) 0%, transparent 60%), var(--apx-violet);
+    radial-gradient(120% 140% at 0% 0%, var(--colonia-info) 0%, transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, var(--colonia-brand) 0%, transparent 60%), var(--colonia-violet);
   color: #fff;
   transition: filter 0.2s;
 }
@@ -501,7 +501,7 @@ body.h {
   padding: 5px 8px;
   border-radius: 999px;
   background: rgb(0 0 0 / 0.35);
-  font: 600 10px / 1 var(--apx-font-mono);
+  font: 600 10px / 1 var(--colonia-font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -531,7 +531,7 @@ body.h {
   color: rgb(255 255 255 / 0.85);
 }
 .nav__feat-date {
-  font: 500 10.5px / 1.3 var(--apx-font-mono);
+  font: 500 10.5px / 1.3 var(--colonia-font-mono);
   color: rgb(255 255 255 / 0.7);
 }
 .nav__menu-list {
@@ -549,12 +549,12 @@ body.h {
   min-width: 0;
   padding: 12px;
   border-radius: 14px;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   transition: background 0.2s;
 }
 .nav__menu-list a:hover,
 .nav__menu-list a:focus-visible {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 .nav__menu-mark {
   display: grid;
@@ -571,7 +571,7 @@ body.h {
   height: 28px;
   overflow: hidden;
   border-radius: 8px;
-  background: var(--apx-bg);
+  background: var(--colonia-bg);
 }
 .nav__menu-logo {
   width: 18px;
@@ -580,18 +580,18 @@ body.h {
 }
 .tone-warm {
   background:
-    radial-gradient(120% 140% at 0% 0%, var(--apx-warning) 0%, transparent 55%),
-    radial-gradient(120% 140% at 100% 100%, var(--apx-violet) 0%, transparent 60%), var(--apx-danger);
+    radial-gradient(120% 140% at 0% 0%, var(--colonia-warning) 0%, transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, var(--colonia-violet) 0%, transparent 60%), var(--colonia-danger);
 }
 .tone-dusk {
   background:
-    radial-gradient(120% 140% at 0% 100%, var(--apx-danger) 0%, transparent 55%),
-    radial-gradient(120% 140% at 100% 0%, var(--apx-warning) 0%, transparent 60%), var(--apx-violet);
+    radial-gradient(120% 140% at 0% 100%, var(--colonia-danger) 0%, transparent 55%),
+    radial-gradient(120% 140% at 100% 0%, var(--colonia-warning) 0%, transparent 60%), var(--colonia-violet);
 }
 .tone-sea {
   background:
-    radial-gradient(120% 140% at 0% 0%, var(--apx-info) 0%, transparent 55%),
-    radial-gradient(120% 140% at 100% 100%, var(--apx-brand) 0%, transparent 60%), var(--apx-violet);
+    radial-gradient(120% 140% at 0% 0%, var(--colonia-info) 0%, transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, var(--colonia-brand) 0%, transparent 60%), var(--colonia-violet);
 }
 .nav__menu-text {
   display: flex;
@@ -607,7 +607,7 @@ body.h {
   overflow: hidden;
   font-size: 12.5px;
   line-height: 1.35;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -618,17 +618,17 @@ body.h {
   gap: 12px;
   margin: 0;
   padding: 14px 20px;
-  border-top: 1px solid var(--apx-border);
+  border-top: 1px solid var(--colonia-border);
   font-size: 13px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .nav__menu-foot a {
   font-weight: 500;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   white-space: nowrap;
 }
 .nav__menu-foot a:hover {
-  color: var(--apx-brand);
+  color: var(--colonia-brand);
 }
 .nav__cta {
   display: flex;
@@ -640,7 +640,7 @@ body.h {
   display: flex;
   height: 36px;
   padding: 3px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 999px;
 }
 .lang a {
@@ -648,13 +648,13 @@ body.h {
   place-items: center;
   padding: 0 10px;
   border-radius: 999px;
-  font: 600 11px / 1 var(--apx-font-mono);
+  font: 600 11px / 1 var(--colonia-font-mono);
   letter-spacing: 0.04em;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
 }
 .lang a.on {
-  background: var(--apx-fg);
-  color: var(--apx-bg);
+  background: var(--colonia-fg);
+  color: var(--colonia-bg);
 }
 .icon-btn {
   display: grid;
@@ -663,14 +663,14 @@ body.h {
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 999px;
   background: transparent;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
   transition: background 0.2s;
 }
 .icon-btn:hover {
-  background: var(--apx-fill);
+  background: var(--colonia-fill);
 }
 #theme .moon,
 :root[data-theme="light"] #theme .sun {
@@ -698,7 +698,7 @@ body.h {
 .nav__toggle span {
   width: 14px;
   height: 1.5px;
-  background: var(--apx-fg);
+  background: var(--colonia-fg);
   transition: transform 0.2s;
 }
 .nav__toggle[aria-expanded="true"] span:first-child {
@@ -709,6 +709,12 @@ body.h {
 }
 .nav__links > .nav__sheet-get {
   display: none;
+}
+/* En móvil el CTA vive dentro del menú: no cabe entero en la barra. */
+@media (max-width: 479px) {
+  .web-header .nav__get {
+    display: none;
+  }
 }
 @media (max-width: 1099px) {
   .web-header .btn-discord .lbl {
@@ -723,13 +729,6 @@ body.h {
   .nav__in {
     gap: 12px;
   }
-  .web-header .btn .lbl {
-    display: none;
-  }
-  .web-header .btn {
-    width: 36px;
-    padding: 0;
-  }
   .nav__toggle {
     display: flex;
   }
@@ -742,20 +741,20 @@ body.h {
     flex-direction: column;
     gap: 4px;
     align-items: stretch;
-    padding: 12px var(--apx-gutter) 20px;
+    padding: 12px var(--colonia-gutter) 20px;
     border: 0;
-    border-bottom: 1px solid var(--apx-border);
+    border-bottom: 1px solid var(--colonia-border);
     border-radius: 0;
-    background: var(--apx-bg);
+    background: var(--colonia-bg);
     font-size: 18px;
     font-weight: 500;
-    color: var(--apx-fg);
+    color: var(--colonia-fg);
   }
   .nav__links > a,
   .nav__drop-link {
     height: auto;
     padding: 12px 4px;
-    border-bottom: 1px solid var(--apx-border);
+    border-bottom: 1px solid var(--colonia-border);
     border-radius: 0;
   }
   .nav__links > a:hover,
@@ -813,13 +812,13 @@ body.h {
     padding: 8px 10px;
     border-radius: 12px;
     font-size: 14px;
-    color: var(--apx-fg);
+    color: var(--colonia-fg);
     transition: background 0.2s;
   }
   .nav__menu-sections a:hover,
   .nav__menu-sections a:focus-visible,
   .nav__menu-sections a[aria-current] {
-    background: var(--apx-fill);
+    background: var(--colonia-fill);
   }
   .nav__menu-list--docs {
     display: grid;
@@ -831,8 +830,8 @@ body.h {
   }
   .nav__feat--docs {
     background:
-      radial-gradient(120% 140% at 100% 0%, var(--apx-brand) 0%, transparent 55%),
-      radial-gradient(120% 140% at 0% 100%, var(--apx-info) 0%, transparent 60%), var(--apx-violet);
+      radial-gradient(120% 140% at 100% 0%, var(--colonia-brand) 0%, transparent 55%),
+      radial-gradient(120% 140% at 0% 100%, var(--colonia-info) 0%, transparent 60%), var(--colonia-violet);
   }
   .nav__menu-card {
     border: 0;
@@ -895,8 +894,8 @@ body.h {
     margin-top: 14px;
     border: 0;
     border-radius: 999px;
-    background: var(--apx-fg);
-    color: var(--apx-bg);
+    background: var(--colonia-fg);
+    color: var(--colonia-bg);
   }
   /* Without scripts the menu cannot open; the footer carries the same links. */
   html:not(.js) .nav__toggle {
@@ -940,9 +939,9 @@ body.h {
   position: relative;
   overflow: hidden;
   padding-top: clamp(48px, 7vw, 72px);
-  border-top: 1px solid var(--apx-border);
-  background: var(--apx-bg);
-  color: var(--apx-fg-muted);
+  border-top: 1px solid var(--colonia-border);
+  background: var(--colonia-bg);
+  color: var(--colonia-fg-muted);
   font-size: 14px;
 }
 /* Top row: the brand, how to reach us and the legal lines; the platforms on the right. */
@@ -953,7 +952,7 @@ body.h {
   align-items: start;
   gap: 32px 56px;
   padding-bottom: 36px;
-  border-bottom: 1px solid var(--apx-border);
+  border-bottom: 1px solid var(--colonia-border);
 }
 .web-footer__intro {
   display: flex;
@@ -969,10 +968,10 @@ body.h {
 .web-footer__contact {
   font-size: 14px;
   font-weight: 500;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .web-footer__contact:hover {
-  color: var(--apx-brand);
+  color: var(--colonia-brand);
 }
 .web-footer .brand {
   display: flex;
@@ -980,7 +979,7 @@ body.h {
   gap: 10px;
   font-size: 18px;
   font-weight: 700;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .web-footer .brand img {
   width: 26px;
@@ -994,7 +993,7 @@ body.h {
 .web-footer__fine {
   margin: 0;
   font-size: 12px;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .web-footer__home {
   display: flex;
@@ -1003,13 +1002,13 @@ body.h {
   gap: 10px;
   height: 36px;
   padding: 0 14px 0 8px;
-  border: 1px solid var(--apx-border);
+  border: 1px solid var(--colonia-border);
   border-radius: 999px;
-  font: 12px / 1 var(--apx-font-mono);
+  font: 12px / 1 var(--colonia-font-mono);
 }
 .web-footer__home b {
   font-weight: 400;
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .web-footer__socials {
   display: flex;
@@ -1022,17 +1021,17 @@ body.h {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  color: var(--apx-fg-muted);
+  color: var(--colonia-fg-muted);
   transition:
     color 0.2s,
     background 0.2s;
 }
 .web-footer__socials a:hover {
-  background: var(--apx-fill);
-  color: var(--apx-fg);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
 }
 .web-footer a:focus-visible {
-  outline: 2px solid var(--apx-brand);
+  outline: 2px solid var(--colonia-brand);
   outline-offset: 2px;
 }
 /* The links in two rows: the website's (Product, Community, Compare over two columns), then the docs' sections. */
@@ -1089,10 +1088,10 @@ body.h {
 }
 .web-footer__row h2 {
   margin: 0 0 12px;
-  font: 500 11px / 1 var(--apx-font-mono);
+  font: 500 11px / 1 var(--colonia-font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .web-footer__row ul {
   display: flex;
@@ -1125,7 +1124,7 @@ body.h {
   }
 }
 .web-footer__row a:hover {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .web-footer__mark {
   position: relative;
@@ -1157,7 +1156,7 @@ body.h {
   font-weight: 700;
   line-height: 0.78;
   letter-spacing: -0.07em;
-  color: var(--apx-fill-strong);
+  color: var(--colonia-fill-strong);
 }
 .web-footer__back,
 .web-footer__front {
@@ -1172,7 +1171,7 @@ body.h {
   justify-content: space-between;
   width: min(560px, 90%);
 }
-.web-footer__back .apx-blob {
+.web-footer__back .colonia-blob {
   opacity: 0.45;
   filter: blur(1.2px);
   transform: translateY(-14px);
@@ -1182,10 +1181,10 @@ body.h {
   gap: clamp(8px, 2vw, 22px);
   pointer-events: auto;
 }
-.web-footer__front .apx-blob {
-  transition: transform 0.35s var(--apx-spring);
+.web-footer__front .colonia-blob {
+  transition: transform 0.35s var(--colonia-spring);
 }
-.web-footer__front .apx-blob:hover {
+.web-footer__front .colonia-blob:hover {
   transform: translateY(-8px);
 }
 .web-footer__legal {
@@ -1198,10 +1197,10 @@ body.h {
   margin: 0;
 }
 .web-footer__legal a:hover {
-  color: var(--apx-fg);
+  color: var(--colonia-fg);
 }
 .web-footer__sep {
-  color: var(--apx-fg-subtle);
+  color: var(--colonia-fg-subtle);
 }
 .web-footer__availability {
   display: flex;
@@ -1222,7 +1221,7 @@ body.h {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--apx-brand);
+  background: var(--colonia-brand);
 }
 .web-footer__platforms {
   display: flex;
@@ -1243,13 +1242,13 @@ body.h {
   align-items: center;
   gap: 6px;
   margin: 0;
-  font: 500 11px / 1 var(--apx-font-mono);
+  font: 500 11px / 1 var(--colonia-font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .web-footer__heart {
   font-size: 13px;
-  color: var(--apx-danger);
+  color: var(--colonia-danger);
 }
 @media (max-width: 760px) {
   .web-footer__availability {
@@ -1270,8 +1269,8 @@ body.h {
   }
   .web-footer__fold summary::after {
     content: "+";
-    font: 500 16px / 1 var(--apx-font-mono);
-    color: var(--apx-fg-muted);
+    font: 500 16px / 1 var(--colonia-font-mono);
+    color: var(--colonia-fg-muted);
   }
   .web-footer__fold[open] summary::after {
     content: "−";
@@ -1286,9 +1285,9 @@ body.h {
 }
 [data-reveal] {
   transition:
-    opacity 0.9s var(--apx-ease),
-    transform 0.9s var(--apx-ease),
-    filter 0.9s var(--apx-ease);
+    opacity 0.9s var(--colonia-ease),
+    transform 0.9s var(--colonia-ease),
+    filter 0.9s var(--colonia-ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1296,48 +1295,48 @@ body.h {
     scroll-behavior: auto;
   }
   /* Every animation ends where it starts, whatever selector runs it; transitions are instant. */
-  @keyframes apx-word-in {
+  @keyframes colonia-word-in {
     to {
       opacity: 1;
     }
   }
-  @keyframes apx-pop {
+  @keyframes colonia-pop {
     to {
       opacity: 1;
     }
   }
-  @keyframes apx-dot {
+  @keyframes colonia-dot {
     to {
       opacity: 1;
     }
   }
-  @keyframes apx-fill {
+  @keyframes colonia-fill {
     to {
       transform: scaleX(1);
     }
   }
-  @keyframes apx-float {
+  @keyframes colonia-float {
     to {
       transform: none;
     }
   }
-  @keyframes apx-marquee {
+  @keyframes colonia-marquee {
     to {
       transform: none;
     }
   }
-  @keyframes apx-aura {
+  @keyframes colonia-aura {
     to {
       opacity: 1;
       transform: translateX(-50%);
     }
   }
-  @keyframes apx-travel {
+  @keyframes colonia-travel {
     to {
       transform: none;
     }
   }
-  @keyframes apx-sheen {
+  @keyframes colonia-sheen {
     to {
       background-position: 0 0;
     }
@@ -1392,7 +1391,7 @@ body.h {
   }
 }
 
-/* One line across the footer, over the divider: where APX runs on the left, where it is made on the right. */
+/* One line across the footer, over the divider: where Colonia runs on the left, where it is made on the right. */
 .web-footer__bar {
   grid-column: 1 / -1;
   display: flex;

@@ -15,7 +15,7 @@
   const next = new WeakMap<Element, { blink: number; next: number }>();
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   function loop(t: number) {
-    for (const el of document.querySelectorAll<HTMLElement>(".apx-blob")) {
+    for (const el of document.querySelectorAll<HTMLElement>(".colonia-blob")) {
       const box = el.getBoundingClientRect();
       if (!box.width || box.bottom < -50 || box.top > innerHeight + 50) continue;
       let s = next.get(el);
