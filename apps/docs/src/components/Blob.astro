@@ -58,6 +58,11 @@ const cy = e0 ? (e0.y + e0.h / 2) / 256 : 0.5;
     pointer-events: none;
     user-select: none;
   }
+  /* OJOS-DOCS-1: Starlight mete margin-top entre hermanos del contenido y bajaba los ojos 16 px. */
+  .colonia-blob img,
+  .colonia-blob svg {
+    margin: 0 !important;
+  }
   .colonia-blob svg {
     position: absolute;
     inset: 0;
