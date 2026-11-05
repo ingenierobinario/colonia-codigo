@@ -1,0 +1,30 @@
+name: Instaladores de macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - run: corepack pnpm package:mac --${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: colonia-mac-${{ matrix.arch }}
+          path: |
+            out/*.dmg
+            out/*.zip
+            out/*.sha256
+          retention-days: 30
