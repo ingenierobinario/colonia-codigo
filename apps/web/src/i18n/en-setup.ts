@@ -229,7 +229,7 @@ export const enSetup = {
   "about.upFor": "Up for",
   "about.electron": "Electron",
   "about.system": "System",
-  "about.credits": "Built on APC, the Agent Project Context standard. Icons by Lucide; shell by Electron.",
+  "about.credits": "Icons by Lucide; shell by Electron.",
   "connect.kicker": "FIRST RUN",
   "connect.title": "Where does",
   "connect.titleEnd": "your Colonia run?",

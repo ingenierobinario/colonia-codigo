@@ -3,7 +3,6 @@ import { Button, Dialog, Icons } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { send } from "../data/actions.ts";
 import { secretary } from "../data/identity.ts";
-import { LINKS, openLink } from "../data/links.ts";
 import { closeNews, useNews } from "../data/news.ts";
 import { byRelease, type NewsItem, words } from "../data/newsModel.ts";
 import { useData } from "../data/state.ts";
@@ -28,12 +27,6 @@ export function WhatsNewDialog() {
       title={t("help.whatsNew")}
       closeLabel={t("common.close")}
       className="whatsnew"
-      footer={
-        <Button variant="ghost" size="sm" onClick={() => openLink(LINKS.releases)}>
-          {t("help.allChanges")}
-          <Icons.ExternalLink size={13} />
-        </Button>
-      }
     >
       {releases.map((r) => (
         <section key={r.version} className="whatsnew__release">

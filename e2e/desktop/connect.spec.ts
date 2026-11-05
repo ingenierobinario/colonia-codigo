@@ -261,7 +261,6 @@ test("About opens Colonia's own window with this build's versions and the repo",
   await expect(about.locator(".about__version")).toContainText("Colonia");
   await expect(about.locator(".about__status")).toBeVisible();
   await expect(about.locator(".about__list")).toContainText("Protocol");
-  await expect(about.locator(".about__repo")).toHaveAttribute("href", /github\.com/);
   await app.close();
 });
 

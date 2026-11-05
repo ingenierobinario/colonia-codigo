@@ -68,7 +68,7 @@ export const NEWS: readonly NewsEntry[] = [
     text:
       "The panel now has a Help menu (the ? at the foot of the sidebar) with what each release brought the owner: each " +
       "entry opens to what it lets them do, with a button that asks the super-agent for it, and every release can be " +
-      "gone through again. It also links the guides, the Discord and feedback. From now on you tell only the one thing " +
+      "gone through again. It also links the guides. From now on you tell only the one thing " +
       "that matters most and leave the rest there.",
     actions: [
       {

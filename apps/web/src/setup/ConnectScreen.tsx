@@ -5,6 +5,7 @@ import type { SshPrompt } from "../colonia-desktop.d.ts";
 import logo from "../assets/logo.png";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { useDesktopClass } from "../shell/desktop.ts";
+import { LanguageMenu } from "../shell/LanguageMenu.tsx";
 import { BuildVersion } from "./BuildVersion.tsx";
 import { ConnectTerminal, type TermLine } from "./ConnectTerminal.tsx";
 import { CrewHero } from "./CrewHero.tsx";
@@ -194,6 +195,7 @@ export function ConnectScreen() {
           <img src={logo} alt="" width={24} height={24} />
           <span>Colonia</span>
         </div>
+        <LanguageMenu className="topbar__lang connect__lang" />
       </header>
       <div className="wiz__scroll">
         <div className="wiz__grid is-single connect">

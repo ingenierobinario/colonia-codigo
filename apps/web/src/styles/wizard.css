@@ -37,6 +37,9 @@
   padding-left: max(28px, calc(20px + var(--window-controls-start, 0px)));
   padding-right: max(28px, calc(20px + var(--window-controls-end, 0px)));
 }
+.connect__lang {
+  margin-left: auto;
+}
 .wiz__brand {
   display: flex;
   gap: 10px;

@@ -8,7 +8,6 @@ import { useScrambleTo } from "./CrewHero.tsx";
 import { startGlyphPortrait } from "./glyphPortrait.ts";
 
 const EVERY_MS = 3200;
-const REPO = "https://github.com/ingenierobinario/colonia";
 
 /** "blob|Name|what they do", one per line of the website's ticker. */
 function parseStatuses(text: string): Array<{ blob: string; who: string; what: string }> {
@@ -121,9 +120,6 @@ export function AboutScreen() {
         </div>
       </div>
       <StatusTicker />
-      <a className="about__repo" href={REPO} target="_blank" rel="noreferrer">
-        {REPO.replace("https://", "")}
-      </a>
       <p className="about__legal">{t("about.legal", { year: new Date().getFullYear() })}</p>
     </div>
   );

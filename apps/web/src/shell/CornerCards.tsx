@@ -1,15 +1,14 @@
 import "../styles/corner.css";
-import { Button, ChannelIcon, IconButton, Icons, ProjectTile } from "@colonia/ui";
+import { Button, IconButton, Icons, ProjectTile } from "@colonia/ui";
 import type { CSSProperties, ReactNode } from "react";
 import { closeCard, useClosedCards } from "../data/cornerCards.ts";
-import { LINKS } from "../data/links.ts";
 import { PRIVACY_URL, setUsage, useTelemetry } from "../data/telemetry.ts";
 import { newerOf, openUpdate, restartApp, useUpdates } from "../data/updates.ts";
 import { useV1Running } from "../data/v1Running.ts";
 import { useT } from "../i18n/index.ts";
 
 /**
- * A small deck: a newer Colonia, the Discord, a star on GitHub. Only the first that still applies shows; the next peeks
+ * A small deck of notices. Only the first that still applies shows; the next peeks
  * out behind it and comes forward when it is closed. Each one is said once per device (the update card once per
  * version), never as a modal. At the foot of the sidebar; floating beside it when the sidebar is a rail, away from the
  * composer.
@@ -82,33 +81,6 @@ export function CornerCards({ floating = false }: { floating?: boolean }) {
         secondary={t("telemetry.cardNo")}
         // Closing it is a no: the card is never said twice.
         onClose={() => void setUsage(false)}
-      />,
-    );
-  if (!closed.discord)
-    cards.push(
-      <CornerCard
-        key="discord"
-        id="discord"
-        icon={<ProjectTile tone="neutral" size={24} icon={<ChannelIcon channel="discord" size={14} />} />}
-        title={t("community.title")}
-        description={t("community.desc")}
-        action={t("community.cta")}
-        onAction={() => window.open(LINKS.discord, "_blank", "noopener,noreferrer")}
-        onClose={() => closeCard({ discord: true })}
-      />,
-    );
-  // Last on purpose: it asks for something instead of offering it.
-  if (!closed.star)
-    cards.push(
-      <CornerCard
-        key="star"
-        id="star"
-        icon={<ProjectTile tone="warning" size={24} icon={<Icons.Star size={14} />} />}
-        title={t("star.title")}
-        description={t("star.desc")}
-        action={t("star.cta")}
-        onAction={() => window.open(LINKS.repo, "_blank", "noopener,noreferrer")}
-        onClose={() => closeCard({ star: true })}
       />,
     );
   if (!cards.length) return null;

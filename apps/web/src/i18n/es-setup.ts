@@ -231,7 +231,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "about.upFor": "Activo hace",
   "about.electron": "Electron",
   "about.system": "Sistema",
-  "about.credits": "Hecho sobre APC, el estándar Agent Project Context. Iconos de Lucide; app con Electron.",
+  "about.credits": "Iconos de Lucide; aplicación con Electron.",
   "connect.kicker": "PRIMER ARRANQUE",
   "connect.title": "¿Dónde se ejecuta",
   "connect.titleEnd": "tu Colonia?",

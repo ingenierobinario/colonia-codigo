@@ -1,12 +1,12 @@
 import { Icons, Menu, type MenuEntry } from "@colonia/ui";
 import { Suspense, useEffect } from "react";
-import { guidesUrl, LINKS, openLink } from "../data/links.ts";
+import { guidesUrl, openLink } from "../data/links.ts";
 import { loadNews, lookAtNews, openNews, useNews } from "../data/news.ts";
 import { hasFresh, latest, words } from "../data/newsModel.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
 import { WhatsNewDialog } from "../lazy.ts";
 
-/** Sidebar foot, beside the account: what the last releases brought, the guides, the Discord and feedback. */
+/** Sidebar foot, beside the account: what the last releases brought, and the guides. */
 export function HelpMenu({ rail }: { rail: boolean }) {
   const t = useT();
   const lang = useLanguage();
@@ -31,8 +31,6 @@ export function HelpMenu({ rail }: { rail: boolean }) {
         ] satisfies MenuEntry[])
       : []),
     { label: t("help.guides"), icon: <Icons.BookOpen />, onSelect: () => openLink(guidesUrl(lang)) },
-    { label: t("help.discord"), icon: <Icons.MessageCircle />, onSelect: () => openLink(LINKS.discord) },
-    { label: t("help.feedback"), icon: <Icons.Megaphone />, onSelect: () => openLink(LINKS.feedback) },
   ];
   return (
     <div className={rail ? "help is-rail" : "help"}>

@@ -1,14 +1,9 @@
-// Where Colonia lives outside the app: the community, the code and the guides.
+// Where Colonia lives outside the app.
 export const LINKS = {
-  discord: "https://discord.gg/vxdZuT5WuE",
-  // The public repo: where the releases and the docs live.
-  repo: "https://github.com/ingenierobinario/colonia",
-  releases: "https://github.com/ingenierobinario/colonia/releases",
-  feedback: "https://github.com/ingenierobinario/colonia/issues/new/choose",
   docs: "https://colonia.ingenierobinario.com/",
 } as const;
 
-/** The guides in the panel's language (the docs site has English and Spanish). */
-export const guidesUrl = (lang: string): string => `${LINKS.docs}${lang === "es" ? "es/" : ""}start/first-steps/`;
+/** The public site in the panel's language. */
+export const guidesUrl = (lang: string): string => `${LINKS.docs}${lang === "es" ? "" : "en/"}`;
 
 export const openLink = (url: string): void => void window.open(url, "_blank", "noopener,noreferrer");
