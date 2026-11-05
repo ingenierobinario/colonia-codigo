@@ -3,6 +3,7 @@ import blobs from "../../data/blobs.json";
 import { HIDDEN_SECTIONS, RESERVAR_URL, sectionRoute, type SectionId } from "../../config/site";
 import { sitePath } from "../../doc-routes.mjs";
 import { HOME, type Lang } from "../../i18n/home";
+import { getCollection } from "astro:content";
 import Blob from "../Blob.astro";
 import UiIcon from "../UiIcon.astro";
 import "./web.css";
@@ -28,6 +29,19 @@ const sections: [string, string, BlobName][] = [
   ["compare", t.nav.sectionsLabel.compare, "amatista"],
   ["download", t.nav.sectionsLabel.download, "aqua"],
 ];
+// DOCS-MENU-1: menú Documentación como el de APX; una fila por sección, descrita por su primera página.
+const docs = await getCollection("docs");
+const describe = (path: string) =>
+  docs.find((d) => d.id === `${lang === "es" ? "es/" : ""}docs/${path}`)?.data.description ?? "";
+const doc = (path: string) => href(`${pre}/docs/${path}/`);
+const guides: [string, string, BlobName][] = [
+  ["concepts/agents", t.nav.ideas, "orbita"],
+  ["office/chat", t.nav.office, "cobalto"],
+  ["channels/overview", t.nav.channels, "brasa"],
+  ["devices/desktop", t.nav.devices, "aqua"],
+  ["extend/skills", t.nav.extend, "amatista"],
+  ["reference/cli", t.nav.cli, "noche"],
+];
 ---
 <script is:inline>
   (() => {
@@ -52,6 +66,31 @@ const sections: [string, string, BlobName][] = [
               ))}
             </ul>
             <p class="nav__menu-foot"><span>{t.nav.productNote}</span><a href={RESERVAR_URL}>{t.reserve} →</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="nav__drop nav__docs">
+        <a class="nav__drop-link nav__docs-link" href={doc("start/introduction")}>{t.nav.docs}<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" /></svg></a>
+        <div class="nav__menu nav__menu--start nav__menu--wide">
+          <div class="nav__menu-card">
+            <div class="nav__menu-grid">
+              <a class="nav__feat nav__feat--docs" href={doc("start/introduction")}>
+                <span class="nav__feat-blob" aria-hidden="true"><Blob name="menta" size={48} /></span>
+                <span class="nav__feat-name">{t.nav.startHere}</span>
+                <span class="nav__feat-tag">{describe("start/introduction")}</span>
+              </a>
+              <ul class="nav__menu-list nav__menu-list--docs">
+                {guides.map(([path, label, blob]) => (
+                  <li>
+                    <a href={doc(path)}>
+                      <Blob name={blob} size={24} />
+                      <span class="nav__menu-text"><b>{label}</b><span>{describe(path)}</span></span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p class="nav__menu-foot"><span>{t.nav.docsNote}</span><a href={doc("start/introduction")}>{t.nav.allDocs} →</a></p>
           </div>
         </div>
       </div>
