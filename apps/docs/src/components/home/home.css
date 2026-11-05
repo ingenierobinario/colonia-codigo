@@ -421,6 +421,22 @@
   color: #fff;
   font-weight: 700;
 }
+/* PRECIO-TACHADO-1: el precio de siempre tachado en rojo y el de Black Friday grande. */
+.bf__was {
+  color: #ff8a98;
+  font-weight: 600;
+  text-decoration: line-through 2px #ff5a6e;
+}
+.bf__txt .bf__now,
+.spot__price .bf__now {
+  color: #56d298;
+  font-size: 1.35em;
+  font-weight: 800;
+}
+.spot__price {
+  margin: 0;
+  font-size: 18px;
+}
 .bf__clock {
   display: flex;
   gap: 6px;
