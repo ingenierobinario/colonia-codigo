@@ -10,9 +10,9 @@ const { offer, until, units, class: cls = "" } = Astro.props;
 const keys = ["d", "h", "m", "s"];
 ---
 
-<div class:list={["bf", cls]} data-bf aria-label={`Black Friday · ${offer}: 497 € (antes 1.195 €) ${until}`}>
+<div class:list={["bf", cls]} data-bf aria-label={`Black Friday · ${offer}: −58 % ${until}`}>
   <span class="bf__tag">Black Friday</span>
-  <span class="bf__txt"><s class="bf__was">1.195 €</s> <b class="bf__now">497 €</b> {until}</span>
+  <span class="bf__txt"><b class="bf__now">−58 %</b> {until}</span>
   <span class="bf__clock" aria-hidden="true">
     {keys.map((k, i) => (
       <span class="bf__u"><b data-u={k}>00</b><i>{units[i]}</i></span>
