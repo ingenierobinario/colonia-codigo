@@ -4,6 +4,7 @@
 import Blob from "../Blob.astro";
 
 interface Props {
+  lang?: string;
   demo: {
     alt: string;
     inbox: string;
@@ -22,22 +23,43 @@ interface Props {
     script: readonly { from: string; text: string }[];
   };
 }
-const { demo } = Astro.props;
+const { demo, lang = "es" } = Astro.props;
+const es = lang !== "en";
+const hour = (i: number) => (es ? `12:${String(30 - i * 4).padStart(2, "0")}` : `12:${String(30 - i * 4).padStart(2, "0")} PM`);
+// Iconos de trazo de la interfaz: sólo se escribe el contenido de cada <svg>.
+const icons = {
+  inbox: '<path d="M3 13h5l2 3h4l2-3h5"/><path d="M5 5h14l2 8v6H3v-6z"/>',
+  tasks: '<path d="m4 7 2 2 3-3M4 16l2 2 3-3M13 8h7M13 17h7"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+  folder: '<path d="M3 7h6l2 2h10v10H3z"/>',
+  files: '<path d="M6 3h8l4 4v14H6zM14 3v4h4"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
+  search: '<circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/>',
+  term: '<path d="m5 8 4 4-4 4M12 17h7"/>',
+  doc: '<path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+};
 ---
 
 <div class="demo" role="img" aria-label={demo.alt} data-stage-demo data-working={demo.working}>
   <div class="demo__scale">
-    <div class="demo__bar"><span></span><span></span><span></span><em>{demo.search}</em></div>
+    <div class="demo__bar"><span></span><span></span><span></span><em><svg viewBox="0 0 24 24" set:html={icons.search} />{demo.search}<kbd>Ctrl K</kbd></em></div>
     <div class="demo__body">
       <aside class="demo__side">
-        <b class="is-on">{demo.inbox}<i data-demo-count>3</i></b>
-        <b>{demo.tasks}</b>
+        <b class="is-on"><span><svg viewBox="0 0 24 24" set:html={icons.inbox} />{demo.inbox}</span><i data-demo-count>3</i></b>
+        <b><span><svg viewBox="0 0 24 24" set:html={icons.tasks} />{demo.tasks}</span></b>
         <small>{demo.channels}</small>
-        <b>Telegram</b>
-        <b>WhatsApp</b>
+        <b><span><svg viewBox="0 0 24 24" set:html={icons.chat} />Telegram</span></b>
+        <b><span><svg viewBox="0 0 24 24" set:html={icons.chat} />WhatsApp</span></b>
         <small>{demo.projects}</small>
-        <b>{demo.project}</b>
-        <b>{demo.personal}</b>
+        <b><span><svg viewBox="0 0 24 24" set:html={icons.folder} />{demo.project}</span></b>
+        <b><span><svg viewBox="0 0 24 24" set:html={icons.folder} />{demo.personal}</span></b>
+        <div class="demo__foot">
+          <b><span><svg viewBox="0 0 24 24" set:html={icons.files} />{es ? "Recursos" : "Resources"}</span></b>
+          <b><span><svg viewBox="0 0 24 24" set:html={icons.gear} />{es ? "Ajustes" : "Settings"}</span></b>
+          <p><Blob name="coral" size={24} /><span>{es ? "Tu cuenta" : "Your account"}</span></p>
+        </div>
       </aside>
       <section class="demo__list">
         <strong>{demo.inbox}</strong>
@@ -45,18 +67,18 @@ const { demo } = Astro.props;
         {demo.agents.map((a, i) => (
           <div class="demo__agent" data-demo-agent={i}>
             <p><Blob name={a.blob as any} size={22} /><b>{a.name}</b><span data-demo-role>{a.role}</span></p>
-            {a.chats.map((c) => <div class="demo__row">{c}</div>)}
+            {a.chats.map((c, n) => <div class="demo__row"><span>{c}</span>{n === 0 && i < 2 && <mark>{i + 1}</mark>}<time>{hour(i * 2 + n)}</time></div>)}
           </div>
         ))}
       </section>
       <section class="demo__chat">
-        <header><Blob name="menta" size={30} /><span><b>Nova</b><small>{demo.role}</small></span></header>
+        <header><Blob name="menta" size={30} /><span><b>Nova</b><small>{demo.role}</small></span><div class="demo__tools" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={icons.search} /><svg viewBox="0 0 24 24" set:html={icons.doc} /><svg viewBox="0 0 24 24" set:html={icons.term} /><svg viewBox="0 0 24 24" set:html={icons.files} /></div></header>
         <div class="demo__msgs" data-demo-msgs>
           <p class="demo__day">{demo.today}</p>
-          {demo.script.map((m) => <div class:list={["demo__msg", `demo__msg--${m.from}`]} data-from={m.from}>{m.text}</div>)}
+          {demo.script.map((m) => <div class:list={["demo__msg", `demo__msg--${m.from}`]} data-from={m.from}>{m.text}{m.from === "bot" && <small>{`Nova · ${hour(0)}`}</small>}</div>)}
           <div class="demo__typing" data-demo-typing hidden><i></i><i></i><i></i></div>
         </div>
-        <div class="demo__composer"><span data-demo-input>{demo.placeholder}</span><i aria-hidden="true">↑</i></div>
+        <div class="demo__composer"><span data-demo-input>{demo.placeholder}</span><div class="demo__keys"><svg viewBox="0 0 24 24" set:html={icons.plus} /><u>{es ? "Automático" : "Auto"}</u><svg viewBox="0 0 24 24" set:html={icons.mic} /><i aria-hidden="true">↑</i></div></div>
       </section>
     </div>
   </div>
@@ -106,7 +128,9 @@ const { demo } = Astro.props;
           await whenVisible();
           if (m.dataset.from === "me") {
             const text = m.textContent ?? "";
-            for (let c = 1; c <= text.length; c++) {
+            const started = performance.now();
+            for (let c = 0; c < text.length; ) {
+              c = Math.min(text.length, Math.ceil((performance.now() - started) / 26));
               input.textContent = text.slice(0, c);
               await wait(26);
             }
@@ -138,9 +162,14 @@ const { demo } = Astro.props;
   .demo__scale { position: absolute; inset: 0 auto auto 0; width: 1168px; transform-origin: 0 0; }
   .demo__bar { display: flex; align-items: center; gap: 7px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--colonia-border); }
   .demo__bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--colonia-fill-strong); }
-  .demo__bar em { margin: 0 auto; padding: 4px 90px; border-radius: 8px; background: var(--colonia-fill); color: var(--colonia-fg-subtle); font-size: 12px; font-style: normal; white-space: nowrap; }
+  .demo svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .demo__bar em { display: flex; align-items: center; gap: 8px; margin: 0 auto; padding: 4px 12px 4px 90px; border-radius: 8px; background: var(--colonia-fill); color: var(--colonia-fg-subtle); font-size: 12px; font-style: normal; white-space: nowrap; }
   .demo__body { display: grid; grid-template-columns: 170px 270px 1fr; height: 596px; }
   .demo__side { display: flex; flex-direction: column; gap: 3px; padding: 14px 10px; background: var(--colonia-fill); font-size: 13px; }
+  .demo__side b span { display: flex; align-items: center; gap: 8px; }
+  .demo__bar kbd { margin-left: 60px; font: inherit; font-size: 10px; opacity: .75; }
+  .demo__foot { margin-top: auto; display: flex; flex-direction: column; gap: 3px; }
+  .demo__foot p { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; padding: 8px 9px 0; border-top: 1px solid var(--colonia-border); }
   .demo__side b { display: flex; justify-content: space-between; padding: 6px 9px; border-radius: 8px; font-weight: 500; }
   .demo__side b.is-on { background: var(--colonia-fill-strong); }
   .demo__side i { color: var(--colonia-fg-muted); font-style: normal; }
@@ -154,10 +183,17 @@ const { demo } = Astro.props;
   .demo__agent p { display: flex; align-items: center; gap: 7px; margin: 0 0 3px; }
   .demo__agent p span { color: var(--colonia-fg-subtle); font-size: 11px; }
   .demo__agent.is-busy p span { color: var(--colonia-brand-soft-fg); }
-  .demo__row { overflow: hidden; padding: 4px 8px 4px 29px; color: var(--colonia-fg-muted); text-overflow: ellipsis; white-space: nowrap; }
+  .demo__row { display: flex; align-items: center; gap: 6px; padding: 4px 8px 4px 29px; color: var(--colonia-fg-muted); white-space: nowrap; }
+  .demo__row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .demo__row mark { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--colonia-fg); color: var(--colonia-bg); font-size: 10px; }
+  .demo__row time { color: var(--colonia-fg-subtle); font-size: 10px; }
   .demo__chat { display: flex; flex-direction: column; min-width: 0; }
   .demo__chat header { display: flex; align-items: center; gap: 10px; padding: 11px 20px; border-bottom: 1px solid var(--colonia-border); font-size: 13px; }
   .demo__chat header span { display: flex; flex-direction: column; }
+  .demo__tools { display: flex; gap: 14px; margin-left: auto; color: var(--colonia-fg-subtle); }
+  .demo__msg small { display: block; margin-top: 6px; color: var(--colonia-fg-subtle); font-size: 10.5px; }
+  .demo__keys { flex: none; display: flex; align-items: center; gap: 10px; color: var(--colonia-fg-subtle); }
+  .demo__keys u { font-size: 12px; text-decoration: none; }
   .demo__chat header small { color: var(--colonia-fg-subtle); font-size: 11px; }
   .demo__msgs { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; padding: 16px 44px; font-size: 13.5px; line-height: 1.5; }
   .demo__day { margin: 0; color: var(--colonia-fg-subtle); font-size: 11px; text-align: center; }
@@ -175,6 +211,7 @@ const { demo } = Astro.props;
   .demo__composer span { overflow: hidden; white-space: nowrap; }
   .demo__composer i { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--colonia-fill-strong); font-style: normal; }
   .is-compact .demo__bar em { padding: 4px 40px; }
+  .is-compact .demo__bar kbd, .is-compact .demo__keys u { display: none; }
   .is-compact .demo__body { display: block; height: 560px; }
   .is-compact .demo__side, .is-compact .demo__list { display: none; }
   .is-compact .demo__chat { height: 100%; }

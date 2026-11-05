@@ -799,7 +799,7 @@ const en: HomeText = {
           ["#", "Colonia · running"],
           ["", "Team      Home and 5 agents in 2 projects"],
           ["", "Chats     Telegram, WhatsApp"],
-          ["", "Devices   this computer, 1 phone"],
+          ["", "Devices   this computer"],
           ["✓", "All systems working"],
         ],
       },
