@@ -1403,3 +1403,19 @@ body.h {
 .web-footer__bar .web-footer__origin {
   margin: 0;
 }
+
+.wa-bubble {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}

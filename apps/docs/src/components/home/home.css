@@ -350,6 +350,42 @@
 }
 
 /* ── Stage ──────────────────────────────────────────────────────────────── */
+.bf-badge {
+  width: fit-content;
+  max-width: 100%;
+  margin: 18px auto 16px;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, #56d298 60%, var(--colonia-fg));
+  border-radius: 999px;
+  color: var(--colonia-fg);
+  font-size: 14px;
+  text-align: center;
+}
+.bf-badge b {
+  color: color-mix(in srgb, #1f9d67 75%, var(--colonia-fg));
+  font-weight: 600;
+}
+.cta-focus {
+  position: fixed;
+  z-index: 9000;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.82);
+  transition: opacity 0.5s ease;
+}
+.cta-focus.on {
+  visibility: visible;
+  opacity: 1;
+  outline: 2px solid #56d298;
+  animation: ctaFocusPulse 1.6s ease-in-out infinite;
+}
+@keyframes ctaFocusPulse {
+  50% { outline-offset: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-focus.on { animation: none; }
+}
 .hero__offer {
   margin: 14px 0 0;
   color: var(--colonia-fg-muted);
