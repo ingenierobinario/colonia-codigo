@@ -325,7 +325,7 @@ const es = {
           ["#", "Colonia · en marcha"],
           ["", "Equipo       Home y 5 agentes en 2 proyectos"],
           ["", "Chats        Telegram, WhatsApp"],
-          ["", "Dispositivos este ordenador, 1 móvil"],
+          ["", "Dispositivos este ordenador"],
           ["✓", "Todo funciona"],
         ],
       },
