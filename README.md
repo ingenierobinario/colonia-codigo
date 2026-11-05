@@ -1,24 +1,34 @@
 # Colonia
 
-**Tu propio equipo de agentes de IA, con los datos de tu negocio.** Un producto de Ingeniero Binario.
+**Tu propio equipo de agentes de IA, en tu ordenador.** Un producto de [Ingeniero Binario](https://colonia.ingenierobinario.com).
 
-Colonia parte de [Colonia](https://github.com/ingenierobinario/colonia) (licencia MIT). El aviso original se conserva en `LICENSE` y el origen exacto en `NOTICE`.
+Colonia reúne en una sola aplicación a una secretaria que te contesta donde estés y un equipo de agentes por proyecto, cada uno con su papel, su memoria y sus herramientas. Funciona en Windows, Linux y macOS, y tus datos se quedan en tu máquina. La IA la pones tú: conectas tu suscripción o tu clave y el coste lo pagas directamente a tu proveedor.
 
-## Desarrollo
+## Documentación
 
-Requiere Node 24.11 o superior y pnpm 11.
+| Guía | Para qué sirve |
+|---|---|
+| [Primeros pasos](docs/primeros-pasos.md) | Instalar la aplicación y crear tu primer equipo |
+| [Conceptos](docs/conceptos.md) | Qué es cada pieza: agentes, proyectos, canales, rutinas |
+| [Canales](docs/canales.md) | Hablar con tus agentes desde WhatsApp, Telegram y otras aplicaciones |
+| [Terminal](docs/terminal.md) | Los comandos de `colonia` |
+| [Desarrollo](docs/desarrollo.md) | Compilar, modificar y empaquetar el código |
+
+## Empezar desde el código
+
+Necesitas Node 24.11 o superior y pnpm 11.
 
 ```bash
 corepack pnpm install --frozen-lockfile
-corepack pnpm -r --if-present typecheck
+corepack pnpm app
 ```
 
-## Telemetría
+Ese comando compila el panel y la aplicación de escritorio, arranca el servicio y abre la aplicación.
 
-Desactivada por defecto. Solo se envía si `COLONIA_TELEMETRY` indica un destino propio.
+## Tu código, a tu medida
 
-## Estado de la adaptación
+Tienes el código completo para modificarlo o integrarlo en tu negocio. Empieza por [Desarrollo](docs/desarrollo.md).
 
-Hecho: nombre visible en la aplicación, enlaces a este repositorio, fuente de actualizaciones y telemetría.
+## Licencia
 
-Pendiente: iconos binarios (PNG, ICO, ICNS), documentación en `apps/docs`, comando `colonia`, paquetes `@colonia/*` y variables `COLONIA_*`.
+MIT. Consulta [`LICENSE`](LICENSE), que debe conservarse en las copias del software.
