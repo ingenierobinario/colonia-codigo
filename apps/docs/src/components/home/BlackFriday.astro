@@ -1,0 +1,21 @@
+---
+// BLACK-FRIDAY-1: aviso de la oferta con cuenta atrás en vivo (sin precio: el precio solo va en el checkout).
+interface Props {
+  offer: string;
+  until: string;
+  units: string[];
+  class?: string;
+}
+const { offer, until, units, class: cls = "" } = Astro.props;
+const keys = ["d", "h", "m", "s"];
+---
+
+<div class:list={["bf", cls]} data-bf aria-label={`Black Friday · ${offer} ${until}`}>
+  <span class="bf__tag">Black Friday</span>
+  <span class="bf__txt"><b>{offer}</b> {until}</span>
+  <span class="bf__clock" aria-hidden="true">
+    {keys.map((k, i) => (
+      <span class="bf__u"><b data-u={k}>00</b><i>{units[i]}</i></span>
+    ))}
+  </span>
+</div>

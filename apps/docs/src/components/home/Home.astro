@@ -9,6 +9,7 @@ import Blob from "../Blob.astro";
 import StageDemo from "./StageDemo.astro";
 import FeatureScene from "./FeatureScene.astro";
 import BlobEyes from "../BlobEyes.astro";
+import BlackFriday from "./BlackFriday.astro";
 import BrandMark from "../BrandMark.astro";
 import OsIcon from "../OsIcon.astro";
 import UiIcon from "../UiIcon.astro";
@@ -119,7 +120,7 @@ const cards = [
             </span>
           </h1>
           <p class="hero__sub"><b>{t.sub.strong}</b> {t.sub.rest}</p>
-          <p class="bf-badge"><b>Black Friday</b> {t.blackFriday}</p>
+          <BlackFriday offer={t.bfOffer} until={t.blackFriday} units={t.bfUnits} />
           <div class="hero__actions">
             <a class="btn btn-light hero__reserve" id="heroReserve" href={RESERVAR_URL}>{t.reserve}</a>
             <a class="hero__term" href="#what">{t.how} <span aria-hidden="true">↓</span></a>
@@ -487,7 +488,7 @@ const cards = [
           <h2 class="final__title">{t.final.title}</h2>
           <p class="final__tag">{t.final.tag}</p>
           <p class="final__body">{t.final.body}</p>
-          <p class="bf-badge"><b>Black Friday</b> {t.blackFriday}</p>
+          <BlackFriday offer={t.bfOffer} until={t.blackFriday} units={t.bfUnits} />
           <div class="final__actions">
             <a class="btn btn-light" href={RESERVAR_URL}>{t.reserve}</a>
             <a class="btn btn-ghost" href="#what">{t.how}</a>
@@ -499,29 +500,81 @@ const cards = [
     <WebFooter lang={lang} />
 
     <BlobEyes />
-    <div class="cta-focus" id="ctaFocus" aria-hidden="true"></div>
+    <div class="spot" id="spot" aria-hidden="true">
+      <div class="spot__beam"></div>
+      <div class="spot__ring" id="spotRing"></div>
+      <div class="spot__card" id="spotCard">
+        <Blob name="menta" size={56} class="spot__peng" />
+        <div class="spot__body">
+          <p class="spot__tag"><span>Black Friday</span> {t.blackFriday}</p>
+          <p class="spot__txt">{t.bfSpot}</p>
+          <span class="bf__clock spot__clock">
+            {["d", "h", "m", "s"].map((k, i) => (
+              <span class="bf__u"><b data-u={k}>00</b><i>{t.bfUnits[i]}</i></span>
+            ))}
+          </span>
+        </div>
+        <span class="spot__arrow" id="spotArrow"></span>
+      </div>
+    </div>
     <script>
-      // FOCO-CTA: a los 5 s sin moverse, oscurece todo menos el botón de compra.
+      // BLACK-FRIDAY-1: cuenta atrás hasta el 30-nov-2026 23:59:59 (Madrid). Al acabar, el aviso desaparece.
+      {
+        const fin = Date.parse("2026-11-30T23:59:59+01:00");
+        const dos = (n: number) => String(n).padStart(2, "0");
+        const tic = () => {
+          const q = fin - Date.now();
+          if (q <= 0) {
+            for (const el of document.querySelectorAll<HTMLElement>("[data-bf], .spot")) el.hidden = true;
+            return;
+          }
+          const v: Record<string, string> = {
+            d: dos(Math.floor(q / 864e5)),
+            h: dos(Math.floor(q / 36e5) % 24),
+            m: dos(Math.floor(q / 6e4) % 60),
+            s: dos(Math.floor(q / 1e3) % 60),
+          };
+          for (const b of document.querySelectorAll<HTMLElement>("[data-u]")) b.textContent = v[b.dataset.u!] ?? "";
+        };
+        tic();
+        window.setInterval(tic, 1000);
+      }
+      // FOCO-CTA-2: a los 5 s sin moverse, luz de escenario sobre «Quiero mi colonia»; se va al hacer scroll o tocar.
       {
         const btn = document.getElementById("heroReserve");
-        const foco = document.getElementById("ctaFocus");
+        const spot = document.getElementById("spot");
+        const card = document.getElementById("spotCard");
+        const arrow = document.getElementById("spotArrow");
         const eventos = ["scroll", "wheel", "touchmove", "keydown", "pointerdown"] as const;
         const situar = () => {
-          if (!btn || !foco) return false;
+          if (!btn || !spot || !card || !arrow || spot.hidden) return false;
           const r = btn.getBoundingClientRect();
-          if (r.width === 0 || r.top < 0 || r.bottom > window.innerHeight) return false;
-          const m = 8;
-          foco.style.cssText = `top:${r.top - m}px;left:${r.left - m}px;width:${r.width + m * 2}px;height:${r.height + m * 2}px;border-radius:${getComputedStyle(btn).borderRadius}`;
+          if (r.width === 0 || r.top < 0 || r.bottom > innerHeight) return false;
+          const cx = r.left + r.width / 2;
+          const cy = r.top + r.height / 2;
+          spot.style.setProperty("--x", `${cx}px`);
+          spot.style.setProperty("--y", `${cy}px`);
+          spot.style.setProperty("--w", `${r.width}px`);
+          spot.style.setProperty("--h", `${r.height}px`);
+          const cw = Math.min(400, innerWidth - 24);
+          card.style.width = `${cw}px`;
+          const left = Math.max(12, Math.min(innerWidth - cw - 12, cx - cw / 2));
+          card.style.left = `${left}px`;
+          arrow.style.left = `${cx - left - 9}px`;
+          const alto = card.offsetHeight;
+          const arriba = r.top - 26 - alto > 72;
+          card.classList.toggle("abajo", !arriba);
+          card.style.top = `${arriba ? r.top - 26 - alto : r.bottom + 26}px`;
           return true;
         };
         const quitar = () => {
-          foco?.classList.remove("on");
+          spot?.classList.remove("on");
           window.removeEventListener("resize", situar);
           for (const e of eventos) window.removeEventListener(e, quitar);
         };
         const temporizador = window.setTimeout(() => {
           if (window.scrollY > 40 || !situar()) return;
-          foco?.classList.add("on");
+          spot?.classList.add("on");
           window.addEventListener("resize", situar);
           for (const e of eventos) window.addEventListener(e, quitar, { passive: true });
         }, 5000);

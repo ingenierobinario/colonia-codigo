@@ -34,7 +34,10 @@ const cy = e0 ? (e0.y + e0.h / 2) / 256 : 0.5;
     preset.eyes.length > 0 && (
       <svg viewBox="0 0 256 256">
         {preset.eyes.map((e) => (
-          <rect class="eye" x={e.x} y={e.y} width={e.w} height={e.h} rx={e.rx} fill={preset.eyeColor} />
+          <g class="eye">
+            <rect x={e.x} y={e.y} width={e.w} height={e.h} rx={e.rx} fill={preset.eyeColor} />
+            <circle cx={e.x + e.w * 0.66} cy={e.y + e.h * 0.28} r={e.w * 0.2} fill="#fff" />
+          </g>
         ))}
       </svg>
     )
@@ -61,6 +64,13 @@ const cy = e0 ? (e0.y + e0.h / 2) / 256 : 0.5;
     width: 100%;
     height: 100%;
     overflow: visible;
+  }
+  /* OJOS-1: el cuerpo se inclina hacia el puntero (variable --lean, la pone BlobEyes). */
+  .colonia-blob img,
+  .colonia-blob svg {
+    transform: rotate(var(--lean, 0deg));
+    transform-origin: 50% 88%;
+    transition: transform 0.3s ease-out;
   }
   .colonia-blob :global(.eye) {
     transform-box: fill-box;

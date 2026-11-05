@@ -350,41 +350,239 @@
 }
 
 /* ── Stage ──────────────────────────────────────────────────────────────── */
-.bf-badge {
+/* BLACK-FRIDAY-1: tarjeta negra con borde vivo y cuenta atrás (igual en tema claro y oscuro). */
+@property --bf-a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.bf {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
   width: fit-content;
   max-width: 100%;
-  margin: 18px auto 16px;
-  padding: 6px 14px;
-  border: 1px solid color-mix(in srgb, #56d298 60%, var(--colonia-fg));
-  border-radius: 999px;
-  color: var(--colonia-fg);
-  font-size: 14px;
-  text-align: center;
+  margin: 26px auto 22px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: #07090c;
+  color: #fff;
+  box-shadow: 0 18px 50px -18px rgba(86, 210, 152, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
-.bf-badge b {
-  color: color-mix(in srgb, #1f9d67 75%, var(--colonia-fg));
-  font-weight: 600;
+.bf::before,
+.spot__card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--bf-a), #56d298, #f7c948, #ff5a6e, #8b7bff, #56d298);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: bfGira 4s linear infinite;
 }
-.cta-focus {
+@keyframes bfGira {
+  to { --bf-a: 360deg; }
+}
+.bf__tag {
+  position: relative;
+  overflow: hidden;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: #fff;
+  color: #07090c;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.bf__tag::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(86, 210, 152, 0.7) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: bfBrillo 2.8s ease-in-out infinite;
+}
+@keyframes bfBrillo {
+  60%, 100% { transform: translateX(100%); }
+}
+.bf__txt {
+  font-size: 15px;
+  color: #c9d1d8;
+}
+.bf__txt b {
+  color: #fff;
+  font-weight: 700;
+}
+.bf__clock {
+  display: flex;
+  gap: 6px;
+}
+.bf__u {
+  display: grid;
+  justify-items: center;
+  min-width: 46px;
+  padding: 5px 6px 4px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.bf__u b {
+  color: #fff;
+  font: 700 18px/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.bf__u i {
+  color: #8f9aa4;
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* FOCO-CTA-2: luz de escenario sobre «Quiero mi colonia». */
+.spot {
+  --x: 50vw;
+  --y: 50vh;
+  --w: 200px;
+  --h: 56px;
   position: fixed;
+  inset: 0;
   z-index: 9000;
   pointer-events: none;
   visibility: hidden;
   opacity: 0;
-  box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.82);
-  transition: opacity 0.5s ease;
+  background: radial-gradient(
+    ellipse calc(var(--w) / 2 + 120px) calc(var(--h) / 2 + 110px) at var(--x) var(--y),
+    rgba(3, 5, 8, 0) 0%,
+    rgba(3, 5, 8, 0) 42%,
+    rgba(3, 5, 8, 0.9) 100%
+  );
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
-.cta-focus.on {
+.spot.on {
   visibility: visible;
   opacity: 1;
-  outline: 2px solid #56d298;
-  animation: ctaFocusPulse 1.6s ease-in-out infinite;
+  transition: opacity 0.6s ease;
 }
-@keyframes ctaFocusPulse {
-  50% { outline-offset: 5px; }
+.spot__beam {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    calc(var(--x) - 70px) 0,
+    calc(var(--x) + 70px) 0,
+    calc(var(--x) + var(--w) / 2 + 40px) calc(var(--y) - var(--h) / 2 - 12px),
+    calc(var(--x) - var(--w) / 2 - 40px) calc(var(--y) - var(--h) / 2 - 12px)
+  );
+  background: linear-gradient(to bottom, rgba(190, 255, 225, 0.02), rgba(190, 255, 225, 0.2));
+  animation: spotParpadeo 3s ease-in-out infinite;
+}
+@keyframes spotParpadeo {
+  50% { opacity: 0.65; }
+}
+.spot__ring {
+  position: absolute;
+  left: calc(var(--x) - var(--w) / 2 - 8px);
+  top: calc(var(--y) - var(--h) / 2 - 8px);
+  width: calc(var(--w) + 16px);
+  height: calc(var(--h) + 16px);
+  padding: 3px;
+  border-radius: 999px;
+  background: conic-gradient(from var(--bf-a), #56d298, #f7c948, #ff5a6e, #8b7bff, #56d298);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 14px rgba(86, 210, 152, 0.9));
+  animation: bfGira 2.4s linear infinite, spotLatido 1.4s ease-in-out infinite;
+}
+@keyframes spotLatido {
+  50% { transform: scale(1.07); }
+}
+.spot__card {
+  position: absolute;
+  isolation: isolate;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 14px 14px 12px;
+  border-radius: 18px;
+  background: #07090c;
+  color: #fff;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(14px) scale(0.96);
+}
+.spot__card.abajo {
+  transform: translateY(-14px) scale(0.96);
+}
+.spot.on .spot__card {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.45s ease 0.35s, transform 0.55s var(--colonia-spring, cubic-bezier(0.2, 1.4, 0.4, 1)) 0.35s;
+}
+.spot__peng {
+  margin-top: 2px;
+  animation: colonia-bob 2.4s ease-in-out infinite;
+}
+.spot__body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.spot__tag {
+  margin: 0;
+  color: #c9d1d8;
+  font-size: 13px;
+}
+.spot__tag span {
+  margin-right: 4px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: #fff;
+  color: #07090c;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.spot__txt {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.spot__clock .bf__u {
+  min-width: 42px;
+}
+.spot__arrow {
+  position: absolute;
+  bottom: -8px;
+  width: 18px;
+  height: 18px;
+  background: #07090c;
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+.spot__card.abajo .spot__arrow {
+  top: -8px;
+  bottom: auto;
 }
 @media (prefers-reduced-motion: reduce) {
-  .cta-focus.on { animation: none; }
+  .bf::before,
+  .spot__card::before,
+  .bf__tag::after,
+  .spot__beam,
+  .spot__ring,
+  .spot__peng {
+    animation: none;
+  }
 }
 .hero__offer {
   margin: 14px 0 0;
