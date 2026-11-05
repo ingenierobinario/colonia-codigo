@@ -1,6 +1,6 @@
 // Lo que el dueño aún debe fijar. Cambia estos valores y toda la web los sigue.
 /** A dónde lleva «Quiero mi colonia». La compra vive en el funnel de LeadMatch. */
-export const RESERVAR_URL = "https://www.leadmatch.ingenierobinario.com/colonia";
+export const RESERVAR_URL = "https://www.leadmatch.ingenierobinario.com/a634f855";
 /**
  * Dirección donde se publicarán install.sh e install.ps1. Aún no existe.
  * Las páginas .mdx con bloques de código repiten este mismo literal: búscalo con grep al fijarla.
