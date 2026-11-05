@@ -10,7 +10,24 @@ Descarga el instalador de tu sistema desde la página de recursos a la que acced
 | macOS | Imagen `.dmg` |
 | Linux | `.AppImage` |
 
-Si el sistema avisa de que la aplicación es de un desarrollador no identificado, confirma que el archivo viene de tu página de recursos antes de abrirlo.
+La aplicación todavía no está firmada, así que tu sistema puede avisarte la primera vez. Confirma que el archivo viene de tu página de recursos y sigue estos pasos.
+
+### En macOS
+
+1. Abre el `.dmg` y arrastra Colonia a Aplicaciones.
+2. Abre Colonia. macOS te avisará y no la abrirá; pulsa **Aceptar** o **Hecho**.
+3. Ve a **Ajustes del Sistema → Privacidad y seguridad**, baja hasta **Seguridad** y pulsa **Abrir igualmente**.
+4. Confirma con tu contraseña. A partir de ahí se abre con normalidad.
+
+Si macOS dice que la aplicación está dañada, abre Terminal, ejecuta este comando y vuelve a abrirla:
+
+```bash
+xattr -cr /Applications/Colonia.app
+```
+
+### En Windows
+
+Si aparece **Windows protegió su PC**, pulsa **Más información** y después **Ejecutar de todas formas**.
 
 ## 2. Conecta tu IA
 
