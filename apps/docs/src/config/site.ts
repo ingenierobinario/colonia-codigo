@@ -7,7 +7,7 @@ export const RESERVAR_URL = "https://www.leadmatch.ingenierobinario.com/a634f855
  */
 export const INSTALL_BASE_URL = "https://PENDIENTE-URL-INSTALADOR.example";
 
-/** Instalador de Windows para /empezar/. Vacío = aún no publicado: la página lo dice en vez de dar un enlace roto. */
+/** Instalador de Windows. Vacío = aún no publicado: la página lo dice en vez de dar un enlace roto. */
 export const WINDOWS_INSTALLER_URL = "";
 
 export type SectionId = "what" | "new" | "start" | "map" | "terminal" | "questions" | "compare" | "download";

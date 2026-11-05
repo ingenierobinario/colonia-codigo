@@ -9,8 +9,8 @@ import { sitePath } from "./src/doc-routes.mjs";
 // Where the site is published. Pages write absolute links ("/concepts/agents/"); withBase() below puts this prefix in
 // front of them, so moving the site (e.g. under /colonia/docs/) only changes these two values.
 const site = process.env.DOCS_SITE ?? "https://colonia.ingenierobinario.com";
-// Web publicada: portada y /empezar/. COLONIA_DOCS=1 (y quitar el _ de src/pages/_[...legacy].astro y _llms.txt.ts) devuelve la documentación.
-const fullDocs = process.env.COLONIA_DOCS === "1";
+// DOCS-1: la documentación se publica en /docs/ (inglés) y /es/docs/ (español). COLONIA_DOCS=0 la apaga.
+const fullDocs = process.env.COLONIA_DOCS !== "0";
 const base = (process.env.DOCS_BASE ?? "/").replace(/\/?$/, "/");
 /** What a link to any page shows when it is shared (public/og.jpg, 1200×630, drawn by scripts/og-image.ts). */
 const ogImage = new URL(`${base}og.jpg`, site).href;
@@ -62,7 +62,6 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const path = new URL(page).pathname.slice(base.length - 1);
-        if (path === "/empezar/") return false;
         return fullDocs ? sitePath(path) === path && !["/docs/", "/es/docs/"].includes(path) : true;
       },
     }),

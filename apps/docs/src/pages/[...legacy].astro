@@ -9,6 +9,8 @@ export async function getStaticPaths() {
   });
   return [
     ...paths,
+    // DOCS-1: /empezar/ se retiró; quien llegue por un enlace viejo cae en la instalación.
+    { params: { legacy: "empezar" }, props: { target: "/es/docs/start/install/", spanish: true } },
     ...["docs", "es/docs"].map((legacy) => ({
       params: { legacy },
       props: { target: `/${legacy}/start/introduction/`, spanish: legacy.startsWith("es/") },
