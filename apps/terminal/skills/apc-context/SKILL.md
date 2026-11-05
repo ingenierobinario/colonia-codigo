@@ -1,14 +1,13 @@
 ---
 name: apc-context
 description: "ALWAYS activate when the project has a .apc/ directory or AGENTS.md file. Do not wait to be asked. Read .apc/ before making any assumption about agents, memory, or project structure. Activate on: .apc/, AGENTS.md, 'which agents', 'list agents', 'agent context', 'who are the agents', any question about agents or memory in this project. IMPORTANT: if .apc/migrate.md exists, open the conversation with a migration offer before answering anything else. If the user declines, delete .apc/migrate.md immediately so it is not shown again."
-homepage: https://github.com/agentprojectcontext/agentprojectcontext
 ---
 
-# Agent Project Context
+# Project context
 
-This project uses APC. APC stores portable project context in `.apc/` and `AGENTS.md`.
+This project keeps portable project context in `.apc/` and `AGENTS.md`.
 
-APC does not store raw runtime sessions. Sessions, conversations, messages, caches, provider
+The project context does not store raw runtime sessions. Sessions, conversations, messages, caches, provider
 threads, and private runtime memory stay in the IDE, CLI, daemon, or user-level store that created
 them.
 
@@ -22,13 +21,13 @@ cat .apc/migrate.md 2>/dev/null
 
 If it exists, open with this offer before answering anything else:
 
-> I see this project was initialized with Agent Project Context (APC).
+> I see this project was initialized with a Colonia project context.
 >
 > I found context files that may need migration:
 > [list files from .apc/migrate.md]
 >
 > I can read them, separate durable project context from runtime/private state, and migrate only
-> what belongs in APC.
+> what belongs in the project context.
 >
 > Want me to start?
 
@@ -61,7 +60,7 @@ After migration:
 5. Delete `.apc/migrate.md`.
 6. Summarize what moved, what stayed local, and what was dropped.
 
-## APC structure
+## Structure
 
 ```text
 AGENTS.md                        ← root project contract
@@ -105,9 +104,9 @@ Do not store:
 2. Read agent definitions from `.apc/agents/<name>.md` when present.
 3. Read curated project memory from `.apc/memory.md` when present. An individual agent's own memory is runtime
    state kept by the runtime (for Colonia: in its core, see `colonia memory`) — never under `.apc/`.
-4. Write only durable, safe, curated facts to APC memory.
+4. Write only durable, safe, curated facts to project memory.
 5. Never write raw sessions, transcripts, messages, conversations, or tool logs into `.apc/`.
-6. Keep secrets out of APC and out of git.
+6. Keep secrets out of the project context and out of git.
 7. Treat `.apc/mcps.json` as MCP configuration hints, not as an MCP implementation. A runtime may require the
    owner to approve each server before it runs.
 
@@ -147,7 +146,7 @@ sanitized fact to `.apc/memory.md` only when useful and safe.
 
 ## Colonia
 
-Colonia is a runtime that implements APC: its core reads `AGENTS.md`, `.apc/agents/`, `.apc/skills/`,
+Colonia works from these files: its core reads `AGENTS.md`, `.apc/agents/`, `.apc/skills/`,
 `.apc/memory.md` and `.apc/mcps.json` of registered projects, and keeps runtime state (threads, runs, agent
 memory, secrets) outside the repository, under `~/.colonia/v2`.
 

@@ -98,10 +98,10 @@ export const esTeam: Partial<Record<MessageKey, string>> = {
   "team.file": "Archivo",
   "team.import.title": "Importar agentes",
   "team.import.lead":
-    "Equipos y agentes sueltos de Colonia y de tu bóveda de v1 (solo lectura). Se escriben en .apc/agents/ de este proyecto.",
+    "Equipos y agentes sueltos de Colonia y de tu bóveda anterior (solo lectura). Se escriben en .apc/agents/ de este proyecto.",
   "team.import.teams": "Equipos",
   "team.import.singles": "Agentes sueltos",
-  "team.import.fromV1": "Bóveda v1",
+  "team.import.fromV1": "Bóveda anterior",
   "team.import.selectAll": "Elegir todos",
   "team.import.clear": "Limpiar",
   "team.import.preview": "Ver {name}",
@@ -112,7 +112,7 @@ export const esTeam: Partial<Record<MessageKey, string>> = {
     "Este proyecto ya tiene a {top}: el líder del equipo va a reportar a {top} y sigue habiendo un solo árbol.",
   "team.import.warnRoots":
     "Este proyecto ya tiene a {top}: el líder del equipo queda sin padre y el proyecto pasa a tener dos árboles. Nadie pierde su lugar.",
-  "team.import.empty": "No hay plantillas. Añade carpetas en examples/agents/ o en tu bóveda de v1.",
+  "team.import.empty": "No hay plantillas. Añade carpetas en examples/agents/ o en tu bóveda anterior.",
   "team.import.doneRoutines.one": "Su rutina quedó activa: la ves en Rutinas.",
   "team.import.doneRoutines.other": "Sus {n} rutinas quedaron activas: las ves en Rutinas.",
   "team.import.routines.one": "1 rutina",

@@ -16,8 +16,7 @@ pnpm preview      # preview the built site at http://127.0.0.1:4400/
 pnpm shots        # retake every screenshot against a demo core (see below)
 ```
 
-It is published at `https://colonia.ingenierobinario.com/` (the repository's Pages custom domain, built by the Pages workflow on
-`main`; `agentprojectcontext.github.io/colonia/…` redirects there). The build also copies `scripts/install/install.sh` and `install.ps1` to the site's root,
+It is published at `https://colonia.ingenierobinario.com/`. The build also copies `scripts/install/install.sh` and `install.ps1` to the site's root,
 so `<site>/install.sh` is the stable install URL; the older `/v2/install.sh` stays served beside it. `<base>docs/`
 redirects to `/docs/start/introduction/`; Spanish documentation lives at `/es/docs/…`.
 All former documentation addresses remain static HTML redirects. See [Site routing](SITE_ROUTING.md)

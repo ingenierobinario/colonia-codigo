@@ -56,7 +56,7 @@ export function createNews(deps: {
   timeoutMs?: number;
 }) {
   const { store, log } = deps;
-  const entries = deps.entries ?? NEWS;
+  const entries = deps.entries ?? (process.env.COLONIA_NEWS_CATALOG === "on" ? NEWS : []);
   const ac = new AbortController();
   let running: Promise<unknown> = Promise.resolve();
 

@@ -37,6 +37,8 @@ after(async () => {
   await env.cleanup();
 });
 
+process.env.COLONIA_NEWS_CATALOG = "on";
+
 test("news reach the owner's channel with buttons; a press asks the super-agent as the owner", async () => {
   env.core.store.surfaces.upsert({ name: "weather", title: "Weather", html: "<p>sunny</p>", created_by: "superagent" });
   // Calendar connected and the news every owner or a channel's owner gets already heard: this is about the widgets'.

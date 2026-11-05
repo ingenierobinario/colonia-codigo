@@ -96,10 +96,10 @@ export const enTeam = {
   "team.file": "File",
   "team.import.title": "Import agents",
   "team.import.lead":
-    "Teams and single agents from Colonia and from your v1 vault (read only). They are written to this project's .apc/agents/.",
+    "Teams and single agents from Colonia and from your earlier vault (read only). They are written to this project's .apc/agents/.",
   "team.import.teams": "Teams",
   "team.import.singles": "Single agents",
-  "team.import.fromV1": "V1 vault",
+  "team.import.fromV1": "Earlier vault",
   "team.import.selectAll": "Select all",
   "team.import.clear": "Clear",
   "team.import.preview": "Preview {name}",
@@ -110,7 +110,7 @@ export const enTeam = {
     "This project already has {top}: the team's lead will report to {top}, so there is still one tree.",
   "team.import.warnRoots":
     "This project already has {top}: the team's lead will have no parent and the project will have two trees. Nobody is demoted.",
-  "team.import.empty": "No templates found. Add folders to examples/agents/ or to your v1 vault.",
+  "team.import.empty": "No templates found. Add folders to examples/agents/ or to your earlier vault.",
   "team.import.doneRoutines.one": "Its routine is on: see it in Routines.",
   "team.import.doneRoutines.other": "Their {n} routines are on: see them in Routines.",
   "team.import.routines.one": "1 routine",

@@ -72,7 +72,7 @@ export function ConnectPart({ part, threadId, messageId }: { part: Connect; thre
     <div className="inputcard connectcard">
       <div className="inputcard__head">
         <Icons.Plug size={14} />
-        <span className="inputcard__title">{t("connect.title")}</span>
+        <span className="inputcard__title">{t("connect.suggested")}</span>
       </div>
       {part.why && <p className="inputcard__prompt">{part.why}</p>}
       <div className="connectcard__rows">

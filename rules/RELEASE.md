@@ -33,7 +33,6 @@ Day-to-day work goes to `staging` (verify runs on every push there); `main` is t
 fast-forwards `main` to a `staging` commit whose verify passed, waits for verify on `main`, then tags it (below).
 `pages.yml` publishes the site from `main`, so the docs change with a release, not with each push. The site lives at
 `https://colonia.ingenierobinario.com/`, the repository's Pages custom domain (DNS in Cloudflare, DNS only, pointing at GitHub Pages);
-GitHub sends every `agentprojectcontext.github.io/colonia/…` address on to the same path there.
 
 ## What a release carries
 
@@ -51,7 +50,7 @@ pass, and a failed job can be retried on its own.
 Authenticode certificate (Azure Trusted Signing is the cheap one). Until then the install docs must say how to open
 an unsigned app (macOS: right-click › Open, or System Settings › Privacy & Security; Windows: SmartScreen › More info).
 
-The phone app is `dev.colonia.mobile` and v1's is `dev.agentprojectcontext.colonia`: they install side by side. Its APK
+The phone app is `dev.colonia.mobile`. Its APK
 carries arm64-v8a only by default (`COLONIA_ANDROID_ABIS` adds more) and its versionCode follows the tag (2.1.3 → 20103); Expo push needs the owner's EAS project
 and Firebase app, set once as repo variable/secret ([apps/mobile/README.md](../apps/mobile/README.md#push)).
 
@@ -107,9 +106,7 @@ since the last tag either has an entry or is not worth offering.
 A commit that fixes a GitHub issue ends its message with a trailer, one per issue: `Issue: #105`. Once that commit
 is pushed to origin's `staging` (not before: a local commit or an unmerged branch has fixed nothing yet), whoever
 pushed it comments on the issue with what changed and the commit, and closes it as completed, without waiting for the
-tag. Once the release is out and announced, `release.yml`'s `issues` job (`scripts/issue-replies.ts`) still comments
 on each named issue with the version and the commits, closed ones included, and closes any left open; a version
-already answered is skipped. To preview it locally: `TAG=v2.x.y node scripts/issue-replies.ts --dry`.
 
 ## Install paths
 

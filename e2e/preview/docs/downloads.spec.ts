@@ -16,7 +16,7 @@ for (const path of ["/", "/es/", "/docs/start/introduction/", "/es/docs/start/in
       const file = (await link.getAttribute("data-file")) ?? "";
       const href = (await link.getAttribute("href")) ?? "";
       expect(href, file).toMatch(
-        /^https:\/\/github\.com\/agentprojectcontext\/colonia\/releases\/download\/v2\.\d+\.\d+\//,
+        /^https:\/\/github\.com\/ingenierobinario\/colonia\/releases\/download\/v2\.\d+\.\d+\//,
       );
       expect(href.endsWith(file), `${href} ends with ${file}`).toBe(true);
       await expect(link).toHaveAttribute("data-release", /^v2\.\d+\.\d+$/);

@@ -158,7 +158,6 @@ export function AboutPage({
               </ListGroup>
             </>
           )}
-          <Text style={[type.small, { textAlign: "center", paddingTop: 8 }]}>{t("aboutApc")}</Text>
         </Animated.ScrollView>
       </View>
       <Animated.View

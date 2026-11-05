@@ -403,8 +403,7 @@ export const es: Record<Key, string> = {
   actionsWaitingOne: "Esperando · 1 acción",
   about: "Acerca de",
   aboutBody:
-    "Un agente es un archivo markdown. Rol, cara, memoria, skills: todo vive en .apc/, al lado de tu código. Sin base de datos, sin lock-in. Leelo, comparalo, commitealo.",
-  aboutApc: "Hecho sobre APC, el estándar Agent Project Context.",
+    "Un agente es un archivo markdown. Rol, cara, memoria, skills: todo vive en la carpeta del proyecto, al lado de tu código. Sin base de datos, sin lock-in. Leelo, comparalo, commitealo.",
   thisApp: "Esta app",
   appVersion: "Versión",
   appBuild: "Build",

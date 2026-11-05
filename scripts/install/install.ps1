@@ -104,14 +104,14 @@ try {
   if ($mode -eq "server") {
   $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
   if (Get-ItemProperty -Path $runKey -Name "ColoniaDaemon" -ErrorAction SilentlyContinue) {
-    Say "Stopping Colonia v1's daemon"
+    Say "Stopping an earlier Colonia's daemon"
     Remove-ItemProperty -Path $runKey -Name "ColoniaDaemon"
     Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
-      Where-Object { $_.CommandLine -match "agentprojectcontext[\\/]colonia[\\/]src[\\/]host[\\/]daemon" } |
+      Where-Object { $_.CommandLine -match "colonia[\\/]src[\\/]host[\\/]daemon" } |
       ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
   }
   if ((Get-Command npm -ErrorAction SilentlyContinue) -and (npm ls -g --depth=0 @ingenierobinario/colonia 2>$null | Select-String "@ingenierobinario/colonia")) {
-    Say "Removing Colonia v1's colonia command (its files in .colonia stay, to import them)"
+    Say "Removing an earlier colonia command (its files in .colonia stay, to import them)"
     npm uninstall -g @ingenierobinario/colonia 2>$null | Out-Null
   }
   }

@@ -25,8 +25,8 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "plan.login.ifRefused":
     "¿ChatGPT no acepta el código? Puede que tengas que activar «Autorización con código de dispositivo para Codex».",
   "plan.login.start": "Iniciar sesión con ChatGPT",
-  "plan.login.fromV1": "Usar el login de Colonia v1",
-  "plan.login.fromV1Hint": "Colonia v1 ya tiene la sesión iniciada: Colonia la toma sin pedirte un código nuevo.",
+  "plan.login.fromV1": "Usar el acceso de la versión anterior",
+  "plan.login.fromV1Hint": "La versión anterior ya tiene la sesión iniciada: Colonia la toma sin pedirte un código nuevo.",
   "plan.login.step1": "Abre esta página:",
   "plan.login.step2": "Escribe este código ahí:",
   "plan.login.copy": "Copiar código",

@@ -248,10 +248,10 @@ export const es: Partial<Record<MessageKey, string>> = {
   "update.cardDesc": "Hay una versión más reciente que la que usas. Mira qué trae y actualiza cuando quieras.",
   "update.cardCta": "Ver novedades",
   "corner.label": "Novedades e invitaciones",
-  "v1.cardTitle": "Colonia v1 sigue encendida",
+  "v1.cardTitle": "Una versión anterior de Colonia sigue encendida",
   "v1.cardDesc":
-    "Tus rutinas y bots pueden ejecutarse dos veces. Apaga v1 y que colonia sea esta versión; los archivos de v1 quedan.",
-  "v1.cardCta": "Apagar v1",
+    "Tus rutinas y bots pueden ejecutarse dos veces. Apágala y que colonia sea esta versión; sus archivos se conservan.",
+  "v1.cardCta": "Apagarla",
   "board.title": "Tablero",
   "board.empty":
     "Los widgets fijados a este proyecto aparecen aquí, en vivo. Crea uno con un agente o carga uno que ya existe.",
@@ -833,7 +833,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "project.basePath": "Espacio base · carpeta de trabajo de Colonia",
   "project.settings": "Configuración del proyecto",
   "project.settings.title": "Configuración de {name}",
-  "project.settings.body": "Se guarda en el .apc/project.json del proyecto, así viaja con la carpeta.",
+  "project.settings.body": "Se guarda en la carpeta del proyecto, así viaja con ella.",
   "project.settings.baseBody":
     "El proyecto base no tiene carpeta: Colonia guarda su nombre y tipo, y sus agentes trabajan en cualquier sitio. Para trabajar en una carpeta, haz un proyecto con ella.",
   "project.settings.baseNameHint": "Sigue siendo el proyecto base aunque le cambies el nombre.",
@@ -855,7 +855,7 @@ export const es: Partial<Record<MessageKey, string>> = {
     "No te pregunta nada, en cualquier carpeta salvo la de Colonia. Solo para proyectos en los que confías del todo.",
   "project.settings.folder": "Carpeta",
   "project.settings.folderHint":
-    "La usan los chats que trabajan en la carpeta, y su .apc/ guarda los agentes y la configuración.",
+    "La usan los chats que trabajan en la carpeta, que guarda también los agentes y la configuración.",
   "project.settings.folderMissing": "La carpeta no está en el disco ahora (se movió, o es un disco sin montar).",
   "project.settings.folderWaiting":
     "Esta carpeta todavía no se abrió para Colonia. Si tu Mac pregunta si “node” puede acceder, elige Permitir: Colonia la lee en cuanto pueda.",
@@ -1092,9 +1092,9 @@ export const es: Partial<Record<MessageKey, string>> = {
   "appearance.mode.light": "Claro",
   "appearance.mode.dark": "Oscuro",
   "appearance.look": "Estilo",
-  "appearance.lookHint": "Minimal es v2. Clásico trae el verde y la tipografía de v1.",
+  "appearance.lookHint": "Minimal es el estilo actual. Clásico usa un verde y otra tipografía.",
   "appearance.look.minimal": "Minimal",
-  "appearance.look.classic": "Clásico v1",
+  "appearance.look.classic": "Clásico",
   "engine.loggedIn": "Sesión iniciada",
   "engine.authOnInvocation": "Autenticación verificada al ejecutar",
   "engine.detail.oneshot": "CLI de una ejecución · autenticación verificada al ejecutar; sin permisos por herramienta",

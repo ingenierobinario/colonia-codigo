@@ -888,3 +888,9 @@ input.wiz__name {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+.wiz__welcomelang {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}

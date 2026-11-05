@@ -8,6 +8,7 @@ import { type MessageKey, useT } from "../i18n/index.ts";
 import { CrewHero } from "./CrewHero.tsx";
 import type { Draft, StepProps } from "./draft.ts";
 import { JUST_INSTALLED } from "./firstRun.ts";
+import { LanguageChoice } from "./LanguageChoice.tsx";
 
 /** A step's kicker, title (with its muted or green end) and text. */
 export function StepHead(props: {
@@ -73,6 +74,7 @@ export function Welcome({
     <div className="wiz__welcome crew__stage">
       <CrewHero pill={pill} />
       <div className="wiz__welcomenext">
+        <LanguageChoice className="wiz__welcomelang" />
         <p className="wiz__body">{t(JUST_INSTALLED ? "setup.welcome.installedBody" : "setup.welcome.body")}</p>
         {/* Two ways in only when there is a v1 to bring; otherwise just the way in. */}
         {v1 ? (
