@@ -42,7 +42,7 @@ const es = {
   langLabel: "Idioma",
   themeLabel: "Cambiar entre claro y oscuro",
   reserve: "Quiero mi colonia",
-  offer: "497 € · pago único · incluye todo el código",
+  offer: "Incluye todo el código",
   how: "Ver cómo funciona",
   pill: { strong: "Colonia", rest: "Se instala en" },
   meet: "Te presento a tu",
@@ -52,7 +52,7 @@ const es = {
     rest: "Una secretaria que te contesta donde estés y un equipo por proyecto que trabaja con tus herramientas. Conectas tu propia suscripción o clave de IA.",
   },
   status: [
-    ["Home", "está ordenando tu bandeja"],
+    ["Nova", "está ordenando tu bandeja"],
     ["Lucía", "está planificando el lanzamiento"],
     ["Tomás", "está revisando el pago de la tienda"],
     ["Vera", "está redactando el boletín"],
@@ -71,7 +71,7 @@ const es = {
       { name: "Lucía", blob: "coral", role: "Agente · 4", chats: ["Lanzamiento del trimestre", "Aprobar el presupuesto"] },
     ],
     script: [
-      { from: "me", text: "¿Qué tengo hoy en el plato?" },
+      { from: "me", text: "¿Qué tengo pendiente hoy?" },
       { from: "bot", text: "Tres cosas en Tienda Acme:\n1. Lucía ha preparado el plan de lanzamiento y espera tu visto bueno.\n2. Tomás tiene el arreglo del pago en revisión.\n3. Vera ha programado el boletín para el viernes a las 9:00." },
       { from: "me", text: "Dile a Lucía que miro el plan después de comer." },
       { from: "bot", text: "Hecho. Se lo he dicho a Lucía y te he puesto un aviso a las 14:00." },
@@ -418,7 +418,7 @@ const es = {
   download: {
     label: "Descargar",
     title: "Consigue Colonia.",
-    lead: "Colonia se instala en tu ordenador. Primero compras tu colonia (497 €, pago único, con todo el código); después, la guía de instalación te lleva paso a paso.",
+    lead: "Colonia se instala en tu ordenador. Primero compras tu colonia, con todo el código; después, la guía de instalación te lleva paso a paso.",
     available: "Compatible",
     guide: "Guía para",
     cards: {
@@ -437,7 +437,7 @@ const es = {
     },
     reserve: {
       title: "Quiero mi colonia",
-      body: "497 €, pago único. Tras pagar entras en una página privada con las descargas y todo el código. La IA la pones tú.",
+      body: "Tras la compra entras en una página privada con las descargas y todo el código. La IA la pones tú.",
     },
     unsigned: {
       title: "Tu sistema puede avisarte la primera vez",
@@ -516,7 +516,7 @@ const en: HomeText = {
   langLabel: "Language",
   themeLabel: "Toggle light and dark",
   reserve: "I want my Colonia",
-  offer: "€497 · one-time payment · full source code included",
+  offer: "Full source code included",
   how: "See how it works",
   pill: { strong: "Colonia", rest: "Installs on" },
   meet: "Meet your",
@@ -526,7 +526,7 @@ const en: HomeText = {
     rest: "A secretary that answers you anywhere, and a team per project that works with your tools. You connect your own AI subscription or key.",
   },
   status: [
-    ["Home", "is sorting your inbox"],
+    ["Nova", "is sorting your inbox"],
     ["Lucía", "is planning the launch"],
     ["Tomás", "is checking the shop's checkout"],
     ["Vera", "is drafting the newsletter"],
@@ -545,7 +545,7 @@ const en: HomeText = {
       { name: "Lucía", blob: "coral", role: "Agent · 4", chats: ["Quarter launch", "Approve the budget"] },
     ],
     script: [
-      { from: "me", text: "What's on my plate today?" },
+      { from: "me", text: "What needs my attention today?" },
       { from: "bot", text: "Three things at Acme Store:\n1. Lucía drafted the launch plan and is waiting for your OK.\n2. Tomás has the checkout fix in review.\n3. Vera scheduled the newsletter for Friday at 9:00." },
       { from: "me", text: "Tell Lucía I'll look at the plan after lunch." },
       { from: "bot", text: "Done. I told Lucía and added a reminder for 14:00." },
@@ -764,7 +764,7 @@ const en: HomeText = {
     transcript: "A terminal session with four commands",
     demo: [
       {
-        command: 'colonia chat "What\'s on my plate today?"',
+        command: 'colonia chat "What needs my attention today?"',
         output: [
           ["#", "Home, in Acme Store"],
           ["", "You have three open things in Acme Store:"],
@@ -892,7 +892,7 @@ const en: HomeText = {
   download: {
     label: "Download",
     title: "Get Colonia.",
-    lead: "Colonia installs on your computer. First you buy your Colonia (€497, one-time, with the full source code); then the install guide takes you step by step.",
+    lead: "Colonia installs on your computer. First you buy your Colonia, with the full source code; then the install guide takes you step by step.",
     available: "Supported",
     guide: "Guide for",
     cards: {
@@ -911,7 +911,7 @@ const en: HomeText = {
     },
     reserve: {
       title: "I want my Colonia",
-      body: "€497, one-time payment. After paying you get a private page with the downloads and the full source code. You bring the AI.",
+      body: "After buying you get a private page with the downloads and the full source code. You bring the AI.",
     },
     unsigned: {
       title: "Your system may warn you the first time",
