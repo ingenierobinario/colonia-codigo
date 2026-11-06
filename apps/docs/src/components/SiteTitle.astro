@@ -1,0 +1,10 @@
+---
+// El logo lleva a la portada propia de cada idioma: la española está en / y la inglesa en /en/.
+// Starlight lo mandaba a /es/ (no existe: 404) y a / (la portada española, desde las páginas en inglés).
+import Default from "@astrojs/starlight/components/SiteTitle.astro";
+
+const route = Astro.locals.starlightRoute;
+route.siteTitleHref = route.locale === "es" ? "/" : "/en/";
+---
+
+<Default><slot /></Default>

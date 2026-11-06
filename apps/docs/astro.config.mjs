@@ -94,7 +94,7 @@ export default defineConfig({
         root: { label: "English", lang: "en" },
         es: { label: "Español", lang: "es" },
       },
-      components: { Footer: "./src/components/Footer.astro" },
+      components: { Footer: "./src/components/Footer.astro", SiteTitle: "./src/components/SiteTitle.astro" },
       lastUpdated: false,
       sidebar: [
         section("Start here", "Empezar", "start"),
