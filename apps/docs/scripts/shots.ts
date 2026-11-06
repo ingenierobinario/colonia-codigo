@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Retakes the docs' screenshots: a core of its own (temp home and HOME, port 7480, file secrets, a scripted model),
-// the demo office from demo-seed.ts, and the panel in English in both themes, saved as src/assets/shots/*.webp.
+// the demo office from demo-seed.ts, and the panel in both themes, once in English (src/assets/shots/name.webp and
+// name-dark.webp) and once in Spanish (name.es.webp and name.es-dark.webp), each with the office's texts in that language.
 // Nothing here touches ~/.colonia, the Keychain or a real service. Needs `pnpm build:web` at the repo root first.
-//   node --no-warnings scripts/shots.ts [name…]     (no names: every shot)
+//   node --no-warnings scripts/shots.ts [name…]     (no names: every shot; no SHOTS_LANG: English, then Spanish)
+//   SHOTS_LANG=es node --no-warnings scripts/shots.ts  (one language only)
 //   SHOTS_SERVE=1 node --no-warnings scripts/shots.ts  (only the demo core, to pair the phone app with)
-import { spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -12,7 +14,15 @@ import { chromium, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { fakeTelegram } from "../../../apps/core/src/channels/fake-telegram.test-support.ts";
 import { demoLlm } from "./demo-llm.ts";
-import { seed, writeDemoWorld, writeHomeSkills } from "./demo-seed.ts";
+import {
+  drawerTask,
+  type Lang,
+  ordersTitle,
+  seed,
+  telegramText,
+  writeDemoWorld,
+  writeHomeSkills,
+} from "./demo-seed.ts";
 
 const root = path.resolve(import.meta.dirname, "../../..");
 const out = path.resolve(import.meta.dirname, "../src/assets/shots");
@@ -26,20 +36,80 @@ if (!fs.existsSync(path.join(root, "apps/web/dist/index.html"))) {
   process.exit(1);
 }
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-shots-"));
+// No language given: one run per language, each with its own core and office.
+if (!process.env.SHOTS_LANG && !process.env.SHOTS_SERVE) {
+  let code = 0;
+  for (const l of ["en", "es"]) {
+    const r = spawnSync(process.execPath, process.execArgv.concat(process.argv.slice(1)), {
+      stdio: "inherit",
+      env: { ...process.env, SHOTS_LANG: l },
+    });
+    code ||= r.status ?? 1;
+  }
+  process.exit(code);
+}
+const lang: Lang = process.env.SHOTS_LANG === "es" ? "es" : "en";
+/** The Spanish set carries ".es" before the theme: name.es.webp, name.es-dark.webp. */
+const suffix = lang === "es" ? ".es" : "";
+
+// The panel's own strings, read from apps/web/src/i18n (a key missing in Spanish falls back to English, as the panel does).
+const i18nDir = path.join(root, "apps/web/src/i18n");
+const table = (l: Lang) => {
+  const m = new Map<string, string>();
+  const mine = (f: string) =>
+    f.endsWith(".ts") && !f.includes(".test.") && (l === "en" ? /^en[-.]|-en\.ts$/ : /^es[-.]|-es\.ts$/).test(f);
+  for (const f of fs.readdirSync(i18nDir).filter(mine))
+    for (const [, k, v] of fs
+      .readFileSync(path.join(i18nDir, f), "utf8")
+      .matchAll(/^\s*"([\w.-]+)":\s*"((?:[^"\\]|\\.)*)",?\s*$/gm))
+      if (!m.has(k)) m.set(k, JSON.parse(`"${v}"`));
+  return m;
+};
+const EN = table("en");
+const ES = lang === "es" ? table("es") : EN;
+const tr = (key: string, vars: Record<string, string> = {}) => {
+  const s = ES.get(key) ?? EN.get(key);
+  if (!s) throw new Error(`no string for ${key}`);
+  return s.replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? `{${v}}`);
+};
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// The long form of the temp folder: on Windows it can come as an 8.3 short name (C:UsersALEXAN~1), and watching a
+// folder under one aborts the core inside libuv (fs-event.c assertion).
+const dir = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), "colonia-shots-"));
 // A HOME of its own: no browser profiles, Claude or Codex sessions, v1 or Tailscale of the owner's show up.
 const fakeHome = path.join(dir, "home");
 // The example extension is copied into that HOME, so the screen shows "~/work/…" and not this checkout's path.
 const extension = path.join(fakeHome, "work", "extensions", "daily-brief");
 fs.cpSync(path.join(root, "examples/extensions/daily-brief"), extension, { recursive: true });
-const world = { ...writeDemoWorld(fakeHome), extension };
-writeHomeSkills(path.join(dir, "colonia"));
+const world = { ...writeDemoWorld(fakeHome, lang), extension };
+writeHomeSkills(path.join(dir, "colonia"), lang);
 // A tailscale that is not logged in, ahead of the real one in PATH (the core would show this machine's tailnet name).
 const bin = path.join(dir, "bin");
 fs.mkdirSync(bin, { recursive: true });
 fs.writeFileSync(path.join(bin, "tailscale"), "#!/bin/sh\necho 'Logged out.' >&2\nexit 1\n", { mode: 0o755 });
+fs.writeFileSync(path.join(bin, "tailscale.cmd"), "@echo Logged out. 1>&2\r\n@exit /b 1\r\n");
+// Windows needs its system variables to run anything (and git from its own PATH); elsewhere the bare minimum.
+const win = process.platform === "win32";
+const winEnv = win
+  ? Object.fromEntries(
+      ["SystemRoot", "WINDIR", "TEMP", "TMP", "PATHEXT", "ComSpec"].flatMap((k) =>
+        process.env[k] ? [[k, process.env[k] as string]] : [],
+      ),
+    )
+  : {};
+const pathDirs = win
+  ? // Only Windows itself, git and node: any other tool of this machine (Claude, Codex, Kimi…) would show up as a session.
+    [
+      bin,
+      path.join(process.env.SystemRoot ?? "C:\\Windows", "System32"),
+      process.env.SystemRoot ?? "C:\\Windows",
+      path.dirname(execFileSync("where", ["git"], { encoding: "utf8" }).split(/\r?\n/)[0] ?? ""),
+      path.dirname(process.execPath),
+    ]
+  : [bin, "/usr/bin", "/bin"];
 const models = ["llama-3.3-70b", "qwen-2.5-coder-32b"];
-const llm = await demoLlm(models);
+const llm = await demoLlm(models, lang);
 const tgToken = "123456789:AAShotsFakeTokenForTheEmulatedBot";
 const tg = await fakeTelegram(tgToken);
 
@@ -47,8 +117,10 @@ const child = spawn(process.execPath, ["--no-warnings", path.join(root, "apps/co
   cwd: root,
   stdio: ["ignore", "pipe", "pipe"],
   env: {
-    PATH: [bin, "/usr/bin", "/bin"].join(path.delimiter),
+    ...winEnv,
+    PATH: pathDirs.join(path.delimiter),
     HOME: fakeHome,
+    ...(win ? { USERPROFILE: fakeHome } : {}),
     COLONIA_PUBLIC_URL: "https://colonia.example.com",
     COLONIA_HOME: path.join(dir, "colonia"),
     COLONIA_PORT: String(port),
@@ -100,10 +172,10 @@ for (let i = 0; i < 100; i++) {
 }
 await rpc("models.set_config", { default: { model: `custom/${models[0]}`, router: false } });
 log("seeding the demo office…");
-const ids = await seed(rpc, world, log);
+const ids = await seed(rpc, world, log, lang);
 try {
   await rpc("channels.set", { id: "telegram", channel: { type: "telegram", agent_id: ids.home }, token: tgToken });
-  tg.message({ id: 4242, name: "Carla Ruiz" }, "Hi! Are we still on for the catalog shoot on Thursday?");
+  tg.message({ id: 4242, name: "Carla Ruiz" }, telegramText(lang));
 } catch (e) {
   log(`  ✗ telegram: ${(e as Error).message}`);
 }
@@ -120,23 +192,31 @@ if (process.env.SHOTS_SERVE) {
 type Shot = { name: string; go: (p: Page) => Promise<void>; phone?: boolean; clip?: "dialog" };
 const at = (hash: string) => async (p: Page) => {
   await p.goto(`${core}/#${hash}`);
-  await p.getByRole("button", { name: "Inbox" }).first().waitFor();
+  await p.getByRole("button", { name: tr("nav.inbox") }).first().waitFor();
 };
-const settings = (label: string) => async (p: Page) => {
+const settings = (key: string) => async (p: Page) => {
   await at("thread=home")(p);
   await p.keyboard.press("ControlOrMeta+Comma");
-  const dialog = p.getByRole("dialog", { name: "Settings" });
+  const dialog = p.getByRole("dialog", { name: tr("config.title") });
   if (!(await dialog.isVisible().catch(() => false)))
-    await p.getByRole("button", { name: "Settings", exact: true }).first().click();
-  await dialog.getByText(label, { exact: true }).first().click();
+    await p.getByRole("button", { name: tr("config.title"), exact: true }).first().click();
+  await dialog.getByRole("navigation").getByRole("button", { name: tr(key), exact: true }).first().click();
 };
-const project = (tab: string) => at(`project=${ids.acme}&tab=${tab}`);
-const resources = (seg: string) => async (p: Page) => {
+const project = (tab: string) => at(`project=${ids.shop}&tab=${tab}`);
+const resources = (key: string) => async (p: Page) => {
   await at("view=resources")(p);
   await p
-    .getByRole("radio", { name: new RegExp(`^${seg}`) })
+    .getByRole("radio", { name: new RegExp(`^${esc(tr(key))}`) })
     .first()
     .click();
+};
+const firstRun = async (p: Page) => {
+  await at("thread=home")(p);
+  await p
+    .getByRole("button", { name: new RegExp(`^${esc(tr("account.menuOf", { name: "" }).trim())}`) })
+    .first()
+    .click();
+  await p.getByText(tr("setup.menu"), { exact: true }).first().click();
 };
 
 const SHOTS: Shot[] = [
@@ -158,7 +238,7 @@ const SHOTS: Shot[] = [
     go: async (p) => {
       await at("thread=home")(p);
       await p.keyboard.press("ControlOrMeta+K");
-      await p.keyboard.type("launch");
+      await p.keyboard.type(lang === "es" ? "lanza" : "launch");
     },
   },
   { name: "project", go: project("overview") },
@@ -168,7 +248,7 @@ const SHOTS: Shot[] = [
     go: async (p) => {
       await project("team")(p);
       await p
-        .getByRole("tab", { name: /^Areas and roles/ })
+        .getByRole("tab", { name: new RegExp(`^${esc(tr("project.tab.org"))}`) })
         .first()
         .click();
     },
@@ -178,7 +258,7 @@ const SHOTS: Shot[] = [
     go: async (p) => {
       await at(`thread=${ids.luciaChat}`)(p);
       await p
-        .getByRole("button", { name: /^View Lucía/ })
+        .getByRole("button", { name: new RegExp(`^${esc(tr("agent.openPanel", { name: "Lucía" }))}`) })
         .first()
         .click();
     },
@@ -188,7 +268,7 @@ const SHOTS: Shot[] = [
     name: "task-drawer",
     go: async (p) => {
       await at("view=tasks")(p);
-      await p.getByText("Redesign the checkout page").first().click();
+      await p.getByText(drawerTask(lang)).first().click();
     },
   },
   {
@@ -196,7 +276,7 @@ const SHOTS: Shot[] = [
     go: async (p) => {
       await at("view=tasks")(p);
       await p
-        .getByRole("radio", { name: /^Commitments/ })
+        .getByRole("radio", { name: new RegExp(`^${esc(tr("tasks.kind.commitments"))}`) })
         .first()
         .click();
     },
@@ -204,30 +284,30 @@ const SHOTS: Shot[] = [
   { name: "routines", go: project("routines") },
   { name: "memory", go: project("memory") },
   { name: "files", go: project("files") },
-  { name: "resources-skills", go: resources("Skills") },
-  { name: "resources-mcp", go: resources("MCP") },
-  { name: "resources-integrations", go: resources("Integrations") },
-  { name: "resources-variables", go: resources("Variables") },
-  { name: "resources-extensions", go: resources("Extensions") },
-  { name: "settings-engines", go: settings("Engines and models") },
-  { name: "settings-router", go: settings("Router") },
-  { name: "settings-memory", go: settings("Memory") },
-  { name: "settings-profile", go: settings("Profile") },
-  { name: "settings-interruptions", go: settings("Interruptions") },
-  { name: "settings-channels", go: settings("Channels") },
-  { name: "settings-devices", go: settings("Devices") },
-  { name: "settings-desktop", go: settings("Desktop") },
-  { name: "settings-appearance", go: settings("Appearance") },
-  { name: "settings-agents", go: settings("Agents") },
-  { name: "settings-tokens", go: settings("API tokens") },
+  { name: "resources-skills", go: resources("res.tab.skills") },
+  { name: "resources-mcp", go: resources("res.tab.mcp") },
+  { name: "resources-integrations", go: resources("res.tab.integrations") },
+  { name: "resources-variables", go: resources("res.tab.variables") },
+  { name: "resources-extensions", go: resources("res.tab.extensions") },
+  { name: "settings-engines", go: settings("config.engines") },
+  { name: "settings-router", go: settings("config.router") },
+  { name: "settings-memory", go: settings("config.memory") },
+  { name: "settings-profile", go: settings("config.profile") },
+  { name: "settings-interruptions", go: settings("config.interruptions") },
+  { name: "settings-channels", go: settings("config.channels") },
+  { name: "settings-devices", go: settings("config.devices") },
+  { name: "settings-desktop", go: settings("config.desktop") },
+  { name: "settings-appearance", go: settings("config.appearance") },
+  { name: "settings-agents", go: settings("config.agents") },
+  { name: "settings-tokens", go: settings("clients.title") },
   { name: "channel", go: at("channel=telegram") },
   { name: "external-sessions", go: at("engine=claude") },
   {
     name: "app-widget",
     go: async (p) => {
       await at("thread=home")(p);
-      await p.getByRole("complementary").getByRole("button", { name: "BTC market panel" }).first().click();
-      // The widget fetches Binance's live figures (or falls back to sample ones) before it draws.
+      await p.getByRole("complementary").getByRole("button", { name: ordersTitle(lang) }).first().click();
+      // The widget draws its figures on load and marks body[data-state] when it's done.
       await p.frameLocator("iframe").first().locator("body[data-state]").waitFor({ timeout: 20_000 });
     },
   },
@@ -235,31 +315,16 @@ const SHOTS: Shot[] = [
     name: "phone-pair",
     go: async (p) => {
       await at("thread=home")(p);
-      await p.getByRole("button", { name: "More options" }).first().click();
-      await p.getByText("Open on your phone", { exact: true }).first().click();
+      await p.getByRole("button", { name: tr("topbar.more") }).first().click();
+      await p.getByText(tr("phone.open"), { exact: true }).first().click();
     },
   },
-  {
-    name: "wizard-welcome",
-    go: async (p) => {
-      await at("thread=home")(p);
-      await p
-        .getByRole("button", { name: /^Account/ })
-        .first()
-        .click();
-      await p.getByText("First-run setup", { exact: true }).first().click();
-    },
-  },
+  { name: "wizard-welcome", go: firstRun },
   {
     name: "wizard-agent",
     go: async (p) => {
-      await at("thread=home")(p);
-      await p
-        .getByRole("button", { name: /^Account/ })
-        .first()
-        .click();
-      await p.getByText("First-run setup", { exact: true }).first().click();
-      await p.getByText("Start from scratch", { exact: true }).first().click();
+      await firstRun(p);
+      await p.getByText(tr("setup.welcome.new"), { exact: true }).first().click();
     },
   },
   { name: "phone-home", go: at("thread=home"), phone: true },
@@ -267,13 +332,13 @@ const SHOTS: Shot[] = [
 
 const browser = await chromium.launch({ executablePath: process.env.SHOTS_CHROMIUM || undefined });
 const prefs = async (p: Page, mode: "light" | "dark") =>
-  p.addInitScript((mode) => {
+  p.addInitScript(([mode, language]) => {
     try {
       localStorage.setItem("colonia.mode", mode);
-      localStorage.setItem("colonia.prefs", JSON.stringify({ language: "en", look: "minimal", displayName: "Alex" }));
+      localStorage.setItem("colonia.prefs", JSON.stringify({ language, look: "minimal", displayName: "Marta" }));
       localStorage.setItem("colonia.corner", JSON.stringify({ discord: true, star: true }));
     } catch {}
-  }, mode);
+  }, [mode, lang] as const);
 // The demo lives in a temp folder; it shows the way a reader's own one would, under ~ (kept so across re-renders).
 const tidyPaths = (p: Page) =>
   p.addInitScript(
@@ -288,21 +353,22 @@ const tidyPaths = (p: Page) =>
         for (const r of records) fix(r.type === "characterData" ? (r.target.parentNode ?? r.target) : r.target);
       }).observe(document, { subtree: true, childList: true, characterData: true });
     },
-    [fs.realpathSync(fakeHome), fakeHome],
+    [...new Set([fs.realpathSync(fakeHome), fakeHome].flatMap((h) => [h, h.replaceAll("\\", "/")]))],
   );
 fs.mkdirSync(out, { recursive: true });
 let failed = 0;
-// Every shot in both themes: the docs show the one that matches the page (name.webp light, name-dark.webp dark).
+// Every shot in both themes: the docs show the one that matches the page (name.webp light, name-dark.webp dark;
+// the Spanish set as name.es.webp and name.es-dark.webp).
 for (const theme of ["light", "dark"] as const)
   for (const shot of SHOTS) {
     if (only.size && !only.has(shot.name)) continue;
-    const file = theme === "dark" ? `${shot.name}-dark` : shot.name;
+    const file = `${shot.name}${suffix}${theme === "dark" ? "-dark" : ""}`;
     const ctx = await browser.newContext({
       viewport: shot.phone ? { width: 390, height: 844 } : { width: 1440, height: 900 },
       deviceScaleFactor: 2,
       colorScheme: theme,
-      locale: "en-US",
-      timezoneId: "America/New_York",
+      locale: lang === "es" ? "es-ES" : "en-US",
+      timezoneId: "Europe/Madrid",
       isMobile: Boolean(shot.phone),
       hasTouch: Boolean(shot.phone),
     });
