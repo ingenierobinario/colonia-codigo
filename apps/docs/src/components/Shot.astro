@@ -196,6 +196,8 @@ const loading = eager ? "eager" : "lazy";
   .colonia-shot__clip {
     position: absolute;
     inset: 0;
+    /* Starlight separa hermanos con margin-top: 1rem; desplazaba el vídeo 16 px sobre la fija. */
+    margin: 0 !important;
     width: 100%;
     height: 100%;
     object-fit: cover;
