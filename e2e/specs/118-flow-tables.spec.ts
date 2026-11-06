@@ -58,7 +58,7 @@ const L = {
     del: "Borrar paso",
     pick: "Insertar un valor",
     saveBtn: "Guardar",
-    saved: "Guardado. Prendelo para que corra como está dibujado.",
+    saved: "Guardado. Enciéndelo para que se ejecute como está dibujado.",
     close: "Salir del editor",
     toggle: (n: string) => `Encender o apagar ${n}`,
     rows: "1 fila",

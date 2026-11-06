@@ -12,11 +12,11 @@ const chatCount = async () => (await rpc<{ threads: unknown[] }>("threads.list")
 test("unsent words stay with their chat through moving around and a reload", async ({ page }) => {
   const other = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "scout", title: "Aparte" });
   await open(page);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("Half a thought for the super-agent");
 
   await goTo(page, `#thread=${other.id}`);
-  await expect(page.getByRole("textbox", { name: "Escribile a Scout…" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Escríbele a Scout…" })).toHaveValue("");
   await box.fill("Another one for Scout");
 
   await goTo(page, "#thread=home");
@@ -43,12 +43,12 @@ test("a new chat is made only when its first message goes, and keeps its words u
     await page.getByRole("combobox", { name: "Nuevo chat" }).first().click();
     await page.getByRole("option", { name: /Scout/ }).first().click();
   };
-  const box = page.getByRole("textbox", { name: "Escribile a Scout…" });
+  const box = page.getByRole("textbox", { name: "Escríbele a Scout…" });
 
   await startWithScout();
   await box.fill("Not sent yet");
   await goTo(page, "#thread=home");
-  await expect(page.getByRole("textbox", { name: /^Escribile a/ })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: /^Escríbele a/ })).toHaveValue("");
   expect(await chatCount()).toBe(before);
 
   // Opening a new chat with the same agent again finds what was left in it, also after a reload.

@@ -9,7 +9,7 @@ import { Aside, Steps, CardGrid, LinkCard } from "@astrojs/starlight/components"
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-Colonia no trae un modelo propio. Vos traés uno (o varios): una API key, tu plan de ChatGPT, un modelo que corre en tu
+Colonia no trae un modelo propio. Tú traes uno (o varios): una API key, tu plan de ChatGPT, un modelo que corre en tu
 máquina. Colonia elige el indicado para cada turno y pasa al siguiente cuando uno falla.
 
 ## Dos palabras: proveedor y harness
@@ -21,7 +21,7 @@ máquina. Colonia elige el indicado para cada turno y pasa al siguiente cuando u
 
 Tus agentes, el router y el modelo por defecto de la instalación usan siempre **proveedores** a través del loop de
 Colonia, con las herramientas, la memoria y las reglas de seguridad de Colonia. Claude Code, Codex y las otras CLIs corren
-**en sus propias sesiones**: le hablás a la CLI en persona, en una carpeta, desde **Sesiones externas**. No son
+**en sus propias sesiones**: le hablas a la CLI en persona, en una carpeta, desde **Sesiones externas**. No son
 modelos para tus agentes.
 
 <Aside>
@@ -32,8 +32,8 @@ modelos para tus agentes.
 
 ## Sumar un proveedor
 
-Abrí **Configuración › Motores y modelos**. En **APIs de modelos (loop propio de Colonia)**, tocá **Agregar proveedor** y
-elegí su tipo; la dirección se completa sola. Pegá la key (Colonia la guarda en el almacén de secretos y no la vuelve a
+Abre **Configuración › Motores y modelos**. En **APIs de modelos (loop propio de Colonia)**, toca **Agregar proveedor** y
+elige su tipo; la dirección se completa sola. Pega la key (Colonia la guarda en el almacén de secretos y no la vuelve a
 mostrar) y la lista de modelos se le pide al proveedor mismo.
 
 Presets: **OpenCode Zen**, **Gemini**, **Anthropic**, **OpenAI**, **OpenRouter**, **Groq**, **Cerebras**,
@@ -43,7 +43,7 @@ API. Ollama y LM Studio corren en tu máquina y no necesitan key.
 <Shot name="settings-engines" alt="Configuración, Engines and models: la tarjeta del plan de ChatGPT y una lista de APIs de modelos con su estado" caption="Configuración › Motores y modelos" />
 
 En un servidor sin panel, tres variables de entorno suman un proveedor OpenAI-compatible: `COLONIA_LLM_BASE_URL`,
-`COLONIA_LLM_KEY_REF` (el nombre de un secreto) y `COLONIA_LLM_MODELS`. Mirá [Configuración](/es/reference/configuration/).
+`COLONIA_LLM_KEY_REF` (el nombre de un secreto) y `COLONIA_LLM_MODELS`. Mira [Configuración](/es/reference/configuration/).
 
 ### Tu plan de ChatGPT
 
@@ -52,16 +52,16 @@ de Colonia, con las herramientas de Colonia.
 
 <Steps>
 
-1. En ChatGPT, abrí Settings › Security y prendé **Device code authorization for Codex**. Sin eso, el inicio de
+1. En ChatGPT, abre Settings › Security y activa **Device code authorization for Codex**. Sin eso, el inicio de
    sesión no puede terminar.
-2. En **Configuración › Motores y modelos**, tocá **Conectar** en la tarjeta del plan de ChatGPT y después
+2. En **Configuración › Motores y modelos**, toca **Conectar** en la tarjeta del plan de ChatGPT y después
    **Iniciar sesión con ChatGPT**.
-3. Abrí la página que te muestra Colonia y escribí ahí el código. Colonia espera hasta que termines en el navegador.
+3. Abre la página que te muestra Colonia y escribe ahí el código. Colonia espera hasta que termines en el navegador.
 
 </Steps>
 
 Colonia tiene su propio inicio de sesión, separado del de la app de Codex, y lo renueva solo. Si Colonia v1 ya tenía la sesión
-iniciada, podés tomar esa sesión sin un código nuevo.
+iniciada, puedes tomar esa sesión sin un código nuevo.
 
 ## Cómo se nombra un modelo
 
@@ -118,7 +118,7 @@ chatgpt/gpt-6-sol                            included     48 runs      603118 in
 
 **Desde 2.11.1**, el botón **Uso de IA** de la barra superior puede mostrar ventanas
 de cuota, proporción restante y horarios de reinicio informados por los CLI locales de Codex y Claude. Las consultas
-corren en la **computadora del core**, no necesariamente en tu escritorio. Claude requiere Claude Code 2.1.273 o
+corren en el **ordenador del core**, no necesariamente en tu escritorio. Claude requiere Claude Code 2.1.273 o
 posterior. Colonia no inicia turnos de modelo para consultarlas ni lee las credenciales de los CLI. Las cuentas no
 compatibles o no disponibles muestran ese estado, no un saldo estimado de suscripción.
 
@@ -140,7 +140,7 @@ chatgpt — Codex
   chatgpt/gpt-6-sol
 ollama — Ollama (not available)`}</Terminal>
 
-La lista arranca con las CLIs (`claude`, `codex`, los agentes ACP), cuyos modelos usás en sus propias sesiones, y
+La lista arranca con las CLIs (`claude`, `codex`, los agentes ACP), cuyos modelos usas en sus propias sesiones, y
 sigue con tus proveedores. A cada motor se le pide su propia lista; `colonia models --refresh` vuelve a preguntar en vez
 de usar la caché de un día.
 

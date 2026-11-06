@@ -55,7 +55,7 @@ export function ClassicLook() {
   return (
     <ColoniaProvider look="classic" mode="dark" fill style={{ padding: 16, borderRadius: 12, width: 592 }}>
       <Composer
-        placeholder="Escribí algo y enter para enviar (shift+enter = nueva línea)"
+        placeholder="Escribe algo y enter para enviar (shift+enter = nueva línea)"
         onAttach={() => {}}
         header={
           <>

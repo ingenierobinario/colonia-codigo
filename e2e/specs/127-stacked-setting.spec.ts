@@ -6,9 +6,9 @@ test("the account's About you box sits right under its description", async ({ pa
   await open(page);
   await openSettings(page);
   const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
-  const about = settings.getByRole("textbox", { name: "Sobre vos", exact: true });
+  const about = settings.getByRole("textbox", { name: "Sobre ti", exact: true });
   await expect(about).toBeVisible();
-  const hint = settings.getByText("Lo que tus agentes saben de vos siempre", { exact: false });
+  const hint = settings.getByText("Lo que tus agentes saben de ti siempre", { exact: false });
   const top = await about.evaluate((box) => box.getBoundingClientRect().top);
   const bottom = await hint.evaluate((text) => text.getBoundingClientRect().bottom);
   expect(top - bottom).toBeLessThan(24);

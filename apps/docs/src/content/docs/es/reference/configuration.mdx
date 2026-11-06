@@ -43,15 +43,15 @@ agentes, su memoria y sus skills ([Proyectos](/es/concepts/projects/)).
 
 <Aside type="caution">
 `colonia.db` y `secrets.json` son del core. Los agentes no pueden leer ni cambiar la carpeta de Colonia con sus herramientas, y
-vos no deberías editarlos a mano mientras el core corre. Para probar cosas sin tocar tus datos reales, arrancá un core
-con su propio `COLONIA_HOME` (mirá [Problemas frecuentes](/es/reference/troubleshooting/#empezar-de-cero-sin-perder-nada)).
+tú no deberías editarlos a mano mientras el core corre. Para probar cosas sin tocar tus datos reales, arranca un core
+con su propio `COLONIA_HOME` (mira [Problemas frecuentes](/es/reference/troubleshooting/#empezar-de-cero-sin-perder-nada)).
 </Aside>
 
 ## core.env
 
 `<home>/core.env` dice cómo está expuesto el core. Lo escriben `colonia expose`, **Configuración › Conexiones ›
 Dispositivos** y el primer arranque de la app de escritorio; lo leen el core, el comando `colonia` y la app de escritorio.
-Es un archivo `CLAVE=VALOR` común, que solo vos podés leer (modo 600), y solo cuentan estas claves:
+Es un archivo `CLAVE=VALOR` común, que solo tú puedes leer (modo 600), y solo cuentan estas claves:
 
 | Clave | Qué define |
 |---|---|
@@ -73,13 +73,13 @@ necesita un reinicio.
 | `COLONIA_HOME` | `~/.colonia/v2` | La carpeta de Colonia. |
 | `COLONIA_PORT` | `7440` | El puerto del core. |
 | `COLONIA_HOST` | `127.0.0.1` | La dirección donde escucha. Cualquier cosa que no sea loopback necesita `COLONIA_TOKEN`, o el core no arranca. |
-| `COLONIA_TOKEN` | ninguno | El token del core. Sin token, el core solo acepta esta compu. |
-| `COLONIA_PUBLIC_URL` | ninguna | La dirección por la que los dispositivos llegan a este core desde afuera (un VPS o un nombre de Tailscale). Va primera en el QR de vinculación. |
+| `COLONIA_TOKEN` | ninguno | El token del core. Sin token, el core solo acepta este ordenador. |
+| `COLONIA_PUBLIC_URL` | ninguna | La dirección por la que los dispositivos llegan a este core desde fuera (un VPS o un nombre de Tailscale). Va primera en el QR de vinculación. |
 | `COLONIA_ALLOWED_ORIGINS` | ninguno | Orígenes extra que pueden llamar al core, separados por comas. |
 | `COLONIA_SECRETS` | el almacén del sistema | `file` guarda los secretos en `<home>/secrets.json` en cualquier sistema. |
 | `COLONIA_UPDATES` | prendido | `off` deja de buscar un Colonia más nuevo; `app` solo avisa que salió uno (la app de escritorio lo pone para su core, y las actualizaciones las instala ella). |
 | `COLONIA_RELEASES` | `ingenierobinario/colonia` | El repositorio de GitHub cuyos releases anuncian un paquete nuevo. `off` lo frena. |
-| `COLONIA_TELEMETRY` | prendido | `off` no le manda nada al proyecto Colonia, ni siquiera los pasos de la instalación. `DO_NOT_TRACK=1` y `CI` hacen lo mismo. Mirá [Privacidad y telemetría](/es/reference/privacy/). |
+| `COLONIA_TELEMETRY` | prendido | `off` no le manda nada al proyecto Colonia, ni siquiera los pasos de la instalación. `DO_NOT_TRACK=1` y `CI` hacen lo mismo. Mira [Privacidad y telemetría](/es/reference/privacy/). |
 | `COLONIA_APP` | `~/.colonia/v2/app` | Donde el script de instalación pone el paquete (sus versiones y `current`). |
 | `COLONIA_AGENT_NAME` | uno al azar | El nombre de Home en una instalación nueva. |
 | `COLONIA_LLM_TIMEOUT_MS` | `45000` | Cuánto espera el core el primer byte de la respuesta de un modelo. |
@@ -98,7 +98,7 @@ necesita un reinicio.
 ### Un proveedor de modelos propio
 
 Estas cuatro suman un proveedor compatible con OpenAI, primero en la lista: un servidor local, un gateway, cualquier
-cosa que hable esa API. También podés sumar proveedores desde el panel ([Modelos](/es/concepts/models/)).
+cosa que hable esa API. También puedes sumar proveedores desde el panel ([Modelos](/es/concepts/models/)).
 
 | Variable | Por defecto | Qué hace |
 |---|---|---|
@@ -114,14 +114,14 @@ cosa que hable esa API. También podés sumar proveedores desde el panel ([Model
 | `COLONIA_URL` | `http://127.0.0.1:7440` | El core con el que habla `colonia`. |
 | `COLONIA_TOKEN` | el de `core.env` | El token que presenta. |
 | `COLONIA_CHANNEL_TOKEN` | ninguno | El token de un bot de Telegram, para `colonia channels add`. |
-| `COLONIA_CLIENT_TOKEN` | ninguno | El token de una app de afuera, para `colonia mcp`. |
+| `COLONIA_CLIENT_TOKEN` | ninguno | El token de una app externa, para `colonia mcp`. |
 
 ### La app de escritorio
 
 | Variable | Por defecto | Qué hace |
 |---|---|---|
 | `COLONIA_URL` | `http://127.0.0.1:7440` | El core local que abre. |
-| `COLONIA_CONNECTION` | pregunta en el primer arranque | `local` saltea la pregunta y usa el core de esta compu. |
+| `COLONIA_CONNECTION` | pregunta en el primer arranque | `local` se salta la pregunta y usa el core de este ordenador. |
 | `COLONIA_DESKTOP_DATA` | la carpeta de datos de apps del sistema | Una carpeta de datos aparte: sus propias sesiones del navegador y su propio candado de instancia única. |
 | `COLONIA_WEB_URL` | `http://127.0.0.1:7441` | El servidor de desarrollo del panel, que prueba primero cuando corre desde el código. |
 
@@ -130,7 +130,7 @@ cosa que hable esa API. También podés sumar proveedores desde el panel ([Model
 | Puerto | Qué |
 |---|---|
 | `7440` | El core: el panel, el protocolo y `/health`. Se cambia con `COLONIA_PORT`. |
-| `7441` | El servidor de desarrollo del panel (`pnpm --filter @colonia/web dev`), solo cuando trabajás en Colonia. |
+| `7441` | El servidor de desarrollo del panel (`pnpm --filter @colonia/web dev`), solo cuando trabajas en Colonia. |
 | `7430` | El daemon de Colonia v1. v2 no lo usa, así que pueden correr los dos a la vez. |
 | `443` | Donde `colonia expose tailscale` publica el core dentro de tu tailnet (`tailscale serve`). |
 
@@ -143,7 +143,7 @@ refieren a los secretos por nombre (`secret://gemini`) y el core los resuelve so
   `<home>/secrets.index.json` solo lista nombres y fechas.
 - **Linux**: los valores van a tu llavero (Secret Service), bajo el mismo servicio.
 - **Windows**: los valores van a `<home>/secrets.dpapi`, cifrado con DPAPI para tu cuenta.
-- **Un servidor Linux sin llavero o `COLONIA_SECRETS=file`**: los valores van a `<home>/secrets.json`, que solo vos podés
+- **Un servidor Linux sin llavero o `COLONIA_SECRETS=file`**: los valores van a `<home>/secrets.json`, que solo tú puedes
   leer.
 
 Se manejan en **Recursos › Variables** (globales o por proyecto; el valor de un proyecto le gana al global), o con
@@ -151,11 +151,11 @@ Se manejan en **Recursos › Variables** (globales o por proyecto; el valor de u
 
 ## Dónde vive cada ajuste
 
-Abrí **Configuración** con `⌘,` o desde el menú de tu cuenta. Las secciones, por grupo:
+Abre **Configuración** con `⌘,` o desde el menú de tu cuenta. Las secciones, por grupo:
 
-| Grupo | Sección | Qué ajustás ahí |
+| Grupo | Sección | Qué ajustas ahí |
 |---|---|---|
-| General | **Cuenta** | Tu nombre, sobre vos, el idioma de tus agentes, tu zona horaria. |
+| General | **Cuenta** | Tu nombre, sobre ti, el idioma de tus agentes, tu zona horaria. |
 | | **Apariencia** | Modo, estilo, fuente, ancho e idioma (abajo). |
 | Modelos | **Motores y modelos** | Los proveedores y sus claves, los inicios de sesión, qué modelos hay. |
 | | **Sesiones externas** | Las CLI de Claude Code y Codex en esta máquina. |
@@ -168,9 +168,9 @@ Abrí **Configuración** con `⌘,` o desde el menú de tu cuenta. Las secciones
 | | **Canales** | Telegram, WhatsApp, Discord, Slack y los demás. |
 | | **Interrupciones** | Tope diario, horas de silencio, app de chat para los avisos. |
 | Conexiones | **Dispositivos** | Quién puede llegar a este Colonia, vinculación, dispositivos vinculados, push. |
-| | **Tokens de API** | Tokens para apps de afuera. |
+| | **Tokens de API** | Tokens para apps externas. |
 | Entorno | **Navegador** | Importar tus sesiones al navegador de Colonia. |
-| | **Escritorio** | El atajo del chat rápido, abrir al iniciar, el uso de la computadora. |
+| | **Escritorio** | El atajo del chat rápido, abrir al iniciar, el uso del ordenador. |
 | | **Avanzado** | La versión del core, `code_sha`, cuánto lleva prendido, los servicios y el uso de RAM. |
 
 ## Idiomas y temas

@@ -24,10 +24,10 @@ test("the base project is renamed and made a company, with areas and roles its a
   await page.getByRole("button", { name: "Agregar un área" }).click();
   const area = page.getByRole("dialog", { name: "Nueva área" });
   await area.getByLabel("Nombre").fill("Finanzas");
-  await area.getByLabel("Objetivo").fill("Que la plata alcance");
+  await area.getByLabel("Objetivo").fill("Que el dinero alcance");
   await area.getByRole("button", { name: "Guardar" }).click();
   const card = page.locator(".org__area", { hasText: "Finanzas" });
-  await expect(card).toContainText("Que la plata alcance");
+  await expect(card).toContainText("Que el dinero alcance");
   await card.getByRole("button", { name: "Rol" }).click();
   const role = page.getByRole("dialog", { name: "Nuevo rol" });
   await role.getByLabel("Nombre").fill("Chief Financial Officer");

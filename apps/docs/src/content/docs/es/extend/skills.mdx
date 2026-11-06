@@ -1,6 +1,6 @@
 ---
 title: Skills
-description: Enseñale a tus agentes a hacer algo una vez, en un SKILL.md que cargan cuando una tarea lo necesita.
+description: Enseña a tus agentes a hacer algo una vez, en un SKILL.md que cargan cuando una tarea lo necesita.
 sidebar:
   order: 1
 ---
@@ -29,7 +29,7 @@ description: Writes the Friday status report from this week's closed tasks. Use 
 3. End with what is still blocked and who it waits on.
 ```
 
-Lo que más importa es la descripción: es lo que leen los agentes para decidir si cargar la skill. Decí **cuándo**
+Lo que más importa es la descripción: es lo que leen los agentes para decidir si cargar la skill. Di **cuándo**
 usarla, no solo qué es. Los nombres usan letras, números, puntos, `-` y `_`.
 
 ## Skills globales y de proyecto
@@ -50,22 +50,22 @@ usarla, no solo qué es. Los nombres usan letras, números, puntos, `-` y `_`.
 - **Las skills de otras apps de agentes** también están, leídas donde esas apps las guardan: `~/.claude/skills`,
   `~/.codex/skills`, `~/.cursor/skills` y `~/.agents/skills` (globales), y `.claude/skills`, `.codex/skills`… dentro de
   un proyecto. Cada una muestra la etiqueta de su app (Claude, Codex, Cursor, Agents) y en Colonia es de solo lectura:
-  cambiala en su app, o **Copiar a Colonia**.
+  cámbiala en su app, o **Copiar a Colonia**.
 - Un mismo nombre en dos lugares es una sola skill: gana la del proyecto, después la de Colonia, después las de otras apps
   y por último las de extensiones. Las demás se marcan **Duplicada** y aparecen en **También en**, diciendo si cada una
   es igual o distinta.
 
-Se manejan en **Recursos › Skills**: leer, editar, crear (**+ Skill**) y prender o apagar cada una globalmente o por
-proyecto. Si editás una skill global desde adentro de un proyecto, Colonia te pregunta si cambiar la original o darle a
-ese proyecto su propia copia. Arriba de la lista podés ver solo las del proyecto (**Todas** / **Proyecto**) y filtrar
+Se manejan en **Recursos › Skills**: leer, editar, crear (**+ Skill**) y activar o desactivar cada una globalmente o por
+proyecto. Si editas una skill global desde dentro de un proyecto, Colonia te pregunta si cambiar la original o darle a
+ese proyecto su propia copia. Arriba de la lista puedes ver solo las del proyecto (**Todas** / **Proyecto**) y filtrar
 por motor (Colonia, Claude, Codex, Cursor, Agents; varios a la vez).
 
 ## Importar skills
 
 **+ Skill › Importar** trae skills desde una carpeta, un `.zip` o un repositorio git (https o ssh; un link de GitHub a
 una carpeta trae solo esa carpeta). Colonia primero lo lee y no ejecuta nada: ves cada skill que encontró, sus archivos,
-los scripts que trae, la configuración que solo lee otra app (como `allowed-tools`) y lo que quedó afuera (links,
-archivos demasiado grandes). Marcás las que querés copiar; un nombre que ya existe se mantiene salvo que elijas
+los scripts que trae, la configuración que solo lee otra app (como `allowed-tools`) y lo que quedó fuera (links,
+archivos demasiado grandes). Marcas las que quieras copiar; un nombre que ya existe se mantiene salvo que elijas
 reemplazarlo. Dentro de un proyecto van a su `.apc/skills/`.
 
 <Shot name="resources-skills" alt="Recursos, pestaña Skills: una lista de skills globales y de proyecto, con una abierta que muestra su descripción y dónde está prendida" caption="Recursos › Skills" />
@@ -73,12 +73,12 @@ reemplazarlo. Dentro de un proyecto van a su `.apc/skills/`.
 ## Cómo las eligen los agentes
 
 Cada agente recibe un catálogo corto de las skills que puede usar. Con un motor de embeddings configurado
-(**Configuración › Memoria › Elegir skills por significado**), cada mensaje que mandás además se compara por
+(**Configuración › Memoria › Elegir skills por significado**), cada mensaje que mandas además se compara por
 significado con tus skills, y hasta tres que encajan se le sugieren al agente para ese turno. El agente las evalúa y
 carga las que necesita con `load_skill`. La elección se ve como chips sobre la respuesta: cargada, sugerida o
 considerada.
 
-Para cargar una vos, nombrala en el compositor: escribí `/` y elegila, o escribí `/weekly-report`. Su texto completo
+Para cargar una tú, nómbrala en el compositor: escribe `/` y elígela, o escribe `/weekly-report`. Su texto completo
 entra en ese turno, haya o no motor de embeddings. `/skills` abre la lista de skills.
 
 <Aside type="note">
@@ -100,16 +100,16 @@ colonia skills import ./pack.zip --project <proyecto> --yes          # a .apc/sk
 colonia skills import ~/.claude/skills/pdf --yes                     # copia a Colonia una skill de otra app
 ```
 
-## Enseñale a otras apps de agentes a usar Colonia
+## Enseña a otras apps de agentes a usar Colonia
 
 Colonia trae unas skills para **otras** apps de agentes, así Claude Code, Codex, Cursor y todo lo que lea `~/.agents` sabe
 usar Colonia (`colonia`, `colonia-mcp`, `colonia-extensions`, `apc-context`). El core las copia en la carpeta de skills de cada app
-cada vez que arranca, solo para las apps que tenés instaladas. Para actualizarlas ahora, o ver qué cambiaría:
+cada vez que arranca, solo para las apps que tienes instaladas. Para actualizarlas ahora, o ver qué cambiaría:
 
 ```bash
 colonia skills install-runtimes --dry-run
 colonia skills install-runtimes
 ```
 
-Solo toca las skills que trae Colonia (y quita las que ya no trae), nunca las de otros. Mirá
+Solo toca las skills que trae Colonia (y quita las que ya no trae), nunca las de otros. Mira
 [Clientes externos](/es/extend/outside-clients/) para conectar esas apps a tus agentes.

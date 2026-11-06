@@ -29,51 +29,51 @@ comparte entre artefactos.
 
 | Capa | Guarda | Quién la ve |
 |---|---|---|
-| **Estado** | Lo que elegiste o escribiste: filtros, la pestaña abierta, una checklist, un borrador. Hasta 64.000 caracteres. | Vos, y su agente, que lo lee como datos y puede cambiarlo por vos. |
+| **Estado** | Lo que elegiste o escribiste: filtros, la pestaña abierta, una checklist, un borrador. Hasta 64.000 caracteres. | Tú, y su agente, que lo lee como datos y puede cambiarlo por ti. |
 | **Almacén** | Datos que guardó, como la última lectura de un widget en vivo. Hasta 5 MB. | La página. Su agente ve solo los nombres de lo guardado y el tamaño. |
 | **Base de datos** | Los registros de una app (SQLite), hasta 50 MB. | La página. Su agente ve las tablas y cuántas filas tienen. |
 
-Para verla o borrarla, abrí el menú del artefacto › **Memoria y exportación**: cada capa muestra su tamaño y
+Para verla o borrarla, abre el menú del artefacto › **Memoria y exportación**: cada capa muestra su tamaño y
 **Borrar…** te deja elegir qué olvidar. Copiar un artefacto a otro proyecto no copia su memoria.
 
 ### Credenciales
 
-Un artefacto que lee una API con una clave nunca tiene la clave. La guardás una vez como secreto con el nombre
+Un artefacto que lee una API con una clave nunca tiene la clave. La guardas una vez como secreto con el nombre
 `artifact.<nombre del artefacto>.<clave>` (por ejemplo `artifact.weather.token`) y la página le pide a Colonia que haga
 la llamada: Colonia suma la clave de su lado y la página recibe solo la respuesta. La llamada solo puede ir a los sitios
 que el artefacto declaró, y la clave nunca la ve la página, ni su agente, ni un link compartido.
 
 ## Artefactos en vivo
 
-Cómo se comporta un artefacto cuando te vas y volvés:
+Cómo se comporta un artefacto cuando te vas y vuelves:
 
 - **Estático** (la mayoría): muestra lo que tenía cuando se armó y corre solo mientras está en pantalla.
-- **Con caché**: guarda su última lectura en el almacén; cuando lo volvés a abrir ves esa lectura al instante (marcada
+- **Con caché**: guarda su última lectura en el almacén; cuando lo vuelves a abrir ves esa lectura al instante (marcada
   como vieja) mientras trae una nueva.
 - **En vivo**: una página que tiene que seguir corriendo oculta (un ticker, un temporizador) puede pedirle a Colonia que
   la mantenga viva. Colonia mantiene como mucho tres a la vez. La página debe pausar trabajo innecesario cuando está
-  oculta; puede vencer o ser desalojada si otra necesita lugar. Leé [Apps vivas](/es/apps/live-apps/) para el grupo
+  oculta; puede vencer o ser desalojada si otra necesita lugar. Lee [Apps vivas](/es/apps/live-apps/) para el grupo
   separado de seis apps abiertas y sus límites.
 
-**Las apps quedan abiertas; los widgets se cierran.** Una app que abrís sigue corriendo mientras vas a otra parte de
-Colonia, como una app de tu escritorio: volvés y está tal cual la dejaste, hasta que la cerrás (Cerrar app) o cerrás Colonia.
-Corren hasta seis a la vez, cada una con un punto en Apps, en la barra lateral. Un widget es una vista: lo abrís en
-pantalla completa, lo mirás, te vas y se cierra. Fijá un widget en Apps para convertirlo en app. "Abrir en otra
-ventana" lleva una app a una ventana propia; el panel muestra dónde está y la trae de vuelta cuando cerrás esa ventana.
+**Las apps quedan abiertas; los widgets se cierran.** Una app que abres sigue corriendo mientras vas a otra parte de
+Colonia, como una app de tu escritorio: vuelves y está tal cual la dejaste, hasta que la cierras (Cerrar app) o cierras Colonia.
+Corren hasta seis a la vez, cada una con un punto en Apps, en la barra lateral. Un widget es una vista: lo abres en
+pantalla completa, lo miras, te vas y se cierra. Fija un widget en Apps para convertirlo en app. "Abrir en otra
+ventana" lleva una app a una ventana propia; el panel muestra dónde está y la trae de vuelta cuando cierras esa ventana.
 
 ## Exportar e importar
 
 Un artefacto viaja como un archivo **`.coloniaart`**, sea widget o app. Clic derecho en Apps (o su menú Más) ›
 **Descargar (.coloniaart)** › **Solo el artefacto**, o **Con lo que recuerda** para llevarte también tus elecciones, la caché
 y los registros (para un backup o para pasarlo a otro Colonia). **Instalar artefacto** (el botón de subir en Apps, o el +
-del tablero de un proyecto) abre un diálogo: arrastrás el archivo o lo elegís, ves qué es (widget o app, a qué se
-conecta, qué secretos te va a pedir, si trae datos), elegís el proyecto, si lo fijás en Apps, y recién ahí
+del tablero de un proyecto) abre un diálogo: arrastras el archivo o lo eliges, ves qué es (widget o app, a qué se
+conecta, qué secretos te va a pedir, si trae datos), eliges el proyecto, si lo fijas en Apps, y recién ahí
 **Instalar**. Si el nombre ya existe ahí, se instala al lado con un número. Desde la terminal:
 `colonia artifacts export <nombre> [--memory]` y `colonia artifacts import <archivo.coloniaart>`. Los archivos guardados antes como
 `.colonia-artifact.json` se instalan igual.
 
 <Aside type="caution">
-Una exportación con memoria lleva lo que escribiste y los registros de la app. Compartí solo exportaciones sin
+Una exportación con memoria lleva lo que escribiste y los registros de la app. Comparte solo exportaciones sin
 memoria.
 </Aside>
 
@@ -99,7 +99,7 @@ Los artefactos exportados son el formato que va a usar un futuro marketplace. Ca
   llega, los secretos que espera (solo nombres, nunca valores), si corre en vivo y la versión del formato de su base de
   datos, para que una versión nueva pueda actualizar tus registros;
 - la **página** en sí;
-- opcionalmente, la memoria (estado, almacén y base de datos), solo cuando lo exportás para vos.
+- opcionalmente, la memoria (estado, almacén y base de datos), solo cuando lo exportas para ti.
 
 Una subida al marketplace nunca va a llevar tu memoria: quien instala un artefacto arranca con una vacía y suma sus
 propios secretos.
@@ -107,6 +107,6 @@ propios secretos.
 ## Siguiente
 
 <CardGrid>
-  <LinkCard title="Tablero y widgets" href="/es/office/board/" description="Fijá artefactos a un proyecto, abrilos como apps, compartilos." />
+  <LinkCard title="Tablero y widgets" href="/es/office/board/" description="Fija artefactos a un proyecto, ábrelos como apps, compártelos." />
   <LinkCard title="Chat" href="/es/office/chat/" description="Donde los agentes los arman y los cambian." />
 </CardGrid>

@@ -72,8 +72,8 @@ for (const phone of [false, true]) {
     const chat = editor.getByRole("complementary", { name: `Chat con ${boss} sobre este flow` });
     await expect(chat).toBeVisible();
     await expect(editor.getByRole("complementary", { name: "Ajustes del paso" })).toBeHidden();
-    await expect(chat).toContainText(`Contale a ${boss} qué tiene que hacer este flow`);
-    await chat.getByRole("textbox", { name: /Escribile/ }).fill("add a cleanup step");
+    await expect(chat).toContainText(`Cuéntale a ${boss} qué tiene que hacer este flow`);
+    await chat.getByRole("textbox", { name: /Escríbele/ }).fill("add a cleanup step");
     await page.keyboard.press("Enter");
 
     // The owner's bubble is only their words (the core tells the agent which Flow); the step appears on the
@@ -92,7 +92,7 @@ for (const phone of [false, true]) {
     await expect(chat.getByRole("button", { name: "Abrir en el editor" })).toHaveCount(0);
     if (!phone)
       await expect(
-        editor.getByRole("status").filter({ hasText: `Lo dibujó ${boss}: revisalo y guardalo` }),
+        editor.getByRole("status").filter({ hasText: `Lo dibujó ${boss}: revísalo y guárdalo` }),
       ).toBeVisible();
     await expect(editor.locator(".fe-agent")).toBeHidden();
     const drawn = await rpc<Result<"flows.graph_get">>("flows.graph_get", { flow });
@@ -125,7 +125,7 @@ test("a new flow the super-agent is asked to make becomes the editor's flow", as
   const canvas = editor.locator(".fe-canvas > .fc");
   await editor.getByRole("button", { name: `Pedírselo a ${boss}` }).click();
   const chat = editor.getByRole("complementary", { name: `Chat con ${boss} sobre este flow` });
-  await chat.getByRole("textbox", { name: /Escribile/ }).fill("make this flow");
+  await chat.getByRole("textbox", { name: /Escríbele/ }).fill("make this flow");
   await page.keyboard.press("Enter");
 
   await expect(chat).not.toContainText(project);

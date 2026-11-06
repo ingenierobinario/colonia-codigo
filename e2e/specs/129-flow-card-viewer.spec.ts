@@ -19,7 +19,7 @@ async function cardIn(page: Page, name: string) {
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name })).project.id;
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "superagent", title: "Flows" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill(`draw a flow in ${project}`);
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill(`draw a flow in ${project}`);
   await page.keyboard.press("Enter");
   const card = page.locator(".flowcard");
   await expect(card.locator(".react-flow__node")).toHaveCount(2);
@@ -47,7 +47,7 @@ for (const phone of [false, true]) {
       expect(box).toMatchObject({ x: 0, y: 0, width: 390, height: 844 });
     } else {
       const steps = viewer.getByRole("complementary", { name: "Pasos" });
-      await expect(steps).toContainText("Elegí uno para ver sus ajustes.");
+      await expect(steps).toContainText("Elige uno para ver sus ajustes.");
       await expect(steps.getByRole("button", { name: /Save the lead/ })).toBeVisible();
     }
     await shot(page, `flow-viewer-${at}`);

@@ -65,7 +65,7 @@
       },
       "help": {
         "en": "What your other agents' routines had for you, told in one message; they never write to you on their own.",
-        "es": "Lo que las rutinas de tus otros agentes tenían para vos, contado en un solo mensaje; ellos nunca te escriben por su cuenta."
+        "es": "Lo que las rutinas de tus otros agentes tenían para ti, contado en un solo mensaje; ellos nunca te escriben por su cuenta."
       },
       "default": 4
     },
@@ -143,9 +143,9 @@
           "value": "informal",
           "label": {
             "en": "Informal",
-            "es": "Informal (vos / tú)"
+            "es": "Informal (tú)"
           },
-          "prompt": "Address the owner informally (tú / vos)."
+          "prompt": "Address the owner informally (tú)."
         },
         {
           "value": "neutral",

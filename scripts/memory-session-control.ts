@@ -40,8 +40,8 @@ try {
   const agent = await env.client.call("agents.create", { slug: "learner", name: "Learner", project_id: project.id });
   await env.client.call("agents.update", { agent: agent.id, tools: ["list_agents"], autonomy: "total" });
   for (const text of [
-    `Siempre prefiero etiqueta ${marker} para informes internos. Respondé solo recibido, sin herramientas.`,
-    "Sin usar herramientas, elegí etiqueta para informe interno. Si no conocés preferencia duradera, respondé NEUTRO. Respondé solo etiqueta.",
+    `Siempre prefiero etiqueta ${marker} para informes internos. Responde solo recibido, sin herramientas.`,
+    "Sin usar herramientas, elige etiqueta para informe interno. Si no conoces preferencia duradera, responde NEUTRO. Responde solo etiqueta.",
   ]) {
     const thread = await env.client.call("threads.create", {
       kind: "code",

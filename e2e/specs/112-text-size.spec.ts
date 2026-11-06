@@ -4,7 +4,7 @@ for (const look of ["minimal", "classic"]) {
   test(`text size previews, persists and remains usable on a narrow screen (${look})`, async ({ page }) => {
     await rpc("setup.finish");
     await open(page);
-    const composer = page.getByRole("textbox", { name: /^Escribile a/ });
+    const composer = page.getByRole("textbox", { name: /^Escríbele a/ });
     const normalComposer = await composer.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     await openSettings(page);
     await page.getByRole("button", { name: "Apariencia", exact: true }).click();

@@ -9,7 +9,7 @@ test("an answer shows what its turn received: the parts' sizes, the system promp
   const t = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "superagent", title: "Received" });
   await open(page, `#view=inbox&thread=${t.id}`);
   const main = page.getByRole("main");
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("Northwind hola");
   await box.press("Enter");
   const answer = main.locator(".colonia-msg--agent", { hasText: "Got it: Northwind hola" });

@@ -95,7 +95,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await expect(page.getByText(/Soy Robina, tu super-agente/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Directo y breve" })).toBeVisible();
   await page.getByRole("button", { name: "Otra", exact: true }).click();
-  await page.getByRole("textbox", { name: /Contame cómo querés que sea/ }).fill("Con calma y paciencia");
+  await page.getByRole("textbox", { name: /Cuéntame cómo quieres que sea/ }).fill("Con calma y paciencia");
   await page.keyboard.press("Enter");
   await expect(page.getByText("Quiero que seas así: Con calma y paciencia.").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Directo y breve" })).toBeHidden();
@@ -155,7 +155,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await dialog.getByRole("button", { name: "embeddinggemma:300m" }).click();
   await expect(dialog.getByRole("textbox", { name: "Modelo" })).toHaveValue("embeddinggemma:300m");
   await dialog.getByRole("button", { name: "Probar conexión" }).click();
-  await expect(dialog.getByText("Responde, con 2 modelos: elegí uno.")).toBeVisible();
+  await expect(dialog.getByText("Responde, con 2 modelos: elige uno.")).toBeVisible();
   await page.screenshot({ path: "/tmp/colonia-embed-test.png" });
   await page.keyboard.press("Escape");
   await wizard.getByRole("button", { name: /Buscar por palabras/ }).click();

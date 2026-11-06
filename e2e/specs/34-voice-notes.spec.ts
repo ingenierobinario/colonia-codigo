@@ -13,7 +13,7 @@ test("nota voz muestra volumen real, conserva audio y texto, reproduce después 
     req.resume();
     req.on("end", () => {
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ text: "Revisá publicaciones duplicadas" }));
+      res.end(JSON.stringify({ text: "Revisa publicaciones duplicadas" }));
     });
   });
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -38,10 +38,10 @@ test("nota voz muestra volumen real, conserva audio y texto, reproduce después 
     await context.grantPermissions(["microphone"], { origin: env.core.url });
     // Live words need whisper.cpp on the machine running the test: the core's answer is stood in for.
     await page.route("**/rpc/media.listen", (route) =>
-      route.fulfill({ json: { ok: true, result: { text: "Revisá publicaciones", live: true } } }),
+      route.fulfill({ json: { ok: true, result: { text: "Revisa publicaciones", live: true } } }),
     );
     await page.goto(env.core.url);
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     await expect(input).toBeVisible();
     await page.getByRole("button", { name: "Dictar", exact: true }).click();
     await expect(page.getByText("Grabando", { exact: true })).toBeVisible();
@@ -57,24 +57,24 @@ test("nota voz muestra volumen real, conserva audio y texto, reproduce después 
       )
       .toBe(true);
     await expect(page.locator(".voice-recording__time")).not.toHaveText("0:00");
-    await expect(page.locator(".voice-recording__heard")).toHaveText("Revisá publicaciones");
+    await expect(page.locator(".voice-recording__heard")).toHaveText("Revisa publicaciones");
     await expect(input).toHaveValue("");
     await page.screenshot({ path: "/tmp/colonia-voice-recording.png" });
     await page.getByRole("button", { name: "Terminar de dictar", exact: true }).click();
-    await expect(input).toHaveValue("Revisá publicaciones duplicadas");
+    await expect(input).toHaveValue("Revisa publicaciones duplicadas");
     await expect(page.locator(".voice-recording__heard")).toHaveCount(0);
     await expect(page.locator(".attchip.is-audio")).toBeVisible();
     await expect(page.locator(".transcript__row")).toHaveCount(0);
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(page.locator(".transcript").getByText("Duplicates checked", { exact: true })).toBeVisible();
-    await expect(page.getByText("Revisá publicaciones duplicadas", { exact: true })).toBeVisible();
+    await expect(page.getByText("Revisa publicaciones duplicadas", { exact: true })).toBeVisible();
     const player = page.getByRole("button", { name: "Reproducir nota de voz", exact: true });
     await expect(player).toBeEnabled();
     await player.click();
     await expect(page.getByRole("button", { name: "Pausar nota de voz", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Pausar nota de voz", exact: true }).click();
     await page.reload();
-    await expect(page.getByText("Revisá publicaciones duplicadas", { exact: true })).toBeVisible();
+    await expect(page.getByText("Revisa publicaciones duplicadas", { exact: true })).toBeVisible();
     await expect(player).toBeEnabled();
     await page.screenshot({ path: "/tmp/colonia-voice-message.png" });
     const thread = await env.client.call("threads.get", { thread: "home" });
@@ -92,11 +92,11 @@ test("nota voz muestra volumen real, conserva audio y texto, reproduce después 
         mimeType: recording.mime,
         buffer: Buffer.from(recording.data, "base64"),
       });
-    await expect(input).toHaveValue("Revisá publicaciones duplicadas");
+    await expect(input).toHaveValue("Revisa publicaciones duplicadas");
     await expect(page.locator(".attchip.is-audio")).toBeVisible();
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(page.locator(".transcript__files .audiopart")).toHaveCount(2);
-    await expect(page.getByText("Revisá publicaciones duplicadas", { exact: true })).toHaveCount(2);
+    await expect(page.getByText("Revisa publicaciones duplicadas", { exact: true })).toHaveCount(2);
     await page.reload();
     await expect(page.locator(".transcript__files .audiopart")).toHaveCount(2);
     await expect(player.first()).toBeEnabled();

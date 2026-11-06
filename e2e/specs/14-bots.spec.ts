@@ -70,7 +70,7 @@ test("Discord rooms: the owner lists a server room, and the bot answers there wh
   await names.blur();
   await expect(names).toHaveValue("roby");
   // Its rooms may look things up on the web: by default only when the owner asks; here, for everyone.
-  await expect(page.getByRole("radio", { name: "Solo vos" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Solo tú" })).toBeChecked();
   await page.getByRole("radio", { name: "Todos" }).click();
   await until(async () =>
     (await rpc<{ channels: Array<{ id: string; research?: string }> }>("channels.list")).channels.some(
@@ -99,14 +99,14 @@ test("Discord rooms: the owner lists a server room, and the bot answers there wh
   await expect(page.getByText("nice weather today")).toBeVisible();
 
   // From the app the owner tells the agent what to post there: the answer goes to the room, not back to the app.
-  const ask = page.getByRole("textbox", { name: /^Decile a .+ qué publicar en #general…$/ });
+  const ask = page.getByRole("textbox", { name: /^Dile a .+ qué publicar en #general…$/ });
   await expect(page.getByText(/escribe el mensaje y lo publica en #general/)).toBeVisible();
   await ask.fill("thank Ben for asking");
   await ask.press("Enter");
   await until(async () => (await world.roomPosts("100000000000000001")).length === 2, 20_000);
   // Or writes it themselves: it goes out as is, through the bot, mentioning who wrote in the room.
   await page.getByRole("radio", { name: "Escribo yo" }).click();
-  const write = page.getByRole("textbox", { name: "Escribí en #general…" });
+  const write = page.getByRole("textbox", { name: "Escribe en #general…" });
   await write.fill("@ben welcome!");
   await write.press("Enter");
   const mine = await until(async () => (await world.roomPosts("100000000000000001"))[2], 20_000);

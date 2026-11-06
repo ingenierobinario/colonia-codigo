@@ -26,7 +26,7 @@ function updateRecovery(
           type: "warning",
           message: es ? "La actualización de Colonia está bloqueada" : "Colonia update is blocked",
           detail: es
-            ? `${error}\n\nLa app no se aplicó. Reconectate y elegí Buscar actualizaciones en el menú Colonia para reintentar. Si el servidor es anterior, actualizalo primero. Podés cambiar de conexión desde el menú Colonia.`
+            ? `${error}\n\nLa app no se aplicó. Reconéctate y elige Buscar actualizaciones en el menú Colonia para reintentar. Si el servidor es anterior, actualízalo primero. Puedes cambiar de conexión desde el menú Colonia.`
             : `${error}\n\nThe app was not applied. Reconnect and choose Check for updates in the Colonia menu to retry. If the server is older, update it first. You can change connections from the Colonia menu.`,
           buttons: [
             es ? "Reintentar" : "Retry",

@@ -55,7 +55,7 @@ test("a document opens beside the Artifacts list, and from there in its chat", a
     fs.writeFileSync(path.join(work, "Guide.md"), "# Northwind guide\n\nFirst read this.\n");
     await env.client.call("setup.finish", {});
     await page.goto(env.core.url);
-    await page.getByRole("textbox", { name: /^Escribile a/ }).fill("open the guide");
+    await page.getByRole("textbox", { name: /^Escríbele a/ }).fill("open the guide");
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(page.locator(".transcript").getByText("Done", { exact: true })).toBeVisible();
 

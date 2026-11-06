@@ -309,9 +309,9 @@ export function createConnector(opts: {
         where: new URL(opts.coreUrl).host,
         url: opts.coreUrl,
         local: app.isPackaged
-          ? `${es ? "Si no abre, mirá el registro" : "If it does not open, see the log"}: ${localCoreLogFile()}`
+          ? `${es ? "Si no abre, mira el registro" : "If it does not open, see the log"}: ${localCoreLogFile()}`
           : es
-            ? "Si no abre, arrancalo con pnpm dev (mismo COLONIA_HOME y COLONIA_PORT)."
+            ? "Si no abre, arráncalo con pnpm dev (mismo COLONIA_HOME y COLONIA_PORT)."
             : "If it does not open, start it with pnpm dev (same COLONIA_HOME and COLONIA_PORT).",
       };
       const reached = await wait(local, firstRun, current, {

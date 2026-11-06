@@ -10,7 +10,7 @@ export const BROWSER_JAVASCRIPT_NEWS: NewsEntry = {
       "the card they show. Read the code before you allow it.",
     es:
       "Tus agentes pueden ejecutar un script en la pestaña del navegador de Colonia, pero solo " +
-      "después de que lo apruebes en la tarjeta que te muestran. Revisá el código antes de " +
+      "después de que lo apruebes en la tarjeta que te muestran. Revisa el código antes de " +
       "permitirlo.",
   },
   applies: () => true,

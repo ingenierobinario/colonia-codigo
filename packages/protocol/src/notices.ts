@@ -98,18 +98,18 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.routine.post.timeout": "Comando posterior: se cortó por tiempo",
   "notice.routine.skipped": "No se llamó al modelo; el resultado del comando previo no lo pedía.",
   "notice.breaker.paused.runs":
-    "En pausa: los agentes hicieron {spent} turnos solos desde tu último mensaje acá. {who} terminó; escribí para seguir.",
+    "En pausa: los agentes hicieron {spent} turnos solos desde tu último mensaje aquí. {who} terminó; escribe para seguir.",
   "notice.breaker.paused.tokens":
-    "En pausa: los agentes gastaron {spent} tokens solos desde tu último mensaje acá. {who} terminó; escribí para seguir.",
+    "En pausa: los agentes gastaron {spent} tokens solos desde tu último mensaje aquí. {who} terminó; escribe para seguir.",
   "notice.breaker.paused.link": "Cambiar el límite",
   "notice.breaker.held.runs":
-    "En pausa: los agentes hicieron {spent} turnos solos desde tu último mensaje acá. {who} empieza «{task}» cuando los dejes seguir.",
+    "En pausa: los agentes hicieron {spent} turnos solos desde tu último mensaje aquí. {who} empieza «{task}» cuando los dejes seguir.",
   "notice.breaker.held.tokens":
-    "En pausa: los agentes gastaron {spent} tokens solos desde tu último mensaje acá. {who} empieza «{task}» cuando los dejes seguir.",
+    "En pausa: los agentes gastaron {spent} tokens solos desde tu último mensaje aquí. {who} empieza «{task}» cuando los dejes seguir.",
   "notice.breaker.held.agentRuns":
-    "En pausa para {who}: {who} hizo {spent} turnos solo desde tu último mensaje acá, su propio límite. Empieza «{task}» cuando los dejes seguir.",
+    "En pausa para {who}: {who} hizo {spent} turnos solo desde tu último mensaje aquí, su propio límite. Empieza «{task}» cuando los dejes seguir.",
   "notice.breaker.held.agentTokens":
-    "En pausa para {who}: {who} gastó {spent} tokens solo desde tu último mensaje acá, su propio límite. Empieza «{task}» cuando los dejes seguir.",
+    "En pausa para {who}: {who} gastó {spent} tokens solo desde tu último mensaje aquí, su propio límite. Empieza «{task}» cuando los dejes seguir.",
   "notice.breaker.held.link": "Cambiar el límite",
   "notice.breaker.reset": "Reiniciar presupuesto",
   "notice.breaker.release": "Liberar en esta ronda",
@@ -119,9 +119,9 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.delegation.limit.continuedTime":
     "{who} se quedó sin tiempo con «{task}» y viene avanzando; Colonia lo hizo seguir en la sesión {session}. Hasta ahora: {sofar}",
   "notice.delegation.limit.stoppedSteps":
-    "{who} se quedó sin pasos con «{task}» y su último tramo no avanzó, así que Colonia no siguió solo. Tocá Continuar si tiene que seguir. Hasta ahora: {sofar}",
+    "{who} se quedó sin pasos con «{task}» y su último tramo no avanzó, así que Colonia no siguió solo. Toca Continuar si tiene que seguir. Hasta ahora: {sofar}",
   "notice.delegation.limit.stoppedTime":
-    "{who} se quedó sin tiempo con «{task}» y su último tramo no avanzó, así que Colonia no siguió solo. Tocá Continuar si tiene que seguir. Hasta ahora: {sofar}",
+    "{who} se quedó sin tiempo con «{task}» y su último tramo no avanzó, así que Colonia no siguió solo. Toca Continuar si tiene que seguir. Hasta ahora: {sofar}",
   "notice.delegation.limit.returnedSteps":
     "{who} se quedó sin pasos con «{task}». {caller} tiene su informe y decide cómo seguir. Hasta ahora: {sofar}",
   "notice.delegation.limit.returnedTime":
@@ -137,7 +137,7 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.delegation.limit.offline": "Sin conexión: estado actual no disponible",
   "notice.delegation.limit.unavailable": "No pude consultar estado de sesión",
   "notice.delegation.limit.continuePrompt":
-    "Continuá el trabajo pendiente en esta sesión desde el último informe. Conservá el alcance y los permisos existentes; informá el resultado a quien te delegó.",
+    "Continúa el trabajo pendiente en esta sesión desde el último informe. Conserva el alcance y los permisos existentes; informa del resultado a quien te delegó.",
   "notice.delegation.limit.stop": "Detenerla",
   "notice.delegation.limit.stopped": "Detenida",
   "notice.delegation.limit.ended": "Ya había terminado",
@@ -155,7 +155,7 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.thread.compacted":
     "Se resumieron los turnos anteriores para que el contexto de este chat sea más chico. No se empezó nada nuevo.",
   "notice.task.stalled": "No había nada corriendo en esta tarea: Colonia le pidió al agente que siga o diga qué espera.",
-  "notice.pairing.request": "Alguien nuevo quiere hablar por un canal: aprobalo en Configuración › Canales.",
+  "notice.pairing.request": "Alguien nuevo quiere hablar por un canal: apruébalo en Configuración › Canales.",
 };
 
 const NOTICES = { en: noticeEn, es: noticeEs } as const;

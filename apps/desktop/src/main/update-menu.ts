@@ -17,31 +17,31 @@ const words = (es: boolean, platform: string) => ({
   readyDetail:
     platform === "win32"
       ? es
-        ? "Se instala al reiniciar Colonia. Si elegís más tarde, queda en el menú Colonia: Reiniciar para actualizar."
+        ? "Se instala al reiniciar Colonia. Si eliges más tarde, queda en el menú Colonia: Reiniciar para actualizar."
         : "It goes in when Colonia restarts. If you choose later, it waits in the Colonia menu: Restart to update."
       : es
-        ? "Se instala al reiniciar Colonia. Si elegís más tarde, se instala cuando salgas de Colonia."
+        ? "Se instala al reiniciar Colonia. Si eliges más tarde, se instala cuando salgas de Colonia."
         : "It goes in when Colonia restarts. If you choose later, it goes in when you quit Colonia.",
   remoteReady: es
     ? "El servidor ya confirmó la versión. Se vuelve a verificar antes de aplicar esta app; salir de Colonia no la instala."
     : "The server confirmed the target release. It is checked again before applying this app; quitting Colonia does not install it.",
   openInstaller: es ? "Abrir instalador" : "Open installer",
   manualReady: es
-    ? "El servidor se verifica antes de abrir el instalador. Reemplazá esta app manualmente y volvé a abrirla."
+    ? "El servidor se verifica antes de abrir el instalador. Reemplaza esta app manualmente y vuelve a abrirla."
     : "The server is checked before opening the installer. Replace this app manually, then open it again.",
   restartNow: es ? "Reiniciar ahora" : "Restart now",
   later: es ? "Más tarde" : "Later",
   upToDate: es ? "Colonia está al día" : "Colonia is up to date",
-  version: (v: string) => (es ? `Tenés la versión ${v}.` : `You have version ${v}.`),
+  version: (v: string) => (es ? `Tienes la versión ${v}.` : `You have version ${v}.`),
   failed: es ? "No se pudo actualizar Colonia" : "Colonia could not update",
   noFeed: es ? "No se pudo consultar si hay una versión nueva." : "Could not ask whether a newer version is out.",
   dragged: (v: string) =>
     es
-      ? `Se abrió Colonia ${v}: arrastralo a Aplicaciones, reemplazando este, y abrilo de nuevo.`
+      ? `Se abrió Colonia ${v}: arrástralo a Aplicaciones, reemplazando este, y ábrelo de nuevo.`
       : `Colonia ${v} opened: drag it into Applications, replacing this one, and open it again.`,
   readyNote: (v: string) =>
-    es ? `Colonia ${v} está listo. Reiniciá Colonia para usarlo.` : `Colonia ${v} is ready. Restart Colonia to use it.`,
-  outNote: (v: string) => (es ? `Salió Colonia ${v}. Abrí Colonia para actualizar.` : `Colonia ${v} is out. Open Colonia to update.`),
+    es ? `Colonia ${v} está listo. Reinicia Colonia para usarlo.` : `Colonia ${v} is ready. Restart Colonia to use it.`,
+  outNote: (v: string) => (es ? `Salió Colonia ${v}. Abre Colonia para actualizar.` : `Colonia ${v} is out. Open Colonia to update.`),
   ok: es ? "Aceptar" : "OK",
 });
 

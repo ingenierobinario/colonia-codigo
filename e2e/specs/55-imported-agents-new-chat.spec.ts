@@ -38,7 +38,7 @@ async function newChatWith(page: import("@playwright/test").Page, project: strin
     .getByRole("option", { name: new RegExp(name) })
     .first()
     .click();
-  const box = page.getByRole("textbox", { name: `Escribile a ${name}…` });
+  const box = page.getByRole("textbox", { name: `Escríbele a ${name}…` });
   await expect(box).toBeVisible();
   await expect(page).toHaveURL(/thread=new/);
   // Still there a moment later: nothing swaps the new chat for the project's latest one.

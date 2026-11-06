@@ -1,6 +1,6 @@
 ---
 title: Extensiones
-description: Empaquetá skills, servidores MCP, plantillas de rutinas y sus secretos en una carpeta que se instala apagada y se enciende toda junta.
+description: Empaqueta skills, servidores MCP, plantillas de rutinas y sus secretos en una carpeta que se instala apagada y se enciende toda junta.
 sidebar:
   order: 3
 ---
@@ -13,14 +13,14 @@ Una extensión es una carpeta con un `colonia-extension.json` que junta varias c
 rutinas, los secretos que necesitan y, si hace falta, un plugin en un sandbox. Colonia lee el manifiesto sin correr nada,
 la instala **apagada**, y encenderla aprueba exactamente los archivos que tenía.
 
-## ¿Necesitás una?
+## ¿Necesitas una?
 
-Empezá por lo más chico que resuelva el problema:
+Empieza por lo más pequeño que resuelva el problema:
 
-| Querés | Hacé |
+| Quieres | Haz |
 |---|---|
 | Saber hacer algo para los agentes de un proyecto | Una [skill de proyecto](/es/extend/skills/) en `.apc/skills/` |
-| Un servidor MCP más para tus agentes | `colonia mcps add` (mirá [Servidores MCP](/es/extend/mcp/)) |
+| Un servidor MCP más para tus agentes | `colonia mcps add` (mira [Servidores MCP](/es/extend/mcp/)) |
 | Skills, servidores y rutinas que viajan juntos, para compartir o reusar | **Una extensión** |
 | Código que mira eventos o suma contexto a tus turnos | Una extensión con plugin |
 
@@ -67,8 +67,8 @@ El esquema es estricto: las claves desconocidas se rechazan.
 | `skills` | Una carpeta de carpetas de skills, cada una con su `SKILL.md`. |
 | `mcp` | Servidores por nombre (letras, números y `_`): `command` + `args` + `env`, o `url` + `headers`. Un comando que empieza con `./` corre desde la carpeta de la extensión. |
 | `routines` | Plantillas con `name`, `schedule` (`cron`, `every` cada N minutos con N de 5 o más, o `once`) y `prompt`. |
-| `secrets` | Hasta 10, cada uno con `name`, `label` y una `url` opcional de dónde sacarlo. Cada valor lo escribís una vez. |
-| `plugin` | Código opcional; mirá más abajo. |
+| `secrets` | Hasta 10, cada uno con `name`, `label` y una `url` opcional de dónde sacarlo. Cada valor lo escribes una vez. |
+| `plugin` | Código opcional; mira más abajo. |
 
 Un servidor MCP de una extensión solo puede usar los secretos **propios** de la extensión, como `secret://name`. No
 puede nombrar tus otras variables ni el entorno, así que un paquete no puede llevarse tus credenciales a otro lado.
@@ -80,20 +80,20 @@ puede nombrar tus otras variables ni el entorno, así que un paquete no puede ll
 "secrets": [{ "name": "token", "label": "CRM API token", "url": "https://example.com/settings/tokens" }]
 ```
 
-## Instalala
+## Instálala
 
 <Tabs>
 <TabItem label="Panel">
 
 <Steps>
 
-1. Abrí **Recursos › Extensiones** y tocá **Instalar**.
+1. Abre **Recursos › Extensiones** y toca **Instalar**.
 
-2. Pegá la ruta de la carpeta, tocá **Revisar** para ver qué trae, y después **Instalar**.
+2. Pega la ruta de la carpeta, toca **Revisar** para ver qué trae, y después **Instalar**.
 
-3. Llega apagada. Completá sus claves (**Editar**) y encendela.
+3. Llega apagada. Completa sus claves (**Editar**) y enciéndela.
 
-4. Sus rutinas son sugerencias: **Agregar a Rutinas** pone una en Rutinas, apagada hasta que la enciendas.
+4. Sus rutinas son sugerencias: **Añadir a Rutinas** pone una en Rutinas, apagada hasta que la enciendas.
 
 </Steps>
 
@@ -124,7 +124,7 @@ Turn it on with: colonia extensions on daily-brief`}</Terminal>
 
 Instalar copia archivos comunes a la carpeta de Colonia y les toma una huella. Si la copia instalada cambia en el disco,
 Colonia apaga la extensión en el próximo arranque hasta que la vuelvas a aprobar. Para traer cambios de la carpeta
-original, instalala de nuevo o usá **Volver a leer** en su detalle.
+original, instálala de nuevo o usa **Volver a leer** en su detalle.
 
 ## Plugins
 
@@ -137,14 +137,14 @@ proceso, mira eventos (una tarea cambió, llegó un mensaje…) y puede sumar co
 
 Corre en un sandbox con el modelo de permisos de Node: lee solo su carpeta, escribe solo su carpeta de datos, no
 arranca procesos y no puede llamar a Colonia. Llega a internet solo con `"network": true`, y nunca a esta máquina. Lo que
-suma como contexto le llega al agente como dato de afuera, no como instrucciones.
+suma como contexto le llega al agente como dato de fuera, no como instrucciones.
 
 <Aside type="caution">
-Una extensión con plugin corre código en tu computadora. El panel te lo avisa antes de encenderla: hacelo solo si
-confiás en quien la hizo.
+Una extensión con plugin corre código en tu ordenador. El panel te lo avisa antes de encenderla: hazlo solo si
+confías en quien la hizo.
 </Aside>
 
 <Aside type="tip">
-Colonia trae una skill `colonia-extensions` para Claude Code, Codex y otras apps de agentes, así le podés pedir a una de ellas
-que te arme una extensión. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agentes-a-usar-colonia).
+Colonia trae una skill `colonia-extensions` para Claude Code, Codex y otras apps de agentes, así le puedes pedir a una de ellas
+que te arme una extensión. Mira [Skills](/es/extend/skills/#enseña-a-otras-apps-de-agentes-a-usar-colonia).
 </Aside>

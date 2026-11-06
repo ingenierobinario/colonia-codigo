@@ -9,24 +9,24 @@ import { Aside, Steps, Tabs, TabItem, CardGrid, LinkCard } from "@astrojs/starli
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-Todo lo que le decís a un agente, y todo lo que los agentes se dicen entre ellos, vive en una misma forma. Aprendé tres
+Todo lo que le dices a un agente, y todo lo que los agentes se dicen entre ellos, vive en una misma forma. Aprende tres
 palabras y el resto de Colonia se lee solo.
 
 | Palabra | Quiere decir | Ejemplo |
 |---|---|---|
 | **Hilo** (thread) | Una conversación. | Tu chat con Lucía. |
-| **Turno** (run) | Un turno de un agente en el hilo, guardado con su entrada y su origen antes de empezar. | Lucía respondiendo "Planificá el lanzamiento de Q4". |
+| **Turno** (run) | Un turno de un agente en el hilo, guardado con su entrada y su origen antes de empezar. | Lucía respondiendo "Planifica el lanzamiento de Q4". |
 | **Paso** (step) | Una llamada a una herramienta dentro de un turno. | Lucía creando una tarea para Tomás. |
 
-## Una sola conversación en todos lados
+## Una sola conversación en todas partes
 
-El chat de Home es especial: es la misma conversación estés donde estés. Le escribís a Home desde el panel, el chat
+El chat de Home es especial: es la misma conversación estés donde estés. Le escribes a Home desde el panel, el chat
 rápido del escritorio, tu teléfono o Telegram, y todo cae en un mismo hilo, con una sola memoria de lo que dijiste.
-Un mensaje por WhatsApp en la parada del colectivo y la continuación en tu escritorio son un chat, no dos.
+Un mensaje por WhatsApp en la parada del autobús y la continuación en tu escritorio son un chat, no dos.
 
 <Shot name="home-hero" alt="El Inbox con el chat de Home abierto: una charla corta con la secretaria sobre las prioridades del día" caption="Home: una conversación, todos los dispositivos y canales" />
 
-Esto se puede cambiar por canal, para que tus mensajes vayan a un chat propio de ese canal. Mirá
+Esto se puede cambiar por canal, para que tus mensajes vayan a un chat propio de ese canal. Mira
 [Canales](/es/channels/overview/).
 
 ## Tipos de hilo
@@ -35,7 +35,7 @@ Esto se puede cambiar por canal, para que tus mensajes vayan a un chat propio de
 |---|---|
 | `home` | El chat de Home. Hay uno solo. |
 | `agent` | El chat propio de un agente. |
-| `loose` | Otro chat que abrís con **Nuevo chat**. |
+| `loose` | Otro chat que abres con **Nuevo chat**. |
 | `group` | Un chat con varios agentes a la vez. |
 | `a2a` | Un agente pidiéndole algo a otro (o a un ayudante). Aparece como una tarjeta de avance en el chat de quien pidió. |
 | `code` | Un chat que trabaja en una carpeta, con una política de escritura. Más abajo. |
@@ -54,16 +54,16 @@ Un turno pasa por pocos estados. La lista de chats y el menú **Procesos** los m
 | `input-required` | El agente te está esperando: una pregunta o una aprobación. |
 | `completed` | Listo. |
 | `failed` | Algo se rompió. El chat dice qué. |
-| `canceled` | Lo frenaste vos (con /stop, el botón de frenar o `colonia threads cancel`). |
+| `canceled` | Lo frenaste tú (con /stop, el botón de frenar o `colonia threads cancel`). |
 
 Una pregunta que te hace un agente no vence con el turno. El turno termina, el chat muestra que te está esperando, y
-la pregunta queda para responder durante 30 días. Tu respuesta arranca un turno nuevo. Mirá
+la pregunta queda para responder durante 30 días. Tu respuesta arranca un turno nuevo. Mira
 [Autonomía y seguridad](/es/concepts/autonomy/).
 
 ## Los turnos sobreviven a los reinicios
 
 Cada turno se anota con su entrada antes de empezar, y cada paso antes de que corra su herramienta. Así, cuando Colonia
-se reinicia (una actualización, un crash, una notebook que se durmió en medio de un turno), nada se pierde en
+se reinicia (una actualización, un crash, un portátil que se durmió en medio de un turno), nada se pierde en
 silencio:
 
 - Un turno cortado **se retoma una vez**, con una nota corta que le dice al agente por qué se frenó. Un turno que ya
@@ -84,14 +84,14 @@ el agente puede cambiar ahí:
 | `auto` | cambia archivos libremente. |
 | `read-only` | sólo lee. |
 
-Arrancá uno desde un proyecto, o desde la terminal dentro de la carpeta del proyecto:
+Arranca uno desde un proyecto, o desde la terminal dentro de la carpeta del proyecto:
 
 <Terminal command={'colonia chat "Make the coupon field ignore case" --code --cwd ~/work/acme-store --write ask'}>{`Done: codes are trimmed and upper-cased before the check.
 — completed · gemini/gemini-3.8-flash · thread th_4be19c07a2d35e61`}</Terminal>
 
 Un hilo de código también puede ser una **sesión de motor**: un chat con Claude Code, Codex u otro agente ACP en
-persona, con su propio prompt y su configuración, en tu carpeta. Las sesiones que ya tenés en `~/.claude` y
-`~/.codex` aparecen en **Sesiones externas** en la barra lateral, y podés retomar cualquiera desde Colonia. Mirá
+persona, con su propio prompt y su configuración, en tu carpeta. Las sesiones que ya tienes en `~/.claude` y
+`~/.codex` aparecen en **Sesiones externas** en la barra lateral, y puedes retomar cualquiera desde Colonia. Mira
 [Código](/es/office/code/) y [Modelos y motores](/es/concepts/models/).
 
 ## Jobs
@@ -112,11 +112,11 @@ job_5f0b8e2a7c1d9346     agent    completed  Tomás: fix the checkout coupon`}</
 ## Compactación
 
 Los chats largos pesan. Cuando un hilo crece, Colonia resume sus turnos viejos en un resumen fijo de cinco partes y deja
-los más nuevos palabra por palabra, así el agente sigue trabajando con un contexto más chico. Un resumen de contenido
+los más nuevos palabra por palabra, así el agente sigue trabajando con un contexto más pequeño. Un resumen de contenido
 de afuera sigue marcado como de afuera, así las reglas de seguridad no se aflojan.
 
-- Pasa solo con **Resumir los chats largos** en Configuración › Memoria (prendido por defecto).
-- Escribí `/compact` en un chat para hacerlo ya, o corré `colonia compact <thread>`.
+- Pasa solo con **Resumir los chats largos** en Configuración › Memoria (activado por defecto).
+- Escribe `/compact` en un chat para hacerlo ya, o ejecuta `colonia compact <thread>`.
 - Las sesiones de Claude Code y Codex compactan sus propias transcripciones.
 
 ## Desde la terminal
@@ -135,8 +135,8 @@ y Vera programó el newsletter para el viernes a las 9:00.
 | `colonia threads get <thread>` | Muestra los últimos mensajes de un hilo. |
 | `colonia threads cancel <thread>` | Frena lo que esté corriendo ahí. |
 | `colonia runs get <run>` / `colonia runs wait <run> [--timeout 60]` | Un turno en JSON, ahora o cuando termine. |
-| `colonia runs pending [thread]` | Lo que los agentes están esperando de vos. |
-| `colonia runs respond <input> approve\|deny` | Responde una aprobación. Mirá [Autonomía y seguridad](/es/concepts/autonomy/). |
+| `colonia runs pending [thread]` | Lo que los agentes están esperando de ti. |
+| `colonia runs respond <input> approve\|deny` | Responde una aprobación. Mira [Autonomía y seguridad](/es/concepts/autonomy/). |
 | `colonia jobs [list] \| get <job> \| cancel <job>` | Trabajo de fondo. |
 | `colonia compact <thread>` | Resume ya los turnos viejos de un hilo. |
 
@@ -146,6 +146,6 @@ th_a07c33e19d5b2f40    input-required agent  Lucía
 th_e2915bd0c4f7a813    working    routine Daily sales check · 10/8/26, 9:00 AM`}</Terminal>
 
 <CardGrid>
-  <LinkCard title="Chat" description="Todo lo que podés hacer en un chat." href="/es/office/chat/" />
+  <LinkCard title="Chat" description="Todo lo que puedes hacer en un chat." href="/es/office/chat/" />
   <LinkCard title="Memoria" description="Lo que pasa de un hilo a otro." href="/es/concepts/memory/" />
 </CardGrid>

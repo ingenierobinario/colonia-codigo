@@ -30,7 +30,7 @@ test("a newer Colonia: its changes, and Update now", async ({ page }) => {
   const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de Colonia" });
   await expect(dialog.getByText("fix: b")).toBeVisible();
   await dialog.getByRole("button", { name: "Actualizar ahora" }).click();
-  await expect(dialog.getByText("Listo. Reiniciá Colonia para usar la versión nueva.")).toBeVisible();
+  await expect(dialog.getByText("Listo. Reinicia Colonia para usar la versión nueva.")).toBeVisible();
 });
 
 test("a newer panel on disk asks to reload", async ({ page }) => {
@@ -63,7 +63,7 @@ test("a daemon installed from a bundle offers the newer release by its version",
   await expect(dialog.getByText("Salió Colonia 9.1.0. Qué trae:")).toBeVisible();
   await expect(dialog.getByText("feat: sidebar sections")).toBeVisible();
   await dialog.getByRole("button", { name: "Actualizar ahora" }).click();
-  await expect(dialog.getByText("Listo. Reiniciá Colonia para usar la versión nueva.")).toBeVisible();
+  await expect(dialog.getByText("Listo. Reinicia Colonia para usar la versión nueva.")).toBeVisible();
 });
 
 test("a browser on the desktop app's core says a newer Colonia is out, and to update it from the app", async ({ page }) => {
@@ -77,7 +77,7 @@ test("a browser on the desktop app's core says a newer Colonia is out, and to up
   await open(page);
   await page.getByRole("button", { name: "Colonia 9.1.0 · Actualizar" }).click();
   const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de Colonia" });
-  await expect(dialog.getByText(/Actualizalo desde la app de Colonia/)).toBeVisible();
+  await expect(dialog.getByText(/Actualízala desde la app de Colonia/)).toBeVisible();
   await expect(dialog.getByText("feat: sidebar sections")).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Actualizar ahora" })).toBeHidden();
   await dialog.getByRole("button", { name: "Cerrar" }).click();
@@ -140,8 +140,8 @@ test("the desktop app downloads its newer version, then asks to restart now", as
   await expect(dialog.getByText(/Salió Colonia 9\.1\.0 \(esta app es la 9\.0\.0\)/)).toBeVisible();
   await expect(dialog.getByText("feat: app updates")).toBeVisible();
   await dialog.getByRole("button", { name: "Actualizar ahora" }).click();
-  await expect(dialog.getByText("Colonia 9.1.0 ya está descargado y listo. Reiniciá Colonia para usarlo.")).toBeVisible();
-  await expect(dialog.getByText("Si elegís más tarde, se instala cuando salgas de Colonia.")).toBeVisible();
+  await expect(dialog.getByText("Colonia 9.1.0 ya está descargado y listo. Reinicia Colonia para usarlo.")).toBeVisible();
+  await expect(dialog.getByText("Si eliges más tarde, se instala cuando salgas de Colonia.")).toBeVisible();
   await dialog.getByRole("button", { name: "Reiniciar ahora" }).click();
   await expect(dialog.getByText("Reiniciando Colonia con la versión nueva…")).toBeVisible();
   expect(await count(page, "installs")).toBe(1);
@@ -158,7 +158,7 @@ test("later: the dialog closes and the pill offers the restart", async ({ page }
   await expect(dialog).toBeHidden();
   await page.reload();
   await page.getByRole("button", { name: "Colonia 9.1.0 · Reiniciar" }).click();
-  await expect(dialog.getByText("Colonia 9.1.0 ya está descargado y listo. Reiniciá Colonia para usarlo.")).toBeVisible();
+  await expect(dialog.getByText("Colonia 9.1.0 ya está descargado y listo. Reinicia Colonia para usarlo.")).toBeVisible();
   await dialog.getByRole("button", { name: "Reiniciar ahora" }).click();
   expect(await count(page, "installs")).toBe(1);
   expect(await count(page, "restarts")).toBe(1);
@@ -173,5 +173,5 @@ test("on macOS without a place it can replace, the new app is downloaded and ope
   const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de Colonia" });
   await expect(dialog.getByText(/se abre para que la arrastres a Aplicaciones/)).toBeVisible();
   await dialog.getByRole("button", { name: "Descargar" }).click();
-  await expect(dialog.getByText(/arrastralo a Aplicaciones/)).toBeVisible();
+  await expect(dialog.getByText(/arrástralo a Aplicaciones/)).toBeVisible();
 });

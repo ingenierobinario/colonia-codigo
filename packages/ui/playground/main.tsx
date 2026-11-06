@@ -59,7 +59,7 @@ function Screen({ look, mode }: { look: ColoniaLook; mode: ColoniaMode }) {
         </div>
         <div style={{ padding: 12 }}>
           {classic ? (
-            <Composer placeholder="Escribí algo y enter para enviar" onAttach={() => {}} header={<><span>◔ 2368.7k</span><span>⚒ 127</span></>} toolbar={<><Button size="sm" variant="ghost" leadingIcon={<Icons.Layers />}>Auto</Button><Button size="sm" variant="ghost" leadingIcon={<Icons.Zap />}>Interrumpe</Button></>} />
+            <Composer placeholder="Escribe algo y enter para enviar" onAttach={() => {}} header={<><span>◔ 2368.7k</span><span>⚒ 127</span></>} toolbar={<><Button size="sm" variant="ghost" leadingIcon={<Icons.Layers />}>Auto</Button><Button size="sm" variant="ghost" leadingIcon={<Icons.Zap />}>Interrumpe</Button></>} />
           ) : (
             <Composer placeholder="Message Outbound" onAttach={() => {}} />
           )}

@@ -12,7 +12,7 @@ export const COMPUTER_ACTIONS_PER_TURN = 60;
 
 const ASK = {
   es: {
-    q: (n: number) => `Ya hice ${n} acciones en tu computadora en este turno. ¿Sigo?`,
+    q: (n: number) => `Ya hice ${n} acciones en tu ordenador en este turno. ¿Sigo?`,
     go: "Seguir",
     stop: "Parar",
   },

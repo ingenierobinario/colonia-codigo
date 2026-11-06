@@ -92,7 +92,7 @@ test("who may reach this Colonia: the local network is saved for the next start,
   // The sandbox core has no supervisor: the choice waits for its next start.
   await expect(page.getByText(/se aplica cuando el core vuelva a arrancar/)).toBeVisible();
   expect((await rpc<{ saved: string }>("access.get", {})).saved).toBe("lan");
-  await page.getByRole("radio", { name: "Solo esta compu" }).click();
+  await page.getByRole("radio", { name: "Solo este ordenador" }).click();
   await expect(page.getByText(/se aplica cuando el core vuelva a arrancar/)).toBeHidden();
   expect((await rpc<{ saved: string }>("access.get", {})).saved).toBe("local");
 });

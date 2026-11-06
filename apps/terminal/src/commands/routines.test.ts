@@ -190,7 +190,7 @@ test("editing a routine reads an exact UTF-8 prompt file and preserves its exist
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-routine-prompt-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const file = path.join(dir, "prompt.txt");
-  const prompt = "Revisá cambios\nKeep the next line.\n";
+  const prompt = "Revisa cambios\nKeep the next line.\n";
   fs.writeFileSync(file, prompt);
   const { client, calls } = recordingClient({
     "routines.list": { routines: [routine] },

@@ -11,7 +11,7 @@ import Shot from "../../../../components/Shot.astro";
 La app de escritorio es la forma más cómoda de convivir con Colonia. Su ventana es el panel, el mismo que el core le sirve
 a un navegador. Alrededor, la app suma tres cosas que una página web no puede: un ícono en la barra de menú con un chat
 rápido, un navegador de verdad que tus agentes pueden manejar y (en macOS y Windows) la opción de dejar que los agentes usen
-tu computadora.
+tu ordenador.
 
 ## La ventana
 
@@ -19,7 +19,7 @@ La ventana principal es el panel: Inbox, Tareas, Proyectos, Configuración y tod
 Cerrarla solo la esconde. Las pestañas del navegador y la conexión con el core siguen vivas, y el Dock, el ícono de la
 barra de menú o abrir Colonia de nuevo la traen de vuelta. Lo que la cierra de verdad es **Salir**.
 
-Corre un solo Colonia a la vez: si lo abrís otra vez, trae al frente el que ya está corriendo.
+Corre un solo Colonia a la vez: si lo abres otra vez, trae al frente el que ya está corriendo.
 
 ## El ícono de la barra de menú y el chat rápido
 
@@ -39,39 +39,39 @@ la app.
 
 ## Configuración › Escritorio
 
-<Shot name="settings-desktop" alt="Configuración, sección Escritorio: el atajo del chat rápido, abrir al iniciar y el uso de la computadora con sus permisos de macOS" caption="Configuración › Escritorio" />
+<Shot name="settings-desktop" alt="Configuración, sección Escritorio: el atajo del chat rápido, abrir al iniciar y el uso del ordenador con sus permisos de macOS" caption="Configuración › Escritorio" />
 
 Estos ajustes se guardan en el core, pero solo aplican dentro de la app de escritorio (en un navegador común, la
 sección lo avisa).
 
 | Ajuste | Qué hace |
 |---|---|
-| **Atajo** | El atajo global del chat rápido. Hacé clic y apretá las teclas. **Quitar** lo deja sin atajo. Si otra app ya usa esas teclas, Colonia te avisa. |
-| **Abrir al iniciar la compu** | Colonia se abre cuando iniciás sesión. Viene prendido. |
-| **Dejar que los agentes usen esta computadora** | El uso de la computadora, en macOS y Windows, apagado hasta que lo prendas. Mirá abajo. |
-| **Mantener la Mac despierta mientras trabajan los agentes** | Evita que el sistema se duerma durante un turno, un comando o el inicio de la computadora. La pantalla puede apagarse. Podés desactivarlo. |
+| **Atajo** | El atajo global del chat rápido. Haz clic y pulsa las teclas. **Quitar** lo deja sin atajo. Si otra app ya usa esas teclas, Colonia te avisa. |
+| **Abrir al iniciar el ordenador** | Colonia se abre cuando inicias sesión. Viene activado. |
+| **Dejar que los agentes usen este ordenador** | El uso del ordenador, en macOS y Windows, desactivado hasta que lo actives. Mira abajo. |
+| **Mantener la Mac despierta mientras trabajan los agentes** | Evita que el sistema se duerma durante un turno, un comando o el inicio del ordenador. La pantalla puede apagarse. Puedes desactivarlo. |
 
-### Uso de la computadora
+### Uso del ordenador
 
-Con el uso de la computadora prendido, los agentes pueden mirar la ventana que está al frente y, con tu OK, hacer clic
+Con el uso del ordenador activado, los agentes pueden mirar la ventana que está al frente y, con tu OK, hacer clic
 y escribir en ella. En macOS necesita dos permisos, que aparecen ahí mismo con su estado y un botón **Abrir Ajustes del
 Sistema**: **Grabación de pantalla** (para ver la ventana) y **Accesibilidad** (para leer sus botones y campos, hacer
 clic y escribir). Windows no pide esos permisos; ahí un agente solo abre direcciones web y apps por nombre, nunca una consola de comandos ni un intérprete de scripts.
 
 Algunas cosas valen en cualquier nivel de autonomía, incluso total:
 
-- `⌘⇧Esc` (`Ctrl+Alt+Esc` en Windows) es el freno de emergencia, desde cualquier app. Corta todas las corridas que estén usando la computadora.
+- `⌘⇧Esc` (`Ctrl+Alt+Esc` en Windows) es el freno de emergencia, desde cualquier app. Corta todas las ejecuciones que estén usando el ordenador.
 - Cada 60 acciones en un mismo turno, el agente te pregunta antes de seguir.
 - Los campos de contraseña se rechazan.
 
 Mirar la pantalla no cambia nada, así que corre sin preguntar (en Manual sí pregunta); abrir una app es una
-herramienta `ask`; hacer clic, escribir y apretar teclas son herramientas `always`, así que preguntan en cualquier
-autonomía menos total (mirá [Autonomía](/es/concepts/autonomy/)). Linux todavía no presta esta capacidad.
+herramienta `ask`; hacer clic, escribir y pulsar teclas son herramientas `always`, así que preguntan en cualquier
+autonomía menos total (mira [Autonomía](/es/concepts/autonomy/)). Linux todavía no presta esta capacidad.
 
 ## El navegador que manejan tus agentes
 
-La app de escritorio se conecta al core como un **nodo**: le presta su `browser` (y `computer`, cuando prendés el uso
-de la computadora). Los agentes abren pestañas ahí, leen páginas, hacen clic y escriben, y vos podés mirar o tomar el
+La app de escritorio se conecta al core como un **nodo**: le presta su `browser` (y `computer`, cuando activas el uso
+del ordenador). Los agentes abren pestañas ahí, leen páginas, hacen clic y escriben, y tú puedes mirar o tomar el
 control cuando quieras. Las pestañas van aparte del panel, así que recargar el panel nunca las cierra.
 
 Sin la app de escritorio, el core usa su propio Chrome sin ventana, que no te puede pasar el control ni usar tus
@@ -84,36 +84,36 @@ dirección** todavía no le presta su navegador.
 
 ## A qué Colonia se conecta
 
-La primera vez que abrís la app instalada, te pregunta **¿Dónde corre tu Colonia?**
+La primera vez que abres la app instalada, te pregunta **¿Dónde corre tu Colonia?**
 
 <Tabs>
-<TabItem label="Servidor (esta compu)">
+<TabItem label="Servidor (este ordenador)">
 
-Colonia corre acá: la app arranca su propio core. Después te pregunta **¿Desde dónde lo vas a usar?**
+Colonia corre aquí: la app arranca su propio core. Después te pregunta **¿Desde dónde lo vas a usar?**
 
-- **Solo desde esta computadora**: lo más seguro. Nadie más llega al core.
+- **Solo desde este ordenador**: lo más seguro. Nadie más llega al core.
 - **También desde mi red local**: otros equipos de tu casa u oficina, cada uno con un código de vinculación.
-- **Tailscale**: tus equipos desde cualquier lado, con https. Necesita Tailscale instalado.
+- **Tailscale**: tus equipos desde cualquier sitio, con https. Necesita Tailscale instalado.
 
-Si es la primera vez, después elegís empezar de cero o importar desde Colonia v1.
+Si es la primera vez, después eliges empezar de cero o importar desde Colonia v1.
 
-Si ya hay un core corriendo en esta compu (puerto `7440`), la app usa ese en vez de arrancar otro.
+Si ya hay un core corriendo en este ordenador (puerto `7440`), la app usa ese en vez de arrancar otro.
 
 </TabItem>
 <TabItem label="Cliente (otra máquina)">
 
-Colonia ya corre en otra compu o en un servidor, y esta app solo se conecta. Dos formas:
+Colonia ya corre en otro ordenador o en un servidor, y esta app solo se conecta. Dos formas:
 
 - **Dirección**: la URL del core, por ejemplo la de Tailscale. La primera vez, el core le pide a esta app un código de
-  vinculación; lo sacás en ese Colonia en **Configuración › Conexiones › Dispositivos** o con `colonia pair`.
+  vinculación; lo sacas en ese Colonia en **Configuración › Conexiones › Dispositivos** o con `colonia pair`.
 - **SSH**: `usuario@servidor` (con `:puerto` si hace falta). La app usa tu propio `ssh`, tus claves, tu agente y tu
-  `~/.ssh/config` para traer el core del servidor a esta compu, así que el servidor no abre ningún puerto. Si no puede
+  `~/.ssh/config` para traer el core del servidor a este ordenador, así que el servidor no abre ningún puerto. Si no puede
   entrar, si no encuentra Colonia en el servidor o si el core no responde, te dice cuál de las tres pasó.
 
 </TabItem>
 </Tabs>
 
-Para elegir otro Colonia más adelante, usá el menú de la app: **Colonia › Cambiar conexión…**
+Para elegir otro Colonia más adelante, usa el menú de la app: **Colonia › Cambiar conexión…**
 
 Cómo preparar el lado del servidor está en [Colonia en un servidor](/es/devices/server/).
 
@@ -125,24 +125,24 @@ Si Desktop arrancó su core incluido, salir de Desktop detiene solo ese proceso,
 puede tener un solo daemon, incluso si se intenta arrancar otro con un puerto distinto.
 
 Una URL explícita (también `COLONIA_URL`) sirve solo para conectarse: si el servidor no responde, la app no arranca un
-reemplazo en esta computadora. El modo SSH controla su túnel, no el daemon del servidor. Actualizar o reiniciar
+reemplazo en este ordenador. El modo SSH controla su túnel, no el daemon del servidor. Actualizar o reiniciar
 Desktop no actualiza ni reinicia ese servidor por sí solo. La activación coordinada de una versión, explicada abajo, es una acción separada del dueño.
 
-Los comandos `colonia service` de la CLI siempre controlan servicios de la computadora donde corrés el comando, nunca
-la indicada por `COLONIA_URL`. Usá `--home` para elegir la instalación local. `colonia desktop` también abre la app en la
-computadora donde corre el comando: ejecutarlo por SSH no abre Desktop en tu cliente.
+Los comandos `colonia service` de la CLI siempre controlan servicios del ordenador donde ejecutas el comando, nunca
+el indicado por `COLONIA_URL`. Usa `--home` para elegir la instalación local. `colonia desktop` también abre la app en el
+ordenador donde corre el comando: ejecutarlo por SSH no abre Desktop en tu cliente.
 
-Para un escritorio Linux aparte de tu pantalla, consultá [La computadora de los agentes](/es/office/computers/).
+Para un escritorio Linux aparte de tu pantalla, consulta [El ordenador de los agentes](/es/office/computers/).
 
 ## Actualizaciones
 
 La app instalada se actualiza sola. Cada tantas horas revisa las versiones publicadas y, cuando sale un Colonia más nuevo,
-el panel lo muestra en la barra de arriba. Cuando vos decís, baja el instalador para tu sistema y lo verifica contra su
+el panel lo muestra en la barra de arriba. Cuando tú lo decides, baja el instalador para tu sistema y lo verifica contra su
 `.sha256`:
 
 - **Linux** (AppImage) y **Windows** terminan solos y vuelven a abrir.
-- **macOS** descomprime la app nueva al lado de la que está corriendo y se reemplaza cuando hacés clic en
-  **Reiniciar ahora**, o cuando la cerrás.
+- **macOS** descomprime la app nueva al lado de la que está corriendo y se reemplaza cuando haces clic en
+  **Reiniciar ahora**, o cuando la cierras.
 
 El core local incluido se actualiza con Desktop. Con un core remoto, Desktop coordina una versión compartida
 mediante la conexión autenticada de Colonia, sin SSH. El servidor se actualiza una vez; cada app Desktop solo puede
@@ -151,9 +151,9 @@ reconcilian al volver: los dispositivos no se actualizan de forma atómica. Los 
 compatibles bloquean la activación de Desktop y muestran cómo recuperarse. La primera actualización de un servidor
 sin coordinación todavía usa su mecanismo anterior.
 
-## Correrla desde el código
+## Ejecutarla desde el código
 
-¿Trabajás en Colonia? Desde el repositorio:
+¿Trabajas en Colonia? Desde el repositorio:
 
 ```bash
 pnpm install

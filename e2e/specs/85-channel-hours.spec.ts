@@ -23,7 +23,7 @@ test("attention hours: set in the channel's settings, a contact waits outside th
   await hours.click();
   await until(async () => (await hoursOf())?.to === "22:00");
   expect(await hoursOf()).toEqual({ days: [1, 2, 3, 4, 5, 6, 0], from: "08:00", to: "22:00" });
-  await expect(page.getByText(/A vos siempre te responde/)).toBeVisible();
+  await expect(page.getByText(/A ti siempre te responde/)).toBeVisible();
   await expect(page.getByText("Días y horas")).toBeVisible();
   await page.getByRole("textbox", { name: "Hasta" }).fill("21:30");
   await until(async () => (await hoursOf())?.to === "21:30");

@@ -19,7 +19,7 @@ test("a suggested command runs in a terminal from the chat and its end wakes the
   });
 
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /^Escribile a/ }).fill("suggest a command");
+  await page.getByRole("textbox", { name: /^Escríbele a/ }).fill("suggest a command");
   await page.getByRole("button", { name: "Enviar" }).click();
   await expect(page.getByText("echo e2e-suggested-$((6*7))")).toBeVisible();
   await expect(page.locator(".runcode")).toHaveCSS("display", "flex");
@@ -62,7 +62,7 @@ test("a late attach snapshot does not undo the command's exit event", async ({ p
     await route.fulfill({ response });
   });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /^Escribile a/ }).fill("suggest a command");
+  await page.getByRole("textbox", { name: /^Escríbele a/ }).fill("suggest a command");
   await page.getByRole("button", { name: "Enviar" }).click();
   await page.getByRole("button", { name: "Ejecutar en una terminal" }).click();
   const out = page.locator(".runcode__out");
@@ -72,7 +72,7 @@ test("a late attach snapshot does not undo the command's exit event", async ({ p
 
 test("in a chat with no project the block runs too, in Colonia's work folder", async ({ page }) => {
   await open(page, "#thread=home");
-  await page.getByRole("textbox", { name: /^Escribile a/ }).fill("suggest a command");
+  await page.getByRole("textbox", { name: /^Escríbele a/ }).fill("suggest a command");
   await page.getByRole("button", { name: "Enviar" }).click();
   await page.getByRole("button", { name: "Ejecutar en una terminal" }).last().click();
   await expect(page.locator(".runcode__out .runcode__screen").last()).toContainText("e2e-suggested-42", {

@@ -79,13 +79,13 @@ const SCENES: Record<Lang, Scene[]> = {
           ["runtime", "claude-code"],
           ["icon", "perla"],
         ],
-        "Sos Tomás, el desarrollador. Primero reproducí, después arreglá, y siempre decí qué test lo prueba.",
+        "Eres Tomás, el desarrollador. Primero reproduce, después arregla, y siempre di qué test lo prueba.",
       ),
     },
     {
       key: "papa",
       file: "night/memory.md",
-      text: "# memoria · turno noche\n- Backups a las 3:00, reporte a las 9:00.\n- Si una rutina falla dos veces, avisale a Nova, no al dueño.\n- Log corto: qué corrió, qué se rompió, qué sigue.",
+      text: "# memoria · turno noche\n- Backups a las 3:00, reporte a las 9:00.\n- Si una rutina falla dos veces, avisa a Nova, no al dueño.\n- Log corto: qué corrió, qué se rompió, qué sigue.",
     },
     {
       key: "orbita",
@@ -98,7 +98,7 @@ const SCENES: Record<Lang, Scene[]> = {
           ["autonomy", "total"],
           ["icon", "orbita"],
         ],
-        "Sos Lucía, product manager de Acme Store. Dividí los pedidos grandes en tareas, asignalas y seguilas hasta que se cierren.",
+        "Eres Lucía, product manager de Acme Store. Divide los pedidos grandes en tareas, asígnalas y síguelas hasta que se cierren.",
       ),
     },
     {
@@ -113,17 +113,17 @@ const SCENES: Record<Lang, Scene[]> = {
         [
           ["name", "Vera"],
           ["role", "Marketing"],
-          ["description", "Escribe campañas, newsletters y posteos para redes."],
+          ["description", "Escribe campañas, newsletters y publicaciones para redes."],
           ["skills", "[newsletter, social-posts]"],
           ["icon", "caracol"],
         ],
-        "Sos Vera. Textos cortos, una idea por posteo, y nada sale sin fecha.",
+        "Eres Vera. Textos cortos, una idea por publicación, y nada sale sin fecha.",
       ),
     },
     {
       key: "parche",
       file: "desk/memory.md",
-      text: "# memoria · mesa de whatsapp\n- Contestá sólo a contactos guardados.\n- Pedidos: decí que sale, nunca prometas una fecha.\n- Todo lo de plata va al dueño por Telegram.",
+      text: "# memoria · mesa de whatsapp\n- Contesta sólo a contactos guardados.\n- Pedidos: di que sale, nunca prometas una fecha.\n- Todo lo del dinero va al dueño por Telegram.",
     },
   ],
 };

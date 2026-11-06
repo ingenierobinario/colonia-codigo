@@ -88,7 +88,7 @@ async function page(which: "main" | "quick"): Promise<Page> {
 
 test("the window shows the panel the core serves", async () => {
   const main = await page("main");
-  await expect(main.getByRole("textbox", { name: /^Escribile a|^Message/ }).or(main.getByRole("dialog"))).toBeVisible();
+  await expect(main.getByRole("textbox", { name: /^Escríbele a|^Message/ }).or(main.getByRole("dialog"))).toBeVisible();
 });
 
 test("the desktop header shares the native title bar and keeps its search centered", async () => {

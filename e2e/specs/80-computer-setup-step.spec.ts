@@ -40,7 +40,7 @@ test("a missing QEMU shows as a step with its command, and the step goes once th
     await page.goto(`${env.core.url}/#view=computers`);
     const step = page.locator(".computer__needs");
     await expect(step).toContainText("Falta un paso en este equipo");
-    await expect(step).toContainText("La computadora arma su máquina Linux con QEMU");
+    await expect(step).toContainText("El ordenador arma su máquina Linux con QEMU");
     await expect(step.locator("code")).toHaveText("sudo apt install qemu-system-x86 qemu-utils");
     await expect(step.getByRole("button", { name: "Copiar" })).toBeVisible();
     // The raw reason the core gives agents never reaches the screen.
@@ -54,7 +54,7 @@ test("a missing QEMU shows as a step with its command, and the step goes once th
     await page.goto(`${env.core.url}/#thread=${chat.id}&panel=computer`);
     const panel = page.locator(".computer");
     await expect(panel.locator(".computer__needs code")).toHaveText("sudo apt install qemu-system-x86 qemu-utils");
-    await expect(panel.getByRole("button", { name: /^(Activar computadora|Reintentar preparación)$/ })).toHaveCount(0);
+    await expect(panel.getByRole("button", { name: /^(Activar ordenador|Reintentar preparación)$/ })).toHaveCount(0);
 
     // Installed: the retry starts the computer and the step is gone.
     need = undefined;

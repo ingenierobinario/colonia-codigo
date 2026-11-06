@@ -25,7 +25,7 @@ test("the chat shows the computer being created, then ready, and the agent carri
     appearance: async () => {},
   });
   const llm = scriptedLlm((req, { said }) => {
-    if (said.includes("is ready")) return say("Lista la computadora, sigo con la tienda.");
+    if (said.includes("is ready")) return say("Listo el ordenador, sigo con la tienda.");
     const done = req.messages.filter((m) => m.role === "tool").length;
     return done ? say("Ahora te aviso.") : callTool("start", "computer", { action: "start" });
   });
@@ -49,7 +49,7 @@ test("the chat shows the computer being created, then ready, and the agent carri
     });
     await env.client.call("environments.permit", { agent: "superagent", on: true });
     await page.goto(`${env.core.url}/#thread=${robyChat.id}`);
-    await page.getByRole("textbox", { name: /Escribile a/ }).fill("Probá la tienda en la computadora");
+    await page.getByRole("textbox", { name: /Escríbele a/ }).fill("Prueba la tienda en el ordenador");
     await page.keyboard.press("Enter");
 
     const chip = page.locator(".chat__computer");
@@ -57,7 +57,7 @@ test("the chat shows the computer being created, then ready, and the agent carri
     await expect(page.getByText("Ahora te aviso.")).toBeVisible();
     boot();
     await expect(chip).toHaveText("Lista");
-    await expect(page.getByText("Lista la computadora, sigo con la tienda.")).toBeVisible();
+    await expect(page.getByText("Listo el ordenador, sigo con la tienda.")).toBeVisible();
     await expect(chip).toHaveCount(0, { timeout: 10_000 });
   } finally {
     boot();

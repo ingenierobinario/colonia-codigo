@@ -7,14 +7,14 @@ sidebar:
 
 import { Aside, CardGrid, LinkCard, Steps } from "@astrojs/starlight/components";
 
-No necesitás nada de esto para usar Colonia. Pero conocer las pocas piezas que se mueven hace que el resto de la
+No necesitas nada de esto para usar Colonia. Pero conocer las pocas piezas que se mueven hace que el resto de la
 documentación cierre: por qué la terminal y la app siempre coinciden, por qué un reinicio no pierde nada y qué
-significa "motor" cuando elegís un modelo.
+significa "motor" cuando eliges un modelo.
 
 ```text
    App de escritorio    Panel en un navegador    terminal colonia        Teléfono
   (presta navegador,                                             (presta cámara,
-   uso de la compu)                                                ubicación)
+   uso del equipo)                                                ubicación)
         │                       │                      │                 │
         └───────────────────────┴───── protocolo ──────┴─────────────────┘
                    métodos tipados por HTTP, eventos en vivo por WebSocket
@@ -33,22 +33,22 @@ significa "motor" cuando elegís un modelo.
 ## El core
 
 El core es un proceso en segundo plano y es lo único que es dueño del estado. Agentes, hilos, tareas, rutinas,
-memoria, canales y configuración viven en una sola base SQLite, `~/.colonia/v2/colonia.db`. Cada app que usás es una ventana
+memoria, canales y configuración viven en una sola base SQLite, `~/.colonia/v2/colonia.db`. Cada app que usas es una ventana
 a eso.
 
-- Por defecto escucha en `127.0.0.1:7440`, así que solo esta computadora llega a él. No acepta escuchar en una
+- Por defecto escucha en `127.0.0.1:7440`, así que solo este ordenador llega a él. No acepta escuchar en una
   dirección de red sin un token, y `colonia expose` te arma las dos cosas.
-- Corre cada turno de agente, cada rutina y cada canal. Cuando cerrás la app, el trabajo sigue.
+- Corre cada turno de agente, cada rutina y cada canal. Cuando cierras la app, el trabajo sigue.
 - El trabajo en curso se anota antes de correr. Si el core se reinicia en medio de un turno, lo retoma una vez y te
   dice con honestidad si hay alguna acción de la que no puede saber cómo terminó.
 
-Mirá cómo anda cuando quieras con `colonia status`, o `colonia service status` para el servicio en segundo plano.
+Mira cómo va cuando quieras con `colonia status`, o `colonia service status` para el servicio en segundo plano.
 
 ## Un solo protocolo
 
 Todos los clientes le hablan al core por un único contrato: un registro tipado de unos 230 métodos, que se llaman por
 HTTP, con eventos en vivo por un WebSocket. No hay puertas laterales. El panel, la terminal y el teléfono llaman a los
-mismos métodos, y por eso un mensaje que mandás desde la terminal aparece en la app mientras se escribe.
+mismos métodos, y por eso un mensaje que mandas desde la terminal aparece en la app mientras se escribe.
 
 Los métodos que cambian algo llevan una clave de idempotencia, así que un reintento después de un corte nunca hace la
 cosa dos veces.
@@ -60,7 +60,7 @@ Los clientes son de dos tipos:
 - **Operadores**: muestran y controlan. La app de escritorio, el panel en un navegador, la terminal `colonia`, la app del
   teléfono.
 - **Nodos**: le prestan al core algo que no tiene por su cuenta. La app de escritorio presta el **navegador** (y, en
-  macOS, el **uso de la computadora** cuando lo activás). El teléfono presta la **ubicación** y la **cámara**.
+  macOS, el **uso del ordenador** cuando lo activas). El teléfono presta la **ubicación** y la **cámara**.
 
 Cuando un agente quiere abrir una página, el core manda esa llamada al nodo que ofrece un navegador. Si no hay app de
 escritorio conectada, usa un Chrome sin ventana, sin tus sesiones iniciadas y sin forma de tomar el control.
@@ -80,7 +80,7 @@ las herramientas, la memoria y las reglas de seguridad de Colonia. Las CLIs de c
 hilos de código y las sesiones de Claude Code y Codex que Colonia encuentra en tu disco, en **Sesiones externas**.
 
 Un modelo se nombra `motor/modelo`, con un esfuerzo opcional después de un `#`, y el router elige uno en cada turno
-según tus reglas y la cadena de respaldo. Mirá [Modelos](/es/concepts/models/).
+según tus reglas y la cadena de respaldo. Mira [Modelos](/es/concepts/models/).
 
 ## Hilos, corridas y pasos
 
@@ -93,14 +93,14 @@ Todo lo que pasa queda registrado de la misma forma:
 | **Paso** | Una llamada a una herramienta dentro de una corrida. | Leer un archivo, abrir una página, mandar un mensaje |
 
 Cuando un agente le pide ayuda a otro, eso es un sub-hilo con sus propias corridas, que en tu chat se ve como una
-tarjeta de progreso que podés abrir. Hay una sola forma de hacerlo, el mismo `threads.send` que usan la app y la
+tarjeta de progreso que puedes abrir. Hay una sola forma de hacerlo, el mismo `threads.send` que usan la app y la
 terminal.
 
 ## Del mensaje a la respuesta
 
 <Steps>
 
-1. Le escribís a Lucía en la app, por Telegram o con `colonia chat`. Todos llaman a `threads.send`.
+1. Le escribes a Lucía en la app, por Telegram o con `colonia chat`. Todos llaman a `threads.send`.
 2. El core guarda una corrida con tu mensaje antes de que pase cualquier otra cosa.
 3. Arma lo que lee el modelo: las instrucciones de Lucía, el proyecto, las notas de memoria y las skills que
    coinciden, y la conversación. El comienzo del prompt no cambia entre llamadas, así los proveedores lo pueden
@@ -111,7 +111,7 @@ terminal.
 
 </Steps>
 
-<Aside title="El texto de afuera es dato">
+<Aside title="El texto externo es dato">
 Las páginas web, los mensajes de canales, el texto de otros agentes y la salida de las herramientas le llegan al
 modelo marcados como datos, nunca como instrucciones. Mientras haya contenido así en un turno, las acciones de alto
 impacto te preguntan primero, salvo que hayas elegido autonomía total para ese agente. Más en
@@ -123,6 +123,6 @@ impacto te preguntan primero, salvo que hayas elegido autonomía total para ese 
 <CardGrid>
   <LinkCard title="Agentes" description="Quiénes son y cómo se definen." href="/es/concepts/agents/" />
   <LinkCard title="Conversaciones" description="Hilos, corridas y pasos en detalle." href="/es/concepts/conversations/" />
-  <LinkCard title="Correr Colonia en un servidor" description="Exponé el core, emparejá dispositivos, mantenelo andando." href="/es/devices/server/" />
+  <LinkCard title="Correr Colonia en un servidor" description="Expón el core, empareja dispositivos, mantenlo en marcha." href="/es/devices/server/" />
   <LinkCard title="Clientes de afuera" description="Que Claude Code, Codex y otras apps usen Colonia." href="/es/extend/outside-clients/" />
 </CardGrid>

@@ -23,7 +23,7 @@ export const HISTORY_BUDGET_CHARS = 120_000;
 export const FULL_OUTPUT_RUNS = 2;
 
 const LANGUAGES: Record<string, string> = {
-  es: "Spanish (Rioplatense, with voseo)",
+  es: "Spanish (Spain, informal tuteo)",
   en: "English",
 };
 

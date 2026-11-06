@@ -1,6 +1,6 @@
 ---
 title: Tablero y widgets
-description: Los agentes arman widgets vivos en el chat; vos los fijás al Tablero de un proyecto, los abrís como apps a pantalla completa, los copiás y los compartís.
+description: Los agentes arman widgets vivos en el chat; tú los fijas al Tablero de un proyecto, los abres como apps a pantalla completa, los copias y los compartes.
 sidebar:
   order: 5
 ---
@@ -8,33 +8,33 @@ sidebar:
 import { Aside, Steps, CardGrid, LinkCard } from "@astrojs/starlight/components";
 import Shot from "../../../../components/Shot.astro";
 
-Pedile a un agente un gráfico, un dashboard, una checklist o una herramientita, y arma un **widget**: una pieza de
+Pídele a un agente un gráfico, un dashboard, una checklist o una herramientita, y arma un **widget**: una pieza de
 HTML autocontenida que se ve ahí mismo en el chat. Los widgets están vivos: cuando el agente cambia uno, se actualiza
-al instante en todos los lugares donde está abierto. Fijá los útiles al **Tablero** de un proyecto y tenés un
+al instante en todos los lugares donde está abierto. Fija los útiles al **Tablero** de un proyecto y tendrás un
 dashboard que tus agentes mantienen al día.
 
 ## Los agentes los arman en el chat
 
-Pedilo con tus palabras:
+Pídelo con tus palabras:
 
-> **Vos:** Vera, haceme un widget con los pedidos de esta semana por día y los 5 productos más vendidos.
+> **Tú:** Vera, hazme un widget con los pedidos de esta semana por día y los 5 productos más vendidos.
 >
-> **Vera:** Acá está. Lee los números del export de la tienda; pedime cualquier cambio.
+> **Vera:** Aquí está. Lee los números del export de la tienda; pídeme cualquier cambio.
 
-El widget aparece en la respuesta. Para cambiarlo, pedíselo ("poné las barras en verde, sumá la semana pasada para
+El widget aparece en la respuesta. Para cambiarlo, pídeselo ("pon las barras en verde, suma la semana pasada para
 comparar"): el agente edita el mismo widget en lugar de hacer uno nuevo, y ves la versión nueva en su lugar.
 
 Los widgets toman los colores del panel (claro y oscuro) y no salen a la red salvo que declaren de dónde sacan datos
 en vivo: entonces el encabezado del widget dice **Datos en vivo de** y los hosts. Un widget que se conecta afuera te
 pide OK mientras haya contenido de afuera en el turno.
 
-Un widget también puede mostrar las imágenes, videos y audios del propio proyecto sin copiarlos adentro: pedí "una
+Un widget también puede mostrar las imágenes, videos y audios del propio proyecto sin copiarlos adentro: pide "una
 vista del reel con `reels/toma-1.mp4` de fondo" y el widget reproduce ese archivo desde la carpeta del proyecto. Solo
 lee los archivos que el widget nombra, dentro de su proyecto, y solo multimedia (nada de documentos ni código).
 
 ## El panel lateral Widget
 
-Abrí el panel lateral en **Widget** para ver, más grande, cada widget que armó el agente en este chat. El encabezado
+Abre el panel lateral en **Widget** para ver, más grande, cada widget que armó el agente en este chat. El encabezado
 de cada widget tiene las mismas acciones donde sea que aparezca (chat, panel, Tablero, Apps):
 
 | Acción | Qué hace |
@@ -44,7 +44,7 @@ de cada widget tiene las mismas acciones donde sea que aparezca (chat, panel, Ta
 | **Fijar en Apps** / **Abrir como app** | Lo suma a Apps en la barra lateral y lo abre a pantalla completa. |
 | **Compartir** | Privado por defecto; **Cualquiera con el enlace** lo puede ver sin editar. **Copiar enlace** para mandarlo. |
 
-## Fijalo al Tablero del proyecto
+## Fíjalo al Tablero del proyecto
 
 La pestaña **Resumen** de un proyecto arranca con su **Tablero**: los widgets fijados a ese proyecto, en vivo.
 
@@ -52,24 +52,24 @@ La pestaña **Resumen** de un proyecto arranca con su **Tablero**: los widgets f
 
 <Steps>
 
-1. En un chat, fijá un widget con **Fijar al tablero**, o en el Tablero apretá **Sumar un widget**.
-2. **Pedir un widget nuevo a…** y elegí un agente (o Home): aparece en el Tablero apenas el agente lo hace.
-3. O elegí uno que ya existe: **De este proyecto**, o **Copiar de otro proyecto**. Un Tablero vacío ofrece lo mismo
+1. En un chat, fija un widget con **Fijar al tablero**, o en el Tablero pulsa **Sumar un widget**.
+2. **Pedir un widget nuevo a…** y elige un agente (o Home): aparece en el Tablero apenas el agente lo hace.
+3. O elige uno que ya existe: **De este proyecto**, o **Copiar de otro proyecto**. Un Tablero vacío ofrece lo mismo
    como **Crear** y **Cargar**.
-4. Arrastrá la barra de un widget para ordenarlo; ajustá alto y ancho con las manijas (o con las flechas). **Tablero
+4. Arrastra la barra de un widget para ordenarlo; ajusta alto y ancho con las manijas (o con las flechas). **Tablero
    a todo el ancho** usa toda la ventana.
 
 </Steps>
 
-## Compartí deliberadamente
+## Comparte deliberadamente
 
-Un enlace permite ver el artefacto a cualquiera que lo tenga: revisá los datos visibles antes de habilitar **Cualquiera
-con el enlace**. Usá el menú para dejar de compartir cuando no haga falta. El enlace necesita un host Colonia accesible;
+Un enlace permite ver el artefacto a cualquiera que lo tenga: revisa los datos visibles antes de habilitar **Cualquiera
+con el enlace**. Usa el menú para dejar de compartir cuando no haga falta. El enlace necesita un host Colonia accesible;
 crearlo no publica en internet un core que escucha solo localmente. No expongas todo el panel para compartir un widget.
 
-Un agente no puede reemplazar el HTML de un artefacto publicado: dejá de compartirlo vos antes de pedir cambios o
-pedí otro artefacto. La página pública no tiene tu chat para aprobar acciones. Exportá sin memoria para distribuir
-una plantilla en vez de tus registros. Leé [memoria y exportación](/es/office/artifacts/).
+Un agente no puede reemplazar el HTML de un artefacto publicado: deja de compartirlo tú antes de pedir cambios o
+pide otro artefacto. La página pública no tiene tu chat para aprobar acciones. Exporta sin memoria para distribuir
+una plantilla en vez de tus registros. Lee [memoria y exportación](/es/office/artifacts/).
 
 ## Apps: un widget a pantalla completa
 
@@ -85,9 +85,9 @@ Un widget es de un proyecto, o es global si se hizo en un chat fuera de todo pro
 solo los widgets de ese proyecto; los chats fuera de un proyecto ven solo los globales. Para usar un widget en otro
 lado:
 
-- **Copialo** a otro proyecto (desde el Tablero de ese proyecto: **Sumar un widget** › **Copiar de otro proyecto**).
-- **Abrilo como app**, desde cualquier proyecto.
-- **Compartí** su enlace.
+- **Cópialo** a otro proyecto (desde el Tablero de ese proyecto: **Sumar un widget** › **Copiar de otro proyecto**).
+- **Ábrelo como app**, desde cualquier proyecto.
+- **Comparte** su enlace.
 
 Un agente nunca toca los widgets de otro proyecto.
 

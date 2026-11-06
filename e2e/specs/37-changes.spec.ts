@@ -47,7 +47,7 @@ test("cambios: lista unificada, diff expandible en vivo, historial y registros a
     });
     await page.goto(`${env.core.url}/#thread=${thread.id}&panel=changes`);
     const panel = page.locator(".sidepanel");
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     await input.fill("changes");
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(panel.getByText("Cambios: 1 archivo editado", { exact: true })).toBeVisible();
@@ -135,7 +135,7 @@ test("cambios: los archivos de la carpeta temporal se listan aparte, con su diff
       title: "Borrador",
     });
     await page.goto(`${env.core.url}/#thread=${thread.id}&panel=changes`);
-    await page.getByRole("textbox", { name: /^Escribile a/ }).fill("draft");
+    await page.getByRole("textbox", { name: /^Escríbele a/ }).fill("draft");
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(page.locator(".transcript").getByText("Done", { exact: true })).toHaveCount(1);
     await expect(page.locator(".changes__head")).toContainText("Archivos en la carpeta temporal: 1");

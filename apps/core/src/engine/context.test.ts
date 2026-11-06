@@ -25,7 +25,7 @@ test("the system prompt has no clock and no roster: same agent and thread, same 
   const a = systemPrompt(agent, { kind: "home" }, "es");
   assert.equal(a, systemPrompt(agent, { kind: "home" }, "es"));
   assert.doesNotMatch(a, /\d{4}|id: scout/);
-  assert.match(a, /Spanish \(Rioplatense/);
+  assert.match(a, /Spanish \(Spain/);
   assert.match(a, /Never delegate to yourself/);
   // One rule says when to delegate, and a late hand-off carries what was found.
   assert.equal(a.match(/^- Delegate at the start,/gm)?.length, 1);

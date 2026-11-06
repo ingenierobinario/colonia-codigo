@@ -45,8 +45,8 @@ test("quoted lines become one quote holding their own blocks, with blank quoted 
 });
 
 test("a link into the desktop panel shows as its label on the phone", () => {
-  const blocks = parseMarkdown("Prendelo en [Config › Escritorio](colonia:settings/desktop).");
-  assert.deepEqual(blocks, parseMarkdown("Prendelo en Config › Escritorio."));
+  const blocks = parseMarkdown("Enciéndelo en [Config › Escritorio](colonia:settings/desktop).");
+  assert.deepEqual(blocks, parseMarkdown("Enciéndelo en Config › Escritorio."));
 });
 
 test("a copy is the text as it reads: no marks, list markers kept, a quote's own words", () => {

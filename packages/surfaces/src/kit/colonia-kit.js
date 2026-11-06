@@ -712,7 +712,7 @@ ax-icon{display:inline-grid;place-items:center;width:var(--s,16px);height:var(--
     apply(); scope._axApply = apply;
   }
 
-  /* Puente con el agente: <button data-ax-ask="Actualizá la lectura">  → el agente recibe el pedido en el chat */
+  /* Puente con el agente: <button data-ax-ask="Actualiza la lectura">  → el agente recibe el pedido en el chat */
   function ask(text, btn) {
     if (btn) { btn.setAttribute('aria-busy', 'true'); btn.disabled = true; setTimeout(function () { btn.removeAttribute('aria-busy'); btn.disabled = false; }, 8000); }
     post('ask', { text: text });

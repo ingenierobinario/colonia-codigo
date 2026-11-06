@@ -10,8 +10,8 @@ test("the owner gives an agent its own budget from its detail and takes it back"
     .first()
     .click();
   const detail = page.locator(".teamdetail");
-  const turns = detail.getByRole("spinbutton", { name: "Turnos sin vos" });
-  const tokens = detail.getByRole("spinbutton", { name: "Miles de tokens sin vos" });
+  const turns = detail.getByRole("spinbutton", { name: "Turnos sin ti" });
+  const tokens = detail.getByRole("spinbutton", { name: "Miles de tokens sin ti" });
   await expect(turns).toHaveAttribute("placeholder", "Sin límite");
 
   await turns.fill("5");

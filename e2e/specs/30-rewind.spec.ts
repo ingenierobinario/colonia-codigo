@@ -7,7 +7,7 @@ test("the owner edits a message and asks again for an answer; what came after go
   const t = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "superagent", title: "Rewind" });
   await open(page, `#view=inbox&thread=${t.id}`);
   const main = page.getByRole("main");
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   for (const text of ["Northwind uno", "Northwind dos"]) {
     await box.fill(text);
     await box.press("Enter");

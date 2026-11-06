@@ -28,7 +28,7 @@ test("a due date reads as today, tomorrow or a capitalised weekday, with the hou
 test("relative times count back and forward in the owner's language", () => {
   assert.equal(ago(new Date(now.getTime() - 18 * 60_000).toISOString(), now, "es"), "hace 18 min");
   assert.equal(ago(new Date(now.getTime() - 3 * 3_600_000).toISOString(), now, "en"), "3 h ago");
-  assert.equal(ago(now.toISOString(), now, "es"), "Recién");
+  assert.equal(ago(now.toISOString(), now, "es"), "Ahora mismo");
   assert.equal(ahead(new Date(now.getTime() + 12 * 60_000).toISOString(), now, "es"), "en 12 min");
   assert.equal(ahead(at(1, 8), now, "es"), "Mañana 08:00");
   assert.equal(ahead(new Date(now.getTime() - 3 * 3_600_000).toISOString(), now, "es"), "hace 3 h");

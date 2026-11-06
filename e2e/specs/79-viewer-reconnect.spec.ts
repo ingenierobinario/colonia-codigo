@@ -67,7 +67,7 @@ test("a viewer that drops reconnects by itself and shows the agent's screen, nev
     // Home stays on this Mac (DECISIONS.md#d-154): the work goes in a chat of its own.
     const chat = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
     await env.client.call("environments.bind", { thread: chat.id });
-    await env.client.call("threads.send", { thread: chat.id, text: "Trabajá en tu pantalla" });
+    await env.client.call("threads.send", { thread: chat.id, text: "Trabaja en tu pantalla" });
     await env.settle(chat.id);
 
     await page.goto(`${env.core.url}/#thread=${chat.id}&panel=computer`);

@@ -114,7 +114,7 @@ test("Computer installs only on enable, shows the chat agent's screen, follows C
     const editor = computer.getByRole("textbox", { name: "Comando dentro de la VM" });
     // Said plainly whose user and folder the commands run in, and that control comes first.
     await expect(computer.getByRole("log")).toContainText(
-      "Los comandos que mandes acá corren con el usuario Linux de Roby, en ~/work. Primero tomá el control",
+      "Los comandos que mandes aquí se ejecutan con el usuario Linux de Roby, en ~/work. Primero toma el control",
     );
     // A one-line command box, growing only for a longer command.
     const boxHeight = () => editor.evaluate((element) => element.getBoundingClientRect().height);
@@ -159,8 +159,8 @@ test("Computer installs only on enable, shows the chat agent's screen, follows C
     await computer.getByRole("button", { name: "Restaurar terminal", exact: true }).click();
     await expect(computer.locator(".computer__desktop")).toBeVisible();
     // Asked while the owner has its screen, the agent's turn says so, and its notice hands the screen back.
-    await env.client.call("threads.send", { thread: robyChat.id, text: "Seguí vos" });
-    const blocked = page.locator(".notice--error", { hasText: "Tenés la pantalla de Roby en tus manos" });
+    await env.client.call("threads.send", { thread: robyChat.id, text: "Sigue tú" });
+    const blocked = page.locator(".notice--error", { hasText: "Tienes la pantalla de Roby en tus manos" });
     await blocked.getByRole("button", { name: "Devolver control al agente", exact: true }).click();
     await expect(blocked.getByRole("button", { name: "Control devuelto", exact: true })).toBeDisabled();
     await expect(computer.locator(".computer__locked")).toBeVisible();
@@ -278,7 +278,7 @@ test("a late status poll cannot undo shutdown, and an optional VM error cannot b
     optionalFailure = true;
     await page.reload();
     await expect(page.locator(".computer")).toBeVisible();
-    await expect(page.getByRole("textbox", { name: "Escribile a Roby…", exact: true })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Escríbele a Roby…", exact: true })).toBeVisible();
   } finally {
     release();
     await page.unrouteAll({ behavior: "ignoreErrors" });

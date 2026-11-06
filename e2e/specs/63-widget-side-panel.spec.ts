@@ -46,7 +46,7 @@ test("a widget shows in the side panel, the chat keeps a card of it, and it come
   await head.getByRole("button", { name: "Abrir en otra ventana" }).click();
   expect(new URL((await opens).url()).searchParams.get("artifact")).toBe(surfaceId);
 
-  await card.getByRole("button", { name: "Mostrar acá" }).click();
+  await card.getByRole("button", { name: "Mostrar aquí" }).click();
   await expect(panel).toHaveCount(0);
   await expect(inline.getByText("Coverage rows")).toBeVisible();
   // A published widget refuses changes: unpublished, the next chat can show it again.

@@ -14,7 +14,7 @@ A settings line as in Config: title (14) and a muted description (13) on the lef
 A control that needs the width, like a paragraph to write, goes under the text with `stacked`:
 
 ```tsx
-<SettingRow stacked title="Sobre vos" description="Lo que tus agentes saben de vos siempre.">
+<SettingRow stacked title="Sobre ti" description="Lo que tus agentes saben de ti siempre.">
   <Textarea rows={3} />
 </SettingRow>
 ```

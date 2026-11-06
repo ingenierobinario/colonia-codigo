@@ -18,7 +18,7 @@ test("an agent's table keeps its columns, scrolls in its frame, maximizes and co
   await page.setViewportSize({ width: 820, height: 800 });
   await open(page, `#view=inbox&thread=${t.id}`);
   const main = page.getByRole("main");
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill(`show a table for ${task.id}`);
   await box.press("Enter");
 

@@ -20,7 +20,7 @@ test("arrastrar MP4 5,3 MB y PDF grande permite enviar; rechazo muestra motivo c
   try {
     await env.client.call("setup.finish", {});
     await page.goto(env.core.url);
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     await expect(input).toBeVisible();
     await input.fill("Keep my attachments");
     const tooLargeName = "product-launch-reel-final-review-version-with-captions.mp4";
@@ -132,7 +132,7 @@ test("adjuntos usuario y agente muestran imágenes y descargan archivos después
     const health = await env.client.call("system.health", {});
     expect(health.code_sha).toBeTruthy();
     await page.goto(env.core.url);
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     await expect(input).toBeVisible();
     await page
       .locator('input[type="file"]')

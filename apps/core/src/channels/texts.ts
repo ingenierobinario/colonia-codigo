@@ -3,11 +3,11 @@ import type { Store } from "../domain/store.ts";
 
 const es = {
   pairing: (name: string, agent: string, code: string, label: string) =>
-    `Hola ${name}. Soy ${agent}, un asistente. Todavía no conozco este chat: hay que aprobarlo con el código ${code}. Si sos mi dueño, en Colonia › ${label} tocá "Soy yo" y escribilo.`,
+    `Hola ${name}. Soy ${agent}, un asistente. Todavía no conozco este chat: hay que aprobarlo con el código ${code}. Si eres mi dueño, en Colonia › ${label} toca "Soy yo" y escríbelo.`,
   pairingOwner: (name: string, label: string, code: string) =>
-    `${name} quiere hablar por ${label}. Código ${code}. Aprobalo acá o en Colonia › Canales.`,
+    `${name} quiere hablar por ${label}. Código ${code}. Apruébalo aquí o en Colonia › Canales.`,
   pairingApp: (name: string, label: string, code: string) =>
-    `${name} quiere hablar por ${label} (código ${code}). Aprobalo en la lista de ${label}.`,
+    `${name} quiere hablar por ${label} (código ${code}). Apruébalo en la lista de ${label}.`,
   askOwner: (name: string, label: string, text: string) =>
     `${name} te escribió por ${label}${text ? `: «${text}»` : "."} ¿Le contesto?`,
   wroteFirst: (name: string, label: string, text: string) =>
@@ -24,15 +24,15 @@ const es = {
   send: "Enviar",
   skip: "Omitir",
   skipped: "(omitida)",
-  pickSome: "Tildá al menos una opción, o tocá Omitir.",
-  cut: (more: number) => `(cortado: ${more} caracteres más, miralos en Colonia antes de aprobar)`,
+  pickSome: "Marca al menos una opción, o toca Omitir.",
+  cut: (more: number) => `(cortado: ${more} caracteres más, míralos en Colonia antes de aprobar)`,
   asContact: "Aprobar como contacto",
   ignore: "Ignorar",
   failed: (why: string) => `No pude terminar: ${why}`,
   contactFailed: "Ahora no puedo responder; ya le avisé a mi dueño.",
   contactFailedOwner: (name: string, why: string) => `No pude responderle a ${name}: ${why}`,
   passedOn: (name: string, kind: string, summary: string, rest: string) =>
-    `${name} ${kind === "appointment" ? "pidió un turno" : kind === "message" ? "te dejó un mensaje" : "te pidió algo"}: ${summary}${rest ? `\n${rest}` : ""}\nQuedó en tus tareas.`,
+    `${name} ${kind === "appointment" ? "pidió una cita" : kind === "message" ? "te dejó un mensaje" : "te pidió algo"}: ${summary}${rest ? `\n${rest}` : ""}\nQuedó en tus tareas.`,
   reactFailed: (emoji: string, where: string) =>
     `No pude reaccionar con ${emoji} en ${where}: no hay un mensaje suyo al que reaccionar o el canal no tiene reacciones. No se envió nada.`,
   reactRefused: (emoji: string, where: string, why: string) =>
@@ -53,13 +53,13 @@ const es = {
   goOn: "Continuar",
   wentOn: "Listo, sigue trabajando.",
   goOnPrompt:
-    "Continuá el trabajo pendiente en esta sesión desde el último informe. Conservá el alcance y los permisos existentes; informá el resultado a quien te delegó.",
+    "Continúa el trabajo pendiente en esta sesión desde el último informe. Conserva el alcance y los permisos existentes; informa del resultado a quien te delegó.",
   stopped: "Listo, paré.",
   due: (title: string, person?: string, owedBy?: "owner" | "person") =>
     person
       ? owedBy === "person"
         ? `Vence: ${title}. Te lo debe ${person}.`
-        : `Vence: ${title}. Se lo debés a ${person}.`
+        : `Vence: ${title}. Se lo debes a ${person}.`
       : `Vence: ${title}.`,
   routineFailed: (name: string, why: string) => `La rutina «${name}» no pudo terminar: ${why}`,
   providerLimitTitle: "Límite del proveedor de modelos",
@@ -90,9 +90,9 @@ const es = {
   inputGone: "Eso ya no está pendiente: se respondió en otro lado o venció.",
   inApp: "Esto se responde en la app de Colonia (el panel, el escritorio o tu teléfono vinculado), no por este canal.",
   waiting: (agent: string, what: string) =>
-    `${agent} te espera: ${what}\n\nRespondele en Colonia (la app, el escritorio o tu teléfono).`,
+    `${agent} te espera: ${what}\n\nRespóndele en Colonia (la app, el escritorio o tu teléfono).`,
   writeNow: (name: string, minutes: number) =>
-    `Escribí tu respuesta para ${name}: lo próximo que me mandes acá se lo envío tal cual (durante ${minutes} minutos). Mandá «cancelar» para no enviarle nada.`,
+    `Escribe tu respuesta para ${name}: lo próximo que me mandes aquí se lo envío tal cual (durante ${minutes} minutos). Manda «cancelar» para no enviarle nada.`,
   writeCanceled: "Listo, no le mando nada.",
   tooManyDrafts: (name: string) =>
     `${name} escribe mucho seguido: por esta hora no te sugiero más respuestas. Sus mensajes quedan en su chat.`,

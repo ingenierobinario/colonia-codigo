@@ -96,7 +96,7 @@ for (const lang of ["en", "es"]) {
       const face = header.getByRole("button", { name: `${lang === "es" ? "Ver a" : "View"} ${name}`, exact: true });
       await face.hover();
       await expect(page.locator(".colonia-tooltip")).toHaveText(
-        `${name} · ${project}. ${lang === "es" ? "Hacé clic para abrir el editor." : "Click to open the editor."}`,
+        `${name} · ${project}. ${lang === "es" ? "Haz clic para abrir el editor." : "Click to open the editor."}`,
       );
       await face.click();
       await expect(page.locator(".inboxpreview__agent")).toHaveText(`${lang === "es" ? "Ver a" : "View"} ${name}`);

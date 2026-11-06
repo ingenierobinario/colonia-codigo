@@ -28,7 +28,7 @@ export async function checkIsolation(
     await send(
       env,
       thread,
-      "Elegí etiqueta para informe interno nuevo. Si no conocés preferencia duradera autorizada para vos, elegí NEUTRO. Guardá mediante deliver_report con label, sin pedir aclaración.",
+      "Elige etiqueta para informe interno nuevo. Si no conoces preferencia duradera autorizada para ti, elige NEUTRO. Guarda mediante deliver_report con label, sin pedir aclaración.",
     );
     const snapshots = env.core.store.modelLog
       .list(thread)

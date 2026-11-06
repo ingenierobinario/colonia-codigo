@@ -52,7 +52,7 @@ export function ClassicLook() {
         <p>Corregí lo anterior: la tarea estaba marcada en curso, pero no había producción activa.</p>
         <p>Ahora sí dejé la ejecución corriendo con Albert sobre la misma tarea, sin publicar.</p>
       </Message>
-      <Message from="user">¿seguís?</Message>
+      <Message from="user">¿sigues?</Message>
     </ColoniaProvider>
   );
 }

@@ -20,7 +20,7 @@ test("an agent on total autonomy writes in another folder from a chat with no pr
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "ondina", title: "Afuera" });
   try {
     await open(page, `#thread=${chat.id}`);
-    await page.getByRole("textbox", { name: /Escribile/ }).fill(`write a note at ${note}`);
+    await page.getByRole("textbox", { name: /Escríbele/ }).fill(`write a note at ${note}`);
     await page.keyboard.press("Enter");
 
     const thread = () => rpc<Thread>("threads.get", { thread: chat.id });

@@ -85,7 +85,7 @@ test("panel pairs with a code when the core asks for a token", async ({ page }) 
   // Android WebViews on HTTP origins expose getRandomValues without randomUUID.
   await page.addInitScript(() => Object.defineProperty(crypto, "randomUUID", { value: undefined }));
   await page.goto(core);
-  await expect(page.getByText("Vinculá este")).toBeVisible();
+  await expect(page.getByText("Vincula este")).toBeVisible();
   await expect(page.getByText(/^Colonia v\d+\.\d+\.\d+/)).toBeVisible();
   await expect(page.getByText(/colonia pair en un servidor/)).toBeVisible();
   const logo = await page.locator(".pair__head img").boundingBox();
@@ -98,13 +98,13 @@ test("panel pairs with a code when the core asks for a token", async ({ page }) 
 
   await input.fill("WRONG234");
   await page.getByRole("button", { name: "Vincular" }).click();
-  await expect(page.getByRole("alert")).toHaveText("Ese código es incorrecto o venció. Pedí uno nuevo.");
+  await expect(page.getByRole("alert")).toHaveText("Ese código es incorrecto o venció. Pide uno nuevo.");
 
   await input.fill(await pairCode());
   await page.getByRole("button", { name: "Vincular" }).click();
   // Paired: the page reloads with its own key and the app opens (a fresh core starts on its setup).
   await expect(page.getByRole("button", { name: "Salir" })).toBeVisible();
-  await expect(page.getByText("Vinculá este")).toBeHidden();
+  await expect(page.getByText("Vincula este")).toBeHidden();
   const token = await page.evaluate(() => localStorage.getItem("colonia.token"));
   expect(token).toMatch(/^coloniad_/);
 
@@ -126,6 +126,6 @@ test("a stored token the core no longer takes is dropped and the gate shows agai
     }
   });
   await page.goto(core);
-  await expect(page.getByText("Vinculá este")).toBeVisible();
+  await expect(page.getByText("Vincula este")).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem("colonia.token"))).toBeNull();
 });

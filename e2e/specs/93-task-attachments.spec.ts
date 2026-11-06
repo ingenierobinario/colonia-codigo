@@ -76,7 +76,7 @@ test("task uploads show size errors and enforce the attachment count before crea
       buffer: Buffer.from("A note"),
     })),
   );
-  await expect(dialog.getByRole("alert")).toHaveText("Podés adjuntar hasta 20 archivos acá.");
+  await expect(dialog.getByRole("alert")).toHaveText("Puedes adjuntar hasta 20 archivos aquí.");
   await input.setInputFiles(image);
   await expect(dialog.getByRole("alert")).toHaveCount(0);
   await expect(dialog.getByRole("button", { name: "brief.png", exact: true })).toBeVisible();
@@ -113,7 +113,7 @@ test("existing tasks accept more than 20 attachments and stop at 50", async ({ p
     { name: "extra-a.txt", mimeType: "text/plain", buffer: Buffer.from("A") },
     { name: "extra-b.txt", mimeType: "text/plain", buffer: Buffer.from("B") },
   ]);
-  await expect(assets.getByRole("alert")).toHaveText("Podés adjuntar hasta 50 archivos acá.");
+  await expect(assets.getByRole("alert")).toHaveText("Puedes adjuntar hasta 50 archivos aquí.");
   await assets
     .getByLabel("Adjuntar archivos", { exact: true })
     .setInputFiles({ name: "last.txt", mimeType: "text/plain", buffer: Buffer.from("Last") });

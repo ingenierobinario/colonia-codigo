@@ -23,13 +23,13 @@ const TEMPLATES: Record<"en" | "es", Template> = {
   },
   es: {
     text: (name) =>
-      `¡Hola! Soy ${name}, tu super-agente, y ya estoy listo para trabajar con vos.\n\n` +
-      "Antes de arrancar, contame un poco de vos: ¿cómo te llamás y a qué te dedicás? ¿Y cómo querés que sea? " +
-      "Elegí una de estas personalidades o escribí la tuya.",
+      `¡Hola! Soy ${name}, tu super-agente, y ya estoy listo para trabajar contigo.\n\n` +
+      "Antes de arrancar, cuéntame un poco de ti: ¿cómo te llamas y a qué te dedicas? ¿Y cómo quieres que sea? " +
+      "Elige una de estas personalidades o escribe la tuya.",
     options: [
       { label: "Cercano y con humor", value: "Cercano, cálido y con humor; relajado y de confianza." },
       { label: "Directo y breve", value: "Directo y breve: va al grano, sin relleno." },
-      { label: "Formal y prolijo", value: "Formal y prolijo: cuidadoso con las palabras, ordenado y profesional." },
+      { label: "Formal y esmerado", value: "Formal y esmerado: cuidadoso con las palabras, ordenado y profesional." },
     ],
   },
 };

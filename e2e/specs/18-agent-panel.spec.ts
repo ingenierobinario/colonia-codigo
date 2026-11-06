@@ -36,8 +36,8 @@ test("the super-agent's face opens its block beside the chat; its prompt and pro
   await editor.getByRole("button", { name: "Guardar y cerrar" }).click();
   await expect(block.getByText("Sign every message with a lemon.")).toBeVisible();
 
-  await block.getByRole("button", { name: /Lo que sabe de vos/ }).click();
+  await block.getByRole("button", { name: /Lo que sabe de ti/ }).click();
   const config = page.getByRole("dialog", { name: "Configuración" });
-  await expect(config.getByRole("textbox", { name: "Sobre vos" })).toHaveValue("Runs a bakery in Northwind.");
+  await expect(config.getByRole("textbox", { name: "Sobre ti" })).toHaveValue("Runs a bakery in Northwind.");
   await expect(config.getByRole("combobox", { name: "Zona horaria" })).toHaveText(/Buenos Aires/);
 });
