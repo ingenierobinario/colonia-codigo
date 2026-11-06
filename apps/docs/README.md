@@ -85,8 +85,10 @@ import Blob from "../../../components/Blob.astro";
 ## Screenshots
 
 `scripts/shots.ts` starts a separate core (its own temp home, port 7480, file secrets, a scripted model that answers
-like the demo crew), seeds an office ("Acme Store" with Lucía, Tomás and Vera), and captures each screen of the
-panel in English, once per theme (Spanish pages reuse them). It runs with its own HOME and a `tailscale` that is not
+like the demo crew), seeds an office ("Brezo Cerámica", a fictitious Spanish online shop run by Marta, with Lucía, Tomás, Inés and Pablo), and
+captures each screen of the panel once per theme and per language: English (`name.webp`, `name-dark.webp`) and Spanish
+(`name.es.webp`, `name.es-dark.webp`, panel and office texts in Spanish). Spanish pages use the Spanish set and fall back
+to the English one. `SHOTS_LANG=en|es` takes only one; the selectors read the panel strings from `apps/web/src/i18n`. It runs with its own HOME and a `tailscale` that is not
 logged in, so nothing of the machine it runs on (paths, browser profiles, tailnet names) ends up in a capture. It needs the panel built (`pnpm build:web` at the
 repo root) and Playwright's Chromium (`pnpm exec playwright install chromium` at the root). The list of shots is in
 the script; add one there and run `pnpm shots` again.
