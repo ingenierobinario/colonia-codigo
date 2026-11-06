@@ -1,0 +1,62 @@
+---
+title: Bandeja de correo
+description: Conecta tu correo, deja que la secretaria te diga lo importante y que tus agentes preparen las respuestas.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+import Shot from "../../../../components/Shot.astro";
+
+El objetivo: dejar de abrir el correo para clasificarlo. Colonia lee los correos nuevos, te cuenta solo los
+importantes y un agente prepara la respuesta como **borrador** para que la revises y la envíes.
+
+## 1 · Conecta el buzón
+
+Dos caminos; elige uno:
+
+| Usas | Conéctalo en | Qué consigues |
+|---|---|---|
+| **Gmail** | **Recursos › Integraciones › Gmail** | Leer, buscar y crear borradores en tu propio Gmail. |
+| Otro correo | **Configuración › Canales › Email** | Enviar por SMTP; añade el IMAP del canal para recibir. |
+
+<Shot name="resources-integrations" alt="Recursos, Integraciones: la lista de servicios que puedes conectar, entre ellos Gmail" caption="Recursos › Integraciones" />
+
+<Steps>
+
+1. Abre **Recursos** en la barra lateral y entra en **Integraciones**.
+2. Abre **Gmail** y sigue el diálogo. Si tu empresa exige una app propia, elige **Mi propio OAuth client**: el diálogo
+   te guía.
+3. En **Configurar integración**, activa la revisión de correos nuevos y elige cada cuánto y si solo los importantes.
+
+</Steps>
+
+## 2 · Deja que la secretaria te avise
+
+Con el [perfil de Secretaria](/es/cases/secretary-first-day/) activado, los correos nuevos entran en tu día: en el
+resumen de la mañana y, si algo no puede esperar, como un aviso que pasa por tu presupuesto de interrupciones. En
+**Configuración › Super-agente › Capacidades de secretaría**, la línea de los correos nuevos tiene un atajo,
+**Abrir integraciones**, que te lleva al mismo sitio.
+
+## 3 · Respuestas en borrador
+
+Pídeselo en el chat, a Home o a cualquier agente:
+
+> Prepara una respuesta corta al correo del proveedor: confirmamos el pedido para el jueves.
+
+El agente escribe un **borrador**; no lo envía. Lo abres en tu correo, cambias lo que quieras y lo envías. Si usas una
+firma por remitente, se añade sola ([firmas](/es/office/email/)).
+
+<Shot name="inbox" alt="El Inbox: los chats de cada agente con su último mensaje, uno tras otro" caption="Inbox: lo que ha hecho cada agente" />
+
+Todo lo que han hecho tus agentes está en **Inbox**, un chat tras otro, para que veas quién ha preparado cada
+respuesta.
+
+<Aside type="caution">
+No pegues contraseñas ni claves en el chat. El correo se conecta en Recursos o en Configuración, nunca por mensaje.
+</Aside>
+
+## Siguiente
+
+- [Campaña de Black Friday](/es/cases/black-friday/): pon al equipo a trabajar en una campaña.
+- Todo sobre el correo: [Email](/es/office/email/) y el [canal Email](/es/channels/email/).

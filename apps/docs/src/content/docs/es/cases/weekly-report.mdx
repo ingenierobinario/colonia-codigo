@@ -1,0 +1,56 @@
+---
+title: Informe semanal
+description: Una rutina que repasa la semana cada lunes a las 09:00 y te manda un informe corto.
+sidebar:
+  order: 4
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+import Shot from "../../../../components/Shot.astro";
+
+Una rutina es trabajo que un agente hace solo, con horario. Aquí: cada lunes a las 09:00, Lucía repasa la semana
+anterior y te manda el informe.
+
+## 1 · Crea la rutina
+
+<Steps>
+
+1. Abre el proyecto y entra en **Rutinas**.
+2. Pulsa **Nueva rutina**.
+3. **Nombre**: `informe-semanal`.
+4. **Agente**: quien lo va a escribir (Lucía, por ejemplo).
+5. **Cuándo**: **Con horario**, solo **Lun**, a las **09:00**. Si lo prefieres, **Escribir un cron** con `0 9 * * 1`.
+6. En el paso **Agente**, en **Qué hacer**, escribe el encargo (abajo).
+7. **Guardar**.
+
+</Steps>
+
+<Shot name="case-routine" alt="Rutinas: el diálogo Nueva rutina con el nombre, el agente, cuándo se ejecuta y sus pasos" caption="Rutinas › Nueva rutina" />
+
+Un buen **Qué hacer** para este informe:
+
+> Repasa la semana pasada en este proyecto: tareas terminadas, tareas bloqueadas y lo que vence esta semana.
+> Escríbelo en cinco líneas, primero lo bloqueado. Si no ha cambiado nada, dilo en una línea.
+
+## 2 · Asegúrate de que te llega
+
+- El informe pasa por tu presupuesto de interrupciones como cualquier mensaje no pedido. Si quieres que llegue
+  **siempre**, activa **Llega siempre** en la rutina.
+- Para recibirlo en tu app de mensajería (Telegram, WhatsApp…), elígela en **Configuración › Interrupciones ›
+  App de chat para los avisos**.
+
+## 3 · Pruébala sin esperar al lunes
+
+En la lista de **Rutinas**, cada rutina tiene un botón para ejecutarla ya. Ejecútala una vez, lee el resultado y, si
+no te convence, ajusta **Qué hacer** y vuelve a ejecutarla.
+
+<Shot name="routines" alt="Las rutinas del proyecto y después los flows que ejecutan" caption="Rutinas y Flows" />
+
+<Aside type="tip">
+Valóralo con 👍/👎 cuando llegue: la rutina recibe sus propios números en la siguiente ejecución y ajusta lo que dice.
+</Aside>
+
+## Siguiente
+
+- Todo sobre las [Rutinas](/es/office/routines/).
+- [Primer día con la secretaria](/es/cases/secretary-first-day/): la apertura y el cierre del día también son rutinas.

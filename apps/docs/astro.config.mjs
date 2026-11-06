@@ -98,6 +98,7 @@ export default defineConfig({
       lastUpdated: false,
       sidebar: [
         section("Start here", "Empezar", "start"),
+        section("Use cases", "Casos prácticos", "cases"),
         section("Core ideas", "Ideas clave", "concepts"),
         {
           label: "Your office",
