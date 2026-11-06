@@ -43,7 +43,10 @@ if (!process.env.SHOTS_LANG && !process.env.SHOTS_SERVE) {
     const r = spawnSync(process.execPath, process.execArgv.concat(process.argv.slice(1)), {
       stdio: "inherit",
       env: { ...process.env, SHOTS_LANG: l },
+      // A whole language never takes more than 40 minutes (78 shots of 60 s at worst, most take a few seconds).
+      timeout: 40 * 60_000,
     });
+    if (r.error) console.error(`${l}: ${r.error.message}`);
     code ||= r.status ?? 1;
   }
   process.exit(code);
@@ -150,6 +153,7 @@ async function rpc<T = Record<string, unknown>>(method: string, params: unknown 
     method: "POST",
     headers: { "content-type": "application/json", "idempotency-key": `shots-${Date.now()}-${seq++}` },
     body: JSON.stringify(params),
+    signal: AbortSignal.timeout(60_000),
   });
   const body = (await res.json()) as { ok: boolean; result?: T; error?: { message: string } };
   if (!body.ok) throw new Error(`${method}: ${body.error?.message}`);
@@ -159,12 +163,18 @@ async function rpc<T = Record<string, unknown>>(method: string, params: unknown 
 async function stop(code = 0) {
   child.kill("SIGTERM");
   await Promise.all([llm.close(), tg.close()]);
-  if (!process.env.SHOTS_KEEP) fs.rmSync(dir, { recursive: true, force: true });
+  // On Windows the core holds its files for a moment after it is killed: retry, and never fail the run over it.
+  if (!process.env.SHOTS_KEEP)
+    try {
+      fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+    } catch (e) {
+      log(`could not remove ${dir}: ${(e as Error).message.split("\n")[0]}`);
+    }
   else log(`kept ${dir}`);
   process.exit(code);
 }
 
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 600; i++) {
   try {
     if ((await fetch(`${core}/health`)).ok) break;
   } catch {}
@@ -198,8 +208,14 @@ const settings = (key: string) => async (p: Page) => {
   await at("thread=home")(p);
   await p.keyboard.press("ControlOrMeta+Comma");
   const dialog = p.getByRole("dialog", { name: tr("config.title") });
-  if (!(await dialog.isVisible().catch(() => false)))
-    await p.getByRole("button", { name: tr("config.title"), exact: true }).first().click();
+  // The shortcut may not reach the panel; Settings also opens from the account menu (bottom left).
+  if (!(await dialog.waitFor({ timeout: 5_000 }).then(() => true, () => false))) {
+    await p
+      .getByRole("button", { name: new RegExp(`^${esc(tr("account.menuOf", { name: "" }).trim())}`) })
+      .first()
+      .click();
+    await p.getByText(tr("config.title"), { exact: true }).first().click();
+  }
   await dialog.getByRole("navigation").getByRole("button", { name: tr(key), exact: true }).first().click();
 };
 const project = (tab: string) => at(`project=${ids.shop}&tab=${tab}`);
@@ -356,49 +372,64 @@ const tidyPaths = (p: Page) =>
     [...new Set([fs.realpathSync(fakeHome), fakeHome].flatMap((h) => [h, h.replaceAll("\\", "/")]))],
   );
 fs.mkdirSync(out, { recursive: true });
-let failed = 0;
+const skipped: string[] = [];
+// No wait longer than 60 s: 20 s per action, 60 s per shot; a shot that fails twice is skipped and listed.
+const within = <T>(ms: number, p: Promise<T>) =>
+  Promise.race([p, new Promise<never>((_, no) => setTimeout(() => no(new Error(`over ${ms / 1000} s`)), ms))]);
+async function take(shot: Shot, theme: "light" | "dark", file: string) {
+  const ctx = await browser.newContext({
+    viewport: shot.phone ? { width: 390, height: 844 } : { width: 1440, height: 900 },
+    deviceScaleFactor: 2,
+    colorScheme: theme,
+    locale: lang === "es" ? "es-ES" : "en-US",
+    timezoneId: "Europe/Madrid",
+    isMobile: Boolean(shot.phone),
+    hasTouch: Boolean(shot.phone),
+  });
+  ctx.setDefaultTimeout(20_000);
+  ctx.setDefaultNavigationTimeout(20_000);
+  try {
+    const page = await ctx.newPage();
+    await prefs(page, theme);
+    await tidyPaths(page);
+    await within(
+      60_000,
+      (async () => {
+        await shot.go(page);
+        await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+        await page.waitForTimeout(900);
+        await page.mouse.move(0, 0);
+        const png = await page.screenshot({ animations: "disabled", caret: "hide" });
+        await sharp(png)
+          .webp({ quality: 82 })
+          .toFile(path.join(out, `${file}.webp`));
+      })(),
+    );
+  } finally {
+    await within(10_000, ctx.close()).catch(() => {});
+  }
+}
 // Every shot in both themes: the docs show the one that matches the page (name.webp light, name-dark.webp dark;
 // the Spanish set as name.es.webp and name.es-dark.webp).
 for (const theme of ["light", "dark"] as const)
   for (const shot of SHOTS) {
     if (only.size && !only.has(shot.name)) continue;
     const file = `${shot.name}${suffix}${theme === "dark" ? "-dark" : ""}`;
-    const ctx = await browser.newContext({
-      viewport: shot.phone ? { width: 390, height: 844 } : { width: 1440, height: 900 },
-      deviceScaleFactor: 2,
-      colorScheme: theme,
-      locale: lang === "es" ? "es-ES" : "en-US",
-      timezoneId: "Europe/Madrid",
-      isMobile: Boolean(shot.phone),
-      hasTouch: Boolean(shot.phone),
-    });
-    const page = await ctx.newPage();
-    await prefs(page, theme);
-    await tidyPaths(page);
-    try {
-      await shot.go(page);
-      await page.waitForLoadState("networkidle").catch(() => {});
-      await page.waitForTimeout(900);
-      await page.mouse.move(0, 0);
-      const png = await page.screenshot({ animations: "disabled", caret: "hide" });
-      await sharp(png)
-        .webp({ quality: 82 })
-        .toFile(path.join(out, `${file}.webp`));
-      log(`✓ ${file}`);
-    } catch (e) {
-      failed++;
-      log(`✗ ${file}: ${(e as Error).message.split("\n")[0]}`);
-      if (process.env.SHOTS_KEEP)
-        fs.writeFileSync(
-          path.join(dir, `${file}.aria.yml`),
-          await page
-            .locator("body")
-            .ariaSnapshot()
-            .catch(() => ""),
-        );
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await take(shot, theme, file);
+        log(`✓ ${file}`);
+        break;
+      } catch (e) {
+        log(`✗ ${file} (attempt ${attempt}): ${(e as Error).message.split("\n")[0]}`);
+        if (attempt >= 2) {
+          log((e as Error).message.split("\n").slice(1, 12).join("\n"));
+          skipped.push(file);
+          break;
+        }
+      }
     }
-    await ctx.close();
   }
-await browser.close();
-log(failed ? `${failed} shot(s) failed; core log in ${dir}/core.log (SHOTS_KEEP=1 keeps it)` : "all shots taken");
-await stop(failed ? 1 : 0);
+await within(10_000, browser.close()).catch(() => {});
+log(skipped.length ? `skipped: ${skipped.join(" ")}` : "all shots taken");
+await stop(skipped.length ? 1 : 0);
