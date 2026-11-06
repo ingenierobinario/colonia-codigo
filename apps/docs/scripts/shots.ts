@@ -308,7 +308,7 @@ const SHOTS: Shot[] = [
   { name: "settings-engines", go: settings("config.engines") },
   { name: "settings-router", go: settings("config.router") },
   { name: "settings-memory", go: settings("config.memory") },
-  { name: "settings-profile", go: settings("config.profile") },
+  { name: "settings-profile", go: settings("config.superagent") },
   { name: "settings-interruptions", go: settings("config.interruptions") },
   { name: "settings-channels", go: settings("config.channels") },
   { name: "settings-devices", go: settings("config.devices") },
@@ -331,8 +331,12 @@ const SHOTS: Shot[] = [
     name: "phone-pair",
     go: async (p) => {
       await at("thread=home")(p);
-      await p.getByRole("button", { name: tr("topbar.more") }).first().click();
-      await p.getByText(tr("phone.open"), { exact: true }).first().click();
+      // "Open on your phone" lives in the account menu (bottom left), not in the top bar.
+      await p
+        .getByRole("button", { name: new RegExp(`^${esc(tr("account.menuOf", { name: "" }).trim())}`) })
+        .first()
+        .click();
+      await p.getByRole("menuitem", { name: tr("phone.open"), exact: true }).first().click();
     },
   },
   { name: "wizard-welcome", go: firstRun },
@@ -340,7 +344,8 @@ const SHOTS: Shot[] = [
     name: "wizard-agent",
     go: async (p) => {
       await firstRun(p);
-      await p.getByText(tr("setup.welcome.new"), { exact: true }).first().click();
+      // With no v1 to import, the welcome step has a single way in: "Start".
+      await p.getByRole("button", { name: tr("setup.welcome.start"), exact: true }).first().click();
     },
   },
   { name: "phone-home", go: at("thread=home"), phone: true },
