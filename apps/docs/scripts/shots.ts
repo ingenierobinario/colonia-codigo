@@ -531,6 +531,47 @@ const CLIPS: Clip[] = [
       await p.waitForTimeout(1800);
     },
   },
+  {
+    // Use case: the first day with the secretary, from the profile to the interruptions budget.
+    name: "case-secretary",
+    go: async (p) => {
+      await settings("config.superagent")(p);
+      await p.mouse.move(900, 500);
+      await p.waitForTimeout(1200);
+      await p.mouse.wheel(0, 400);
+      await p.waitForTimeout(1000);
+      const dialog = p.getByRole("dialog", { name: tr("config.title") });
+      await glide(p, dialog.getByRole("navigation").getByRole("button", { name: tr("config.interruptions"), exact: true }).first());
+      await p.waitForTimeout(1800);
+    },
+  },
+  {
+    // Use case: a campaign asked of the secretary, answered with a plan and tasks.
+    name: "case-launch",
+    go: async (p) => {
+      await at("thread=home")(p);
+      await p.mouse.move(700, 300);
+      await glide(p, p.getByRole("textbox").last());
+      await p.keyboard.type(lang === "es" ? "Planifica el lanzamiento de Navidad" : "Plan the Christmas launch", { delay: 60 });
+      await p.waitForTimeout(250);
+      await p.keyboard.press("Enter");
+      await p.waitForTimeout(4200);
+    },
+  },
+  {
+    // Use case: a new routine for the weekly report.
+    name: "case-routine",
+    go: async (p) => {
+      await project("routines")(p);
+      await p.mouse.move(800, 600);
+      await p.waitForTimeout(600);
+      await glide(p, p.getByRole("button", { name: tr("routines.new"), exact: true }).first());
+      await p.waitForTimeout(800);
+      await glide(p, p.getByRole("textbox").first());
+      await p.keyboard.type(lang === "es" ? "informe-semanal" : "weekly-report", { delay: 60 });
+      await p.waitForTimeout(1500);
+    },
+  },
 ];
 const ffmpeg = process.env.SHOTS_FFMPEG || "ffmpeg";
 const clipsOut = path.resolve(import.meta.dirname, "../src/assets/clips");

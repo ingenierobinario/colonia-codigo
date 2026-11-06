@@ -1,0 +1,61 @@
+---
+title: Inbox for your email
+description: Connect your email, let the secretary tell you what matters and have your agents draft the replies.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+import Shot from "../../../components/Shot.astro";
+
+The goal: you stop opening your email to triage it. Colonia reads the new emails, tells you only the important ones
+and an agent prepares the reply as a **draft** for you to check and send.
+
+## 1 · Connect the mailbox
+
+Two ways, pick one:
+
+| You use | Connect it in | What you get |
+|---|---|---|
+| **Gmail** | **Resources › Integrations › Gmail** | Read, search and drafts in your own Gmail. |
+| Any other email | **Settings › Channels › Email** | Sending by SMTP; add the channel's IMAP to receive. |
+
+<Shot name="resources-integrations" alt="Resources, Integrations: the list of services you can connect, Gmail among them" caption="Resources › Integrations" />
+
+<Steps>
+
+1. Open **Resources** in the side bar and go to **Integrations**.
+2. Open **Gmail** and follow the dialog. If your company asks for its own app, choose **My own OAuth client**: the
+   dialog walks you through it.
+3. In **Configure integration**, turn on the review of new emails and choose how often and whether only the important
+   ones.
+
+</Steps>
+
+## 2 · Let the secretary tell you
+
+With the [Secretary profile](/cases/secretary-first-day/) on, new emails show up in your day: in the morning brief
+and, if something can't wait, as a notice that goes through your interruption budget. In **Settings › Super-agent ›
+Secretary capabilities**, the line about new emails has a shortcut, **Open integrations**, that takes you to the same place.
+
+## 3 · Replies as drafts
+
+Ask in the chat, to Home or to any agent:
+
+> Prepare a short reply to the supplier's email: we confirm the order for Thursday.
+
+The agent writes a **draft**; it doesn't send it. You open it in your email, change what you want and send it. If you
+use a signature per sender, it is added on its own ([signatures](/office/email/)).
+
+<Shot name="inbox" alt="The Inbox: each agent's chats with their last message, one after another" caption="Inbox: what each agent did" />
+
+Everything your agents did is in **Inbox**, one chat after another, so you can see who prepared which reply.
+
+<Aside type="caution">
+Don't paste passwords or keys in the chat. Email is connected in Resources or in Settings, never by message.
+</Aside>
+
+## Next
+
+- [Black Friday campaign](/cases/black-friday/): put the team to work on a campaign.
+- Everything about email: [Email](/office/email/) and the [Email channel](/channels/email/).
