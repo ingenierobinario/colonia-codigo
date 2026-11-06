@@ -569,7 +569,7 @@ async function record(clip: Clip, theme: "light" | "dark", file: string) {
         to = (Date.now() - t0) / 1000;
       })(),
     );
-    await within(30_000, ctx.close());
+    await within(90_000, ctx.close());
     video = await v?.path();
   } finally {
     await within(10_000, ctx.close()).catch(() => {});
