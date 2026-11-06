@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { getImage, Image } from "astro:assets";
 // A screenshot of the real app in a window (or phone) frame, in the theme the reader is looking at: <name>.webp is the
 // light capture and <name>-dark.webp the dark one, both taken by scripts/shots.ts against a demo core (Spanish: below). `split` shows
 // both at once, cut on a diagonal. A missing capture shows a dashed box with its name.
@@ -40,6 +40,21 @@ const pick = (file: string) =>
   (spanish ? shots[`../assets/shots/${name}.es${file}.webp`] : undefined) ?? shots[`../assets/shots/${name}${file}.webp`];
 const light = pick("");
 const dark = pick("-dark");
+// A clip of the same screen (src/assets/clips/<name>[.es][-dark].webm, with an .mp4 beside it) plays in a loop over
+// the still, which stays as its poster and is all that shows to readers who ask for reduced motion. Not in split.
+const clips = import.meta.glob<string>("../assets/clips/*.{webm,mp4}", { eager: true, query: "?url", import: "default" });
+const clipOf = (file: string) => {
+  const at = (lang: string, ext: string) => clips[`../assets/clips/${name}${lang}${file}.${ext}`];
+  const lang = spanish ? ".es" : ""; // sin clip .es, la página en español se queda con el póster fijo (nunca un clip en inglés)
+  const webm = at(lang, "webm");
+  return webm ? { webm, mp4: at(lang, "mp4") } : undefined;
+};
+const poster = async (img: ImageMetadata | undefined) =>
+  img ? (await getImage({ src: img, width: 1600, format: "webp", quality: 80 })).src : undefined;
+const clipLight = !split && light ? clipOf("") : undefined;
+const clipDark = !split && dark ? clipOf("-dark") : undefined;
+const posterLight = clipLight ? await poster(light) : undefined;
+const posterDark = clipDark ? await poster(dark) : undefined;
 const widths = frame === "phone" ? [390, 780] : [800, 1200, 1600, 2400];
 const sizes = frame === "phone" ? "(max-width: 600px) 80vw, 340px" : "(max-width: 900px) 100vw, 1100px";
 const loading = eager ? "eager" : "lazy";
@@ -61,6 +76,18 @@ const loading = eager ? "eager" : "lazy";
       light ? (
         <div class="colonia-shot__img">
           <Image class="is-light" src={light} alt={alt} widths={widths} sizes={sizes} quality={86} loading={loading} />
+          {clipLight && (
+            <video class="is-light colonia-shot__clip" autoplay muted loop playsinline preload="metadata" poster={posterLight} aria-label={alt}>
+              <source src={clipLight.webm} type="video/webm" />
+              {clipLight.mp4 && <source src={clipLight.mp4} type="video/mp4" />}
+            </video>
+          )}
+          {clipDark && (
+            <video class="is-dark colonia-shot__clip" autoplay muted loop playsinline preload="metadata" poster={posterDark} aria-label={alt}>
+              <source src={clipDark.webm} type="video/webm" />
+              {clipDark.mp4 && <source src={clipDark.mp4} type="video/mp4" />}
+            </video>
+          )}
           {dark && (
             <Image
               class="is-dark"
@@ -164,6 +191,19 @@ const loading = eager ? "eager" : "lazy";
   }
   :global(:root[data-theme="dark"]) .colonia-shot.has-dark:not(.colonia-shot--split) :global(.is-light) {
     display: none;
+  }
+  /* A clip lies over its still (which keeps the layout and is its poster); with reduced motion only the still shows. */
+  .colonia-shot__clip {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .colonia-shot__clip {
+      display: none !important;
+    }
   }
   /* Both, cut on a diagonal: dark on the right. */
   .colonia-shot--split :global(.is-dark) {

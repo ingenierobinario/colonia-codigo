@@ -6,6 +6,9 @@
 //   node --no-warnings scripts/shots.ts [name…]     (no names: every shot; no SHOTS_LANG: English, then Spanish)
 //   SHOTS_LANG=es node --no-warnings scripts/shots.ts  (one language only)
 //   SHOTS_SERVE=1 node --no-warnings scripts/shots.ts  (only the demo core, to pair the phone app with)
+//   SHOTS_CLIPS=1 SHOTS_FFMPEG=/path/to/ffmpeg node --no-warnings scripts/shots.ts [name…]
+//     (short clips of the real interaction instead of stills, in src/assets/clips: name[.es][-dark].webm and .mp4;
+//      without SHOTS_FFMPEG it looks for ffmpeg on PATH; `npm i ffmpeg-static` in a scratch folder gives one)
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -112,7 +115,8 @@ const pathDirs = win
     ]
   : [bin, "/usr/bin", "/bin"];
 const models = ["llama-3.3-70b", "qwen-2.5-coder-32b"];
-const llm = await demoLlm(models, lang);
+// The clips stream the answers a little slower, so the agent is seen writing.
+const llm = await demoLlm(models, lang, process.env.SHOTS_CLIPS ? 70 : 0);
 const tgToken = "123456789:AAShotsFakeTokenForTheEmulatedBot";
 const tg = await fakeTelegram(tgToken);
 
@@ -413,6 +417,212 @@ async function take(shot: Shot, theme: "light" | "dark", file: string) {
   } finally {
     await within(10_000, ctx.close()).catch(() => {});
   }
+}
+// ── Clips ────────────────────────────────────────────────────────────────────────────────────────────────────────
+// A few seconds of the real interaction on the most visited pages, named like the still they replace (which stays as
+// the poster and as the frame shown to readers who ask for reduced motion).
+type Clip = { name: string; go: (p: Page) => Promise<void> };
+// Headless Chromium draws no pointer: a drawn one follows the real mouse events.
+const cursor = (p: Page) =>
+  p.addInitScript(() => {
+    const put = () => {
+      if (document.getElementById("__cursor")) return;
+      const c = document.createElement("div");
+      c.id = "__cursor";
+      c.innerHTML =
+        '<svg width="22" height="22" viewBox="0 0 22 22"><path d="M3 2l14 8-6 1.6L8.4 18z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+      Object.assign(c.style, {
+        position: "fixed",
+        left: "0",
+        top: "0",
+        zIndex: "2147483647",
+        pointerEvents: "none",
+        transform: "translate(-100px,-100px)",
+        transition: "scale .12s",
+      });
+      document.documentElement.appendChild(c);
+      addEventListener("mousemove", (e) => (c.style.transform = `translate(${e.clientX - 3}px,${e.clientY - 2}px)`), true);
+      addEventListener("mousedown", () => (c.style.scale = "0.82"), true);
+      addEventListener("mouseup", () => (c.style.scale = "1"), true);
+    };
+    if (document.readyState === "loading") addEventListener("DOMContentLoaded", put);
+    else put();
+  });
+/** Moves the pointer to the element at a human pace, then clicks it. */
+const glide = async (p: Page, loc: ReturnType<Page["locator"]>, click = true) => {
+  await loc.waitFor({ state: "visible" });
+  const b = await loc.boundingBox();
+  if (!b) throw new Error("no box to move to");
+  await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 28 });
+  await p.waitForTimeout(180);
+  if (click) await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+};
+const tabOrButton = (p: Page, label: string) => {
+  const name = new RegExp(`^${esc(label)}`);
+  return p
+    .getByRole("tab", { name })
+    .or(p.getByRole("button", { name }))
+    .or(p.getByRole("link", { name }))
+    .first();
+};
+const CLIPS: Clip[] = [
+  {
+    // The chat with the secretary: a question typed in, the answer written back.
+    name: "home-hero",
+    go: async (p) => {
+      await at("thread=home")(p);
+      await p.mouse.move(700, 300);
+      await glide(p, p.getByRole("textbox").last());
+      await p.keyboard.type(lang === "es" ? "¿Qué tengo hoy?" : "What's on my plate today?", { delay: 70 });
+      await p.waitForTimeout(250);
+      await p.keyboard.press("Enter");
+      await p.waitForTimeout(3600);
+    },
+  },
+  {
+    // The office: from its summary to its chats and its tasks.
+    name: "project",
+    go: async (p) => {
+      await project("overview")(p);
+      await p.mouse.move(600, 500);
+      await p.waitForTimeout(500);
+      await glide(p, tabOrButton(p, tr("project.tab.chats")));
+      await p.waitForTimeout(1300);
+      await glide(p, tabOrButton(p, tr("project.tab.tasks")));
+      await p.waitForTimeout(1500);
+    },
+  },
+  {
+    // The agents: the team, then its areas and roles.
+    name: "team",
+    go: async (p) => {
+      await project("team")(p);
+      await p.mouse.move(900, 600);
+      await p.waitForTimeout(700);
+      await glide(p, p.getByRole("tab", { name: new RegExp(`^${esc(tr("project.tab.org"))}`) }).first());
+      await p.waitForTimeout(1500);
+      await glide(p, p.getByRole("tab", { name: new RegExp(`^${esc(tr("project.tab.team"))}`) }).last());
+      await p.waitForTimeout(1300);
+    },
+  },
+  {
+    // The inbox: one agent's chat after another.
+    name: "inbox",
+    go: async (p) => {
+      await at(`thread=${ids.luciaChat}`)(p);
+      await p.mouse.move(700, 450);
+      await p.waitForTimeout(500);
+      await glide(p, p.getByText(lang === "es" ? "Boletín del viernes" : "Friday newsletter", { exact: true }).first());
+      await p.waitForTimeout(1400);
+      await glide(p, p.getByText(lang === "es" ? "Arreglo del pago" : "Checkout fix", { exact: true }).first());
+      await p.waitForTimeout(1400);
+    },
+  },
+  {
+    // The flows: the office's routines, then the flows they run.
+    name: "routines",
+    go: async (p) => {
+      await project("routines")(p);
+      await p.mouse.move(800, 600);
+      await p.waitForTimeout(600);
+      await p.mouse.move(700, 230, { steps: 25 });
+      await p.waitForTimeout(500);
+      await glide(p, p.getByRole("button", { name: tr("nav.flows"), exact: true }).last());
+      await p.waitForTimeout(1800);
+    },
+  },
+];
+const ffmpeg = process.env.SHOTS_FFMPEG || "ffmpeg";
+const clipsOut = path.resolve(import.meta.dirname, "../src/assets/clips");
+const MAX_BYTES = 1.5 * 1024 * 1024;
+async function record(clip: Clip, theme: "light" | "dark", file: string) {
+  const raw = path.join(dir, "raw", file);
+  const ctx = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    colorScheme: theme,
+    locale: lang === "es" ? "es-ES" : "en-US",
+    timezoneId: "Europe/Madrid",
+    recordVideo: { dir: raw, size: { width: 1440, height: 900 } },
+  });
+  ctx.setDefaultTimeout(20_000);
+  ctx.setDefaultNavigationTimeout(20_000);
+  const t0 = Date.now();
+  let from = 0;
+  let to = 0;
+  let video: string | undefined;
+  try {
+    const page = await ctx.newPage();
+    await prefs(page, theme);
+    await tidyPaths(page);
+    await cursor(page);
+    const v = page.video();
+    await within(
+      60_000,
+      (async () => {
+        // The first moments (blank page, loading) stay out of the clip: it starts once the screen is drawn.
+        const go = clip.go(page);
+        await page.getByRole("button", { name: tr("nav.inbox") }).first().waitFor();
+        await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+        from = (Date.now() - t0) / 1000;
+        await go;
+        await page.waitForTimeout(400);
+        to = (Date.now() - t0) / 1000;
+      })(),
+    );
+    await within(30_000, ctx.close());
+    video = await v?.path();
+  } finally {
+    await within(10_000, ctx.close()).catch(() => {});
+  }
+  if (!video) throw new Error("no video recorded");
+  // 4 to 8 seconds; past 8 the end is kept (that's where the answer is).
+  const length = Math.min(8, Math.max(4, to - from));
+  const start = Math.max(0, to - length);
+  fs.mkdirSync(clipsOut, { recursive: true });
+  const vf = "fps=24,scale=1280:-2";
+  const encode = (crf: number) => {
+    const webm = path.join(clipsOut, `${file}.webm`);
+    const mp4 = path.join(clipsOut, `${file}.mp4`);
+    const common = ["-y", "-loglevel", "error", "-ss", start.toFixed(2), "-t", length.toFixed(2), "-i", video as string, "-an"];
+    execFileSync(
+      ffmpeg,
+      [...common, "-vf", vf, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", String(crf), "-row-mt", "1", "-deadline", "good", "-cpu-used", "4", webm],
+      { timeout: 120_000 },
+    );
+    execFileSync(
+      ffmpeg,
+      [...common, "-vf", vf, "-c:v", "libx264", "-crf", String(crf - 12), "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", mp4],
+      { timeout: 120_000 },
+    );
+    return [fs.statSync(webm).size, fs.statSync(mp4).size];
+  };
+  let sizes = encode(40);
+  for (let crf = 46; Math.max(...sizes) > MAX_BYTES && crf <= 58; crf += 6) sizes = encode(crf);
+  if (Math.max(...sizes) > MAX_BYTES) throw new Error(`over 1.5 MB: ${sizes.join(" / ")}`);
+  return { length, sizes };
+}
+if (process.env.SHOTS_CLIPS) {
+  for (const theme of ["light", "dark"] as const)
+    for (const clip of CLIPS) {
+      if (only.size && !only.has(clip.name)) continue;
+      const file = `${clip.name}${suffix}${theme === "dark" ? "-dark" : ""}`;
+      for (let attempt = 1; ; attempt++) {
+        try {
+          const { length, sizes } = await record(clip, theme, file);
+          log(`✓ ${file} ${length.toFixed(1)} s · webm ${(sizes[0] / 1024).toFixed(0)} KB · mp4 ${(sizes[1] / 1024).toFixed(0)} KB`);
+          break;
+        } catch (e) {
+          log(`✗ ${file} (attempt ${attempt}): ${(e as Error).message.split("\n")[0]}`);
+          if (attempt >= 2) {
+            skipped.push(file);
+            break;
+          }
+        }
+      }
+    }
+  await within(10_000, browser.close()).catch(() => {});
+  log(skipped.length ? `skipped: ${skipped.join(" ")}` : "all clips recorded");
+  await stop(skipped.length ? 1 : 0);
 }
 // Every shot in both themes: the docs show the one that matches the page (name.webp light, name-dark.webp dark;
 // the Spanish set as name.es.webp and name.es-dark.webp).

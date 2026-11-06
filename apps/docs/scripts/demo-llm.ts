@@ -105,7 +105,8 @@ function answer(messages: Message[], lang: Lang): string {
   return es ? "De acuerdo. Me encargo y te aviso cuando esté." : "Sure. I'll take care of it and let you know when it's done.";
 }
 
-export async function demoLlm(models: string[], lang: Lang = "en") {
+/** pace: milliseconds between streamed pieces (0 for the stills; the clips use a little, so the answer is seen being written). */
+export async function demoLlm(models: string[], lang: Lang = "en", pace = 0) {
   const server = http.createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => {
@@ -131,11 +132,15 @@ export async function demoLlm(models: string[], lang: Lang = "en") {
       }
       res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache" });
       const send = (o: unknown) => res.write(`data: ${JSON.stringify(o)}\n\n`);
-      for (const part of text.match(/[\s\S]{1,24}/g) ?? [text])
-        send({ id: "demo", choices: [{ index: 0, delta: { content: part }, finish_reason: null }] });
-      send({ id: "demo", choices: [{ index: 0, delta: {}, finish_reason: "stop" }] });
-      send({ id: "demo", choices: [], usage });
-      res.end("data: [DONE]\n\n");
+      void (async () => {
+        for (const part of text.match(/[\s\S]{1,24}/g) ?? [text]) {
+          send({ id: "demo", choices: [{ index: 0, delta: { content: part }, finish_reason: null }] });
+          if (pace) await new Promise((r) => setTimeout(r, pace));
+        }
+        send({ id: "demo", choices: [{ index: 0, delta: {}, finish_reason: "stop" }] });
+        send({ id: "demo", choices: [], usage });
+        res.end("data: [DONE]\n\n");
+      })();
     });
   });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
