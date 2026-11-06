@@ -4,7 +4,7 @@ import { expect, open, rpc, test, world } from "./kit.ts";
 test("the owner writes to the super-agent and the answer streams in", async ({ page }) => {
   await open(page);
   const before = await world.llmCalls();
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("What is on today?");
   await page.getByRole("button", { name: "Enviar" }).click();
   await expect(page.locator(".transcript").getByText("Got it: What is on today?")).toBeVisible();
@@ -22,9 +22,9 @@ test("a new chat starts empty and keeps its own conversation", async ({ page }) 
   // A picker with a search box: the trigger is a combobox, each agent an option (once more under Recent).
   await page.getByRole("combobox", { name: "Nuevo chat" }).first().click();
   await page.getByRole("option", { name: /Scout/ }).first().click();
-  await expect(page.getByRole("textbox", { name: "Escribile a Scout…" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Escríbele a Scout…" })).toBeVisible();
   expect((await rpc<{ threads: unknown[] }>("threads.list")).threads.length).toBe(count);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("Second chat");
   await box.press("Enter");
   await expect(page.getByRole("main").locator("p", { hasText: "Got it: Second chat" })).toBeVisible();
@@ -54,7 +54,7 @@ test("a message is matched to skills by meaning: a recommended chip over the ans
   });
   try {
     await open(page);
-    const box = page.getByRole("textbox", { name: /^Escribile a/ });
+    const box = page.getByRole("textbox", { name: /^Escríbele a/ });
     await box.fill("creame una imagen de un gato");
     await box.press("Enter");
     await expect(page.locator(".transcript").getByText("Got it: creame una imagen de un gato")).toBeVisible();
@@ -74,7 +74,7 @@ test("a message is matched to skills by meaning: a recommended chip over the ans
 test("the / menu: commands and skills, a skill named loads whole, /new opens a fresh chat", async ({ page }) => {
   // image-gen stays from the test above; with no embedding engine now, only "/" can bring it in.
   await open(page);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("/");
   const menu = page.getByRole("listbox", { name: "Comandos y skills" });
   await expect(menu).toBeVisible();
@@ -86,9 +86,9 @@ test("the / menu: commands and skills, a skill named loads whole, /new opens a f
   await box.press("Enter");
   await expect(box).toHaveValue("/image-gen ");
   await expect(menu).toBeHidden();
-  await box.pressSequentially("dibujá un perro");
+  await box.pressSequentially("dibuja un perro");
   await box.press("Enter");
-  await expect(page.locator(".transcript").getByText("Got it: /image-gen dibujá un perro")).toBeVisible();
+  await expect(page.locator(".transcript").getByText("Got it: /image-gen dibuja un perro")).toBeVisible();
   await expect(page.getByRole("button", { name: "image-gen", exact: true }).last()).toBeVisible();
 
   // Esc closes the menu; the text stays as typed.
@@ -102,8 +102,8 @@ test("the / menu: commands and skills, a skill named loads whole, /new opens a f
   const count = (await rpc<{ threads: unknown[] }>("threads.list")).threads.length;
   await box.fill("/new");
   await box.press("Enter");
-  await expect(page.getByRole("textbox", { name: /^Escribile a/ })).toHaveValue("");
-  await expect(page.getByText("Got it: /image-gen dibujá un perro")).toBeHidden();
+  await expect(page.getByRole("textbox", { name: /^Escríbele a/ })).toHaveValue("");
+  await expect(page.getByText("Got it: /image-gen dibuja un perro")).toBeHidden();
   expect((await rpc<{ threads: unknown[] }>("threads.list")).threads.length).toBe(count);
   await box.fill("Fresh start");
   await box.press("Enter");

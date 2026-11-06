@@ -40,7 +40,7 @@ With the repository's root development dependencies installed and the built site
 - Frontmatter: `title`, `description` (one sentence), `sidebar.order`.
 - Links are absolute and end in `/`: `/docs/concepts/agents/` in English, `/es/docs/concepts/agents/` in Spanish.
   Existing section-only links are migrated and the publication base is added at build time.
-- English: short, concrete, second person. Spanish: rioplatense ("vos", "tenés"), same sections as the English page.
+- English: short, concrete, second person. Spanish: castellano de España con tuteo ("tú", "tienes"), same sections as the English page.
   Commands, flags, paths and code stay as they are. UI labels are written as the app shows them in that language.
 - Sentence case for titles and headings ("Run a routine now", not "Run A Routine Now").
 - Document what the code does today. Check commands with `colonia <command> --help`; mark anything partial as such.

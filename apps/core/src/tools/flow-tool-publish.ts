@@ -33,7 +33,7 @@ function outwardLines(store: Store, flow: string): string[] {
     : [
         ...sends.map((s) => `• ${s.owner ? "Te manda" : `Le manda a ${s.to}`} un mensaje por ${s.channel}`),
         ...calls.map((c) => `• Llama a ${c.host} (${c.method})${keys(c.secrets)}`),
-        ...commands.map((c) => `• Corre \`${c.command}\` en esta computadora${keys(c.secrets)}`),
+        ...commands.map((c) => `• Corre \`${c.command}\` en este ordenador${keys(c.secrets)}`),
         ...writes.map((w) => `• Cambia la base de datos ${w.database}`),
         ...agents.map((n) => `• Un agente actúa en el paso «${n.label.slice(0, 60)}»`),
       ];

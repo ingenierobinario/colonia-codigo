@@ -10,7 +10,7 @@ const es: Record<ConfirmWhy, (agent: string, tool: string) => string> = {
   asks_every: (a, t) => `${a} quiere usar ${t}: pide tu OK antes de cada acción que cambia algo.`,
   rule: (a, t) => `${a} quiere usar ${t}: sus reglas piden tu OK para esta clase de acción.`,
   url_data: (a, t) =>
-    `${a} quiere usar ${t} con una URL que lleva datos (lo que va después del «?»), y en este turno hay contenido de una web, otro agente o un mensaje. Mirá que no mande nada tuyo a otro sitio.`,
+    `${a} quiere usar ${t} con una URL que lleva datos (lo que va después del «?»), y en este turno hay contenido de una web, otro agente o un mensaje. Mira que no mande nada tuyo a otro sitio.`,
 };
 
 const en: typeof es = {
@@ -50,7 +50,7 @@ const english = (store: Store) => store.settings.get("owner_language") === "en";
 export const droppedWords = (store: Store, from: string) =>
   english(store)
     ? `Did not act on ${from}'s result, even after a second try. Open the chat to go on.`
-    : `No retomó el resultado de ${from}, ni en un segundo intento. Abrí el chat para seguir.`;
+    : `No retomó el resultado de ${from}, ni en un segundo intento. Abre el chat para seguir.`;
 
 /** A task still open with nobody working on it, after Colonia asked its agent once to go on. */
 export const stalledWords = (store: Store, agent: string) =>

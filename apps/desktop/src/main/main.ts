@@ -322,7 +322,7 @@ app.whenReady().then(() => {
       if (stopped && Notification.isSupported())
         new Notification({
           title: "Colonia",
-          body: language === "es" ? "Uso de la computadora detenido." : "Computer use stopped.",
+          body: language === "es" ? "Uso del ordenador detenido." : "Computer use stopped.",
         }).show();
     },
     // macOS refused it: System Settings opens where to allow it, and a notification says what to turn on.
@@ -341,7 +341,7 @@ app.whenReady().then(() => {
       const n = new Notification({
         title: es ? `Colonia necesita el permiso de ${what}` : `Colonia needs the ${what} permission`,
         body: es
-          ? "Activá Colonia en Configuración del Sistema. Si ya está activado, quitalo con − y agregalo de nuevo."
+          ? "Activa Colonia en Configuración del Sistema. Si ya está activado, quítalo con − y añádelo de nuevo."
           : "Turn Colonia on in System Settings. If it is already on, remove it with − and add it again.",
       });
       n.on("click", () => openPrivacy(kind));

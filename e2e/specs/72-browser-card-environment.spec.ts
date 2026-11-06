@@ -60,16 +60,16 @@ test("guest browser cards, including old messages, stay in the VM; an open panel
     const chat = await env.client.call("threads.create", {
       kind: "loose",
       agent_id: "superagent",
-      title: "En la computadora",
+      title: "En el ordenador",
     });
     await env.client.call("environments.bind", { thread: chat.id });
     add(chat.id, "Legacy guest page", "h1");
     add(chat.id, "Tagged guest page", "vm-1", "vm");
     await page.setViewportSize({ width: 1600, height: 1000 });
     await page.goto(`${env.core.url}/#thread=${chat.id}`);
-    const legacy = page.getByRole("button", { name: "Computadora: Legacy guest page", exact: true });
+    const legacy = page.getByRole("button", { name: "Ordenador: Legacy guest page", exact: true });
     await expect(legacy).toBeVisible();
-    await expect(page.getByRole("button", { name: "Computadora: Tagged guest page", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Ordenador: Tagged guest page", exact: true })).toBeVisible();
     await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Abrir de nuevo", exact: true })).toHaveCount(0);
     await legacy.click();

@@ -82,10 +82,10 @@ for (const language of ["en", "es"] as const) {
       const failure =
         screen === "resources"
           ? spanish
-            ? "No se pudieron mostrar los permisos del navegador. Recargá para volver a intentarlo."
+            ? "No se pudieron mostrar los permisos del navegador. Recarga para volver a intentarlo."
             : "Could not show browser permissions. Reload to try again."
           : spanish
-            ? "No se pudieron mostrar estas opciones. Recargá para volver a intentarlo."
+            ? "No se pudieron mostrar estas opciones. Recarga para volver a intentarlo."
             : "These options could not be shown. Reload to try again.";
       const permissions = spanish ? "Permisos activos del navegador" : "Active browser permissions";
       await rpc("setup.finish", {});

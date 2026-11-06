@@ -35,7 +35,7 @@ test("an agent reading its project's parent folder asks with a card; it is lent 
   });
   try {
     await open(page, `#thread=${chat.id}`);
-    await page.getByRole("textbox", { name: /Escribile/ }).fill("look around the parent folder");
+    await page.getByRole("textbox", { name: /Escríbele/ }).fill("look around the parent folder");
     await page.keyboard.press("Enter");
 
     const card = page.locator(".inputcard.is-pending");

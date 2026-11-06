@@ -39,14 +39,14 @@ test("a Flow the super-agent draws shows in the chat and opens in the editor", a
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Acme leads" })).project.id;
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "superagent", title: "Flows" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill(`draw a flow in ${project}`);
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill(`draw a flow in ${project}`);
   await page.keyboard.press("Enter");
 
   const card = page.locator(".flowcard");
   await expect(card).toContainText("New leads");
   await expect(card).toContainText("Acme leads");
   await expect(card).toContainText("Borrador");
-  await expect(card).toContainText("Todavía no corre: revisalo en el editor y prendelo.");
+  await expect(card).toContainText("Todavía no corre: revísalo en el editor y enciéndelo.");
   await expect(card.locator(".react-flow__node")).toHaveCount(2);
   await expect(card.locator(".react-flow__node").first()).toContainText("New lead");
   // Nothing was asked of the owner: a draft runs nothing.
@@ -93,7 +93,7 @@ test("turning on a Flow an agent drew opens it for review instead of running it"
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Acme review" })).project.id;
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "superagent", title: "Review" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill(`draw a flow in ${project}`);
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill(`draw a flow in ${project}`);
   await page.keyboard.press("Enter");
   await expect(page.locator(".flowcard")).toContainText("Borrador");
   const flow = (await rpc<Result<"flows.list">>("flows.list", { project })).flows[0]?.id ?? "";
@@ -101,7 +101,7 @@ test("turning on a Flow an agent drew opens it for review instead of running it"
   await open(page, `#view=flows&scope=${project}`);
   await page.getByRole("switch", { name: "Encender o apagar New leads" }).click();
   await expect(
-    page.getByText("Un agente dibujó estos cambios: revisalos y guardalos, después prendé el flow."),
+    page.getByText("Un agente dibujó estos cambios: revísalos y guárdalos, después enciende el flow."),
   ).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`flow=${flow}.*edit=1`));
   const doc = await rpc<Result<"flows.graph_get">>("flows.graph_get", { flow });

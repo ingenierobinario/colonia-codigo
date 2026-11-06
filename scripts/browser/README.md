@@ -43,9 +43,9 @@ Instagram-origin fixture and do not contact Instagram or send a real message.
 
 ## Ayuda en español
 
-Leé el archivo completo y calculá su SHA-256 antes de aprobar `browser_evaluate({ tab, origin, document, path, sha256 })` en la pestaña
+Lee el archivo completo y calcula su SHA-256 antes de aprobar `browser_evaluate({ tab, origin, document, path, sha256 })` en la pestaña
 actual de Colonia. La tarjeta se mantiene incluso en Total. Cargar `instagram-draft.js` solo instala `coloniaInstagramDraft`;
-no compone ni manda. Después invocá la función con destinatario, ID numérico de conversación, texto exacto y selectores
+no compone ni manda. Después invoca la función con destinatario, ID numérico de conversación, texto exacto y selectores
 reales del contenedor y de burbujas individuales. Los selectores del ejemplo son placeholders, no selectores productivos
 validados. Si el header, el destinatario, la URL o el editor no coinciden, se detiene sin enviar.
 

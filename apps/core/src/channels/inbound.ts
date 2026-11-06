@@ -201,7 +201,7 @@ export function createInbound(deps: {
       return "done";
     }
     text = text.trim() || (attachments.length ? "[attached files]" : "[empty message]");
-    // "Pará" while the agent works: the turn stops, and the word is kept without starting another.
+    // "Para" while the agent works: the turn stops, and the word is kept without starting another.
     if (owner && !attachments.length && asksToStop(text) && working(thread.id)) {
       await call("threads.cancel", { thread: thread.id }, { actor: "human" }, `channel:${rowId}:stop`);
       theirLast(thread.id, cfg.id, m, keepQuiet(thread.id, cfg.id, undefined, text));
@@ -494,7 +494,7 @@ export function createInbound(deps: {
     if (!id) return false;
     const t = channelTexts(store);
     const reply = (text: string) => delivery.enqueue({ channel, conversation, kind: "notice", body: { text } });
-    if (/^(cancel|cancelar|cancelá)\W*$/i.test(words.trim())) {
+    if (/^(cancel|cancelar|cancela|cancelá)\W*$/i.test(words.trim())) {
       reply(t.writeCanceled);
       return true;
     }

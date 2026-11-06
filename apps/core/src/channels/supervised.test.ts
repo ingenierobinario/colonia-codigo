@@ -169,7 +169,7 @@ test("'Contestar yo': the owner's next words go to the contact as theirs", async
   const notice = await noticeFor(NB, "are you there?");
   const calls = llm.calls.length;
   tg.press(OWNER, buttons(notice).find((b) => b.text === "Contestar yo")?.callback_data ?? "");
-  await waitFor(() => toOwner().some((b) => /Escribí tu respuesta para Northwind Buyer/.test(String(b.text))), "asked");
+  await waitFor(() => toOwner().some((b) => /Escribe tu respuesta para Northwind Buyer/.test(String(b.text))), "asked");
   tg.message(OWNER, "Yes, calling you in 5");
   await waitFor(() => tg.messagesTo(NB.id).length === 3, "their words sent");
   assert.equal(tg.messagesTo(NB.id)[2]?.body.text, "Yes, calling you in 5");
@@ -181,7 +181,7 @@ test("'Contestar yo': the owner's next words go to the contact as theirs", async
 test("'Contestar yo' then 'cancelar' sends nothing, and the draft stays pending", async () => {
   const notice = await noticeFor(NB, "still there?");
   tg.press(OWNER, buttons(notice).find((b) => b.text === "Contestar yo")?.callback_data ?? "");
-  await waitFor(() => toOwner().filter((b) => /Escribí tu respuesta/.test(String(b.text))).length === 2, "asked");
+  await waitFor(() => toOwner().filter((b) => /Escribe tu respuesta/.test(String(b.text))).length === 2, "asked");
   tg.message(OWNER, "cancelar");
   await waitFor(() => toOwner().some((b) => b.text === "Listo, no le mando nada."), "canceled");
   assert.equal(tg.messagesTo(NB.id).length, 3);

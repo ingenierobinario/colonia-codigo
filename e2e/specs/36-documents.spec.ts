@@ -28,7 +28,7 @@ test("documentos: txt como Markdown, apertura explícita, fuente, descarga y rec
     const health = await env.client.call("system.health", {});
     expect(health.code_sha).toBeTruthy();
     await page.goto(env.core.url);
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     const send = async (text: string, count: number) => {
       await input.fill(text);
       await page.getByRole("button", { name: "Enviar", exact: true }).click();

@@ -28,7 +28,7 @@ test("a new chat with a project's agent stays with that agent and is made with i
   await page.getByRole("combobox", { name: "Nuevo chat" }).first().click();
   await page.getByRole("option", { name: /Dana/ }).first().click();
 
-  const box = page.getByRole("textbox", { name: "Escribile a Dana…" });
+  const box = page.getByRole("textbox", { name: "Escríbele a Dana…" });
   await expect(box).toBeVisible();
   await expect(page).toHaveURL(/thread=new/);
   // Still there a moment later: nothing swaps the new chat for the project's latest one.

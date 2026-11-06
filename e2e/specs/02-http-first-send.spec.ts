@@ -38,7 +38,7 @@ test("a failed first send restores files and retries on the created chat without
   });
   await page.getByRole("combobox", { name: "Nuevo chat" }).first().click();
   // These specs run last (their own browser options), when the list holds many agents: search, as an owner would.
-  await page.getByPlaceholder("Buscá un agente").fill("Scout");
+  await page.getByPlaceholder("Busca un agente").fill("Scout");
   await page.getByRole("option", { name: /Scout/ }).first().click();
   await page
     .locator('input[type="file"]')
@@ -50,7 +50,7 @@ test("a failed first send restores files and retries on the created chat without
     });
   await expect(page.locator(".attchips").getByText("first.txt")).toBeVisible();
   await expect(page.locator(".attchip__spin")).toHaveCount(0);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("First draft survives");
   await box.press("Enter");
   await expect(page.getByText(/First send refused/)).toBeVisible();

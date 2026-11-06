@@ -1,6 +1,6 @@
 ---
 title: Clientes externos
-description: Usá los agentes y el navegador de Colonia desde Claude Code, Codex o cualquier cliente MCP, con un token limitado a lo que puede hacer.
+description: Usa los agentes y el navegador de Colonia desde Claude Code, Codex o cualquier cliente MCP, con un token limitado a lo que puede hacer.
 sidebar:
   order: 5
 ---
@@ -9,7 +9,7 @@ import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-Colonia también es un servidor MCP. Registrá `colonia mcp` en Claude Code, Codex o cualquier otro cliente MCP, y esa app puede
+Colonia también es un servidor MCP. Registra `colonia mcp` en Claude Code, Codex o cualquier otro cliente MCP, y esa app puede
 preguntarles cosas a tus agentes de Colonia y manejar el navegador integrado de Colonia.
 
 ## Qué recibe el cliente
@@ -24,23 +24,23 @@ el que arranca:
 | Un token con **Chat** y **Navegador** | Los dos grupos |
 
 - `colonia_agents` lista tus agentes.
-- `colonia_ask` le pregunta a uno y espera la respuesta hasta 5 minutos. Pasale el `thread` que devuelve para seguir el
+- `colonia_ask` le pregunta a uno y espera la respuesta hasta 5 minutos. Pásale el `thread` que devuelve para seguir el
   chat.
 - `colonia_read` lee un chat que empezó el cliente.
 
 Las tools del navegador necesitan la app de escritorio de Colonia abierta, porque el navegador es de ella. Los campos de
 contraseña, código de un solo uso y tarjeta se rechazan: `browser_handoff` te pasa la pestaña para que inicies sesión
-vos.
+tú.
 
-## Creá un token
+## Crea un token
 
 Cada app tiene su propio token. Se muestra una sola vez; Colonia guarda solo una huella.
 
 <Tabs>
 <TabItem label="Panel">
 
-En **Configuración › Tokens de API**, escribí un **Nombre de la app**, marcá **Chat** y/o **Navegador**, y tocá
-**Crear token**. Copialo enseguida. Cada token muestra cuándo se usó por última vez, y **Revocar** lo quita.
+En **Configuración › Tokens de API**, escribe un **Nombre de la app**, marca **Chat** y/o **Navegador**, y toca
+**Crear token**. Cópialo enseguida. Cada token muestra cuándo se usó por última vez, y **Revocar** lo quita.
 
 <Shot name="settings-tokens" alt="Configuración, Tokens de API: una lista de tokens de apps con sus alcances y último uso, y un formulario para crear uno nuevo" caption="Configuración › Tokens de API" />
 
@@ -57,14 +57,14 @@ colonia clients rm <id>                            # revocar
 </TabItem>
 </Tabs>
 
-<Aside type="caution" title="Un token actúa como un modelo, nunca como vos">
+<Aside type="caution" title="Un token actúa como un modelo, nunca como tú">
 Una app con token solo puede llamar lo que permiten sus alcances, y solo en los chats que ella empezó. Tus agentes
 toman su texto como un pedido de otra app, no como una orden tuya, así que un prompt secuestrado en esa app no puede
-hacerlos actuar como vos. Guardá el token en la configuración MCP de la app, nunca en un repositorio, un prompt ni en
+hacerlos actuar como tú. Guarda el token en la configuración MCP de la app, nunca en un repositorio, un prompt ni en
 `.apc/`.
 </Aside>
 
-## Registrá Colonia en tu cliente
+## Registra Colonia en tu cliente
 
 <Tabs>
 <TabItem label="Claude Code">
@@ -99,34 +99,34 @@ codex mcp list
 </TabItem>
 </Tabs>
 
-Si `colonia` no está en el PATH del cliente, usá la ruta completa que imprime `command -v colonia`. Para un core en otro
-puerto u otra máquina, sumá también `COLONIA_URL` al entorno.
+Si `colonia` no está en el PATH del cliente, usa la ruta completa que imprime `command -v colonia`. Para un core en otro
+puerto u otra máquina, suma también `COLONIA_URL` al entorno.
 
-Después simplemente pedí, por ejemplo en Claude Code: "preguntale a mi secretaria de Colonia qué vence esta semana". O, con
-el alcance de navegador: "abrí el admin de Acme Store en el navegador de Colonia y fijate los pedidos de hoy".
+Después simplemente pide, por ejemplo en Claude Code: "pregúntale a mi secretaria de Colonia qué vence esta semana". O, con
+el alcance de navegador: "abre el admin de Acme Store en el navegador de Colonia y fíjate en los pedidos de hoy".
 
-## Enseñale Colonia al cliente
+## Enseña Colonia al cliente
 
 Colonia copia unas skills en Claude Code, Codex, Cursor y `~/.agents` cada vez que arranca, así esas apps saben usar `colonia`
-y estas tools. Mirá [Skills](/es/extend/skills/#enseñale-a-otras-apps-de-agentes-a-usar-colonia).
+y estas tools. Mira [Skills](/es/extend/skills/#enseña-a-otras-apps-de-agentes-a-usar-colonia).
 
 ## Cuando las tools no aparecen
 
 <Steps>
 
-1. Corré `colonia status`: ¿el core está andando?
+1. Ejecuta `colonia status`: ¿el core está en marcha?
 
-2. Corré `colonia mcp` en una terminal. Debería quedarse esperando en silencio (Ctrl-C para salir). Cualquier error ahí es
+2. Ejecuta `colonia mcp` en una terminal. Debería quedarse esperando en silencio (Ctrl-C para salir). Cualquier error ahí es
    el real.
 
 3. Solo tools de navegador, sin `colonia_*`: falta el token o fue revocado (`colonia clients`).
 
-4. Token pero sin tools de navegador: sus alcances dejan afuera el navegador (`--scopes chat,browser`).
+4. Token pero sin tools de navegador: sus alcances dejan fuera el navegador (`--scopes chat,browser`).
 
 5. Las llamadas al navegador fallan como no disponibles: la app de escritorio no está abierta.
 
 </Steps>
 
 <Aside type="note">
-`colonia mcp --run` es otra cosa, que se usa adentro de las corridas propias de Colonia. No lo registres en un cliente.
+`colonia mcp --run` es otra cosa, que se usa dentro de las ejecuciones propias de Colonia. No lo registres en un cliente.
 </Aside>

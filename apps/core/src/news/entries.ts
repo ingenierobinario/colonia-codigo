@@ -62,7 +62,7 @@ export const NEWS: readonly NewsEntry[] = [
     title: { en: "What's new, in the Help menu", es: "Las novedades, en el menú de ayuda" },
     about: {
       en: "The ? at the foot of the sidebar keeps what each release brought: open one to read it and ask your super-agent to set it up. The guides and the Discord are there too.",
-      es: "El ? al pie de la barra lateral guarda lo que trajo cada versión: abrí una para leerla y pedirle a tu super-agente que te la configure. Ahí también están las guías y el Discord.",
+      es: "El ? al pie de la barra lateral guarda lo que trajo cada versión: abre una para leerla y pedirle a tu super-agente que te la configure. Ahí también están las guías y el Discord.",
     },
     applies: () => true,
     text:
@@ -72,7 +72,7 @@ export const NEWS: readonly NewsEntry[] = [
       "that matters most and leave the rest there.",
     actions: [
       {
-        label: { en: "What can you set up for me?", es: "¿Qué me podés configurar?" },
+        label: { en: "What can you set up for me?", es: "¿Qué me puedes configurar?" },
         prompt:
           "Look at what is new in Colonia for me and tell me, in two lines, the one thing worth setting up first. Change " +
           "nothing until I answer.",
@@ -89,7 +89,7 @@ export const NEWS: readonly NewsEntry[] = [
         "it on in Resources › Integrations, on Google Calendar's page.",
       es:
         "Google Calendar puede avisarte poco antes de cada evento, 30 minutos por defecto. " +
-        "Activalo en Recursos › Integraciones, en la página de Google Calendar.",
+        "Actívalo en Recursos › Integraciones, en la página de Google Calendar.",
     },
     applies: (f) => f.google.calendar,
     text:
@@ -118,8 +118,8 @@ export const NEWS: readonly NewsEntry[] = [
         "Choose how often Colonia looks at your new Gmail and whether only important mail counts. Do " +
         "it in Resources › Integrations, on Gmail's page.",
       es:
-        "Elegí cada cuánto revisa Colonia tu correo nuevo de Gmail y si solo cuenta el importante. " +
-        "Hacelo en Recursos › Integraciones, en la página de Gmail.",
+        "Elige cada cuánto revisa Colonia tu correo nuevo de Gmail y si solo cuenta el importante. " +
+        "Hazlo en Recursos › Integraciones, en la página de Gmail.",
     },
     applies: (f) => f.google.gmailReadable,
     text:
@@ -142,14 +142,14 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.12.0",
     title: {
       en: "Approve browser scripts for a tab or one turn",
-      es: "Aprobá scripts del navegador para una pestaña o un turno",
+      es: "Aprueba scripts del navegador para una pestaña o un turno",
     },
     about: {
       en:
         "When an agent asks to run a script, you can allow it once, for that tab, or for the " +
         "current turn. Permission ends when the tab changes or the turn finishes.",
       es:
-        "Cuando un agente pide ejecutar un script, podés permitirlo una vez, para esa pestaña o " +
+        "Cuando un agente pide ejecutar un script, puedes permitirlo una vez, para esa pestaña o " +
         "para el turno actual. El permiso termina al cambiar la pestaña o al acabar el turno.",
     },
     applies: () => true,
@@ -165,13 +165,13 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "secretary-capabilities",
     since: "2.12.0",
-    title: { en: "Choose what your secretary watches for you", es: "Elegí qué vigila tu secretaria por vos" },
+    title: { en: "Choose what your secretary watches for you", es: "Elige qué vigila tu secretaria por ti" },
     about: {
       en:
         "In Settings › Super-agent you can turn Team news on or off and give it your own " +
         "instructions. Mail is checked from Gmail's settings.",
       es:
-        "En Configuración › Super-agente podés activar o desactivar las noticias del equipo y darle tus " +
+        "En Configuración › Super-agente puedes activar o desactivar las noticias del equipo y darle tus " +
         "propias instrucciones. El correo se revisa desde los ajustes de Gmail.",
     },
     applies: (f) => f.secretary,
@@ -186,14 +186,14 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "webhook-flows",
     since: "2.12.0",
-    title: { en: "Run work only when a webhook arrives", es: "Ejecutá trabajo solo cuando llegue un webhook" },
+    title: { en: "Run work only when a webhook arrives", es: "Ejecuta trabajo solo cuando llegue un webhook" },
     about: {
       en:
         "The new Flows entry in the sidebar lets you draw, on a canvas, what should happen when a " +
         "webhook arrives. Try it with sample data and see each run step by step.",
       es:
         "La nueva entrada Flows de la barra lateral te permite dibujar en un lienzo qué debe " +
-        "pasar cuando llega un webhook. Probalo con datos de ejemplo y mirá cada ejecución paso " +
+        "pasar cuando llega un webhook. Pruébalo con datos de ejemplo y mira cada ejecución paso " +
         "a paso.",
     },
     applies: (f) => f.secretary && f.channels > 0,
@@ -211,14 +211,14 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.12.0",
     title: {
       en: "Flows run as drawn, with branches and model steps",
-      es: "Los Flows se ejecutan como los dibujás, con ramas y pasos de modelo",
+      es: "Los Flows se ejecutan como los dibujas, con ramas y pasos de modelo",
     },
     about: {
       en:
         "A Flow now runs exactly what you drew: yes and no branches, steps that join again and a " +
         "step that asks a model once. Each run shows every step.",
       es:
-        "Un Flow ahora se ejecuta exactamente como lo dibujáste: ramas de sí y no, pasos que se " +
+        "Un Flow ahora se ejecuta exactamente como lo dibujaste: ramas de sí y no, pasos que se " +
         "vuelven a unir y un paso que consulta un modelo una vez. Cada ejecución muestra todos " +
         "los pasos.",
     },
@@ -245,7 +245,7 @@ export const NEWS: readonly NewsEntry[] = [
         "its page to start it, and stop a run that is going.",
       es:
         "Un Flow puede empezar con un horario, por ejemplo cada hora o los días laborables a las " +
-        "08:30. Usá Ejecutar ahora en su página para iniciarlo y detené una ejecución en curso.",
+        "08:30. Usa Ejecutar ahora en su página para iniciarlo y detén una ejecución en curso.",
     },
     applies: (f) => f.secretary && f.channels > 0,
     text: "A Flow can now start on a schedule instead of a webhook: every 5 minutes, every hour, weekdays at 08:30, daily at 03:00 or any cron, in the owner's time zone, with the next runs shown in its editor and list. If Colonia was off at a run's time, the Flow runs once when Colonia starts, not once per missed time. Any published Flow has Run now on its page (a webhook Flow asks for a sample body, filled in with the last one it received), and a run that is going can be stopped: steps that haven't started don't run, and a model step already sent is left for the owner to look at, never sent again.",
@@ -296,7 +296,7 @@ export const NEWS: readonly NewsEntry[] = [
         "steps. You approve a command or a database change before it runs.",
       es:
         "Los Flows ahora tienen comprobaciones con varios casos, variables y pasos de " +
-        "JavaScript, SQL y comandos de shell. Aprobás un comando o un cambio en una base de " +
+        "JavaScript, SQL y comandos de shell. Apruebas un comando o un cambio en una base de " +
         "datos antes de que se ejecute.",
     },
     applies: (f) => f.secretary,
@@ -321,7 +321,7 @@ export const NEWS: readonly NewsEntry[] = [
         "Each project has its own tables. See and edit them in Flows › Tables, and let a Flow " +
         "read or save rows with its Read and Save steps.",
       es:
-        "Cada proyecto tiene sus propias tablas. Miralas y editalas en Flows › Tablas, y dejá " +
+        "Cada proyecto tiene sus propias tablas. Míralas y edítalas en Flows › Tablas, y deja " +
         "que un Flow lea o guarde filas con sus pasos Leer y Guardar.",
     },
     applies: (f) => f.secretary,
@@ -342,14 +342,14 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "flow-agents",
     since: "2.12.0",
-    title: { en: "Your super-agent draws Flows for you", es: "Tu super-agente dibuja Flows por vos" },
+    title: { en: "Your super-agent draws Flows for you", es: "Tu super-agente dibuja Flows por ti" },
     about: {
       en:
         "Ask in any chat for a Flow and your assistant draws it for you. Review it in the editor, or " +
         "ask it to turn it on and try it: it asks for your OK first.",
       es:
-        "Pedí un Flow en cualquier chat y tu asistente lo dibuja por vos. Revisalo en el editor, o " +
-        "pedile que lo prenda y lo pruebe: antes te pide el OK.",
+        "Pide un Flow en cualquier chat y tu asistente lo dibuja por ti. Revísalo en el editor, o " +
+        "pídele que lo active y lo pruebe: antes te pide el OK.",
     },
     applies: (f) => f.secretary,
     text: "The super-agent can now make a Flow in a project or change one's steps when the owner asks in any chat: it draws the steps, connects and places them, checks what keeps the drawing from running and fixes it. The chat shows the Flow's drawing with a button to open it in the editor. In the Flow editor itself, the Ask button opens a chat with the super-agent over the canvas: the owner says what to change and watches the steps appear as it draws them. What it saves is a draft: nothing runs until the owner turns it on, in the editor or by asking the super-agent, which shows a card with what the Flow sends, calls, runs and changes and waits for their OK; it can then run it once with sample data, after another OK, and say how each step went.",
@@ -374,8 +374,8 @@ export const NEWS: readonly NewsEntry[] = [
         "model and how freely it acts, and add values from earlier steps while you type.",
       es:
         "El paso de IA de un Flow puede usar uno de tus agentes o un bot hecho solo para ese " +
-        "Flow. Elegí el modelo y cuánta libertad tiene, y agregá valores de pasos anteriores " +
-        "mientras escribís.",
+        "Flow. Elige el modelo y cuánta libertad tiene, y añade valores de pasos anteriores " +
+        "mientras escribes.",
     },
     applies: (f) => f.secretary,
     text: "A Flow's AI model step can now be answered by an agent of the crew (with its instructions, memory and tools) or by a bot written just for that Flow: a name and how it works, starting from scratch each run. The owner picks the harness (Colonia, or Claude Code or Codex when they're installed), the model, the effort and how freely it acts. By default it works alone, without handing work to other agents; a switch on the step lets it. In every field that takes values, typing {{ or $ or pressing a button offers what arrived, earlier steps, variables and Colonia's values, shown as badges; secrets only where the step reads them itself, like a request's headers or a command's variables.",
@@ -392,7 +392,7 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.12.0",
     title: {
       en: "Test a Flow with a real event before turning it on",
-      es: "Probá un Flow con un evento real antes de activarlo",
+      es: "Prueba un Flow con un evento real antes de activarlo",
     },
     about: {
       en:
@@ -424,7 +424,7 @@ export const NEWS: readonly NewsEntry[] = [
         "In Settings › Devices you can turn on a public web address for Flows, LINE, Teams and " +
         "widgets you choose to publish. Your panel and files stay private.",
       es:
-        "En Configuración › Dispositivos podés activar una dirección web pública para Flows, LINE, " +
+        "En Configuración › Dispositivos puedes activar una dirección web pública para Flows, LINE, " +
         "Teams y los widgets que decidas publicar. Tu panel y tus archivos siguen siendo " +
         "privados.",
     },
@@ -448,14 +448,14 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.12.0",
     title: {
       en: "Keep connection settings separate from email preferences",
-      es: "Separá los ajustes de conexión de las preferencias de correo",
+      es: "Separa los ajustes de conexión de las preferencias de correo",
     },
     about: {
       en:
         "Connection settings and email preferences are now apart. Add several mailboxes, each " +
         "with its own signature, and set a general signature in Settings › Account.",
       es:
-        "Los ajustes de conexión y las preferencias de correo ahora están separados. Agregá varios " +
+        "Los ajustes de conexión y las preferencias de correo ahora están separados. Añade varios " +
         "buzones, cada uno con su propia firma, y define una firma general en Configuración › Cuenta.",
     },
     applies: (f) => f.google.gmail || f.email,
@@ -471,13 +471,13 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "device-text-size",
     since: "2.12.0",
-    title: { en: "Choose a comfortable text size", es: "Elegí un tamaño de texto cómodo" },
+    title: { en: "Choose a comfortable text size", es: "Elige un tamaño de texto cómodo" },
     about: {
       en:
         "In Settings › Appearance you can pick 85%, 100%, 115% or 130% text size and see the " +
         "change right away. It is saved on this device.",
       es:
-        "En Configuración › Apariencia podés elegir un tamaño de texto del 85 %, 100 %, 115 % o 130 % " +
+        "En Configuración › Apariencia puedes elegir un tamaño de texto del 85 %, 100 %, 115 % o 130 % " +
         "y ver el cambio al instante. Se guarda en este dispositivo.",
     },
     applies: (f) => f.secretary,
@@ -500,7 +500,7 @@ export const NEWS: readonly NewsEntry[] = [
         "default. You can set limits in Config › Agents › When agents work on their own.",
       es:
         "Los agentes siguen hasta terminar lo que les pediste, sin límite de turnos ni de tokens " +
-        "por defecto. Podés fijar límites en Config › Agentes › Cuando los agentes trabajan " +
+        "por defecto. Puedes fijar límites en Config › Agentes › Cuando los agentes trabajan " +
         "solos.",
     },
     applies: (f) => f.secretary,
@@ -518,15 +518,15 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.11.2",
     title: {
       en: "Your agents' computer, on Linux and Windows",
-      es: "La computadora de tus agentes, en Linux y Windows",
+      es: "El ordenador de tus agentes, en Linux y Windows",
     },
     about: {
       en:
         "Your agents can now use a separate Linux computer on this Linux or Windows machine too. " +
         "Allow it for an agent from its card, and watch their screens in Computers.",
       es:
-        "Tus agentes ahora también pueden usar una computadora Linux aparte en este equipo Linux o " +
-        "Windows. Permitilo para un agente desde su tarjeta y mirá sus pantallas en Computadoras.",
+        "Tus agentes ahora también pueden usar un ordenador Linux aparte en este equipo Linux o " +
+        "Windows. Permítelo para un agente desde su tarjeta y mira sus pantallas en Ordenadores.",
     },
     applies: (f) => f.computer && !f.mac,
     text:
@@ -553,14 +553,14 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "durable-task-attachments",
     since: "2.11.1",
-    title: { en: "Keep screenshots and files with a task", es: "Guardá capturas y archivos con una tarea" },
+    title: { en: "Keep screenshots and files with a task", es: "Guarda capturas y archivos con una tarea" },
     about: {
       en:
         "Attach screenshots and files to a task, when you create it or later. They stay with the " +
         "task, even if the chat is deleted, and you can preview and download them.",
       es:
-        "Adjuntá capturas y archivos a una tarea, al crearla o después. Se quedan con la tarea " +
-        "aunque se borre el chat, y podés previsualizarlos y descargarlos.",
+        "Adjunta capturas y archivos a una tarea, al crearla o después. Se quedan con la tarea " +
+        "aunque se borre el chat, y puedes previsualizarlos y descargarlos.",
     },
     applies: (f) => f.secretary,
     text: "Tasks can keep selected screenshots and files as durable snapshots, at creation or later. Authorized agents can inspect them from the task even after the source chat is deleted. The panel previews and downloads them. This does not grant access to private contact chats or publish files; sending outside Colonia remains a separate owner action.",
@@ -575,13 +575,13 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "task-chat-actions",
     since: "2.11.1",
-    title: { en: "Manage tasks from their chat group", es: "Gestioná las tareas desde su grupo de chat" },
+    title: { en: "Manage tasks from their chat group", es: "Gestiona las tareas desde su grupo de chat" },
     about: {
       en:
         "Right-click a task's chat group, or use its actions button, to move the task, mark it " +
         "waiting, close or reopen it, or archive its chats. Its status shows beside the chat.",
       es:
-        "Hacé clic derecho en el grupo de chat de una tarea, o usá su botón de acciones, para " +
+        "Haz clic derecho en el grupo de chat de una tarea, o usa su botón de acciones, para " +
         "moverla, marcarla en espera, cerrarla o reabrirla, o archivar sus chats. Su estado se ve " +
         "junto al chat.",
     },
@@ -600,7 +600,7 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.11.1",
     title: {
       en: "Update the server before your Desktop apps",
-      es: "Actualizá el servidor antes que tus apps de escritorio",
+      es: "Actualiza el servidor antes que tus apps de escritorio",
     },
     about: {
       en:
@@ -608,7 +608,7 @@ export const NEWS: readonly NewsEntry[] = [
         "itself, so both stay in step. Start it from the Desktop menu.",
       es:
         "Cuando tu servidor está en otro equipo, Desktop lo actualiza primero y luego se " +
-        "actualiza a sí mismo, para que ambos vayan a la par. Inicialo desde el menú de Desktop.",
+        "actualiza a sí mismo, para que ambos vayan a la par. Inícialo desde el menú de Desktop.",
     },
     applies: (f) => Boolean(f.desktop),
     text:
@@ -630,14 +630,14 @@ export const NEWS: readonly NewsEntry[] = [
     since: "2.11.1",
     title: {
       en: "Let your agent configure your email signature",
-      es: "Dejá que tu agente configure tu firma de correo",
+      es: "Deja que tu agente configure tu firma de correo",
     },
     about: {
       en:
         "Ask your assistant to read or change the signature of any of your mailboxes. It shows " +
         "you the change and waits for your approval first.",
       es:
-        "Pedile a tu asistente que lea o cambie la firma de cualquiera de tus buzones. Te muestra " +
+        "Pide a tu asistente que lea o cambie la firma de cualquiera de tus buzones. Te muestra " +
         "el cambio y espera tu aprobación antes de aplicarlo.",
     },
     applies: (f) => f.google.gmail || f.email,
@@ -690,7 +690,7 @@ export const NEWS: readonly NewsEntry[] = [
         "and when it resets. Turn Usage on for each engine in its card.",
       es:
         "El botón de uso de IA de la barra superior muestra cuánto te queda de tus planes de " +
-        "Codex y Claude y cuándo se renuevan. Activá Uso en la tarjeta de cada motor.",
+        "Codex y Claude y cuándo se renuevan. Activa Uso en la tarjeta de cada motor.",
     },
     applies: (f) => f.codex || f.claude === true,
     text:
@@ -752,7 +752,7 @@ export const NEWS: readonly NewsEntry[] = [
         "Connect Google in Resources › Integrations and your assistant can set up meetings with a " +
         "Meet link, find free time, read and send mail and work with your Drive documents.",
       es:
-        "Conectá Google en Recursos › Integraciones y tu asistente podrá crear reuniones con " +
+        "Conecta Google en Recursos › Integraciones y tu asistente podrá crear reuniones con " +
         "enlace de Meet, buscar huecos libres, leer y enviar correos y trabajar con tus " +
         "documentos de Drive.",
     },
@@ -770,7 +770,7 @@ export const NEWS: readonly NewsEntry[] = [
           "for me, and once it is connected tell me what I have this week.",
       },
       {
-        label: { en: "What can you do?", es: "¿Qué podés hacer?" },
+        label: { en: "What can you do?", es: "¿Qué puedes hacer?" },
         prompt:
           "Tell me in a few lines what you can do with my Google Calendar, Gmail and Drive once they are connected, " +
           "and which one I should connect first for how I work.",
@@ -796,13 +796,13 @@ export const NEWS: readonly NewsEntry[] = [
       "messages teach it. Its morning brief also reads today's events from Google Calendar.",
     actions: [
       {
-        label: { en: "How do you choose?", es: "¿Cómo elegís?" },
+        label: { en: "How do you choose?", es: "¿Cómo eliges?" },
         prompt:
           "Explain in a few lines how you decide which new mail to tell me about, then ask me which senders or " +
           "subjects always matter to me and which never do, and remember what I say.",
       },
       {
-        label: { en: "Check less often", es: "Revisar menos seguido" },
+        label: { en: "Check less often", es: "Revisar con menos frecuencia" },
         prompt:
           "Tell me how often you check my mail now (Settings › Profile › Check mail every) and change it to every " +
           "15 minutes if I say yes.",
@@ -818,7 +818,7 @@ export const NEWS: readonly NewsEntry[] = [
         "Set attention hours on each channel, or on a contact's card. Outside them contacts get " +
         "no answer, and everything is answered once when the hours begin.",
       es:
-        "Definí un horario de atención en cada canal, o en la ficha de un contacto. Fuera de él " +
+        "Define un horario de atención en cada canal, o en la ficha de un contacto. Fuera de él " +
         "los contactos no reciben respuesta, y todo se contesta una vez cuando empieza el " +
         "horario.",
     },
@@ -831,7 +831,7 @@ export const NEWS: readonly NewsEntry[] = [
       "colonia_settings once the owner approves each change.",
     actions: [
       {
-        label: { en: "Suggest my hours", es: "Sugerime un horario" },
+        label: { en: "Suggest my hours", es: "Sugiéreme un horario" },
         prompt:
           "Look at when my contacts usually write to me and suggest attention hours for my channels, and which " +
           "contacts you would answer at any hour. If I agree, set them.",
@@ -847,8 +847,8 @@ export const NEWS: readonly NewsEntry[] = [
         "Ask in chat to change almost anything you set up in the panel, such as a contact, a " +
         "channel, your profile, projects or routines. You see the change and approve it first.",
       es:
-        "Pedí por chat que se cambie casi cualquier cosa que configurás en el panel, como un " +
-        "contacto, un canal, tu perfil, proyectos o rutinas. Ves el cambio y lo aprobás antes.",
+        "Pide por chat que se cambie casi cualquier cosa que configuras en el panel, como un " +
+        "contacto, un canal, tu perfil, proyectos o rutinas. Ves el cambio y lo apruebas antes.",
     },
     // The owner's profile, notices, projects and memory are every owner's: contacts are only part of it.
     applies: () => true,
@@ -861,13 +861,13 @@ export const NEWS: readonly NewsEntry[] = [
       "their yes. Saving a key, sign-ins, models, what agents may do and this computer stay the owner's, in Settings.",
     actions: [
       {
-        label: { en: "What can you change?", es: "¿Qué podés cambiar?" },
+        label: { en: "What can you change?", es: "¿Qué puedes cambiar?" },
         prompt:
           "Tell me in a few lines what you can change in my Colonia settings from chat, then ask me what I would like " +
           "to adjust, and change it as I tell you.",
       },
       {
-        label: { en: "Set my quiet hours", es: "Configurá mis horas de silencio" },
+        label: { en: "Set my quiet hours", es: "Configura mis horas de silencio" },
         prompt: "Ask me when I do not want to be notified and how many notices a day are fine, then set it up.",
       },
     ],
@@ -882,7 +882,7 @@ export const NEWS: readonly NewsEntry[] = [
         "with one. Manage them in each channel's settings, under Stickers.",
       es:
         "Los stickers que te envían por WhatsApp o Telegram se guardan, y tu agente puede " +
-        "responder con uno. Gestionalos en los ajustes de cada canal, en Stickers.",
+        "responder con uno. Gestiónalos en los ajustes de cada canal, en Stickers.",
     },
     applies: (f) => f.contacts,
     text:
@@ -893,7 +893,7 @@ export const NEWS: readonly NewsEntry[] = [
       "default) or wait for their OK; one for adults always waits. Reactions the agent puts now show in the app too.",
     actions: [
       {
-        label: { en: "Answer me with a sticker", es: "Contestame con un sticker" },
+        label: { en: "Answer me with a sticker", es: "Contéstame con un sticker" },
         prompt:
           "Answer this message with one of the stickers people sent me on this channel, the one that fits best. If " +
           "none is kept here yet, tell me in words that a sticker sent to you is kept and you can use it after.",
@@ -911,7 +911,7 @@ export const NEWS: readonly NewsEntry[] = [
         "them.",
       es:
         "Recursos › Integraciones ahora conecta unas cincuenta apps más, como Linear, Jira, " +
-        "Stripe y Figma. La mayoría solo requiere un clic e iniciar sesión en el navegador; usá " +
+        "Stripe y Figma. La mayoría solo requiere un clic e iniciar sesión en el navegador; usa " +
         "el buscador para encontrarlas.",
     },
     applies: (f) => f.integrations > 0,
@@ -939,8 +939,8 @@ export const NEWS: readonly NewsEntry[] = [
         "Your agents can now be reached on iMessage, Google Chat, SMS, ntfy, Nextcloud Talk, IRC " +
         "and Twitch. Set each one up in Settings › Channels.",
       es:
-        "Ahora podés hablar con tus agentes por iMessage, Google Chat, SMS, ntfy, Nextcloud " +
-        "Talk, IRC y Twitch. Configurá cada uno en Configuración › Canales.",
+        "Ahora puedes hablar con tus agentes por iMessage, Google Chat, SMS, ntfy, Nextcloud " +
+        "Talk, IRC y Twitch. Configura cada uno en Configuración › Canales.",
     },
     applies: (f) => f.channels > 0,
     text:
@@ -964,8 +964,8 @@ export const NEWS: readonly NewsEntry[] = [
         "Connect Microsoft Teams and LINE in Settings › Channels. Their screen first helps you " +
         "turn on a public address so the apps can reach you.",
       es:
-        "Conectá Microsoft Teams y LINE en Configuración › Canales. Su pantalla te ayuda primero a " +
-        "activar una dirección pública para que las apps puedan llegar hasta vos.",
+        "Conecta Microsoft Teams y LINE en Configuración › Canales. Su pantalla te ayuda primero a " +
+        "activar una dirección pública para que las apps puedan llegar hasta ti.",
     },
     applies: (f) => f.channels > 0,
     text:
@@ -1014,14 +1014,14 @@ export const NEWS: readonly NewsEntry[] = [
   {
     id: "linux-computer",
     since: "2.11.0",
-    title: { en: "A Linux computer your agents share", es: "Una computadora Linux que comparten tus agentes" },
+    title: { en: "A Linux computer your agents share", es: "Un ordenador Linux que comparten tus agentes" },
     about: {
       en:
         "Your agents can use a separate Linux computer, each with its own screen, desktop and " +
         "browser. Allow it per agent, and see every screen in Computers.",
       es:
-        "Tus agentes pueden usar una computadora Linux aparte, cada uno con su propia pantalla, " +
-        "escritorio y navegador. Permitilo por agente y mirá todas las pantallas en Computadoras.",
+        "Tus agentes pueden usar un ordenador Linux aparte, cada uno con su propia pantalla, " +
+        "escritorio y navegador. Permítelo por agente y mira todas las pantallas en Ordenadores.",
     },
     applies: (f) => f.computer && f.mac,
     text:
@@ -1053,7 +1053,7 @@ export const NEWS: readonly NewsEntry[] = [
     about: {
       en:
         "Your Mac no longer goes to sleep while an agent is working. You can turn this off in " + "Settings › Desktop.",
-      es: "Tu Mac ya no se duerme mientras un agente trabaja. Podés desactivarlo en Configuración › " + "Escritorio.",
+      es: "Tu Mac ya no se duerme mientras un agente trabaja. Puedes desactivarlo en Configuración › " + "Escritorio.",
     },
     applies: (f) => f.mac,
     text:

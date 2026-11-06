@@ -31,7 +31,7 @@ test("⌘K finds words inside messages, accents aside, and opens the chat at tha
     agent_id: "superagent",
     title: "Zoología",
   });
-  await rpc("threads.send", { thread: thread.id, text: "Anotá que el ornitorrinco come camarones" });
+  await rpc("threads.send", { thread: thread.id, text: "Anota que el ornitorrinco come camarones" });
   await until(async () => (await rpc<{ hits: unknown[] }>("threads.search", { query: "ornitorrinco" })).hits.length);
   await open(page);
   await page.keyboard.press("ControlOrMeta+k");

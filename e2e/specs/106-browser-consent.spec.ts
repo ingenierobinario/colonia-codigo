@@ -70,7 +70,7 @@ for (const [width, scope, language] of [
       ).id;
       await page.setViewportSize({ width, height: 900 });
       await open(page, `#thread=${thread}`);
-      await page.getByRole("textbox", { name: /Escribile|Message/ }).fill("evaluate browser three times");
+      await page.getByRole("textbox", { name: /Escríbele|Message/ }).fill("evaluate browser three times");
       await page.keyboard.press("Enter");
       const card = page.locator(".inputcard.is-pending");
       const once = card.getByRole("button", { name: spanish ? "Aceptar una vez" : "Approve once", exact: true });

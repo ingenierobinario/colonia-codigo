@@ -17,12 +17,12 @@ test("time zone and language are picked by searching, Advanced names each part o
   const dialog = page.getByRole("dialog", { name: "Configuración" });
 
   await dialog.getByRole("combobox", { name: "Zona horaria" }).click();
-  await page.getByPlaceholder("Buscá una ciudad o país").fill("madrid");
+  await page.getByPlaceholder("Busca una ciudad o país").fill("madrid");
   await page.getByRole("option", { name: /Madrid/ }).click();
   await expect.poll(async () => (await rpc<Owner>("owner.get")).timezone).toBe("Europe/Madrid");
 
   await dialog.getByRole("combobox", { name: "Idioma de tus agentes" }).click();
-  await page.getByPlaceholder("Buscá un idioma").fill("portu");
+  await page.getByPlaceholder("Busca un idioma").fill("portu");
   await page.getByRole("option", { name: /Português/ }).click();
   await expect.poll(async () => (await rpc<Owner>("owner.get")).language).toBe("pt");
   await rpc("owner.set", { language: "es", timezone: "" });

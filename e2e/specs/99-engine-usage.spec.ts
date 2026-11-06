@@ -146,7 +146,7 @@ test("AI usage recovers from a failed request without showing an invented balanc
   await open(page);
   await page.getByTestId("engine-usage-button").click();
   const summary = page.getByTestId("engine-usage-summary");
-  await expect(summary.getByRole("alert")).toContainText("Volvé a intentar");
+  await expect(summary.getByRole("alert")).toContainText("Vuelve a intentar");
   await expect(summary.locator(".colonia-meter")).toHaveCount(0);
   fail = false;
   await summary.getByRole("button", { name: "Actualizar" }).click();

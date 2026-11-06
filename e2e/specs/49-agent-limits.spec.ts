@@ -21,7 +21,7 @@ test("the owner changes the limits on agents working on their own in Config › 
   // Off by default: turning it on starts from room for a large feature.
   const limitsOn = dialog.getByRole("switch", { name: "Poner límites" });
   await expect(limitsOn).not.toBeChecked();
-  await expect(dialog.getByRole("spinbutton", { name: "Turnos sin vos" })).toHaveCount(0);
+  await expect(dialog.getByRole("spinbutton", { name: "Turnos sin ti" })).toHaveCount(0);
   await limitsOn.click();
   await expect.poll(() => rpc<Limits>("agents.limits")).toMatchObject({ runs: 100, tokens: 5_000_000 });
   await rpc("agents.set_limits", { runs: 30, tokens: 1_500_000 });
@@ -37,14 +37,14 @@ test("the owner changes the limits on agents working on their own in Config › 
     .first()
     .click();
 
-  const tokens = dialog.getByRole("spinbutton", { name: "Tokens sin vos" });
+  const tokens = dialog.getByRole("spinbutton", { name: "Tokens sin ti" });
   await expect(tokens).toHaveValue("1500");
   await tokens.fill("2000");
   await tokens.press("Enter");
   await expect.poll(async () => (await rpc<Limits>("agents.limits")).tokens).toBe(2_000_000);
 
   // Emptied, one limit goes; the switch removes both and hides the numbers.
-  const runs = dialog.getByRole("spinbutton", { name: "Turnos sin vos" });
+  const runs = dialog.getByRole("spinbutton", { name: "Turnos sin ti" });
   await runs.fill("");
   await runs.press("Enter");
   await expect.poll(async () => (await rpc<Limits>("agents.limits")).runs).toBe(0);
@@ -52,7 +52,7 @@ test("the owner changes the limits on agents working on their own in Config › 
   await expect(runs).toHaveCount(0);
   await expect.poll(() => rpc<Limits>("agents.limits")).toMatchObject({ runs: 0, tokens: 0 });
   await limitsOn.click();
-  await expect(dialog.getByRole("spinbutton", { name: "Tokens sin vos" })).toHaveValue("5000");
+  await expect(dialog.getByRole("spinbutton", { name: "Tokens sin ti" })).toHaveValue("5000");
 
   await rpc("agents.set_limits", { runs: 0, tokens: 0 });
 });

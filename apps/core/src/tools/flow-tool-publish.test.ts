@@ -75,7 +75,7 @@ test("publishing waits for the owner's card, in their language, which says what 
   const { detail } = await h.ask(publish, "deny");
   assert.equal(
     detail,
-    "Prender «New leads». Desde ahora corre como está dibujado cada vez que se dispare.\nCada vez:\n• Corre `printf ok` en esta computadora",
+    "Prender «New leads». Desde ahora corre como está dibujado cada vez que se dispare.\nCada vez:\n• Corre `printf ok` en este ordenador",
   );
   h.env.core.store.settings.set("owner_language", "en");
   try {

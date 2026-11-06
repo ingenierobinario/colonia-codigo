@@ -9,7 +9,7 @@ import { Aside, Steps, CardGrid, LinkCard } from "@astrojs/starlight/components"
 import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
-Las tareas son el tablero de pendientes de la oficina, compartido entre vos y tus agentes. Las creás vos, las crean
+Las tareas son el tablero de pendientes de la oficina, compartido entre tú y tus agentes. Las creas tú, las crean
 ellos, y darle una a un agente alcanza para que arranque. **Tareas** en la barra lateral las muestra de todos los
 proyectos; cada proyecto tiene además su pestaña **Tareas** con **Nueva tarea**.
 
@@ -17,15 +17,15 @@ proyectos; cada proyecto tiene además su pestaña **Tareas** con **Nueva tarea*
 
 Antes de crear otra tarea, los agentes tienen la instrucción de revisar las tareas abiertas y seguir una
 existente si ya cubre el mismo trabajo o uno muy relacionado. No es una detección automática de duplicados.
-Para una tarea que cambia código, mirá [dónde va ese trabajo](/es/office/code/#dónde-una-tarea-cambia-código).
+Para una tarea que cambia código, mira [dónde va ese trabajo](/es/office/code/#dónde-una-tarea-cambia-código).
 
 ## Registrar versus empezar el trabajo
 
-Si pedís una acción, el agente debe hacerla con sus herramientas o pasarla una sola vez al especialista necesario,
+Si pides una acción, el agente debe hacerla con sus herramientas o pasarla una sola vez al especialista necesario,
 no reemplazar el resultado por movimientos del tablero. Un trabajo largo puede tener una tarea como seguimiento
 interno, pero debe arrancar y devolver un resultado o un bloqueo concreto.
 
-Para registrar una idea sin empezar a trabajar, pedí una tarea solo de captura y dejala **sin asignar**. Una tarea
+Para registrar una idea sin empezar a trabajar, pide una tarea solo de captura y déjala **sin asignar**. Una tarea
 con responsable y descripción inicia su propia sesión, salvo que sea propuesta, esté programada para después o
 esté pausada por límites de agentes. Asignar y delegar son alternativas para arrancar, no dos pasos que haya que
 hacer juntos. Dentro de un mismo turno (incluida la recuperación tras un reinicio), Colonia impide mezclar ejecución por
@@ -40,7 +40,7 @@ declarar que son trabajos independientes.
 | Campo | Valores |
 |---|---|
 | **Tipo** | **Tarea** (trabajo de un proyecto), **Compromiso** (algo prometido con alguien) o **Recado** (algo chico para hacer al pasar: comprar, llamar, retirar). |
-| **Columna** | **Por planificar** (recién llegada, las nuevas caen acá), **Para hacer** (decidida, es lo próximo), **En curso** (alguien la está haciendo), **Revisión** (terminada, falta revisarla). |
+| **Columna** | **Por planificar** (recién llegada, las nuevas caen aquí), **Para hacer** (decidida, es lo próximo), **En curso** (alguien la está haciendo), **Revisión** (terminada, falta revisarla). |
 | **Prioridad** | Urgente, Alta, Normal, Baja. |
 | **Quién la hace** | Un agente, o nadie. Elegir un agente de un proyecto pone la tarea en ese proyecto. |
 | **Vencimiento y recordatorio** | Cuando vence, 1 hora antes, 1 día antes, otro momento o sin recordatorio. |
@@ -52,12 +52,12 @@ lista en un solo proyecto o muestra **Todos los proyectos**; este navegador recu
 
 ### Cómo se agrupa la lista
 
-- **Propuestas** (cuando hay, arriba de todo): tareas que un agente propone y que no arrancan hasta que las aceptás.
-  **Aceptar todas** en su encabezado, o **Aceptar** y **Descartar** en el panel de cada una. Mirá
+- **Propuestas** (cuando hay, arriba de todo): tareas que un agente propone y que no arrancan hasta que las aceptes.
+  **Aceptar todas** en su encabezado, o **Aceptar** y **Descartar** en el panel de cada una. Mira
   [Propuestas](#propuestas).
 - **Necesita tu revisión** (va primero): lo que es tuyo. Un agente te preguntó algo o necesita una decisión (sigue
-  cuando respondés; también la marcás así con **Espera tu respuesta** desde el menú), o una tarea terminada que
-  revisás vos para cerrarla. Cada fila dice cuál: **Te pregunta algo** o **Revisa: Vos**.
+  cuando respondes; también la marcas así con **Espera tu respuesta** desde el menú), o una tarea terminada que
+  revisas tú para cerrarla. Cada fila dice cuál: **Te pregunta algo** o **Revisa: Tú**.
 - **En curso**: su columna es En curso, o un agente la está trabajando ahora.
 - **Pendiente**: Por planificar o Para hacer, nadie la empezó todavía.
 - **En revisión**: terminada, y la revisa el agente que nombraste (**Quién la revisa** en el panel, o un agente que lo
@@ -67,19 +67,19 @@ lista en un solo proyecto o muestra **Todos los proyectos**; este navegador recu
 ## Adjuntos y acciones de los chats de una tarea
 
 Las tareas pueden guardar capturas y archivos seleccionados como copias independientes, al crearlas o después.
-Podés previsualizarlos o descargarlos desde la tarea. Cada tarea admite hasta 50 archivos de hasta 20 MB cada uno.
+Puedes previsualizarlos o descargarlos desde la tarea. Cada tarea admite hasta 50 archivos de hasta 20 MB cada uno.
 Borrar el chat original no borra la copia de la tarea; quitar el adjunto borra esa copia, no otras que ya se hayan
 compartido. Los agentes autorizados pueden consultar los adjuntos sin obtener acceso a chats privados de contactos.
 Enviar un archivo fuera de Colonia sigue siendo una acción separada del dueño.
 
-Usá el botón de acciones del grupo de chats de la tarea o su menú contextual para cambiarla de columna, marcarla en
+Usa el botón de acciones del grupo de chats de la tarea o su menú contextual para cambiarla de columna, marcarla en
 espera, cerrarla, reabrirla o archivar sus chats. Archivar conserva el historial: no cierra la tarea ni reinicia el
 trabajo. El estado aparece junto al encabezado del chat y la descripción inicial conserva párrafos y listas.
 
 ## Asignar arranca el trabajo
 
 Dale una tarea a un agente (al crearla o después) y empieza a trabajar enseguida, en **su propio chat para esa
-tarea**. Ese chat es uno más del Inbox: podés abrirlo y mirar, o hablar ahí con el agente.
+tarea**. Ese chat es uno más del Inbox: puedes abrirlo y mirar, o hablar ahí con el agente.
 
 <Steps>
 
@@ -92,17 +92,17 @@ tarea**. Ese chat es uno más del Inbox: podés abrirlo y mirar, o hablar ahí c
 
 </Steps>
 
-Abrí una tarea y su panel muestra la descripción, los campos, los **Comentarios** y el **Historial** (quién la creó,
+Abre una tarea y su panel muestra la descripción, los campos, los **Comentarios** y el **Historial** (quién la creó,
 movió, asignó o cerró). **Sesiones**, arriba, cuenta los chats en los que se trabajó la tarea y abre su lista, para ir
-a donde pasa el trabajo. Si la reasignás, el nuevo agente tiene su propio chat y se entera de quién la trabajó antes y
+a donde pasa el trabajo. Si la reasignas, el nuevo agente tiene su propio chat y se entera de quién la trabajó antes y
 dónde leerlo.
 
 <Shot name="task-drawer" alt="Una tarea abierta en su panel: título, responsable, prioridad y una conversación con comentarios del dueño y de un agente" caption="El panel de una tarea: comentarios, campos y el chat de trabajo" />
 
 Las tareas asignadas que nunca arrancaron se retoman solas: una vez por hora, las más urgentes se ponen en marcha,
 como de quien las dio: una tarea que dio un agente cuenta para los límites de ese agente, nunca como un pedido tuyo.
-Para que una arranque más tarde (mañana a la mañana, después de una salida a producción), poné **Empieza** en su
-panel, o `colonia tasks add … --start 2026-10-23T09:00`: su agente arranca a esa hora, no cuando la asignás.
+Para que una arranque más tarde (mañana por la mañana, después de una salida a producción), pon **Empieza** en su
+panel, o `colonia tasks add … --start 2026-10-23T09:00`: su agente arranca a esa hora, no cuando la asignas.
 
 ### Pasar el trabajo actual a una tarea
 
@@ -115,33 +115,33 @@ no iniciar un segundo ejecutor.
 
 ### Comentarios y @menciones
 
-Escribí en el cuadro **Comentario** de la tarea. Un comentario que no nombra a nadie espera un minuto (por si sumás
+Escribe en el cuadro **Comentario** de la tarea. Un comentario que no nombra a nadie espera un minuto (por si sumas
 otro) y después le llega al agente de la tarea, o al superagente si nadie la tiene; sus tildes muestran que se envió,
 se entregó y se leyó. Un `@nombre` le pregunta a ese agente: responde en su propio chat
-para la tarea, y su respuesta vuelve como comentario. Preguntale a Vera desde la tarea de Lucía:
+para la tarea, y su respuesta vuelve como comentario. Pregúntale a Vera desde la tarea de Lucía:
 
-> @Vera ¿podés tener las fotos de producto para el jueves? Esta página las necesita.
+> @Vera ¿puedes tener las fotos de producto para el jueves? Esta página las necesita.
 
 Un agente le pregunta a un compañero igual: su `@nombre` en un comentario abre una consulta en la tarea, que se ve
 como una tarjeta con la pregunta y la respuesta, y la respuesta le vuelve al agente que preguntó, que sigue con su
 trabajo. Un comentario pregunta a dos compañeros como mucho, y el que responde una consulta no puede preguntarle a
-nadie más. Un agente también te puede mencionar a vos para llamarte la atención.
+nadie más. Un agente también te puede mencionar a ti para llamarte la atención.
 
 ### Un agente trabaja una tarea hasta terminarla
 
 Cuando el turno de un agente en una tarea termina con la tarea todavía en curso (se quedó sin pasos, o frenó en "sigo
 después"), su parte siguiente arranca enseguida, numerada, hasta nueve. Para cuando el agente cierra la tarea, la marca
-esperándote con lo que tenés que hacer, dice qué lo bloquea, o cuando una parte no avanzó. Para cerrar su trabajo como
+esperándote con lo que tienes que hacer, dice qué lo bloquea, o cuando una parte no avanzó. Para cerrar su trabajo como
 hecho, el agente tiene que decir qué verificó.
 
 ### Cuando se cierra la tarea de un agente
 
 Una tarea que un agente creó y le dio a otro avisa cuando se cierra. Tu agente principal se entera de cada tarea que
-cierra su equipo, también las que diste vos u otro agente, y te cuenta cómo salió. Tu agente principal puede pasarle un objetivo
+cierra su equipo, también las que diste tú u otro agente, y te cuenta cómo salió. Tu agente principal puede pasarle un objetivo
 entero al orquestador de un proyecto como tarea; cuando el orquestador la cierra, horas y reinicios después, tu agente
-principal recibe su informe en el chat donde creó la tarea y te cuenta lo que importa. Si la cerrás vos, o un agente
+principal recibe su informe en el chat donde creó la tarea y te cuenta lo que importa. Si la cierras tú, o un agente
 cierra la suya, no se despierta a nadie. Ese turno cuenta para los [turnos que los agentes arrancan solos sin
-vos](/es/concepts/agents/): pasado el límite, el informe espera a que escribas en ese chat.
+ti](/es/concepts/agents/): pasado el límite, el informe espera a que escribas en ese chat.
 
 ### Pedir correcciones
 
@@ -152,7 +152,7 @@ protocolo usan los mismos campos en `tasks.close`.
 La tarea debe estar cerrada y asignada. El pedido conserva su identidad, columna, historial y chat de trabajo,
 registra el motivo y la nueva ejecución, y devuelve el resultado al coordinador original cuando el responsable
 vuelve a cerrarla. Si todavía hay trabajo activo o los límites de agentes están pausados, se rechaza el pedido sin
-cambiar la tarea: esperá a que termine el trabajo o pedile al dueño que permita continuar la cadena y volvé a
+cambiar la tarea: espera a que termine el trabajo o pídele al dueño que permita continuar la cadena y vuelve a
 intentarlo. Las actualizaciones comunes y las reaperturas administrativas nunca arrancan una corrección.
 
 ## Subtareas
@@ -167,10 +167,10 @@ agente dueño de una tarea la lleva de punta a punta, y le pasa una parte a otro
 
 Cuando un agente termina, puede ver más trabajo: una pasada de QA, una revisión, algo de otra área. El trabajo que su
 rol reparte lo crea y lo arranca; el resto lo **propone**. Una tarea propuesta espera en **Propuestas**, con quién la
-propuso, hasta que la aceptás (arranca como cualquier tarea asignada) o la descartás. Te llega un aviso por agente con
+propuso, hasta que la aceptes (arranca como cualquier tarea asignada) o la descartes. Te llega un aviso por agente con
 cuántas tiene esperando.
 
-Algunas tareas son propuestas pida lo que pida el agente. Cuando le pedís a tu superagente varias cosas sin decir cómo, primero
+Algunas tareas son propuestas pida lo que pida el agente. Cuando le pides a tu superagente varias cosas sin decir cómo, primero
 te pregunta (un plan, una tarea por cada una o hacerlo él); si ya le dijiste cómo, sigue sin preguntar.
 
 Las propuestas:
@@ -181,15 +181,15 @@ Las propuestas:
   así dos agentes no se pasan el mismo trabajo de ida y vuelta.
 
 Lo mismo pasa cuando un agente le pasa una tarea que ya existe a otro agente: si darla nueva la volvería propuesta, el
-pase también queda propuesto y arranca cuando lo aceptás.
+pase también queda propuesto y arranca cuando lo aceptes.
 
 ## Compromisos
 
 Un compromiso es una tarea con **una persona** (uno de tus [contactos](/es/channels/overview/)) y **quién lo debe**:
-**Lo debo yo** (le prometiste algo a alguien) o **Me lo deben** (alguien te prometió algo a vos). Tiene vencimiento
+**Lo debo yo** (le prometiste algo a alguien) o **Me lo deben** (alguien te prometió algo a ti). Tiene vencimiento
 como cualquier tarea, así que se recuerda y se avisa antes de que se haga tarde.
 
-<Shot name="commitments" alt="Tareas filtradas por Compromisos: lo que le debés a cada persona y lo que cada persona te debe, con vencimientos" caption="El filtro Compromisos" />
+<Shot name="commitments" alt="Tareas filtradas por Compromisos: lo que le debes a cada persona y lo que cada persona te debe, con vencimientos" caption="El filtro Compromisos" />
 
 Un compromiso termina de una de tres formas, o cambia de fecha:
 
@@ -201,7 +201,7 @@ Un compromiso termina de una de tres formas, o cambia de fecha:
 | **Nueva fecha** | Se renegoció: sigue abierto con la fecha nueva, y un contador muestra cuántas veces se movió. |
 
 Solo tu palabra cierra un compromiso. Los agentes nunca marcan uno como cumplido o no cumplido por su cuenta: la
-rutina de cierre del día te pregunta cómo salieron, y el agente anota tu respuesta (mirá
+rutina de cierre del día te pregunta cómo salieron, y el agente anota tu respuesta (mira
 [Secretaria](/es/office/secretary/)).
 
 ## Desde la terminal
@@ -224,14 +224,14 @@ colonia tasks add Mandar el presupuesto mayorista --person Marta --owed me --due
 
 # Moverla, comentarla, cerrarla
 colonia tasks move <id-tarea> review
-colonia tasks say <id-tarea> @Lucía revisás el texto antes del viernes
+colonia tasks say <id-tarea> @Lucía revisas el texto antes del viernes
 colonia tasks done <id-tarea>
 ```
 
 Las columnas para `move` son `backlog`, `todo`, `doing` y `review`.
 
 <Aside type="note">
-Los agentes pueden abrir, mover, comentar y cerrar tareas con sus propias herramientas, así que "Lucía, poné eso en
+Los agentes pueden abrir, mover, comentar y cerrar tareas con sus propias herramientas, así que "Lucía, pon eso en
 el tablero para Tomás" funciona en cualquier chat.
 </Aside>
 

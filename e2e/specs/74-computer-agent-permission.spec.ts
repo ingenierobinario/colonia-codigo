@@ -52,7 +52,7 @@ test("an agent asks for the computer, starts and stops it, and the owner takes t
     const done = req.messages.filter((m) => m.role === "tool").length;
     if (done === 0) return callTool("start", "computer", { action: "start" });
     if (done === 1) return callTool("stop", "computer", { action: "stop" });
-    return say("Probé el sitio en Linux y dejé la computadora.");
+    return say("Probé el sitio en Linux y dejé el ordenador.");
   });
   let free = 12 * 1024 ** 3;
   const env = await startCore({
@@ -84,9 +84,9 @@ test("an agent asks for the computer, starts and stops it, and the owner takes t
     await env.client.call("environments.permit", { agent: "scout", on: true });
     const chat = await env.client.call("threads.create", { kind: "loose", agent_id: "scout" });
     await page.goto(`${env.core.url}/#thread=${chat.id}`);
-    await page.getByRole("textbox", { name: /Escribile a/ }).fill("Probá el sitio en Linux");
+    await page.getByRole("textbox", { name: /Escríbele a/ }).fill("Prueba el sitio en Linux");
     await page.keyboard.press("Enter");
-    await expect(page.getByText("Probé el sitio en Linux y dejé la computadora.")).toBeVisible();
+    await expect(page.getByText("Probé el sitio en Linux y dejé el ordenador.")).toBeVisible();
     expect(calls).toEqual(["start", "stop", "start"]);
     const status = await env.client.call("environments.status", { thread: chat.id });
     expect(status.phase).toBe("running");
@@ -101,7 +101,7 @@ test("an agent asks for the computer, starts and stops it, and the owner takes t
     await expect(page.locator(".computer__badge")).toHaveText("Linux · 2 vCPU · 4 GiB");
     await expect(computer.getByRole("combobox", { name: "Pantalla" })).toHaveText(/Scout · :101/);
     await expect(computer.getByText("Scout trabaja en este equipo en este chat.")).toBeVisible();
-    await expect(computer.getByRole("button", { name: "Usar la computadora acá", exact: true })).toBeVisible();
+    await expect(computer.getByRole("button", { name: "Usar el ordenador aquí", exact: true })).toBeVisible();
     await env.client.call("environments.stop", {});
     await expect(computer.getByRole("button", { name: "Encender VM", exact: true })).toBeVisible();
     // Without room for it, the start is refused where the owner sees it, above the settings, in their language.
@@ -114,7 +114,7 @@ test("an agent asks for the computer, starts and stops it, and the owner takes t
     await page.getByRole("button", { name: "Encender VM", exact: true }).click();
     const refused = page.locator(".computer").getByRole("alert");
     await expect(refused).toContainText(
-      "No hay memoria libre suficiente en este equipo: 5,5 GiB libres, y la computadora necesita 4 GiB más 2 GiB",
+      "No hay memoria libre suficiente en este equipo: 5,5 GiB libres, y el ordenador necesita 4 GiB más 2 GiB",
     );
     await expect(refused).not.toContainText("not enough");
     await expect(refused).toBeInViewport();
@@ -130,8 +130,8 @@ test("an agent asks for the computer, starts and stops it, and the owner takes t
     await page.locator(".teamcanvas__node", { hasText: "Scout" }).click({ button: "right" });
     await page.getByRole("menuitem", { name: "Editar" }).click();
     const editor = page.getByRole("dialog", { name: /^Editar a/ });
-    await editor.getByRole("button", { name: /^Computadora/ }).click();
-    const allowed = editor.getByRole("switch", { name: "Computadora aislada" });
+    await editor.getByRole("button", { name: /^Ordenador/ }).click();
+    const allowed = editor.getByRole("switch", { name: "Ordenador aislado" });
     await expect(allowed).toBeChecked();
     await allowed.click();
     await expect(allowed).not.toBeChecked();

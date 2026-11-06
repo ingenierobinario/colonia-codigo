@@ -65,12 +65,12 @@ const SCENES: Record<Language, Scene[]> = {
           ["role", "Desarrollador"],
           ["runtime", "claude-code"],
         ],
-        "Sos Tomás, el desarrollador. Primero reproducí, después arreglá, y siempre decí qué test lo prueba.",
+        "Eres Tomás, el desarrollador. Primero reproduce, después arregla, y siempre di qué test lo prueba.",
       ),
     },
     {
       key: "papa",
-      text: "# memoria · turno noche - Backups a las 3:00, reporte a las 9:00. - Si una rutina falla dos veces, avisale a Nova.",
+      text: "# memoria · turno noche - Backups a las 3:00, reporte a las 9:00. - Si una rutina falla dos veces, avisa a Nova.",
     },
     {
       key: "orbita",
@@ -80,7 +80,7 @@ const SCENES: Record<Language, Scene[]> = {
           ["role", "Product manager"],
           ["autonomy", "total"],
         ],
-        "Sos Lucía, product manager de Acme Store. Dividí los pedidos grandes en tareas, asignalas y seguilas.",
+        "Eres Lucía, product manager de Acme Store. Divide los pedidos grandes en tareas, asígnalas y síguelas.",
       ),
     },
     {
@@ -95,12 +95,12 @@ const SCENES: Record<Language, Scene[]> = {
           ["role", "Marketing"],
           ["skills", "[newsletter, social-posts]"],
         ],
-        "Sos Vera. Textos cortos, una idea por posteo, y nada sale sin fecha.",
+        "Eres Vera. Textos cortos, una idea por publicación, y nada sale sin fecha.",
       ),
     },
     {
       key: "parche",
-      text: "# memoria · mesa de whatsapp - Contestá sólo a contactos guardados. - Todo lo de plata va al dueño por Telegram.",
+      text: "# memoria · mesa de whatsapp - Contesta sólo a contactos guardados. - Todo lo del dinero va al dueño por Telegram.",
     },
   ],
 };

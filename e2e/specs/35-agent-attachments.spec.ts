@@ -21,7 +21,7 @@ test("agente adjunta JPG, MP4 y audio: visibles, reproducibles y descargables tr
       fs.copyFileSync(path.join(fixtures, name), path.join(work, name));
     await env.client.call("setup.finish", {});
     await page.goto(env.core.url);
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     await expect(input).toBeVisible();
     for (const [i, name] of ["preview.jpg", "preview.mp4", "preview.wav"].entries()) {
       await input.fill(name);

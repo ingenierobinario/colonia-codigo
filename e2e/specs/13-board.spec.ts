@@ -161,7 +161,7 @@ test("the board is ordered from the grip, takes the full width, and both stay af
     await expect(drawer.frameLocator("iframe").getByText("Primero")).toBeVisible();
     // A new session for the widget starts with its name ready in the composer.
     await drawer.getByRole("button", { name: "Nueva sesión para este widget" }).click();
-    await expect(drawer.getByRole("textbox")).toHaveValue(/Seguí editando el widget «Primero» \(nombre: board-a\)/);
+    await expect(drawer.getByRole("textbox")).toHaveValue(/Sigue editando el widget «Primero» \(nombre: board-a\)/);
     await page.keyboard.press("Escape");
     await expect(drawer).toBeHidden();
   } finally {
@@ -189,8 +189,8 @@ test("a widget of another project is copied onto this board, and a new one is as
   await page.getByRole("menuitem", { name: "Pedir un widget nuevo a…" }).hover();
   await page.getByRole("menuitem", { name: /super-agente/ }).click();
   const drawer = page.getByRole("complementary", { name: "Chat del widget Widget nuevo" });
-  await expect(drawer.getByText("El widget aparece acá apenas el agente lo haga.")).toBeVisible();
-  await expect(drawer.getByRole("textbox")).toHaveValue(/Haceme un widget para el tablero de este proyecto/);
+  await expect(drawer.getByText("El widget aparece aquí en cuanto el agente lo haga.")).toBeVisible();
+  await expect(drawer.getByRole("textbox")).toHaveValue(/Hazme un widget para el tablero de este proyecto/);
   await page.keyboard.press("Escape");
 
   const copies = (await rpc<{ surfaces: Array<{ id: string; title: string }> }>("surfaces.list", {})).surfaces;
@@ -205,7 +205,7 @@ test("the board's dashed tile asks an agent for a new widget, picked by its blob
   await board.getByRole("button", { name: "Crear", exact: true }).click();
   await board.getByRole("button", { name: /super-agente/ }).click();
   const drawer = page.getByRole("complementary", { name: "Chat del widget Widget nuevo" });
-  await expect(drawer.getByRole("textbox")).toHaveValue(/Haceme un widget para el tablero de este proyecto/);
+  await expect(drawer.getByRole("textbox")).toHaveValue(/Hazme un widget para el tablero de este proyecto/);
   await page.keyboard.press("Escape");
   await board.getByRole("button", { name: "Cargar", exact: true }).click();
   await expect(page.getByRole("menuitem", { name: "Copiar de otro proyecto" })).toBeVisible();

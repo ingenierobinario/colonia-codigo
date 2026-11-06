@@ -210,7 +210,7 @@ test("background failures and unsupported notifications stay silent; drag mode n
   const drag = harness({ mode: "drag", es: true });
   drag.menu.found({ ...initial, latest: "2.1.0" });
   assert.equal(drag.counts().installs, 0);
-  assert.equal(notices[0]?.options.body, "Salió Colonia 2.1.0. Abrí Colonia para actualizar.");
+  assert.equal(notices[0]?.options.body, "Salió Colonia 2.1.0. Abre Colonia para actualizar.");
   assert.equal(notices[0]?.listener, undefined);
 });
 

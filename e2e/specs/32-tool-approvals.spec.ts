@@ -90,7 +90,7 @@ test("chat offers once, session and always; session lets later calls proceed wit
     title: "Permisos MCP",
   });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill("read MCP twice");
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill("read MCP twice");
   await page.keyboard.press("Enter");
   const card = page.locator(".inputcard.is-pending");
   await expect(card.getByRole("button", { name: "Aceptar una vez" })).toBeVisible();
@@ -98,7 +98,7 @@ test("chat offers once, session and always; session lets later calls proceed wit
   await card.getByRole("button", { name: "Aceptar durante esta sesión" }).click();
   await expect(card).toBeHidden();
   await expect(page.locator(".inputline")).toContainText("Esta sesión");
-  await page.getByRole("textbox", { name: /Escribile/ }).fill("read MCP twice again");
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill("read MCP twice again");
   await page.keyboard.press("Enter");
   await expect(page.locator(".transcript").getByText("Got it: read MCP twice again", { exact: true })).toBeVisible();
   await expect(card).toBeHidden();
@@ -117,7 +117,7 @@ test("a file edit waiting for the owner shows its patch across the chat's width"
     title: "Patch",
   });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill("edit the agents file");
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill("edit the agents file");
   await page.keyboard.press("Enter");
   const card = page.locator(".inputcard.is-pending.has-change");
   await expect(card.locator(".inputcard__path")).toHaveText("AGENTS.md");

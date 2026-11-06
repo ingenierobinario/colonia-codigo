@@ -1,6 +1,6 @@
 ---
 title: Colonia en un servidor
-description: Instalá el core en un VPS o en un servidor de tu casa sin escritorio, dejalo corriendo como servicio, llegá por Tailscale o por tu red y conectá tus dispositivos.
+description: Instala el core en un VPS o en un servidor de tu casa sin escritorio, déjalo corriendo como servicio, llega por Tailscale o por tu red y conecta tus dispositivos.
 sidebar:
   order: 3
 ---
@@ -8,8 +8,8 @@ sidebar:
 import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 import Terminal from "../../../../components/Terminal.astro";
 
-El core anda perfecto solo. Ponelo en un VPS chico o en una compu que esté siempre prendida, y tus agentes siguen
-trabajando (rutinas, canales, tareas) mientras tu notebook duerme. La app de escritorio y tu teléfono se conectan a él.
+El core funciona perfectamente solo. Ponlo en un VPS pequeño o en un ordenador que esté siempre encendido, y tus agentes siguen
+trabajando (rutinas, canales, tareas) mientras tu portátil duerme. La app de escritorio y tu teléfono se conectan a él.
 
 Nada de esto necesita root, y el servidor no necesita tener Node instalado: el paquete trae el suyo.
 
@@ -18,19 +18,19 @@ Nada de esto necesita root, y el servidor no necesita tener Node instalado: el p
 <Tabs>
 <TabItem label="Linux y macOS">
 
-Corrélo en el servidor (se instala donde se corre), por SSH:
+Ejecútalo en el servidor (se instala donde se ejecuta), por SSH:
 
 ```bash
 curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --server
 ```
 
-O desde tu propia computadora en una sola línea, también desde PowerShell en Windows:
+O desde tu propio ordenador en una sola línea, también desde PowerShell en Windows:
 
 ```bash
 ssh usuario@servidor 'curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --server'
 ```
 
-Opciones: `--file <paquete>` (un paquete que ya tenés, sin descargar), `--version <x.y.z>`, `--feed <owner/repo>`,
+Opciones: `--file <paquete>` (un paquete que ya tienes, sin descargar), `--version <x.y.z>`, `--feed <owner/repo>`,
 `--no-service`, `--uninstall`. Por el pipe van después de `bash -s --`, por ejemplo
 `curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --no-service`.
 
@@ -57,11 +57,11 @@ Cambiar conexión):
 
 <Steps>
 
-1. Elegí **Cliente**, después **SSH**, y escribí `usuario@servidor`. Usa tu propio `ssh` y tus claves.
+1. Elige **Cliente**, después **SSH**, y escribe `usuario@servidor`. Usa tu propio `ssh` y tus claves.
 
 2. Si Colonia todavía no está en ese servidor, la app te lo dice y te ofrece **Instalarlo por mí** (o **Instalarlo a
    mano**, que te muestra el comando). Manda el mismo `install.sh` por SSH e instala la versión de la propia app.
-   Funciona en servidores Linux y macOS; en Windows, instalalo a mano.
+   Funciona en servidores Linux y macOS; en Windows, instálalo a mano.
 
 3. En Linux después te pide que Colonia siga corriendo cuando te desconectes, un paso que necesita al administrador del
    servidor: **Hacerlo por mí** te pide la contraseña de sudo (va directo a `sudo` por SSH y no se guarda), o **Lo
@@ -79,7 +79,7 @@ Qué hace el script:
   corría antes queda hasta la próxima actualización.
 - Escribe el comando `colonia` en `~/.local/bin` (y suma esa carpeta al archivo de arranque de tu shell si no estaba en el
   `PATH`).
-- Si tenés Colonia v1 instalado, frena su daemon y saca su comando `colonia`. Sus archivos en `~/.colonia` quedan, para que puedas
+- Si tienes Colonia v1 instalado, frena su daemon y saca su comando `colonia`. Sus archivos en `~/.colonia` quedan, para que puedas
   importarlos.
 - Arranca el core como servicio, salvo que hayas pasado `--no-service`.
 
@@ -93,7 +93,7 @@ Un solo comando termina de preparar el servidor:
 colonia setup --headless --expose tailscale     # o --expose lan
 ```
 
-Sumá `--import` (con `--keys`, `--skills` y `--services` si los querés) para traer los proyectos y agentes de un Colonia v1
+Suma `--import` (con `--keys`, `--skills` y `--services` si los quieres) para traer los proyectos y agentes de un Colonia v1
 en la misma máquina.
 
 Corre, en orden, los mismos pasos que podrías hacer a mano:
@@ -114,8 +114,8 @@ Corre, en orden, los mismos pasos que podrías hacer a mano:
 
 </Steps>
 
-<Aside type="caution" title="Linux: que siga corriendo cuando cerrás sesión">
-Un servicio de usuario de systemd se frena cuando cerrás tu sesión en el servidor. Activá el linger una vez (necesita
+<Aside type="caution" title="Linux: que siga corriendo cuando cierras sesión">
+Un servicio de usuario de systemd se frena cuando cierras tu sesión en el servidor. Activa el linger una vez (necesita
 `sudo`). El instalador lo hace solo cuando sudo no pide contraseña; si no, te muestra esta línea, con tu usuario:
 
 ```bash
@@ -123,7 +123,7 @@ sudo loginctl enable-linger <usuario>
 ```
 </Aside>
 
-Revisalo cuando quieras:
+Revísalo cuando quieras:
 
 <Terminal command="colonia service status">{`service  systemd: active
 core     answers on http://127.0.0.1:7440`}</Terminal>
@@ -136,30 +136,30 @@ En Linux, el log del core está en el journal: `journalctl --user -u colonia -f`
 Por defecto el core solo le responde a su propia máquina. `colonia expose` cambia eso:
 
 Loopback impide el acceso directo desde Internet; no separa a los usuarios del mismo sistema operativo. Sin token,
-un proceso local puede controlar el core. En un servidor compartido, usá una cuenta dedicada y autenticación.
+un proceso local puede controlar el core. En un servidor compartido, usa una cuenta dedicada y autenticación.
 Colonia administra una crew del mismo dueño: vincular un dispositivo concede acceso de operador, no acceso de invitado.
 
 | Comando | Qué hace |
 |---|---|
 | `colonia expose tailscale` | Deja el core en `127.0.0.1` y lo publica con `tailscale serve` en `https://<machine>.<tailnet>.ts.net`, alcanzable solo desde tu tailnet. |
 | `colonia expose lan` | Hace que el core escuche en todas las direcciones (`COLONIA_HOST=0.0.0.0`), por ejemplo `http://192.168.1.20:7440`. |
-| `colonia expose off` | Vuelve a solo esta compu. El token queda. |
+| `colonia expose off` | Vuelve a solo este ordenador. El token queda. |
 | `colonia expose status` | Qué está en vigor, el puerto, si hay token y dónde está el archivo de configuración. |
 
-Tanto `tailscale` como `lan` crean un token para el core si no tiene, y lo muestran una sola vez. Después reiniciá el
+Tanto `tailscale` como `lan` crean un token para el core si no tiene, y lo muestran una sola vez. Después reinicia el
 core (`colonia service restart`) para que lea el cambio.
 
 <Aside type="tip" title="¿Tailscale o red local?">
-Para un VPS, elegí **Tailscale**. El core nunca escucha en una dirección pública, el tráfico va por https y solo los
+Para un VPS, elige **Tailscale**. El core nunca escucha en una dirección pública, el tráfico va por https y solo los
 equipos de tu tailnet pueden llegar. Tailscale tiene que estar instalado y con la sesión iniciada en el servidor, con
-MagicDNS prendido; si `tailscale serve` falla, puede que tengas que habilitar HTTPS para tu tailnet en el panel de
+MagicDNS activado; si `tailscale serve` falla, puede que tengas que habilitar HTTPS para tu tailnet en el panel de
 administración de Tailscale.
 
-**Red local** es http sin cifrar en todas las direcciones de la máquina. Usala solo en una red en la que confíes (tu
-casa, tu oficina), o poné tu propio proxy con TLS adelante. Nunca en un servidor con IP pública.
+**Red local** es http sin cifrar en todas las direcciones de la máquina. Úsala solo en una red en la que confíes (tu
+casa, tu oficina), o pon tu propio proxy con TLS delante. Nunca en un servidor con IP pública.
 
-En cualquiera de los dos casos, cada pedido de afuera necesita el token del core o la llave de un dispositivo
-vinculado. El core se niega a escuchar en una dirección que no sea loopback sin `COLONIA_TOKEN`, y rechaza un pedido que
+En cualquiera de los dos casos, cada petición de fuera necesita el token del core o la llave de un dispositivo
+vinculado. El core se niega a escuchar en una dirección que no sea loopback sin `COLONIA_TOKEN`, y rechaza una petición que
 llega a través de un proxy cuando no tiene token.
 </Aside>
 
@@ -168,7 +168,7 @@ que está corriendo, como hace el panel en **Configuración › Conexiones › D
 
 ### core.env y el token
 
-`colonia expose` escribe `<home>/core.env` (`~/.colonia/v2/core.env`, salvo que `COLONIA_HOME` diga otra cosa), que solo vos podés
+`colonia expose` escribe `<home>/core.env` (`~/.colonia/v2/core.env`, salvo que `COLONIA_HOME` diga otra cosa), que solo tú puedes
 leer (modo 600). Solo puede definir estas claves: `COLONIA_HOST`, `COLONIA_PORT`, `COLONIA_TOKEN`, `COLONIA_PUBLIC_URL`,
 `COLONIA_ALLOWED_ORIGINS`. Después de `colonia expose tailscale` queda así:
 
@@ -179,12 +179,12 @@ COLONIA_PUBLIC_URL=https://<machine>.<tailnet>.ts.net
 ```
 
 Las variables de entorno del proceso le ganan al archivo. El comando `colonia` y la app de escritorio en la misma máquina
-leen el token de acá solos, así que no tenés que copiarlo a ningún lado. Los otros dispositivos nunca lo reciben: se
+leen el token de aquí solos, así que no tienes que copiarlo a ningún lado. Los otros dispositivos nunca lo reciben: se
 vinculan.
 
 ## 4. Conectar tus dispositivos
 
-Corré `colonia pair` en el servidor cada vez que necesites un código (sirve una vez, por 10 minutos).
+Ejecuta `colonia pair` en el servidor cada vez que necesites un código (sirve una vez, por 10 minutos).
 
 <Terminal command="colonia pair">{`Pairing code: ABCD2345
 Expires at 10:40:00 (in about 10 min)
@@ -195,23 +195,23 @@ Addresses a device may reach this core on:
 In the Colonia app, open Pair and paste the link, or enter an address and the code:
   colonia://pair?c=ABCD2345&u=https%3A%2F%2F<machine>.<tailnet>.ts.net`}</Terminal>
 
-- **App de escritorio**: en el primer arranque elegí **Cliente**, y después **Dirección** (la de Tailscale o la de la
+- **App de escritorio**: en el primer arranque elige **Cliente**, y después **Dirección** (la de Tailscale o la de la
   red local; el panel te pide el código) o **SSH** (`usuario@servidor`). SSH usa tus propias claves y trae el core a tu
-  compu, así que anda aunque el servidor no esté expuesto a nadie. Detalles en [App de escritorio](/es/devices/desktop/).
-- **Teléfono**: escaneá el QR desde el panel, pegá el enlace `colonia://pair` en la app de Colonia, o abrí la dirección en el
-  navegador del teléfono y escribí el código. Mirá [Tu teléfono](/es/devices/phone/).
-- **Un navegador en otra compu**: abrí la dirección del core (la de Tailscale, o la de la red local, como
-  `http://192.168.1.20:7440`). El panel te pide **Vinculá este dispositivo**: escribí un código de `colonia pair` (o de
+  ordenador, así que funciona aunque el servidor no esté expuesto a nadie. Detalles en [App de escritorio](/es/devices/desktop/).
+- **Teléfono**: escanea el QR desde el panel, pega el enlace `colonia://pair` en la app de Colonia, o abre la dirección en el
+  navegador del teléfono y escribe el código. Mira [Tu teléfono](/es/devices/phone/).
+- **Un navegador en otro ordenador**: abre la dirección del core (la de Tailscale, o la de la red local, como
+  `http://192.168.1.20:7440`). El panel te pide **Vincula este dispositivo**: escribe un código de `colonia pair` (o de
   **Configuración › Conexiones › Dispositivos › Vincular un dispositivo** en un dispositivo ya vinculado), y ese
-  navegador se guarda su propia llave. No hay que instalar nada en esa compu.
+  navegador se guarda su propia llave. No hay que instalar nada en ese ordenador.
 
-Cada dispositivo tiene su propia llave. Revocá uno con `colonia devices revoke <id>` o en **Configuración › Conexiones ›
+Cada dispositivo tiene su propia llave. Revoca uno con `colonia devices revoke <id>` o en **Configuración › Conexiones ›
 Dispositivos**.
 
-Instalar Colonia en el VPS por una terminal SSH no registra tu computadora como nodo. La app de escritorio conectada
+Instalar Colonia en el VPS por una terminal SSH no registra tu ordenador como nodo. La app de escritorio conectada
 por SSH sí presta su navegador al core mientras mantiene esa conexión. El control de pantalla, teclado y mouse
-requiere activar **Uso de la computadora**. Al cambiar conexión o cerrar la app, deja de prestar esas capacidades.
-Abrir una dirección del servidor en un navegador no presta automáticamente las capacidades de tu computadora.
+requiere activar **Uso del ordenador**. Al cambiar conexión o cerrar la app, deja de prestar esas capacidades.
+Abrir una dirección del servidor en un navegador no presta automáticamente las capacidades de tu ordenador.
 
 ## Actualizaciones
 
@@ -227,7 +227,7 @@ colonia upgrade --check     # ¿hay un Colonia más nuevo?
 colonia upgrade             # aplicarlo
 ```
 
-Volver a correr el script de instalación también instala la versión más nueva. `COLONIA_UPDATES=off` frena los chequeos;
+Volver a correr el script de instalación también instala la versión más nueva. `COLONIA_UPDATES=off` frena las comprobaciones;
 `COLONIA_RELEASES=<owner/repo>` los apunta a otro origen (`off` también los frena).
 
 ## Desinstalar
@@ -236,12 +236,12 @@ Volver a correr el script de instalación también instala la versión más nuev
 curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --uninstall
 ```
 
-Frena el servicio y borra `~/.colonia/v2/app` y el comando `colonia`; tus datos en `~/.colonia/v2` quedan. En Windows, guardá
-`install.ps1` y correlo con `-Uninstall` ([Desinstalar](/es/start/install/#desinstalar)).
+Frena el servicio y borra `~/.colonia/v2/app` y el comando `colonia`; tus datos en `~/.colonia/v2` quedan. En Windows, guarda
+`install.ps1` y ejecútalo con `-Uninstall` ([Desinstalar](/es/start/install/#desinstalar)).
 
 ## Desde el código, en cambio
 
-En una máquina donde trabajás en Colonia:
+En una máquina donde trabajas en Colonia:
 
 ```bash
 pnpm install

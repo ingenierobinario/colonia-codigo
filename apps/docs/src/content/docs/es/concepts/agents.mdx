@@ -1,6 +1,6 @@
 ---
 title: Agentes
-description: Quién trabaja para vos en Colonia, cómo cada agente es un archivo markdown y cómo se pasan el trabajo entre ellos.
+description: Quién trabaja para ti en Colonia, cómo cada agente es un archivo markdown y cómo se pasan el trabajo entre ellos.
 sidebar:
   order: 1
 ---
@@ -12,7 +12,7 @@ import Blob from "../../../../components/Blob.astro";
 
 
 Un agente es alguien de tu equipo: un nombre, una cara, un rol, unas instrucciones y las herramientas que puede usar.
-Algunos trabajan con vos en todos lados, otros pertenecen a un proyecto, y otros existen para un solo encargo y
+Algunos trabajan contigo en todas partes, otros pertenecen a un proyecto, y otros existen para un solo encargo y
 después desaparecen.
 
 <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap", alignItems: "center", margin: "1.5rem 0" }}>
@@ -28,8 +28,8 @@ después desaparecen.
 
 <CardGrid>
   <Card title="Home, la secretaria" icon="star">
-    Tu agente principal. Le ponés nombre y cara durante la configuración. Su chat es **Home**: una sola conversación
-    que te sigue a todos los canales. Sabe quién sos, le delega al resto del equipo y no se puede borrar.
+    Tu agente principal. Le pones nombre y cara durante la configuración. Su chat es **Home**: una sola conversación
+    que te sigue a todos los canales. Sabe quién eres, le delega al resto del equipo y no se puede borrar.
   </Card>
   <Card title="Agentes de proyecto" icon="document">
     Viven en la carpeta `.apc/agents/` de un proyecto, un archivo markdown cada uno. Leen el `AGENTS.md` del proyecto,
@@ -40,21 +40,21 @@ después desaparecen.
   </Card>
   <Card title="Ayudantes" icon="rocket">
     Ayudantes descartables que un agente arranca para un trabajo puntual (una búsqueda larga, una revisión). Usan el
-    modelo y las herramientas de quien los llamó, reportan y chau.
+    modelo y las herramientas de quien los llamó, reportan y listo.
   </Card>
 </CardGrid>
 
 ## Blobos
 
 Cada agente tiene una cara: un **blobo**. Hay 35 (menta, orbita, cobalto, brasa, amatista, perla, noche, kiwi…). Sus
-ojos siguen tu puntero, acá y en la app. Home recibe su cara durante la configuración; para cualquier otro agente, lo
-escribís en su archivo como `icon:` o lo definís con `colonia agents set <agent> blob=…`.
+ojos siguen tu puntero, aquí y en la app. Home recibe su cara durante la configuración; para cualquier otro agente, lo
+escribes en su archivo como `icon:` o lo defines con `colonia agents set <agent> blob=…`.
 
 ## Un agente es un archivo markdown
 
 Un agente de proyecto es `.apc/agents/<slug>.md`: un bloque de frontmatter con sus campos y después un cuerpo con sus
-instrucciones. El archivo manda. Colonia vigila `.apc/`, así que un cambio guardado aparece en la app al toque, y lo que
-cambiás en la app se escribe en el mismo archivo.
+instrucciones. El archivo manda. Colonia vigila `.apc/`, así que un cambio guardado aparece en la app al instante, y lo que
+cambias en la app se escribe en el mismo archivo.
 
 Esta es Lucía, la product manager de Acme Store:
 
@@ -91,20 +91,20 @@ and follow up until they close. When a decision needs the owner, ask once, clear
 | `emoji` | Un emoji opcional que se guarda con el agente (los archivos de otras herramientas suelen traer uno). |
 | `parent` | El agente al que reporta, por su slug (o su id completo). Si no está, reporta a Home. |
 | `area` | El área a la que pertenece, para el organigrama (`product`, `engineering`…). |
-| `autonomy` | Su modo de permisos: `manual`, `auto` (por defecto), `accept_edits`, `plan` o `total`. Mirá [Autonomía y seguridad](/es/concepts/autonomy/). |
+| `autonomy` | Su modo de permisos: `manual`, `auto` (por defecto), `accept_edits`, `plan` o `total`. Mira [Autonomía y seguridad](/es/concepts/autonomy/). |
 | `personality` | Cómo suena, aparte de lo que hace. Hasta 1.000 caracteres. |
 | `orchestrator` | `true` marca a un agente que lidera a los que le reportan. Sin `parent`, encabeza todo el equipo: va arriba del organigrama y recibe primero el trabajo del proyecto; con `parent`, lidera sólo su subequipo (con la etiqueta **Líder de equipo**). `false` dice que no lo es, sugiera lo que sugiera su rol; si nadie sin parent está marcado, se adivina entre los que no tienen parent por el rol (orquestador, CEO, lead), o es el único. |
 | `rules` | Su propia regla por tipo de acción, por encima de su autonomía: `read`, `write`, `outside` o `irreversible`, cada una `auto`, `ask` u `off` (`rules: write=auto, outside=ask`). Un tipo que no aparece sigue a la autonomía. |
 | `tools` | Limita al agente a esas herramientas o grupos. Sin este campo, tiene todas. |
 | `skills` | Limita qué skills se le ofrecen. Sin este campo, todas. |
-| `aliases` | Slugs viejos. Renombrás el archivo, ponés acá el slug anterior y el agente conserva sus chats. |
+| `aliases` | Slugs viejos. Renombras el archivo, pones aquí el slug anterior y el agente conserva sus chats. |
 | `model` | `engine:model`, como lo escribía Colonia v1. Se lee cuando el agente aparece por primera vez; después, el modelo se cambia desde la app o con `colonia agents model`. `inherit` es el modelo por defecto de la instalación. |
 
-El cuerpo son las instrucciones propias del agente. Escribilo como una nota para alguien que recién entra: qué le
+El cuerpo son las instrucciones propias del agente. Escríbelo como una nota para alguien que recién entra: qué le
 toca, cómo trabaja, qué no tiene que hacer nunca solo.
 
-**Grupos de herramientas** que podés nombrar en `tools:`: `browser`, `widgets`, `agents` (listar agentes, delegar,
-dar una herramienta), `shell`, `files`, `mcp`, `memory`, `images`, `tasks`. También podés nombrar herramientas
+**Grupos de herramientas** que puedes nombrar en `tools:`: `browser`, `widgets`, `agents` (listar agentes, delegar,
+dar una herramienta), `shell`, `files`, `mcp`, `memory`, `images`, `tasks`. También puedes nombrar herramientas
 sueltas. Algunas quedan siempre, diga lo que diga la lista, porque sólo leen o te preguntan: leer una salida,
 hacerte una pregunta, cargar una skill y buscar en las notas.
 
@@ -119,46 +119,46 @@ hacerte una pregunta, cargar una skill y buscar en las notas.
   <TabItem label="Panel">
 <Steps>
 
-1. Abrí un proyecto y andá a la pestaña **Agentes**.
-2. Tocá **Agente** para escribir uno nuevo, o **Importar** para instalar una plantilla (más abajo).
-3. Ponele nombre, rol, descripción e instrucciones, y tocá **Crear agente**. Colonia escribe el archivo en `.apc/agents/` del
+1. Abre un proyecto y ve a la pestaña **Agentes**.
+2. Toca **Agente** para escribir uno nuevo, o **Importar** para instalar una plantilla (más abajo).
+3. Ponle nombre, rol, descripción e instrucciones, y toca **Crear agente**. Colonia escribe el archivo en `.apc/agents/` del
    proyecto.
-4. Tocá el nombre de cualquier agente en la cabecera de un chat para abrir su panel lateral: rol, a quién reporta,
+4. Toca el nombre de cualquier agente en la cabecera de un chat para abrir su panel lateral: rol, a quién reporta,
    autonomía, modelo, perfil del navegador y sus números.
-5. Tocá el lápiz para editar el agente entero: identidad (elegí un área y un rol del proyecto o creá uno; las áreas
-   existen sólo en proyectos de tipo empresa), prompt, modelo y equipo (marcalo como **Orquestador**), las tools y
+5. Toca el lápiz para editar el agente entero: identidad (elige un área y un rol del proyecto o crea uno; las áreas
+   existen sólo en proyectos de tipo empresa), prompt, modelo y equipo (márcalo como **Orquestador**), las tools y
    skills que puede usar (cada lista tiene buscador), su autonomía, sus **reglas por caso**, lo que le **concediste**
-   para siempre (limitá un permiso a ciertas rutas o dominios, o ponele vencimiento) y su perfil del navegador. El
+   para siempre (limita un permiso a ciertas rutas o dominios, o ponle vencimiento) y su perfil del navegador. El
    menú del clic derecho del agente también tiene **Orquestador**, con una corona.
 
 </Steps>
 
 <Shot name="team" alt="La pestaña Agents de Acme Store en vista Hierarchy: Lucía arriba, con Tomás, Vera y Desk debajo" caption="Agentes › Jerarquía" />
 
-<Shot name="agent-panel" alt="El panel lateral de Lucía abierto junto a su chat, con su rol, autonomía y modelo" caption="Tocá el nombre de un agente en un chat para abrir su panel" />
+<Shot name="agent-panel" alt="El panel lateral de Lucía abierto junto a su chat, con su rol, autonomía y modelo" caption="Toca el nombre de un agente en un chat para abrir su panel" />
 
-Si creás un agente desde el proyecto base, queda como agente global: trabaja en cualquier proyecto.
+Si creas un agente desde el proyecto base, queda como agente global: trabaja en cualquier proyecto.
   </TabItem>
   <TabItem label="Terminal">
-Listá el equipo y el modelo de cada agente (★ marca a Home):
+Lista el equipo y el modelo de cada agente (★ marca a Home):
 
 <Terminal command="colonia agents">{`nova                         ★ Nova             default                      personal secretary
 3f9a1c0d7e21-lucia             Lucía            router                       Product manager
 3f9a1c0d7e21-tomas             Tomás            default                      Developer`}</Terminal>
 
-Creá uno. Con `--project` va a `.apc/agents/` de ese proyecto; sin eso, queda como agente global:
+Crea uno. Con `--project` va a `.apc/agents/` de ese proyecto; sin eso, queda como agente global:
 
 <Terminal command={'colonia agents new vera "Vera" --project p_3f9a1c0d7e21 --role "Marketing"'}>{`Vera (3f9a1c0d7e21-vera) · written to .apc/agents/`}</Terminal>
 
-Cambiá campos con pares `clave=valor` (`name`, `role`, `slug`, `parent`, `blob`):
+Cambia campos con pares `clave=valor` (`name`, `role`, `slug`, `parent`, `blob`):
 
 <Terminal command="colonia agents set 3f9a1c0d7e21-vera parent=lucia blob=cobalto">{`Vera (3f9a1c0d7e21-vera) · vera · Marketing`}</Terminal>
 
-Archivá uno. Su archivo pasa a `.apc/agents/.archived/` (nunca se borra) y sus chats quedan:
+Archiva uno. Su archivo pasa a `.apc/agents/.archived/` (nunca se borra) y sus chats quedan:
 
 <Terminal command="colonia agents archive 3f9a1c0d7e21-vera">{`archived; file moved to ~/work/acme-store/.apc/agents/.archived/vera.md`}</Terminal>
 
-Elegí su modelo (mirá [Modelos y motores](/es/concepts/models/)):
+Elige su modelo (mira [Modelos y motores](/es/concepts/models/)):
 
 <Terminal command="colonia agents model 3f9a1c0d7e21-lucia gemini/gemini-3.8-flash --router">{`Lucía: gemini/gemini-3.8-flash → router`}</Terminal>
   </TabItem>
@@ -172,7 +172,7 @@ Finder. Una carpeta con `TEAM.md` es un equipo: el de producto (un orquestador, 
 QA…) o el ejecutivo, que además trae sus rutinas semanales.
 
 Instalar copia el archivo tal cual en `.apc/agents/`. Sólo puede cambiar `parent`, para colgar al líder del equipo
-debajo del orquestador que el proyecto ya tiene. Un slug que el proyecto ya usa se saltea, nunca se pisa.
+debajo del orquestador que el proyecto ya tiene. Un slug que el proyecto ya usa se salta, nunca se pisa.
 
 ## El organigrama
 
@@ -184,7 +184,7 @@ La pestaña **Agentes** dibuja tu equipo de dos maneras:
 <Shot name="org" alt="La vista Areas and roles: áreas Product, Engineering y Growth con sus roles y agentes" caption="Agentes › Áreas y roles" />
 
 Las áreas y roles son para empresas: viven en `.apc/organization.json` (hasta 40 áreas y 200 roles), y el tipo del
-proyecto pasa a **Empresa** cuando los agregás. Los agentes los leen, así Lucía sabe que Growth es de Vera.
+proyecto pasa a **Empresa** cuando los añades. Los agentes los leen, así Lucía sabe que Growth es de Vera.
 
 ```json title=".apc/organization.json"
 {
@@ -201,13 +201,13 @@ proyecto pasa a **Empresa** cuando los agregás. Los agentes los leen, así Luc�
 
 ## Delegar
 
-Un agente con la herramienta `delegate` puede pasarle una tarea a un agente fijo ("pedile a Tomás que arregle el
+Un agente con la herramienta `delegate` puede pasarle una tarea a un agente fijo ("pídele a Tomás que arregle el
 checkout") o arrancar un **ayudante**: alguien que define en el momento con un nombre, instrucciones y, si quiere, una
 lista más corta de herramientas. El ayudante usa el modelo de quien lo llamó, no tiene personalidad ni conoce al
 resto del equipo, no le pregunta a nadie más y reporta.
 
 La respuesta vuelve en el mismo turno si es rápida, o más tarde como un turno nuevo que despierta a quien la pidió. El
-chat muestra una tarjeta con el avance, el informe completo (plegado hasta que lo abrís) y cuánto tardó.
+chat muestra una tarjeta con el avance, el informe completo (plegado hasta que lo abres) y cuánto tardó.
 
 Colonia mantiene la delegación con correa:
 
@@ -217,7 +217,7 @@ Colonia mantiene la delegación con correa:
 | Delegaciones a la vez desde un chat | 3 |
 | Tiempo que una delegación puede pasar sin avanzar | 6 minutos; un comando que sigue corriendo cuenta como avance |
 | Tiempo que puede trabajar una sola delegación, avance o no | 2 horas |
-| Turnos que los agentes arrancan solos sin vos | Sin límite por defecto: terminan lo que les pediste. Si prendés **Poner límites** en **Cuando los agentes trabajan solos** (arranca en 100 turnos o 5.000.000 tokens nuevos; lo leído de la caché no cuenta), la cadena se pausa ahí hasta que escribas |
+| Turnos que los agentes arrancan solos sin ti | Sin límite por defecto: terminan lo que les pediste. Si activas **Poner límites** en **Cuando los agentes trabajan solos** (arranca en 100 turnos o 5.000.000 tokens nuevos; lo leído de la caché no cuenta), la cadena se pausa ahí hasta que escribas |
 
 Una delegación que se queda sin pasos o sin tiempo no se pierde. Lo que reportó es un informe de avance, no un
 resultado, y Colonia la hace seguir en la misma sesión, que conserva su contexto: siempre una vez, y después de nuevo cada
@@ -241,15 +241,15 @@ delegación.
 
 ## Una sola forma de hablarle a un agente
 
-Todo lo que le habla a un agente entra por la misma puerta: vos en el panel, la CLI `colonia`, un mensaje de un canal,
-una rutina, un widget, una app de afuera y los agentes entre sí. Por eso el trabajo entre agentes aparece en tus chats
+Todo lo que le habla a un agente entra por la misma puerta: tú en el panel, la CLI `colonia`, un mensaje de un canal,
+una rutina, un widget, una app de fuera y los agentes entre sí. Por eso el trabajo entre agentes aparece en tus chats
 como cualquier otro turno, y por eso sus límites y aprobaciones no se pueden saltear.
 
 <Terminal command={'colonia chat "¿En qué está Tomás?" --agent 3f9a1c0d7e21-lucia'}>{`Tomás tiene en curso el rediseño del checkout y el arreglo de las fotos del catálogo en revisión.`}</Terminal>
 
-Sin `--agent`, le hablás a Home.
+Sin `--agent`, le hablas a Home.
 
-## Seguí por acá
+## Sigue por aquí
 
 <CardGrid>
   <LinkCard title="Proyectos" description="La carpeta .apc/ donde viven los agentes." href="/es/concepts/projects/" />

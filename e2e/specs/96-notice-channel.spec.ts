@@ -16,7 +16,7 @@ test("the owner keeps the super-agent's notices in the app only", async ({ page 
     .first()
     .click();
   const dialog = page.getByRole("dialog", { name: "Configuración" });
-  await expect(dialog.getByText(/La app, en esta compu y en tu teléfono, siempre te avisa/)).toBeVisible();
+  await expect(dialog.getByText(/La app, en este ordenador y en tu teléfono, siempre te avisa/)).toBeVisible();
   const where = dialog.getByRole("combobox", { name: "Por dónde te habla" });
   await where.click();
   await expect(page.getByRole("option", { name: /\(push\)/ })).toHaveCount(0);

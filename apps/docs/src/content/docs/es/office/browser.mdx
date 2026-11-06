@@ -1,6 +1,6 @@
 ---
 title: Navegador
-description: El navegador integrado que manejan tus agentes, sus perfiles, cómo importar tus sesiones, tomar el control y el uso de la computadora en macOS.
+description: El navegador integrado que manejan tus agentes, sus perfiles, cómo importar tus sesiones, tomar el control y el uso del ordenador en macOS.
 sidebar:
   order: 6
 ---
@@ -10,59 +10,59 @@ import Shot from "../../../../components/Shot.astro";
 import Terminal from "../../../../components/Terminal.astro";
 
 Los agentes navegan la web en un navegador de verdad, integrado en la [app de escritorio](/es/devices/desktop/). Ves
-cada página en vivo en el panel lateral **Navegador** del chat, y podés agarrar el volante cuando quieras.
+cada página en vivo en el panel lateral **Navegador** del chat, y puedes tomar el volante cuando quieras.
 
 ## Mirar navegar a un agente
 
 Cuando un agente abre una página, el chat muestra una tarjeta del navegador y el panel lateral **Navegador** sigue la
-pestaña en vivo: "Vera está navegando · proveedor.example.com". Desde el panel podés abrir la pestaña en una ventana
+pestaña en vivo: "Vera está navegando · proveedor.example.com". Desde el panel puedes abrir la pestaña en una ventana
 aparte o en tu propio navegador.
 
-> **Vos:** Vera, compará los precios de envío de nuestros dos correos para una caja de 2 kg a Córdoba.
+> **Tú:** Vera, compara los precios de envío de nuestros dos correos para una caja de 2 kg a Córdoba.
 >
 > **Vera:** Abro los dos cotizadores… El primero sale 4,20 menos, pero el segundo entrega un día antes.
 
 ## Tomar el control
 
-Apretá **Tomar control** en una pestaña y es tuya: hacé clic, escribí, scrolleá. El agente espera. **Devolver** se la
+Pulsa **Tomar control** en una pestaña y es tuya: haz clic, escribe, desplázate. El agente espera. **Devolver** se la
 devuelve.
 
-El agente también te puede pedir que sigas vos. Cuando un sitio pide login, una contraseña, un código 2FA o un
-captcha, el agente te pasa la pestaña ("Vera necesita que sigas vos") y espera hasta 5 minutos mientras terminás.
+El agente también te puede pedir que sigas tú. Cuando un sitio pide login, una contraseña, un código 2FA o un
+captcha, el agente te pasa la pestaña ("Vera necesita que sigas tú") y espera hasta 5 minutos mientras terminas.
 Después sigue desde la página donde la dejaste.
 
 <Aside type="caution" title="Nunca escribe tus contraseñas">
 El navegador integrado se niega a escribir en campos de contraseña, de códigos de un solo uso y de tarjetas, sea cual
-sea la autonomía. Eso siempre te lo pasa a vos. Además, a los agentes se les indica que nunca te pidan contraseñas
+sea la autonomía. Eso siempre te lo pasa a ti. Además, a los agentes se les indica que nunca te pidan contraseñas
 por chat.
 </Aside>
 
 ## Ejecución de JavaScript aprobada
 
 En builds de staging todavía no publicados, el agente puede usar `browser_evaluate` en su pestaña actual de Colonia.
-Pasá una expresión JavaScript en `script`, o un `path` local `.js` con el SHA-256 de sus bytes exactos en `sha256`.
+Pasa una expresión JavaScript en `script`, o un `path` local `.js` con el SHA-256 de sus bytes exactos en `sha256`.
 Se respetan los permisos habituales de carpetas; no se cargan scripts desde URLs. Los chats en VM aceptan solo código
-inline, nunca archivos del host. Para sentencias, usá una IIFE async
+inline, nunca archivos del host. Para sentencias, usa una IIFE async
 que devuelva un valor: `(async () => ({ title: document.title }))()`.
 
 La ejecución requiere confirmación en la app (panel, Desktop o teléfono), incluso en Total; un mensaje recortado en un
-canal no permite aprobarla. Podés elegir **Aceptar una vez**, **Permitir en esta pestaña** o **Durante este turno**.
+canal no permite aprobarla. Puedes elegir **Aceptar una vez**, **Permitir en esta pestaña** o **Durante este turno**.
 El consentimiento temporal permite código nuevo sin otra confirmación: no queda limitado al código de la primera tarjeta.
 Las dos opciones temporales se limitan al mismo agente, conversación y origen exacto aprobado y se pierden al reiniciar
 el core. El permiso por pestaña vence como máximo a los 30 minutos y también termina al cerrarla, navegar o recargar
 (incluso dentro del mismo origen), o al reconectar el navegador. El permiso por turno dura hasta que termine esta
 ejecución, sin un límite de tiempo adicional; no dura toda la conversación. Puede cubrir otras pestañas solo en ese mismo origen exacto. No pasa a otro agente, sesión delegada,
-turno futuro ni rutina. Podés revocar un consentimiento activo sin esperar su vencimiento. Rechazar una tarjeta no
+turno futuro ni rutina. Puedes revocar un consentimiento activo sin esperar su vencimiento. Rechazar una tarjeta no
 concede nada; si terminó el turno que esperaba, hay que pedir una tarjeta nueva. No son permisos globales de herramienta.
-En el panel o Desktop, abrí **Recursos → Permisos activos del navegador** para revisarlos y revocarlos; en el teléfono,
-abrí **Permisos activos del navegador** dentro del chat.
+En el panel o Desktop, abre **Recursos → Permisos activos del navegador** para revisarlos y revocarlos; en el móvil,
+abre **Permisos activos del navegador** dentro del chat.
 
-Pasá el `origin` exacto esperado (por ejemplo,
+Pasa el `origin` exacto esperado (por ejemplo,
 `https://example.com`, sin ruta). La tarjeta muestra pestaña, origen y código completo; se guarda una copia del archivo
-antes de aprobar y se ejecutan esos mismos bytes. Pasá también la referencia `document` del último `browser_snapshot`:
+antes de aprobar y se ejecutan esos mismos bytes. Pasa también la referencia `document` del último `browser_snapshot`:
 se vincula al contexto exacto de Chromium y a su URL, no solo al origen. Navegar, recargar, cambiar la URL o tomar otro
-snapshot invalida esa referencia de documento; tomá uno nuevo y volvé a aprobar salvo que siga vigente un consentimiento
-temporal aplicable. Si cambió el origen, no se evalúa. Revisá todo el código antes de
+snapshot invalida esa referencia de documento; toma uno nuevo y vuelve a aprobar salvo que siga vigente un consentimiento
+temporal aplicable. Si cambió el origen, no se evalúa. Revisa todo el código antes de
 aprobar: JavaScript arbitrario puede leer datos privados o mandar solicitudes con tu sesión iniciada.
 La protección de campos sensibles de la herramienta de escritura **no es un sandbox para JavaScript**. No apruebes código
 que maneje contraseñas, códigos 2FA ni tarjetas. Se mantienen el perfil y el control/handoff de la pestaña. Este método
@@ -71,8 +71,8 @@ no se expone a clientes MCP externos.
 Colonia espera promesas y devuelve texto JSON no confiable (hasta 16.000 caracteres); undefined pasa a null, bigint a texto,
 y los resultados circulares o demasiado grandes fallan. El límite del script es 64.000 caracteres (archivos: bytes).
 Colonia deja de esperar la evaluación de Chromium a los 7 segundos. Un timeout **no cancela ni revierte**:
-timers, solicitudes u otros efectos pueden continuar. Verificá la página antes de reintentar, especialmente un envío.
-Esto agrega una herramienta para agentes, no un panel DevTools ni un puerto de depuración. Desktop debe cargar el build
+timers, solicitudes u otros efectos pueden continuar. Verifica la página antes de reintentar, especialmente un envío.
+Esto añade una herramienta para agentes, no un panel DevTools ni un puerto de depuración. Desktop debe cargar el build
 nuevo compatible; reiniciar solo el core no alcanza.
 
 ## Perfiles
@@ -82,15 +82,15 @@ del propio agente):
 
 | Perfil | Cookies y sesiones |
 |---|---|
-| **Compartido** | Un perfil que comparten todos los agentes que lo usan. Iniciás sesión una vez y les sirve a todos. Es el de siempre. |
+| **Compartido** | Un perfil que comparten todos los agentes que lo usan. Inicias sesión una vez y les sirve a todos. Es el de siempre. |
 | **Aislado** | Un perfil propio de ese agente; nada pasa de un agente a otro. |
 | **Incógnito** | No se guarda nada. No se le pueden importar sesiones. |
 
 ## Importar tus sesiones
 
 Si ya iniciaste sesión en un sitio desde tu propio navegador, no hace falta volver a hacerlo en el de Colonia.
-**Configuración › Navegador** copia tus sesiones al perfil compartido: elegí un navegador de origen (Chrome, Brave,
-Arc, Edge, Zen o Firefox), filtrá los dominios e importá solo los que necesitás. Tu navegador puede pedirte permiso;
+**Configuración › Navegador** copia tus sesiones al perfil compartido: elige un navegador de origen (Chrome, Brave,
+Arc, Edge, Zen o Firefox), filtra los dominios e importa solo los que necesites. Tu navegador puede pedirte permiso;
 los valores nunca salen de tu máquina.
 
 Los agentes también lo pueden pedir. Cuando un sitio pide login, un agente puede pedir usar tu sesión para ese
@@ -124,45 +124,45 @@ colonia browser import <source> <domain,…> [--profile shared|agent:<id>]`}</Te
 `snapshot` lista los elementos de la página con referencias que toman `click` y `type`. `control` define quién tiene
 la pestaña. `cookies` muestra solo cantidades, nunca valores.
 
-Las apps de afuera, como Claude Code, también pueden usar este navegador, con `colonia mcp`. Mirá
+Las apps de afuera, como Claude Code, también pueden usar este navegador, con `colonia mcp`. Mira
 [Clientes externos](/es/extend/outside-clients/).
 
-## Uso de la computadora en macOS
+## Uso del ordenador en macOS
 
 Más allá del navegador, los agentes pueden usar las apps de tu Mac: mirar la ventana que está al frente, hacer clic,
-escribir y apretar teclas. Viene **apagado**.
+escribir y pulsar teclas. Viene **apagado**.
 
-<Shot name="settings-desktop" alt="Configuración, Escritorio: atajo del chat rápido, abrir al iniciar la compu y el interruptor de uso de la computadora con los permisos de Grabación de pantalla y Accesibilidad" caption="Configuración › Escritorio" />
+<Shot name="settings-desktop" alt="Configuración, Escritorio: atajo del chat rápido, abrir al iniciar el ordenador y el interruptor de uso del ordenador con los permisos de Grabación de pantalla y Accesibilidad" caption="Configuración › Escritorio" />
 
 <Steps>
 
-1. Abrí **Configuración › Escritorio** y prendé **Dejar que los agentes usen esta computadora**.
+1. Abre **Configuración › Escritorio** y activa **Dejar que los agentes usen este ordenador**.
 2. Dale a macOS los permisos de **Grabación de pantalla** (para ver la ventana en la que trabaja un agente) y
    **Accesibilidad** (para leer los botones y campos de una ventana, hacer clic y escribir). **Abrir Ajustes del
    Sistema** te lleva ahí.
-3. Pedilo en un chat: "Tomás, abrí la app de la impresora de etiquetas e imprimí las 12 etiquetas de envío de hoy".
+3. Pídelo en un chat: "Tomás, abre la app de la impresora de etiquetas e imprime las 12 etiquetas de envío de hoy".
 
 </Steps>
 
-Mientras un agente usa la computadora, el chat muestra **Lo que ve el agente**, una vista en vivo de la pantalla.
+Mientras un agente usa el ordenador, el chat muestra **Lo que ve el agente**, una vista en vivo de la pantalla.
 
 - Mirar la pantalla te pide OK, y también cada clic, tecla y texto escrito. Con autonomía total no pregunta ninguno.
 - Cada 60 acciones en un mismo turno frena y pregunta si sigue, en cualquier autonomía.
 - Se niega a escribir en campos de contraseña, y a hacer clic donde otra app tapa ese punto.
-- Un clic real espera a que tu mouse esté quieto, así no te pelea el puntero.
+- Un clic real espera a que tu ratón esté quieto, así no te pelea el puntero.
 
 <Aside type="danger" title="Parada de emergencia">
 **Detener** en la vista en vivo, o **⌘⇧Esc** desde cualquier app, corta en el acto todos los turnos que están usando
-la computadora. Volvé a pedirlo cuando quieras.
+el ordenador. Vuelve a pedirlo cuando quieras.
 </Aside>
 
 <Aside type="note">
-Por ahora el uso de la computadora es solo para macOS. Windows y Linux todavía no prestan esa capacidad.
+Por ahora el uso del ordenador es solo para macOS. Windows y Linux todavía no prestan esa capacidad.
 </Aside>
 
 ## Lo que sigue
 
 <CardGrid>
   <LinkCard title="Autonomía y aprobaciones" href="/es/concepts/autonomy/" description="Qué pregunta antes y cómo cambiarlo." />
-  <LinkCard title="App de escritorio" href="/es/devices/desktop/" description="Instalá la app que trae el navegador." />
+  <LinkCard title="App de escritorio" href="/es/devices/desktop/" description="Instala la app que trae el navegador." />
 </CardGrid>

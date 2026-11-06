@@ -22,7 +22,7 @@ test("the owner links their Telegram with the code and talks to the super-agent 
   // While it worked the owner saw "typing…", never a streamed draft (it locked their chat until the answer was done).
   expect(await world.draftsTo(owner.id)).toEqual([]);
   // The owner's own chat with the bot opens beside the list, with what they wrote there.
-  await page.getByRole("button", { name: /^Vos/ }).click();
+  await page.getByRole("button", { name: /^Tú/ }).click();
   await expect(page.getByRole("main").getByText("Remind me to stretch").first()).toBeVisible();
   await expect(page.getByRole("main").getByText("Got it: Remind me to stretch").first()).toBeVisible();
 });

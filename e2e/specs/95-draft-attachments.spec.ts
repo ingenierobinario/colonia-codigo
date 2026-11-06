@@ -6,7 +6,7 @@ test("deleting a chat during upload clears its draft and ignores the late result
   const a = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Deleted upload" });
   const b = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Remaining draft" });
   await open(page, `#thread=${a.id}`);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("Deleted words");
   let release = () => {};
   const held = new Promise<void>((resolve) => {
@@ -78,7 +78,7 @@ for (const width of [412, 1280]) {
     const b = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Other draft" });
     await page.setViewportSize({ width, height: 900 });
     await open(page, `#thread=${a.id}`);
-    const box = page.getByRole("textbox", { name: /^Escribile a/ });
+    const box = page.getByRole("textbox", { name: /^Escríbele a/ });
     await box.fill("Review before sending");
     let uploads = 0;
     let release = () => {};
@@ -158,7 +158,7 @@ test("navigation retains text and documents without resubmitting uploads", async
     title: "Other document draft",
   });
   await open(page, `#thread=${a.id}`);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("Keep this document");
   let uploads = 0;
   page.on("request", (r) => {
@@ -192,7 +192,7 @@ for (const editOrigin of [false, true]) {
     const a = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Retry draft" });
     const b = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Separate draft" });
     await open(page, `#thread=${a.id}`);
-    const box = page.getByRole("textbox", { name: /^Escribile a/ });
+    const box = page.getByRole("textbox", { name: /^Escríbele a/ });
     await box.fill("Retry with this image");
     let uploads = 0;
     page.on("request", (r) => {
@@ -266,7 +266,7 @@ test("removing an uploading image prevents resurrection and reload only preserve
   await rpc("setup.finish");
   const chat = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Discard draft" });
   await open(page, `#thread=${chat.id}`);
-  const box = page.getByRole("textbox", { name: /^Escribile a/ });
+  const box = page.getByRole("textbox", { name: /^Escríbele a/ });
   await box.fill("Text survives reload");
   let release = () => {};
   const held = new Promise<void>((resolve) => {

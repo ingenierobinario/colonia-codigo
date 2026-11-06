@@ -9,7 +9,7 @@ import { Aside } from "@astrojs/starlight/components";
 import Terminal from "../../../../components/Terminal.astro";
 
 Casi todos los problemas se reducen a tres preguntas: ¿el core está corriendo?, ¿este cliente llega a él?, ¿lo deja
-entrar? Empezá por ahí.
+entrar? Empieza por ahí.
 
 ## ¿El core está corriendo, y con qué código?
 
@@ -22,21 +22,21 @@ colonia --version       # la versión y el commit de esta CLI, sin preguntarle a
 colonia service status  # ¿el servicio está instalado, y el core responde?
 ```
 
-Si el commit no es el que esperás (por ejemplo, después de actualizar), el core sigue corriendo el código viejo:
-reinicialo con `colonia service restart`, o cerrá y abrí la app de escritorio. En el panel, **Configuración › Avanzado**
+Si el commit no es el que esperas (por ejemplo, después de actualizar), el core sigue corriendo el código viejo:
+reinícialo con `colonia service restart`, o cierra y abre la app de escritorio. En el panel, **Configuración › Avanzado**
 muestra la misma versión y el `code_sha`.
 
 Si el core no está corriendo, vas a ver:
 
 <Terminal command="colonia status">{`colonia: Core not running: See why and what to do: colonia doctor`}</Terminal>
 
-`colonia doctor` revisa esta computadora sin el core: qué dice el log del core sobre su último arranque, si el servicio
+`colonia doctor` revisa este ordenador sin el core: qué dice el log del core sobre su último arranque, si el servicio
 está instalado y corriendo, y si salió un Colonia más nuevo. Termina con el comando a correr. Si una versión no puede
 arrancar (su log muestra `ERR_MODULE_NOT_FOUND`), `colonia update` la reemplaza aunque el core esté caído, en un Colonia
 instalado con el script de instalación; la app de escritorio se reemplaza bajando la más nueva.
 
-Si no, arrancalo con la app de escritorio, con `colonia service install` (o `colonia service restart` si el servicio ya
-existe), o con `pnpm dev` desde el código. Si arranca y se cae, leé su log.
+Si no, arráncalo con la app de escritorio, con `colonia service install` (o `colonia service restart` si el servicio ya
+existe), o con `pnpm dev` desde el código. Si arranca y se cae, lee su log.
 
 ## Dónde están los logs
 
@@ -46,7 +46,7 @@ en la carpeta `logs` de su home. Una línea JSON por evento; las credenciales qu
 
 | Sistema | El log del core |
 |---|---|
-| macOS | `~/.colonia/v2/logs/core.log` (`/Users/<vos>/.colonia/v2/logs/core.log`) |
+| macOS | `~/.colonia/v2/logs/core.log` (`/Users/<tú>/.colonia/v2/logs/core.log`) |
 | Linux | `~/.colonia/v2/logs/core.log` (el servicio además lo manda a `journalctl --user -u colonia -f`) |
 | Windows | `%USERPROFILE%\.colonia\v2\logs\core.log` |
 
@@ -58,8 +58,8 @@ Tres formas de leerlo:
 - En el panel: **Configuración › Registros** muestra las líneas más nuevas primero, con filtro por nivel, búsqueda y
   la ruta del archivo para copiar.
 - `colonia logs` le pregunta al core (sirve también para un core en un servidor), con `-n 200`, `--level error`,
-  `--grep texto` o `--json`. Si ningún core responde, lee el archivo de esta computadora.
-- `colonia service logs -f` lee el archivo de esta computadora y lo sigue.
+  `--grep texto` o `--json`. Si ningún core responde, lee el archivo de este ordenador.
+- `colonia service logs -f` lee el archivo de este ordenador y lo sigue.
 
 <Terminal command="colonia logs --level error -n 2">{`# ~/.colonia/v2/logs/core.log
 2026-10-15 09:12:03  ERROR  core  channel stopped  {"channel":"acme"}
@@ -74,9 +74,9 @@ viejas siguen ahí.
 ## Una actualización de la app no se instala
 
 Si **Reiniciar ahora** no puede poner la versión nueva, la ventana de actualización dice por qué, o después de un
-minuto avisa que Colonia no se reinició. Salí de Colonia (Cmd+Q en macOS, **Salir de Colonia** desde el ícono de la bandeja en los
-demás) y volvé a abrirlo. En macOS y Linux, una versión ya descargada se instala cuando Colonia se cierra; en Windows,
-elegí **Reiniciar ahora** otra vez cuando esté abierto. Si Colonia no se cierra, forzá la salida (Monitor de Actividad en
+minuto avisa que Colonia no se reinició. Sal de Colonia (Cmd+Q en macOS, **Salir de Colonia** desde el icono de la bandeja en los
+demás) y vuelve a abrirlo. En macOS y Linux, una versión ya descargada se instala cuando Colonia se cierra; en Windows,
+elige **Reiniciar ahora** otra vez cuando esté abierto. Si Colonia no se cierra, fuerza la salida (Monitor de Actividad en
 macOS, Administrador de tareas en Windows).
 
 La app de escritorio anota cada paso de su propia actualización (descarga, reinicio, salida y, en macOS, el cambio de
@@ -90,15 +90,15 @@ próxima vez que arranca.
 El core corre como `node`, la copia de Node que viene con Colonia. La primera vez que lee un proyecto en una carpeta que
 macOS protege (Documentos, Escritorio, Descargas, iCloud Drive, un disco externo o de red), macOS pregunta si “node”
 puede abrirla. Cuando el core arranca solo al iniciar sesión, esa ventana puede quedar detrás de otras, o aparecer sin
-nadie frente a la computadora.
+nadie frente al ordenador.
 
-- Elegí **Permitir**. Colonia lee el proyecto apenas respondés; no hace falta nada más.
+- Elige **Permitir**. Colonia lee el proyecto en cuanto respondes; no hace falta nada más.
 - Mientras nadie responde, Colonia arranca y funciona como siempre. Los ajustes de ese proyecto dicen que su carpeta
   todavía no se abrió, y sus agentes no trabajan en su carpeta; tus otros proyectos siguen igual.
-- Si elegiste **No permitir**, o la ventana ya no está: abrí **Ajustes del Sistema › Privacidad y seguridad › Archivos
-  y carpetas**, activá la carpeta debajo de “node” y reiniciá Colonia (`colonia service restart`, o salí y abrí la app de
+- Si elegiste **No permitir**, o la ventana ya no está: abre **Ajustes del Sistema › Privacidad y seguridad › Archivos
+  y carpetas**, activa la carpeta debajo de “node” y reinicia Colonia (`colonia service restart`, o sal y abre la app de
   escritorio).
-- Para que no pregunte, guardá los proyectos en una carpeta que macOS no protege, como `~/work/…`.
+- Para que no pregunte, guarda los proyectos en una carpeta que macOS no protege, como `~/work/…`.
 
 Antes de la 2.12.4 el core esperaba la respuesta para arrancar: la app de escritorio se quedaba en **Conectando con
 Colonia** y `colonia status` no encontraba ningún core hasta que alguien respondía la ventana.
@@ -112,44 +112,44 @@ escritorio, el servicio), un segundo core no arranca. `colonia service install` 
 a core already answers on http://127.0.0.1:7440 and it is not the service's. Stop it first (it may be `pnpm dev` or the desktop app), then run install again.
 ```
 
-Frená el otro, o dale a este core otro puerto con `COLONIA_PORT` (la terminal también sigue a `COLONIA_PORT` y a `core.env`).
+Frena el otro, o dale a este core otro puerto con `COLONIA_PORT` (la terminal también sigue a `COLONIA_PORT` y a `core.env`).
 La app de escritorio no se pelea por el puerto: si ya responde un core en el `7440`, usa ese.
 
 ## "Missing or bad token"
 
-Cuando el core está expuesto (red local o Tailscale) tiene un token, y cada pedido lo necesita, o la llave de un
+Cuando el core está expuesto (red local o Tailscale) tiene un token, y cada petición lo necesita, o la llave de un
 dispositivo vinculado. El comando `colonia` y la app de escritorio en la misma máquina lo leen solos de `<home>/core.env`.
 Si ves `Colonia · unauthorized` con `missing or bad token`:
 
-- Estás usando otra carpeta que la del core: revisá `COLONIA_HOME`, o pasá `COLONIA_TOKEN` a mano.
-- Estás en otra máquina: no copies el token, vinculá (`colonia pair` en el servidor). Un navegador muestra **Vinculá este
+- Estás usando otra carpeta que la del core: revisa `COLONIA_HOME`, o pasa `COLONIA_TOKEN` a mano.
+- Estás en otra máquina: no copies el token, vincula (`colonia pair` en el servidor). Un navegador muestra **Vincula este
   dispositivo**.
-- El dispositivo fue revocado: vinculalo de nuevo.
+- El dispositivo fue revocado: vincúlalo de nuevo.
 
-Dos más que podés cruzarte si cambiás el acceso a mano:
+Dos más con los que te puedes cruzar si cambias el acceso a mano:
 
 - El core no arranca con `refusing to listen on 0.0.0.0 without COLONIA_TOKEN`: un `COLONIA_HOST` que no sea loopback siempre
   necesita token. `colonia expose lan` te crea uno.
-- `a request through a proxy needs COLONIA_TOKEN on the core`: algo (como `tailscale serve`) le reenvía pedidos a un core
+- `a request through a proxy needs COLONIA_TOKEN on the core`: algo (como `tailscale serve`) le reenvía peticiones a un core
   sin token. `colonia expose tailscale` crea uno.
 
 ## Un cambio de acceso no se aplicó
 
-El core lee `core.env` solo al arrancar. Después de `colonia expose`, corré `colonia service restart` (el panel reinicia su
+El core lee `core.env` solo al arrancar. Después de `colonia expose`, ejecuta `colonia service restart` (el panel reinicia su
 propio core cuando puede, o te dice **Guardado: se aplica cuando el core vuelva a arrancar**). `colonia status` muestra
 `Restart needed` mientras el acceso guardado no coincida con el que está corriendo.
 
 `colonia expose status` también te dice si una variable de entorno está pisando el archivo (por ejemplo `the environment
 overrides: COLONIA_HOST`): las variables del proceso siempre ganan.
 
-## Un código de vinculación no anda
+## Un código de vinculación no funciona
 
 | Lo que ves | Por qué, y qué hacer |
 |---|---|
-| "Ese código es incorrecto o venció" | Los códigos duran 10 minutos y sirven una vez. Reiniciar el core también los anula. Pedí uno nuevo. |
-| "Demasiados códigos incorrectos" | Cinco códigos mal pausan la vinculación por cinco minutos. Esperá y pedí un código nuevo. |
-| "Tu teléfono todavía no llega a este core" | El core solo escucha en su propia compu. Exponelo (red local o Tailscale), reinicialo y vinculá de nuevo. |
-| El teléfono no conecta para nada | No está en la misma red (red local) o en tu tailnet (Tailscale), o la dirección está mal. Probá la dirección en el navegador del teléfono. |
+| "Ese código es incorrecto o venció" | Los códigos duran 10 minutos y sirven una vez. Reiniciar el core también los anula. Pide uno nuevo. |
+| "Demasiados códigos incorrectos" | Cinco códigos mal pausan la vinculación por cinco minutos. Espera y pide un código nuevo. |
+| "Tu teléfono todavía no llega a este core" | El core solo escucha en su propio ordenador. Exponlo (red local o Tailscale), reinícialo y vincula de nuevo. |
+| El teléfono no conecta para nada | No está en la misma red (red local) o en tu tailnet (Tailscale), o la dirección está mal. Prueba la dirección en el navegador del teléfono. |
 
 Más en [Tu teléfono](/es/devices/phone/).
 
@@ -162,11 +162,11 @@ colonia pairing           # desconocidos esperando tu aprobación
 ```
 
 - **Un desconocido no recibe respuesta**: por defecto, una persona nueva recibe un código de vinculación y te espera.
-  Aprobala con `colonia pairing ok <code>` (o `colonia pairing me <code>` si sos vos desde otra dirección), o decíselo a tu
+  Apruébala con `colonia pairing ok <code>` (o `colonia pairing me <code>` si eres tú desde otra dirección), o díselo a tu
   secretaria.
-- **Tu propio mensaje parece no llegar a ningún lado**: por defecto, lo que escribís en un canal va al chat Home, así
+- **Tu propio mensaje parece no llegar a ningún lado**: por defecto, lo que escribes en un canal va al chat Home, así
   que la respuesta también está ahí.
-- **Una persona está bloqueada**: las personas bloqueadas no reciben respuesta. Revisá `colonia contacts`.
+- **Una persona está bloqueada**: las personas bloqueadas no reciben respuesta. Revisa `colonia contacts`.
 - **Un envío quedó `uncertain`**: el core se cortó mientras mandaba, así que no puede saber si llegó. No se manda dos
   veces.
 - **Dos Colonia contestan el mismo bot**: no corras Colonia v1 y v2 con el mismo bot. Por eso instalar v2 frena el daemon de v1.
@@ -181,7 +181,7 @@ colonia models --refresh  # les vuelve a preguntar a los motores
 colonia models config     # el predeterminado, la cadena del router y sus reglas
 ```
 
-- **Un motor no está disponible**: casi siempre falta una clave o un inicio de sesión. Cargalo en **Configuración ›
+- **Un motor no está disponible**: casi siempre falta una clave o un inicio de sesión. Cárgalo en **Configuración ›
   Motores y modelos**.
 - **El router no pasó al siguiente**: pasa al próximo modelo de la cadena solo cuando un modelo falla **antes de que
   corra alguna herramienta** en ese turno.
@@ -200,23 +200,23 @@ colonia mcp tools <server>      # lo que ofrece
 <Terminal command="colonia mcp check notes">{`notes: Failed · 3012 ms · 0 tools
 connect ECONNREFUSED 127.0.0.1:3000`}</Terminal>
 
-- **needs-approval**: un servidor del `.apc/mcps.json` de un proyecto corre recién cuando confiás en esa definición
+- **needs-approval**: un servidor del `.apc/mcps.json` de un proyecto solo corre cuando confías en esa definición
   exacta: `colonia mcps trust <project> <server>`.
-- **needs-sign-in**: pidió que inicies sesión en tu navegador y te espera; Colonia no lo vuelve a arrancar solo. Tocá
-  **Iniciar sesión** en **Recursos › MCP**, o corré `colonia mcp signin <server>`.
-- **Falta una clave**: los servidores MCP reciben sus secretos por referencia; cargalos en **Recursos › Variables**.
-- **Ambiguous server**: el mismo nombre existe global y en un proyecto. Sumá `--project <id>` y `--scope`.
+- **needs-sign-in**: pidió que inicies sesión en tu navegador y te espera; Colonia no lo vuelve a arrancar solo. Pulsa
+  **Iniciar sesión** en **Recursos › MCP**, o ejecuta `colonia mcp signin <server>`.
+- **Falta una clave**: los servidores MCP reciben sus secretos por referencia; cárgalos en **Recursos › Variables**.
+- **Ambiguous server**: el mismo nombre existe global y en un proyecto. Suma `--project <id>` y `--scope`.
 
 Más en [Servidores MCP](/es/extend/mcp/).
 
 ## El navegador necesita la app de escritorio
 
 Los agentes manejan el navegador que presta la app de escritorio. Sin la app, el core usa su propio Chrome sin
-ventana, que no te puede pasar el control y nunca usa tus sesiones iniciadas. Errores que podés ver:
+ventana, que no te puede pasar el control y nunca usa tus sesiones iniciadas. Errores que puedes ver:
 
-- `no connected node offers "browser" (open the Colonia desktop app)`: abrí la app de escritorio en la compu donde corre
+- `no connected node offers "browser" (open the Colonia desktop app)`: abre la app de escritorio en el ordenador donde corre
   el core, o una conectada a él por SSH. Una app conectada **por dirección** todavía no presta su navegador.
-- `no Chrome, Chromium or Edge on this machine`: instalá uno para el navegador sin ventana, o apuntá `COLONIA_CHROME` a él.
+- `no Chrome, Chromium or Edge on this machine`: instala uno para el navegador sin ventana, o apunta `COLONIA_CHROME` a él.
   `COLONIA_HEADLESS=off` lo apaga.
 
 Para leer páginas y buscar, los agentes también tienen `web_read` y `web_search`, que no necesitan navegador. Más en
@@ -237,7 +237,7 @@ la configuración inicial (solo lee v1). `colonia daemon` es una costumbre de v1
 
 ## Empezar de cero sin perder nada
 
-Para probar algo riesgoso, arrancá un segundo core con su propia carpeta, su propio puerto y los secretos en un
+Para probar algo arriesgado, arranca un segundo core con su propia carpeta, su propio puerto y los secretos en un
 archivo, así nada toca tus datos reales ni tu Llavero:
 
 ```bash
@@ -249,21 +249,21 @@ COLONIA_HOME=~/work/colonia-scratch COLONIA_PORT=7460 COLONIA_SECRETS=file \
   ~/.colonia/v2/app/current/node/bin/node ~/.colonia/v2/app/current/apps/core/src/main.ts
 ```
 
-Después apuntá la terminal a ese core:
+Después apunta la terminal a ese core:
 
 ```bash
 COLONIA_HOME=~/work/colonia-scratch COLONIA_URL=http://127.0.0.1:7460 colonia status
 ```
 
-Un core con su propio `COLONIA_HOME` tampoco toca las skills de Claude Code, Codex y Cursor. Cuando termines, borrá la
+Un core con su propio `COLONIA_HOME` tampoco toca las skills de Claude Code, Codex y Cursor. Cuando termines, borra la
 carpeta de prueba.
 
 <Aside type="caution">
 No borres `~/.colonia/v2` para "resetear" Colonia: ahí están todos los agentes, chats, tareas y notas, y en un servidor también
-la app instalada. Mové las cosas a un costado, y solo con el core frenado.
+la app instalada. Mueve las cosas a un lado, y solo con el core frenado.
 </Aside>
 
-## ¿Seguís trabado?
+## ¿Sigues atascado?
 
-Preguntá en [Discord](https://discord.gg/vxdZuT5WuE) con la salida de `colonia status --plain` y las últimas líneas del log
-del core (revisá antes que no tengan nada privado).
+Pregunta en [Discord](https://discord.gg/vxdZuT5WuE) con la salida de `colonia status --plain` y las últimas líneas del log
+del core (revisa antes que no tengan nada privado).

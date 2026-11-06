@@ -63,7 +63,7 @@ test("image generation shows inline cubes, real single/multiple results, and cle
       },
     });
     await page.goto(env.core.url);
-    const input = page.getByRole("textbox", { name: /^Escribile a/ });
+    const input = page.getByRole("textbox", { name: /^Escríbele a/ });
     const preview = page.getByRole("status", { name: "Generando imágenes" });
     for (const scenario of ["one", "two", "failure", "cancel"]) {
       await input.fill(scenario);

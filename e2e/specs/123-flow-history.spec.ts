@@ -78,7 +78,7 @@ for (const phone of [false, true]) {
     await versions.nth(2).click();
     const canvas = page.locator(".fd__canvas");
     await expect(canvas.locator(".react-flow__node")).toHaveCount(2);
-    await expect(canvas.locator(".fd__version")).toContainText(/^Versión #1 · .+ · Vos$/);
+    await expect(canvas.locator(".fd__version")).toContainText(/^Versión #1 · .+ · Tú$/);
     await expect(page.getByText("Una versión anterior. No corre")).toBeVisible();
     await shot(page, `page-version-${at}`);
     if (phone) {

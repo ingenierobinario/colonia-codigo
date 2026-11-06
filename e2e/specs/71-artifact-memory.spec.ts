@@ -216,7 +216,7 @@ test("Create an artifact opens a new chat with the super-agent, its first words 
   await open(p);
   await p.getByRole("button", { name: "Abrir un artefacto" }).click();
   await p.getByRole("button", { name: /Crear un artefacto/ }).click();
-  const composer = p.getByRole("textbox", { name: /Escribile a/ }).last();
+  const composer = p.getByRole("textbox", { name: /Escríbele a/ }).last();
   await expect(composer).toHaveValue("Quiero crear un artefacto: ");
   const { threads } = await rpc<{ threads: { title?: string; agent_id?: string }[] }>("threads.list", {});
   expect(threads.some((t) => t.title === "Artefacto nuevo")).toBe(true);

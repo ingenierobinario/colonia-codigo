@@ -10,6 +10,6 @@ Placeholder for an empty list or pane, a pane that is still waiting for data, or
 
 ```tsx
 <EmptyState icon={<Icons.Inbox />} title="No hay chats" action={<Button size="sm">Nuevo chat</Button>}>
-  Escribile a Roby para empezar.
+  Escríbele a Roby para empezar.
 </EmptyState>
 ```

@@ -55,7 +55,7 @@ test("a commitment names the person and who owes it, and is reminded once on its
   env.core.scheduler.tick();
   const due = (await tray()).notifications.filter((n) => n.kind === "due");
   assert.equal(due.length, 1, "reminded once");
-  assert.match(due[0]?.body ?? "", /Se lo debés a Ana/);
+  assert.match(due[0]?.body ?? "", /Se lo debes a Ana/);
 
   // A later date: the reminder goes away and comes back on the new day.
   await env.client.call("tasks.update", { task: t.id, due_at: "2026-10-06" });

@@ -35,12 +35,12 @@ test("an agent's card shows the computer off, turns it on in its settings, then 
     // No agent may use it yet: the sidebar does not show the view, the card is the way in.
     const nav = page.getByRole("button", { name: "Computadoras", exact: true });
     await expect(nav).toHaveCount(0);
-    await detail.getByRole("button", { name: /^Una computadora Linux/ }).hover();
-    await expect(page.locator(".colonia-tooltip")).toContainText("Una computadora Linux aparte de este equipo");
+    await detail.getByRole("button", { name: /^Un ordenador Linux/ }).hover();
+    await expect(page.locator(".colonia-tooltip")).toContainText("Un ordenador Linux aparte de este equipo");
 
     await row.getByRole("button", { name: "Activar", exact: true }).click();
     const editor = page.getByRole("dialog", { name: /^Editar a/ });
-    const allowed = editor.getByRole("switch", { name: "Computadora aislada" });
+    const allowed = editor.getByRole("switch", { name: "Ordenador aislado" });
     await expect(allowed).not.toBeChecked();
     await allowed.click();
     await expect(allowed).toBeChecked();
@@ -48,8 +48,8 @@ test("an agent's card shows the computer off, turns it on in its settings, then 
     await expect(editor).toHaveCount(0);
 
     await expect(row).toContainText("Permitida (detenida)");
-    await row.getByRole("button", { name: "Ver computadoras", exact: true }).click();
-    await expect(page.getByRole("main")).toContainText("La computadora está apagada");
+    await row.getByRole("button", { name: "Ver ordenadores", exact: true }).click();
+    await expect(page.getByRole("main")).toContainText("El ordenador está apagado");
     await expect(nav).toBeVisible();
   } finally {
     await page.goto("about:blank");

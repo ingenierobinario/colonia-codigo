@@ -7,7 +7,7 @@ test("an approved request shrinks to one line saying what was asked and how it e
   await rpc("agents.update", { agent: "scout", autonomy: "manual" });
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "scout", title: "Permisos" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill("make a note file");
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill("make a note file");
   await page.keyboard.press("Enter");
 
   const card = page.locator(".inputcard.is-pending");
@@ -31,7 +31,7 @@ test("a question with several answers is ticked, then sent, and shows what was p
   await rpc("setup.finish", {});
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "scout", title: "Días" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill("ask me which days");
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill("ask me which days");
   await page.keyboard.press("Enter");
 
   const card = page.locator(".inputcard.is-pending");

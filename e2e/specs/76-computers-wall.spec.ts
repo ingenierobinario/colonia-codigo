@@ -73,7 +73,7 @@ test("the Computers view shows two screens in use as two tiles, and opens one la
     await expect(wall.getByText("Pantalla apagada")).toHaveCount(2);
 
     for (const agent of ["superagent", "scout"])
-      await env.client.call("threads.send", { thread: chats[agent] ?? "", text: "Trabajá en la computadora" });
+      await env.client.call("threads.send", { thread: chats[agent] ?? "", text: "Trabaja en el ordenador" });
     const tiles = wall.locator(".computers__tile");
     await expect(tiles).toHaveCount(2);
     await expect(tiles.nth(0)).toContainText("Roby");
@@ -95,13 +95,13 @@ test("the Computers view shows two screens in use as two tiles, and opens one la
     await expect(bar.getByRole("button", { name: "Más", exact: true })).toBeVisible();
     await bar.getByRole("button", { name: "Chat", exact: true }).click();
     const side = wall.locator(".computers__chat");
-    await expect(side).toContainText("Trabajá en la computadora");
+    await expect(side).toContainText("Trabaja en el ordenador");
     await expect(side.getByRole("textbox")).toBeVisible();
     await side.getByRole("button", { name: "Cerrar", exact: true }).click();
     await expect(side).toHaveCount(0);
     await wall.getByRole("button", { name: "Tomar control", exact: true }).click();
     await expect(wall.getByRole("button", { name: "Devolver control al agente", exact: true })).toBeVisible();
-    await expect(wall.locator(".computers__large")).toContainText("Tenés el control");
+    await expect(wall.locator(".computers__large")).toContainText("Tienes el control");
     await wall.getByRole("button", { name: "Chat", exact: true }).click();
     await wall.getByRole("button", { name: "Abrir chat", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`thread=${chats.scout}`));
@@ -137,7 +137,7 @@ test("a screen kept up after its run shows on the wall as idle, opens large with
       title: "Lint del repo",
     });
     await env.client.call("environments.bind", { thread: chat.id });
-    await env.client.call("threads.send", { thread: chat.id, text: "Corré el lint" });
+    await env.client.call("threads.send", { thread: chat.id, text: "Corre el lint" });
     await env.settle(chat.id);
     // The run is over; Roby's screen stays up.
     const status = await env.client.call("environments.status", {});
@@ -168,9 +168,9 @@ test("a screen kept up after its run shows on the wall as idle, opens large with
     await page.goto(`${env.core.url}/#thread=${other.id}&panel=computer`);
     const computer = page.locator(".computer");
     await expect(
-      computer.getByText("Este chat corre en este equipo. La pantalla de Roby en la computadora es de su otro chat."),
+      computer.getByText("Este chat se ejecuta en este equipo. La pantalla de Roby en el ordenador es de su otro chat."),
     ).toBeVisible();
-    await expect(computer.getByRole("button", { name: "Usar la computadora acá", exact: true })).toBeVisible();
+    await expect(computer.getByRole("button", { name: "Usar el ordenador aquí", exact: true })).toBeVisible();
     await computer.getByRole("button", { name: "Abrir ese chat", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`thread=${chat.id}`));
   } finally {
@@ -259,7 +259,7 @@ test("with the computer off the view shows only the global state", async ({ page
     await env.client.call("environments.permit", { agent: "superagent", on: true });
     await page.goto(`${env.core.url}/#view=computers`);
     const wall = page.locator(".computers");
-    await expect(wall.getByText("La computadora está apagada")).toBeVisible();
+    await expect(wall.getByText("El ordenador está apagado")).toBeVisible();
     await expect(wall.getByRole("button", { name: "Encender VM", exact: true })).toBeVisible();
     await expect(wall.locator(".computers__tile")).toHaveCount(0);
   } finally {

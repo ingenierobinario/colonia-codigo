@@ -19,11 +19,11 @@ test("the owner links a line with the QR, then their own phone by writing to it"
   await page.getByRole("menuitem", { name: /WhatsApp/ }).click();
   await expect(page.getByRole("switch", { name: "Esta línea es mi propio teléfono" })).not.toBeChecked();
   await page.getByRole("button", { name: "Vincular" }).click();
-  await expect(page.getByRole("img", { name: "Escaneá este código con tu teléfono" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Escanea este código con tu teléfono" })).toBeVisible();
 
   await world.whatsapp.scan();
   await expect(page.getByText("+5491100000001").first()).toBeVisible();
-  await expect(page.getByRole("img", { name: "Escaneá este código con tu teléfono" })).toBeHidden();
+  await expect(page.getByRole("img", { name: "Escanea este código con tu teléfono" })).toBeHidden();
   await expect(page.getByText("Todavía no está vinculado", { exact: false })).toBeVisible();
   await expect(page.getByText("El agente que contesta en WhatsApp.")).toBeVisible();
 
@@ -36,14 +36,14 @@ test("the owner links a line with the QR, then their own phone by writing to it"
   await world.whatsapp.message(ME, "soy yo");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
-  await expect(page.getByText("Vinculá tu teléfono")).toBeVisible();
+  await expect(page.getByText("Vincula tu teléfono")).toBeVisible();
   await expect(page.getByText("+5491100000007")).toBeVisible();
   await page.getByRole("button", { name: "Es mi número" }).click();
-  await expect(page.getByRole("button", { name: /^Vos Tu teléfono/ })).toBeVisible();
-  await expect(page.getByText("Vinculá tu teléfono")).toBeHidden();
+  await expect(page.getByRole("button", { name: /^Tú Tu teléfono/ })).toBeVisible();
+  await expect(page.getByText("Vincula tu teléfono")).toBeHidden();
 
   // The owner's chat on the channel opens a side panel like any chat.
-  await page.getByRole("button", { name: /^Vos Tu teléfono/ }).click();
+  await page.getByRole("button", { name: /^Tú Tu teléfono/ }).click();
   await page.getByRole("button", { name: /Abrir panel lateral|Panel:/ }).click();
   await page.getByRole("menuitem", { name: "Widget" }).click();
   await expect(page.getByRole("complementary", { name: "Panel lateral" })).toBeVisible();
@@ -56,7 +56,7 @@ test("the owner links a line with the QR, then their own phone by writing to it"
   const chat = page.getByRole("main");
   await expect(chat.getByText("Got it: Remind me to call the bank").first()).toBeVisible();
   await expect(chat.getByText("Remind me to stretch")).toHaveCount(0);
-  await expect(chat.getByText(/Solo lo que hablaron vos y .+ por WhatsApp/)).toBeVisible();
+  await expect(chat.getByText(/Solo lo que hablaron tú y .+ por WhatsApp/)).toBeVisible();
   await chat.getByRole("button", { name: "Abrir Home" }).click();
   await expect(page.getByRole("main").getByText("Remind me to stretch").first()).toBeVisible();
   await expect(page.getByRole("main").getByText("Remind me to call the bank").first()).toBeVisible();
@@ -100,7 +100,7 @@ test("strangers 'ask me': whoever writes is an unreviewed contact, the owner hea
 test("a contact's video plays in the chat's own player, and a document of any type downloads", async ({ page }) => {
   const mp4 = Buffer.concat([Buffer.from("000000186674797069736f6d", "hex"), Buffer.alloc(64 * 1024, 1)]);
   await world.whatsapp.media(FRIEND, {
-    videoMessage: { caption: "Mirá cómo quedó", mimetype: "video/mp4", fileLength: mp4.length },
+    videoMessage: { caption: "Mira cómo quedó", mimetype: "video/mp4", fileLength: mp4.length },
     bytes: mp4.toString("base64"),
   });
   await world.whatsapp.media(FRIEND, {
@@ -111,7 +111,7 @@ test("a contact's video plays in the chat's own player, and a document of any ty
   await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
   await page.getByRole("button", { name: /Lucía/ }).first().click();
   await expect(page.locator('video[aria-label="video.mp4"]')).toBeVisible();
-  await expect(page.getByText("Mirá cómo quedó")).toBeVisible();
+  await expect(page.getByText("Mira cómo quedó")).toBeVisible();
   await expect(page.getByRole("button", { name: /planilla\.ods/ })).toBeVisible();
   await expect(page.getByText("[attached files]")).toHaveCount(0);
   await expect(page.getByText(/cannot read this kind/)).toHaveCount(0);

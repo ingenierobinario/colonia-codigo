@@ -70,7 +70,7 @@ for (const phone of [false, true]) {
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     // Kept as it is, and it says what is left before it can run.
     await expect(editor.getByRole("status")).toHaveText(
-      "Borrador guardado. Para que corra: «JavaScript» no está completo: completá lo que le falta.",
+      "Borrador guardado. Para que corra: «JavaScript» no está completo: completa lo que le falta.",
     );
     let doc = await docOf(flow);
     expect(doc.draft?.nodes.find((n) => n.kind === "js")).toMatchObject({ code: "" });
@@ -80,7 +80,7 @@ for (const phone of [false, true]) {
 
     // Save asks for the step first, and what runs stays revision 1.
     await editor.getByRole("button", { name: "Guardar", exact: true }).click();
-    await expect(editor.getByRole("alert")).toHaveText("Completá «JavaScript».");
+    await expect(editor.getByRole("alert")).toHaveText("Completa «JavaScript».");
     doc = await docOf(flow);
     expect(doc.publishedRevision).toBe(1);
 
@@ -91,7 +91,7 @@ for (const phone of [false, true]) {
     await expect(row.locator(".flowrow__open")).toContainText(phone ? "Lead intake" : "Borrador");
     await row.getByRole("switch", { name: "Encender o apagar Lead intake" }).click();
     await expect(
-      page.getByText("«JavaScript» no está completo: terminalo en el editor y después prendé el flow."),
+      page.getByText("«JavaScript» no está completo: termínalo en el editor y después enciende el flow."),
     ).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`flow=${flow}.*edit=1`));
     expect((await rpc<Result<"flows.list">>("flows.list", { project })).flows[0]?.enabled).toBe(false);
@@ -121,7 +121,7 @@ test("on a Flow that is on, Save draft and the leave prompt keep what runs as it
   await editor.getByRole("button", { name: "Sumar JavaScript" }).click();
   await editor.getByRole("button", { name: "Salir del editor" }).click();
   const prompt = page.getByRole("dialog", { name: "¿Salir sin guardar?" });
-  await expect(prompt).toContainText("Guardalos como borrador para volver a ellos, o salí y se pierden.");
+  await expect(prompt).toContainText("Guárdalos como borrador para volver a ellos, o sal y se pierden.");
   await shot(page, "leave-prompt-desktop");
   await prompt.getByRole("button", { name: "Guardar borrador" }).click();
   await expect(editor).toBeHidden();
@@ -148,7 +148,7 @@ test("a Flow an agent made shows its draft steps in the list and on its page, ne
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Acme agent" })).project.id;
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "superagent", title: "Flows" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill(`draw a flow in ${project}`);
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill(`draw a flow in ${project}`);
   await page.keyboard.press("Enter");
   await expect(page.locator(".flowcard")).toContainText("Borrador");
   const flow = (await rpc<Result<"flows.list">>("flows.list", { project })).flows[0]?.id ?? "";

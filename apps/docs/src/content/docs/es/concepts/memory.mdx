@@ -18,22 +18,22 @@ guardado y AutoDream tienen controles separados en **Configuración › Memoria*
 
 | Alcance | Sobre | Quién la ve |
 |---|---|---|
-| **Global** | Vos: tus preferencias, la gente de tu vida, cómo trabajás. | Todos los agentes. |
+| **Global** | Tú: tus preferencias, la gente de tu vida, cómo trabajas. | Todos los agentes. |
 | **Proyecto** | Un proyecto: decisiones, convenciones, cómo se hacen las cosas ahí. | Todos los agentes, en cada chat de ese proyecto. |
 | **Agente** | El cuaderno propio de un agente. | Sólo ese agente. |
 
-Y además está `.apc/memory.md`, un archivo del proyecto que escribís **vos** a mano. Los agentes siempre lo leen y
-nunca lo escriben: es el lugar para reglas fijas que no querés que ningún agente edite. Mirá
+Y además está `.apc/memory.md`, un archivo del proyecto que escribes **tú** a mano. Los agentes siempre lo leen y
+nunca lo escriben: es el lugar para reglas fijas que no quieres que ningún agente edite. Mira
 [Proyectos](/es/concepts/projects/).
 
 ## Quién escribe las notas
 
 Tres caminos, todos a la vista:
 
-- **Vos.** Sumás una nota en la pestaña **Memoria** de un proyecto, o con `colonia memory add`. O directamente le decís a
-  un agente "acordate de que…".
+- **Tú.** Sumas una nota en la pestaña **Memoria** de un proyecto, o con `colonia memory add`. O directamente le dices a
+  un agente "acuérdate de que…".
 - **Un agente**, con su herramienta `remember`, cuando aprende algo que vale la pena guardar: una corrección, algo
-  que repetís o una forma de hacer algo que confirmaste. Escribe la nota con sus propias palabras; para una corrección
+  que repites o una forma de hacer algo que confirmaste. Escribe la nota con sus propias palabras; para una corrección
   o una forma de trabajar, primero la regla; `Why:` solo si diste motivo y `How to apply:` solo cuando existe respaldo. Dentro de un proyecto la
   guarda en el proyecto; si no, en las notas globales. Puede corregir sus propias notas y sacar una con `forget`.
 
@@ -43,7 +43,7 @@ Tres caminos, todos a la vista:
   relaciones, condiciones, excepciones y motivos. Descarta candidatos contradictorios o inciertos. No exige inventar
   un motivo cuando no lo diste. Las notas quedan privadas del agente, limitadas al mismo proyecto. La revisión reduce
   errores; no garantiza que el modelo comprenda todos los casos.
-- **Historia de procedimientos verificados.** Un turno recuperado deja nota solo si confirmás el trabajo real
+- **Historia de procedimientos verificados.** Un turno recuperado deja nota solo si confirmas el trabajo real
   ("genial, funcionó", incluso como cierre de canal), o Colonia observa una lectura completa de archivo que coincide con
   su escritura anterior. Un `ok` de herramienta no basta. Conserva método exitoso, destinos seguros, salidas e intentos
   fallidos en una sección aparte. Las fuentes incluyen confirmación real o referencias a escritura y lectura.
@@ -58,14 +58,14 @@ Tres caminos, todos a la vista:
 
 Usa el modelo auxiliar que ya configuraste en Colonia. Si está apagado, no extrae notas automáticas; `remember` y la
 recuperación automática de chats siguen funcionando. La cola persiste entre reinicios y los reintentos no duplican
-notas. Lo que escribís como dueño en un canal (Telegram, WhatsApp…) cuenta igual que lo que escribís en la app.
+notas. Lo que escribes como dueño en un canal (Telegram, WhatsApp…) cuenta igual que lo que escribes en la app.
 Contactos, salas, clientes externos, subhilos, workers y sesiones directas de motor quedan excluidos del recuerdo y
 guardado automáticos.
 
-Los agentes no pueden editar ni borrar las notas que escribiste vos. Y algunas notas te esperan:
+Los agentes no pueden editar ni borrar las notas que escribiste tú. Y algunas notas te esperan:
 
-- **Para confirmar.** Una nota global que un agente escribió sobre vos queda en todos los chats recién cuando la
-  confirmás. Mientras tanto, aparece sólo cuando coincide con lo que dijiste.
+- **Para confirmar.** Una nota global que un agente escribió sobre ti queda en todos los chats recién cuando la
+  confirmas. Mientras tanto, aparece sólo cuando coincide con lo que dijiste.
 - **Con contenido de afuera.** Una nota guardada mientras había una página web, un mensaje de un canal o el texto de
   otro agente en el turno queda marcada así. Los agentes la leen como dato, no como palabra tuya, hasta que la edites
   para respaldarla.
@@ -79,7 +79,7 @@ Las notas nunca van en el prompt de sistema. En cambio, cuando un agente respond
    coincidencias relevantes tienen espacio antes de las notas fijas; una nota larga no tapa las siguientes.
 2. Tus turnos también traen un **índice del cuaderno del agente**: una línea corta por cada nota que no se muestra
    entera (tipo, fecha y de qué trata), las más nuevas primero, dentro de 2.000 caracteres. Así una nota escrita
-   distinto de tu mensaje ("hacelo como hiciste hoy") sigue a la vista, y `recall` trae su texto completo; las que no
+   distinto de tu mensaje ("hazlo como hiciste hoy") sigue a la vista, y `recall` trae su texto completo; las que no
    entran se encuentran buscando. Los turnos siguientes del hilo listan sólo las notas guardadas o cambiadas desde
    entonces.
 3. En los **turnos siguientes** recibe sólo coincidencias nuevas que todavía no vio en ese hilo.
@@ -104,8 +104,8 @@ cachear y cada turno sale más barato.
 | **Buscar por significado** | Un motor de embeddings entiende de qué habla cada nota, así "¿cuándo es el offsite del equipo?" también encuentra "El retiro es el 3 de junio". Necesita un motor de embeddings. |
 | **Sin memoria** | Cada chat arranca de cero; los agentes no guardan notas. |
 
-Para buscar por significado, sumá un motor en **Motores de embeddings**: un Ollama local, o Gemini u OpenAI con una
-key. Se prueban en orden y se usa el primero que responde. **Indexar ahora** indexa las notas que ya tenés y **Probar
+Para buscar por significado, suma un motor en **Motores de embeddings**: un Ollama local, o Gemini u OpenAI con una
+key. Se prueban en orden y se usa el primero que responde. **Indexar ahora** indexa las notas que ya tienes y **Probar
 una búsqueda** te deja ver qué traería una pregunta.
 
 <Shot name="settings-memory" alt="Configuración, Memory: los tres modos, los motores de embeddings, la elección de skills y las opciones de chats largos" caption="Configuración › Memoria" />
@@ -113,9 +113,9 @@ una búsqueda** te deja ver qué traería una pregunta.
 La misma pantalla tiene dos opciones relacionadas:
 
 - **Elegir skills por significado**: cada mensaje se compara con tus skills y las que encajan se le ofrecen al agente.
-  Mirá [Skills](/es/extend/skills/).
+  Mira [Skills](/es/extend/skills/).
 - **Resumir los chats largos** y el **Modelo ayudante** que escribe los resúmenes y los títulos de los chats
-  (Automático, Elegido o Desactivado). Mirá [Conversaciones](/es/concepts/conversations/).
+  (Automático, Elegido o Desactivado). Mira [Conversaciones](/es/concepts/conversations/).
 
 ## AutoDream y límites
 
@@ -152,33 +152,33 @@ repetirla. Retirar una nota exige revisar misma afirmación y ámbito; una fecha
 ## Ver, confirmar y deshacer
 
 La pestaña **Memoria** de un proyecto muestra sus notas y te deja cambiar entre **Este proyecto**, **Cuadernos de
-agentes**, **Sobre vos** y **Olvidadas**. Buscalas, sumá una, editá o sacá cualquiera.
+agentes**, **Sobre ti** y **Olvidadas**. Búscalas, suma una, edita o saca cualquiera.
 
 <Shot name="memory" alt="La pestaña Memory de Acme Store: notas del proyecto con quién escribió cada una, y un buscador" caption="La pestaña Memoria de un proyecto" />
 
 - Una nota **Para confirmar** tiene un botón **Confirmar** y un link al chat donde el agente la aprendió.
-- Olvidar se puede deshacer. Una nota que sacás va a **Olvidadas**, donde ningún agente la ve; **Traer de vuelta** la
+- Olvidar se puede deshacer. Una nota que sacas va a **Olvidadas**, donde ningún agente la ve; **Traer de vuelta** la
   recupera. **Borrar para siempre** elimina la nota y el texto de sus revisiones; conserva una huella mínima y los IDs
   fuente para impedir recrearla. Las fuentes olvidadas quedan fuera del recuerdo automático, herramientas de chats y reintentos.
 - **Fuentes e historial** muestra citas y revisiones. **Restaurar esta revisión** permite deshacer una unión o edición.
   Los chats originales se conservan; borrar un recuerdo no borra la conversación.
-- La captura automática de Colonia 2.7.0 también guardó como notas pedidos y preguntas del momento ("¿podés terminar
+- La captura automática de Colonia 2.7.0 también guardó como notas pedidos y preguntas del momento ("¿puedes terminar
   esa review?"). El primer arranque después de actualizar retira las que su agente nunca editó y la captura de hoy
   rechazaría; quedan en **Olvidadas**, marcadas *Retirada por la limpieza de capturas* en su historial, y **Traer de vuelta**
-  recupera la que quieras. Las notas que escribiste vos o `remember` no se tocan, y el mismo dato se puede enseñar de nuevo.
+  recupera la que quieras. Las notas que escribiste tú o `remember` no se tocan, y el mismo dato se puede enseñar de nuevo.
 
 ## Desde la terminal
 
-Listá las notas más nuevas, o las que mejor coinciden con algunas palabras:
+Lista las notas más nuevas, o las que mejor coinciden con algunas palabras:
 
 <Terminal command="colonia memory deploy">{`mem_2a9f4c01d7b6e358  project:p_3f9a1c0d7e21   you   Deploys go out on Fridays.
 mem_81c3e0b5a4f2d917  agent:3f9a1c0d7e21-tomas 3f9a  Run the checkout tests before any deploy.`}</Terminal>
 
-Sumá una. El alcance es global por defecto, o de proyecto o agente cuando pasás `--project` o `--agent`:
+Suma una. El alcance es global por defecto, o de proyecto o agente cuando pasas `--project` o `--agent`:
 
 <Terminal command={'colonia memory add project "El envío es gratis desde $50." --project p_3f9a1c0d7e21'}>{`mem_c47e19a20b85f6d3  project:p_3f9a1c0d7e21`}</Terminal>
 
-Sacá notas por id:
+Saca notas por id:
 
 <Terminal command="colonia memory rm mem_c47e19a20b85f6d3">{`mem_c47e19a20b85f6d3  removed`}</Terminal>
 

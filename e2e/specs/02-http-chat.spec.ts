@@ -23,9 +23,9 @@ for (const host of ["127.0.0.1", "panel.test"]) {
     });
     await page.getByRole("combobox", { name: "Nuevo chat" }).first().click();
     // These specs run last (their own browser options), when the list holds many agents: search, as an owner would.
-    await page.getByPlaceholder("Buscá un agente").fill("Scout");
+    await page.getByPlaceholder("Busca un agente").fill("Scout");
     await page.getByRole("option", { name: /Scout/ }).first().click();
-    const box = page.getByRole("textbox", { name: /^Escribile a/ });
+    const box = page.getByRole("textbox", { name: /^Escríbele a/ });
     await box.fill(`HTTP first ${host}`);
     await box.press("Enter");
     await expect(page.locator(".transcript").getByText(`Got it: HTTP first ${host}`)).toBeVisible();

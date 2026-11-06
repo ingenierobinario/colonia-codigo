@@ -28,7 +28,7 @@ test("a bubble copies, forks the chat from it and says when there is no voice to
     });
     await open(page, `#view=inbox&thread=${t.id}`);
     const main = page.getByRole("main");
-    const box = page.getByRole("textbox", { name: /^Escribile a/ });
+    const box = page.getByRole("textbox", { name: /^Escríbele a/ });
     for (const text of ["Northwind uno", "Northwind dos"]) {
       await box.fill(text);
       await box.press("Enter");
@@ -61,7 +61,7 @@ test("a bubble copies, forks the chat from it and says when there is no voice to
     await mine.getByRole("button", { name: "Bifurcar en un chat nuevo" }).click();
     await expect(page).not.toHaveURL(new RegExp(`thread=${t.id}`));
     await expect(main.getByText("Got it: Northwind dos")).toHaveCount(0);
-    await expect(page.getByRole("textbox", { name: /^Escribile a/ })).toHaveValue("Northwind dos");
+    await expect(page.getByRole("textbox", { name: /^Escríbele a/ })).toHaveValue("Northwind dos");
   } finally {
     await switchVoices(true);
   }

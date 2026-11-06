@@ -6,7 +6,7 @@ async function ask(page: Parameters<typeof open>[0], text: string) {
   await rpc("setup.finish", {});
   const chat = await rpc<{ id: string }>("threads.create", { kind: "loose", agent_id: "scout", title: "Conectar" });
   await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escribile/ }).fill(text);
+  await page.getByRole("textbox", { name: /Escríbele/ }).fill(text);
   await page.keyboard.press("Enter");
   return page.locator(".connectcard");
 }

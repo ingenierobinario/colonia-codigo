@@ -1,6 +1,6 @@
 ---
 title: WhatsApp
-description: Vinculá WhatsApp con un QR, como una línea aparte para tu agente o como tu propio número.
+description: Vincula WhatsApp con un QR, como una línea aparte para tu agente o como tu propio número.
 sidebar:
   order: 3
 ---
@@ -12,57 +12,57 @@ es la API de WhatsApp Business, y no hay ninguna cuenta de bot que crear.
 
 ## Dos formas de usarlo
 
-**Una línea aparte** (la opción de entrada). Un segundo número que usa solo tu agente. Le escribís desde tu propio
+**Una línea aparte** (la opción de entrada). Un segundo número que usa solo tu agente. Le escribes desde tu propio
 teléfono, como le escribirías a un asistente. Es lo que quiere la mayoría: tu agente tiene sus chats y los tuyos
 siguen siendo tuyos.
 
-**Tu propio número.** Prendé **Esta línea es mi propio teléfono** y hablás con tu agente en el chat "Mensaje a mí
-mismo" de WhatsApp. Lo que les escribís a otras personas desde tu teléfono sigue siendo tuyo: Colonia nunca contesta en
+**Tu propio número.** Activa **Esta línea es mi propio teléfono** y hablas con tu agente en el chat "Mensaje a mí
+mismo" de WhatsApp. Lo que les escribes a otras personas desde tu teléfono sigue siendo tuyo: Colonia nunca contesta en
 tu nombre ahí.
 
-Después podés cambiar con el mismo interruptor, en la configuración del canal.
+Después puedes cambiar con el mismo interruptor, en la configuración del canal.
 
-## Vinculalo
+## Vincúlalo
 
 <Steps>
 
-1. Abrí **Configuración › Canales**, usá **Agregar canal** y elegí **WhatsApp** (o entrá directo si es el primero).
+1. Abre **Configuración › Canales**, usa **Agregar canal** y elige **WhatsApp** (o entra directo si es el primero).
 
-2. Elegí **Quién responde**, y prendé **Esta línea es mi propio teléfono** si vinculás tu propio número.
+2. Elige **Quién responde**, y activa **Esta línea es mi propio teléfono** si vinculas tu propio número.
 
-3. Tocá **Vincular**. Aparece un QR; cambia cada pocos segundos y la página lo mantiene al día.
+3. Pulsa **Vincular**. Aparece un QR; cambia cada pocos segundos y la página lo mantiene al día.
 
 4. En el teléfono que tiene el número: **WhatsApp › Configuración › Dispositivos vinculados › Vincular un
-   dispositivo**, y apuntá al código.
+   dispositivo**, y apunta al código.
 
 </Steps>
 
-El estado pasa a **Conectado**. El soporte de WhatsApp se carga la primera vez que lo vinculás, así que esa primera
+El estado pasa a **Conectado**. El soporte de WhatsApp se carga la primera vez que lo vinculas, así que esa primera
 conexión puede tardar un poco.
 
-## Vinculá tu teléfono a la línea
+## Vincula tu teléfono a la línea
 
-En una línea aparte, Colonia no sabe qué número sos vos hasta que se lo decís. Hasta entonces, lo que le escribas a la
+En una línea aparte, Colonia no sabe qué número eres tú hasta que se lo dices. Hasta entonces, lo que le escribas a la
 línea es de un desconocido. Dos formas, en **Tu teléfono**:
 
-- **Escribile a la línea** desde tu WhatsApp. El pedido aparece en la lista; tocá **Es mi número**. WhatsApp muestra
+- **Escribe a la línea** desde tu WhatsApp. El pedido aparece en la lista; pulsa **Es mi número**. WhatsApp muestra
   el número, así que no hace falta código.
-- **Agregar mi número**: escribilo con el código de país (`+1 555 0100`) y tocá **Guardar**.
+- **Agregar mi número**: escríbelo con el código de país (`+1 555 0100`) y pulsa **Guardar**.
 
 Una vez vinculado, tus mensajes van a **Home**, o a un chat propio si pusiste **Tus mensajes** en **Chat propio**.
 
-Con tu propio número no hay nada que vincular: quien escribe en "Mensaje a mí mismo" sos vos.
+Con tu propio número no hay nada que vincular: quien escribe en "Mensaje a mí mismo" eres tú.
 
 ## Solo contactos
 
 Colonia lee los chats uno a uno. Los grupos, las listas de difusión y los canales de WhatsApp se ignoran. Las notas de voz
-en chats privados se transcriben (mirá [Notas de voz](/es/channels/overview/#notas-de-voz)), y las opciones que te
-ofrece el agente llegan como una lista numerada: contestá con el número. Las fotos, videos, stickers y documentos quedan en el chat para verlos o descargarlos.
+en chats privados se transcriben (mira [Notas de voz](/es/channels/overview/#notas-de-voz)), y las opciones que te
+ofrece el agente llegan como una lista numerada: contesta con el número. Las fotos, videos, stickers y documentos quedan en el chat para verlos o descargarlos.
 
 ### Archivos que nunca llegaron
 
 Un archivo que no se pudo descargar cuando llegó (o que llegó antes de que Colonia leyera archivos) aparece como una nota
-del estilo "[video — Colonia cannot read this kind of message yet]". Tocá **Recuperar archivos** en ese chat, o corré
+del estilo "[video — Colonia cannot read this kind of message yet]". Pulsa **Recuperar archivos** en ese chat, o ejecuta
 `colonia channels recover <thread>`: Colonia le pide a tu teléfono que vuelva a mandar esos mensajes y pone cada archivo en
 su mensaje, sin que el agente vuelva a contestar. El teléfono tiene que estar en línea para responder.
 
@@ -73,15 +73,15 @@ una diferencia en tu propio número: Colonia nunca manda un código desde ahí. 
 la persona queda anotada en la configuración del canal para que la apruebes, y no se le manda nada.
 
 **Avisarme** suele ser lo más cómodo en WhatsApp: te llega un aviso con quién escribió, su número y su primer
-mensaje. Si decís que sí (con el botón, o diciéndoselo a tu agente), se le contesta ese primer mensaje.
+mensaje. Si dices que sí (con el botón, o diciéndoselo a tu agente), se le contesta ese primer mensaje.
 
 ## Cuando se desconecta
 
 - Si WhatsApp cierra la sesión del dispositivo (por ejemplo, lo sacaste de **Dispositivos vinculados**), Colonia borra la
-  sesión guardada y el canal muestra un error. Tocá **Vincular de nuevo** y escaneá un código nuevo.
+  sesión guardada y el canal muestra un error. Pulsa **Vincular de nuevo** y escanea un código nuevo.
 - **Desvincular WhatsApp** quita el canal y su carpeta de sesión.
 
 <Aside type="caution">
 Colonia usa el protocolo de dispositivos vinculados de WhatsApp a través de una biblioteca de código abierto, no una API
-oficial. Usalo para conversaciones normales, no para mensajes masivos.
+oficial. Úsalo para conversaciones normales, no para mensajes masivos.
 </Aside>
