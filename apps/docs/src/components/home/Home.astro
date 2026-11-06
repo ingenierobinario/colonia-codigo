@@ -453,7 +453,7 @@ const cards = [
                   <p class="dlc__top"><OsIcon name={c.id} size={30} /><span class="dlc__tag">{t.download.available}</span></p>
                   <h3>{c.name}</h3>
                   <p class="dlc__meta">{t.download.cards[c.id]}</p>
-                  <a class="dlc__main" href={href(c.id === "android" ? `${pre}/devices/phone/` : `${pre}/start/install/`)}>{t.download.guide} {c.name} <span aria-hidden="true">→</span></a>
+                  <a class="dlc__main" href={href(`${pre}/start/install/`)}>{t.download.guide} {c.name} <span aria-hidden="true">→</span></a>
                   <span class="dlc__alt" />
                   <span class="dlc__blob" aria-hidden="true"><Blob name={c.blob} size={64} /></span>
                 </article>

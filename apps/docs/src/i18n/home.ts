@@ -271,10 +271,9 @@ const es = {
     {
       blob: "aqua",
       title: "En todas partes",
-      body: "La aplicación de escritorio, tu móvil y, si lo prefieres, un servidor propio.",
+      body: "La aplicación de escritorio y, si lo prefieres, un servidor propio.",
       links: [
         ["Aplicación de escritorio", "/devices/desktop/"],
-        ["Móvil", "/devices/phone/"],
         ["Servidor y acceso remoto", "/devices/server/"],
       ],
     },
@@ -432,7 +431,6 @@ const es = {
       mac: "Apple silicon o Intel",
       windows: "Windows x64",
       linux: "x64 o ARM",
-      android: "Aplicación de móvil · se empareja con tu ordenador",
     },
     need: {
       title: "Qué necesitas",
@@ -752,10 +750,9 @@ const en: HomeText = {
     {
       blob: "aqua",
       title: "Everywhere",
-      body: "The desktop app, your phone and, if you prefer, your own server.",
+      body: "The desktop app and, if you prefer, your own server.",
       links: [
         ["Desktop app", "/devices/desktop/"],
-        ["Phone", "/devices/phone/"],
         ["Server and remote", "/devices/server/"],
       ],
     },
@@ -913,7 +910,6 @@ const en: HomeText = {
       mac: "Apple silicon or Intel",
       windows: "Windows x64",
       linux: "x64 or ARM",
-      android: "Phone app · pairs with your computer",
     },
     need: {
       title: "What you need",
