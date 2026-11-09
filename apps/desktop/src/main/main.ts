@@ -348,6 +348,42 @@ app.whenReady().then(() => {
       n.show();
     },
   });
+  // PERMISOS-TRAS-ACTUALIZAR-1: en Mac, una versión nueva sin firmar pierde Accesibilidad y Grabación de pantalla.
+  // Al arrancar tras una actualización, si falta alguno, un aviso explica que hay que darlos de nuevo.
+  if (process.platform === "darwin" && app.isPackaged) {
+    const marca = path.join(app.getPath("userData"), "ultima-version.txt");
+    let anterior = "";
+    try {
+      anterior = fs.readFileSync(marca, "utf8").trim();
+    } catch {}
+    const actual = app.getVersion();
+    if (anterior !== actual) {
+      try {
+        fs.writeFileSync(marca, actual);
+      } catch {}
+      const p = computerPermissions();
+      if (anterior && (p.screen !== "granted" || !p.accessibility)) {
+        const es = (language ?? app.getLocale()).startsWith("es");
+        setTimeout(async () => {
+          const { response } = await dialog.showMessageBox({
+            type: "info",
+            title: "Colonia",
+            message: es ? `Colonia se ha actualizado a la versión ${actual}` : `Colonia was updated to ${actual}`,
+            detail: es
+              ? "Tras cada actualización, macOS retira los permisos. Vuelve a activar Colonia en Accesibilidad y en Grabación de pantalla (si ya aparece activado, quítalo con − y añádelo de nuevo) y reinicia Colonia."
+              : "After each update, macOS removes the permissions. Turn Colonia on again in Accessibility and Screen Recording (if it already shows as on, remove it with − and add it again), then restart Colonia.",
+            buttons: es
+              ? ["Abrir Accesibilidad", "Abrir Grabación de pantalla", "Más tarde"]
+              : ["Open Accessibility", "Open Screen Recording", "Later"],
+            defaultId: 0,
+            cancelId: 2,
+          });
+          if (response === 0) openPrivacy("accessibility");
+          if (response === 1) openPrivacy("screen");
+        }, 3000);
+      }
+    }
+  }
   // The emergency stop, from any app, while computer use is on.
   // Ctrl+Shift+Esc is Windows' own Task Manager: there it is Ctrl+Alt+Esc.
   const STOP_KEYS = process.platform === "win32" ? "Control+Alt+Escape" : "CommandOrControl+Shift+Escape";
