@@ -1,0 +1,87 @@
+# ACTUALIZACIONES-1: publica una versión que las Colonias instaladas descargan solas (D-044, D-058).
+# Se dispara al empujar una etiqueta v2.X.Y. Compila los instaladores de cada plataforma y los sube como versión
+# al repositorio PÚBLICO ingenierobinario/colonia (RELEASE_FEED), que solo guarda instaladores, nunca código.
+# Las notas de la versión salen del mensaje de la etiqueta: cada línea «- …» se ve en la app como una novedad.
+#   git tag -a v2.13.0 -m "- Puedes conectar más de un número de WhatsApp" && git push origin v2.13.0
+name: Publicar versión
+
+on:
+  push:
+    tags: ["v2.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Etiqueta ya empujada a publicar (v2.X.Y)"
+        required: true
+      prueba:
+        description: "Publicarla como prelanzamiento: las apps instaladas la ignoran"
+        type: boolean
+        default: true
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+  FEED: ingenierobinario/colonia
+
+jobs:
+  instalador:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { runner: macos-15, os: mac, arch: arm64 }
+          - { runner: macos-15-intel, os: mac, arch: x64 }
+          - { runner: ubuntu-24.04, os: linux, arch: x64 }
+          - { runner: ubuntu-24.04-arm, os: linux, arch: arm64 }
+          - { runner: windows-2022, os: win, arch: x64 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Compilar
+        shell: bash
+        run: |
+          [[ "$TAG" =~ ^v2\.[0-9]+\.[0-9]+$ ]] || { echo "etiqueta no válida: $TAG"; exit 1; }
+          COLONIA_VERSION="${TAG#v}" corepack pnpm package:${{ matrix.os }} --${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: colonia-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            out/*.dmg
+            out/*.AppImage
+            out/*.exe
+            out/Colonia-*.zip
+            out/colonia-core-*.tar.gz
+            out/*.sha256
+            out/install.sh
+            out/install.ps1
+          if-no-files-found: error
+          retention-days: 7
+
+  publicar:
+    needs: instalador
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publicar en el repositorio público
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+          git tag -l --format='%(contents)' "$TAG" > notas.md
+          [ -s notas.md ] || echo "- Colonia ${TAG#v}" > notas.md
+          ls -la dist
+          if gh release view "$TAG" -R "$FEED" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* -R "$FEED" --clobber
+          else
+            gh release create "$TAG" dist/* -R "$FEED" --target main --title "Colonia ${TAG#v}" --notes-file notas.md               ${{ inputs.prueba && '--prerelease' || '' }}
+          fi
