@@ -121,7 +121,10 @@ export async function saveChannel(id: string, draft: ChannelDraft | null, token?
       id,
       channel: draft
         ? {
-            type: before.find((c) => c.id === id)?.type ?? TYPES.find((k) => k === id) ?? "telegram",
+            type:
+              before.find((c) => c.id === id)?.type ??
+              TYPES.find((k) => k === id || id.startsWith(`${k}-`)) ??
+              "telegram",
             ...draft,
           }
         : null,

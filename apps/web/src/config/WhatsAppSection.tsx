@@ -1,6 +1,6 @@
 import type { ChannelInfo } from "@colonia/protocol";
 import { SUPER_AGENT_ID } from "@colonia/protocol/client";
-import { Badge, Button, EmptyState, IconButton, Icons, SettingRow, Spinner, Switch } from "@colonia/ui";
+import { Badge, Button, EmptyState, IconButton, Icons, Select, SettingRow, Spinner, Switch } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { PhoneForm, phoneOf } from "../channels/PhoneForm.tsx";
@@ -23,9 +23,16 @@ const DEFAULTS = { enabled: true, strangers: "pair", concurrency: "steer", owner
 export function WhatsAppSection() {
   const channels = useChannels((s) => s.channels);
   const ready = useChannels((s) => s.ready);
-  const channel = channels.find((c) => c.type === "whatsapp");
+  const t = useT();
+  const [selected, setSelected] = useState("");
+  const [adding, setAdding] = useState(false);
+  // MULTI-WHATSAPP-1: as many numbers as the owner wants, each its own channel (and its own session on disk).
+  const accounts = channels.filter((c) => c.type === "whatsapp");
+  const found = accounts.find((c) => c.id === selected) ?? accounts[0];
+  const connecting = adding || !found;
+  const channel = connecting ? undefined : found;
   // While a QR waits it changes every few seconds: read it often then, rarely otherwise.
-  const linking = channel?.status === "starting";
+  const linking = accounts.some((c) => c.status === "starting");
   useEffect(() => {
     void loadChannels();
     const id = setInterval(() => void loadChannels(), linking ? 1500 : 5000);
@@ -33,7 +40,43 @@ export function WhatsAppSection() {
   }, [linking]);
   return (
     <>
-      {ready && (channel ? <Linked channel={channel} /> : <Setup />)}
+      {accounts.length > 0 && (
+        <SettingRow title={t("wa.account")}>
+          <Select
+            label={t("wa.account")}
+            value={found?.id ?? ""}
+            onValueChange={(id) => {
+              if (id) setSelected(id);
+              setAdding(false);
+            }}
+            options={accounts.map((c) => ({ value: c.id, label: c.account ?? c.label }))}
+          />
+          <Button size="sm" variant="secondary" leadingIcon={<Icons.Plus size={14} />} onClick={() => setAdding(true)}>
+            {t("wa.addAccount")}
+          </Button>
+        </SettingRow>
+      )}
+      {ready &&
+        (channel ? (
+          <Linked key={channel.id} channel={channel} />
+        ) : (
+          <>
+            <Setup
+              id={accounts.length ? undefined : CHANNEL_ID}
+              onLinked={(id) => {
+                setSelected(id);
+                setAdding(false);
+              }}
+            />
+            {found && (
+              <div>
+                <Button variant="ghost" onClick={() => setAdding(false)}>
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            )}
+          </>
+        ))}
       {channel && (
         <>
           {!channel.self_owner && <OwnerPhone channel={channel} />}
@@ -59,7 +102,8 @@ function Steps() {
   );
 }
 
-function Setup() {
+function Setup({ id: fixed, onLinked }: { id?: string; onLinked(id: string): void }) {
+  const [id] = useState(() => fixed ?? `whatsapp-${crypto.randomUUID().replaceAll("-", "").slice(0, 24)}`);
   const t = useT();
   const agents = useData((s) => s.agents);
   const secretary = Object.values(agents).find((a) => a.kind === "secretary");
@@ -68,8 +112,9 @@ function Setup() {
   const [busy, setBusy] = useState(false);
   const link = async () => {
     setBusy(true);
-    await saveChannel(CHANNEL_ID, { agent_id: agent, ...DEFAULTS, self_owner: selfOwner });
+    const saved = await saveChannel(id, { agent_id: agent, ...DEFAULTS, self_owner: selfOwner });
     setBusy(false);
+    if (saved) onLinked(id);
   };
   return (
     <div className="tgsetup">
