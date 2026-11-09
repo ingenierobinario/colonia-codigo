@@ -103,7 +103,7 @@ function Steps() {
 }
 
 function Setup({ id: fixed, onLinked }: { id?: string; onLinked(id: string): void }) {
-  const [id] = useState(() => fixed ?? `whatsapp-${crypto.randomUUID().replaceAll("-", "").slice(0, 24)}`);
+  const [id] = useState(() => fixed ?? `whatsapp-${crypto.randomUUID().replaceAll("-", "").slice(0, 16)}`);
   const t = useT();
   const agents = useData((s) => s.agents);
   const secretary = Object.values(agents).find((a) => a.kind === "secretary");
