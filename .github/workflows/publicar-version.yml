@@ -11,8 +11,11 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Etiqueta ya empujada a publicar (v2.X.Y)"
+        description: "Versión a publicar (v2.X.Y)"
         required: true
+      ref:
+        description: "Commit o rama a compilar (vacío = la etiqueta)"
+        default: ""
       prueba:
         description: "Publicarla como prelanzamiento: las apps instaladas la ignoran"
         type: boolean
@@ -37,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ inputs.ref || env.TAG }}
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Compilar
@@ -66,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ inputs.ref || env.TAG }}
           fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
@@ -76,8 +79,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
-          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
-          git tag -l --format='%(contents)' "$TAG" > notas.md
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
+          git tag -l --format='%(contents)' "$TAG" > notas.md || true
           [ -s notas.md ] || echo "- Colonia ${TAG#v}" > notas.md
           ls -la dist
           if gh release view "$TAG" -R "$FEED" >/dev/null 2>&1; then
