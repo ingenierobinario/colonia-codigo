@@ -49,7 +49,10 @@ export function WhatsAppSection() {
               if (id) setSelected(id);
               setAdding(false);
             }}
-            options={accounts.map((c) => ({ value: c.id, label: c.account ?? c.label }))}
+            options={accounts.map((c) => ({
+              value: c.id,
+              label: c.account && c.account !== c.label ? `${c.label} · ${c.account}` : c.label,
+            }))}
           />
           <Button size="sm" variant="secondary" leadingIcon={<Icons.Plus size={14} />} onClick={() => setAdding(true)}>
             {t("wa.addAccount")}

@@ -177,6 +177,7 @@ export const enChannels = {
   "ch.saved": "Contact saved.",
   "ch.youToAgent": "You → {agent}",
   "wa.account": "WhatsApp number",
+  "ch.nameHint": "To tell this channel apart from the others, e.g. Alexander or Carla.",
   "wa.addAccount": "Add another number",
   "em.account": "Email account",
   "em.addAccount": "Add email account",

@@ -193,6 +193,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "channel.telegram.name": "Telegram",
   "channel.discord.name": "Discord",
   "wa.account": "Número de WhatsApp",
+  "ch.nameHint": "Para distinguir este canal de los demás, por ejemplo Alexander o Carla.",
   "wa.addAccount": "Añadir otro número",
   "em.account": "Cuenta de email",
   "em.addAccount": "Añadir cuenta de email",

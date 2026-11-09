@@ -114,6 +114,9 @@ const TYPES = [
 export async function saveChannel(id: string, draft: ChannelDraft | null, token?: string): Promise<boolean> {
   // A setting shows changed at once; the core's answer confirms it (or a failure puts it back).
   const before = store.get().channels;
+  // CANAL-NOMBRE-1: a save that does not name the channel keeps the name it has (the core would reset it).
+  const label = before.find((c) => c.id === id)?.label;
+  if (draft && draft.label === undefined && label) draft = { ...draft, label };
   if (draft && before.some((c) => c.id === id))
     store.set({ channels: before.map((c) => (c.id === id ? { ...c, ...draft } : c)) });
   try {

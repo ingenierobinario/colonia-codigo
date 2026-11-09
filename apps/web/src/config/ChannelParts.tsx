@@ -43,6 +43,28 @@ const STRANGER_HINT: Record<ReturnType<typeof strangerMode>, MessageKey> = {
 };
 
 /** Who answers on the channel and how: the agent, where the owner's words go, overlapping messages, strangers. */
+/** CANAL-NOMBRE-1: the name the owner gives a channel ("Alexander", "Carla"), saved when they leave the field. */
+function ChannelName({ label, save }: { label: string; save(patch: Partial<ChannelDraft>): Promise<unknown> }) {
+  const t = useT();
+  const [value, setValue] = useState(label);
+  const commit = () => {
+    const name = value.trim().slice(0, 60);
+    if (name && name !== label) void save({ label: name });
+    else setValue(label);
+  };
+  return (
+    <Input
+      aria-label={t("ch.name")}
+      autoComplete="off"
+      maxLength={60}
+      value={value}
+      onChange={(e) => setValue(e.currentTarget.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+    />
+  );
+}
+
 export function Behavior({
   channel,
   save,
@@ -54,6 +76,9 @@ export function Behavior({
   return (
     <>
       <SubHead>{t("tg.behavior")}</SubHead>
+      <SettingRow title={t("ch.name")} description={t("ch.nameHint")}>
+        <ChannelName key={channel.label} label={channel.label} save={save} />
+      </SettingRow>
       <SettingRow title={t("tg.agent")} description={t("tg.agentHint", { channel: channel.label })}>
         <AgentSelect
           size="sm"
