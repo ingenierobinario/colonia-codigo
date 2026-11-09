@@ -119,7 +119,8 @@ export function createInbound(deps: {
     const supervised = !owner && !person.muted && person.supervised;
     // Outside the channel's hours a contact's message waits, unanswered, for them to begin (held.ts).
     const waits = !owner && !person.muted && waitsForHours(store, cfg, person, deps.now());
-    if (!owner && !person.muted && !supervised && !waits && overLimit(person.id, person.name)) return "ignored";
+    if (!cfg.read_only && !owner && !person.muted && !supervised && !waits && overLimit(person.id, person.name))
+      return "ignored";
     let text = m.text;
     const attachments: string[] = [];
     let voice: MediaRecord | undefined;
@@ -160,9 +161,11 @@ export function createInbound(deps: {
       }
     }
     // A silenced contact keeps its files without transcription, a model call or a work-folder copy.
-    if (!owner && person.muted) {
+    // CANAL-LECTURA-1: on a read-only channel every message, the owner's too, is only kept: no turn, no answer.
+    if (cfg.read_only || (!owner && person.muted)) {
       const said = m.voice ? `${text ? `${text}\n` : ""}[voice note]` : text;
-      keepQuiet(thread.id, cfg.id, person, said, attachments);
+      const kept = keepQuiet(thread.id, cfg.id, owner ? undefined : person, said, attachments);
+      if (cfg.read_only) theirLast(thread.id, cfg.id, m, kept);
       if (person.unreviewed) report(cfg, person, m.sender.id, said, thread.id);
       return "done";
     }
@@ -348,6 +351,14 @@ export function createInbound(deps: {
     if (cfg.strangers === "ignore") return "ignored";
     const t = channelTexts(store);
     const name = m.sender.name.slice(0, 80);
+    // CANAL-LECTURA-1: read only, a stranger is kept as a contact so their words can be read; no code goes out.
+    if (cfg.read_only) {
+      store.tx(() => {
+        const p = store.persons.create({ name, role: "contact" });
+        store.persons.link(p.id, { channel: cfg.id, external_id: m.sender.id, label: name });
+      });
+      return route(cfg.id, rowId, m);
+    }
     // Asked: kept as a silenced contact the owner has not reviewed. Their words show in their chat, unanswered, and
     // each message is reported to the owner, who can turn on answers.
     if (cfg.strangers === "ask") {

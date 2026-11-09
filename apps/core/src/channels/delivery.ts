@@ -11,7 +11,7 @@ import { type ChannelAdapter, SendError } from "./types.ts";
 const MAX_ATTEMPTS = 6;
 const NOT_RUNNING_RETRY_MS = 30_000;
 
-export type Target = { adapter: ChannelAdapter; running: boolean } | undefined;
+export type Target = { adapter: ChannelAdapter; running: boolean; read_only?: boolean } | undefined;
 
 export function createDelivery(deps: {
   store: Store;
@@ -67,6 +67,13 @@ export function createDelivery(deps: {
       return;
     }
     if (!store.channels.outbox.claim(o.id)) return;
+    // CANAL-LECTURA-1: a read-only channel sends nothing, whoever asks.
+    if (target.read_only) {
+      store.channels.outbox.fail(o.id, "failed", "read-only channel");
+      if (o.message_id) store.messages.setDelivery(o.message_id, "failed");
+      deps.failed?.(o);
+      return;
+    }
     // Answered elsewhere while it waited to go out: its buttons would ask nothing.
     const input = o.kind === "input" && o.body.input_id ? store.inputs.get(o.body.input_id) : undefined;
     if (input && input.state !== "pending") {

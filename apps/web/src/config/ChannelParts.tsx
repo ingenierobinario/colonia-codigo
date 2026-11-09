@@ -79,6 +79,18 @@ export function Behavior({
       <SettingRow title={t("ch.name")} description={t("ch.nameHint")}>
         <ChannelName key={channel.label} label={channel.label} save={save} />
       </SettingRow>
+      <SettingRow title={t("ch.access")} description={t("ch.accessHint")}>
+        <SegmentedControl
+          size="sm"
+          label={t("ch.access")}
+          value={channel.read_only ? "read" : "write"}
+          onValueChange={(v) => void save({ read_only: v === "read" })}
+          options={[
+            { value: "read", label: t("ch.access.read") },
+            { value: "write", label: t("ch.access.write") },
+          ]}
+        />
+      </SettingRow>
       <SettingRow title={t("tg.agent")} description={t("tg.agentHint", { channel: channel.label })}>
         <AgentSelect
           size="sm"

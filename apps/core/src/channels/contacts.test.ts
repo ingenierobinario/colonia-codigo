@@ -124,6 +124,36 @@ test("a silenced contact's message is kept and unread, never answered", async ()
   await env.client.call("contacts.set", { id: person, name: MAG.name, muted: false });
 });
 
+test("CANAL-LECTURA-1: a read-only channel keeps what arrives, answers nothing, sends nothing", async () => {
+  const set = (read_only: boolean) =>
+    env.client.call("channels.set", { id: "tg", channel: { type: "telegram", agent_id: "superagent", read_only } });
+  await set(true);
+  assert.equal((await env.client.call("channels.list", {})).channels[0]?.read_only, true);
+  const sent = tg.messagesTo(MAG.id).length;
+  const calls = llm.calls.length;
+  tg.message(MAG, "read only please");
+  await waitFor(async () => {
+    const { messages } = await env.client.call("threads.get", { thread });
+    return messages.some((m) => m.parts[0]?.type === "text" && m.parts[0].text === "read only please");
+  }, "message kept");
+  // A stranger is kept as a contact without a pairing code.
+  const STRANGER = { id: 2299, name: "Quiet Stranger" };
+  tg.message(STRANGER, "hi there");
+  await waitFor(
+    async () => (await env.client.call("contacts.list", {})).persons.some((p) => p.name.startsWith(STRANGER.name)),
+    "stranger kept",
+  );
+  // The owner's own words on the channel start no turn either.
+  tg.message(OWNER, "just reading");
+  // And nothing typed by hand goes out.
+  await env.client.call("channels.send", { thread, text: "should not leave" }).catch(() => {});
+  await new Promise((r) => setTimeout(r, 400));
+  assert.equal(tg.messagesTo(MAG.id).length, sent, "nothing went to the contact");
+  assert.equal(tg.messagesTo(STRANGER.id).length, 0, "no code to the stranger");
+  assert.equal(llm.calls.length, calls, "no model call");
+  await set(false);
+});
+
 test("a closing message is kept, never answered, and costs no model call", async () => {
   const sent = tg.messagesTo(MAG.id).length;
   const calls = llm.calls.length;

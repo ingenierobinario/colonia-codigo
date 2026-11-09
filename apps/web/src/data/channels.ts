@@ -69,6 +69,8 @@ export type ChannelDraft = {
   concurrency: ChannelInfo["concurrency"];
   owner_thread: ChannelInfo["owner_thread"];
   self_owner?: boolean | undefined;
+  /** Read only: kept for reading, nothing answered or sent (kept on every save). */
+  read_only?: boolean | undefined;
   /** Discord: the server rooms it reads and may speak in (kept on every save, or they would be dropped). */
   rooms?: ChannelInfo["rooms"];
   /** Silence or an emoji for a message that needs no answer (kept on every save). */
@@ -117,6 +119,9 @@ export async function saveChannel(id: string, draft: ChannelDraft | null, token?
   // CANAL-NOMBRE-1: a save that does not name the channel keeps the name it has (the core would reset it).
   const label = before.find((c) => c.id === id)?.label;
   if (draft && draft.label === undefined && label) draft = { ...draft, label };
+  // CANAL-LECTURA-1: likewise the read-only switch.
+  const readOnly = before.find((c) => c.id === id)?.read_only;
+  if (draft && draft.read_only === undefined && readOnly) draft = { ...draft, read_only: true };
   if (draft && before.some((c) => c.id === id))
     store.set({ channels: before.map((c) => (c.id === id ? { ...c, ...draft } : c)) });
   try {

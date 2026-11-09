@@ -1070,6 +1070,7 @@ export const appMethods = {
             concurrency: z.enum(["queue", "interrupt", "steer"]).default("steer"),
             owner_thread: z.enum(["home", "own"]).default("home"),
             self_owner: z.boolean().optional(),
+            read_only: z.boolean().optional(),
             rooms: ChannelRooms.optional(),
             closers: ChannelClosers.default(CHANNEL_DEFAULTS.closers),
             research: ChannelResearch.default(CHANNEL_DEFAULTS.research),

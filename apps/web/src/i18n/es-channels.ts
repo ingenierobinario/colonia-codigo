@@ -194,6 +194,11 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "channel.discord.name": "Discord",
   "wa.account": "Número de WhatsApp",
   "ch.nameHint": "Para distinguir este canal de los demás, por ejemplo Alexander o Carla.",
+  "ch.access": "Permiso",
+  "ch.accessHint":
+    "Solo lectura: se guarda lo que llega para leerlo, pero ni el agente contesta ni se envía nada por este canal.",
+  "ch.access.read": "Solo lectura",
+  "ch.access.write": "Lectura y escritura",
   "wa.addAccount": "Añadir otro número",
   "em.account": "Cuenta de email",
   "em.addAccount": "Añadir cuenta de email",

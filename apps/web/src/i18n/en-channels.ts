@@ -178,6 +178,11 @@ export const enChannels = {
   "ch.youToAgent": "You → {agent}",
   "wa.account": "WhatsApp number",
   "ch.nameHint": "To tell this channel apart from the others, e.g. Alexander or Carla.",
+  "ch.access": "Permission",
+  "ch.accessHint":
+    "Read only: what arrives is kept to read, but the agent never answers and nothing is sent on this channel.",
+  "ch.access.read": "Read only",
+  "ch.access.write": "Read and write",
   "wa.addAccount": "Add another number",
   "em.account": "Email account",
   "em.addAccount": "Add email account",
@@ -240,7 +245,8 @@ export const enChannels = {
     "Talk with your agents by text message, through a Twilio number. Only the people you approve reach them; replies arrive within a few seconds.",
   "sms.step1": "In Twilio, buy or pick a number that sends SMS.",
   "sms.step2": "Copy the Account SID and Auth Token from the console's Account Info.",
-  "sms.step3": "Paste them and the number below. No webhook is needed: Colonia checks for new messages every few seconds.",
+  "sms.step3":
+    "Paste them and the number below. No webhook is needed: Colonia checks for new messages every few seconds.",
   "sms.sid": "Account SID",
   "sms.token": "Auth token",
   "nt.lead":

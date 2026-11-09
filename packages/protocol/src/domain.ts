@@ -612,7 +612,12 @@ const KNOWN_PARTS: ReadonlySet<string> = new Set(KnownPart.options.map((o) => o.
 export const Part = z.preprocess((v) => {
   const type = (v as { type?: unknown } | null)?.type;
   return typeof type === "string" && !KNOWN_PARTS.has(type)
-    ? { type: "notice", level: "info", code: "part.unknown", text: `This part (${type}) needs a newer version of Colonia.` }
+    ? {
+        type: "notice",
+        level: "info",
+        code: "part.unknown",
+        text: `This part (${type}) needs a newer version of Colonia.`,
+      }
     : v;
 }, KnownPart);
 export type Part = z.infer<typeof KnownPart>;
@@ -1113,6 +1118,8 @@ export const ChannelInfo = z.object({
    * its own the agent answers on, and the owner writes to it from their phone (linked with a code or by number).
    */
   self_owner: z.boolean().optional(),
+  /** CANAL-LECTURA-1: read only: what arrives is kept for the owner and the agents to read; nothing is answered or sent. */
+  read_only: z.boolean().optional(),
   /** Discord: the server rooms it reads and may speak in; Telegram: its groups. None: only direct messages. */
   rooms: ChannelRooms.optional(),
   /**

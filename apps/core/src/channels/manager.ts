@@ -132,7 +132,9 @@ export function createChannels(deps: {
     log,
     target: (id) => {
       const l = live.get(id);
-      return l ? { adapter: l.adapter, running: l.status === "running" } : undefined;
+      return l
+        ? { adapter: l.adapter, running: l.status === "running", read_only: l.config.read_only === true }
+        : undefined;
     },
     configured: (id) => configs().some((c) => c.id === id),
     media: (id) => deps.services.read(id),
