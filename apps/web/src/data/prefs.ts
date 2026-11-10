@@ -28,6 +28,7 @@ export type Prefs = {
   /** Sidebar sections retain their folding independently. */
   channelsFolded: boolean;
   externalSessionsFolded: boolean;
+  appsFolded: boolean;
   /** Channels in the owner's sidebar order; the first three stay visible. */
   channelOrder: string[];
   /** A manual reorder stays in place until newer channel activity arrives. */
@@ -85,6 +86,7 @@ const DEFAULTS: Prefs = {
   projectsFolded: false,
   channelsFolded: false,
   externalSessionsFolded: false,
+  appsFolded: false,
   channelOrder: [],
   channelOrderAt: "",
   projectOrder: [],
@@ -116,6 +118,7 @@ function load(): Prefs {
       projectsFolded: raw.projectsFolded === true,
       channelsFolded: raw.channelsFolded === true,
       externalSessionsFolded: raw.externalSessionsFolded === true,
+      appsFolded: raw.appsFolded === true,
       channelOrder: Array.isArray(raw.channelOrder)
         ? [...new Set(raw.channelOrder.filter((id): id is string => typeof id === "string"))]
         : [],

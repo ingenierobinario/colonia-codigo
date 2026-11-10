@@ -20,7 +20,6 @@ import { ProjectsNav } from "./ProjectsNav.tsx";
 export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
   const t = useT();
   const view = useNav((s) => s.view);
-  const resourcesTab = useNav((s) => s.resourcesTab);
   const threads = useData((s) => s.threads);
   const computers = useData((s) => s.computers.shown);
   const screensInUse = useData((s) => s.computers.inUse);
@@ -88,15 +87,8 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
           collapsed={rail}
           icon={<Icons.Layers />}
           label={t("nav.resources")}
-          active={view === "resources" && resourcesTab !== "mcp"}
+          active={view === "resources"}
           onClick={() => go.view("resources")}
-        />
-        <NavItem
-          collapsed={rail}
-          icon={<Icons.Plug />}
-          label={t("nav.connectors")}
-          active={view === "resources" && resourcesTab === "mcp"}
-          onClick={() => go.resources("mcp", true)}
         />
         <NavItem
           collapsed={rail}

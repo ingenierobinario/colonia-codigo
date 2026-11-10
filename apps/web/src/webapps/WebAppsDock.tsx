@@ -2,6 +2,7 @@
 import type { WebApp } from "@colonia/protocol";
 import { Button, ContextMenu, Dialog, IconButton, Icons, Input, Menu, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
+import { usePrefs } from "../data/prefs.ts";
 import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
 import { addProgram, canPinPrograms, ProgramItems } from "../programs/ProgramsDock.tsx";
@@ -40,9 +41,12 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
   const view = useNav((s) => s.view);
   const current = useNav((s) => s.webAppId);
   const [editing, setEditing] = useState<WebApp | "new">();
+  const folded = usePrefs((s) => s.appsFolded);
   useEffect(() => {
     void loadWebApps();
   }, []);
+  // Folded with the rest of Aplicaciones (the rail always shows the icons).
+  if (folded && !rail) return null;
 
   const plus = (
     <IconButton

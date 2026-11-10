@@ -1,10 +1,21 @@
 import type { McpServerStatus } from "@colonia/protocol";
-import { Button, ContextMenu, Dialog, EmptyState, Icons, MasterDetail, type MenuEntry, PickRow, Tag } from "@colonia/ui";
+import {
+  Button,
+  ContextMenu,
+  Dialog,
+  EmptyState,
+  Icons,
+  MasterDetail,
+  type MenuEntry,
+  PickRow,
+  Tag,
+} from "@colonia/ui";
 import { useState } from "react";
 import { projectName } from "../data/identity.ts";
 import { setMcp, setMcpToolMode, toggleMcp, trustMcp } from "../data/resources.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { ConnectorCatalog, ConnectorCatalogDialog } from "./ConnectorCatalog.tsx";
 import { mcpDot, STATUS_KEY } from "./labels.ts";
 import { McpDetail } from "./McpDetail.tsx";
 import { McpDialog } from "./McpDialog.tsx";
@@ -26,6 +37,7 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
   const [permissionRequest, setPermissionRequest] = useState(0);
   const [permissionServer, setPermissionServer] = useState<string>();
   const [toolReload, setToolReload] = useState(0);
+  const [catalog, setCatalog] = useState(false);
   const [permissionsBusy, setPermissionsBusy] = useState(false);
   const all = res.data.servers;
   const shown = (all ?? []).filter(
@@ -173,10 +185,22 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
           icon={<Icons.Server />}
           title={t("res.noMcp")}
           action={
-            <Button size="sm" leadingIcon={<Icons.Plus size={14} />} onClick={() => setAdding(true)}>
-              {t("res.add.mcp")}
+            <Button
+              size="sm"
+              variant="secondary"
+              leadingIcon={<Icons.Plus size={14} />}
+              onClick={() => setAdding(true)}
+            >
+              {t("res.catalog.custom")}
             </Button>
           }
+        />
+        <ConnectorCatalog
+          servers={all}
+          onAdded={async (name) => {
+            await res.loadServers();
+            setPicked(`global::${name}`);
+          }}
         />
         {newServer}
       </div>
@@ -189,32 +213,45 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
         backLabel={t("res.tab.mcp")}
         onBack={() => setPicked(undefined)}
         list={
-          all && !shown.length ? (
-            <EmptyState variant="dashed" size="sm" icon={<Icons.Server />}>
-              {query ? t("res.noMatch") : t("res.noMcp")}
-            </EmptyState>
-          ) : projectId ? (
-            <ScopedGroups
-              ownTitle={groups[0]?.title ?? ""}
-              own={groups[0]?.items ?? []}
-              globals={groups[1]?.items ?? []}
-              inherit={inherit}
-              emptyOwn={t("res.noOwnMcp")}
-              render={row}
-              ownOnly={ownOnly}
-            />
-          ) : (
-            groups
-              .filter((g) => g.items.length)
-              .map((g) => (
-                <div key={g.title} className="resv__group">
-                  <div className="resv__grouptitle">
-                    {g.title} <span>{g.items.length}</span>
+          <>
+            {!projectId && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="catalog__open"
+                leadingIcon={<Icons.LayoutGrid size={14} />}
+                onClick={() => setCatalog(true)}
+              >
+                {t("res.catalog.open")}
+              </Button>
+            )}
+            {all && !shown.length ? (
+              <EmptyState variant="dashed" size="sm" icon={<Icons.Server />}>
+                {query ? t("res.noMatch") : t("res.noMcp")}
+              </EmptyState>
+            ) : projectId ? (
+              <ScopedGroups
+                ownTitle={groups[0]?.title ?? ""}
+                own={groups[0]?.items ?? []}
+                globals={groups[1]?.items ?? []}
+                inherit={inherit}
+                emptyOwn={t("res.noOwnMcp")}
+                render={row}
+                ownOnly={ownOnly}
+              />
+            ) : (
+              groups
+                .filter((g) => g.items.length)
+                .map((g) => (
+                  <div key={g.title} className="resv__group">
+                    <div className="resv__grouptitle">
+                      {g.title} <span>{g.items.length}</span>
+                    </div>
+                    {g.items.map(row)}
                   </div>
-                  {g.items.map(row)}
-                </div>
-              ))
-          )
+                ))
+            )}
+          </>
         }
         detail={
           current && (
@@ -237,6 +274,16 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
           </EmptyState>
         }
       />
+      {catalog && (
+        <ConnectorCatalogDialog
+          servers={all}
+          onClose={() => setCatalog(false)}
+          onAdded={async (name) => {
+            await res.loadServers();
+            setPicked(`global::${name}`);
+          }}
+        />
+      )}
       {editing && (
         <McpDialog
           server={editing}
