@@ -39,6 +39,11 @@ const refArg = z
   .describe("ref like e12, from the last snapshot");
 
 export function browserTools(store: Store, home: string, vm?: { hasThread(id: string): boolean }): Tool[] {
+  // WEBAPP-3: a web app the owner pinned in the sidebar keeps its own sign-in (profile app:<id>). Agents may open it
+  // there, signed in as the owner left it, and drive those tabs as their own.
+  const webApp = (id: unknown) => store.settings.read("webapps").find((w) => w.id === id);
+  const mine = (agent: AgentRecord, profile: string) =>
+    profile === profileFor(agent) || (profile.startsWith("app:") && Boolean(webApp(profile.slice(4))));
   /** The model looks at the tab itself: the tree alone misses images, charts and slides. */
   const look = async (ctx: ToolContext, tab: string) => {
     if (!ctx.see) return;
@@ -77,15 +82,14 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
   const own = async (ctx: Pick<ToolContext, "agent" | "call">, id: string): Promise<string> => {
     const t = (await ctx.call("browser.tabs", {})).tabs.find((x) => x.tab === id);
     if (!t) throw new Error(`unknown tab ${id}; open one with browser_open`);
-    if (t.profile !== profileFor(ctx.agent))
-      throw new Error(`tab ${id} belongs to another browser profile; open your own tab`);
+    if (!mine(ctx.agent, t.profile)) throw new Error(`tab ${id} belongs to another browser profile; open your own tab`);
     if (t.control.kind === "agent" && t.control.by !== ctx.agent.id)
       throw new Error(`tab ${id} is being used by another agent; open your own tab`);
     return id;
   };
 
   /** The newest tab this chat's cards show that the agent may still drive: browsing goes on there, not in a new tab. */
-  const chatTab = async (ctx: ToolContext): Promise<string | undefined> => {
+  const chatTab = async (ctx: ToolContext, profile = profileFor(ctx.agent)): Promise<string | undefined> => {
     const shown = store.messages
       .list(ctx.thread.id, CHAT_TAB_LOOKBACK)
       .flatMap((m) => m.parts.flatMap((p) => (p.type === "browser" ? [p.tab] : [])))
@@ -95,7 +99,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
     return shown.find((id) => {
       const t = open.find((x) => x.tab === id);
       return (
-        t?.profile === profileFor(ctx.agent) &&
+        t?.profile === profile &&
         (t.control.kind === "idle" || (t.control.kind === "agent" && t.control.by === ctx.agent.id))
       );
     });
@@ -107,25 +111,35 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_open",
       description:
-        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
+        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it. Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
       args: z.object({
-        url: z.string().describe("http(s) URL"),
+        url: z.string().optional().describe("http(s) URL; optional with `app`"),
+        app: z
+          .string()
+          .max(64)
+          .optional()
+          .describe("id of one of the owner's web apps (list_apps), to use its sign-in"),
         tab: tabArg.optional().describe("tab id to load it in"),
         new_tab: z.boolean().optional().describe("open another tab instead of reusing this chat's"),
       }),
       effect: "external",
-      confirm: (a) => urlConfirm(a.url),
+      confirm: (a) => urlConfirm(a.url ?? webApp(a.app)?.url),
       untrustedWhy: "url_data",
       deadlineMs: 30_000,
-      title: (a) => `Opened ${host(a.url)}`,
+      title: (a) => `Opened ${host(a.url ?? webApp(a.app)?.url ?? a.app)}`,
       async run(a, ctx) {
-        const reuse = a.tab ? await own(ctx, a.tab) : a.new_tab ? undefined : await chatTab(ctx);
+        const app = a.app === undefined ? undefined : webApp(a.app);
+        if (a.app !== undefined && !app) throw new Error(`no web app ${a.app}; list_apps gives their ids`);
+        const url = a.url ?? app?.url;
+        if (!url) throw new Error("give a url, or the id of a web app as app");
+        const profile = app ? `app:${app.id}` : profileFor(ctx.agent);
+        const reuse = a.tab ? await own(ctx, a.tab) : a.new_tab ? undefined : await chatTab(ctx, profile);
         if (reuse) {
-          const r = await ctx.call("browser.navigate", { tab: reuse, url: a.url, by: ctx.agent.id });
+          const r = await ctx.call("browser.navigate", { tab: reuse, url, by: ctx.agent.id });
           await card(ctx, reuse, "agent");
           return `tab ${reuse} · ${r.title} · ${r.url}\nNext: browser_snapshot to see the page.`;
         }
-        const t = await ctx.call("browser.open", { url: a.url, profile: profileFor(ctx.agent), by: ctx.agent.id });
+        const t = await ctx.call("browser.open", { url, profile, by: ctx.agent.id });
         await card(ctx, t.tab, "agent");
         return `tab ${t.tab} · ${t.title} · ${t.url}\nNext: browser_snapshot to see the page.`;
       },

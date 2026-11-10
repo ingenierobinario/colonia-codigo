@@ -17,6 +17,7 @@ const QUERIES: Record<string, { query: string; why?: string }> = {
 const llm = scriptedLlm((req, { said, afterTool }) => {
   if (afterTool) return say(String(req.messages.at(-1)?.content));
   const q = QUERIES[said];
+  if (said === "what apps do I have") return callTool("c1", "list_apps", {});
   return q ? callTool("c1", "suggest_connection", q) : say("ok");
 });
 
@@ -123,4 +124,18 @@ test("a name wins over descriptions, and a connected one comes first on a tie", 
     ["gmail", "email"],
   );
   assert.deepEqual(findConnectable(POOL, "the of my"), []);
+});
+
+test("WEBAPP-3: list_apps shows the owner's web apps, with their connector, and the other connectors", async () => {
+  await env.client.call("webapps.set", { id: "bs", app: { name: "Business Stack", url: "https://bs.example.com/" } });
+  await env.client.call("webapps.set", {
+    id: "crm",
+    app: { name: "CRM", url: "https://crm.example.com/", mcp: "https://crm.example.com/mcp" },
+  });
+  await env.client.call("mcp.set", { name: "railway", server: { url: "https://mcp.railway.com" } });
+  const { answer } = await ask("what apps do I have");
+  assert.match(answer, /- Business Stack \(app: bs\) · https:\/\/bs\.example\.com\/\n/);
+  assert.match(answer, /- CRM \(app: crm\) · https:\/\/crm\.example\.com\/ · connector: mcp_search server webapp-crm/);
+  assert.match(answer, /Connectors[^\n]*\n- railway$/m);
+  assert.doesNotMatch(answer, /^- webapp-crm$/m, "an app's own connector is listed with the app, not twice");
 });

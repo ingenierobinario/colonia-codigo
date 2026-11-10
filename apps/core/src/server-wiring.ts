@@ -165,7 +165,7 @@ export function builtinTools(
     ...browserTools(store, home, vm),
     ...surfaceTools(store, home),
     ...ownerTools(store),
-    ...connectionTools(),
+    ...connectionTools(store),
     ...shellTools(store, home, port, vm),
     ...vmTools(vm),
     ...fileTools(store, home),

@@ -2,6 +2,8 @@
 // agent offers to connect it instead of only saying it cannot: a card in the chat opens that one's form.
 import type { ConnectOffer } from "@colonia/protocol";
 import { z } from "zod";
+import type { Store } from "../domain/store.ts";
+import { webAppServer } from "../rpc/webapps.ts";
 import { defineTool, type Tool } from "./types.ts";
 
 /** Offers on one card: the best few, not the catalog. */
@@ -12,8 +14,36 @@ const WHERE = { integration: "Resources › Integrations", channel: "Settings �
 
 const named = (o: ConnectOffer) => `${o.label} (${o.kind}${o.coming ? ", coming soon" : ""})`;
 
-export function connectionTools(): Tool[] {
+export function connectionTools(store: Store): Tool[] {
   return [
+    // WEBAPP-3: what the owner connected, internal (web apps pinned in Colonia) and external (connectors), in one look.
+    defineTool({
+      name: "list_apps",
+      description:
+        "The apps the owner connected to Colonia, so you use them instead of saying you cannot: their web apps (each opens with its own sign-in: browser_open with `app`; one with a connector also has tools) and their connectors (MCP servers: find their tools with mcp_search). Use it when asked about an app, an account or a service the owner works with.",
+      args: z.object({}),
+      effect: "none",
+      deadlineMs: 5_000,
+      title: () => "Looked at the connected apps",
+      async run() {
+        const apps = store.settings.read("webapps");
+        const servers = Object.keys(
+          (JSON.parse(store.settings.get("mcp_servers") ?? "{}") as { mcpServers?: Record<string, unknown> })
+            .mcpServers ?? {},
+        );
+        const own = new Set(apps.map((a) => webAppServer(a.id)));
+        const web = apps.map(
+          (a) =>
+            `- ${a.name} (app: ${a.id}) · ${a.url}${servers.includes(webAppServer(a.id)) ? ` · connector: mcp_search server ${webAppServer(a.id)}` : ""}`,
+        );
+        const ext = servers.filter((s) => !own.has(s)).map((s) => `- ${s}`);
+        return [
+          `Web apps in Colonia (browser_open with app: <id>, signed in as the owner left them):\n${web.join("\n") || "- none"}`,
+          `Connectors (mcp_search with server: <name>; one that is off or not signed in answers nothing):\n${ext.join("\n") || "- none"}`,
+          "Not listed: suggest_connection offers to connect it.",
+        ].join("\n\n");
+      },
+    }),
     defineTool({
       name: "suggest_connection",
       description:

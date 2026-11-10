@@ -58,6 +58,7 @@ export const SPANISH_TITLES: Record<string, (a: Args) => string> = {
   search_owner_notes: (a) => `Buscó «${str(a.query, 60)}» en tus notas`,
   contact_requests: () => "Revisó quién está esperando",
   suggest_connection: (a) => `Buscó ${str(a.query, 60)} para conectar`,
+  list_apps: () => "Miró las aplicaciones conectadas",
   answer_contact_request: (a) => (a.decision === "answer" ? `Dejó pasar a ${str(a.code)}` : `Ignoró a ${str(a.code)}`),
   search_chats: (a) => `Buscó «${str(a.query, 60)}» en los chats`,
   read_chat: (a) => `Leyó el chat ${str(a.chat)}`,

@@ -19,10 +19,13 @@ const BROWSE: Array<[string, object[]]> = [
     ],
   ],
   ["go to t1", [{ url: "https://example.com/t1", tab: "t1" }]],
+  ["open the crm", [{ app: "crm" }, { app: "crm", url: "https://crm.example.com/deals" }]],
+  ["open a stranger app", [{ app: "nope" }]],
 ];
 
 /** The model the scripted calls report: one that reads images unless a test says otherwise. */
 let model = "fake/gpt-4o";
+const profiles: string[] = [];
 let requestedFile: { path: string; sha256: string } | undefined;
 const llm = scriptedLlm((req, { said, afterTool }) => {
   const looks = req.messages.filter((m) => m.role === "tool").length;
@@ -92,9 +95,10 @@ before(async () => {
       return { url: "https://example.com/", json: "42" };
     }
     if (method === "browser.open") {
-      const { url } = params as { url: string };
+      const { url, profile } = params as { url: string; profile: string };
       opened.push(url);
-      const t = { tab: `t${tabs.length + 1}`, url, title: "Page", profile: "shared", control: { kind: "idle" } };
+      profiles.push(profile);
+      const t = { tab: `t${tabs.length + 1}`, url, title: "Page", profile, control: { kind: "idle" } };
       tabs.push(t);
       return t;
     }
@@ -353,4 +357,26 @@ test("a URL that carries data after a page was read waits, and the card says why
   assert.match(prompt, /URL/);
   assert.match(prompt, /lleva datos/);
   assert.match(prompt, /contenido de una web/);
+});
+
+test("WEBAPP-3: browser_open with app opens the owner's web app in its own sign-in, and goes on in that tab", async () => {
+  await env.client.call("webapps.set", { id: "crm", app: { name: "CRM", url: "https://crm.example.com/" } });
+  opened.length = 0;
+  profiles.length = 0;
+  navigated.length = 0;
+  const thread = (await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" })).id;
+  await env.client.call("threads.send", { thread, text: "open the crm" });
+  await env.settle(thread);
+  assert.deepEqual(opened, ["https://crm.example.com/"]);
+  assert.deepEqual(profiles, ["app:crm"]);
+  const tab = tabs.find((t) => t.url === "https://crm.example.com/")?.tab;
+  assert.deepEqual(navigated, [{ tab, url: "https://crm.example.com/deals" }]);
+});
+
+test("WEBAPP-3: an app the owner did not pin opens nothing", async () => {
+  opened.length = 0;
+  const thread = (await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" })).id;
+  await env.client.call("threads.send", { thread, text: "open a stranger app" });
+  await env.settle(thread);
+  assert.deepEqual(opened, []);
 });
