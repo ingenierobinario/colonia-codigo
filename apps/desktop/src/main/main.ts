@@ -34,6 +34,7 @@ import { artifactOwners, itemName, memoryReport, memoryText, memoryWatch, size }
 import { nativeUpdates } from "./native-updates.ts";
 import { startNodeLink } from "./node-link.ts";
 import { openedIn, openedQueue } from "./opened-files.ts";
+import { createPrograms } from "./programs.ts";
 import { createQuick, type DesktopPrefs } from "./quick.ts";
 import { confirmQuit } from "./quit-confirm.ts";
 import { createUpdateMenu } from "./update-menu.ts";
@@ -507,6 +508,33 @@ app.whenReady().then(() => {
     const r = await dialog.showOpenDialog(win, { properties: ["openDirectory", "createDirectory"] });
     return r.canceled ? undefined : r.filePaths[0];
   });
+  // PROGRAMAS-1: the owner's desktop programs; picked with the system dialog, launched by id. Only the panel asks.
+  const programs = createPrograms({
+    file: path.join(app.getPath("userData"), "programs.json"),
+    platform: process.platform,
+    pick: async (filters) => {
+      const r = await dialog.showOpenDialog(win, {
+        properties: ["openFile", "multiSelections"],
+        filters,
+        defaultPath:
+          process.platform === "darwin" ? "/Applications" : process.platform === "win32" ? process.env.ProgramFiles : undefined,
+      });
+      return r.canceled ? [] : r.filePaths;
+    },
+    openPath: (p) => shell.openPath(p),
+    icon: async (p) => (await app.getFileIcon(p, { size: "normal" })).toDataURL(),
+  });
+  ipcMain.handle("programs:list", (e) => (e.sender === panel.webContents ? programs.list() : []));
+  ipcMain.handle("programs:add", (e) => (e.sender === panel.webContents ? programs.add() : []));
+  ipcMain.handle("programs:rename", (e, id: unknown, name: unknown) =>
+    e.sender === panel.webContents ? programs.rename(String(id), String(name)) : [],
+  );
+  ipcMain.handle("programs:remove", (e, id: unknown) =>
+    e.sender === panel.webContents ? programs.remove(String(id)) : [],
+  );
+  ipcMain.handle("programs:launch", (e, id: unknown) =>
+    e.sender === panel.webContents ? programs.launch(String(id)) : "denied",
+  );
   ipcMain.on("desktop:attention", (e, unread: unknown) => {
     if (e.sender !== panel.webContents || typeof unread !== "number") return;
     quick.badge(unread);

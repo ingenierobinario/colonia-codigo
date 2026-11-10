@@ -18,7 +18,7 @@ export const enResources = {
     "Skills, MCP servers, integrations and variables. They live globally or inside a project; each project inherits the global ones and can turn them off or override them without touching the original.",
   "res.tabs": "What to show",
   "res.tab.skills": "Skills",
-  "res.tab.mcp": "MCP",
+  "res.tab.mcp": "Connectors",
   "res.tab.integrations": "Integrations",
   "res.tab.variables": "Variables",
   "res.tab.extensions": "Extensions",

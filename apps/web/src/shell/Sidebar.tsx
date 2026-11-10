@@ -7,7 +7,7 @@ import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { unreadListed } from "../inbox/groupThreads.ts";
-import { AppsDock, CornerCards, DesktopInstallNotice, WebAppsDock } from "../lazy.ts";
+import { AppsDock, CornerCards, DesktopInstallNotice, ProgramsDock, WebAppsDock } from "../lazy.ts";
 import { AccountRow } from "./AccountRow.tsx";
 import { ChannelsNav } from "./ChannelsNav.tsx";
 import { ExternalSessionsNav } from "./ExternalSessionsNav.tsx";
@@ -20,6 +20,7 @@ import { ProjectsNav } from "./ProjectsNav.tsx";
 export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
   const t = useT();
   const view = useNav((s) => s.view);
+  const resourcesTab = useNav((s) => s.resourcesTab);
   const threads = useData((s) => s.threads);
   const computers = useData((s) => s.computers.shown);
   const screensInUse = useData((s) => s.computers.inUse);
@@ -87,8 +88,15 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
           collapsed={rail}
           icon={<Icons.Layers />}
           label={t("nav.resources")}
-          active={view === "resources"}
+          active={view === "resources" && resourcesTab !== "mcp"}
           onClick={() => go.view("resources")}
+        />
+        <NavItem
+          collapsed={rail}
+          icon={<Icons.Plug />}
+          label={t("nav.connectors")}
+          active={view === "resources" && resourcesTab === "mcp"}
+          onClick={() => go.resources("mcp", true)}
         />
         <NavItem
           collapsed={rail}
@@ -120,6 +128,9 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
         </Suspense>
         <Suspense fallback={null}>
           <WebAppsDock rail={rail} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ProgramsDock rail={rail} />
         </Suspense>
       </div>
       {!rail && (

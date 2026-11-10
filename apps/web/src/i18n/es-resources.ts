@@ -21,7 +21,7 @@ export const esResources: Partial<Record<MessageKey, string>> = {
     "Skills, MCP, integraciones y variables. Viven globales o dentro de un proyecto; cada proyecto hereda las globales y puede apagarlas o pisarlas sin tocar la original.",
   "res.tabs": "Qué mostrar",
   "res.tab.skills": "Skills",
-  "res.tab.mcp": "MCP",
+  "res.tab.mcp": "Conectores",
   "res.tab.integrations": "Integraciones",
   "res.tab.variables": "Variables",
   "res.tab.extensions": "Extensiones",

@@ -24,6 +24,9 @@ export const AttachChips = lazy(() =>
 
 // Screens and dialogs loaded when first opened: the chat is what the panel opens on.
 export const WebAppScreen = lazy(() => import("./webapps/WebAppScreen.tsx").then((m) => ({ default: m.WebAppScreen })));
+export const ProgramsDock = lazy(() =>
+  import("./programs/ProgramsDock.tsx").then((m) => ({ default: m.ProgramsDock })),
+);
 export const WebAppsDock = lazy(() => import("./webapps/WebAppsDock.tsx").then((m) => ({ default: m.WebAppsDock })));
 export const AppScreen = lazy(() => import("./apps/AppScreen.tsx").then((m) => ({ default: m.AppScreen })));
 export const ChannelScreen = lazy(() =>

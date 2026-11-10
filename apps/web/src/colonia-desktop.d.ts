@@ -6,6 +6,9 @@ type ConnectAnswer =
 /** A question ssh asks while logging in: masked (`secret`) for a password or passphrase, plain for yes/no. */
 export type SshPrompt = { id: string; text: string; secret: boolean };
 
+/** PROGRAMAS-1: a desktop program pinned in the sidebar (icon: a data: URL from the system). */
+export type DesktopProgram = { id: string; name: string; path: string; icon?: string };
+
 /** The desktop app's own update (it carries its own core). */
 export type DesktopUpdate = {
   current: string;
@@ -101,6 +104,14 @@ declare global {
       setTitleBar?(mode: "light" | "dark"): void;
       /** The system's folder dialog; undefined when the owner cancels. */
       pickFolder?(): Promise<string | undefined>;
+      /** PROGRAMAS-1: the owner's desktop programs on this computer (icon: a data: URL). */
+      programs?(): Promise<DesktopProgram[]>;
+      /** Opens the system's file dialog; the list after adding what the owner picked. */
+      addProgram?(): Promise<DesktopProgram[]>;
+      renameProgram?(id: string, name: string): Promise<DesktopProgram[]>;
+      removeProgram?(id: string): Promise<DesktopProgram[]>;
+      /** "" when it started; "missing" when the file is gone; else why not. */
+      launchProgram?(id: string): Promise<string>;
       /** Whether a newer Colonia app is out; `check` asks the release feed now. */
       updateStatus?(check?: boolean): Promise<DesktopUpdate | undefined>;
       /** Downloads the newer app and leaves it ready (`ready: false`: opened for the owner to drag in). */

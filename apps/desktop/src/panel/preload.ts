@@ -85,6 +85,13 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
   /** Runs an app menu item (about, update, change-connection): Windows and Linux have no menu bar to show it. */
   menuAction: (id: string) => ipcRenderer.send("desktop:menu-action", String(id)),
   pickFolder: (): Promise<string | undefined> => ipcRenderer.invoke("panel:pick-folder"),
+  /** PROGRAMAS-1: the owner's desktop programs (picked with the system dialog, launched by id). */
+  programs: (): Promise<unknown> => ipcRenderer.invoke("programs:list"),
+  addProgram: (): Promise<unknown> => ipcRenderer.invoke("programs:add"),
+  renameProgram: (id: string, name: string): Promise<unknown> =>
+    ipcRenderer.invoke("programs:rename", String(id), String(name)),
+  removeProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:remove", String(id)),
+  launchProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:launch", String(id)),
   memory: (): Promise<unknown> => ipcRenderer.invoke("desktop:memory"),
   /** Whether a newer Colonia app is out (check: ask the release feed now). */
   updateAuth: (token?: string) => ipcRenderer.send("desktop:update-auth", token),
