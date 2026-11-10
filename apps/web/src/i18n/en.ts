@@ -1364,6 +1364,7 @@ export const en = {
   "res.catalog.cat.work": "Work and teams",
   "res.catalog.cat.docs": "Docs and files",
   "res.catalog.cat.marketing": "Marketing",
+  "res.catalog.cat.social": "Social media",
   "res.catalog.cat.data": "Data and AI",
   "res.catalog.keyNeeded": "Asks for a key you create in the service itself",
   "res.catalog.keyHow": "How to get it",

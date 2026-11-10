@@ -12,7 +12,7 @@ import { useState } from "react";
 import { type McpDraft, setMcp, setSecret } from "../data/resources.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
 
-type Category = "work" | "docs" | "design" | "sales" | "marketing" | "web" | "data" | "dev";
+type Category = "work" | "docs" | "design" | "sales" | "marketing" | "social" | "web" | "data" | "dev";
 type Key = { env: string; label: [es: string, en: string]; bearer?: boolean };
 type Connector = {
   id: string;
@@ -508,20 +508,12 @@ export const CONNECTORS: readonly Connector[] = [
     "Tráfico de webs",
     "Web traffic",
   ),
-  r(
-    "buffer",
-    "Buffer",
-    "buffer.com",
-    "marketing",
-    "https://mcp.buffer.com/mcp",
-    "Publicaciones en redes",
-    "Social posts",
-  ),
+  r("buffer", "Buffer", "buffer.com", "social", "https://mcp.buffer.com/mcp", "Publicaciones en redes", "Social posts"),
   r(
     "metricool",
     "Metricool",
     "metricool.com",
-    "marketing",
+    "social",
     "https://ai.metricool.com/mcp",
     "Redes y analítica",
     "Social and analytics",
@@ -554,6 +546,26 @@ export const CONNECTORS: readonly Connector[] = [
     "Your newsletter",
   ),
   r("resend", "Resend", "resend.com", "marketing", "https://mcp.resend.com/mcp", "Envío de correos", "Email sending"),
+  // Redes sociales
+  r(
+    "businessstack",
+    "Business Stack",
+    "business-stack.ingenierobinario.com",
+    "social",
+    "https://business-stack.ingenierobinario.com/mcp",
+    "Instagram, Facebook, LinkedIn, TikTok, YouTube y X desde tu panel",
+    "Instagram, Facebook, LinkedIn, TikTok, YouTube and X from your panel",
+  ),
+  {
+    id: "posteverywhere",
+    name: "PostEverywhere",
+    domain: "posteverywhere.ai",
+    category: "social",
+    npx: ["@posteverywhere/mcp"],
+    help: "https://app.posteverywhere.ai/developers",
+    keys: [{ env: "POSTEVERYWHERE_API_KEY", label: ["Clave de PostEverywhere", "PostEverywhere key"] }],
+    desc: ["Publica en Instagram, TikTok, LinkedIn y más", "Post to Instagram, TikTok, LinkedIn and more"],
+  },
   // Web y tienda
   r(
     "webflow",
@@ -960,7 +972,17 @@ export const CONNECTORS: readonly Connector[] = [
   },
 ];
 
-const CATEGORIES: readonly Category[] = ["work", "docs", "design", "sales", "marketing", "web", "data", "dev"];
+const CATEGORIES: readonly Category[] = [
+  "work",
+  "docs",
+  "design",
+  "sales",
+  "marketing",
+  "social",
+  "web",
+  "data",
+  "dev",
+];
 
 /** The variable a connector's key is kept under. */
 const secretName = (c: Connector, k: Key) => `conector_${c.id}_${k.env}`.replace(/[^a-zA-Z0-9_.-]/g, "_");

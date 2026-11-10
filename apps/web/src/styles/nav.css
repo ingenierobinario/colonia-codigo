@@ -246,6 +246,22 @@
   padding: 8px 8px 10px;
   border-top: 1px solid var(--colonia-border);
 }
+.sidebar__sign {
+  flex: none;
+  padding: 0 12px 8px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--colonia-fg-muted);
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+.sidebar.is-rail .sidebar__sign {
+  text-align: center;
+  padding: 0 0 8px;
+}
 .sidebar .colonia-nav--collapsed {
   justify-content: flex-start;
   padding: 0 10px;

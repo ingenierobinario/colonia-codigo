@@ -17,6 +17,8 @@ import { go, useNav } from "./nav.ts";
 import { ProjectsNav } from "./ProjectsNav.tsx";
 
 /** Inbox · Tasks · Flows · Resources · Files (pinned) · Channels · Projects · External sessions · Apps · account (with Settings). `rail` = 60px icons. */
+const SIGNATURE = "© 2026 · by LeadMatch · Ingeniero Binario";
+
 export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
   const t = useT();
   const view = useNav((s) => s.view);
@@ -135,6 +137,10 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
       <div className="sidebar__foot">
         <HelpMenu rail={rail} />
         <AccountRow rail={rail} />
+      </div>
+      {/* FIRMA-1: the maker's signature, small and always there. */}
+      <div className="sidebar__sign" title={SIGNATURE}>
+        {rail ? "©" : SIGNATURE}
       </div>
     </aside>
   );

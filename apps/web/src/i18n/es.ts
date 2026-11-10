@@ -1368,6 +1368,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "res.catalog.cat.work": "Trabajo y equipo",
   "res.catalog.cat.docs": "Documentos y archivos",
   "res.catalog.cat.marketing": "Marketing",
+  "res.catalog.cat.social": "Redes sociales",
   "res.catalog.cat.data": "Datos e IA",
   "res.catalog.keyNeeded": "Pide una clave que creas en el propio servicio",
   "res.catalog.keyHow": "Cómo conseguirla",
