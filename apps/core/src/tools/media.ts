@@ -53,6 +53,34 @@ export function mediaTools(store: Store, home: string, vm?: { hasThread(id: stri
       },
     }),
     defineTool({
+      name: "task_notes",
+      description:
+        "Rewrite this chat's task notebook (goal, decisions, done, pending, files, next step, open questions). Shown every turn and kept when a new context window opens: keep it current on long tasks. Replaces the whole text.",
+      args: z.object({ text: z.string().max(8000) }),
+      effect: "local",
+      deadlineMs: 5_000,
+      title: () => "Updated the task notebook",
+      async run(a, ctx) {
+        const text = a.text.trim();
+        store.threads.mergeContext(ctx.thread.id, {
+          notebook: text ? { text, at: new Date().toISOString() } : undefined,
+        });
+        return text ? "task notebook saved." : "task notebook cleared.";
+      },
+    }),
+    defineTool({
+      name: "search_earlier",
+      description:
+        "Search this chat's whole earlier conversation, summarized parts included, for a word or phrase: short excerpts.",
+      args: z.object({ query: z.string().trim().min(2).max(200), limit: z.number().int().min(1).max(20).optional() }),
+      effect: "local",
+      deadlineMs: 10_000,
+      title: (a) => `Searched earlier messages for "${a.query}"`,
+      async run(a, ctx) {
+        return searchEarlier(store, ctx.thread.id, a.query, a.limit ?? 8);
+      },
+    }),
+    defineTool({
       name: "make_image",
       description:
         "Draw an image, shown in this chat; prompt in English. references: up to 4 images to work from (paths, e.g. an attachment or screenshot, or med_ ids of earlier drawings).",
@@ -104,4 +132,22 @@ export function mediaTools(store: Store, home: string, vm?: { hasThread(id: stri
       },
     }),
   ];
+}
+
+/** Excerpts of a chat's whole model log that hold `query`, newest first (D-186). */
+export function searchEarlier(store: Store, threadId: string, query: string, limit: number): string {
+  const q = query.toLowerCase();
+  const hits: string[] = [];
+  const entries = store.modelLog.list(threadId, 20_000);
+  for (let i = entries.length - 1; i >= 0 && hits.length < limit; i--) {
+    const item = entries[i]?.item as { role?: unknown; type?: unknown; content?: unknown } | undefined;
+    if (!item) continue;
+    const who = String(item.role ?? item.type ?? "item");
+    const text = typeof item.content === "string" ? item.content : JSON.stringify(item.content ?? item);
+    const at = text.toLowerCase().indexOf(q);
+    if (at < 0) continue;
+    const from = Math.max(0, at - 200);
+    hits.push(`#${entries[i]?.seq} ${who}: ${from ? "…" : ""}${text.slice(from, at + q.length + 200)}…`);
+  }
+  return hits.length ? hits.join("\n\n") : `nothing earlier in this chat mentions "${query}".`;
 }

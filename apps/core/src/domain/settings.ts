@@ -88,6 +88,10 @@ export function harnessSessionsRepo({ one, all, run }: Sql) {
           ),
       );
     },
+    /** Forgets the outside session: the next turn starts a new one (a renewed context window, D-186). */
+    drop(threadId: string, harness: string): void {
+      run(qb.deleteFrom("harness_sessions").where("thread_id", "=", threadId).where("harness", "=", harness));
+    },
   };
 }
 

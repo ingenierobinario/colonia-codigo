@@ -144,6 +144,8 @@ export const SPANISH_TITLES: Record<string, (a: Args) => string> = {
   commitment_settle: (a) => `Marcó ${str(a.task)} como ${TASK_STATE[str(a.outcome)] ?? str(a.outcome)}`,
   send_file: (a) => `Adjuntó ${file(a.path, "un archivo")}`,
   voice_replies: (a) => (a.on ? "Activó las respuestas habladas" : "Desactivó las respuestas habladas"),
+  task_notes: () => "Actualizó el cuaderno de la tarea",
+  search_earlier: (a) => `Buscó «${str(a.query, 40)}» en la conversación anterior`,
   make_image: (a) => `Dibujó: ${str(a.prompt)}`,
   ask_owner: (a) => `Te preguntó: ${str(a.question, 60)}`,
   notify_owner: (a) => `Te avisó: ${str(a.text, 60)}`,

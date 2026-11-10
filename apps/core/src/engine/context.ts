@@ -508,6 +508,8 @@ export type TurnOpts = {
   told?: Sections | undefined;
   /** In the chat that told what an update brought: which release, and where its commits are (releaseBlock). */
   release?: string | undefined;
+  /** The agent's task notebook for this chat, and a handoff request when the window is nearly full (D-186). */
+  notes?: string | undefined;
 };
 
 /** One named block of a turn's input ("message" is what was said, framed by who said it). */
@@ -569,6 +571,7 @@ export function turnBlocks(opts: TurnOpts): InputBlock[] {
     ["memory", opts.memory ? `[memory: notes saved earlier]\n${opts.memory}` : ""],
     ["skills", opts.skills ? `[skills for this message]\n${opts.skills}` : ""],
     ["task", opts.task ? `[task]\n${opts.task}` : ""],
+    ["task notes", opts.notes ?? ""],
     ["flow editor", opts.flowEditor ? `[flow editor] ${opts.flowEditor}` : ""],
     ["extension", opts.extension ? `[extension context]\n${opts.extension}` : ""],
     ["waiting", opts.waiting ? `[waiting]\n${opts.waiting}` : ""],

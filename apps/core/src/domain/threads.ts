@@ -38,6 +38,10 @@ export type ThreadContext = {
   /** A public room of a server (a Discord channel): its turns are sealed, whoever wrote. */
   room?: { name: string };
   compaction?: Epoch;
+  /** The agent's task notebook for this chat (goal, decisions, done, pending, next step): shown every turn, kept across windows (D-186). */
+  notebook?: { text: string; at: string };
+  /** How many times this chat's context window was renewed (D-186). */
+  windows?: number;
   /** The roster last shown to this agent, to show it again only when it changes. */
   roster_hash?: string;
   roster_agent?: string;

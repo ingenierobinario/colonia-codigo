@@ -20,9 +20,9 @@ test("an engine's list holds its own sessions only, and a CLI runs nowhere else"
   const ran = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
   await env.client.call("threads.send", { thread: ran.id, text: "hello" });
   await env.settle(ran.id);
-  // Outside its own sessions a CLI is no chat's model.
+  // Outside its own sessions a CLI is no chat's model; Claude is the exception (D-185).
   await assert.rejects(
-    env.client.call("threads.model", { thread: ran.id, model_choice: { model: "claude", router: false } }),
+    env.client.call("threads.model", { thread: ran.id, model_choice: { model: "codex", router: false } }),
     /own sessions/,
   );
   const repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-eng-")));

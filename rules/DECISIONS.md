@@ -3445,3 +3445,15 @@ sessions only. Now an agent's model, or a chat's own pick, may be `claude/<model
 `claude` through the Agent SDK with the agent's system prompt and Colonia's tools (`mcp__colonia__*`), and the Claude
 session is kept per chat (key "claude") so the next turn resumes it. A chat that moves to Claude mid-way starts its
 session with a short recap of the last turns. The router, the install default and Codex/ACP stay as D-043 says.
+
+<a id="d-186"></a>
+## D-186 — 2026-11-10 — A long task opens a new context window without losing its progress
+A summary written by another model lost the thread of long tasks: pending work, the next step, why a choice was made.
+Now each chat has a task notebook the agent itself keeps (`task_notes`: goal, decisions, done, pending, files, next
+step, open questions). It lives outside the conversation and rides every owner turn as an input block (not in the
+system prompt, which stays cached). When the history nears the compaction threshold, the turn asks the agent to write
+a full handoff there first. Compaction then summarizes with the notebook in view, counts the window ("Ventana N ·
+relevo hecho") and, for an agent on Claude (D-185), drops the Claude session so the next turn opens a fresh one from
+the summary, the notebook and the last turns instead of carrying the whole transcript. `search_earlier` reads the
+whole model log for a detail the summary left out. Not done: a handoff in the middle of one long turn; the nudge
+comes at the start of the next turn.

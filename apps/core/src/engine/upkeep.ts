@@ -251,7 +251,9 @@ export function createUpkeep(deps: { store: Store; llm: Llm; log: Log }) {
   async function compact(threadId: string, force = false): Promise<{ compacted: boolean; reason?: string }> {
     // Only our own loop reads this history; Claude Code and Codex keep and compact their own transcript.
     const runs = store.runs.list(threadId, 200);
-    if (!runs.some((r) => r.harness === "native"))
+    // An agent's chat on Claude (no engine session of its own) is renewed by Colonia too: a new window (D-186).
+    const agentOnClaude = !store.threads.get(threadId)?.engine && runs.some((r) => r.harness === "claude");
+    if (!runs.some((r) => r.harness === "native") && !agentOnClaude)
       return { compacted: false, reason: "this thread's engine keeps and compacts its own transcript" };
     const generation = memoryGeneration(store);
     const ctx = store.threads.context(threadId);
@@ -268,11 +270,14 @@ export function createUpkeep(deps: { store: Store; llm: Llm; log: Log }) {
     );
     if (!plan) return { compacted: false, reason: "nothing old enough to summarize" };
     const previous = epoch ? `Previous summary:\n${epoch.summary}\n\n` : "";
+    const notebook = ctx.notebook
+      ? `The agent's own task notebook (keep its goal, pending work and next step):\n${ctx.notebook.text}\n\n`
+      : "";
     const out = await ask(
       about("summary", threadId),
       runs[0]?.agent_id,
       SUMMARY_PROMPT,
-      `${previous}Conversation:\n${transcriptOf(plan.items)}`,
+      `${previous}${notebook}Conversation:\n${transcriptOf(plan.items)}`,
     );
     if (out === undefined) return { compacted: false, reason: "no auxiliary model: set model_aux or add an API model" };
     const summary = validSummary(out);
@@ -294,12 +299,15 @@ export function createUpkeep(deps: { store: Store; llm: Llm; log: Log }) {
       memory_shown: undefined,
       memory_since: undefined,
       roster_hash: undefined,
+      windows: (ctx.windows ?? 1) + 1,
     });
+    // On Claude the old session would carry the whole transcript on: the next turn opens a new one from the summary.
+    if (agentOnClaude) store.harnessSessions.drop(threadId, "claude");
     const notice = {
       type: "notice" as const,
       level: "info" as const,
       code: "thread.compacted",
-      text: `Summarized ${next.runs} earlier turns to keep this chat's context small. Nothing new was started.`,
+      text: `Ventana ${(ctx.windows ?? 1) + 1} · relevo hecho: ${next.runs} turnos anteriores resumidos junto al cuaderno de la tarea. El agente sigue donde iba.`,
     };
     // One notice for a stretch of the chat: a recent one is brought up to date instead of adding another.
     const recent = store.messages

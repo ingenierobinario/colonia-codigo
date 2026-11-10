@@ -18,7 +18,9 @@ import { ownerIdentity, ownerTimeZone } from "../domain/owner.ts";
 import { engineOf, harnessOf, isCliRef } from "../domain/refs.ts";
 import { type RunRecord, runsOnComputer } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
-import { previewOf, type Worker, worksInFolder } from "../domain/threads.ts";
+import { previewOf, type ThreadContext, type Worker, worksInFolder } from "../domain/threads.ts";
+import type { LogEntry } from "../domain/model-log.ts";
+import { COMPACT_AT_CHARS } from "./upkeep.ts";
 import { computerBriefing, HOME_COMPUTER } from "../environments/briefing.ts";
 import { AGENT_WORKSPACE } from "../environments/worker.ts";
 import { CallError, Canceled, DeadlineExceeded, errorMessage, Shutdown, Superseded } from "../errors.ts";
@@ -571,6 +573,7 @@ async function buildContext(deps: TurnDeps, turn: Turn, run: RunRecord, mode: Au
                 : COMPUTER_WORKSPACE(AGENT_WORKSPACE)
               : workspaceBlock(thread, readOnlyFolders(store, thread), workDir(store, deps.home, thread), told),
             computer,
+            notes: ownerTurn && !sealed ? notesBlock(store.threads.context(thread.id), entries) : undefined,
             release: ownerTurn ? releaseBlock(store.threads.context(thread.id).release) : undefined,
             feedback: o.kind === "routine" ? ratingNote(store, `routine:${o.name}`) || undefined : undefined,
             // The owner's channel lands in Home: what went out on it meanwhile is what they may be answering.
@@ -781,7 +784,9 @@ async function runEngine(
   const resumed = session ? store.harnessSessions.get(t.thread.id, session) : undefined;
   const io = t.io();
   // An agent chat that moves to Claude mid-way: its fresh session gets the chat so far, in brief.
-  const recap = !t.thread.engine && session && !resumed ? recapOf(io.history) : "";
+  const recap = !t.thread.engine && session && !resumed 
+      ? recapOf(io.history, 12_000, store.threads.context(t.thread.id).compaction?.summary)
+      : "";
   const outcome = await deps.harnesses.get(engine.harness).run({
     ...io,
     system: recap ? `${io.system}\n\n${recap}` : io.system,
@@ -805,20 +810,24 @@ async function runEngine(
 }
 
 /** The last turns of a chat, short, for an outside session that starts without them. */
-export function recapOf(history: ChatItem[], max = 12_000): string {
+export function recapOf(history: ChatItem[], max = 12_000, summary?: string): string {
   const lines: string[] = [];
+  const SUMMARY_NOTE = "[summary of the earlier conversation";
   let size = 0;
   for (let i = history.length - 1; i >= 0; i--) {
     const m = history[i]!;
     if (m.role !== "user" && m.role !== "assistant") continue;
-    const text = typeof m.content === "string" ? m.content.trim() : "";
+    let text = typeof m.content === "string" ? m.content.trim() : "";
+    // The summary rides on the first kept item: it goes whole at the top instead (D-186).
+    if (summary && text.startsWith(SUMMARY_NOTE)) text = text.slice(text.indexOf(summary) + summary.length).trim();
     if (!text) continue;
     const line = `${m.role === "user" ? "User" : "You"}: ${text.length > 2000 ? `${text.slice(0, 2000)}…` : text}`;
     if (size + line.length > max) break;
     lines.unshift(line);
     size += line.length;
   }
-  return lines.length ? `Earlier in this chat (for context):\n${lines.join("\n\n")}` : "";
+  const head = summary ? `Summary of this chat so far (a new context window opened from it):\n${summary}\n\n` : "";
+  return lines.length || head ? `${head}Earlier in this chat (for context):\n${lines.join("\n\n")}` : "";
 }
 
 /**
@@ -983,4 +992,18 @@ function projectBrief(store: Store, projectId: string | undefined): ProjectBrief
   const hasOrg = org.areas.length > 0 || org.roles.length > 0;
   if (!base.kind && !hasOrg) return undefined;
   return { name: base.name, ...(base.kind ? { kind: base.kind } : {}), ...(hasOrg ? { org } : {}) };
+}
+
+/** The task notebook every owner turn reads, and when the window is nearly full a request to write the handoff (D-186). */
+export function notesBlock(ctx: ThreadContext, entries: LogEntry[]): string | undefined {
+  const since = ctx.compaction?.upto ?? -1;
+  const size = entries.filter((e) => e.seq > since).reduce((n, e) => n + JSON.stringify(e.item).length, 0);
+  const near = size >= COMPACT_AT_CHARS * 0.85;
+  const parts: string[] = [];
+  if (ctx.notebook) parts.push(`[task notes, yours, updated ${ctx.notebook.at}]\n${ctx.notebook.text}`);
+  if (near)
+    parts.push(
+      "[context window nearly full] Before you go on, call task_notes with a full handoff: goal, decisions and why, what is done, what is pending, files touched, the exact next step and open questions. A new window will start from it.",
+    );
+  return parts.length ? parts.join("\n\n") : undefined;
 }
