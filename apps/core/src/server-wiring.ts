@@ -298,7 +298,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...routineHandlers(d.store, d.scheduler, d.profileRoots),
     ...flowHandlers(d.store, d.flows, d.publicCredentials, d.flowModel, d.bus),
     ...noticeHandlers(d.store, d.nudges),
-    ...webAppHandlers(d.store),
+    ...webAppHandlers(d.store, d.mcp, d.secrets),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),

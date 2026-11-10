@@ -6,6 +6,12 @@
   display: flex;
   flex-direction: column;
 }
+.webapp__favicon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 3px;
+}
 .webapp__where {
   cursor: default;
 }

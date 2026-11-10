@@ -364,6 +364,13 @@ export const es: Partial<Record<MessageKey, string>> = {
   "webapp.gone": "Esta aplicación ya no está",
   "webapp.goneBody": "Se quitó de la barra lateral. Añádela otra vez con «+» en Aplicaciones web.",
   "webapp.saveError": "No se pudo guardar la aplicación: {error}",
+  "webapp.connector": "Conector para los agentes (opcional)",
+  "webapp.connectorHint":
+    "Con él, tus agentes también pueden usar esta aplicación. En Business Stack lo tienes en «Conecta tu IA».",
+  "webapp.mcp": "Dirección del conector",
+  "webapp.key": "Clave del conector",
+  "webapp.keySaved": "Hay una clave guardada. Déjalo vacío para conservarla.",
+  "webapp.keyRemove": "Quitar la clave",
   "nav.computers": "Ordenadores",
   "nav.resources": "Recursos",
   "nav.files": "Archivos",

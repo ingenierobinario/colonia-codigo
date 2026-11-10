@@ -6,8 +6,9 @@ import { createStore, useSlice } from "./createStore.ts";
 import { notify } from "./notices.ts";
 import { data } from "./state.ts";
 
-const store = createStore<{ apps: WebApp[]; loaded: boolean }>({ apps: [], loaded: false });
-export const useWebApps = <T>(select: (s: { apps: WebApp[]; loaded: boolean }) => T): T => useSlice(store, select);
+type State = { apps: WebApp[]; keyed: string[]; loaded: boolean };
+const store = createStore<State>({ apps: [], keyed: [], loaded: false });
+export const useWebApps = <T>(select: (s: State) => T): T => useSlice(store, select);
 
 /** The tab profile of a web app: its sign-in lives there, apart from the agents' browser. */
 export const webAppProfile = (id: string) => `app:${id}` as const;
@@ -15,8 +16,8 @@ export const isWebAppTab = (tab: TabInfo) => tab.profile.startsWith("app:");
 
 export async function loadWebApps(): Promise<void> {
   try {
-    const { apps } = await client.call("webapps.list", {});
-    store.set({ apps, loaded: true });
+    const { apps, keyed } = await client.call("webapps.list", {});
+    store.set({ apps, keyed, loaded: true });
   } catch {
     store.set({ loaded: true });
   }
@@ -37,10 +38,11 @@ export function webAppId(name: string, taken: readonly string[]): string {
   return id;
 }
 
-export async function saveWebApp(id: string, app: Omit<WebApp, "id"> | null): Promise<boolean> {
+/** key: a value saves the connector's key, null removes it, absent keeps it. */
+export async function saveWebApp(id: string, app: Omit<WebApp, "id"> | null, key?: string | null): Promise<boolean> {
   try {
-    const { apps } = await client.call("webapps.set", { id, app });
-    store.set({ apps });
+    const { apps, keyed } = await client.call("webapps.set", { id, app, ...(key !== undefined && { key }) });
+    store.set({ apps, keyed });
     return true;
   } catch (e) {
     notify(t("webapp.saveError", { error: e instanceof Error ? e.message : String(e) }));

@@ -1106,6 +1106,13 @@ export const WebApp = z.object({
     .url()
     .max(2048)
     .refine((u) => /^https?:\/\//i.test(u), "http or https"),
+  /** WEBAPP-2: the app's connector (an MCP address), so agents can use the app too. */
+  mcp: z
+    .string()
+    .url()
+    .max(2048)
+    .refine((u) => /^https?:\/\//i.test(u), "http or https")
+    .optional(),
 });
 export type WebApp = z.infer<typeof WebApp>;
 

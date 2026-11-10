@@ -19,6 +19,20 @@ export function normalUrl(raw: string): string | undefined {
   }
 }
 
+/** The site's own icon (its /favicon.ico); the globe while it loads or if the site has none. */
+export function Favicon({ url }: { url: string }) {
+  const src = (() => {
+    try {
+      return `${new URL(url).origin}/favicon.ico`;
+    } catch {
+      return undefined;
+    }
+  })();
+  const [failed, setFailed] = useState<string>();
+  if (!src || failed === src) return <Icons.Globe />;
+  return <img className="webapp__favicon" src={src} alt="" onError={() => setFailed(src)} />;
+}
+
 export function WebAppsDock({ rail }: { rail: boolean }) {
   const t = useT();
   const apps = useWebApps((s) => s.apps);
@@ -62,7 +76,7 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
         >
           <NavItem
             collapsed={rail}
-            icon={<ProjectTile tone="info" icon={<Icons.Globe />} />}
+            icon={<ProjectTile tone="info" icon={<Favicon url={a.url} />} />}
             label={a.name}
             active={view === "webapp" && current === a.id}
             onClick={() => go.webapp(a.id)}
@@ -92,14 +106,21 @@ function WebAppDialog({
   const t = useT();
   const [name, setName] = useState(initial?.name ?? "");
   const [url, setUrl] = useState(initial?.url ?? "");
+  const [mcp, setMcp] = useState(initial?.mcp ?? "");
+  const [key, setKey] = useState("");
+  const hasKey = useWebApps((s) => (initial ? s.keyed.includes(initial.id) : false));
+  const [dropKey, setDropKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const href = normalUrl(url);
-  const valid = name.trim().length > 0 && href != null;
+  const mcpHref = mcp.trim() ? normalUrl(mcp) : undefined;
+  const mcpBad = mcp.trim() !== "" && !mcpHref;
+  const valid = name.trim().length > 0 && href != null && !mcpBad;
   const save = async () => {
     if (!href) return;
     setSaving(true);
     const id = initial?.id ?? webAppId(name, taken);
-    const ok = await saveWebApp(id, { name: name.trim(), url: href });
+    const keyChange = key.trim() ? key.trim() : dropKey ? null : undefined;
+    const ok = await saveWebApp(id, { name: name.trim(), url: href, ...(mcpHref && { mcp: mcpHref }) }, keyChange);
     setSaving(false);
     if (!ok) return;
     onClose();
@@ -144,6 +165,37 @@ function WebAppDialog({
             }}
           />
           {url.trim() !== "" && !href && <span className="pform__hint is-error">{t("webapp.badUrl")}</span>}
+        </div>
+        <div className="pform__field">
+          <span className="pform__label">{t("webapp.connector")}</span>
+          <span className="pform__hint">{t("webapp.connectorHint")}</span>
+          <Input
+            aria-label={t("webapp.mcp")}
+            placeholder={`${t("webapp.mcp")} · https://…/mcp`}
+            value={mcp}
+            onChange={(e) => setMcp(e.currentTarget.value)}
+          />
+          {mcpBad && <span className="pform__hint is-error">{t("webapp.badUrl")}</span>}
+          {mcpHref && (
+            <>
+              <Input
+                type="password"
+                autoComplete="off"
+                aria-label={t("webapp.key")}
+                placeholder={t("webapp.key")}
+                value={key}
+                onChange={(e) => setKey(e.currentTarget.value)}
+              />
+              {hasKey && !dropKey && !key && (
+                <span className="pform__hint">
+                  {t("webapp.keySaved")}{" "}
+                  <Button size="sm" variant="ghost" onClick={() => setDropKey(true)}>
+                    {t("webapp.keyRemove")}
+                  </Button>
+                </span>
+              )}
+            </>
+          )}
         </div>
       </div>
     </Dialog>

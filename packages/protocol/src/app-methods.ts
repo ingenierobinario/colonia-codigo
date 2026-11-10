@@ -1436,14 +1436,22 @@ export const appMethods = {
   },
   "webapps.list": {
     params: z.object({}).strict(),
-    result: z.object({ apps: z.array(WebApp) }),
+    /** keyed: the apps whose connector has a key saved (the key itself never leaves the core). */
+    result: z.object({ apps: z.array(WebApp), keyed: z.array(z.string()) }),
     effect: false,
     access: "human",
   },
   /** Adds or changes (app) or removes (null) a web app of the sidebar. */
   "webapps.set": {
-    params: z.object({ id: WebApp.shape.id, app: WebApp.omit({ id: true }).nullable() }).strict(),
-    result: z.object({ apps: z.array(WebApp) }),
+    params: z
+      .object({
+        id: WebApp.shape.id,
+        app: WebApp.omit({ id: true }).nullable(),
+        /** The connector's key: a value saves it, null removes it, absent keeps it. */
+        key: z.string().trim().min(1).max(4096).nullable().optional(),
+      })
+      .strict(),
+    result: z.object({ apps: z.array(WebApp), keyed: z.array(z.string()) }),
     effect: true,
     access: "human",
   },
