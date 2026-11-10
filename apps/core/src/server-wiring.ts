@@ -73,6 +73,7 @@ import { terminalHandlers } from "./rpc/terminal.ts";
 import { threadAdminHandlers } from "./rpc/thread-admin.ts";
 import { threadHandlers } from "./rpc/threads.ts";
 import { transcriptionHandlers } from "./rpc/transcription.ts";
+import { webAppHandlers } from "./rpc/webapps.ts";
 import { webhookHandlers } from "./rpc/webhooks.ts";
 import type { Secrets } from "./secrets.ts";
 import type { RuntimeHomes } from "./skills/runtimes.ts";
@@ -297,6 +298,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...routineHandlers(d.store, d.scheduler, d.profileRoots),
     ...flowHandlers(d.store, d.flows, d.publicCredentials, d.flowModel, d.bus),
     ...noticeHandlers(d.store, d.nudges),
+    ...webAppHandlers(d.store),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),

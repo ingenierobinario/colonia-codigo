@@ -65,6 +65,7 @@ import {
   Thread,
   ToolApproval,
   ToolRisk,
+  WebApp,
   WritePolicy,
 } from "./domain.ts";
 import { filesMethods } from "./files-methods.ts";
@@ -1430,6 +1431,19 @@ export const appMethods = {
   "notices.feedback": {
     params: z.object({ id: Id, feedback: z.enum(["up", "down"]).nullable() }).strict(),
     result: Nudge,
+    effect: true,
+    access: "human",
+  },
+  "webapps.list": {
+    params: z.object({}).strict(),
+    result: z.object({ apps: z.array(WebApp) }),
+    effect: false,
+    access: "human",
+  },
+  /** Adds or changes (app) or removes (null) a web app of the sidebar. */
+  "webapps.set": {
+    params: z.object({ id: WebApp.shape.id, app: WebApp.omit({ id: true }).nullable() }).strict(),
+    result: z.object({ apps: z.array(WebApp) }),
     effect: true,
     access: "human",
   },

@@ -1097,6 +1097,18 @@ export const ChannelHours = z.object({
 });
 export type ChannelHours = z.infer<typeof ChannelHours>;
 
+/** WEBAPP-1: a web app the owner pinned in the sidebar; it opens inside Colonia with its own sign-in. */
+export const WebApp = z.object({
+  id: z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/),
+  name: z.string().trim().min(1).max(60),
+  url: z
+    .string()
+    .url()
+    .max(2048)
+    .refine((u) => /^https?:\/\//i.test(u), "http or https"),
+});
+export type WebApp = z.infer<typeof WebApp>;
+
 export const ChannelInfo = z.object({
   id: z.string(),
   type: ChannelType,

@@ -9,6 +9,8 @@ export const BrowserProfile = z.union([
   z.literal("shared"),
   z.literal("incognito"),
   z.string().regex(/^agent:[a-z0-9][a-z0-9-]{0,63}$/),
+  // WEBAPP-1: a web app pinned in the sidebar keeps its own sign-in, apart from the agents'.
+  z.string().regex(/^app:[a-z0-9][a-z0-9-]{0,63}$/),
 ]);
 export type BrowserProfile = z.infer<typeof BrowserProfile>;
 

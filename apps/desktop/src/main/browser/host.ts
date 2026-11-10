@@ -41,6 +41,7 @@ function cleanUserAgent(): string {
 function partitionFor(profile: BrowserProfile, seq: number): string {
   if (profile === "shared") return "persist:colonia-shared";
   if (profile === "incognito") return `colonia-incog-${seq}`; // no "persist:" → memory only
+  if (profile.startsWith("app:")) return `persist:colonia-app-${profile.slice("app:".length)}`; // WEBAPP-1
   return `persist:colonia-agent-${profile.slice("agent:".length)}`;
 }
 

@@ -22,6 +22,7 @@ import {
   TaskColumn,
   TelemetryEvent,
   TelemetryStage,
+  WebApp,
 } from "@colonia/protocol";
 import { z } from "zod";
 import { DEFAULT_COLUMNS } from "./tasks.ts";
@@ -181,6 +182,8 @@ export const SETTINGS = {
   /** Services Colonia added on its own once (Codex's images): one the owner removed is not added again. */
   services_offered: entry(z.array(z.string()).catch([]), []),
   channels: entry(listOf(Channel), []),
+  /** WEBAPP-1: the web apps pinned in the sidebar. */
+  webapps: entry(listOf(WebApp), []),
   /**
    * The restricted public ingress address the owner chose (public-tunnel.ts), applied again at every start, and the
    * last address ngrok gave (a new one is pointed out to the owner).

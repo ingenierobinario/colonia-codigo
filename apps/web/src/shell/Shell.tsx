@@ -24,6 +24,7 @@ import {
   TasksScreen,
   ThreadDialogs,
   UsageDialog,
+  WebAppScreen,
   WidgetChatHost,
 } from "../lazy.ts";
 import { useAnyLive } from "../surfaces/liveAny.ts";
@@ -76,6 +77,8 @@ export function Shell() {
             <Suspense fallback={null}>
               {view === "app" ? (
                 <AppScreen />
+              ) : view === "webapp" ? (
+                <WebAppScreen />
               ) : view === "project" ? (
                 <ProjectScreen layout={layout} />
               ) : view === "tasks" ? (

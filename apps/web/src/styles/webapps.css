@@ -1,0 +1,11 @@
+/* WEBAPP-1: a web app in the main area, like a browser of its own. */
+.webapp {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.webapp__where {
+  cursor: default;
+}
