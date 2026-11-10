@@ -101,7 +101,8 @@ function capture(command: string, args: string[], cwd: string, options: Options)
       stopped = true;
       void cleanup();
     };
-    const cancel = (options.runTimers?.after ?? after)(options.timeoutMs ?? 8_000, stop);
+    // USO-CLAUDE-1: a cold start of `claude -p /usage` on Windows takes ~12 s (3-4 s once warm); 8 s hid the limits.
+    const cancel = (options.runTimers?.after ?? after)(options.timeoutMs ?? 20_000, stop);
     child.on("error", stop);
     child.stdin.on("error", stop);
     child.stdin.end();

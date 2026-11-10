@@ -153,7 +153,7 @@ test("Claude silent child is terminated by an injected deadline", async () => {
     const timers = manualTimers();
     const pending = readClaudeUsage(bin, { launch, env, runTimers: timers });
     await waitFor(() => fs.existsSync(log) && fs.readFileSync(log, "utf8").includes('"/usage"'), "usage command");
-    timers.tick(8_000);
+    timers.tick(20_000);
     assert.equal(await pending, undefined);
     assert.equal(timers.pending(), 0);
   });
@@ -166,7 +166,7 @@ test("Claude deadline closes inherited pipes and kills descendants before folder
       () => fs.existsSync(log) && fs.readFileSync(log, "utf8").includes('"descendant":true'),
       "descendant holds pipes",
     );
-    timers.tick(8_000);
+    timers.tick(20_000);
     assert.equal(await pending, undefined);
     assert.equal(timers.pending(), 0);
   });
