@@ -194,7 +194,7 @@ export function loadConfig(processEnv: NodeJS.ProcessEnv = process.env, readCore
   const config: CoreConfig = {
     host: env.COLONIA_HOST ?? "127.0.0.1",
     port,
-    hooksPort: Number(env.COLONIA_HOOKS_PORT ?? (port === 0 ? 0 : port + 8)),
+    hooksPort: Number(env.COLONIA_HOOKS_PORT ?? (port === 0 || port + 8 > 65535 ? 0 : port + 8)),
     home: env.COLONIA_HOME ?? defaultHome(),
     token: env.COLONIA_TOKEN || undefined,
     allowedOrigins: list(env.COLONIA_ALLOWED_ORIGINS),

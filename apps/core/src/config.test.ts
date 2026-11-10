@@ -39,3 +39,8 @@ test("a home without core.env, and testConfig, read nothing from disk", () => {
   assert.equal(t.host, "127.0.0.1");
   assert.equal(t.token, undefined);
 });
+
+test("the webhook listener takes a free port when the core's port + 8 would pass 65535", () => {
+  assert.equal(loadConfig({ COLONIA_HOME: home, COLONIA_PORT: "7600" }).hooksPort, 7608);
+  assert.equal(loadConfig({ COLONIA_HOME: home, COLONIA_PORT: "65531" }).hooksPort, 0);
+});
