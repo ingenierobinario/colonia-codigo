@@ -1105,3 +1105,23 @@
 .catalog__open {
   margin: 0 0 8px;
 }
+
+/* CATALOGO-CONECTORES-2: the key form of the connectors that need one, inside the card. */
+.catalog__card--open {
+  flex-wrap: wrap;
+}
+.catalog__keys {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-basis: 100%;
+}
+.catalog__keyrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.catalog__spacer {
+  flex: 1;
+}
