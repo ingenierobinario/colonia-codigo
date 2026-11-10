@@ -212,6 +212,12 @@
   font-size: var(--colonia-text-sm);
   font-weight: var(--colonia-weight-semibold);
 }
+.chan__linklead {
+  margin: 0;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+  line-height: 1.6;
+}
 .chan__linksteps {
   margin: 0;
   padding-left: 18px;

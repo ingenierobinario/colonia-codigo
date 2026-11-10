@@ -165,7 +165,7 @@ export function LinkPhone({ channel }: { channel: ChannelInfo }) {
         <Icons.Smartphone size={14} />
         {t("ch.linkPhone.title")}
       </div>
-      <p className="chan__pendinghint">{t("ch.linkPhone.lead", { line: channel.account ?? channel.label })}</p>
+      <p className="chan__linklead">{t("ch.linkPhone.lead", { line: channel.account ?? channel.label })}</p>
       <ol className="chan__linksteps">
         <li>{t("ch.linkPhone.step1", { line: channel.account ?? channel.label })}</li>
         <li>{t("ch.linkPhone.step2")}</li>
