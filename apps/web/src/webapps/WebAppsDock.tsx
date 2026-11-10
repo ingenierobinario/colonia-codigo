@@ -1,9 +1,10 @@
 // WEBAPP-1: the web apps in the sidebar, under their own heading, with "+" to add one (name and address).
 import type { WebApp } from "@colonia/protocol";
-import { Button, ContextMenu, Dialog, IconButton, Icons, Input, NavItem, ProjectTile } from "@colonia/ui";
+import { Button, ContextMenu, Dialog, IconButton, Icons, Input, Menu, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
+import { addProgram, canPinPrograms, ProgramItems } from "../programs/ProgramsDock.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
 
@@ -43,19 +44,34 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
     void loadWebApps();
   }, []);
 
+  const plus = (
+    <IconButton
+      size="sm"
+      className="sidebar__add"
+      label={t("webapp.add")}
+      icon={<Icons.Plus size={14} />}
+      onClick={canPinPrograms() ? undefined : () => setEditing("new")}
+    />
+  );
   return (
     <>
       <SidebarSection
         rail={rail}
-        title={t("webapp.title")}
+        sub
+        title={t("nav.appsExternal")}
         action={
-          <IconButton
-            size="sm"
-            className="sidebar__add"
-            label={t("webapp.add")}
-            icon={<Icons.Plus size={14} />}
-            onClick={() => setEditing("new")}
-          />
+          canPinPrograms() ? (
+            <Menu
+              trigger={plus}
+              align="end"
+              items={[
+                { label: t("webapp.addWeb"), icon: <Icons.Globe size={14} />, onSelect: () => setEditing("new") },
+                { label: t("program.add"), icon: <Icons.Monitor size={14} />, onSelect: addProgram },
+              ]}
+            />
+          ) : (
+            plus
+          )
         }
       />
       {apps.map((a) => (
@@ -83,6 +99,7 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
           />
         </ContextMenu>
       ))}
+      <ProgramItems rail={rail} />
       {editing && (
         <WebAppDialog
           initial={editing === "new" ? undefined : editing}

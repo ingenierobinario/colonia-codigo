@@ -1,44 +1,40 @@
-// PROGRAMAS-1: the owner's desktop programs in the sidebar, opened with one click. Only in the desktop app: the list
-// lives on this computer and a program is picked with the system's own dialog.
-
-import { Button, ContextMenu, Dialog, IconButton, Icons, Input, NavItem, ProjectTile } from "@colonia/ui";
+// PROGRAMAS-1: the owner's desktop programs, listed under Aplicaciones › Externas and opened with one click. Only in the
+// desktop app: the list lives on this computer and a program is picked with the system's own dialog.
+import { Button, ContextMenu, Dialog, Icons, Input, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import type { DesktopProgram } from "../colonia-desktop.d.ts";
+import { createStore, useSlice } from "../data/createStore.ts";
 import { notify } from "../data/notices.ts";
 import { useT } from "../i18n/index.ts";
-import { SidebarSection } from "../shell/SidebarSection.tsx";
 
-export function ProgramsDock({ rail }: { rail: boolean }) {
+const store = createStore<{ list: DesktopProgram[] }>({ list: [] });
+const desk = () => (typeof window !== "undefined" ? window.coloniaDesktop : undefined);
+const keep = (list: DesktopProgram[] | undefined) => {
+  if (list) store.set({ list });
+};
+
+/** Whether this window can pin programs (the desktop app). */
+export const canPinPrograms = () => Boolean(desk()?.programs);
+/** The system's file dialog; the chosen programs join the list. */
+export const addProgram = () => void desk()?.addProgram?.().then(keep);
+
+export function ProgramItems({ rail }: { rail: boolean }) {
   const t = useT();
-  const desk = typeof window !== "undefined" ? window.coloniaDesktop : undefined;
-  const [list, setList] = useState<DesktopProgram[]>([]);
+  const list = useSlice(store, (s) => s.list);
   const [renaming, setRenaming] = useState<DesktopProgram>();
   useEffect(() => {
-    void desk?.programs?.().then(setList);
-  }, [desk]);
-  if (!desk?.programs) return null;
+    void desk()?.programs?.().then(keep);
+  }, []);
+  if (!canPinPrograms()) return null;
 
   const launch = async (p: DesktopProgram) => {
-    const why = await desk.launchProgram?.(p.id);
+    const why = await desk()?.launchProgram?.(p.id);
     if (why === "missing") notify(t("program.missing"), "error");
     else if (why) notify(t("program.failed"), "error");
   };
 
   return (
     <>
-      <SidebarSection
-        rail={rail}
-        title={t("program.title")}
-        action={
-          <IconButton
-            size="sm"
-            className="sidebar__add"
-            label={t("program.add")}
-            icon={<Icons.Plus size={14} />}
-            onClick={() => void desk.addProgram?.().then(setList)}
-          />
-        }
-      />
       {list.map((p) => (
         <ContextMenu
           key={p.id}
@@ -48,7 +44,7 @@ export function ProgramsDock({ rail }: { rail: boolean }) {
               label: t("program.remove"),
               icon: <Icons.Trash2 size={14} />,
               danger: true,
-              onSelect: () => void desk.removeProgram?.(p.id).then(setList),
+              onSelect: () => void desk()?.removeProgram?.(p.id).then(keep),
             },
           ]}
         >
@@ -70,8 +66,7 @@ export function ProgramsDock({ rail }: { rail: boolean }) {
           program={renaming}
           onClose={() => setRenaming(undefined)}
           onSave={async (name) => {
-            const next = await desk.renameProgram?.(renaming.id, name);
-            if (next) setList(next);
+            keep(await desk()?.renameProgram?.(renaming.id, name));
             setRenaming(undefined);
           }}
         />

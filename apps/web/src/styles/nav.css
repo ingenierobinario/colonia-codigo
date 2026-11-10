@@ -961,3 +961,9 @@
 .usage-btn.is-danger {
   color: var(--colonia-danger-soft-fg);
 }
+
+/* Aplicaciones › Internas / Externas: a heading inside the section. */
+.sidebar__sub {
+  font-size: 11px;
+  opacity: 0.75;
+}

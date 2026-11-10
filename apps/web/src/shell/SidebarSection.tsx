@@ -12,8 +12,11 @@ export function SidebarSection({
   onToggle,
   unread = 0,
   unreadLabel,
+  sub = false,
 }: {
   rail: boolean;
+  /** A heading inside a section (Aplicaciones › Internas): no divider, smaller. */
+  sub?: boolean;
   title: string;
   action?: ReactNode;
   folded?: boolean;
@@ -23,11 +26,11 @@ export function SidebarSection({
 }) {
   return (
     <>
-      <hr className="sidebar__divider" />
+      {!sub && <hr className="sidebar__divider" />}
       {rail ? (
         action && <div className="sidebar__railaction">{action}</div>
       ) : (
-        <SectionLabel action={action}>
+        <SectionLabel action={action} className={sub ? "sidebar__sub" : undefined}>
           {onToggle ? (
             <button
               type="button"

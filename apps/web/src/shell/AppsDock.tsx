@@ -81,9 +81,11 @@ export function AppsDock({ rail }: { rail: boolean }) {
   const props = propsOf ? surfaces[propsOf] : undefined;
   return (
     <>
+      <SidebarSection rail={rail} title={t("nav.apps")} />
       <SidebarSection
         rail={rail}
-        title={t("nav.apps")}
+        sub
+        title={t("nav.appsInternal")}
         action={
           <span className="appsdock__actions">
             <IconButton
