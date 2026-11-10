@@ -8,6 +8,7 @@ import { useT } from "../i18n/index.ts";
 import { addProgram, canPinPrograms, ProgramItems } from "../programs/ProgramsDock.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
+import "../styles/webapps.css";
 
 /** "business-stack.example.com" → "https://business-stack.example.com"; anything not http(s) is refused. */
 export function normalUrl(raw: string): string | undefined {
@@ -32,7 +33,8 @@ export function Favicon({ url }: { url: string }) {
   })();
   const [failed, setFailed] = useState<string>();
   if (!src || failed === src) return <Icons.Globe />;
-  return <img className="webapp__favicon" src={src} alt="" onError={() => setFailed(src)} />;
+  // FAVICON-1: the size also goes inline, so a large icon never fills the tile before the stylesheet arrives.
+  return <img className="webapp__favicon" src={src} alt="" width={16} height={16} onError={() => setFailed(src)} />;
 }
 
 export function WebAppsDock({ rail }: { rail: boolean }) {
