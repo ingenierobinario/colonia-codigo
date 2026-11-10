@@ -36,9 +36,11 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "ch.waPhoneHome": "Tu teléfono — tus mensajes van a Home",
   "ch.waPhoneOwn": "Tu teléfono",
   "ch.waPhoneOwnNone": "Tu chat empieza cuando le escribas a la línea",
-  "ch.linkPhone.title": "Vincula tu teléfono",
-  "ch.linkPhone.step1": "Escríbele a {line} desde tu WhatsApp y pulsa «Es mi número» cuando aparezca abajo",
-  "ch.linkPhone.step2": "O escribe tu número aquí",
+  "ch.linkPhone.title": "Habla con tu agente desde tu móvil",
+  "ch.linkPhone.lead":
+    "Dinos cuál es tu número personal. Lo que escribas desde él a {line} le llegará a tu agente como si se lo dijeras aquí, y no se mezclará con tus contactos.",
+  "ch.linkPhone.step1": "Desde tu WhatsApp personal, mándale un mensaje a {line} y pulsa «Es mi número» cuando aparezca abajo",
+  "ch.linkPhone.step2": "O escribe aquí tu número personal (no el de la línea)",
   "ch.code.approved":
     'El código {code} ya se aprobó como contacto. Si esa cuenta es tuya, abre el contacto y elige "Esta cuenta es mía".',
   "ch.code.denied": "El código {code} se ignoró. Escribe de nuevo por el canal para recibir otro.",

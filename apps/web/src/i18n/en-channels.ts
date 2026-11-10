@@ -34,9 +34,11 @@ export const enChannels = {
   "ch.waPhoneHome": "Your phone — your messages go to Home",
   "ch.waPhoneOwn": "Your phone",
   "ch.waPhoneOwnNone": "Your chat starts when you write to the line",
-  "ch.linkPhone.title": "Link your phone",
-  "ch.linkPhone.step1": "Write to {line} from your own WhatsApp and tap “It's my number” when it shows up below",
-  "ch.linkPhone.step2": "Or type your number here",
+  "ch.linkPhone.title": "Talk to your agent from your phone",
+  "ch.linkPhone.lead":
+    "Tell us your personal number. Whatever you send from it to {line} reaches your agent as if you typed it here, and stays apart from your contacts.",
+  "ch.linkPhone.step1": "From your personal WhatsApp, send a message to {line} and tap “It's my number” when it shows up below",
+  "ch.linkPhone.step2": "Or type your personal number here (not the line's)",
   "ch.code.approved":
     'Code {code} was already approved as a contact. If that account is yours, open the contact and choose "This account is mine".',
   "ch.code.denied": "Code {code} was ignored. Write on the channel again for a new one.",
