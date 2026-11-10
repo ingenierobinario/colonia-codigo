@@ -143,7 +143,7 @@ function shortRef(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
  * What agents, the router and a chat may run on: model APIs that answer now (the plans signed in from Colonia among
  * them). Claude Code, Codex and ACP agents run only in their own sessions (DECISIONS.md#d-043).
  */
-export const forAgents = (e: CatalogEngine): boolean => e.kind === "provider" && e.available;
+export const forAgents = (e: CatalogEngine): boolean => (e.kind === "provider" || e.id === "claude") && e.available;
 
 /** A reasoning effort as people read it ("high" → "Alto"); one this panel does not know, capitalised. */
 export function effortLabel(effort: string): string {

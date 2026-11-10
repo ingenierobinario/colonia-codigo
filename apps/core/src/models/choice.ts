@@ -69,9 +69,16 @@ export function candidates(choice: ModelChoice, router: RouterConfig, f: TurnFea
  * (only the CLIs have a default model of their own). A CLI runs only in its own sessions, and a session (`session`,
  * the CLI it belongs to) runs nothing else.
  */
-export function refProblem(ref: string, engines: EngineIds, session?: string): string | undefined {
+export function refProblem(
+  ref: string,
+  engines: EngineIds,
+  session?: string,
+  forAgent = false,
+): string | undefined {
   const { engine, model } = parseRef(ref);
   if (session) return engine === session ? undefined : `this chat is a ${session} session: it runs ${session} only`;
+  // D-185: an agent or its chat may run on the user's Claude Code; the router and the default may not.
+  if (forAgent && engine === "claude" && engines.harness.has(engine)) return undefined;
   if (engines.harness.has(engine))
     return `${engine} runs only in its own sessions (Sessions › ${engine}); agents and the router use model APIs`;
   if (!engines.providers.has(engine)) return `unknown engine "${engine}" in ${ref}`;

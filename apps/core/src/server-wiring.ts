@@ -390,7 +390,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       scopeOf: (caller) => d.permissions.forCaller(caller),
       locate: (thread, file) => d.permissions.path(thread, file),
       services: d.services,
-      checkModel: (ref, session) => refProblem(ref, d.engines, session),
+      checkModel: (ref, session) => refProblem(ref, d.engines, session, true),
     }),
   };
 }

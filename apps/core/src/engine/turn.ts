@@ -740,6 +740,9 @@ function enginePick(deps: TurnDeps, turn: Turn, start: RunRecord, history: ChatI
     const ref = chosen?.model && engineOf(chosen.model) === own ? chosen.model : own;
     return { harness: harnessOf(ref), refs: [ref] };
   }
+  // D-185: an agent (or its chat) may pick a Claude model; that turn runs on the user's Claude Code with the agent's
+  // prompt and Colonia's tools. The router and the install default stay on model APIs.
+  if (chosen?.model && harnessOf(chosen.model) === "claude") return { harness: "claude", refs: [chosen.model] };
   const settings = modelSettings(deps.store);
   const refs = candidates(chosen ?? settings.defaultChoice(), settings.router(), {
     text: turn.input.text,
@@ -774,10 +777,14 @@ async function runEngine(
 ): Promise<TurnOutcome> {
   const { store } = deps;
   t.onHarness(engine.harness);
-  const session = t.thread.engine;
+  const session = t.thread.engine ?? (engine.harness === "claude" ? "claude" : undefined);
   const resumed = session ? store.harnessSessions.get(t.thread.id, session) : undefined;
+  const io = t.io();
+  // An agent chat that moves to Claude mid-way: its fresh session gets the chat so far, in brief.
+  const recap = !t.thread.engine && session && !resumed ? recapOf(io.history) : "";
   const outcome = await deps.harnesses.get(engine.harness).run({
-    ...t.io(),
+    ...io,
+    system: recap ? `${io.system}\n\n${recap}` : io.system,
     models: engine.refs,
     sessionId: resumed,
     input: t.input,
@@ -795,6 +802,23 @@ async function runEngine(
   }
   t.signal.throwIfAborted();
   return outcome;
+}
+
+/** The last turns of a chat, short, for an outside session that starts without them. */
+export function recapOf(history: ChatItem[], max = 12_000): string {
+  const lines: string[] = [];
+  let size = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const m = history[i]!;
+    if (m.role !== "user" && m.role !== "assistant") continue;
+    const text = typeof m.content === "string" ? m.content.trim() : "";
+    if (!text) continue;
+    const line = `${m.role === "user" ? "User" : "You"}: ${text.length > 2000 ? `${text.slice(0, 2000)}…` : text}`;
+    if (size + line.length > max) break;
+    lines.unshift(line);
+    size += line.length;
+  }
+  return lines.length ? `Earlier in this chat (for context):\n${lines.join("\n\n")}` : "";
 }
 
 /**

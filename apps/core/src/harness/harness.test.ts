@@ -113,10 +113,18 @@ test("a CLI is never an agent's model, the router or the install default; one sa
     const asAgent = await env.client
       .call("agents.update", { agent: "superagent", model_choice: { model: bad, router: false } })
       .catch((e: unknown) => e);
-    assert.ok(asAgent instanceof ColoniaError && asAgent.code === "bad_request", bad);
     const inChat = await env.client
       .call("threads.model", { thread: "home", model_choice: { model: bad, router: false } })
       .catch((e: unknown) => e);
+    if (bad === "claude") {
+      // D-185: an agent and its chat may run on the owner's Claude Code.
+      assert.ok(!(asAgent instanceof Error), "an agent may pick claude");
+      assert.ok(!(inChat instanceof Error), "a chat may pick claude");
+      await env.client.call("agents.update", { agent: "superagent", model_choice: null });
+      await env.client.call("threads.model", { thread: "home", model_choice: null });
+      continue;
+    }
+    assert.ok(asAgent instanceof ColoniaError && asAgent.code === "bad_request", bad);
     assert.ok(inChat instanceof ColoniaError && inChat.code === "bad_request", bad);
   }
   // As an older Colonia saved them: the router and the default name CLIs; the turn runs on the model API behind them.

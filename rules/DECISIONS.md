@@ -3437,3 +3437,11 @@ was also accepted on a Flow never published, which turned on something that runs
 
 Tests, the key, an address and an AI step's autonomy stay the owner's. Rejected: letting the agent read the webhook
 key to call it (a key never reaches a model, D-139), and turning on without publishing (it runs nothing).
+
+<a id="d-185"></a>
+## D-185 — 2026-11-10 — An agent may run on the owner's Claude Code (amends D-043)
+Owners paying a Claude plan could not use it for their agents: D-043 kept Claude Code, Codex and ACP in their own
+sessions only. Now an agent's model, or a chat's own pick, may be `claude/<model>`: that turn runs on the owner's
+`claude` through the Agent SDK with the agent's system prompt and Colonia's tools (`mcp__colonia__*`), and the Claude
+session is kept per chat (key "claude") so the next turn resumes it. A chat that moves to Claude mid-way starts its
+session with a short recap of the last turns. The router, the install default and Codex/ACP stay as D-043 says.
