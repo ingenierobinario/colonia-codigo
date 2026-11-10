@@ -277,6 +277,20 @@
   font-family: var(--colonia-meta-font);
   font-size: var(--colonia-text-2xs);
 }
+.chan__notme {
+  display: block;
+  margin: -4px 0 4px 52px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-2xs);
+}
+.chan__notme:hover {
+  border-color: var(--colonia-border);
+  color: var(--colonia-fg);
+}
 .chan__rowtime {
   flex: none;
   color: var(--colonia-fg-subtle);

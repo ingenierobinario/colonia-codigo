@@ -75,6 +75,9 @@ export const enChannels = {
   "ch.recover.done": "{n} of {total} files recovered",
   "ch.recover.none": "No file came back: {reason}",
   "ch.you": "You",
+  "ch.notMe": "Not my number",
+  "ch.notMeConfirm":
+    "Unlink {phone}? It will no longer be treated as you, and its messages will arrive like anyone else's.",
   "ch.agentDid": "{agent}: {what}",
   "ch.who": "Who answers",
   "ch.agentAnswers": "{agent} answers",

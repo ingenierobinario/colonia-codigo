@@ -79,6 +79,9 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "ch.recover.done": "Se recuperaron {n} de {total} archivos",
   "ch.recover.none": "No volvió ningún archivo: {reason}",
   "ch.you": "Tú",
+  "ch.notMe": "No es mi número",
+  "ch.notMeConfirm":
+    "¿Desvincular {phone}? Dejará de tratarse como tú y sus mensajes volverán a llegar como los de cualquier otra persona.",
   "ch.agentDid": "{agent}: {what}",
   "ch.who": "Quién contesta",
   "ch.agentAnswers": "{agent} responde",

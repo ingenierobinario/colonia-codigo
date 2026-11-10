@@ -3,7 +3,7 @@ import { Button, Icons, Input } from "@colonia/ui";
 import { useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { useFlash } from "../common/useFlash.ts";
-import { respondPairing, useChannels } from "../data/channels.ts";
+import { respondPairing, unlinkAddress, useChannels } from "../data/channels.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
 import { PersonAvatar } from "./PersonAvatar.tsx";
@@ -111,6 +111,12 @@ export function OwnerRow({
   const t = useT();
   const toHome = channel.owner_thread === "home";
   const owner = useChannels((s) => s.persons.find((p) => p.role === "owner"));
+  // DUENO-NUMERO-1: on WhatsApp the number taken as the owner's shows, and can be let go if it is someone else's.
+  const linked = channel.type === "whatsapp" ? owner?.addresses.find((a) => a.channel === channel.id) : undefined;
+  const phone = linked && phoneOf(linked.external_id);
+  const notMe = () => {
+    if (linked && phone && window.confirm(t("ch.notMeConfirm", { phone }))) void unlinkAddress(linked.id);
+  };
   return (
     <li>
       <button
@@ -126,10 +132,16 @@ export function OwnerRow({
             <span className="chan__rowname">
               {owner?.nickname ? t("ch.youNamed", { name: owner.nickname }) : t("ch.you")}
             </span>
+            {phone && <span className="chan__rowphone">{phone}</span>}
           </span>
           <span className="chan__preview">{t(ownerLine(channel)[toHome ? "home" : target ? "own" : "none"])}</span>
         </span>
       </button>
+      {phone && (
+        <button type="button" className="chan__notme" onClick={notMe}>
+          {t("ch.notMe")}
+        </button>
+      )}
     </li>
   );
 }
