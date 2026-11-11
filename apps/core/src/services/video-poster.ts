@@ -3,6 +3,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { findProgram } from "../programs.ts";
 
 const POSTER_MS = 20_000;
 /** Posters made at once: a screen of video cards asks for dozens together. */
@@ -15,7 +16,7 @@ export const ffmpegFrame: FrameMaker = (video, out) =>
   new Promise((resolve, reject) => {
     // Seeking before -i is fast; 0.5 s skips a black first frame and still fits the shortest clip.
     const args = ["-hide_banner", "-loglevel", "error", "-y", "-ss", "0.5", "-i", video];
-    const p = spawn("ffmpeg", [...args, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "5", "-f", "image2", out], {
+    const p = spawn(findProgram("ffmpeg") ?? "ffmpeg", [...args, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "5", "-f", "image2", out], {
       stdio: ["ignore", "ignore", "pipe"],
       windowsHide: true,
     });

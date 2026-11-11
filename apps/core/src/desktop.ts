@@ -2,6 +2,7 @@
 // default app or move it to the system trash, where it can still be recovered. Paths go as arguments or environment, never inside a script.
 import { execFile } from "node:child_process";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 export type DesktopOps = {
   reveal(abs: string): Promise<void>;
@@ -24,7 +25,18 @@ export function desktopOps(platform: NodeJS.Platform = process.platform, run: Ru
     reveal(abs) {
       if (platform === "darwin") return run("open", ["-R", abs]);
       if (platform === "win32") return run("explorer.exe", [`/select,${abs}`]).catch(() => {});
-      return run("xdg-open", [path.dirname(abs)]);
+      // The file manager selects the file; with --print-reply a missing service rejects, and the folder opens instead.
+      // array:string: splits on commas, so a comma in the name goes encoded.
+      return run("dbus-send", [
+        "--session",
+        "--print-reply",
+        "--reply-timeout=5000",
+        "--dest=org.freedesktop.FileManager1",
+        "/org/freedesktop/FileManager1",
+        "org.freedesktop.FileManager1.ShowItems",
+        `array:string:${pathToFileURL(abs).href.replaceAll(",", "%2C")}`,
+        "string:",
+      ]).catch(() => run("xdg-open", [path.dirname(abs)]));
     },
     open(abs) {
       if (platform === "darwin") return run("open", [abs]);
@@ -66,7 +78,15 @@ export function desktopOps(platform: NodeJS.Platform = process.platform, run: Ru
           ],
           { COLONIA_TRASH_PATH: abs },
         );
-      return run("gio", ["trash", abs]);
+      // gio ships with glib; trash-cli only where gio is missing. A real gio failure is said as it is.
+      const missing = (err: unknown) => (err as NodeJS.ErrnoException).code === "ENOENT";
+      return run("gio", ["trash", abs]).catch((err) => {
+        if (!missing(err)) throw err;
+        return run("trash-put", [abs]).catch((again) => {
+          if (!missing(again)) throw again;
+          throw new Error("Colonia could not find a trash tool (gio or trash-cli) on this machine");
+        });
+      });
     },
   };
 }

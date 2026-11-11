@@ -17,6 +17,7 @@ import type { Llm, LlmRequest } from "../providers/llm.ts";
 import type { AssistantItem, Completion } from "../providers/types.ts";
 import type { NgrokStart } from "../public-tunnel.ts";
 import type { ReleaseSource } from "../release-notes.ts";
+import type { Secrets } from "../secrets.ts";
 import { createCore } from "../server.ts";
 import type { TelemetrySink } from "../telemetry-sink.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
@@ -95,6 +96,7 @@ export async function startCore(opts: {
   /** Enable background extraction and consolidation only in tests that exercise them. */
   memoryMaintenance?: boolean;
   channelAdapters?: Record<string, AdapterFactory>;
+  secrets?: Secrets;
   channelRetryMs?: readonly number[];
   roomBurstMs?: number;
   followUpTimers?: RunTimers;
@@ -172,6 +174,7 @@ export async function startCore(opts: {
       ...(opts.harnesses ? { harnesses: opts.harnesses } : {}),
       ...(opts.extraTools ? { extraTools: opts.extraTools } : {}),
       ...(opts.channelAdapters ? { channelAdapters: opts.channelAdapters } : {}),
+      ...(opts.secrets ? { secrets: opts.secrets } : {}),
       ...(opts.channelRetryMs ? { channelRetryMs: opts.channelRetryMs } : {}),
       ...(opts.roomBurstMs !== undefined ? { roomBurstMs: opts.roomBurstMs } : {}),
       ...(opts.followUpTimers ? { followUpTimers: opts.followUpTimers } : {}),

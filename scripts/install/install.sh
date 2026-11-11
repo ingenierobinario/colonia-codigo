@@ -232,16 +232,27 @@ ln -sf colonia "$BIN/colonia2"
 case ":$PATH:" in
   *":$BIN:"*) ;;
   *)
-    added=0
-    for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
-      if [ -f "$rc" ] && ! grep -q '.local/bin' "$rc"; then
-        printf '\n# Added by the Colonia installer\nexport PATH="$HOME/.local/bin:$PATH"\n' >>"$rc"
-        added=1
+    # The file the person's shell reads is created when missing (a new Mac has none); the others only when present.
+    case "$(basename "${SHELL:-}")" in
+      zsh) own="${ZDOTDIR:-$HOME}/.zshrc" ;;
+      bash)
+        if [ "$(uname -s)" = Darwin ]; then
+          # A login bash reads the first of these that exists: creating .bash_profile would hide them.
+          own="$HOME/.profile"
+          for f in "$HOME/.bash_profile" "$HOME/.bash_login"; do [ -f "$f" ] && { own="$f"; break; }; done
+        else
+          own="$HOME/.bashrc"
+        fi ;;
+      *) own="$HOME/.profile" ;;
+    esac
+    for rc in "$own" "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+      if [ "$rc" = "$own" ] || [ -f "$rc" ]; then
+        grep -qs '\.local/bin' "$rc" ||
+          printf '\n# Added by the Colonia installer\nexport PATH="$HOME/.local/bin:$PATH"\n' >>"$rc" 2>/dev/null ||
+          warn "could not write $rc"
       fi
     done
-    if [ "$added" = 1 ]; then
-      warn "$BIN was not on your PATH: added to your shell's startup file. Open a new terminal, or run: export PATH=\"$BIN:\$PATH\""
-    fi
+    warn "$BIN is not on your PATH yet. Open a new terminal, or run: export PATH=\"$BIN:\$PATH\""
     ;;
 esac
 
@@ -272,9 +283,12 @@ if [ "$OS" = linux ] && [ "$SERVICE" = 1 ] && command -v loginctl >/dev/null 2>&
 fi
 
 say "Colonia $VERSION is installed. Try: colonia status"
-# The agents' own computer runs only on Apple Silicon Macs.
-[ "$OS" = mac ] && [ "$ARCH" = arm64 ] &&
+# The agents' own computer is optional everywhere it runs; its panel names what is missing.
+if [ "$OS" = mac ] && [ "$ARCH" = arm64 ]; then
   echo "    Computer is optional: open its panel to download Linux and missing VM components. No Docker required."
+elif [ "$OS" = linux ]; then
+  echo "    Computer is optional: its panel tells you what it needs (QEMU and KVM). No Docker required."
+fi
 found="$(command -v colonia 2>/dev/null || true)"
 if [ -n "$found" ] && [ "$found" != "$BIN/colonia" ]; then
   warn "colonia here is still $found (Colonia v1's?). This Colonia also answers to colonia2: colonia2 v1 off turns v1 off and makes colonia this one"

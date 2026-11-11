@@ -9,7 +9,7 @@
 FROM debian:bookworm-slim
 ARG BUNDLE
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl git tini \
+ && apt-get install -y --no-install-recommends ca-certificates curl git tini chromium fonts-liberation ffmpeg \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --create-home --uid 1000 colonia \
  && mkdir -p /data && chown colonia:colonia /data
@@ -18,6 +18,10 @@ ADD ${BUNDLE} /opt/
 RUN printf '#!/bin/sh\nexec /opt/colonia/node/bin/node --disable-warning=ExperimentalWarning /opt/colonia/apps/terminal/src/main.ts "$@"\n' \
       > /usr/local/bin/colonia \
  && chmod 755 /usr/local/bin/colonia
+# Chromium cannot build its own sandbox as a plain user inside a default container; the container is the boundary.
+RUN printf '#!/bin/sh\nexec chromium --no-sandbox "$@"\n' > /usr/local/bin/colonia-chromium \
+ && chmod 755 /usr/local/bin/colonia-chromium
+ENV COLONIA_CHROME=/usr/local/bin/colonia-chromium
 USER colonia
 WORKDIR /opt/colonia
 ENV COLONIA_HOME=/data COLONIA_HOST=0.0.0.0 COLONIA_PORT=7440 COLONIA_SECRETS=file COLONIA_UPDATES=off COLONIA_RUNTIME_SKILLS=off

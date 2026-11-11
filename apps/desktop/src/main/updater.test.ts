@@ -153,7 +153,8 @@ test("concurrent installs share a verified download and only open the file after
   const file = path.join(directory, name);
   assert.equal(fs.readFileSync(file, "utf8"), bytes);
   assert.equal(fs.existsSync(`${file}.sha256`), false);
-  assert.deepEqual(opened, [file]);
+  // On Linux the new file is shown, never run unasked.
+  assert.deepEqual(opened, []);
   assert.deepEqual(shown, [file]);
   assert.equal(h.quits(), 0);
   fs.rmSync(file);
@@ -161,6 +162,7 @@ test("concurrent installs share a verified download and only open the file after
 
 test("a corrupt download is deleted, never opened and installation can recover on retry", async (t) => {
   opened.length = 0;
+  shown.length = 0;
   let valid = false;
   t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
     const url = String(input);
@@ -177,11 +179,13 @@ test("a corrupt download is deleted, never opened and installation can recover o
   assert.deepEqual(opened, []);
   valid = true;
   assert.deepEqual(await h.updater.install(), { ok: true, ready: false });
-  assert.deepEqual(opened, [path.join(directory, name)]);
+  assert.deepEqual(opened, []);
+  assert.deepEqual(shown, [path.join(directory, name)]);
 });
 
 test("a remote manual installer stays unopened until activation and uses the exact target", async (t) => {
   opened.length = 0;
+  shown.length = 0;
   t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
     const url = String(input);
     if (url.includes("/releases?")) return Response.json([{ ...release, tag_name: "v2.2.0", assets: [] }, release]);
@@ -195,7 +199,32 @@ test("a remote manual installer stays unopened until activation and uses the exa
   h.updater.quitting();
   assert.deepEqual(opened, []);
   assert.deepEqual(h.updater.restart(), { ok: true });
-  assert.deepEqual(opened, [path.join(directory, name)]);
+  assert.deepEqual(opened, []);
+  assert.deepEqual(shown, [path.join(directory, name)]);
+});
+
+test("an AppImage in a folder Colonia cannot write updates by hand", async (t) => {
+  const image = path.join(directory, "locked", "Colonia.AppImage");
+  fs.mkdirSync(path.dirname(image), { recursive: true });
+  fs.writeFileSync(image, "old");
+  process.env.APPIMAGE = image;
+  t.after(() => {
+    delete process.env.APPIMAGE;
+  });
+  shown.length = 0;
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.includes("/releases?")) return Response.json([release]);
+    if (url.endsWith(".sha256")) return new Response(checksum);
+    return new Response(bytes);
+  });
+  const updater = createDesktopUpdater({ changed: () => {}, quit: () => {}, writable: () => false });
+  assert.equal(updater.mode, "drag");
+  assert.deepEqual(await updater.install(), { ok: true, ready: false });
+  assert.deepEqual(fs.readdirSync(path.dirname(image)), ["Colonia.AppImage"], "nothing is written beside the image");
+  assert.equal(fs.readFileSync(image, "utf8"), "old");
+  assert.deepEqual(shown, [path.join(directory, name)]);
+  fs.rmSync(path.join(directory, name));
 });
 
 test("AppImage download does not replace the running image until activation and quit is idempotent", async (t) => {

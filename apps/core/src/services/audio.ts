@@ -1,13 +1,14 @@
 // Speech as a Telegram voice note: OGG/Opus, converted with the ffmpeg on this machine. Without ffmpeg the audio goes
 // as a plain audio file instead.
 import { spawn } from "node:child_process";
+import { findProgram } from "../programs.ts";
 
 const CONVERT_MS = 60_000;
 
 export function toOggOpus(input: Buffer): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const p = spawn(
-      "ffmpeg",
+      findProgram("ffmpeg") ?? "ffmpeg",
       ["-hide_banner", "-loglevel", "error", "-i", "pipe:0", "-c:a", "libopus", "-b:a", "32k", "-f", "ogg", "pipe:1"],
       {
         stdio: ["pipe", "pipe", "pipe"],

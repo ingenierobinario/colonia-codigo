@@ -33,6 +33,9 @@ export const PHONE_CAMERA_CAP = "camera";
  */
 export const COMPUTER_CAP = "computer";
 
+/** Sent beside the browser by a desktop that cannot lend computer use at all (Linux), so nobody offers to turn it on. */
+export const NO_COMPUTER_CAP = "computer.unsupported";
+
 export const AccessMode = z.enum(["local", "lan", "tailscale"]);
 export type AccessMode = z.infer<typeof AccessMode>;
 export const AccessState = z.object({

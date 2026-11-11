@@ -87,7 +87,8 @@ sólo les añade `AGENTS.md` y `.apc/`. Las claves van al llavero de tu sistema 
 ## Actualizaciones
 
 Colonia busca versiones nuevas cada pocas horas y, cuando hay una, muestra un aviso **Actualización** en la barra de
-arriba. Tus datos se conservan. En Windows y Linux la versión nueva se instala sola; en macOS se abre el disco nuevo para
+arriba. Tus datos se conservan. En Windows la versión nueva se instala sola, y en Linux también cuando Colonia puede escribir junto a su AppImage (si no,
+te muestra el fichero nuevo); en macOS se abre el disco nuevo para
 que arrastres la aplicación. En un servidor, `colonia upgrade --check` te dice si hay versión nueva y `colonia upgrade` la
 instala. Con `COLONIA_UPDATES=off` se apagan las comprobaciones.
 
@@ -98,7 +99,7 @@ Desinstalar quita el programa. **Tus datos se quedan** en `~/.colonia/v2`: borra
 <Tabs syncKey="install">
 <TabItem label="Aplicación de escritorio">
 
-- **macOS**: cierra Colonia desde su icono en la barra de menú y arrastra **Colonia** de Aplicaciones a la papelera.
+- **macOS**: cierra Colonia desde su icono en la barra de menú y arrastra **Colonia** de Aplicaciones (la carpeta Aplicaciones de tu carpeta personal si la instalaste desde la terminal) a la papelera.
 - **Windows**: Configuración › Aplicaciones › Aplicaciones instaladas › **Colonia** › Desinstalar.
 - **Linux**: cierra Colonia y borra el AppImage. Si la instalaste con `colonia desktop`, el instalador con
   `--uninstall` la quita junto con su entrada del menú.

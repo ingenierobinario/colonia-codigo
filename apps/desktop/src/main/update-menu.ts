@@ -27,10 +27,22 @@ const words = (es: boolean, platform: string) => ({
   remoteReady: es
     ? "El servidor ya confirmó la versión. Se vuelve a verificar antes de aplicar esta app; salir de Colonia no la instala."
     : "The server confirmed the target release. It is checked again before applying this app; quitting Colonia does not install it.",
-  openInstaller: es ? "Abrir instalador" : "Open installer",
-  manualReady: es
-    ? "El servidor se verifica antes de abrir el instalador. Reemplaza esta app manualmente y vuelve a abrirla."
-    : "The server is checked before opening the installer. Replace this app manually, then open it again.",
+  openInstaller:
+    platform === "linux"
+      ? es
+        ? "Mostrar la versión nueva"
+        : "Show the new version"
+      : es
+        ? "Abrir instalador"
+        : "Open installer",
+  manualReady:
+    platform === "linux"
+      ? es
+        ? "El servidor se verifica antes de mostrarte el fichero nuevo. Cierra Colonia y ábrelo."
+        : "The server is checked before Colonia shows you the new file. Close Colonia and open it."
+      : es
+        ? "El servidor se verifica antes de abrir el instalador. Reemplaza esta app manualmente y vuelve a abrirla."
+        : "The server is checked before opening the installer. Replace this app manually, then open it again.",
   restartNow: es ? "Reiniciar ahora" : "Restart now",
   later: es ? "Más tarde" : "Later",
   upToDate: es ? "Colonia está al día" : "Colonia is up to date",
@@ -38,7 +50,11 @@ const words = (es: boolean, platform: string) => ({
   failed: es ? "No se pudo actualizar Colonia" : "Colonia could not update",
   noFeed: es ? "No se pudo consultar si hay una versión nueva." : "Could not ask whether a newer version is out.",
   dragged: (v: string) =>
-    es
+    platform === "linux"
+      ? es
+        ? `Colonia te muestra el fichero de Colonia ${v}. Cierra Colonia y ábrelo.`
+        : `Colonia shows you the new file for Colonia ${v}. Close Colonia and open it.`
+      : es
       ? `Se abrió Colonia ${v}: arrástralo a Aplicaciones, reemplazando este, y ábrelo de nuevo.`
       : `Colonia ${v} opened: drag it into Applications, replacing this one, and open it again.`,
   ok: es ? "Aceptar" : "OK",

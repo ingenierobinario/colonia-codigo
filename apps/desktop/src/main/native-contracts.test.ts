@@ -175,7 +175,7 @@ test("a restart from the menu that cannot go ahead shows the reason", async () =
 });
 
 test("install failures show the reason; drag updates explain manual replacement instead of restarting", async () => {
-  const h = harness();
+  const h = harness({ platform: "darwin" });
   h.result({ ok: false, error: "Checksum mismatch" });
   await click(h.menu.item({ ...initial, latest: "2.1.0" }));
   assert.equal(messages[0]?.type, "warning");

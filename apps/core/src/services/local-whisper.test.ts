@@ -30,6 +30,22 @@ test("the model fits the machine: the big one only on a Mac's GPU, smaller ones 
   assert.match(installHint("win32"), /whisper-server\.exe/);
 });
 
+test("on Linux the hint gives ffmpeg's command for the distribution, and whisper through Homebrew", () => {
+  const cases: [string, string][] = [
+    ["ID=ubuntu\nID_LIKE=debian\n", "sudo apt install ffmpeg"],
+    ['ID="fedora"\n', "sudo dnf install ffmpeg"],
+    ["ID=arch\n", "sudo pacman -S ffmpeg"],
+    ['ID="opensuse-tumbleweed"\nID_LIKE="opensuse suse"\n', "sudo zypper install ffmpeg"],
+  ];
+  for (const [release, command] of cases) {
+    const hint = installHint("linux", release);
+    assert.ok(hint.includes(command), hint);
+    assert.match(hint, /^brew install whisper-cpp, and /);
+    assert.match(hint, /or use a cloud service instead$/);
+  }
+  assert.equal(installHint("linux", ""), "brew install whisper-cpp ffmpeg (Homebrew on Linux); or use a cloud service instead");
+});
+
 test("installing downloads the model in the background with its progress, then sets it up; a cut download is dropped", async () => {
   const body = Buffer.alloc(200_000, 7);
   let cut = false;

@@ -476,6 +476,7 @@ app.whenReady().then(() => {
       link = startNodeLink(host, node.url, () => {}, node.token, {
         on: () => computerOn && COMPUTER_PLATFORMS.includes(process.platform),
         handle: computer.handle,
+        unsupported: !COMPUTER_PLATFORMS.includes(process.platform),
       });
     },
   });

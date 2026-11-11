@@ -183,6 +183,9 @@ colonia pairing           # strangers waiting for your approval
 - **A send is `uncertain`**: the core was cut while sending, so it can't know whether it arrived. It isn't sent twice.
 - **Two Colonia answer the same bot**: don't run Colonia v1 and v2 with the same bot. Installing v2 stops v1's daemon for this
   reason.
+- **"The system keyring is locked" (Linux)**: the core started before anyone logged in to the desktop, so the keyring
+  that holds the channel's token is still closed. Log in and the channel starts by itself. On a machine nobody logs in
+  to, keep secrets in a file instead: start the core with `COLONIA_SECRETS=file`.
 
 More in [Channels](/channels/overview/).
 

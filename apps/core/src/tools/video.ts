@@ -2,6 +2,7 @@
 // (YouTube, Vimeo and most video sites). Nothing is downloaded or written; offered only where yt-dlp is installed.
 import { execFile } from "node:child_process";
 import { z } from "zod";
+import { childPath } from "../harness/env.ts";
 import { untrusted } from "./result.ts";
 import { defineTool, type Tool } from "./types.ts";
 
@@ -99,7 +100,7 @@ function ytDlp(bin: string, url: string, signal: AbortSignal): Promise<Info> {
         timeout: 60_000,
         maxBuffer: 32 * 1024 * 1024,
         windowsHide: true,
-        env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "" },
+        env: { PATH: childPath(), HOME: process.env.HOME ?? "" },
       },
       (err, stdout, stderr) => {
         if (err) return reject(new Error((stderr || err.message).trim().split("\n").at(-1)?.slice(0, 300)));
