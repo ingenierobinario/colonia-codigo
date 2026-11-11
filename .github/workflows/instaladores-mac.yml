@@ -35,5 +35,9 @@ jobs:
             out/*.dmg
             out/*.AppImage
             out/Colonia-*.zip
+            out/colonia-core-*.tar.gz
             out/*.sha256
+            out/install.sh
+            out/install.ps1
+          if-no-files-found: error
           retention-days: 30

@@ -96,7 +96,8 @@ app.on("before-quit", (e) => {
 app.whenReady().then(() => {
   if (!single) return;
   // Run straight from Electron (not the Colonia bundle `pnpm app` makes), the Dock still shows Colonia's face.
-  app.dock?.setIcon(path.join(DIST, "icon.png"));
+  // The packaged app already carries its bundle icon (shaped by macOS); a PNG set here would replace it as drawn.
+  if (!app.isPackaged) app.dock?.setIcon(path.join(DIST, "icon.png"));
   // One chrome bar: native window controls sit in the topbar (hidden title bar on every OS).
   const win = new BaseWindow({
     width: 1480,
@@ -620,11 +621,13 @@ app.whenReady().then(() => {
     if (e.sender !== panel.webContents || typeof unread !== "number") return;
     quick.badge(unread);
   });
-  // Windows/Linux window-control overlay follows the panel theme (mac uses native traffic lights).
+  // The window background follows the panel theme on every OS; the window-control overlay only on Windows/Linux (mac
+  // draws its own traffic lights, there is no overlay to recolor).
   ipcMain.on("desktop:titlebar", (e, mode: unknown) => {
-    if (e.sender !== panel.webContents || process.platform === "darwin") return;
+    if (e.sender !== panel.webContents) return;
     if (mode !== "light" && mode !== "dark") return;
     win.setBackgroundColor(mode === "light" ? "#f4f3f0" : "#1a1a19");
+    if (process.platform === "darwin") return;
     win.setTitleBarOverlay(
       mode === "light"
         ? { color: "#f4f3f0", symbolColor: "#444444", height: 46 }
