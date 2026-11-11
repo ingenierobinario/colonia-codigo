@@ -107,7 +107,7 @@ export function availableFromMeminfo(text: string): number | undefined {
 
 function run(cmd: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) =>
-    execFile(cmd, args, { timeout: 2_000 }, (err, out) => (err ? reject(err) : resolve(out))),
+    execFile(cmd, args, { timeout: 2_000, windowsHide: true }, (err, out) => (err ? reject(err) : resolve(out))),
   );
 }
 

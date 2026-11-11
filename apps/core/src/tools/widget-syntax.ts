@@ -34,7 +34,7 @@ async function checkModule(src: string, lineOffset: number, signal: AbortSignal)
   const r = await new Promise<{ status: number | null; stderr: string }>((resolve) => {
     let stderr = "";
     try {
-      const child = spawn(process.execPath, ["--check", "--input-type=module", "-"], { signal });
+      const child = spawn(process.execPath, ["--check", "--input-type=module", "-"], { signal, windowsHide: true });
       child.stderr.setEncoding("utf8").on("data", (d: string) => {
         stderr += d;
       });

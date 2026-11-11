@@ -70,7 +70,7 @@ export function changesIn(log: string): Change[] {
 }
 
 const git = (cwd: string, ...args: string[]) =>
-  execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true }).trim();
 
 /** The release tag a checkout is at or past ("v2.3.32"), or none outside git or before any v2 tag. */
 function tagOf(cwd: string): string | undefined {

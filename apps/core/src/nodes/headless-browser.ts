@@ -244,6 +244,8 @@ export function createHeadlessBrowser(deps: {
       chrome,
       [
         "--headless=new",
+        // Chromium refuses to start as root with its sandbox on (a server, a container).
+        ...(process.getuid?.() === 0 ? ["--no-sandbox"] : []),
         "--remote-debugging-pipe",
         `--user-data-dir=${profile}`,
         "--no-first-run",

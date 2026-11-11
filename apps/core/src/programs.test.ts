@@ -3,7 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { withUsualDirs } from "./programs.ts";
+import { nvmBin, withUsualDirs } from "./programs.ts";
+import { tempDir } from "./testkit/platform.ts";
 
 test("a bare PATH gets the usual folders it lacks at its end, only those that exist and once", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-programs-"));
@@ -24,4 +25,13 @@ test("a bare PATH gets the usual folders it lacks at its end, only those that ex
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("nvm's programs are those of the newest Node it installed, compared as versions", async () => {
+  await using dir = tempDir("colonia-nvm-");
+  const home = dir.path;
+  assert.equal(nvmBin(home), undefined, "no nvm, no folder");
+  for (const v of ["v9.11.2", "v22.4.0", "v20.18.1", "system"])
+    fs.mkdirSync(path.join(home, ".nvm", "versions", "node", v, "bin"), { recursive: true });
+  assert.equal(nvmBin(home), path.join(home, ".nvm", "versions", "node", "v22.4.0", "bin"));
 });

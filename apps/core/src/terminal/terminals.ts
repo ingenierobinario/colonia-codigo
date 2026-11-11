@@ -6,9 +6,15 @@ import path from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import type { TerminalInfo } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
-import { commandShell } from "../processes.ts";
+import { commandShell, stopTree } from "../processes.ts";
 
 const BRIDGE = path.join(import.meta.dirname, "pty-bridge.py");
+
+/** Ends a shell and what it started. Windows has no hangup: killing the shell alone would leave its programs running. */
+function hangUp(child: ChildProcess): void {
+  if (process.platform === "win32" && child.pid) void stopTree(child.pid);
+  else child.kill("SIGHUP");
+}
 /** What a terminal keeps of its output, to draw it again when the panel opens. */
 const BACKLOG = 256 * 1024;
 /** Terminals running at once, across every chat. */
@@ -103,7 +109,7 @@ export function createTerminals(deps: { bus: Bus; commandEnded?: (e: CommandEnde
             env: shellEnv(),
             stdio: ["pipe", "pipe", "pipe", "pipe"],
           })
-        : spawn(shell, args, { cwd, env: shellEnv(), stdio: "pipe" });
+        : spawn(shell, args, { cwd, env: shellEnv(), stdio: "pipe", windowsHide: true });
       const n = list(threadId).length + 1;
       const info: TerminalInfo = {
         id: `term_${randomUUID().slice(0, 12)}`,
@@ -157,13 +163,13 @@ export function createTerminals(deps: { bus: Bus; commandEnded?: (e: CommandEnde
     },
     close(id: string): void {
       const t = get(id);
-      if (t.info.alive) t.child.kill("SIGHUP");
+      if (t.info.alive) hangUp(t.child);
       clearTimeout(t.timer);
       terms.delete(id);
     },
     /** Every shell ends with the core. */
     closeAll(): void {
-      for (const t of terms.values()) if (t.info.alive) t.child.kill("SIGHUP");
+      for (const t of terms.values()) if (t.info.alive) hangUp(t.child);
       terms.clear();
     },
   };

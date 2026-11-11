@@ -17,6 +17,7 @@ export const ffmpegFrame: FrameMaker = (video, out) =>
     const args = ["-hide_banner", "-loglevel", "error", "-y", "-ss", "0.5", "-i", video];
     const p = spawn("ffmpeg", [...args, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "5", "-f", "image2", out], {
       stdio: ["ignore", "ignore", "pipe"],
+      windowsHide: true,
     });
     let err = "";
     const timer = setTimeout(() => p.kill("SIGKILL"), POSTER_MS);

@@ -11,7 +11,9 @@ export type DesktopOps = {
 
 const run = (cmd: string, args: string[], env?: NodeJS.ProcessEnv) =>
   new Promise<void>((resolve, reject) =>
-    execFile(cmd, args, { timeout: 15_000, env: { ...process.env, ...env } }, (err) => (err ? reject(err) : resolve())),
+    execFile(cmd, args, { timeout: 15_000, windowsHide: true, env: { ...process.env, ...env } }, (err) =>
+      err ? reject(err) : resolve(),
+    ),
   );
 
 export const systemDesktop: DesktopOps = {

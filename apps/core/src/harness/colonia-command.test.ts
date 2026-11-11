@@ -5,6 +5,8 @@ import path from "node:path";
 import { after, before, test } from "node:test";
 import { promisify } from "node:util";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
+import { tempDir } from "../testkit/platform.ts";
+import { thisRunner, writeColoniaCommand } from "./colonia-command.ts";
 import { commandEnv } from "./env.ts";
 
 let env: Awaited<ReturnType<typeof startCore>>;
@@ -27,6 +29,18 @@ test("the core leaves its own colonia for agents' shells, first on their PATH, a
   assert.equal(shell[key]?.split(path.delimiter)[0], bin);
   // What an agent's `colonia ping` does: the launcher, found on that PATH, talks to this core.
   // On Windows the launcher is colonia.cmd, which only a shell runs, as an agent's shell does.
-  const { stdout } = await promisify(execFile)("colonia", ["ping"], { env: shell, shell: process.platform === "win32" });
+  const { stdout } = await promisify(execFile)("colonia", ["ping"], {
+    env: shell,
+    shell: process.platform === "win32",
+  });
   assert.match(stdout, /^pong/m);
+});
+
+test("on Windows the launcher is written for cmd and for Git Bash, and reads an accented path as UTF-8", async () => {
+  await using home = tempDir("colonia-cmd-é-");
+  const bin = writeColoniaCommand(home.path, 7999, thisRunner(), "win32");
+  assert.ok(bin);
+  assert.deepEqual(fs.readdirSync(bin).sort(), ["colonia", "colonia.cmd"]);
+  assert.match(fs.readFileSync(path.join(bin, "colonia"), "utf8"), /^#!\/bin\/sh\n/);
+  assert.match(fs.readFileSync(path.join(bin, "colonia.cmd"), "utf8"), /^@echo off\r\nchcp 65001 >nul\r\n/);
 });

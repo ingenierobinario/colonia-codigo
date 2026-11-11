@@ -11,6 +11,7 @@ export type CommandRunner = { exe: string; main: string; electron: boolean };
 
 /**
  * Writes `<home>/bin/colonia` (and `colonia.cmd` on Windows) running this core's own terminal against this home and port.
+ * Windows gets both: cmd and PowerShell run the .cmd, and Git Bash, where agents' commands run, only finds the sh one.
  * Returns the folder to put on agents' PATH, or undefined when this Colonia has no terminal to run.
  */
 export function writeColoniaCommand(
@@ -23,8 +24,11 @@ export function writeColoniaCommand(
   const bin = path.join(home, "bin");
   fs.mkdirSync(bin, { recursive: true });
   if (platform === "win32") {
+    // cmd reads this file in the console's code page: a path with an accent is only itself read as UTF-8.
+    const ascii = [home, runner.exe, runner.main].every((s) => /^[\x20-\x7e]*$/.test(s));
     const cmd = [
       "@echo off",
+      ...(ascii ? [] : ["chcp 65001 >nul"]),
       ...(runner.electron ? ["set ELECTRON_RUN_AS_NODE=1"] : []),
       `set "COLONIA_HOME=${home}"`,
       `set "COLONIA_PORT=${port}"`,
@@ -32,7 +36,6 @@ export function writeColoniaCommand(
       "",
     ].join("\r\n");
     fs.writeFileSync(path.join(bin, "colonia.cmd"), cmd);
-    return bin;
   }
   const script = [
     "#!/bin/sh",

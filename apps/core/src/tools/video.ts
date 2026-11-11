@@ -98,6 +98,7 @@ function ytDlp(bin: string, url: string, signal: AbortSignal): Promise<Info> {
         signal,
         timeout: 60_000,
         maxBuffer: 32 * 1024 * 1024,
+        windowsHide: true,
         env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "" },
       },
       (err, stdout, stderr) => {

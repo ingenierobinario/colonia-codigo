@@ -55,6 +55,8 @@ const MEMORY_LIMIT_MB = 4096;
 // single-instance lock, so it never meets the owner's running Colonia.
 app.setPath("userData", process.env.COLONIA_DESKTOP_DATA ?? path.join(app.getPath("appData"), "@colonia", "desktop"));
 app.setName("Colonia");
+// Windows files notifications and taskbar pins under this id: the installer's shortcut carries the same one.
+if (process.platform === "win32") app.setAppUserModelId("com.ingenierobinario.colonia");
 applySavedLocalTarget(app.getPath("userData"), process.env);
 const CORE_URL = localCoreUrl();
 const openedConnection = JSON.stringify(loadConnection(app.getPath("userData")));

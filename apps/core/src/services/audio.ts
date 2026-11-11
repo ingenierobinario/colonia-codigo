@@ -11,6 +11,7 @@ export function toOggOpus(input: Buffer): Promise<Buffer> {
       ["-hide_banner", "-loglevel", "error", "-i", "pipe:0", "-c:a", "libopus", "-b:a", "32k", "-f", "ogg", "pipe:1"],
       {
         stdio: ["pipe", "pipe", "pipe"],
+        windowsHide: true,
       },
     );
     const out: Buffer[] = [];

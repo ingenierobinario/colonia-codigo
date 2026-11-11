@@ -34,6 +34,7 @@ export const runGit: GitRunner = (args, timeoutMs) =>
   new Promise((resolve) => {
     const child = spawn("git", args, {
       stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
       timeout: timeoutMs,
       // Never a password prompt, and large files stay pointers: a skill is text.
       env: { ...process.env, GIT_TERMINAL_PROMPT: "0", GIT_LFS_SKIP_SMUDGE: "1" },

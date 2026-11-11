@@ -83,7 +83,7 @@ export function createPlugins(deps: {
         RUNNER,
         entry,
       ],
-      { cwd: data, env, stdio: ["pipe", "pipe", "pipe"] },
+      { cwd: data, env, stdio: ["pipe", "pipe", "pipe"], windowsHide: true },
     );
     const l: Live = { ext, child, status: "running", pending: new Map(), restarts, stopping: false };
     live.set(ext.id, l);

@@ -35,6 +35,7 @@ function gitSha(): string {
       cwd: APP_DIR,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
+      windowsHide: true,
     }).trim();
   } catch {
     return "unknown";

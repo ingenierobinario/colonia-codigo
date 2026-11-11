@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.28.0": {
+    en: [
+      "Meta Ads, WhatsApp Business and TikTok Ads join the connectors: sign in and your agents use them.",
+      "On a Mac, Colonia finds Claude and Codex installed with nvm, Volta, Bun, asdf, mise or MacPorts.",
+      "On Windows, agents find the colonia command in Git Bash, and closing a terminal ends what it started.",
+      "On a Linux server run as root, the built-in browser starts.",
+    ],
+    es: [
+      "Meta Ads, WhatsApp Business y TikTok Ads se suman a los conectores: inicia sesión y tus agentes los usan.",
+      "En Mac, Colonia encuentra Claude y Codex instalados con nvm, Volta, Bun, asdf, mise o MacPorts.",
+      "En Windows, los agentes encuentran el comando colonia en Git Bash, y cerrar un terminal cierra lo que abrió.",
+      "En un servidor Linux como root, el navegador integrado arranca.",
+    ],
+  },
   "2.27.0": {
     en: [
       "Each project can have its own picture: upload a photo, or pick an emoji or an icon and its colour.",

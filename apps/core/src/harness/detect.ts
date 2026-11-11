@@ -4,13 +4,14 @@
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import { promisify } from "node:util";
+import { findProgram } from "../programs.ts";
 
 const run = promisify(execFile);
 
 async function cli(cmd: string, args: string[]): Promise<string | undefined> {
   try {
     // Some CLIs (codex login status) answer on stderr.
-    const { stdout, stderr } = await run(cmd, args, { timeout: 15_000, maxBuffer: 1024 * 1024 });
+    const { stdout, stderr } = await run(cmd, args, { timeout: 15_000, maxBuffer: 1024 * 1024, windowsHide: true });
     return stdout.trim() || stderr.trim() || undefined;
   } catch {
     return undefined;
@@ -28,7 +29,8 @@ export async function which(bin: string): Promise<string | undefined> {
   const found =
     process.platform === "win32"
       ? onWindowsPath(bin)
-      : (await cli("/usr/bin/which", [bin]))?.split("\n")[0] || undefined;
+      : // A core the desktop app or launchd started has only the system's PATH: look where owners install too.
+        (await cli("/usr/bin/which", [bin]))?.split("\n")[0] || findProgram(bin);
   whichCache.set(bin, { at: Date.now(), path: found });
   return found;
 }
