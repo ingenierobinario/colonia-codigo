@@ -19,6 +19,7 @@ import {
   WebContentsView,
 } from "electron";
 import { showAbout } from "./about.ts";
+import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
 import { registerAppScheme, serveAppScheme, webDist } from "./app-scheme.ts";
 import { createArtifactWindows } from "./artifact-windows.ts";
 import { runAskpass } from "./askpass.ts";
@@ -78,6 +79,8 @@ app.on("open-file", (e, file) => {
   opened.add([file]);
 });
 opened.add(openedIn(process.argv.slice(1)));
+// Started by the login item: stay out of the way unless a file came with it.
+let background = startedAtLogin() && openedIn(process.argv.slice(1)).length === 0;
 
 let quitting = false;
 // Quitting asks first (closing the window only hides it). Set by the updater, a shutdown or a confirmed answer.
@@ -110,8 +113,10 @@ app.whenReady().then(() => {
         }),
     // Behind the panel, the theme's own color: a pixel the panel does not cover never shows white.
     backgroundColor: "#1a1a19",
+    show: !background,
   });
   const foregroundMain = () => {
+    background = false;
     // Steal focus so a double-click on the tray brings Colonia above other apps on every display.
     if (process.platform === "darwin") app.focus({ steal: true });
     win.show();
@@ -126,6 +131,10 @@ app.whenReady().then(() => {
       win.restore();
     } else foregroundMain();
   };
+  /** Ends a background start: Colonia has something to show, or nowhere else to be found. */
+  const reveal = () => {
+    if (background) openMain();
+  };
   // Closing the window hides it — its browser tabs and the core link stay alive; the Dock, the menu-bar icon or
   // opening Colonia again bring it back, and Quit ends it.
   // A Linux desktop without a tray (GNOME) has nothing to bring a hidden window back with: there it minimises.
@@ -135,7 +144,15 @@ app.whenReady().then(() => {
       trayHost = has;
     });
   };
-  findTrayHost();
+  void hasTrayHost(process.platform, process.env).then((has) => {
+    trayHost = has;
+    // Hidden with no tray to come back from: start minimised instead, where the person can find it.
+    if (background && !has) {
+      background = false;
+      win.showInactive();
+      win.minimize();
+    }
+  });
   win.on("close", (e) => {
     if (quitting) return;
     e.preventDefault();
@@ -159,8 +176,10 @@ app.whenReady().then(() => {
       app.quit();
       return;
     }
-    opened.add(openedIn(argv.slice(1)));
-    openMain();
+    const files = openedIn(argv.slice(1));
+    opened.add(files);
+    // Another login-item start (a second session, a restart of Explorer) does not pop the window.
+    if (!(argv.includes(HIDDEN_ARG) && files.length === 0)) openMain();
   });
   // Every page (the panel, the quick chat, browser tabs) gets the edit menu on a right click.
   app.on("web-contents-created", (_e, contents) => {
@@ -468,6 +487,7 @@ app.whenReady().then(() => {
     },
     updating: (connection) => updater.connect(connection),
     opened: (url, node) => {
+      clearTimeout(late);
       base = url;
       quick.start();
       link?.stop();
@@ -639,6 +659,8 @@ app.whenReady().then(() => {
     connector.stop();
   });
 
+  // A core that never answers would leave a background start invisible: show the waiting page after a while.
+  const late = setTimeout(reveal, 45_000);
   void connector.open();
 
   // Dev-only: `kill -USR2 <pid>` writes the panel, the visible tab and the slot so a script can compose them.

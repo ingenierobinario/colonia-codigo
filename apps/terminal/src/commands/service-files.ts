@@ -241,16 +241,16 @@ export function windowsStopScript(home: string, command: string): string {
  * The Windows login entry: it starts `colonia service run`, the terminal's own supervisor, since a Run value cannot
  * restart what dies. Electron's binary only behaves as Node with ELECTRON_RUN_AS_NODE, set through cmd.
  */
-export function windowsRunCommand(o: {
-  node: string;
-  terminal: string;
-  home: string;
-  electron: boolean;
-  /** Variables the login entry sets first (a login starts it with the user's environment, not the installer's). */
-  env?: Record<string, string>;
-}): string {
-  const cmd = `"${o.node}" ${NODE_FLAGS.join(" ")} "${o.terminal}" service run --home "${o.home}"`;
-  const env = { ...(o.electron ? { ELECTRON_RUN_AS_NODE: "1" } : {}), ...o.env };
-  const sets = Object.entries(env).map(([k, v]) => `set ${k}=${v}&& `);
-  return sets.length ? `cmd /d /c "${sets.join("")}${cmd}"` : cmd;
+export function windowsRunCommand(o: { node: string; terminal: string; home: string; electron: boolean }): string {
+  const line = windowsSupervisorLine(o);
+  return o.electron ? `cmd /d /c "set ELECTRON_RUN_AS_NODE=1&& ${line}"` : line;
 }
+
+/** The supervisor itself, as the login entry runs it; settings travel in service.env.json, never in this line. */
+export function windowsSupervisorLine(o: { node: string; terminal: string; home: string }): string {
+  return `"${o.node}" ${NODE_FLAGS.join(" ")} "${o.terminal}" service run --home "${o.home}"`;
+}
+
+/** Settings the installer had that a login does not: the supervisor reads them back before it starts the core. */
+export const serviceEnvFile = (home: string) => path.join(home, "service.env.json");
+export const keptServiceEnv = ["COLONIA_PORT", "COLONIA_RELEASES"] as const;

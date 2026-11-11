@@ -7,10 +7,19 @@ import type { RunTimers } from "./engine.ts";
 type Held = { kill(): boolean; once(event: "exit" | "error", listener: () => void): unknown };
 type Spawn = (cmd: string, args: string[]) => Held;
 
+// ES_CONTINUOUS | ES_SYSTEM_REQUIRED, held by this helper's thread until the core ends (as caffeinate -w). Decimal:
+// Windows PowerShell 5.1 reads 0x80000001 as a negative Int32. Sent encoded, so its quotes never meet the command line.
+const AWAKE_PS =
+  `$k = Add-Type -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint f);'` +
+  ` -Name Awake -Namespace Colonia -PassThru; [void]$k::SetThreadExecutionState([uint32]2147483649);` +
+  ` try { Wait-Process -Id {pid} -ErrorAction Stop } catch {}`;
+const encoded = (script: string) => Buffer.from(script, "utf16le").toString("base64");
+
 /**
  * Holds `caffeinate -i -w <pid>` while `busy()` (macOS only, and only while the owner leaves it on): `-w` ends it with
  * the core even if the core dies without `close`. `update` is called whenever work starts or ends. On Linux the same
- * is asked of systemd (`systemd-inhibit`), and a system that has none, or refuses, is asked once and left alone.
+ * is asked of systemd (`systemd-inhibit`), and on Windows of the system itself (`SetThreadExecutionState`, held by a
+ * hidden PowerShell that waits for the core); a system that has neither, or refuses, is asked once and left alone.
  */
 export function keepAwake(o: {
   busy: () => boolean;
@@ -42,7 +51,9 @@ export function keepAwake(o: {
               "/dev/null",
             ],
           ]
-        : undefined;
+        : platform === "win32"
+          ? ["powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", encoded(AWAKE_PS.replace("{pid}", pid))]]
+          : undefined;
   const release = () => {
     const c = child;
     child = undefined;
@@ -59,7 +70,7 @@ export function keepAwake(o: {
         const gone = () => {
           if (child !== c) return;
           child = undefined;
-          if (platform === "linux") refused = true;
+          if (platform !== "darwin") refused = true;
         };
         c.once("exit", gone);
         c.once("error", gone);

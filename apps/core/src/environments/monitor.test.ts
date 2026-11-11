@@ -78,7 +78,7 @@ test("the monitor shares one VM probe between callers and reuses it for a few se
   }
 });
 
-// portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
+// portable: fakes the VM driver with a script binary, which Windows cannot start (RUNS_SCRIPTS, D-188).
 if (RUNS_SCRIPTS)
   test("a guest that does not answer is given up within the monitor's wait, its probe killed", async () => {
     const dir = tempDir("colonia-vm-probe-");

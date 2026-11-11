@@ -24,6 +24,8 @@ import {
   systemdProblem,
   systemdUnit,
   terminalMain,
+  keptServiceEnv,
+  serviceEnvFile,
   WINDOWS_RUN_VALUE,
   windowsRunCommand,
   windowsStopScript,
@@ -192,6 +194,7 @@ export async function install(): Promise<void> {
   } else {
     const command = windowsCommand(home);
     if (wasInstalled) stopWindows(home);
+    writeServiceEnv(home);
     must("reg", ["add", RUN_KEY, "/v", names().windows, "/t", "REG_SZ", "/d", command, "/f"]);
     startWindows(command);
     console.log(`installed the login entry ${names().windows}`);
@@ -212,6 +215,7 @@ export async function uninstall(): Promise<void> {
   } else if (process.platform === "win32") {
     if (wasInstalled) stopWindows(coloniaHome());
     sh("reg", ["delete", RUN_KEY, "/v", names().windows, "/f"]);
+    fs.rmSync(serviceEnvFile(coloniaHome()), { force: true });
   }
   console.log("the core no longer runs as a service");
 }
@@ -311,15 +315,24 @@ export async function logs(home: string, n: number, follow: boolean): Promise<vo
   await new Promise(() => {});
 }
 
-/** The login entry's command; a release feed other than the public one goes in it, as systemd's unit keeps it. */
+/** The login entry's command: no settings in it, so the Run value stays a plain command line. */
 function windowsCommand(home: string): string {
-  const feed = process.env.COLONIA_RELEASES;
-  return windowsRunCommand({
-    ...supervisorRun(),
-    home,
-    electron: Boolean(process.env.ELECTRON_RUN_AS_NODE),
-    env: { COLONIA_PORT: String(corePort()), ...(feed ? { COLONIA_RELEASES: feed } : {}) },
-  });
+  return windowsRunCommand({ ...supervisorRun(), home, electron: Boolean(process.env.ELECTRON_RUN_AS_NODE) });
+}
+
+/** What the installer was told that a login will not be: an explicit port and a release feed, as systemd's unit keeps them. */
+export function writeServiceEnv(home: string, env: NodeJS.ProcessEnv = process.env): void {
+  const kept = Object.fromEntries(keptServiceEnv.filter((k) => env[k]).map((k) => [k, env[k] as string]));
+  fs.mkdirSync(home, { recursive: true });
+  fs.writeFileSync(serviceEnvFile(home), `${JSON.stringify(kept, null, 2)}\n`, { mode: 0o600 });
+}
+
+/** Puts back what writeServiceEnv kept; a variable already set wins, and a missing or broken file changes nothing. */
+export function readServiceEnv(home: string, env: NodeJS.ProcessEnv = process.env): void {
+  try {
+    const kept = JSON.parse(fs.readFileSync(serviceEnvFile(home), "utf8")) as Record<string, unknown>;
+    for (const k of keptServiceEnv) if (typeof kept[k] === "string") env[k] ||= kept[k];
+  } catch {}
 }
 
 /**
@@ -352,6 +365,7 @@ function stopWindows(home: string) {
 /** `colonia service run`: keeps one core alive, started again with backoff whenever it exits. */
 async function supervise(home: string): Promise<void> {
   process.env.COLONIA_HOME = home;
+  readServiceEnv(home);
   fs.mkdirSync(path.join(home, "logs"), { recursive: true });
   const log = fs.createWriteStream(path.join(home, "logs", "core.log"), { flags: "a" });
   const s = spec(home);

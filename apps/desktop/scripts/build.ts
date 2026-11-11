@@ -35,6 +35,6 @@ await build({
 });
 // The menu-bar icon (a macOS template image: black on transparent, tinted by the system).
 for (const f of fs.readdirSync(path.join(root, "assets"))) {
-  if (/\.(png|svg)$/.test(f)) fs.copyFileSync(path.join(root, "assets", f), path.join(out, f));
+  if (/\.(png|svg)$/.test(f) || /^tray-.*\.ico$/.test(f)) fs.copyFileSync(path.join(root, "assets", f), path.join(out, f));
 }
 console.log("built apps/desktop/dist");

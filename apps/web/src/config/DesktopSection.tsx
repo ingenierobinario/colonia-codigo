@@ -99,7 +99,7 @@ export function DesktopSection() {
           aria-label={t("desktop.login")}
         />
       </SettingRow>
-      {window.coloniaDesktop?.platform === "darwin" && (
+      {window.coloniaDesktop && (
         <SettingRow title={t("desktop.awake")} description={t("desktop.awakeHint")}>
           <Switch
             size="sm"

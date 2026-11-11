@@ -1608,8 +1608,8 @@ export const en = {
   "desktop.none": "None",
   "desktop.clear": "Remove",
   "desktop.login": "Start with the computer",
-  "desktop.loginHint": "Colonia opens when you log in.",
-  "desktop.awake": "Keep the Mac awake while agents work",
+  "desktop.loginHint": "Colonia starts when you log in and waits in the menu bar or tray until you open it.",
+  "desktop.awake": "Keep this computer awake while agents work",
   "desktop.awakeHint":
     "It does not sleep during a turn, a command or a computer starting; the screen may still turn off.",
   "desktop.cu": "Computer use",

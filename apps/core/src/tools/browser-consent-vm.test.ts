@@ -10,7 +10,7 @@ import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { RUNS_SCRIPTS, tempDir, waitFor } from "../testkit/platform.ts";
 import { vmBrowserDriver } from "../testkit/vm-browser-driver.ts";
 
-// Portable: the VM's script transport runs on macOS/Linux; Windows does not run this guest driver.
+// Portable: fakes the VM driver with a script binary, which Windows cannot start (RUNS_SCRIPTS, D-188). It also needs Playwright's Chromium.
 if (RUNS_SCRIPTS && fs.existsSync(chromium.executablePath())) {
   for (const scope of ["tab", "turn"] as const) {
     for (const change of ["unchanged", "closure", "reload", "owner takeover", "closure after activation"] as const) {

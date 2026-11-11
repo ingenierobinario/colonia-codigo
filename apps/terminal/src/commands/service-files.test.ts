@@ -16,9 +16,13 @@ import {
   systemdDir,
   systemdProblem,
   systemdUnit,
+  serviceEnvFile,
   windowsProcessPattern,
   windowsRunCommand,
+  windowsSupervisorLine,
 } from "./service-files.ts";
+import { readServiceEnv, writeServiceEnv } from "./service.ts";
+import { tempDir } from "../../../core/src/testkit/platform.ts";
 
 const spec = {
   node: "/opt/node 24/bin/node",
@@ -77,10 +81,31 @@ test("the Windows login entry runs the terminal's supervisor, through cmd only f
     '"C:\\Node\\node.exe" --disable-warning=ExperimentalWarning "C:\\colonia\\apps\\terminal\\src\\main.ts" service run --home "C:\\Users\\u\\.colonia\\v2"',
   );
   assert.match(windowsRunCommand({ ...o, electron: true }), /^cmd \/d \/c "set ELECTRON_RUN_AS_NODE=1&& "C:/);
-  assert.match(
-    windowsRunCommand({ ...o, electron: false, env: { COLONIA_RELEASES: "http://192.168.0.10:7480" } }),
-    /^cmd \/d \/c "set COLONIA_RELEASES=http:\/\/192.168.0.10:7480&& "C:\\Node\\node.exe" .* service run --home .*"$/,
+  assert.equal(
+    windowsRunCommand({ ...o, electron: true }),
+    `cmd /d /c "set ELECTRON_RUN_AS_NODE=1&& ${windowsSupervisorLine(o)}"`,
   );
+  assert.ok(!windowsRunCommand({ ...o, electron: true }).includes("COLONIA_"), "carries no settings");
+});
+
+test("the settings a login lacks go through service.env.json, and an explicit variable wins", async (t) => {
+  const dir = await tempDir("service-env");
+  t.after(() => dir.remove());
+  writeServiceEnv(dir.path, { COLONIA_PORT: "7541", COLONIA_RELEASES: "https://updates.example.com/feed", PATH: "x" });
+  assert.deepEqual(JSON.parse(fs.readFileSync(serviceEnvFile(dir.path), "utf8")), {
+    COLONIA_PORT: "7541",
+    COLONIA_RELEASES: "https://updates.example.com/feed",
+  });
+  const env: NodeJS.ProcessEnv = { COLONIA_PORT: "7542" };
+  readServiceEnv(dir.path, env);
+  assert.deepEqual(env, { COLONIA_PORT: "7542", COLONIA_RELEASES: "https://updates.example.com/feed" });
+  writeServiceEnv(dir.path, {});
+  const bare: NodeJS.ProcessEnv = {};
+  readServiceEnv(dir.path, bare);
+  assert.deepEqual(bare, {});
+  fs.writeFileSync(serviceEnvFile(dir.path), "{broken");
+  readServiceEnv(dir.path, bare);
+  assert.deepEqual(bare, {}, "a broken file changes nothing");
 });
 
 test("a bundle install runs through current, and its terminal finds the install it lives in", () => {

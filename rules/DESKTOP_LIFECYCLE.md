@@ -69,6 +69,9 @@ The default home retains `colonia.service`, `dev.colonia.core` and `ColoniaCore`
 so restarting or uninstalling one cannot address the default installation's service entry. Existing entries must
 match the selected home before modification. Windows stop/restart does not trust persisted PIDs: it identifies the
 supervisor by the exact quoted home argument and restricts core termination to its direct child.
+The Windows Run value carries no settings: an explicit port and release feed go in `service.env.json` in the home,
+which the supervisor reads back without overriding a variable already set; uninstall removes it.
+Desktop's own login item starts it with `--hidden`, so a login opens the tray, not a window, unless no tray exists.
 
 ### Older custom-home services
 

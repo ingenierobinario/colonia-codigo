@@ -19,6 +19,10 @@ La ventana principal es el panel: Inbox, Tareas, Proyectos, Configuración y tod
 Cerrarla solo la esconde. Las pestañas del navegador y la conexión con el core siguen vivas, y el Dock, el ícono de la
 barra de menú o abrir Colonia de nuevo la traen de vuelta. Lo que la cierra de verdad es **Salir**.
 
+Cuando Colonia se inicia con el ordenador, arranca sin su ventana: ábrela desde el Dock, el ícono de la barra de menú o
+la bandeja. En escritorios Linux sin bandeja arranca minimizada. Si mueves el AppImage, abre Colonia una vez desde su
+nuevo sitio para que vuelva a iniciarse al entrar en la sesión.
+
 Corre un solo Colonia a la vez: si lo abres otra vez, trae al frente el que ya está corriendo.
 
 ## El ícono de la barra de menú y el chat rápido
@@ -49,7 +53,7 @@ sección lo avisa).
 | **Atajo** | El atajo global del chat rápido. Haz clic y pulsa las teclas. **Quitar** lo deja sin atajo. Si otra app ya usa esas teclas, Colonia te avisa. |
 | **Abrir al iniciar el ordenador** | Colonia se abre cuando inicias sesión. Viene activado. |
 | **Dejar que los agentes usen este ordenador** | El uso del ordenador, en macOS y Windows, desactivado hasta que lo actives. Mira abajo. |
-| **Mantener la Mac despierta mientras trabajan los agentes** | Evita que el sistema se duerma durante un turno, un comando o el inicio del ordenador. La pantalla puede apagarse. Puedes desactivarlo. |
+| **Mantener este ordenador despierto mientras trabajan los agentes** | Evita que el sistema se duerma durante un turno, un comando o el inicio del ordenador. La pantalla puede apagarse, y en Windows cerrar la tapa o pulsar el botón de encendido lo sigue durmiendo. Puedes desactivarlo. |
 
 ### Uso del ordenador
 
@@ -143,7 +147,8 @@ notificación del sistema y en el chat «Novedades» la primera vez que arranca 
 de la 2.27.0 muestra sus notas tal como se escribieron. Cuando tú lo decides, baja el instalador para tu sistema y lo
 verifica contra su `.sha256`:
 
-- **Linux** (AppImage) y **Windows** terminan solos y vuelven a abrir.
+- **Linux** (AppImage) y **Windows** terminan solos y vuelven a abrir. En Windows, si sales de Colonia con una
+  actualización descargada, se instala entonces y la próxima vez se abre actualizada.
 - **macOS** descomprime la app nueva al lado de la que está corriendo y se reemplaza cuando haces clic en
   **Reiniciar ahora**, o cuando la cierras.
 

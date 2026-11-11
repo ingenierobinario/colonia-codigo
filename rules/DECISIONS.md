@@ -3476,3 +3476,11 @@ the release body (`## Español` / `## English` bullets) and the panel dialog, th
 notification and the "what's new" chat show the person's language. `system.updates` keeps `changes` and adds
 `localized`; apps up to 2.26.0 list every bullet, hence four per language. A release without an entry falls back to
 the tag message. The terminal's `colonia upgrade --check` stays English.
+
+<a id="d-188"></a>
+## D-188 — 2026-11-11 — The script-binary tests are skipped on Windows only for want of a fake (replaces D-155's premise)
+D-155 skipped five computer-driver tests on Windows because the driver never ran there. Since D-183 it does, so that
+reason no longer holds. They stay skipped there only because they fake `limactl`, the guest's SSH or a viewer with a
+script binary, which Windows cannot start, and a spawnable fake would put a test-only path into the product's spawn
+sites. Linux and macOS CI keep running the driver logic. `RUNS_SCRIPTS` also gates tests that need a login shell
+with rc files. Running the five on Windows is a later change, one test at a time, each proven by a Windows run.

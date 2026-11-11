@@ -36,7 +36,7 @@ export function createQuick(opts: {
   let unreadCount = 0;
   let pressedVisible: boolean | undefined;
 
-  function trayImage(): Electron.NativeImage {
+  function trayImage(): Electron.NativeImage | string {
     const attention = unreadCount > 0;
     const name =
       process.platform === "darwin"
@@ -44,12 +44,14 @@ export function createQuick(opts: {
           ? "tray-white"
           : "trayTemplate"
         : "tray-color";
+    // Windows takes the .ico and picks the entry for its display scale itself.
+    if (process.platform === "win32") return path.join(opts.assets, `${name}${attention ? "-attention" : ""}.ico`);
     const image = nativeImage.createFromPath(
       path.join(opts.assets, `${name}${unreadCount > 0 ? "-attention" : ""}.png`),
     );
     // Template tinting would turn the orange badge into the system's monochrome color.
     if (process.platform === "darwin") image.setTemplateImage(!attention);
-    return process.platform === "win32" ? image.resize({ width: 16 }) : image;
+    return image;
   }
 
   function updateBadge(): void {

@@ -51,7 +51,7 @@ test("the Mac is kept awake while work runs, let go when none does, and never le
   const off = spawner();
   enabled = false;
   keepAwake({ busy: () => true, enabled: () => enabled, platform: "darwin", spawn: off.spawn }).update();
-  keepAwake({ busy: () => true, enabled: () => true, platform: "win32", spawn: off.spawn }).update();
+  keepAwake({ busy: () => true, enabled: () => true, platform: "freebsd", spawn: off.spawn }).update();
   assert.equal(off.spawned.length, 0);
 });
 
@@ -87,6 +87,47 @@ test("on Linux systemd is asked to hold the machine awake, and a system that can
     refused.update();
     none.spawned[0]?.child.emit(event, new Error("spawn systemd-inhibit ENOENT"));
     assert.equal(refused.holding(), false);
+    refused.update();
+    refused.update();
+    assert.equal(none.spawned.length, 1, event);
+  }
+});
+
+test("on Windows a hidden PowerShell holds the machine awake until the core ends, and one that cannot is asked once", () => {
+  const { spawned, spawn } = spawner();
+  const cmds: string[] = [];
+  let busy = true;
+  const awake = keepAwake({
+    busy: () => busy,
+    enabled: () => true,
+    platform: "win32",
+    pid: 4242,
+    spawn: (cmd, args) => {
+      cmds.push(cmd);
+      return spawn(cmd, args);
+    },
+  });
+  awake.update();
+  awake.update();
+  assert.deepEqual(cmds, ["powershell.exe"], "held once");
+  const args = spawned[0]?.args ?? [];
+  assert.ok(args.includes("-NonInteractive"));
+  const script = Buffer.from(args[args.indexOf("-EncodedCommand") + 1] ?? "", "base64").toString("utf16le");
+  assert.match(script, /SetThreadExecutionState\(\[uint32\]2147483649\)/);
+  assert.match(script, /Wait-Process -Id 4242 /, "tied to the core's pid");
+  busy = false;
+  awake.update();
+  assert.equal(spawned[0]?.killed, true, "let go when the work ends");
+  busy = true;
+  awake.update();
+  assert.equal(spawned.length, 2, "and held again for the next work");
+
+  // PowerShell missing or blocked (it ends by itself while work runs): not started again every tick.
+  for (const event of ["error", "exit"]) {
+    const none = spawner();
+    const refused = keepAwake({ busy: () => true, enabled: () => true, platform: "win32", spawn: none.spawn });
+    refused.update();
+    none.spawned[0]?.child.emit(event, new Error("spawn powershell.exe ENOENT"));
     refused.update();
     refused.update();
     assert.equal(none.spawned.length, 1, event);

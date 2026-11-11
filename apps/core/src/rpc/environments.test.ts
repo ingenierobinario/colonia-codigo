@@ -378,7 +378,7 @@ test("only the owner shuts the shared computer down; it cancels the turns holdin
   }
 });
 
-// portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
+// portable: fakes the VM driver with a script binary, which Windows cannot start (RUNS_SCRIPTS, D-188).
 if (RUNS_SCRIPTS)
   test("shutdown terminates an in-flight guest command's local SSH process", async () => {
     const home = tempDir("colonia-computer-command-").path;
@@ -546,7 +546,7 @@ test("VM availability does not advertise browser tools to an ordinary chat witho
   }
 });
 
-// portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
+// portable: fakes the VM driver with a script binary, which Windows cannot start (RUNS_SCRIPTS, D-188).
 if (RUNS_SCRIPTS)
   test("revoking a device invalidates pending display tickets, closes its live display and refuses existing RPC sockets", async () => {
     const home = tempDir("colonia-display-revoke-").path;
@@ -610,7 +610,7 @@ if (RUNS_SCRIPTS)
     }
   });
 
-// portable: stands in for the Mac-only driver with a script binary (RUNS_SCRIPTS).
+// portable: fakes the VM driver with a script binary, which Windows cannot start (RUNS_SCRIPTS, D-188).
 if (RUNS_SCRIPTS)
   test("a viewer that reconnects again and again never hits the cap: the same device's oldest one gives way", async () => {
     const env = await startCore({ llm: scriptedLlm(() => say("ok")) });

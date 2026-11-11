@@ -126,7 +126,14 @@ if [ "$relaunch" = 1 ]; then open "$old" || say "could not open $old"; fi
 
 type Staged = { version: string; restart(): void; onQuit?(): void };
 
-export function createDesktopUpdater(opts: { quit(): void; changed(status: DesktopUpdate): void; logFile?: string }) {
+export function createDesktopUpdater(opts: {
+  quit(): void;
+  changed(status: DesktopUpdate): void;
+  logFile?: string;
+  /** Starts the Windows installer (a test passes its own, so no real installer runs). */
+  spawn?: typeof spawn;
+}) {
+  const start = opts.spawn ?? spawn;
   const env = process.env.COLONIA_RELEASES;
   const feed = env === "off" ? undefined : env || RELEASE_FEED;
   const enabled = app.isPackaged && Boolean(feed) && Boolean(platformOf(process.platform, process.arch));
@@ -312,13 +319,31 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
     const file = path.join(os.tmpdir(), asset.name);
     removeOldInstallers(os.tmpdir(), asset.name);
     await fetchChecked(release, asset, file);
+    const launch = (args: string[]) => {
+      // A cleaned temporary folder is the common way to lose it: say so instead of quitting into nothing.
+      if (!fs.existsSync(file)) {
+        staged = undefined;
+        throw new Error("The new version is no longer ready. Check for updates again.");
+      }
+      const child = start(file, args, { detached: true, stdio: "ignore", windowsHide: false });
+      child.once("error", (error) => log(`installer did not start: ${error.message}`));
+      // A spawn that failed has no pid at once; its 'error' event only follows later.
+      if (child.pid === undefined) {
+        staged = undefined;
+        throw new Error("The installer did not start. Check for updates again.");
+      }
+      child.unref();
+    };
     return {
       version: release.version,
-      // The installer replaces Colonia once it has quit, then opens the new one (runAfterFinish).
+      // --updated: the installer waits for Colonia to close instead of asking; runAfterFinish opens the new one.
       restart: () => {
-        spawn(file, [], { detached: true, stdio: "ignore", windowsHide: false }).unref();
+        launch(["--updated"]);
+        swapping = true; // the quit below must not start the installer a second time
         setTimeout(opts.quit, 1000);
       },
+      // The owner quit: install without a window and do not reopen.
+      onQuit: () => launch(["--updated", "/S"]),
     };
   }
 
@@ -356,7 +381,14 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
     quitting() {
       if (staged?.onQuit && !swapping) {
         log(`quit: putting ${staged.version} in place`);
-        staged.onQuit();
+        const ready = staged;
+        // Once only: a second quit must not start it again; a failure here must not throw inside will-quit.
+        staged = undefined;
+        try {
+          ready.onQuit?.();
+        } catch (error) {
+          log(`quit: ${error instanceof Error ? error.message : String(error)}`);
+        }
       }
     },
     /** `found(status)`: a background check found a newer Colonia (auto mode then downloads it on its own). */
