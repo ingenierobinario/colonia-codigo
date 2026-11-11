@@ -85,7 +85,8 @@ adds `AGENTS.md` and `.apc/` to them. Keys go to your system's keychain when the
 ## Updates
 
 Colonia looks for new versions every few hours and, when there is one, shows an **Update** notice in the top bar. Your
-data is kept. On Windows and Linux the new version installs itself; on macOS the new disk image opens for you to drag the
+data is kept. On Windows the new version installs itself, and on Linux too when Colonia can write next to its AppImage (otherwise it
+shows you the new file); on macOS the new disk image opens for you to drag the
 app. On a server, `colonia upgrade --check` tells you whether there is a new version and `colonia upgrade` installs it.
 `COLONIA_UPDATES=off` turns the checks off.
 
@@ -96,7 +97,7 @@ Uninstalling removes the program. **Your data stays** in `~/.colonia/v2`: delete
 <Tabs syncKey="install">
 <TabItem label="Desktop app">
 
-- **macOS**: quit Colonia from its icon in the menu bar and drag **Colonia** from Applications to the bin.
+- **macOS**: quit Colonia from its icon in the menu bar and drag **Colonia** from Applications (the Applications folder in your home if you installed from the terminal) to the bin.
 - **Windows**: Settings › Apps › Installed apps › **Colonia** › Uninstall.
 - **Linux**: quit Colonia and delete the AppImage. If you installed it with `colonia desktop`, the installer's
   `--uninstall` removes it together with its menu entry.

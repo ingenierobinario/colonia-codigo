@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { errorMessage } from "../errors.ts";
 import type { Log } from "../log.ts";
+import { childPath } from "../harness/env.ts";
 import { findProgram } from "../programs.ts";
 
 const START_TIMEOUT_MS = 60_000;
@@ -73,7 +74,11 @@ export function createWhisperCpp(deps: {
       "-t",
       String(whisperThreads()),
     ];
+    // Its own ffmpeg (--convert) is looked up on the PATH agents get, not the service's frozen one.
+    const env = { ...process.env };
+    env[Object.keys(env).find((k) => k.toUpperCase() === "PATH") ?? "PATH"] = childPath();
     const child = (deps.spawn ?? spawn)(bin, args, {
+      env,
       stdio: ["ignore", "ignore", "pipe"],
     });
     let stderr = "";

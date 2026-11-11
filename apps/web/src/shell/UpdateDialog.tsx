@@ -23,6 +23,7 @@ export function UpdateDialog() {
       ? notesFor(status?.localized, status?.changes, language)
       : notesFor(app?.localized, app?.notes, language);
   const drag = target === "app" && app?.install === "drag";
+  const linux = window.coloniaDesktop?.platform === "linux";
   const byApp = updatedByApp(status, target);
   const lead =
     target === "both"
@@ -30,7 +31,7 @@ export function UpdateDialog() {
       : target === "app"
         ? phase === "ready" || phase === "restarting" || phase === "stalled"
           ? t("update.leadReady", { v: app?.ready ?? app?.latest ?? "" })
-          : t(drag ? "update.leadAppDrag" : "update.leadApp", { v: app?.latest ?? "", current: app?.current ?? "" })
+          : t(drag ? (linux ? "update.leadAppDragLinux" : "update.leadAppDrag") : "update.leadApp", { v: app?.latest ?? "", current: app?.current ?? "" })
         : byApp
           ? t("update.leadByApp", { v: status?.latest ?? "" })
           : status?.source === "release"
@@ -95,7 +96,7 @@ export function UpdateDialog() {
         </p>
       )}
       {phase === "stalled" && <p className="update__note">{t("update.restartStalled")}</p>}
-      {phase === "done" && <p className="update__note">{t(drag ? "update.dragDone" : "update.done")}</p>}
+      {phase === "done" && <p className="update__note">{t(drag ? (linux ? "update.dragDoneLinux" : "update.dragDone") : "update.done")}</p>}
       {phase === "failed" && (
         <>
           <p className="update__note">{t("update.failed")}</p>

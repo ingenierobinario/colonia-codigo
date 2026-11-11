@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { linuxInstaller } from "../environments/host.ts";
 import { findProgram } from "../programs.ts";
 
 export type LocalModel = {
@@ -57,12 +58,16 @@ export function recommend(m: Machine): string {
   return "base";
 }
 
-/** How to get whisper.cpp's server on this system, when it is missing. */
-export function installHint(platform: NodeJS.Platform): string {
+const FFMPEG = { apt: "sudo apt install ffmpeg", dnf: "sudo dnf install ffmpeg", pacman: "sudo pacman -S ffmpeg", zypper: "sudo zypper install ffmpeg" };
+
+/** How to get whisper.cpp's server on this system, when it is missing; on Linux, `osRelease` picks ffmpeg's command. */
+export function installHint(platform: NodeJS.Platform, osRelease = ""): string {
   if (platform === "darwin") return "brew install whisper-cpp ffmpeg";
   if (platform === "win32")
     return "winget install ffmpeg, and whisper-server.exe from github.com/ggml-org/whisper.cpp/releases (in your PATH)";
-  return "brew install whisper-cpp ffmpeg (Linuxbrew), or build whisper.cpp; or use a cloud service instead";
+  const installer = linuxInstaller(osRelease);
+  const ffmpeg = installer ? `, and ${FFMPEG[installer]}` : " ffmpeg";
+  return `brew install whisper-cpp${ffmpeg} (Homebrew on Linux); or use a cloud service instead`;
 }
 
 export const modelFile = (dir: string, id: string) => path.join(dir, `ggml-${id}.bin`);

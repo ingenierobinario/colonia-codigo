@@ -1,5 +1,6 @@
 // Local transcription from the app: what this machine runs well, and installing a model for it (see local-whisper.ts).
 import type { LocalTranscription } from "@colonia/protocol";
+import { readOsRelease } from "../environments/host.ts";
 import { badRequest, errorMessage } from "../errors.ts";
 import { installHint, LOCAL_MODELS, type ModelInstaller, machine, recommend } from "../services/local-whisper.ts";
 import type { Services } from "../services/registry.ts";
@@ -31,7 +32,7 @@ export function transcriptionHandlers(services: Services, installer: ModelInstal
     const download = installer.progress();
     return {
       machine: { ...m, server: Boolean(m.server) },
-      ...(!m.server || !m.ffmpeg ? { install_hint: installHint(m.platform) } : {}),
+      ...(!m.server || !m.ffmpeg ? { install_hint: installHint(m.platform, m.platform === "linux" ? readOsRelease() : "") } : {}),
       recommended: recommend(m),
       models: LOCAL_MODELS.map((x) => ({ ...x, installed: installer.installed(x.id) })),
       ...(download ? { download } : {}),

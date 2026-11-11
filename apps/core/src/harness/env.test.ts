@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { removeDir } from "../testkit/platform.ts";
-import { childEnv, commandEnv, useColoniaCommand, useOwnerShell, useUsualDirs, withOwnerShell } from "./env.ts";
+import { childEnv, childPath, commandEnv, useColoniaCommand, useOwnerShell, useUsualDirs, withOwnerShell } from "./env.ts";
 import type { LoginEnv } from "./login-env.ts";
 
 const run = promisify(execFile);
@@ -123,4 +123,12 @@ test("a terminal the core opens starts from the owner's shell exports too, and t
   });
   assert.deepEqual(own, { PATH: dirs("/usr/bin"), EDITOR: "vi" });
   assert.equal(process.env.NVM_DIR, undefined);
+});
+
+test("what the core starts for the owner (yt-dlp, ffmpeg) searches the PATH agents get", (t) => {
+  coreEnv(t, { PATH: dirs("/usr/bin", "/bin") });
+  assert.equal(childPath(), dirs("/usr/bin", "/bin"), "a core started by hand keeps its own");
+  useOwnerShell(true, { shell: answered({ PATH: dirs("/opt/homebrew/bin", "/usr/bin") }) });
+  assert.equal(childPath(), childEnv().PATH);
+  assert.ok(childPath().split(path.delimiter).includes("/opt/homebrew/bin"));
 });

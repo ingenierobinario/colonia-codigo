@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -9,8 +9,8 @@ import { coreBundleName, platformOf } from "../packages/protocol/src/releases.ts
 const script = path.resolve(import.meta.dirname, "install/install.sh");
 
 /** A bundle with only what install.sh checks: colonia/node/bin/node, executable. */
-function bundle(dir: string, version: string): string {
-  const platform = platformOf(process.platform, process.arch);
+function bundle(dir: string, version: string, os: NodeJS.Platform = process.platform): string {
+  const platform = platformOf(os, process.arch);
   assert.ok(platform);
   const src = path.join(dir, `src-${version}`);
   fs.mkdirSync(path.join(src, "colonia", "node", "bin"), { recursive: true });
@@ -105,4 +105,66 @@ test("uninstalling on Linux takes the desktop app and its entries with it, and l
   plant("/opt/Colonia/colonia");
   uninstall();
   assert.deepEqual(left.filter((file) => fs.existsSync(file)), left.slice(0, 4));
+});
+
+/** Runs install.sh with `home` as HOME, a PATH without its ~/.local/bin, and `shell` as the login shell. */
+async function installInto(
+  home: string,
+  shell: string,
+  extra: (bin: string) => void = () => {},
+  os: NodeJS.Platform = process.platform,
+) {
+  await using dir = tempDir("colonia-install-path-");
+  const bin = quietTools(dir.path);
+  extra(bin);
+  const env = { HOME: home, SHELL: shell, COLONIA_APP: path.join(dir.path, "app"), PATH: `${bin}:/usr/bin:/bin` };
+  return spawnSync("bash", [script, "--file", bundle(dir.path, "2.12.1", os), "--no-service"], { env, encoding: "utf8" });
+}
+const MARK = "# Added by the Colonia installer";
+const marks = (file: string) => fs.readFileSync(file, "utf8").split(MARK).length - 1;
+
+test("a home without shell startup files gets one, and is told to open a new terminal", async () => {
+  if (process.platform === "win32") return;
+  await using home = tempDir("colonia-home-");
+  const r = await installInto(home.path, "/bin/zsh");
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(marks(path.join(home.path, ".zshrc")), 1);
+  assert.match(r.stderr, /not on your PATH yet\. Open a new terminal/);
+  await installInto(home.path, "/bin/zsh");
+  assert.equal(marks(path.join(home.path, ".zshrc")), 1, "a second install adds nothing");
+});
+
+test("a startup file that already puts ~/.local/bin on the PATH is left as it is", async () => {
+  if (process.platform === "win32") return;
+  await using home = tempDir("colonia-home-");
+  const rc = path.join(home.path, ".zshrc");
+  fs.writeFileSync(rc, 'export PATH="$HOME/.local/bin:$PATH"\n');
+  assert.equal((await installInto(home.path, "/bin/zsh")).status, 0);
+  assert.equal(fs.readFileSync(rc, "utf8"), 'export PATH="$HOME/.local/bin:$PATH"\n');
+});
+
+test("bash on a Mac gets the line in the login file it reads, without a new .bash_profile", async () => {
+  if (process.platform === "win32") return;
+  await using home = tempDir("colonia-home-");
+  fs.writeFileSync(path.join(home.path, ".bash_login"), "");
+  const r = await installInto(home.path, "/bin/bash", (bin) =>
+    fs.writeFileSync(path.join(bin, "uname"), '#!/bin/sh\n[ "$1" = -s ] && { echo Darwin; exit 0; }\nexec /usr/bin/uname "$@"\n', {
+      mode: 0o755,
+    }),
+    "darwin",
+  );
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(marks(path.join(home.path, ".bash_login")), 1);
+  assert.equal(fs.existsSync(path.join(home.path, ".bash_profile")), false);
+});
+
+test("a startup file that cannot be written does not stop the install", async () => {
+  if (process.platform === "win32" || process.getuid?.() === 0) return;
+  await using home = tempDir("colonia-home-");
+  const rc = path.join(home.path, ".zshrc");
+  fs.writeFileSync(rc, "");
+  fs.chmodSync(rc, 0o444);
+  const r = await installInto(home.path, "/bin/zsh");
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stderr, /could not write/);
 });

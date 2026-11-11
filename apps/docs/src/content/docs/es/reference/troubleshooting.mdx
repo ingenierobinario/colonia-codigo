@@ -189,6 +189,9 @@ colonia pairing           # desconocidos esperando tu aprobación
 - **Un envío quedó `uncertain`**: el core se cortó mientras mandaba, así que no puede saber si llegó. No se manda dos
   veces.
 - **Dos Colonia contestan el mismo bot**: no corras Colonia v1 y v2 con el mismo bot. Por eso instalar v2 frena el daemon de v1.
+- **«The system keyring is locked» (Linux)**: el core arrancó antes de que nadie entrara en el escritorio, así que el
+  llavero que guarda el token del canal sigue cerrado. Entra en la sesión y el canal arranca solo. En una máquina en la
+  que nadie inicia sesión, guarda los secretos en un fichero: arranca el core con `COLONIA_SECRETS=file`.
 
 Más en [Canales](/es/channels/overview/).
 

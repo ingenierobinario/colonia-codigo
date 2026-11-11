@@ -512,10 +512,15 @@ export function createChannels(deps: {
     const factory = deps.factories[config.type];
     if (!factory || !config.enabled || stopped) return;
     const ac = new AbortController();
-    const adapter = factory(config, secrets.resolve(`secret://${tokenName(config.id)}`));
+    const name = tokenName(config.id);
+    const token = secrets.resolve(`secret://${name}`);
+    const adapter = factory(config, token);
     const l: Live = { config, adapter, ac, status: "starting" };
     live.set(config.id, l);
     try {
+      // Saved, but the keyring does not give it now (still locked at boot): a wait, not a refusal.
+      if (token === undefined && secrets.backend === "secret-service" && secrets.listed(name))
+        throw new Error("The system keyring is locked. Unlock it (log in to the desktop) and this channel starts by itself");
       const r = await adapter.start({
         receive: (m) => inbound.receive(config.id, m),
         action: (a) => void inbound.action(config.id, a),

@@ -70,6 +70,12 @@ export function childEnv(): Record<string, string> {
   return env;
 }
 
+/** The PATH of what the core starts for the owner (yt-dlp, ffmpeg): the one agents get. */
+export function childPath(): string {
+  const env = childEnv();
+  return env[Object.keys(env).find((k) => k.toUpperCase() === "PATH") ?? "PATH"] ?? "";
+}
+
 /** Variable names that usually hold credentials. */
 export const SECRET_NAME = /(KEY|TOKEN|SECRET|PASSW|CREDENTIAL|AUTH|COOKIE|SESSION|PRIVATE)/i;
 

@@ -49,14 +49,48 @@ test("mac and linux keep their commands", async () => {
   );
   const linux = recorder("linux");
   await linux.ops.open("/u/a.md");
-  await linux.ops.reveal("/u/a.md");
   await linux.ops.trash("/u/a.md");
   assert.deepEqual(
     linux.calls.map((c) => [c.cmd, ...c.args]),
     [
       ["xdg-open", "/u/a.md"],
-      ["xdg-open", "/u"],
       ["gio", "trash", "/u/a.md"],
     ],
   );
+});
+
+const failing = (fails: Record<string, NodeJS.ErrnoException>) => {
+  const calls: string[] = [];
+  const ops = desktopOps("linux", async (cmd) => {
+    calls.push(cmd);
+    if (fails[cmd]) throw fails[cmd];
+  });
+  return { ops, calls };
+};
+const enoent = () => Object.assign(new Error("spawn ENOENT"), { code: "ENOENT" });
+
+test("linux reveal asks the file manager to select the file, with a comma in its name encoded", async () => {
+  const { ops, calls } = recorder("linux");
+  await ops.reveal("/u/a,b.md");
+  assert.equal(calls[0]?.cmd, "dbus-send");
+  assert.ok(calls[0]?.args.includes("--print-reply"));
+  const item = calls[0]?.args.find((a) => a.startsWith("array:string:")) ?? "";
+  assert.match(item, /^array:string:file:\/\/.*a%2Cb\.md$/);
+  assert.equal(calls.length, 1);
+});
+
+test("linux reveal opens the folder when no file manager answers", async () => {
+  const { ops, calls } = failing({ "dbus-send": new Error("no reply") });
+  await ops.reveal("/u/a.md");
+  assert.deepEqual(calls, ["dbus-send", "xdg-open"]);
+});
+
+test("linux trash: trash-cli only where gio is missing; a real gio failure is said as it is", async () => {
+  const noGio = failing({ gio: enoent() });
+  await noGio.ops.trash("/u/a.md");
+  assert.deepEqual(noGio.calls, ["gio", "trash-put"]);
+  await assert.rejects(failing({ gio: enoent(), "trash-put": enoent() }).ops.trash("/u/a.md"), /could not find a trash tool \(gio or trash-cli\)/);
+  const real = failing({ gio: Object.assign(new Error("Operation not supported"), { code: 2 as unknown as string }) });
+  await assert.rejects(real.ops.trash("/u/a.md"), /Operation not supported/);
+  assert.deepEqual(real.calls, ["gio"]);
 });

@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { BROWSER_CAP, type HarnessId, TabInfo } from "@colonia/protocol";
+import { BROWSER_CAP, type HarnessId, NO_COMPUTER_CAP, TabInfo } from "@colonia/protocol";
 import {
   createDesktopInstaller,
   type DesktopInstaller,
@@ -108,7 +108,7 @@ import { useLocalEmbedder } from "./rpc/embeddings.ts";
 import { internalCaller } from "./rpc/internal.ts";
 import { createRouter, type Dispatch } from "./rpc/router.ts";
 import { useLocalModel } from "./rpc/transcription.ts";
-import { createSecrets } from "./secrets.ts";
+import { createSecrets, type Secrets } from "./secrets.ts";
 import {
   builtinTools,
   coreHandlers,
@@ -159,6 +159,8 @@ export type CoreOptions = {
   extraTools?: Tool[];
   /** Channel adapters by type; tests use a fake one instead of Telegram. */
   channelAdapters?: Record<string, AdapterFactory>;
+  /** Where secret values live; tests pass a store with a fake keyring. */
+  secrets?: Secrets;
   /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
   tailscale?: TailscaleRun;
   ngrok?: NgrokStart;
@@ -216,7 +218,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   // The engine exists by the time a command ends.
   const terminals = createTerminals({ bus, log, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
   const store = createStore(db, bus);
-  const secrets = createSecrets(config.home, config.secrets);
+  const secrets = opts.secrets ?? createSecrets(config.home, config.secrets);
   if (secrets.notice && !store.settings.get("secrets_file_told")) {
     log.warn({ backend: secrets.backend }, secrets.notice);
     store.settings.set("secrets_file_told", "1");
@@ -595,7 +597,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     mcpTools: mcp.toolsFor,
     mcpServers: mcp.serversFor,
     hasCap: (cap) => Boolean(broker.withCap(cap)) || (cap === BROWSER_CAP && Boolean(headless?.available())),
-    desktopLinked: () => Boolean(broker.withCap(BROWSER_CAP)),
+    desktopLinked: () =>
+      broker.list().some((n) => n.caps.includes(BROWSER_CAP) && !n.caps.includes(NO_COMPUTER_CAP)),
     afterRun: (run) => {
       upkeep.afterRun(run);
       memoryMaintenance.afterRun(run);

@@ -1,6 +1,6 @@
 // Keeps the desktop connected to the core as a node lending "browser" (and "computer" when the owner turned it on).
 // Reconnects with backoff, forever; turning computer use on or off reconnects at once with the new capabilities.
-import { BROWSER_CAP, COMPUTER_CAP } from "@colonia/protocol";
+import { BROWSER_CAP, COMPUTER_CAP, NO_COMPUTER_CAP } from "@colonia/protocol";
 import { ColoniaClient, type ColoniaSocket } from "@colonia/protocol/client";
 import type { BrowserHost } from "./browser/host.ts";
 
@@ -16,7 +16,7 @@ export function startNodeLink(
   url: string,
   onStatus: (s: "connected" | "offline") => void,
   token?: string,
-  computer?: { on(): boolean; handle: ComputerHandler },
+  computer?: { on(): boolean; handle: ComputerHandler; unsupported?: boolean },
   connect?: (caps: string[], signal: AbortSignal) => Promise<NodeSocket>,
 ): { refresh(): void; emit(type: string, payload?: unknown): void; stop(): void } {
   const controller = new AbortController();
@@ -39,7 +39,10 @@ export function startNodeLink(
     if (stopped) return;
     try {
       lent = Boolean(computer?.on());
-      const opened = await open(lent ? [BROWSER_CAP, COMPUTER_CAP] : [BROWSER_CAP], controller.signal);
+      const opened = await open(
+        lent ? [BROWSER_CAP, COMPUTER_CAP] : computer?.unsupported ? [BROWSER_CAP, NO_COMPUTER_CAP] : [BROWSER_CAP],
+        controller.signal,
+      );
       if (stopped) {
         opened.close();
         return;

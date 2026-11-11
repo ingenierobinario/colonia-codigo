@@ -136,3 +136,27 @@ test("stopping during reconnect backoff prevents a previous core from reconnecti
   assert.equal(connects, 1);
   assert.equal(host.listenerCount("changed"), 0);
 });
+
+test("a desktop that cannot lend computer use says so beside the browser; one that can says nothing until it is on", async () => {
+  for (const [unsupported, on, caps] of [
+    [true, false, ["browser", "computer.unsupported"]],
+    [false, false, ["browser"]],
+    [false, true, ["browser", "computer"]],
+  ] as const) {
+    let sent: string[] = [];
+    const link = startNodeLink(
+      new Host(),
+      "http://core.example",
+      () => {},
+      undefined,
+      { on: () => on, handle: async () => ({}), unsupported },
+      async (c) => {
+        sent = c;
+        return new Socket();
+      },
+    );
+    await flush();
+    link.stop();
+    assert.deepEqual(sent, caps);
+  }
+});

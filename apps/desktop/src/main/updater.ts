@@ -132,8 +132,10 @@ export function createDesktopUpdater(opts: {
   logFile?: string;
   /** Starts the Windows installer (a test passes its own, so no real installer runs). */
   spawn?: typeof spawn;
+  writable?: (dir: string) => boolean;
 }) {
   const start = opts.spawn ?? spawn;
+  const canWrite = opts.writable ?? writable;
   const env = process.env.COLONIA_RELEASES;
   const feed = env === "off" ? undefined : env || RELEASE_FEED;
   const enabled = app.isPackaged && Boolean(feed) && Boolean(platformOf(process.platform, process.arch));
@@ -141,7 +143,9 @@ export function createDesktopUpdater(opts: {
   // Why a Mac app cannot replace itself, so the owner is told what to do about it.
   const place = process.platform === "darwin" ? bundlePlace(process.execPath, writable) : undefined;
   // An AppImage replaces itself; run from an unpacked zip, the owner gets the file instead.
-  const appImage = process.platform === "linux" ? process.env.APPIMAGE : undefined;
+  const image = process.platform === "linux" ? process.env.APPIMAGE : undefined;
+  // An AppImage in a folder Colonia cannot write (a system path, a read-only mount) cannot replace itself.
+  const appImage = image && canWrite(path.dirname(image)) ? image : undefined;
   const mode: DesktopUpdate["install"] = process.platform === "win32" || bundle || appImage ? "auto" : "drag";
   let found: ReturnType<typeof pickUpdate>;
   let status: DesktopUpdate = { current: app.getVersion(), notes: [], install: "none" };
@@ -231,6 +235,12 @@ export function createDesktopUpdater(opts: {
           fetchChecked(release, asset, to),
         );
         const open = async () => {
+          // On Linux opening the file would run it unasked (an AppImage) or open an archive (a zip): it is only shown.
+          if (process.platform === "linux") {
+            if (file.endsWith(".AppImage")) fs.chmodSync(file, 0o755);
+            shell.showItemInFolder(file);
+            return;
+          }
           const opened = await shell.openPath(file);
           if (opened) shell.showItemInFolder(file);
         };

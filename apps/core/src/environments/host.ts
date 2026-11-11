@@ -146,7 +146,7 @@ export function qemuCommand(installer: Installer | undefined, arch: GuestArch): 
   }
 }
 
-const readOsRelease = () => {
+export const readOsRelease = () => {
   try {
     return fs.readFileSync("/etc/os-release", "utf8");
   } catch {

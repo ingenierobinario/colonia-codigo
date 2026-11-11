@@ -223,6 +223,7 @@ export const en = {
   "update.leadApp": "Colonia {v} is out (this app is {current}). It downloads now and goes in when Colonia restarts.",
   "update.leadAppDrag":
     "Colonia {v} is out (this app is {current}). It downloads and opens for you to drag into Applications.",
+  "update.leadAppDragLinux": "Colonia {v} is out (this app is {current}). It downloads and Colonia shows you the new file.",
   "update.leadReady": "Colonia {v} is downloaded and ready. Restart Colonia to use it.",
   "update.readyLater": "If you choose later, it goes in when you quit Colonia.",
   "update.readyLaterMenu": "If you choose later, it waits in the Colonia menu: Restart to update.",
@@ -235,6 +236,7 @@ export const en = {
   "update.downloading": "Downloading the new Colonia…",
   "update.dragDone":
     "The new Colonia opened in a window: drag it into Applications, replacing this one, and open it again.",
+  "update.dragDoneLinux": "Colonia shows you the new file. Close Colonia and open it.",
   "update.check": "Check again",
   "update.now": "Update now",
   "update.updating": "Updating. This can take a few minutes.",
