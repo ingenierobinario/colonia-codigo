@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import { registerHooks } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
+import { tempDir, waitFor } from "../../../core/src/testkit/platform.ts";
 import type { DesktopUpdate } from "./updater.ts";
 
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-updater-test-"));
@@ -232,4 +234,77 @@ test("a release without its checksum cannot be staged", async (t) => {
   assert.equal(result.ok, false);
   assert.match("error" in result ? result.error : "", /no .sha256/);
   assert.deepEqual(opened, []);
+});
+
+/** A staged Windows update with a fake installer launch; `started: false` is a spawn that failed (no pid). */
+async function windowsUpdate(t: import("node:test").TestContext, started = true) {
+  const dir = tempDir("colonia-updater-win-");
+  const temp = dir.path;
+  const saved = { TEMP: process.env.TEMP, TMP: process.env.TMP, TMPDIR: process.env.TMPDIR };
+  process.env.TEMP = process.env.TMP = process.env.TMPDIR = temp;
+  Object.defineProperty(process, "platform", { value: "win32" });
+  t.after(async () => {
+    await dir.remove();
+    Object.defineProperty(process, "platform", { value: "linux" });
+    for (const [k, v] of Object.entries(saved)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+  });
+  const exe = `Colonia-2.1.0-win-${process.arch}.exe`;
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.includes("/releases?"))
+      return Response.json([{ ...release, assets: [asset(exe), asset(`${exe}.sha256`)] }]);
+    return new Response(url.endsWith(".sha256") ? checksum : bytes);
+  });
+  const spawns: { file: string; args: string[] }[] = [];
+  let quits = 0;
+  const spawn = ((file: string, args: string[]) => {
+    spawns.push({ file, args });
+    return Object.assign(new EventEmitter(), { pid: started ? 4242 : undefined, unref() {} });
+  }) as unknown as typeof import("node:child_process").spawn;
+  const updater = createDesktopUpdater({ changed: () => {}, quit: () => quits++, spawn });
+  assert.equal((await updater.install("2.1.0", true)).ok, true);
+  return { updater, spawns, quits: () => quits, file: path.join(temp, exe) };
+}
+
+test("a Windows installer that does not start leaves Colonia open, and is not reused", async (t) => {
+  const w = await windowsUpdate(t, false);
+  const answer = w.updater.restart();
+  assert.equal(answer.ok, false);
+  assert.match("error" in answer ? answer.error : "", /installer did not start/);
+  assert.equal(w.updater.status().ready, undefined);
+  w.updater.quitting();
+  assert.equal(w.spawns.length, 1, "nothing staged is left for the quit");
+  assert.equal(w.quits(), 0);
+});
+
+test("a Windows installer deleted from the temporary folder is reported instead of quitting", async (t) => {
+  const w = await windowsUpdate(t);
+  fs.rmSync(w.file);
+  const answer = w.updater.restart();
+  assert.equal(answer.ok, false);
+  assert.match("error" in answer ? answer.error : "", /no longer ready/);
+  assert.deepEqual(w.spawns, []);
+  w.updater.quitting();
+  assert.deepEqual(w.spawns, []);
+  assert.equal(w.quits(), 0);
+});
+
+test("Windows quits into the installer once it started, with --updated, and the quit does not start it again", async (t) => {
+  const w = await windowsUpdate(t);
+  assert.deepEqual(w.updater.restart(), { ok: true });
+  assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated"] }]);
+  await waitFor(() => w.quits() === 1, "the quit after the installer started");
+  w.updater.quitting();
+  assert.equal(w.spawns.length, 1);
+});
+
+test("quitting with a Windows update downloaded installs it silently, once", async (t) => {
+  const w = await windowsUpdate(t);
+  w.updater.quitting();
+  w.updater.quitting();
+  assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated", "/S"] }]);
+  assert.equal(w.quits(), 0);
 });

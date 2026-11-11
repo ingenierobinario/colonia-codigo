@@ -1613,9 +1613,10 @@ export const es: Partial<Record<MessageKey, string>> = {
   "desktop.press": "Pulsa las teclas…",
   "desktop.none": "Ninguno",
   "desktop.clear": "Quitar",
-  "desktop.login": "Abrir al iniciar el ordenador",
-  "desktop.loginHint": "Colonia se abre al iniciar sesión.",
-  "desktop.awake": "Mantener el Mac despierta mientras trabajan los agentes",
+  "desktop.login": "Iniciar con el ordenador",
+  "desktop.loginHint":
+    "Colonia se inicia al entrar en tu sesión y espera en la barra de menús o la bandeja hasta que la abras.",
+  "desktop.awake": "Mantener este ordenador despierto mientras trabajan los agentes",
   "desktop.awakeHint":
     "No se duerme durante un turno, un comando o un ordenador que arranca; la pantalla puede apagarse de todos modos.",
   "desktop.cu": "Uso del ordenador",

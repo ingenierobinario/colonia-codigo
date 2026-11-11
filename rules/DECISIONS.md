@@ -3489,3 +3489,11 @@ in `pty-host.ts`, a one-purpose process that speaks `pty-bridge.py`'s protocol, 
 its pseudoconsole, worker thread and console-list agent only on `kill()`, and even then can keep the event loop
 alive; ending the helper releases all of it. The helper builds the Windows command line itself with Node's quoting
 rule. The packaging smoke runs one command through the staged helper.
+
+<a id="d-189"></a>
+## D-189 — 2026-11-11 — The script-binary tests are skipped on Windows only for want of a fake (replaces D-155's premise)
+D-155 skipped five computer-driver tests on Windows because the driver never ran there. Since D-183 it does, so that
+reason no longer holds. They stay skipped there only because they fake `limactl`, the guest's SSH or a viewer with a
+script binary, which Windows cannot start, and a spawnable fake would put a test-only path into the product's spawn
+sites. Linux and macOS CI keep running the driver logic. `RUNS_SCRIPTS` also gates tests that need a login shell
+with rc files. Running the five on Windows is a later change, one test at a time, each proven by a Windows run.

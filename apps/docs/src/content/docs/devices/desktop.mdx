@@ -18,6 +18,10 @@ The main window is the panel: Inbox, Tasks, Projects, Settings and everything el
 these docs. Closing it only hides it. Browser tabs and the link to the core stay alive, and the Dock, the menu-bar
 icon or opening Colonia again bring the window back. **Quit** is what ends it.
 
+When Colonia starts with the computer it starts without its window: open it from the Dock, the menu-bar icon or the
+tray. On Linux desktops with no tray it starts minimised. If you move the AppImage, open Colonia once from its new
+place so it starts at login again.
+
 Only one Colonia runs at a time: opening it again brings the running one to the front.
 
 ## The menu-bar icon and the quick chat
@@ -46,7 +50,7 @@ These settings live in the core but only apply inside the desktop app (in a plai
 | **Shortcut** | The global shortcut for the quick chat. Click, then press the keys. **Remove** leaves it without one. If another app already uses those keys, Colonia tells you. |
 | **Start with the computer** | Colonia opens when you log in. On by default. |
 | **Let agents use this computer** | Computer use, on macOS and Windows, off until you turn it on. See below. |
-| **Keep the Mac awake while agents work** | Prevents system sleep during a turn, command or computer startup. The screen can still turn off. You can disable it. |
+| **Keep this computer awake while agents work** | Prevents system sleep during a turn, command or computer startup. The screen can still turn off, and on Windows closing the lid or pressing the power button still sleeps. You can disable it. |
 
 ### Computer use
 
@@ -140,7 +144,8 @@ notification, and in the "What's new" chat the first time the new version starts
 shows its notes as they were written. On your word it downloads the installer for your system and checks it against
 its `.sha256`:
 
-- **Linux** (AppImage) and **Windows** finish on their own and open again.
+- **Linux** (AppImage) and **Windows** finish on their own and open again. On Windows, if you quit Colonia with an
+  update downloaded, it installs then and opens updated the next time.
 - **macOS** unpacks the new app beside the one running and swaps itself in when you click **Restart now**, or
   when you quit it.
 

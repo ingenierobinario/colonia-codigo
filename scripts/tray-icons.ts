@@ -1,8 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { chromium } from "@playwright/test";
+import { ico } from "./ico.ts";
 
 const assets = path.resolve(import.meta.dirname, "../apps/desktop/assets");
+// Windows picks the tray entry for its display scale (100-300 %); one 16 px bitmap would be stretched and blurred.
+const WINDOWS = ["tray-color", "tray-color-attention"];
+const ICO = [16, 20, 24, 32, 40, 48];
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
@@ -14,8 +18,8 @@ try {
     "tray-color-attention",
   ]) {
     const source = await fs.readFile(path.join(assets, `${name}.svg`), "utf8");
-    for (const scale of [1, 2]) {
-      const png = await page.evaluate(
+    const render = (size: number) =>
+      page.evaluate(
         async ({ source, size }) => {
           const image = new Image();
           const url = URL.createObjectURL(new Blob([source], { type: "image/svg+xml" }));
@@ -32,11 +36,21 @@ try {
             URL.revokeObjectURL(url);
           }
         },
-        { source, size: 22 * scale },
+        { source, size },
       );
+    for (const scale of [1, 2]) {
+      const png = await render(22 * scale);
       if (!png) throw new Error(`Empty tray image: ${name}`);
       await fs.writeFile(path.join(assets, `${name}${scale === 2 ? "@2x" : ""}.png`), Buffer.from(png, "base64"));
     }
+    if (!WINDOWS.includes(name)) continue;
+    const entries = [];
+    for (const size of ICO) {
+      const png = await render(size);
+      if (!png) throw new Error(`Empty tray image: ${name} at ${size}px`);
+      entries.push({ size, data: Buffer.from(png, "base64") });
+    }
+    await fs.writeFile(path.join(assets, `${name}.ico`), ico(entries));
   }
 } finally {
   await browser.close();

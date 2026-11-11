@@ -32,7 +32,8 @@ export const runProcess: ProcessRunner = (command, args, options) =>
         ...(options.detached ? {} : { signal: options.signal }),
         detached: options.detached === true,
         stdio: out === undefined ? "ignore" : ["ignore", out, out],
-        windowsHide: true,
+        // A detached process outlives this one and may open its own windows; hiding it would hide those too.
+        windowsHide: options.detached !== true,
       });
     } catch (error) {
       release();

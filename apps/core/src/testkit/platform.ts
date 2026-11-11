@@ -19,9 +19,9 @@ export const TIME_SCALE = (() => {
 })();
 
 /**
- * Whether a fake binary written as a script (a shebang line) can be spawned: Windows runs only real executables. The
- * computer's driver runs only on a Mac, so the tests that stand in for its Lima or SSH with such a script run where
- * scripts do (DECISIONS.md#d-155).
+ * Whether a script file (a shebang line) can be started as a program: Windows starts only real executables. Two kinds
+ * of tests need it: those that fake the computer's VM driver (Lima, its SSH, a viewer) with a script, and those that
+ * run a login shell with rc files (DECISIONS.md#d-189).
  */
 export const RUNS_SCRIPTS = process.platform !== "win32";
 

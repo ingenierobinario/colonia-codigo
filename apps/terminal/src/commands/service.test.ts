@@ -157,22 +157,26 @@ test("on Windows only an exact home supervisor and its child core may be stopped
   assert.match(script, /Wait-Process -Id \$ids -Timeout 10/);
 });
 
+// What older installs registered, settings and all: an upgrade still has to find and stop it.
+const legacy = (line: string) =>
+  `cmd /d /c "set COLONIA_PORT=7550&& set COLONIA_RELEASES=https://updates.example.com/feed&& ${line}"`;
 for (const packaged of [false, true]) {
-  for (const port of [undefined, "7550"]) {
-    for (const feed of [undefined, "https://updates.example.com/feed"]) {
-      for (const electron of [false, true]) {
-        test(`Windows stop uses the registered command: packaged=${packaged}, port=${port}, feed=${Boolean(feed)}, electron=${electron}`, () => {
+  for (const shape of ["plain", "electron", "legacy"] as const) {
+    {
+      const electron = shape === "electron";
+      {
+        test(`Windows stop uses the registered command: packaged=${packaged}, shape=${shape}`, () => {
           const root = packaged ? "C:\\Program Files\\Colonia\\current" : "C:\\work\\colonia";
           const node = `${root}\\${electron ? "electron.exe" : "node.exe"}`;
           const terminal = `${root}\\apps\\terminal\\src\\main.ts`;
           const home = "C:\\Colonia's data\\v2";
-          const command = windowsRunCommand({
+          let command = windowsRunCommand({
             node,
             terminal,
             home,
             electron,
-            env: { ...(port ? { COLONIA_PORT: port } : {}), ...(feed ? { COLONIA_RELEASES: feed } : {}) },
           });
+          if (shape === "legacy") command = legacy(command);
           const script = windowsStopScript(home, command);
           const searchedCommand = /-ceq '((?:''|[^'])*)'/.exec(script)?.[1]?.replaceAll("''", "'");
           assert.equal(searchedCommand, command, "stop searches for exactly the registered line");
