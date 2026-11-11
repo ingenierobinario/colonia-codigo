@@ -1,6 +1,6 @@
 // Starts the staged core (apps/desktop/.stage/colonia) on an empty home and waits for /health: a bundle whose core cannot
 // start never ships. See HISTORY.md#protocol-subpaths.
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
@@ -46,6 +46,17 @@ while (!healthy && !gone && Date.now() < until) {
     .catch(() => false);
   if (!healthy) await new Promise((r) => setTimeout(r, 500));
 }
+// The terminal's native pty must have survived staging (pty.node, spawn-helper, conpty.node): one echo through it.
+const ptyShell =
+  process.platform === "win32"
+    ? [process.env.COMSPEC ?? "cmd.exe", "/c", "echo colonia-pty"]
+    : ["/bin/sh", "-c", "echo colonia-pty"];
+const pty = spawnSync(process.execPath, ["apps/core/src/terminal/pty-host.ts", "24", "80", ...ptyShell], {
+  cwd: stage,
+  encoding: "utf8",
+  timeout: 10_000,
+  windowsHide: true,
+});
 if (!gone) core.kill();
 await exited;
 fs.rmSync(home, { recursive: true, force: true });
@@ -56,3 +67,8 @@ if (!healthy) {
   );
 }
 console.log("staged core answered /health");
+if (!pty.stdout?.includes("colonia-pty")) {
+  console.error(pty.stdout, pty.stderr, pty.error?.message);
+  throw new Error("the staged terminal's native pty did not run a command");
+}
+console.log("staged terminal ran a command on its native pty");

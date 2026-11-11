@@ -214,7 +214,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const db = openDb(config.home);
   const bus = createBus();
   // The engine exists by the time a command ends.
-  const terminals = createTerminals({ bus, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
+  const terminals = createTerminals({ bus, log, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
   const store = createStore(db, bus);
   const secrets = createSecrets(config.home, config.secrets);
   if (secrets.notice && !store.settings.get("secrets_file_told")) {
