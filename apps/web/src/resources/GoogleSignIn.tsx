@@ -11,6 +11,10 @@ const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const COLONIA_LIMIT: Record<string, MessageKey> = { gmail: "int.coloniaLimit.gmail", "google-drive": "int.coloniaLimit.drive" };
 /** Parts whose full use needs the owner's own client: Colonia's reaches only part of them (no paid security review). */
 const OWN_FIRST = new Set(["gmail", "google-drive"]);
+/** Signed in to with the owner's own app on that network, not with Google: no Google guide, no parts to add. */
+const SOCIAL = new Set(["x", "linkedin"]);
+/** Their app is the owner's to create, and the agent walks them through it (the colonia-social skill). */
+const AGENT_GUIDED = new Set(["youtube", "x", "linkedin"]);
 /** Creating one's own client in Google Cloud, step by step, each with the console page it happens on. */
 const GUIDE: Array<{ text: MessageKey; href: string }> = [
   { text: "int.guide.project", href: "https://console.cloud.google.com/projectcreate" },
@@ -90,6 +94,7 @@ export function GoogleSignInForm({
   );
   const builtin = Boolean(i.oauth?.builtin);
   const ownFirst = OWN_FIRST.has(i.id);
+  const social = SOCIAL.has(i.id);
   const [client, setClient] = useState<"colonia" | "own">(
     !builtin ? "own" : i.connected && i.oauth?.client ? i.oauth.client : ownFirst ? "own" : "colonia",
   );
@@ -103,8 +108,10 @@ export function GoogleSignInForm({
   useEffect(() => {
     void api
       .call("integrations.list", {})
-      .then(({ integrations }) => setOthers(integrations.filter((x) => x.oauth && x.id !== i.id)));
-  }, [i.id]);
+      .then(({ integrations }) =>
+        setOthers(social ? [] : integrations.filter((x) => x.oauth && x.id !== i.id && !SOCIAL.has(x.id))),
+      );
+  }, [i.id, social]);
   const saved = i.fields.every((f) => f.value || f.set);
   const ownUsers = others.filter((x) => x.connected && x.oauth?.client === "own");
   const joinable = others.filter((x) => !(x.connected && x.oauth?.client === "own"));
@@ -157,7 +164,7 @@ export function GoogleSignInForm({
 
   const finishPasted = async () => {
     const got = returned(pasted);
-    if (!got) return notify(t("int.pasteBad"));
+    if (!got) return notify(t(social ? "int.pasteBadPlain" : "int.pasteBad"));
     setBusy(true);
     try {
       await api.call("integrations.oauth_finish", got);
@@ -185,7 +192,7 @@ export function GoogleSignInForm({
             leadingIcon={<Icons.ExternalLink size={14} />}
             onClick={() => void signIn()}
           >
-            {i.connected || waiting ? t("int.signInAgain") : t("int.signIn")}
+            {i.connected || waiting ? t("int.signInAgain") : t(social ? "int.signInPlain" : "int.signIn")}
           </Button>
         </>
       }
@@ -217,7 +224,7 @@ export function GoogleSignInForm({
                 ? t("int.ownSavedFor", { names: ownUsers.map((x) => x.label).join(", ") })
                 : t("int.ownSaved")}
             </p>
-          ) : (
+          ) : social ? null : (
             <>
               <p className="int__desc">{t("int.ownNote")}</p>
               <ol className="int__guide">
@@ -232,7 +239,8 @@ export function GoogleSignInForm({
               </ol>
             </>
           ))}
-        {client === "own" && (
+        {AGENT_GUIDED.has(i.id) && <p className="int__desc">{t("int.agentGuide", { name: i.label })}</p>}
+        {client === "own" && !social && (
           <>
             <input
               ref={file}
@@ -272,7 +280,7 @@ export function GoogleSignInForm({
             </Field>
           ))}
         {client === "own" && i.oauth && (
-          <Field label={t("int.redirect")} hint={t("int.redirectHint")}>
+          <Field label={t("int.redirect")} hint={t(social ? "int.redirectExact" : "int.redirectHint")}>
             {(id) => (
               <Input id={id} readOnly value={i.oauth?.redirect_uri ?? ""} onFocus={(e) => e.currentTarget.select()} />
             )}
@@ -296,17 +304,17 @@ export function GoogleSignInForm({
         )}
         {waiting && (
           <p className="int__desc">
-            <Spinner size={12} /> {t("int.waiting")}
+            <Spinner size={12} /> {t(social ? "int.waitingPlain" : "int.waiting")}
           </p>
         )}
         {waiting && ELSEWHERE && (
-          <Field label={t("int.pasteLabel")} hint={t("int.pasteHint")}>
+          <Field label={t("int.pasteLabel")} hint={t(social ? "int.pasteHintPlain" : "int.pasteHint")}>
             {(id) => (
               <div className="int__paste">
                 <Input
                   id={id}
                   autoComplete="off"
-                  placeholder="http://127.0.0.1:7440/oauth/google?state=…&code=…"
+                  placeholder={`${i.oauth?.redirect_uri ?? "http://127.0.0.1:7440/oauth/google"}?state=…&code=…`}
                   value={pasted}
                   onChange={({ currentTarget: { value } }) => setPasted(value)}
                 />

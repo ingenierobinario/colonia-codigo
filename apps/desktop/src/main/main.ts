@@ -30,6 +30,7 @@ import { applySavedLocalTarget, loadConnection, localCoreUrl } from "./connectio
 import { createConnector } from "./connector.ts";
 import { createCursor } from "./cursor.ts";
 import { editMenu } from "./edit-menu.ts";
+import { hasTrayHost, sandboxNotice, sandboxText } from "./linux-desktop.ts";
 import { artifactOwners, itemName, memoryReport, memoryText, memoryWatch, size } from "./memory.ts";
 import { nativeUpdates } from "./native-updates.ts";
 import { startNodeLink } from "./node-link.ts";
@@ -57,6 +58,8 @@ app.setPath("userData", process.env.COLONIA_DESKTOP_DATA ?? path.join(app.getPat
 app.setName("Colonia");
 // Windows files notifications and taskbar pins under this id: the installer's shortcut carries the same one.
 if (process.platform === "win32") app.setAppUserModelId("com.ingenierobinario.colonia");
+// Wayland groups a window under the launcher whose file name this is; the installer writes that file.
+if (process.platform === "linux") app.setDesktopName("colonia.desktop");
 applySavedLocalTarget(app.getPath("userData"), process.env);
 const CORE_URL = localCoreUrl();
 const openedConnection = JSON.stringify(loadConnection(app.getPath("userData")));
@@ -125,10 +128,21 @@ app.whenReady().then(() => {
   };
   // Closing the window hides it — its browser tabs and the core link stay alive; the Dock, the menu-bar icon or
   // opening Colonia again bring it back, and Quit ends it.
+  // A Linux desktop without a tray (GNOME) has nothing to bring a hidden window back with: there it minimises.
+  let trayHost = true;
+  const findTrayHost = () => {
+    void hasTrayHost(process.platform, process.env).then((has) => {
+      trayHost = has;
+    });
+  };
+  findTrayHost();
   win.on("close", (e) => {
     if (quitting) return;
     e.preventDefault();
-    win.hide();
+    if (trayHost) win.hide();
+    else win.minimize();
+    // A tray extension can come or go while Colonia runs.
+    findTrayHost();
   });
   app.on("activate", openMain);
   app.on("second-instance", (_event, argv) => {
@@ -387,11 +401,52 @@ app.whenReady().then(() => {
       }
     }
   }
+  // The AppImage launcher drops the sandbox by itself where the system forbids it: the owner is told, with the fix.
+  const unsandboxed = app.isPackaged
+    ? sandboxNotice({
+        platform: process.platform,
+        argv: process.argv,
+        appImage: process.env.APPIMAGE,
+        read: (file) => {
+          try {
+            return fs.readFileSync(file, "utf8");
+          } catch {
+            return undefined;
+          }
+        },
+        exists: fs.existsSync,
+      })
+    : undefined;
+  const silenced = path.join(app.getPath("userData"), "sandbox-notice-off");
+  if (unsandboxed && !fs.existsSync(silenced)) {
+    setTimeout(async () => {
+      const es = (language ?? app.getLocale()).startsWith("es");
+      const command = unsandboxed.command;
+      const copy = es ? "Copiar la orden" : "Copy the command";
+      const later = es ? "Ahora no" : "Not now";
+      const { response, checkboxChecked } = await dialog.showMessageBox({
+        type: "warning",
+        title: "Colonia",
+        ...sandboxText(unsandboxed, es),
+        buttons: command ? [copy, later] : [later],
+        defaultId: 0,
+        cancelId: command ? 1 : 0,
+        checkboxLabel: es ? "No volver a mostrar" : "Do not show this again",
+      });
+      if (command && response === 0) clipboard.writeText(command);
+      if (checkboxChecked) {
+        try {
+          fs.writeFileSync(silenced, "");
+        } catch {}
+      }
+    }, 3000);
+  }
   // The emergency stop, from any app, while computer use is on.
   // Ctrl+Shift+Esc is Windows' own Task Manager: there it is Ctrl+Alt+Esc.
   const STOP_KEYS = process.platform === "win32" ? "Control+Alt+Escape" : "CommandOrControl+Shift+Escape";
   const armStop = () => {
     const armed = globalShortcut.isRegistered(STOP_KEYS);
+    // Where the desktop lends no global shortcuts (Wayland) this registers nothing; the stop button stays.
     if (computerOn && !armed) globalShortcut.register(STOP_KEYS, () => computer.stop());
     if (!computerOn && armed) globalShortcut.unregister(STOP_KEYS);
   };
@@ -490,7 +545,10 @@ app.whenReady().then(() => {
     computerOn = prefs.computerUse === true;
     armStop();
     link?.refresh();
-    const error = quick.apply({ shortcut: prefs.shortcut, launchAtLogin: prefs.launchAtLogin === true });
+    const error = quick.apply(
+      { shortcut: prefs.shortcut, launchAtLogin: prefs.launchAtLogin === true },
+      language === "es",
+    );
     if (error && Notification.isSupported()) new Notification({ title: "Colonia", body: error }).show();
   });
   // Computer use: what macOS allows, where to allow it, and live frames of the window an agent works on (panel only).

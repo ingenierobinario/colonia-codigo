@@ -105,12 +105,17 @@ export function createGoogle(deps: {
     ): string {
       const typedId = values.client_id?.trim();
       const typedSecret = values.client_secret?.trim();
+      const more = [...new Set(also)].filter((x) => x !== id);
+      const wanted = GOOGLE_INTEGRATIONS.filter((x) => x.id === id || more.includes(x.id));
+      // A part Colonia's own client asks no scope for (YouTube) signs in only with the owner's client.
+      const ownOnly = wanted.find((e) => e.coloniaScopes.length === 0);
       const kind: ClientKind =
         values.client === "colonia" || values.client === "own"
           ? values.client
-          : deps.builtin && !typedId && !typedSecret
+          : deps.builtin && !typedId && !typedSecret && !ownOnly
             ? "colonia"
             : "own";
+      if (kind === "colonia" && ownOnly) throw new Error(`${ownOnly.label} needs your own OAuth client`);
       if (kind === "own") {
         if (typedId) store.settings.set(CLIENT_ID, typedId);
         if (typedSecret) secrets.set(CLIENT_SECRET, typedSecret);
@@ -126,9 +131,7 @@ export function createGoogle(deps: {
       const nonce = randomUUID();
       const { verifier, challenge } = pkce();
       const redirect = redirectUri();
-      const more = [...new Set(also)].filter((x) => x !== id);
       flows.set(nonce, { id, also: more, kind, verifier, redirect, exp: now() + FLOW_TTL_MS });
-      const wanted = GOOGLE_INTEGRATIONS.filter((x) => x.id === id || more.includes(x.id));
       const scopes = ["openid", "email", ...wanted.flatMap((e) => (kind === "colonia" ? e.coloniaScopes : e.scopes))];
       return authUrl(endpoints, {
         clientId: c.clientId,

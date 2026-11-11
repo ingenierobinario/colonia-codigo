@@ -51,8 +51,46 @@ test("the Mac is kept awake while work runs, let go when none does, and never le
   const off = spawner();
   enabled = false;
   keepAwake({ busy: () => true, enabled: () => enabled, platform: "darwin", spawn: off.spawn }).update();
-  keepAwake({ busy: () => true, enabled: () => true, platform: "linux", spawn: off.spawn }).update();
+  keepAwake({ busy: () => true, enabled: () => true, platform: "win32", spawn: off.spawn }).update();
   assert.equal(off.spawned.length, 0);
+});
+
+test("on Linux systemd is asked to hold the machine awake, and a system that cannot is asked only once", () => {
+  const { spawned, spawn } = spawner();
+  const cmds: string[] = [];
+  let busy = true;
+  const awake = keepAwake({
+    busy: () => busy,
+    enabled: () => true,
+    platform: "linux",
+    pid: 4242,
+    spawn: (cmd, args) => {
+      cmds.push(cmd);
+      return spawn(cmd, args);
+    },
+  });
+  awake.update();
+  assert.equal(cmds[0], "systemd-inhibit");
+  assert.ok(spawned[0]?.args.includes("--what=idle:sleep"));
+  assert.deepEqual(spawned[0]?.args.slice(-4), ["tail", "--pid=4242", "-f", "/dev/null"], "it ends with the core");
+  busy = false;
+  awake.update();
+  assert.equal(spawned[0]?.killed, true, "let go when the work ends");
+  busy = true;
+  awake.update();
+  assert.equal(spawned.length, 2, "and held again for the next work");
+
+  // No systemd (the command is not there) or no leave to block sleep (it ends at once): neither is tried again.
+  for (const event of ["error", "exit"]) {
+    const none = spawner();
+    const refused = keepAwake({ busy: () => true, enabled: () => true, platform: "linux", spawn: none.spawn });
+    refused.update();
+    none.spawned[0]?.child.emit(event, new Error("spawn systemd-inhibit ENOENT"));
+    assert.equal(refused.holding(), false);
+    refused.update();
+    refused.update();
+    assert.equal(none.spawned.length, 1, event);
+  }
 });
 
 /** A clock that can run on time, or sleep: it jumps ahead and the timers due meanwhile all fire late, at wake. */

@@ -6,6 +6,7 @@ import path from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import type { TerminalInfo } from "@colonia/protocol";
 import type { Bus } from "../bus.ts";
+import { withOwnerShell } from "../harness/env.ts";
 import { commandShell, stopTree } from "../processes.ts";
 
 const BRIDGE = path.join(import.meta.dirname, "pty-bridge.py");
@@ -47,7 +48,8 @@ function findPython(): string | undefined {
 /** The owner's environment, without Colonia's own settings (its token, how the core was started). */
 function shellEnv(): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
-  for (const [k, v] of Object.entries(process.env))
+  // A command block's shell skips the rc files an open one reads: it gets what they export from here.
+  for (const [k, v] of Object.entries(withOwnerShell(process.env)))
     if (!k.startsWith("COLONIA_") && k !== "ELECTRON_RUN_AS_NODE" && k !== "NODE_OPTIONS") env[k] = v;
   return { ...env, TERM: "xterm-256color", COLORTERM: "truecolor" };
 }

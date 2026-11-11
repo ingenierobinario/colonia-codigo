@@ -62,13 +62,28 @@ export function keychainStore(service: string, run: Run = runCommand): ValueStor
   };
 }
 
+const KEYRING_READ_MS = 8000;
+const KEYRING_REST_MS = 60_000;
+
 /** The Secret Service (GNOME Keyring, KWallet, KeePassXC) through libsecret's `secret-tool`. */
-export function secretServiceStore(service: string, run: Run = runCommand): ValueStore {
+export function secretServiceStore(service: string, run: Run = runCommand, now: () => number = Date.now): ValueStore {
   const attrs = (name: string) => ["service", service, "account", name];
+  // A locked keyring with nobody to unlock it (a server, a session with no prompter) never answers, and every call
+  // blocks the core while it waits: after one that timed out, the keyring is left alone for a minute.
+  let restUntil = 0;
+  const tool = (args: string[], o: { input?: string; timeoutMs: number }) => {
+    if (now() < restUntil) throw new Error("the keyring is not answering");
+    try {
+      return run("secret-tool", args, o);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ETIMEDOUT") restUntil = now() + KEYRING_REST_MS;
+      throw err;
+    }
+  };
   const store: ValueStore = {
     get(name) {
       try {
-        return run("secret-tool", ["lookup", ...attrs(name)]).replace(/\n$/, "") || undefined;
+        return tool(["lookup", ...attrs(name)], { timeoutMs: KEYRING_READ_MS }).replace(/\n$/, "") || undefined;
       } catch {
         return undefined;
       }
@@ -76,11 +91,12 @@ export function secretServiceStore(service: string, run: Run = runCommand): Valu
     set(name, value) {
       if (value === null) {
         try {
-          run("secret-tool", ["clear", ...attrs(name)]);
+          tool(["clear", ...attrs(name)], { timeoutMs: KEYRING_READ_MS });
         } catch {}
         return;
       }
-      run("secret-tool", ["store", "--label", `Colonia ${name}`, ...attrs(name)], { input: value });
+      // Storing may ask the person to unlock the keyring: it gets the time a person needs.
+      tool(["store", "--label", `Colonia ${name}`, ...attrs(name)], { input: value, timeoutMs: 15_000 });
     },
     works() {
       // A round trip: a keyring that is missing, or a session bus that is not there, fails here.

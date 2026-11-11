@@ -43,6 +43,31 @@ xattr -dr com.apple.quarantine /Applications/Colonia.app
 ```
 </Aside>
 
+## Linux
+
+El AppImage es un solo archivo: no hay nada que instalar. Dos cosas pueden frenarlo en un sistema reciente.
+
+**No se abre y dice que necesita FUSE.** Ubuntu 22.04 y posteriores ya no traen la biblioteca con la que se abren los
+AppImage. Instálala una vez:
+
+```bash
+sudo apt install libfuse2t64 || sudo apt install libfuse2
+```
+
+En Fedora es `sudo dnf install fuse-libs`, en Arch `sudo pacman -S fuse2` y en openSUSE
+`sudo zypper install libfuse2`. Sin ella también puedes abrir Colonia: `colonia desktop` lo detecta, abre el archivo
+desempaquetado (unos segundos más lento) y te dice la orden de arriba.
+
+**Dice que está funcionando sin su aislamiento.** Ubuntu 24.04 y posteriores impiden que las aplicaciones creen el
+aislamiento que Colonia usa para las páginas que abren tus agentes, salvo que la aplicación tenga un permiso propio.
+Colonia no lo esconde: te avisa cuando se abrió sin el aislamiento y te da la única orden que concede ese permiso solo a
+Colonia. Cópiala desde el aviso, ejecútala en una terminal y vuelve a abrir Colonia. No desactives la protección para
+todo el sistema.
+
+En GNOME no hay icono en la bandeja salvo que añadas una extensión, así que cerrar la ventana minimiza Colonia en vez de
+ocultarla. Los atajos globales no funcionan en Wayland: asigna el atajo a Colonia desde los ajustes de teclado del
+sistema.
+
 ## Instalar en un servidor
 
 Sólo si quieres que Colonia funcione siempre, aunque apagues tu ordenador, y tienes un servidor propio. En esa máquina,
@@ -75,7 +100,8 @@ Desinstalar quita el programa. **Tus datos se quedan** en `~/.colonia/v2`: borra
 
 - **macOS**: cierra Colonia desde su icono en la barra de menú y arrastra **Colonia** de Aplicaciones a la papelera.
 - **Windows**: Configuración › Aplicaciones › Aplicaciones instaladas › **Colonia** › Desinstalar.
-- **Linux**: cierra Colonia y borra el AppImage.
+- **Linux**: cierra Colonia y borra el AppImage. Si la instalaste con `colonia desktop`, el instalador con
+  `--uninstall` la quita junto con su entrada del menú.
 
 </TabItem>
 <TabItem label="Servidor">

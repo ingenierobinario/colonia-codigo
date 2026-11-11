@@ -58,6 +58,15 @@
     "identity": "-",
     "hardenedRuntime": false,
     "extendInfo": {
+      "NSDesktopFolderUsageDescription": "Colonia and the agents you run in it work on the files of the projects you keep in your Desktop folder.",
+      "NSDocumentsFolderUsageDescription": "Colonia and the agents you run in it work on the files of the projects you keep in your Documents folder.",
+      "NSDownloadsFolderUsageDescription": "Colonia saves what you download from it, and its agents read the files you point them to, in your Downloads folder.",
+      "NSRemovableVolumesUsageDescription": "Colonia and the agents you run in it work on the files of the projects you keep on this disk.",
+      "NSNetworkVolumesUsageDescription": "Colonia and the agents you run in it work on the files of the projects you keep on this network disk.",
+      "NSAppleEventsUsageDescription": "Colonia controls other apps only when you ask an agent to: sending a message, or working on this Mac for you.",
+      "NSMicrophoneUsageDescription": "Colonia listens only while you dictate a message.",
+      "NSCameraUsageDescription": "Colonia does not use the camera itself; a program one of your agents runs asked for it.",
+      "NSLocalNetworkUsageDescription": "Colonia reaches your other devices and the services running on your network.",
       "UTExportedTypeDeclarations": [
         {
           "UTTypeIdentifier": "dev.colonia.artifact",

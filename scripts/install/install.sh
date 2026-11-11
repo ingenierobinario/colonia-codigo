@@ -71,8 +71,31 @@ if [ "$UNINSTALL" = 1 ]; then
   rm -rf "$APP"
   if [ -f "$BIN/colonia" ] && grep -q 'written by install.sh' "$BIN/colonia"; then rm -f "$BIN/colonia"; fi
   if [ -L "$BIN/colonia2" ]; then rm -f "$BIN/colonia2"; fi
+  if [ "$OS" = linux ]; then
+    # What `colonia desktop` and the app itself leave outside $APP: the app, its menu entry, icon, file types and login entry.
+    data="${XDG_DATA_HOME:-$HOME/.local/share}"
+    entry="$data/applications/colonia.desktop"
+    if [ -f "$entry" ] && grep -qF "$HOME/Applications/Colonia.AppImage" "$entry"; then
+      rm -f "$HOME/Applications/Colonia.AppImage" "$entry" "$data/icons/hicolor/512x512/apps/colonia.png" "$data/mime/packages/colonia.xml"
+      rmdir "$HOME/Applications" 2>/dev/null || true
+      update-desktop-database "$data/applications" >/dev/null 2>&1 || true
+      update-mime-database "$data/mime" >/dev/null 2>&1 || true
+    fi
+    rm -f "${XDG_CONFIG_HOME:-$HOME/.config}/autostart/colonia.desktop"
+    if [ "$(loginctl show-user "$(id -un)" -p Linger --value 2>/dev/null || true)" = yes ]; then
+      say "Your services still outlive your logout (lingering). If nothing else needs it: sudo loginctl disable-linger $(id -un)"
+    fi
+  fi
   say "Colonia is uninstalled. Your data is still in ${COLONIA_HOME:-$HOME/.colonia/v2}"
   exit 0
+fi
+
+# The bundled Node is built for glibc: on musl (Alpine) it dies with a bare "not found". Tests point COLONIA_ROOT at a made-up tree.
+if [ "$OS" = linux ]; then
+  root="${COLONIA_ROOT:-}"
+  if ls "$root"/lib/ld-musl-*.so.1 >/dev/null 2>&1 && [ ! -e "$root/lib64/ld-linux-x86-64.so.2" ] && [ ! -e "$root/lib/ld-linux-aarch64.so.1" ]; then
+    die "this system uses musl (Alpine) and Colonia's bundle needs glibc, so it cannot run here. Run it in a glibc container (for example: docker run -it debian:stable-slim) or on a glibc distribution such as Debian, Ubuntu or Fedora"
+  fi
 fi
 
 if [ "$MODE" = auto ]; then

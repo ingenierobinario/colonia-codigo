@@ -47,6 +47,8 @@ There is no automatic retry of a write; inspect Asana before repeating a create 
   their tools with `mcp_search` and `mcp_call`; manage the server like any other (colonia-mcps): `colonia mcps check github`,
   or `colonia mcps off github --project <id>` to keep it out of one project.
 - Disconnecting is also the owner's, in the same screen.
+- Social networks (YouTube, X, Facebook and Instagram, LinkedIn) connect with an app of the owner's own: follow
+  colonia-social.
 
 ## A service that is not in the list
 

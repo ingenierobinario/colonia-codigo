@@ -892,9 +892,9 @@ export const es: Partial<Record<MessageKey, string>> = {
     "La usan los chats que trabajan en la carpeta, que guarda también los agentes y la configuración.",
   "project.settings.folderMissing": "La carpeta no está en el disco ahora (se movió, o es un disco sin montar).",
   "project.settings.folderWaiting":
-    "Esta carpeta todavía no se abrió para Colonia. Si tu Mac pregunta si “node” puede acceder, elige Permitir: Colonia la lee en cuanto pueda.",
+    "Esta carpeta todavía no se abrió para Colonia. Si tu Mac pregunta si Colonia (o “node”, cuando Colonia funciona sin su app) puede acceder, elige Permitir: Colonia la lee en cuanto pueda.",
   "project.settings.folderDenied":
-    "Colonia no tiene permiso para abrir esta carpeta. En un Mac, activa “node” en Ajustes del Sistema › Privacidad y seguridad › Archivos y carpetas, y reinicia Colonia.",
+    "Colonia no tiene permiso para abrir esta carpeta. En un Mac, abre Ajustes del Sistema › Privacidad y seguridad › Archivos y carpetas, activa esta carpeta bajo Colonia (bajo “node” cuando Colonia funciona sin su app) y reinicia Colonia.",
   "project.settings.agentsMdLong": "AGENTS.md pasa el límite",
   "project.settings.agentsMdLongBody":
     "Tiene {chars} caracteres, más que los {limit} que los agentes reciben enteros: reciben el principio y el final, saben qué líneas quedaron fuera y las leen cuando las necesitan.",
@@ -1454,6 +1454,10 @@ export const es: Partial<Record<MessageKey, string>> = {
   "res.catalog.search": "Buscar conectores",
   "res.catalog.add": "Conectar",
   "res.catalog.added": "Añadido",
+  "res.catalog.own.youtube": "Tus vídeos, comentarios y respuestas",
+  "res.catalog.own.x": "Publica y responde",
+  "res.catalog.own.meta": "Facebook e Instagram con tu propia app",
+  "res.catalog.own.linkedin": "Publica en tu perfil",
   "res.catalog.open": "Catálogo",
   "res.catalog.custom": "Otro conector",
   "res.catalog.cat.work": "Trabajo y equipo",

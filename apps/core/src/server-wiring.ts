@@ -25,6 +25,7 @@ import type { Identity } from "./identity.ts";
 import type { Asana } from "./integrations/asana.ts";
 import { isGoogleId } from "./integrations/catalog.ts";
 import type { Google } from "./integrations/google.ts";
+import { isSocialId, type Social } from "./integrations/social.ts";
 import type { Log } from "./log.ts";
 import { refProblem } from "./models/choice.ts";
 import type { NodeBroker } from "./nodes/broker.ts";
@@ -220,6 +221,7 @@ type HandlerDeps = {
   /** The owner's Google account (Calendar, Gmail). */
   google: Google;
   asana: Asana;
+  social: Social;
   providers: Parameters<typeof providerHandlers>[0];
   secrets: Parameters<typeof providerHandlers>[1];
   chatgpt: Parameters<typeof providerHandlers>[2];
@@ -309,7 +311,11 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...extensionHandlers(d.extensions, d.mcp),
     // Native integrations share the project switches of global servers, without starting an MCP.
     ...mcpHandlers(d.mcp, d.store, (name) =>
-      name === "asana" ? d.asana.connected() : isGoogleId(name) && d.google.connected(name),
+      name === "asana"
+        ? d.asana.connected()
+        : isSocialId(name)
+          ? d.social.connected(name)
+          : isGoogleId(name) && d.google.connected(name),
     ),
     ...integrationHandlers({
       store: d.store,
@@ -317,6 +323,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       mcp: d.mcp,
       google: d.google,
       asana: d.asana,
+      social: d.social,
       ...(d.integrationFetch ? { fetch: d.integrationFetch } : {}),
     }),
     ...asanaHandlers(d.store, d.asana),

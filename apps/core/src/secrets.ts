@@ -68,6 +68,12 @@ export function createSecrets(
   const backend: SecretsBackend = store ? wanted : "file";
   // The file holds values only for the file backend; with a store it is just the index (names, dates).
   const file = store ? index : legacy;
+  // A file written by hand or restored from a copy may be readable by others: only its owner reads it from here on.
+  if (!store && process.platform !== "win32") {
+    try {
+      fs.chmodSync(legacy, 0o600);
+    } catch {}
+  }
   const cache = new Map<string, string | undefined>();
   const read = (): Record<string, Entry> => {
     try {
@@ -85,6 +91,11 @@ export function createSecrets(
 
   const api = {
     backend,
+    /** What the owner should know once: the keyring was wanted and is not there, so values sit in a file. */
+    notice:
+      wanted === "secret-service" && !store
+        ? `No system keyring answered, so secrets are kept in ${legacy}, readable only by this user. To keep them in the keyring, install one (gnome-keyring and libsecret-tools) and restart Colonia.`
+        : undefined,
     /** Resolves `secret://name` or `env:VAR`; anything else (or a missing value) is undefined. */
     resolve(ref: string | undefined): string | undefined {
       if (!ref) return undefined;

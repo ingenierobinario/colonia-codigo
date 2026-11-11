@@ -1,6 +1,7 @@
 // The update as the app menu says it ("Check for updates…", "Update to Colonia 2.3.0…", "Restart to update to Colonia 2.3.0")
 // and the native questions it asks when the owner started it there: restart now or later.
 import { type BaseWindow, dialog, type MenuItemConstructorOptions, Notification } from "electron";
+import type { BundlePlace } from "./app-bundle.ts";
 import { updateNotice } from "./update-notes.ts";
 import type { DesktopUpdate, RestartAnswer } from "./updater.ts";
 
@@ -41,6 +42,21 @@ const words = (es: boolean, platform: string) => ({
       ? `Se abrió Colonia ${v}: arrástralo a Aplicaciones, reemplazando este, y ábrelo de nuevo.`
       : `Colonia ${v} opened: drag it into Applications, replacing this one, and open it again.`,
   ok: es ? "Aceptar" : "OK",
+  // Why this Mac app cannot update itself, and the one thing that fixes it.
+  moveFirst: (place: BundlePlace | undefined) =>
+    place === "translocated"
+      ? es
+        ? "Colonia no puede actualizarse sola aquí: macOS la está ejecutando desde una copia temporal porque se abrió donde se descargó. Sal de Colonia, arrástrala a Aplicaciones en el Finder y ábrela desde allí; a partir de entonces se actualiza sola."
+        : "Colonia cannot update itself here: macOS is running it from a temporary copy because it was opened where it was downloaded. Quit Colonia, drag it into Applications in the Finder and open it from there; from then on it updates by itself."
+      : place === "disk-image"
+        ? es
+          ? "Colonia no puede actualizarse sola aquí: se está ejecutando desde su imagen de disco. Arrástrala a Aplicaciones, expulsa la imagen y ábrela desde Aplicaciones; a partir de entonces se actualiza sola."
+          : "Colonia cannot update itself here: it is running from its disk image. Drag it into Applications, eject the disk image and open it from Applications; from then on it updates by itself."
+        : place === "read-only"
+          ? es
+            ? "Colonia no puede actualizarse sola aquí: tu cuenta no puede cambiar la carpeta donde está. Muévela a Aplicaciones (o a una carpeta Aplicaciones dentro de tu carpeta de inicio) y ábrela desde allí; a partir de entonces se actualiza sola."
+            : "Colonia cannot update itself here: your account cannot change the folder it is in. Move it to Applications (or to an Applications folder inside your home folder) and open it from there; from then on it updates by itself."
+          : undefined,
 });
 
 export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; es: boolean; platform: string }) {
@@ -52,7 +68,12 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
     const { response } = await dialog.showMessageBox(window, {
       type: "info",
       message: t.readyTitle(version),
-      detail: updater.mode === "drag" ? t.manualReady : updater.automatic?.() === false ? t.remoteReady : t.readyDetail,
+      detail:
+        updater.mode === "drag"
+          ? [t.manualReady, t.moveFirst(updater.place)].filter(Boolean).join("\n\n")
+          : updater.automatic?.() === false
+            ? t.remoteReady
+            : t.readyDetail,
       buttons: [updater.mode === "drag" ? t.openInstaller : t.restartNow, t.later],
       defaultId: 0,
       cancelId: 1,
@@ -74,7 +95,15 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
       return;
     }
     if (r.ready) await askRestart(version);
-    else await dialog.showMessageBox(window, { type: "info", message: t.dragged(version), buttons: [t.ok] });
+    else {
+      const detail = t.moveFirst(updater.place);
+      await dialog.showMessageBox(window, {
+        type: "info",
+        message: t.dragged(version),
+        ...(detail ? { detail } : {}),
+        buttons: [t.ok],
+      });
+    }
   }
 
   async function checkNow(): Promise<void> {

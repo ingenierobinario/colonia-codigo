@@ -4,6 +4,7 @@ import { exitWhenClosed } from "@colonia/protocol/exit";
 import { legacyHome, loadConfig } from "./config.ts";
 import { acquireDaemonLock } from "./daemon-lock.ts";
 import { moveLegacyHome } from "./home.ts";
+import { stopWhenParentCloses } from "./processes.ts";
 import { createCore } from "./server.ts";
 import { restartAfterClose } from "./updates.ts";
 
@@ -33,9 +34,15 @@ const core = await createCore(config, {
     ),
 });
 
-for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  process.once(signal, async () => {
-    await core.close();
-    exitWhenClosed(0);
-  });
-}
+let stopping = false;
+const stop = async () => {
+  if (stopping) return;
+  stopping = true;
+  await core.close();
+  exitWhenClosed(0);
+};
+// Windows: a closed console window is a HUP and Ctrl+Break a BREAK; neither may leave the agents' programs running.
+const windows = process.platform === "win32" ? (["SIGHUP", "SIGBREAK"] as const) : [];
+for (const signal of ["SIGINT", "SIGTERM", ...windows] as const) process.on(signal, stop);
+// And a supervisor there cannot send a TERM: it closes the core's stdin.
+stopWhenParentCloses(() => void stop());

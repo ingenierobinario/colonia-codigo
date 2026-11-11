@@ -12,12 +12,16 @@ import {
   coreMain,
   LAUNCHD_LABEL,
   launchdPlist,
+  lingerLine,
   NODE_FLAGS,
   type ServiceSpec,
+  STOP_FILE,
   SYSTEMD_UNIT,
   serviceEnv,
   serviceNames,
   serviceOwnsHome,
+  systemdDir,
+  systemdProblem,
   systemdUnit,
   terminalMain,
   WINDOWS_RUN_VALUE,
@@ -63,7 +67,18 @@ const must = (cmd: string, args: string[]) => {
 
 const names = () => serviceNames(coloniaHome());
 
-const systemdFile = () => path.join(os.homedir(), ".config", "systemd", "user", names().systemd);
+const systemdFile = () => path.join(systemdDir(process.env, os.homedir()), names().systemd);
+
+/** Whether this user's services outlive their last logout; enabling it is tried where it needs no password. */
+function linger(enable: boolean): "on" | "enabled" | "off" {
+  const user = os.userInfo().username;
+  const on = () => sh("loginctl", ["show-user", user, "-p", "Linger", "--value"]).out.trim() === "yes";
+  if (on()) return "on";
+  if (!enable) return "off";
+  const mine = sh("loginctl", ["--no-ask-password", "enable-linger", user]).ok;
+  if (!mine) sh("sudo", ["-n", "loginctl", "enable-linger", user]);
+  return on() ? "enabled" : "off";
+}
 const launchdFile = () => path.join(os.homedir(), "Library", "LaunchAgents", `${names().launchd}.plist`);
 const launchdTarget = () => `gui/${process.getuid?.() ?? 0}`;
 const pidFile = (home: string) => path.join(home, "service.pid");
@@ -80,7 +95,7 @@ function refuseLegacyService(): void {
     entry =
       process.platform === "darwin"
         ? path.join(os.homedir(), "Library", "LaunchAgents", `${LAUNCHD_LABEL}.plist`)
-        : path.join(os.homedir(), ".config", "systemd", "user", SYSTEMD_UNIT);
+        : path.join(systemdDir(process.env, os.homedir()), SYSTEMD_UNIT);
     if (fs.existsSync(entry)) text = fs.readFileSync(entry, "utf8");
   }
   if (text && serviceOwnsHome(text, process.platform, coloniaHome()))
@@ -157,6 +172,8 @@ export async function install(): Promise<void> {
   const s = spec(home);
 
   if (process.platform === "linux") {
+    const reachable = sh("systemctl", ["--user", "show-environment"]);
+    if (!reachable.ok) throw new Error(systemdProblem(reachable.out, os.userInfo().username));
     fs.mkdirSync(path.dirname(systemdFile()), { recursive: true });
     fs.writeFileSync(systemdFile(), systemdUnit(s));
     must("systemctl", ["--user", "daemon-reload"]);
@@ -164,9 +181,7 @@ export async function install(): Promise<void> {
     if (wasInstalled) must("systemctl", ["--user", "restart", names().systemd]);
     console.log(`installed ${systemdFile()}`);
     console.log(`logs: journalctl --user -u ${names().systemd} -f`);
-    console.log(
-      `On a server, keep it running after you log out:  sudo loginctl enable-linger ${os.userInfo().username}`,
-    );
+    console.log(lingerLine(linger(true), os.userInfo().username));
   } else if (process.platform === "darwin") {
     fs.mkdirSync(path.dirname(launchdFile()), { recursive: true });
     fs.writeFileSync(launchdFile(), launchdPlist(s));
@@ -205,7 +220,7 @@ export async function status(): Promise<void> {
   const { url } = serviceConnection();
   let manager = "not installed";
   if (process.platform === "linux" && installed())
-    manager = `systemd: ${sh("systemctl", ["--user", "is-active", names().systemd]).out.trim() || "unknown"}`;
+    manager = `systemd: ${sh("systemctl", ["--user", "is-active", names().systemd]).out.trim() || "unknown"}${linger(false) === "on" ? "" : ", stops when you log out (sudo loginctl enable-linger)"}`;
   else if (process.platform === "darwin" && installed()) {
     const r = sh("launchctl", ["print", `${launchdTarget()}/${names().launchd}`]);
     manager = r.ok ? `launchd: ${/^\s*state = (.+)$/m.exec(r.out)?.[1] ?? "loaded"}` : "launchd: installed, not loaded";
@@ -320,7 +335,16 @@ function stopWindows(home: string) {
   const entry = must("reg", ["query", RUN_KEY, "/v", serviceNames(home).windows]);
   const command = /\sREG_SZ\s+([^\r\n]+)/.exec(entry)?.[1];
   if (!command) throw new Error("The Windows service entry has no command; no process was stopped.");
-  must("powershell", ["-NoProfile", "-NonInteractive", "-Command", windowsStopScript(home, command)]);
+  const script = windowsStopScript(home, command);
+  const ask = path.join(home, STOP_FILE);
+  // Windows has no TERM: the supervisor is asked with a file, and only what does not obey is ended by force.
+  fs.mkdirSync(home, { recursive: true });
+  fs.writeFileSync(ask, "");
+  try {
+    must("powershell", ["-NoProfile", "-NonInteractive", "-Command", script]);
+  } finally {
+    fs.rmSync(ask, { force: true });
+  }
   fs.rmSync(pidFile(home), { force: true });
   return command;
 }
@@ -335,14 +359,17 @@ async function supervise(home: string): Promise<void> {
   let backoff = 1000;
   let stopped = false;
   let retry: NodeJS.Timeout | undefined;
+  // Windows cannot send the core a TERM: it holds the core's stdin, and closing it is the request to stop cleanly.
+  const windows = process.platform === "win32";
   const start = () => {
     const startedAt = Date.now();
     child = spawn(s.node, [...NODE_FLAGS, s.main], {
       cwd: s.cwd,
-      env: { ...process.env, ...s.env },
-      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, ...s.env, ...(windows ? { COLONIA_STOP_ON_STDIN: "1" } : {}) },
+      stdio: [windows ? "pipe" : "ignore", "pipe", "pipe"],
       windowsHide: true,
     });
+    child.stdin?.on("error", () => {});
     child.stdout?.pipe(log, { end: false });
     child.stderr?.pipe(log, { end: false });
     fs.writeFileSync(pidFile(home), JSON.stringify({ supervisor: process.pid, core: child.pid }));
@@ -355,14 +382,27 @@ async function supervise(home: string): Promise<void> {
     });
   };
   const done = new Promise<void>((resolve) => {
-    for (const signal of ["SIGINT", "SIGTERM"] as const)
-      process.once(signal, () => {
-        stopped = true;
-        clearTimeout(retry);
-        // Ends on its own after a clean stop; by force only if the stop hangs.
-        exitWhenClosed(0, 15_000);
-        void stopCore(child, log).then(resolve);
-      });
+    let asked: NodeJS.Timeout | undefined;
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      clearTimeout(retry);
+      clearInterval(asked);
+      // Ends on its own after a clean stop; by force only if the stop hangs.
+      exitWhenClosed(0, 15_000);
+      void stopCore(child, log, windows ? 10_000 : undefined).then(resolve);
+    };
+    for (const signal of ["SIGINT", "SIGTERM"] as const) process.once(signal, stop);
+    if (windows) {
+      // `colonia service stop` asks with this file (nothing can signal this process); taking it is the answer.
+      const ask = path.join(home, STOP_FILE);
+      fs.rmSync(ask, { force: true });
+      asked = setInterval(() => {
+        if (!fs.existsSync(ask)) return;
+        fs.rmSync(ask, { force: true });
+        stop();
+      }, 250);
+    }
   });
   start();
   await done;
@@ -371,12 +411,14 @@ async function supervise(home: string): Promise<void> {
 /**
  * Stops the core and closes its log so the supervisor can exit on its own: a process.exit with the child's pipes
  * still open can crash Node on Windows (a libuv assertion). A grandchild may hold the core's pipes open, so after
- * a short wait for the last output they are destroyed rather than awaited.
+ * a short wait for the last output they are destroyed rather than awaited. A core whose stdin is held (Windows) is
+ * asked by closing it: a kill there ends it at once, with its store open and its agents' programs left running.
  */
 export async function stopCore(child: ChildProcess | undefined, log: fs.WriteStream, graceMs = 5000): Promise<void> {
   if (child && child.exitCode === null && child.signalCode === null) {
     const exited = new Promise<void>((resolve) => child.once("exit", () => resolve()));
-    child.kill();
+    if (child.stdin && !child.stdin.destroyed) child.stdin.end();
+    else child.kill();
     const late = setTimeout(() => child.kill("SIGKILL"), graceMs);
     await exited;
     clearTimeout(late);

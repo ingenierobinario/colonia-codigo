@@ -4,6 +4,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { parseRef } from "../domain/refs.ts";
+import { isWindowsShim, spawnable, toSpawn } from "../programs.ts";
 import { which } from "./detect.ts";
 import { commandEnv } from "./env.ts";
 import type { Harness, TurnIO } from "./types.ts";
@@ -15,13 +16,10 @@ export const ONESHOT = {
 export type OneshotId = keyof typeof ONESHOT;
 const MAX_BYTES = 1_000_000;
 
-export function isWindowsShim(binary: string, platform: string = process.platform): boolean {
-  return platform === "win32" && /\.(cmd|bat)$/i.test(binary);
-}
-
 export async function oneshotStatus(id: OneshotId, lookup = which, platform: string = process.platform) {
   const binary = await lookup(ONESHOT[id].binary);
-  const shim = Boolean(binary && isWindowsShim(binary, platform));
+  // A .cmd shim counts when what it starts can be started without a shell (npm's and other managers' do).
+  const shim = Boolean(binary && isWindowsShim(binary, platform) && !spawnable(binary, [], platform));
   const installed = Boolean(binary) && !shim;
   return {
     installed,
@@ -54,8 +52,8 @@ export function oneshotHarness(
       if (model?.startsWith("-")) throw new Error(`${id} model must not start with '-'`);
       const binary = deps.binary ? await deps.binary() : await which(ONESHOT[id].binary);
       if (!binary) throw new Error(`${ONESHOT[id].binary} is not installed on this machine`);
-      if (isWindowsShim(binary))
-        throw new Error("Windows .cmd/.bat CLI shims are unsupported; install a native executable");
+      // Checked before anything is written or announced: a script no program can be read from.
+      toSpawn(binary);
       const callId = `${io.run.id}-oneshot`;
       const cwd = deps.cwd(io);
       // These CLIs do not have a reliable session protocol: replay text history, never invent a session id.
@@ -120,7 +118,8 @@ export function oneshotHarness(
 function runCli(binary: string, args: string[], cwd: string, signal: AbortSignal, alive: () => void): Promise<string> {
   signal.throwIfAborted();
   return new Promise((resolve, reject) => {
-    const child = spawn(binary, args, {
+    const start = toSpawn(binary, args);
+    const child = spawn(start.file, start.args, {
       cwd,
       env: commandEnv(),
       stdio: ["ignore", "pipe", "pipe"],

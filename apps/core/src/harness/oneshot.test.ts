@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { harnessOf, isCliRef } from "../domain/refs.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
-import { isWindowsShim, type OneshotId, oneshotHarness, oneshotStatus } from "./oneshot.ts";
+import { type OneshotId, oneshotHarness, oneshotStatus } from "./oneshot.ts";
 import type { TurnIO } from "./types.ts";
 
 const root = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-oneshot-test-")));
@@ -28,16 +28,23 @@ test("discovery does not confuse a GUI installation with headless availability o
     assert.equal(found.detail_code, "oneshot");
   }
 });
-test("Windows command shims are unavailable instead of failing at spawn", async () => {
+test("a Windows command shim nothing can be started from is unavailable instead of failing at spawn", async () => {
   for (const suffix of [".cmd", ".BAT"]) {
     const binary = `C:\\cli\\agy${suffix}`;
-    assert.equal(isWindowsShim(binary, "win32"), true);
     const status = await oneshotStatus("antigravity", async () => binary, "win32");
     assert.equal(status.installed, false);
     assert.equal(status.detail_code, "oneshot_windows_shim");
   }
-  assert.equal(isWindowsShim("C:\\cli\\agy.exe", "win32"), false);
-  assert.equal(isWindowsShim("/opt/agy.cmd", "linux"), false);
+  // Batch files exist only on Windows: one that starts a real program counts as installed, and runs.
+  if (process.platform !== "win32") return;
+  const shim = path.join(root, "agy.cmd");
+  fs.writeFileSync(shim, `@"${process.execPath}" "${fixture}" echo %*\r\n`);
+  const status = await oneshotStatus("antigravity", async () => shim);
+  assert.equal(status.installed, true);
+  assert.equal(status.detail_code, "oneshot");
+  const shimmed = oneshotHarness("antigravity", { cwd: () => root, binary: async () => shim });
+  const body = JSON.parse((await shimmed.run(setup("antigravity").io)).text);
+  assert.ok(body.prompt.includes("Untrusted $(touch never); --flag"));
 });
 
 function setup(id: OneshotId, mode = "echo", approved = true) {

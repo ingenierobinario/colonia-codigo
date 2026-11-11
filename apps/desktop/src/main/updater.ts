@@ -26,7 +26,7 @@ import {
   releaseChanges,
 } from "@colonia/protocol";
 import { app, shell } from "electron";
-import { replaceableBundle } from "./app-bundle.ts";
+import { bundlePlace, replaceableBundle, saveInFirst } from "./app-bundle.ts";
 import { removeOldInstallers } from "./installer-files.ts";
 import { updateLog } from "./update-log.ts";
 
@@ -131,6 +131,8 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
   const feed = env === "off" ? undefined : env || RELEASE_FEED;
   const enabled = app.isPackaged && Boolean(feed) && Boolean(platformOf(process.platform, process.arch));
   const bundle = process.platform === "darwin" ? replaceableBundle(process.execPath, writable) : undefined;
+  // Why a Mac app cannot replace itself, so the owner is told what to do about it.
+  const place = process.platform === "darwin" ? bundlePlace(process.execPath, writable) : undefined;
   // An AppImage replaces itself; run from an unpacked zip, the owner gets the file instead.
   const appImage = process.platform === "linux" ? process.env.APPIMAGE : undefined;
   const mode: DesktopUpdate["install"] = process.platform === "win32" || bundle || appImage ? "auto" : "drag";
@@ -217,8 +219,10 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
       else if (appImage) staged = await stageAppImage(release, asset, appImage);
       else if (process.platform === "win32") staged = await stageWindows(release, asset);
       else {
-        const file = path.join(app.getPath("downloads"), asset.name);
-        await fetchChecked(release, asset, file);
+        // macOS can keep the app out of Downloads: the installer is as good from the temporary folder.
+        const file = await saveInFirst([app.getPath("downloads"), app.getPath("temp")], asset.name, (to) =>
+          fetchChecked(release, asset, to),
+        );
         const open = async () => {
           const opened = await shell.openPath(file);
           if (opened) shell.showItemInFolder(file);
@@ -320,6 +324,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
   return {
     enabled,
     mode,
+    ...(place ? { place } : {}),
     /** Adds a line to the update log (steps decided outside this updater, like a coordinated server update). */
     log,
     status: current,

@@ -6,9 +6,18 @@ import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import type { LinuxHost } from "./appimage.ts";
 import { createDesktopInstaller, type DesktopInstallOptions } from "./desktop.ts";
 import { desktopDataDir, hasDesktop } from "./paths.ts";
 import type { ProcessRunner } from "./process.ts";
+
+/** A Linux machine where AppImages mount, so the plain launch path runs on any platform. */
+const mounts: LinuxHost = {
+  read: () => undefined,
+  exists: () => true,
+  list: () => ["libfuse.so.2"],
+  head: () => "libfuse.so.2",
+};
 
 function fixture(overrides: Partial<DesktopInstallOptions> = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-install-test-"));
@@ -54,6 +63,7 @@ function fixture(overrides: Partial<DesktopInstallOptions> = {}) {
     candidates: [app],
     fetch: fakeFetch,
     run,
+    host: mounts,
     target: () => ({ home: coreHome, port: 7550, home_id: "selected-home" }),
     ...overrides,
   });
@@ -63,6 +73,8 @@ function fixture(overrides: Partial<DesktopInstallOptions> = {}) {
     coreHome,
     bytes,
     calls,
+    /** The launches alone: the Linux installer also runs the AppImage to take its icon out. */
+    opens: () => calls.filter((c) => c.command === app && !c.args.includes("--appimage-extract")),
     requests,
     installer,
     fakeFetch,
@@ -93,21 +105,25 @@ test("missing desktop downloads once, reports bytes, installs, and opens the sel
     assert.deepEqual(fs.readFileSync(f.app), f.bytes);
     fs.accessSync(f.app, fs.constants.X_OK);
     const launcher = fs.readFileSync(path.join(f.home, ".local/share/applications/colonia.desktop"), "utf8");
-    const executable = /^Exec=(".*")$/m.exec(launcher)?.[1];
+    const executable = /^Exec=(".*") %U$/m.exec(launcher)?.[1];
     assert.ok(executable, "the launcher quotes its executable path");
     assert.equal(JSON.parse(executable.replace(/\\([`$])/g, "$1")).replace(/%%/g, "%"), f.app);
     assert.match(launcher, /^\[Desktop Entry\]\nType=Application\n/);
+    assert.match(launcher, /^StartupWMClass=Colonia$/m);
+    assert.match(launcher, /^MimeType=application\/x-colonia-artifact;/m);
+    assert.doesNotMatch(launcher, /no-sandbox/);
     const saved = JSON.parse(fs.readFileSync(path.join(f.home, "desktop/connection.json"), "utf8"));
     assert.equal(saved.home, fs.realpathSync(f.coreHome));
     assert.equal(saved.port, 7550);
     assert.equal(saved.home_id, "selected-home");
     assert.equal(saved.token, undefined);
-    assert.equal(f.calls.length, 1);
-    assert.equal(f.calls[0]?.command, f.app);
-    assert.deepEqual(f.calls[0]?.args, ["--colonia-adopt-local"]);
-    assert.equal(f.calls[0]?.env.COLONIA_TOKEN, undefined);
-    assert.equal(f.calls[0]?.env.COLONIA_URL, undefined);
-    assert.equal(f.calls[0]?.env.ELECTRON_RUN_AS_NODE, undefined);
+    const opens = f.opens();
+    assert.equal(opens.length, 1);
+    assert.deepEqual(opens[0]?.args, ["--colonia-adopt-local"]);
+    assert.equal(opens[0]?.env.COLONIA_TOKEN, undefined);
+    assert.equal(opens[0]?.env.COLONIA_URL, undefined);
+    assert.equal(opens[0]?.env.ELECTRON_RUN_AS_NODE, undefined);
+    assert.equal(opens[0]?.env.APPIMAGE_EXTRACT_AND_RUN, undefined);
   } finally {
     await f.close();
   }
@@ -122,7 +138,7 @@ test("an existing app is preserved and opened without network or a second instal
     assert.equal((await f.installer.wait()).phase, "ready");
     assert.equal(f.requests.length, 0);
     assert.equal(fs.readFileSync(f.app, "utf8"), "existing");
-    assert.equal(f.calls[0]?.command, f.app);
+    assert.equal(f.opens().length, 1);
   } finally {
     await f.close();
   }
@@ -515,5 +531,126 @@ test("Windows waits for its installer before launching the installed executable"
     assert.equal(f.calls[1]?.command, f.app);
   } finally {
     await f.close();
+  }
+});
+
+type Open = { args: string[]; env: NodeJS.ProcessEnv; output?: string | undefined; settle?: number | undefined };
+
+/** Opens an installed AppImage on a described Linux machine; the fake app prints `says` and fails until `works`. */
+async function linuxOpen(files: string[], says: string, works: (call: Open) => boolean) {
+  const opens: Open[] = [];
+  const notes: string[] = [];
+  let app = "";
+  const run: ProcessRunner = async (command, args, options) => {
+    if (command !== app) throw new Error("ENOENT");
+    if (args.includes("--appimage-extract")) {
+      const dir = path.join(options.cwd ?? "", "squashfs-root/usr/share/icons/hicolor/1024x1024/apps");
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, "colonia.png"), "png");
+      return;
+    }
+    const call = { args, env: options.env, output: options.output, settle: options.settle };
+    opens.push(call);
+    if (works(call)) return;
+    if (options.output) fs.writeFileSync(options.output, says);
+    throw new Error("Desktop failed to start (1)");
+  };
+  const host: LinuxHost = {
+    read: (file) =>
+      file === "/etc/os-release"
+        ? "ID=ubuntu\nID_LIKE=debian\n"
+        : fs.existsSync(file)
+          ? fs.readFileSync(file, "utf8")
+          : undefined,
+    exists: (file) => files.includes(file),
+    list: (dir) => files.filter((f) => f.startsWith(`${dir}/`)).map((f) => f.slice(dir.length + 1)),
+    head: () => "libfuse.so.2",
+  };
+  const f = fixture({ run, host, note: (text) => notes.push(text) });
+  app = f.app;
+  fs.mkdirSync(path.dirname(f.app));
+  fs.writeFileSync(f.app, "existing");
+  f.installer.start();
+  const status = await f.installer.wait();
+  const data = path.join(f.home, ".local", "share");
+  return {
+    f,
+    opens,
+    notes,
+    status,
+    launcher: fs.readFileSync(path.join(data, "applications", "colonia.desktop"), "utf8"),
+    icon: path.join(data, "icons", "hicolor", "512x512", "apps", "colonia.png"),
+    mime: path.join(data, "mime", "packages", "colonia.xml"),
+  };
+}
+
+const MOUNTS = ["/dev/fuse", "/usr/bin/fusermount", "/usr/lib/x86_64-linux-gnu/libfuse.so.2.9.9"];
+
+test("a Linux machine that mounts AppImages opens it plainly, with its own icon and file types", async () => {
+  const r = await linuxOpen(MOUNTS, "", () => true);
+  try {
+    assert.equal(r.status.phase, "ready");
+    assert.equal(r.opens.length, 1);
+    assert.equal(r.opens[0]?.env.APPIMAGE_EXTRACT_AND_RUN, undefined);
+    assert.deepEqual(r.notes, []);
+    assert.equal(fs.readFileSync(r.icon, "utf8"), "png");
+    assert.ok(r.launcher.includes(`\nIcon=${r.icon}\n`));
+    assert.match(fs.readFileSync(r.mime, "utf8"), /<glob pattern="\*\.coloniaart"\/>/);
+  } finally {
+    await r.f.close();
+  }
+});
+
+test("without libfuse 2 the AppImage runs unpacked, says so once with the command, and so does the menu entry", async () => {
+  const r = await linuxOpen(["/dev/fuse", "/usr/bin/fusermount3"], "", () => true);
+  try {
+    assert.equal(r.status.phase, "ready");
+    assert.equal(r.opens.length, 1);
+    assert.equal(r.opens[0]?.env.APPIMAGE_EXTRACT_AND_RUN, "1");
+    assert.ok((r.opens[0]?.settle ?? 0) > 1500, "unpacking gets time before the start counts");
+    assert.equal(r.notes.length, 1);
+    assert.match(r.notes[0] ?? "", /sudo apt install libfuse2t64 fuse3/);
+    assert.match(r.launcher, /^Exec=env APPIMAGE_EXTRACT_AND_RUN=1 /m);
+  } finally {
+    await r.f.close();
+  }
+});
+
+test("a mount failure the check did not foresee falls back to unpacked instead of failing", async () => {
+  const says =
+    "fuse: failed to open /dev/fuse: Permission denied\nCannot mount AppImage, please check your FUSE setup.";
+  const r = await linuxOpen(MOUNTS, says, (c) => c.env.APPIMAGE_EXTRACT_AND_RUN === "1");
+  try {
+    assert.equal(r.status.phase, "ready");
+    assert.deepEqual(
+      r.opens.map((c) => [c.env.APPIMAGE_EXTRACT_AND_RUN, Boolean(c.output)]),
+      [
+        [undefined, false],
+        [undefined, true],
+        ["1", false],
+      ],
+    );
+    assert.match(r.launcher, /^Exec=env APPIMAGE_EXTRACT_AND_RUN=1 /m);
+    assert.equal(r.notes.length, 1);
+  } finally {
+    await r.f.close();
+  }
+});
+
+test("a blocked sandbox is explained and never worked around", async () => {
+  const says =
+    "FATAL:setuid_sandbox_host.cc:166] The SUID sandbox helper binary was found, but is not configured correctly.";
+  const r = await linuxOpen(MOUNTS, says, () => false);
+  try {
+    assert.equal(r.status.phase, "failed");
+    assert.match(r.status.error ?? "", /stops the sandbox/);
+    assert.equal(r.opens.length, 2);
+    for (const call of r.opens) {
+      assert.deepEqual(call.args, ["--colonia-adopt-local"]);
+      assert.equal(call.env.ELECTRON_DISABLE_SANDBOX, undefined);
+    }
+    assert.doesNotMatch(r.launcher, /no-sandbox/);
+  } finally {
+    await r.f.close();
   }
 });

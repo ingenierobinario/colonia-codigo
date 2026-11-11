@@ -884,9 +884,9 @@ export const en = {
   "project.settings.folderHint": "Chats that work in the folder use it, which also holds the agents and settings.",
   "project.settings.folderMissing": "The folder is not on disk right now (moved, or a drive that is not mounted).",
   "project.settings.folderWaiting":
-    "This folder has not opened for Colonia yet. If your Mac asks whether “node” can access it, choose Allow: Colonia reads the folder as soon as it can.",
+    "This folder has not opened for Colonia yet. If your Mac asks whether Colonia (or “node”, when Colonia runs without its app) can access it, choose Allow: Colonia reads the folder as soon as it can.",
   "project.settings.folderDenied":
-    "Colonia is not allowed to open this folder. On a Mac, turn on “node” in System Settings › Privacy & Security › Files and Folders, then restart Colonia.",
+    "Colonia is not allowed to open this folder. On a Mac, open System Settings › Privacy & Security › Files and Folders, turn this folder on under Colonia (under “node” when Colonia runs without its app), then restart Colonia.",
   "project.settings.agentsMdLong": "AGENTS.md past the limit",
   "project.settings.agentsMdLongBody":
     "It has {chars} characters, more than the {limit} agents get whole: they get its start and its end, are told which lines are left out and read them when they need them.",
@@ -1450,6 +1450,10 @@ export const en = {
   "res.catalog.search": "Search connectors",
   "res.catalog.add": "Connect",
   "res.catalog.added": "Added",
+  "res.catalog.own.youtube": "Your videos, comments and replies",
+  "res.catalog.own.x": "Post and reply",
+  "res.catalog.own.meta": "Facebook and Instagram with your own app",
+  "res.catalog.own.linkedin": "Post on your profile",
   "res.catalog.open": "Catalog",
   "res.catalog.custom": "Other connector",
   "res.catalog.cat.work": "Work and teams",

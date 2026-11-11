@@ -3,14 +3,15 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { app } from "electron";
+import { loginCommand } from "./linux-desktop.ts";
 
 /** What a Linux login starts: the AppImage itself when Colonia runs from one (its mount path changes every run). */
-export function linuxEntry(exec: string): string {
+export function linuxEntry(exec: string, env: NodeJS.ProcessEnv = {}): string {
   return [
     "[Desktop Entry]",
     "Type=Application",
     "Name=Colonia",
-    `Exec="${exec}"`,
+    `Exec=${loginCommand(exec, env)}`,
     "X-GNOME-Autostart-enabled=true",
     "",
   ].join("\n");
@@ -26,7 +27,7 @@ export function setLaunchAtLogin(on: boolean): void {
   try {
     if (on) {
       fs.mkdirSync(path.dirname(file), { recursive: true });
-      fs.writeFileSync(file, linuxEntry(process.env.APPIMAGE || process.execPath));
+      fs.writeFileSync(file, linuxEntry(process.env.APPIMAGE || process.execPath, process.env));
     } else fs.rmSync(file, { force: true });
   } catch {
     // a read-only home: Colonia still runs, it just will not start by itself

@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { PassThrough } from "node:stream";
 import { test } from "node:test";
 import {
   commandShell,
@@ -9,6 +11,7 @@ import {
   processStart,
   spawnCommand,
   stopTree,
+  stopWhenParentCloses,
 } from "./processes.ts";
 
 const has = (...files: string[]) => {
@@ -142,4 +145,56 @@ test("a process that is gone is gone, and a TERM it obeys ends the stop before i
   await stopTree(pid, { graceMs: 20_000 });
   assert.ok(performance.now() - started < 10_000, "the stop waited out its grace");
   assert.deepEqual(await probeProcess(pid), { state: "gone" });
+});
+
+test("a core stops cleanly when its supervisor closes its stdin, and only when asked to listen", async () => {
+  const idle = new PassThrough();
+  assert.equal(
+    stopWhenParentCloses(() => assert.fail("not asked to listen"), {}, idle),
+    false,
+  );
+  idle.end();
+  const env: Record<string, string | undefined> = { COLONIA_STOP_ON_STDIN: "1" };
+  const pipe = new PassThrough();
+  let stops = 0;
+  assert.equal(
+    stopWhenParentCloses(() => stops++, env, pipe),
+    true,
+  );
+  assert.deepEqual(env, {}, "the programs the core starts must not listen to their own stdin");
+  assert.equal(stops, 0);
+  pipe.end();
+  await once(pipe, "close");
+  assert.equal(stops, 1, "end and close are one request");
+
+  // For real: a child that would run forever ends by itself, cleanly.
+  const core = `
+    import { stopWhenParentCloses } from ${JSON.stringify(new URL("./processes.ts", import.meta.url).href)};
+    const busy = setInterval(() => {}, 1000);
+    const listening = stopWhenParentCloses(() => { console.log("closed"); clearInterval(busy); });
+    console.log("listening " + listening);`;
+  const start = (stdin: "pipe" | "ignore", extra: Record<string, string>) =>
+    spawn(process.execPath, ["--input-type=module", "-e", core], {
+      stdio: [stdin, "pipe", "inherit"],
+      windowsHide: true,
+      env: { ...process.env, ...extra },
+    });
+  const child = start("pipe", { COLONIA_STOP_ON_STDIN: "1" });
+  let out = "";
+  child.stdout?.on("data", (chunk) => {
+    out += chunk;
+  });
+  await once(child.stdout as NodeJS.ReadableStream, "data");
+  child.stdin?.end();
+  const [code] = await once(child, "exit");
+  assert.equal(code, 0);
+  assert.match(out, /listening true\s+closed/);
+
+  // No variable, no stdin: the core keeps running.
+  const plain = start("ignore", {});
+  const [first] = await once(plain.stdout as NodeJS.ReadableStream, "data");
+  assert.match(String(first), /listening false/);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.equal(plain.exitCode, null);
+  plain.kill();
 });

@@ -9,9 +9,12 @@ import {
   bundleRun,
   coreMain,
   launchdPlist,
+  lingerLine,
   serviceEnv,
   serviceNames,
   serviceOwnsHome,
+  systemdDir,
+  systemdProblem,
   systemdUnit,
   windowsProcessPattern,
   windowsRunCommand,
@@ -147,4 +150,42 @@ test("Windows process authority matches complete arguments with OS quoting varia
   const spaced = ["C:\\Program Files\\node.exe", "main.ts"];
   assert.ok(new RegExp(windowsProcessPattern(spaced), "i").test('"C:\\Program Files\\node.exe" main.ts'));
   assert.ok(!new RegExp(windowsProcessPattern(spaced), "i").test(spaced.join(" ")));
+});
+
+test("the systemd unit never gives up restarting and keeps a dollar in a path literal", () => {
+  const unit = systemdUnit({ ...spec, main: "/srv/$HOME colonia/main.ts" });
+  assert.match(unit, /^\[Unit\]\nDescription=Colonia core\nStartLimitIntervalSec=0$/m);
+  assert.match(unit, /"\/srv\/\$\$HOME colonia\/main\.ts"$/m);
+  assert.match(systemdUnit({ ...spec, env: { A: "$x" } }), /^Environment="A=\$x"$/m);
+});
+
+test("user units go where systemd reads them", () => {
+  const under = (...parts: string[]) => path.join(...parts, "systemd", "user");
+  assert.equal(systemdDir({}, path.resolve("/home/u")), under(path.resolve("/home/u"), ".config"));
+  assert.equal(
+    systemdDir({ XDG_CONFIG_HOME: path.resolve("/cfg") }, path.resolve("/home/u")),
+    under(path.resolve("/cfg")),
+  );
+  assert.equal(
+    systemdDir({ XDG_CONFIG_HOME: "relative" }, path.resolve("/home/u")),
+    under(path.resolve("/home/u"), ".config"),
+  );
+});
+
+test("a system without systemd, or a session without its bus, is told what to do instead", () => {
+  const none = systemdProblem("spawnSync systemctl ENOENT", "ana");
+  assert.match(none, /does not run systemd[\s\S]*colonia service run/);
+  assert.match(
+    systemdProblem("System has not been booted with systemd as init system (PID 1).", "ana"),
+    /colonia service run/,
+  );
+  const bus = systemdProblem("Failed to connect to bus: No medium found", "ana");
+  assert.match(bus, /Failed to connect to bus: No medium found/);
+  assert.match(bus, /ssh ana@host, not su[\s\S]*enable-linger ana[\s\S]*XDG_RUNTIME_DIR/);
+});
+
+test("the install says whether the service survives a logout", () => {
+  assert.match(lingerLine("on", "ana"), /keeps running after you log out/);
+  assert.match(lingerLine("enabled", "ana"), /lingering enabled/);
+  assert.match(lingerLine("off", "ana"), /stops when you log out[\s\S]*sudo loginctl enable-linger ana$/);
 });

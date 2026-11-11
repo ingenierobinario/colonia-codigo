@@ -3,6 +3,7 @@
 import { type ChildProcess, execFile, type StdioOptions, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { envOf } from "./programs.ts";
 
 export type CommandShell = {
   file: string;
@@ -13,9 +14,6 @@ export type CommandShell = {
 
 type Env = Record<string, string | undefined>;
 type Exists = (file: string) => boolean;
-
-/** Windows' environment names ignore case; a plain object does not. */
-const envOf = (env: Env, key: string) => env[Object.keys(env).find((k) => k.toUpperCase() === key) ?? key];
 
 const win = path.win32;
 
@@ -204,4 +202,31 @@ export async function processStart(
     why = p.why;
   }
   throw new Error(`cannot tell whether process ${pid} runs: ${why}`);
+}
+
+/**
+ * Windows has no TERM: a supervisor's kill ends the core at once, its store open and its agents' programs left running.
+ * A supervisor that sets COLONIA_STOP_ON_STDIN holds the core's stdin instead, and closing it asks for a clean stop. (A
+ * supervisor killed on Windows takes the core with it: Node ties its children to itself there.) Never without the
+ * variable: a core started with no stdin at all would read its end at once.
+ */
+export function stopWhenParentCloses(
+  stop: () => void,
+  env: Env = process.env,
+  stdin: NodeJS.ReadableStream & { unref?: () => unknown } = process.stdin,
+): boolean {
+  if (envOf(env, "COLONIA_STOP_ON_STDIN") !== "1") return false;
+  // Not for the programs the core starts: their stdin is not the supervisor's pipe.
+  for (const key of Object.keys(env)) if (key.toUpperCase() === "COLONIA_STOP_ON_STDIN") delete env[key];
+  let asked = false;
+  const ask = () => {
+    if (asked) return;
+    asked = true;
+    stop();
+  };
+  for (const event of ["end", "close", "error"]) stdin.once(event, ask);
+  stdin.resume();
+  // The pipe alone must not keep a closed core from ending.
+  stdin.unref?.();
+  return true;
 }

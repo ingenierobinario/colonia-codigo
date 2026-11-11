@@ -325,6 +325,21 @@ export const enResources = {
   "int.signInAgain": "Sign in again",
   "int.waiting": "Finish signing in in your browser. This closes by itself once Google sends you back.",
   "int.signedInAs": "Signed in as {account}",
+  "int.signInPlain": "Sign in",
+  "int.agentGuide":
+    "{name} needs an app of your own on its developer site. Ask your agent to guide you: it tells you which pages to open, what to choose and what to paste here.",
+  "int.redirectExact": "Add it to your app as the callback (redirect) address, exactly as written.",
+  "int.waitingPlain": "Finish signing in in your browser. This closes by itself once you are sent back.",
+  "int.pasteHintPlain":
+    "The sign-in sends you back to this computer's Colonia, which this device can't open. Copy the address of the page that failed to load and paste it here.",
+  "int.pasteBadPlain": "That address doesn't carry the sign-in code",
+  "int.desc.youtube":
+    "Your channel's videos with their numbers, and their comments to read and reply to. Your agent can guide you through the setup.",
+  "int.desc.x":
+    "Your posts with their numbers, replies, and posting as you. Your agent can guide you through the setup.",
+  "int.desc.meta":
+    "Your Facebook Pages and Instagram accounts: posts, comments, publishing and replying. Your agent can guide you through the setup.",
+  "int.desc.linkedin": "Publish posts on your LinkedIn profile. Your agent can guide you through the setup.",
   "oauth.working": "Finishing the sign-in…",
   "oauth.doneTitle": "{name} is connected",
   "oauth.doneTitleMany": "{names} are connected",

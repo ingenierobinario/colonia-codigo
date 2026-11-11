@@ -3,6 +3,7 @@
 import path from "node:path";
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen, Tray } from "electron";
 import { setLaunchAtLogin } from "./autostart.ts";
+import { shortcutRefused } from "./linux-desktop.ts";
 import { quickPlacement } from "./quick-placement.ts";
 
 const WIDTH = 400;
@@ -215,13 +216,13 @@ export function createQuick(opts: {
       window();
     },
     /** Re-registers the global shortcut and the start-at-login setting. */
-    apply(prefs: DesktopPrefs): string | undefined {
+    apply(prefs: DesktopPrefs, es = false): string | undefined {
       if (shortcut) globalShortcut.unregister(shortcut);
       shortcut = undefined;
       let error: string | undefined;
       try {
         if (prefs.shortcut && globalShortcut.register(prefs.shortcut, () => toggle(false))) shortcut = prefs.shortcut;
-        else if (prefs.shortcut) error = `the shortcut ${prefs.shortcut} is taken by another app`;
+        else if (prefs.shortcut) error = shortcutRefused(prefs.shortcut, process.platform, process.env, es);
       } catch {
         error = `${prefs.shortcut} is not a valid shortcut`;
       }

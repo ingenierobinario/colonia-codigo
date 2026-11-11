@@ -74,8 +74,8 @@ import { notifyDestination } from "./flow-outward.ts";
 import { createFlows } from "./flows.ts";
 import { thisRunner, writeColoniaCommand } from "./harness/colonia-command.ts";
 import type { CliStatus } from "./harness/detect.ts";
-import { which } from "./harness/detect.ts";
-import { harnessEnv, useColoniaCommand, useUsualDirs } from "./harness/env.ts";
+import { sdkPath } from "./harness/detect.ts";
+import { harnessEnv, useColoniaCommand, useOwnerShell, useUsualDirs } from "./harness/env.ts";
 import { createHarnesses, type Harness } from "./harness/index.ts";
 import { readIdentity } from "./identity.ts";
 import { createIdleTrim } from "./idle-memory.ts";
@@ -84,6 +84,7 @@ import { createAsana } from "./integrations/asana.ts";
 import { calendarApi } from "./integrations/calendar.ts";
 import { gmailApi } from "./integrations/gmail.ts";
 import { createGoogle } from "./integrations/google.ts";
+import { createSocial } from "./integrations/social.ts";
 import { coloniaGoogleClient, clientFromPair } from "./integrations/google-client.ts";
 import { GOOGLE, googleAt } from "./integrations/google-oauth.ts";
 import { createLog, type Log } from "./log.ts";
@@ -132,6 +133,7 @@ import { createTerminals } from "./terminal/terminals.ts";
 import { asanaTools } from "./tools/asana.ts";
 import { scratchRoot } from "./tools/folders.ts";
 import { googleTools } from "./tools/google.ts";
+import { socialTools } from "./tools/social.ts";
 import { imessageTools } from "./tools/imessage.ts";
 import type { Tool } from "./tools/types.ts";
 import { listenHooks } from "./transport/hooks.ts";
@@ -146,6 +148,8 @@ export type CoreOptions = {
   computer?: ComputerConfig;
   /** Asana transport; tests record REST requests without contacting an account. */
   asanaFetch?: typeof fetch;
+  /** The social networks' transport; tests answer for X, Meta and LinkedIn without contacting them. */
+  socialFetch?: typeof fetch;
   /** What asks an integration's remote server whether it takes the owner's account; tests pass a fake. */
   integrationFetch?: typeof fetch;
   quiet?: boolean;
@@ -204,6 +208,8 @@ export type CoreOptions = {
 
 export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const log = createLog("core", opts.quiet, opts.quiet ? undefined : coreLogSink(config.home));
+  // Asked first: the owner's shell takes a moment to answer, and the first turn should already have it.
+  useOwnerShell(config.supervised, { log });
   const identity = readIdentity(config.home);
   const db = openDb(config.home);
   const bus = createBus();
@@ -211,6 +217,10 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const terminals = createTerminals({ bus, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
   const store = createStore(db, bus);
   const secrets = createSecrets(config.home, config.secrets);
+  if (secrets.notice && !store.settings.get("secrets_file_told")) {
+    log.warn({ backend: secrets.backend }, secrets.notice);
+    store.settings.set("secrets_file_told", "1");
+  }
   seed(store, config.agentName);
   const releases =
     opts.releases ?? (config.whatsNew ? localReleases(path.resolve(import.meta.dirname, "../../..")) : undefined);
@@ -318,6 +328,13 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     fetch: opts.asanaFetch,
     offIn: (project) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes("asana"),
   });
+  const social = createSocial({
+    store,
+    secrets,
+    fetch: opts.socialFetch,
+    origin: () => `http://127.0.0.1:${listening}`,
+    offIn: (project, id) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes(id),
+  });
   const vm = createComputer(
     store,
     opts.computer && !opts.computer.managed ? opts.computer : managedVmConfig(store, config.home, opts.computer),
@@ -353,7 +370,13 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     store,
     config.home,
     () => listening,
-    [...imessageTools(imessage), ...googleTools(google), ...asanaTools(asana, store), ...(opts.extraTools ?? [])],
+    [
+      ...imessageTools(imessage),
+      ...googleTools(google),
+      ...asanaTools(asana, store),
+      ...socialTools(social, google),
+      ...(opts.extraTools ?? []),
+    ],
     config.runtimeSkills.homes,
     { profiles: profileRoots, templates: templateRoots },
     vm,
@@ -389,7 +412,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     home: config.home,
     log,
     codexImages: createCodexImages({
-      codexPath: () => which("codex"),
+      codexPath: () => sdkPath("codex"),
       signedIn: async () => (await harnesses.status()).some((e) => e.id === "codex" && e.logged_in),
       env: harnessEnv,
       workDir: path.join(config.home, "codex-images"),
@@ -717,6 +740,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       mcp,
       google,
       asana,
+      social,
       providers,
       secrets,
       chatgpt: { login: chatgpt, v1Home: config.v1.home },

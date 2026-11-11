@@ -6,7 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { removeDir } from "../testkit/platform.ts";
-import { commandEnv } from "./env.ts";
+import { childEnv, commandEnv, useColoniaCommand, useOwnerShell, useUsualDirs, withOwnerShell } from "./env.ts";
+import type { LoginEnv } from "./login-env.ts";
 
 const run = promisify(execFile);
 
@@ -49,4 +50,77 @@ test("pnpm run by an agent reinstalls a changed node_modules instead of aborting
   manifest({ lib: "file:./lib", other: "file:./lib" });
   await pnpm("store-b");
   assert.ok(fs.existsSync(path.join(dir, "node_modules", "other")));
+});
+
+/** An owner's shell that has already answered with `env`, and how often it was asked. */
+function answered(env: Record<string, string> | undefined) {
+  const shell = { asked: 0, ask: () => void shell.asked++, current: () => env, settled: async () => {} };
+  return shell satisfies LoginEnv & { asked: number };
+}
+
+/** The core's own environment for one test: only `own`, put back as it was afterwards, with every hook off. */
+function coreEnv(t: { after: (fn: () => void) => void }, own: Record<string, string>) {
+  const before = { ...process.env };
+  for (const k of Object.keys(process.env)) delete process.env[k];
+  Object.assign(process.env, own);
+  t.after(() => {
+    for (const k of Object.keys(process.env)) delete process.env[k];
+    Object.assign(process.env, before);
+    useOwnerShell(false);
+    useColoniaCommand(undefined);
+    useUsualDirs(false);
+  });
+}
+
+const dirs = (...list: string[]) => list.join(path.delimiter);
+
+test("what agents run gets what the owner's shell exports and the core lacks, the core's own values first", (t) => {
+  coreEnv(t, { PATH: dirs("/usr/bin", "/bin"), LANG: "C", COLONIA_HOME: "/home/owner/.colonia" });
+  const shell = answered({
+    PATH: dirs("/opt/homebrew/bin", "/usr/bin", "/bin"),
+    HTTPS_PROXY: "http://proxy.example:8080",
+    NODE_EXTRA_CA_CERTS: "/etc/ssl/acme.pem",
+    LANG: "es_ES.UTF-8",
+  });
+  useOwnerShell(true, { shell });
+  useColoniaCommand("/home/owner/.colonia/bin");
+  const env = childEnv();
+  assert.equal(env.PATH, dirs("/home/owner/.colonia/bin", "/opt/homebrew/bin", "/usr/bin", "/bin"));
+  assert.equal(env.HTTPS_PROXY, "http://proxy.example:8080");
+  assert.equal(env.NODE_EXTRA_CA_CERTS, "/etc/ssl/acme.pem");
+  assert.equal(env.LANG, "C");
+  assert.equal(env.COLONIA_HOME, undefined);
+  assert.equal(commandEnv().HTTPS_PROXY, "http://proxy.example:8080", "an agent's command is behind the proxy too");
+});
+
+test("a core started by hand, or whose owner's shell has not answered, gives agents its own environment", (t) => {
+  coreEnv(t, { PATH: dirs("/usr/bin", "/bin") });
+  const silent = answered(undefined);
+  useOwnerShell(true, { shell: silent });
+  assert.deepEqual(childEnv(), { PATH: dirs("/usr/bin", "/bin") });
+  childEnv();
+  // Each start of a program asks again: that is what retries a shell that failed to answer.
+  assert.equal(silent.asked, 3);
+  const shell = answered({ PATH: dirs("/opt/homebrew/bin"), HTTPS_PROXY: "http://proxy.example:8080" });
+  useOwnerShell(true, { shell });
+  assert.equal(childEnv().HTTPS_PROXY, "http://proxy.example:8080");
+  useOwnerShell(false);
+  assert.deepEqual(childEnv(), { PATH: dirs("/usr/bin", "/bin") });
+  assert.equal(shell.asked, 2, "not asked once the core is not supervised");
+});
+
+test("a terminal the core opens starts from the owner's shell exports too, and the core's environment is untouched", (t) => {
+  coreEnv(t, { PATH: dirs("/usr/bin") });
+  useOwnerShell(true, {
+    shell: answered({ PATH: dirs("/opt/homebrew/bin", "/usr/bin"), NVM_DIR: "/home/owner/.nvm" }),
+  });
+  useColoniaCommand("/home/owner/.colonia/bin");
+  const own = { PATH: dirs("/usr/bin"), EDITOR: "vi" };
+  assert.deepEqual(withOwnerShell(own), {
+    PATH: dirs("/opt/homebrew/bin", "/usr/bin"),
+    EDITOR: "vi",
+    NVM_DIR: "/home/owner/.nvm",
+  });
+  assert.deepEqual(own, { PATH: dirs("/usr/bin"), EDITOR: "vi" });
+  assert.equal(process.env.NVM_DIR, undefined);
 });

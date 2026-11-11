@@ -29,7 +29,8 @@ service; inspect `colonia status` (`code_sha`) and update the intended installat
 When Desktop starts its own bundled daemon, it passes home and port explicitly and does not inherit an unrelated
 `COLONIA_APP` bundle location or code SHA. Ambient `COLONIA_*` variables are removed from the child environment; the
 bundled child binds explicitly to `127.0.0.1`. Its selected home's `core.env` supplies persisted settings such as
-the token, but cannot override that loopback binding. Closing the window hides it. Quitting the app stops its own child, not a
+the token, but cannot override that loopback binding. Closing the window hides it; on a Linux desktop with no tray host
+(GNOME without an extension) it minimises instead, because nothing could bring a hidden window back. Quitting the app stops its own child, not a
 service or a remote daemon. Stopping cancels pending restart timers; a replacement waits for the previous child to
 exit. Updating Desktop updates its bundle only. Updating a server from its panel remains an explicit server action;
 restarting the client does not implicitly update that server.

@@ -25,6 +25,7 @@ export async function desktop(): Promise<void> {
     feed: env.COLONIA_RELEASES || RELEASE_FEED,
     version: env.COLONIA_INSTALL_VERSION,
     target: () => (target ? prepareLocalTarget(target, localConnection(env).token) : undefined),
+    note: (text) => console.log(text),
     changed: (s) => {
       const next = s.total ? Math.floor((s.received / s.total) * 100) : -1;
       if (s.phase !== phase || next >= percent + 10) {

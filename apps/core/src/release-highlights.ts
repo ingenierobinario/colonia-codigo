@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.29.0": {
+    en: [
+      "YouTube, X, Facebook, Instagram and LinkedIn join the connectors: your agents can post and reply.",
+      "On Mac and Linux, agents see the same tools and paths as your terminal.",
+      "On Windows, the installer handles folders with spaces or accents, and Colonia closes cleanly.",
+      "On Linux, the AppImage, tray icon, background service and keyring work out of the box.",
+    ],
+    es: [
+      "YouTube, X, Facebook, Instagram y LinkedIn se suman a los conectores: tus agentes publican y responden.",
+      "En Mac y Linux, los agentes ven las mismas herramientas y rutas que tu terminal.",
+      "En Windows, el instalador admite carpetas con espacios o tildes, y Colonia se cierra limpiamente.",
+      "En Linux, la AppImage, el icono de la bandeja, el servicio y el llavero funcionan desde el principio.",
+    ],
+  },
   "2.28.0": {
     en: [
       "Meta Ads, WhatsApp Business and TikTok Ads join the connectors: sign in and your agents use them.",

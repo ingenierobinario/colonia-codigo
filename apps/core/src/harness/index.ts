@@ -16,7 +16,7 @@ import { acpAgents, acpEngine } from "./acp/agents.ts";
 import { acpHarness } from "./acp/harness.ts";
 import { claudeHarness } from "./claude.ts";
 import { codexHarness, type McpCommand } from "./codex.ts";
-import { type CliStatus, detectClaude, detectCodex, which } from "./detect.ts";
+import { type CliStatus, detectClaude, detectCodex, sdkPath, which } from "./detect.ts";
 import { nativeHarness } from "./native.ts";
 import { ONESHOT, oneshotHarness, oneshotStatus } from "./oneshot.ts";
 import type { Harness, TurnIO } from "./types.ts";
@@ -39,7 +39,8 @@ export function createHarnesses(deps: {
   const { store, llm } = deps;
   const gates = new Map<string, Gate>();
   const bin = (name: string) => async () => {
-    const p = await which(name);
+    // The SDKs start the program without a shell: behind a Windows .cmd shim, what the shim starts.
+    const p = name === "claude" || name === "codex" ? await sdkPath(name) : await which(name);
     if (!p) throw new Error(`${name} is not installed on this machine`);
     return p;
   };

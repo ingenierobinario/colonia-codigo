@@ -3,6 +3,7 @@
 import { spawn } from "node:child_process";
 import type { Store } from "../../domain/store.ts";
 import { stopTree } from "../../processes.ts";
+import { toSpawn } from "../../programs.ts";
 import { childEnv } from "../env.ts";
 import { connect, type RequestHandler, type Rpc, RpcError } from "./rpc.ts";
 
@@ -126,7 +127,9 @@ export async function openSession(
     onRequest?: RequestHandler;
   },
 ): Promise<AcpSession> {
-  const child = spawn(o.binary, agent.args, {
+  // An npm-installed agent is a .cmd shim on Windows: Node starts what the shim starts, never a shell.
+  const start = toSpawn(o.binary, agent.args);
+  const child = spawn(start.file, start.args, {
     cwd: o.cwd,
     env: { ...childEnv(), ...agent.env, ...(o.coloniaAgent ? { COLONIA_AGENT: o.coloniaAgent } : {}) },
     stdio: ["pipe", "pipe", "pipe"],

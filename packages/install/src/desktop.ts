@@ -3,7 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import type { DesktopInstallStatus } from "@colonia/protocol";
 import { desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED } from "@colonia/protocol";
+import { type LinuxHost, linuxHost } from "./appimage.ts";
 import { downloadDesktop } from "./download.ts";
+import { openLinuxDesktop } from "./linux-launch.ts";
 import { desktopCandidates, desktopDataDir, hasDesktop, type LocalTarget, saveLocalTarget } from "./paths.ts";
 import { installDesktopFile } from "./platform.ts";
 import { type ProcessRunner, runProcess } from "./process.ts";
@@ -22,6 +24,10 @@ export type DesktopInstallOptions = {
   /** The installed paths at a filesystem boundary; tests keep every platform inside a temporary home. */
   candidates?: readonly string[];
   session?: () => NodeJS.ProcessEnv;
+  /** What is read from a Linux machine to explain an AppImage that will not start. */
+  host?: LinuxHost;
+  /** Something the person should know although the app opened. */
+  note?: (text: string) => void;
 };
 
 export function createDesktopInstaller(opts: DesktopInstallOptions) {
@@ -100,15 +106,27 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
       const target = opts.target?.();
       if (target) saveLocalTarget(desktopDataDir(opts.platform, env, opts.userHome), target);
       change({ phase: "opening" });
-      await run(
-        opts.platform === "darwin" ? "/usr/bin/open" : app,
-        opts.platform === "darwin"
-          ? [...(target ? ["-n"] : []), "-a", app, ...(target ? ["--args", "--colonia-adopt-local"] : [])]
-          : target
-            ? ["--colonia-adopt-local"]
-            : [],
-        { signal, detached: opts.platform !== "darwin", env: launchEnv(env) },
-      );
+      const args = target ? ["--colonia-adopt-local"] : [];
+      if (opts.platform === "linux")
+        await openLinuxDesktop({
+          app,
+          args,
+          userHome: opts.userHome,
+          env: launchEnv(env),
+          run,
+          signal,
+          dataDir: desktopDataDir(opts.platform, env, opts.userHome),
+          host: opts.host ?? linuxHost,
+          note: opts.note,
+        });
+      else
+        await run(
+          opts.platform === "darwin" ? "/usr/bin/open" : app,
+          opts.platform === "darwin"
+            ? [...(target ? ["-n"] : []), "-a", app, ...(target ? ["--args", "--colonia-adopt-local"] : [])]
+            : args,
+          { signal, detached: opts.platform !== "darwin", env: launchEnv(env) },
+        );
       change({ phase: "ready" });
     } catch (error) {
       fail(error);

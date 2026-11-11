@@ -531,6 +531,7 @@ function TokenForm({
     >
       <div className="int__form">
         <p className="int__desc">{t(viaBrowser(i) ? "int.browserNote" : "int.formNote")}</p>
+        {i.id === "meta" && <p className="int__desc">{t("int.agentGuide", { name: i.label })}</p>}
         {i.fields.map((f) => (
           <Field
             key={f.name}

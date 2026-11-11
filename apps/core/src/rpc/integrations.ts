@@ -17,6 +17,7 @@ import {
 } from "../integrations/catalog.ts";
 import { type Connectable, findConnectable } from "../integrations/find.ts";
 import type { Google } from "../integrations/google.ts";
+import { isSocialId, SOCIAL, type Social, signsIn } from "../integrations/social.ts";
 import type { Mcp } from "../mcp/manager.ts";
 import type { Secrets } from "../secrets.ts";
 import type { Handlers } from "./router.ts";
@@ -37,10 +38,11 @@ export function integrationHandlers(deps: {
   mcp: Mcp;
   google: Google;
   asana: Asana;
+  social: Social;
   /** What asks a remote server whether it takes the owner's account (tests pass a fake). */
   fetch?: typeof fetch;
 }) {
-  const { store, secrets, mcp, google, asana } = deps;
+  const { store, secrets, mcp, google, asana, social } = deps;
   const connected = (id: string) => mcp.config.global().some((d) => d.name === id);
   /** What was typed in an integration's plain fields (a team id, a folder), to edit it later. */
   const plainOf = (id: string): Record<string, string> => {
@@ -79,14 +81,62 @@ export function integrationHandlers(deps: {
       oauth: {
         redirect_uri: google.redirectUri(),
         ...(account ? { account } : {}),
-        builtin: client.builtin,
+        // YouTube is not in Colonia's own client: only the owner's own serves it.
+        builtin: client.builtin && e.coloniaScopes.length > 0,
         ...(google.clientOf(e.id) ? { client: google.clientOf(e.id) } : {}),
       },
     };
   };
+  /** X and LinkedIn sign in with the owner's own app; Meta takes what its Graph API Explorer gives. */
+  const socialEntry = (e: (typeof SOCIAL)[number], projects: Array<{ id: string }>) => {
+    const on = social.connected(e.id);
+    const client = social.client(e.id);
+    const account = social.account(e.id);
+    const fields = signsIn(e.id)
+      ? [
+          {
+            name: "client_id",
+            label: "Client id",
+            secret: false,
+            url: e.id === "x" ? "https://console.x.com" : "https://www.linkedin.com/developers/apps",
+            ...(client.client_id ? { value: client.client_id } : {}),
+          },
+          { name: "client_secret", label: "Client secret", secret: true, set: client.secret },
+        ]
+      : [
+          {
+            name: "app_id",
+            label: "App id",
+            secret: false,
+            url: "https://developers.facebook.com/apps/",
+            ...(client.client_id ? { value: client.client_id } : {}),
+          },
+          { name: "app_secret", label: "App secret", secret: true, set: false },
+          {
+            name: "user_token",
+            label: "Access token",
+            secret: true,
+            url: "https://developers.facebook.com/tools/explorer/",
+            set: false,
+          },
+        ];
+    return {
+      id: e.id,
+      label: e.label,
+      description: account && !signsIn(e.id) ? `${e.description} Connected: ${account}.` : e.description,
+      fields,
+      connected: on,
+      coming: false,
+      off_in: on ? offIn(e.id, projects) : [],
+      ...(signsIn(e.id)
+        ? { oauth: { redirect_uri: social.redirectUri(), ...(account ? { account } : {}), builtin: false } }
+        : {}),
+    };
+  };
   /** What an integration's settings hold; Gmail's signature has methods of its own (email.signature_*). */
   const settingsOf = (id: string) => {
-    if (id !== "asana" && !isGoogleId(id) && !CATALOG.some((x) => x.id === id)) throw notFound(`integration ${id}`);
+    if (id !== "asana" && !isGoogleId(id) && !isSocialId(id) && !CATALOG.some((x) => x.id === id))
+      throw notFound(`integration ${id}`);
     if (id === "google-calendar") return { reminders: store.settings.read("calendar_reminders") };
     return id === "gmail" ? { mail: store.settings.read("mail_check") } : {};
   };
@@ -96,6 +146,7 @@ export function integrationHandlers(deps: {
       return {
         integrations: [
           ...GOOGLE_INTEGRATIONS.map((e) => googleEntry(e, projects)),
+          ...SOCIAL.map((e) => socialEntry(e, projects)),
           {
             ...ASANA,
             fields: [{ ...ASANA_FIELD, set: asana.connected() }],
@@ -139,6 +190,7 @@ export function integrationHandlers(deps: {
       });
       const all: Connectable[] = [
         ...GOOGLE_INTEGRATIONS.map((e) => integration(e, google.connected(e.id))),
+        ...SOCIAL.map((e) => integration(e, social.connected(e.id))),
         integration(ASANA, asana.connected()),
         ...CATALOG.map((e) => integration(e, connected(e.id))),
         ...COMING.map((e) => ({ ...integration(e, false), coming: true })),
@@ -162,6 +214,15 @@ export function integrationHandlers(deps: {
         return { connected: true as const };
       }
       if (isGoogleId(id)) throw badRequest(`${id} connects by signing in with Google`);
+      if (id === "meta") {
+        try {
+          await social.connectMeta(values);
+        } catch (e) {
+          throw badRequest(message(e));
+        }
+        return { connected: true as const };
+      }
+      if (isSocialId(id)) throw badRequest(`${id} connects by signing in`);
       const e = CATALOG.find((x) => x.id === id);
       if (!e) throw notFound(`integration ${id}`);
       // Editing a connected one, a field left empty keeps what it had.
@@ -200,6 +261,13 @@ export function integrationHandlers(deps: {
       return { connected: true as const };
     },
     "integrations.oauth_start": ({ id, values, also }) => {
+      if (signsIn(id)) {
+        try {
+          return { url: social.start(id, { client_id: values?.client_id, client_secret: values?.client_secret }) };
+        } catch (e) {
+          throw badRequest(message(e));
+        }
+      }
       if (!isGoogleId(id)) throw notFound(`integration ${id} with a sign-in`);
       const more = also ?? [];
       const unknown = more.find((x) => !isGoogleId(x));
@@ -218,6 +286,11 @@ export function integrationHandlers(deps: {
     },
     "integrations.oauth_finish": async ({ code, state }) => {
       try {
+        // Each sign-in signs its own states: the one that made this one finishes it.
+        if (social.owns(state)) {
+          const made = await social.finish(code, state);
+          return { id: made.id, ...(made.account ? { account: made.account } : {}) };
+        }
         const done = await google.finish(code, state);
         return {
           id: done.id,
@@ -244,6 +317,10 @@ export function integrationHandlers(deps: {
     "integrations.disconnect": ({ id }) => {
       if (id === "asana") {
         secrets.set(ASANA_SECRET, null);
+        return { connected: false as const };
+      }
+      if (isSocialId(id)) {
+        social.disconnect(id);
         return { connected: false as const };
       }
       if (isGoogleId(id)) {

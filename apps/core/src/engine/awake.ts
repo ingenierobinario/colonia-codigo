@@ -4,12 +4,13 @@ import { spawn as nodeSpawn } from "node:child_process";
 import type { RunTimers } from "./engine.ts";
 
 /** What it needs of a child: to end it, and to hear it ended. */
-type Held = { kill(): boolean; once(event: "exit", listener: () => void): unknown };
+type Held = { kill(): boolean; once(event: "exit" | "error", listener: () => void): unknown };
 type Spawn = (cmd: string, args: string[]) => Held;
 
 /**
  * Holds `caffeinate -i -w <pid>` while `busy()` (macOS only, and only while the owner leaves it on): `-w` ends it with
- * the core even if the core dies without `close`. `update` is called whenever work starts or ends.
+ * the core even if the core dies without `close`. `update` is called whenever work starts or ends. On Linux the same
+ * is asked of systemd (`systemd-inhibit`), and a system that has none, or refuses, is asked once and left alone.
  */
 export function keepAwake(o: {
   busy: () => boolean;
@@ -22,6 +23,26 @@ export function keepAwake(o: {
   const spawn: Spawn = o.spawn ?? ((cmd, args) => nodeSpawn(cmd, args, { stdio: "ignore" }));
   let child: ReturnType<Spawn> | undefined;
   let closed = false;
+  let refused = false;
+  const pid = String(o.pid ?? process.pid);
+  // The inhibitor lasts as long as the command it wraps: one that waits for the core to end.
+  const command: [string, string[]] | undefined =
+    platform === "darwin"
+      ? ["caffeinate", ["-i", "-w", pid]]
+      : platform === "linux"
+        ? [
+            "systemd-inhibit",
+            [
+              "--what=idle:sleep",
+              "--who=Colonia",
+              "--why=An agent is working",
+              "tail",
+              `--pid=${pid}`,
+              "-f",
+              "/dev/null",
+            ],
+          ]
+        : undefined;
   const release = () => {
     const c = child;
     child = undefined;
@@ -29,14 +50,19 @@ export function keepAwake(o: {
   };
   return {
     update() {
-      if (platform !== "darwin" || closed) return;
+      if (!command || closed || refused) return;
       const want = o.enabled() && o.busy();
       if (want && !child) {
-        const c = spawn("caffeinate", ["-i", "-w", String(o.pid ?? process.pid)]);
+        const c = spawn(...command);
         child = c;
-        c.once("exit", () => {
-          if (child === c) child = undefined;
-        });
+        // It only ends by itself where it cannot hold anything (no systemd, no leave to block sleep): not asked again.
+        const gone = () => {
+          if (child !== c) return;
+          child = undefined;
+          if (platform === "linux") refused = true;
+        };
+        c.once("exit", gone);
+        c.once("error", gone);
       } else if (!want && child) release();
     },
     holding: () => Boolean(child),

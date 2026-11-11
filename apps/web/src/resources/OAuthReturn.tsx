@@ -8,9 +8,12 @@ const NAMES: Record<string, string> = {
   "google-calendar": "Google Calendar",
   gmail: "Gmail",
   "google-drive": "Google Drive",
+  youtube: "YouTube",
+  x: "X",
+  linkedin: "LinkedIn",
 };
 
-// Loaded only on /oauth/google. What Google sent is read once: the code leaves the address bar right away, and
+// Loaded only on /oauth/google and /oauth/social. What Google sent is read once: the code leaves the address bar right away, and
 // StrictMode's second mount reuses the same call instead of spending the code twice.
 const params = new URLSearchParams(window.location.search);
 if (window.location.search) window.history.replaceState(null, "", window.location.pathname);

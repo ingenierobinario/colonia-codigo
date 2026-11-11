@@ -331,6 +331,21 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "int.signInAgain": "Iniciar sesión de nuevo",
   "int.waiting": "Termina de iniciar sesión en tu navegador. Esto se cierra solo cuando Google te devuelva.",
   "int.signedInAs": "Sesión iniciada como {account}",
+  "int.signInPlain": "Iniciar sesión",
+  "int.agentGuide":
+    "{name} necesita una app tuya en su web de desarrolladores. Pídele a tu agente que te guíe: te dice qué páginas abrir, qué elegir y qué pegar aquí.",
+  "int.redirectExact": "Añádela en tu app como dirección de retorno (redirect), tal cual está escrita.",
+  "int.waitingPlain": "Termina de iniciar sesión en tu navegador. Esto se cierra solo cuando te devuelvan aquí.",
+  "int.pasteHintPlain":
+    "El inicio de sesión te devuelve a tu Colonia de este ordenador, que este dispositivo no puede abrir. Copia la dirección de la página que no cargó y pégala aquí.",
+  "int.pasteBadPlain": "Esa dirección no trae el código de inicio de sesión",
+  "int.desc.youtube":
+    "Los vídeos de tu canal con sus cifras, y sus comentarios para leerlos y responderlos. Tu agente puede guiarte para configurarlo.",
+  "int.desc.x":
+    "Tus publicaciones con sus cifras, las respuestas, y publicar en tu nombre. Tu agente puede guiarte para configurarlo.",
+  "int.desc.meta":
+    "Tus Páginas de Facebook y cuentas de Instagram: publicaciones, comentarios, publicar y responder. Tu agente puede guiarte para configurarlo.",
+  "int.desc.linkedin": "Publicar en tu perfil de LinkedIn. Tu agente puede guiarte para configurarlo.",
   "oauth.working": "Terminando de iniciar sesión…",
   "oauth.doneTitle": "{name} está conectado",
   "oauth.doneTitleMany": "{names} están conectados",

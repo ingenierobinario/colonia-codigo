@@ -39,13 +39,6 @@ export async function installDesktopFile(
       fs.copyFileSync(file, staged, fs.constants.COPYFILE_EXCL);
       fs.chmodSync(staged, 0o755);
       fs.linkSync(staged, destination);
-      const dir = path.join(opts.env.XDG_DATA_HOME || path.join(opts.userHome, ".local", "share"), "applications");
-      fs.mkdirSync(dir, { recursive: true });
-      const executable = destination.replace(/%/g, "%%").replace(/[\\"`$]/g, "\\$&");
-      fs.writeFileSync(
-        path.join(dir, "colonia.desktop"),
-        `[Desktop Entry]\nType=Application\nName=Colonia\nExec="${executable}"\nIcon=applications-development\nTerminal=false\nCategories=Utility;\n`,
-      );
     }
   } finally {
     fs.rmSync(staged, { recursive: true, force: true });

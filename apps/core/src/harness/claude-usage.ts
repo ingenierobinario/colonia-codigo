@@ -5,6 +5,7 @@ import { join } from "node:path";
 import type { EngineUsageWindow } from "@colonia/protocol";
 import { z } from "zod";
 import { stopTree } from "../processes.ts";
+import { toSpawn } from "../programs.ts";
 import { commandEnv } from "./env.ts";
 
 type Deadline = (ms: number, callback: () => void) => () => void;
@@ -78,15 +79,25 @@ function capture(command: string, args: string[], cwd: string, options: Options)
   return new Promise((resolve) => {
     const launch: Launch =
       options.launch ??
-      ((command, args, cwd, env) =>
-        spawn(command, args, {
+      ((command, args, cwd, env) => {
+        // An npm-installed CLI is a .cmd shim on Windows: what it starts, with these arguments untouched by a shell.
+        const start = toSpawn(command, args);
+        return spawn(start.file, start.args, {
           cwd,
           env,
           stdio: ["pipe", "pipe", "pipe"],
           windowsHide: true,
           detached: process.platform !== "win32",
-        }));
-    const child = launch(command, args, cwd, options.env ?? commandEnv());
+        });
+      });
+    let child: ChildProcessWithoutNullStreams;
+    try {
+      child = launch(command, args, cwd, options.env ?? commandEnv());
+    } catch {
+      // A shim nothing can be started from: no usage, like a CLI that does not answer.
+      resolve(undefined);
+      return;
+    }
     let output = "";
     let bytes = 0;
     let stopped = false;

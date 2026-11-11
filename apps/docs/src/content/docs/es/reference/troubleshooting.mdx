@@ -85,6 +85,27 @@ La app de escritorio anota cada paso de su propia actualización (descarga, rein
 `.Colonia-<versión>.update` junto a `Colonia.app`, es una versión descargada que nunca se puso en su lugar; Colonia la borra la
 próxima vez que arranca.
 
+En macOS la app se reemplaza sola únicamente donde tu cuenta puede cambiarla. Abierta desde su imagen de disco, desde
+la carpeta donde se descargó (macOS ejecuta entonces una copia temporal) o desde una carpeta donde no puedes escribir,
+descarga la versión nueva y te dice que la pongas a mano. Para que se actualice sola: sal de Colonia, arrastra
+`Colonia.app` a **Aplicaciones** en el Finder y ábrela desde allí. Si macOS no deja a Colonia escribir en Descargas, la
+versión nueva se guarda en la carpeta temporal y se abre desde ahí.
+
+## Un agente no encuentra un programa, un proxy o un certificado que tu terminal sí tiene
+
+Un core que arranca la app de escritorio o un servicio no viene de tu terminal, así que no tiene lo que tu shell
+prepara en `~/.zshrc`, `~/.bash_profile` o `config.fish`. En macOS y Linux le pregunta a tu shell de inicio de
+sesión una vez, al arrancar, y le da a lo que ejecutan los agentes tu `PATH`, tu configuración de proxy y de
+certificados (`HTTPS_PROXY`, `NO_PROXY`, `NODE_EXTRA_CA_CERTS`, `SSL_CERT_FILE` y similares), tu idioma y las
+carpetas de los gestores de versiones (nvm, Volta, pyenv, asdf, mise). Las claves y tokens que exporta tu shell no se
+toman.
+
+- Después de cambiar esos archivos, reinicia Colonia: al shell se le pregunta una vez por arranque.
+- Si el shell tarda más de diez segundos o no imprime ningún entorno (un perfil que espera una tecla, o que arranca
+  otro programa en lugar del shell), los agentes reciben el `PATH` básico del sistema más las carpetas habituales
+  (Homebrew, `~/.local/bin`). El log del core dice `owner's shell environment not read` y por qué.
+- Un core que arrancas tú desde una terminal ya tiene tu entorno y no le pregunta a nadie.
+
 ## macOS le pide a “node” acceso a Documentos
 
 El core corre como `node`, la copia de Node que viene con Colonia. La primera vez que lee un proyecto en una carpeta que

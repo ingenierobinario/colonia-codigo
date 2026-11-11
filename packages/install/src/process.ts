@@ -1,21 +1,45 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 
 export type ProcessRunner = (
   command: string,
   args: string[],
-  options: { signal: AbortSignal; detached?: boolean; env: NodeJS.ProcessEnv },
+  options: {
+    signal: AbortSignal;
+    detached?: boolean;
+    env: NodeJS.ProcessEnv;
+    cwd?: string;
+    /** A file that receives what the process prints, so a failed start can be explained. */
+    output?: string;
+    /** How long a detached process must stay up to count as started. */
+    settle?: number;
+  },
 ) => Promise<void>;
 
 export const runProcess: ProcessRunner = (command, args, options) =>
   new Promise((resolve, reject) => {
     options.signal.throwIfAborted();
-    const child = spawn(command, args, {
-      env: options.env,
-      ...(options.detached ? {} : { signal: options.signal }),
-      detached: options.detached === true,
-      stdio: "ignore",
-      windowsHide: true,
-    });
+    const out = options.output === undefined ? undefined : fs.openSync(options.output, "w", 0o600);
+    // The child holds its own copy of the file; ours is closed whether or not it started.
+    const release = () => {
+      if (out !== undefined) fs.closeSync(out);
+    };
+    let child: ReturnType<typeof spawn>;
+    try {
+      child = spawn(command, args, {
+        env: options.env,
+        ...(options.cwd ? { cwd: options.cwd } : {}),
+        ...(options.detached ? {} : { signal: options.signal }),
+        detached: options.detached === true,
+        stdio: out === undefined ? "ignore" : ["ignore", out, out],
+        windowsHide: true,
+      });
+    } catch (error) {
+      release();
+      reject(error);
+      return;
+    }
+    release();
     child.once("error", reject);
     if (options.detached) {
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -33,7 +57,7 @@ export const runProcess: ProcessRunner = (command, args, options) =>
       child.once("exit", exited);
       options.signal.addEventListener("abort", abort, { once: true });
       child.once("spawn", () => {
-        timer = setTimeout(() => done(), 1500);
+        timer = setTimeout(() => done(), options.settle ?? 1500);
       });
     } else
       child.once("exit", (code, signal) =>

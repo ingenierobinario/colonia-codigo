@@ -1095,6 +1095,66 @@ export const NEWS: readonly NewsEntry[] = [
       },
     ],
   },
+  {
+    id: "own-social-accounts",
+    since: "2.29.0",
+    title: {
+      en: "Connect your own YouTube, X, Facebook, Instagram and LinkedIn",
+      es: "Conecta tu propio YouTube, X, Facebook, Instagram y LinkedIn",
+    },
+    about: {
+      en:
+        "Your agents can read your posts and comments, and publish and reply once you confirm. Each network needs an " +
+        "app of your own on its developer site: your agent guides you step by step.",
+      es:
+        "Tus agentes pueden leer tus publicaciones y comentarios, y publicar y responder cuando lo confirmas. Cada " +
+        "red necesita una app tuya en su web de desarrolladores: tu agente te guía paso a paso.",
+    },
+    applies: () => true,
+    text:
+      "Resources, Integrations now has YouTube, X, Facebook and Instagram, and LinkedIn. Each connects with a " +
+      "developer app the owner creates on that network; the colonia-social skill has the steps for each, to walk the " +
+      "owner through one at a time. Once connected: social_posts and social_comments read (YouTube, X, Facebook, " +
+      "Instagram), social_publish posts (X, Facebook, Instagram, LinkedIn) and social_reply answers a comment, both " +
+      "only after the owner confirms. X's API is paid by use; LinkedIn only publishes and its sign-in lasts 60 days.",
+    actions: [
+      {
+        label: { en: "Guide me to connect one", es: "Guíame para conectar una" },
+        prompt:
+          "I want to connect one of my social networks to Colonia. Ask me which one, tell me what it costs and how " +
+          "long it takes, and guide me step by step.",
+      },
+    ],
+  },
+  {
+    id: "owner-shell-environment",
+    since: "2.29.0",
+    title: {
+      en: "Agents get your shell's PATH, proxy and certificates",
+      es: "Los agentes reciben el PATH, el proxy y los certificados de tu shell",
+    },
+    about: {
+      en:
+        "Agents now get the PATH, proxy and certificates of your shell when Colonia starts from the app. On Mac, the " +
+        "app tells you when it must move to Applications to update itself.",
+      es:
+        "Los agentes ya reciben el PATH, proxy y certificados de tu shell cuando Colonia arranca desde la app; en Mac, " +
+        "la app avisa si debe moverse a Aplicaciones para actualizarse sola.",
+    },
+    applies: () => true,
+    text:
+      "When Colonia starts from the desktop app, agents and the programs they run now get the owner's shell " +
+      "environment: PATH, proxy settings and extra certificates, as in a terminal. A tool that was missing only when " +
+      "started from the app should now be found. On Mac, the app warns when it runs outside Applications and must be " +
+      "moved there to update itself.",
+    actions: [
+      {
+        label: { en: "Check my tools", es: "Revisa mis herramientas" },
+        prompt:
+          "Check which of the command-line tools I use you can find now, and tell me if any is still missing and why.",
+      },
+    ],
+  },
 ];
 
 /** The catalog integrations among the owner's global MCP servers. */

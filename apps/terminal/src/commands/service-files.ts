@@ -109,12 +109,37 @@ export function serviceOwnsHome(text: string, platform: string, home: string): b
   return platform !== "win32" && !text.includes("COLONIA_HOME") && serviceNames(home).systemd === SYSTEMD_UNIT;
 }
 
+/** Where systemd reads a user's own units: under XDG_CONFIG_HOME when that is set, as systemd itself does. */
+export function systemdDir(env: NodeJS.ProcessEnv, userHome: string): string {
+  const config = env.XDG_CONFIG_HOME;
+  return path.join(config && path.isAbsolute(config) ? config : path.join(userHome, ".config"), "systemd", "user");
+}
+
+/** What to say where `systemctl --user` cannot be used: no systemd (Alpine, a container) or no session bus (su, cron). */
+export function systemdProblem(out: string, user: string): string {
+  const detail = out.trim().split("\n")[0] ?? "";
+  if (/ENOENT|not found|not been booted with systemd|Host is down/i.test(out))
+    return `This system does not run systemd, so Colonia cannot install itself as a service here. Start it from your own supervisor (OpenRC, runit, a container entrypoint) with:  colonia service run${detail ? `\n(${detail})` : ""}`;
+  return `systemd is here but this session cannot reach your user services (${detail || "no session bus"}). Log in as ${user} directly (ssh ${user}@host, not su), or run:  sudo loginctl enable-linger ${user}  and then:  export XDG_RUNTIME_DIR=/run/user/$(id -u)`;
+}
+
+/** One line on whether the service outlives the last logout, which on Linux takes lingering. */
+export function lingerLine(state: "on" | "enabled" | "off", user: string): string {
+  if (state === "on") return "It keeps running after you log out and starts with the machine.";
+  if (state === "enabled")
+    return "It now keeps running after you log out and starts with the machine (lingering enabled).";
+  return `It stops when you log out. On a server, keep it running:  sudo loginctl enable-linger ${user}`;
+}
+
 export function systemdUnit(spec: ServiceSpec): string {
-  const exec = [spec.node, ...NODE_FLAGS, spec.main].map(sdQuote).join(" ");
+  // ExecStart also expands $VAR in its words, which Environment= lines do not.
+  const exec = [spec.node, ...NODE_FLAGS, spec.main].map((word) => sdQuote(word).replace(/\$/g, "$$$$")).join(" ");
   const env = Object.entries(spec.env).map(([k, v]) => `Environment=${sdQuote(`${k}=${v}`)}`);
   return `${[
     "[Unit]",
     "Description=Colonia core",
+    // Without this, five quick failures (a full disk, a port taken) make systemd give up until someone logs in.
+    "StartLimitIntervalSec=0",
     "",
     "[Service]",
     `ExecStart=${exec}`,
@@ -176,7 +201,14 @@ export function windowsProcessPattern(args: string[]): string {
     .join("[ \\t]+")}$`;
 }
 
-/** Stops only the registered supervisor and its direct core children, never a PID file or the caller's paths. */
+/** In the home: `colonia service stop` writes it, and the Windows supervisor that takes it stops its core cleanly. */
+export const STOP_FILE = "service.stop";
+
+/**
+ * Stops only the registered supervisor and its direct core children, never a PID file or the caller's paths. They are
+ * first left to stop by themselves: a supervisor that took the stop file closes its core cleanly. One that does not
+ * take it (older code), and whatever is still running after the wait, is ended by force.
+ */
 export function windowsStopScript(home: string, command: string): string {
   const match = /"([^"]+)" ([^"]*) "([^"]+)" service run --home "([^"]+)""?$/.exec(command);
   if (!match || match[2] !== NODE_FLAGS.join(" ") || !serviceOwnsHome(command, "win32", home))
@@ -194,7 +226,14 @@ export function windowsStopScript(home: string, command: string): string {
     `$all = @(Get-CimInstance Win32_Process)`,
     `; $parents = @($all | Where-Object { ($_.CommandLine -ceq '${quote(command)}') -or ($_.CommandLine -imatch '${supervisor}') } | ForEach-Object { $_.ProcessId })`,
     `; $ids = @($all | Where-Object { ($parents -contains $_.ProcessId) -or (($parents -contains $_.ParentProcessId) -and $_.CommandLine -imatch '${core}') } | ForEach-Object { $_.ProcessId })`,
-    `; if ($ids.Count) { Stop-Process -Id $ids -Force -ErrorAction Stop; Wait-Process -Id $ids -Timeout 10 -ErrorAction SilentlyContinue }`,
+    `; $ask = '${quote(path.win32.join(home, STOP_FILE))}'`,
+    `; if ($ids.Count) { for ($i = 0; ($i -lt 20) -and (Test-Path -LiteralPath $ask); $i++) { Start-Sleep -Milliseconds 100 }`,
+    `; if (-not (Test-Path -LiteralPath $ask)) { Wait-Process -Id $ids -Timeout 14 -ErrorAction SilentlyContinue }`,
+    `; $left = @(Get-Process -Id $ids -ErrorAction SilentlyContinue | ForEach-Object { $_.Id })`,
+    // Killing the supervisor takes its core with it (Node ties children to itself on Windows), so the core can be gone
+    // before Stop-Process reaches it: a process that ended is not a failure; one still running afterwards is.
+    `; if ($left.Count) { Stop-Process -Id $left -Force -ErrorAction SilentlyContinue; Wait-Process -Id $ids -Timeout 10 -ErrorAction SilentlyContinue`,
+    `; if (@(Get-Process -Id $ids -ErrorAction SilentlyContinue).Count) { throw 'Colonia could not stop the service processes.' } } }`,
   ].join(" ");
 }
 

@@ -90,6 +90,14 @@ export const GOOGLE_INTEGRATIONS = [
     scopes: ["https://www.googleapis.com/auth/drive.readonly", "https://www.googleapis.com/auth/drive.file"],
     coloniaScopes: ["https://www.googleapis.com/auth/drive.file"],
   },
+  {
+    id: "youtube",
+    label: "YouTube",
+    description: "Your channel: your videos and their numbers, comments and replies.",
+    // One scope reads the channel and writes comments. Colonia's own client does not ask for it: the owner's own does.
+    scopes: ["https://www.googleapis.com/auth/youtube.force-ssl"],
+    coloniaScopes: [],
+  },
 ] as const;
 
 export type GoogleId = (typeof GOOGLE_INTEGRATIONS)[number]["id"];

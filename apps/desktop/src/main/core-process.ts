@@ -6,6 +6,8 @@ const RESTART_CODE = 75;
 const READY_MS = 30_000;
 const MAX_BACKOFF_MS = 30_000;
 const ROTATE_BYTES = 20 * 1024 * 1024;
+/** How long a core asked to stop (its stdin closed) has to close its store and agents before it is killed. */
+const CLEAN_STOP_MS = 5000;
 
 export type EmbeddedCore = { stop(): Promise<void> };
 
@@ -47,7 +49,8 @@ export function startEmbeddedCore(opts: {
       ["--disable-warning=ExperimentalWarning", path.join(root, "apps", "core", "src", "main.ts")],
       {
         cwd: root,
-        stdio: ["ignore", log, log],
+        // The core stops cleanly when this pipe closes (stopWhenParentCloses): Windows has no TERM to ask it with.
+        stdio: ["pipe", log, log],
         windowsHide: true,
         env: {
           ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("COLONIA_"))),
@@ -61,6 +64,7 @@ export function startEmbeddedCore(opts: {
           COLONIA_UPDATES: "app",
           COLONIA_SUPERVISED: "1",
           COLONIA_CODE_SHA: build.sha ?? "",
+          COLONIA_STOP_ON_STDIN: "1",
         },
       },
     );
@@ -71,6 +75,8 @@ export function startEmbeddedCore(opts: {
       retry = setTimeout(start, backoff);
       backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
     };
+    // A core that already ended breaks the pipe; that must not throw in the app.
+    child.stdin?.on("error", () => {});
     child.once("exit", finished);
     child.once("error", () => finished(null));
   };
@@ -87,12 +93,15 @@ export function startEmbeddedCore(opts: {
         };
         if (!child || child.exitCode !== null || child.signalCode !== null || !child.pid) return close();
         const current = child;
-        const force = setTimeout(() => current.kill("SIGKILL"), 5000);
+        // First ask: closing stdin lets the core close its store and stop its agents' programs.
+        const kill = setTimeout(() => current.kill(), CLEAN_STOP_MS);
+        const force = setTimeout(() => current.kill("SIGKILL"), CLEAN_STOP_MS + 5000);
         current.once("exit", () => {
+          clearTimeout(kill);
           clearTimeout(force);
           close();
         });
-        current.kill();
+        current.stdin?.end();
       });
       return stopping;
     },

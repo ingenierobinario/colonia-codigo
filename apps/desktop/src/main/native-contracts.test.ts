@@ -59,7 +59,15 @@ Reflect.deleteProperty(globalThis, boundary);
 
 const window = {} as BaseWindow;
 const initial: DesktopUpdate = { current: "2.0.0", notes: [], install: "auto" };
-function harness(options: { es?: boolean; platform?: string; enabled?: boolean; mode?: "auto" | "drag" } = {}) {
+function harness(
+  options: {
+    es?: boolean;
+    platform?: string;
+    enabled?: boolean;
+    mode?: "auto" | "drag";
+    place?: "translocated" | "disk-image" | "read-only";
+  } = {},
+) {
   messages.length = 0;
   notices.length = 0;
   response = 1;
@@ -73,6 +81,7 @@ function harness(options: { es?: boolean; platform?: string; enabled?: boolean; 
   const updater = {
     enabled: options.enabled ?? true,
     mode: options.mode ?? "auto",
+    place: options.place,
     check: async () => {
       checks++;
       return status;
@@ -175,6 +184,31 @@ test("install failures show the reason; drag updates explain manual replacement 
   await click(h.menu.item({ ...initial, latest: "2.1.0" }));
   assert.match(String(messages[1]?.message), /drag it into Applications/);
   assert.equal(h.counts().restarts, 0);
+});
+
+test("a Mac app that cannot replace itself says why and to open it from Applications, in the owner's language", async () => {
+  const copy = harness({ mode: "drag", platform: "darwin", place: "translocated" });
+  copy.result({ ok: true, ready: false });
+  await click(copy.menu.item({ ...initial, latest: "2.1.0" }));
+  assert.match(String(messages[0]?.message), /drag it into Applications/);
+  assert.match(String(messages[0]?.detail), /temporary copy.*drag it into Applications.*updates by itself/);
+
+  const image = harness({ mode: "drag", platform: "darwin", place: "disk-image", es: true });
+  image.result({ ok: true, ready: false });
+  await click(image.menu.item({ ...initial, latest: "2.1.0" }));
+  assert.match(String(messages[0]?.detail), /imagen de disco.*Aplicaciones.*se actualiza sola/);
+
+  // A downloaded installer waiting to be opened carries the same advice under its own.
+  const locked = harness({ mode: "drag", platform: "darwin", place: "read-only" });
+  locked.result({ ok: true, ready: true });
+  await click(locked.menu.item({ ...initial, latest: "2.1.0" }));
+  assert.match(String(messages[0]?.detail), /Replace this app manually[\s\S]*cannot change the folder it is in/);
+
+  // An unpacked Linux zip has no such place to move to: nothing is added.
+  const zip = harness({ mode: "drag" });
+  zip.result({ ok: true, ready: false });
+  await click(zip.menu.item({ ...initial, latest: "2.1.0" }));
+  assert.equal(messages[0]?.detail, undefined);
 });
 
 test("background releases notify once per version and notification clicks ask before restart", async () => {

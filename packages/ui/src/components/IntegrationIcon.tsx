@@ -61,6 +61,10 @@ const BRANDS: Record<IntegrationBrand, true> = {
   prisma: true,
   cloudinary: true,
   webflow: true,
+  youtube: true,
+  x: true,
+  meta: true,
+  linkedin: true,
 };
 const ALIASES: Record<string, IntegrationBrand> = {
   brave: "brave-search",
@@ -81,6 +85,9 @@ const ALIASES: Record<string, IntegrationBrand> = {
   "wolfram-alpha": "wolfram",
   wolframalpha: "wolfram",
   "circle-ci": "circleci",
+  twitter: "x",
+  facebook: "meta",
+  instagram: "meta",
 };
 
 /** The integration an id names (`GitHub`, `brave_search`, `googlecalendar` all count), or undefined. */

@@ -7,10 +7,15 @@
 //   personal key the person creates in that service. It is kept as a variable and reaches the server as secret://,
 //   never written in the config.
 import type { McpServerStatus } from "@colonia/protocol";
-import { Button, Dialog, Icons, Input, SearchField } from "@colonia/ui";
-import { useState } from "react";
+import { Button, Dialog, Icons, Input, IntegrationIcon, SearchField } from "@colonia/ui";
+import { useCallback, useEffect, useState } from "react";
+import { client } from "../data/client.ts";
 import { type McpDraft, setMcp, setSecret } from "../data/resources.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
+import { ConnectForm, type Integration } from "./IntegrationsTab.tsx";
+
+/** Colonia's own social connectors: listed with the social connectors, they connect in the same form as in Integrations. */
+const OWN_SOCIAL = ["youtube", "x", "meta", "linkedin"] as const;
 
 type Category = "work" | "docs" | "design" | "sales" | "marketing" | "social" | "web" | "data" | "dev";
 type Key = { env: string; label: [es: string, en: string]; bearer?: boolean };
@@ -1058,8 +1063,21 @@ export function ConnectorCatalog({
   const [busy, setBusy] = useState<string>();
   const [asking, setAsking] = useState<string>();
   const [values, setValues] = useState<Record<string, string>>({});
+  const [own, setOwn] = useState<Integration[]>([]);
+  const [connecting, setConnecting] = useState<Integration>();
+  const loadOwn = useCallback(async () => {
+    try {
+      const all = (await client.call("integrations.list", {})).integrations;
+      setOwn(OWN_SOCIAL.flatMap((id) => all.filter((i) => i.id === id)));
+    } catch {
+      // Without the list the cards are left out; the rest of the catalog still works.
+    }
+  }, []);
+  useEffect(() => void loadOwn(), [loadOwn]);
   const have = new Set((servers ?? []).filter((s) => s.scope === "global").map((s) => s.name));
   const q = query.trim().toLowerCase();
+  const ownDesc = (i: Integration) => t(`res.catalog.own.${i.id as (typeof OWN_SOCIAL)[number]}`);
+  const ownShown = own.filter((i) => !q || `${i.label} ${ownDesc(i)}`.toLowerCase().includes(q));
   const shown = CONNECTORS.filter((c) => !q || `${c.name} ${c.desc.join(" ")}`.toLowerCase().includes(q));
   const add = async (c: Connector) => {
     setBusy(c.id);
@@ -1087,11 +1105,32 @@ export function ConnectorCatalog({
       </div>
       {CATEGORIES.map((cat) => {
         const items = shown.filter((c) => c.category === cat);
-        if (!items.length) return null;
+        const mine = cat === "social" ? ownShown : [];
+        if (!items.length && !mine.length) return null;
         return (
           <section key={cat} className="catalog__group">
             <div className="resv__grouptitle">{t(`res.catalog.cat.${cat}`)}</div>
             <div className="catalog__grid">
+              {mine.map((i) => (
+                <div key={`own-${i.id}`} className="catalog__card">
+                  <span className="catalog__logo">
+                    <IntegrationIcon id={i.id} name={i.label} size={28} />
+                  </span>
+                  <span className="catalog__text">
+                    <span className="catalog__name">{i.label}</span>
+                    <span className="catalog__desc">{ownDesc(i)}</span>
+                  </span>
+                  {i.connected ? (
+                    <span className="catalog__on">
+                      <Icons.Check size={14} /> {t("res.catalog.added")}
+                    </span>
+                  ) : (
+                    <Button size="sm" variant="secondary" onClick={() => setConnecting(i)}>
+                      {t("res.catalog.add")}
+                    </Button>
+                  )}
+                </div>
+              ))}
               {items.map((c) => {
                 const on = have.has(c.id);
                 const open = asking === c.id && c.keys;
@@ -1157,6 +1196,17 @@ export function ConnectorCatalog({
           </section>
         );
       })}
+      {connecting && (
+        <ConnectForm
+          i={connecting}
+          title={t("int.connectTitle", { name: connecting.label })}
+          onClose={() => setConnecting(undefined)}
+          onDone={async () => {
+            setConnecting(undefined);
+            await loadOwn();
+          }}
+        />
+      )}
     </div>
   );
 }

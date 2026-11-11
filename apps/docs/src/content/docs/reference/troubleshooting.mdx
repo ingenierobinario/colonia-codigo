@@ -81,6 +81,26 @@ The desktop app writes each step of its own update (download, restart, quit, and
 Windows, `~/.config/Colonia/logs/update.log` on Linux. On macOS, a leftover `.Colonia-<version>.update` folder next to
 `Colonia.app` means a downloaded version that was never put in place; Colonia removes it the next time it starts.
 
+On macOS the app replaces itself only where your account can change it. Opened from its disk image, from the folder it
+was downloaded to (macOS then runs a temporary copy), or from a folder you cannot write, it downloads the new version
+and tells you to put it in by hand. To have it update by itself: quit Colonia, drag `Colonia.app` into
+**Applications** in the Finder and open it from there. If macOS keeps Colonia out of Downloads, the new version is saved
+in the temporary folder and opened from there.
+
+## An agent doesn't find a program, a proxy or a certificate your terminal has
+
+A core the desktop app or a service starts does not come from your terminal, so it does not have what your shell sets
+up in `~/.zshrc`, `~/.bash_profile` or `config.fish`. On macOS and Linux it asks your login shell once, when it
+starts, and gives what agents run your `PATH`, your proxy and certificate settings (`HTTPS_PROXY`, `NO_PROXY`,
+`NODE_EXTRA_CA_CERTS`, `SSL_CERT_FILE` and the like), your language and the folders of version managers (nvm,
+Volta, pyenv, asdf, mise). Keys and tokens your shell exports are not taken.
+
+- After changing those files, restart Colonia: the shell is asked once per start.
+- If the shell takes more than ten seconds or prints no environment (a profile that waits for a key, or that starts
+  another program in place of the shell), agents get the system's bare `PATH` plus the usual folders (Homebrew,
+  `~/.local/bin`). The core's log says `owner's shell environment not read` and why.
+- A core you start yourself from a terminal already has your environment and asks nobody.
+
 ## macOS asks “node” for access to Documents
 
 The core runs as `node`, the copy of Node that comes with Colonia. The first time it reads a project in a folder macOS

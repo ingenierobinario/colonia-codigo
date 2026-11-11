@@ -17,6 +17,7 @@ import {
 import { assertNavigable, CdpPage } from "@colonia/protocol/cdp";
 import { ColoniaError } from "@colonia/protocol/client";
 import { findProgram } from "../programs.ts";
+import { browserMissing } from "./browser-missing.ts";
 import { type PageCall, type PageCheck, runPageCheck } from "./page-check.ts";
 
 const MAX_TABS = 6;
@@ -237,7 +238,7 @@ export function createHeadlessBrowser(deps: {
       const { child, input, output } = deps.remote.launch();
       return connect(child, input, output);
     }
-    if (!chrome) throw new ColoniaError({ code: "unavailable", message: "no Chrome, Chromium or Edge on this machine" });
+    if (!chrome) throw new ColoniaError({ code: "unavailable", message: browserMissing() });
     const profile = path.join(deps.dir, "shared");
     fs.mkdirSync(profile, { recursive: true });
     const child = (deps.spawn ?? spawn)(

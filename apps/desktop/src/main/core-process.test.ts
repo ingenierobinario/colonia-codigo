@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { removeDir } from "../../../core/src/testkit/platform.ts";
 import { startEmbeddedCore } from "./core-process.ts";
 
 async function until(check: () => boolean): Promise<void> {
@@ -80,5 +81,29 @@ test("stopping during backoff cancels a queued restart", { timeout: 10_000 }, as
   } finally {
     await core.stop();
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("stop first closes the core's stdin, so it can end cleanly before any kill", { timeout: 10_000 }, async () => {
+  const { dir, opts } = fixture(`
+    import fs from 'node:fs';
+    import path from 'node:path';
+    const flag = process.env.COLONIA_STOP_ON_STDIN;
+    fs.writeFileSync(path.join(process.env.COLONIA_HOME, 'ready'), String(flag));
+    process.stdin.on('end', () => { fs.writeFileSync(path.join(process.env.COLONIA_HOME, 'clean'), 'yes'); process.exit(0); });
+    process.stdin.resume();
+    setInterval(() => {}, 1000);
+  `);
+  const core = startEmbeddedCore(opts);
+  try {
+    await until(() => fs.existsSync(path.join(dir, "ready")));
+    assert.equal(fs.readFileSync(path.join(dir, "ready"), "utf8"), "1");
+    const started = Date.now();
+    await core.stop();
+    assert.equal(fs.readFileSync(path.join(dir, "clean"), "utf8"), "yes");
+    assert.ok(Date.now() - started < 4000, "ended by the closed stdin, not by the kill");
+  } finally {
+    await core.stop();
+    await removeDir(dir);
   }
 });

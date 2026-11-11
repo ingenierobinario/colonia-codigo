@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import type { EngineStatus, EngineUsageReport, EngineUsageWindow } from "@colonia/protocol";
 import { z } from "zod";
 import { readClaudeUsage } from "./claude-usage.ts";
-import { which } from "./detect.ts";
+import { sdkPath, which } from "./detect.ts";
 import { commandEnv } from "./env.ts";
 
 const Window = z.object({
@@ -174,7 +174,8 @@ export function createEngineUsage(deps: {
           const claude = engine.id === "claude";
           const binary = await (claude
             ? (deps.claudeBinary ?? (() => which("claude")))
-            : (deps.binary ?? (() => which("codex"))))();
+            : // Stopped with a kill, which a shim's launcher would not pass on: the native program.
+              (deps.binary ?? (() => sdkPath("codex").catch(() => undefined))))();
           const read = claude ? (deps.readClaude ?? readClaudeUsage) : (deps.read ?? readCodexUsage);
           const windows = binary ? await read(binary) : undefined;
           return {

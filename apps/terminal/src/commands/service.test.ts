@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
+import { waitFor } from "../../../core/src/testkit/platform.ts";
 import { lastLines, logs, stopCore } from "./service.ts";
-import { NODE_FLAGS, windowsRunCommand, windowsStopScript } from "./service-files.ts";
+import { NODE_FLAGS, STOP_FILE, windowsRunCommand, windowsStopScript } from "./service-files.ts";
 import { printed } from "./testing.ts";
 
 const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-logs-"));
@@ -69,6 +70,75 @@ test("stopCore with no core running only closes the log", async () => {
   await stopCore(undefined, log);
   assert.ok(log.writableFinished);
 });
+
+test("stopCore asks a core whose stdin it holds by closing it, so the core ends by itself", async () => {
+  const file = path.join(home, "asked.log");
+  const log = fs.createWriteStream(file, { flags: "a" });
+  await once(log, "open");
+  const script = `
+    process.stdin.once("end", () => { console.log("closed cleanly"); clearInterval(busy); });
+    process.stdin.resume();
+    const busy = setInterval(() => {}, 1000);
+    console.log("up");`;
+  const child = spawn(process.execPath, ["-e", script], { stdio: ["pipe", "pipe", "pipe"] });
+  child.stdout.pipe(log, { end: false });
+  await once(child.stdout, "data");
+  await stopCore(child, log, 20_000);
+  assert.equal(child.exitCode, 0, "ended by itself, not by a kill");
+  assert.match(fs.readFileSync(file, "utf8"), /closed cleanly/);
+});
+
+// The real stop script against stand-ins with the registered command line: PowerShell exists only on Windows.
+for (const obeys of process.platform === "win32" ? [true, false] : []) {
+  test(`the Windows stop ${obeys ? "lets a supervisor that takes the stop file close its core" : "ends by force a supervisor that ignores the stop file"}`, async () => {
+    const root = fs.mkdtempSync(path.join(home, "stop "));
+    const data = path.join(root, "home");
+    const terminal = path.join(root, "apps", "terminal", "src", "main.ts");
+    const core = path.join(root, "apps", "core", "src", "main.ts");
+    for (const dir of [data, path.dirname(terminal), path.dirname(core)]) fs.mkdirSync(dir, { recursive: true });
+    const mark = (name: string) => path.join(data, name);
+    fs.writeFileSync(
+      core,
+      `import fs from "node:fs";
+      const busy = setInterval(() => {}, 1000);
+      process.stdin.once("end", () => { fs.writeFileSync(${JSON.stringify(mark("core-closed"))}, ""); clearInterval(busy); });
+      process.stdin.resume();
+      fs.writeFileSync(${JSON.stringify(mark("up"))}, String(process.pid));`,
+    );
+    fs.writeFileSync(
+      terminal,
+      `import { spawn } from "node:child_process";
+      import fs from "node:fs";
+      const child = spawn(process.execPath, [...${JSON.stringify(NODE_FLAGS)}, ${JSON.stringify(core)}], { stdio: ["pipe", "ignore", "ignore"] });
+      const ask = ${JSON.stringify(path.join(data, STOP_FILE))};
+      const watch = setInterval(() => {
+        if (!${obeys} || !fs.existsSync(ask)) return;
+        fs.rmSync(ask);
+        clearInterval(watch);
+        child.stdin.end();
+      }, 100);`,
+    );
+    const command = windowsRunCommand({ node: process.execPath, terminal, home: data, electron: false });
+    const supervisor = spawn(process.execPath, [...NODE_FLAGS, terminal, "service", "run", "--home", data], {
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    try {
+      await waitFor(() => fs.existsSync(mark("up")) && fs.readFileSync(mark("up"), "utf8"), "the core", { ms: 20_000 });
+      const corePid = Number(fs.readFileSync(mark("up"), "utf8"));
+      fs.writeFileSync(path.join(data, STOP_FILE), "");
+      execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-Command", windowsStopScript(data, command)], {
+        windowsHide: true,
+      });
+      // The script ran synchronously: the exit it caused is reported on the next turns of the loop.
+      await waitFor(() => supervisor.exitCode !== null || supervisor.signalCode !== null, "the supervisor's end");
+      assert.throws(() => process.kill(corePid, 0), "the core is gone");
+      if (obeys) assert.ok(fs.existsSync(mark("core-closed")), "the core closed by itself");
+    } finally {
+      supervisor.kill();
+    }
+  });
+}
 
 test("on Windows only an exact home supervisor and its child core may be stopped", () => {
   const home = "C:\\Colonia's data\\v2";

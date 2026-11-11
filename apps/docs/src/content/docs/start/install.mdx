@@ -43,6 +43,29 @@ xattr -dr com.apple.quarantine /Applications/Colonia.app
 ```
 </Aside>
 
+## Linux
+
+The AppImage is one file: there is nothing to install. Two things can stop it on a recent system.
+
+**It does not open and says it needs FUSE.** Ubuntu 22.04 and later no longer bring the library AppImages use to open.
+Install it once:
+
+```bash
+sudo apt install libfuse2t64 || sudo apt install libfuse2
+```
+
+On Fedora it is `sudo dnf install fuse-libs`, on Arch `sudo pacman -S fuse2` and on openSUSE
+`sudo zypper install libfuse2`. Without it you can still open Colonia: `colonia desktop` notices, opens the file unpacked
+(a few seconds slower) and tells you the command above.
+
+**It says it is running without its sandbox.** Ubuntu 24.04 and later stop apps from creating the sandbox Colonia uses
+for the pages your agents open, unless the app has a permission of its own. Colonia does not hide it: it tells you when
+it opened without the sandbox and gives you the one command that grants that permission to Colonia alone. Copy it from
+the notice, run it in a terminal and open Colonia again. Do not turn the protection off for the whole system.
+
+On GNOME there is no tray icon unless you add an extension for it, so closing the window minimises Colonia instead of
+hiding it. Global shortcuts do not work on Wayland: bind the shortcut to Colonia in your system keyboard settings.
+
 ## Install on a server
 
 Only if you want Colonia always on, even with your computer off, and you have your own server. On that machine, this
@@ -75,7 +98,8 @@ Uninstalling removes the program. **Your data stays** in `~/.colonia/v2`: delete
 
 - **macOS**: quit Colonia from its icon in the menu bar and drag **Colonia** from Applications to the bin.
 - **Windows**: Settings › Apps › Installed apps › **Colonia** › Uninstall.
-- **Linux**: quit Colonia and delete the AppImage.
+- **Linux**: quit Colonia and delete the AppImage. If you installed it with `colonia desktop`, the installer's
+  `--uninstall` removes it together with its menu entry.
 
 </TabItem>
 <TabItem label="Server">
