@@ -1,11 +1,12 @@
 import type { Agent, Thread, WritePolicy } from "@colonia/protocol";
-import { EngineIcon, IconButton, Icons, Menu, type MenuEntry, ProjectTile, Tag, Tooltip } from "@colonia/ui";
+import { EngineIcon, IconButton, Icons, Menu, type MenuEntry, Tag, Tooltip } from "@colonia/ui";
 import { Suspense } from "react";
 import { useAgentHint } from "../common/AgentFace.tsx";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { useEngineLabel } from "../common/useEngineLabel.ts";
 import { compactThread } from "../data/actions.ts";
-import { DEFAULT_PID, projectName, projectTone } from "../data/identity.ts";
+import { projectName } from "../data/identity.ts";
 import { isNewChat } from "../data/newChat.ts";
 import { useData } from "../data/state.ts";
 import { updateThread } from "../data/threadAdmin.ts";
@@ -102,7 +103,7 @@ export function ChatHeader({
           )}
         </div>
         <div className="chat__crumb">
-          <ProjectTile tone={projectTone(project?.id ?? DEFAULT_PID)} size={12} />
+          <ProjectAvatar id={project?.id} size={12} />
           <span>{projectName(projects, thread.project_id)}</span>
           {!sub && (
             <>

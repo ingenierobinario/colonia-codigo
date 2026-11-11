@@ -1,8 +1,9 @@
 import type { SharedFile } from "@colonia/protocol";
-import { Dialog, EmptyState, IconButton, Icons, MediaLoader, mediaKindOf, ProjectTile } from "@colonia/ui";
+import { Dialog, EmptyState, IconButton, Icons, MediaLoader, mediaKindOf } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { formatBytes } from "../common/format.ts";
-import { DEFAULT_PID, projectInitial, projectName, projectTone } from "../data/identity.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
+import { projectName } from "../data/identity.ts";
 import { mediaUrl } from "../data/media.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -133,11 +134,7 @@ export function SharedPreview({
         <dl className="sharedf__facts">
           <dt>{t("shared.fact.project")}</dt>
           <dd className="sharedf__project">
-            <ProjectTile
-              tone={projectTone(file.project_id ?? DEFAULT_PID)}
-              initial={projectInitial(project)}
-              size={16}
-            />
+            <ProjectAvatar id={file.project_id ?? undefined} name={project} size={16} />
             {project}
           </dd>
           <dt>{t("shared.fact.chat")}</dt>

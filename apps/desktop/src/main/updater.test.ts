@@ -78,6 +78,14 @@ test("update selection falls back to the newest compatible release and excludes 
   assert.equal(pickUpdate([release], "2.0.0", "freebsd", process.arch), undefined);
 });
 
+test("a release that says its notes per language passes them on in both; an older one in neither", () => {
+  const body = "## Español\n\n- Mejores avisos\n\n## English\n\n- Better notices\n";
+  const answer = pickUpdate([{ ...release, body }], "2.0.0", "linux", process.arch);
+  assert.deepEqual(answer?.localized, { en: ["Better notices"], es: ["Mejores avisos"] });
+  assert.deepEqual(answer?.notes, ["Better notices"], "what an app from before reads");
+  assert.equal(pickUpdate([release], "2.0.0", "linux", process.arch)?.localized, undefined);
+});
+
 test("disabled updates stay offline and cannot claim an available installer", async (t) => {
   native.app.isPackaged = false;
   const h = harness();

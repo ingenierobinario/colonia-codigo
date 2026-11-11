@@ -1,10 +1,12 @@
 import { Button, Dialog, Spinner } from "@colonia/ui";
+import { notesFor } from "../data/update-notes.ts";
 import { applyUpdate, closeUpdate, loadUpdates, restartApp, updatedByApp, useUpdates } from "../data/updates.ts";
-import { useT } from "../i18n/index.ts";
+import { useLanguage, useT } from "../i18n/index.ts";
 
 /** The update dialog (from the pill or the corner card): what changed, and "Update now". */
 export function UpdateDialog() {
   const t = useT();
+  const language = useLanguage();
   const status = useUpdates((s) => s.status);
   const app = useUpdates((s) => s.app);
   const target = useUpdates((s) => s.target);
@@ -16,7 +18,10 @@ export function UpdateDialog() {
   };
   // Started from the app menu, the app may already be downloading it, or have it ready.
   const phase = target === "app" && own === "idle" ? (app?.ready ? "ready" : app?.downloading ? "updating" : own) : own;
-  const changes = (target === "core" ? status?.changes : app?.notes) ?? [];
+  const changes =
+    target === "core"
+      ? notesFor(status?.localized, status?.changes, language)
+      : notesFor(app?.localized, app?.notes, language);
   const drag = target === "app" && app?.install === "drag";
   const byApp = updatedByApp(status, target);
   const lead =

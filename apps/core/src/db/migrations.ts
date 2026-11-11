@@ -1136,4 +1136,9 @@ export const MIGRATIONS: readonly string[] = [
     DELETE FROM message_media WHERE message_id = old.id;
   END;
   `,
+  // How the owner drew a project's tile (picture, emoji or icon, and colour), as JSON: kept by Colonia, as autonomy
+  // is, so it survives a reindex of the folder and changes with the folder away.
+  `
+  ALTER TABLE projects ADD COLUMN mark TEXT;
+  `,
 ];

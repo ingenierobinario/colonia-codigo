@@ -1,4 +1,4 @@
-import { Autonomy, type Project } from "@colonia/protocol";
+import { Autonomy, type Project, ProjectMark } from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import type { ProjectsTable } from "../db/schema.ts";
 import { now, opt, qb, type Sql } from "./sql.ts";
@@ -25,7 +25,19 @@ const toProject = (r: Selectable<ProjectsTable>): ProjectRecord => ({
   ...(r.context_chars ? { agents_md_chars: r.context_chars } : {}),
   ...autonomyOf(r.autonomy),
   ...foldersOf(r.read_only_folders),
+  ...markOf(r.mark),
 });
+
+/** A stored tile Colonia can draw; anything else, and one that sets nothing, reads as none. */
+function markOf(v: string | null): { mark?: ProjectMark } {
+  if (!v) return {};
+  try {
+    const m = ProjectMark.safeParse(JSON.parse(v));
+    return m.success && Object.keys(m.data).length ? { mark: m.data } : {};
+  } catch {
+    return {};
+  }
+}
 
 /** A stored list of folders; anything that is not a list of strings reads as none. */
 function foldersOf(v: string | null): { read_only_folders?: string[] } {
@@ -191,6 +203,15 @@ export function projectsRepo({ one, all, run }: Sql, changed: () => void) {
         qb
           .updateTable("projects")
           .set({ read_only_folders: folders.length ? JSON.stringify(folders) : null })
+          .where("id", "=", id),
+      );
+    },
+    /** Its tile as the owner drew it, already checked; undefined = its initial again. */
+    setMark(id: string, mark: ProjectMark | undefined): void {
+      write(
+        qb
+          .updateTable("projects")
+          .set({ mark: mark && Object.keys(mark).length ? JSON.stringify(mark) : null })
           .where("id", "=", id),
       );
     },

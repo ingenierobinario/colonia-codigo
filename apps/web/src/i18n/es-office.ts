@@ -128,7 +128,8 @@ export const esOffice: Partial<Record<MessageKey, string>> = {
     "Terminada; la revisa el agente que dice la fila. Si pide cambios vuelve al que la hizo; si aprueba, pasa a la tuya para cerrarla.",
   "tasks.help.group.blocked":
     "Lo que es tuyo: un agente te preguntó algo o necesita una decisión (sigue cuando respondes), o una tarea terminada que revisas tú para cerrarla. Cada fila dice cuál.",
-  "tasks.help.group.closed": "Hechas o descartadas, las más recientes primero.",
+  "tasks.help.group.closed":
+    "Todas las tareas hechas o descartadas, las más recientes primero. Si reabres una, vuelve a pendientes con su conversación y su historial.",
   "tasks.historyEmpty": "Todavía no pasó nada con esta tarea.",
   "tasks.ev.create": "{name} creó la tarea",
   "tasks.ev.move": "{name} la movió de {from} a {to}",
@@ -427,7 +428,12 @@ export const esOffice: Partial<Record<MessageKey, string>> = {
   "tasks.acceptAll": "Aceptar todas",
   "tasks.row.proposedBy": "Propone {name}",
   "tasks.row.proposed": "Propuesta",
-  "tasks.group.closed": "Cerradas hace poco",
+  "tasks.group.closed": "Cerradas",
+  "tasks.closed.search": "Buscar tareas cerradas",
+  "tasks.closed.found.one": "1 resultado",
+  "tasks.closed.found.other": "{n} resultados",
+  "tasks.closed.noMatch": "Ninguna tarea cerrada coincide con esa búsqueda.",
+  "tasks.closed.empty": "Todavía no hay nada cerrado. Las tareas que termines o descartes se guardan aquí.",
   "tasks.blockedTip": "Espera tu respuesta",
   "tasks.row.reviewer": "Revisa: {name}",
   "tasks.row.asks": "Te pregunta algo",

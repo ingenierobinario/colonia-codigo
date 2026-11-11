@@ -1,11 +1,12 @@
 import "../styles/resources.css";
 import "../styles/shared-files.css";
 import type { SharedFile, SharedKind, SharedOrder } from "@colonia/protocol";
-import { Button, EmptyState, Icons, ProjectTile, SearchField, SegmentedControl, Select } from "@colonia/ui";
+import { Button, EmptyState, Icons, SearchField, SegmentedControl, Select } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMediaUrl } from "../chat/parts/useMediaUrl.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { client } from "../data/client.ts";
-import { DEFAULT_PID, projectEntries, projectInitial, projectName, projectTone } from "../data/identity.ts";
+import { DEFAULT_PID, projectEntries, projectName } from "../data/identity.ts";
 import { posterUrl } from "../data/media.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
@@ -89,11 +90,7 @@ function Card({ file, onOpen }: { file: SharedFile; onOpen: () => void }) {
         </span>
         <span className="sharedf__meta" title={`${project} · ${file.thread_title}`}>
           <span className="sharedf__project">
-            <ProjectTile
-              tone={projectTone(file.project_id ?? DEFAULT_PID)}
-              initial={projectInitial(project)}
-              size={14}
-            />
+            <ProjectAvatar id={file.project_id ?? undefined} name={project} size={14} />
             {project}
           </span>
           <span className="sharedf__chat">{file.thread_title}</span>
@@ -218,7 +215,7 @@ export function FilesScreen() {
                 ...projectEntries(projects).map((p) => ({
                   value: p.id,
                   label: p.name,
-                  icon: <ProjectTile tone={projectTone(p.id)} initial={projectInitial(p.name)} size={16} />,
+                  icon: <ProjectAvatar id={p.id} name={p.name} size={16} />,
                 })),
               ]}
             />

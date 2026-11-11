@@ -186,7 +186,8 @@ test("background releases notify once per version and notification clicks ask be
   assert.equal(h.counts().installs, 1);
   assert.equal(notices.length, 1);
   assert.equal(notices[0]?.shown, true);
-  assert.equal(notices[0]?.options.body, "Colonia 2.1.0 is ready. Restart Colonia to use it.");
+  assert.equal(notices[0]?.options.title, "Colonia 2.1.0 is ready");
+  assert.equal(notices[0]?.options.body, "Restart Colonia to use it.");
   response = 0;
   notices[0]?.listener?.();
   await new Promise<void>((resolve) => setImmediate(resolve));
@@ -208,9 +209,11 @@ test("background failures and unsupported notifications stay silent; drag mode n
   await new Promise<void>((resolve) => setImmediate(resolve));
   assert.equal(notices.length, 0);
   const drag = harness({ mode: "drag", es: true });
-  drag.menu.found({ ...initial, latest: "2.1.0" });
+  const localized = { en: ["Better notices."], es: ["Mejores avisos."] };
+  drag.menu.found({ ...initial, latest: "2.1.0", notes: localized.en, localized });
   assert.equal(drag.counts().installs, 0);
-  assert.equal(notices[0]?.options.body, "Salió Colonia 2.1.0. Abre Colonia para actualizar.");
+  assert.equal(notices[0]?.options.title, "Salió Colonia 2.1.0");
+  assert.equal(notices[0]?.options.body, "Mejores avisos. Abre Colonia para actualizar.", "what it brings, in Spanish");
   assert.equal(notices[0]?.listener, undefined);
 });
 

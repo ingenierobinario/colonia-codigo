@@ -9,7 +9,11 @@ export const RELEASE_FEED = "ingenierobinario/colonia";
 export const RELEASE_CHECK_EVERY_MS = 6 * 3600_000;
 
 export type ReleaseAsset = { name: string; url: string };
-export type Release = { version: string; notes: string[]; assets: ReleaseAsset[] };
+/** The languages a release says its notes in. */
+export type NotesLanguage = "en" | "es";
+/** What a release brings, said once per language (the body's "## Español" and "## English" sections). */
+export type LocalizedNotes = { en?: string[] | undefined; es?: string[] | undefined };
+export type Release = { version: string; notes: string[]; localized?: LocalizedNotes; assets: ReleaseAsset[] };
 
 /** The operating system and processor as release file names spell them (electron-builder's ${os}, Node's arch). */
 export type Platform = { os: "linux" | "mac" | "win"; arch: "x64" | "arm64" };
@@ -68,22 +72,53 @@ type GithubRelease = {
   assets?: Array<{ name?: unknown; browser_download_url?: unknown }>;
 };
 
-/** What the release body says, as short lines (its bullets, without the markdown). */
-function notesOf(body: unknown, max = 8): string[] {
-  if (typeof body !== "string") return [];
-  return body
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => /^[-*] /.test(l))
-    .map((l) =>
-      l
-        .slice(2)
-        .replace(/ by @\S+ in \S+$/, "")
-        .replace(/\*\*|`/g, "")
-        .trim(),
-    )
-    .filter(Boolean)
-    .slice(0, max);
+const HEADING = /^#{1,6}\s+(.+?)\s*#*$/;
+const LANGUAGE_HEADINGS: Array<[NotesLanguage, RegExp]> = [
+  ["en", /^(english|en)$/i],
+  ["es", /^(espa[nñ]ol|spanish|castellano|es)$/i],
+];
+
+const cleanBullet = (line: string) =>
+  line
+    .slice(2)
+    .replace(/ by @\S+ in \S+$/, "")
+    .replace(/\*\*|`/g, "")
+    .trim();
+
+/**
+ * What the release body says, as short lines (its bullets, without the markdown). Bullets under a language heading
+ * belong to that language; any other heading, or none, leaves them untagged (how releases up to 2.26.0 were written).
+ */
+function notesOf(body: unknown, max = 8): { notes: string[]; localized?: LocalizedNotes } {
+  if (typeof body !== "string") return { notes: [] };
+  const plain: string[] = [];
+  const localized: LocalizedNotes = {};
+  let language: NotesLanguage | undefined;
+  for (const raw of body.split("\n")) {
+    const line = raw.trim();
+    const heading = HEADING.exec(line)?.[1];
+    if (heading !== undefined) {
+      language = LANGUAGE_HEADINGS.find(([, re]) => re.test(heading))?.[0];
+      continue;
+    }
+    if (!/^[-*] /.test(line)) continue;
+    const text = cleanBullet(line);
+    if (!text) continue;
+    if (language) localized[language] ??= [];
+    const into = language ? (localized[language] ?? plain) : plain;
+    if (into.length < max) into.push(text);
+  }
+  if (!localized.en && !localized.es) return { notes: plain };
+  // Callers that know no languages (apps up to 2.26.0 read every bullet) still get one list.
+  return { notes: plain.length ? plain : (localized.en ?? localized.es ?? []), localized };
+}
+
+/** The inverse of the parser: the body a release is published with, Spanish first, one section per language. */
+export function releaseBody(localized: LocalizedNotes): string {
+  const section = (title: string, lines: string[] | undefined) =>
+    lines?.length ? [`## ${title}\n\n${lines.map((l) => `- ${l}`).join("\n")}`] : [];
+  const parts = [...section("Español", localized.es), ...section("English", localized.en)];
+  return parts.length ? `${parts.join("\n\n")}\n` : "";
 }
 
 /**
@@ -101,14 +136,25 @@ export function newerReleases(list: unknown, current: string): Release[] {
         ? [{ name: a.name, url: a.browser_download_url }]
         : [],
     );
-    out.push({ version: r.tag_name.slice(1), notes: notesOf(r.body), assets });
+    out.push({ version: r.tag_name.slice(1), ...notesOf(r.body), assets });
   }
   return out.sort((a, b) => compareVersions(b.version, a.version));
 }
 
-/** What the newer releases change, newest first, as a few lines (a release without bullets says its name). */
-export const releaseChanges = (newer: Release[], max = 8): string[] =>
-  newer.flatMap((r) => (r.notes.length ? r.notes : [`Colonia ${r.version}`])).slice(0, max);
+/**
+ * What the newer releases change, newest first, as a few lines (a release without bullets says its name). With a
+ * language, each release answers in it when it can, and with its plain notes when it cannot.
+ */
+export const releaseChanges = (newer: Release[], max = 8, language?: NotesLanguage): string[] =>
+  newer
+    .flatMap((r) => (language && r.localized?.[language]) ?? (r.notes.length ? r.notes : [`Colonia ${r.version}`]))
+    .slice(0, max);
+
+/** The same lines once per language, for a screen to pick from; nothing when no release says them by language. */
+export function localizedChanges(newer: Release[], max = 8): { en: string[]; es: string[] } | undefined {
+  if (!newer.some((r) => r.localized)) return undefined;
+  return { en: releaseChanges(newer, max, "en"), es: releaseChanges(newer, max, "es") };
+}
 
 /** Asks GitHub for the feed's recent releases (no token: 60 requests an hour per address is plenty). */
 export async function fetchReleases(feed: string, fetchImpl: typeof fetch = fetch): Promise<unknown> {

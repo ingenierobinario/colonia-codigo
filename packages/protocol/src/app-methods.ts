@@ -47,6 +47,7 @@ import {
   PersonRole,
   Project,
   ProjectKind,
+  ProjectMark,
   ProviderInfo,
   ProviderTransport,
   RoomMode,
@@ -229,6 +230,8 @@ export const appMethods = {
       behind: z.number().int(),
       latest: z.string().optional(),
       changes: z.array(z.string()),
+      /** The same lines once per language, when the releases say them so; the screen picks the person's. */
+      localized: z.object({ en: z.array(z.string()).optional(), es: z.array(z.string()).optional() }).optional(),
       checked_at: z.string().optional(),
       error: z.string().optional(),
     }),
@@ -514,6 +517,8 @@ export const appMethods = {
         kind: ProjectKind.nullable().optional(),
         /** How far agents without one of their own go here; null = auto. */
         autonomy: Autonomy.nullable().optional(),
+        /** Its tile: a picture, an emoji or an icon, and a colour; null = the initial again. */
+        mark: ProjectMark.nullable().optional(),
       })
       .strict(),
     result: z.object({ base: BaseProject }),
@@ -580,6 +585,11 @@ export const appMethods = {
         autonomy: Autonomy.nullable().optional(),
         /** Replaces the folders its agents may only read: absolute (or "~/…"), existing, outside Colonia's home. */
         read_only_folders: z.array(z.string().trim().min(1).max(1024)).max(20).optional(),
+        /**
+         * Its tile: a picture (a small square image uploaded with media.upload), an emoji or an icon, and a colour;
+         * null = the initial again. Kept by Colonia, so it changes with the folder away too.
+         */
+        mark: ProjectMark.nullable().optional(),
       })
       .strict(),
     result: z.object({ project: Project }),

@@ -92,6 +92,23 @@ announcement, the replies to the issues a release fixes, and, inside Colonia, th
 first start of the new version ([D-100](DECISIONS.md#d-100)). So a commit subject is release text: write it for the
 people who use Colonia. Only `feat`, `fix` and `perf` commits are shown.
 
+What a version brings is also written by hand, for the notices of an update: one to four short sentences (110
+characters at most), the same number in English and in Spanish, under its version in
+`apps/core/src/release-highlights.ts`. That file is the single source. `scripts/release-body.ts` turns an entry into
+the body the release is published with (`## Español` and its bullets, then `## English` and its bullets), and every
+installed Colonia reads that body back and shows the person's language: the update dialog and its card, the desktop
+notification (the first line) and the "what's new" chat, which uses these lines instead of the commit sentences when
+the version has them. An app from before 2.27.0 lists every bullet of the body, both languages, at most eight: hence
+four lines per language. A release without an entry falls back to the tag's message, as before, and its notices show
+those lines as written. Write the entry in the commit that closes the version, and check it before tagging:
+
+```bash
+node scripts/release-body.ts v2.27.0 --check       # exits 1 when the entry is missing or does not fit
+node scripts/release-body.ts v2.27.0               # prints the body
+```
+
+`release-highlights.test.ts` fails when the version a checkout is at (its last tag) has no entry.
+
 Release news are the other half: what a release lets an owner's super-agent do for them, told once, in its own words,
 with a button or two to start ([D-117](DECISIONS.md#d-117)). They are written by hand in
 `apps/core/src/news/entries.ts`, one entry per thing worth acting on, by whoever ships that thing (AGENTS.md rule 25):

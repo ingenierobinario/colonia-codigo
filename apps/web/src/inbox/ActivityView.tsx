@@ -1,9 +1,10 @@
 import type { Agent } from "@colonia/protocol";
-import { ContextMenu, Icons, ProjectTile, Spinner } from "@colonia/ui";
+import { ContextMenu, Icons, Spinner } from "@colonia/ui";
 import { Suspense } from "react";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
-import { DEFAULT_PID, isWorking, projectName, projectTone } from "../data/identity.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
+import { isWorking, projectName } from "../data/identity.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { TaskBundle } from "../lazy.ts";
@@ -74,7 +75,7 @@ export function ActivityView({ groups, selected }: { groups: ActivityGroup[]; se
                         <ChatProcesses thread={th.id} />
                       </span>
                       <span className="activity__meta">
-                        <ProjectTile tone={projectTone(th.project_id ?? DEFAULT_PID)} size={10} />
+                        <ProjectAvatar id={th.project_id} size={10} />
                         {projectName(projects, th.project_id)} · <Where thread={th} agent={agent} />
                         <CodeMark thread={th} />
                       </span>

@@ -4,7 +4,14 @@
 // code; without one the owner is told to restart.
 import fs from "node:fs";
 import path from "node:path";
-import { type Platform, platformOf, type Release, releaseChanges } from "@colonia/protocol";
+import {
+  type LocalizedNotes,
+  localizedChanges,
+  type Platform,
+  platformOf,
+  type Release,
+  releaseChanges,
+} from "@colonia/protocol";
 import {
   checkReleases,
   commandRunner,
@@ -28,6 +35,8 @@ export type UpdateStatus = {
   latest?: string | undefined;
   /** What they change, newest first (their commit subjects). */
   changes: string[];
+  /** The same lines once per language, when the releases say them so (a checkout's commits never do). */
+  localized?: LocalizedNotes | undefined;
   checked_at?: string | undefined;
   error?: string | undefined;
 };
@@ -157,6 +166,7 @@ export function createUpdates(opts: {
       behind: newer.length,
       latest: newer[0]?.version,
       changes: releaseChanges(newer),
+      localized: localizedChanges(newer),
       checked_at: now(),
     };
     return status;

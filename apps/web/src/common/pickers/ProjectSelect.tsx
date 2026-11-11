@@ -1,7 +1,7 @@
-import { ProjectTile } from "@colonia/ui";
-import { DEFAULT_PID, projectEntries, projectInitial, projectTone } from "../../data/identity.ts";
+import { DEFAULT_PID, projectEntries } from "../../data/identity.ts";
 import { useData } from "../../data/state.ts";
 import { useT } from "../../i18n/index.ts";
+import { ProjectAvatar } from "../ProjectAvatar.tsx";
 import { SearchSelect } from "./SearchSelect.tsx";
 
 /** Where something belongs: the base space (no project) or one of the projects, with its tile. */
@@ -32,7 +32,7 @@ export function ProjectSelect({
       options={projectEntries(projects).map((p) => ({
         value: p.id,
         label: p.name,
-        icon: <ProjectTile tone={projectTone(p.id)} initial={projectInitial(p.name)} size={16} />,
+        icon: <ProjectAvatar id={p.id} name={p.name} size={16} />,
       }))}
       onValueChange={(v) => onChange(v && v !== DEFAULT_PID ? v : undefined)}
     />

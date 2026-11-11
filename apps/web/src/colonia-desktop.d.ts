@@ -14,6 +14,8 @@ export type DesktopUpdate = {
   current: string;
   latest?: string;
   notes: string[];
+  /** The same lines once per language, when the releases say them so. */
+  localized?: { en?: string[]; es?: string[] };
   /** auto: it downloads and goes in at the next restart; drag: macOS opens the disk image for the owner. */
   install: "auto" | "drag" | "none";
   /** Downloading the newer app now. */

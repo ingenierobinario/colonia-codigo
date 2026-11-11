@@ -14,6 +14,8 @@ import { promisify } from "node:util";
 import {
   desktopAssetFor,
   fetchReleases,
+  type LocalizedNotes,
+  localizedChanges,
   newerReleases,
   parseSha256,
   platformOf,
@@ -33,6 +35,8 @@ export type DesktopUpdate = {
   /** A newer Colonia with a build for this computer. */
   latest?: string | undefined;
   notes: string[];
+  /** The same lines once per language, when the releases say them so. */
+  localized?: LocalizedNotes | undefined;
   /** How it goes in: by itself at the next restart (auto), or the owner drags it in (macOS disk image). */
   install: "auto" | "drag" | "none";
   /** Downloading the newer Colonia now. */
@@ -58,13 +62,14 @@ export function pickUpdate(
   current: string,
   platform: string,
   arch: string,
-): { release: Release; asset: ReleaseAsset; notes: string[] } | undefined {
+): { release: Release; asset: ReleaseAsset; notes: string[]; localized?: LocalizedNotes | undefined } | undefined {
   const p = platformOf(platform, arch);
   if (!p) return undefined;
   const newer = newerReleases(list, current);
   for (const [i, release] of newer.entries()) {
     const asset = desktopAssetFor(release.assets, release.version, p);
-    if (asset) return { release, asset, notes: releaseChanges(newer.slice(i)) };
+    if (asset)
+      return { release, asset, notes: releaseChanges(newer.slice(i)), localized: localizedChanges(newer.slice(i)) };
   }
   return undefined;
 }
@@ -149,6 +154,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
         current: app.getVersion(),
         latest: found?.release.version,
         notes: found?.notes ?? [],
+        localized: found?.localized,
         install: found ? mode : "none",
         checked_at: new Date().toISOString(),
       };
@@ -199,7 +205,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
       const platform = platformOf(process.platform, process.arch);
       const asset = release && platform ? desktopAssetFor(release.assets, target, platform) : undefined;
       if (!release || !asset) return { ok: false, error: "The selected release has no installer for this computer." };
-      found = { release, asset, notes: release.notes };
+      found = { release, asset, notes: release.notes, localized: release.localized };
     }
     if (!found) await check();
     if (!found) return { ok: false, error: status.error ?? "No newer Colonia for this computer." };

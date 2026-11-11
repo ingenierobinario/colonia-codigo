@@ -199,6 +199,11 @@ export function taskHandlers(
         columns: columnsOf(store),
       };
     },
+    "tasks.closed": ({ project, unfiled, kind, query, offset, limit }, ctx) => {
+      const scope = agentScope(ctx);
+      const projects = scope ? [scope.project, undefined] : unfiled ? [undefined] : project ? [project] : undefined;
+      return store.tasks.closed({ projects, kind, query, offset, limit });
+    },
     "tasks.get": ({ task }, ctx) => {
       const scope = agentScope(ctx);
       const found = store.tasks.get(task);
@@ -399,8 +404,12 @@ export function taskHandlers(
         reviewRequested(store, engine.admit, changed);
       return changed;
     },
-    "tasks.close": ({ task, state, note, rework }, ctx) => {
+    "tasks.close": ({ task, state, note, rework, status }, ctx) => {
       const cur = visible(task, ctx);
+      if (status !== undefined) {
+        if (state !== "open" || rework) throw badRequest("status goes only with state:open, without rework");
+        checkColumn(store, status);
+      }
       if (rework) {
         if (state !== "open") throw badRequest("rework requires state:open");
         refuseHandOn(ctx);
@@ -409,7 +418,8 @@ export function taskHandlers(
       }
       const t = store.tasks.change(
         task,
-        { state, ...(state !== "open" ? { awaits_owner: false } : {}) },
+        // Reopening into a column is one change, so the history shows a single "reopen".
+        { state, ...(state !== "open" ? { awaits_owner: false } : {}), ...(status !== undefined ? { status } : {}) },
         by(ctx),
         note,
       ) as Task;

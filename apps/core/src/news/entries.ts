@@ -1064,7 +1064,34 @@ export const NEWS: readonly NewsEntry[] = [
     actions: [
       {
         label: { en: "When does it apply?", es: "¿Cuándo se aplica?" },
-        prompt: "Tell me in two lines when Colonia keeps my Mac awake now and how I turn that off if I prefer it to sleep.",
+        prompt:
+          "Tell me in two lines when Colonia keeps my Mac awake now and how I turn that off if I prefer it to sleep.",
+      },
+    ],
+  },
+  {
+    id: "project-tiles",
+    since: "2.27.0",
+    title: { en: "Each project can have its own picture", es: "Cada proyecto puede llevar su propia imagen" },
+    about: {
+      en:
+        "Click a project's tile to upload a picture or pick an emoji or an icon with a colour. Closed tasks can now " +
+        "be searched and reopened.",
+      es:
+        "Pulsa la ficha de un proyecto para subir una foto o elegir un emoji o un icono con su color. Las tareas " +
+        "cerradas ahora se pueden buscar y reabrir.",
+    },
+    applies: () => true,
+    text:
+      "A project's tile can be a picture the owner uploads and crops in the panel, an emoji or an icon with a " +
+      "colour, instead of its initial; it shows wherever the project appears. An agent may set the emoji and the " +
+      "colour through the settings tool, never the picture. In Tasks, the Closed group lists every closed or " +
+      "dropped task with a search, and Reopen returns one to Pending with its conversation intact. A project's " +
+      "overview shows its open tasks.",
+    actions: [
+      {
+        label: { en: "Give my projects an emoji", es: "Pon un emoji a mis proyectos" },
+        prompt: "Pick a fitting emoji and a colour for each of my projects and set them as their tiles.",
       },
     ],
   },

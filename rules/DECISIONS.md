@@ -3457,3 +3457,22 @@ relevo hecho") and, for an agent on Claude (D-185), drops the Claude session so 
 the summary, the notebook and the last turns instead of carrying the whole transcript. `search_earlier` reads the
 whole model log for a detail the summary left out. Not done: a handoff in the middle of one long turn; the nudge
 comes at the start of the next turn.
+
+<a id="d-187"></a>
+## D-187 — 2026-11-11 — A project's own picture, closed tasks that can be recovered, and update notices that say what a version brings
+Three changes an owner asked for, in one version. **A project's tile** is drawn by one shared `ProjectAvatar` in
+the panel; its letter, emoji, icon or cropped picture is chosen in a lazily loaded editor reached from the project
+header and from the project's settings. Icons are a closed list of 40 ids in the protocol (`PROJECT_ICONS`), with
+their glyphs in a separate `@colonia/ui/project-glyphs` entry the first screen may not import. Pictures are cropped
+in the browser to a 256 px square under 512 KB before upload; an agent may set an emoji and a colour, never the
+picture. The mobile app keeps drawing the initial for now. **Closed tasks** are no longer a "recent" slice of the
+task store: the folded Closed group reads every done or dropped task from a paged, searchable `tasks.closed` method
+only when unfolded. Reopen returns a task to the pending column through an optional `status` on `tasks.close`, with
+the same thread and history and a single reopen event. A project's overview shows a quiet tasks strip (counts, at
+most three titles, a link to the Tasks tab) and nothing when no task is open. Not done: turning a chat into a task
+with one click, which needs an origin thread on `tasks.create`. **What a version brings** is written by hand, one to
+four short sentences per language, in `apps/core/src/release-highlights.ts`; `scripts/release-body.ts` turns it into
+the release body (`## Español` / `## English` bullets) and the panel dialog, the corner card, the desktop
+notification and the "what's new" chat show the person's language. `system.updates` keeps `changes` and adds
+`localized`; apps up to 2.26.0 list every bullet, hence four per language. A release without an entry falls back to
+the tag message. The terminal's `colonia upgrade --check` stays English.

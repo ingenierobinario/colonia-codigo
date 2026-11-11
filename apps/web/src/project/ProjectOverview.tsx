@@ -8,6 +8,7 @@ import { standsAlone } from "../inbox/groupThreads.ts";
 import { go } from "../shell/nav.ts";
 import { ProjectBoard } from "./ProjectBoard.tsx";
 import { ProjectHelper } from "./ProjectHelper.tsx";
+import { ProjectTasksStrip } from "./ProjectTasksStrip.tsx";
 
 /** Overview: what runs now, the team, counts and the latest chats. All real data; nothing sampled. */
 export function ProjectOverview({ project }: { project: ProjectEntry }) {
@@ -102,6 +103,8 @@ export function ProjectOverview({ project }: { project: ProjectEntry }) {
             <Stat value={unread} label={t("overview.unread")} onClick={() => go.projectTab("chats")} />
             <Stat value={team.length} label={t("overview.agents")} onClick={() => go.projectTab("team")} />
           </div>
+
+          <ProjectTasksStrip projectId={pid} />
 
           {apps.length > 0 && (
             <section className="overview__block">

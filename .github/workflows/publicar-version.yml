@@ -1,8 +1,10 @@
 # ACTUALIZACIONES-1: publica una versión que las Colonias instaladas descargan solas (D-044, D-058).
 # Se dispara al empujar una etiqueta v2.X.Y. Compila los instaladores de cada plataforma y los sube como versión
 # al repositorio PÚBLICO ingenierobinario/colonia (RELEASE_FEED), que solo guarda instaladores, nunca código.
-# Las notas de la versión salen del mensaje de la etiqueta: cada línea «- …» se ve en la app como una novedad.
-#   git tag -a v2.13.0 -m "- Puedes conectar más de un número de WhatsApp" && git push origin v2.13.0
+# Las notas de la versión (qué trae, en español y en inglés) se escriben en apps/core/src/release-highlights.ts;
+# scripts/release-body.ts las convierte en el cuerpo de la versión y cada app instalada las enseña en el idioma de la
+# persona. Antes de etiquetar: node scripts/release-body.ts v2.27.0 --check
+# Si la versión no tiene notas ahí, se usa el mensaje de la etiqueta como antes: cada línea «- …» es una novedad.
 name: Publicar versión
 
 on:
@@ -75,13 +77,24 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      - uses: actions/setup-node@v4
+        continue-on-error: true
+        with:
+          node-version: "24.11"
+      - name: Notas de la versión
+        run: |
+          # Lo que trae la versión, en los dos idiomas. Sin notas escritas (o sin Node), el mensaje de la etiqueta.
+          node scripts/release-body.ts "$TAG" > notas.md || true
+          if ! grep -qE '^[-*] ' notas.md; then
+            git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
+            git tag -l --format='%(contents)' "$TAG" > notas.md || true
+          fi
+          [ -s notas.md ] || echo "- Colonia ${TAG#v}" > notas.md
+          cat notas.md
       - name: Publicar en el repositorio público
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
-          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
-          git tag -l --format='%(contents)' "$TAG" > notas.md || true
-          [ -s notas.md ] || echo "- Colonia ${TAG#v}" > notas.md
           ls -la dist
           if gh release view "$TAG" -R "$FEED" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* -R "$FEED" --clobber

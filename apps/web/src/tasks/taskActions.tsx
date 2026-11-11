@@ -6,7 +6,7 @@ import { taskStateActions } from "../common/taskStateActions.tsx";
 import { blobOf } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";
 import { archiveTaskChats } from "../data/taskChats.ts";
-import { closeTask, updateTask } from "../data/tasks.ts";
+import { closeTask, reopenTask, updateTask } from "../data/tasks.ts";
 import type { T } from "../i18n/index.ts";
 import { PRIORITIES, PRIORITY_KEY, PriorityDot } from "./TaskFields.tsx";
 import { type GroupId, moveTo } from "./taskGroups.ts";
@@ -18,8 +18,12 @@ export async function dropOn(task: Task, group: GroupId, columns: readonly TaskC
     if (task.state === "open") await closeTask(task.id, "done");
     return;
   }
-  // A closed task dropped on an open group opens again first.
-  if (task.state !== "open") await closeTask(task.id, "open");
+  // A closed task dropped on an open group opens again straight in that group's column.
+  if (task.state !== "open") {
+    await reopenTask(task.id, columns, "status" in move ? move.status : undefined);
+    if (!("status" in move)) await updateTask(task.id, move);
+    return;
+  }
   if ("status" in move) {
     if (move.status !== task.status || task.awaits_owner) await updateTask(task.id, move);
   } else if (!task.awaits_owner) await updateTask(task.id, move);

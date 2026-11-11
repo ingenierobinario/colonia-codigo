@@ -202,6 +202,7 @@
                       "**/PairScreen.tsx",
                       "**/PhoneDialog.tsx",
                       "**/ProcessesPanel.tsx",
+                      "**/ProjectMarkEditor.tsx",
                       "**/ProjectScreen.tsx",
                       "**/ProjectSettings.tsx",
                       "**/QrSvg.tsx",
@@ -238,7 +239,8 @@
                       "**/WidgetChat.tsx",
                       "**/WidgetPanel.tsx",
                       "**/Wizard.tsx",
-                      "**/osNotices.ts"
+                      "**/osNotices.ts",
+                      "@colonia/ui/project-glyphs"
                     ],
                     "message": "Loaded late: import it from apps/web/src/lazy.ts, never statically from the first screen (AGENTS.md rule 27)."
                   }

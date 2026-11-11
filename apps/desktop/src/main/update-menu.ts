@@ -1,6 +1,7 @@
 // The update as the app menu says it ("Check for updates…", "Update to Colonia 2.3.0…", "Restart to update to Colonia 2.3.0")
 // and the native questions it asks when the owner started it there: restart now or later.
 import { type BaseWindow, dialog, type MenuItemConstructorOptions, Notification } from "electron";
+import { updateNotice } from "./update-notes.ts";
 import type { DesktopUpdate, RestartAnswer } from "./updater.ts";
 
 type Updater = Omit<ReturnType<typeof import("./updater.ts").createDesktopUpdater>, "restart"> & {
@@ -39,9 +40,6 @@ const words = (es: boolean, platform: string) => ({
     es
       ? `Se abrió Colonia ${v}: arrástralo a Aplicaciones, reemplazando este, y ábrelo de nuevo.`
       : `Colonia ${v} opened: drag it into Applications, replacing this one, and open it again.`,
-  readyNote: (v: string) =>
-    es ? `Colonia ${v} está listo. Reinicia Colonia para usarlo.` : `Colonia ${v} is ready. Restart Colonia to use it.`,
-  outNote: (v: string) => (es ? `Salió Colonia ${v}. Abre Colonia para actualizar.` : `Colonia ${v} is out. Open Colonia to update.`),
   ok: es ? "Aceptar" : "OK",
 });
 
@@ -110,15 +108,16 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
       const latest = s.latest;
       if (!latest || told === latest) return;
       told = latest;
-      const notify = (body: string, click?: () => void) => {
+      const notify = (kind: "out" | "ready", click?: () => void) => {
         if (!Notification.isSupported()) return;
-        const n = new Notification({ title: "Colonia", body });
+        // The version in the title, then the first thing it brings: what there is room for in a notification.
+        const n = new Notification(updateNotice(kind, latest, opts.es, s));
         if (click) n.on("click", click);
         n.show();
       };
-      if (updater.mode !== "auto" || updater.automatic?.() === false) return notify(t.outNote(latest));
+      if (updater.mode !== "auto" || updater.automatic?.() === false) return notify("out");
       void updater.install().then((r) => {
-        if (r.ok && r.ready) notify(t.readyNote(latest), () => void askRestart(latest));
+        if (r.ok && r.ready) notify("ready", () => void askRestart(latest));
       });
     },
   };

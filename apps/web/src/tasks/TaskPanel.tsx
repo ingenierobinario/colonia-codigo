@@ -26,7 +26,7 @@ import { baseName, blobOf } from "../data/identity.ts";
 import { useOwnerName } from "../data/owner.ts";
 import { useData } from "../data/state.ts";
 import { type TaskDetail, taskDetail } from "../data/task-detail.ts";
-import { acceptTasks, closeTask, settleTask, updateTask, useTasks } from "../data/tasks.ts";
+import { acceptTasks, closeTask, reopenTask, settleTask, updateTask, useTasks } from "../data/tasks.ts";
 import { useT } from "../i18n/index.ts";
 import { formatCompact } from "./compact.ts";
 import { historyLines } from "./history.ts";
@@ -226,7 +226,7 @@ function TaskActivity({ task, detail }: { task: Task; detail: TaskDetail | undef
   );
 }
 
-/** Its column (how it ended, once closed: it keeps its column to go back to on reopen), and done / drop (or reopen). */
+/** Its column (how it ended, once closed), and done / drop (or reopen, which puts it back in pending). */
 function StateBar({ task }: { task: Task }) {
   const t = useT();
   const columns = useTasks((s) => s.columns);
@@ -274,7 +274,7 @@ function StateBar({ task }: { task: Task }) {
           <DropButton task={task} />
         </>
       ) : (
-        <Button size="sm" variant="secondary" onClick={() => void closeTask(task.id, "open")}>
+        <Button size="sm" variant="secondary" onClick={() => void reopenTask(task.id)}>
           {t("tasks.reopen")}
         </Button>
       )}
@@ -305,7 +305,7 @@ function CommitmentActions({ task }: { task: Task }) {
         {task.outcome && (
           <Badge tone={task.outcome === "kept" ? "brand" : "neutral"}>{t(`tasks.outcome.${task.outcome}`)}</Badge>
         )}
-        <Button size="sm" variant="secondary" onClick={() => void closeTask(task.id, "open")}>
+        <Button size="sm" variant="secondary" onClick={() => void reopenTask(task.id)}>
           {t("tasks.reopen")}
         </Button>
       </>

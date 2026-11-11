@@ -48,6 +48,71 @@ export const AUTONOMY_RULES: Record<Autonomy, Required<AgentRules>> = {
   total: { read: "auto", write: "auto", outside: "auto", irreversible: "auto" },
 };
 
+/** The colours a project's tile takes: the design system's tile tones. */
+export const ProjectTone = z.enum(["brand", "violet", "info", "warning", "danger", "ink", "neutral"]);
+export type ProjectTone = z.infer<typeof ProjectTone>;
+/** A project's picture is a small square the panel already cropped: a full photo never rides in every list. */
+export const PROJECT_IMAGE_BYTES = 512 * 1024;
+/**
+ * How the owner drew a project's tile: a picture, an emoji or an icon (one of the three at most) and a colour.
+ * Nothing set = its initial on a colour of its own. Kept by Colonia, never in the project's folder.
+ */
+/** The icons a project's tile can carry. A closed list: every client draws the same glyph for the same name. */
+export const PROJECT_ICONS = [
+  "rocket",
+  "star",
+  "heart",
+  "house",
+  "briefcase",
+  "book-open",
+  "code",
+  "terminal",
+  "globe",
+  "shopping-cart",
+  "camera",
+  "music",
+  "palette",
+  "pencil",
+  "lightbulb",
+  "flask-conical",
+  "graduation-cap",
+  "leaf",
+  "flame",
+  "zap",
+  "sun",
+  "moon",
+  "cloud",
+  "coffee",
+  "gamepad-2",
+  "gift",
+  "megaphone",
+  "mail",
+  "message-circle",
+  "calendar",
+  "chart-column",
+  "wallet",
+  "wrench",
+  "shield",
+  "bot",
+  "brain",
+  "compass",
+  "plane",
+  "trophy",
+  "target",
+] as const;
+export type ProjectIcon = (typeof PROJECT_ICONS)[number];
+export const ProjectMark = z
+  .object({
+    /** An uploaded picture (a media id), already square. */
+    image: Id.optional(),
+    emoji: z.string().trim().min(1).max(16).optional(),
+    /** One of the panel's icons, by name; a client that cannot draw it shows the initial. */
+    icon: z.enum(PROJECT_ICONS).optional(),
+    tone: ProjectTone.optional(),
+  })
+  .refine((m) => [m.image, m.emoji, m.icon].filter(Boolean).length <= 1, "a picture, an emoji or an icon: one of them");
+export type ProjectMark = z.infer<typeof ProjectMark>;
+
 /** The base project (no folder): the owner may name it, describe it and give it a kind, like any other. */
 export const BaseProject = z.object({
   name: z.string().trim().min(1).max(80),
@@ -55,6 +120,8 @@ export const BaseProject = z.object({
   kind: ProjectKind.optional(),
   /** How far its agents go on their own when they set nothing themselves. Absent = auto. */
   autonomy: Autonomy.optional(),
+  /** Its tile as the owner drew it. Absent = the initial. */
+  mark: ProjectMark.optional(),
 });
 export type BaseProject = z.infer<typeof BaseProject>;
 
@@ -104,6 +171,8 @@ export const Project = z.object({
   unreadable: z.enum(["waiting", "denied"]).optional(),
   /** Blob name from the design system catalog, used as the project's avatar. */
   blob: z.string().optional(),
+  /** Its tile as the owner drew it (picture, emoji or icon, and colour); kept by Colonia. Absent = the initial. */
+  mark: ProjectMark.optional(),
   path: z.string().optional(),
   /** How far its agents go on their own when they set nothing themselves; kept by Colonia, never in the folder. */
   autonomy: Autonomy.optional(),

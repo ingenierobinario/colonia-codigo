@@ -1,6 +1,14 @@
 // Tasks: the row is the task as it is now; every change is also an event, so its history can be told. The board's
 // columns are a setting; "done" and "dropped" are states, never columns.
-import type { CommitmentOutcome, Task, TaskColumn, TaskEvent, TaskKind, TaskPriority, TaskState } from "@colonia/protocol";
+import type {
+  CommitmentOutcome,
+  Task,
+  TaskColumn,
+  TaskEvent,
+  TaskKind,
+  TaskPriority,
+  TaskState,
+} from "@colonia/protocol";
 import type { Selectable } from "kysely";
 import { sql as raw } from "kysely";
 import type { Bus } from "../bus.ts";
@@ -198,6 +206,9 @@ export type TaskChange = Partial<{
   outcome: CommitmentOutcome | null;
 }>;
 
+/** Lowercase and without accents, so a search finds "Diseño" by "diseno". */
+const foldText = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
 export function tasksRepo({ one, all, run }: Sql, bus: Bus) {
   const emit = (t: Task) => bus.emit({ type: "task.updated", task: t });
   const event = (taskId: string, op: TaskEvent["op"], by: string, data: Record<string, unknown> = {}) =>
@@ -259,6 +270,50 @@ export function tasksRepo({ one, all, run }: Sql, bus: Bus) {
           ),
         );
       return all(q.orderBy("tasks.activity_at", "desc").limit(o.limit)).map(toTask);
+    },
+    /**
+     * A page of the closed tasks (done and dropped), newest activity first, and how many there are in all. `query`
+     * is matched here rather than in SQL: SQLite's LIKE folds neither accents nor non-ASCII case.
+     */
+    closed(o: {
+      projects?: Array<string | undefined>;
+      kind?: TaskKind;
+      query?: string;
+      offset: number;
+      limit: number;
+    }): { tasks: Task[]; total: number } {
+      const ids = o.projects?.filter((p): p is string => p !== undefined) ?? [];
+      const global = o.projects?.includes(undefined) ?? false;
+      if (o.projects && !ids.length && !global) return { tasks: [], total: 0 };
+      let q = qb.selectFrom("tasks").where("state", "in", ["done", "dropped"]);
+      if (o.projects)
+        q = q.where((eb) =>
+          eb.or([
+            ...(ids.length ? [eb("project_id", "in", ids)] : []),
+            ...(global ? [eb("project_id", "is", null)] : []),
+          ]),
+        );
+      if (o.kind) q = q.where("kind", "=", o.kind);
+      const terms = foldText(o.query ?? "")
+        .split(/\s+/)
+        .filter(Boolean);
+      const ordered = q.orderBy("activity_at", "desc").orderBy("id", "desc");
+      let page: string[];
+      let total: number;
+      if (terms.length) {
+        const found = all(ordered.select(["id", "title", "description"])).filter((r) => {
+          const text = foldText(`${r.title}\n${r.description ?? ""}`);
+          return terms.every((term) => text.includes(term));
+        });
+        total = found.length;
+        page = found.slice(o.offset, o.offset + o.limit).map((r) => r.id);
+      } else {
+        total = Number(one(q.select((eb) => eb.fn.countAll<number>().as("n")))?.n ?? 0);
+        page = all(ordered.select("id").limit(o.limit).offset(o.offset)).map((r) => r.id);
+      }
+      if (!page.length) return { tasks: [], total };
+      const rows = new Map(all(tasksQuery().where("tasks.id", "in", page)).map((r) => [r.id, toTask(r)]));
+      return { tasks: page.flatMap((id) => rows.get(id) ?? []), total };
     },
     create(t: {
       title: string;

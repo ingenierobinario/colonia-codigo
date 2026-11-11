@@ -1,20 +1,15 @@
 import "../styles/screens.css";
-import { Badge, Button, EmptyState, IconButton, Icons, ProjectTile, Tabs } from "@colonia/ui";
-import { useEffect, useState } from "react";
+import "../styles/project-mark.css";
+import { Badge, Button, EmptyState, IconButton, Icons, Tabs } from "@colonia/ui";
+import { Suspense, useEffect, useState } from "react";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { loadProjectThreads } from "../data/actions.ts";
-import {
-  findProject,
-  inProject,
-  isListed,
-  type ProjectEntry,
-  projectInitial,
-  projectTone,
-  realProjectId,
-} from "../data/identity.ts";
+import { findProject, inProject, isListed, type ProjectEntry, realProjectId } from "../data/identity.ts";
 import { parseNewChat } from "../data/newChat.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { NewChatMenu } from "../inbox/NewChatMenu.tsx";
+import { ProjectMarkEditor } from "../lazy.ts";
 import { ResourcesView } from "../resources/ResourcesView.tsx";
 import { RoutinesPane } from "../routines/RoutinesPane.tsx";
 import { ChatWorkspace } from "../shell/ChatWorkspace.tsx";
@@ -78,11 +73,24 @@ function ProjectHeader({ project, tab }: { project: ProjectEntry; tab: ProjectTa
   const t = useT();
   const counts = useProjectCounts(project.id);
   const [settings, setSettings] = useState(false);
+  // The editor arrives the first time it is opened, and then stays to give the focus back when it closes.
+  const [mark, setMark] = useState<boolean>();
   const KindIcon = kindIcon(project.kind);
   return (
     <header className="project__head">
       <div className="project__titlerow">
-        <ProjectTile tone={projectTone(project.id)} initial={projectInitial(project.name)} size={36} />
+        <button
+          type="button"
+          className="project__mark"
+          aria-label={t("project.mark.change")}
+          title={t("project.mark.change")}
+          onClick={() => setMark(true)}
+        >
+          <ProjectAvatar id={project.id} name={project.name} size={36} />
+          <span className="project__markedit" aria-hidden="true">
+            <Icons.Pencil size={16} />
+          </span>
+        </button>
         <div className="project__titles">
           <div className="project__name">
             <h1>{project.name}</h1>
@@ -129,6 +137,11 @@ function ProjectHeader({ project, tab }: { project: ProjectEntry; tab: ProjectTa
         }))}
       />
       <ProjectSettings project={project} open={settings} onOpenChange={setSettings} />
+      {mark !== undefined && (
+        <Suspense fallback={null}>
+          <ProjectMarkEditor project={project} open={mark} onOpenChange={setMark} />
+        </Suspense>
+      )}
     </header>
   );
 }

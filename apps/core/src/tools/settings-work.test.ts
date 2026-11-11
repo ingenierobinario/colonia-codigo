@@ -31,6 +31,14 @@ test("projects: created and renamed once the owner approves; autonomy stays thei
   assert.match((await h.ask(total)).answer, /autonomy stays the owner's/);
   const folders = { method: "projects.update", params: { project: acme, read_only_folders: [] } };
   assert.match((await h.ask(folders)).answer, /read_only_folders stays the owner's/);
+  // Its tile is an emoji an agent may draw; its picture is uploaded by the owner.
+  const tile = await h.ask({ method: "projects.update", params: { project: acme, mark: { emoji: "🚀" } } }, "approve");
+  assert.equal(tile.detail, 'Change the project Acme Labs\nmark.emoji: (none) → "🚀"');
+  assert.deepEqual((await projects()).find((p) => p.id === acme)?.mark, { emoji: "🚀" });
+  const picture = { method: "projects.update", params: { project: acme, mark: { image: "med_0000000000000000" } } };
+  assert.match((await h.ask(picture)).answer, /mark\.image stays the owner's/);
+  const base = { method: "projects.update_base", params: { mark: { image: "med_0000000000000000" } } };
+  assert.match((await h.ask(base)).answer, /mark\.image stays the owner's/);
 });
 
 test("memory: its settings change and keep its model; the model stays the owner's", async () => {

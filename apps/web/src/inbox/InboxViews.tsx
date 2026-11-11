@@ -1,13 +1,14 @@
 import type { Agent, Thread } from "@colonia/protocol";
-import { AgentAvatar, ContextMenu, EngineIcon, Icons, ProjectTile, Spinner, Tooltip } from "@colonia/ui";
+import { AgentAvatar, ContextMenu, EngineIcon, Icons, Spinner, Tooltip } from "@colonia/ui";
 import { Suspense, useRef, useState } from "react";
 import { KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";
 import { AgentFace } from "../common/AgentFace.tsx";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { useEngineLabel } from "../common/useEngineLabel.ts";
-import { DEFAULT_PID, isWorking, projectInitial, projectTone, routineName, threadAgent } from "../data/identity.ts";
+import { isWorking, routineName, threadAgent } from "../data/identity.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { ChannelTreeRow, TaskBundle } from "../lazy.ts";
@@ -82,11 +83,7 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
       {trees.map((tree) => (
         <div key={tree.key} className="tree__project">
           <div className="tree__projecthead">
-            <ProjectTile
-              tone={projectTone(tree.project?.id ?? DEFAULT_PID)}
-              initial={projectInitial(tree.name)}
-              size={16}
-            />
+            <ProjectAvatar id={tree.project?.id} name={tree.name} size={16} />
             <span>{tree.name}</span>
           </div>
           {tree.agents.map((b) => {

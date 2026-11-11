@@ -210,7 +210,9 @@ Opening the server's address in a browser does not automatically lend your compu
 A bundle install updates itself. Every 6 hours (the first time a minute after it starts) the core asks the GitHub
 Releases of `ingenierobinario/colonia` whether there is a newer Colonia. The panel shows it in the top bar, whether you
 opened it on the server or from a desktop app connected to it, and **Update now** downloads the new bundle, checks its
-`.sha256`, unpacks it beside the running one, moves `current` and restarts the core.
+`.sha256`, unpacks it beside the running one, moves `current` and restarts the core. The notice says what the version
+brings in a few short sentences, in the language you use Colonia in (English or Spanish); `colonia upgrade --check`
+prints them in English.
 
 From the terminal:
 

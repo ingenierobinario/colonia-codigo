@@ -1,12 +1,15 @@
 import "../styles/screens.css";
+import "../styles/project-mark.css";
 import { AGENTS_MD_LIMIT, Autonomy, DEFAULT_AUTONOMY, type ProjectKind } from "@colonia/protocol";
-import { Button, Dialog, Field, Icons, Input, Select, type SelectOption, Textarea } from "@colonia/ui";
-import { useEffect, useMemo, useState } from "react";
+import { Button, Dialog, Field, Icons, Input, Select, type SelectOption, SettingRow, Textarea } from "@colonia/ui";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { formatNumber } from "../common/format.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import type { ProjectEntry } from "../data/identity.ts";
 import { updateBase, updateProject } from "../data/projects.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { ProjectMarkEditor } from "../lazy.ts";
 import { NewProjectDialog } from "../shell/NewProjectDialog.tsx";
 import { go } from "../shell/nav.ts";
 import { KINDS, kindOptions, NO_KIND } from "./projectKind.ts";
@@ -39,6 +42,7 @@ export function ProjectSettings({
   const [autonomy, setAutonomy] = useState<Autonomy>(DEFAULT_AUTONOMY);
   const [busy, setBusy] = useState(false);
   const [newProject, setNewProject] = useState(false);
+  const [mark, setMark] = useState<boolean>();
   // Filled once per opening: the project list refreshing while it is open must not undo what the owner typed.
   const [seeded, setSeeded] = useState(false);
   useEffect(() => {
@@ -118,6 +122,14 @@ export function ProjectSettings({
         }
       >
         <div className="projsettings">
+          <SettingRow title={t("project.settings.mark")} description={t("project.settings.markHint")}>
+            <div className="projsettings__mark">
+              <ProjectAvatar id={project.id} name={full.name} size={32} />
+              <Button variant="secondary" size="sm" onClick={() => setMark(true)}>
+                {t("project.mark.changeShort")}
+              </Button>
+            </div>
+          </SettingRow>
           <Field
             label={t("project.settings.name")}
             hint={project.isDefault ? t("project.settings.baseNameHint") : undefined}
@@ -186,6 +198,11 @@ export function ProjectSettings({
         </div>
       </Dialog>
       {newProject && <NewProjectDialog onClose={() => setNewProject(false)} />}
+      {mark !== undefined && (
+        <Suspense fallback={null}>
+          <ProjectMarkEditor project={project} open={mark} onOpenChange={setMark} />
+        </Suspense>
+      )}
     </>
   );
 }

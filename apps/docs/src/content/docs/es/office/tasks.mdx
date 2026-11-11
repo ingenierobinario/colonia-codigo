@@ -62,7 +62,22 @@ lista en un solo proyecto o muestra **Todos los proyectos**; este navegador recu
 - **Pendiente**: Por planificar o Para hacer, nadie la empezó todavía.
 - **En revisión**: terminada, y la revisa el agente que nombraste (**Quién la revisa** en el panel, o un agente que lo
   nombra). Se le pide la revisión enseguida: si pide cambios, vuelve al que la hizo; si aprueba, pasa a la tuya.
-- **Cerradas hace poco**: hechas o descartadas, las más nuevas primero.
+- **Cerradas** (al final, plegadas): todas las tareas hechas o descartadas, las más nuevas primero, por mucho
+  tiempo que haga que se cerraron.
+
+### Tareas cerradas
+
+Despliega **Cerradas** para verlas. Se cargan entonces, de 20 en 20: **Ver n más** trae las siguientes. El buscador
+mira en el título y en la descripción, no distingue mayúsculas ni acentos, y pide todas las palabras que escribas.
+Dentro de un proyecto ves las cerradas de ese proyecto; en la vista global, las de todos, o las del que hayas
+filtrado.
+
+Cada tarea cerrada tiene **Reabrir** al lado. Vuelve a **Pendiente** con la misma conversación, el mismo historial,
+sus notas y sus adjuntos: no se copia nada ni se pierde nada. Reabrir no arranca trabajo; asígnala a un agente o
+muévela cuando quieras que se haga.
+
+El **Resumen** de un proyecto enseña sus tareas abiertas en pocas líneas: cuántas hay en cada grupo, hasta tres por
+su nombre, y **Ver todas**, que abre la pestaña Tareas. No enseña nada cuando el proyecto no tiene tareas abiertas.
 
 ## Adjuntos y acciones de los chats de una tarea
 
@@ -148,6 +163,10 @@ ti](/es/concepts/agents/): pasado el límite, el informe espera a que escribas e
 Reabrir por sí solo no arranca trabajo. Para rechazar una entrega y pedirle correcciones al mismo responsable, un
 agente usa `task_close` con `state: "open"`, `rework: true` y una `note` que explique qué corregir. Los clientes del
 protocolo usan los mismos campos en `tasks.close`.
+
+Los clientes del protocolo leen las tareas cerradas con `tasks.closed` (`project`, `unfiled`, `kind`, `query`,
+`offset`, `limit`; responde la página y el `total`), y reabren a una columna en un solo cambio con `tasks.close` y
+`state: "open"`, `status: "<columna>"`. `status` se rechaza con cualquier otro estado y junto con `rework`.
 
 La tarea debe estar cerrada y asignada. El pedido conserva su identidad, columna, historial y chat de trabajo,
 registra el motivo y la nueva ejecución, y devuelve el resultado al coordinador original cuando el responsable

@@ -41,6 +41,7 @@ export const composerMethods = {
               8,
           ),
         thread: Id.optional(),
+        /** A temporary upload, in no chat: a task's attachment or a project's picture takes it, or it expires. */
         task_asset: z.boolean().optional(),
       })
       .strict(),

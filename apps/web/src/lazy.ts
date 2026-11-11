@@ -94,6 +94,10 @@ export const UnregisterProjectDialog = lazy(() =>
 export const ProjectSettings = lazy(() =>
   import("./project/ProjectSettings.tsx").then((m) => ({ default: m.ProjectSettings })),
 );
+// The editor of a project's tile (with the picture cropper), opened from its header or its settings.
+export const ProjectMarkEditor = lazy(() =>
+  import("./project/ProjectMarkEditor.tsx").then((m) => ({ default: m.ProjectMarkEditor })),
+);
 
 export const JobList = lazy(() => import("./shell/JobList.tsx").then((m) => ({ default: m.JobList })));
 
@@ -193,3 +197,5 @@ export const QrSvg = lazy(() => import("./common/QrSvg.tsx").then((m) => ({ defa
 // Plain modules loaded on first use.
 export const loadOsNotices = () => import("./shell/osNotices.ts");
 export const loadSounds = () => import("./shell/sounds.ts");
+// The icons a project's tile can carry: only a project whose owner chose one asks for them.
+export const loadProjectGlyphs = () => import("@colonia/ui/project-glyphs");

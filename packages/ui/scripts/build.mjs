@@ -17,9 +17,14 @@ const components = Object.fromEntries(
     .map((f) => [`components/${f.slice(0, -4)}`, `src/components/${f}`]),
 );
 // The ACP agents', model APIs' and integrations' marks are an entry of their own: the panel loads them after its
-// first screen.
+// first screen. So are the glyphs a project's tile can carry.
 await build({
-  entryPoints: { index: "src/index.ts", marks: "src/marks.ts", ...components },
+  entryPoints: {
+    index: "src/index.ts",
+    marks: "src/marks.ts",
+    "project-glyphs": "src/project-glyphs.ts",
+    ...components,
+  },
   outdir: "dist",
   bundle: true,
   splitting: true,

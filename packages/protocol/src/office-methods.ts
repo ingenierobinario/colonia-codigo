@@ -59,6 +59,25 @@ export const officeMethods = {
     result: z.object({ tasks: z.array(Task), columns: z.array(TaskColumn) }),
     effect: false,
   },
+  /**
+   * Every closed task (done and dropped together), newest activity first, a page at a time. `query` matches the
+   * title and the description, ignoring case and accents; every word must appear. `total` counts the matches.
+   * `unfiled` keeps only the tasks outside every project. An agent sees its own scope, as in `tasks.list`.
+   */
+  "tasks.closed": {
+    params: z
+      .object({
+        project: Id.optional(),
+        unfiled: z.boolean().optional(),
+        kind: TaskKind.optional(),
+        query: z.string().trim().max(200).optional(),
+        offset: z.number().int().min(0).default(0),
+        limit: z.number().int().min(1).max(200).default(20),
+      })
+      .strict(),
+    result: z.object({ tasks: z.array(Task), total: z.number().int() }),
+    effect: false,
+  },
   "tasks.get": {
     params: z.object({ task: Id }).strict(),
     /**
@@ -143,10 +162,16 @@ export const officeMethods = {
     result: Task,
     effect: true,
   },
-  /** Done, dropped, or open again. */
+  /** Done, dropped, or open again. `status` (only with `state: "open"`, without `rework`) is the column it reopens in. */
   "tasks.close": {
     params: z
-      .object({ task: Id, state: TaskState, note: z.string().max(2000).optional(), rework: z.boolean().optional() })
+      .object({
+        task: Id,
+        state: TaskState,
+        note: z.string().max(2000).optional(),
+        rework: z.boolean().optional(),
+        status: z.string().max(40).optional(),
+      })
       .strict(),
     result: Task,
     effect: true,

@@ -10,7 +10,7 @@ import { promisify } from "node:util";
 import { runningVersion } from "../../../packages/install/src/release.ts";
 import { createLog } from "./log.ts";
 import { panelEntry } from "./server-wiring.ts";
-import { removeDir } from "./testkit/platform.ts";
+import { removeDir, tempDir } from "./testkit/platform.ts";
 import { createUpdates, RESTART_CODE, type Runner, restartAfterClose } from "./updates.ts";
 
 const log = createLog("test", true);
@@ -359,6 +359,38 @@ test("the core the desktop app carries says a newer release is out, and leaves i
   assert.equal(r.ok, false);
   assert.match(r.log, /desktop app/);
   f.done();
+});
+
+test("releases that say their notes per language are passed on in both, and old ones in neither", async () => {
+  await using home = tempDir();
+  const feed = (releases: unknown[]) =>
+    createUpdates({
+      root: home.path,
+      log,
+      enabled: true,
+      supervised: true,
+      version: "2.0.3",
+      byApp: true,
+      feed: "acme/colonia",
+      platform: { os: "linux", arch: "x64" },
+      fetch: (async () => Response.json(releases)) as typeof fetch,
+    });
+  const body = "## Español\n\n- Cada proyecto lleva su imagen.\n\n## English\n\n- Each project has its own picture.\n";
+  const s = await feed([
+    { tag_name: "v2.2.0", body },
+    { tag_name: "v2.1.0", body: "- feat: sidebar sections" },
+  ]).check();
+  assert.equal(s.latest, "2.2.0");
+  assert.deepEqual(s.localized, {
+    en: ["Each project has its own picture.", "feat: sidebar sections"],
+    es: ["Cada proyecto lleva su imagen.", "feat: sidebar sections"],
+  });
+  // Who reads only `changes` (an older panel) gets one language, never both.
+  assert.deepEqual(s.changes, ["Each project has its own picture.", "feat: sidebar sections"]);
+
+  const old = await feed([{ tag_name: "v2.1.0", body: "- feat: sidebar sections" }]).check();
+  assert.deepEqual(old.changes, ["feat: sidebar sections"]);
+  assert.equal(old.localized, undefined);
 });
 
 test("a restart after an update exits even when closing the core hangs", async () => {

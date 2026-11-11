@@ -506,6 +506,7 @@ export interface ProjectsTable {
   autonomy: string | null;
   read_only_folders: string | null;
   context_chars: number | null;
+  mark: string | null;
 }
 
 export interface PromptTextsTable {

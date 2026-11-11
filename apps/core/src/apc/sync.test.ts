@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { AGENTS_MD_LIMIT } from "@colonia/protocol";
 import { ColoniaError } from "@colonia/protocol/client";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
-import { removeDir } from "../testkit/platform.ts";
+import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
 
 function makeProject(root: string) {
   fs.mkdirSync(path.join(root, ".apc", "agents"), { recursive: true });
@@ -471,5 +471,25 @@ test("a long AGENTS.md reaches its agents whole, and past the safety limit says 
     await env.core.close();
     await env.cleanup();
     await removeDir(root);
+  }
+});
+
+test("a project in a folder its system names another way is watched by its real path", async () => {
+  await using dir = tempDir("colonia-watch-");
+  // As the system's temp folder names it: on Windows by a short 8.3 name when the user's is long, and the first change
+  // in a folder watched by that name ended the whole core.
+  const written = path.join(os.tmpdir(), path.basename(dir.path));
+  makeProject(written);
+  const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
+  try {
+    const { project } = await env.client.call("projects.register", { path: written });
+    const meta = path.join(written, ".apc", "project.json");
+    fs.writeFileSync(meta, JSON.stringify({ name: "Northwind Labs", colonia_id: "abc123def456", kind: "company" }));
+    const name = async () =>
+      (await env.client.call("projects.list", {})).projects.find((p) => p.id === project.id)?.name;
+    await waitFor(async () => (await name()) === "Northwind Labs", "the watcher to reindex the renamed project");
+  } finally {
+    await env.core.close();
+    await env.cleanup();
   }
 });

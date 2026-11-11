@@ -1,9 +1,10 @@
 import type { Agent } from "@colonia/protocol";
-import { AgentAvatar, ProjectTile, SearchField, SegmentedControl } from "@colonia/ui";
+import { AgentAvatar, SearchField, SegmentedControl } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { setAgentBrowserProfile } from "../data/actions.ts";
 import { PROFILE_KEY } from "../data/engines.ts";
-import { blobOf, DEFAULT_PID, projectInitial, projectTone } from "../data/identity.ts";
+import { blobOf } from "../data/identity.ts";
 import { loadCatalog, loadModelsConfig } from "../data/models.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -52,11 +53,7 @@ export function AgentsSection() {
               <span className="agentcfg__name">
                 <b>{a.name}</b>
                 <span className="agentcfg__where">
-                  <ProjectTile
-                    size={12}
-                    tone={projectTone(project?.id ?? DEFAULT_PID)}
-                    initial={projectInitial(project?.name ?? "Default")}
-                  />
+                  <ProjectAvatar id={project?.id} name={project?.name ?? "Default"} size={12} />
                   {project?.name ?? (a.kind === "secretary" ? t("agents.superGlobal") : t("agents.global"))}
                 </span>
               </span>

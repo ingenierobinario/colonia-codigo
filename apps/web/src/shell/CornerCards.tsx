@@ -3,9 +3,10 @@ import { Button, IconButton, Icons, ProjectTile } from "@colonia/ui";
 import type { CSSProperties, ReactNode } from "react";
 import { closeCard, useClosedCards } from "../data/cornerCards.ts";
 import { PRIVACY_URL, setUsage, useTelemetry } from "../data/telemetry.ts";
+import { firstNote } from "../data/update-notes.ts";
 import { newerOf, openUpdate, restartApp, useUpdates } from "../data/updates.ts";
 import { useV1Running } from "../data/v1Running.ts";
-import { useT } from "../i18n/index.ts";
+import { useLanguage, useT } from "../i18n/index.ts";
 
 /**
  * A small deck of notices. Only the first that still applies shows; the next peeks
@@ -15,6 +16,7 @@ import { useT } from "../i18n/index.ts";
  */
 export function CornerCards({ floating = false }: { floating?: boolean }) {
   const t = useT();
+  const language = useLanguage();
   const closed = useClosedCards((s) => s);
   const status = useUpdates((s) => s.status);
   const app = useUpdates((s) => s.app);
@@ -45,6 +47,11 @@ export function CornerCards({ floating = false }: { floating?: boolean }) {
     const version = update.version;
     // Downloaded already (the desktop app does it on its own): only the restart is left.
     const ready = update.target === "app" && app?.ready === version;
+    // The first thing it brings, in the language on screen; a release that says nothing keeps the plain invitation.
+    const brings =
+      update.target === "core"
+        ? firstNote(status?.localized, status?.changes, language)
+        : firstNote(app?.localized, app?.notes, language);
     cards.push(
       <CornerCard
         key="update"
@@ -60,7 +67,7 @@ export function CornerCards({ floating = false }: { floating?: boolean }) {
                 : "update.cardTitle",
           { v: version },
         )}
-        description={t(ready ? "update.cardReadyDesc" : "update.cardDesc")}
+        description={ready ? t("update.cardReadyDesc") : (brings ?? t("update.cardDesc"))}
         action={t(ready ? "update.restartNow" : "update.cardCta")}
         onAction={() => (ready ? void restartApp() : openUpdate(update.target))}
         onClose={() => closeCard({ update: version })}

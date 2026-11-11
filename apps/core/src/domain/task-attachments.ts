@@ -8,6 +8,10 @@ export function taskAttachmentsRepo({ all, one, run }: Sql) {
     stage(id: string) {
       run(qb.insertInto("task_uploads").values({ media_id: id }));
     },
+    /** A temporary upload something kept (a project's tile): it no longer expires. */
+    take(id: string) {
+      run(qb.deleteFrom("task_uploads").where("media_id", "=", id));
+    },
     expired(at: string) {
       return all(
         qb

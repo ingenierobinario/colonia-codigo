@@ -11,11 +11,11 @@ import {
   IntegrationIcon,
   MasterDetail,
   PickRow,
-  ProjectTile,
   SegmentedControl,
   Switch,
 } from "@colonia/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { EmailSignatures } from "../config/EmailSignatures.tsx";
 import { client } from "../data/client.ts";
 import { loadMarks } from "../data/models.ts";
@@ -316,7 +316,7 @@ function IntegrationDetail({
       </div>
       <div className="int__rows">
         <div className="int__row">
-          <ProjectTile tone="brand" initial="D" size={28} />
+          <ProjectAvatar name="D" size={28} />
           <span className="int__rowmain">
             <b>Default</b>
             <span>{t("int.defaultAlways")}</span>
@@ -327,7 +327,7 @@ function IntegrationDetail({
           const on = !i.off_in.includes(p.id);
           return (
             <div key={p.id} className="int__row">
-              <ProjectTile tone="info" initial={p.name.slice(0, 1).toUpperCase()} size={28} />
+              <ProjectAvatar id={p.id} name={p.name} tone="info" size={28} />
               <span className="int__rowmain">
                 <b>{p.name}</b>
                 <span>{on ? t("int.on") : t("int.off")}</span>

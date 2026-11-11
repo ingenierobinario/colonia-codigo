@@ -1,7 +1,8 @@
 import type { Agent } from "@colonia/protocol";
-import { AgentAvatar, Button, Checkbox, EmptyState, Icons, ProjectTile, Switch } from "@colonia/ui";
+import { AgentAvatar, Button, Checkbox, EmptyState, Icons, Switch } from "@colonia/ui";
 import { useMemo } from "react";
-import { blobOf, DEFAULT_PID, projectInitial, projectTone, realProjectId } from "../../data/identity.ts";
+import { ProjectAvatar } from "../../common/ProjectAvatar.tsx";
+import { blobOf, DEFAULT_PID, realProjectId } from "../../data/identity.ts";
 import { useData } from "../../data/state.ts";
 import { useT } from "../../i18n/index.ts";
 import { teamLead } from "./lead.ts";
@@ -66,7 +67,7 @@ export function CloneFromProject({
         return (
           <section key={g.id} className="teamimport__team">
             <header className="teamimport__teamhead">
-              <ProjectTile size={16} tone={projectTone(g.id)} initial={projectInitial(g.name)} />
+              <ProjectAvatar id={g.id} name={g.name} size={16} />
               <div className="teamimport__teamtitles">
                 <div className="teamimport__teamname">{g.name}</div>
               </div>

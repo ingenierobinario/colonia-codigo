@@ -2,6 +2,7 @@
 // moving, what waits, what an agent reviews, and the closed ones. Pure, so it is tested on its own.
 import type { Task } from "@colonia/protocol";
 import { TASK_GROUP_ORDER, type TaskGroupId, taskGroupOf } from "@colonia/protocol/task-groups";
+import { pendingColumn } from "../data/pendingColumn.ts";
 
 export type GroupId = TaskGroupId;
 export const GROUP_ORDER = TASK_GROUP_ORDER;
@@ -53,7 +54,5 @@ export function moveTo(group: GroupId, columns: readonly { id: string }[]): Grou
   const has = (id: string) => columns.some((c) => c.id === id);
   if (group === "doing" && has("doing")) return { status: "doing", awaits_owner: false };
   if (group === "review" && has("review")) return { status: "review", awaits_owner: false };
-  // Pending: "to do" when the board has it, else the first column that is not in progress or review.
-  const pending = has("todo") ? "todo" : columns.find((c) => c.id !== "doing" && c.id !== "review")?.id;
-  return { status: pending ?? columns[0]?.id ?? "todo", awaits_owner: false };
+  return { status: pendingColumn(columns), awaits_owner: false };
 }

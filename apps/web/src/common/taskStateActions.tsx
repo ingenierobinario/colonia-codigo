@@ -1,6 +1,6 @@
 import type { Task, TaskColumn } from "@colonia/protocol";
 import { Icons, type MenuEntry } from "@colonia/ui";
-import { closeTask, updateTask } from "../data/tasks.ts";
+import { closeTask, reopenTask, updateTask } from "../data/tasks.ts";
 import type { T } from "../i18n/index.ts";
 import { columnLabel } from "./taskStatus.ts";
 
@@ -28,7 +28,7 @@ export function taskStateActions(task: Task, columns: readonly TaskColumn[], t: 
     { type: "separator" },
     open
       ? { label: t("tasks.markDone"), icon: <Icons.Check />, onSelect: () => void closeTask(task.id, "done") }
-      : { label: t("tasks.reopen"), icon: <Icons.RotateCcw />, onSelect: () => void closeTask(task.id, "open") },
+      : { label: t("tasks.reopen"), icon: <Icons.RotateCcw />, onSelect: () => void reopenTask(task.id, columns) },
     ...(open
       ? [
           {

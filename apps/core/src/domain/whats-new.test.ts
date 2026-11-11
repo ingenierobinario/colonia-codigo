@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Thread } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
+import { highlightsOf } from "../release-highlights.ts";
 import type { Release, ReleaseSource } from "../release-notes.ts";
+import { whatsNewText } from "./whats-new.ts";
 
 const RELEASES: Release[] = [
   {
@@ -150,4 +152,79 @@ test("each new release goes on in the same news chat, retitled, instead of openi
     await third.core.close();
     await third.cleanup();
   }
+});
+
+/** A build of a release that says what it brings, with the commit log it would carry (or none). */
+const said = (version: string, carried = true): ReleaseSource => ({
+  version: () => version,
+  notes: () =>
+    carried
+      ? {
+          version,
+          branch: "main",
+          releases: [
+            { version, previous: "2.25.0", changes: [{ kind: "feat", text: "A commit sentence", sha: "ddd4444" }] },
+          ],
+        }
+      : undefined,
+});
+
+/** An install in use on 2.25.0 that updates to 2.26.0, and the chat it is told in. */
+async function updated(language: "en" | "es" | undefined, carried = true) {
+  const llm = scriptedLlm(() => say("ok"));
+  const first = await startCore({ llm, releases: said("2.25.0") });
+  await first.client.call("threads.send", { thread: "home", text: "hello" });
+  await first.settle("home");
+  if (language) first.core.store.settings.set("owner_language", language);
+  await first.core.close();
+  const second = await startCore({ llm, home: first.home, releases: said("2.26.0", carried) });
+  const [thread] = (await told(second.client)).filter((t) => t.release === "2.26.0");
+  const { messages } = await second.client.call("threads.get", { thread: thread?.id ?? "" });
+  return { second, thread, text: JSON.stringify(messages.at(-1)?.parts), calls: llm.calls.length };
+}
+
+test("a release that says what it brings is told with those lines, in Spanish unless the owner reads English", async () => {
+  const highlights = highlightsOf("2.26.0");
+  assert.ok(highlights?.es[0] && highlights.en[0]);
+  for (const language of [undefined, "es", "en"] as const) {
+    const { second, thread, text } = await updated(language);
+    try {
+      const en = language === "en";
+      assert.equal(thread?.title, en ? "What's new in Colonia 2.26.0" : "Novedades de Colonia 2.26.0");
+      assert.ok(text.includes(en ? highlights.en[0] : highlights.es[0]), text);
+      assert.ok(!text.includes(en ? highlights.es[0] : highlights.en[0]), "one language, not both");
+      assert.match(text, en ? /Colonia was updated to 2\.26\.0/ : /Colonia se actualizó a la 2\.26\.0/);
+      assert.match(text, en ? /Ask me anything/ : /Pregúntame lo que quieras/);
+      assert.doesNotMatch(text, /A commit sentence|\*\*New\*\*/, "the written lines stand for the commit log");
+    } finally {
+      await second.core.close();
+      await second.cleanup();
+    }
+  }
+});
+
+test("a release that says what it brings is told even from a build that carries no commit log", async () => {
+  const { second, thread, text } = await updated(undefined, false);
+  try {
+    assert.equal(thread?.title, "Novedades de Colonia 2.26.0");
+    assert.ok(text.includes(highlightsOf("2.26.0")?.es[0] ?? "-"), text);
+  } finally {
+    await second.core.close();
+    await second.cleanup();
+  }
+});
+
+test("releases without written lines keep their commit sections; a mix is framed in the owner's language", () => {
+  const plain = whatsNewText("2.3.33", RELEASES.slice(0, 1), "es");
+  assert.match(plain, /^Colonia was updated to 2\.3\.33/, "an English frame around English sentences");
+  const mixed = whatsNewText(
+    "2.26.0",
+    [
+      { version: "2.26.0", changes: [] },
+      { version: "2.24.0", changes: [] },
+    ],
+    "es",
+  );
+  assert.match(mixed, /^Colonia se actualizó a la 2\.26\.0/);
+  assert.match(mixed, /### 2\.24\.0\n\nSolo cambios internos\./);
 });

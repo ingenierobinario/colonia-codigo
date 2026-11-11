@@ -151,6 +151,44 @@
 .taskrow.is-subclosed {
   opacity: 0.6;
 }
+/* The closed group, unfolded: its search, and a row's "Reopen" in sight beside it. */
+.tasks__closedbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 6px;
+}
+.tasks__closedsearch {
+  flex: 0 1 280px;
+  min-width: 0;
+}
+.tasks__closedfound,
+.tasks__closedempty {
+  margin: 0;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+}
+.tasks__closedfound {
+  flex: none;
+  white-space: nowrap;
+}
+.tasks__closedempty {
+  padding: 8px 0;
+}
+.tasks__closedwait {
+  padding: 8px 0;
+}
+.tasks__item.has-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--colonia-border);
+}
+.has-action .taskrow {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
 .tasks__more {
   margin-top: 6px;
   padding: 4px 0;
@@ -282,6 +320,13 @@
   }
   .taskrow__project,
   .taskrow__who {
+    display: none;
+  }
+  /* A closed row gives its date to the button beside it: the title needs the width more. */
+  .has-action .taskrow {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+  .has-action .taskrow__when {
     display: none;
   }
 }

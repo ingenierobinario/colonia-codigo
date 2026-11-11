@@ -1,17 +1,8 @@
-import {
-  Button,
-  EmptyState,
-  IconButton,
-  Icons,
-  Menu,
-  ProjectTile,
-  SearchField,
-  SegmentedControl,
-  Skeleton,
-} from "@colonia/ui";
+import { Button, EmptyState, IconButton, Icons, Menu, SearchField, SegmentedControl, Skeleton } from "@colonia/ui";
 import { Suspense, useMemo, useState } from "react";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { markAllRead } from "../data/actions.ts";
-import { DEFAULT_PID, findProject, projectInitial, projectTone, threadAgent } from "../data/identity.ts";
+import { findProject, threadAgent } from "../data/identity.ts";
 import { type InboxView, setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -158,11 +149,7 @@ export function InboxList() {
                   aria-expanded={!isCollapsed}
                   onClick={() => setCollapsed((c) => ({ ...c, [g.key]: !isCollapsed }))}
                 >
-                  <ProjectTile
-                    tone={projectTone(g.project?.id ?? DEFAULT_PID)}
-                    initial={projectInitial(g.name)}
-                    size={16}
-                  />
+                  <ProjectAvatar id={g.project?.id} name={g.name} size={16} />
                   <span className="inbox__groupname">{g.name}</span>
                   <span className="inbox__groupcount">{g.threads.length}</span>
                   {g.running > 0 && (

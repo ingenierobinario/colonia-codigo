@@ -1,34 +1,19 @@
-import type { Run, Task } from "@colonia/protocol";
-import {
-  AgentAvatar,
-  Button,
-  ContextMenu,
-  EmptyState,
-  Help,
-  Icons,
-  ProjectTile,
-  SegmentedControl,
-  Spinner,
-} from "@colonia/ui";
+import type { Task } from "@colonia/protocol";
+import { AgentAvatar, Button, ContextMenu, EmptyState, Help, Icons, SegmentedControl, Spinner } from "@colonia/ui";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
 import { aheadLabel, dueLabel, shortWhen } from "../common/format.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { SearchSelect } from "../common/pickers/SearchSelect.tsx";
 import { useLongPressDrag } from "../common/useLongPressDrag.ts";
-import {
-  blobOf,
-  DEFAULT_PID,
-  inProject,
-  projectEntries,
-  projectInitial,
-  projectName,
-  projectTone,
-} from "../data/identity.ts";
+import { blobOf, DEFAULT_PID, inProject, projectEntries, projectName } from "../data/identity.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
+import { useRunningTasks } from "../data/runningTasks.ts";
 import { useData } from "../data/state.ts";
 import { taskChatIds } from "../data/taskChats.ts";
-import { acceptTasks, loadTasks, useTasks } from "../data/tasks.ts";
+import { acceptTasks, loadTasks, reopenTask, useTasks } from "../data/tasks.ts";
 import { type MessageKey, type T, useT } from "../i18n/index.ts";
 import { nav, useNav } from "../shell/nav.ts";
+import { ClosedTasks, useClosedTasks } from "./ClosedTasks.tsx";
 import { CommitmentMeta } from "./Commitments.tsx";
 import { kindLabel, PriorityDot } from "./TaskFields.tsx";
 import { DeleteTask, NewTask } from "./TaskForms.tsx";
@@ -36,14 +21,14 @@ import { TaskPanel } from "./TaskPanel.tsx";
 import { dropOn, taskMenu } from "./taskActions.tsx";
 import { GROUP_ORDER, type GroupId, groupOf, groupTasks, nestTasks } from "./taskGroups.ts";
 
-/** A task is being worked while one of these runs: a delegation queued for a slot is work taken on too. */
-const LIVE: ReadonlySet<Run["state"]> = new Set(["queued", "submitted", "working"]);
 /** The project filter's value for every project (a nav project id never is empty). */
 const ALL_PROJECTS = "";
 /** How many tasks each group shows globally before "See n more". */
 const GLOBAL_PEEK = 5;
 /** How deep subtasks indent; deeper ones line up with the last level. */
 const MAX_DEPTH = 3;
+/** The groups of the tasks still open, in the order they are listed. */
+const OPEN_GROUPS = GROUP_ORDER.filter((g) => g !== "closed");
 
 const GROUP_LABEL: Record<GroupId, MessageKey> = {
   proposed: "tasks.group.proposed",
@@ -84,8 +69,8 @@ const FILTER_LABEL: Record<Kind, MessageKey> = {
 
 /**
  * Tasks as one list grouped by where they stand, not a board: in progress on top, then pending, in review and
- * blocked; the recently closed ones folded at the end. Globally every project's (5 per group, with the project
- * column); inside a project only its own, all of them.
+ * blocked; every closed one folded at the end, read a page at a time once unfolded. Globally every project's (5 per
+ * open group, with the project column); inside a project only its own, all of them.
  */
 export function TasksList({
   projectId,
@@ -99,7 +84,6 @@ export function TasksList({
   const t = useT();
   const all = useTasks((s) => s.tasks);
   const ready = useTasks((s) => s.ready);
-  const runs = useData((s) => s.runs);
   const [kind, setKind] = useState<Kind>("all");
   const open = useNav((s) => s.taskId);
   const setOpen = (taskId: string | undefined) => nav.set({ taskId });
@@ -126,22 +110,46 @@ export function TasksList({
     errand: scoped.filter((x) => x.kind === "errand").length,
   };
   const shown = scoped.filter((x) => kind === "all" || x.kind === kind);
-  const threads = useData((s) => s.threads);
-  // A task is being worked while a turn runs in one of its agents' chats (or, from before, in its own thread).
-  const running = useMemo(() => {
-    const live = Object.values(runs).flatMap((r) => (LIVE.has(r.state) ? [r.thread_id] : []));
-    const tasks = new Set(live.flatMap((id) => threads[id]?.task_id ?? []));
-    return new Set([...live, ...Object.values(all).flatMap((x) => (tasks.has(x.id) ? [x.thread_id] : []))]);
-  }, [runs, threads, all]);
+  const running = useRunningTasks();
   const columns = useTasks((s) => s.columns);
   const { drag, bind } = useLongPressDrag<Task>((task, target) => void dropOn(task, target as GroupId, columns));
   // Subtasks sit under their parent, whatever group they are in; only the tasks at the top are grouped.
   const { top, children } = useMemo(() => nestTasks(shown), [shown]);
-  const filled = groupTasks(top, running);
+  // The closed group is its own read: the board holds only the ones closed lately.
+  const filled = groupTasks(top, running).filter((g) => g.id !== "closed");
   // While dragging every group is a place to drop, empty ones too.
-  const groups = drag ? GROUP_ORDER.map((id) => filled.find((g) => g.id === id) ?? { id, items: [] }) : filled;
+  const groups = drag ? OPEN_GROUPS.map((id) => filled.find((g) => g.id === id) ?? { id, items: [] }) : filled;
+  const closedScope = useMemo(
+    () => ({
+      ...(scope === DEFAULT_PID ? { unfiled: true } : scope ? { project: scope } : {}),
+      ...(kind === "all" ? {} : { kind }),
+    }),
+    [scope, kind],
+  );
+  const closed = useClosedTasks(closedScope, closedOpen);
   // Only a task of this list opens beside it (a project's tab never shows another project's task).
-  const current = open ? scoped.find((x) => x.id === open) : undefined;
+  const current = open ? (scoped.find((x) => x.id === open) ?? closed.items?.find((x) => x.id === open)) : undefined;
+  const closedRow = (task: Task) => (
+    <TaskRow
+      key={task.id}
+      task={task}
+      group="closed"
+      depth={0}
+      subtasks={undefined}
+      running={false}
+      showProject={global && !filter}
+      selected={task.id === open}
+      dragging={drag?.item.id === task.id}
+      drag={bind(task, task.title)}
+      onOpen={() => setOpen(task.id === open ? undefined : task.id)}
+      onDelete={() => setDeleting(task)}
+      action={
+        <Button size="sm" variant="ghost" onClick={() => void reopenTask(task.id, columns)}>
+          {t("tasks.reopen")}
+        </Button>
+      }
+    />
+  );
   /** A task's row, then its subtasks' rows under it (while unfolded), indented a level each. */
   const branch = (task: Task, group: GroupId, depth: number): ReactNode[] => {
     const subs = children.get(task.id) ?? [];
@@ -208,7 +216,7 @@ export function TasksList({
                 ...projectEntries(projects).map((p) => ({
                   value: p.id,
                   label: p.name,
-                  icon: <ProjectTile tone={projectTone(p.id)} initial={projectInitial(p.name)} size={16} />,
+                  icon: <ProjectAvatar id={p.id} name={p.name} size={16} />,
                 })),
               ]}
             />
@@ -220,16 +228,15 @@ export function TasksList({
             </Button>
           )}
         </div>
-        {ready && !shown.length ? (
+        {ready && !groups.length ? (
           <EmptyState variant="dashed" size="lg" icon={<Icons.ListChecks />} title={t("tasks.emptyTitle")}>
             {t("tasks.empty")}
           </EmptyState>
         ) : (
           groups.map((g) => {
-            const folded = g.id === "closed" && !closedOpen && !drag;
             const limit = global && !more.has(g.id) ? GLOBAL_PEEK : Number.POSITIVE_INFINITY;
-            const items = folded ? [] : g.items.slice(0, limit);
-            const hidden = folded ? 0 : g.items.length - items.length;
+            const items = g.items.slice(0, limit);
+            const hidden = g.items.length - items.length;
             return (
               <section
                 key={g.id}
@@ -238,22 +245,8 @@ export function TasksList({
                 data-drop={g.id}
               >
                 <header className="tasks__grouphead">
-                  {g.id === "closed" ? (
-                    <button
-                      type="button"
-                      className="tasks__fold"
-                      aria-expanded={closedOpen}
-                      onClick={() => setClosedOpen((o) => !o)}
-                    >
-                      <Icons.ChevronRight size={14} className={closedOpen ? "is-open" : undefined} />
-                      {t(GROUP_LABEL[g.id])}
-                    </button>
-                  ) : (
-                    <>
-                      <span className="tasks__groupdot" />
-                      {t(GROUP_LABEL[g.id])}
-                    </>
-                  )}
+                  <span className="tasks__groupdot" />
+                  {t(GROUP_LABEL[g.id])}
                   <span className="tasks__groupcount">{g.items.length}</span>
                   {g.id === "proposed" && (
                     <Button size="sm" variant="ghost" onClick={() => void acceptTasks(g.items.map((x) => x.id))}>
@@ -274,6 +267,30 @@ export function TasksList({
             );
           })
         )}
+        {ready && (
+          <section
+            className={`tasks__group is-closed${drag ? " is-droppable" : ""}${drag?.over === "closed" ? " is-over" : ""}`}
+            aria-label={t("tasks.group.closed")}
+            data-drop="closed"
+          >
+            <header className="tasks__grouphead">
+              <button
+                type="button"
+                className="tasks__fold"
+                aria-expanded={closedOpen}
+                onClick={() => setClosedOpen((o) => !o)}
+              >
+                <Icons.ChevronRight size={14} className={closedOpen ? "is-open" : undefined} />
+                {t("tasks.group.closed")}
+              </button>
+              {closedOpen && closed.total !== undefined && <span className="tasks__groupcount">{closed.total}</span>}
+              <Help label={t("tasks.group.closed")} align="start" width={280}>
+                {t("tasks.help.group.closed")}
+              </Help>
+            </header>
+            {closedOpen && <ClosedTasks closed={closed} row={closedRow} />}
+          </section>
+        )}
       </div>
       {drag && (
         <div className="taskdrag" style={{ left: drag.x + 12, top: drag.y + 8 }} aria-hidden="true">
@@ -283,7 +300,15 @@ export function TasksList({
       )}
       {current && <TaskPanel key={current.id} task={current} onClose={() => setOpen(undefined)} />}
       {creating && <NewTask projectId={projectId} onClose={() => setCreating(false)} />}
-      {deleting && <DeleteTask task={deleting} onClose={() => setDeleting(undefined)} />}
+      {deleting && (
+        <DeleteTask
+          task={deleting}
+          onClose={() => {
+            setDeleting(undefined);
+            closed.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -302,6 +327,8 @@ function TaskRow(props: {
   drag: ReturnType<ReturnType<typeof useLongPressDrag<Task>>["bind"]>;
   onOpen(): void;
   onDelete(): void;
+  /** What a row offers beside it, in sight: a closed one, to reopen it. */
+  action?: ReactNode;
 }) {
   const t = useT();
   const { task } = props;
@@ -321,10 +348,12 @@ function TaskRow(props: {
   const reviewerName = (task.reviewer && agents[task.reviewer]?.name) || t("tasks.reviewerOwner");
   const startsAt =
     task.state === "open" && task.start_at && task.start_at > new Date().toISOString() ? task.start_at : undefined;
-  const pid = task.project_id ?? DEFAULT_PID;
   const subs = props.subtasks;
   return (
-    <li className="tasks__item" style={{ "--depth": props.depth } as CSSProperties}>
+    <li
+      className={props.action ? "tasks__item has-action" : "tasks__item"}
+      style={{ "--depth": props.depth } as CSSProperties}
+    >
       {subs && (
         <button
           type="button"
@@ -434,9 +463,9 @@ function TaskRow(props: {
           </span>
           {props.showProject && (
             <span className="taskrow__project">
-              <ProjectTile
-                tone={projectTone(pid)}
-                initial={projectName(projects, task.project_id).slice(0, 1)}
+              <ProjectAvatar
+                id={task.project_id ?? undefined}
+                name={projectName(projects, task.project_id)}
                 size={14}
               />
               {projectName(projects, task.project_id)}
@@ -463,6 +492,7 @@ function TaskRow(props: {
           </span>
         </button>
       </ContextMenu>
+      {props.action}
     </li>
   );
 }

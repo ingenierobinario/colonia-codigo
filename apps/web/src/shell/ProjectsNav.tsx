@@ -1,15 +1,7 @@
-import { IconButton, Icons, ProjectTile } from "@colonia/ui";
+import { IconButton, Icons } from "@colonia/ui";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import {
-  inInbox,
-  inProject,
-  isListed,
-  isWorking,
-  type ProjectEntry,
-  projectEntries,
-  projectInitial,
-  projectTone,
-} from "../data/identity.ts";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
+import { inInbox, inProject, isListed, isWorking, type ProjectEntry, projectEntries } from "../data/identity.ts";
 import { rememberSidebar, setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -109,7 +101,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
       )}
       key={p.id}
       rail={rail && !onPick}
-      icon={<ProjectTile tone={projectTone(p.id)} initial={projectInitial(p.name)} />}
+      icon={<ProjectAvatar id={p.id} name={p.name} />}
       label={p.name}
       trailing={
         <>

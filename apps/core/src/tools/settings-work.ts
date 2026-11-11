@@ -7,6 +7,14 @@ import { inlineName } from "./result.ts";
 import { merged, ownersField, type Params, projectName, quoted, type Setting, str } from "./settings-kit.ts";
 
 const AUTONOMY = "how far agents may act stays the owner's (DECISIONS.md#d-060)";
+
+/** A tile's picture is uploaded in the panel: an agent keeps the one there is, or draws an emoji instead. */
+function tilePicture(p: Params, now: { mark?: { image?: string } } | undefined): string | undefined {
+  const image = (p.mark as { image?: unknown } | null | undefined)?.image;
+  return image === undefined || image === now?.mark?.image
+    ? undefined
+    : "mark.image stays the owner's: a project's picture is uploaded from its own screen";
+}
 const MODEL = "which model runs stays the owner's (DECISIONS.md#d-060)";
 
 const on = (v: unknown) => (v ? "on" : "off");
@@ -90,21 +98,29 @@ export const WORK: Readonly<Record<string, Setting>> = {
     says: (p, { store }) => `Stop listing ${projectName(store, p.project)} (its files and chats stay)`,
   },
   "projects.update": {
-    does: "change a project (project, and only what changes: name, description, kind); autonomy and read-only folders stay the owner's",
+    does: "change a project (project, and only what changes: name, description, kind, mark = its tile: {emoji, tone?}, or null for its initial); autonomy, read-only folders and its picture stay the owner's",
     says: (p, { store }) => `Change ${projectName(store, p.project)}`,
     refuse: (p, { store }) => {
-      const cur = store.projects.get(str(p.project)) as Params | undefined;
-      return ownersField(p, cur, "autonomy", AUTONOMY) ?? ownersField(p, cur, "read_only_folders", AUTONOMY);
+      const cur = store.projects.get(str(p.project));
+      const now = cur as Params | undefined;
+      return (
+        ownersField(p, now, "autonomy", AUTONOMY) ??
+        ownersField(p, now, "read_only_folders", AUTONOMY) ??
+        tilePicture(p, cur)
+      );
     },
     now: (p, { store }) => {
       const cur = store.projects.get(str(p.project));
-      return cur && { project: cur.id, name: cur.name, description: cur.description, kind: cur.kind };
+      return cur && { project: cur.id, name: cur.name, description: cur.description, kind: cur.kind, mark: cur.mark };
     },
   },
   "projects.update_base": {
-    does: "change the base project, where chats with no project live (name, description, kind)",
+    does: "change the base project, where chats with no project live (name, description, kind, mark as in projects.update)",
     says: () => "Change the base project",
-    refuse: (p, { store }) => ownersField(p, store.settings.read("base_project"), "autonomy", AUTONOMY),
+    refuse: (p, { store }) => {
+      const cur = store.settings.read("base_project");
+      return ownersField(p, cur, "autonomy", AUTONOMY) ?? tilePicture(p, cur);
+    },
     now: (_p, { store }) => store.settings.read("base_project"),
   },
   "projects.helper_set": {

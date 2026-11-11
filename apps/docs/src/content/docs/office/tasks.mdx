@@ -61,7 +61,20 @@ project or shows **All projects**; this browser remembers the choice for the nex
 - **Pending**: Backlog or To do, nobody started it yet.
 - **In review**: finished, and the agent you named reviews it (**Reviewed by** in the drawer, or an agent naming one).
   It is asked to review at once: asking for changes sends it back to whoever did it; approving makes it yours.
-- **Closed recently**: done or dropped, newest first.
+- **Closed** (last, folded): every task done or dropped, newest first, however long ago it closed.
+
+### Closed tasks
+
+Unfold **Closed** to read them. They load then, 20 at a time: **See n more** brings the next ones. The search box
+looks in the title and the description, ignores capitals and accents, and wants every word you type. Inside a
+project you see that project's closed tasks; in the global view, every project's, or the one you filtered by.
+
+Each closed task has **Reopen** beside it. It goes back to **Pending** with the same conversation, history, notes
+and attachments: nothing is copied and nothing is lost. Reopening does not start work; hand it to an agent or move
+it when you want it done.
+
+A project's **Overview** shows its open tasks in a few lines: how many are in each group, up to three of them by
+name, and **See all**, which opens the Tasks tab. It shows nothing when the project has no open task.
 
 ## Attachments and task chat actions
 
@@ -146,6 +159,10 @@ you](/concepts/agents/): past the limit, the report waits until you write in tha
 Reopening alone does not start work. To reject a delivery and ask the same assignee to correct it, an agent uses
 `task_close` with `state: "open"`, `rework: true`, and a `note` explaining the corrections. Protocol clients use the
 same fields on `tasks.close`.
+
+Protocol clients read closed tasks with `tasks.closed` (`project`, `unfiled`, `kind`, `query`, `offset`, `limit`; it
+answers the page and the `total`), and reopen into a column in one change with `tasks.close` and `state: "open"`,
+`status: "<column>"`. `status` is refused with any other state and together with `rework`.
 
 The task must be closed and assigned. The request keeps its identity, column, history and work chat, records the
 reason and new run, and reports back to the original coordinator when the assignee closes it again. Requests are

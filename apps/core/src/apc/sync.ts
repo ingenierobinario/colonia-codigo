@@ -5,6 +5,7 @@ import path from "node:path";
 import type { ModelChoice } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import type { Log } from "../log.ts";
+import { realpath } from "../paths.ts";
 import { listField, textField } from "./frontmatter.ts";
 import type { ProjectFiles, ReadProjectFiles } from "./project-reader.ts";
 import { type ApcAgent, type ApcProject, isApcProject, readAgents, readProject } from "./read.ts";
@@ -222,9 +223,11 @@ export function createApcSync(deps: {
     };
     const list: fs.FSWatcher[] = [];
     try {
-      if (fs.existsSync(path.join(root, ".apc")))
-        list.push(fs.watch(path.join(root, ".apc"), { recursive: true }, changed));
-      list.push(fs.watch(root, (_e, file) => file === "AGENTS.md" && changed()));
+      // By its real path: Windows ends the whole core at the first change in a folder watched by a short 8.3 name.
+      const real = realpath(root);
+      if (fs.existsSync(path.join(real, ".apc")))
+        list.push(fs.watch(path.join(real, ".apc"), { recursive: true }, changed));
+      list.push(fs.watch(real, (_e, file) => file === "AGENTS.md" && changed()));
     } catch {}
     for (const w of list) w.on("error", () => w.close());
     watchers.set(root, list);

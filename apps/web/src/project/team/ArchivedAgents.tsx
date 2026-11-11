@@ -1,7 +1,8 @@
 import type { Agent } from "@colonia/protocol";
-import { AgentAvatar, Button, Dialog, Icons, ProjectTile } from "@colonia/ui";
+import { AgentAvatar, Button, Dialog, Icons } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
-import { blobOf, DEFAULT_PID, projectInitial, projectTone } from "../../data/identity.ts";
+import { ProjectAvatar } from "../../common/ProjectAvatar.tsx";
+import { blobOf } from "../../data/identity.ts";
 import { useData } from "../../data/state.ts";
 import { deleteAgentForGood, loadArchivedAgents, restoreAgent } from "../../data/team.ts";
 import { useT } from "../../i18n/index.ts";
@@ -65,11 +66,7 @@ export function ArchivedAgents({ project }: { project?: string | undefined }) {
                     <span className="archived__role">
                       {project === undefined && (
                         <>
-                          <ProjectTile
-                            size={12}
-                            tone={projectTone(where?.id ?? DEFAULT_PID)}
-                            initial={projectInitial(where?.name ?? "Default")}
-                          />
+                          <ProjectAvatar id={where?.id} name={where?.name ?? "Default"} size={12} />
                           {where?.name ?? t("agents.global")}
                           {a.role ? " · " : ""}
                         </>

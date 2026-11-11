@@ -241,6 +241,11 @@
   text-align: left;
   color: var(--colonia-fg-muted);
 }
+.overview__taskcount {
+  margin: 0;
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
+}
 .overview__rowname {
   flex: 1;
   min-width: 0;
@@ -258,6 +263,20 @@
   flex: none;
   font-size: var(--colonia-text-xs);
   color: var(--colonia-fg-subtle);
+}
+/* A task's row keeps its title readable in a narrow column: the group beside it gives way first. */
+.overview__taskglyph {
+  flex: none;
+}
+.overview__taskname {
+  flex: 1 0 55%;
+}
+.overview__taskwhere {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .overview__unread {
   flex: none;
@@ -862,4 +881,20 @@
   margin: 0;
   color: var(--colonia-fg-muted);
   font-size: var(--colonia-text-sm);
+}
+
+/* A phone's width: the overview is one column, and the header's buttons go under the project's name. */
+@media (max-width: 640px) {
+  .overview__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .project__titlerow {
+    flex-wrap: wrap;
+  }
+  .project__titles {
+    flex: 1 1 calc(100% - 64px);
+  }
+  .project__name h1 {
+    min-width: 0;
+  }
 }

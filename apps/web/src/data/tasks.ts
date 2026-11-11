@@ -4,6 +4,7 @@ import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import { notify } from "./notices.ts";
+import { pendingColumn } from "./pendingColumn.ts";
 
 type State = { tasks: Record<string, Task>; columns: TaskColumn[]; ready: boolean };
 const store = createStore<State>({ tasks: {}, columns: [], ready: false });
@@ -98,6 +99,31 @@ export async function closeTask(task: string, state: TaskState) {
     taskChanged(await client.call("tasks.close", { task, state }));
   } catch (e) {
     fail(e);
+  }
+}
+
+/** Opens a closed task again, back in pending: one change, so its conversation and history stay as they were. */
+export async function reopenTask(
+  task: string,
+  columns: readonly { id: string }[] = store.get().columns,
+  status = pendingColumn(columns),
+) {
+  try {
+    taskChanged(await client.call("tasks.close", { task, state: "open", status }));
+  } catch (e) {
+    fail(e);
+  }
+}
+
+/** A page of the closed tasks, newest first, with how many there are in all; undefined when it could not be read. */
+export async function loadClosed(
+  params: Params<"tasks.closed">,
+): Promise<{ tasks: Task[]; total: number } | undefined> {
+  try {
+    return await client.call("tasks.closed", params);
+  } catch (e) {
+    fail(e);
+    return undefined;
   }
 }
 

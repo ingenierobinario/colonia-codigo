@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { Organization, ProjectKind } from "@colonia/protocol";
+import type { Organization, ProjectKind, ProjectMark } from "@colonia/protocol";
 import { declaresApp } from "../../../../packages/surfaces/src/kit.ts";
 import { readOrganization, writeOrganization } from "../apc/org.ts";
 import type { ApcSync } from "../apc/sync.ts";
@@ -30,6 +30,7 @@ import type { Services } from "../services/registry.ts";
 import { withKit } from "../surface-kit.ts";
 import { checkReadOnly } from "../tools/folders.ts";
 import { projectHelperHandlers } from "./project-helper.ts";
+import { changeMark } from "./project-mark.ts";
 import type { Handlers } from "./router.ts";
 
 export function appHandlers(deps: {
@@ -117,17 +118,21 @@ export function appHandlers(deps: {
       projects: store.projects.list(include_unregistered).map(publicProject),
       base: store.settings.read("base_project"),
     }),
-    "projects.update_base": ({ name, description, kind, autonomy }) => {
+    "projects.update_base": ({ name, description, kind, autonomy, mark }) => {
       const cur = store.settings.read("base_project");
       const desc = description === undefined ? cur.description : description || undefined;
       const k = kind === undefined ? cur.kind : (kind ?? undefined);
       const auto = autonomy === undefined ? cur.autonomy : (autonomy ?? undefined);
-      store.settings.write("base_project", {
-        name: name ?? cur.name,
-        ...(desc ? { description: desc } : {}),
-        ...(k ? { kind: k } : {}),
-        ...(auto ? { autonomy: auto } : {}),
-      });
+      const write = (tile: ProjectMark | undefined) =>
+        store.settings.write("base_project", {
+          name: name ?? cur.name,
+          ...(desc ? { description: desc } : {}),
+          ...(k ? { kind: k } : {}),
+          ...(auto ? { autonomy: auto } : {}),
+          ...(tile ? { mark: tile } : {}),
+        });
+      if (mark === undefined) write(cur.mark);
+      else changeMark(store, cur.mark, mark, write);
       return { base: store.settings.read("base_project") };
     },
     "org.get": ({ project }) => {
@@ -166,7 +171,7 @@ export function appHandlers(deps: {
       if (!project) throw notFound(`project ${r.project}`);
       return { project: publicProject(project), agents: r.agents };
     },
-    "projects.update": ({ project: id, name, description, kind, autonomy, read_only_folders }) => {
+    "projects.update": ({ project: id, name, description, kind, autonomy, read_only_folders, mark }) => {
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
       if (read_only_folders !== undefined) {
@@ -180,6 +185,8 @@ export function appHandlers(deps: {
       }
       // Autonomy is Colonia's, not the folder's: it changes even with the folder away.
       if (autonomy !== undefined) store.projects.setAutonomy(id, autonomy ?? undefined);
+      // So is its tile.
+      if (mark !== undefined) changeMark(store, project.mark, mark, (tile) => store.projects.setMark(id, tile));
       const meta = name !== undefined || description !== undefined || kind !== undefined;
       if (meta && !project.path) throw badRequest(`${project.name} has no folder to keep its settings in`);
       if (meta && !project.present) throw badRequest(`the folder of ${project.name} is not on disk right now`);

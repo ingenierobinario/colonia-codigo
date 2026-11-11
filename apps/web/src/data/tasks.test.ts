@@ -3,6 +3,7 @@ import { type TestContext, test } from "node:test";
 import { Task, type TaskColumn } from "@colonia/protocol";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { pendingColumn } from "./pendingColumn.ts";
 
 const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
 Object.defineProperty(globalThis, "window", {
@@ -132,6 +133,36 @@ test("task mutations send exact fields, update cached state, and report failed d
   ]);
   mockRpc(t, { "tasks.delete": new Error("not allowed") });
   assert.equal(await tasks.deleteTask("task_1"), false);
+});
+
+test("reopening sends the pending column in the same call, whatever the board looks like", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const reopened = task("task_9");
+  const calls = mockRpc(t, { "tasks.close": () => reopened });
+  const custom = [{ id: "doing" }, { id: "review" }, { id: "later" }];
+  assert.equal(pendingColumn([{ id: "backlog" }, { id: "todo" }, { id: "doing" }]), "todo");
+  assert.equal(pendingColumn(custom), "later");
+  assert.equal(pendingColumn([{ id: "doing" }]), "doing");
+  assert.equal(pendingColumn([]), "todo");
+  await tasks.reopenTask("task_9", custom);
+  await tasks.reopenTask("task_9", custom, "review");
+  assert.deepEqual(boardSnapshot().tasks.task_9, reopened);
+  assert.deepEqual(calls, [
+    ["tasks.close", { task: "task_9", state: "open", status: "later" }],
+    ["tasks.close", { task: "task_9", state: "open", status: "review" }],
+  ]);
+});
+
+test("a page of closed tasks passes its filters through and a failure reads as nothing loaded", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const page = { tasks: [task("task_7", "done"), task("task_8", "dropped")], total: 12 };
+  const calls = mockRpc(t, { "tasks.closed": () => page });
+  assert.deepEqual(await tasks.loadClosed({ project: "project_1", query: "offer", offset: 20, limit: 20 }), page);
+  assert.deepEqual(calls, [["tasks.closed", { project: "project_1", query: "offer", offset: 20, limit: 20 }]]);
+  // Reading a page never puts its tasks on the board.
+  assert.equal(boardSnapshot().tasks.task_7, undefined);
+  mockRpc(t, { "tasks.closed": new Error("offline") });
+  assert.equal(await tasks.loadClosed({ offset: 0, limit: 20 }), undefined);
 });
 
 test("one-time task lookup resolves events and detail reads normalize optional collections", async (t) => {

@@ -125,7 +125,8 @@ export const enOffice = {
     "Finished; the agent the row names reviews it. Asking for changes sends it back to whoever did it; approving makes it yours to close.",
   "tasks.help.group.blocked":
     "What is yours: an agent asked you something or needs your decision (it goes on when you answer), or a finished task you review to close. Each row says which.",
-  "tasks.help.group.closed": "Done or dropped, newest first.",
+  "tasks.help.group.closed":
+    "Every task done or dropped, newest first. Reopen one and it goes back to pending with its conversation and history.",
   "tasks.historyEmpty": "Nothing has happened with this task yet.",
   "tasks.ev.create": "{name} created the task",
   "tasks.ev.move": "{name} moved it from {from} to {to}",
@@ -422,7 +423,12 @@ export const enOffice = {
   "tasks.acceptAll": "Accept all",
   "tasks.row.proposedBy": "Proposed by {name}",
   "tasks.row.proposed": "Proposed",
-  "tasks.group.closed": "Closed recently",
+  "tasks.group.closed": "Closed",
+  "tasks.closed.search": "Search closed tasks",
+  "tasks.closed.found.one": "1 result",
+  "tasks.closed.found.other": "{n} results",
+  "tasks.closed.noMatch": "No closed task matches that search.",
+  "tasks.closed.empty": "Nothing closed yet. Tasks you finish or drop are kept here.",
   "tasks.blockedTip": "Waiting for your answer",
   "tasks.row.reviewer": "Reviews: {name}",
   "tasks.row.asks": "Asks you something",

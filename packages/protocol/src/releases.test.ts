@@ -5,10 +5,12 @@ import {
   coreBundleName,
   desktopAssetFor,
   fetchReleases,
+  localizedChanges,
   newerReleases,
   nodeOs,
   parseSha256,
   platformOf,
+  releaseBody,
   releaseChanges,
   targetOf,
 } from "./releases.ts";
@@ -119,4 +121,93 @@ test("what the newer releases change: their bullets, newest first, and the name 
     "Docs: guides in line with the code",
   ]);
   assert.equal(releaseChanges(newer, 2).length, 2);
+});
+
+const BILINGUAL = [
+  "## Español",
+  "",
+  "- Cada proyecto puede llevar su propia imagen.",
+  "- Las tareas cerradas se pueden reabrir.",
+  "",
+  "## English",
+  "",
+  "- Each project can have its own picture.",
+  "- Closed tasks can be reopened.",
+  "",
+].join("\n");
+
+test("a release that says its notes under a heading per language gives them by language", () => {
+  const [r] = newerReleases([{ tag_name: "v2.27.0", body: BILINGUAL }], "2.26.0");
+  assert.deepEqual(r?.localized, {
+    es: ["Cada proyecto puede llevar su propia imagen.", "Las tareas cerradas se pueden reabrir."],
+    en: ["Each project can have its own picture.", "Closed tasks can be reopened."],
+  });
+  // Who knows no languages still reads one list, not both.
+  assert.deepEqual(r?.notes, r?.localized?.en);
+  assert.deepEqual(releaseChanges(r ? [r] : [], 8, "es"), r?.localized?.es);
+  assert.deepEqual(releaseChanges(r ? [r] : []), r?.localized?.en);
+});
+
+test("language headings are read whatever their level, case and spelling", () => {
+  const body = "# ESPANOL #\n* Uno\n### Castellano\n- Dos\n#### en\n- One\n###### Spanish\n- Tres";
+  const [r] = newerReleases([{ tag_name: "v2.27.0", body }], "2.26.0");
+  assert.deepEqual(r?.localized, { es: ["Uno", "Dos", "Tres"], en: ["One"] });
+});
+
+test("a release written the old way has plain notes and no languages", () => {
+  const [r] = newerReleases([{ tag_name: "v2.26.0", body: "- Agents keep working\n- **Faster** `inbox`" }], "2.25.0");
+  assert.deepEqual(r?.notes, ["Agents keep working", "Faster inbox"]);
+  assert.equal(r?.localized, undefined);
+  assert.deepEqual(releaseChanges(r ? [r] : [], 8, "es"), ["Agents keep working", "Faster inbox"]);
+  assert.equal(localizedChanges(r ? [r] : []), undefined);
+});
+
+test("a heading that names no language leaves its bullets untagged", () => {
+  const body = "## Español\n- Uno\n## Full changelog\n- chore: bump\n## English\n- One";
+  const [r] = newerReleases([{ tag_name: "v2.27.0", body }], "2.26.0");
+  assert.deepEqual(r?.localized, { es: ["Uno"], en: ["One"] });
+  assert.deepEqual(r?.notes, ["chore: bump"]);
+});
+
+test("a release in one language only answers in it, whatever language is asked", () => {
+  const [r] = newerReleases([{ tag_name: "v2.27.0", body: "## Español\n\n- Solo en español" }], "2.26.0");
+  assert.deepEqual(r?.localized, { es: ["Solo en español"] });
+  assert.deepEqual(r?.notes, ["Solo en español"]);
+  assert.deepEqual(releaseChanges(r ? [r] : [], 8, "en"), ["Solo en español"]);
+  assert.deepEqual(localizedChanges(r ? [r] : []), { en: ["Solo en español"], es: ["Solo en español"] });
+});
+
+test("old and new releases together give a full list in each language", () => {
+  const newer = newerReleases(
+    [
+      { tag_name: "v2.27.0", body: BILINGUAL },
+      { tag_name: "v2.26.0", body: "- Agents keep working through long conversations" },
+      { tag_name: "v2.25.0", body: "" },
+    ],
+    "2.24.0",
+  );
+  assert.deepEqual(localizedChanges(newer), {
+    en: [
+      "Each project can have its own picture.",
+      "Closed tasks can be reopened.",
+      "Agents keep working through long conversations",
+      "Colonia 2.25.0",
+    ],
+    es: [
+      "Cada proyecto puede llevar su propia imagen.",
+      "Las tareas cerradas se pueden reabrir.",
+      "Agents keep working through long conversations",
+      "Colonia 2.25.0",
+    ],
+  });
+  assert.equal(localizedChanges(newer, 3)?.es.length, 3);
+});
+
+test("the body a release is published with reads back as the same notes", () => {
+  const notes = { es: ["Uno.", "Dos."], en: ["One.", "Two."] };
+  const body = releaseBody(notes);
+  assert.equal(body, "## Español\n\n- Uno.\n- Dos.\n\n## English\n\n- One.\n- Two.\n");
+  assert.deepEqual(newerReleases([{ tag_name: "v2.27.0", body }], "2.26.0")[0]?.localized, notes);
+  assert.equal(releaseBody({}), "");
+  assert.equal(releaseBody({ en: ["Only English."] }), "## English\n\n- Only English.\n");
 });

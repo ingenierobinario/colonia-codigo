@@ -1,9 +1,10 @@
 import type { Task } from "@colonia/protocol";
-import { AgentAvatar, Dialog, Icons, Kbd, ProjectTile } from "@colonia/ui";
+import { AgentAvatar, Dialog, Icons, Kbd } from "@colonia/ui";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { CONFIG_SECTION_LABELS } from "../config/sectionLabels.ts";
 import { client } from "../data/client.ts";
-import { isListed, projectInitial, projectTone } from "../data/identity.ts";
+import { isListed } from "../data/identity.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { type ConfigSection, go, useNav } from "./nav.ts";
@@ -125,7 +126,7 @@ export function CommandPalette() {
         group: "palette.projects",
         title: p.name,
         ...(p.path ? { detail: p.path } : {}),
-        icon: <ProjectTile tone={projectTone(p.id)} initial={projectInitial(p.name)} size={18} />,
+        icon: <ProjectAvatar id={p.id} name={p.name} size={18} />,
         run: close(() => go.project(p.id)),
       }));
     const agentItems: Item[] = Object.values(agents).map((a) => ({

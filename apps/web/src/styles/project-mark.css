@@ -1,0 +1,214 @@
+/* The editor of a project's tile, and the header tile that opens it. */
+.pmark {
+  display: flex;
+  flex-direction: column;
+  gap: var(--colonia-space-4);
+  min-width: 0;
+}
+.pmark__top {
+  display: flex;
+  align-items: center;
+  gap: var(--colonia-space-4);
+  flex-wrap: wrap;
+}
+.pmark__preview {
+  display: flex;
+  flex: none;
+}
+.pmark__picture {
+  display: block;
+  overflow: hidden;
+  border-radius: 19px;
+}
+.pmark__modes {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.pmark__hint {
+  margin: 0;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+}
+.pmark__legend {
+  padding: 0;
+  margin-bottom: var(--colonia-space-2);
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
+}
+.pmark__grid,
+.pmark__tones {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pmark__grid {
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: var(--colonia-space-1);
+}
+.pmark__grid > .pmark__legend,
+.pmark__tones > .pmark__legend {
+  grid-column: 1 / -1;
+}
+.pmark__cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--colonia-radius-md);
+  background: none;
+  color: var(--colonia-fg);
+  cursor: pointer;
+}
+.pmark__cell--emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+.pmark__cell:hover {
+  border-color: var(--colonia-border-strong);
+}
+.pmark__cell[aria-pressed="true"],
+.pmark__tone[aria-pressed="true"] {
+  border-color: var(--colonia-accent);
+  background: var(--colonia-fill);
+}
+.pmark__cell:focus-visible,
+.pmark__tone:focus-visible,
+.pmark__crop:focus-visible,
+.project__mark:focus-visible {
+  outline: 2px solid var(--colonia-focus, var(--colonia-accent, currentColor));
+  outline-offset: 2px;
+}
+.pmark__other {
+  display: flex;
+  align-items: center;
+  gap: var(--colonia-space-3);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+}
+.pmark__emojiinput {
+  width: 64px;
+  text-align: center;
+}
+.pmark__tones {
+  grid-template-columns: repeat(auto-fill, minmax(36px, max-content));
+  align-items: center;
+  gap: var(--colonia-space-1);
+}
+.pmark__tone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--colonia-radius-pill);
+  background: none;
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-sm);
+  cursor: pointer;
+}
+.pmark__tone--auto {
+  grid-column: span 3;
+  padding: 0 var(--colonia-space-3);
+  border-color: var(--colonia-border);
+}
+.pmark__tone:hover {
+  border-color: var(--colonia-border-strong);
+}
+.pmark__pic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--colonia-space-3);
+}
+.pmark__cropper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--colonia-space-2);
+  max-width: 100%;
+}
+.pmark__crop {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-fill);
+  overflow: hidden;
+  cursor: grab;
+  /* The drag moves the picture: the page under a finger must not scroll with it. */
+  touch-action: none;
+}
+.pmark__crop:active {
+  cursor: grabbing;
+}
+.pmark__cropbox {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.pmark__cropbox img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+.pmark__zoom {
+  display: flex;
+  align-items: center;
+  gap: var(--colonia-space-2);
+}
+.pmark__range {
+  width: 150px;
+  accent-color: var(--colonia-accent);
+}
+.pmark__problem {
+  margin: 0;
+  padding: var(--colonia-space-2) var(--colonia-space-3);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-danger-soft);
+  color: var(--colonia-danger-soft-fg);
+  font-size: var(--colonia-text-sm);
+}
+.pmark__restore {
+  margin-right: auto;
+}
+
+/* The header tile is a button: a pencil comes over it on hover and on focus. */
+.project__mark {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+}
+.project__markedit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  opacity: 0;
+}
+.project__mark:hover .project__markedit,
+.project__mark:focus-visible .project__markedit {
+  opacity: 1;
+}
+/* The tile and the button that changes it, in the project's settings. */
+.projsettings__mark {
+  display: flex;
+  align-items: center;
+  gap: var(--colonia-space-3);
+}

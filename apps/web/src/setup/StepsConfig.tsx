@@ -1,6 +1,7 @@
-import { Badge, Button, Dialog, Icons, Input, ProjectTile, Select, Spinner, Switch } from "@colonia/ui";
+import { Badge, Button, Dialog, Icons, Input, Select, Spinner, Switch } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
+import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { QrCode } from "../common/QrCode.tsx";
 import { RouterChain } from "../config/models/RouterChain.tsx";
 import { ProvidersGrid } from "../config/ProvidersGrid.tsx";
@@ -330,7 +331,7 @@ export function ProjectStep({ draft: d, set }: StepProps) {
         {t("setup.project.body")}
       </StepHead>
       <div className="wiz__card wiz__default">
-        <ProjectTile tone="brand" initial={(d.baseName.trim()[0] ?? "D").toUpperCase()} size={30} />
+        <ProjectAvatar name={d.baseName.trim() || "D"} size={30} />
         <span className="wiz__rowmain">
           <span className="wiz__rowbody">{t("setup.project.default")}</span>
           <span className="wiz__basefields">

@@ -1,7 +1,8 @@
 // A project's own settings (projects.update): kept in its .apc/project.json by the core.
-import type { Params, Project } from "@colonia/protocol";
+import type { Params, Project, ProjectMark } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
+import { DEFAULT_PID } from "./identity.ts";
 import { notify } from "./notices.ts";
 import { data } from "./state.ts";
 
@@ -46,4 +47,10 @@ export async function updateBase(p: Params<"projects.update_base">): Promise<boo
     notify(t("error.change", { error: errText(e) }));
     return false;
   }
+}
+
+/** Draws a project's tile as its owner chose; null is the initial again. False when it could not be saved. */
+export async function setProjectMark(pid: string, mark: ProjectMark | null): Promise<boolean> {
+  if (pid === DEFAULT_PID) return updateBase({ mark });
+  return (await updateProject({ project: pid, mark })) !== undefined;
 }
