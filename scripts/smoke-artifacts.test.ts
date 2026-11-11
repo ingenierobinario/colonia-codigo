@@ -14,6 +14,6 @@ test("a mac zip is unpacked with ditto, which keeps the framework links the sign
     "/usr/bin/ditto",
     ["-x", "-k", "a.zip", "d"],
   ]);
-  assert.equal(unzipCommand({ os: "win", arch: "x64" }, "a.zip", "d")[0], "tar");
+  assert.match(unzipCommand({ os: "win", arch: "x64" }, "a.zip", "d")[0], /System32[\\/]tar\.exe$/);
   assert.equal(unzipCommand({ os: "linux", arch: "arm64" }, "a.zip", "d")[0], "unzip");
 });

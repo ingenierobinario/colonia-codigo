@@ -65,6 +65,8 @@ function main(argv: string[]): void {
   }
   process.stdin.setEncoding("utf8");
   process.stdin.on("data", (d: string) => p.write(d));
+  // The core never closes this end on purpose: it ending means the core is gone, so the shell must not outlive it.
+  process.stdin.on("end", () => exitWhenClosed(1));
   p.onData((d) => process.stdout.write(d));
   let control: net.Socket | undefined;
   try {

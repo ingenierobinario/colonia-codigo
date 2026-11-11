@@ -20,7 +20,8 @@ export function appBinary(p: Platform): string {
 /** The command that unpacks a zip on each OS without flattening the mac framework links. */
 export function unzipCommand(p: Platform, zip: string, into: string): [string, string[]] {
   if (p.os === "mac") return ["/usr/bin/ditto", ["-x", "-k", zip, into]];
-  if (p.os === "win") return ["tar", ["-xf", zip, "-C", into]];
+  // Windows' own bsdtar by full path: under Git Bash a bare "tar" is GNU tar, which cannot open a zip.
+  if (p.os === "win") return [path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe"), ["-xf", zip, "-C", into]];
   return ["unzip", ["-q", zip, "-d", into]];
 }
 

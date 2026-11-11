@@ -139,9 +139,9 @@ export function createDesktopUpdater(opts: {
   const env = process.env.COLONIA_RELEASES;
   const feed = env === "off" ? undefined : env || RELEASE_FEED;
   const enabled = app.isPackaged && Boolean(feed) && Boolean(platformOf(process.platform, process.arch));
-  const bundle = process.platform === "darwin" ? replaceableBundle(process.execPath, writable) : undefined;
+  const bundle = process.platform === "darwin" ? replaceableBundle(process.execPath, canWrite) : undefined;
   // Why a Mac app cannot replace itself, so the owner is told what to do about it.
-  const place = process.platform === "darwin" ? bundlePlace(process.execPath, writable) : undefined;
+  const place = process.platform === "darwin" ? bundlePlace(process.execPath, canWrite) : undefined;
   // An AppImage replaces itself; run from an unpacked zip, the owner gets the file instead.
   const image = process.platform === "linux" ? process.env.APPIMAGE : undefined;
   // An AppImage in a folder Colonia cannot write (a system path, a read-only mount) cannot replace itself.
