@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.32.0": {
+    en: [
+      "The terminal is a real one on Windows and on Macs or Linux without Python: prompts, colours, full screen.",
+      "On Windows, Colonia keeps the computer awake properly, starts hidden and updates when you quit.",
+      "On Mac and Linux as a service, your tools, the keychain and the AppImage work as they do in your session.",
+    ],
+    es: [
+      "El terminal es uno de verdad en Windows y en Mac o Linux sin Python: contraseñas, colores, pantalla completa.",
+      "En Windows, Colonia mantiene el ordenador despierto como toca, arranca oculta y se actualiza al salir.",
+      "En Mac y Linux como servicio, tus herramientas, el llavero y la AppImage funcionan como en tu sesión.",
+    ],
+  },
   "2.31.0": {
     en: ["In the Inbox By chat view, the Super-agent tag no longer gets cut off: it shows whole or steps aside."],
     es: ["En la vista Por chat de la Bandeja, la etiqueta Super-agente ya no sale cortada: se ve entera o se aparta."],
