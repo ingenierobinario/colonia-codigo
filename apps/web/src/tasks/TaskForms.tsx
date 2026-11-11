@@ -70,9 +70,18 @@ export function KindHelp() {
   );
 }
 
-export function NewTask({ projectId, onClose }: { projectId?: string | undefined; onClose: () => void }) {
+export function NewTask({
+  projectId,
+  initialTitle = "",
+  onClose,
+}: {
+  projectId?: string | undefined;
+  /** What the task starts named, when it comes from something that already has a name (a chat). */
+  initialTitle?: string;
+  onClose: () => void;
+}) {
   const t = useT();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState("");
   const [kind, setKind] = useState<TaskKind>("task");
   const [project, setProject] = useState(realProjectId(projectId));

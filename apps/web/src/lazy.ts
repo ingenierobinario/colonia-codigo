@@ -32,6 +32,7 @@ export const ChannelScreen = lazy(() =>
 export const ConfigModal = lazy(() => import("./config/ConfigModal.tsx").then((m) => ({ default: m.ConfigModal })));
 export const TaskPeek = lazy(() => import("./tasks/TaskPeek.tsx").then((m) => ({ default: m.TaskPeek })));
 export const TaskBundle = lazy(() => import("./inbox/TaskBundle.tsx").then((m) => ({ default: m.TaskBundle })));
+export const NewTask = lazy(() => import("./tasks/TaskForms.tsx").then((m) => ({ default: m.NewTask })));
 export const TaskStatus = lazy(() => import("./common/TaskStatus.tsx").then((m) => ({ default: m.TaskStatus })));
 export const SubthreadPart = lazy(() =>
   import("./chat/parts/SubthreadPart.tsx").then((m) => ({ default: m.SubthreadPart })),

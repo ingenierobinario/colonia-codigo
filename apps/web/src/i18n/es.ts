@@ -1470,6 +1470,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "res.catalog.cat.dev": "Desarrollo",
   "chat.more": "Más",
   "chat.compact": "Resumir turnos anteriores",
+  "chat.toTask": "Crear una tarea a partir de este chat",
   "chat.folder": "Carpeta del proyecto",
   "chat.folderOff": "No trabaja en la carpeta",
   "chat.compactSkipped": "No se resumió: {reason}",

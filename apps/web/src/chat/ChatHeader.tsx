@@ -1,6 +1,6 @@
 import type { Agent, Thread, WritePolicy } from "@colonia/protocol";
 import { EngineIcon, IconButton, Icons, Menu, type MenuEntry, Tag, Tooltip } from "@colonia/ui";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useAgentHint } from "../common/AgentFace.tsx";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
@@ -14,7 +14,7 @@ import { useT } from "../i18n/index.ts";
 import { ThreadAvatar } from "../inbox/ThreadAvatar.tsx";
 import { PinMark } from "../inbox/ThreadRow.tsx";
 import { threadMenu } from "../inbox/threadActions.tsx";
-import { ChannelFace, TaskStatus } from "../lazy.ts";
+import { ChannelFace, NewTask, TaskStatus } from "../lazy.ts";
 import { PanelSwitcher } from "../panel/PanelSwitcher.tsx";
 import { go, useNav } from "../shell/nav.ts";
 
@@ -66,6 +66,7 @@ export function ChatHeader({
   const projects = useData((s) => s.projects);
   const project = projects.find((p) => p.id === thread.project_id);
   const tools = useNav((s) => s.tools);
+  const [tasking, setTasking] = useState(false);
   const sub = thread.kind === "a2a" || thread.parent_id != null;
   // An engine session is the engine itself: its name and icon, not the agent that owns the run.
   const engine = useEngineLabel(thread.engine);
@@ -170,6 +171,16 @@ export function ChatHeader({
                 ...(project?.path && project.present && ["loose", "agent", "code"].includes(thread.kind)
                   ? [folderMenu(thread, t)]
                   : []),
+                // A task's own chat and a routine's already are one; the home chat is not about one thing.
+                ...(["task", "routine", "home"].includes(thread.kind)
+                  ? []
+                  : [
+                      {
+                        label: t("chat.toTask"),
+                        icon: <Icons.ListChecks size={14} />,
+                        onSelect: () => setTasking(true),
+                      },
+                    ]),
                 {
                   label: t("chat.compact"),
                   icon: <Icons.Layers size={14} />,
@@ -183,6 +194,11 @@ export function ChatHeader({
         {/* Usage opens from the composer's context chip; read-only chats have no composer, so it stays here. */}
         <PanelSwitcher wide={wide} skipUsage={!sub} />
       </div>
+      {tasking && (
+        <Suspense fallback={null}>
+          <NewTask projectId={project?.id} initialTitle={thread.title} onClose={() => setTasking(false)} />
+        </Suspense>
+      )}
     </header>
   );
 }

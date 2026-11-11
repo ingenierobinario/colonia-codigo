@@ -1466,6 +1466,7 @@ export const en = {
   "res.catalog.cat.dev": "Development",
   "chat.more": "More",
   "chat.compact": "Summarize earlier turns",
+  "chat.toTask": "Make a task from this chat",
   "chat.folder": "Project folder",
   "chat.folderOff": "Does not work in the folder",
   "chat.compactSkipped": "Not summarized: {reason}",
