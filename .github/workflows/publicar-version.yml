@@ -50,6 +50,13 @@ jobs:
         run: |
           [[ "$TAG" =~ ^v2\.[0-9]+\.[0-9]+$ ]] || { echo "etiqueta no válida: $TAG"; exit 1; }
           COLONIA_VERSION="${TAG#v}" corepack pnpm package:${{ matrix.os }} --${{ matrix.arch }}
+      - name: Comprobar y arrancar lo construido
+        shell: bash
+        run: |
+          # Lo que lleva esta plataforma (y sus sumas), el core instalado con su script y la app empaquetada arrancando.
+          if [ "${{ matrix.os }}" = linux ] && ! command -v xvfb-run >/dev/null; then sudo apt-get install -y xvfb; fi
+          node scripts/release-assets.ts "${TAG#v}" out --platform ${{ matrix.os }}-${{ matrix.arch }}
+          node scripts/smoke-artifacts.ts "${TAG#v}" ${{ matrix.os }} ${{ matrix.arch }} out
       - uses: actions/upload-artifact@v4
         with:
           name: colonia-${{ matrix.os }}-${{ matrix.arch }}
@@ -78,7 +85,6 @@ jobs:
           path: dist
           merge-multiple: true
       - uses: actions/setup-node@v4
-        continue-on-error: true
         with:
           node-version: "24.11"
       - name: Notas de la versión
@@ -96,6 +102,8 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
           ls -la dist
+          # Los 32 ficheros exactos y cada suma, antes de que nada sea público (create ya sube como borrador).
+          node scripts/release-assets.ts "${TAG#v}" dist
           if gh release view "$TAG" -R "$FEED" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* -R "$FEED" --clobber
           else

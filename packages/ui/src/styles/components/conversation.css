@@ -54,11 +54,18 @@
   font-size: var(--colonia-text-md);
   font-weight: var(--colonia-weight-medium);
 }
+/* A title tag keeps its natural width (shrinking it clipped «Super-agente» to «Super-ag»): the title gives way first,
+   and when the row is too narrow for both the tag is hidden whole (its text stays in the row's title attribute). */
 .colonia-convrow__top > .colonia-tag {
-  flex-shrink: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.colonia-convrow__main {
+  container: convrow / inline-size;
+}
+@container convrow (max-width: 240px) {
+  .colonia-convrow__top > .colonia-tag {
+    display: none;
+  }
 }
 .colonia-convrow__time {
   margin-left: auto;

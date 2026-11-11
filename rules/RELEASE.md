@@ -155,6 +155,12 @@ e2e/install/servers.sh clean
 On a server: `curl -fsSL http://colonia-feed:7480/install.sh | bash -s -- --feed http://colonia-feed:7480`; the install
 keeps updating from that feed (`colonia upgrade`). The desktop app installs onto one with `COLONIA_RELEASES=<feed>` set.
 
+What the tag workflow (`publicar-version.yml`) proves before publishing: each runner checks its slice of `out/` against
+`scripts/release-assets.ts` (names and checksums), installs its core bundle with `install.sh`/`install.ps1` and starts
+it with the Node inside, then starts the packaged app from its zip on its embedded core (`scripts/smoke-artifacts.ts`;
+on macOS `codesign --verify --deep --strict` first). The publish job checks the exact 32-file set and every checksum
+before `gh release` runs. `smoke-artifacts.ts` is for a throwaway runner only: `install.ps1` writes the user PATH.
+
 ## Verified before the beta
 
 Tried for real on the network, from a local feed, with builds made the way `release.yml` makes them:
