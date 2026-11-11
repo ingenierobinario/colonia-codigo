@@ -102,8 +102,9 @@ test("v1 skills are copied once: folders without inner links, linked skills stay
   fs.writeFileSync(path.join(outside, "SKILL.md"), "---\nname: linked\ndescription: Lives elsewhere.\n---\n");
   fs.mkdirSync(path.join(v1, "plain"));
   fs.writeFileSync(path.join(v1, "plain", "SKILL.md"), "---\nname: plain\ndescription: A plain one.\n---\n");
-  fs.symlinkSync(outside, path.join(v1, "plain", "leak"));
-  fs.symlinkSync(outside, path.join(v1, "linked"));
+  fs.symlinkSync(outside, path.join(v1, "plain", "leak"), "junction");
+  // Junctions: what a v1 link is on a Windows account without symlink rights (ignored elsewhere).
+  fs.symlinkSync(outside, path.join(v1, "linked"), "junction");
   fs.mkdirSync(path.join(v1, "brief-writer"));
   fs.writeFileSync(path.join(v1, "brief-writer", "SKILL.md"), "---\nname: brief-writer\ndescription: Old.\n---\n");
   fs.mkdirSync(path.join(v1, "not-a-skill"));

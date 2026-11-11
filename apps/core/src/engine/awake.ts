@@ -20,7 +20,7 @@ export function keepAwake(o: {
   spawn?: Spawn;
 }) {
   const platform = o.platform ?? process.platform;
-  const spawn: Spawn = o.spawn ?? ((cmd, args) => nodeSpawn(cmd, args, { stdio: "ignore" }));
+  const spawn: Spawn = o.spawn ?? ((cmd, args) => nodeSpawn(cmd, args, { stdio: "ignore", windowsHide: true }));
   let child: ReturnType<Spawn> | undefined;
   let closed = false;
   let refused = false;

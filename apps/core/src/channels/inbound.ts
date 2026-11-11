@@ -31,7 +31,7 @@ import type { createRooms } from "./rooms.ts";
 import type { Stickers } from "./stickers.ts";
 import type { Suggestions } from "./suggestions.ts";
 import { channelTexts } from "./texts.ts";
-import type { ChannelConfig } from "./types.ts";
+import type { ChannelConfig, OwnMessage } from "./types.ts";
 
 /** A contact gets at most this many automatic answers per hour; then the owner is told once. */
 const CONTACT_PER_HOUR = 20;
@@ -426,7 +426,7 @@ export function createInbound(deps: {
       store.threads.byConversation(cfg.id, conversation) ??
       store.threads.create({
         kind: "channel",
-        title: person.name,
+        title: displayName(person.name, conversation),
         agent_ids: [cfg.agent_id],
         channel: { id: cfg.id, conversation, person_id: person.id },
       })
@@ -474,6 +474,70 @@ export function createInbound(deps: {
       const t = store.threads.get(threadId);
       store.threads.patch(threadId, { preview: previewOf(text), ...(person ? { unread: (t?.unread ?? 0) + 1 } : {}) });
       return kept.id;
+    });
+  }
+
+  /** PROPIOS-1: platform ids of the owner's own messages already kept (a redelivery is the same message). */
+  const ownKept = new Set<string>();
+
+  /**
+   * PROPIOS-1: the owner wrote to a contact from their own phone. Kept in that contact's chat as the owner's words and
+   * noted for the agent (as "I'll write" does), but no turn, no unread, no follow-up moved. Only a chat Colonia already
+   * keeps, or a known contact's: the owner's private chats with people Colonia does not know never come in.
+   */
+  function ownSent(channel: string, m: OwnMessage): void {
+    const cfg = deps.configs().find((c) => c.id === channel);
+    if (!cfg) return;
+    const key = `${channel}\n${m.external_id}`;
+    // Our own send whose echo slipped through (delivery recorded its id): already in the chat.
+    if (ownKept.has(key) || store.channels.outbox.byExternal(channel, m.external_id)) return;
+    const person = store.persons.byAddress(cfg.id, m.conversation);
+    const known = person && person.role !== "owner" && person.role !== "blocked" ? person : undefined;
+    const thread =
+      store.threads.byConversation(cfg.id, m.conversation) ??
+      (known ? contactThread(cfg, m.conversation, known) : undefined);
+    if (!thread?.channel?.person_id || thread.channel.person_id === OWNER_ID) {
+      log.info({ channel }, "owner's own message to someone Colonia does not keep: not stored");
+      return;
+    }
+    ownKept.add(key);
+    if (ownKept.size > 2000) ownKept.delete(ownKept.values().next().value ?? "");
+    let text = m.text;
+    const attachments: string[] = [];
+    for (const file of m.files ?? []) {
+      try {
+        attachments.push(
+          saveUpload(
+            deps.home,
+            store,
+            { name: file.name, mime: file.mime, bytes: Buffer.from(file.data, "base64"), thread: thread.id },
+            file.mime.startsWith("image/") ? undefined : UPLOAD_LIMITS.channelBytes,
+          ).id,
+        );
+      } catch (err) {
+        text += `\n[attachment could not be accepted: ${errorMessage(err, 200)}]`;
+      }
+    }
+    const said = text.trim() || (attachments.length ? "[attached files]" : "");
+    if (!said) return;
+    const name = store.persons.get(thread.channel.person_id)?.name ?? "them";
+    store.tx(() => {
+      store.messages.add({
+        thread_id: thread.id,
+        author: { kind: "user", direct: true, phone: true },
+        via: channel,
+        parts: [
+          ...(text.trim() ? [{ type: "text" as const, text: text.trim() }] : []),
+          ...attachments.flatMap((id) => {
+            const media = store.media.get(id);
+            return media ? [partOfMedia(media)] : [];
+          }),
+        ],
+      });
+      store.modelLog.append(thread.id, undefined, [
+        { role: "user", content: `[Your owner wrote to ${name} directly from their phone:]\n${said}` },
+      ]);
+      store.threads.patch(thread.id, { preview: previewOf(said) });
     });
   }
 
@@ -739,6 +803,7 @@ export function createInbound(deps: {
     receive,
     action,
     reaction,
+    ownSent,
     /**
      * A request the owner approved after being asked: its first message is handled now, as if it had just arrived from
      * the person it turned out to be.
@@ -769,3 +834,13 @@ export function createInbound(deps: {
 
 /** The tray notice of a pairing request, closed when the owner answers it. */
 export const pairingRef = (code: string) => `pairing:${code}`;
+
+/**
+ * BANDEJA-1: a chat's name. One made only of emoji or symbols ("🔥✨") reads as nothing in a list: the number it
+ * writes from instead, when the address carries one.
+ */
+export function displayName(name: string, conversation: string): string {
+  if (/[\p{L}\p{N}]/u.test(name)) return name;
+  const digits = /^(\d{6,})@s\.whatsapp\.net$/.exec(conversation)?.[1] ?? /^\+?(\d{6,})$/.exec(conversation)?.[1];
+  return digits ? `+${digits}` : name;
+}

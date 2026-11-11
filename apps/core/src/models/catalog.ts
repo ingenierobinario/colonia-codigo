@@ -153,7 +153,11 @@ function fromCodexList(models: CodexListed[] | undefined): CatalogModel[] {
 async function codexModels(): Promise<CatalogModel[]> {
   const bin = await sdkPath("codex");
   if (!bin) throw new Error("not installed");
-  const { stdout } = await run(bin, ["debug", "models"], { timeout: 30_000, maxBuffer: 8 * 1024 * 1024 });
+  const { stdout } = await run(bin, ["debug", "models"], {
+    timeout: 30_000,
+    maxBuffer: 8 * 1024 * 1024,
+    windowsHide: true,
+  });
   return fromCodexList((JSON.parse(stdout) as { models?: CodexListed[] }).models);
 }
 
@@ -175,7 +179,9 @@ let codexVersionSeen: string | undefined;
 async function codexVersion(): Promise<string> {
   if (codexVersionSeen) return codexVersionSeen;
   const bin = await sdkPath("codex").catch(() => undefined);
-  const out = bin ? await run(bin, ["--version"], { timeout: 10_000 }).catch(() => undefined) : undefined;
+  const out = bin
+    ? await run(bin, ["--version"], { timeout: 10_000, windowsHide: true }).catch(() => undefined)
+    : undefined;
   const v = out?.stdout.match(/\d+\.\d+\.\d+/)?.[0];
   codexVersionSeen = v && v.localeCompare(KNOWN_CODEX, undefined, { numeric: true }) > 0 ? v : KNOWN_CODEX;
   return codexVersionSeen;

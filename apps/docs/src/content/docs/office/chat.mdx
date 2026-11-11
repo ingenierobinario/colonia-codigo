@@ -22,7 +22,11 @@ that tasks and routines open. Pick how to see them with the switch at the top:
 |---|---|
 | **Tree** | Chats grouped by project, then by agent, so you see who you talked to in Acme Store at a glance. |
 | **Activity** | Chats by time: In progress, Today, Yesterday, This week, Earlier. |
-| **By chat** | One flat list, newest first. |
+| **By chat** | One flat list, pinned first, then newest first. |
+
+**Since 2.30.0**, in the Tree each channel's chats that belong to no project have a group of their own, after the
+projects. There is no separate Unread block: unread chats go first in each branch, and the **more** button says how
+many of the hidden ones are unread. Delegated chats get a short title from the task, and a link is never a title.
 
 <Shot name="inbox" alt="The Inbox in Tree view: Home's chat, chats with project agents and a group chat, grouped by project and agent" caption="The Inbox, Tree view" />
 
@@ -75,6 +79,10 @@ not durable file storage.
 
 Channel conversations show the corresponding contact and channel identity. That display does not change the agent
 assigned to the chat.
+
+**Since 2.30.0**, what you write to a known contact from WhatsApp on your phone or WhatsApp Web shows in their chat as
+yours, and the agent there knows you said it. It starts no agent turn, never creates a contact, and earlier history
+is not imported.
 
 A delegated reply appears as an expandable block with its agent, status and a link to the source chat. It is not
 another participant in this conversation. An interrupted, failed or unanswered delegation does not mean the work

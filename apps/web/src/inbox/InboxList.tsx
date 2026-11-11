@@ -1,7 +1,7 @@
 import { Button, EmptyState, IconButton, Icons, Menu, SearchField, SegmentedControl, Skeleton } from "@colonia/ui";
 import { Suspense, useMemo, useState } from "react";
-import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { markAllRead } from "../data/actions.ts";
+import { useChannels } from "../data/channels.ts";
 import { findProject, threadAgent } from "../data/identity.ts";
 import { type InboxView, setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData, useShownAgents } from "../data/state.ts";
@@ -9,14 +9,7 @@ import { useT } from "../i18n/index.ts";
 import { ActivityView, TaskBundle } from "../lazy.ts";
 import { go, useNav } from "../shell/nav.ts";
 import { ListedChat } from "./Delegated.tsx";
-import {
-  archivedThreads,
-  bundleTasks,
-  groupByAgent,
-  groupByProject,
-  groupByTime,
-  unreadListed,
-} from "./groupThreads.ts";
+import { archivedThreads, bundleTasks, flatChats, groupByAgent, groupByTime, unreadListed } from "./groupThreads.ts";
 import { TreeView } from "./InboxViews.tsx";
 import { NewChatMenu, startChat, useChatAgents } from "./NewChatMenu.tsx";
 import { RoutineBundle } from "./RoutineBundle.tsx";
@@ -33,19 +26,23 @@ export function InboxList() {
   const ready = useData((s) => s.ready);
   const offline = useData((s) => s.connection === "offline");
   const [query, setQuery] = useState("");
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [showArchived, setShowArchived] = useState(false);
   const chatAgents = useChatAgents(projectId);
 
   const view = usePrefs((s) => s.inboxView);
   const routines = usePrefs((s) => s.inboxRoutines);
-  const groups = useMemo(
-    () => groupByProject(threads, projects, { projectId, query, routines }),
-    [threads, projects, projectId, query, routines],
+  const channels = useChannels((s) => s.channels);
+  // BANDEJA-1: "By chat" is one list, newest first, as the docs say; the tree groups by project and by channel.
+  const chats = useMemo(
+    () => flatChats(threads, { projectId, query, routines }),
+    [threads, projectId, query, routines],
   );
   const trees = useMemo(
-    () => (view === "tree" ? groupByAgent(threads, projects, { projectId, query, routines }) : []),
-    [view, threads, projects, projectId, query, routines],
+    () =>
+      view === "tree"
+        ? groupByAgent(threads, projects, { projectId, query, routines }, new Map(channels.map((c) => [c.id, c.label])))
+        : [],
+    [view, threads, projects, projectId, query, routines, channels],
   );
   const activity = useMemo(
     () => (view === "activity" ? groupByTime(threads, { projectId, query, routines }) : []),
@@ -118,7 +115,7 @@ export function InboxList() {
           </EmptyState>
         ) : !ready ? (
           <InboxSkeleton />
-        ) : groups.length === 0 && archived.length === 0 ? (
+        ) : chats.length === 0 && archived.length === 0 ? (
           <EmptyState
             icon={<Icons.Inbox />}
             title={query ? t("inbox.noResults") : t("inbox.empty")}
@@ -139,52 +136,29 @@ export function InboxList() {
             <ActivityView groups={activity} selected={threadId} />
           </Suspense>
         ) : (
-          groups.map((g) => {
-            const isCollapsed = collapsed[g.key] ?? false;
-            return (
-              <div key={g.key} className="inbox__group">
-                <button
-                  type="button"
-                  className="inbox__grouphead"
-                  aria-expanded={!isCollapsed}
-                  onClick={() => setCollapsed((c) => ({ ...c, [g.key]: !isCollapsed }))}
-                >
-                  <ProjectAvatar id={g.project?.id} name={g.name} size={16} />
-                  <span className="inbox__groupname">{g.name}</span>
-                  <span className="inbox__groupcount">{g.threads.length}</span>
-                  {g.running > 0 && (
-                    <span className="inbox__grouprun">{t("inbox.groupRunning", { n: g.running })}</span>
-                  )}
-                  <span className="inbox__groupspacer" />
-                  {isCollapsed ? <Icons.ChevronRight size={14} /> : <Icons.ChevronDown size={14} />}
-                </button>
-                {!isCollapsed &&
-                  bundleTasks(g.threads).map((entry) =>
-                    entry.kind === "routine" ? (
-                      <RoutineBundle
-                        key={`routine:${entry.routineId}`}
-                        routineId={entry.routineId}
-                        threads={entry.threads}
-                        selected={threadId}
-                      />
-                    ) : entry.kind === "task" ? (
-                      <Suspense key={entry.taskId} fallback={null}>
-                        <TaskBundle taskId={entry.taskId} threads={entry.threads} selected={threadId} />
-                      </Suspense>
-                    ) : (
-                      <ListedChat key={entry.thread.id} thread={entry.thread} selected={threadId}>
-                        <ThreadRow
-                          thread={entry.thread}
-                          agent={threadAgent(entry.thread, agents)}
-                          selected={entry.thread.id === threadId}
-                          onOpen={() => go.thread(entry.thread.id)}
-                        />
-                      </ListedChat>
-                    ),
-                  )}
-              </div>
-            );
-          })
+          bundleTasks(chats).map((entry) =>
+            entry.kind === "routine" ? (
+              <RoutineBundle
+                key={`routine:${entry.routineId}`}
+                routineId={entry.routineId}
+                threads={entry.threads}
+                selected={threadId}
+              />
+            ) : entry.kind === "task" ? (
+              <Suspense key={entry.taskId} fallback={null}>
+                <TaskBundle taskId={entry.taskId} threads={entry.threads} selected={threadId} />
+              </Suspense>
+            ) : (
+              <ListedChat key={entry.thread.id} thread={entry.thread} selected={threadId}>
+                <ThreadRow
+                  thread={entry.thread}
+                  agent={threadAgent(entry.thread, agents)}
+                  selected={entry.thread.id === threadId}
+                  onOpen={() => go.thread(entry.thread.id)}
+                />
+              </ListedChat>
+            ),
+          )
         )}
         {ready && archived.length > 0 && (
           <div className="inbox__archived">

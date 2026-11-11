@@ -31,5 +31,6 @@ function readUserSession(env: NodeJS.ProcessEnv): string {
     maxBuffer: 65536,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
+    windowsHide: true,
   });
 }

@@ -21,6 +21,7 @@ export const gitBoth = (cwd: string, args: string[], timeout = 10_000, env: Reco
     {
       timeout,
       maxBuffer: 4 * 1024 * 1024,
+      windowsHide: true,
       env: { ...process.env, GIT_TERMINAL_PROMPT: "0", GIT_ASKPASS: "", ...env },
     },
   );

@@ -8,6 +8,7 @@ import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { useEngineLabel } from "../common/useEngineLabel.ts";
+import { useChannels } from "../data/channels.ts";
 import { isWorking, routineName, threadAgent } from "../data/identity.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -28,7 +29,10 @@ import { useThreadChannel } from "./useThreadChannel.ts";
 export function chatLabel(thread: Thread, agent: Agent | undefined, generic: string): string {
   const plain = !thread.title || thread.title === agent?.name || thread.title === generic || thread.kind === "routine";
   const said = thread.preview.split("\n").find((l) => l.trim()) ?? "";
-  return plain && said ? said.replace(/\*\*|`|^\s*(#+|>|[-*])\s+/g, "") : thread.title;
+  if (plain && said) return said.replace(/\*\*|`|^\s*(#+|>|[-*])\s+/g, "");
+  // BANDEJA-1: a contact named only with emoji reads as its number.
+  const digits = thread.channel && /^\+?(\d{6,})(@s\.whatsapp\.net)?$/.exec(thread.channel.conversation)?.[1];
+  return digits && !/[\p{L}\p{N}]/u.test(thread.title) ? `+${digits}` : thread.title;
 }
 
 const cx = (...c: Array<string | false>) => c.filter(Boolean).join(" ");
@@ -43,126 +47,131 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
   const threads = useData((s) => s.threads);
   const engines = useData((s) => s.engines);
   const engineLabel = (id: string) => engines.find((e) => e.id === id)?.label ?? id;
+  const channels = useChannels((s) => s.channels);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  // Unread chats repeat on top: in the tree they can sit under "N more". One opened while unread stays while it is
-  // open, read by then, so the row clicked does not jump away; a chat already open that gets an answer does not.
-  const listed = [
-    ...new Map(trees.flatMap((tr) => tr.agents.flatMap((b) => b.threads)).map((th) => [th.id, th])).values(),
-  ];
+  // BANDEJA-1: no "Unread" block repeating chats: inside each branch the unread ones go first, so none hides under
+  // "N more" (which says how many unread it holds). One opened while unread keeps its place while it stays open, read
+  // by then, so the row clicked does not jump away.
+  const listed = trees.flatMap((tr) => tr.agents.flatMap((b) => b.threads));
   const opened = useRef<{ selected: string | undefined; kept: string | undefined }>({ selected, kept: undefined });
   if (opened.current.selected !== selected) {
     const wasUnread = listed.some((th) => th.id === selected && th.unread > 0);
     opened.current = { selected, kept: wasUnread ? selected : undefined };
   }
-  const unread = listed
-    .filter((th) => th.kind !== "routine" && (th.unread > 0 || th.id === opened.current.kept))
-    .sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1));
-  const unreadCount = unread.filter((th) => th.unread > 0).length;
+  const lifted = (th: Thread) => th.kind !== "routine" && (th.unread > 0 || th.id === opened.current.kept);
+  const unreadFirst = <T,>(list: T[], of: (x: T) => Thread[]) =>
+    [...list].sort((a, b) => Number(of(b).some(lifted)) - Number(of(a).some(lifted)));
   return (
     <>
-      {unread.length > 0 && (
-        <div className="tree__project">
-          <div className="tree__projecthead">
-            <span className="tree__unreaddot" />
-            <span>{t("inbox.unread")}</span>
-            {unreadCount > 0 && <span className="tree__agentmeta">{unreadCount}</span>}
-          </div>
-          <div className="tree__unreadlist">
-            {unread.map((th) => (
-              <SessionRow
-                key={th.id}
-                thread={th}
-                agent={threadAgent(th, agents)}
-                selected={th.id === selected}
-                withAgent
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      {trees.map((tree) => (
-        <div key={tree.key} className="tree__project">
-          <div className="tree__projecthead">
-            <ProjectAvatar id={tree.project?.id} name={tree.name} size={16} />
-            <span>{tree.name}</span>
-          </div>
-          {tree.agents.map((b) => {
-            if (b.routine)
-              return (
-                <RoutineBundle
-                  key={`${tree.key}:${b.agentId}`}
-                  routineId={b.routine}
-                  threads={b.threads}
-                  selected={selected}
-                />
-              );
-            if (b.task)
-              return (
-                <Suspense key={`${tree.key}:${b.agentId}`} fallback={null}>
-                  <TaskBundle taskId={b.task} threads={b.threads} selected={selected} />
-                </Suspense>
-              );
-            if (b.channel)
-              return b.threads.map((th) => (
-                <ListedChat key={th.id} thread={th} selected={selected}>
-                  <Suspense
-                    fallback={<SessionRow thread={th} agent={threadAgent(th, agents)} selected={th.id === selected} />}
-                  >
-                    <ChannelTreeRow thread={th} agent={threadAgent(th, agents)} selected={th.id === selected} />
+      {trees.map((tree) => {
+        const via = tree.channel ? channels.find((c) => c.id === tree.channel) : undefined;
+        return (
+          <div key={tree.key} className="tree__project">
+            <div className="tree__projecthead">
+              {tree.channel ? (
+                via ? (
+                  <KindIcon kind={via.type} size={16} />
+                ) : (
+                  <Icons.MessageCircle size={16} />
+                )
+              ) : (
+                <ProjectAvatar id={tree.project?.id} name={tree.name} size={16} />
+              )}
+              <span>{tree.name || t("inbox.group.channel")}</span>
+            </div>
+            {(tree.channel ? unreadFirst(tree.agents, (b) => b.threads) : tree.agents).map((b) => {
+              if (b.routine)
+                return (
+                  <RoutineBundle
+                    key={`${tree.key}:${b.agentId}`}
+                    routineId={b.routine}
+                    threads={b.threads}
+                    selected={selected}
+                  />
+                );
+              if (b.task)
+                return (
+                  <Suspense key={`${tree.key}:${b.agentId}`} fallback={null}>
+                    <TaskBundle taskId={b.task} threads={b.threads} selected={selected} />
                   </Suspense>
-                </ListedChat>
-              ));
-            const agent = b.engine ? undefined : agents[b.agentId];
-            const key = `${tree.key}:${b.agentId}`;
-            const all = open[key] ?? false;
-            const shown = all ? b.threads : b.threads.slice(0, PER_AGENT);
-            // The super-agent's name opens Home (the chat in common); another agent's, its latest chat; an
-            // engine's, its sessions.
-            const openBranch = () =>
-              b.engine
-                ? go.engine(b.engine)
-                : agent?.kind === "secretary" && threads.home
-                  ? go.thread("home")
-                  : b.threads[0] && go.thread(b.threads[0].id);
-            return (
-              <div key={key} className="tree__agent">
-                <button type="button" className="tree__agenthead" onClick={openBranch}>
-                  {b.engine ? (
-                    <EngineIcon engine={b.engine} tile size={20} />
-                  ) : agent ? (
-                    <AgentFace agent={agent} size={20} />
-                  ) : (
-                    <AgentAvatar name={b.agentId} size={20} animated={false} />
-                  )}
-                  <span className="tree__agentname">
-                    {b.engine ? engineLabel(b.engine) : (agent?.name ?? b.agentId)}
-                  </span>
-                  <span className="tree__agentmeta">
-                    {t(b.engine ? "nav.externalSession" : agent?.kind === "secretary" ? "agent.super" : "common.agent")}{" "}
-                    · {b.threads.length}
-                  </span>
-                </button>
-                <div className="tree__sessions">
-                  {shown.map((th) => (
-                    <ListedChat key={th.id} thread={th} selected={selected}>
-                      <SessionRow thread={th} agent={agent} selected={th.id === selected} />
-                    </ListedChat>
-                  ))}
-                  {b.threads.length > PER_AGENT && (
-                    <button
-                      type="button"
-                      className="tree__more"
-                      onClick={() => setOpen((o) => ({ ...o, [key]: !all }))}
+                );
+              if (b.channel)
+                return b.threads.map((th) => (
+                  <ListedChat key={th.id} thread={th} selected={selected}>
+                    <Suspense
+                      fallback={
+                        <SessionRow thread={th} agent={threadAgent(th, agents)} selected={th.id === selected} />
+                      }
                     >
-                      {all ? t("inbox.showLess") : t("inbox.showMore", { n: b.threads.length - PER_AGENT })}
-                    </button>
-                  )}
+                      <ChannelTreeRow
+                        thread={th}
+                        agent={threadAgent(th, agents)}
+                        selected={th.id === selected}
+                        inChannelGroup={!!tree.channel}
+                      />
+                    </Suspense>
+                  </ListedChat>
+                ));
+              const agent = b.engine ? undefined : agents[b.agentId];
+              const key = `${tree.key}:${b.agentId}`;
+              const all = open[key] ?? false;
+              const ordered = unreadFirst(b.threads, (th) => [th]);
+              const shown = all ? ordered : ordered.slice(0, PER_AGENT);
+              const hiddenUnread = ordered.slice(PER_AGENT).filter((th) => th.unread > 0).length;
+              // The super-agent's name opens Home (the chat in common); another agent's, its latest chat; an
+              // engine's, its sessions.
+              const openBranch = () =>
+                b.engine
+                  ? go.engine(b.engine)
+                  : agent?.kind === "secretary" && threads.home
+                    ? go.thread("home")
+                    : b.threads[0] && go.thread(b.threads[0].id);
+              return (
+                <div key={key} className="tree__agent">
+                  <button type="button" className="tree__agenthead" onClick={openBranch}>
+                    {b.engine ? (
+                      <EngineIcon engine={b.engine} tile size={20} />
+                    ) : agent ? (
+                      <AgentFace agent={agent} size={20} />
+                    ) : (
+                      <AgentAvatar name={b.agentId} size={20} animated={false} />
+                    )}
+                    <span className="tree__agentname">
+                      {b.engine ? engineLabel(b.engine) : (agent?.name ?? b.agentId)}
+                    </span>
+                    <span className="tree__agentmeta">
+                      {t(
+                        b.engine ? "nav.externalSession" : agent?.kind === "secretary" ? "agent.super" : "common.agent",
+                      )}{" "}
+                      · {b.threads.length}
+                    </span>
+                  </button>
+                  <div className="tree__sessions">
+                    {shown.map((th) => (
+                      <ListedChat key={th.id} thread={th} selected={selected}>
+                        <SessionRow thread={th} agent={agent} selected={th.id === selected} />
+                      </ListedChat>
+                    ))}
+                    {b.threads.length > PER_AGENT && (
+                      <button
+                        type="button"
+                        className="tree__more"
+                        onClick={() => setOpen((o) => ({ ...o, [key]: !all }))}
+                      >
+                        {all
+                          ? t("inbox.showLess")
+                          : hiddenUnread > 0
+                            ? t("inbox.moreUnread", { n: b.threads.length - PER_AGENT, unread: hiddenUnread })
+                            : t("inbox.showMore", { n: b.threads.length - PER_AGENT })}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ))}
+              );
+            })}
+          </div>
+        );
+      })}
     </>
   );
 }

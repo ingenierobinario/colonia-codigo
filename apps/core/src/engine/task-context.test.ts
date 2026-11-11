@@ -52,7 +52,7 @@ test("asking the same agent again goes on in its session instead of opening anot
   assert.equal(asked.length, 2, "both requests reached the same session");
   assert.equal(
     env.core.store.threads.get(sessions[0]?.id ?? "")?.title,
-    "Roby → Vera: second request",
+    "Roby → Vera: Second request",
     "it reads as the latest",
   );
 });

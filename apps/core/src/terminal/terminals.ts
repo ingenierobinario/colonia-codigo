@@ -36,13 +36,18 @@ type Term = { info: TerminalInfo; child: ChildProcess; backlog: string; pending:
 /** Python with its pty module, without waking macOS's "install the command line tools" dialog. */
 function findPython(): string | undefined {
   if (process.platform === "win32") return undefined;
-  if (process.platform === "darwin" && spawnSync("xcode-select", ["-p"], { timeout: 3000 }).status !== 0) {
+  if (
+    process.platform === "darwin" &&
+    spawnSync("xcode-select", ["-p"], { timeout: 3000, windowsHide: true }).status !== 0
+  ) {
     // /usr/bin/python3 is only a stub that asks to install the tools; a Homebrew one is real.
     for (const p of ["/opt/homebrew/bin/python3", "/usr/local/bin/python3"])
-      if (spawnSync(p, ["-c", "import pty"], { timeout: 3000 }).status === 0) return p;
+      if (spawnSync(p, ["-c", "import pty"], { timeout: 3000, windowsHide: true }).status === 0) return p;
     return undefined;
   }
-  return spawnSync("python3", ["-c", "import pty"], { timeout: 3000 }).status === 0 ? "python3" : undefined;
+  return spawnSync("python3", ["-c", "import pty"], { timeout: 3000, windowsHide: true }).status === 0
+    ? "python3"
+    : undefined;
 }
 
 /** The owner's environment, without Colonia's own settings (its token, how the core was started). */
@@ -110,6 +115,7 @@ export function createTerminals(deps: { bus: Bus; commandEnded?: (e: CommandEnde
             cwd,
             env: shellEnv(),
             stdio: ["pipe", "pipe", "pipe", "pipe"],
+            windowsHide: true,
           })
         : spawn(shell, args, { cwd, env: shellEnv(), stdio: "pipe", windowsHide: true });
       const n = list(threadId).length + 1;

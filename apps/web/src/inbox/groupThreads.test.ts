@@ -5,6 +5,7 @@ import {
   archivedThreads,
   bundleTasks,
   delegatedByChat,
+  flatChats,
   groupByAgent,
   groupByProject,
   groupByTime,
@@ -57,12 +58,13 @@ test("channel conversations keep their own tree identity instead of nesting unde
     {},
   );
   assert.deepEqual(
-    trees[0]?.agents.map((b) => [b.agentId, !!b.channel, b.threads.map((t) => t.id)]),
+    trees.flatMap((g) => g.agents.map((b) => [b.agentId, !!b.channel, b.threads.map((t) => t.id)])),
     [
-      ["task:task-example", false, ["dddd"]],
-      ["channel:ccc", true, ["ccc"]],
-      ["channel:bb", true, ["bb"]],
       ["superagent", false, ["a"]],
+      // BANDEJA-1: with no project, each channel is a group of its own, after the rest.
+      ["task:task-example", false, ["dddd"]],
+      ["channel:bb", true, ["bb"]],
+      ["channel:ccc", true, ["ccc"]],
     ],
   );
 });
@@ -228,4 +230,50 @@ test("a chat delegated into a project from Home is listed in that project, and o
   );
   const inbox = groupByProject(threads, [], {}).flatMap((g) => g.threads.map((t) => t.id));
   assert.equal(inbox.includes("sub"), false, "listed once, under its caller");
+});
+
+test("BANDEJA-1: a channel's chats with no project have a group of their own per channel, after the rest", () => {
+  const channels = new Map([
+    ["wa", "WhatsApp"],
+    ["tg", "Telegram"],
+  ]);
+  const trees = groupByAgent(
+    {
+      a: thread("a"),
+      bb: thread("bb", { channel: { id: "wa", conversation: "1" } }),
+      ccc: thread("ccc", { channel: { id: "tg", conversation: "2" } }),
+      dddd: thread("dddd", { channel: { id: "wa", conversation: "3" }, project_id: "p1" }),
+      eeeee: thread("eeeee", { channel: { id: "gone", conversation: "4" } }),
+    },
+    [{ id: "p1", name: "Northwind" } as never],
+    {},
+    channels,
+  );
+  const shape = trees.map((g) => [g.channel ?? "", g.agents.flatMap((b) => b.threads.map((t) => t.id))]);
+  const byChannel = Object.fromEntries(shape.filter(([c]) => c));
+  assert.deepEqual(byChannel.wa, ["bb"], "a project's channel chat stays in its project");
+  assert.deepEqual(byChannel.tg, ["ccc"]);
+  assert.deepEqual(byChannel.gone, ["eeeee"], "an unknown channel still gets its group");
+  const firstChannel = shape.findIndex(([c]) => c);
+  assert.ok(
+    shape.slice(firstChannel).every(([c]) => c),
+    "channel groups go last",
+  );
+  assert.ok(shape.some(([c, ids]) => !c && (ids as string[]).includes("dddd")));
+  assert.ok(shape.some(([c, ids]) => !c && (ids as string[]).includes("a")));
+});
+
+test("BANDEJA-1: «By chat» is one flat list, pinned first, nothing grouped", () => {
+  const list = flatChats(
+    {
+      a: thread("a"),
+      bb: thread("bb", { pinned: true }),
+      ccc: thread("ccc", { channel: { id: "wa", conversation: "1" } }),
+    },
+    {},
+  );
+  assert.deepEqual(
+    list.map((t) => t.id),
+    ["bb", "ccc", "a"],
+  );
 });

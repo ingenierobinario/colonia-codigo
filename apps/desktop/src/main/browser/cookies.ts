@@ -91,7 +91,10 @@ async function withCopy<T>(db: string, fn: (copy: string) => Promise<T>): Promis
 }
 
 async function query<T>(db: string, sql: string): Promise<T[]> {
-  const { stdout } = await run("/usr/bin/sqlite3", ["-readonly", "-json", db, sql], { maxBuffer: 64 * 1024 * 1024 });
+  const { stdout } = await run("/usr/bin/sqlite3", ["-readonly", "-json", db, sql], {
+    maxBuffer: 64 * 1024 * 1024,
+    windowsHide: true,
+  });
   return stdout.trim() ? (JSON.parse(stdout) as T[]) : [];
 }
 
@@ -214,7 +217,9 @@ async function readFirefox(src: CookieSource, domains: string[]): Promise<Cookie
 async function readChromium(src: CookieSource, domains: string[]): Promise<CookiesSetDetails[]> {
   if (!src.keychain) throw new ColoniaError({ code: "bad_request", message: "no keychain entry for this browser" });
   // macOS shows its own Keychain dialog here: that dialog is the user's consent.
-  const { stdout } = await run("/usr/bin/security", ["find-generic-password", "-w", "-s", src.keychain]).catch(() => {
+  const { stdout } = await run("/usr/bin/security", ["find-generic-password", "-w", "-s", src.keychain], {
+    windowsHide: true,
+  }).catch(() => {
     throw new ColoniaError({
       code: "unavailable",
       message: `Keychain access to "${src.keychain}" was denied or not found`,

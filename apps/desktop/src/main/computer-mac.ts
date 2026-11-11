@@ -20,7 +20,7 @@ function osa(script: string, args: string[] = [], language = "AppleScript", time
     execFile(
       "osascript",
       ["-l", language, "-e", script, ...args],
-      { timeout, maxBuffer: 4 * 1024 * 1024 },
+      { timeout, maxBuffer: 4 * 1024 * 1024, windowsHide: true },
       (err, out, stderr) => {
         if (!err) return resolve(out.trimEnd());
         if (err.killed) return reject(new Error("timed out"));
@@ -368,7 +368,9 @@ export const macDriver: ComputerDriver = {
   open: (app, url) => {
     const args = app ? ["-a", app, ...(url ? [url] : [])] : [String(url)];
     return new Promise<void>((resolve, reject) =>
-      execFile("open", args, { timeout: OSA_MS }, (err) => (err ? reject(new Error("could not open it")) : resolve())),
+      execFile("open", args, { timeout: OSA_MS, windowsHide: true }, (err) =>
+        err ? reject(new Error("could not open it")) : resolve(),
+      ),
     );
   },
   canPress: (keys) => parseKeys(keys) !== undefined,

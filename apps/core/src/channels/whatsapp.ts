@@ -123,6 +123,8 @@ const BACKOFF_MS = [2_000, 5_000, 15_000, 30_000, 60_000];
 const QR_ROUNDS = 4;
 /** Our own sends come back as echoes within seconds; this only has to outlive that, bounded. */
 const ECHOES = 500;
+/** An echo of our send can beat sendMessage's answer by a moment; the owner's own message waits this long first. */
+const ECHO_WAIT_MS = 1_500;
 // WhatsApp's own service numbers (verification codes, product tips): never someone writing.
 const SERVICE = new Set(["16505361212", "16508638904"]);
 /** How long the phone has to send messages again under one address before the next one is tried. */
@@ -259,6 +261,8 @@ export function whatsappAdapter(opts: {
   lib?: () => Promise<WaLib>;
   /** How long the phone has to send a message again (tests shorten it). */
   resendWaitMs?: number;
+  /** How long a message sent from the owner's phone waits, in case it is the echo of our own send (tests shorten it). */
+  echoWaitMs?: number;
 }): ChannelAdapter {
   const { dir, log } = opts;
   let lib: WaLib | undefined;
@@ -423,14 +427,25 @@ export function whatsappAdapter(opts: {
       return;
     }
     const group = jid.endsWith("@g.us");
+    // PROPIOS-1: the owner typing to a contact on the linked phone (or WhatsApp Web): kept in that chat, never a turn.
+    let own = false;
     if (m.key.fromMe) {
-      // Our own send coming back, or someone typing on the linked phone to another chat: neither is for the agent.
-      // "Message yourself" is the owner only when the line is the owner's own phone.
-      if (ownSends.delete(m.key.id) || !isSelf(jid) || !opts.selfOwner) return;
+      // Our own send coming back (the agent's answer, the owner's "I'll write"): already in the chat.
+      if (ownSends.delete(m.key.id)) return;
+      // "Message yourself" is the owner talking to the agent only when the line is the owner's own phone.
+      if (isSelf(jid)) {
+        if (!opts.selfOwner) return;
+      } else {
+        if (group || content.reactionMessage || !io.ownMessage) return;
+        // The echo of our own send can come before sendMessage resolves and its id is remembered: wait, look again.
+        await new Promise((r) => setTimeout(r, opts.echoWaitMs ?? ECHO_WAIT_MS));
+        if (ownSends.delete(m.key.id) || !io || !me) return;
+        own = true;
+      }
     }
     const alt = normalJid(m.key.remoteJidAlt);
     // One person, one address: their phone number when WhatsApp tells it, their private id otherwise.
-    const who = m.key.fromMe ? me.pn : isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
+    const who = m.key.fromMe && !own ? me.pn : isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
     const name = m.key.fromMe ? "Owner" : m.verifiedBizName?.trim() || m.pushName?.trim() || `+${digitsOf(who)}`;
     const reacted = content.reactionMessage;
     if (reacted) {
@@ -473,6 +488,15 @@ export function whatsappAdapter(opts: {
     }
     if (!text && !voice && !files) {
       if (!m.key.fromMe) log?.warn({ server, kinds: Object.keys(content).slice(0, 8) }, "whatsapp message not read");
+      return;
+    }
+    // The owner's own words: no menu read, no option pressed (a "1" they type is not a choice offered to them).
+    if (own) {
+      const kept = [
+        ...(files ?? []),
+        ...(voice ? [{ name: "Voice note.ogg", mime: voice.mime, data: voice.data }] : []),
+      ];
+      io.ownMessage?.({ external_id: m.key.id, conversation: who, text, ...(kept.length ? { files: kept } : {}) });
       return;
     }
     if (!group) {

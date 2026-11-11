@@ -89,9 +89,10 @@ export async function openExternal(url: unknown, browser?: unknown): Promise<boo
   const found = installedBrowsers().find((b) => b.id === browser);
   if (!found) return false;
   if (process.platform === "darwin") {
-    execFile("open", ["-a", found.launch, url], () => {});
+    execFile("open", ["-a", found.launch, url], { windowsHide: true }, () => {});
   } else {
-    const child = spawn(found.launch, [url], { detached: true, stdio: "ignore" });
+    // A browser window the owner must see: hiding would hide its first window too.
+    const child = spawn(found.launch, [url], { detached: true, stdio: "ignore", windowsHide: false });
     child.on("error", () => {});
     child.unref();
   }

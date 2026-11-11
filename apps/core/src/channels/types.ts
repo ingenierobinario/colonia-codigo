@@ -14,6 +14,15 @@ import type { Inbound, InboundAction, InboundReaction, Presentation } from "../d
 
 export type InboundFile = NonNullable<Inbound["files"]>[number];
 
+/** What the owner sent from their own phone to a conversation (see `AdapterIO.ownMessage`). */
+export type OwnMessage = {
+  /** The platform's id of the message: the same one twice is one message. */
+  external_id: string;
+  conversation: string;
+  text: string;
+  files?: InboundFile[];
+};
+
 export type ChannelConfig = Omit<ChannelInfo, "token_set" | "token_hint" | "status" | "error" | "account">;
 
 export type AdapterCaps = {
@@ -70,6 +79,11 @@ export type AdapterIO = {
   reaction?(r: InboundReaction): void;
   /** A message we sent (by the platform's id) reached their device, or was seen. */
   receipt?(externalId: string, state: "delivered" | "read"): void;
+  /**
+   * PROPIOS-1: the owner wrote to a contact from their own phone (or WhatsApp Web), outside Colonia. Kept in that
+   * contact's chat as the owner's words; never a turn, never the contact speaking (so apart from `receive`).
+   */
+  ownMessage?(m: OwnMessage): void;
   /**
    * A group the bot is in, seen in an update, for a platform that cannot list them (Telegram); `left` when it was
    * removed from it. Offered in the rooms picker.

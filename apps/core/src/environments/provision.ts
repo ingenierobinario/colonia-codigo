@@ -37,6 +37,7 @@ export async function provisionDesktop(run: LimaRun, instance: string, signal?: 
   await admin(["sudo", "chmod", "755", "/usr/local/libexec/colonia-computer-user"]);
   const assets = execFileSync("tar", ["-czf", "-", "-C", path.join(GUEST_ASSETS, "appearance"), "."], {
     maxBuffer: 8 * 1024 * 1024,
+    windowsHide: true,
   });
   // A shared, root-owned copy each agent's screen user gets its own copy of (user.sh).
   await admin(["sudo", "mkdir", "-p", "/usr/local/share/colonia-vm"]);

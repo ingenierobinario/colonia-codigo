@@ -42,7 +42,7 @@ export async function linkedWorktreeWritableDirs(cwd: string): Promise<string[]>
         "--git-dir",
         "--git-common-dir",
       ],
-      { cwd, env: { ...env, GIT_TERMINAL_PROMPT: "0" }, timeout: 10_000 },
+      { cwd, env: { ...env, GIT_TERMINAL_PROMPT: "0" }, timeout: 10_000, windowsHide: true },
     );
     const [gitDir, commonDir] = stdout
       .trim()

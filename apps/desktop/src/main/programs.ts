@@ -85,7 +85,13 @@ export function createPrograms(d: Deps) {
       if (d.platform === "linux" && !/\.desktop$/i.test(p.path)) {
         try {
           fs.accessSync(p.path, fs.constants.X_OK);
-          const child = spawn(p.path, [], { detached: true, stdio: "ignore", cwd: path.dirname(p.path) });
+          // A program the owner must see: hiding would hide its first window too.
+          const child = spawn(p.path, [], {
+            detached: true,
+            stdio: "ignore",
+            cwd: path.dirname(p.path),
+            windowsHide: false,
+          });
           child.on("error", () => {});
           child.unref();
           return "";

@@ -21,6 +21,8 @@ export function fakeWhatsApp(owner = OWNER_PN) {
   let qrs = 0;
   let sockets = 0;
   const sent: Array<{ id: string; jid: string; content: Record<string, unknown> }> = [];
+  /** Echoes come back before sendMessage answers (WhatsApp can be that quick). */
+  const echoFirst = { value: false };
   /** Who this device asked to hear coming online. */
   const watched = new Set<string>();
   const loggedOut = { value: false };
@@ -46,8 +48,10 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       async sendMessage(jid: string, content: Record<string, unknown>) {
         const id = `OUT-${++seq}`;
         sent.push({ id, jid, content });
-        // Every send comes back as an echo, as on a linked device.
-        setTimeout(() => s.emit("messages.upsert", { type: "notify", messages: [echo(id, jid, content)] }), 5);
+        // Every send comes back as an echo, as on a linked device; `echoFirst`: before the send's answer (a race).
+        const back = () => s.emit("messages.upsert", { type: "notify", messages: [echo(id, jid, content)] });
+        if (echoFirst.value) back();
+        else setTimeout(back, 5);
         return { key: { id } };
       },
       async sendPresenceUpdate() {},
@@ -183,9 +187,17 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       deliver({ key: { id: `ME-${++seq}`, remoteJid: OWNER_LID, fromMe: true }, message: { conversation: text } });
     },
     /** The owner types to someone else on their phone. */
-    ownerTo(to: Person, text: string) {
-      deliver({ key: { id: `ME-${++seq}`, remoteJid: to.phone, fromMe: true }, message: { conversation: text } });
+    ownerTo(to: Person, text: string, opts: { id?: string; type?: "notify" | "append"; group?: string } = {}) {
+      const id = opts.id ?? `ME-${++seq}`;
+      const m: WaMessage = {
+        key: { id, remoteJid: opts.group ?? to.phone, fromMe: true },
+        message: { conversation: text },
+      };
+      phone.history.push(m);
+      sock?.emit("messages.upsert", { type: opts.type ?? "notify", messages: [m] });
+      return id;
     },
+    echoFirst,
     /** Someone puts an emoji on a message (empty: takes theirs off). */
     react(from: Person, id: string, emoji: string) {
       deliver({

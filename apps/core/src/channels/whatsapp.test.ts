@@ -7,6 +7,7 @@ import { UPLOAD_LIMITS } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
 import { fakeWhatsApp } from "./fake-whatsapp.test-support.ts";
+import { displayName } from "./inbound.ts";
 import type { AdapterIO } from "./types.ts";
 import { toWhatsApp, whatsappAdapter } from "./whatsapp.ts";
 
@@ -34,7 +35,12 @@ before(async () => {
     llm,
     channelAdapters: {
       whatsapp: (c) =>
-        whatsappAdapter({ dir: `${envDir()}/wa`, selfOwner: c.self_owner === true, lib: async () => wa.lib }),
+        whatsappAdapter({
+          dir: `${envDir()}/wa`,
+          selfOwner: c.self_owner === true,
+          lib: async () => wa.lib,
+          echoWaitMs: 40,
+        }),
     },
   });
 });
@@ -405,6 +411,53 @@ test("a contact's video, a document of any type and a too-big file: kept to play
   );
 });
 
+test("PROPIOS-1: what the owner types to a contact on the phone is kept in their chat as theirs, with no turn", async () => {
+  const ana = (await env.client.call("threads.list", {})).threads.find(
+    (t) => t.channel?.id === "whatsapp" && t.title === "Ana",
+  );
+  assert.ok(ana, "Ana's chat");
+  const texts = async (pick: (a: { kind: string; direct?: boolean; phone?: boolean }) => boolean) =>
+    (await env.client.call("threads.get", { thread: ana.id })).messages
+      .filter((m) => pick(m.author))
+      .flatMap((m) => m.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])));
+  const fromPhone = () => texts((a) => a.kind === "user" && a.phone === true);
+  const calls = llm.calls.length;
+  const unread = ana.unread;
+
+  // Kept once, in Ana's chat (not the owner's), even when WhatsApp hands it over twice.
+  const id = wa.ownerTo(ANA, "see you at nine");
+  wa.ownerTo(ANA, "see you at nine", { id });
+  await waitFor(async () => (await fromPhone()).length === 1, "kept in Ana's chat");
+  // A "1" is the owner's words, not an option pressed; history, groups and strangers are never kept.
+  wa.ownerTo(ANA, "1");
+  wa.ownerTo(ANA, "old words", { type: "append" });
+  wa.ownerTo(ANA, "group words", { group: "120363000000000009@g.us" });
+  wa.ownerTo({ phone: "5491100000099@s.whatsapp.net", name: "Zoe" }, "private words");
+  await waitFor(async () => (await fromPhone()).length === 2, "the 1");
+  await new Promise((r) => setTimeout(r, 150));
+  assert.deepEqual(await fromPhone(), ["see you at nine", "1"]);
+  assert.equal(llm.calls.length, calls, "no turn of the agent");
+  const after = (await env.client.call("threads.list", {})).threads;
+  assert.equal(after.find((t) => t.id === ana.id)?.unread, unread, "not unread: the owner wrote it");
+  assert.ok(!after.some((t) => t.channel?.conversation === "5491100000099@s.whatsapp.net"), "no chat for Zoe");
+  assert.ok(!(await env.client.call("contacts.list", {})).persons.some((p) => p.name === "Zoe"), "no contact");
+
+  // "I'll write" whose echo beats the send's answer: one message, never a second one "from the phone".
+  wa.echoFirst.value = true;
+  try {
+    await env.client.call("channels.send", { thread: ana.id, text: "written from the app" });
+    await waitFor(() => wa.textsTo(ANA.phone).some((t) => t.includes("written from the app")), "sent");
+    await new Promise((r) => setTimeout(r, 200));
+  } finally {
+    wa.echoFirst.value = false;
+  }
+  assert.deepEqual(
+    (await texts((a) => a.kind === "user")).filter((t) => t === "written from the app"),
+    ["written from the app"],
+  );
+  assert.deepEqual(await fromPhone(), ["see you at nine", "1"]);
+});
+
 test("groups, and the owner writing to a friend on their phone, never reach the agent", async () => {
   const calls = llm.calls.length;
   wa.message(ANA, "group news", { group: "120363000000000001@g.us" });
@@ -467,4 +520,10 @@ test("adapter: options go out numbered, a number back presses that option; Markd
   assert.equal(toWhatsApp("# Title\n[docs](https://example.com) ~~old~~"), "*Title*\ndocs (https://example.com) ~old~");
   await adapter.stop();
   await removeDir(dir);
+});
+
+test("BANDEJA-1: a contact named only with emoji is shown by its number; a real name stays", () => {
+  assert.equal(displayName("🔥✨", "34600111222@s.whatsapp.net"), "+34600111222");
+  assert.equal(displayName("Ana 🔥", "34600111222@s.whatsapp.net"), "Ana 🔥");
+  assert.equal(displayName("🔥", "123@lid"), "🔥");
 });

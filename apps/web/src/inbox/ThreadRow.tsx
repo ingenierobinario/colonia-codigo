@@ -38,7 +38,10 @@ export function ThreadRow({ thread, agent, selected, onOpen }: ThreadRowProps) {
         titleTag={
           <>
             <ChatProcesses thread={thread.id} />
-            {!thread.engine && agent?.kind === "secretary" && <Tag kind="role">{t("agent.super")}</Tag>}
+            {/* BANDEJA-1: not on a channel's chats (every contact's agent is the super-agent) nor on Home. */}
+            {!thread.engine && !thread.channel && thread.id !== "home" && agent?.kind === "secretary" && (
+              <Tag kind="role">{t("agent.super")}</Tag>
+            )}
           </>
         }
         time={shortWhen(thread.updated_at)}

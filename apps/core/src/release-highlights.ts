@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.30.0": {
+    en: [
+      "The Inbox groups each channel's contacts on their own, and By chat is one list, newest first.",
+      "Chat titles are short and clear: no raw links, and names made only of emoji show the number.",
+      "What you write to a contact from your own WhatsApp now shows in their chat in Colonia.",
+      "On Windows, no console windows flash, and files with symbols in the name open and go to the bin.",
+    ],
+    es: [
+      "La Bandeja agrupa los contactos de cada canal aparte, y Por chat es una sola lista, lo último primero.",
+      "Títulos de chat cortos y claros: sin enlaces crudos, y un nombre solo de emojis muestra el número.",
+      "Lo que escribes a un contacto desde tu propio WhatsApp ya aparece en su chat de Colonia.",
+      "En Windows no parpadean consolas, y los archivos con símbolos en el nombre se abren y van a la papelera.",
+    ],
+  },
   "2.29.0": {
     en: [
       "YouTube, X, Facebook, Instagram and LinkedIn join the connectors: your agents can post and reply.",

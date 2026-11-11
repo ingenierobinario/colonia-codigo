@@ -253,7 +253,7 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
     const file = path.join(os.tmpdir(), zip.name);
     try {
       await fetchChecked(release, zip, file);
-      await run("/usr/bin/ditto", ["-x", "-k", file, stage]);
+      await run("/usr/bin/ditto", ["-x", "-k", file, stage], { windowsHide: true });
     } catch (err) {
       fs.rmSync(stage, { recursive: true, force: true });
       throw err;
@@ -266,13 +266,14 @@ export function createDesktopUpdater(opts: { quit(): void; changed(status: Deskt
       throw new Error(`${zip.name} has no app in it`);
     }
     const next = path.join(stage, name);
-    await run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", next]).catch(() => undefined);
+    await run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", next], { windowsHide: true }).catch(() => undefined);
     const swap = (relaunch: boolean) => {
       swapping = true;
       const args = [String(process.pid), old, next, stage, relaunch ? "1" : "0", opts.logFile ?? ""];
       spawn("/bin/sh", ["-c", SWAP, "colonia-update", ...args], {
         detached: true,
         stdio: "ignore",
+        windowsHide: true,
       }).unref();
     };
     return {

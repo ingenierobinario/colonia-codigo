@@ -5,6 +5,7 @@ import { waitFor } from "../testkit/platform.ts";
 import { UNTRUSTED_MARK, untrusted } from "../tools/result.ts";
 import { projectHistory } from "./context.ts";
 import { say, scriptedLlm, startCore } from "./testkit.ts";
+import { shortTask } from "./titles.ts";
 import { COMPACT_AT_CHARS, planCompaction, titleFromText, validSummary, validTitle } from "./upkeep.ts";
 
 const SUMMARY = [
@@ -146,4 +147,33 @@ test("old tool output counts as the stub the model sees: long reads alone do not
     entries.push(entry(i * 3 + 3, `r${i}`, { role: "tool", tool_call_id: `c${i}`, content: i < 4 ? huge : "short" }));
   }
   assert.equal(planCompaction(entries, undefined, false), undefined, "four huge old outputs are four stubs");
+});
+
+test("BANDEJA-1: a delegated chat's title is the task, short, without who relayed it, and the same when given again", () => {
+  assert.equal(
+    shortTask("Alexander pide ahora: revisa el informe de ventas de octubre"),
+    "Revisa el informe de ventas de octubre",
+  );
+  assert.equal(
+    shortTask('The owner wants: "draft the March launch email". Then wait.'),
+    "Draft the March launch email",
+  );
+  assert.ok(shortTask("Prepara una propuesta detallada para el cliente nuevo de Valencia con precios").length <= 40);
+  const once = shortTask("Alexander pide: prepara una propuesta detallada para el cliente nuevo de Valencia");
+  assert.equal(shortTask(once), once);
+  // Not relaying: a label with no verb, or a sentence too long before its colon.
+  assert.equal(shortTask("Error: the build fails"), "Error: the build fails");
+  assert.equal(shortTask("Mira lo que dice el log: falla"), "Mira lo que dice el log: falla");
+  // Someone else's words are the task itself; an abbreviation's dot does not end the sentence.
+  assert.equal(shortTask("La API dice: 500 en /login"), "La API dice: 500 en /login");
+  assert.equal(shortTask("El cliente quiere: presupuesto"), "El cliente quiere: presupuesto");
+  assert.equal(shortTask("Mi jefe dice: llama a Ana"), "Llama a Ana");
+  assert.equal(shortTask("Habla con el Sr. García del pedido"), "Habla con el Sr. García del pedido");
+});
+
+test("BANDEJA-1: a link is never a title; the words around it are, or its site", () => {
+  assert.equal(titleFromText("https://github.com/acme/colonia"), "github.com · colonia");
+  assert.equal(titleFromText("mira esto https://example.com/a?b=1 por favor"), "mira esto por favor");
+  assert.equal(validTitle("https://example.com/"), "example.com");
+  assert.equal(validTitle("Plan de lanzamiento"), "Plan de lanzamiento");
 });

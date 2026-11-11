@@ -71,7 +71,8 @@ export function importSkills(from: string, to: string): string[] {
     if (!SKILL_NAME.test(name) || taken(dst)) continue;
     try {
       if (!fs.existsSync(path.join(src, "SKILL.md"))) continue;
-      if (fs.lstatSync(src).isSymbolicLink()) fs.symlinkSync(realpath(src), dst);
+      // A junction on Windows: a symlink there needs Developer Mode or elevation (the type is ignored elsewhere).
+      if (fs.lstatSync(src).isSymbolicLink()) fs.symlinkSync(realpath(src), dst, "junction");
       else
         fs.cpSync(src, dst, {
           recursive: true,

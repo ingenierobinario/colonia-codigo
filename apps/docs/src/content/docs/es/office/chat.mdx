@@ -22,7 +22,12 @@ código y los chats que abren las tareas y las rutinas. Elige cómo verlos con e
 |---|---|
 | **Árbol** | Los chats agrupados por proyecto y después por agente: de un vistazo ves con quién hablaste en Acme Store. |
 | **Actividad** | Los chats por momento: En curso, Hoy, Ayer, Esta semana, Antes. |
-| **Por chat** | Una sola lista, los más nuevos primero. |
+| **Por chat** | Una sola lista, los fijados primero y después los más nuevos. |
+
+**Desde 2.30.0**, en el Árbol los chats de cada canal que no son de ningún proyecto tienen su propio grupo, después de
+los proyectos. Ya no hay un bloque aparte de Sin leer: los no leídos van primero en cada rama, y el botón **más** dice
+cuántos de los ocultos están sin leer. Los chats delegados llevan un título corto sacado de la tarea, y un enlace nunca
+es un título.
 
 <Shot name="inbox" alt="El Inbox en vista Árbol: el chat de Home, chats con agentes de un proyecto y un chat grupal, agrupados por proyecto y agente" caption="El Inbox, vista Árbol" />
 
@@ -76,6 +81,10 @@ no sobreviven a recargar o cerrar la página: no son almacenamiento durable de a
 
 Las conversaciones de canales muestran la identidad del contacto y del canal correspondientes. Esa presentación
 no cambia el agente asignado al chat.
+
+**Desde 2.30.0**, lo que escribes a un contacto conocido desde WhatsApp en el móvil o en WhatsApp Web sale en su chat
+como tuyo, y el agente de ese chat sabe que lo dijiste. No arranca ningún turno del agente, nunca crea contactos y no
+se importa el historial anterior.
 
 Una respuesta delegada aparece en un bloque desplegable con su agente, estado y un enlace al chat de origen. No es
 otro participante de esta conversación. Una delegación interrumpida, fallida o sin respuesta no implica que el

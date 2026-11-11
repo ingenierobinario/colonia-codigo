@@ -56,6 +56,30 @@ test("product: path prefixes and process.exit are found; their own homes and lit
   assert.deepEqual(rules("scripts/perf.ts", "process.exit(1);"), []);
 });
 
+test("product: a child_process call must say windowsHide; other spawns and tests are not checked", () => {
+  const CP = 'import { spawn, execFile as ef } from "node:child_process";\n';
+  assert.deepEqual(rules(PRODUCT, `${CP}spawn("git", ["status"]);`), ["console-window"]);
+  assert.deepEqual(rules(PRODUCT, `${CP}ef("git", [], { cwd });`), ["console-window"]);
+  assert.deepEqual(rules(PRODUCT, `${CP}spawn("git", [], { cwd, windowsHide: true });`), []);
+  assert.deepEqual(rules(PRODUCT, `${CP}spawn(found.launch, [url], { detached: true, windowsHide: false });`), []);
+  assert.deepEqual(rules(PRODUCT, `${CP}ef("osascript", [], { windowsHide: true }, (err) => done(err));`), []);
+  assert.deepEqual(
+    rules(PRODUCT, `${CP}// portable: a terminal program, never on Windows\nspawn("osascript", []);`),
+    [],
+  );
+  // Promisified aliases and namespace imports are the same call.
+  assert.deepEqual(
+    rules(PRODUCT, 'import { execFile } from "node:child_process";\nconst run = promisify(execFile);\nrun("git", []);'),
+    ["console-window"],
+  );
+  assert.deepEqual(rules(PRODUCT, 'import * as cp from "child_process";\ncp.execFileSync("tar", []);'), [
+    "console-window",
+  ]);
+  // A local function of the same name is not a process.
+  assert.deepEqual(rules(PRODUCT, 'const spawn = (n: string) => n;\nspawn("worker");'), []);
+  assert.deepEqual(rules(TEST, `${CP}spawn("git", ["status"]);`), []);
+});
+
 test("a marked exception passes, on its line or the line above", () => {
   assert.deepEqual(rules(PRODUCT, "process.exit(2); // portable: no handle is open before the arguments parse"), []);
   assert.deepEqual(rules(PRODUCT, "// portable: the askpass child has nothing open\nprocess.exit(1);"), []);

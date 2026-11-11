@@ -18,6 +18,7 @@ import { readsImages } from "../providers/vision.ts";
 import { UNTRUSTED_MARK } from "../tools/result.ts";
 import { FULL_OUTPUT_RUNS, HISTORY_BUDGET_CHARS } from "./context.ts";
 import { memoryHistory } from "./memory-projection.ts";
+import { cutAt, withoutLinks } from "./titles.ts";
 
 /** A thread is compacted once what the model would see since the last summary passes this. */
 export const COMPACT_AT_CHARS = Math.floor(HISTORY_BUDGET_CHARS * 0.75);
@@ -64,21 +65,22 @@ export function validSummary(text: string): string | undefined {
 }
 
 export function validTitle(text: string): string | undefined {
-  const line = (text.trim().split("\n")[0] ?? "")
-    .replace(/^#+\s*/, "")
-    .replace(/^["'“«]+|["'”»]+$/g, "")
-    .replace(/\.$/, "")
-    .trim();
-  return line.length >= 2 && line.length <= 70 ? line : undefined;
+  // BANDEJA-1: never a raw link (titles.ts).
+  const line = withoutLinks(
+    (text.trim().split("\n")[0] ?? "")
+      .replace(/^#+\s*/, "")
+      .replace(/^["'“«]+|["'”»]+$/g, "")
+      .replace(/\.$/, "")
+      .trim(),
+  );
+  return line && line.length >= 2 && line.length <= 70 ? line : undefined;
 }
 
-/** Without a model: the first line of the owner's message, cut at a word. */
+/** Without a model: the first line of the owner's message, cut at a word; never a raw link. */
 export function titleFromText(text: string): string | undefined {
-  const line = text.replace(/\s+/g, " ").trim();
-  if (line.length < 2) return undefined;
-  if (line.length <= 60) return line;
-  const cut = line.slice(0, 60);
-  return `${cut.slice(0, cut.lastIndexOf(" ") > 30 ? cut.lastIndexOf(" ") : 60)}…`;
+  const line = withoutLinks(text.replace(/\s+/g, " ").trim());
+  if (!line || line.length < 2) return undefined;
+  return cutAt(line, 61);
 }
 
 /** The model log as plain text for the summarizer: who said what, tool calls and their results, shortened. */

@@ -44,7 +44,9 @@ export function attributedText(blob: Uint8Array | null | undefined): string | un
 
 type Run = (cmd: string, args: string[]) => Promise<void>;
 const execRun: Run = (cmd, args) =>
-  new Promise((resolve, reject) => execFile(cmd, args, { timeout: 20_000 }, (err) => (err ? reject(err) : resolve())));
+  new Promise((resolve, reject) =>
+    execFile(cmd, args, { timeout: 20_000, windowsHide: true }, (err) => (err ? reject(err) : resolve())),
+  );
 
 // Sends through the signed-in iMessage account; the address and the words arrive as argv.
 const SEND_SCRIPT = [

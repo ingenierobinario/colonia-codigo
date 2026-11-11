@@ -17,10 +17,13 @@ export function ChannelTreeRow({
   thread,
   agent,
   selected,
+  inChannelGroup = false,
 }: {
   thread: Thread;
   agent: Agent | undefined;
   selected: boolean;
+  /** BANDEJA-1: listed under its channel's own group, which already says the channel. */
+  inChannelGroup?: boolean;
 }) {
   const t = useT();
   const channel = useThreadChannel(thread);
@@ -35,7 +38,7 @@ export function ChannelTreeRow({
       >
         <ThreadAvatar thread={thread} agent={agent} size={20} />
         <span className="tree__agentname">{chatLabel(thread, agent, t("chat.new"))}</span>
-        {channel && (
+        {channel && !inChannelGroup && (
           <span className="tree__agentmeta activity__via">
             <KindIcon kind={channel} size={10} /> {t("chat.viaChannel", { channel: t(CHANNEL_KINDS[channel].name) })}
           </span>

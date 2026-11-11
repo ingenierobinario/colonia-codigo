@@ -60,7 +60,8 @@ export async function localDesktopTarget(env: NodeJS.ProcessEnv) {
 export async function openPanel(): Promise<void> {
   const { url } = localConnection();
   const command = process.platform === "darwin" ? "open" : process.platform === "win32" ? "explorer.exe" : "xdg-open";
-  const child = spawn(command, [url], { detached: true, stdio: "ignore" });
+  // A window the owner must see: hiding would hide its first window too.
+  const child = spawn(command, [url], { detached: true, stdio: "ignore", windowsHide: false });
   child.on("error", (error) => console.error(error.message));
   child.unref();
   console.log(`opening ${url}`);

@@ -520,6 +520,7 @@ export function createChannels(deps: {
         receive: (m) => inbound.receive(config.id, m),
         action: (a) => void inbound.action(config.id, a),
         reaction: (r) => inbound.reaction(config.id, r),
+        ownMessage: (m) => inbound.ownSent(config.id, m),
         status: (s, error) => {
           l.status = s;
           l.error = error;

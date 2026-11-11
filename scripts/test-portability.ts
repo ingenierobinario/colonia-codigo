@@ -13,7 +13,8 @@ export type PortabilityRule =
   | "counted-poll"
   | "short-window"
   | "path-prefix"
-  | "process-exit";
+  | "process-exit"
+  | "console-window";
 
 export type PortabilityFinding = { file: string; line: number; rule: PortabilityRule; reason: string };
 
@@ -25,6 +26,8 @@ const REASONS: Record<PortabilityRule, string> = {
   "short-window": "a real-time window under 2 s decides the outcome: inject runTimers (manualTimers)",
   "path-prefix": "a path compared as a string prefix: use isInside()/samePath() (any case and both slashes on Windows)",
   "process-exit": "process.exit with handles open crashes libuv on Windows: use exitWhenClosed()",
+  "console-window":
+    "spawn without windowsHide: a console window flashes on Windows; say true, or false for a window the owner must see",
 };
 
 /** Files whose job is the very thing a rule forbids elsewhere. */
@@ -90,6 +93,60 @@ function prefixWithSep(arg: ts.Expression): boolean {
   return false;
 }
 
+const CHILD_PROCESS = /^(node:)?child_process$/;
+const SPAWNERS = new Set(["spawn", "spawnSync", "exec", "execSync", "execFile", "execFileSync", "fork"]);
+
+/**
+ * Local names that start a process: what `node:child_process` binds (named, renamed, namespace or default import) and
+ * `promisify(execFile)` aliases. A script spawned from inside a template string is invisible here.
+ */
+function spawnBindings(source: ts.SourceFile): { fns: Set<string>; namespaces: Set<string> } {
+  const fns = new Set<string>();
+  const namespaces = new Set<string>();
+  for (const s of source.statements) {
+    if (!ts.isImportDeclaration(s) || !ts.isStringLiteral(s.moduleSpecifier)) continue;
+    if (!CHILD_PROCESS.test(s.moduleSpecifier.text)) continue;
+    const clause = s.importClause;
+    if (!clause || clause.isTypeOnly) continue;
+    if (clause.name) namespaces.add(clause.name.text);
+    const bindings = clause.namedBindings;
+    if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
+    if (bindings && ts.isNamedImports(bindings))
+      for (const el of bindings.elements)
+        if (!el.isTypeOnly && SPAWNERS.has((el.propertyName ?? el.name).text)) fns.add(el.name.text);
+  }
+  const isSpawner = (e: ts.Expression) => {
+    const names = callee(e);
+    return (
+      (names.length === 1 && fns.has(names[0] ?? "")) ||
+      (names.length === 2 && namespaces.has(names[0] ?? "") && SPAWNERS.has(names[1] ?? ""))
+    );
+  };
+  const visit = (n: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(n) &&
+      ts.isIdentifier(n.name) &&
+      n.initializer &&
+      ts.isCallExpression(n.initializer) &&
+      callee(n.initializer.expression).at(-1) === "promisify" &&
+      n.initializer.arguments[0] &&
+      isSpawner(n.initializer.arguments[0])
+    )
+      fns.add(n.name.text);
+    ts.forEachChild(n, visit);
+  };
+  visit(source);
+  return { fns, namespaces };
+}
+
+/** Any object literal among the arguments names `windowsHide` (true or false: the author decided). */
+const saysWindowsHide = (call: ts.CallExpression) =>
+  call.arguments.some(
+    (a) =>
+      ts.isObjectLiteralExpression(a) &&
+      a.properties.some((p) => p.name !== undefined && p.name.getText().replaceAll(/["']/g, "") === "windowsHide"),
+  );
+
 export function scanPortability(file: string, text: string, kind = portabilityKind(file)): PortabilityFinding[] {
   if (!kind) return [];
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
@@ -110,11 +167,19 @@ export function scanPortability(file: string, text: string, kind = portabilityKi
     if (marked && rule !== "short-window") return;
     findings.push({ file, line: line + 1, rule, reason: REASONS[rule] });
   };
+  const spawners = kind === "product" ? spawnBindings(source) : undefined;
   const visit = (node: ts.Node) => {
     if (ts.isCallExpression(node)) {
       const names = callee(node.expression);
       const last = names.at(-1) ?? "";
       if (kind === "product" && names.join(".") === "process.exit") add(node, "process-exit");
+      if (
+        spawners &&
+        ((names.length === 1 && spawners.fns.has(last)) ||
+          (names.length === 2 && spawners.namespaces.has(names[0] ?? "") && SPAWNERS.has(last))) &&
+        !saysWindowsHide(node)
+      )
+        add(node, "console-window");
       if (
         kind === "product" &&
         last === "startsWith" &&

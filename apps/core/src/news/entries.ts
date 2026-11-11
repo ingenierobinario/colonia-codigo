@@ -1155,6 +1155,48 @@ export const NEWS: readonly NewsEntry[] = [
       },
     ],
   },
+  {
+    id: "inbox-sorted",
+    since: "2.30.0",
+    title: { en: "A tidier Inbox", es: "Una Bandeja más ordenada" },
+    about: {
+      en:
+        "Each channel's chats have their own group, unread chats come first in each branch, titles are short and " +
+        "never a link, and «By chat» is one plain list.",
+      es:
+        "Los chats de cada canal tienen su propio grupo, los no leídos van primero en cada rama, los títulos son " +
+        "cortos y nunca un enlace, y «Por chat» es una lista sin más.",
+    },
+    applies: () => true,
+    text:
+      "The Inbox tree now gives each channel's chats that belong to no project a group of their own, after the " +
+      "projects. The separate Unread block is gone: unread chats go first inside each branch, and «more» says how many " +
+      "of the hidden ones are unread. Delegated chats get a short title from the task, a link is never a title, and a " +
+      "contact named only with emoji shows as their number. «By chat» is a flat list, pinned first.",
+    actions: [],
+  },
+  {
+    id: "owner-phone-messages",
+    since: "2.30.0",
+    title: {
+      en: "What you write from your phone stays in the chat",
+      es: "Lo que escribes desde el móvil queda en el chat",
+    },
+    about: {
+      en:
+        "When you answer a contact yourself from WhatsApp on your phone or the web, the message now shows in their " +
+        "chat as yours, and your agent knows you said it.",
+      es:
+        "Cuando contestas tú a un contacto desde WhatsApp en el móvil o en la web, el mensaje sale ya en su chat como " +
+        "tuyo, y tu agente sabe que lo dijiste.",
+    },
+    applies: (f) => f.channels > 0,
+    text:
+      "Messages the owner sends to a known contact from WhatsApp on their phone or WhatsApp Web are now kept in that " +
+      "contact's chat as the owner's, and noted for the agent that answers there. They start no agent turn, never " +
+      "create a contact or a chat for a stranger, and old history is not imported: only what is written from now on.",
+    actions: [],
+  },
 ];
 
 /** The catalog integrations among the owner's global MCP servers. */

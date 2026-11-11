@@ -16,6 +16,7 @@ import { MAX_ACTIVE_DELEGATIONS, MAX_DEPTH } from "./limits.ts";
 import { MAX_AUTO_PARTS, stalled } from "./progress.ts";
 import { answerOf as answered, type Outcome, outcomeNote, outcomeOf } from "./run-outcome.ts";
 import { runLineage } from "./task-handoff.ts";
+import { shortTask } from "./titles.ts";
 
 export type Caller = { run: RunRecord; agent: AgentRecord; display: Display };
 
@@ -539,7 +540,7 @@ export function createDelegations(deps: {
       if (!sub) {
         sub = store.threads.create({
           kind: "a2a",
-          title: `${from.agent.name} → ${who}: ${task.slice(0, 60)}`,
+          title: `${from.agent.name} → ${who}: ${shortTask(task)}`,
           agent_ids: worker ? [to.id] : [to.id, from.agent.id],
           project_id: projectId,
           parent_id: parentThread.id,
@@ -549,7 +550,7 @@ export function createDelegations(deps: {
         if (worker) store.threads.mergeContext(sub.id, { worker });
       } else {
         // A session asked again reads as its latest request in the lists, not the first one it was opened for.
-        store.threads.patch(sub.id, { title: `${from.agent.name} → ${who}: ${task.slice(0, 60)}` });
+        store.threads.patch(sub.id, { title: `${from.agent.name} → ${who}: ${shortTask(task)}` });
       }
       store.messages.add({
         thread_id: sub.id,

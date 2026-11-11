@@ -24,6 +24,7 @@ export function version(json = false): string {
         cwd: root,
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
+        windowsHide: true,
       }).trim();
     } catch {}
   }

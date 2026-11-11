@@ -26,7 +26,12 @@ export const commandRunner =
   (cwd: string): Runner =>
   (cmd, args, timeoutMs) =>
     new Promise((resolve) => {
-      const child = spawn(cmd, args, { cwd, stdio: ["ignore", "pipe", "pipe"], timeout: timeoutMs });
+      const child = spawn(cmd, args, {
+        cwd,
+        stdio: ["ignore", "pipe", "pipe"],
+        timeout: timeoutMs,
+        windowsHide: true,
+      });
       let out = "";
       const keep = (d: Buffer) => {
         out = (out + d.toString()).slice(-8000);
