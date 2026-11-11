@@ -786,7 +786,8 @@ export const en = {
   "terminal.background": "Background",
   "terminal.stop": "Stop",
   "terminal.exitedLine": "[the terminal ended with {code}]",
-  "terminal.noTty": "This computer has no Python: the terminal runs commands, without colors or interactive programs.",
+  "terminal.noTty":
+    "This computer can't give Colonia a full terminal: commands run, without colors or full-screen programs.",
   "panel.open": "Open side panel",
   "panel.current": "Panel: {name}",
 

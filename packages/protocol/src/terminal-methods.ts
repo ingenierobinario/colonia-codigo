@@ -9,7 +9,7 @@ export const TerminalInfo = z.object({
   title: z.string(),
   cwd: z.string(),
   alive: z.boolean(),
-  /** false when this machine gives it no real tty (no Python): it still runs commands, without prompts or colors. */
+  /** false when this machine gives it no real tty: it still runs commands, without prompts or colors. */
   tty: z.boolean(),
   exit_code: z.number().int().optional(),
   /** The one command it runs (from a block an agent wrote), instead of an open shell; it ends with the command. */

@@ -792,7 +792,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "terminal.stop": "Detener",
   "terminal.exitedLine": "[la terminal terminó con {code}]",
   "terminal.noTty":
-    "Este ordenador no tiene Python: la terminal ejecuta comandos, pero sin colores ni programas interactivos.",
+    "Este ordenador no puede darle a Colonia una terminal completa: los comandos se ejecutan, pero sin colores ni programas a pantalla completa.",
   "panel.open": "Abrir panel lateral",
   "panel.current": "Panel: {name}",
 

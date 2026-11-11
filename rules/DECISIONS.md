@@ -3476,3 +3476,16 @@ the release body (`## Español` / `## English` bullets) and the panel dialog, th
 notification and the "what's new" chat show the person's language. `system.updates` keeps `changes` and adds
 `localized`; apps up to 2.26.0 list every bullet, hence four per language. A release without an entry falls back to
 the tag message. The terminal's `colonia upgrade --check` stays English.
+
+<a id="d-188"></a>
+## D-188 — 2026-11-11 — A real terminal on Windows and on a Unix without Python, from a prebuilt native pty in a helper process
+Windows had no pty at all and a Mac without the command line tools had none either, so a password prompt, colours
+or a full-screen program did not work there. The core now depends on `@lydell/node-pty`, pinned to exactly `1.1.0`
+(the `latest` tag points to a beta): a repackaging of node-pty that ships a prebuilt binary per platform through
+`optionalDependencies`, with no install script and no compiler, staged like `sharp` (`npm --os/--cpu`). Python's
+bridge stays first on macOS and Linux; the native pty is used on Windows (ConPTY, Windows 10 1809 and later) and when
+Python is missing; plain pipes remain the last resort, logged once. The module never loads inside the core: it runs
+in `pty-host.ts`, a one-purpose process that speaks `pty-bridge.py`'s protocol, because on Windows node-pty releases
+its pseudoconsole, worker thread and console-list agent only on `kill()`, and even then can keep the event loop
+alive; ending the helper releases all of it. The helper builds the Windows command line itself with Node's quoting
+rule. The packaging smoke runs one command through the staged helper.

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Run a command on a pseudo-terminal and relay it over stdin/stdout.
 
-A shell (and the CLIs it starts) needs a real tty: raw keys, a window size, colors. Node has no pty of its own
-and node-pty is a native module (a compiler on every install), while Python's pty module is a few lines.
+A shell (and the CLIs it starts) needs a real tty: raw keys, a window size, colors. Node has no pty of its own;
+on macOS and Linux Python's pty module is a few lines and comes first. Windows, and a Unix without Python, use
+pty-host.ts (a prebuilt native pty) with the same protocol.
 
 usage: pty-bridge.py <rows> <cols> <command> [args...]
 
