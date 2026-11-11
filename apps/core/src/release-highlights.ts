@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.31.0": {
+    en: ["In the Inbox By chat view, the Super-agent tag no longer gets cut off: it shows whole or steps aside."],
+    es: ["En la vista Por chat de la Bandeja, la etiqueta Super-agente ya no sale cortada: se ve entera o se aparta."],
+  },
   "2.30.0": {
     en: [
       "The Inbox groups each channel's contacts on their own, and By chat is one list, newest first.",

@@ -40,7 +40,9 @@ export function ThreadRow({ thread, agent, selected, onOpen }: ThreadRowProps) {
             <ChatProcesses thread={thread.id} />
             {/* BANDEJA-1: not on a channel's chats (every contact's agent is the super-agent) nor on Home. */}
             {!thread.engine && !thread.channel && thread.id !== "home" && agent?.kind === "secretary" && (
-              <Tag kind="role">{t("agent.super")}</Tag>
+              <Tag kind="role" title={t("agent.super")}>
+                {t("agent.super")}
+              </Tag>
             )}
           </>
         }
