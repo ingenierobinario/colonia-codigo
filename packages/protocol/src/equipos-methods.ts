@@ -19,8 +19,25 @@ export const Equipo = z.object({
   agent_access: z.boolean(),
   /** Un agente lo está usando ahora. */
   in_use: z.boolean(),
+  /** EQUIPOS-SIN-AGENTE-1: «ssh» si se llega por terminal remota sin instalar nada; si no, corre Colonia. */
+  via: z.enum(["colonia", "ssh"]).optional(),
+  /** Dirección en la red (solo los de SSH). */
+  address: z.string().optional(),
 });
 export type Equipo = z.infer<typeof Equipo>;
+
+/** EQUIPOS-SIN-AGENTE-1: un equipo encontrado en la red o en Tailscale, sin instalar nada en él. */
+export const FoundEquipo = z.object({
+  name: z.string(),
+  ip: z.string(),
+  os: z.enum(["windows", "linux/mac", "desconocido"]),
+  via: z.enum(["red", "tailscale"]),
+  online: z.boolean(),
+  ports: z.array(z.number()),
+  /** Lo que se puede abrir en él: «Terminal», «Escritorio remoto», «Carpetas», «VNC». */
+  opens: z.array(z.string()),
+});
+export type FoundEquipo = z.infer<typeof FoundEquipo>;
 
 export const EquipoAuditEntry = z.object({
   n: z.number(),
@@ -92,6 +109,44 @@ export const equiposMethods = {
     effect: true,
     access: "human",
   },
+  /** EQUIPOS-SIN-AGENTE-1: busca equipos en la red local (ARP) y en Tailscale y mira qué se puede abrir en cada uno. */
+  "equipos.discover": {
+    params: z.object({}).strict(),
+    result: z.object({ equipos: z.array(FoundEquipo), tailscale: z.boolean() }),
+    effect: false,
+    access: "human",
+  },
+  /**
+   * EQUIPOS-SIN-AGENTE-1: conecta por SSH con usuario y contraseña (o clave). Se prueba antes de guardar; el acceso va
+   * al almacén de secretos cifrado, nunca en claro. El equipo queda en la lista con el uso por agentes apagado.
+   */
+  "equipos.connect": {
+    params: z
+      .object({
+        host: z
+          .string()
+          .trim()
+          .min(1)
+          .max(253)
+          .regex(/^[A-Za-z0-9[][A-Za-z0-9.\-:[\]_]*$/),
+        port: z.number().int().min(1).max(65535).optional(),
+        user: z
+          .string()
+          .trim()
+          .min(1)
+          .max(100)
+          .regex(/^[^\s"'`$;&|<>-][^\s"'`$;&|<>]*$/),
+        password: z.string().min(1).max(500).optional(),
+        key: z.string().min(1).max(20_000).optional(),
+        name: z.string().trim().min(1).max(60).optional(),
+      })
+      .strict()
+      .refine((v) => Boolean(v.password) !== Boolean(v.key), { message: "contraseña o clave, una de las dos" }),
+    result: Equipo,
+    effect: true,
+    access: "human",
+    replay: false,
+  },
   /** Activa o apaga que los agentes usen este equipo como herramienta. */
   "equipos.set_access": {
     params: z.object({ id: Id, enabled: z.boolean() }).strict(),
@@ -128,6 +183,12 @@ export const equiposMethods = {
   "equipos.read_file": {
     params: z.object({ equipo: z.string().min(1).max(120), path: Path }).strict(),
     result: z.object({ content_base64: z.string(), size: z.number(), truncated: z.boolean() }),
+    effect: false,
+  },
+  /** EQUIPOS-SIN-AGENTE-1: lo que hay en una carpeta del equipo (nombre, tamaño, fecha), como texto. */
+  "equipos.list_files": {
+    params: z.object({ equipo: z.string().min(1).max(120), path: Path }).strict(),
+    result: z.object({ output: z.string(), truncated: z.boolean() }),
     effect: false,
   },
   "equipos.write_file": {

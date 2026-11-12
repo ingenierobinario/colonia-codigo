@@ -41,6 +41,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "webapps.set": "the owner chooses which web apps sit in the sidebar and signs in to them",
   "equipos.pair_start": SECRET,
   "equipos.pair_cancel": SECRET,
+  "equipos.connect": SECRET,
   "equipos.revoke": SECRET,
   "equipos.set_access": POWER,
   "equipos.local_pair": SECRET,

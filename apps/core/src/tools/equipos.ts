@@ -13,7 +13,8 @@ export function equipoTools(): Tool[] {
   return [
     defineTool({
       name: "equipo_list",
-      description: "List the owner's paired computers (laptops) this agent may use, and whether each is connected now.",
+      description:
+        "List the owner's computers this agent may use (paired laptops and computers reached over SSH), and whether each is connected now.",
       args: z.object({}),
       effect: "none",
       confirm: "never",
@@ -71,6 +72,21 @@ export function equipoTools(): Tool[] {
         const text = bytes.toString("utf8");
         const cut = r.truncated || text.length > MODEL_TEXT_MAX;
         return `${text.slice(0, MODEL_TEXT_MAX)}${cut ? `\n[cut: file is ${r.size} bytes]` : ""}`;
+      },
+    }),
+    // EQUIPOS-SIN-AGENTE-1: también en equipos por terminal remota (SSH), con el mismo interruptor del dueño.
+    defineTool({
+      name: "equipo_list_files",
+      description: "List what is in a folder on one of the owner's computers (names, sizes, dates).",
+      args: z.object({ equipo, path: z.string().min(1).max(1000).describe("Folder on that computer") }),
+      effect: "external",
+      confirm: "untrusted",
+      needsCap: EQUIPO_CAP,
+      deadlineMs: 200_000,
+      title: (a) => `Miró una carpeta de ${a.equipo ?? "un equipo"}`,
+      async run(a, ctx) {
+        const r = await ctx.call("equipos.list_files", { equipo: a.equipo, path: a.path });
+        return `${r.output.slice(0, MODEL_TEXT_MAX)}${r.truncated ? "\n[cut]" : ""}`;
       },
     }),
     defineTool({
