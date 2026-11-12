@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { tempDir } from "../apps/core/src/testkit/platform.ts";
@@ -99,12 +100,18 @@ test("uninstalling on Linux takes the desktop app and its entries with it, and l
 
   plant(image);
   uninstall();
-  assert.deepEqual(left.filter((file) => fs.existsSync(file)), []);
+  assert.deepEqual(
+    left.filter((file) => fs.existsSync(file)),
+    [],
+  );
 
   // An entry that starts something else (a package from the distribution) is not this installer's to remove.
   plant("/opt/Colonia/colonia");
   uninstall();
-  assert.deepEqual(left.filter((file) => fs.existsSync(file)), left.slice(0, 4));
+  assert.deepEqual(
+    left.filter((file) => fs.existsSync(file)),
+    left.slice(0, 4),
+  );
 });
 
 /** Runs install.sh with `home` as HOME, a PATH without its ~/.local/bin, and `shell` as the login shell. */
@@ -118,7 +125,10 @@ async function installInto(
   const bin = quietTools(dir.path);
   extra(bin);
   const env = { HOME: home, SHELL: shell, COLONIA_APP: path.join(dir.path, "app"), PATH: `${bin}:/usr/bin:/bin` };
-  return spawnSync("bash", [script, "--file", bundle(dir.path, "2.12.1", os), "--no-service"], { env, encoding: "utf8" });
+  return spawnSync("bash", [script, "--file", bundle(dir.path, "2.12.1", os), "--no-service"], {
+    env,
+    encoding: "utf8",
+  });
 }
 const MARK = "# Added by the Colonia installer";
 const marks = (file: string) => fs.readFileSync(file, "utf8").split(MARK).length - 1;
@@ -147,10 +157,17 @@ test("bash on a Mac gets the line in the login file it reads, without a new .bas
   if (process.platform === "win32") return;
   await using home = tempDir("colonia-home-");
   fs.writeFileSync(path.join(home.path, ".bash_login"), "");
-  const r = await installInto(home.path, "/bin/bash", (bin) =>
-    fs.writeFileSync(path.join(bin, "uname"), '#!/bin/sh\n[ "$1" = -s ] && { echo Darwin; exit 0; }\nexec /usr/bin/uname "$@"\n', {
-      mode: 0o755,
-    }),
+  const r = await installInto(
+    home.path,
+    "/bin/bash",
+    (bin) =>
+      fs.writeFileSync(
+        path.join(bin, "uname"),
+        '#!/bin/sh\n[ "$1" = -s ] && { echo Darwin; exit 0; }\nexec /usr/bin/uname "$@"\n',
+        {
+          mode: 0o755,
+        },
+      ),
     "darwin",
   );
   assert.equal(r.status, 0, r.stderr);
@@ -167,4 +184,15 @@ test("a startup file that cannot be written does not stop the install", async ()
   const r = await installInto(home.path, "/bin/zsh");
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stderr, /could not write/);
+});
+
+test("--equipo y --huella van juntos y exigen el servicio: se rechaza antes de instalar nada", () => {
+  const run = (...args: string[]) =>
+    spawnSync("bash", [script, ...args], { encoding: "utf8", env: { ...process.env, HOME: os.tmpdir() } });
+  const solo = run("--equipo", "ws://10.0.0.2:4100");
+  assert.notEqual(solo.status, 0);
+  assert.match(solo.stderr, /--equipo and --huella go together/);
+  const sinServicio = run("--equipo", "ws://10.0.0.2:4100", "--huella", "abcdef0123456789", "--no-service");
+  assert.notEqual(sinServicio.status, 0);
+  assert.match(sinServicio.stderr, /needs the service/);
 });

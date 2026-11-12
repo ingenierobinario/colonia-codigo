@@ -4,6 +4,8 @@
 #   .\install.ps1 -File colonia-core-2.2.0-win-x64.tar.gz      # a bundle you already have (no download)
 #
 # Parameters: -File <bundle>  -Version <x.y.z>  -Feed <owner/repo | http(s) URL>  -NoService  -Portable  -Uninstall
+#             -Equipo <url> -Huella <fingerprint>  (this laptop as an equipo of another Colonia: the command Colonia shows you;
+#             the 6-digit code is asked here and confirmed on this laptop, and an entry appears in Installed apps)
 # A feed URL is a GitHub-shaped test feed (scripts/install/feed.ts): <url>/releases and <url>/download/v<x.y.z>/<file>.
 # It lands in %USERPROFILE%\.colonia\v2\app (COLONIA_APP to change it); your data stays in %USERPROFILE%\.colonia\v2, and Colonia v1's
 # files in %USERPROFILE%\.colonia are never touched. If Colonia v1 is installed, its daemon is stopped and its `colonia` removed.
@@ -18,7 +20,9 @@ param(
   [switch]$Server,
   [switch]$Desktop,
   [switch]$Portable,
-  [switch]$Uninstall
+  [switch]$Uninstall,
+  [string]$Equipo = "",
+  [string]$Huella = ""
 )
 # Under `irm | iex` this text runs in the user's own session: an `exit` would close their window, and a preference or
 # a function set here would stay with them. So all of it runs in a block of its own, and a failure is thrown.
@@ -37,10 +41,24 @@ try {
     $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
     $Bin = Join-Path $App "bin"
     if ($Portable) { $Server = $true; $NoService = $true }
+    # Pairing needs the daemon (it holds the connection): server mode with the service, never portable.
+    if ($Equipo -or $Huella) {
+      if (-not ($Equipo -and $Huella)) { Die "-Equipo and -Huella go together: copy the whole command from Colonia" }
+      if ($Portable -or $NoService -or $Desktop) { Die "-Equipo needs the service: do not combine it with -Portable, -NoService or -Desktop" }
+      $Server = $true
+    }
+    $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\ColoniaEquipo"
 
     # -Uninstall: the login entry and the program go; the data in .colonia\v2 stays (delete it yourself to start over).
     if ($Uninstall) {
       $cmd = Join-Path $Bin "colonia.cmd"
+      # An equipo tells its Colonia and deletes its key before anything goes, so nothing stays authorised.
+      if ((Test-Path -LiteralPath $UninstallKey) -and (Test-Path -LiteralPath $cmd)) {
+        Say "Disconnecting this laptop from its Colonia"
+        $env:COLONIA_APP = $App
+        Quiet { & $cmd equipo desconectar } | Out-Null
+      }
+      Remove-Item -Path $UninstallKey -Recurse -ErrorAction SilentlyContinue
       if ((Test-Path -LiteralPath $cmd) -and -not $Portable) {
         Say "Stopping the Colonia daemon"
         $env:COLONIA_APP = $App
@@ -228,6 +246,22 @@ try {
         if ($entry) {
           Say "A Colonia service is already installed (login entry $entry): -NoService leaves it as it is; it runs this version from its next start (colonia service restart). To remove it: colonia service uninstall"
         }
+      }
+
+      if ($Equipo) {
+        # Installed apps: a normal name and a normal uninstall (it disconnects first, then removes the program).
+        New-Item -Path $UninstallKey -Force | Out-Null
+        $self = Join-Path $App "uninstall-equipo.cmd"
+        @('@echo off', 'powershell -NoProfile -ExecutionPolicy Bypass -Command "& ([scriptblock]::Create((irm https://colonia.ingenierobinario.com/install.ps1))) -Uninstall"') | Set-Content -Encoding ASCII -LiteralPath $self
+        Set-ItemProperty -Path $UninstallKey -Name DisplayName -Value "Colonia (equipo)"
+        Set-ItemProperty -Path $UninstallKey -Name DisplayVersion -Value $Version
+        Set-ItemProperty -Path $UninstallKey -Name Publisher -Value "Colonia"
+        Set-ItemProperty -Path $UninstallKey -Name UninstallString -Value "`"$self`""
+        Set-ItemProperty -Path $UninstallKey -Name NoModify -Value 1 -Type DWord
+        # The code is typed here, never passed in the command; the laptop's owner confirms it on this very machine.
+        Say "Now confirm the code Colonia is showing"
+        & (Join-Path $Bin "colonia.cmd") equipo emparejar $Equipo $Huella
+        if ($LASTEXITCODE -ne 0) { Die "pairing did not complete; run it again from Colonia (Add a computer) or: colonia equipo emparejar" }
       }
 
       Say "Colonia $Version is installed. Try: colonia status"

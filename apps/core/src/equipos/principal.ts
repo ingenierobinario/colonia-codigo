@@ -220,7 +220,7 @@ export function createPrincipal(d: PrincipalDeps) {
       const windows = base
         ? `& ([scriptblock]::Create((irm ${INSTALL_BASE}/install.ps1))) -Equipo ${base} -Huella ${fp}`
         : "";
-      const unix = base ? `curl -fsSL ${INSTALL_BASE}/install.sh | sh -s -- --equipo ${base} --huella ${fp}` : "";
+      const unix = base ? `curl -fsSL ${INSTALL_BASE}/install.sh | bash -s -- --equipo ${base} --huella ${fp}` : "";
       audit("codigo_creado", "se generó un código de emparejamiento");
       return {
         code,

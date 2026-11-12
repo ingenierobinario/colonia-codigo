@@ -5,6 +5,8 @@
 #   bash install.sh --file colonia-core-2.2.0-linux-x64.tar.gz      # a bundle you already have (no download)
 #
 # Options: --file <bundle>  --version <x.y.z>  --feed <owner/repo | http(s) URL>  --no-service  --uninstall
+#          --equipo <url> --huella <fingerprint>  this computer as an equipo of another Colonia (the command Colonia shows you);
+#          the 6-digit code is asked here, on this computer, and nothing is shared until you confirm it
 # A feed URL is a GitHub-shaped test feed (scripts/install/feed.ts): <url>/releases and <url>/download/v<x.y.z>/<file>.
 # It lands in ~/.colonia/v2/app (COLONIA_APP to change it); your data stays in ~/.colonia/v2, and Colonia v1's files in ~/.colonia are never
 # touched. If Colonia v1 is installed, its daemon is stopped and its `colonia` command removed: this one takes its place.
@@ -17,6 +19,8 @@ FILE=""
 VERSION=""
 SERVICE=1
 UNINSTALL=0
+EQUIPO=
+HUELLA=
 MODE=auto
 REQUESTED_DESKTOP=0
 REQUESTED_SERVER=0
@@ -37,13 +41,19 @@ while [ $# -gt 0 ]; do
     --server) REQUESTED_SERVER=1; shift ;;
     --desktop) REQUESTED_DESKTOP=1; shift ;;
     --uninstall) UNINSTALL=1; shift ;;
+    --equipo) EQUIPO="${2:?--equipo needs the address Colonia shows}"; MODE=server; shift 2 ;;
+    --huella) HUELLA="${2:?--huella needs the fingerprint Colonia shows}"; shift 2 ;;
     -h | --help)
-      echo "usage: install.sh [--desktop|--server] [--file <colonia-core-…tar.gz>] [--version x.y.z] [--feed owner/repo|url] [--no-service] [--uninstall]"
+      echo "usage: install.sh [--desktop|--server] [--file <colonia-core-…tar.gz>] [--version x.y.z] [--feed owner/repo|url] [--no-service] [--uninstall] [--equipo <url> --huella <fingerprint>]"
       exit 0
       ;;
     *) die "unknown option: $1 (see --help)" ;;
   esac
 done
+if [ -n "$EQUIPO" ] || [ -n "$HUELLA" ]; then
+  [ -n "$EQUIPO" ] && [ -n "$HUELLA" ] || die "--equipo and --huella go together: copy the whole command from Colonia"
+  [ "$REQUESTED_DESKTOP" = 0 ] && [ "$SERVICE" = 1 ] || die "--equipo needs the service: do not combine it with --desktop or --no-service"
+fi
 if [ "$REQUESTED_DESKTOP" = 1 ]; then
   [ "$REQUESTED_SERVER" = 0 ] && [ -z "$FILE" ] && [ "$SERVICE" = 1 ] || die "--desktop cannot be combined with --server, --file or --no-service"
   MODE=desktop
@@ -64,6 +74,13 @@ esac
 
 # --uninstall: the service and the program go; the data in ~/.colonia/v2 stays (delete it yourself to start over).
 if [ "$UNINSTALL" = 1 ]; then
+  # An equipo tells its Colonia and deletes its key before anything goes, so nothing stays authorised.
+  menu="${XDG_DATA_HOME:-$HOME/.local/share}/applications/colonia-equipo.desktop"
+  if [ -f "$menu" ] && [ -x "$BIN/colonia" ]; then
+    say "Disconnecting this computer from its Colonia"
+    COLONIA_APP="$APP" "$BIN/colonia" equipo desconectar || true
+  fi
+  rm -f "$menu"
   if [ -x "$BIN/colonia" ] && [ -e "$APP/current" ]; then
     say "Stopping the Colonia daemon"
     COLONIA_APP="$APP" "$BIN/colonia" service uninstall || warn "the service did not uninstall; see colonia service status"
@@ -279,6 +296,21 @@ if [ "$OS" = linux ] && [ "$SERVICE" = 1 ] && command -v loginctl >/dev/null 2>&
     loginctl enable-linger "$(id -un)" >/dev/null 2>&1 ||
       { command -v sudo >/dev/null 2>&1 && sudo -n loginctl enable-linger "$(id -un)" >/dev/null 2>&1; } ||
       warn "Colonia stops when you log out. To keep it running, run once:  sudo loginctl enable-linger $(id -un)"
+  fi
+fi
+
+if [ -n "$EQUIPO" ]; then
+  # Linux lists it among the apps (a menu entry that shows its state); macOS shows the service as a background item.
+  if [ "$OS" = linux ]; then
+    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    printf '[Desktop Entry]\nType=Application\nName=Colonia (equipo)\nComment=This computer as an equipo of another Colonia. Uninstall: install.sh --uninstall\nExec=sh -c "%s equipo; echo; read -r _"\nTerminal=true\nCategories=Network;\n' "$BIN/colonia" >"${XDG_DATA_HOME:-$HOME/.local/share}/applications/colonia-equipo.desktop"
+  fi
+  # The code is typed here, never passed in the command; the owner confirms it on this very machine (stdin may be the pipe).
+  say "Now confirm the code Colonia is showing"
+  if [ -r /dev/tty ]; then
+    COLONIA_APP="$APP" "$BIN/colonia" equipo emparejar "$EQUIPO" "$HUELLA" </dev/tty || die "pairing did not complete; run it again from Colonia (Add a computer) or: colonia equipo emparejar"
+  else
+    die "there is no terminal to type the code in; open one and run: colonia equipo emparejar $EQUIPO $HUELLA"
   fi
 fi
 

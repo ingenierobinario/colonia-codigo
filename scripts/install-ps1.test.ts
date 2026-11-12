@@ -220,4 +220,15 @@ test("-NoService over an installed server leaves its service alone and says how 
       execFileSync("reg", ["delete", runKey, "/v", value, "/f"], { windowsHide: true, stdio: "ignore" });
     }
   });
+
+test("el instalador de Windows registra el equipo en Aplicaciones instaladas y se desconecta antes de desinstalar", () => {
+  const text = fs.readFileSync(path.resolve(import.meta.dirname, "install/install.ps1"), "utf8");
+  assert.match(text, /\[string\]\$Equipo/);
+  assert.match(text, /\[string\]\$Huella/);
+  assert.match(text, /Uninstall.ColoniaEquipo/);
+  assert.match(text, /DisplayName -Value "Colonia \(equipo\)"/);
+  // La desinstalación avisa al Colonia principal y borra la clave ANTES de quitar el programa.
+  assert.ok(text.indexOf("equipo desconectar") < text.indexOf("Remove-Item -Recurse -Force -LiteralPath $App -ErrorAction"));
+  // El código nunca viaja en el comando: se teclea en el equipo.
+  assert.doesNotMatch(text, /\$Codigo|-Code\b/);
 });
