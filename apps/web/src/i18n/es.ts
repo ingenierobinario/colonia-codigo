@@ -864,6 +864,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "browser.noTabs": "No hay pestañas abiertas",
   "browser.noTabsBody": "Cuando un agente navegue, lo ves aquí en vivo y puedes tomar el control.",
   "browser.badUrl": "Escribe una dirección http o https.",
+  "browser.isColonia": "Esa dirección es la propia Colonia: no se puede abrir dentro de una pestaña.",
   "browser.back": "Atrás",
   "browser.reload": "Recargar",
   "browser.address": "Dirección",

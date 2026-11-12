@@ -131,3 +131,8 @@ export function dueLabel(iso: string, now = new Date()): { text: string; late: b
   if (days > 1 && days < 7) return { text: f.weekday.format(d), late };
   return { text: f.date.format(d), late };
 }
+
+/** PULIDO-236-1. A clock reading, always HH:MM on 24 h ("22:05", never "10:05 p. m."). */
+export function clockTime(d: Date): string {
+  return new Intl.DateTimeFormat(currentLocale(), { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d);
+}
