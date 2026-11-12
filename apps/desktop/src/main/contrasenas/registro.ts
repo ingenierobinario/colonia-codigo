@@ -90,7 +90,9 @@ export function registrarContrasenas(o: {
 
   // Importar: solo cuando el usuario pulsa «Importar»; el panel recibe nombres de perfil, nunca rutas.
   ipcMain.handle("import:sources", (e) =>
-    delPanel(e) ? descubrirFuentes().map(({ id, navegador, perfil }) => ({ id, navegador, perfil })) : [],
+    delPanel(e)
+      ? descubrirFuentes().map(({ id, navegador, perfil, nombre, email }) => ({ id, navegador, perfil, nombre, email }))
+      : [],
   );
   ipcMain.handle("import:read", (e, id: unknown) => {
     const f = delPanel(e) && typeof id === "string" ? descubrirFuentes().find((x) => x.id === id) : undefined;

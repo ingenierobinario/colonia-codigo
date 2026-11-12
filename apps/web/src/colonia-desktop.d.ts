@@ -7,7 +7,14 @@ type ConnectAnswer =
 export type SshPrompt = { id: string; text: string; secret: boolean };
 
 /** PROGRAMAS-1: a desktop program pinned in the sidebar (icon: a data: URL from the system). */
-export type ImportSource = { id: string; navegador: "chrome" | "edge" | "brave" | "firefox"; perfil: string };
+export type ImportSource = {
+  id: string;
+  navegador: "chrome" | "edge" | "brave" | "firefox";
+  perfil: string;
+  /** PERFIL-NOMBRE-1: nombre visible del perfil y su cuenta, si el navegador los guarda. */
+  nombre?: string;
+  email?: string;
+};
 export type ImportRead = {
   marcadores: { titulo: string; url: string }[];
   visitadas: { host: string; visitas: number }[];

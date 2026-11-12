@@ -14,13 +14,16 @@ export type FuenteImportar = {
   navegador: Navegador;
   /** Nombre de la carpeta del perfil («Default», «Profile 2», «ab12.default-release»). */
   perfil: string;
+  /** PERFIL-NOMBRE-1: el nombre que el usuario le puso al perfil («Trabajo», «Alex») y su cuenta, si el navegador los guarda. */
+  nombre?: string;
+  email?: string;
   familia: Familia;
   /** Carpeta del perfil: no sale del proceso principal. */
   dir: string;
 };
 
 /** Lo que ve el panel de una fuente: nada de rutas. */
-export type FuentePublica = Pick<FuenteImportar, "id" | "navegador" | "perfil">;
+export type FuentePublica = Pick<FuenteImportar, "id" | "navegador" | "perfil" | "nombre" | "email">;
 
 export type Marcador = { titulo: string; url: string };
 export type WebVisitada = { host: string; visitas: number };
@@ -85,6 +88,48 @@ export function entornoReal(): Entorno {
   };
 }
 
+const texto = (v: unknown): string | undefined =>
+  typeof v === "string" && v.trim() ? v.trim().slice(0, 120) : undefined;
+
+/**
+ * PERFIL-NOMBRE-1: Chromium guarda el nombre visible de cada perfil y su cuenta en `Local State`
+ * (profile.info_cache[<carpeta>]: name, gaia_name, user_name). Solo se leen esos tres campos.
+ */
+export function nombresChromium(json: string): Record<string, { nombre?: string; email?: string }> {
+  let cache: Record<string, { name?: unknown; gaia_name?: unknown; user_name?: unknown }> | undefined;
+  try {
+    cache = JSON.parse(json)?.profile?.info_cache;
+  } catch {
+    return {};
+  }
+  const out: Record<string, { nombre?: string; email?: string }> = {};
+  for (const [dir, p] of Object.entries(cache && typeof cache === "object" ? cache : {})) {
+    if (!p || typeof p !== "object") continue;
+    const email = texto(p.user_name);
+    out[dir] = { nombre: texto(p.name) ?? texto(p.gaia_name) ?? email, ...(email ? { email } : {}) };
+  }
+  return out;
+}
+
+/** PERFIL-NOMBRE-1: Firefox los nombra en profiles.ini (Name= / Path=); la clave es la carpeta del perfil. */
+export function nombresFirefox(ini: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const bloque of ini.split(/^\s*\[/m)) {
+    const nombre = /^Name=(.+)$/m.exec(bloque)?.[1]?.trim();
+    const ruta = /^Path=(.+)$/m.exec(bloque)?.[1]?.trim();
+    if (nombre && ruta) out[path.basename(ruta.replace(/\\/g, "/"))] = nombre.slice(0, 120);
+  }
+  return out;
+}
+
+const leer = (f: string): string => {
+  try {
+    return fs.readFileSync(f, "utf8");
+  } catch {
+    return "";
+  }
+};
+
 export function descubrirFuentes(e: Entorno = entornoReal()): FuenteImportar[] {
   const raiz = raizDatos(e);
   const sistema = e.platform as Sistema;
@@ -92,16 +137,36 @@ export function descubrirFuentes(e: Entorno = entornoReal()): FuenteImportar[] {
   const out: FuenteImportar[] = [];
   for (const c of CHROMIUM) {
     const base = path.join(raiz.chromium, c.ruta[sistema]);
+    const nombres = nombresChromium(leer(path.join(base, "Local State")));
     for (const perfil of lista(base).filter((n) => n === "Default" || /^Profile \d+$/.test(n))) {
       const dir = path.join(base, perfil);
       if (fs.existsSync(path.join(dir, "Bookmarks")) || fs.existsSync(path.join(dir, "History")))
-        out.push({ id: `${c.navegador}:${perfil}`, navegador: c.navegador, perfil, familia: "chromium", dir });
+        out.push({
+          id: `${c.navegador}:${perfil}`,
+          navegador: c.navegador,
+          perfil,
+          ...nombres[perfil],
+          familia: "chromium",
+          dir,
+        });
     }
   }
+  // profiles.ini está junto a Profiles/ en Windows y macOS, y en la misma carpeta en Linux.
+  const ini = nombresFirefox(
+    leer(path.join(raiz.firefox, "..", "profiles.ini")) || leer(path.join(raiz.firefox, "profiles.ini")),
+  );
   for (const perfil of lista(raiz.firefox)) {
     const dir = path.join(raiz.firefox, perfil);
+    const nombre = ini[perfil];
     if (fs.existsSync(path.join(dir, "places.sqlite")))
-      out.push({ id: `firefox:${perfil}`, navegador: "firefox", perfil, familia: "firefox", dir });
+      out.push({
+        id: `firefox:${perfil}`,
+        navegador: "firefox",
+        perfil,
+        ...(nombre ? { nombre } : {}),
+        familia: "firefox",
+        dir,
+      });
   }
   return out;
 }

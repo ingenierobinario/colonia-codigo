@@ -1,12 +1,13 @@
-// IMPORTAR-1: asistente de tres pasos (navegador, aplicaciones, listo). Solo lee marcadores y webs más visitadas, y solo
-// cuando se pulsa «Importar»; nunca contraseñas ni sesiones.
-import { Button, Checkbox, Dialog, EmptyState, Icons } from "@colonia/ui";
+// IMPORTAR-1: asistente de dos pasos (perfil, listo). Solo lee marcadores y webs más visitadas, y solo cuando se pulsa
+// «Importar»; nunca contraseñas ni sesiones. PERFIL-AGENTE-1: no ancla nada en la barra lateral: lo leído queda como
+// una nota global de Memoria para los agentes. PERFIL-NOMBRE-1: cada perfil se muestra con su nombre real y su cuenta.
+import { Button, Dialog, EmptyState, Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import type { ImportSource } from "../colonia-desktop.d.ts";
-import { cerrarAsistente, marcarOfrecido, useMigrar } from "../data/migrar.ts";
-import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
+import { client } from "../data/client.ts";
+import { cerrarAsistente, marcarOfrecido, notaDelPerfil, useMigrar } from "../data/migrar.ts";
 import { usePack, useT } from "../i18n/index.ts";
-import { reconocerWebs, type WebReconocida } from "./presets.ts";
+import { reconocerWebs } from "./presets.ts";
 import "../styles/webapps.css";
 
 const NAVEGADORES = { chrome: "Chrome", edge: "Edge", brave: "Brave", firefox: "Firefox" } as const;
@@ -19,16 +20,13 @@ export function ImportWizard() {
 
 function Cuerpo() {
   const t = useT();
-  const apps = useWebApps((s) => s.apps);
   const [fuentes, setFuentes] = useState<ImportSource[]>();
   const [fuente, setFuente] = useState<string>();
-  const [paso, setPaso] = useState<1 | 2 | 3>(1);
+  const [paso, setPaso] = useState<1 | 2>(1);
   const [leyendo, setLeyendo] = useState(false);
-  const [error, setError] = useState(false);
-  const [webs, setWebs] = useState<WebReconocida[]>([]);
+  const [error, setError] = useState<"read" | "save">();
   const [sinVisitas, setSinVisitas] = useState<string | undefined>();
-  const [marcadas, setMarcadas] = useState<Set<string>>(new Set());
-  const [anadidas, setAnadidas] = useState(0);
+  const [guardada, setGuardada] = useState(false);
 
   useEffect(() => {
     marcarOfrecido();
@@ -38,52 +36,54 @@ function Cuerpo() {
     });
   }, []);
 
+  const titulo = (s: ImportSource) =>
+    t("migrar.profileName", { browser: NAVEGADORES[s.navegador], profile: s.nombre ?? s.perfil });
+
   const importar = async () => {
-    if (!fuente) return;
+    const f = fuentes?.find((x) => x.id === fuente);
+    if (!f) return;
     setLeyendo(true);
-    setError(false);
-    const r = await window.coloniaDesktop?.importRead?.(fuente).catch(() => undefined);
-    setLeyendo(false);
-    if (!r) return setError(true);
-    const encontradas = reconocerWebs(r.marcadores, r.visitadas);
-    setWebs(encontradas);
-    setSinVisitas(
-      r.visitadasNoDisponibles ? NAVEGADORES[fuentes?.find((x) => x.id === fuente)?.navegador ?? "chrome"] : undefined,
-    );
-    setMarcadas(new Set(encontradas.filter((w) => !apps.some((a) => a.name === w.name)).map((w) => w.name)));
-    setPaso(2);
-  };
-
-  const anadir = async () => {
-    const ids = apps.map((a) => a.id);
-    let n = 0;
-    for (const w of webs) {
-      if (!marcadas.has(w.name)) continue;
-      const id = webAppId(w.name, ids);
-      if (await saveWebApp(id, { name: w.name, url: w.url })) {
-        ids.push(id);
-        n++;
+    setError(undefined);
+    try {
+      const r = await window.coloniaDesktop?.importRead?.(f.id).catch(() => undefined);
+      if (!r) return setError("read");
+      const cabecera = t("migrar.note", { profile: titulo(f) });
+      const texto = notaDelPerfil(
+        cabecera,
+        { apps: t("migrar.noteApps"), sitios: t("migrar.noteSites") },
+        reconocerWebs(r.marcadores, r.visitadas),
+        r.marcadores,
+        r.visitadas,
+      );
+      if (texto) {
+        // Reimportar el mismo perfil actualiza su nota en vez de apilar otra.
+        const { memories } = await client.call("memory.list", { scope: "global", query: cabecera, limit: 50 });
+        const previa = memories.find((m) => m.text.startsWith(cabecera));
+        await client.call("memory.add", {
+          text: texto,
+          scope: "global",
+          kind: "reference",
+          ...(previa ? { id: previa.id } : {}),
+        });
       }
+      setGuardada(Boolean(texto));
+      setSinVisitas(r.visitadasNoDisponibles ? NAVEGADORES[f.navegador] : undefined);
+      setPaso(2);
+    } catch {
+      setError("save");
+    } finally {
+      setLeyendo(false);
     }
-    await loadWebApps();
-    setAnadidas(n);
-    setPaso(3);
   };
 
-  const alternar = (nombre: string) =>
-    setMarcadas((p) => {
-      const n = new Set(p);
-      n.has(nombre) ? n.delete(nombre) : n.add(nombre);
-      return n;
-    });
-  const pasos = [t("migrar.step1"), t("migrar.step2"), t("migrar.step3")];
-  const titulo = (s: ImportSource) => t("migrar.profileName", { browser: NAVEGADORES[s.navegador], profile: s.perfil });
+  const pasos = [t("migrar.step1"), t("migrar.step2")];
+  const elegida = fuentes?.find((x) => x.id === fuente);
 
   return (
     <Dialog
       open
       onOpenChange={(o) => !o && cerrarAsistente()}
-      title={paso === 3 ? t("migrar.doneTitle") : t("migrar.title")}
+      title={paso === 2 ? t("migrar.doneTitle") : t("migrar.title")}
       description={paso === 1 ? t("migrar.lead") : undefined}
       footer={
         paso === 1 ? (
@@ -93,15 +93,6 @@ function Cuerpo() {
             </Button>
             <Button disabled={!fuente} loading={leyendo} onClick={() => void importar()}>
               {leyendo ? t("migrar.reading") : t("migrar.import")}
-            </Button>
-          </>
-        ) : paso === 2 ? (
-          <>
-            <Button variant="secondary" onClick={() => setPaso(1)}>
-              {t("migrar.back")}
-            </Button>
-            <Button disabled={!marcadas.size} onClick={() => void anadir()}>
-              {marcadas.size === 1 ? t("migrar.pinOne") : t("migrar.pin", { n: marcadas.size })}
             </Button>
           </>
         ) : (
@@ -129,36 +120,25 @@ function Cuerpo() {
               {(fuentes ?? []).map((s) => (
                 <label key={s.id} className="import__card" data-on={fuente === s.id || undefined}>
                   <input type="radio" name="fuente" checked={fuente === s.id} onChange={() => setFuente(s.id)} />
-                  <span>{titulo(s)}</span>
+                  <span className="import__profile">
+                    <span>{titulo(s)}</span>
+                    {s.email && <span className="import__email">{s.email}</span>}
+                  </span>
                 </label>
               ))}
-              {error && <p className="import__error">{t("migrar.readFailed")}</p>}
+              {error && (
+                <p className="import__error">{error === "read" ? t("migrar.readFailed") : t("migrar.saveFailed")}</p>
+              )}
             </fieldset>
           ))}
-        {paso === 2 &&
-          (webs.length ? (
-            <>
-              <p className="import__hint">{t("migrar.foundBody")}</p>
-              {sinVisitas && <p className="import__hint">{t("migrar.visitsUnavailable", { browser: sinVisitas })}</p>}
-              <ul className="import__list">
-                {webs.map((w) => (
-                  <li key={w.name} className="import__card" data-on={marcadas.has(w.name) || undefined}>
-                    <Checkbox
-                      checked={marcadas.has(w.name)}
-                      onCheckedChange={() => alternar(w.name)}
-                      label={w.name}
-                      description={w.origen === "marcador" ? t("migrar.fromMarks") : t("migrar.fromVisits")}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <EmptyState variant="dashed" icon={<Icons.Globe />} title={t("migrar.foundNone")}>
-              {sinVisitas ? t("migrar.visitsUnavailable", { browser: sinVisitas }) : t("migrar.foundNoneBody")}
-            </EmptyState>
-          ))}
-        {paso === 3 && <p className="import__hint">{anadidas ? t("migrar.doneBody") : t("migrar.doneNone")}</p>}
+        {paso === 2 && (
+          <>
+            <p className="import__hint">
+              {guardada ? t("migrar.doneBody", { profile: elegida ? titulo(elegida) : "" }) : t("migrar.doneNone")}
+            </p>
+            {sinVisitas && <p className="import__hint">{t("migrar.visitsUnavailable", { browser: sinVisitas })}</p>}
+          </>
+        )}
       </div>
     </Dialog>
   );

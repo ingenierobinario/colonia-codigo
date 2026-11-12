@@ -82,6 +82,18 @@
 .import__card[data-on] {
   border-color: var(--colonia-fg-subtle);
 }
+.import__profile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.import__email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
+}
 .import__hint {
   margin: 0;
   font-size: var(--colonia-text-sm);

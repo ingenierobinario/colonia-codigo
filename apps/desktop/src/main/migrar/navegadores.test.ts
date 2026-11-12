@@ -5,7 +5,15 @@ import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { descubrirFuentes, leerFuente, limpiarUrl, marcadoresChromium, sitiosMasVisitados } from "./navegadores.ts";
+import {
+  descubrirFuentes,
+  leerFuente,
+  limpiarUrl,
+  marcadoresChromium,
+  nombresChromium,
+  nombresFirefox,
+  sitiosMasVisitados,
+} from "./navegadores.ts";
 
 const carpeta = (t: { after(fn: () => void): void }) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-test-nav-"));
@@ -108,4 +116,43 @@ test("una base bloqueada o ilegible no rompe: marcadores sí, visitadas declarad
   const r = leerFuente(f as NonNullable<typeof f>);
   assert.equal(r.marcadores.length, 3);
   assert.equal(r.visitadasNoDisponibles, true);
+});
+
+test("PERFIL-NOMBRE-1: el nombre real de cada perfil sale de Local State y de profiles.ini", (t) => {
+  const home = carpeta(t);
+  const base = path.join(home, ".config", "google-chrome");
+  for (const p of ["Default", "Profile 3"]) {
+    fs.mkdirSync(path.join(base, p), { recursive: true });
+    fs.writeFileSync(path.join(base, p, "Bookmarks"), BOOKMARKS);
+  }
+  fs.writeFileSync(
+    path.join(base, "Local State"),
+    JSON.stringify({
+      profile: {
+        info_cache: {
+          Default: { name: "Trabajo", gaia_name: "Alex D", user_name: "alex@empresa.com" },
+          "Profile 3": { name: "", gaia_name: "Alex Personal", user_name: "" },
+        },
+      },
+    }),
+  );
+  const ff = path.join(home, ".mozilla", "firefox");
+  fs.mkdirSync(path.join(ff, "ab12.default-release"), { recursive: true });
+  fs.writeFileSync(path.join(ff, "ab12.default-release", "places.sqlite"), "");
+  fs.writeFileSync(
+    path.join(ff, "profiles.ini"),
+    "[General]\nStartWithLastProfile=1\n\n[Profile0]\nName=Casa\nIsRelative=1\nPath=ab12.default-release\n",
+  );
+  const fuentes = descubrirFuentes({ platform: "linux", home });
+  assert.deepEqual(
+    fuentes.map(({ id, nombre, email }) => ({ id, nombre, email })),
+    [
+      { id: "chrome:Default", nombre: "Trabajo", email: "alex@empresa.com" },
+      { id: "chrome:Profile 3", nombre: "Alex Personal", email: undefined },
+      { id: "firefox:ab12.default-release", nombre: "Casa", email: undefined },
+    ],
+  );
+  assert.deepEqual(nombresChromium("roto"), {});
+  assert.deepEqual(nombresFirefox("[Profile0]\nName=Win\nPath=Profiles/xy.default\n"), { "xy.default": "Win" });
+  assert.deepEqual(nombresFirefox("[Profile0]\nName=Win\nPath=C:\\P\\zz.default\n"), { "zz.default": "Win" });
 });
