@@ -6,12 +6,12 @@ import { abrirAsistente, yaOfrecido } from "../data/migrar.ts";
 import { usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
-import { usePack, useT } from "../i18n/index.ts";
+import { useT } from "../i18n/index.ts";
 import { addProgram, canPinPrograms, ProgramItems } from "../programs/ProgramsDock.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
 import { ImportWizard } from "./ImportWizard.tsx";
-import { presetOf, unreadFromTitle, WEBAPP_PRESETS } from "./presets.ts";
+import { unreadFromTitle } from "./presets.ts";
 import "../styles/webapps.css";
 
 /** "business-stack.example.com" → "https://business-stack.example.com"; anything not http(s) is refused. */
@@ -59,7 +59,6 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
   const folded = usePrefs((s) => s.appsFolded);
   const loaded = useWebApps((s) => s.loaded);
   const puedeImportar = typeof window.coloniaDesktop?.importSources === "function";
-  const migrarListo = usePack("migrar");
   useEffect(() => {
     void loadWebApps();
   }, []);
@@ -73,15 +72,6 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
   const plus = (
     <IconButton size="sm" className="sidebar__add" label={t("webapp.add")} icon={<Icons.Plus size={14} />} />
   );
-  const addPreset = (p: (typeof WEBAPP_PRESETS)[number]) => {
-    // Cada alta es una sesión nueva (gmail, gmail-2…): así se tienen varias cuentas a la vez.
-    const n = apps.filter((a) => presetOf(a)?.key === p.key).length;
-    const id = webAppId(
-      p.name,
-      apps.map((a) => a.id),
-    );
-    void saveWebApp(id, { name: n ? `${p.name} ${n + 1}` : p.name, url: p.url }).then((ok) => ok && go.webapp(id));
-  };
   return (
     <>
       <SidebarSection
@@ -93,14 +83,6 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
             trigger={plus}
             align="end"
             items={[
-              ...WEBAPP_PRESETS.map((p) => ({
-                label: p.name,
-                icon: <Icons.Mail size={14} />,
-                onSelect: () => addPreset(p),
-              })),
-              ...(puedeImportar && migrarListo
-                ? [{ label: t("migrar.menu"), icon: <Icons.Download size={14} />, onSelect: abrirAsistente }]
-                : []),
               { label: t("webapp.addWeb"), icon: <Icons.Globe size={14} />, onSelect: () => setEditing("new") },
               ...(canPinPrograms()
                 ? [{ label: t("program.add"), icon: <Icons.Monitor size={14} />, onSelect: addProgram }]
