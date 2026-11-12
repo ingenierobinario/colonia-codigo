@@ -120,14 +120,14 @@ test("on Linux values go to the keyring by stdin, the file keeps only names, and
   }
 });
 
-test("without a keyring a Linux server keeps the 0600 file; once values went to the keyring it stays chosen", () => {
+test("without a keyring a Linux server saves nothing in a file; once values went to the keyring it stays chosen", () => {
   const server = tempHome();
   const desktop = tempHome();
   try {
     const s = createSecrets(server, "secret-service", {}, fakeSystem().run);
-    assert.equal(s.backend, "file");
-    s.set("token", "v");
-    assert.equal(s.resolve("secret://token"), "v");
+    assert.throws(() => s.set("token", "v"));
+    assert.equal(s.resolve("secret://token"), undefined);
+    assert.equal(fs.existsSync(path.join(server, "secrets.json")), false);
 
     const up = fakeSystem({ keyring: true });
     createSecrets(desktop, "secret-service", {}, up.run).set("token", "in-keyring");
@@ -165,7 +165,10 @@ test("on Windows values are sealed with DPAPI in one file, apart from the index"
     assert.equal(again.resolve("secret://gemini"), "k-123");
     assert.equal(again.resolve("secret://slack"), "xoxb-1");
     const bare = tempHome();
-    assert.equal(createSecrets(bare, "dpapi", {}, fakeSystem().run).backend, "file", "no PowerShell: the file");
+    assert.throws(
+      () => createSecrets(bare, "dpapi", {}, fakeSystem().run).set("k", "v"),
+      "no PowerShell: no plain file",
+    );
     fs.rmSync(bare, { recursive: true, force: true });
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

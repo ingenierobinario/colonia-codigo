@@ -1,8 +1,9 @@
 // Secrets by reference. Config and settings hold `secret://<name>` (or `env:<VAR>`); the value is read only by the
 // code that uses it, right when it uses it, and never leaves the core.
 // Values live in the system's own store (secrets-stores.ts): the login Keychain on macOS, a DPAPI file on Windows, the
-// Secret Service keyring on Linux, so an agent harness sandboxed to read the disk cannot read them. Without one (a Linux
-// server with no keyring), and in tests, they live in <home>/secrets.json (0600). See DECISIONS.md#d-010
+// Secret Service keyring on Linux, so an agent harness sandboxed to read the disk cannot read them. Without one, nothing
+// is written in plain text: saving a value fails and none is read from disk. Only the backend "file", asked for by name
+// (tests), keeps <home>/secrets.json (0600). See DECISIONS.md#d-010
 import fs from "node:fs";
 import path from "node:path";
 import { defaultHome } from "./config.ts";
@@ -66,10 +67,12 @@ export function createSecrets(
   const store =
     candidate && (wanted === "keychain" || fs.existsSync(index) || candidate.works()) ? candidate : undefined;
   const backend: SecretsBackend = store ? wanted : "file";
+  // A system store was wanted and does not answer: there is no safe place for a value, so none is saved or read from a file.
+  const sealed = wanted !== "file" && !store;
   // The file holds values only for the file backend; with a store it is just the index (names, dates).
   const file = store ? index : legacy;
   // A file written by hand or restored from a copy may be readable by others: only its owner reads it from here on.
-  if (!store && process.platform !== "win32") {
+  if (!store && !sealed && process.platform !== "win32") {
     try {
       fs.chmodSync(legacy, 0o600);
     } catch {}
@@ -92,16 +95,16 @@ export function createSecrets(
   const api = {
     backend,
     /** What the owner should know once: the keyring was wanted and is not there, so values sit in a file. */
-    notice:
-      wanted === "secret-service" && !store
-        ? `No system keyring answered, so secrets are kept in ${legacy}, readable only by this user. To keep them in the keyring, install one (gnome-keyring and libsecret-tools) and restart Colonia.`
-        : undefined,
+    notice: sealed
+      ? `No system store for secrets answered, so Colonia will not save any (it never writes them in plain text). On Linux install a keyring (gnome-keyring and libsecret-tools) and restart Colonia. Values already in ${legacy} are not read.`
+      : undefined,
     /** Resolves `secret://name` or `env:VAR`; anything else (or a missing value) is undefined. */
     resolve(ref: string | undefined): string | undefined {
       if (!ref) return undefined;
       if (ref.startsWith("env:")) return env[ref.slice(4)] || undefined;
       if (!ref.startsWith("secret://")) return undefined;
       const name = ref.slice(9);
+      if (sealed) return undefined;
       if (!store) return read()[name]?.value || undefined;
       if (cache.has(name)) return cache.get(name);
       // The Keychain may hold a value from an earlier install in another home; the newer stores only what is listed.
@@ -137,6 +140,7 @@ export function createSecrets(
       }));
     },
     set(name: string, value: string | null): void {
+      if (sealed && value !== null) throw new Error(api.notice);
       const all = read();
       if (store) {
         store.set(name, value);

@@ -56,7 +56,7 @@ test("reading waits less than storing, which may need the person to unlock the k
   assert.ok((waits.lookup ?? 0) < (waits.store ?? 0));
 });
 
-test("without a keyring the owner is told where the values are, and the file is theirs alone", async () => {
+test("without a keyring nothing is saved in plain text and the owner is told", async () => {
   await using dir = tempDir("colonia-secrets-file-");
   const file = path.join(dir.path, "secrets.json");
   fs.writeFileSync(file, JSON.stringify({ old: { value: "v", updated_at: "x" } }), { mode: 0o644 });
@@ -64,12 +64,11 @@ test("without a keyring the owner is told where the values are, and the file is 
     throw new Error("Cannot autolaunch D-Bus without X11 $DISPLAY");
   };
   const s = createSecrets(dir.path, "secret-service", {}, none);
-  assert.equal(s.backend, "file");
-  assert.match(s.notice ?? "", /No system keyring answered/);
-  assert.ok(s.notice?.includes(file));
-  assert.equal(s.resolve("secret://old"), "v");
-  // Windows has no such bits; there the home folder's own access list does this.
-  if (process.platform !== "win32") assert.equal(fs.statSync(file).mode & 0o777, 0o600);
+  assert.match(s.notice ?? "", /No system store for secrets answered/);
+  assert.throws(() => s.set("token", "super-secret-value"), /plain text/);
+  assert.equal(s.resolve("secret://old"), undefined, "a plain-text file is not read");
+  assert.doesNotMatch(fs.readFileSync(file, "utf8"), /super-secret-value/);
+  assert.equal(fs.existsSync(path.join(dir.path, "secrets.json.tmp")), false);
   assert.equal(createSecrets(dir.path, "file", {}, none).notice, undefined, "a file that was asked for is no news");
 });
 
