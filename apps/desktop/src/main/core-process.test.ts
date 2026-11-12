@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { removeDir } from "../../../core/src/testkit/platform.ts";
+import { removeDir, tempDir } from "../../../core/src/testkit/platform.ts";
+import * as core from "./core-process.ts";
 import { startEmbeddedCore } from "./core-process.ts";
+import { waiting, waitingText } from "./remote-wait.ts";
 
 async function until(check: () => boolean): Promise<void> {
   const deadline = Date.now() + 5000;
@@ -14,8 +17,8 @@ async function until(check: () => boolean): Promise<void> {
   }
 }
 
-function fixture(source: string) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-embedded-"));
+function fixture(source: string, into?: string) {
+  const dir = into ?? fs.mkdtempSync(path.join(os.tmpdir(), "colonia-embedded-"));
   const main = path.join(dir, "colonia", "apps", "core", "src", "main.ts");
   fs.mkdirSync(path.dirname(main), { recursive: true });
   fs.writeFileSync(main, source);
@@ -105,5 +108,154 @@ test("stop first closes the core's stdin, so it can end cleanly before any kill"
   } finally {
     await core.stop();
     await removeDir(dir);
+  }
+});
+
+// PUERTO-AJENO-1 / ADOPTAR-CORE-1: what holds the core's port decides whether the app starts its own core.
+async function serve(handler: http.RequestListener, port = 0): Promise<http.Server & { port: number }> {
+  const server = http.createServer(handler);
+  await new Promise<void>((resolve) => server.listen(port, "127.0.0.1", resolve));
+  return Object.assign(server, { port: (server.address() as { port: number }).port });
+}
+const close = (s: http.Server) => new Promise<void>((resolve) => s.close(() => resolve()));
+const colonia: http.RequestListener = (_req, res) => {
+  res.writeHead(200, { "content-type": "application/json" });
+  res.end(JSON.stringify({ ok: true, result: { name: "colonia-core", home_id: "x" } }));
+};
+const starts = (dir: string) =>
+  fs.existsSync(path.join(dir, "starts"))
+    ? fs.readFileSync(path.join(dir, "starts"), "utf8").trim().split("\n").length
+    : 0;
+
+test("a program that is not Colonia answering 200 on /health is not a core that is up", async () => {
+  const other = await serve((_req, res) => res.end("ok"));
+  try {
+    assert.equal(await core.isUp(`http://127.0.0.1:${other.port}`), false);
+  } finally {
+    await close(other);
+  }
+  const real = await serve(colonia);
+  try {
+    assert.equal(await core.isUp(`http://127.0.0.1:${real.port}`), true);
+  } finally {
+    await close(real);
+  }
+});
+
+test("another program on the port: no core is started, the wait ends early and the screen names the way out", {
+  timeout: 20_000,
+}, async () => {
+  const other = await serve((_req, res) => {
+    res.writeHead(404);
+    res.end();
+  });
+  await using dir = tempDir("colonia-port-");
+  const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
+  const url = `http://127.0.0.1:${other.port}`;
+  const embedded = core.startEmbeddedCore({ ...opts, port: other.port, adoptMs: 600, watchMs: 300 });
+  try {
+    const started = Date.now();
+    assert.equal(await core.waitUp(url, 10_000), false);
+    assert.ok(Date.now() - started < 8000, "the wait stops once the port is known to be taken");
+    const problem = core.portProblem?.(url);
+    assert.ok(problem, "the taken port is reported");
+    assert.equal(problem.port, other.port);
+    assert.equal(problem.envFile, path.join(dir.path, "core.env"));
+    assert.ok(problem.freePort && problem.freePort !== other.port);
+    if (process.platform === "win32") assert.match(problem.program ?? "", /node/i);
+    assert.equal(starts(dir.path), 0, "no core was started against a taken port");
+    const remote = { where: "here", url, local: "See the log" };
+    const es = waitingText(waiting(remote, true, true));
+    assert.match(es, new RegExp(`Otro programa.*puerto ${other.port}`));
+    assert.match(es, new RegExp(`COLONIA_PORT=${problem.freePort}`));
+    assert.match(waitingText(waiting(remote, true, false)), /Another program .*Close it/);
+    // Once the program goes away, the app starts its own core by itself.
+    await close(other);
+    await until(() => starts(dir.path) === 1);
+    assert.equal(core.portProblem?.(url), undefined);
+  } finally {
+    await embedded.stop();
+    if (other.listening) await close(other);
+  }
+});
+
+test("a Colonia core that answers on the port (the service, started at the same time) is adopted, not fought", {
+  timeout: 20_000,
+}, async () => {
+  // The service binds the port but its /health only answers a moment later, as a core still starting does.
+  let ready = false;
+  const service = await serve((req, res) => {
+    if (!ready) {
+      res.writeHead(503);
+      res.end();
+      return;
+    }
+    colonia(req, res);
+  });
+  setTimeout(() => (ready = true), 1000);
+  await using dir = tempDir("colonia-adopt-");
+  const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
+  const url = `http://127.0.0.1:${service.port}`;
+  const embedded = core.startEmbeddedCore({ ...opts, port: service.port, adoptMs: 5000, watchMs: 300 });
+  try {
+    assert.equal(await core.waitUp(url, 8000), true);
+    await new Promise((r) => setTimeout(r, 1500));
+    assert.equal(starts(dir.path), 0, "the app did not start a second core");
+    assert.equal(core.portProblem?.(url), undefined);
+    assert.doesNotMatch(fs.readFileSync(opts.logFile, "utf8"), /core exited/);
+    // When the service goes away, the app's own core takes over.
+    await close(service);
+    await until(() => starts(dir.path) === 1);
+  } finally {
+    await embedded.stop();
+    if (service.listening) await close(service);
+  }
+});
+
+test("a core that loses the race for the port adopts the one that won it instead of retrying", {
+  timeout: 20_000,
+}, async () => {
+  // The child stands in for a core that dies on a taken port; the winner starts answering right as it dies.
+  await using dir = tempDir("colonia-race-");
+  const probe = await serve(() => {});
+  const port = probe.port;
+  await close(probe);
+  const { opts } = fixture(`${record}\nprocess.exit(1);`, dir.path);
+  const url = `http://127.0.0.1:${port}`;
+  const embedded = core.startEmbeddedCore({ ...opts, port, adoptMs: 3000, watchMs: 300, restartDelayMs: 200 });
+  let winner: (http.Server & { port: number }) | undefined;
+  try {
+    await until(() => starts(dir.path) === 1);
+    winner = await serve(colonia, port);
+    assert.equal(await core.waitUp(url, 5000), true);
+    await new Promise((r) => setTimeout(r, 2000));
+    assert.equal(starts(dir.path), 1, "no further start while the other core serves the port");
+  } finally {
+    await embedded.stop();
+    if (winner) await close(winner);
+  }
+});
+
+test("a core that dies young while the port is still free waits briefly for another core taking its home", {
+  timeout: 20_000,
+}, async () => {
+  // The service holds the home (so ours dies at once) but binds the port only a moment later.
+  await using dir = tempDir("colonia-home-race-");
+  const probe = await serve(() => {});
+  const port = probe.port;
+  await close(probe);
+  const { opts } = fixture(`${record}\nprocess.exit(1);`, dir.path);
+  const embedded = core.startEmbeddedCore({ ...opts, port, adoptMs: 4000, watchMs: 300, restartDelayMs: 200 });
+  let service: (http.Server & { port: number }) | undefined;
+  try {
+    await until(() => starts(dir.path) === 1);
+    await new Promise((r) => setTimeout(r, 1500));
+    service = await serve(colonia, port);
+    assert.equal(await core.waitUp(`http://127.0.0.1:${port}`, 5000), true);
+    await new Promise((r) => setTimeout(r, 1500));
+    assert.equal(starts(dir.path), 1, "no second start while the other core was coming up");
+  } finally {
+    await embedded.stop();
+    if (service) await close(service);
   }
 });
