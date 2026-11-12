@@ -327,7 +327,7 @@ export function createConnector(opts: {
                     : "The local installation or core identity is missing. It will not connect until it can be verified."
                   : es
                     ? "Este puerto pertenece a otra instalación de Colonia. No se conectará como el core local."
-                    : "This port belongs to another home. It will not be adopted as the local core.";
+                    : "This port belongs to another Colonia installation. It will not connect as the local core.";
             return identity === "matches";
           } catch {
             identityProblem = undefined;

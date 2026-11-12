@@ -9,7 +9,7 @@
 FROM debian:bookworm-slim
 ARG BUNDLE
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl git tini chromium fonts-liberation ffmpeg \
+ && apt-get install -y --no-install-recommends ca-certificates curl git tini procps chromium fonts-liberation ffmpeg \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --create-home --uid 1000 colonia \
  && mkdir -p /data && chown colonia:colonia /data

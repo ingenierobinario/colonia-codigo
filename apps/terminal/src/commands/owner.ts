@@ -1,5 +1,6 @@
 // colonia owner / org / profiles: who the owner is, a project's areas and roles, and what the super-agent is for.
 import type { ColoniaClient } from "@colonia/protocol/client";
+import { readStdin } from "../stdin.ts";
 
 export const USAGE = {
   owner: `colonia owner                                  Who you are, for your agents
@@ -45,12 +46,6 @@ export async function owner(client: ColoniaClient, [sub, ...pairs]: string[]) {
   console.log(`Language:  ${me.language}`);
   console.log(`Time zone: ${me.timezone || "this machine's"}`);
   if (me.about.trim()) console.log(`\n${me.about.trim()}`);
-}
-
-async function readStdin(): Promise<string> {
-  let raw = "";
-  for await (const chunk of process.stdin) raw += String(chunk);
-  return raw;
 }
 
 export async function org(client: ColoniaClient, [sub]: string[], o: { project?: string | undefined }, read = readStdin) {

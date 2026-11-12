@@ -8,8 +8,10 @@ import Terminal from "./Terminal.astro";
 interface Props {
   /** Labels of the two choices (Spanish pages pass their own). */
   labels?: [string, string];
+  /** Install in server mode (always on, with its service): `--server` / `-Server`. */
+  server?: boolean;
 }
-const { labels = ["macOS and Linux", "Windows"] } = Astro.props;
+const { labels = ["macOS and Linux", "Windows"], server = false } = Astro.props;
 const site = INSTALL_BASE_URL;
 ---
 
@@ -18,8 +20,8 @@ const site = INSTALL_BASE_URL;
     <button type="button" data-pick="unix" aria-pressed="true"><OsIcon name="mac" /><OsIcon name="linux" />{labels[0]}</button>
     <button type="button" data-pick="win" aria-pressed="false"><OsIcon name="windows" />{labels[1]}</button>
   </div>
-  <div class="colonia-oscmd__pane" data-pane="unix"><Terminal command={`curl -fsSL ${site}/install.sh | bash`} /></div>
-  <div class="colonia-oscmd__pane" data-pane="win"><Terminal command={`irm ${site}/install.ps1 | iex`} title="PowerShell" /></div>
+  <div class="colonia-oscmd__pane" data-pane="unix"><Terminal command={server ? `curl -fsSL ${site}/install.sh | bash -s -- --server` : `curl -fsSL ${site}/install.sh | bash`} /></div>
+  <div class="colonia-oscmd__pane" data-pane="win"><Terminal command={server ? `& ([scriptblock]::Create((irm '${site}/install.ps1'))) -Server` : `irm ${site}/install.ps1 | iex`} title="PowerShell" /></div>
 </div>
 
 <script>

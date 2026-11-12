@@ -1,6 +1,7 @@
 // colonia extensions: install a folder with colonia-extension.json, turn it on or off, give it its secrets.
 import type { ExtensionInfo } from "@colonia/protocol";
 import type { ColoniaClient } from "@colonia/protocol/client";
+import { readStdin } from "../stdin.ts";
 
 const USAGE = `colonia extensions                         Installed extensions
 colonia extensions inspect <folder>        What a folder would bring (nothing is installed)
@@ -45,9 +46,7 @@ export async function extensions(
     let value: string | null = null;
     if (!opts.clear) {
       // From stdin, never argv (it would show up in the process list and shell history).
-      let raw = "";
-      for await (const chunk of process.stdin) raw += String(chunk);
-      value = raw.trim();
+      value = (await readStdin()).trim();
       if (!value) throw new Error(`pipe the value in: … | colonia extensions secret ${arg} ${name}`);
     }
     show(await client.call("extensions.set_secret", { id: arg, name, value }));

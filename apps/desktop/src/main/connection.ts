@@ -83,15 +83,25 @@ export const localCoreHome = (env: NodeJS.ProcessEnv = process.env) =>
   env.COLONIA_HOME || path.join(os.homedir(), ".colonia", "v2");
 
 /** COLONIA_URL selects a connection, never the daemon this computer may start. */
-export function localCoreUrl(env: NodeJS.ProcessEnv = process.env): string {
+/**
+ * A wrong COLONIA_PORT (in the environment or in core.env) never keeps the app from opening: it falls back to 7440 and
+ * `warn` gets a sentence saying where to fix it.
+ */
+export function localCoreUrl(env: NodeJS.ProcessEnv = process.env, warn: (message: string) => void = () => {}): string {
   let port = env.COLONIA_PORT;
+  let where = "the COLONIA_PORT environment variable";
   if (!port) {
+    const file = path.join(localCoreHome(env), CORE_ENV_FILE);
     try {
-      port = parseCoreEnv(fs.readFileSync(path.join(localCoreHome(env), CORE_ENV_FILE), "utf8")).COLONIA_PORT;
+      port = parseCoreEnv(fs.readFileSync(file, "utf8")).COLONIA_PORT;
+      where = file;
     } catch {}
   }
   const n = Number(port || 7440);
-  if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("Invalid local COLONIA_PORT");
+  if (!Number.isInteger(n) || n < 1 || n > 65535) {
+    warn(`COLONIA_PORT=${port} is not a valid port (1-65535). Using 7440. Fix it in ${where}.`);
+    return "http://127.0.0.1:7440";
+  }
   return `http://127.0.0.1:${n}`;
 }
 

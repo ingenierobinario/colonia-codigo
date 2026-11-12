@@ -122,7 +122,20 @@ test("an explicit URL is connect-only, even when a local connection was saved", 
     assert.equal(localCoreUrl({ COLONIA_HOME: dir, COLONIA_URL: "https://core.example.com" }), "http://127.0.0.1:7550");
     assert.equal(localCoreUrl({ COLONIA_HOME: dir, COLONIA_PORT: "7660" }), "http://127.0.0.1:7660");
     assert.equal(localCoreToken({ COLONIA_HOME: dir, COLONIA_TOKEN: "explicit" }), "explicit");
-    assert.throws(() => localCoreUrl({ COLONIA_PORT: "0" }), /Invalid local COLONIA_PORT/);
+    // A wrong port never keeps the app from opening: 7440 and a sentence naming the file to fix.
+    const warned: string[] = [];
+    assert.equal(
+      localCoreUrl({ COLONIA_PORT: "0" }, (m) => warned.push(m)),
+      "http://127.0.0.1:7440",
+    );
+    fs.writeFileSync(path.join(dir, "core.env"), "COLONIA_PORT=siete\nCOLONIA_TOKEN=stored\n");
+    assert.equal(
+      localCoreUrl({ COLONIA_HOME: dir }, (m) => warned.push(m)),
+      "http://127.0.0.1:7440",
+    );
+    assert.equal(warned.length, 2);
+    assert.match(warned[0] ?? "", /environment variable/);
+    assert.ok(warned[1]?.includes(path.join(dir, "core.env")), warned[1]);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

@@ -29,6 +29,30 @@ xattr -cr /Applications/Colonia.app
 
 Si aparece **Windows protegió su PC**, pulsa **Más información** y después **Ejecutar de todas formas**.
 
+### En Linux
+
+Con el `.AppImage`, hazlo ejecutable una vez y ábrelo:
+
+```bash
+chmod +x Colonia-*.AppImage
+./Colonia-*.AppImage
+```
+
+Si no se abre y dice que necesita FUSE (Ubuntu 22.04 y posteriores), instala la biblioteca una vez:
+
+```bash
+sudo apt install libfuse2t64 || sudo apt install libfuse2
+```
+
+Si prefieres un paquete del sistema, sin FUSE y con Colonia en el menú de aplicaciones, instala el `.deb` (Debian, Ubuntu) o el `.rpm` (Fedora, RHEL, openSUSE) desde la carpeta donde lo descargaste:
+
+```bash
+sudo apt install ./Colonia-*-linux-amd64.deb     # Debian, Ubuntu (arm64 en ARM)
+sudo dnf install ./Colonia-*-linux-x86_64.rpm    # Fedora, RHEL (aarch64 en ARM)
+```
+
+El paquete no se actualiza solo: cuando haya una versión nueva, instala el paquete nuevo igual.
+
 ## 2. Conecta tu IA
 
 La primera vez que abras Colonia, elige con qué IA van a trabajar tus agentes: una suscripción que ya tengas, una clave de un proveedor o un modelo que funcione en tu propio ordenador. El coste de la IA lo pagas directamente a ese proveedor.
@@ -43,8 +67,12 @@ Escríbele desde la bandeja de la aplicación. Puede responderte con lo que hay 
 
 ## Si algo no funciona
 
-Ejecuta esto en una terminal para ver por qué no responde el servicio y qué hacer a continuación:
+Cierra Colonia del todo y vuelve a abrirla: la aplicación arranca de nuevo su servicio y, si no puede, te dice por qué en la pantalla de conexión.
+
+Si sigue sin responder y tienes la orden `colonia` en la terminal, ejecuta esto para ver por qué no responde el servicio y qué hacer a continuación:
 
 ```bash
 colonia doctor
 ```
+
+La orden `colonia` existe si instalaste Colonia con la línea de instalación de la documentación o desde el código. Los instaladores `.exe`, `.dmg` y `.AppImage` solo instalan la aplicación: si al escribir `colonia` la terminal dice que no la encuentra, instala la terminal con esa línea de instalación (no toca la aplicación) y vuelve a probar.

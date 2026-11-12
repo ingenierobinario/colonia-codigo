@@ -18,6 +18,8 @@ Colonia reúne en una sola aplicación a una secretaria que te contesta donde es
 
 Necesitas Node 24.11 o superior y pnpm 11.
 
+Con Node 25 o posterior, corepack ya no viene incluido: instálalo una vez con `npm i -g corepack` o usa Node 24 LTS.
+
 ```bash
 corepack pnpm install --frozen-lockfile
 corepack pnpm app

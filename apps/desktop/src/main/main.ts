@@ -62,7 +62,16 @@ if (process.platform === "win32") app.setAppUserModelId("com.ingenierobinario.co
 // Wayland groups a window under the launcher whose file name this is; the installer writes that file.
 if (process.platform === "linux") app.setDesktopName("colonia.desktop");
 applySavedLocalTarget(app.getPath("userData"), process.env);
-const CORE_URL = localCoreUrl();
+// A wrong COLONIA_PORT falls back to 7440: logged now, and said in a dialog that does not block once the app is up.
+let portWarning: string | undefined;
+const CORE_URL = localCoreUrl(process.env, (message) => {
+  portWarning = message;
+  console.warn(`[colonia] ${message}`);
+});
+app.whenReady().then(() => {
+  if (portWarning && single)
+    void dialog.showMessageBox({ type: "warning", message: "Colonia", detail: portWarning, buttons: ["OK"] });
+});
 const openedConnection = JSON.stringify(loadConnection(app.getPath("userData")));
 
 registerAppScheme();

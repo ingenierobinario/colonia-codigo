@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import type { ModelChoice, RouterConfig } from "@colonia/protocol";
 import type { ColoniaClient } from "@colonia/protocol/client";
+import { readStdin } from "../stdin.ts";
 import { agentPatch } from "./agent-fields.ts";
 
 const show = (c: ModelChoice) => (c.model ? `${c.model}${c.router ? " → router" : ""}` : "router");
@@ -50,8 +51,7 @@ export async function models(client: ColoniaClient, [sub, ...args]: string[], o:
   }
   if (sub === "rules") {
     // Rules are a JSON array on stdin: [{"when": {...}, "model": "<ref>"}].
-    let raw = "";
-    for await (const chunk of process.stdin) raw += String(chunk);
+    const raw = await readStdin();
     const out = await client.call("models.set_config", { router: { ...cfg.router, rules: JSON.parse(raw) } });
     console.log(`${out.router.rules.length} rules`);
     return;

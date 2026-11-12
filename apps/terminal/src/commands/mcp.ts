@@ -1,5 +1,6 @@
 import type { ColoniaClient } from "@colonia/protocol/client";
 import { clean } from "../presentation.ts";
+import { readStdin } from "../stdin.ts";
 import { mcps } from "./threads.ts";
 
 const quote = (s: string) => `'${s.replaceAll("'", "'\"'\"'")}'`;
@@ -103,11 +104,9 @@ export async function mcpCommand(client: ColoniaClient, args: string[], o: Optio
   if (!tool) throw new Error("usage: colonia mcp run <server> <tool> [<json>|-]");
   let input = raw ?? "{}";
   if (input === "-") {
-    input = "";
-    for await (const chunk of process.stdin) {
-      input += String(chunk);
-      if (input.length > 1_000_000) throw new Error("MCP arguments exceed 1 MB");
-    }
+    input = await readStdin(process.stdin, 1_000_000).catch((e: unknown) => {
+      throw /exceeds/.test(String(e)) ? new Error("MCP arguments exceed 1 MB") : e;
+    });
   }
   const parsed: unknown = JSON.parse(input);
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))

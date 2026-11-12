@@ -66,6 +66,8 @@ export function ConnectScreen() {
   const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  // The raw output behind a translated reason: on hover (title), never pasted after it.
+  const [errorDetail, setErrorDetail] = useState<string>();
   // The server has no Colonia: it can be installed from here or by hand (then the command shows).
   const [noColonia, setNoColonia] = useState(false);
   const [byHand, setByHand] = useState(false);
@@ -144,7 +146,8 @@ export function ConnectScreen() {
     if (r.reason === "badSsh") setTerm(false);
     setKey(r.key);
     const reason = r.reason && REASONS[r.reason] ? t(REASONS[r.reason] as MessageKey) : undefined;
-    setError([reason, r.error].filter(Boolean).join(" ") || r.reason);
+    setError(reason ?? (r.error || r.reason));
+    setErrorDetail(reason ? r.error : undefined);
   };
   const goOn = () => void answer(() => window.coloniaConnect?.ssh(address));
   const installThere = () => void answer(() => window.coloniaConnect?.installSsh(address));
@@ -251,7 +254,7 @@ export function ConnectScreen() {
               </div>
               <p className="wiz__hintline">{t("connect.importNext")}</p>
               {error && (
-                <span className="wiz__hintline is-error" role="alert">
+                <span className="wiz__hintline is-error" role="alert" title={errorDetail}>
                   {error}
                 </span>
               )}
@@ -282,7 +285,7 @@ export function ConnectScreen() {
                   </>
                 )}
                 {error && (
-                  <span id="client-error" className="wiz__hintline is-error" role="alert">
+                  <span id="client-error" className="wiz__hintline is-error" role="alert" title={errorDetail}>
                     {error}
                   </span>
                 )}
@@ -377,7 +380,7 @@ export function ConnectScreen() {
                 />
                 <span className="wiz__hintline">{t(via === "url" ? "connect.urlHint" : "connect.sshHint")}</span>
                 {error && (
-                  <span id="client-error" className="wiz__hintline is-error" role="alert">
+                  <span id="client-error" className="wiz__hintline is-error" role="alert" title={errorDetail}>
                     {error}
                   </span>
                 )}

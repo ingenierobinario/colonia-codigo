@@ -11,6 +11,7 @@ import {
   ProjectKind,
 } from "@colonia/protocol";
 import type { ColoniaClient } from "@colonia/protocol/client";
+import { readStdin } from "../stdin.ts";
 
 /** Who wrote a message, in one word: the agent's id, or the author's kind. */
 export const authorOf = (a: Author) => (a.kind === "agent" ? a.id : a.kind);
@@ -121,9 +122,7 @@ export async function secrets(client: ColoniaClient, [sub, name]: string[]): Pro
   }
   if (sub !== "set") throw new Error(`unknown secrets command: ${sub}`);
   // The value comes from stdin, never from argv (it would show up in the process list and shell history).
-  let value = "";
-  for await (const chunk of process.stdin) value += String(chunk);
-  value = value.trim();
+  const value = (await readStdin()).trim();
   if (!value) throw new Error("pipe the value in: … | colonia secrets set <name>");
   await client.call("secrets.set", { name, value });
   console.log(`stored ${name}`);
@@ -431,8 +430,7 @@ export async function skills(
   if (sub === "save") {
     if (!name) throw new Error("usage: colonia skills save <skill> [--project <project>] < SKILL.md");
     // The whole SKILL.md (frontmatter and body) on stdin: a body would not survive as an argument.
-    let content = "";
-    for await (const chunk of process.stdin) content += String(chunk);
+    const content = await readStdin();
     if (!content.trim()) throw new Error("pipe the SKILL.md in: … | colonia skills save <skill>");
     const r = await client.call("skills.save", {
       name,
