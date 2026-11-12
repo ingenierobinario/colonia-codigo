@@ -336,9 +336,9 @@ export function whatsappAdapter(opts: {
         // A message the phone sent again on request is that request's answer, not news.
         const asked = m.key.id ? resending.get(m.key.id) : undefined;
         if (asked) asked(m);
-        // PROPIOS-3: what the owner typed on the phone while this device was offline (a reconnection, the PC asleep)
-        // comes as "append", not "notify": still theirs to keep. Other people's backlog still starts no turn.
-        else if (up.type === "notify" || (up.type === "append" && m.key.fromMe))
+        // PROPIOS-3: what was written while this device was offline (a reconnection, the PC asleep) comes as
+        // "append", not "notify": kept all the same, the owner's as theirs, the others' unread but unanswered.
+        else if (up.type === "notify" || up.type === "append")
           void onMessage(m, up.type === "append").catch((err) => log?.warn({ err: errorMessage(err, 200) }, "whatsapp message not handled"));
       }
     }) as (arg: never) => void);
@@ -518,7 +518,7 @@ export function whatsappAdapter(opts: {
     // A number answering the options offered here is that option, pressed.
     const choice = /^\s*(\d{1,2})\s*$/.exec(text)?.[1];
     const options = offered.get(who);
-    if (choice && options?.[Number(choice) - 1]) {
+    if (!offline && choice && options?.[Number(choice) - 1]) {
       offered.delete(who);
       io.action({ conversation: who, sender: { id: who, name }, data: options[Number(choice) - 1]?.id ?? "" });
       return;
@@ -530,6 +530,7 @@ export function whatsappAdapter(opts: {
       sender: { id: who, name: name.slice(0, 80) },
       text,
       private: !group,
+      ...(offline ? { late: true } : {}),
       ...(voice ? { voice } : {}),
       ...(files ? { files } : {}),
     });
