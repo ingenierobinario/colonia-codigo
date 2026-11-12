@@ -10,6 +10,7 @@ import {
   ChannelScreen,
   CommandPalette,
   ComputersScreen,
+  EquiposScreen,
   ConfigModal,
   CornerCards,
   EngineSessions,
@@ -91,6 +92,8 @@ export function Shell() {
                 <FilesScreen />
               ) : view === "computers" ? (
                 <ComputersScreen />
+              ) : view === "equipos" ? (
+                <EquiposScreen />
               ) : view === "channel" ? (
                 <ChannelScreen />
               ) : view === "engine" ? (

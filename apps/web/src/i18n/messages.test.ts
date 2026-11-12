@@ -3,6 +3,8 @@ import { test } from "node:test";
 import { enApprovals } from "./approvals-en.ts";
 import { esApprovals } from "./approvals-es.ts";
 import { enComputer } from "./computer-en.ts";
+import { enEquipos } from "./equipos-en.ts";
+import { esEquipos } from "./equipos-es.ts";
 import { esComputer } from "./computer-es.ts";
 import { en as base } from "./en.ts";
 import { enEmailSignatures } from "./en-email-signatures.ts";
@@ -104,6 +106,7 @@ const en = {
   ...base,
   ...enApprovals,
   ...enComputer,
+  ...enEquipos,
   ...enReceived,
   ...enSysUsage,
   ...enEmailSignatures,
@@ -116,6 +119,7 @@ const es = {
   ...esBase,
   ...esApprovals,
   ...esComputer,
+  ...esEquipos,
   ...esReceived,
   ...esSysUsage,
   ...esEmailSignatures,

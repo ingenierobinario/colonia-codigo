@@ -22,11 +22,15 @@ export function systemTray(platform: NodeJS.Platform = process.platform): Tray {
     show(text) {
       if (child) return;
       try {
-        child = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", WINDOWS], {
-          env: { ...process.env, COLONIA_AVISO_TEXTO: text.slice(0, 60) },
-          stdio: "ignore",
-          windowsHide: true,
-        });
+        child = spawn(
+          "powershell.exe",
+          ["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", WINDOWS],
+          {
+            env: { ...process.env, COLONIA_AVISO_TEXTO: text.slice(0, 60) },
+            stdio: "ignore",
+            windowsHide: true,
+          },
+        );
         child.on("error", () => {});
         child.on("exit", () => (child = undefined));
       } catch {

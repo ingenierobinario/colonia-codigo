@@ -25,7 +25,16 @@ import {
   verifyAs,
 } from "./channel.ts";
 import { createPairing, type Pairing } from "./pairing.ts";
-import { ClientHello, EQUIPO_PATH, Sealed, type Op, type Result, ToPrincipal, type ToEquipo, type Who } from "./wire.ts";
+import {
+  ClientHello,
+  EQUIPO_PATH,
+  type Op,
+  type Result,
+  Sealed,
+  type ToEquipo,
+  ToPrincipal,
+  type Who,
+} from "./wire.ts";
 
 const IDENTITY_SECRET = "equipos.identidad";
 const INSTALL_BASE = "https://colonia.ingenierobinario.com";
@@ -97,7 +106,8 @@ export function createPrincipal(d: PrincipalDeps) {
     let computerId: string | undefined;
     const plain = (m: object) => ws.send(JSON.stringify(m));
     const secret = (m: ToEquipo) => {
-      if (seal && ws.readyState === ws.OPEN) ws.send(JSON.stringify({ t: "x", d: seal(Buffer.from(JSON.stringify(m))) }));
+      if (seal && ws.readyState === ws.OPEN)
+        ws.send(JSON.stringify({ t: "x", d: seal(Buffer.from(JSON.stringify(m))) }));
     };
     const end = (why?: string) => {
       phase = "dead";

@@ -1,6 +1,7 @@
 import { noticeEn } from "@colonia/protocol/notices";
 import type { ApprovalKey } from "./approvals-en.ts";
 import type { ComputerKey } from "./computer-en.ts";
+import type { EquipoKey } from "./equipos-en.ts";
 import { enChannels } from "./en-channels.ts";
 import { enChat } from "./en-chat.ts";
 import type { enEmailSignatures } from "./en-email-signatures.ts";
@@ -375,6 +376,8 @@ export const en = {
   "webapp.keyRemove": "Remove the key",
   "webapp.saveError": "Could not save the app: {error}",
   "nav.computers": "Computers",
+  "nav.equipos": "My computers",
+  "nav.equiposAdd": "Add a computer",
   "nav.resources": "Resources",
   "nav.files": "Files",
   "program.title": "Programs",
@@ -2006,6 +2009,7 @@ export type MessageKey =
   | keyof typeof en
   | ApprovalKey
   | ComputerKey
+  | EquipoKey
   | ReceivedKey
   | SysUsageKey
   | keyof typeof enEmailSignatures

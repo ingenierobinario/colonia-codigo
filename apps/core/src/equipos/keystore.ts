@@ -3,7 +3,15 @@
 //  - sin él → un fichero cifrado con AES-256-GCM y una clave derivada con scrypt de una contraseña que el dueño
 //    pone una vez; sin contraseña no se empareja (la interfaz explica por qué).
 // La misma clave firma la marca «permitir siempre» (HMAC), para que editar equipo.json a mano no conceda nada.
-import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  hkdfSync,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual,
+} from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { Secrets } from "../secrets.ts";
@@ -18,7 +26,8 @@ export function createKeyStore(d: { home: string; secrets: Secrets }) {
   /** Con el almacén del sistema la clave está protegida por él; sin él hace falta contraseña. */
   const system = () => d.secrets.backend !== "file";
 
-  const derive = (pass: string, salt: Buffer) => scryptSync(pass, salt, 32, { N: 2 ** 15, r: 8, p: 1, maxmem: 128 * 1024 * 1024 });
+  const derive = (pass: string, salt: Buffer) =>
+    scryptSync(pass, salt, 32, { N: 2 ** 15, r: 8, p: 1, maxmem: 128 * 1024 * 1024 });
 
   return {
     /** ¿Hay que pedir una contraseña para poder guardar la clave? */
@@ -29,14 +38,19 @@ export function createKeyStore(d: { home: string; secrets: Secrets }) {
       return !system() && fs.existsSync(vaultFile(d.home));
     },
     has(): boolean {
-      return Boolean(loaded) || (system() ? Boolean(d.secrets.resolve(`secret://${KEY_SECRET}`)) : fs.existsSync(vaultFile(d.home)));
+      return (
+        Boolean(loaded) ||
+        (system() ? Boolean(d.secrets.resolve(`secret://${KEY_SECRET}`)) : fs.existsSync(vaultFile(d.home)))
+      );
     },
     save(id: Identity, passphrase?: string): void {
       if (system()) {
         d.secrets.set(KEY_SECRET, JSON.stringify(id));
       } else {
         if (!passphrase || passphrase.length < MIN_PASSPHRASE)
-          throw new Error(`este equipo no tiene almacén de claves del sistema: elige una contraseña de al menos ${MIN_PASSPHRASE} caracteres para proteger la clave`);
+          throw new Error(
+            `este equipo no tiene almacén de claves del sistema: elige una contraseña de al menos ${MIN_PASSPHRASE} caracteres para proteger la clave`,
+          );
         const salt = randomBytes(16);
         const iv = randomBytes(12);
         const c = createCipheriv("aes-256-gcm", derive(passphrase, salt), iv);
@@ -44,7 +58,14 @@ export function createKeyStore(d: { home: string; secrets: Secrets }) {
         fs.mkdirSync(d.home, { recursive: true });
         fs.writeFileSync(
           vaultFile(d.home),
-          JSON.stringify({ v: 1, kdf: "scrypt", salt: salt.toString("base64"), iv: iv.toString("base64"), tag: c.getAuthTag().toString("base64"), ct: ct.toString("base64") }),
+          JSON.stringify({
+            v: 1,
+            kdf: "scrypt",
+            salt: salt.toString("base64"),
+            iv: iv.toString("base64"),
+            tag: c.getAuthTag().toString("base64"),
+            ct: ct.toString("base64"),
+          }),
           { mode: 0o600 },
         );
       }
@@ -68,7 +89,9 @@ export function createKeyStore(d: { home: string; secrets: Secrets }) {
         const k = derive(passphrase, Buffer.from(v.salt, "base64"));
         const x = createDecipheriv("aes-256-gcm", k, Buffer.from(v.iv, "base64"));
         x.setAuthTag(Buffer.from(v.tag, "base64"));
-        loaded = JSON.parse(Buffer.concat([x.update(Buffer.from(v.ct, "base64")), x.final()]).toString("utf8")) as Identity;
+        loaded = JSON.parse(
+          Buffer.concat([x.update(Buffer.from(v.ct, "base64")), x.final()]).toString("utf8"),
+        ) as Identity;
         return loaded;
       } catch {
         return undefined;

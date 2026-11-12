@@ -35,10 +35,13 @@ export const runCommand: Run = (op) =>
     };
     child.stdout.on("data", take);
     child.stderr.on("data", take);
-    const timer = setTimeout(() => {
-      out += "\n[Colonia] Tiempo agotado: el comando se detuvo.";
-      child.kill();
-    }, (op.timeout_s ?? DEFAULT_TIMEOUT_S) * 1000);
+    const timer = setTimeout(
+      () => {
+        out += "\n[Colonia] Tiempo agotado: el comando se detuvo.";
+        child.kill();
+      },
+      (op.timeout_s ?? DEFAULT_TIMEOUT_S) * 1000,
+    );
     child.on("error", (e) => {
       clearTimeout(timer);
       resolve({ exit_code: null, output: `No se pudo ejecutar: ${e.message}`, truncated });

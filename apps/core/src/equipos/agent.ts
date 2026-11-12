@@ -22,10 +22,10 @@ import {
   verifyAs,
 } from "./channel.ts";
 import type { KeyStore } from "./keystore.ts";
-import { type Notify } from "./notify.ts";
+import type { Notify } from "./notify.ts";
+import { type Run, readFile, runCommand, writeFile } from "./ops.ts";
 import type { Tray } from "./tray.ts";
-import { readFile, type Run, runCommand, writeFile } from "./ops.ts";
-import { EQUIPO_PATH, Plain, type Op, type Result, ServerHello, Sealed, ToEquipo } from "./wire.ts";
+import { EQUIPO_PATH, type Op, Plain, type Result, Sealed, ServerHello, ToEquipo } from "./wire.ts";
 
 const HANDSHAKE_MS = 15_000;
 
@@ -79,9 +79,13 @@ export function createEquipoAgent(d: AgentDeps) {
   const audit = (kind: string, detail: string) => {
     try {
       fs.mkdirSync(d.home, { recursive: true });
-      fs.appendFileSync(auditFile(d.home), `${JSON.stringify({ at: new Date().toISOString(), kind, detail: detail.slice(0, 600) })}\n`, {
-        mode: 0o600,
-      });
+      fs.appendFileSync(
+        auditFile(d.home),
+        `${JSON.stringify({ at: new Date().toISOString(), kind, detail: detail.slice(0, 600) })}\n`,
+        {
+          mode: 0o600,
+        },
+      );
     } catch {}
   };
   /** Apretón de manos común: verifica al principal (huella fijada) y deja listos los dos sentidos del canal. */
@@ -105,7 +109,8 @@ export function createEquipoAgent(d: AgentDeps) {
         if (refused.success) return fail(refused.data.why);
         const h = ServerHello.parse(JSON.parse(String(raw)));
         const tr = transcript(mode, eph.pub, nonce, h.eph, h.nonce);
-        if (!sameFingerprint(fingerprintOf(h.pub), pinned.fingerprint)) return fail("la huella del principal no coincide");
+        if (!sameFingerprint(fingerprintOf(h.pub), pinned.fingerprint))
+          return fail("la huella del principal no coincide");
         if (pinned.publicKey && h.pub !== pinned.publicKey) return fail("la clave del principal cambió");
         if (!verifyAs("principal", tr, h.sig, h.pub)) return fail("la firma del principal no es válida");
         const keys = deriveKeys(eph, h.eph, tr, "client");
@@ -124,7 +129,13 @@ export function createEquipoAgent(d: AgentDeps) {
   }
 
   /** El dueño tecleó el código en este equipo: se emparejan y queda guardado. */
-  function pair(a: { url: string; fingerprint: string; code: string; name?: string; passphrase?: string }): Promise<{ name: string }> {
+  function pair(a: {
+    url: string;
+    fingerprint: string;
+    code: string;
+    name?: string;
+    passphrase?: string;
+  }): Promise<{ name: string }> {
     if (d.keys.needsPassphrase() && (a.passphrase?.length ?? 0) < 8)
       return Promise.reject(
         new Error(
@@ -139,45 +150,52 @@ export function createEquipoAgent(d: AgentDeps) {
         reject(new Error(why));
       };
       ws.on("error", (e) => fail(`no se pudo conectar con ${a.url}: ${e.message}`));
-      handshake(ws, "pair", { fingerprint: a.fingerprint }, undefined, (c) => {
-        const me = generateIdentity();
-        c.send({
-          t: "pair",
-          pub: me.publicKey,
-          name,
-          platform: d.platform?.() ?? process.platform,
-          proof: pairProof(a.code.replace(/\D/g, ""), c.tr, me.publicKey),
-          sig: signAs("equipo", c.tr, me.privateKey),
-        });
-        ws.on("message", (raw) => {
-          try {
-            const m = ToEquipo.parse(c.recv(String(raw)));
-            if (m.t === "paired") {
-              d.keys.save(me, a.passphrase);
-              writeState(d.home, {
-                id: m.id,
-                name,
-                principal: { url: a.url, fingerprint: fingerprintOf(c.pub), publicKey: c.pub },
-                always: false,
-              });
-              audit("emparejado", `emparejado con ${a.url}; confirmaste el código aquí`);
-              resolve({ name });
-              ws.close();
-            } else if (m.t === "refused") {
-              const why: Record<string, string> = {
-                wrong: "el código no es correcto",
-                expired: "el código ha caducado: pide uno nuevo",
-                locked: "demasiados intentos: pide un código nuevo",
-                none: "no hay ningún código activo: pide uno nuevo",
-              };
-              audit("emparejamiento_fallido", m.why);
-              fail(why[m.why] ?? m.why);
+      handshake(
+        ws,
+        "pair",
+        { fingerprint: a.fingerprint },
+        undefined,
+        (c) => {
+          const me = generateIdentity();
+          c.send({
+            t: "pair",
+            pub: me.publicKey,
+            name,
+            platform: d.platform?.() ?? process.platform,
+            proof: pairProof(a.code.replace(/\D/g, ""), c.tr, me.publicKey),
+            sig: signAs("equipo", c.tr, me.privateKey),
+          });
+          ws.on("message", (raw) => {
+            try {
+              const m = ToEquipo.parse(c.recv(String(raw)));
+              if (m.t === "paired") {
+                d.keys.save(me, a.passphrase);
+                writeState(d.home, {
+                  id: m.id,
+                  name,
+                  principal: { url: a.url, fingerprint: fingerprintOf(c.pub), publicKey: c.pub },
+                  always: false,
+                });
+                audit("emparejado", `emparejado con ${a.url}; confirmaste el código aquí`);
+                resolve({ name });
+                ws.close();
+              } else if (m.t === "refused") {
+                const why: Record<string, string> = {
+                  wrong: "el código no es correcto",
+                  expired: "el código ha caducado: pide uno nuevo",
+                  locked: "demasiados intentos: pide un código nuevo",
+                  none: "no hay ningún código activo: pide uno nuevo",
+                };
+                audit("emparejamiento_fallido", m.why);
+                fail(why[m.why] ?? m.why);
+              }
+            } catch (e) {
+              fail((e as Error).message);
             }
-          } catch (e) {
-            fail((e as Error).message);
-          }
-        });
-      }, fail);
+          });
+        },
+        fail,
+      );
     });
   }
 
@@ -203,50 +221,57 @@ export function createEquipoAgent(d: AgentDeps) {
     };
     ws.on("error", () => {});
     ws.on("close", retry);
-    handshake(ws, "session", state.principal, state.id, (c) => {
-      c.send({ t: "auth", sig: signAs("equipo", c.tr, me.privateKey) });
-      tellRevoke = () => c.send({ t: "revoke" });
-      ws.on("message", async (raw) => {
-        let m: ToEquipo;
-        try {
-          m = ToEquipo.parse(c.recv(String(raw)));
-        } catch {
-          return ws.terminate();
-        }
-        if (m.t === "ready") {
-          connected = true;
-          attempt = 0;
-          audit("conectado", "conectado con el principal");
-        } else if (m.t === "revoked") {
-          audit("revocado", "el principal revocó este equipo");
-          forget();
-        } else if (m.t === "req") {
-          const line = summary(m.op);
-          audit("peticion", `${m.who.name}: ${line}`);
-          const ok = await d.approval.authorize(m.who, line);
-          if (!ok) {
-            audit("denegado", `${m.who.name}: ${line}`);
-            return c.send({ t: "res", id: m.id, ok: false, error: "el dueño del equipo no lo aprobó" });
-          }
-          busy++;
-          d.tray.show("Colonia está usando este equipo");
-          d.notify("Colonia está usando este equipo", `${m.who.name}: ${line}`);
+    handshake(
+      ws,
+      "session",
+      state.principal,
+      state.id,
+      (c) => {
+        c.send({ t: "auth", sig: signAs("equipo", c.tr, me.privateKey) });
+        tellRevoke = () => c.send({ t: "revoke" });
+        ws.on("message", async (raw) => {
+          let m: ToEquipo;
           try {
-            const result = await serve(m.op);
-            audit("hecho", `${line}: correcto`);
-            c.send({ t: "res", id: m.id, ok: true, result });
-          } catch (e) {
-            audit("fallo", `${line}: ${(e as Error).message}`);
-            c.send({ t: "res", id: m.id, ok: false, error: (e as Error).message });
-          } finally {
-            busy--;
+            m = ToEquipo.parse(c.recv(String(raw)));
+          } catch {
+            return ws.terminate();
           }
-        }
-      });
-    }, (why) => {
-      audit("conexion_rechazada", why);
-      ws.terminate();
-    });
+          if (m.t === "ready") {
+            connected = true;
+            attempt = 0;
+            audit("conectado", "conectado con el principal");
+          } else if (m.t === "revoked") {
+            audit("revocado", "el principal revocó este equipo");
+            forget();
+          } else if (m.t === "req") {
+            const line = summary(m.op);
+            audit("peticion", `${m.who.name}: ${line}`);
+            const ok = await d.approval.authorize(m.who, line);
+            if (!ok) {
+              audit("denegado", `${m.who.name}: ${line}`);
+              return c.send({ t: "res", id: m.id, ok: false, error: "el dueño del equipo no lo aprobó" });
+            }
+            busy++;
+            d.tray.show("Colonia está usando este equipo");
+            d.notify("Colonia está usando este equipo", `${m.who.name}: ${line}`);
+            try {
+              const result = await serve(m.op);
+              audit("hecho", `${line}: correcto`);
+              c.send({ t: "res", id: m.id, ok: true, result });
+            } catch (e) {
+              audit("fallo", `${line}: ${(e as Error).message}`);
+              c.send({ t: "res", id: m.id, ok: false, error: (e as Error).message });
+            } finally {
+              busy--;
+            }
+          }
+        });
+      },
+      (why) => {
+        audit("conexion_rechazada", why);
+        ws.terminate();
+      },
+    );
   }
 
   /** Se borra todo lo del emparejamiento en este equipo: la clave, el estado y lo aprobado. */

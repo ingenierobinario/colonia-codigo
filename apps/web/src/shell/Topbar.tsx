@@ -38,6 +38,7 @@ function useCrumbs(): string[] {
   if (view === "resources") return [t("nav.resources")];
   if (view === "files") return [t("nav.files")];
   if (view === "computers") return [t("nav.computers")];
+  if (view === "equipos") return [t("nav.equipos")];
   if (view === "channel") return [t("nav.channels"), channelLabel ?? t("nav.channels")];
   if (view === "engine") {
     const name = engineLabel ?? engineId ?? "";

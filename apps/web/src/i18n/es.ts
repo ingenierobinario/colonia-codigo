@@ -377,6 +377,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "webapp.keySaved": "Hay una clave guardada. Déjalo vacío para conservarla.",
   "webapp.keyRemove": "Quitar la clave",
   "nav.computers": "Ordenadores",
+  "nav.equipos": "Mis equipos",
+  "nav.equiposAdd": "Añadir un equipo",
   "nav.resources": "Recursos",
   "nav.files": "Archivos",
   "program.title": "Programas",

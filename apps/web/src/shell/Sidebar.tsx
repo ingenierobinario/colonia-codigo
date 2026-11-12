@@ -10,6 +10,7 @@ import { unreadListed } from "../inbox/groupThreads.ts";
 import { AppsDock, CornerCards, DesktopInstallNotice, WebAppsDock } from "../lazy.ts";
 import { AccountRow } from "./AccountRow.tsx";
 import { ChannelsNav } from "./ChannelsNav.tsx";
+import { EquiposNav } from "./EquiposNav.tsx";
 import { ExternalSessionsNav } from "./ExternalSessionsNav.tsx";
 import { HelpMenu } from "./HelpMenu.tsx";
 import { LAYOUT } from "./layout.ts";
@@ -123,6 +124,8 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
         <Suspense fallback={null}>
           <WebAppsDock rail={rail} />
         </Suspense>
+
+        <EquiposNav rail={rail} />
       </div>
       {!rail && (
         <Suspense fallback={null}>

@@ -52,6 +52,10 @@ const PACKS = {
     en: () => import("./received-en.ts").then((m) => m.enReceived),
     es: () => import("./received-es.ts").then((m) => m.esReceived),
   },
+  equipos: {
+    en: () => import("./equipos-en.ts").then((m) => m.enEquipos),
+    es: () => import("./equipos-es.ts").then((m) => m.esEquipos),
+  },
   usage: {
     en: () => import("./sysusage-en.ts").then((m) => m.enSysUsage),
     es: () => import("./sysusage-es.ts").then((m) => m.esSysUsage),

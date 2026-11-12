@@ -70,6 +70,9 @@ export const FilesScreen = lazy(() => import("./files/FilesScreen.tsx").then((m)
 export const ComputersScreen = lazy(() =>
   import("./computers/ComputersScreen.tsx").then((m) => ({ default: m.ComputersScreen })),
 );
+export const EquiposScreen = lazy(() =>
+  import("./equipos/EquiposScreen.tsx").then((m) => ({ default: m.EquiposScreen })),
+);
 export const UsageDialog = lazy(() => import("./shell/UsagePanels.tsx").then((m) => ({ default: m.UsageDialog })));
 export const UsageSummary = lazy(() => import("./shell/UsagePanels.tsx").then((m) => ({ default: m.UsageSummary })));
 export const RunningIndicator = lazy(() =>

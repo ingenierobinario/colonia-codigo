@@ -3,9 +3,10 @@
 //  - «Permitir siempre a este Colonia» es una marca local que solo se pone y se quita desde este equipo
 //    (equipos.local_always, un método humano y local). El principal no puede ponerla: sus tramas no la llevan.
 //  - NO hay camino que se la salte: ni variable de entorno, ni modo desarrollo. Este módulo no lee el entorno.
+
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import type { KeyStore } from "./keystore.ts";
 import type { Who } from "./wire.ts";
 
