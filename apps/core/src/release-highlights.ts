@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.1": {
+    en: [
+      "«Add a computer» finds computers on your network or VPN and connects without installing Colonia there.",
+      "Your agents can browse the files of a connected computer.",
+    ],
+    es: [
+      "«Añadir un equipo» encuentra los ordenadores de tu red o VPN y se conecta sin instalar Colonia en ellos.",
+      "Tus agentes pueden ver los archivos de un equipo conectado.",
+    ],
+  },
   "2.36.0": {
     en: [
       "New Browsers section: profiles and a built-in browser with tabs, also usable by your agents.",
