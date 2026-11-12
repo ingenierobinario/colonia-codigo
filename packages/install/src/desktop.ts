@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { DesktopInstallStatus } from "@colonia/protocol";
-import { desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED } from "@colonia/protocol";
+import { compareVersions, desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED } from "@colonia/protocol";
 import { type LinuxHost, linuxHost } from "./appimage.ts";
 import { downloadDesktop } from "./download.ts";
 import { openLinuxDesktop } from "./linux-launch.ts";
@@ -115,6 +115,11 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
       // A Colonia the package manager owns is updated by the package manager, never by an AppImage beside it.
       const owned = app && opts.platform === "linux" ? await (opts.linuxPackage ?? packageOwner)(app) : undefined;
       if (app && owned && opts.version && owned.version !== opts.version) {
+        // An older package would need the package manager forced back (apt refuses, dnf keeps the newer quietly).
+        if (compareVersions(opts.version, owned.version) < 0)
+          throw new Error(
+            `Colonia ${owned.version} is installed, newer than ${opts.version}. Going back to an older version is not done here; remove Colonia with your package manager first.`,
+          );
         const privileged = opts.privileged ?? process.getuid?.() === 0;
         const { file } = await fetchFile(owned.kind, () => (privileged ? scratch() : keepDir()));
         if (!privileged)
@@ -124,6 +129,10 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
         change({ phase: "installing" });
         const [command, args] = packageInstallArgs(owned.kind, file);
         await run(command, args, { signal, env: launchEnv(env) });
+        // Root has no graphical session and its home is not the owner's: nothing is opened or saved for it.
+        opts.note?.(`Colonia ${opts.version} is installed. Open it from your own session.`);
+        change({ phase: "ready" });
+        return;
       }
       if (!app) {
         const file = (await fetchFile(platform?.os === "mac" ? "zip" : "installer", scratch)).file;

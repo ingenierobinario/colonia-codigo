@@ -744,9 +744,10 @@ for (const kind of ["deb", "rpm"] as const)
     }
   });
 
-test("an installer that already runs as root puts the package in itself and opens the updated app", async () => {
+test("an installer that already runs as root puts the package in itself, opens nothing and saves nothing", async () => {
   for (const kind of ["deb", "rpm"] as const) {
     const { f, opt, appImage, pkg } = packaged(kind);
+    const notes: string[] = [];
     const installer = createDesktopInstaller({
       platform: "linux",
       arch: "x64",
@@ -762,20 +763,57 @@ test("an installer that already runs as root puts the package in itself and open
       host: mounts,
       linuxPackage: async () => ({ kind, version: "2.8.0" }),
       privileged: true,
+      target: () => ({ home: f.coreHome, port: 7550, home_id: "selected-home" }),
+      note: (text) => notes.push(text),
     });
     try {
       installer.start();
       assert.equal((await installer.wait()).phase, "ready");
-      assert.equal(f.calls.length, 2);
+      assert.equal(f.calls.length, 1);
       assert.equal(f.calls[0]?.command, kind === "deb" ? "apt-get" : "dnf");
       assert.deepEqual(f.calls[0]?.args.slice(0, 2), ["install", "-y"]);
       assert.ok(f.calls[0]?.args[2]?.endsWith(pkg));
-      assert.equal(f.calls[1]?.command, opt);
+      assert.equal(fs.existsSync(path.join(f.home, "desktop", "connection.json")), false);
+      assert.ok(notes.some((n) => n.includes("Open it from your own session")));
       assert.equal(fs.existsSync(appImage), false);
     } finally {
       await installer.close();
       await f.close();
     }
+  }
+});
+
+test("an older version than the installed package is refused plainly, with nothing downloaded or run", async () => {
+  const { f, opt, appImage, pkg } = packaged("deb");
+  const installer = createDesktopInstaller({
+    platform: "linux",
+    arch: "x64",
+    userHome: f.home,
+    env: { DISPLAY: ":1", COLONIA_DESKTOP_DATA: path.join(f.home, "desktop") },
+    feed: "https://releases.example",
+    version: "2.9.1",
+    candidates: [opt, appImage],
+    fetch: async (input) => {
+      f.requests.push(String(input));
+      return (await packagedFetch(pkg))(input);
+    },
+    run: async (command, args, options) => {
+      f.calls.push({ command, args, env: options.env });
+    },
+    host: mounts,
+    linuxPackage: async () => ({ kind: "deb", version: "2.10.0" }),
+    privileged: true,
+  });
+  try {
+    installer.start();
+    const result = await installer.wait();
+    assert.equal(result.phase, "failed");
+    assert.match(result.error ?? "", /2\.10\.0 is installed, newer than 2\.9\.1/);
+    assert.deepEqual(f.calls, []);
+    assert.deepEqual(f.requests, []);
+  } finally {
+    await installer.close();
+    await f.close();
   }
 });
 
