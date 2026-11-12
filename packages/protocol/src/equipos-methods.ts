@@ -50,6 +50,10 @@ export const EquipoLocalState = z.object({
   connected: z.boolean(),
   /** «Permitir siempre a este Colonia»: solo se cambia desde este equipo. */
   always_allow: z.boolean(),
+  /** La clave está cifrada con contraseña y aún no se ha desbloqueado: no se conecta hasta entonces. */
+  locked: z.boolean(),
+  /** Este equipo no tiene almacén de claves del sistema: para emparejar hace falta una contraseña. */
+  needs_passphrase: z.boolean(),
   in_use: z.boolean(),
   pending: z.array(EquipoPending),
   audit: z.array(EquipoAuditEntry),
@@ -148,10 +152,21 @@ export const equiposMethods = {
         url: z.string().trim().min(1).max(300),
         fingerprint: z.string().trim().min(8).max(100),
         code: z.string().trim().min(6).max(8),
+        /** Solo si este equipo no tiene almacén de claves del sistema: protege la clave en disco. */
+        passphrase: z.string().min(8).max(200).optional(),
         name: z.string().trim().min(1).max(60).optional(),
       })
       .strict(),
     result: z.object({ name: z.string() }),
+    effect: true,
+    access: "human",
+    local: true,
+    replay: false,
+  },
+  /** Sin almacén de claves del sistema, la contraseña desbloquea la clave tras reiniciar. */
+  "equipos.local_unlock": {
+    params: z.object({ passphrase: z.string().min(1).max(200) }).strict(),
+    result: z.object({ unlocked: z.boolean() }),
     effect: true,
     access: "human",
     local: true,

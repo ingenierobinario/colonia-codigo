@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import type { KeyStore } from "./keystore.ts";
 import type { Who } from "./wire.ts";
 
 /** Lo que este equipo sabe de su emparejamiento. Solo datos públicos: la clave privada vive en el almacén del sistema. */
@@ -14,7 +15,10 @@ export type EquipoState = {
   name: string;
   principal: { url: string; fingerprint: string; publicKey: string };
   always: boolean;
+  /** Firma de la marca «siempre» con la clave local: sin ella (o si no cuadra) la marca no vale. */
+  always_mac?: string;
 };
+const marca = (s: EquipoState, on: boolean) => `siempre|${s.id}|${s.principal.fingerprint}|${on}`;
 
 export type PendingApproval = { id: string; at: string; who: string; summary: string };
 
@@ -43,15 +47,21 @@ export function createApproval(d: {
   notify?: (title: string, body: string) => void;
   /** Cuánto espera una petición a que el dueño decida; pasado ese tiempo se deniega. */
   timeoutMs?: number;
+  /** Clave local del equipo: firma y verifica la marca «siempre». Sin clave desbloqueada, «siempre» no vale. */
+  keys: KeyStore;
 }) {
+  const always = () => {
+    const s = readState(d.home);
+    return Boolean(s && s.always === true && d.keys.verify(marca(s, true), s.always_mac));
+  };
   const approved = new Set<string>();
   const pending = new Map<string, PendingApproval & { settle: (ok: boolean) => void }>();
 
   return {
-    always: () => readState(d.home)?.always === true,
+    always,
     /** Cada sesión nueva espera aquí la decisión del dueño de este equipo. */
     authorize(who: Who, summary: string): Promise<boolean> {
-      if (readState(d.home)?.always === true) return Promise.resolve(true);
+      if (always()) return Promise.resolve(true);
       if (approved.has(who.session)) return Promise.resolve(true);
       return new Promise((resolve) => {
         const id = randomUUID();
@@ -73,12 +83,21 @@ export function createApproval(d: {
       p.settle(allow);
       return true;
     },
+    /** ¿Hay alguna sesión de agente aprobada o la marca «siempre»? */
+    active: () => approved.size > 0 || always(),
     pending: (): PendingApproval[] => [...pending.values()].map(({ settle: _s, ...p }) => p),
     /** «Permitir siempre» solo cambia el fichero de este equipo; sin emparejamiento no hay nada que marcar. */
     setAlways(enabled: boolean): boolean {
       const s = readState(d.home);
       if (!s) return false;
-      writeState(d.home, { ...s, always: enabled });
+      if (enabled) {
+        const mac = d.keys.mac(marca(s, true));
+        if (!mac) return false;
+        writeState(d.home, { ...s, always: true, always_mac: mac });
+      } else {
+        const { always_mac: _m, ...rest } = s;
+        writeState(d.home, { ...rest, always: false });
+      }
       if (!enabled) approved.clear();
       return true;
     },

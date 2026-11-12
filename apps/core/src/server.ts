@@ -111,6 +111,8 @@ import { useLocalModel } from "./rpc/transcription.ts";
 import { createSecrets, type Secrets } from "./secrets.ts";
 import { createEquipoAgent } from "./equipos/agent.ts";
 import { createApproval } from "./equipos/approval.ts";
+import { createKeyStore } from "./equipos/keystore.ts";
+import { systemTray, type Tray } from "./equipos/tray.ts";
 import { type Notify, systemNotify } from "./equipos/notify.ts";
 import { createPrincipal } from "./equipos/principal.ts";
 import { EQUIPO_CAP } from "./tools/equipos.ts";
@@ -168,6 +170,7 @@ export type CoreOptions = {
   secrets?: Secrets;
   /** Cómo avisa un equipo emparejado a su dueño (los tests no lanzan notificaciones del sistema). */
   equipoNotify?: Notify;
+  equipoTray?: Tray;
   /** Un equipo emparejado no llama al principal hasta que se arranque a mano (los tests). */
   equipoOff?: boolean;
   /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
@@ -722,8 +725,17 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     log,
     addresses: () => reachableAt(config.host, listening, config.publicUrl),
   });
-  const approval = createApproval({ home: config.home, notify: equipoNotify });
-  const equipoAgent = createEquipoAgent({ home: config.home, secrets, log, approval, notify: equipoNotify });
+  const equipoKeys = createKeyStore({ home: config.home, secrets });
+  const approval = createApproval({ home: config.home, notify: equipoNotify, keys: equipoKeys });
+  const equipoAgent = createEquipoAgent({
+    home: config.home,
+    secrets,
+    log,
+    approval,
+    notify: equipoNotify,
+    keys: equipoKeys,
+    tray: opts.equipoTray ?? systemTray(),
+  });
 
   const dispatch = createRouter(
     coreHandlers({

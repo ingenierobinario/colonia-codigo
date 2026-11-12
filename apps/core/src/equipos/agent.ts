@@ -13,7 +13,6 @@ import {
   deriveKeys,
   fingerprintOf,
   generateIdentity,
-  type Identity,
   newEphemeral,
   newNonce,
   pairProof,
@@ -22,11 +21,12 @@ import {
   transcript,
   verifyAs,
 } from "./channel.ts";
+import type { KeyStore } from "./keystore.ts";
 import { type Notify } from "./notify.ts";
+import type { Tray } from "./tray.ts";
 import { readFile, type Run, runCommand, writeFile } from "./ops.ts";
 import { EQUIPO_PATH, Plain, type Op, type Result, ServerHello, Sealed, ToEquipo } from "./wire.ts";
 
-const KEY_SECRET = "equipo.clave";
 const HANDSHAKE_MS = 15_000;
 
 export type AuditLine = { at: string; kind: string; detail: string };
@@ -50,6 +50,9 @@ export type AgentDeps = {
   log: Log;
   approval: Approval;
   notify: Notify;
+  keys: KeyStore;
+  /** Icono persistente mientras haya una sesión activa (solo donde el sistema lo permite). */
+  tray: Tray;
   run?: Run;
   /** Cuánto esperar antes de reintentar la conexión (se inyecta en los tests). */
   retryMs?: (attempt: number) => number;
@@ -81,15 +84,6 @@ export function createEquipoAgent(d: AgentDeps) {
       });
     } catch {}
   };
-  const key = (): Identity | undefined => {
-    const raw = d.secrets.resolve(`secret://${KEY_SECRET}`);
-    try {
-      return raw ? (JSON.parse(raw) as Identity) : undefined;
-    } catch {
-      return undefined;
-    }
-  };
-
   /** Apretón de manos común: verifica al principal (huella fijada) y deja listos los dos sentidos del canal. */
   function handshake(
     ws: WebSocket,
@@ -130,7 +124,13 @@ export function createEquipoAgent(d: AgentDeps) {
   }
 
   /** El dueño tecleó el código en este equipo: se emparejan y queda guardado. */
-  function pair(a: { url: string; fingerprint: string; code: string; name?: string }): Promise<{ name: string }> {
+  function pair(a: { url: string; fingerprint: string; code: string; name?: string; passphrase?: string }): Promise<{ name: string }> {
+    if (d.keys.needsPassphrase() && (a.passphrase?.length ?? 0) < 8)
+      return Promise.reject(
+        new Error(
+          "este equipo no tiene almacén de claves del sistema (llavero): para emparejarlo elige una contraseña de al menos 8 caracteres que proteja la clave; sin ella no se empareja",
+        ),
+      );
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(wsUrl(a.url));
       const name = (a.name?.trim() || d.hostname?.() || "Mi equipo").slice(0, 80);
@@ -153,7 +153,7 @@ export function createEquipoAgent(d: AgentDeps) {
           try {
             const m = ToEquipo.parse(c.recv(String(raw)));
             if (m.t === "paired") {
-              d.secrets.set(KEY_SECRET, JSON.stringify(me));
+              d.keys.save(me, a.passphrase);
               writeState(d.home, {
                 id: m.id,
                 name,
@@ -189,12 +189,13 @@ export function createEquipoAgent(d: AgentDeps) {
 
   function connect() {
     const state = readState(d.home);
-    const me = key();
+    const me = d.keys.load();
     if (stopped || !state || !me) return;
     const ws = new WebSocket(wsUrl(state.principal.url));
     socket = ws;
     const retry = () => {
       connected = false;
+      d.tray.hide();
       if (socket === ws) socket = undefined;
       if (stopped || !readState(d.home)) return;
       timer = setTimeout(connect, d.retryMs?.(attempt++) ?? Math.min(30_000, 1000 * 2 ** attempt++));
@@ -228,6 +229,7 @@ export function createEquipoAgent(d: AgentDeps) {
             return c.send({ t: "res", id: m.id, ok: false, error: "el dueño del equipo no lo aprobó" });
           }
           busy++;
+          d.tray.show("Colonia está usando este equipo");
           d.notify("Colonia está usando este equipo", `${m.who.name}: ${line}`);
           try {
             const result = await serve(m.op);
@@ -252,7 +254,8 @@ export function createEquipoAgent(d: AgentDeps) {
     stopped = true;
     clearTimeout(timer);
     d.approval.reset();
-    d.secrets.set(KEY_SECRET, null);
+    d.keys.clear();
+    d.tray.hide();
     writeState(d.home, undefined);
     connected = false;
     tellRevoke = undefined;
@@ -270,6 +273,8 @@ export function createEquipoAgent(d: AgentDeps) {
     stop() {
       stopped = true;
       clearTimeout(timer);
+      d.tray.hide();
+      d.keys.forget();
       socket?.terminate();
       socket = undefined;
       connected = false;
@@ -290,6 +295,15 @@ export function createEquipoAgent(d: AgentDeps) {
       return readState(d.home);
     },
     connected: () => connected,
+    locked: () => d.keys.locked(),
+    needsPassphrase: () => d.keys.needsPassphrase(),
+    /** Tras reiniciar, sin llavero del sistema, la contraseña desbloquea la clave y se reanuda la conexión. */
+    unlock(passphrase: string): boolean {
+      if (!d.keys.load(passphrase)) return false;
+      stopped = false;
+      if (!socket && readState(d.home)) connect();
+      return true;
+    },
     inUse: () => busy > 0,
     audit: (limit?: number) => readAudit(d.home, limit),
   };

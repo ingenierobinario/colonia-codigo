@@ -10,7 +10,9 @@ import { testConfig } from "../config.ts";
 import { say, scriptedLlm } from "../engine/testkit.ts";
 import { createCore } from "../server.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
-import { createApproval, readState, writeState } from "./approval.ts";
+import { createApproval, readState, stateFile, writeState } from "./approval.ts";
+import { createKeyStore, vaultFile } from "./keystore.ts";
+import { createSecrets } from "../secrets.ts";
 import { createOpener, createSealer, deriveKeys, newEphemeral, pairProof, sameProof } from "./channel.ts";
 import { CODE_TTL_MS, createPairing, MAX_ATTEMPTS } from "./pairing.ts";
 import { ToEquipo } from "./wire.ts";
@@ -72,7 +74,7 @@ test("la aprobación no lee entorno ni modo desarrollo, y las tramas del princip
       COLONIA_EQUIPO_ALWAYS: "1",
       COLONIA_AUTO_APPROVE: "true",
     });
-    const ap = createApproval({ home, timeoutMs: 80 });
+    const ap = createApproval({ home, timeoutMs: 80, keys: createKeyStore({ home, secrets: createSecrets(home, "file") }) });
     assert.equal(await ap.authorize({ session: "s1", name: "A" }, "ejecutar: x"), false, "sin decisión, se deniega al agotar el plazo");
     const frame = ToEquipo.parse({
       t: "req",
@@ -92,6 +94,7 @@ test("la aprobación no lee entorno ni modo desarrollo, y las tramas del princip
 });
 
 const TOKEN = "principal-token";
+const PASS = "contraseña-de-prueba";
 const LAPTOP_TOKEN = "laptop-token";
 let principal: Awaited<ReturnType<typeof createCore>>;
 let laptop: Awaited<ReturnType<typeof createCore>>;
@@ -121,7 +124,7 @@ after(async () => {
 });
 
 const pairWith = (start: { fingerprint: string }, code: string) =>
-  lap.call("equipos.local_pair", { url: principal.url, fingerprint: start.fingerprint, code, name: "Portátil de prueba" });
+  lap.call("equipos.local_pair", { url: principal.url, fingerprint: start.fingerprint, code, name: "Portátil de prueba", passphrase: PASS });
 
 test("un código equivocado y una huella equivocada no emparejan; 5 fallos anulan el código", async () => {
   const start = await owner.call("equipos.pair_start", {});
@@ -193,4 +196,54 @@ test("revocar desde el principal borra el emparejamiento del portátil", async (
   await owner.call("equipos.revoke", { id: e.id });
   await waitFor(() => readState(lHome) === undefined, "el portátil olvida el emparejamiento");
   assert.equal((await lap.call("equipos.local_state", {})).paired, false);
+});
+
+test("sin llavero del sistema no se empareja sin contraseña, y la clave nunca queda en claro en disco", async () => {
+  const start = await owner.call("equipos.pair_start", {});
+  await assert.rejects(
+    lap.call("equipos.local_pair", { url: principal.url, fingerprint: start.fingerprint, code: start.code, name: "Sin clave" }),
+    /contraseña/,
+  );
+  // El rechazo es antes de gastar el código: con contraseña, ese mismo código empareja.
+  await pairWith(start, start.code);
+  const e = await waitFor(async () => (await owner.call("equipos.list", {})).equipos.find((x) => x.connected), "conectado");
+  const vault = fs.readFileSync(vaultFile(lHome), "utf8");
+  const files = [vault, fs.readFileSync(stateFile(lHome), "utf8"), fs.existsSync(path.join(lHome, "secrets.json")) ? fs.readFileSync(path.join(lHome, "secrets.json"), "utf8") : ""];
+  const priv = JSON.parse(
+    (() => {
+      const k = createKeyStore({ home: lHome, secrets: createSecrets(lHome, "file") });
+      return JSON.stringify(k.load(PASS));
+    })(),
+  ).privateKey as string;
+  assert.ok(priv.length > 20);
+  for (const f of files) assert.ok(!f.includes(priv), "la clave privada no aparece en claro");
+  assert.ok(!createKeyStore({ home: lHome, secrets: createSecrets(lHome, "file") }).load("contraseña-equivocada"));
+  await owner.call("equipos.revoke", { id: e.id });
+  await waitFor(() => readState(lHome) === undefined, "olvidado");
+  assert.equal(fs.existsSync(vaultFile(lHome)), false, "al revocar se borra la clave cifrada");
+});
+
+test("editar a mano equipo.json para poner «siempre» no concede acceso", async () => {
+  const start = await owner.call("equipos.pair_start", {});
+  await pairWith(start, start.code);
+  const e = await waitFor(async () => (await owner.call("equipos.list", {})).equipos.find((x) => x.connected), "conectado");
+  await owner.call("equipos.set_access", { id: e.id, enabled: true });
+  const s = readState(lHome);
+  assert.ok(s);
+  writeState(lHome, { ...s, always: true, always_mac: "inventada" });
+  assert.equal((await lap.call("equipos.local_state", {})).always_allow, false);
+  const req = owner.call("equipos.run", { equipo: e.id, command: "echo manual" });
+  let done = false;
+  void req.then(() => (done = true), () => (done = true));
+  const pend = await waitFor(async () => (await lap.call("equipos.local_state", {})).pending[0], "sigue pidiendo aprobación");
+  await new Promise((r) => setTimeout(r, 100));
+  assert.equal(done, false);
+  await lap.call("equipos.local_decide", { id: pend.id, allow: false });
+  await assert.rejects(req);
+  // La marca legítima (firmada desde el propio equipo) sí vale, y copiarla a otra clave no.
+  await lap.call("equipos.local_always", { enabled: true });
+  assert.equal((await lap.call("equipos.local_state", {})).always_allow, true);
+  const legit = readState(lHome);
+  await lap.call("equipos.local_disconnect", {});
+  assert.ok(legit?.always_mac);
 });

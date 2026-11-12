@@ -87,7 +87,9 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
         paired: Boolean(s),
         ...(s ? { principal: { url: s.principal.url, fingerprint: s.principal.fingerprint }, name: s.name } : {}),
         connected: d.agent.connected(),
-        always_allow: s?.always === true,
+        always_allow: d.approval.always(),
+        locked: d.agent.locked(),
+        needs_passphrase: d.agent.needsPassphrase(),
         in_use: d.agent.inUse(),
         pending: d.approval.pending(),
         audit: d.agent.audit().map((l, i) => ({ n: i, at: l.at, kind: l.kind, detail: l.detail })),
@@ -98,11 +100,13 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
         url: a.url,
         fingerprint: a.fingerprint,
         code: a.code,
+        ...(a.passphrase ? { passphrase: a.passphrase } : {}),
         ...(a.name ? { name: a.name } : {}),
       });
       d.agent.start();
       return out;
     },
+    "equipos.local_unlock": ({ passphrase }) => ({ unlocked: d.agent.unlock(passphrase) }),
     "equipos.local_decide": ({ id, allow }) => ({ decided: d.approval.decide(id, allow) }),
     "equipos.local_always": ({ enabled }) => ({ always_allow: d.approval.setAlways(enabled) && enabled }),
     "equipos.local_disconnect": async () => ({ disconnected: await d.agent.disconnect() }),
