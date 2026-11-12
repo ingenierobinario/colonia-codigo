@@ -7,6 +7,7 @@
 # A feed URL is a GitHub-shaped test feed (scripts/install/feed.ts): <url>/releases and <url>/download/v<x.y.z>/<file>.
 # It lands in %USERPROFILE%\.colonia\v2\app (COLONIA_APP to change it); your data stays in %USERPROFILE%\.colonia\v2, and Colonia v1's
 # files in %USERPROFILE%\.colonia are never touched. If Colonia v1 is installed, its daemon is stopped and its `colonia` removed.
+# -NoService installs no login service; one already installed is left as it is (colonia service uninstall removes it).
 # -Portable touches nothing outside that folder: no PATH entry, no login service, an earlier Colonia left alone.
 # Keep this file ASCII: Windows PowerShell 5.1 reads a script without a byte order mark in the system's code page.
 param(
@@ -131,9 +132,10 @@ try {
         }
       }
 
-      # 4. A running Colonia daemon from an earlier install stops before its files are replaced.
+      # 4. A running Colonia daemon from an earlier install stops before its files are replaced. -NoService means
+      # "install no service", not "remove the one there is": that one is left alone (step 7 says so).
       $current = Join-Path $App "current"
-      if ($mode -eq "server" -and -not $Portable -and (Test-Path -LiteralPath (Join-Path $current "node\node.exe"))) {
+      if ($mode -eq "server" -and -not $NoService -and (Test-Path -LiteralPath (Join-Path $current "node\node.exe"))) {
         Quiet { & (Join-Path $current "node\node.exe") --disable-warning=ExperimentalWarning (Join-Path $current "apps\terminal\src\main.ts") service uninstall } | Out-Null
       }
 
@@ -144,7 +146,8 @@ try {
       & $Tar -xzf $Bundle -C $unpacked
       if ($LASTEXITCODE -ne 0) { Die "could not unpack $Name" }
       if (-not (Test-Path -LiteralPath (Join-Path $unpacked "colonia\node\node.exe"))) { Die "$Name has no Node inside" }
-      if ($mode -eq "desktop" -and (Test-Path -LiteralPath $current)) {
+      # Only a server install is kept: over an earlier desktop install, `current` moves to this version like any other.
+      if ($mode -eq "desktop" -and $existingServer) {
         Say "Installing desktop without replacing the existing server"
         $env:COLONIA_RELEASES = $Feed
         $env:COLONIA_INSTALL_VERSION = $Version
@@ -216,6 +219,15 @@ try {
         Say "Starting the Colonia daemon"
         & (Join-Path $Bin "colonia.cmd") service install
         if ($LASTEXITCODE -ne 0) { Warn "the service did not install; run: colonia service install" }
+      } elseif (-not $Portable) {
+        # A login entry this install wrote runs a command under $App (service install, step 7).
+        $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+        $entry = (Get-Item -Path $runKey -ErrorAction SilentlyContinue).Property |
+          Where-Object { "$((Get-ItemProperty -Path $runKey -Name $_).$_)".IndexOf("$App\", [StringComparison]::OrdinalIgnoreCase) -ge 0 } |
+          Select-Object -First 1
+        if ($entry) {
+          Say "A Colonia service is already installed (login entry $entry): -NoService leaves it as it is; it runs this version from its next start (colonia service restart). To remove it: colonia service uninstall"
+        }
       }
 
       Say "Colonia $Version is installed. Try: colonia status"

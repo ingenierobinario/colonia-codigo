@@ -49,7 +49,7 @@ In PowerShell:
 & ([scriptblock]::Create((irm 'https://colonia.ingenierobinario.com/install.ps1'))) -Server
 ```
 
-Parameters: `-File <bundle>`, `-Version <x.y.z>`, `-Feed <owner/repo>`, `-NoService`, `-Uninstall`.
+Parameters: `-File <bundle>`, `-Version <x.y.z>`, `-Feed <owner/repo>`, `-NoService`, `-Uninstall`. `-NoService` installs no login service; a service already installed is left as it is, and the installer says so (remove it with `colonia service uninstall`).
 
 </TabItem>
 <TabItem label="From the desktop app">
