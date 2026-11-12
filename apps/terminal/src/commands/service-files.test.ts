@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -213,4 +214,39 @@ test("the install says whether the service survives a logout", () => {
   assert.match(lingerLine("on", "ana"), /keeps running after you log out/);
   assert.match(lingerLine("enabled", "ana"), /lingering enabled/);
   assert.match(lingerLine("off", "ana"), /stops when you log out[\s\S]*sudo loginctl enable-linger ana$/);
+});
+
+const onWindows = { skip: process.platform !== "win32" };
+
+test("a home spelled with 8.3 short names or in another case keys one service (Windows)", onWindows, async () => {
+  await using dir = tempDir("colonia-home-");
+  const long = path.join(dir.path, "Carpeta Larga De Colonia");
+  fs.mkdirSync(long);
+  // The system's own short name for it, when the volume makes them (8.3 names can be turned off).
+  const short = execFileSync(
+    "powershell",
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      `(New-Object -ComObject Scripting.FileSystemObject).GetFolder('${long.replace(/'/g, "''")}').ShortPath`,
+    ],
+    { encoding: "utf8" },
+  ).trim();
+  assert.ok(fs.existsSync(short), short);
+  const upper = long.toUpperCase();
+  const base = path.join(dir.path, "default");
+  assert.deepEqual(serviceNames(upper, base), serviceNames(long, base));
+  const owns = (home: string) =>
+    serviceOwnsHome(windowsRunCommand({ node: "node.exe", terminal: "main.ts", home, electron: false }), "win32", long);
+  assert.equal(owns(upper), true);
+  if (short.toLowerCase() !== long.toLowerCase()) {
+    assert.deepEqual(serviceNames(short, base), serviceNames(long, base));
+    assert.equal(owns(short), true);
+  }
+  // A home that does not exist yet keys the same once it does.
+  const later = path.join(upper, "nueva");
+  const before = serviceNames(later, base);
+  fs.mkdirSync(path.join(long, "nueva"));
+  assert.deepEqual(serviceNames(path.join(long, "nueva"), base), before);
 });

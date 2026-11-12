@@ -5,9 +5,16 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
-import { waitFor } from "../../../core/src/testkit/platform.ts";
-import { lastLines, logs, stopCore } from "./service.ts";
-import { NODE_FLAGS, STOP_FILE, windowsRunCommand, windowsStopScript } from "./service-files.ts";
+import { tempDir, waitFor } from "../../../core/src/testkit/platform.ts";
+import { adoptLegacyRunEntry, lastLines, logs, readRegString, stopCore } from "./service.ts";
+import {
+  legacyServiceNames,
+  NODE_FLAGS,
+  STOP_FILE,
+  serviceNames,
+  windowsRunCommand,
+  windowsStopScript,
+} from "./service-files.ts";
 import { printed } from "./testing.ts";
 
 const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-logs-"));
@@ -208,4 +215,46 @@ test("Windows stop refuses unknown commands and entries registered for another h
   });
   assert.throws(() => windowsStopScript("C:\\data\\two", command), /no process was stopped/);
   assert.throws(() => windowsStopScript("C:\\data\\one", "node anything"), /no process was stopped/);
+});
+
+// A throwaway key under HKCU: never the real Run key.
+const TEST_KEY = "HKCU\\Software\\ColoniaTest234";
+const dropTestKey = () => {
+  try {
+    execFileSync("reg", ["delete", TEST_KEY, "/f"], { stdio: "ignore" });
+  } catch {}
+};
+
+const onWindows = { skip: process.platform !== "win32" };
+
+test("a registry value with ñ and á reads back exactly in any console code page", onWindows, () => {
+  const value = 'C:\\Usuarios\\Begoña\\Información "x"';
+  try {
+    execFileSync("reg", ["add", TEST_KEY, "/v", "Prueba", "/t", "REG_SZ", "/d", value, "/f"], { stdio: "ignore" });
+    assert.equal(readRegString(TEST_KEY, "Prueba"), value);
+    assert.equal(readRegString(TEST_KEY, "NoEsta"), undefined);
+  } finally {
+    dropTestKey();
+  }
+});
+
+test("an entry named by an older key for the same home is adopted under the current name", onWindows, async () => {
+  await using dir = tempDir("colonia-legacy-");
+  const home = path.join(dir.path, "Mi Colonia ñ");
+  fs.mkdirSync(home);
+  const spelled = home.toUpperCase();
+  const base = path.join(dir.path, "default");
+  const old = legacyServiceNames(spelled, base).windows;
+  const now = serviceNames(spelled, base).windows;
+  assert.notEqual(old, now);
+  const command = windowsRunCommand({ node: "node.exe", terminal: "main.ts", home: spelled, electron: false });
+  try {
+    execFileSync("reg", ["add", TEST_KEY, "/v", old, "/t", "REG_SZ", "/d", command, "/f"], { stdio: "ignore" });
+    assert.equal(adoptLegacyRunEntry(TEST_KEY, spelled, base), true);
+    assert.equal(readRegString(TEST_KEY, now), command);
+    assert.equal(readRegString(TEST_KEY, old), undefined);
+    assert.equal(adoptLegacyRunEntry(TEST_KEY, spelled, base), false);
+  } finally {
+    dropTestKey();
+  }
 });

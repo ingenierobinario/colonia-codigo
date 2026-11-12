@@ -25,6 +25,7 @@ import {
   systemdUnit,
   terminalMain,
   keptServiceEnv,
+  legacyServiceNames,
   serviceEnvFile,
   WINDOWS_RUN_VALUE,
   windowsRunCommand,
@@ -61,6 +62,33 @@ export function sh(
   }
 }
 
+/**
+ * A REG_SZ value, or undefined when it is not there. Read through PowerShell in UTF-8: `reg query` prints in the
+ * console's OEM code page (850 on a Spanish Windows), which decoded as UTF-8 turns a home with "ñ" or "á" into
+ * replacement characters, so the entry no longer matched its own home.
+ */
+export function readRegString(key: string, name: string): string | undefined {
+  const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
+  const ps = `[Console]::OutputEncoding = [Text.Encoding]::UTF8; $v = Get-ItemProperty -LiteralPath ${q(`Registry::${key}`)} -Name ${q(name)} -ErrorAction SilentlyContinue; if ($null -eq $v) { exit 3 }; [Console]::Out.Write([string]$v.${q(name)})`;
+  const r = sh("powershell", ["-NoProfile", "-NonInteractive", "-Command", ps]);
+  return r.ok ? r.out.replace(/^\uFEFF/, "") : undefined;
+}
+
+/**
+ * An entry an older Colonia wrote for this home under its old name (8.3 or another case in the key) is renamed to the
+ * current one, so it is still found, stopped and removed, never left starting a second core at login.
+ */
+export function adoptLegacyRunEntry(key: string, home: string, defaultHome?: string): boolean {
+  const now = serviceNames(home, defaultHome).windows;
+  const old = legacyServiceNames(home, defaultHome).windows;
+  if (old === now || readRegString(key, now) !== undefined) return false;
+  const command = readRegString(key, old);
+  if (command === undefined || !serviceOwnsHome(command, "win32", home)) return false;
+  must("reg", ["add", key, "/v", now, "/t", "REG_SZ", "/d", command, "/f"]);
+  must("reg", ["delete", key, "/v", old, "/f"]);
+  return true;
+}
+
 const must = (cmd: string, args: string[]) => {
   const r = sh(cmd, args);
   if (!r.ok) throw new Error(`${cmd} ${args.join(" ")} failed: ${r.out.trim()}`);
@@ -91,8 +119,7 @@ function refuseLegacyService(): void {
   let entry: string;
   if (process.platform === "win32") {
     entry = WINDOWS_RUN_VALUE;
-    const r = sh("reg", ["query", RUN_KEY, "/v", entry]);
-    if (r.ok) text = r.out;
+    text = readRegString(RUN_KEY, entry);
   } else {
     entry =
       process.platform === "darwin"
@@ -110,9 +137,10 @@ function installed(): boolean {
   refuseLegacyService();
   let text: string;
   if (process.platform === "win32") {
-    const r = sh("reg", ["query", RUN_KEY, "/v", names().windows]);
-    if (!r.ok) return false;
-    text = r.out;
+    adoptLegacyRunEntry(RUN_KEY, coloniaHome());
+    const command = readRegString(RUN_KEY, names().windows);
+    if (command === undefined) return false;
+    text = command;
   } else {
     const file =
       process.platform === "linux" ? systemdFile() : process.platform === "darwin" ? launchdFile() : undefined;
@@ -345,8 +373,7 @@ function startWindows(command: string) {
 }
 
 function stopWindows(home: string) {
-  const entry = must("reg", ["query", RUN_KEY, "/v", serviceNames(home).windows]);
-  const command = /\sREG_SZ\s+([^\r\n]+)/.exec(entry)?.[1];
+  const command = readRegString(RUN_KEY, serviceNames(home).windows);
   if (!command) throw new Error("The Windows service entry has no command; no process was stopped.");
   const script = windowsStopScript(home, command);
   const ask = path.join(home, STOP_FILE);

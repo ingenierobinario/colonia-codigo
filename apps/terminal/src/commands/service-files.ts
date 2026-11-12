@@ -10,17 +10,53 @@ export const LAUNCHD_LABEL = "dev.colonia.core";
 export const WINDOWS_RUN_VALUE = "ColoniaCore";
 export const NODE_FLAGS = ["--disable-warning=ExperimentalWarning"];
 
-/** A custom home must not restart or replace the default installation's service. */
-export function serviceNames(home: string, defaultHome = path.join(os.homedir(), ".colonia", "v2")) {
-  const real = (p: string) => (fs.existsSync(p) ? fs.realpathSync(p) : path.resolve(p));
-  const canonical = real(home);
+/**
+ * The one form a home is named and compared by: links resolved (from its nearest existing folder, the rest appended)
+ * and, on Windows, the system's own resolution, which expands 8.3 short names (ALEXAN~1), in one case, since there
+ * any spelling names the same folder. Every service name and every "is this the same home" goes through here.
+ */
+export function homeKey(home: string, platform: NodeJS.Platform = process.platform): string {
+  const win = platform === "win32";
+  let cur = path.resolve(home);
+  const rest: string[] = [];
+  for (;;) {
+    try {
+      const found = path.join(win ? fs.realpathSync.native(cur) : fs.realpathSync(cur), ...rest.reverse());
+      return win ? found.toLowerCase() : found;
+    } catch {
+      const up = path.dirname(cur);
+      if (up === cur) return win ? path.resolve(home).toLowerCase() : path.resolve(home);
+      rest.push(path.basename(cur));
+      cur = up;
+    }
+  }
+}
+
+/** How names were keyed before homeKey: an existing home's JS realpath, as written (8.3 and case kept on Windows). */
+const legacyKey = (p: string) => (fs.existsSync(p) ? fs.realpathSync(p) : path.resolve(p));
+
+function namesBy(key: (p: string) => string, home: string, defaultHome: string) {
+  const canonical = key(home);
   const suffix =
-    canonical === real(defaultHome) ? "" : `-${createHash("sha256").update(canonical).digest("hex").slice(0, 16)}`;
+    canonical === key(defaultHome) ? "" : `-${createHash("sha256").update(canonical).digest("hex").slice(0, 16)}`;
   return {
     systemd: suffix ? `colonia${suffix}.service` : SYSTEMD_UNIT,
     launchd: `${LAUNCHD_LABEL}${suffix}`,
     windows: `${WINDOWS_RUN_VALUE}${suffix}`,
   };
+}
+
+/** A custom home must not restart or replace the default installation's service. */
+export function serviceNames(home: string, defaultHome = path.join(os.homedir(), ".colonia", "v2")) {
+  return namesBy(homeKey, home, defaultHome);
+}
+
+/**
+ * The names an older Colonia gave the same home. Only Windows can differ (8.3 and case were part of the key there);
+ * an entry still under that name is adopted, not left running beside a new one.
+ */
+export function legacyServiceNames(home: string, defaultHome = path.join(os.homedir(), ".colonia", "v2")) {
+  return namesBy(legacyKey, home, defaultHome);
 }
 
 /** The core's entry, beside the terminal both in the repo and in the packaged layout (apps/terminal, apps/core). */
@@ -102,10 +138,7 @@ export function serviceOwnsHome(text: string, platform: string, home: string): b
     configured = /^Environment="COLONIA_HOME=((?:\\.|[^"\\])*)"$/m.exec(text)?.[1];
     configured = configured?.replace(/\\(.)/g, "$1").replace(/%%/g, "%");
   }
-  if (configured) {
-    const canonical = (p: string) => (fs.existsSync(p) ? fs.realpathSync(p) : path.resolve(p));
-    return canonical(configured) === canonical(home);
-  }
+  if (configured) return homeKey(configured) === homeKey(home);
   return platform !== "win32" && !text.includes("COLONIA_HOME") && serviceNames(home).systemd === SYSTEMD_UNIT;
 }
 
