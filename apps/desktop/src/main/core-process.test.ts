@@ -194,6 +194,7 @@ test("a Colonia core that answers on the port (the service, started at the same 
   });
   setTimeout(() => (ready = true), 1000);
   await using dir = tempDir("colonia-adopt-");
+  fs.writeFileSync(path.join(dir.path, "home-id"), "x\n"); // the service started this folder: it has its identity
   const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
   const url = `http://127.0.0.1:${service.port}`;
   const embedded = core.startEmbeddedCore({ ...opts, port: service.port, adoptMs: 2000, watchMs: 300 });
@@ -217,6 +218,7 @@ test("a core that loses the race for the port adopts the one that won it instead
 }, async () => {
   // The child stands in for a core that dies on a taken port; the winner starts answering right as it dies.
   await using dir = tempDir("colonia-race-");
+  fs.writeFileSync(path.join(dir.path, "home-id"), "x\n"); // the service started this folder: it has its identity
   const probe = await serve(() => {});
   const port = probe.port;
   await close(probe);
@@ -241,6 +243,7 @@ test("a core that dies young while the port is still free waits briefly for anot
 }, async () => {
   // The service holds the home (so ours dies at once) but binds the port only a moment later.
   await using dir = tempDir("colonia-home-race-");
+  fs.writeFileSync(path.join(dir.path, "home-id"), "x\n"); // the service started this folder: it has its identity
   const probe = await serve(() => {});
   const port = probe.port;
   await close(probe);
@@ -297,8 +300,28 @@ test("a Colonia core of another folder on the port is not adopted, and the scree
   }
 });
 
+test("a folder that never started is not taken over by a Colonia core of another folder on its port", {
+  timeout: 20_000,
+}, async () => {
+  // No home-id yet: had this folder's core run (the service's or ours), it would have written one.
+  const foreign = await serve(colonia);
+  await using dir = tempDir("colonia-new-home-");
+  const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
+  const url = `http://127.0.0.1:${foreign.port}`;
+  const embedded = core.startEmbeddedCore({ ...opts, port: foreign.port, adoptMs: 300, watchMs: 300 });
+  try {
+    await until(() => core.portProblem(url) !== undefined);
+    assert.equal(core.portProblem(url)?.otherHome, true);
+    assert.equal(embedded.adopted(), false);
+  } finally {
+    await embedded.stop();
+    await close(foreign);
+  }
+});
+
 test("an adopted core that restarts (the service) is waited for, not raced", { timeout: 20_000 }, async () => {
   await using dir = tempDir("colonia-service-restart-");
+  fs.writeFileSync(path.join(dir.path, "home-id"), "x\n"); // the service started this folder: it has its identity
   let service = await serve(colonia);
   const port = service.port;
   const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);

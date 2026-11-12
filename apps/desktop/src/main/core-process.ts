@@ -126,10 +126,10 @@ async function whoHolds(
       try {
         expected = fs.readFileSync(path.join(home, "home-id"), "utf8").trim();
       } catch {}
-      // A folder with no identity yet (never started) cannot tell: the core on the port is taken as its own.
-      return !expected || typeof health.home_id !== "string" || health.home_id.trim() === expected
-        ? "colonia"
-        : "otherHome";
+      // ADOPTAR-CORE-1: this folder's core writes home-id before /health answers, so a folder without one is not
+      // what answers here. A core too old to report home_id is still taken as this folder's when the folder has one.
+      if (!expected) return "otherHome";
+      return typeof health.home_id !== "string" || health.home_id.trim() === expected ? "colonia" : "otherHome";
     }
     if (!(await portTaken(port)) && (!expectColonia || Date.now() >= until)) return "free";
     if (Date.now() >= until) return "other";
