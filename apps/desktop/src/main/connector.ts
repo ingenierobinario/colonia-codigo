@@ -19,7 +19,7 @@ import {
   validSshTarget,
   verifyLocalCore,
 } from "./connection.ts";
-import { type EmbeddedCore, isUp, startEmbeddedCore, waitUp } from "./core-process.ts";
+import { type EmbeddedCore, isUp, restartForCoreEnv, startEmbeddedCore, waitUp } from "./core-process.ts";
 import { type Remote, reachRemote, type WaitDeps, waitingHtml } from "./remote-wait.ts";
 import { runCommand } from "./run-command.ts";
 import { appKeyPath, askpassSupported, authorizeKey, ensureAppKey, localSshVersion } from "./ssh-login.ts";
@@ -92,7 +92,8 @@ export function createConnector(opts: {
     // "Only this computer" undoes an earlier LAN or Tailscale choice too.
     const r = await runCli(["expose", access === "none" ? "off" : access]);
     if (!r.ok) return r;
-    await restartOwnCore();
+    const restarted = await restartOwnCore();
+    if (restarted) return restarted;
     return choose({ mode: "local" }, revision);
   });
 
@@ -230,12 +231,14 @@ export function createConnector(opts: {
   }
 
   /** The bundled core reads core.env when it starts: after an exposure change it starts again (a checkout's is not ours). */
-  async function restartOwnCore(): Promise<void> {
-    if (!core) return;
-    await core.stop();
-    core = undefined;
-    const until = Date.now() + 10_000;
-    while (Date.now() < until && (await isUp(opts.coreUrl))) await new Promise((r) => setTimeout(r, 200));
+  // ADOPTAR-CORE-1: a core adopted from the service is not ours to stop; the service starts again instead.
+  async function restartOwnCore(): Promise<Answer | undefined> {
+    if (!core) return undefined;
+    const es = app.getLocale().startsWith("es");
+    const r = await restartForCoreEnv(core, opts.coreUrl, () => runCli(["service", "restart"]), es);
+    if ("error" in r) return { ok: false, error: r.error };
+    if (r.restarted === "own") core = undefined;
+    return undefined;
   }
 
   async function choose(c: Connection, expectedRevision: number): Promise<Answer> {

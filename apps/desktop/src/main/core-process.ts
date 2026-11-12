@@ -15,10 +15,17 @@ const ADOPT_MS = 8000;
 /** While another program holds the port, or a core this app did not start serves it, how often to look again. */
 const WATCH_MS = 2000;
 
-export type EmbeddedCore = { stop(): Promise<void> };
+export type EmbeddedCore = {
+  stop(): Promise<void>;
+  /** True while a core this app did not start (the service) serves the port and this one stands by. */
+  adopted(): boolean;
+};
 
-/** The port of this computer's core is taken by a program that is not Colonia: what the waiting screen tells the owner. */
-export type PortProblem = { port: number; program?: string; freePort?: number; envFile: string };
+/**
+ * The port of this computer's core is taken by a program that is not Colonia, or by a Colonia core of another folder
+ * (`otherHome`): what the waiting screen tells the owner.
+ */
+export type PortProblem = { port: number; program?: string; freePort?: number; envFile: string; otherHome?: true };
 const portProblems = new Map<number, PortProblem>();
 
 const portOf = (url: string) => Number(new URL(url).port || 80);
@@ -32,16 +39,24 @@ export function portProblem(url: string): PortProblem | undefined {
   }
 }
 
-/** Only a Colonia core counts as up: any other program answering 200 on /health is not one (PUERTO-AJENO-1). */
-export async function isUp(url: string): Promise<boolean> {
+/** The names a Colonia core gives on /health: before v2.13.0 it answered "apx-core" (6be00e4b3). */
+const CORE_NAMES = new Set(["colonia-core", "apx-core"]);
+
+/** /health of a Colonia core, or undefined for anything else (PUERTO-AJENO-1). */
+async function coreHealth(url: string): Promise<{ home_id?: unknown } | undefined> {
   try {
     const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(1500) });
-    if (!r.ok) return false;
-    const body = (await r.json()) as { result?: { name?: unknown } };
-    return body?.result?.name === "colonia-core";
+    if (!r.ok) return undefined;
+    const body = (await r.json()) as { result?: { name?: unknown; home_id?: unknown } };
+    return body?.result && CORE_NAMES.has(String(body.result.name)) ? body.result : undefined;
   } catch {
-    return false;
+    return undefined;
   }
+}
+
+/** Only a Colonia core counts as up: any other program answering 200 on /health is not one (PUERTO-AJENO-1). */
+export async function isUp(url: string): Promise<boolean> {
+  return (await coreHealth(url)) !== undefined;
 }
 
 function portTaken(port: number): Promise<boolean> {
@@ -92,18 +107,30 @@ export async function portOwner(port: number): Promise<string | undefined> {
 }
 
 /**
- * Who holds the port: nobody, a Colonia core, or another program. A taken port gets `adoptMs` to answer as Colonia;
+ * Who holds the port: nobody, a Colonia core of this folder (`colonia`), one of another folder (`otherHome`: its home_id
+ * is not the one in `home`), or another program. A taken port gets `adoptMs` to answer as Colonia;
  * with `expectColonia` a free one does too (our core just died young: maybe another core holds the home and is starting).
  */
 async function whoHolds(
   url: string,
   port: number,
+  home: string,
   adoptMs: number,
   expectColonia = false,
-): Promise<"free" | "colonia" | "other"> {
+): Promise<"free" | "colonia" | "otherHome" | "other"> {
   const until = Date.now() + adoptMs;
   while (true) {
-    if (await isUp(url)) return "colonia";
+    const health = await coreHealth(url);
+    if (health) {
+      let expected = "";
+      try {
+        expected = fs.readFileSync(path.join(home, "home-id"), "utf8").trim();
+      } catch {}
+      // A folder with no identity yet (never started) cannot tell: the core on the port is taken as its own.
+      return !expected || typeof health.home_id !== "string" || health.home_id.trim() === expected
+        ? "colonia"
+        : "otherHome";
+    }
     if (!(await portTaken(port)) && (!expectColonia || Date.now() >= until)) return "free";
     if (Date.now() >= until) return "other";
     await new Promise((r) => setTimeout(r, 300));
@@ -139,10 +166,14 @@ export function startEmbeddedCore(opts: {
   // Before each start: a Colonia core already on the port (the service, started at the same time) is adopted instead of
   // fighting it for the port; another program on it is named on the waiting screen. Both are looked at again until the
   // port frees up, so the app starts its own core only then (ADOPTAR-CORE-1, PUERTO-AJENO-1).
+  let adopted = false;
   const launch = async (diedYoung = false) => {
     if (stopped) return;
-    const holder = await whoHolds(url, opts.port, opts.adoptMs ?? ADOPT_MS, diedYoung);
+    // An adopted core that went away is probably restarting (`colonia service restart`): it gets the same short wait.
+    const home = path.resolve(opts.home);
+    const holder = await whoHolds(url, opts.port, home, opts.adoptMs ?? ADOPT_MS, diedYoung || adopted);
     if (stopped) return;
+    adopted = holder === "colonia";
     if (holder === "free") {
       portProblems.delete(opts.port);
       start();
@@ -151,15 +182,20 @@ export function startEmbeddedCore(opts: {
     backoff = opts.restartDelayMs ?? 1000;
     if (holder === "colonia") portProblems.delete(opts.port);
     else if (!portProblems.has(opts.port)) {
-      const [program, freePort] = await Promise.all([portOwner(opts.port), nextFreePort(opts.port)]);
+      const [program, freePort] = await Promise.all([
+        holder === "other" ? portOwner(opts.port) : undefined,
+        nextFreePort(opts.port),
+      ]);
       if (stopped) return;
       portProblems.set(opts.port, {
         port: opts.port,
+        ...(holder === "otherHome" ? { otherHome: true as const } : {}),
         ...(program ? { program } : {}),
         ...(freePort ? { freePort } : {}),
         envFile: path.join(path.resolve(opts.home), "core.env"),
       });
-      fs.writeSync(log, `${new Date().toISOString()} port ${opts.port} is taken by ${program ?? "another program"}\n`);
+      const by = holder === "otherHome" ? "a Colonia core of another folder" : (program ?? "another program");
+      fs.writeSync(log, `${new Date().toISOString()} port ${opts.port} is taken by ${by}\n`);
     }
     retry = setTimeout(() => void launch(), watchMs);
   };
@@ -207,6 +243,7 @@ export function startEmbeddedCore(opts: {
   };
   void launch();
   return {
+    adopted: () => adopted && !stopped,
     stop() {
       if (stopping) return stopping;
       stopped = true;
@@ -252,4 +289,29 @@ function readBuild(root: string): { version?: string; sha?: string } {
   } catch {
     return {};
   }
+}
+
+/**
+ * After core.env changes the core must start again. Ours is stopped (connector starts it again); an adopted one
+ * belongs to the service, so the service is restarted, or the owner is told how in plain words (ADOPTAR-CORE-1).
+ */
+export async function restartForCoreEnv(
+  core: EmbeddedCore,
+  url: string,
+  restartService: () => Promise<{ ok: boolean }>,
+  es: boolean,
+  waitMs = 10_000,
+): Promise<{ restarted: "own" | "service" } | { error: string }> {
+  if (!core.adopted()) {
+    await core.stop();
+    const until = Date.now() + waitMs;
+    while (Date.now() < until && (await isUp(url))) await new Promise((r) => setTimeout(r, 200));
+    return { restarted: "own" };
+  }
+  if ((await restartService()).ok) return { restarted: "service" };
+  return {
+    error: es
+      ? "Colonia funciona como servicio en este equipo y no se pudo reiniciar para aplicar el cambio. Reinicia el equipo, o abre una terminal y escribe: colonia service restart"
+      : "Colonia runs as a service on this computer and could not be restarted to apply the change. Restart the computer, or open a terminal and type: colonia service restart",
+  };
 }
