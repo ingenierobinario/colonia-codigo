@@ -68,7 +68,9 @@ export function createSecrets(
     candidate && (wanted === "keychain" || fs.existsSync(index) || candidate.works()) ? candidate : undefined;
   const backend: SecretsBackend = store ? wanted : "file";
   // A system store was wanted and does not answer: there is no safe place for a value, so none is saved or read from a file.
-  const sealed = wanted !== "file" && !store;
+  // SECRETS-MIGRAR-1: salvo si ya hay un secrets.json de una versión anterior (2.32.0 y antes lo usaba sin llavero):
+  // ese equipo sigue funcionando como antes, y al sellar de golpe perdería todas sus conexiones al actualizar.
+  const sealed = wanted !== "file" && !store && !fs.existsSync(legacy);
   // The file holds values only for the file backend; with a store it is just the index (names, dates).
   const file = store ? index : legacy;
   // A file written by hand or restored from a copy may be readable by others: only its owner reads it from here on.

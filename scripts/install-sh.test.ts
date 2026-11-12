@@ -196,3 +196,27 @@ test("--equipo y --huella van juntos y exigen el servicio: se rechaza antes de i
   assert.notEqual(sinServicio.status, 0);
   assert.match(sinServicio.stderr, /needs the service/);
 });
+
+test("EQUIPO-ARGS-1: una dirección o una huella con caracteres de consola se rechaza antes de instalar nada", () => {
+  const run = (...args: string[]) =>
+    spawnSync("bash", [script, ...args], { encoding: "utf8", env: { ...process.env, HOME: os.tmpdir() } });
+  for (const mala of [
+    "ws://10.0.0.2:4100;touch /tmp/x",
+    "ws://h&calc",
+    'ws://h"x',
+    "ws://h$(id)",
+    "ws://h x",
+    "ws://h`id`",
+  ]) {
+    const r = run("--equipo", mala, "--huella", "abcdef0123456789");
+    assert.notEqual(r.status, 0, mala);
+    assert.match(r.stderr, /--equipo is not an address/, mala);
+  }
+  const h = run("--equipo", "ws://10.0.0.2:4100", "--huella", "abcd;rm -rf");
+  assert.match(h.stderr, /--huella is not a fingerprint/);
+  const [ok] = ["ws://[fd7a::1]:4100", "http://mi-pc.tailnet.ts.net:4100/equipo"];
+  assert.doesNotMatch(
+    run("--equipo", ok, "--huella", "abcd-ef01-2345-6789", "--no-service").stderr,
+    /is not an address/,
+  );
+});

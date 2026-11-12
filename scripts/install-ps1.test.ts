@@ -234,3 +234,18 @@ test("el instalador de Windows registra el equipo en Aplicaciones instaladas y s
   // El código nunca viaja en el comando: se teclea en el equipo.
   assert.doesNotMatch(text, /\$Codigo|-Code\b/);
 });
+
+test("EQUIPO-ARGS-1: -Equipo y -Huella con caracteres de cmd.exe se rechazan antes de instalar nada", () => {
+  if (!windows) return;
+  const run = (equipo: string, huella: string) =>
+    spawnSync("powershell.exe", [...shell, "-File", script, "-Equipo", equipo, "-Huella", huella], {
+      encoding: "utf8",
+      windowsHide: true,
+    });
+  for (const mala of ["ws://h&calc", "ws://h|x", "ws://h^x", "ws://h%PATH%"]) {
+    const r = run(mala, "abcdef0123456789");
+    assert.notEqual(r.status, 0, mala);
+    assert.match(r.stdout + r.stderr, /-Equipo is not an address/, mala);
+  }
+  assert.match(run("ws://10.0.0.2:4100", "abc&calc").stdout, /-Huella is not a fingerprint/);
+});

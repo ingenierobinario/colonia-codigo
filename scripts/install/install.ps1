@@ -45,6 +45,9 @@ try {
     if ($Equipo -or $Huella) {
       if (-not ($Equipo -and $Huella)) { Die "-Equipo and -Huella go together: copy the whole command from Colonia" }
       if ($Portable -or $NoService -or $Desktop) { Die "-Equipo needs the service: do not combine it with -Portable, -NoService or -Desktop" }
+      # EQUIPO-ARGS-1: both end up as arguments of colonia.cmd, where cmd.exe reads & | ^ % as commands.
+      if ($Equipo -notmatch '^(https?|wss?)://[A-Za-z0-9.:\[\]-]+(/[A-Za-z0-9._~/-]*)?$') { Die "-Equipo is not an address: copy the whole command from Colonia" }
+      if ($Huella -notmatch '^[0-9A-Fa-f][0-9A-Fa-f-]*$') { Die "-Huella is not a fingerprint: copy the whole command from Colonia" }
       $Server = $true
     }
     $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\ColoniaEquipo"

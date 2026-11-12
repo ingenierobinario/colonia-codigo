@@ -95,3 +95,21 @@ test("«nunca para este sitio» se recuerda y un origen inválido se rechaza", (
   assert.equal(b.guardar({ ...ENT, origen: "https://mail.example.com/ruta" }), "rechazada");
   assert.equal(b.guardar({ ...ENT, contrasena: "" }), "rechazada");
 });
+
+test("BOVEDA-LEER-1: un fichero roto no se pisa: se conserva una copia y un fallo de disco no borra nada", (t) => {
+  const { archivo, dir, b } = montar(t);
+  assert.equal(b.guardar(ENT), "guardada");
+  const bueno = fs.readFileSync(archivo, "utf8");
+  // 1) JSON truncado (corte de luz a mitad de escritura): se guarda copia aparte antes de empezar de cero
+  fs.writeFileSync(archivo, bueno.slice(0, bueno.length - 5));
+  assert.equal(b.guardar({ ...ENT, app: "a2" }), "guardada");
+  const copias = fs.readdirSync(dir).filter((n) => n.includes(".danado-"));
+  assert.equal(copias.length, 1, "la copia del fichero roto existe");
+  assert.equal(fs.readFileSync(path.join(dir, copias[0] ?? ""), "utf8"), bueno.slice(0, bueno.length - 5));
+  // 2) el fichero existe pero no se puede leer (EISDIR hace de «antivirus lo tiene bloqueado»): no se escribe nada
+  const { archivo: a2, b: b2 } = montar(t);
+  fs.mkdirSync(a2);
+  assert.equal(b2.guardar(ENT), "rechazada");
+  assert.ok(fs.statSync(a2).isDirectory(), "no se sustituyó lo que había");
+  assert.equal(b2.buscar("a1", ENT.origen), undefined, "leer no lanza");
+});

@@ -149,8 +149,20 @@ export const equiposMethods = {
   "equipos.local_pair": {
     params: z
       .object({
-        url: z.string().trim().min(1).max(300),
-        fingerprint: z.string().trim().min(8).max(100),
+        // EQUIPO-ARGS-1: la dirección y la huella acaban como argumentos de un programa; solo los caracteres de una
+        // dirección y de una huella, nunca los de una orden de consola (& | ; " ` $ espacio).
+        url: z
+          .string()
+          .trim()
+          .min(1)
+          .max(300)
+          .regex(/^(https?|wss?):\/\/[A-Za-z0-9.\-:[\]]+(\/[A-Za-z0-9._~\-/]*)?$/),
+        fingerprint: z
+          .string()
+          .trim()
+          .min(8)
+          .max(100)
+          .regex(/^[0-9a-fA-F][0-9a-fA-F-]*$/),
         code: z.string().trim().min(6).max(8),
         /** Solo si este equipo no tiene almacén de claves del sistema: protege la clave en disco. */
         passphrase: z.string().min(8).max(200).optional(),

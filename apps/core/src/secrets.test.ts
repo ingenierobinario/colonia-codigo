@@ -174,3 +174,19 @@ test("on Windows values are sealed with DPAPI in one file, apart from the index"
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
+
+test("SECRETS-MIGRAR-1: un servidor sin llavero que ya tenía secrets.json de 2.32.0 no pierde sus secretos al actualizar", () => {
+  const home = tempHome();
+  try {
+    fs.writeFileSync(
+      path.join(home, "secrets.json"),
+      JSON.stringify({ token: { value: "viejo", updated_at: "2026-01-01T00:00:00.000Z" } }),
+    );
+    const s = createSecrets(home, "secret-service", {}, fakeSystem().run);
+    assert.equal(s.resolve("secret://token"), "viejo", "lo guardado antes se sigue leyendo");
+    s.set("otro", "nuevo");
+    assert.equal(s.resolve("secret://otro"), "nuevo");
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});

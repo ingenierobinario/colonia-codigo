@@ -40,14 +40,31 @@ const MAX_ENTRADAS = 2000;
 export function crearBoveda(opts: { archivo: string; caja: CajaSecreta; ahora?: () => number }) {
   const ahora = opts.ahora ?? Date.now;
 
+  // BOVEDA-LEER-1: solo «no existe» significa «vacía». Un fichero ilegible o roto NO se trata como vacío: la siguiente
+  // escritura lo pisaría y se perderían todas las contraseñas. Si está roto se guarda una copia aparte y se sigue; si el
+  // disco falla (antivirus, permisos) se lanza el error y la escritura no ocurre.
   const leer = (): Fichero => {
+    let texto: string;
     try {
-      const f = JSON.parse(fs.readFileSync(opts.archivo, "utf8")) as Partial<Fichero>;
-      return {
-        v: 1,
-        items: Array.isArray(f.items) ? f.items : [],
-        nunca: Array.isArray(f.nunca) ? f.nunca : [],
-      };
+      texto = fs.readFileSync(opts.archivo, "utf8");
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") return { v: 1, items: [], nunca: [] };
+      throw e;
+    }
+    try {
+      const f = JSON.parse(texto) as Partial<Fichero>;
+      if (f && typeof f === "object" && Array.isArray(f.items))
+        return { v: 1, items: f.items, nunca: Array.isArray(f.nunca) ? f.nunca : [] };
+    } catch {}
+    try {
+      fs.copyFileSync(opts.archivo, `${opts.archivo}.danado-${ahora()}`);
+    } catch {}
+    return { v: 1, items: [], nunca: [] };
+  };
+  /** Para quien solo lee: si el disco falla, no hay nada que mostrar, pero tampoco se rompe el rellenado. */
+  const leerSinFallar = (): Fichero => {
+    try {
+      return leer();
     } catch {
       return { v: 1, items: [], nunca: [] };
     }
@@ -76,7 +93,12 @@ export function crearBoveda(opts: { archivo: string; caja: CajaSecreta; ahora?: 
       if (!opts.caja.disponible()) return "no-disponible";
       if (!e.app || !origenDe(e.origen) || origenDe(e.origen) !== e.origen) return "rechazada";
       if (!e.usuario || !e.contrasena || e.usuario.length > LIMITE || e.contrasena.length > LIMITE) return "rechazada";
-      const f = leer();
+      let f: Fichero;
+      try {
+        f = leer();
+      } catch {
+        return "rechazada";
+      }
       const previo = f.items.find((r) => r.app === e.app && r.origen === e.origen && abrir(r)?.usuario === e.usuario);
       if (previo && abrir(previo)?.contrasena === e.contrasena) return "igual";
       if (!previo && f.items.length >= MAX_ENTRADAS) return "rechazada";
@@ -94,7 +116,7 @@ export function crearBoveda(opts: { archivo: string; caja: CajaSecreta; ahora?: 
     /** La credencial de ESA aplicación y de ESE origen exacto; con varias cuentas, la guardada más recientemente. */
     buscar(app: string, origen: string): Credencial | undefined {
       if (!opts.caja.disponible() || origenDe(origen) !== origen) return undefined;
-      const r = leer()
+      const r = leerSinFallar()
         .items.filter((x) => x.app === app && x.origen === origen)
         .sort((a, b) => b.en - a.en)
         .find((x) => abrir(x));
@@ -104,14 +126,16 @@ export function crearBoveda(opts: { archivo: string; caja: CajaSecreta; ahora?: 
 
     /** Para saber si hay que ofrecer guardar: ¿existe ya este usuario aquí, y con esta misma contraseña? */
     estado(app: string, origen: string, usuario: string, contrasena: string): "nueva" | "cambia" | "igual" {
-      const previo = leer().items.find((r) => r.app === app && r.origen === origen && abrir(r)?.usuario === usuario);
+      const previo = leerSinFallar().items.find(
+        (r) => r.app === app && r.origen === origen && abrir(r)?.usuario === usuario,
+      );
       if (!previo) return "nueva";
       return abrir(previo)?.contrasena === contrasena ? "igual" : "cambia";
     },
 
     lista(): EntradaPublica[] {
       if (!opts.caja.disponible()) return [];
-      return leer()
+      return leerSinFallar()
         .items.flatMap((r) => {
           const c = abrir(r);
           return c ? [{ id: r.id, app: r.app, origen: r.origen, usuario: c.usuario }] : [];
@@ -121,7 +145,7 @@ export function crearBoveda(opts: { archivo: string; caja: CajaSecreta; ahora?: 
 
     revelar(id: string): string | undefined {
       if (!opts.caja.disponible()) return undefined;
-      const r = leer().items.find((x) => x.id === id);
+      const r = leerSinFallar().items.find((x) => x.id === id);
       return r ? abrir(r)?.contrasena : undefined;
     },
 
@@ -147,7 +171,8 @@ export function crearBoveda(opts: { archivo: string; caja: CajaSecreta; ahora?: 
       if (f.nunca.some((n) => n.app === app && n.origen === origen)) return;
       escribir({ ...f, nunca: [...f.nunca, { app, origen }] });
     },
-    esNunca: (app: string, origen: string): boolean => leer().nunca.some((n) => n.app === app && n.origen === origen),
+    esNunca: (app: string, origen: string): boolean =>
+      leerSinFallar().nunca.some((n) => n.app === app && n.origen === origen),
   };
 }
 

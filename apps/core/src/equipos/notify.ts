@@ -26,7 +26,7 @@ export function systemNotify(platform: NodeJS.Platform = process.platform): Noti
                 'display notification (system attribute "COLONIA_AVISO_TEXTO") with title (system attribute "COLONIA_AVISO_TITULO")',
               ],
             ]
-          : ["notify-send", [title, body.slice(0, 250)]];
+          : ["notify-send", ["--", title, body.slice(0, 250)]];
     try {
       const child = spawn(cmd, args, { env, stdio: "ignore", detached: true, windowsHide: true });
       child.on("error", () => {});

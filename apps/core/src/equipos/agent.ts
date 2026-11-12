@@ -214,6 +214,8 @@ export function createEquipoAgent(d: AgentDeps) {
     const retry = () => {
       connected = false;
       d.tray.hide();
+      // CONEXION-APROBACION-1: lo aprobado vale mientras dure ESTA conexión; si se cae, la sesión vuelve a pedirlo.
+      d.approval.reset();
       if (socket === ws) socket = undefined;
       if (stopped || !readState(d.home)) return;
       timer = setTimeout(connect, d.retryMs?.(attempt++) ?? Math.min(30_000, 1000 * 2 ** attempt++));
@@ -293,11 +295,13 @@ export function createEquipoAgent(d: AgentDeps) {
     /** Arranca (o rearranca) la conexión si este equipo está emparejado. */
     start() {
       stopped = false;
+      clearTimeout(timer); // un reintento pendiente + este connect() dejarían dos conexiones peleándose
       if (!socket && readState(d.home)) connect();
     },
     stop() {
       stopped = true;
       clearTimeout(timer);
+      d.approval.reset();
       d.tray.hide();
       d.keys.forget();
       socket?.terminate();

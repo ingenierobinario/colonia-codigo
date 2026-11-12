@@ -52,6 +52,9 @@ while [ $# -gt 0 ]; do
 done
 if [ -n "$EQUIPO" ] || [ -n "$HUELLA" ]; then
   [ -n "$EQUIPO" ] && [ -n "$HUELLA" ] || die "--equipo and --huella go together: copy the whole command from Colonia"
+  # EQUIPO-ARGS-1: they end up in a .desktop Exec line and as arguments; only the characters of an address and a fingerprint.
+  case "$EQUIPO" in *[!]A-Za-z0-9.:/_~[-]*) die "--equipo is not an address: copy the whole command from Colonia" ;; esac
+  case "$HUELLA" in *[!0-9A-Fa-f-]*) die "--huella is not a fingerprint: copy the whole command from Colonia" ;; esac
   [ "$REQUESTED_DESKTOP" = 0 ] && [ "$SERVICE" = 1 ] || die "--equipo needs the service: do not combine it with --desktop or --no-service"
 fi
 if [ "$REQUESTED_DESKTOP" = 1 ]; then

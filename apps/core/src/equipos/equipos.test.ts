@@ -10,6 +10,7 @@ import { say, scriptedLlm } from "../engine/testkit.ts";
 import { createSecrets } from "../secrets.ts";
 import { createCore } from "../server.ts";
 import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
+import { createEquipoAgent } from "./agent.ts";
 import { createApproval, readState, stateFile, writeState } from "./approval.ts";
 import { createOpener, createSealer, deriveKeys, newEphemeral, pairProof, sameProof } from "./channel.ts";
 import { createKeyStore, vaultFile } from "./keystore.ts";
@@ -326,4 +327,32 @@ test("editar a mano equipo.json para poner «siempre» no concede acceso", async
   const legit = readState(lHome);
   await lap.call("equipos.local_disconnect", {});
   assert.ok(legit?.always_mac);
+});
+
+test("CONEXION-APROBACION-1: si la conexión con el principal se cae, lo aprobado se olvida", async () => {
+  const home = tempDir("colonia-aprob-reconexion-").path;
+  try {
+    writeState(home, {
+      id: "e1",
+      name: "x",
+      principal: { url: "http://127.0.0.1:1", fingerprint: "f", publicKey: "k" },
+      always: false,
+    });
+    let resets = 0;
+    const agent = createEquipoAgent({
+      home,
+      keys: { load: () => ({ privateKey: "k" }), forget() {} } as never,
+      approval: { reset: () => resets++ } as never,
+      tray: { show() {}, hide() {} } as never,
+      notify() {},
+      log: { warn() {}, info() {}, error() {}, debug() {} } as never,
+      secrets: {} as never,
+      retryMs: () => 60_000,
+    });
+    agent.start();
+    await waitFor(async () => resets >= 1, "la conexión fallida olvida lo aprobado");
+    agent.stop();
+  } finally {
+    await removeDir(home);
+  }
 });
