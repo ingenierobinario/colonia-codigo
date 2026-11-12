@@ -1,9 +1,10 @@
 // A client over SSH: the system's own ssh (the owner's keys, agent and ~/.ssh/config) forwards the server's core to
 // this computer, so the server never opens a port. The local port equals the remote one: the core only accepts the
 // panel from its own origin.
-import { type ChildProcess, spawn, spawnSync } from "node:child_process";
+import { type ChildProcess, spawn } from "node:child_process";
 import fs from "node:fs";
 import { stripVTControlCharacters } from "node:util";
+import { runCommand } from "./run-command.ts";
 
 export type Tunnel = {
   url: string;
@@ -275,10 +276,10 @@ export async function remoteInstall(
   onLine: (line: string) => void,
   deadlineMs = 10 * 60_000,
 ): Promise<RemoteInstall> {
-  const pre = spawnSync("ssh", sshCommand(target, PRECHECK), { timeout: 30_000, windowsHide: true, encoding: "utf8" });
+  const pre = await runCommand("ssh", sshCommand(target, PRECHECK), { timeout: 30_000 });
   if (pre.status === 255 || pre.status === null) return { ok: false, reason: "sshFailed" };
   if (pre.status !== 0) {
-    const out = `${pre.stdout ?? ""}`.trim();
+    const out = pre.stdout.trim();
     return out.includes("COLONIA_UNSUPPORTED")
       ? { ok: false, reason: "sshUnsupported" }
       : { ok: false, reason: "installFailed", error: out.replace(/^COLONIA_NEEDS /, "missing on the server: ") };
@@ -311,8 +312,8 @@ export async function remoteInstall(
   });
   if (code === 0) {
     // A Linux user's services stop at their last logout unless they linger (install.sh turns it on when it can).
-    const who = spawnSync("ssh", sshCommand(target, LINGER), { timeout: 20_000, windowsHide: true, encoding: "utf8" });
-    const [user = "", linger = ""] = `${who.stdout ?? ""}`.trim().split(/\s+/);
+    const who = await runCommand("ssh", sshCommand(target, LINGER), { timeout: 20_000 });
+    const [user = "", linger = ""] = who.stdout.trim().split(/\s+/);
     return { ok: true, user, lingers: linger !== "no" };
   }
   if (code === 255) return { ok: false, reason: "sshFailed" };
