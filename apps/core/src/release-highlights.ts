@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.35.2": {
+    en: [
+      "What you write to a WhatsApp contact from your phone shows up in their chat again.",
+      "Claude's usage limits show up again in the AI quotas, without spending tokens.",
+      "Browser import shows each profile by its name and no longer fills the sidebar.",
+      "A new icon: the penguin bigger and without the black background.",
+    ],
+    es: [
+      "Lo que escribes a un contacto de WhatsApp desde el móvil vuelve a salir en su chat.",
+      "Los límites de Claude vuelven a salir en las cuotas de IA, sin gastar tokens.",
+      "La importación del navegador muestra cada perfil con su nombre y ya no llena la barra.",
+      "Icono nuevo: el pingüino más grande y sin el fondo negro.",
+    ],
+  },
   "2.35.1": {
     en: [
       "The chat list and each agent in the Inbox tree fold away with one click, and stay as you left them.",
