@@ -50,6 +50,33 @@
 .tree__agenthead:hover {
   background: var(--colonia-fill);
 }
+/* LISTA-PLEGABLE-2: the chevron before an agent folds its branch to the head. */
+.tree__agentrow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.tree__agentrow > .tree__agenthead {
+  flex: 1;
+  min-width: 0;
+}
+.tree__fold {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 24px;
+  margin-left: -6px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--colonia-radius-sm);
+  background: none;
+  color: var(--colonia-text-muted, inherit);
+  cursor: pointer;
+}
+.tree__fold:hover {
+  background: var(--colonia-fill);
+}
 .tree__code,
 .tree__routine {
   display: inline-grid;

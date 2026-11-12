@@ -36,6 +36,8 @@ export type Prefs = {
   channelOrderAt: string;
   projectOrder: string[];
   engineOrder: string[];
+  /** Inbox tree branches (project:agent) the owner folded to their head (LISTA-PLEGABLE-2). */
+  inboxFolded: string[];
   /** Rows each sidebar section shows before the rest folds into "N more" (0 = its minimum). */
   sidebarRows: SidebarRows;
   /** How the Inbox lists chats: project → agent → chats, by time, or by project. */
@@ -95,6 +97,7 @@ const DEFAULTS: Prefs = {
   channelOrderAt: "",
   projectOrder: [],
   engineOrder: [],
+  inboxFolded: [],
   sidebarRows: { channels: 0, projects: 0, engines: 0 },
   inboxView: "tree",
   inboxRoutines: true,
@@ -131,6 +134,9 @@ function load(): Prefs {
       channelOrderAt: typeof raw.channelOrderAt === "string" ? raw.channelOrderAt : "",
       projectOrder: Array.isArray(raw.projectOrder)
         ? [...new Set(raw.projectOrder.filter((id): id is string => typeof id === "string"))]
+        : [],
+      inboxFolded: Array.isArray(raw.inboxFolded)
+        ? [...new Set(raw.inboxFolded.filter((id): id is string => typeof id === "string"))]
         : [],
       engineOrder: Array.isArray(raw.engineOrder)
         ? [...new Set(raw.engineOrder.filter((id): id is string => typeof id === "string"))]

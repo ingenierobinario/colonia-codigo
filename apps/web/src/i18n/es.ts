@@ -477,6 +477,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "inbox.moreUnread": "{n} más · {unread} sin leer",
   "inbox.group.channel": "Canal",
   "inbox.showLess": "Ver menos",
+  "inbox.foldBranch": "Plegar",
+  "inbox.unfoldBranch": "Desplegar",
   "inbox.taskBundle.chats": "{n} chats",
   "inbox.taskBundle.open": "Ver los chats de la tarea",
   "inbox.taskBundle.close": "Ocultar los chats de la tarea",
