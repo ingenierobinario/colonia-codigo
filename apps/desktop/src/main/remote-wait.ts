@@ -99,6 +99,10 @@ export function waiting(remote: Remote, linked: boolean, es: boolean): Waiting {
 /** PUERTO-AJENO-1: another program holds the port Colonia needs on this computer, in plain words with both ways out. */
 export function portTakenText(p: PortProblem, es: boolean): string {
   const port = p.freePort ?? p.port + 1;
+  if (p.otherHome)
+    return es
+      ? `En el puerto ${p.port} responde otra instalación de Colonia, no la de esta carpeta. Ciérrala, o haz que esta use otro puerto: añade la línea COLONIA_PORT=${port} al archivo ${p.envFile} y vuelve a abrir Colonia.`
+      : `Another Colonia installation, not the one in this folder, answers on port ${p.port}. Close it, or have this one use another port: add the line COLONIA_PORT=${port} to the file ${p.envFile} and open Colonia again.`;
   return es
     ? `Otro programa${p.program ? ` (${p.program})` : ""} está usando el puerto ${p.port}, el que Colonia necesita en este equipo. ` +
         `Ciérralo y Colonia arrancará sola. O haz que Colonia use otro: añade la línea COLONIA_PORT=${port} al archivo ${p.envFile} y vuelve a abrir Colonia.`

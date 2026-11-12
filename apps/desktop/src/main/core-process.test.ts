@@ -196,7 +196,7 @@ test("a Colonia core that answers on the port (the service, started at the same 
   await using dir = tempDir("colonia-adopt-");
   const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
   const url = `http://127.0.0.1:${service.port}`;
-  const embedded = core.startEmbeddedCore({ ...opts, port: service.port, adoptMs: 5000, watchMs: 300 });
+  const embedded = core.startEmbeddedCore({ ...opts, port: service.port, adoptMs: 2000, watchMs: 300 });
   try {
     assert.equal(await core.waitUp(url, 8000), true);
     await new Promise((r) => setTimeout(r, 1500));
@@ -258,4 +258,77 @@ test("a core that dies young while the port is still free waits briefly for anot
     await embedded.stop();
     if (service) await close(service);
   }
+});
+
+test("a core older than v2.13.0 (named apx-core) still counts as a Colonia core", async () => {
+  const old = await serve((_req, res) => {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok: true, result: { name: "apx-core" } }));
+  });
+  try {
+    assert.equal(await core.isUp(`http://127.0.0.1:${old.port}`), true);
+  } finally {
+    await close(old);
+  }
+});
+
+test("a Colonia core of another folder on the port is not adopted, and the screen says so", {
+  timeout: 20_000,
+}, async () => {
+  const foreign = await serve((_req, res) => {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok: true, result: { name: "colonia-core", home_id: "someone-else" } }));
+  });
+  await using dir = tempDir("colonia-other-home-");
+  fs.writeFileSync(path.join(dir.path, "home-id"), "mine\n");
+  const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
+  const url = `http://127.0.0.1:${foreign.port}`;
+  const embedded = core.startEmbeddedCore({ ...opts, port: foreign.port, adoptMs: 300, watchMs: 300 });
+  try {
+    await until(() => core.portProblem(url) !== undefined);
+    assert.equal(core.portProblem(url)?.otherHome, true);
+    assert.equal(embedded.adopted(), false);
+    assert.match(waitingText(waiting({ where: "x", url, local: "log" }, true, true)), /otra instalación de Colonia/);
+    assert.match(waitingText(waiting({ where: "x", url, local: "log" }, true, false)), /Another Colonia installation/);
+    assert.equal(starts(dir.path), 0);
+  } finally {
+    await embedded.stop();
+    await close(foreign);
+  }
+});
+
+test("an adopted core that restarts (the service) is waited for, not raced", { timeout: 20_000 }, async () => {
+  await using dir = tempDir("colonia-service-restart-");
+  let service = await serve(colonia);
+  const port = service.port;
+  const { opts } = fixture(`${record}\nsetInterval(() => {}, 1000);`, dir.path);
+  const embedded = core.startEmbeddedCore({ ...opts, port, adoptMs: 4000, watchMs: 200 });
+  try {
+    await until(() => embedded.adopted());
+    await close(service);
+    await new Promise((r) => setTimeout(r, 1500));
+    service = await serve(colonia, port);
+    await new Promise((r) => setTimeout(r, 1000));
+    assert.equal(starts(dir.path), 0, "the app did not start its own core while the service restarted");
+    assert.equal(embedded.adopted(), true);
+  } finally {
+    await embedded.stop();
+    if (service.listening) await close(service);
+  }
+});
+
+test("applying core.env restarts the service when its core was adopted, or says how in plain words", async () => {
+  let stops = 0;
+  let restarts = 0;
+  const adopted = { adopted: () => true, stop: async () => void stops++ };
+  const ok = await core.restartForCoreEnv(adopted, "http://127.0.0.1:9", async () => ({ ok: !!++restarts }), false);
+  assert.deepEqual(ok, { restarted: "service" });
+  assert.equal(stops, 0, "the service's core is not ours to stop");
+  const failed = await core.restartForCoreEnv(adopted, "http://127.0.0.1:9", async () => ({ ok: false }), true);
+  assert.match("error" in failed ? failed.error : "", /colonia service restart/);
+  const own = { adopted: () => false, stop: async () => void stops++ };
+  assert.deepEqual(await core.restartForCoreEnv(own, "http://127.0.0.1:9", async () => ({ ok: false }), false, 100), {
+    restarted: "own",
+  });
+  assert.equal(stops, 1);
 });
