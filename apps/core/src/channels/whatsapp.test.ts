@@ -428,9 +428,8 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   const id = wa.ownerTo(ANA, "see you at nine");
   wa.ownerTo(ANA, "see you at nine", { id });
   await waitFor(async () => (await fromPhone()).length === 1, "kept in Ana's chat");
-  // A "1" is the owner's words, not an option pressed; history, groups and strangers are never kept.
+  // A "1" is the owner's words, not an option pressed; groups and strangers are never kept.
   wa.ownerTo(ANA, "1");
-  wa.ownerTo(ANA, "old words", { type: "append" });
   wa.ownerTo(ANA, "group words", { group: "120363000000000009@g.us" });
   wa.ownerTo({ phone: "5491100000099@s.whatsapp.net", name: "Zoe" }, "private words");
   await waitFor(async () => (await fromPhone()).length === 2, "the 1");
@@ -467,6 +466,15 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
     ),
     "no second chat under the private id",
   );
+
+  // PROPIOS-3: written on the phone while this device was offline, under the private id with a device suffix:
+  // WhatsApp hands it over as "append" on reconnecting. Kept once, in her chat, still no turn.
+  const late = wa.ownerTo({ ...ANA, lid: "200000000000077:0@lid" }, "while you were offline", { type: "append" });
+  wa.ownerTo({ ...ANA, lid: "200000000000077@lid" }, "while you were offline", { id: late, type: "append" });
+  await waitFor(async () => (await fromPhone()).length === 4, "the offline words kept");
+  await new Promise((r) => setTimeout(r, 150));
+  assert.deepEqual(await fromPhone(), ["see you at nine", "1", "under the private id", "while you were offline"]);
+  assert.equal(llm.calls.length, calls, "no turn of the agent");
 });
 
 test("groups, and the owner writing to a friend on their phone, never reach the agent", async () => {

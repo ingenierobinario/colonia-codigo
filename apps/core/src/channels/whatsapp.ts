@@ -336,8 +336,10 @@ export function whatsappAdapter(opts: {
         // A message the phone sent again on request is that request's answer, not news.
         const asked = m.key.id ? resending.get(m.key.id) : undefined;
         if (asked) asked(m);
-        else if (up.type === "notify")
-          void onMessage(m).catch((err) => log?.warn({ err: errorMessage(err, 200) }, "whatsapp message not handled"));
+        // PROPIOS-3: what the owner typed on the phone while this device was offline (a reconnection, the PC asleep)
+        // comes as "append", not "notify": still theirs to keep. Other people's backlog still starts no turn.
+        else if (up.type === "notify" || (up.type === "append" && m.key.fromMe))
+          void onMessage(m, up.type === "append").catch((err) => log?.warn({ err: errorMessage(err, 200) }, "whatsapp message not handled"));
       }
     }) as (arg: never) => void);
     s.ev.on("messages.update", ((ups: WaUpdate[]) => {
@@ -415,7 +417,7 @@ export function whatsappAdapter(opts: {
     retry.unref?.();
   }
 
-  async function onMessage(m: WaMessage): Promise<void> {
+  async function onMessage(m: WaMessage, offline = false): Promise<void> {
     if (!io || !me) return;
     const content = unwrap(m.message);
     const jid = normalJid(m.key.remoteJid);
@@ -431,15 +433,17 @@ export function whatsappAdapter(opts: {
     let own = false;
     if (m.key.fromMe) {
       // Our own send coming back (the agent's answer, the owner's "I'll write"): already in the chat.
-      if (ownSends.delete(m.key.id)) return;
+      // PROPIOS-3: the library's own copy of a send ("append") leaves the id for the echo that may still come.
+      if (offline ? ownSends.has(m.key.id) : ownSends.delete(m.key.id)) return;
       // "Message yourself" is the owner talking to the agent only when the line is the owner's own phone.
       if (isSelf(jid)) {
-        if (!opts.selfOwner) return;
+        // A backlog of orders to the agent is not run late (PROPIOS-3).
+        if (!opts.selfOwner || offline) return;
       } else {
         if (group || content.reactionMessage || !io.ownMessage) return;
         // The echo of our own send can come before sendMessage resolves and its id is remembered: wait, look again.
         await new Promise((r) => setTimeout(r, opts.echoWaitMs ?? ECHO_WAIT_MS));
-        if (ownSends.delete(m.key.id) || !io || !me) return;
+        if ((offline ? ownSends.has(m.key.id) : ownSends.delete(m.key.id)) || !io || !me) return;
         own = true;
       }
     }
