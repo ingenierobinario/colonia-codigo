@@ -3497,3 +3497,19 @@ reason no longer holds. They stay skipped there only because they fake `limactl`
 script binary, which Windows cannot start, and a spawnable fake would put a test-only path into the product's spawn
 sites. Linux and macOS CI keep running the driver logic. `RUNS_SCRIPTS` also gates tests that need a login shell
 with rc files. Running the five on Windows is a later change, one test at a time, each proven by a Windows run.
+
+<a id="d-190"></a>
+## D-190 — 2026-11-12 — Mis equipos: another laptop is used only after its owner approves it there, with keys never in plain text
+One Colonia can use the owner's other computers. Pairing completes only on the laptop: the installer asks for a
+one-use 6-digit code (10 minutes, locked after 5 failures) and the code is never sent, only an HMAC proof after the
+principal's Ed25519 signature is verified against the fingerprint pinned in the install command. The channel is
+X25519 + HKDF + AES-256-GCM with mutual signatures. Each agent session (per `thread_id`) asks for approval on the
+laptop; there is no environment, development-mode or other path that skips it, and the principal's frames carry no
+approval field. «Always allow this Colonia» is stored with a MAC keyed from the laptop's private key, so editing the
+file by hand grants nothing; it is revoked on the laptop. Keys live in the system store (DPAPI, Keychain, libsecret);
+the `file` backend is never used for them: without a store the key is sealed with scrypt + AES-256-GCM under a
+password of at least 8 characters, or pairing is refused before the code is spent. Both sides keep an audit
+(`team_audit` on the principal, `equipo-audit.jsonl` on the laptop). Disconnecting on either side revokes the key.
+Limits: the persistent tray icon exists on Windows only (macOS and Linux get a system notification); macOS has no
+installed-programs entry beyond its background service; if the principal is offline when the laptop disconnects,
+its record stays until the owner revokes it; whoever holds the unlocked key or the password can sign.

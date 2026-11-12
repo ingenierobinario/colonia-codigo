@@ -1197,6 +1197,27 @@ export const NEWS: readonly NewsEntry[] = [
       "create a contact or a chat for a stranger, and old history is not imported: only what is written from now on.",
     actions: [],
   },
+  {
+    id: "mis-equipos",
+    since: "2.30.0",
+    title: { en: "Use your other laptops", es: "Usa tus otros portátiles" },
+    about: {
+      en:
+        "Add a laptop from «My computers»: copy one command, run it there and confirm a code on that laptop. Your " +
+        "agents can then work on it, but only if you allow it and the laptop approves each session.",
+      es:
+        "Añade un portátil desde «Mis equipos»: copia un comando, ejecútalo allí y confirma un código en ese portátil. " +
+        "Tus agentes podrán trabajar en él, pero solo si tú lo permites y el portátil aprueba cada sesión.",
+    },
+    applies: () => true,
+    text:
+      "Mis equipos lets one Colonia use the owner's other computers. Pairing is done on the laptop itself: a one-use " +
+      "6-digit code (10 minutes, locked after 5 failures) is confirmed there. Agents use an equipo as a tool only if " +
+      "the owner enabled it for that equipo, and each agent session asks for approval on the laptop unless its owner " +
+      "chose «always allow this Colonia» there (signed with the laptop's own key). Keys are stored in the system " +
+      "keychain or under a password, never in plain text. Both sides keep an audit of who connected and what ran.",
+    actions: [],
+  },
 ];
 
 /** The catalog integrations among the owner's global MCP servers. */
