@@ -699,6 +699,25 @@ export interface TasksTable {
   proposed: Generated<number>;
 }
 
+export interface TeamAuditTable {
+  n: Generated<number>;
+  at: string;
+  computer_id: string | null;
+  kind: string;
+  detail: string;
+}
+
+export interface TeamComputersTable {
+  id: string;
+  name: string;
+  platform: string;
+  public_key: string;
+  agent_access: Generated<number>;
+  created_at: string;
+  last_seen_at: string | null;
+  revoked_at: string | null;
+}
+
 export interface ThreadsTable {
   id: string;
   kind: string;
@@ -784,5 +803,7 @@ export interface Database {
   task_events: TaskEventsTable;
   task_uploads: TaskUploadsTable;
   tasks: TasksTable;
+  team_audit: TeamAuditTable;
+  team_computers: TeamComputersTable;
   threads: ThreadsTable;
 }

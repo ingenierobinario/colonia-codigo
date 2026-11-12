@@ -109,6 +109,11 @@ import { internalCaller } from "./rpc/internal.ts";
 import { createRouter, type Dispatch } from "./rpc/router.ts";
 import { useLocalModel } from "./rpc/transcription.ts";
 import { createSecrets, type Secrets } from "./secrets.ts";
+import { createEquipoAgent } from "./equipos/agent.ts";
+import { createApproval } from "./equipos/approval.ts";
+import { type Notify, systemNotify } from "./equipos/notify.ts";
+import { createPrincipal } from "./equipos/principal.ts";
+import { EQUIPO_CAP } from "./tools/equipos.ts";
 import {
   builtinTools,
   coreHandlers,
@@ -161,6 +166,10 @@ export type CoreOptions = {
   channelAdapters?: Record<string, AdapterFactory>;
   /** Where secret values live; tests pass a store with a fake keyring. */
   secrets?: Secrets;
+  /** Cómo avisa un equipo emparejado a su dueño (los tests no lanzan notificaciones del sistema). */
+  equipoNotify?: Notify;
+  /** Un equipo emparejado no llama al principal hasta que se arranque a mano (los tests). */
+  equipoOff?: boolean;
   /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
   tailscale?: TailscaleRun;
   ngrok?: NgrokStart;
@@ -596,7 +605,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     ...(opts.runTimers ? { runTimers: opts.runTimers } : {}),
     mcpTools: mcp.toolsFor,
     mcpServers: mcp.serversFor,
-    hasCap: (cap) => Boolean(broker.withCap(cap)) || (cap === BROWSER_CAP && Boolean(headless?.available())),
+    hasCap: (cap) =>
+      (cap === EQUIPO_CAP && store.team.list().some((c) => c.agent_access && principal.connected(c.id))) ||
+      Boolean(broker.withCap(cap)) || (cap === BROWSER_CAP && Boolean(headless?.available())),
     desktopLinked: () =>
       broker.list().some((n) => n.caps.includes(BROWSER_CAP) && !n.caps.includes(NO_COMPUTER_CAP)),
     afterRun: (run) => {
@@ -704,9 +715,20 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       target: () => prepareLocalTarget({ home: config.home, port: listening, home_id: identity.home_id }, config.token),
     } satisfies DesktopInstallOptions);
 
+  const equipoNotify = opts.equipoNotify ?? systemNotify();
+  const principal = createPrincipal({
+    store,
+    secrets,
+    log,
+    addresses: () => reachableAt(config.host, listening, config.publicUrl),
+  });
+  const approval = createApproval({ home: config.home, notify: equipoNotify });
+  const equipoAgent = createEquipoAgent({ home: config.home, secrets, log, approval, notify: equipoNotify });
+
   const dispatch = createRouter(
     coreHandlers({
       vm,
+      equipos: { principal, agent: equipoAgent, approval },
       internal,
       permissions,
       addresses: () => reachableAt(config.host, listening, config.publicUrl),
@@ -780,8 +802,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   if (cleanup) log.info(cleanup, "captured memory cleanup: retired noisy automatic notes");
   memoryMaintenance.start();
 
-  const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm });
+  const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm, equipos: principal });
   listening = transport.port;
+  if (!opts.equipoOff) equipoAgent.start();
   // Agents' shells and harnesses reach this core with `colonia`, whatever the owner's PATH holds.
   try {
     useColoniaCommand(writeColoniaCommand(config.home, listening, thisRunner()));
@@ -843,6 +866,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     telemetry,
     computer: vm,
     async close() {
+      equipoAgent.stop();
+      principal.close();
       awake.close();
       sleep?.close();
       clearInterval(awakeTick);

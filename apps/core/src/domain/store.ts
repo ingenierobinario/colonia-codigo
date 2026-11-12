@@ -8,6 +8,7 @@ import { auxCallsRepo } from "./aux-calls.ts";
 import { channelsRepo } from "./channels.ts";
 import { clientsRepo } from "./clients.ts";
 import { devicesRepo } from "./devices.ts";
+import { teamRepo } from "./team-computers.ts";
 import { extensionsRepo } from "./extensions.ts";
 import { flowGraphRunsRepo } from "./flow-graph-runs.ts";
 import { flowGraphsRepo } from "./flow-graphs.ts";
@@ -88,6 +89,7 @@ export function createStore(db: Db, bus: Bus) {
     extensions: extensionsRepo(q),
     clients: clientsRepo(q),
     devices: devicesRepo(q),
+    team: teamRepo(q),
     nudges: nudgesRepo(q),
     settings: settingsRepo(q),
     harnessSessions: harnessSessionsRepo(q),

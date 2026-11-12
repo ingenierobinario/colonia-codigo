@@ -7,6 +7,7 @@ import { asanaMethods } from "./asana-methods.ts";
 import { browserMethods } from "./browser.ts";
 import { desktopInstallMethods } from "./desktop-install.ts";
 import { deviceMethods } from "./device-methods.ts";
+import { equiposMethods } from "./equipos-methods.ts";
 import { emailSignatureMethods } from "./email-signatures.ts";
 import { engineUsageMethods } from "./engine-usage.ts";
 import { environmentMethods } from "./environment-methods.ts";
@@ -102,6 +103,7 @@ export const methods = {
   ...artifactMethods,
   ...asanaMethods,
   ...deviceMethods,
+  ...equiposMethods,
   ...environmentMethods,
   ...flowMethods,
   ...tableMethods,

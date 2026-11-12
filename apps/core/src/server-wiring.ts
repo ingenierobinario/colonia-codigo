@@ -43,6 +43,8 @@ import { computerHandlers } from "./rpc/computer.ts";
 import type { CallContext } from "./rpc/context.ts";
 import { desktopInstallHandlers } from "./rpc/desktop-install.ts";
 import { deviceHandlers } from "./rpc/devices.ts";
+import { type EquiposDeps, equiposHandlers } from "./rpc/equipos.ts";
+import type { Principal } from "./equipos/principal.ts";
 import { emailSignatureHandlers } from "./rpc/email-signatures.ts";
 import { embeddingHandlers } from "./rpc/embeddings.ts";
 import { environmentHandlers } from "./rpc/environments.ts";
@@ -96,6 +98,7 @@ import { memoryTools } from "./tools/memory.ts";
 import { messageTools } from "./tools/message.ts";
 import { ownerTools } from "./tools/owner.ts";
 import { phoneTools } from "./tools/phone.ts";
+import { equipoTools } from "./tools/equipos.ts";
 import { requestTools } from "./tools/requests.ts";
 import { routineTools } from "./tools/routines.ts";
 import { settingsTools } from "./tools/settings.ts";
@@ -178,6 +181,7 @@ export function builtinTools(
     ...memoryTools(store),
     ...mediaTools(store, home, vm),
     ...phoneTools(),
+    ...equipoTools(),
     ...computerTools(store),
     ...taskTools(store, home),
     ...videoTools(findProgram("yt-dlp")),
@@ -249,6 +253,8 @@ type HandlerDeps = {
   panel: () => string | undefined;
   /** The addresses a paired device may reach this core on. */
   addresses: () => string[];
+  /** Los portátiles emparejados: el lado principal, el lado equipo y su puerta de aprobación. */
+  equipos: EquiposDeps;
   /** Who may reach this core (this computer, the network, the tailnet). */
   access: Parameters<typeof accessHandlers>[0];
   webhooks: Parameters<typeof webhookHandlers>[0];
@@ -304,6 +310,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),
+    ...equiposHandlers(d.store, d.equipos),
     ...accessHandlers(d.access),
     ...webhookHandlers(d.webhooks, d.publicCredentials),
     ...phoneHandlers(d.broker, d.store, d.app.home),
@@ -471,6 +478,8 @@ export async function listen(
     broker: NodeBroker;
     bus: Bus;
     vm?: Computer | undefined;
+    /** Acepta las conexiones de los equipos emparejados en /equipo. */
+    equipos?: Pick<Principal, "path" | "upgrade"> | undefined;
   },
 ) {
   const allowedOrigins = originsFor(`http://${config.host}:${config.port || 7440}`, config.allowedOrigins);
@@ -497,6 +506,7 @@ export async function listen(
   const display = d.vm ? attachVmDisplay(server, d.vm, gate) : undefined;
   const wss = attachWs(server, {
     streamPath: d.vm ? "/vm-display" : undefined,
+    extraPath: d.equipos?.path,
     dispatch: d.dispatch,
     identity: d.identity,
     log: d.log,
@@ -506,6 +516,11 @@ export async function listen(
     deviceOf: (token) => d.store.devices.byToken(token),
     clientOf: (token) => d.store.clients.byToken(token),
   });
+  const team = d.equipos;
+  if (team)
+    server.on("upgrade", (req, socket, head) => {
+      if (new URL(req.url ?? "/", "http://core").pathname === team.path) team.upgrade(req, socket, head);
+    });
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(config.port, config.host, resolve);
