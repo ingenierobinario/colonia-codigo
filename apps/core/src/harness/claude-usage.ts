@@ -1,73 +1,54 @@
-import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import type { EngineUsageWindow } from "@colonia/protocol";
 import { z } from "zod";
-import { stopTree } from "../processes.ts";
-import { toSpawn } from "../programs.ts";
-import { commandEnv } from "./env.ts";
 
-type Deadline = (ms: number, callback: () => void) => () => void;
-type Launch = (command: string, args: string[], cwd: string, env: NodeJS.ProcessEnv) => ChildProcessWithoutNullStreams;
+// USO-CLAUDE-2: the limits come from the account's usage endpoint, the one Claude Code's own /usage reads,
+// with the login Claude Code already keeps. Before this, Colonia ran `claude -p /usage` and parsed an
+// undocumented stream frame: CLI updates kept breaking it (from 2.1.31x `-p /usage` reaches the model,
+// spends tokens and never answers), so «Límites de cuenta no disponibles» came back after every fix.
+const USAGE_URL = "https://api.anthropic.com/api/oauth/usage";
+
 type Options = {
-  launch?: Launch;
   env?: NodeJS.ProcessEnv;
-  runTimers?: { after: Deadline };
+  fetch?: typeof fetch;
+  /** The stored login as JSON text, or undefined when there is none. */
+  credentials?: () => Promise<string | undefined>;
+  now?: () => number;
   timeoutMs?: number;
-  maxBytes?: number;
 };
-const after: Deadline = (ms, callback) => {
-  const timer = setTimeout(callback, ms);
-  return () => clearTimeout(timer);
-};
-const Report = z.object({
-  rate_limits: z.object({
-    limits: z.array(
-      z.object({
-        kind: z.string(),
-        percent: z.number().min(0).max(100),
-        resets_at: z.iso.datetime({ offset: true }).nullable(),
-      }),
-    ),
+
+const Credentials = z.object({
+  claudeAiOauth: z.object({
+    accessToken: z.string().min(1),
+    expiresAt: z.number().optional(),
   }),
 });
 
-export function parseClaudeUsage(output: string): EngineUsageWindow[] | undefined {
-  let report: z.infer<typeof Report> | undefined;
-  let success = false;
-  try {
-    for (const line of output.split("\n").filter((line) => line.trim())) {
-      const frame = JSON.parse(line);
-      if (frame.type === "assistant" && frame.usage_report) report = Report.parse(frame.usage_report);
-      if (frame.type === "result") {
-        success = frame.subtype === "success" && frame.num_turns === 0 && frame.total_cost_usd === 0;
-        const usage = frame.usage;
-        if (
-          !usage ||
-          ["input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"].some(
-            (key) => usage[key] !== 0,
-          )
-        )
-          return undefined;
-      }
-    }
-  } catch {
-    return undefined;
-  }
-  if (!success || !report) return undefined;
+const Window = z
+  .object({
+    utilization: z.number().min(0).max(100),
+    resets_at: z.iso.datetime({ offset: true }).nullable().optional(),
+  })
+  .nullable()
+  .optional();
+const Report = z.object({ five_hour: Window, seven_day: Window });
+
+export function parseClaudeUsage(body: unknown): EngineUsageWindow[] | undefined {
+  const report = Report.safeParse(body);
+  if (!report.success) return undefined;
   const windows: EngineUsageWindow[] = [];
-  for (const [kind, id, minutes] of [
-    ["session", "primary", 300],
-    ["weekly_all", "secondary", 10080],
+  for (const [key, id, minutes] of [
+    ["five_hour", "primary", 300],
+    ["seven_day", "secondary", 10080],
   ] as const) {
-    const limits = report.rate_limits.limits.filter((limit) => limit.kind === kind);
-    if (limits.length > 1) return undefined;
-    const limit = limits[0];
+    const limit = report.data[key];
     if (limit)
       windows.push({
         id,
-        used_percent: limit.percent,
+        used_percent: limit.utilization,
         window_minutes: minutes,
         ...(limit.resets_at ? { resets_at: new Date(limit.resets_at).toISOString() } : {}),
       });
@@ -75,105 +56,51 @@ export function parseClaudeUsage(output: string): EngineUsageWindow[] | undefine
   return windows.length ? windows : undefined;
 }
 
-function capture(command: string, args: string[], cwd: string, options: Options): Promise<string | undefined> {
+/** Where Claude Code keeps its login: a file on Windows and Linux, the login keychain on macOS. */
+async function storedCredentials(env: NodeJS.ProcessEnv): Promise<string | undefined> {
+  const dir = env.CLAUDE_CONFIG_DIR || join(homedir(), ".claude");
+  const file = await readFile(join(dir, ".credentials.json"), "utf8").catch(() => undefined);
+  if (file || process.platform !== "darwin") return file;
   return new Promise((resolve) => {
-    const launch: Launch =
-      options.launch ??
-      ((command, args, cwd, env) => {
-        // An npm-installed CLI is a .cmd shim on Windows: what it starts, with these arguments untouched by a shell.
-        const start = toSpawn(command, args);
-        return spawn(start.file, start.args, {
-          cwd,
-          env,
-          stdio: ["pipe", "pipe", "pipe"],
-          windowsHide: true,
-          detached: process.platform !== "win32",
-        });
-      });
-    let child: ChildProcessWithoutNullStreams;
-    try {
-      child = launch(command, args, cwd, options.env ?? commandEnv());
-    } catch {
-      // A shim nothing can be started from: no usage, like a CLI that does not answer.
-      resolve(undefined);
-      return;
-    }
-    let output = "";
-    let bytes = 0;
-    let stopped = false;
-    let stopping: Promise<void> | undefined;
-    const cleanup = () =>
-      (stopping ??= (child.pid ? stopTree(child.pid, { graceMs: 0 }) : Promise.resolve()).finally(() => {
-        child.stdin.destroy();
-        child.stdout.destroy();
-        child.stderr.destroy();
-      }));
-    const stop = () => {
-      stopped = true;
-      void cleanup();
-    };
-    // USO-CLAUDE-1: a cold start of `claude -p /usage` on Windows takes ~12 s (3-4 s once warm); 8 s hid the limits.
-    const cancel = (options.runTimers?.after ?? after)(options.timeoutMs ?? 20_000, stop);
-    child.on("error", stop);
-    child.stdin.on("error", stop);
-    child.stdin.end();
-    child.on("close", async (code) => {
-      cancel();
-      await cleanup();
-      resolve(!stopped && code === 0 ? output : undefined);
-    });
-    const accept = (chunk: Buffer) => {
-      bytes += chunk.length;
-      if (bytes > (options.maxBytes ?? 256 * 1024)) stop();
-    };
-    child.stderr.on("data", accept);
-    child.stdout.setEncoding("utf8");
-    child.stdout.on("data", (chunk: string) => {
-      accept(Buffer.from(chunk));
-      if (!stopped) output += chunk;
-    });
+    execFile(
+      "security",
+      ["find-generic-password", "-s", "Claude Code-credentials", "-w"],
+      { timeout: 5_000, windowsHide: true },
+      (error, stdout) => resolve(error ? undefined : stdout.trim() || undefined),
+    );
   });
 }
 
-/** The CLI owns authentication; /usage is local command dispatch, never a model prompt. */
+/** `command` is the installed CLI; only its login is used, nothing is started. */
 export async function readClaudeUsage(
-  command: string,
+  _command: string,
   options: Options = {},
 ): Promise<EngineUsageWindow[] | undefined> {
-  const cwd = await mkdtemp(join(tmpdir(), "colonia-usage-"));
+  const env = options.env ?? process.env;
+  let token: string;
   try {
-    const version = await capture(command, ["--version"], cwd, {
-      ...options,
-      timeoutMs: Math.min(options.timeoutMs ?? 3_000, 3_000),
+    const text = await (options.credentials ?? (() => storedCredentials(env)))();
+    if (!text) return undefined;
+    const login = Credentials.parse(JSON.parse(text)).claudeAiOauth;
+    // An expired login is renewed by Claude Code itself the next time it runs; refreshing it here would
+    // rotate the token under the CLI's feet.
+    if (login.expiresAt !== undefined && login.expiresAt <= (options.now?.() ?? Date.now())) return undefined;
+    token = login.accessToken;
+  } catch {
+    return undefined;
+  }
+  try {
+    const response = await (options.fetch ?? fetch)(USAGE_URL, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "anthropic-beta": "oauth-2025-04-20",
+        accept: "application/json",
+      },
+      signal: AbortSignal.timeout(options.timeoutMs ?? 10_000),
     });
-    const parts = version?.match(/^(\d+)\.(\d+)\.(\d+)\s+\(Claude Code\)/);
-    if (!parts) return undefined;
-    const [major, minor, patch] = parts.slice(1).map(Number);
-    if (major !== 2 || minor === undefined || patch === undefined || minor < 1 || (minor === 1 && patch < 273))
-      return undefined;
-    const output = await capture(
-      command,
-      [
-        "-p",
-        "/usage",
-        "--safe-mode",
-        "--no-session-persistence",
-        "--max-turns",
-        "0",
-        "--output-format",
-        "stream-json",
-        "--verbose",
-        "--tools",
-        "",
-        "--strict-mcp-config",
-        "--settings",
-        '{"disableAllHooks":true,"remoteControlAtStartup":false}',
-      ],
-      cwd,
-      options,
-    );
-    return output ? parseClaudeUsage(output) : undefined;
-  } finally {
-    await rm(cwd, { recursive: true, force: true });
+    if (!response.ok) return undefined;
+    return parseClaudeUsage(await response.json());
+  } catch {
+    return undefined;
   }
 }
