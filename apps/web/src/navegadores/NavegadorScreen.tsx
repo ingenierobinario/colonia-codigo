@@ -1,9 +1,9 @@
 // NAVEGADORES-1: one browser profile inside Colonia, like the browser itself: its tabs (new, close), back, forward,
 // reload and the address. Its sign-ins persist in its own jar (profile nav:<id>), apart from the real browser's.
-import { BrowserTabs, EmptyState, IconButton, Icons } from "@colonia/ui";
+import { BrowserTabs, EmptyState, Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { hostPath } from "../common/format.ts";
-import { browserClose, browserHistory, loadTabs } from "../data/actions.ts";
+import { browserClose, loadTabs } from "../data/actions.ts";
 import { BROWSER_NAMES, navProfile, useNavegadores } from "../data/navegadores.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -71,14 +71,8 @@ export function NavegadorScreen() {
         />
       </div>
       <div className="navegador__bar">
-        <IconButton
-          size="sm"
-          label={t("navegadores.forward")}
-          icon={<Icons.ArrowRight size={15} />}
-          disabled={showNew}
-          onClick={() => activeId && void browserHistory(activeId, "forward")}
-        />
         <BrowserToolbar
+          forward
           key={showNew ? "new" : activeId}
           tab={showNew ? undefined : active}
           profile={profile}

@@ -399,12 +399,28 @@ function patchThread(threads: Record<string, Thread>, id: string, patch: Partial
 }
 
 /** Operator navigation in the address bar. Only http(s). */
+// PULIDO-236-1. Colonia's own address never loads in a tab (the core refuses it with a 400 in English). Said here
+// first, in the owner's words, so no refused request reaches the console; the core's refusal is still translated.
+const LOOPBACK = new Set(["127.0.0.1", "localhost", "[::1]", "0.0.0.0"]);
+export function isColoniaItself(url: string, here: { hostname: string; port: string } = window.location): boolean {
+  try {
+    const u = new URL(url);
+    const port = (x: { port: string }) => x.port || "80";
+    return LOOPBACK.has(u.hostname) && LOOPBACK.has(here.hostname) && port(u) === port(here);
+  } catch {
+    return false;
+  }
+}
+const browserErr = (key: "error.navigate" | "error.openTab", e: unknown) =>
+  notify(errText(e).includes("that is Colonia itself") ? t("browser.isColonia") : t(key, { error: errText(e) }));
+
 export async function browserNavigate(tab: string, url: string): Promise<void> {
+  if (isColoniaItself(url)) return notify(t("browser.isColonia"));
   try {
     await client.call("browser.navigate", { tab, url, by: "operator" });
     void loadTabs();
   } catch (e) {
-    notify(t("error.navigate", { error: errText(e) }));
+    browserErr("error.navigate", e);
   }
 }
 
@@ -418,12 +434,16 @@ export async function browserHistory(tab: string, action: "back" | "forward" | "
 }
 
 export async function browserOpen(url: string, profile?: `nav:${string}`): Promise<string | undefined> {
+  if (isColoniaItself(url)) {
+    notify(t("browser.isColonia"));
+    return undefined;
+  }
   try {
     const info = await client.call("browser.open", { url, by: "operator", ...(profile ? { profile } : {}) });
     data.set((s) => ({ tabs: [...s.tabs.filter((t) => t.tab !== info.tab), info] }));
     return info.tab;
   } catch (e) {
-    notify(t("error.openTab", { error: errText(e) }));
+    browserErr("error.openTab", e);
     return undefined;
   }
 }

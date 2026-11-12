@@ -26,11 +26,14 @@ export function BrowserToolbar({
   tab,
   onOpened,
   profile,
+  forward,
 }: {
   tab: TabInfo | undefined;
   onOpened: (tab?: string) => void;
   /** NAVEGADORES-1: a new tab opens in this browser profile, not the agents' one. */
   profile?: `nav:${string}`;
+  /** PULIDO-236-1: a forward button, between back and reload as in any browser (the Navegadores view has it). */
+  forward?: boolean;
 }) {
   const t = useT();
   const [editing, setEditing] = useState<string>();
@@ -64,6 +67,15 @@ export function BrowserToolbar({
         disabled={!tab}
         onClick={() => tab && void browserHistory(tab.tab, "back")}
       />
+      {forward && (
+        <IconButton
+          size="sm"
+          label={t("navegadores.forward")}
+          icon={<Icons.ArrowRight size={15} />}
+          disabled={!tab}
+          onClick={() => tab && void browserHistory(tab.tab, "forward")}
+        />
+      )}
       <IconButton
         size="sm"
         label={t("browser.reload")}

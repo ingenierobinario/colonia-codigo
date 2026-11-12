@@ -16,7 +16,7 @@ import { threadMenu } from "../inbox/threadActions.tsx";
 import { ChannelFace, NewTask, TaskStatus } from "../lazy.ts";
 import { PanelSwitcher } from "../panel/PanelSwitcher.tsx";
 import { go, useNav } from "../shell/nav.ts";
-import { ClearChatDialog } from "./ClearChat.tsx";
+import { ClearChatDialog, useClearing } from "./ClearChat.tsx";
 
 const POLICIES: WritePolicy[] = ["ask", "auto", "read-only"];
 
@@ -67,7 +67,7 @@ export function ChatHeader({
   const project = projects.find((p) => p.id === thread.project_id);
   const tools = useNav((s) => s.tools);
   const [tasking, setTasking] = useState(false);
-  const [clearing, setClearing] = useState(false);
+  const [clearing, setClearing] = useClearing(thread.id);
   const sub = thread.kind === "a2a" || thread.parent_id != null;
   // An engine session is the engine itself: its name and icon, not the agent that owns the run.
   const engine = useEngineLabel(thread.engine);

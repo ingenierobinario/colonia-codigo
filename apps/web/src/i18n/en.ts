@@ -861,6 +861,7 @@ export const en = {
   "browser.noTabs": "No open tabs",
   "browser.noTabsBody": "When an agent browses, you see it here live and can take control.",
   "browser.badUrl": "Type an http or https address.",
+  "browser.isColonia": "That address is Colonia itself: it cannot open inside a tab.",
   "browser.back": "Back",
   "browser.reload": "Reload",
   "browser.address": "Address",

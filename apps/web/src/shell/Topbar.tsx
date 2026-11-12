@@ -3,6 +3,7 @@ import { Fragment, Suspense } from "react";
 import logoUrl from "../assets/logo.png";
 import { useChannels } from "../data/channels.ts";
 import { blobOf, findProject, projectName, secretary } from "../data/identity.ts";
+import { BROWSER_NAMES, useNavegadores } from "../data/navegadores.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useWebApps } from "../data/webapps.ts";
@@ -31,6 +32,13 @@ function useCrumbs(): string[] {
   const channelLabel = useChannels((s) => s.channels.find((c) => c.id === channelId)?.label);
   const engineId = useNav((s) => s.engineId);
   const engineLabel = useData((s) => s.engines.find((e) => e.id === engineId)?.label);
+  const navegadorId = useNav((s) => s.navegadorId);
+  const navegador = useNavegadores((s) => s.navegadores.find((n) => n.id === navegadorId));
+  // PULIDO-236-1: Navegadores / Chrome / Trabajo, not the Inbox it fell through to.
+  if (view === "navegador")
+    return navegador
+      ? [t("navegadores.title"), BROWSER_NAMES[navegador.browser], navegador.name]
+      : [t("navegadores.title")];
   if (view === "app") return [t("nav.apps"), app?.title ?? t("common.app")];
   if (view === "webapp") return [t("webapp.title"), webApp ?? t("common.app")];
   if (view === "tasks") return [t("nav.tasks")];
