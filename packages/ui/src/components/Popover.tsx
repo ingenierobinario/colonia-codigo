@@ -40,7 +40,9 @@ export function Popover({
     <BasePopover.Root open={open} defaultOpen={defaultOpen} onOpenChange={(o) => onOpenChange?.(o)}>
       <BasePopover.Trigger render={trigger} openOnHover={openOnHover} delay={150} />
       <BasePopover.Portal container={portalRef}>
-        <BasePopover.Positioner side={side} align={align} sideOffset={8}>
+        {/* POPOVER-MARGEN-1: 12 px a cada borde, a juego con el max-width calc(100vw - 24px) de .colonia-popover
+            (por defecto se pegaba a 5 px en móvil). */}
+        <BasePopover.Positioner side={side} align={align} sideOffset={8} collisionPadding={12}>
           <BasePopover.Popup className={cx("colonia-popover", className)} style={{ width }} aria-label={label}>
             {children}
           </BasePopover.Popup>
