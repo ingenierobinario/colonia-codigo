@@ -14,6 +14,7 @@ import {
   ImageDefaults,
   MemorySettings,
   ModelChoice,
+  Navegador,
   NoticePrefs,
   Organization,
   ProviderInfo,
@@ -184,6 +185,8 @@ export const SETTINGS = {
   channels: entry(listOf(Channel), []),
   /** WEBAPP-1: the web apps pinned in the sidebar. */
   webapps: entry(listOf(WebApp), []),
+  /** NAVEGADORES-1: the owner's browser profiles under Navegadores. */
+  navegadores: entry(listOf(Navegador), []),
   /**
    * The restricted public ingress address the owner chose (public-tunnel.ts), applied again at every start, and the
    * last address ngrok gave (a new one is pointed out to the owner).

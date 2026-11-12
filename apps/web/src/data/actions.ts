@@ -417,9 +417,9 @@ export async function browserHistory(tab: string, action: "back" | "forward" | "
   }
 }
 
-export async function browserOpen(url: string): Promise<string | undefined> {
+export async function browserOpen(url: string, profile?: `nav:${string}`): Promise<string | undefined> {
   try {
-    const info = await client.call("browser.open", { url, by: "operator" });
+    const info = await client.call("browser.open", { url, by: "operator", ...(profile ? { profile } : {}) });
     data.set((s) => ({ tabs: [...s.tabs.filter((t) => t.tab !== info.tab), info] }));
     return info.tab;
   } catch (e) {

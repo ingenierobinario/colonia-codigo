@@ -42,8 +42,12 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
   // WEBAPP-3: a web app the owner pinned in the sidebar keeps its own sign-in (profile app:<id>). Agents may open it
   // there, signed in as the owner left it, and drive those tabs as their own.
   const webApp = (id: unknown) => store.settings.read("webapps").find((w) => w.id === id);
+  // NAVEGADORES-1: the owner's browsers under Navegadores (profile nav:<id>) are theirs to share with agents too.
+  const navegador = (id: unknown) => store.settings.read("navegadores").find((n) => n.id === id);
   const mine = (agent: AgentRecord, profile: string) =>
-    profile === profileFor(agent) || (profile.startsWith("app:") && Boolean(webApp(profile.slice(4))));
+    profile === profileFor(agent) ||
+    (profile.startsWith("app:") && Boolean(webApp(profile.slice(4)))) ||
+    (profile.startsWith("nav:") && Boolean(navegador(profile.slice(4))));
   /** The model looks at the tab itself: the tree alone misses images, charts and slides. */
   const look = async (ctx: ToolContext, tab: string) => {
     if (!ctx.see) return;
@@ -111,7 +115,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_open",
       description:
-        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it. Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
+        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
       args: z.object({
         url: z.string().optional().describe("http(s) URL; optional with `app`"),
         app: z
@@ -119,6 +123,11 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
           .max(64)
           .optional()
           .describe("id of one of the owner's web apps (list_apps), to use its sign-in"),
+        navegador: z
+          .string()
+          .max(64)
+          .optional()
+          .describe("id of one of the owner's browsers (browser_tabs), to use its sign-in"),
         tab: tabArg.optional().describe("tab id to load it in"),
         new_tab: z.boolean().optional().describe("open another tab instead of reusing this chat's"),
       }),
@@ -132,7 +141,10 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         if (a.app !== undefined && !app) throw new Error(`no web app ${a.app}; list_apps gives their ids`);
         const url = a.url ?? app?.url;
         if (!url) throw new Error("give a url, or the id of a web app as app");
-        const profile = app ? `app:${app.id}` : profileFor(ctx.agent);
+        const nav = a.navegador === undefined ? undefined : navegador(a.navegador);
+        if (a.navegador !== undefined && !nav)
+          throw new Error(`no browser ${a.navegador}; browser_tabs gives their ids`);
+        const profile = app ? `app:${app.id}` : nav ? `nav:${nav.id}` : profileFor(ctx.agent);
         const reuse = a.tab ? await own(ctx, a.tab) : a.new_tab ? undefined : await chatTab(ctx, profile);
         if (reuse) {
           const r = await ctx.call("browser.navigate", { tab: reuse, url, by: ctx.agent.id });
@@ -162,6 +174,29 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         const r = await ctx.call("browser.snapshot", { tab, max_chars: 12_000 });
         await look(ctx, tab);
         return untrusted("web_snapshot", { tab, ...(r.document ? { document: r.document } : {}) }, cap(r.tree));
+      },
+    }),
+    defineTool({
+      needsCap: BROWSER_CAP,
+      name: "browser_tabs",
+      description:
+        "The owner's browsers in Colonia (Navegadores: Chrome, Edge… each profile signed in on its own) and the tabs open in each. Read one with browser_text; open or move with browser_open (navegador, tab).",
+      args: z.object({}),
+      effect: "none",
+      deadlineMs: 15_000,
+      title: () => "Looked at the open tabs",
+      async run(_a, ctx) {
+        const navs = store.settings.read("navegadores");
+        if (!navs.length) return "The owner has added no browsers under Navegadores.";
+        const tabs = (await ctx.call("browser.tabs", {}).catch(() => ({ tabs: [] as TabInfo[] }))).tabs;
+        return navs
+          .map((n) => {
+            const mineTabs = tabs.filter((t) => t.profile === `nav:${n.id}`);
+            const head = `navegador ${n.id} · ${n.browser} · ${n.name}`;
+            const lines = mineTabs.map((t) => `  tab ${t.tab} · ${t.title} · ${t.url}`);
+            return [head, ...(lines.length ? lines : ["  (no tabs open)"])].join("\n");
+          })
+          .join("\n");
       },
     }),
     defineTool({

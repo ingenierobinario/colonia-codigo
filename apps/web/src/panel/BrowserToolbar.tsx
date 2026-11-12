@@ -22,7 +22,16 @@ function normalizeUrl(raw: string): string | undefined {
 }
 
 /** Back · reload · address pill · who drives the tab. `tab` undefined = typing the URL of a new tab. */
-export function BrowserToolbar({ tab, onOpened }: { tab: TabInfo | undefined; onOpened: () => void }) {
+export function BrowserToolbar({
+  tab,
+  onOpened,
+  profile,
+}: {
+  tab: TabInfo | undefined;
+  onOpened: (tab?: string) => void;
+  /** NAVEGADORES-1: a new tab opens in this browser profile, not the agents' one. */
+  profile?: `nav:${string}`;
+}) {
   const t = useT();
   const [editing, setEditing] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -34,9 +43,9 @@ export function BrowserToolbar({ tab, onOpened }: { tab: TabInfo | undefined; on
     if (!url) return notify(tr("browser.badUrl"));
     setEditing(undefined);
     if (tab) return void browserNavigate(tab.tab, url);
-    const id = await browserOpen(url);
-    if (id) nav.set({ browserTab: id });
-    onOpened();
+    const id = await browserOpen(url, profile);
+    if (id && !profile) nav.set({ browserTab: id });
+    onOpened(id);
   };
   const control = (mode: "user" | "idle") => async () => {
     if (!tab) return;

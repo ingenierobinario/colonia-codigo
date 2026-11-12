@@ -12,7 +12,8 @@ export const useWebApps = <T>(select: (s: State) => T): T => useSlice(store, sel
 
 /** The tab profile of a web app: its sign-in lives there, apart from the agents' browser. */
 export const webAppProfile = (id: string) => `app:${id}` as const;
-export const isWebAppTab = (tab: TabInfo) => tab.profile.startsWith("app:");
+// NAVEGADORES-1: a Navegadores profile's tabs (nav:) live in their own view too, not in the side browser.
+export const isWebAppTab = (tab: TabInfo) => tab.profile.startsWith("app:") || tab.profile.startsWith("nav:");
 
 export async function loadWebApps(): Promise<void> {
   try {
