@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.0": {
+    en: [
+      "New Browsers section: profiles and a built-in browser with tabs, also usable by your agents.",
+      "The Externals «+» no longer offers Gmail, Outlook, Slack or Teams presets.",
+    ],
+    es: [
+      "Sección Navegadores nueva: perfiles y navegador integrado con pestañas, también para tus agentes.",
+      "El «+» de Externas ya no ofrece los presets de Gmail, Outlook, Slack ni Teams.",
+    ],
+  },
   "2.35.2": {
     en: [
       "What you write to a WhatsApp contact from your phone shows up in their chat again.",
