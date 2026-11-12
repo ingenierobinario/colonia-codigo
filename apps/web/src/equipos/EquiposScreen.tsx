@@ -125,19 +125,21 @@ function AddEquipo({ onDone }: { onDone: () => void }) {
             ]}
           />
           {pair.urls.length === 0 && <p className="eq-muted">{t("equipos.noAddress")}</p>}
-          <div className="eq-cmd">
-            <code>{cmd}</code>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                void navigator.clipboard?.writeText(cmd);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }}
-            >
-              {copied ? <Icons.Check /> : <Icons.Copy />} {copied ? t("equipos.copied") : t("equipos.copy")}
-            </Button>
-          </div>
+          {cmd && (
+            <div className="eq-cmd">
+              <code>{cmd}</code>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(cmd);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+              >
+                {copied ? <Icons.Check /> : <Icons.Copy />} {copied ? t("equipos.copied") : t("equipos.copy")}
+              </Button>
+            </div>
+          )}
           <div className="eq-row">
             <div>
               <div className="eq-muted">{t("equipos.code")}</div>
