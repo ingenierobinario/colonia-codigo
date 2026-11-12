@@ -22,8 +22,7 @@ export const enMigrar = {
   "migrar.foundBody": "Tick the ones you want in Apps. You can change this later.",
   "migrar.fromMarks": "In your bookmarks",
   "migrar.fromVisits": "Visited a lot",
-  "migrar.visitsUnavailable":
-    "Your most-visited sites couldn't be read (the browser may be open). Bookmarks were used.",
+  "migrar.visitsUnavailable": "Only your bookmarks were imported. Close {browser} to import your most-used sites too.",
   "migrar.pin": "Add {n} to Apps",
   "migrar.pinOne": "Add 1 to Apps",
   "migrar.skip": "Not now",

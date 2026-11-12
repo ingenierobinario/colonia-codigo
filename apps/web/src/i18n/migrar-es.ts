@@ -24,7 +24,7 @@ export const esMigrar: Record<MigrarKey, string> = {
   "migrar.fromMarks": "En tus marcadores",
   "migrar.fromVisits": "Muy visitadas",
   "migrar.visitsUnavailable":
-    "No se han podido leer tus sitios más visitados (puede que el navegador esté abierto). Se han usado los marcadores.",
+    "Se han importado solo tus marcadores. Cierra {browser} para importar también tus webs más usadas.",
   "migrar.pin": "Añadir {n} a Aplicaciones",
   "migrar.pinOne": "Añadir 1 a Aplicaciones",
   "migrar.skip": "Ahora no",

@@ -26,7 +26,7 @@ function Cuerpo() {
   const [leyendo, setLeyendo] = useState(false);
   const [error, setError] = useState(false);
   const [webs, setWebs] = useState<WebReconocida[]>([]);
-  const [sinVisitas, setSinVisitas] = useState(false);
+  const [sinVisitas, setSinVisitas] = useState<string | undefined>();
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set());
   const [anadidas, setAnadidas] = useState(0);
 
@@ -47,7 +47,9 @@ function Cuerpo() {
     if (!r) return setError(true);
     const encontradas = reconocerWebs(r.marcadores, r.visitadas);
     setWebs(encontradas);
-    setSinVisitas(r.visitadasNoDisponibles);
+    setSinVisitas(
+      r.visitadasNoDisponibles ? NAVEGADORES[fuentes?.find((x) => x.id === fuente)?.navegador ?? "chrome"] : undefined,
+    );
     setMarcadas(new Set(encontradas.filter((w) => !apps.some((a) => a.name === w.name)).map((w) => w.name)));
     setPaso(2);
   };
@@ -137,7 +139,7 @@ function Cuerpo() {
           (webs.length ? (
             <>
               <p className="import__hint">{t("migrar.foundBody")}</p>
-              {sinVisitas && <p className="import__hint">{t("migrar.visitsUnavailable")}</p>}
+              {sinVisitas && <p className="import__hint">{t("migrar.visitsUnavailable", { browser: sinVisitas })}</p>}
               <ul className="import__list">
                 {webs.map((w) => (
                   <li key={w.name} className="import__card" data-on={marcadas.has(w.name) || undefined}>
@@ -153,7 +155,7 @@ function Cuerpo() {
             </>
           ) : (
             <EmptyState variant="dashed" icon={<Icons.Globe />} title={t("migrar.foundNone")}>
-              {t("migrar.foundNoneBody")}
+              {sinVisitas ? t("migrar.visitsUnavailable", { browser: sinVisitas }) : t("migrar.foundNoneBody")}
             </EmptyState>
           ))}
         {paso === 3 && <p className="import__hint">{anadidas ? t("migrar.doneBody") : t("migrar.doneNone")}</p>}
