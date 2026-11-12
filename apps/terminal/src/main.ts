@@ -270,7 +270,9 @@ let parsed: ReturnType<typeof argumentsOf>;
 try {
   parsed = argumentsOf();
 } catch (err) {
-  console.error(failure("Invalid arguments", [err instanceof Error ? err.message : String(err), "Try: colonia --help"]));
+  console.error(
+    failure("Invalid arguments", [err instanceof Error ? err.message : String(err), "Try: colonia --help"]),
+  );
   // portable: nothing has opened a handle yet, and nothing after this may run.
   process.exit(2);
 }
@@ -282,7 +284,11 @@ const terminalClient = () =>
   new ColoniaClient({ ...localConnection(), client: { name: "colonia-terminal", version: "0.0.0" } });
 const client = terminalClient();
 /** MCP servers are driven by a model: the core never gives them the owner's controls. */
-const agentClient = new ColoniaClient({ ...connection, client: { name: "colonia-mcp", version: "0.0.0" }, actor: "agent" });
+const agentClient = new ColoniaClient({
+  ...connection,
+  client: { name: "colonia-mcp", version: "0.0.0" },
+  actor: "agent",
+});
 
 try {
   switch (values.version ? "version" : values.help ? "help" : values.status ? "status" : command) {

@@ -8,7 +8,6 @@ import { auxCallsRepo } from "./aux-calls.ts";
 import { channelsRepo } from "./channels.ts";
 import { clientsRepo } from "./clients.ts";
 import { devicesRepo } from "./devices.ts";
-import { teamRepo } from "./team-computers.ts";
 import { extensionsRepo } from "./extensions.ts";
 import { flowGraphRunsRepo } from "./flow-graph-runs.ts";
 import { flowGraphsRepo } from "./flow-graphs.ts";
@@ -38,6 +37,7 @@ import { suggestionsRepo } from "./suggestions.ts";
 import { surfacesRepo } from "./surfaces.ts";
 import { taskAttachmentsRepo } from "./task-attachments.ts";
 import { tasksRepo } from "./tasks.ts";
+import { teamRepo } from "./team-computers.ts";
 import { messagesRepo, threadsRepo } from "./threads.ts";
 
 export function createStore(db: Db, bus: Bus) {

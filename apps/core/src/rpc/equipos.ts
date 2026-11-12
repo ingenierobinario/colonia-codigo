@@ -1,18 +1,24 @@
 // Mis equipos: el panel y las herramientas de los agentes. Aquí no se salta ninguna puerta: el acceso del agente lo
 // activa el dueño en Colonia, y la aprobación (por sesión, o «siempre») la da el dueño en el propio equipo.
 import type { Equipo, EquipoAuditEntry, EquipoPlatform } from "@colonia/protocol";
-import type { TeamAuditEntry, TeamComputer } from "../domain/team-computers.ts";
 import type { Store } from "../domain/store.ts";
-import { badRequest, notFound } from "../errors.ts";
-import type { Approval } from "../equipos/approval.ts";
+import type { TeamAuditEntry, TeamComputer } from "../domain/team-computers.ts";
 import type { EquipoAgent } from "../equipos/agent.ts";
+import type { Approval } from "../equipos/approval.ts";
 import type { Principal } from "../equipos/principal.ts";
+import { badRequest, notFound } from "../errors.ts";
 import type { Handlers } from "./router.ts";
 
 export type EquiposDeps = { principal: Principal; agent: EquipoAgent; approval: Approval };
 
 const platformOf = (p: string): EquipoPlatform =>
-  p === "win32" || p === "windows" ? "windows" : p === "darwin" || p === "macos" ? "macos" : p === "linux" ? "linux" : "other";
+  p === "win32" || p === "windows"
+    ? "windows"
+    : p === "darwin" || p === "macos"
+      ? "macos"
+      : p === "linux"
+        ? "linux"
+        : "other";
 
 export function equiposHandlers(store: Store, d: EquiposDeps) {
   const view = (c: TeamComputer): Equipo => ({
@@ -37,7 +43,8 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
     const all = store.team.list();
     const wanted = ref.trim().toLowerCase();
     const hit = all.find((c) => c.id === ref) ?? all.find((c) => c.name.toLowerCase() === wanted);
-    if (!hit) throw notFound(`equipo «${ref}» (los emparejados son: ${all.map((c) => c.name).join(", ") || "ninguno"})`);
+    if (!hit)
+      throw notFound(`equipo «${ref}» (los emparejados son: ${all.map((c) => c.name).join(", ") || "ninguno"})`);
     return hit;
   };
   const who = (ctx: { agent?: { id: string; thread_id: string } | undefined; session?: string | undefined }) => ({
@@ -53,7 +60,11 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
       const c = store.team.get(id);
       if (!c) throw notFound("equipo");
       store.team.setAgentAccess(id, enabled);
-      store.team.log("acceso", enabled ? "el dueño permitió el uso por agentes" : "el dueño quitó el uso por agentes", id);
+      store.team.log(
+        "acceso",
+        enabled ? "el dueño permitió el uso por agentes" : "el dueño quitó el uso por agentes",
+        id,
+      );
       return view({ ...c, agent_access: enabled });
     },
     "equipos.revoke": ({ id }) => ({ revoked: d.principal.revoke(id, "panel") }),
@@ -61,7 +72,12 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
     "equipos.run": async (a, ctx) => {
       const r = await d.principal.request(
         find(a.equipo).id,
-        { op: "run", command: a.command, ...(a.cwd ? { cwd: a.cwd } : {}), ...(a.timeout_s ? { timeout_s: a.timeout_s } : {}) },
+        {
+          op: "run",
+          command: a.command,
+          ...(a.cwd ? { cwd: a.cwd } : {}),
+          ...(a.timeout_s ? { timeout_s: a.timeout_s } : {}),
+        },
         who(ctx),
       );
       if (!("exit_code" in r)) throw badRequest("respuesta inesperada del equipo");

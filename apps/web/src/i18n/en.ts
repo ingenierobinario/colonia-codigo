@@ -1,7 +1,6 @@
 import { noticeEn } from "@colonia/protocol/notices";
 import type { ApprovalKey } from "./approvals-en.ts";
 import type { ComputerKey } from "./computer-en.ts";
-import type { EquipoKey } from "./equipos-en.ts";
 import { enChannels } from "./en-channels.ts";
 import { enChat } from "./en-chat.ts";
 import type { enEmailSignatures } from "./en-email-signatures.ts";
@@ -13,6 +12,7 @@ import { enResources } from "./en-resources.ts";
 import { enSetup } from "./en-setup.ts";
 import { enTeam } from "./en-team.ts";
 import { enTelemetry } from "./en-telemetry.ts";
+import type { EquipoKey } from "./equipos-en.ts";
 import type { enFlow } from "./flow-en.ts";
 import type { enIngress } from "./ingress-en.ts";
 import type { ReceivedKey } from "./received-en.ts";
@@ -224,7 +224,8 @@ export const en = {
   "update.leadApp": "Colonia {v} is out (this app is {current}). It downloads now and goes in when Colonia restarts.",
   "update.leadAppDrag":
     "Colonia {v} is out (this app is {current}). It downloads and opens for you to drag into Applications.",
-  "update.leadAppDragLinux": "Colonia {v} is out (this app is {current}). It downloads and Colonia shows you the new file.",
+  "update.leadAppDragLinux":
+    "Colonia {v} is out (this app is {current}). It downloads and Colonia shows you the new file.",
   "update.leadReady": "Colonia {v} is downloaded and ready. Restart Colonia to use it.",
   "update.readyLater": "If you choose later, it goes in when you quit Colonia.",
   "update.readyLaterMenu": "If you choose later, it waits in the Colonia menu: Restart to update.",

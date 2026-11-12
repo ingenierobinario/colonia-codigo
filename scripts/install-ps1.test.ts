@@ -228,7 +228,9 @@ test("el instalador de Windows registra el equipo en Aplicaciones instaladas y s
   assert.match(text, /Uninstall.ColoniaEquipo/);
   assert.match(text, /DisplayName -Value "Colonia \(equipo\)"/);
   // La desinstalación avisa al Colonia principal y borra la clave ANTES de quitar el programa.
-  assert.ok(text.indexOf("equipo desconectar") < text.indexOf("Remove-Item -Recurse -Force -LiteralPath $App -ErrorAction"));
+  assert.ok(
+    text.indexOf("equipo desconectar") < text.indexOf("Remove-Item -Recurse -Force -LiteralPath $App -ErrorAction"),
+  );
   // El código nunca viaja en el comando: se teclea en el equipo.
   assert.doesNotMatch(text, /\$Codigo|-Code\b/);
 });

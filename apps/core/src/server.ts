@@ -68,6 +68,12 @@ import { createUpkeep } from "./engine/upkeep.ts";
 import { type ComputerConfig, createComputer } from "./environments/computer.ts";
 import { managedVmConfig } from "./environments/managed.ts";
 import { computerWatchdog } from "./environments/watchdog.ts";
+import { createEquipoAgent } from "./equipos/agent.ts";
+import { createApproval } from "./equipos/approval.ts";
+import { createKeyStore } from "./equipos/keystore.ts";
+import { type Notify, systemNotify } from "./equipos/notify.ts";
+import { createPrincipal } from "./equipos/principal.ts";
+import { systemTray, type Tray } from "./equipos/tray.ts";
 import { errorMessage } from "./errors.ts";
 import { flowHttpPolicy } from "./flow-http.ts";
 import { notifyDestination } from "./flow-outward.ts";
@@ -84,9 +90,9 @@ import { createAsana } from "./integrations/asana.ts";
 import { calendarApi } from "./integrations/calendar.ts";
 import { gmailApi } from "./integrations/gmail.ts";
 import { createGoogle } from "./integrations/google.ts";
-import { createSocial } from "./integrations/social.ts";
-import { coloniaGoogleClient, clientFromPair } from "./integrations/google-client.ts";
+import { clientFromPair, coloniaGoogleClient } from "./integrations/google-client.ts";
 import { GOOGLE, googleAt } from "./integrations/google-oauth.ts";
+import { createSocial } from "./integrations/social.ts";
 import { createLog, type Log } from "./log.ts";
 import { mcpConfig } from "./mcp/config.ts";
 import { agentFiles } from "./mcp/file-args.ts";
@@ -109,13 +115,6 @@ import { internalCaller } from "./rpc/internal.ts";
 import { createRouter, type Dispatch } from "./rpc/router.ts";
 import { useLocalModel } from "./rpc/transcription.ts";
 import { createSecrets, type Secrets } from "./secrets.ts";
-import { createEquipoAgent } from "./equipos/agent.ts";
-import { createApproval } from "./equipos/approval.ts";
-import { createKeyStore } from "./equipos/keystore.ts";
-import { systemTray, type Tray } from "./equipos/tray.ts";
-import { type Notify, systemNotify } from "./equipos/notify.ts";
-import { createPrincipal } from "./equipos/principal.ts";
-import { EQUIPO_CAP } from "./tools/equipos.ts";
 import {
   builtinTools,
   coreHandlers,
@@ -138,10 +137,11 @@ import { createTelemetry } from "./telemetry.ts";
 import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
 import { createTerminals } from "./terminal/terminals.ts";
 import { asanaTools } from "./tools/asana.ts";
+import { EQUIPO_CAP } from "./tools/equipos.ts";
 import { scratchRoot } from "./tools/folders.ts";
 import { googleTools } from "./tools/google.ts";
-import { socialTools } from "./tools/social.ts";
 import { imessageTools } from "./tools/imessage.ts";
+import { socialTools } from "./tools/social.ts";
 import type { Tool } from "./tools/types.ts";
 import { listenHooks } from "./transport/hooks.ts";
 import { createUpdates, type Runner } from "./updates.ts";
@@ -610,9 +610,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     mcpServers: mcp.serversFor,
     hasCap: (cap) =>
       (cap === EQUIPO_CAP && store.team.list().some((c) => c.agent_access && principal.connected(c.id))) ||
-      Boolean(broker.withCap(cap)) || (cap === BROWSER_CAP && Boolean(headless?.available())),
-    desktopLinked: () =>
-      broker.list().some((n) => n.caps.includes(BROWSER_CAP) && !n.caps.includes(NO_COMPUTER_CAP)),
+      Boolean(broker.withCap(cap)) ||
+      (cap === BROWSER_CAP && Boolean(headless?.available())),
+    desktopLinked: () => broker.list().some((n) => n.caps.includes(BROWSER_CAP) && !n.caps.includes(NO_COMPUTER_CAP)),
     afterRun: (run) => {
       upkeep.afterRun(run);
       memoryMaintenance.afterRun(run);

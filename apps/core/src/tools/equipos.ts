@@ -24,7 +24,9 @@ export function equipoTools(): Tool[] {
         const r = await ctx.call("equipos.list", {});
         const usable = r.equipos.filter((e) => e.agent_access);
         if (!usable.length) return "no computer is enabled for agents";
-        return usable.map((e) => `${e.name} (${e.platform}) - ${e.connected ? "connected" : "not connected"}`).join("\n");
+        return usable
+          .map((e) => `${e.name} (${e.platform}) - ${e.connected ? "connected" : "not connected"}`)
+          .join("\n");
       },
     }),
     defineTool({

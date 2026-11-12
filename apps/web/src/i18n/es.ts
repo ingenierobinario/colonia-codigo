@@ -222,7 +222,8 @@ export const es: Partial<Record<MessageKey, string>> = {
     "Salió Colonia {v} (esta app es la {current}). Se descarga ahora y se instala cuando reinicies Colonia.",
   "update.leadAppDrag":
     "Salió Colonia {v} (esta app es la {current}). Se descarga y se abre para que la arrastres a Aplicaciones.",
-  "update.leadAppDragLinux": "Salió Colonia {v} (esta app es la {current}). Se descarga y Colonia te muestra el fichero nuevo.",
+  "update.leadAppDragLinux":
+    "Salió Colonia {v} (esta app es la {current}). Se descarga y Colonia te muestra el fichero nuevo.",
   "update.leadReady": "Colonia {v} ya está descargada y lista. Reinicia Colonia para usarla.",
   "update.readyLater": "Si eliges más tarde, se instala cuando salgas de Colonia.",
   "update.readyLaterMenu": "Si eliges más tarde, queda en el menú Colonia: Reiniciar para actualizar.",
