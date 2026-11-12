@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.35.0": {
+    en: [
+      "New \"My computers\": use your other laptops from this Colonia, with your approval each time.",
+      "Web apps like Gmail, Outlook, Slack and Teams open ready to use, and can save your passwords.",
+      "Bring your favourite sites and bookmarks from your browser with a guided import.",
+    ],
+    es: [
+      "Nuevo «Mis equipos»: usa tus otros portátiles desde este Colonia, con tu permiso cada vez.",
+      "Webs como Gmail, Outlook, Slack y Teams se abren listas y pueden guardar tus contraseñas.",
+      "Trae tus webs favoritas y marcadores de tu navegador con una importación guiada.",
+    ],
+  },
   "2.34.0": {
     en: [
       "If another program holds Colonia's port, the app says which one and how to fix it instead of waiting.",
