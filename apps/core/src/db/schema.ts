@@ -716,6 +716,8 @@ export interface TeamComputersTable {
   created_at: string;
   last_seen_at: string | null;
   revoked_at: string | null;
+  transport: string | null;
+  address: string | null;
 }
 
 export interface ThreadsTable {

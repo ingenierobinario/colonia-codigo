@@ -49,6 +49,31 @@ export const enEquipos = {
   "equipos.needsPassword":
     "This computer has no secure key store, so the key is protected with a password you choose when you pair. Without it, pairing is refused.",
   "equipos.failed": "Something went wrong. Try again.",
+  // EQUIPOS-SIN-AGENTE-1
+  "equipos.findTitle": "Computers on your network",
+  "equipos.findHint":
+    "Colonia looks for computers on your network and on Tailscale. Nothing needs to be installed on them.",
+  "equipos.searchAgain": "Search again",
+  "equipos.searching": "Searching your network…",
+  "equipos.noneFound": "No computers found. Check that they are switched on, or type a name or address below.",
+  "equipos.viaTailscale": "Tailscale",
+  "equipos.nothingOpen": "Nothing to open",
+  "equipos.noTerminal": "Remote terminal is not turned on in this computer",
+  "equipos.openTerminal": "Terminal",
+  "equipos.openDesktop": "Remote desktop",
+  "equipos.openFiles": "Folders",
+  "equipos.openVnc": "Screen sharing",
+  "equipos.osWindows": "Windows",
+  "equipos.osUnix": "Linux or Mac",
+  "equipos.osUnknown": "Unknown system",
+  "equipos.manual": "Name or address of the computer",
+  "equipos.manualGo": "Connect",
+  "equipos.loginTitle": "Sign in to {name}",
+  "equipos.loginHint": "Use the user and password of that computer. They are stored encrypted.",
+  "equipos.user": "User",
+  "equipos.connect": "Connect",
+  "equipos.connecting": "Connecting…",
+  "equipos.otherMethod": "Other method: install Colonia on the other computer",
 } as const;
 
 export type EquipoKey = keyof typeof enEquipos;

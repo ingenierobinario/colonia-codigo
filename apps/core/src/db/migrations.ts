@@ -1163,4 +1163,10 @@ export const MIGRATIONS: readonly string[] = [
   );
   CREATE INDEX team_audit_computer ON team_audit(computer_id, n);
   `,
+  // EQUIPOS-SIN-AGENTE-1: a computer reached over SSH, with nothing installed on it. `transport` is NULL for one that
+  // runs Colonia and dials in; `address` is where an SSH one is reached. Its sign-in lives in the secret store.
+  `
+  ALTER TABLE team_computers ADD COLUMN transport TEXT;
+  ALTER TABLE team_computers ADD COLUMN address TEXT;
+  `,
 ];

@@ -145,3 +145,108 @@
   border-radius: var(--colonia-radius-sm);
   background: var(--colonia-fill);
 }
+
+/* EQUIPOS-SIN-AGENTE-1 · buscar equipos de la red y entrar con usuario y contraseña */
+.eq-find__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.eq-found {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eq-found__item {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--colonia-card-border);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.eq-found__item:hover,
+.eq-found__item--on {
+  border-color: var(--colonia-border-strong);
+}
+.eq-found__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eq-found__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.eq-found__opens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.eq-login {
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid var(--colonia-card-border);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-fill);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.eq-login__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.eq-login__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.eq-row--end {
+  justify-content: flex-end;
+}
+.eq-error {
+  margin: 0;
+  color: var(--colonia-danger);
+}
+.eq-manual {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+.eq-manual > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.eq-other {
+  border: 1px solid var(--colonia-card-border);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-surface);
+  padding: 0 14px;
+}
+.eq-other > summary {
+  cursor: pointer;
+  padding: 12px 0;
+  color: var(--colonia-fg-muted);
+}
+.eq-other[open] > summary {
+  margin-bottom: 4px;
+}
+.eq-other > .eq-card {
+  margin-bottom: 14px;
+}

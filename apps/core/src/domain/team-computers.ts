@@ -10,6 +10,9 @@ export type TeamComputer = {
   agent_access: boolean;
   created_at: string;
   last_seen_at?: string;
+  /** EQUIPOS-SIN-AGENTE-1: «ssh» si se llega por SSH sin instalar nada; si no, el equipo corre Colonia y llama él. */
+  transport?: "ssh";
+  address?: string;
 };
 
 export type TeamAuditEntry = { n: number; at: string; computer_id?: string; kind: string; detail: string };
@@ -27,6 +30,8 @@ export function teamRepo({ one, all, run }: Sql) {
     agent_access: number;
     created_at: string;
     last_seen_at: string | null;
+    transport: string | null;
+    address: string | null;
   }): TeamComputer => ({
     id: r.id,
     name: r.name,
@@ -35,6 +40,8 @@ export function teamRepo({ one, all, run }: Sql) {
     agent_access: r.agent_access === 1,
     created_at: r.created_at,
     ...(r.last_seen_at ? { last_seen_at: r.last_seen_at } : {}),
+    ...(r.transport === "ssh" ? { transport: "ssh" as const } : {}),
+    ...(r.address ? { address: r.address } : {}),
   });
   return {
     list(): TeamComputer[] {
@@ -53,6 +60,25 @@ export function teamRepo({ one, all, run }: Sql) {
         qb
           .insertInto("team_computers")
           .values({ id, name, platform, public_key: publicKey, agent_access: 0, created_at: now() }),
+      );
+      const r = one(qb.selectFrom("team_computers").selectAll().where("id", "=", id));
+      if (!r) throw new Error("equipo no guardado");
+      return toComputer(r);
+    },
+    /** EQUIPOS-SIN-AGENTE-1: alta de un equipo al que se llega por SSH. Sin clave pública: su acceso está en los secretos. */
+    addSsh(name: string, platform: string, address: string): TeamComputer {
+      const id = newId("eqp");
+      run(
+        qb.insertInto("team_computers").values({
+          id,
+          name,
+          platform,
+          public_key: "",
+          agent_access: 0,
+          created_at: now(),
+          transport: "ssh",
+          address,
+        }),
       );
       const r = one(qb.selectFrom("team_computers").selectAll().where("id", "=", id));
       if (!r) throw new Error("equipo no guardado");

@@ -70,9 +70,11 @@ import { managedVmConfig } from "./environments/managed.ts";
 import { computerWatchdog } from "./environments/watchdog.ts";
 import { createEquipoAgent } from "./equipos/agent.ts";
 import { createApproval } from "./equipos/approval.ts";
+import { discoverEquipos, type FoundEquipo } from "./equipos/discovery.ts";
 import { createKeyStore } from "./equipos/keystore.ts";
 import { type Notify, systemNotify } from "./equipos/notify.ts";
 import { createPrincipal } from "./equipos/principal.ts";
+import { createSshEquipos, type SshEquipos, systemSshExec } from "./equipos/ssh.ts";
 import { systemTray, type Tray } from "./equipos/tray.ts";
 import { errorMessage } from "./errors.ts";
 import { flowHttpPolicy } from "./flow-http.ts";
@@ -171,6 +173,9 @@ export type CoreOptions = {
   /** Cómo avisa un equipo emparejado a su dueño (los tests no lanzan notificaciones del sistema). */
   equipoNotify?: Notify;
   equipoTray?: Tray;
+  /** EQUIPOS-SIN-AGENTE-1: las pruebas cambian el `ssh` del sistema y la búsqueda en la red por dobles. */
+  equipoSsh?: SshEquipos;
+  equipoDiscover?: () => Promise<{ equipos: FoundEquipo[]; tailscale: boolean }>;
   /** Un equipo emparejado no llama al principal hasta que se arranque a mano (los tests). */
   equipoOff?: boolean;
   /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
@@ -740,7 +745,13 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const dispatch = createRouter(
     coreHandlers({
       vm,
-      equipos: { principal, agent: equipoAgent, approval },
+      equipos: {
+        principal,
+        agent: equipoAgent,
+        approval,
+        ssh: opts.equipoSsh ?? createSshEquipos({ secrets, exec: systemSshExec(config.home) }),
+        discover: opts.equipoDiscover ?? (() => discoverEquipos()),
+      },
       internal,
       permissions,
       addresses: () => reachableAt(config.host, listening, config.publicUrl),

@@ -131,6 +131,7 @@ export const SPANISH_TITLES: Record<string, (a: Args) => string> = {
   equipo_run: (a) => `Ejecutó un comando en ${str(a.equipo) || "un equipo"}`,
   equipo_read_file: (a) => `Leyó un archivo de ${str(a.equipo) || "un equipo"}`,
   equipo_write_file: (a) => `Subió un archivo a ${str(a.equipo) || "un equipo"}`,
+  equipo_list_files: (a) => `Miró una carpeta de ${str(a.equipo) || "un equipo"}`,
   screen_snapshot: (a) => (a.app ? `Miró ${str(a.app)} en tu pantalla` : "Miró tu pantalla"),
   screen_click: (a) => `Hizo clic en ${str(a.app) || "una app"}`,
   screen_type: (a) => `Escribió en ${str(a.app) || "una app"}`,
