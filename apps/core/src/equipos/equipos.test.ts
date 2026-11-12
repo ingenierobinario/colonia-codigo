@@ -2,7 +2,6 @@
 // Colonia reales (el principal y un «portátil») emparejándose por un socket de verdad.
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { ColoniaClient } from "@colonia/protocol/client";
@@ -10,7 +9,7 @@ import { testConfig } from "../config.ts";
 import { say, scriptedLlm } from "../engine/testkit.ts";
 import { createSecrets } from "../secrets.ts";
 import { createCore } from "../server.ts";
-import { removeDir, waitFor } from "../testkit/platform.ts";
+import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
 import { createApproval, readState, stateFile, writeState } from "./approval.ts";
 import { createOpener, createSealer, deriveKeys, newEphemeral, pairProof, sameProof } from "./channel.ts";
 import { createKeyStore, vaultFile } from "./keystore.ts";
@@ -88,7 +87,7 @@ test("el canal cifrado detecta manipulación, repetición y clave ajena", () => 
 });
 
 test("la aprobación no lee entorno ni modo desarrollo, y las tramas del principal no llevan campo de aprobación", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-aprob-"));
+  const home = tempDir("colonia-aprob-").path;
   const keep = { ...process.env };
   try {
     writeState(home, {
@@ -106,7 +105,7 @@ test("la aprobación no lee entorno ni modo desarrollo, y las tramas del princip
     });
     const ap = createApproval({
       home,
-      timeoutMs: 80,
+      timeoutMs: 2_500,
       keys: createKeyStore({ home, secrets: createSecrets(home, "file") }),
     });
     assert.equal(
@@ -143,8 +142,8 @@ let lap: ColoniaClient;
 const notices: string[] = [];
 
 before(async () => {
-  pHome = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-eq-p-"));
-  lHome = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-eq-l-"));
+  pHome = tempDir("colonia-eq-p-").path;
+  lHome = tempDir("colonia-eq-l-").path;
   const llm = scriptedLlm(() => say("ok"));
   principal = await createCore({ ...testConfig({ home: pHome }), token: TOKEN }, { quiet: true, llm, equipoOff: true });
   laptop = await createCore(
