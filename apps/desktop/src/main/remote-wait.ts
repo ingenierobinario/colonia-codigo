@@ -1,5 +1,6 @@
 // A remote Colonia (an address, or one over SSH) the window waits for: the screen says so and it retries until the server
 // answers, then loads the panel. A server restarting after an update, or this app restarting, comes back on its own.
+import { type PortProblem, portProblem } from "./core-process.ts";
 import type { Tunnel } from "./ssh-tunnel.ts";
 
 export type Remote = {
@@ -64,8 +65,10 @@ export type Waiting = { title: string; where: string; status: string; detail?: s
 export function waiting(remote: Remote, linked: boolean, es: boolean): Waiting {
   const problem = linked ? undefined : remote.tunnel?.problem();
   const identityProblem = remote.identityProblem?.();
+  const taken = remote.local ? portProblem(remote.url) : undefined;
   const status =
     identityProblem ??
+    (taken ? portTakenText(taken, es) : undefined) ??
     (remote.local
       ? es
         ? "Colonia en este equipo todavía no responde. Puede estar arrancando, por ejemplo después de reiniciar."
@@ -91,6 +94,16 @@ export function waiting(remote: Remote, linked: boolean, es: boolean): Waiting {
       ? "Se abre solo cuando responde. Para elegir otro Colonia: menú Colonia › Cambiar conexión."
       : "It opens by itself once it answers. To pick another Colonia: Colonia menu › Change connection.",
   };
+}
+
+/** PUERTO-AJENO-1: another program holds the port Colonia needs on this computer, in plain words with both ways out. */
+export function portTakenText(p: PortProblem, es: boolean): string {
+  const port = p.freePort ?? p.port + 1;
+  return es
+    ? `Otro programa${p.program ? ` (${p.program})` : ""} está usando el puerto ${p.port}, el que Colonia necesita en este equipo. ` +
+        `Ciérralo y Colonia arrancará sola. O haz que Colonia use otro: añade la línea COLONIA_PORT=${port} al archivo ${p.envFile} y vuelve a abrir Colonia.`
+    : `Another program${p.program ? ` (${p.program})` : ""} is using port ${p.port}, the one Colonia needs on this computer. ` +
+        `Close it and Colonia starts by itself. Or have Colonia use another one: add the line COLONIA_PORT=${port} to the file ${p.envFile} and open Colonia again.`;
 }
 
 export function waitingText(w: Waiting): string {
