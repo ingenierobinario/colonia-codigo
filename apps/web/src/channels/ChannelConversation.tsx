@@ -16,7 +16,7 @@ import { AudioPart } from "../chat/parts/lazyAudio.tsx";
 import { bubbleFiles, mediaBlocks, withoutFilesNote } from "../chat/parts/mediaGroups.ts";
 import { shortWhen } from "../common/format.ts";
 import { loadThread, markRead, send } from "../data/actions.ts";
-import { openContactChat, type PresenceState, recoverFiles, sendDirect } from "../data/channels.ts";
+import { openContactChat, type PresenceState, recoverFiles, saveContact, sendDirect } from "../data/channels.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { MediaGroup } from "../lazy.ts";
@@ -121,6 +121,15 @@ export function ChannelConversation(props: {
     setRecovering(false);
   };
 
+  // Someone kept unreviewed: answered from now on, as the "Answer" of the owner's notice does.
+  const [answering, setAnswering] = useState(false);
+  const answer = async () => {
+    if (!person) return;
+    setAnswering(true);
+    await saveContact(person.id, { name: person.name, muted: false });
+    setAnswering(false);
+  };
+
   return (
     <section className="chan__chat" aria-label={name}>
       <header className="chan__chathead">
@@ -159,6 +168,18 @@ export function ChannelConversation(props: {
             onClick={() => void recover()}
           >
             {t("ch.recover")}
+          </Button>
+        )}
+        {person?.unreviewed && (
+          <Button
+            size="sm"
+            variant="primary"
+            title={t("ch.answerHint")}
+            leadingIcon={<Icons.Bell size={14} />}
+            disabled={answering}
+            onClick={() => void answer()}
+          >
+            {t("ch.answerThem")}
           </Button>
         )}
         <Button

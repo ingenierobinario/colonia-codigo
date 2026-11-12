@@ -108,6 +108,7 @@ export function ContactRow({
         type="button"
         className={`chan__row${selected ? " is-selected" : ""}${person?.muted ? " is-muted" : ""}${unread ? " is-unread" : ""}`}
         aria-current={selected || undefined}
+        title={person?.muted ? t(person.unreviewed ? "ch.unreviewed" : "ch.muted") : undefined}
         onClick={onPick}
       >
         <ContactFace person={person} name={name} presence={presence} />
@@ -125,6 +126,7 @@ export function ContactRow({
           {(relation || hasFlags(person)) && (
             <span className="chan__rowtop">
               <span className="chan__rel">{relation}</span>
+              {person?.unreviewed && <span className="chan__chip">{t("ch.unreviewedChip")}</span>}
               <ContactFlags person={person} />
             </span>
           )}

@@ -338,6 +338,16 @@
   margin-left: auto;
   color: var(--colonia-fg-subtle);
 }
+/* A contact kept unreviewed, said in words beside the silenced bell. */
+.chan__chip {
+  flex: none;
+  padding: 0 6px;
+  border-radius: var(--colonia-radius-pill);
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
+  font-size: 11px;
+  line-height: 16px;
+}
 .chan__flag {
   display: inline-grid;
   place-items: center;
