@@ -87,7 +87,7 @@ export function integrationHandlers(deps: {
       },
     };
   };
-  /** X and LinkedIn sign in with the owner's own app; Meta takes what its Graph API Explorer gives. */
+  /** X, LinkedIn and TikTok sign in with the owner's own app; Meta takes what its Graph API Explorer gives. */
   const socialEntry = (e: (typeof SOCIAL)[number], projects: Array<{ id: string }>) => {
     const on = social.connected(e.id);
     const client = social.client(e.id);
@@ -96,9 +96,15 @@ export function integrationHandlers(deps: {
       ? [
           {
             name: "client_id",
-            label: "Client id",
+            // TikTok calls the client id its "Client key".
+            label: e.id === "tiktok" ? "Client key" : "Client id",
             secret: false,
-            url: e.id === "x" ? "https://console.x.com" : "https://www.linkedin.com/developers/apps",
+            url:
+              e.id === "x"
+                ? "https://console.x.com"
+                : e.id === "tiktok"
+                  ? "https://developers.tiktok.com/apps/"
+                  : "https://www.linkedin.com/developers/apps",
             ...(client.client_id ? { value: client.client_id } : {}),
           },
           { name: "client_secret", label: "Client secret", secret: true, set: client.secret },

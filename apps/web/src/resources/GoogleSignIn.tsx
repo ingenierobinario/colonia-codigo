@@ -12,9 +12,9 @@ const COLONIA_LIMIT: Record<string, MessageKey> = { gmail: "int.coloniaLimit.gma
 /** Parts whose full use needs the owner's own client: Colonia's reaches only part of them (no paid security review). */
 const OWN_FIRST = new Set(["gmail", "google-drive"]);
 /** Signed in to with the owner's own app on that network, not with Google: no Google guide, no parts to add. */
-const SOCIAL = new Set(["x", "linkedin"]);
+const SOCIAL = new Set(["x", "linkedin", "tiktok"]);
 /** Their app is the owner's to create, and the agent walks them through it (the colonia-social skill). */
-const AGENT_GUIDED = new Set(["youtube", "x", "linkedin"]);
+const AGENT_GUIDED = new Set(["youtube", "x", "linkedin", "tiktok"]);
 /** Creating one's own client in Google Cloud, step by step, each with the console page it happens on. */
 const GUIDE: Array<{ text: MessageKey; href: string }> = [
   { text: "int.guide.project", href: "https://console.cloud.google.com/projectcreate" },

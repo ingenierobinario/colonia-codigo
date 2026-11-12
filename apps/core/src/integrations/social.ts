@@ -3,7 +3,7 @@
 // it) and its credentials stay in the secret store. X and LinkedIn sign in with an OAuth code flow that returns to the
 // panel (/oauth/social), like Google; Meta takes a token from its Graph API Explorer, because Facebook Login refuses a
 // plain-http loopback return address once an app is live.
-import { randomUUID } from "node:crypto";
+import crypto, { randomUUID } from "node:crypto";
 import type { Store } from "../domain/store.ts";
 import type { Secrets } from "../secrets.ts";
 import { pkce, stateSigner } from "./google-oauth.ts";
@@ -20,19 +20,31 @@ export const SOCIAL = [
     description: "Your Facebook Pages and Instagram professional accounts: posts, numbers, comments and publishing.",
   },
   { id: "linkedin", label: "LinkedIn", description: "Publish posts on your LinkedIn profile." },
+  {
+    id: "tiktok",
+    label: "TikTok",
+    description: "Send videos to your TikTok account: as drafts, or as private posts until TikTok reviews your app.",
+  },
 ] as const;
 
 export type SocialId = (typeof SOCIAL)[number]["id"];
-export type SignInId = "x" | "linkedin";
+export type SignInId = "x" | "linkedin" | "tiktok";
 export const isSocialId = (id: string): id is SocialId => SOCIAL.some((s) => s.id === id);
-export const signsIn = (id: string): id is SignInId => id === "x" || id === "linkedin";
+export const signsIn = (id: string): id is SignInId => id === "x" || id === "linkedin" || id === "tiktok";
+/** The networks whose access lasts hours and is renewed with a refresh token that is spent on use. */
+type Rotating = "x" | "tiktok";
 const labelOf = (id: SocialId) => SOCIAL.find((s) => s.id === id)?.label ?? id;
 
 export const X_API = "https://api.x.com/2";
 export const LINKEDIN_API = "https://api.linkedin.com/v2";
 export const GRAPH = "https://graph.facebook.com/v27.0";
+export const TIKTOK_API = "https://open.tiktokapis.com/v2";
 
-/** X wants PKCE and the client in a Basic header; LinkedIn has no PKCE and takes the secret in the form. */
+/**
+ * X wants PKCE and the client in a Basic header; LinkedIn has no PKCE and takes the secret in the form. TikTok (its
+ * Login Kit for desktop, the kind that accepts a loopback return address) wants PKCE with the challenge in hex, calls
+ * the client id `client_key`, separates scopes with commas and takes the secret in the form.
+ */
 const PROVIDERS: Record<SignInId, { auth: string; token: string; scopes: string[]; pkce: boolean }> = {
   x: {
     auth: "https://x.com/i/oauth2/authorize",
@@ -45,6 +57,12 @@ const PROVIDERS: Record<SignInId, { auth: string; token: string; scopes: string[
     token: "https://www.linkedin.com/oauth/v2/accessToken",
     scopes: ["openid", "profile", "w_member_social"],
     pkce: false,
+  },
+  tiktok: {
+    auth: "https://www.tiktok.com/v2/auth/authorize/",
+    token: `${TIKTOK_API}/oauth/token/`,
+    scopes: ["user.info.basic", "video.upload", "video.publish"],
+    pkce: true,
   },
 };
 
@@ -71,6 +89,8 @@ type CallOptions = {
   headers?: Record<string, string>;
   /** The call posts as the owner: a lost answer may still have gone through. */
   write?: boolean;
+  /** Hand back a refusal (other than a lost sign-in) for the caller to read, instead of throwing it. */
+  keep?: boolean;
 };
 
 /** The network's own words for a refusal: one line, capped. */
@@ -103,13 +123,13 @@ export function createSocial(deps: {
   const fetchImpl = deps.fetch ?? fetch;
   const signer = stateSigner(FLOW_TTL_MS, now);
   const flows = new Map<string, { id: SignInId; verifier: string; redirect: string; exp: number }>();
-  let xAccess: { token: string; exp: number } | undefined;
-  let refreshing: Promise<string> | undefined;
+  const access = new Map<Rotating, { token: string; exp: number }>();
+  const refreshing = new Map<Rotating, Promise<string>>();
 
   const clientIdKey = (id: SocialId) => `social_client_id:${id}`;
   const secretName = (id: SocialId) => `${id}-client_secret`;
   const accountKey = (id: SocialId) => `social_account:${id}`;
-  const X_REFRESH = "x-refresh_token";
+  const refreshName = (id: Rotating) => `${id}-refresh_token`;
   const LINKEDIN_TOKEN = "linkedin-access_token";
   const LINKEDIN_EXP = "social_expires:linkedin";
   const pageSecret = (page: string) => `meta-page_${page}`;
@@ -178,45 +198,54 @@ export function createSocial(deps: {
     const basic = Buffer.from(`${encodeURIComponent(c.clientId)}:${encodeURIComponent(c.clientSecret)}`).toString(
       "base64",
     );
+    const form =
+      id === "x"
+        ? params
+        : id === "tiktok"
+          ? { ...params, client_key: c.clientId, client_secret: c.clientSecret }
+          : { ...params, client_id: c.clientId, client_secret: c.clientSecret };
     const a = await send(labelOf(id), PROVIDERS[id].token, {
       method: "POST",
-      form: id === "x" ? params : { ...params, client_id: c.clientId, client_secret: c.clientSecret },
+      form,
       ...(id === "x" ? { headers: { authorization: `Basic ${basic}` } } : {}),
     });
     if (!ok(a)) throw new Error(`${labelOf(id)} refused the sign-in: ${reason(a.data, a.status)}`);
-    return a.data as { access_token?: string; refresh_token?: string; expires_in?: number };
+    return a.data as { access_token?: string; refresh_token?: string; expires_in?: number; open_id?: string };
   }
 
-  async function xToken(): Promise<string> {
-    if (xAccess && xAccess.exp - 60_000 > now()) return xAccess.token;
-    // X's refresh tokens are spent on use: two refreshes at once would void the sign-in.
-    refreshing ??= (async () => {
-      const c = creds("x");
-      const rt = secrets.resolve(`secret://${X_REFRESH}`);
-      if (!c || !rt) throw new Error("X is not connected; connect it in Resources › Integrations");
+  async function rotatingToken(id: Rotating): Promise<string> {
+    const held = access.get(id);
+    if (held && held.exp - 60_000 > now()) return held.token;
+    // X and TikTok spend a refresh token on use: two refreshes at once would void the sign-in.
+    const pending = refreshing.get(id);
+    if (pending) return pending;
+    const label = labelOf(id);
+    const p = (async () => {
+      const c = creds(id);
+      const rt = secrets.resolve(`secret://${refreshName(id)}`);
+      if (!c || !rt) throw new Error(`${label} is not connected; connect it in Resources › Integrations`);
       let got: Awaited<ReturnType<typeof tokenRequest>>;
       try {
-        got = await tokenRequest("x", c, { grant_type: "refresh_token", refresh_token: rt });
+        got = await tokenRequest(id, c, { grant_type: "refresh_token", refresh_token: rt });
       } catch (e) {
         if (e instanceof Error && e.message.includes("refused"))
-          throw new Error(`X no longer accepts the sign-in; ${again("x")}`);
+          throw new Error(`${label} no longer accepts the sign-in; ${again(id)}`);
         throw e;
       }
-      if (!got.access_token) throw new Error(`X sent no access; ${again("x")}`);
-      if (got.refresh_token) secrets.set(X_REFRESH, got.refresh_token);
-      xAccess = { token: got.access_token, exp: now() + (Number(got.expires_in) || 7200) * 1000 };
+      if (!got.access_token) throw new Error(`${label} sent no access; ${again(id)}`);
+      if (got.refresh_token) secrets.set(refreshName(id), got.refresh_token);
+      access.set(id, { token: got.access_token, exp: now() + (Number(got.expires_in) || 7200) * 1000 });
       return got.access_token;
-    })().finally(() => {
-      refreshing = undefined;
-    });
-    return refreshing;
+    })().finally(() => refreshing.delete(id));
+    refreshing.set(id, p);
+    return p;
   }
 
   const s = {
     redirectUri,
     wait: deps.wait ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms))),
     connected(id: SocialId): boolean {
-      if (id === "x") return secrets.has(`secret://${X_REFRESH}`);
+      if (id === "x" || id === "tiktok") return secrets.has(`secret://${refreshName(id)}`);
       if (id === "linkedin") return secrets.has(`secret://${LINKEDIN_TOKEN}`);
       return s.pages().length > 0;
     },
@@ -227,7 +256,7 @@ export function createSocial(deps: {
       client_id: store.settings.get(clientIdKey(id)) || undefined,
       secret: secrets.has(`secret://${secretName(id)}`),
     }),
-    /** Who is signed in on X or LinkedIn. */
+    /** Who is signed in on X, LinkedIn or TikTok. */
     profile: (id: SignInId) => (s.connected(id) ? stored<Profile>(id) : undefined),
     /** The Facebook Pages reached, each with the Instagram account linked to it. */
     pages: (): MetaPage[] =>
@@ -261,12 +290,14 @@ export function createSocial(deps: {
       const p = PROVIDERS[id];
       const u = new URL(p.auth);
       u.searchParams.set("response_type", "code");
-      u.searchParams.set("client_id", c.clientId);
+      u.searchParams.set(id === "tiktok" ? "client_key" : "client_id", c.clientId);
       u.searchParams.set("redirect_uri", redirect);
-      u.searchParams.set("scope", p.scopes.join(" "));
+      u.searchParams.set("scope", p.scopes.join(id === "tiktok" ? "," : " "));
       u.searchParams.set("state", signer.sign({ id, nonce }));
       if (p.pkce) {
-        u.searchParams.set("code_challenge", challenge);
+        // TikTok's desktop kit hashes the verifier to hex, not to base64url.
+        const hex = crypto.createHash("sha256").update(verifier).digest("hex");
+        u.searchParams.set("code_challenge", id === "tiktok" ? hex : challenge);
         u.searchParams.set("code_challenge_method", "S256");
       }
       return u.toString();
@@ -300,9 +331,25 @@ export function createSocial(deps: {
         const me = await send("X", `${X_API}/users/me`, {}, got.access_token);
         const user = (me.data as { data?: Profile }).data;
         if (!ok(me) || !user?.id) throw new Error(`X: ${reason(me.data, me.status)}`);
-        secrets.set(X_REFRESH, got.refresh_token);
+        secrets.set(refreshName("x"), got.refresh_token);
         store.settings.set(accountKey("x"), JSON.stringify({ id: user.id, name: user.name, username: user.username }));
-        xAccess = { token: got.access_token, exp: now() + (Number(got.expires_in) || 7200) * 1000 };
+        access.set("x", { token: got.access_token, exp: now() + (Number(got.expires_in) || 7200) * 1000 });
+      } else if (id === "tiktok") {
+        if (!got.refresh_token) throw new Error("TikTok sent nothing to stay signed in with; sign in again");
+        const me = await send(
+          "TikTok",
+          `${TIKTOK_API}/user/info/`,
+          { query: { fields: "open_id,display_name" } },
+          got.access_token,
+        );
+        if (!ok(me)) throw new Error(`TikTok: ${reason(me.data, me.status)}`);
+        const user = (me.data as { data?: { user?: { open_id?: string; display_name?: string } } }).data?.user;
+        secrets.set(refreshName("tiktok"), got.refresh_token);
+        store.settings.set(
+          accountKey("tiktok"),
+          JSON.stringify({ id: user?.open_id ?? got.open_id ?? "", name: user?.display_name }),
+        );
+        access.set("tiktok", { token: got.access_token, exp: now() + (Number(got.expires_in) || 7200) * 1000 });
       } else {
         const me = await send("LinkedIn", `${LINKEDIN_API}/userinfo`, {}, got.access_token);
         const user = me.data as { sub?: string; name?: string };
@@ -371,9 +418,9 @@ export function createSocial(deps: {
     disconnect(id: SocialId): void {
       if (id === "meta")
         for (const p of stored<{ pages?: MetaPage[] }>("meta")?.pages ?? []) secrets.set(pageSecret(p.id), null);
-      if (id === "x") {
-        secrets.set(X_REFRESH, null);
-        xAccess = undefined;
+      if (id === "x" || id === "tiktok") {
+        secrets.set(refreshName(id), null);
+        access.delete(id);
       }
       if (id === "linkedin") {
         secrets.set(LINKEDIN_TOKEN, null);
@@ -384,11 +431,11 @@ export function createSocial(deps: {
       store.settings.set(accountKey(id), "");
     },
 
-    /** A call to X or LinkedIn as the owner. X's access lasts two hours: a refused one is minted again once. */
+    /** A call to X, LinkedIn or TikTok as the owner. X's and TikTok's access lasts hours: a refused one is minted again once. */
     async call(id: SignInId, url: string, o: CallOptions = {}): Promise<Answer> {
       const label = labelOf(id);
       const token = async () => {
-        if (id === "x") return xToken();
+        if (id === "x" || id === "tiktok") return rotatingToken(id);
         const t = secrets.resolve(`secret://${LINKEDIN_TOKEN}`);
         if (!t) throw new Error("LinkedIn is not connected; connect it in Resources › Integrations");
         if (Number(store.settings.get(LINKEDIN_EXP)) < now())
@@ -396,13 +443,30 @@ export function createSocial(deps: {
         return t;
       };
       let a = await send(label, url, o, await token());
-      if (a.status === 401 && id === "x") {
-        xAccess = undefined;
+      if (a.status === 401 && (id === "x" || id === "tiktok")) {
+        access.delete(id);
         a = await send(label, url, o, await token());
       }
       if (a.status === 401) throw new Error(`${label} no longer accepts the sign-in; ${again(id)}`);
-      if (!ok(a)) throw new Error(`${label}: ${reason(a.data, a.status)}`);
+      if (!ok(a) && !o.keep) throw new Error(`${label}: ${reason(a.data, a.status)}`);
       return a;
+    },
+
+    /**
+     * A plain request with no sign-in (fetching a video, sending its bytes to an upload address the network gave),
+     * through the same fetch as every call. A lost answer of a write may still have gone through.
+     */
+    async transfer(label: string, url: string, init: RequestInit & { write?: boolean } = {}): Promise<Response> {
+      const { write, ...rest } = init;
+      try {
+        return await fetchImpl(url, { signal: AbortSignal.timeout(5 * 60_000), redirect: "follow", ...rest });
+      } catch {
+        throw new Error(
+          write
+            ? `${label}: no answer. It may have gone through anyway: check before trying again`
+            : `${label}: no answer`,
+        );
+      }
     },
 
     /** A Graph API call with the token of one Page. */

@@ -7,6 +7,7 @@ import type { Google } from "../integrations/google.ts";
 import type { Social } from "../integrations/social.ts";
 import { linkedinApi } from "../integrations/social-linkedin.ts";
 import { metaApi } from "../integrations/social-meta.ts";
+import { tiktokApi } from "../integrations/social-tiktok.ts";
 import { xApi } from "../integrations/social-x.ts";
 import { youtubeApi } from "../integrations/youtube.ts";
 import { untrusted } from "./result.ts";
@@ -22,15 +23,17 @@ export function socialTools(social: Social, g: Google | undefined): Tool[] {
   const x = xApi(social);
   const meta = metaApi(social);
   const linkedin = linkedinApi(social);
+  const tiktok = tiktokApi(social);
   const youtube = g ? youtubeApi(g) : undefined;
   const on = {
     youtube: (t: Thread) => Boolean(g?.usable("youtube", t.project_id)),
     x: (t: Thread) => social.usable("x", t.project_id),
     meta: (t: Thread) => social.usable("meta", t.project_id),
     linkedin: (t: Thread) => social.usable("linkedin", t.project_id),
+    tiktok: (t: Thread) => social.usable("tiktok", t.project_id),
   };
   const reads = (t: Thread) => on.youtube(t) || on.x(t) || on.meta(t);
-  const any = (t: Thread) => reads(t) || on.linkedin(t);
+  const any = (t: Thread) => reads(t) || on.linkedin(t) || on.tiktok(t);
   const publishes = (t: Thread) => on.x(t) || on.meta(t) || on.linkedin(t);
   /** A network the owner has not connected, or turned off here, is refused by name. */
   const need = (network: string, t: Thread) => {
@@ -66,6 +69,12 @@ export function socialTools(social: Social, g: Google | undefined): Tool[] {
               out.push({ network: "instagram", account: p.instagram.username, can: "posts, comments, publish, reply" });
           }
         if (on.linkedin(t)) out.push({ network: "linkedin", account: social.account("linkedin"), can: "publish" });
+        if (on.tiktok(t))
+          out.push({
+            network: "tiktok",
+            account: social.account("tiktok"),
+            can: "send a video as a draft, or post it private (public needs TikTok's review of the app)",
+          });
         return untrusted("social accounts", {}, lines(out));
       },
     }),
@@ -176,6 +185,46 @@ export function socialTools(social: Social, g: Google | undefined): Tool[] {
               ? await x.publish(a.text, a.to)
               : await meta.reply(a.network, a.account, a.to, a.text);
         return `replied (${r.id})`;
+      },
+    }),
+    defineTool({
+      name: "tiktok_send",
+      description:
+        "Send a video (public https address of an MP4, MOV or WebM, up to 512 MB) to the owner's TikTok. mode 'draft' puts it in their TikTok inbox to finish and post in the app; 'private' posts it now, visible only to them: until TikTok reviews the owner's app nothing can be public. The owner confirms it first. Then check it with tiktok_status; never retry an unknown outcome.",
+      args: z.object({
+        video_url: HttpsUrl,
+        mode: z.enum(["draft", "private"]).default("draft"),
+        title: z.string().min(1).max(2200).optional().describe("caption, only for mode 'private'"),
+        pull: z
+          .boolean()
+          .optional()
+          .describe("let TikTok fetch the address itself (only for a site verified in the app)"),
+      }),
+      effect: "external",
+      // It posts as the owner: it always waits for their OK.
+      confirm: "always",
+      deadlineMs: 15 * 60_000,
+      when: (t) => on.tiktok(t),
+      title: () => "Sent a video to TikTok",
+      async run(a, ctx) {
+        need("tiktok", ctx.thread);
+        const r = await tiktok.send(a);
+        return a.mode === "draft"
+          ? `sent to the TikTok inbox (publish_id ${r.publish_id}): the owner gets a notice in the TikTok app to finish and post it`
+          : `posted on TikTok as private, only the owner sees it (publish_id ${r.publish_id}); it may take a minute to process`;
+      },
+    }),
+    defineTool({
+      name: "tiktok_status",
+      description: "Where a video sent with tiktok_send is: processing, in the inbox, posted, or failed and why.",
+      args: z.object({ publish_id: z.string().min(1).max(64) }),
+      effect: "none",
+      deadlineMs: 30_000,
+      when: (t) => on.tiktok(t),
+      title: () => "Checked a TikTok video",
+      async run(a, ctx) {
+        need("tiktok", ctx.thread);
+        return JSON.stringify(await tiktok.status(a.publish_id));
       },
     }),
   ];

@@ -65,6 +65,7 @@ const BRANDS: Record<IntegrationBrand, true> = {
   x: true,
   meta: true,
   linkedin: true,
+  tiktok: true,
 };
 const ALIASES: Record<string, IntegrationBrand> = {
   brave: "brave-search",
