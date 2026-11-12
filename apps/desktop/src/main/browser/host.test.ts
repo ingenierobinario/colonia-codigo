@@ -51,6 +51,7 @@ class View {
 const configuredSession = {
   setUserAgent() {},
   setPermissionRequestHandler() {},
+  setPermissionCheckHandler() {},
   on() {},
 };
 const key = Symbol.for("colonia.test.browser-host");

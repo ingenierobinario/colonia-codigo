@@ -3,11 +3,13 @@ import type { WebApp } from "@colonia/protocol";
 import { Button, ContextMenu, Dialog, IconButton, Icons, Input, Menu, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { usePrefs } from "../data/prefs.ts";
+import { useData } from "../data/state.ts";
 import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
 import { addProgram, canPinPrograms, ProgramItems } from "../programs/ProgramsDock.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
+import { presetOf, unreadFromTitle, WEBAPP_PRESETS } from "./presets.ts";
 import "../styles/webapps.css";
 
 /** "business-stack.example.com" → "https://business-stack.example.com"; anything not http(s) is refused. */
@@ -37,11 +39,20 @@ export function Favicon({ url }: { url: string }) {
   return <img className="webapp__favicon" src={src} alt="" width={16} height={16} onError={() => setFailed(src)} />;
 }
 
+/** Sin leer de cada aplicación abierta, por perfil, leído del título de su pestaña. */
+function useUnread(): Record<string, number> {
+  const tabs = useData((s) => s.tabs);
+  const out: Record<string, number> = {};
+  for (const x of tabs) if (x.profile.startsWith("app:")) out[x.profile.slice(4)] = unreadFromTitle(x.title);
+  return out;
+}
+
 export function WebAppsDock({ rail }: { rail: boolean }) {
   const t = useT();
   const apps = useWebApps((s) => s.apps);
   const view = useNav((s) => s.view);
   const current = useNav((s) => s.webAppId);
+  const unread = useUnread();
   const [editing, setEditing] = useState<WebApp | "new">();
   const folded = usePrefs((s) => s.appsFolded);
   useEffect(() => {
@@ -51,14 +62,17 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
   if (folded && !rail) return null;
 
   const plus = (
-    <IconButton
-      size="sm"
-      className="sidebar__add"
-      label={t("webapp.add")}
-      icon={<Icons.Plus size={14} />}
-      onClick={canPinPrograms() ? undefined : () => setEditing("new")}
-    />
+    <IconButton size="sm" className="sidebar__add" label={t("webapp.add")} icon={<Icons.Plus size={14} />} />
   );
+  const addPreset = (p: (typeof WEBAPP_PRESETS)[number]) => {
+    // Cada alta es una sesión nueva (gmail, gmail-2…): así se tienen varias cuentas a la vez.
+    const n = apps.filter((a) => presetOf(a)?.key === p.key).length;
+    const id = webAppId(
+      p.name,
+      apps.map((a) => a.id),
+    );
+    void saveWebApp(id, { name: n ? `${p.name} ${n + 1}` : p.name, url: p.url }).then((ok) => ok && go.webapp(id));
+  };
   return (
     <>
       <SidebarSection
@@ -66,18 +80,21 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
         sub
         title={t("nav.appsExternal")}
         action={
-          canPinPrograms() ? (
-            <Menu
-              trigger={plus}
-              align="end"
-              items={[
-                { label: t("webapp.addWeb"), icon: <Icons.Globe size={14} />, onSelect: () => setEditing("new") },
-                { label: t("program.add"), icon: <Icons.Monitor size={14} />, onSelect: addProgram },
-              ]}
-            />
-          ) : (
-            plus
-          )
+          <Menu
+            trigger={plus}
+            align="end"
+            items={[
+              ...WEBAPP_PRESETS.map((p) => ({
+                label: p.name,
+                icon: <Icons.Mail size={14} />,
+                onSelect: () => addPreset(p),
+              })),
+              { label: t("webapp.addWeb"), icon: <Icons.Globe size={14} />, onSelect: () => setEditing("new") },
+              ...(canPinPrograms()
+                ? [{ label: t("program.add"), icon: <Icons.Monitor size={14} />, onSelect: addProgram }]
+                : []),
+            ]}
+          />
         }
       />
       {apps.map((a) => (
@@ -100,6 +117,8 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
             collapsed={rail}
             icon={<ProjectTile tone="info" icon={<Favicon url={a.url} />} />}
             label={a.name}
+            count={unread[a.id]}
+            attention
             active={view === "webapp" && current === a.id}
             onClick={() => go.webapp(a.id)}
           />

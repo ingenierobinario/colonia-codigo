@@ -260,7 +260,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
       throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
     const id = `t${++this.#seq}`;
     const ses = session.fromPartition(partitionFor(profile, this.#seq));
-    this.#configure(ses);
+    this.#configure(ses, profile.startsWith("app:"));
     const view = new WebContentsView({
       webPreferences: {
         session: ses,
@@ -403,6 +403,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         used: t.used,
         locked:
           this.#busy.has(t.id) ||
+          t.profile.startsWith("app:") || // ACCESOS-1: el correo y el chat siguen vivos para contar no leídos y avisar
           this.#holds.held(t.id) ||
           t.control.kind === "user" ||
           t.control.kind === "handoff" ||
@@ -479,12 +480,15 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     ]);
   }
 
-  #configure(ses: Session): void {
+  #configure(ses: Session, notifications = false): void {
     if (this.#configured.has(ses)) return;
     this.#configured.add(ses);
     ses.setUserAgent(cleanUserAgent());
     // Camera, mic, geolocation, notifications, clipboard-read: denied unless a later UI grants them.
-    ses.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
+    // ACCESOS-1: la excepción son los avisos de las aplicaciones web fijadas (Gmail, Outlook, Slack…).
+    const allow = (perm: string) => notifications && perm === "notifications";
+    ses.setPermissionRequestHandler((_wc, perm, cb) => cb(allow(perm)));
+    ses.setPermissionCheckHandler((_wc, perm) => allow(perm));
     ses.on("will-download", (e) => e.preventDefault());
   }
 }
