@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.2": {
+    en: [
+      "Web apps no longer open blank inside Colonia.",
+      "You can now write files on a computer you added, and its card shows its address.",
+      "Clearing a chat keeps the dialog open when the window narrows and shows a 24-hour time.",
+      "Browsers: back/forward in the right order, a clear path at the top and plain error messages.",
+    ],
+    es: [
+      "Las aplicaciones web ya no se abren en blanco dentro de Colonia.",
+      "Ya puedes escribir archivos en un equipo añadido, y su tarjeta muestra la dirección.",
+      "Limpiar la conversación no se cierra al estrechar la ventana y muestra la hora en 24 h.",
+      "Navegadores: atrás y adelante en su orden, ruta clara arriba y avisos sin jerga.",
+    ],
+  },
   "2.36.1": {
     en: [
       "«Add a computer» finds computers on your network or VPN and connects without installing Colonia there.",
