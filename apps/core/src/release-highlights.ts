@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.33.0": {
+    en: [
+      "On Linux you can now install Colonia with a .deb or .rpm package, as well as the AppImage.",
+      "TikTok joins your connectors: your agents help you create your own app and upload videos as drafts.",
+      "Clearer messages when connecting, and accents no longer get garbled when piping text to the terminal.",
+    ],
+    es: [
+      "En Linux ya puedes instalar Colonia con un paquete .deb o .rpm, además del AppImage.",
+      "TikTok se suma a tus conectores: tus agentes te ayudan a crear tu app y subir vídeos como borrador.",
+      "Mensajes más claros al conectar, y las tildes ya no se rompen al pasar texto al terminal.",
+    ],
+  },
   "2.32.0": {
     en: [
       "The terminal is a real one on Windows and on Macs or Linux without Python: prompts, colours, full screen.",
