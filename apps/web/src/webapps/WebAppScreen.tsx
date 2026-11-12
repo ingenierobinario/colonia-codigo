@@ -41,6 +41,18 @@ export function WebAppScreen() {
     };
   }, [app]);
 
+  // WEBAPP-BLANCO-1: the tab this view showed is gone (closed, or it was the core's headless one and the desktop
+  // browser took over): open the app again where it can be seen instead of pointing the page at a missing tab.
+  const gone = useData((s) => Boolean(tabId) && !s.tabs.some((x) => x.tab === tabId));
+  useEffect(() => {
+    if (!gone || !app) return;
+    let live = true;
+    void webAppTab(app).then((opened) => live && setTabId(opened));
+    return () => {
+      live = false;
+    };
+  }, [gone, app]);
+
   useEffect(() => {
     if (tabId && !poppedOut) window.coloniaDesktop?.showBrowserTab?.(tabId);
   }, [tabId, poppedOut]);

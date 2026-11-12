@@ -65,11 +65,29 @@ export function browserHandlers(
   vm?.onBrowserChange((run, tabs) => {
     if (store) reconcileBrowserConsents(store, `vm:${run}`, tabs);
   });
+  // WEBAPP-BLANCO-1: when the browser changes hands (the desktop app connects after the core's headless browser
+  // answered, or leaves), the panels still list the old backend's tabs: a web app then reuses a headless tab ("h1")
+  // the desktop does not have, and its page stays blank. Tell them the new backend's tabs at once.
+  const announceTabs = async () => {
+    const at = backend();
+    let tabs: TabInfo[] = [];
+    try {
+      if (local())
+        tabs = headless?.running() ? ((await headless.handle("browser.tabs", {})) as { tabs: TabInfo[] }).tabs : [];
+      else if (broker.withCap(BROWSER_CAP))
+        tabs = ((await broker.invoke(BROWSER_CAP, "browser.tabs", {}, DEADLINE_MS)) as { tabs: TabInfo[] }).tabs;
+    } catch {
+      tabs = [];
+    }
+    // Changed hands again meanwhile: that change tells its own list.
+    if (backend() === at) bus?.emit({ type: "browser.tabs", tabs });
+  };
   broker.onConnectionChange(() => {
     const next = backend();
     if (next !== connection) {
       observedTabs = undefined;
       if (store) reconcileBrowserConsents(store, next, []);
+      void announceTabs();
     }
     connection = next;
   });
