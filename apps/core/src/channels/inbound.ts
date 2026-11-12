@@ -162,7 +162,8 @@ export function createInbound(deps: {
     }
     // A silenced contact keeps its files without transcription, a model call or a work-folder copy.
     // CANAL-LECTURA-1: on a read-only channel every message, the owner's too, is only kept: no turn, no answer.
-    if (cfg.read_only || (!owner && person.muted)) {
+    // PROPIOS-3: a message handed over late (after a reconnection) is kept to read, never answered late.
+    if (cfg.read_only || (!owner && person.muted) || (m.late && !owner)) {
       const said = m.voice ? `${text ? `${text}\n` : ""}[voice note]` : text;
       const kept = keepQuiet(thread.id, cfg.id, owner ? undefined : person, said, attachments);
       if (cfg.read_only) theirLast(thread.id, cfg.id, m, kept);

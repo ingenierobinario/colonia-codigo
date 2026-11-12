@@ -475,6 +475,17 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   await new Promise((r) => setTimeout(r, 150));
   assert.deepEqual(await fromPhone(), ["see you at nine", "1", "under the private id", "while you were offline"]);
   assert.equal(llm.calls.length, calls, "no turn of the agent");
+
+  // PROPIOS-3: what Ana wrote meanwhile also comes as "append": kept in her chat, unread, never answered late.
+  const fromAna = () => texts((a) => a.kind === "person");
+  const before = (await fromAna()).length;
+  wa.message({ ...ANA, lid: "200000000000077@lid" }, "did you get my note?", { type: "append" });
+  await waitFor(async () => (await fromAna()).length === before + 1, "Ana's late words kept");
+  await new Promise((r) => setTimeout(r, 150));
+  assert.equal((await fromAna()).at(-1), "did you get my note?");
+  assert.equal(llm.calls.length, calls, "not answered late");
+  const now = (await env.client.call("threads.list", {})).threads.find((t) => t.id === ana.id);
+  assert.ok((now?.unread ?? 0) > unread, "unread: the owner has not seen it");
 });
 
 test("groups, and the owner writing to a friend on their phone, never reach the agent", async () => {

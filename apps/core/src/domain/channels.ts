@@ -29,6 +29,8 @@ export type Inbound = {
   action?: string | undefined;
   /** Other people the message @mentions (the bot itself left out), written as @handle in `text`. */
   mentions?: Array<{ id: string; handle: string }> | undefined;
+  /** PROPIOS-3: delivered late, after a reconnection: kept in the chat, unread, but it starts no turn. */
+  late?: boolean | undefined;
   /** A one-to-one conversation; anything else reaches the agent only as a listed room (see `room`). */
   private: boolean;
   /** A message in a server's room the owner listed: whether it called the bot (an @mention or a reply to it). */
