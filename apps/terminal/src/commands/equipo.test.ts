@@ -28,7 +28,10 @@ function fake(state: Record<string, unknown>) {
 test("emparejar pide el código por la terminal y nunca lo toma de los argumentos", async () => {
   const { client, calls } = fake({ needs_passphrase: false });
   const asked: string[] = [];
-  await equipo(client, ["emparejar", "ws://x:1", "huella-larga"], async (q) => (asked.push(q), "123456"));
+  await equipo(client, ["emparejar", "ws://x:1", "huella-larga"], async (q) => {
+    asked.push(q);
+    return "123456";
+  });
   assert.equal(asked.length, 1);
   assert.deepEqual(calls[1], ["equipos.local_pair", { url: "ws://x:1", fingerprint: "huella-larga", code: "123456" }]);
 });
