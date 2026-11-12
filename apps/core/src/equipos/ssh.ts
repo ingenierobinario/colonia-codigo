@@ -16,7 +16,8 @@ export type SshTarget = {
   key?: string;
 };
 export type SshOut = { code: number | null; stdout: Buffer; stderr: string; timedOut: boolean };
-export type SshExec = (t: SshTarget, command: string, timeoutMs: number) => Promise<SshOut>;
+/** `input`: bytes que se le dan a la orden remota por su entrada estándar (EQUIPOS-SIN-AGENTE-2: escribir archivos). */
+export type SshExec = (t: SshTarget, command: string, timeoutMs: number, input?: Buffer) => Promise<SshOut>;
 export type RemoteOs = "windows" | "linux" | "macos" | "other";
 
 const OUTPUT_MAX = 200_000;
@@ -26,7 +27,7 @@ const secretName = (id: string) => `equipos.ssh.${id}`;
 
 /** El `ssh` del sistema. `home` guarda los known_hosts propios de Colonia (no toca los del usuario). */
 export function systemSshExec(home: string): SshExec {
-  return (t, command, timeoutMs) =>
+  return (t, command, timeoutMs, input) =>
     new Promise((resolve) => {
       const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-ssh-"));
       const cleanup = () => fs.rmSync(tmp, { recursive: true, force: true });
@@ -67,7 +68,10 @@ export function systemSshExec(home: string): SshExec {
         args.push("-o", "BatchMode=yes");
       }
       args.push("-l", t.user, "--", t.host, command);
-      const child = spawn("ssh", args, { env, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
+      const child = spawn("ssh", args, { env, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+      // Sin `input`, la entrada se cierra en el acto: la orden remota ve fin de archivo, como con "ignore".
+      child.stdin.on("error", () => {});
+      child.stdin.end(input ?? Buffer.alloc(0));
       const out: Buffer[] = [];
       let size = 0;
       let err = "";
@@ -190,6 +194,25 @@ export function createSshEquipos(d: { secrets: Secrets; exec: SshExec }) {
       const size = Number(first.trim()) || 0;
       const content_base64 = rest.join("").replace(/\s+/g, "");
       return { content_base64, size, truncated: size > FILE_MAX };
+    },
+    /** EQUIPOS-SIN-AGENTE-2 · Crea o sobrescribe un archivo. El contenido viaja por la entrada estándar de ssh, nunca
+     * en la orden; en Windows va en base64 para que la consola no toque los bytes. */
+    async writeFile(id: string, os_: RemoteOs, p: string, content: Buffer) {
+      if (content.length > FILE_MAX) throw new Error(`ese archivo es demasiado grande (máximo ${FILE_MAX} bytes)`);
+      const t = need(id);
+      const win = os_ === "windows";
+      const cmd = win
+        ? psEncoded(
+            `$b=[Convert]::FromBase64String([Console]::In.ReadToEnd()); [IO.File]::WriteAllBytes(${psQuote(p)},$b); "$($b.Length)"`,
+          )
+        : `cat > ${shQuote(p)} && wc -c < ${shQuote(p)}`;
+      const out = await d.exec(t, cmd, 120_000, win ? Buffer.from(content.toString("base64")) : content);
+      if (out.code !== 0)
+        throw new Error(
+          out.code === 255 ? explainSshError(out) : out.stderr.trim() || "no se pudo escribir ese archivo",
+        );
+      const written = Number(out.stdout.toString("utf8").trim().split(/\s+/).pop()) || 0;
+      return { written };
     },
     async listFiles(id: string, os_: RemoteOs, p: string) {
       const t = need(id);

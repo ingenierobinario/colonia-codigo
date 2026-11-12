@@ -12,15 +12,18 @@ import { discoverEquipos, type Exec } from "./discovery.ts";
 import { createSshEquipos, explainSshError, type SshExec, type SshTarget, shQuote } from "./ssh.ts";
 
 const TOKEN = "dueno-token";
-const calls: Array<{ t: SshTarget; command: string }> = [];
-const fakeSsh: SshExec = async (t, command) => {
-  calls.push({ t, command });
+const calls: Array<{ t: SshTarget; command: string; input?: Buffer | undefined }> = [];
+const fakeSsh: SshExec = async (t, command, _ms, input) => {
+  calls.push({ t, command, input });
   if (t.password !== "buena")
     return { code: 255, stdout: Buffer.alloc(0), stderr: "Permission denied", timedOut: false };
   if (command.startsWith("hostname"))
     return { code: 0, stdout: Buffer.from("salon-pc\nLinux\n"), stderr: "", timedOut: false };
   if (command.startsWith("wc -c"))
     return { code: 0, stdout: Buffer.from("5\naG9sYQo=\n"), stderr: "", timedOut: false };
+  // EQUIPOS-SIN-AGENTE-2: escribir lee el contenido por la entrada estándar y contesta con el tamaño.
+  if (command.startsWith("cat > "))
+    return { code: 0, stdout: Buffer.from(`${input?.length ?? 0}\n`), stderr: "", timedOut: false };
   if (command.startsWith("ls -lA"))
     return { code: 0, stdout: Buffer.from("-rw-r--r-- 1 ana ana 5 nota.txt\n"), stderr: "", timedOut: false };
   return { code: 0, stdout: Buffer.from(`hecho: ${command}`), stderr: "", timedOut: false };
@@ -99,7 +102,7 @@ test("connect bueno: queda en la lista, conectado, con el interruptor apagado y 
   assert.deepEqual((await owner.call("equipos.discover", {})).equipos, []);
 });
 
-test("run / read_file / list_files por SSH respetan el interruptor y quedan en la actividad", async () => {
+test("run / read_file / list_files / write_file por SSH respetan el interruptor y quedan en la actividad", async () => {
   const [e] = (await owner.call("equipos.list", {})).equipos;
   assert.ok(e);
   await assert.rejects(owner.call("equipos.run", { equipo: e.id, command: "uptime" }), /desactivado/);
@@ -112,6 +115,17 @@ test("run / read_file / list_files por SSH respetan el interruptor y quedan en l
   assert.equal(f.size, 5);
   const l = await owner.call("equipos.list_files", { equipo: e.id, path: "/home/ana" });
   assert.match(l.output, /nota\.txt/);
+  const w = await owner.call("equipos.write_file", {
+    equipo: e.id,
+    path: "/home/ana/it's.txt",
+    content_base64: Buffer.from("adiós\n").toString("base64"),
+  });
+  assert.equal(w.written, Buffer.byteLength("adiós\n"));
+  const wc = calls.at(-1);
+  const q = shQuote("/home/ana/it's.txt");
+  assert.equal(q, String.raw`'/home/ana/it'\''s.txt'`);
+  assert.equal(wc?.command, `cat > ${q} && wc -c < ${q}`);
+  assert.equal(wc?.input?.toString("utf8"), "adiós\n");
   const kinds = (await owner.call("equipos.audit", { id: e.id })).entries.map((x) => x.kind);
   assert.ok(kinds.includes("emparejado") && kinds.includes("hecho"));
   assert.equal((await owner.call("equipos.revoke", { id: e.id })).revoked, true);
