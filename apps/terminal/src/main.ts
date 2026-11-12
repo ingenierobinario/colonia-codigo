@@ -11,6 +11,7 @@ import { chat } from "./commands/chat.ts";
 import { clients } from "./commands/clients.ts";
 import { desktop, openPanel } from "./commands/desktop.ts";
 import { doctor, updateOffline } from "./commands/doctor.ts";
+import { equipo } from "./commands/equipo.ts";
 import { expose } from "./commands/expose.ts";
 import { extensions } from "./commands/extensions.ts";
 import { flows } from "./commands/flows.ts";
@@ -84,6 +85,7 @@ Usage:
   colonia flows [list|set|rows|events|write|retry|retire]  Webhook-only work and persistent tables (colonia flows help)
   colonia notifications [read]       What is waiting for you
   colonia news [tell [<id>…]] [--json]   Release news; tell runs the super-agent's message now
+  colonia equipo [emparejar <url> <huella>|desbloquear|desconectar]  Este portátil como equipo de otro Colonia
   colonia clients [add <name>|rm <id>]  Outside apps with their own token (Claude Code, Codex…)
   colonia extensions [inspect|install|on|off|secret|rm]  Skills, MCP servers and routines in one folder
   colonia memory [words]      Notes agents keep between threads (newest first, or the best matches for the words)
@@ -378,6 +380,9 @@ try {
         descFile: values["desc-file"],
         tags: values.tags,
       });
+      break;
+    case "equipo":
+      await equipo(client, rest);
       break;
     case "clients":
       await clients(client, rest, { scopes: values.scopes });
