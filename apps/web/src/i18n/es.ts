@@ -1491,6 +1491,14 @@ export const es: Partial<Record<MessageKey, string>> = {
   "chat.folderOff": "No trabaja en la carpeta",
   "chat.compactSkipped": "No se resumió: {reason}",
   "error.compact": "No se pudo resumir: {error}",
+  "chat.clear": "Limpiar conversación",
+  "chat.clearTitle": "¿Limpiar la conversación?",
+  "chat.clearBody":
+    "El agente empezará de cero y no recordará lo hablado aquí. Los mensajes siguen en el chat para que puedas leerlos. Si prefieres que conserve lo importante, resume y sigue.",
+  "chat.clearCompact": "Resumir y seguir",
+  "chat.clearConfirm": "Limpiar",
+  "error.clear": "No se pudo limpiar la conversación: {error}",
+  "notice.thread.cleared": "Conversación limpiada · {time}",
   "memory.filter.forgotten": "Olvidadas",
   "memory.lead.forgotten":
     "Notas que tú o un agente olvidaron. Ningún agente las ve; puedes traer una de vuelta o borrarla para siempre.",

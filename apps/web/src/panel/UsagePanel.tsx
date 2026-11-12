@@ -1,7 +1,8 @@
 import type { AuxPurpose, Message, Run } from "@colonia/protocol";
-import { Badge, EmptyState, Icons } from "@colonia/ui";
-import { useMemo } from "react";
-import { contextOf, usageStamp } from "../chat/composer/context.ts";
+import { Badge, Button, EmptyState, Icons } from "@colonia/ui";
+import { useMemo, useState } from "react";
+import { ClearChatDialog } from "../chat/ClearChat.tsx";
+import { clearedAt, contextOf, usageStamp } from "../chat/composer/context.ts";
 import { useThreadUsage } from "../chat/composer/usage.ts";
 import { formatNumber, formatSeconds, shortWhen } from "../common/format.ts";
 import { baseRef } from "../data/models.ts";
@@ -42,6 +43,7 @@ function secs(run: Run): number | undefined {
 export function UsagePanel() {
   const t = useT();
   const threadId = useNav((s) => s.threadId);
+  const [clearing, setClearing] = useState(false);
   const runsById = useData((s) => s.runs);
   const messages = useData((s) => (threadId ? (s.messages[threadId] ?? EMPTY) : EMPTY));
   const runs = useMemo(
@@ -101,7 +103,7 @@ export function UsagePanel() {
         purposes: [...new Set(aux.map((a) => t(AUX_LABEL[a.purpose])))].join(", "),
       }),
     ]);
-  const context = contextOf(runs);
+  const context = contextOf(runs, clearedAt(messages));
   return (
     <div className="chatusage">
       {context?.window && (
@@ -112,6 +114,17 @@ export function UsagePanel() {
           <div className="chatusage__bar" aria-hidden="true">
             <span style={{ width: `${Math.min(100, (context.used / context.window) * 100)}%` }} />
           </div>
+          {context.used > 0 && (
+            <Button
+              size="sm"
+              variant="secondary"
+              leadingIcon={<Icons.Eraser size={14} />}
+              onClick={() => setClearing(true)}
+            >
+              {t("chat.clear")}
+            </Button>
+          )}
+          {clearing && <ClearChatDialog threadId={threadId} onClose={() => setClearing(false)} />}
         </div>
       )}
       <dl className="chatusage__kv">

@@ -30,7 +30,8 @@ export async function bootstrap(): Promise<void> {
       .call("environments.status", {})
       .then((status) => ({ chats: status.enabled ? (status.chats ?? []) : [], computers: computersOf(status) }))
       .catch((error: unknown) => {
-        if (error instanceof ColoniaError && error.code === "unknown_method") return { chats: [], computers: NO_COMPUTERS };
+        if (error instanceof ColoniaError && error.code === "unknown_method")
+          return { chats: [], computers: NO_COMPUTERS };
         return { chats: data.get().vmThreads, computers: data.get().computers };
       }),
   ]);
@@ -247,6 +248,15 @@ export async function compactThread(threadId: string): Promise<void> {
     if (!r.compacted) notify(t("chat.compactSkipped", { reason: r.reason ?? "" }), "info");
   } catch (e) {
     notify(t("error.compact", { error: errText(e) }));
+  }
+}
+
+/** LIMPIAR-CHAT-1: the agent starts this chat's context from nothing; the messages stay to read. */
+export async function clearThread(threadId: string): Promise<void> {
+  try {
+    await client.call("threads.clear", { thread: threadId });
+  } catch (e) {
+    notify(t("error.clear", { error: errText(e) }));
   }
 }
 

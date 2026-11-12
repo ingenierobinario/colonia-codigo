@@ -343,3 +343,9 @@ test("stop, input responses and compaction target the selected entity and keep a
     ["threads.compact", { thread: "thr_1" }],
   ]);
 });
+
+test("clearing a chat asks the core for a new context in the same chat (LIMPIAR-CHAT-1)", async (t) => {
+  const calls = rpc(t, { "threads.clear": { cleared: true, at: "2026-11-12T18:00:00Z" } });
+  await actions.clearThread("thr_1");
+  assert.deepEqual(calls, [["threads.clear", { thread: "thr_1" }]]);
+});

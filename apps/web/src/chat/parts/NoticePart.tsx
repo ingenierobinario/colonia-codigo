@@ -24,7 +24,12 @@ export function NoticePart({ part }: { part: NoticeData }) {
   // A `variant` picks one wording of the code (`notice.<code>.<variant>`).
   const key = `notice.${part.code}${part.vars?.variant ? `.${part.vars.variant}` : ""}`;
   // The core's English text carries details (e.g. the error); the translation is used when it is the plain case.
-  const text = isKey(key) && (part.vars || !part.text.includes(":")) ? t(key, part.vars) : part.text;
+  // A cleared chat says when, in the owner's own clock (LIMPIAR-CHAT-1).
+  const vars =
+    part.code === "thread.cleared" && typeof part.vars?.at === "string"
+      ? { ...part.vars, time: new Date(part.vars.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+      : part.vars;
+  const text = isKey(key) && (vars || !part.text.includes(":")) ? t(key, vars) : part.text;
   // A `link` (colonia:settings/…) is where the owner changes what the notice is about, labelled `notice.<code>.link`.
   const linkKey = `notice.${part.code}.link`;
   const linkLabel = isKey(linkKey) ? t(linkKey) : undefined;

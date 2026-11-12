@@ -271,7 +271,7 @@ export function createUpkeep(deps: { store: Store; llm: Llm; log: Log }) {
       force,
     );
     if (!plan) return { compacted: false, reason: "nothing old enough to summarize" };
-    const previous = epoch ? `Previous summary:\n${epoch.summary}\n\n` : "";
+    const previous = epoch?.summary ? `Previous summary:\n${epoch.summary}\n\n` : "";
     const notebook = ctx.notebook
       ? `The agent's own task notebook (keep its goal, pending work and next step):\n${ctx.notebook.text}\n\n`
       : "";

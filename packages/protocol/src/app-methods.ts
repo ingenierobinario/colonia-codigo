@@ -1798,6 +1798,16 @@ export const appMethods = {
     effect: true,
     access: "human",
   },
+  /**
+   * LIMPIAR-CHAT-1. Empties the agent's context for what comes next (a new engine session in the same chat, like
+   * /clear): what was said stays in the chat to read, but the agent no longer sees it. Refused while a turn runs.
+   */
+  "threads.clear": {
+    params: z.object({ thread: Id }).strict(),
+    result: z.object({ cleared: z.literal(true), at: z.string() }),
+    effect: true,
+    access: "human",
+  },
   /** The owner saw the thread: its unread count and its notices (not pending questions) are cleared. */
   /** Messages whose text has every word typed (each also as a prefix), best first: for the search box. */
   "threads.search": {

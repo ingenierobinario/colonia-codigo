@@ -419,6 +419,34 @@ export function threadHandlers(store: Store, engine: Engine, upkeep: Pick<Upkeep
       if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
       return upkeep.compact(thread);
     },
+    // LIMPIAR-CHAT-1: an empty epoch past the whole log and no outside session; the messages stay to read.
+    "threads.clear": ({ thread }) => {
+      if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
+      if (store.runs.list(thread, 20).some((r) => !TERMINAL.has(r.state)))
+        throw conflict("the agent is still answering in this chat");
+      const at = new Date().toISOString();
+      const upto = store.modelLog.list(thread).at(-1)?.seq ?? 0;
+      store.tx(() => {
+        const ctx = store.threads.context(thread);
+        store.threads.mergeContext(thread, {
+          compaction: { upto, summary: "", untrusted: false, runs: 0, at },
+          notebook: undefined,
+          memory_shown: undefined,
+          memory_since: undefined,
+          roster_hash: undefined,
+          windows: (ctx.windows ?? 1) + 1,
+        });
+        store.harnessSessions.dropAll(thread);
+        store.messages.add({
+          thread_id: thread,
+          author: { kind: "system" },
+          parts: [
+            { type: "notice", level: "info", code: "thread.cleared", text: "Conversation cleared", vars: { at } },
+          ],
+        });
+      });
+      return { cleared: true as const, at };
+    },
     "threads.read": ({ thread }) => {
       if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
       store.tx(() => {
