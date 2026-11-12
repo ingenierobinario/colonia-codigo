@@ -1,25 +1,5 @@
-// ACCESOS-1: aplicaciones web preconfiguradas (correo y mensajería con su interfaz oficial) y el contador de no
-// leídos que se lee del título de la página, que es lo que esas webs actualizan sin pedir ningún permiso.
-import type { WebApp } from "@colonia/protocol";
-
-export type WebAppPreset = { key: string; name: string; url: string };
-
-export const WEBAPP_PRESETS: readonly WebAppPreset[] = [
-  { key: "gmail", name: "Gmail", url: "https://mail.google.com/mail/u/0/" },
-  { key: "outlook", name: "Outlook", url: "https://outlook.office.com/mail/" },
-  { key: "slack", name: "Slack", url: "https://app.slack.com/client" },
-  { key: "teams", name: "Microsoft Teams", url: "https://teams.microsoft.com" },
-];
-
-/** El nombre de la ficha («Gmail»), para el aviso del sistema y la etiqueta de la barra. */
-export const presetOf = (app: Pick<WebApp, "url">): WebAppPreset | undefined => {
-  try {
-    const host = new URL(app.url).hostname;
-    return WEBAPP_PRESETS.find((p) => new URL(p.url).hostname === host);
-  } catch {
-    return undefined;
-  }
-};
+// ACCESOS-1: el contador de no leídos que se lee del título de la página de cada aplicación web, que es lo que
+// esas webs actualizan sin pedir ningún permiso. Las fichas preconfiguradas del menú ya no existen.
 
 const DRAFTS = /^(borradores|drafts)\b/i;
 const LEADING = /^[([](\d{1,4})[)\]]/;
