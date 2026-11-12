@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.35.1": {
+    en: [
+      "The chat list and each agent in the Inbox tree fold away with one click, and stay as you left them.",
+      "\"My computers\" opens Colonia to your network right there when the command was missing.",
+      "The external sessions section is now called \"AIs\" and has a + to add another one.",
+    ],
+    es: [
+      "La lista de chats y cada agente del árbol de la Inbox se pliegan con un clic y se quedan así.",
+      "«Mis equipos» abre Colonia a tu red ahí mismo cuando faltaba el comando.",
+      "Las sesiones externas ahora se llaman «IAs» y tienen un + para añadir otra.",
+    ],
+  },
   "2.35.0": {
     en: [
       "New \"My computers\": use your other laptops from this Colonia, with your approval each time.",
