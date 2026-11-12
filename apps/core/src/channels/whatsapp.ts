@@ -445,7 +445,13 @@ export function whatsappAdapter(opts: {
     }
     const alt = normalJid(m.key.remoteJidAlt);
     // One person, one address: their phone number when WhatsApp tells it, their private id otherwise.
-    const who = m.key.fromMe && !own ? me.pn : isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
+    let who = m.key.fromMe && !own ? me.pn : isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
+    // PROPIOS-2: what the owner types on the phone names the chat by the contact's private id and brings no phone
+    // number beside it; their chat is kept under the number, so the number is asked of the session's own mapping.
+    if (own && who.endsWith("@lid")) {
+      const pn = await sock?.signalRepository?.lidMapping?.getPNForLID?.(who)?.catch(() => undefined);
+      if (pn && isPhone(normalJid(pn))) who = normalJid(pn);
+    }
     const name = m.key.fromMe ? "Owner" : m.verifiedBizName?.trim() || m.pushName?.trim() || `+${digitsOf(who)}`;
     const reacted = content.reactionMessage;
     if (reacted) {

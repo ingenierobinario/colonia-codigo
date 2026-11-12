@@ -55,7 +55,12 @@ export function fakeWhatsApp(owner = OWNER_PN) {
         return { key: { id } };
       },
       async sendPresenceUpdate() {},
-      signalRepository: { lidMapping: { getLIDForPN: async (pn: string) => lids.get(pn) } },
+      signalRepository: {
+        lidMapping: {
+          getLIDForPN: async (pn: string) => lids.get(pn),
+          getPNForLID: async (lid: string) => [...lids].find(([, l]) => l === lid)?.[0],
+        },
+      },
       // The phone sends one message again, found by its id under the address it came on.
       async requestPlaceholderResend(key: WaKey) {
         resendAsked.push(key);
@@ -186,11 +191,12 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     fromOwner(text: string) {
       deliver({ key: { id: `ME-${++seq}`, remoteJid: OWNER_LID, fromMe: true }, message: { conversation: text } });
     },
-    /** The owner types to someone else on their phone. */
+    /** The owner types to someone else on their phone; to someone with a `lid` it goes under that id alone. */
     ownerTo(to: Person, text: string, opts: { id?: string; type?: "notify" | "append"; group?: string } = {}) {
       const id = opts.id ?? `ME-${++seq}`;
+      if (to.lid) lids.set(to.phone, to.lid);
       const m: WaMessage = {
-        key: { id, remoteJid: opts.group ?? to.phone, fromMe: true },
+        key: { id, remoteJid: opts.group ?? to.lid ?? to.phone, fromMe: true },
         message: { conversation: text },
       };
       phone.history.push(m);

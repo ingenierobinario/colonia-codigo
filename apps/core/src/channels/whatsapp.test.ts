@@ -456,6 +456,17 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
     ["written from the app"],
   );
   assert.deepEqual(await fromPhone(), ["see you at nine", "1"]);
+
+  // PROPIOS-2: the phone names Ana's chat by her private id alone: still her chat, the one kept under her number.
+  wa.ownerTo({ ...ANA, lid: "200000000000077@lid" }, "under the private id");
+  await waitFor(async () => (await fromPhone()).length === 3, "kept in Ana's chat under her number");
+  assert.deepEqual(await fromPhone(), ["see you at nine", "1", "under the private id"]);
+  assert.ok(
+    !(await env.client.call("threads.list", {})).threads.some(
+      (t) => t.channel?.conversation === "200000000000077@lid",
+    ),
+    "no second chat under the private id",
+  );
 });
 
 test("groups, and the owner writing to a friend on their phone, never reach the agent", async () => {
