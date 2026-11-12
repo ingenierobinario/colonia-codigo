@@ -20,11 +20,22 @@ const INSTALLER_EXT = { mac: "dmg", linux: "AppImage", win: "exe" } as const;
 /** electron-builder names the x64 AppImage x86_64; every other file keeps x64. */
 const installerArch = (p: Platform) => (p.os === "linux" && p.arch === "x64" ? "x86_64" : p.arch);
 
-/** One platform's installer, zip and core bundle, each with its .sha256. */
+/** Linux's system packages, with each format's own arch name (electron-builder's): amd64/arm64 and x86_64/aarch64. */
+export function linuxPackages(version: string, p: Platform): string[] {
+  if (p.os !== "linux") return [];
+  const x64 = p.arch === "x64";
+  return [
+    `Colonia-${version}-linux-${x64 ? "amd64" : "arm64"}.deb`,
+    `Colonia-${version}-linux-${x64 ? "x86_64" : "aarch64"}.rpm`,
+  ];
+}
+
+/** One platform's installer, zip, Linux packages and core bundle, each with its .sha256. */
 export function platformAssets(version: string, p: Platform): string[] {
   const files = [
     `Colonia-${version}-${p.os}-${installerArch(p)}.${INSTALLER_EXT[p.os]}`,
     `Colonia-${version}-${p.os}-${p.arch}.zip`,
+    ...linuxPackages(version, p),
     coreBundleName(version, p),
   ];
   return files.flatMap((f) => [f, `${f}.sha256`]);

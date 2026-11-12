@@ -1,6 +1,7 @@
 // Runs what a release ships on the runner that built it, before anything is published: installs the core bundle with
 // install.sh/ps1 and starts it with the Node inside it, then starts the packaged app from its zip (verifying the mac
-// signature first) and waits for its embedded core to answer /health. Everything lives in one temp folder; no service,
+// signature first) and waits for its embedded core to answer /health; on Linux it first reads the .deb and .rpm to see
+// they carry the app and its core. Everything lives in one temp folder; no service,
 // no update feed. Only for a throwaway CI runner: install.ps1 writes the user PATH.
 // Usage: node scripts/smoke-artifacts.ts <version> <os> <arch> <out-dir>
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
@@ -10,6 +11,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BUNDLE, coreBundleName, type Platform, targetOf } from "../packages/protocol/src/releases.ts";
+import { linuxPackages } from "./release-assets.ts";
 
 /** The packaged app's executable inside its unpacked zip (relative path). */
 export function appBinary(p: Platform): string {
@@ -23,6 +25,26 @@ export function unzipCommand(p: Platform, zip: string, into: string): [string, s
   // Windows' own bsdtar by full path: under Git Bash a bare "tar" is GNU tar, which cannot open a zip.
   if (p.os === "win") return [path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe"), ["-xf", zip, "-C", into]];
   return ["unzip", ["-q", zip, "-d", into]];
+}
+
+/** How each Linux package lists its files without installing it, and the path the app must be at inside. */
+export function packageListing(file: string): { cmd: [string, string[]]; app: string } {
+  return file.endsWith(".deb")
+    ? { cmd: ["dpkg-deb", ["--contents", file]], app: "./opt/Colonia/colonia" }
+    : { cmd: ["rpm", ["-qlp", file]], app: "/opt/Colonia/colonia" };
+}
+
+/** Each .deb/.rpm carries the app and its embedded core (installing them needs root: the runner only reads them). */
+function checkLinuxPackages(version: string, p: Platform, out: string) {
+  for (const name of linuxPackages(version, p)) {
+    const { cmd, app } = packageListing(path.join(out, name));
+    const r = spawnSync(cmd[0], cmd[1], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
+    if (r.status !== 0) throw new Error(`${cmd[0]} could not read ${name}: ${r.stderr}`);
+    const core = `/opt/Colonia/resources/colonia/${BUNDLE.core.join("/")}`;
+    for (const want of [app, core])
+      if (!r.stdout.split("\n").some((line) => line.endsWith(want))) throw new Error(`${name} does not carry ${want}`);
+    console.log(`${name} carries the app and its core`);
+  }
 }
 
 const freePort = () =>
@@ -89,6 +111,7 @@ const quiet = {
 };
 
 async function smoke(version: string, p: Platform, out: string) {
+  if (p.os === "linux") checkLinuxPackages(version, p, out);
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-artifacts-"));
   try {
     // a. The core bundle, installed by the install script and started with the Node it carries.

@@ -8,7 +8,7 @@ Descarga el instalador de tu sistema desde la página de recursos a la que acced
 |---|---|
 | Windows | Instalador `.exe` |
 | macOS | Imagen `.dmg` |
-| Linux | `.AppImage` |
+| Linux | `.AppImage`, `.deb` o `.rpm` |
 
 La aplicación todavía no está firmada, así que tu sistema puede avisarte la primera vez. Confirma que el archivo viene de tu página de recursos y sigue estos pasos.
 

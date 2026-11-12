@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
-import { appBinary, unzipCommand } from "./smoke-artifacts.ts";
+import { appBinary, packageListing, unzipCommand } from "./smoke-artifacts.ts";
+
+test("a .deb and an .rpm are read with their own tool, without installing them", () => {
+  assert.deepEqual(packageListing("o/a.deb"), {
+    cmd: ["dpkg-deb", ["--contents", "o/a.deb"]],
+    app: "./opt/Colonia/colonia",
+  });
+  assert.deepEqual(packageListing("o/a.rpm"), { cmd: ["rpm", ["-qlp", "o/a.rpm"]], app: "/opt/Colonia/colonia" });
+});
 
 test("each OS starts the packaged app by its own executable", () => {
   assert.equal(appBinary({ os: "mac", arch: "arm64" }), path.join("Colonia.app", "Contents", "MacOS", "Colonia"));

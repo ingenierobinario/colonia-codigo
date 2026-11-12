@@ -2,7 +2,8 @@
   "appId": "com.ingenierobinario.colonia",
   "productName": "Colonia",
   "extraMetadata": {
-    "name": "colonia"
+    "name": "colonia",
+    "homepage": "https://github.com/ingenierobinario/colonia"
   },
   "artifactName": "Colonia-${version}-${os}-${arch}.${ext}",
   "directories": {
@@ -111,11 +112,29 @@
     "runAfterFinish": true
   },
   "linux": {
-    "target": ["AppImage", "zip"],
+    "target": ["AppImage", "zip", "deb", "rpm"],
     "icon": "assets/icon.png",
     "category": "Utility",
     "maintainer": "Colonia",
     "synopsis": "Your agents, your projects, one local core.",
     "executableName": "colonia"
+  },
+  "deb": {
+    "depends": [
+      "libgtk-3-0",
+      "libnotify4",
+      "libnss3",
+      "libxss1",
+      "libxtst6",
+      "xdg-utils",
+      "libatspi2.0-0",
+      "libuuid1",
+      "libsecret-1-0",
+      "libasound2t64 | libasound2",
+      "libgbm1"
+    ]
+  },
+  "rpm": {
+    "fpm": ["--directories", "/opt/Colonia"]
   }
 }

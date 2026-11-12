@@ -25,7 +25,8 @@ go on to [Connect the AI](/start/connect-ai/) and [First steps](/start/first-ste
      notice about Colonia and click **Open Anyway**.
    - **Windows**: run the `.exe` file. When SmartScreen says it protected your PC, click **More info** and then **Run
      anyway**.
-   - **Linux**: make the AppImage file executable and double-click it.
+   - **Linux**: make the AppImage file executable and double-click it. On Debian and Ubuntu you can install the `.deb`
+     instead, and on Fedora the `.rpm` (see [Linux](#linux)).
 
 3. The first time, it asks where Colonia runs. On a first install choose **Server** (it means Colonia runs on this
    computer) and then the option to use it only from this computer, the safest one. The exact button text may vary.
@@ -44,6 +45,17 @@ xattr -dr com.apple.quarantine /Applications/Colonia.app
 </Aside>
 
 ## Linux
+
+If you prefer a system package, with Colonia in the menu and no FUSE needed, download the `.deb` (Debian, Ubuntu) or the
+`.rpm` (Fedora, RHEL, openSUSE) of your computer's architecture and install it from the folder where it is:
+
+```bash
+sudo apt install ./Colonia-*-linux-amd64.deb     # Debian, Ubuntu (arm64 on ARM)
+sudo dnf install ./Colonia-*-linux-x86_64.rpm    # Fedora, RHEL (aarch64 on ARM)
+```
+
+It installs in `/opt/Colonia` and opens from the applications menu. It does not update itself: when there is a new version,
+install the new package the same way.
 
 The AppImage is one file: there is nothing to install. Two things can stop it on a recent system.
 
@@ -99,7 +111,8 @@ Uninstalling removes the program. **Your data stays** in `~/.colonia/v2`: delete
 
 - **macOS**: quit Colonia from its icon in the menu bar and drag **Colonia** from Applications (the Applications folder in your home if you installed from the terminal) to the bin.
 - **Windows**: Settings › Apps › Installed apps › **Colonia** › Uninstall.
-- **Linux**: quit Colonia and delete the AppImage. If you installed it with `colonia desktop`, the installer's
+- **Linux**: quit Colonia and delete the AppImage. If you installed the package, `sudo apt remove colonia` or
+  `sudo dnf remove colonia`. If you installed it with `colonia desktop`, the installer's
   `--uninstall` removes it together with its menu entry.
 
 </TabItem>

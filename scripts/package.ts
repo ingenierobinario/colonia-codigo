@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { desktopAssetFor, platformOf } from "../packages/protocol/src/releases.ts";
+import { linuxPackages } from "./release-assets.ts";
 import { buildVersion } from "./version.ts";
 
 const repo = path.resolve(import.meta.dirname, "..");
@@ -72,10 +73,16 @@ step(
 );
 step("node", ["apps/desktop/scripts/bundle.ts"]);
 
-// What a release attaches: the installers (each with a .sha256 the desktop app checks) and the install scripts.
+// What a release attaches: the installers and Linux's .deb/.rpm (each with a .sha256 the desktop app checks) and the
+// install scripts.
+const systemPackages = linuxPackages(version, { os, arch });
 for (const f of fs.readdirSync(out)) {
   const asset = [{ name: f, url: "" }];
-  if (!desktopAssetFor(asset, version, { os, arch }) && !desktopAssetFor(asset, version, { os, arch }, "zip")) continue;
+  const shipped =
+    desktopAssetFor(asset, version, { os, arch }) ||
+    desktopAssetFor(asset, version, { os, arch }, "zip") ||
+    systemPackages.includes(f);
+  if (!shipped) continue;
   const digest = createHash("sha256")
     .update(fs.readFileSync(path.join(out, f)))
     .digest("hex");

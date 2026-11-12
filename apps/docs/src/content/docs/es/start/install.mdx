@@ -25,7 +25,8 @@ Colonia se instala en tu propio ordenador. Son unos minutos y no hace falta sabe
      Privacidad y seguridad**, baja hasta el aviso sobre Colonia y pulsa **Abrir igualmente**.
    - **Windows**: ejecuta el archivo `.exe`. Cuando SmartScreen diga que ha protegido tu PC, pulsa **Más información** y
      después **Ejecutar de todas formas**.
-   - **Linux**: haz ejecutable el archivo AppImage y ábrelo con doble clic.
+   - **Linux**: haz ejecutable el archivo AppImage y ábrelo con doble clic. En Debian y Ubuntu puedes instalar el `.deb`
+     en su lugar, y en Fedora el `.rpm` (mira [Linux](#linux)).
 
 3. La primera vez te pregunta dónde funciona Colonia. Si es tu primera instalación, elige **Servidor** (quiere decir que
    Colonia funciona en este ordenador) y después **Solo desde este ordenador**, la opción más segura. El texto exacto de los botones puede variar.
@@ -44,6 +45,17 @@ xattr -dr com.apple.quarantine /Applications/Colonia.app
 </Aside>
 
 ## Linux
+
+Si prefieres un paquete del sistema, con Colonia en el menú y sin necesitar FUSE, descarga el `.deb` (Debian, Ubuntu) o
+el `.rpm` (Fedora, RHEL, openSUSE) de la arquitectura de tu ordenador e instálalo desde la carpeta donde esté:
+
+```bash
+sudo apt install ./Colonia-*-linux-amd64.deb     # Debian, Ubuntu (arm64 en ARM)
+sudo dnf install ./Colonia-*-linux-x86_64.rpm    # Fedora, RHEL (aarch64 en ARM)
+```
+
+Se instala en `/opt/Colonia` y se abre desde el menú de aplicaciones. No se actualiza sola: cuando haya una versión nueva, instala el
+paquete nuevo igual.
 
 El AppImage es un solo archivo: no hay nada que instalar. Dos cosas pueden frenarlo en un sistema reciente.
 
@@ -101,7 +113,8 @@ Desinstalar quita el programa. **Tus datos se quedan** en `~/.colonia/v2`: borra
 
 - **macOS**: cierra Colonia desde su icono en la barra de menú y arrastra **Colonia** de Aplicaciones (la carpeta Aplicaciones de tu carpeta personal si la instalaste desde la terminal) a la papelera.
 - **Windows**: Configuración › Aplicaciones › Aplicaciones instaladas › **Colonia** › Desinstalar.
-- **Linux**: cierra Colonia y borra el AppImage. Si la instalaste con `colonia desktop`, el instalador con
+- **Linux**: cierra Colonia y borra el AppImage. Si instalaste el paquete, `sudo apt remove colonia` o
+  `sudo dnf remove colonia`. Si la instalaste con `colonia desktop`, el instalador con
   `--uninstall` la quita junto con su entrada del menú.
 
 </TabItem>

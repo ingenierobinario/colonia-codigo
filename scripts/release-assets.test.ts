@@ -25,11 +25,19 @@ function fill(dir: string, names: string[]) {
   }
 }
 
-test("a release carries 32 distinct files", () => {
+test("a release carries 40 distinct files", () => {
   const all = expectedAssets(V);
-  assert.equal(all.length, 32);
-  assert.equal(new Set(all).size, 32);
-  for (const n of ["colonia-core-1.2.3-win-x64.tar.gz.sha256", "Colonia-1.2.3-linux-x86_64.AppImage", "install.ps1"])
+  assert.equal(all.length, 40);
+  assert.equal(new Set(all).size, 40);
+  for (const n of [
+    "colonia-core-1.2.3-win-x64.tar.gz.sha256",
+    "Colonia-1.2.3-linux-x86_64.AppImage",
+    "Colonia-1.2.3-linux-amd64.deb",
+    "Colonia-1.2.3-linux-x86_64.rpm.sha256",
+    "Colonia-1.2.3-linux-arm64.deb",
+    "Colonia-1.2.3-linux-aarch64.rpm",
+    "install.ps1",
+  ])
     assert.ok(all.includes(n), n);
 });
 

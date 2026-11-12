@@ -27,6 +27,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
+      # El .rpm lo construye rpmbuild, que Ubuntu no trae.
+      - if: matrix.os == 'linux'
+        run: command -v rpmbuild >/dev/null || sudo apt-get install -y rpm
       - run: corepack pnpm package:${{ matrix.os }} --${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
@@ -34,6 +37,8 @@ jobs:
           path: |
             out/*.dmg
             out/*.AppImage
+            out/*.deb
+            out/*.rpm
             out/Colonia-*.zip
             out/colonia-core-*.tar.gz
             out/*.sha256
