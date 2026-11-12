@@ -10,10 +10,14 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
     en: [
       "New Browsers section: profiles and a built-in browser with tabs, also usable by your agents.",
       "The Externals «+» no longer offers Gmail, Outlook, Slack or Teams presets.",
+      "WhatsApp messages you write on your phone while Colonia is offline are no longer lost.",
+      "You can clear a conversation so the agent starts from scratch.",
     ],
     es: [
       "Sección Navegadores nueva: perfiles y navegador integrado con pestañas, también para tus agentes.",
       "El «+» de Externas ya no ofrece los presets de Gmail, Outlook, Slack ni Teams.",
+      "Lo que escribes en WhatsApp desde el móvil con Colonia desconectada ya no se pierde.",
+      "Puedes limpiar la conversación para que el agente empiece de cero.",
     ],
   },
   "2.35.2": {
