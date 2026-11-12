@@ -2,7 +2,8 @@
 // Colonia is out, downloads this platform's build, checks its .sha256 and leaves it ready; it goes in when the owner
 // restarts Colonia, or when they quit it. macOS replaces its own Colonia.app from the release's zip; the AppImage replaces its
 // file; Windows runs the installer. Where the app cannot replace itself (a read-only place, an unpacked Linux zip),
-// the owner gets the installer to put in by hand. See DECISIONS.md#d-058.
+// the owner gets the installer to put in by hand; a Colonia installed from the .deb or .rpm gets the newer package and
+// the one command that installs it. See DECISIONS.md#d-058.
 import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -28,6 +29,7 @@ import {
 import { app, shell } from "electron";
 import { bundlePlace, replaceableBundle, saveInFirst } from "./app-bundle.ts";
 import { removeOldInstallers } from "./installer-files.ts";
+import { type LinuxInstall, linuxInstall, packageCommand } from "./linux-install.ts";
 import { updateLog } from "./update-log.ts";
 
 export type DesktopUpdate = {
@@ -62,12 +64,14 @@ export function pickUpdate(
   current: string,
   platform: string,
   arch: string,
+  /** A Linux Colonia installed from the system's package: its update is that package, not the AppImage. */
+  pkg?: "deb" | "rpm",
 ): { release: Release; asset: ReleaseAsset; notes: string[]; localized?: LocalizedNotes | undefined } | undefined {
   const p = platformOf(platform, arch);
   if (!p) return undefined;
   const newer = newerReleases(list, current);
   for (const [i, release] of newer.entries()) {
-    const asset = desktopAssetFor(release.assets, release.version, p);
+    const asset = desktopAssetFor(release.assets, release.version, p, pkg ?? "installer");
     if (asset)
       return { release, asset, notes: releaseChanges(newer.slice(i)), localized: localizedChanges(newer.slice(i)) };
   }
@@ -133,6 +137,8 @@ export function createDesktopUpdater(opts: {
   /** Starts the Windows installer (a test passes its own, so no real installer runs). */
   spawn?: typeof spawn;
   writable?: (dir: string) => boolean;
+  /** How this Linux Colonia was installed (a test passes its own). */
+  linuxInstall?: () => Promise<LinuxInstall>;
 }) {
   const start = opts.spawn ?? spawn;
   const canWrite = opts.writable ?? writable;
@@ -146,6 +152,19 @@ export function createDesktopUpdater(opts: {
   const image = process.platform === "linux" ? process.env.APPIMAGE : undefined;
   // An AppImage in a folder Colonia cannot write (a system path, a read-only mount) cannot replace itself.
   const appImage = image && canWrite(path.dirname(image)) ? image : undefined;
+  // Asked once, in the background (dpkg/rpm answer in milliseconds, but never on the main thread's clock).
+  const installKind: Promise<"deb" | "rpm" | undefined> =
+    process.platform === "linux" && !image
+      ? (opts.linuxInstall ?? linuxInstall)()
+          .then((k) => (k === "deb" || k === "rpm" ? k : undefined))
+          .catch(() => undefined)
+      : Promise.resolve(undefined);
+  let pkg: "deb" | "rpm" | undefined;
+  void installKind.then((k) => {
+    pkg = k;
+  });
+  /** The command that installs the downloaded package, once it is downloaded. */
+  let pkgCommand: string | undefined;
   const mode: DesktopUpdate["install"] = process.platform === "win32" || bundle || appImage ? "auto" : "drag";
   let found: ReturnType<typeof pickUpdate>;
   let status: DesktopUpdate = { current: app.getVersion(), notes: [], install: "none" };
@@ -162,7 +181,8 @@ export function createDesktopUpdater(opts: {
   async function check(): Promise<DesktopUpdate> {
     if (!enabled || !feed) return current();
     try {
-      found = pickUpdate(await fetchReleases(feed), app.getVersion(), process.platform, process.arch);
+      const kind = await installKind;
+      found = pickUpdate(await fetchReleases(feed), app.getVersion(), process.platform, process.arch, kind);
       status = {
         current: app.getVersion(),
         latest: found?.release.version,
@@ -216,7 +236,10 @@ export function createDesktopUpdater(opts: {
     if (target && feed) {
       const release = newerReleases(await fetchReleases(feed), "0.0.0").find((r) => r.version === target);
       const platform = platformOf(process.platform, process.arch);
-      const asset = release && platform ? desktopAssetFor(release.assets, target, platform) : undefined;
+      const asset =
+        release && platform
+          ? desktopAssetFor(release.assets, target, platform, (await installKind) ?? "installer")
+          : undefined;
       if (!release || !asset) return { ok: false, error: "The selected release has no installer for this computer." };
       found = { release, asset, notes: release.notes, localized: release.localized };
     }
@@ -231,9 +254,11 @@ export function createDesktopUpdater(opts: {
       else if (process.platform === "win32") staged = await stageWindows(release, asset);
       else {
         // macOS can keep the app out of Downloads: the installer is as good from the temporary folder.
+        const kind = await installKind;
         const file = await saveInFirst([app.getPath("downloads"), app.getPath("temp")], asset.name, (to) =>
           fetchChecked(release, asset, to),
         );
+        pkgCommand = kind ? packageCommand(kind, file) : undefined;
         const open = async () => {
           // On Linux opening the file would run it unasked (an AppImage) or open an archive (a zip): it is only shown.
           if (process.platform === "linux") {
@@ -360,6 +385,10 @@ export function createDesktopUpdater(opts: {
   return {
     enabled,
     mode,
+    /** "deb"/"rpm": this Colonia came from the system's package, so its update is one too (known shortly after start). */
+    systemPackage: () => pkg,
+    /** The command that installs the downloaded package (sudo apt/dnf install …), once it is shown. */
+    packageCommand: () => pkgCommand,
     ...(place ? { place } : {}),
     /** Adds a line to the update log (steps decided outside this updater, like a coordinated server update). */
     log,

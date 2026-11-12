@@ -49,6 +49,11 @@ test("the updater finds every platform's installer and zip in the list", () => {
       const found = desktopAssetFor(assets, V, p, kind);
       assert.ok(found && slice.includes(found.name), `${p.os}-${p.arch} ${kind}`);
     }
+    for (const kind of ["deb", "rpm"] as const) {
+      const found = desktopAssetFor(assets, V, p, kind);
+      if (p.os === "linux") assert.ok(found && slice.includes(found.name), `${p.os}-${p.arch} ${kind}`);
+      else assert.equal(found, undefined);
+    }
   }
 });
 

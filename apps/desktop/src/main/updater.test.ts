@@ -337,3 +337,21 @@ test("quitting with a Windows update downloaded installs it silently, once", asy
   assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated", "/S"] }]);
   assert.equal(w.quits(), 0);
 });
+
+test("a Colonia installed from a package is offered that package, never the AppImage", () => {
+  const names = [
+    "Colonia-2.4.0-linux-x86_64.AppImage",
+    "Colonia-2.4.0-linux-amd64.deb",
+    "Colonia-2.4.0-linux-x86_64.rpm",
+    "Colonia-2.4.0-linux-arm64.deb",
+    "Colonia-2.4.0-linux-aarch64.rpm",
+  ];
+  const feed = [
+    { tag_name: "v2.4.0", body: "", assets: names.map((n) => ({ name: n, browser_download_url: `https://x/${n}` })) },
+  ];
+  assert.equal(pickUpdate(feed, "2.3.0", "linux", "x64")?.asset.name, "Colonia-2.4.0-linux-x86_64.AppImage");
+  assert.equal(pickUpdate(feed, "2.3.0", "linux", "x64", "deb")?.asset.name, "Colonia-2.4.0-linux-amd64.deb");
+  assert.equal(pickUpdate(feed, "2.3.0", "linux", "x64", "rpm")?.asset.name, "Colonia-2.4.0-linux-x86_64.rpm");
+  assert.equal(pickUpdate(feed, "2.3.0", "linux", "arm64", "deb")?.asset.name, "Colonia-2.4.0-linux-arm64.deb");
+  assert.equal(pickUpdate(feed, "2.3.0", "linux", "arm64", "rpm")?.asset.name, "Colonia-2.4.0-linux-aarch64.rpm");
+});

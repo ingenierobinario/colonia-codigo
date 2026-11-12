@@ -43,6 +43,11 @@ const words = (es: boolean, platform: string) => ({
       : es
         ? "El servidor se verifica antes de abrir el instalador. Reemplaza esta app manualmente y vuelve a abrirla."
         : "The server is checked before opening the installer. Replace this app manually, then open it again.",
+  // Colonia came from the .deb or .rpm: the system's package manager puts the newer package in, with the owner's password.
+  packageSteps: (command: string) =>
+    es
+      ? `Colonia se instaló con el gestor de paquetes del sistema, así que la versión nueva se instala igual: cierra Colonia, abre una terminal y escribe esta orden (te pedirá tu contraseña):\n\n${command}\n\nLuego vuelve a abrir Colonia.`
+      : `Colonia was installed with the system's package manager, so the new version goes in the same way: quit Colonia, open a terminal and type this command (it asks for your password):\n\n${command}\n\nThen open Colonia again.`,
   restartNow: es ? "Reiniciar ahora" : "Restart now",
   later: es ? "Más tarde" : "Later",
   upToDate: es ? "Colonia está al día" : "Colonia is up to date",
@@ -81,12 +86,15 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
   let told: string | undefined;
 
   async function askRestart(version: string): Promise<void> {
+    const command = updater.packageCommand?.();
     const { response } = await dialog.showMessageBox(window, {
       type: "info",
       message: t.readyTitle(version),
       detail:
         updater.mode === "drag"
-          ? [t.manualReady, t.moveFirst(updater.place)].filter(Boolean).join("\n\n")
+          ? command
+            ? t.packageSteps(command)
+            : [t.manualReady, t.moveFirst(updater.place)].filter(Boolean).join("\n\n")
           : updater.automatic?.() === false
             ? t.remoteReady
             : t.readyDetail,
@@ -112,10 +120,11 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
     }
     if (r.ready) await askRestart(version);
     else {
-      const detail = t.moveFirst(updater.place);
+      const command = updater.packageCommand?.();
+      const detail = command ? t.packageSteps(command) : t.moveFirst(updater.place);
       await dialog.showMessageBox(window, {
         type: "info",
-        message: t.dragged(version),
+        message: command ? t.readyTitle(version) : t.dragged(version),
         ...(detail ? { detail } : {}),
         buttons: [t.ok],
       });

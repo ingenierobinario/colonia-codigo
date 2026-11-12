@@ -1,6 +1,5 @@
 // What the window opens: the first-run choice (server or client) on an installed app, then the Colonia it chose — its
 // own core here, one at an address, or one over SSH. The panel is the same web app in every case.
-import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -22,6 +21,7 @@ import {
 } from "./connection.ts";
 import { type EmbeddedCore, isUp, startEmbeddedCore, waitUp } from "./core-process.ts";
 import { type Remote, reachRemote, type WaitDeps, waitingHtml } from "./remote-wait.ts";
+import { runCommand } from "./run-command.ts";
 import { appKeyPath, askpassSupported, authorizeKey, ensureAppKey, localSshVersion } from "./ssh-login.ts";
 import {
   installArgs,
@@ -90,7 +90,7 @@ export function createConnector(opts: {
     if (!onChooser(e.sender)) return { ok: false, error: "not allowed" };
     if (access !== "none" && access !== "lan" && access !== "tailscale") return { ok: false, error: "bad access" };
     // "Only this computer" undoes an earlier LAN or Tailscale choice too.
-    const r = runCli(["expose", access === "none" ? "off" : access]);
+    const r = await runCli(["expose", access === "none" ? "off" : access]);
     if (!r.ok) return r;
     await restartOwnCore();
     return choose({ mode: "local" }, revision);
@@ -182,8 +182,8 @@ export function createConnector(opts: {
    * key there; from then on every ssh logs in with it. An ssh too old to ask without a terminal: the key, by hand.
    */
   async function passwordLogin(sender: WebContents, target: string): Promise<Answer> {
-    const pubkey = ensureAppKey(dataDir);
-    if (!pubkey || !askpassSupported(localSshVersion()))
+    const pubkey = await ensureAppKey(dataDir);
+    if (!pubkey || !askpassSupported(await localSshVersion()))
       return { ok: false, reason: "sshPasswordManual", ...(pubkey ? { key: pubkey } : {}) };
     step(sender, "login");
     const askpass = await openAskpass({
@@ -257,19 +257,15 @@ export function createConnector(opts: {
   }
 
   /** The bundled terminal (`colonia`), run on Electron's own Node like the core. */
-  function runCli(args: string[]): Answer {
+  async function runCli(args: string[]): Promise<Answer> {
     const main = app.isPackaged
       ? path.join(process.resourcesPath, "colonia", "apps", "terminal", "src", "main.ts")
       : path.resolve(opts.dist, "../../terminal/src/main.ts");
-    const r = spawnSync(process.execPath, ["--disable-warning=ExperimentalWarning", main, ...args], {
+    const r = await runCommand(process.execPath, ["--disable-warning=ExperimentalWarning", main, ...args], {
       env: { ...process.env, COLONIA_URL: "", COLONIA_HOME: localCoreHome(), ELECTRON_RUN_AS_NODE: "1" },
       timeout: 60_000,
-      windowsHide: true,
-      encoding: "utf8",
     });
-    return r.status === 0
-      ? { ok: true }
-      : { ok: false, error: `${r.stdout ?? ""}${r.stderr ?? ""}`.trim().slice(-600) };
+    return r.status === 0 ? { ok: true } : { ok: false, error: `${r.stdout}${r.stderr}`.trim().slice(-600) };
   }
 
   /** `firstRun`: just chosen on the first-run screen, so the panel's setup opens by saying Colonia is installed. */

@@ -1,9 +1,10 @@
 // A server that only takes a password: one interactive ssh (its questions go through askpass to the first-run window)
 // adds this app's own key to the server's authorized_keys, and every later ssh logs in with that key.
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { stripVTControlCharacters } from "node:util";
+import { runCommand } from "./run-command.ts";
 import { splitTarget } from "./ssh-tunnel.ts";
 
 /** The app's key pair, made once in its data folder. */
@@ -22,9 +23,9 @@ export function askpassSupported(version: [number, number] | undefined): boolean
   return Boolean(version && (version[0] > 8 || (version[0] === 8 && version[1] >= 4)));
 }
 
-export function localSshVersion(): [number, number] | undefined {
-  const r = spawnSync("ssh", ["-V"], { timeout: 10_000, windowsHide: true, encoding: "utf8" });
-  return opensshVersion(`${r.stderr ?? ""}${r.stdout ?? ""}`);
+export async function localSshVersion(): Promise<[number, number] | undefined> {
+  const r = await runCommand("ssh", ["-V"], { timeout: 10_000 });
+  return opensshVersion(`${r.stderr}${r.stdout}`);
 }
 
 /** The public key line, only when it is one plain ed25519 key (nothing a shell would read as more). */
@@ -34,14 +35,13 @@ export function publicKeyLine(text: string): string | undefined {
 }
 
 /** Makes the key pair with the system's ssh-keygen the first time; its public line, or undefined when it cannot. */
-export function ensureAppKey(dataDir: string): string | undefined {
+export async function ensureAppKey(dataDir: string, keygen = "ssh-keygen"): Promise<string | undefined> {
   const file = appKeyPath(dataDir);
   if (!fs.existsSync(file)) {
     fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
-    const r = spawnSync("ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "colonia-desktop", "-f", file], {
-      stdio: ["ignore", "ignore", "pipe"],
+    const r = await runCommand(keygen, ["-q", "-t", "ed25519", "-N", "", "-C", "colonia-desktop", "-f", file], {
       timeout: 30_000,
-      windowsHide: true,
+      stdout: false,
     });
     if (r.status !== 0) return undefined;
   }

@@ -57,6 +57,8 @@ function rawUpdater() {
     updater: {
       enabled: true,
       mode: "auto",
+      systemPackage: () => undefined,
+      packageCommand: () => undefined,
       status: () => ({ current: "2.0.0", latest: "2.1.0", notes: [], install: "auto" }),
       check: async () => ({ current: "2.0.0", latest: "2.1.0", notes: [], install: "auto" }),
       install: async (target?: string, defer?: boolean) => {
