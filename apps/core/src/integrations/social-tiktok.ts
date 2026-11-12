@@ -94,7 +94,17 @@ export function tiktokApi(social: Social) {
     if (!res.ok) throw new Error(`TikTok: the video could not be fetched (HTTP ${res.status})`);
     const declared = Number(res.headers.get("content-length"));
     if (declared > TIKTOK_MAX_BYTES) throw new Error("TikTok: the video is over 512 MB; send a smaller file");
-    const bytes = Buffer.from(await res.arrayBuffer());
+    // Read in pieces and stop at the limit: a server that does not say the size cannot fill the core's memory.
+    const parts: Buffer[] = [];
+    let total = 0;
+    if (res.body) {
+      for await (const piece of res.body as AsyncIterable<Uint8Array>) {
+        total += piece.length;
+        if (total > TIKTOK_MAX_BYTES) throw new Error("TikTok: the video is over 512 MB; send a smaller file");
+        parts.push(Buffer.from(piece));
+      }
+    }
+    const bytes = Buffer.concat(parts);
     if (!bytes.length) throw new Error("TikTok: the video address gave an empty file");
     if (bytes.length > TIKTOK_MAX_BYTES) throw new Error("TikTok: the video is over 512 MB; send a smaller file");
     const given = (res.headers.get("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";

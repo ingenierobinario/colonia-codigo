@@ -82,8 +82,8 @@ export function validSshTarget(input: string): boolean {
 export const localCoreHome = (env: NodeJS.ProcessEnv = process.env) =>
   env.COLONIA_HOME || path.join(os.homedir(), ".colonia", "v2");
 
-/** COLONIA_URL selects a connection, never the daemon this computer may start. */
 /**
+ * COLONIA_URL selects a connection, never the daemon this computer may start.
  * A wrong COLONIA_PORT (in the environment or in core.env) never keeps the app from opening: it falls back to 7440 and
  * `warn` gets a sentence saying where to fix it.
  */
