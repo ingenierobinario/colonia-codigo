@@ -51,7 +51,7 @@ sudo apt install ./Colonia-*-linux-amd64.deb     # Debian, Ubuntu (arm64 en ARM)
 sudo dnf install ./Colonia-*-linux-x86_64.rpm    # Fedora, RHEL (aarch64 en ARM)
 ```
 
-El paquete no se actualiza solo: cuando haya una versión nueva, instala el paquete nuevo igual.
+El paquete no se actualiza solo, porque instalarlo pide tu contraseña: cuando haya una versión nueva, Colonia descarga el paquete del mismo tipo (`.deb` o `.rpm`, nunca el `.AppImage`) y te da la orden exacta para instalarlo, por ejemplo `sudo apt install '/home/tu-usuario/Descargas/Colonia-2.4.0-linux-amd64.deb'`. Cierra Colonia, pégala en una terminal y vuelve a abrirla.
 
 ## 2. Conecta tu IA
 

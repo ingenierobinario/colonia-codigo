@@ -38,15 +38,35 @@ export const nodeOs = (p: Platform) => (p.os === "mac" ? "darwin" : p.os === "wi
 /** The daemon on its own (core, terminal, panel and the Node that runs them), as install.sh/ps1 and updates fetch it. */
 export const coreBundleName = (version: string, p: Platform) => `colonia-core-${version}-${p.os}-${p.arch}.tar.gz`;
 
-/** The desktop app's installer for this platform, as electron-builder names it (it says x86_64 for an x64 AppImage). */
+/**
+ * The desktop app's installer for this platform, as electron-builder names it (it says x86_64 for an x64 AppImage).
+ * "deb" and "rpm": Linux's system packages, for a Colonia that came from one (each format has its own arch names).
+ */
 export function desktopAssetFor(
   assets: ReleaseAsset[],
   version: string,
   p: Platform,
-  kind: "installer" | "zip" = "installer",
+  kind: "installer" | "zip" | "deb" | "rpm" = "installer",
 ): ReleaseAsset | undefined {
-  const ext = kind === "zip" ? ".zip" : p.os === "linux" ? ".AppImage" : p.os === "mac" ? ".dmg" : ".exe";
-  const arches = p.arch === "x64" ? ["x64", "x86_64", "amd64"] : ["arm64", "aarch64"];
+  if ((kind === "deb" || kind === "rpm") && p.os !== "linux") return undefined;
+  const ext =
+    kind === "zip"
+      ? ".zip"
+      : kind === "deb" || kind === "rpm"
+        ? `.${kind}`
+        : p.os === "linux"
+          ? ".AppImage"
+          : p.os === "mac"
+            ? ".dmg"
+            : ".exe";
+  const arches =
+    kind === "deb"
+      ? [p.arch === "x64" ? "amd64" : "arm64"]
+      : kind === "rpm"
+        ? [p.arch === "x64" ? "x86_64" : "aarch64"]
+        : p.arch === "x64"
+          ? ["x64", "x86_64", "amd64"]
+          : ["arm64", "aarch64"];
   return assets.find((a) => arches.some((arch) => a.name === `Colonia-${version}-${p.os}-${arch}${ext}`));
 }
 

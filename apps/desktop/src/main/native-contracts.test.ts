@@ -66,6 +66,7 @@ function harness(
     enabled?: boolean;
     mode?: "auto" | "drag";
     place?: "translocated" | "disk-image" | "read-only";
+    packageCommand?: string;
   } = {},
 ) {
   messages.length = 0;
@@ -82,6 +83,8 @@ function harness(
     enabled: options.enabled ?? true,
     mode: options.mode ?? "auto",
     place: options.place,
+    systemPackage: () => undefined,
+    packageCommand: () => options.packageCommand,
     check: async () => {
       checks++;
       return status;
@@ -209,6 +212,18 @@ test("a Mac app that cannot replace itself says why and to open it from Applicat
   zip.result({ ok: true, ready: false });
   await click(zip.menu.item({ ...initial, latest: "2.1.0" }));
   assert.equal(messages[0]?.detail, undefined);
+
+  // Installed from the .deb or .rpm: the package manager's command, not "open the file".
+  for (const [es, command] of [
+    [false, "sudo apt install '/home/ana/Downloads/Colonia-2.1.0-linux-amd64.deb'"],
+    [true, "sudo dnf install '/home/ana/Descargas/Colonia-2.1.0-linux-x86_64.rpm'"],
+  ] as const) {
+    const pkg = harness({ mode: "drag", es, packageCommand: command });
+    pkg.result({ ok: true, ready: false });
+    await click(pkg.menu.item({ ...initial, latest: "2.1.0" }));
+    assert.ok(String(messages[0]?.detail).includes(`\n\n${command}\n\n`), String(messages[0]?.detail));
+    assert.doesNotMatch(String(messages[0]?.message), /open it|ábrelo/);
+  }
 });
 
 test("background releases notify once per version and notification clicks ask before restart", async () => {

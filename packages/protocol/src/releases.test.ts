@@ -83,6 +83,21 @@ test("each platform finds its own installer and daemon bundle", () => {
   assert.equal(desktopAssetFor(assets, "2.2.1", mac), undefined);
   assert.equal(desktopAssetFor(assets, "2.2.0", mac, "zip")?.name, "Colonia-2.2.0-mac-arm64.zip");
   assert.equal(coreBundleName("2.2.0", linux), "colonia-core-2.2.0-linux-x64.tar.gz");
+  // A Colonia installed from the system package updates with the same package, each format with its own arch names.
+  const pkgs = [
+    "Colonia-2.2.0-linux-amd64.deb",
+    "Colonia-2.2.0-linux-x86_64.rpm",
+    "Colonia-2.2.0-linux-arm64.deb",
+    "Colonia-2.2.0-linux-aarch64.rpm",
+  ].map((n) => ({ name: n, url: n }));
+  const arm = platformOf("linux", "arm64");
+  assert.ok(arm);
+  assert.equal(desktopAssetFor(pkgs, "2.2.0", linux, "deb")?.name, "Colonia-2.2.0-linux-amd64.deb");
+  assert.equal(desktopAssetFor(pkgs, "2.2.0", linux, "rpm")?.name, "Colonia-2.2.0-linux-x86_64.rpm");
+  assert.equal(desktopAssetFor(pkgs, "2.2.0", arm, "deb")?.name, "Colonia-2.2.0-linux-arm64.deb");
+  assert.equal(desktopAssetFor(pkgs, "2.2.0", arm, "rpm")?.name, "Colonia-2.2.0-linux-aarch64.rpm");
+  assert.equal(desktopAssetFor(pkgs, "2.2.0", linux), undefined, "a package is not offered as the AppImage");
+  assert.equal(desktopAssetFor(pkgs, "2.2.0", mac, "deb"), undefined);
   assert.equal(platformOf("freebsd", "x64"), undefined);
   assert.equal(platformOf("linux", "ia32"), undefined);
 });
