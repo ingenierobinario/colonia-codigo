@@ -1,5 +1,5 @@
 import type { EngineStatus } from "@colonia/protocol";
-import { EngineIcon, engineBrand, Icons } from "@colonia/ui";
+import { EngineIcon, engineBrand, IconButton, Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { rememberSidebar, setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
@@ -69,6 +69,15 @@ export function ExternalSessionsNav({ rail }: { rail: boolean }) {
       <SidebarSection
         rail={rail}
         title={t("nav.externalSessions")}
+        action={
+          <IconButton
+            size="sm"
+            className="sidebar__add"
+            label={t("nav.addEngine")}
+            icon={<Icons.Plus size={14} />}
+            onClick={() => go.config("external")}
+          />
+        }
         folded={folded}
         onToggle={() => {
           setMoreOpen(false);
