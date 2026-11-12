@@ -6,6 +6,7 @@ import { desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED
 import { type LinuxHost, linuxHost } from "./appimage.ts";
 import { downloadDesktop } from "./download.ts";
 import { openLinuxDesktop } from "./linux-launch.ts";
+import { type PackageKind, packageCommand, packageInstallArgs, packageOwner } from "./linux-package.ts";
 import { desktopCandidates, desktopDataDir, hasDesktop, type LocalTarget, saveLocalTarget } from "./paths.ts";
 import { installDesktopFile } from "./platform.ts";
 import { type ProcessRunner, runProcess } from "./process.ts";
@@ -26,6 +27,10 @@ export type DesktopInstallOptions = {
   session?: () => NodeJS.ProcessEnv;
   /** What is read from a Linux machine to explain an AppImage that will not start. */
   host?: LinuxHost;
+  /** Which package database owns an installed Linux app, and its version; undefined for an AppImage or a loose copy. */
+  linuxPackage?: (app: string) => Promise<{ kind: PackageKind; version: string } | undefined>;
+  /** Whether this process may run the package manager itself (it runs as root). */
+  privileged?: boolean;
   /** Something the person should know although the app opened. */
   note?: (text: string) => void;
 };
@@ -41,6 +46,13 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
   const candidates = opts.candidates ?? desktopCandidates(opts.platform, opts.env, opts.userHome);
   const found = () => candidates.find((p) => fs.existsSync(p));
   const run = opts.run ?? runProcess;
+  /** Where a package the owner installs by hand is left: their downloads, or the desktop's own folder. */
+  const keepDir = () => {
+    const downloads = path.join(opts.userHome, "Downloads");
+    const dir = fs.existsSync(downloads) ? downloads : desktopDataDir(opts.platform, env, opts.userHome);
+    fs.mkdirSync(dir, { recursive: true });
+    return dir;
+  };
   const available = () => {
     if (opts.feed === "off" && !found()) return false;
     if (!hasDesktop(opts.platform, env) && opts.session && Date.now() - checkedSession > 30_000) {
@@ -67,24 +79,23 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
   async function install(signal: AbortSignal): Promise<void> {
     let work: string | undefined;
     try {
-      let app = found();
-      if (!app) {
-        const platform = platformOf(opts.platform, opts.arch);
+      const platform = platformOf(opts.platform, opts.arch);
+      const fetchImpl: typeof fetch = (input, init) =>
+        (opts.fetch ?? fetch)(input, {
+          ...init,
+          signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]),
+        });
+      /** The release wanted (or the newest) with a file of this kind, downloaded and checked into `dir`. */
+      const fetchFile = async (kind: "installer" | "zip" | PackageKind, dir: () => string) => {
         if (!platform) throw new Error("No desktop app for this platform");
-        const fetchImpl: typeof fetch = (input, init) =>
-          (opts.fetch ?? fetch)(input, {
-            ...init,
-            signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]),
-          });
         const release = newerReleases(await fetchReleases(opts.feed || RELEASE_FEED, fetchImpl), "0.0.0")
           .filter((r) => !opts.version || r.version === opts.version)
-          .find((r) => desktopAssetFor(r.assets, r.version, platform, platform.os === "mac" ? "zip" : "installer"));
-        const asset =
-          release &&
-          desktopAssetFor(release.assets, release.version, platform, platform.os === "mac" ? "zip" : "installer");
+          .find((r) => desktopAssetFor(r.assets, r.version, platform, kind));
+        const asset = release && desktopAssetFor(release.assets, release.version, platform, kind);
         if (!release || !asset) throw new Error("No desktop download available for this system");
-        work = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-install-"));
-        const file = path.join(work, asset.name);
+        const file = path.join(dir(), asset.name);
+        // A package left in Downloads by an earlier try is fetched again and checked, not trusted.
+        fs.rmSync(file, { force: true });
         await downloadDesktop({
           asset,
           assets: release.assets,
@@ -94,11 +105,33 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
           progress: (received, total) => change({ received, ...(total ? { total } : {}) }),
         });
         signal.throwIfAborted();
+        return { file, version: release.version };
+      };
+      const scratch = () => {
+        work = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-install-"));
+        return work;
+      };
+      let app = found();
+      // A Colonia the package manager owns is updated by the package manager, never by an AppImage beside it.
+      const owned = app && opts.platform === "linux" ? await (opts.linuxPackage ?? packageOwner)(app) : undefined;
+      if (app && owned && opts.version && owned.version !== opts.version) {
+        const privileged = opts.privileged ?? process.getuid?.() === 0;
+        const { file } = await fetchFile(owned.kind, () => (privileged ? scratch() : keepDir()));
+        if (!privileged)
+          throw new Error(
+            `Colonia ${opts.version} is downloaded. Install it with your package manager: ${packageCommand(owned.kind, file)}`,
+          );
+        change({ phase: "installing" });
+        const [command, args] = packageInstallArgs(owned.kind, file);
+        await run(command, args, { signal, env: launchEnv(env) });
+      }
+      if (!app) {
+        const file = (await fetchFile(platform?.os === "mac" ? "zip" : "installer", scratch)).file;
         change({ phase: "installing" });
         app = await installDesktopFile(
           { platform: opts.platform, userHome: opts.userHome, env: launchEnv(env), run, found },
           file,
-          work,
+          work ?? scratch(),
           signal,
         );
       }
@@ -107,7 +140,7 @@ export function createDesktopInstaller(opts: DesktopInstallOptions) {
       if (target) saveLocalTarget(desktopDataDir(opts.platform, env, opts.userHome), target);
       change({ phase: "opening" });
       const args = target ? ["--colonia-adopt-local"] : [];
-      if (opts.platform === "linux")
+      if (opts.platform === "linux" && app.endsWith(".AppImage"))
         await openLinuxDesktop({
           app,
           args,

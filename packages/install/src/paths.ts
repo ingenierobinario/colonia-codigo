@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { CORE_ENV_FILE, parseCoreEnv, serializeCoreEnv } from "@colonia/protocol";
+import { PACKAGE_APP } from "./linux-package.ts";
 
 export function desktopCandidates(platform: string, env: NodeJS.ProcessEnv, home: string): string[] {
   if (platform === "darwin") return ["/Applications/Colonia.app", path.posix.join(home, "Applications", "Colonia.app")];
@@ -12,7 +13,8 @@ export function desktopCandidates(platform: string, env: NodeJS.ProcessEnv, home
       path.win32.join(local, "Programs", "@coloniadesktop", "Colonia.exe"),
     ];
   }
-  return [path.posix.join(home, "Applications", "Colonia.AppImage")];
+  // A Colonia from the .deb or the .rpm comes first: opening an AppImage beside it would run a second copy.
+  return [PACKAGE_APP, path.posix.join(home, "Applications", "Colonia.AppImage")];
 }
 
 export function desktopDataDir(platform: string, env: NodeJS.ProcessEnv, home: string): string {

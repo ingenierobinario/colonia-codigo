@@ -21,7 +21,10 @@ test("the desktop app is looked for where each installer puts it", () => {
     installed,
   );
   assert.deepEqual(desktopCandidates("win32", {}, "C:\\Users\\u"), installed);
-  assert.deepEqual(desktopCandidates("linux", {}, "/home/u"), ["/home/u/Applications/Colonia.AppImage"]);
+  assert.deepEqual(desktopCandidates("linux", {}, "/home/u"), [
+    "/opt/Colonia/colonia",
+    "/home/u/Applications/Colonia.AppImage",
+  ]);
 });
 
 test("desktop handoff refuses a port belonging to another home", async () => {

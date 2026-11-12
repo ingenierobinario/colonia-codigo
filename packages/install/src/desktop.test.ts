@@ -8,7 +8,7 @@ import path from "node:path";
 import { test } from "node:test";
 import type { LinuxHost } from "./appimage.ts";
 import { createDesktopInstaller, type DesktopInstallOptions } from "./desktop.ts";
-import { desktopDataDir, hasDesktop } from "./paths.ts";
+import { desktopCandidates, desktopDataDir, hasDesktop } from "./paths.ts";
 import type { ProcessRunner } from "./process.ts";
 
 /** A Linux machine where AppImages mount, so the plain launch path runs on any platform. */
@@ -654,3 +654,147 @@ test("a blocked sandbox is explained and never worked around", async () => {
     await r.f.close();
   }
 });
+
+/** A Colonia a package put in place: the package's directory stands inside the temporary home. */
+function packaged(kind: "deb" | "rpm") {
+  const pkg = `Colonia-2.9.1-linux-${kind === "deb" ? "amd64" : "x86_64"}.${kind}`;
+  const f = fixture();
+  const opt = path.join(f.home, "opt", "Colonia", "colonia");
+  const appImage = path.join(f.home, "Applications", "Colonia.AppImage");
+  fs.mkdirSync(path.dirname(opt), { recursive: true });
+  fs.writeFileSync(opt, "installed by the package manager");
+  return { f, opt, appImage, pkg };
+}
+
+test("Linux checks the place the .deb and the .rpm install to before the AppImage", () => {
+  assert.deepEqual(desktopCandidates("linux", {}, "/home/u"), [
+    "/opt/Colonia/colonia",
+    "/home/u/Applications/Colonia.AppImage",
+  ]);
+});
+
+test("a Colonia installed from a package opens as it is, with no AppImage, download or menu entry of its own", async () => {
+  const { f, opt, appImage } = packaged("deb");
+  const installer = createDesktopInstaller({
+    platform: "linux",
+    arch: "x64",
+    userHome: f.home,
+    env: { DISPLAY: ":1", COLONIA_DESKTOP_DATA: path.join(f.home, "desktop") },
+    feed: "https://releases.example",
+    candidates: [opt, appImage],
+    fetch: f.fakeFetch,
+    run: async (command, args, options) => {
+      f.calls.push({ command, args, env: options.env });
+    },
+    host: mounts,
+    linuxPackage: async () => ({ kind: "deb", version: "2.9.1" }),
+  });
+  try {
+    installer.start();
+    assert.equal((await installer.wait()).phase, "ready");
+    assert.equal(f.requests.length, 0);
+    assert.equal(fs.existsSync(appImage), false);
+    assert.deepEqual(
+      f.calls.map((c) => c.command),
+      [opt],
+    );
+    assert.equal(fs.existsSync(path.join(f.home, ".local/share/applications/colonia.desktop")), false);
+  } finally {
+    await installer.close();
+    await f.close();
+  }
+});
+
+for (const kind of ["deb", "rpm"] as const)
+  test(`an older ${kind} Colonia is updated with the newer ${kind}, never an AppImage beside it`, async () => {
+    const { f, opt, appImage, pkg } = packaged(kind);
+    const installer = createDesktopInstaller({
+      platform: "linux",
+      arch: "x64",
+      userHome: f.home,
+      env: { DISPLAY: ":1", COLONIA_DESKTOP_DATA: path.join(f.home, "desktop") },
+      feed: "https://releases.example",
+      version: "2.9.1",
+      candidates: [opt, appImage],
+      fetch: async (input) => {
+        f.requests.push(String(input));
+        return (await packagedFetch(pkg))(input);
+      },
+      run: async (command, args, options) => {
+        f.calls.push({ command, args, env: options.env });
+      },
+      host: mounts,
+      linuxPackage: async () => ({ kind, version: "2.8.0" }),
+      privileged: false,
+    });
+    try {
+      // Without the privileges the package is left where the owner finds it, with the one command to run.
+      installer.start();
+      const result = await installer.wait();
+      assert.equal(result.phase, "failed");
+      const kept = path.join(f.home, "desktop", pkg);
+      assert.equal(fs.readFileSync(kept, "utf8"), "package");
+      assert.ok(result.error?.includes(kind === "deb" ? `sudo apt install '${kept}'` : `sudo dnf install '${kept}'`));
+      assert.equal(fs.existsSync(appImage), false);
+      assert.deepEqual(f.calls, []);
+      assert.ok(f.requests.every((r) => !r.includes(".AppImage")));
+    } finally {
+      await installer.close();
+      await f.close();
+    }
+  });
+
+test("an installer that already runs as root puts the package in itself and opens the updated app", async () => {
+  for (const kind of ["deb", "rpm"] as const) {
+    const { f, opt, appImage, pkg } = packaged(kind);
+    const installer = createDesktopInstaller({
+      platform: "linux",
+      arch: "x64",
+      userHome: f.home,
+      env: { DISPLAY: ":1", COLONIA_DESKTOP_DATA: path.join(f.home, "desktop") },
+      feed: "https://releases.example",
+      version: "2.9.1",
+      candidates: [opt, appImage],
+      fetch: await packagedFetch(pkg),
+      run: async (command, args, options) => {
+        f.calls.push({ command, args, env: options.env });
+      },
+      host: mounts,
+      linuxPackage: async () => ({ kind, version: "2.8.0" }),
+      privileged: true,
+    });
+    try {
+      installer.start();
+      assert.equal((await installer.wait()).phase, "ready");
+      assert.equal(f.calls.length, 2);
+      assert.equal(f.calls[0]?.command, kind === "deb" ? "apt-get" : "dnf");
+      assert.deepEqual(f.calls[0]?.args.slice(0, 2), ["install", "-y"]);
+      assert.ok(f.calls[0]?.args[2]?.endsWith(pkg));
+      assert.equal(f.calls[1]?.command, opt);
+      assert.equal(fs.existsSync(appImage), false);
+    } finally {
+      await installer.close();
+      await f.close();
+    }
+  }
+});
+
+async function packagedFetch(pkg: string): Promise<typeof fetch> {
+  return async (input) => {
+    if (String(input).includes("/releases?"))
+      return Response.json([
+        {
+          tag_name: "v2.9.1",
+          assets: [
+            "Colonia-2.9.1-linux-x64.AppImage",
+            "Colonia-2.9.1-linux-x64.AppImage.sha256",
+            pkg,
+            `${pkg}.sha256`,
+          ].map((name) => ({ name, browser_download_url: `https://releases.example/${name}` })),
+        },
+      ]);
+    return String(input).endsWith(".sha256")
+      ? new Response(createHash("sha256").update("package").digest("hex"))
+      : new Response("package");
+  };
+}
