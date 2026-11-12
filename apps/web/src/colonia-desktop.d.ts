@@ -7,6 +7,14 @@ type ConnectAnswer =
 export type SshPrompt = { id: string; text: string; secret: boolean };
 
 /** PROGRAMAS-1: a desktop program pinned in the sidebar (icon: a data: URL from the system). */
+export type ImportSource = { id: string; navegador: "chrome" | "edge" | "brave" | "firefox"; perfil: string };
+export type ImportRead = {
+  marcadores: { titulo: string; url: string }[];
+  visitadas: { host: string; visitas: number }[];
+  visitadasNoDisponibles: boolean;
+};
+export type SavedLogin = { id: string; app: string; origen: string; usuario: string };
+export type LoginOffer = { id: string; app: string; sitio: string; usuario: string; cambia: boolean };
 export type DesktopProgram = { id: string; name: string; path: string; icon?: string };
 
 /** The desktop app's own update (it carries its own core). */
@@ -114,6 +122,19 @@ declare global {
       removeProgram?(id: string): Promise<DesktopProgram[]>;
       /** "" when it started; "missing" when the file is gone; else why not. */
       launchProgram?(id: string): Promise<string>;
+      /** Perfiles de Chrome, Edge, Brave y Firefox encontrados en este equipo (sin rutas). Nada se lee hasta importar. */
+      importSources?(): Promise<ImportSource[]>;
+      /** Marcadores y webs más visitadas de un perfil; undefined si ya no existe. */
+      importRead?(id: string): Promise<ImportRead | undefined>;
+      /** Si el sistema puede cifrar contraseñas; si no, Colonia no guarda ninguna. */
+      loginsAvailable?(): Promise<boolean>;
+      loginsList?(): Promise<SavedLogin[]>;
+      /** Pide confirmación al sistema (Windows Hello, Touch ID o un aviso) y devuelve la contraseña. */
+      loginsReveal?(id: string): Promise<{ ok: boolean; contrasena?: string }>;
+      loginsRemove?(id: string): Promise<boolean>;
+      answerLoginOffer?(id: string, answer: "guardar" | "nunca" | "ahora-no"): Promise<string>;
+      /** Una web app ha visto un acceso nuevo: se ofrece guardarlo (el panel nunca recibe la contraseña). */
+      onLoginOffer?(listener: (offer: LoginOffer) => void): () => void;
       /** Whether a newer Colonia app is out; `check` asks the release feed now. */
       updateStatus?(check?: boolean): Promise<DesktopUpdate | undefined>;
       /** Downloads the newer app and leaves it ready (`ready: false`: opened for the owner to drag in). */

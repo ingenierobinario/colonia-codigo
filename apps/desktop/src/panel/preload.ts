@@ -92,6 +92,21 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
     ipcRenderer.invoke("programs:rename", String(id), String(name)),
   removeProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:remove", String(id)),
   launchProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:launch", String(id)),
+  /** Importar del navegador habitual: solo marcadores y webs más visitadas, y solo cuando se pide. */
+  importSources: (): Promise<unknown> => ipcRenderer.invoke("import:sources"),
+  importRead: (id: string): Promise<unknown> => ipcRenderer.invoke("import:read", String(id)),
+  /** Contraseñas de las aplicaciones web: la lista nunca lleva la contraseña; verla pide confirmación del sistema. */
+  loginsAvailable: (): Promise<unknown> => ipcRenderer.invoke("logins:available"),
+  loginsList: (): Promise<unknown> => ipcRenderer.invoke("logins:list"),
+  loginsReveal: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:reveal", String(id)),
+  loginsRemove: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:remove", String(id)),
+  answerLoginOffer: (id: string, answer: "guardar" | "nunca" | "ahora-no"): Promise<unknown> =>
+    ipcRenderer.invoke("logins:answer", String(id), answer),
+  onLoginOffer: (listener: (offer: unknown) => void) => {
+    const on = (_e: unknown, offer: unknown) => listener(offer);
+    ipcRenderer.on("logins:offer", on);
+    return () => ipcRenderer.removeListener("logins:offer", on);
+  },
   memory: (): Promise<unknown> => ipcRenderer.invoke("desktop:memory"),
   /** Whether a newer Colonia app is out (check: ask the release feed now). */
   updateAuth: (token?: string) => ipcRenderer.send("desktop:update-auth", token),

@@ -73,6 +73,10 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
   onAttention: (message: string) => void = () => {};
   /** Called whenever the visible tab changes, so the window can lay it out. */
   onShow: (view: WebContentsView | undefined) => void = () => {};
+  /** Preload of the web apps (saved passwords); never given to shared, agent or incognito tabs. */
+  appPreload: string | undefined;
+  /** Called with each web app's id and its page, so the shell can tell which app a message comes from. */
+  onAppView: (appId: string, wc: WebContents) => void = () => {};
 
   get active(): string | undefined {
     return this.#active;
@@ -268,9 +272,11 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         contextIsolation: true,
         nodeIntegration: false,
         backgroundThrottling: false,
+        ...(profile.startsWith("app:") && this.appPreload ? { preload: this.appPreload } : {}),
       },
     });
     const wc = view.webContents;
+    if (profile.startsWith("app:")) this.onAppView(profile.slice("app:".length), wc);
     // Popups stay in the same tab and keep the same owner/profile.
     wc.setWindowOpenHandler(({ url: next }) => {
       try {

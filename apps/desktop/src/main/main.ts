@@ -19,16 +19,17 @@ import {
   WebContentsView,
 } from "electron";
 import { showAbout } from "./about.ts";
-import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
 import { registerAppScheme, serveAppScheme, webDist } from "./app-scheme.ts";
 import { createArtifactWindows } from "./artifact-windows.ts";
 import { runAskpass } from "./askpass.ts";
+import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
 import { installedBrowsers, isWebUrl, openExternal } from "./browser/external.ts";
 import { BrowserHost, blockAppOrigins } from "./browser/host.ts";
 import { type Bounds, createPopout } from "./browser/popout.ts";
 import { COMPUTER_PLATFORMS, computerPermissions, createComputer, openPrivacy } from "./computer.ts";
 import { applySavedLocalTarget, loadConnection, localCoreUrl } from "./connection.ts";
 import { createConnector } from "./connector.ts";
+import { registrarContrasenas } from "./contrasenas/registro.ts";
 import { createCursor } from "./cursor.ts";
 import { editMenu } from "./edit-menu.ts";
 import { hasTrayHost, sandboxNotice, sandboxText } from "./linux-desktop.ts";
@@ -608,12 +609,24 @@ app.whenReady().then(() => {
         properties: ["openFile", "multiSelections"],
         filters,
         defaultPath:
-          process.platform === "darwin" ? "/Applications" : process.platform === "win32" ? process.env.ProgramFiles : undefined,
+          process.platform === "darwin"
+            ? "/Applications"
+            : process.platform === "win32"
+              ? process.env.ProgramFiles
+              : undefined,
       });
       return r.canceled ? [] : r.filePaths;
     },
     openPath: (p) => shell.openPath(p),
     icon: async (p) => (await app.getFileIcon(p, { size: "normal" })).toDataURL(),
+  });
+  registrarContrasenas({
+    host,
+    panel: panel.webContents,
+    ventana: () => win,
+    idioma: () => language,
+    datos: app.getPath("userData"),
+    dist: DIST,
   });
   ipcMain.handle("programs:list", (e) => (e.sender === panel.webContents ? programs.list() : []));
   ipcMain.handle("programs:add", (e) => (e.sender === panel.webContents ? programs.add() : []));
