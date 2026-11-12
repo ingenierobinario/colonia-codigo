@@ -220,6 +220,7 @@ test("-NoService over an installed server leaves its service alone and says how 
       execFileSync("reg", ["delete", runKey, "/v", value, "/f"], { windowsHide: true, stdio: "ignore" });
     }
   });
+});
 
 test("el instalador de Windows registra el equipo en Aplicaciones instaladas y se desconecta antes de desinstalar", () => {
   const text = fs.readFileSync(path.resolve(import.meta.dirname, "install/install.ps1"), "utf8");
