@@ -34,6 +34,7 @@ import {
   MemorySettings,
   Message,
   ModelChoice,
+  Navegador,
   NoticePrefs,
   Nudge,
   Organization,
@@ -1449,6 +1450,20 @@ export const appMethods = {
     /** keyed: the apps whose connector has a key saved (the key itself never leaves the core). */
     result: z.object({ apps: z.array(WebApp), keyed: z.array(z.string()) }),
     effect: false,
+    access: "human",
+  },
+  /** NAVEGADORES-1: the browser profiles of the sidebar's Navegadores. */
+  "navegadores.list": {
+    params: z.object({}).strict(),
+    result: z.object({ navegadores: z.array(Navegador) }),
+    effect: false,
+    access: "human",
+  },
+  /** Adds or changes (navegador) or removes (null) one. */
+  "navegadores.set": {
+    params: z.object({ id: Navegador.shape.id, navegador: Navegador.omit({ id: true }).nullable() }).strict(),
+    result: z.object({ navegadores: z.array(Navegador) }),
+    effect: true,
     access: "human",
   },
   /** Adds or changes (app) or removes (null) a web app of the sidebar. */

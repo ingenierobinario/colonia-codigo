@@ -170,3 +170,43 @@
   font-size: var(--colonia-text-xs);
   color: var(--colonia-fg-muted);
 }
+
+/* NAVEGADORES-1: a browser profile in the main area: its name and tabs, then the toolbar, then the page. */
+.navegador__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--line, var(--colonia-border));
+}
+.navegador__name {
+  flex: none;
+  max-width: 30%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 13px;
+}
+.navegador__tabs {
+  flex: 1;
+  min-width: 0;
+}
+.navegador__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 8px;
+}
+.navegador__bar > .btoolbar {
+  flex: 1;
+  min-width: 0;
+  padding-left: 0;
+}
+.navegador__empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}

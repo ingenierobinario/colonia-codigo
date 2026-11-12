@@ -30,7 +30,8 @@ export async function bootstrap(): Promise<void> {
       .call("environments.status", {})
       .then((status) => ({ chats: status.enabled ? (status.chats ?? []) : [], computers: computersOf(status) }))
       .catch((error: unknown) => {
-        if (error instanceof ColoniaError && error.code === "unknown_method") return { chats: [], computers: NO_COMPUTERS };
+        if (error instanceof ColoniaError && error.code === "unknown_method")
+          return { chats: [], computers: NO_COMPUTERS };
         return { chats: data.get().vmThreads, computers: data.get().computers };
       }),
   ]);
@@ -407,9 +408,9 @@ export async function browserHistory(tab: string, action: "back" | "forward" | "
   }
 }
 
-export async function browserOpen(url: string): Promise<string | undefined> {
+export async function browserOpen(url: string, profile?: `nav:${string}`): Promise<string | undefined> {
   try {
-    const info = await client.call("browser.open", { url, by: "operator" });
+    const info = await client.call("browser.open", { url, by: "operator", ...(profile ? { profile } : {}) });
     data.set((s) => ({ tabs: [...s.tabs.filter((t) => t.tab !== info.tab), info] }));
     return info.tab;
   } catch (e) {

@@ -2,7 +2,7 @@
 import type { WebApp } from "@colonia/protocol";
 import { Button, ContextMenu, Dialog, IconButton, Icons, Input, Menu, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
-import { abrirAsistente, yaOfrecido } from "../data/migrar.ts";
+import { abrirAsistente } from "../data/migrar.ts";
 import { usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
@@ -10,7 +10,6 @@ import { usePack, useT } from "../i18n/index.ts";
 import { addProgram, canPinPrograms, ProgramItems } from "../programs/ProgramsDock.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
-import { ImportWizard } from "./ImportWizard.tsx";
 import { presetOf, unreadFromTitle, WEBAPP_PRESETS } from "./presets.ts";
 import "../styles/webapps.css";
 
@@ -57,16 +56,11 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
   const unread = useUnread();
   const [editing, setEditing] = useState<WebApp | "new">();
   const folded = usePrefs((s) => s.appsFolded);
-  const loaded = useWebApps((s) => s.loaded);
   const puedeImportar = typeof window.coloniaDesktop?.importSources === "function";
   const migrarListo = usePack("migrar");
   useEffect(() => {
     void loadWebApps();
   }, []);
-  // IMPORTAR-1: la primera vez, sin aplicaciones ancladas, se ofrece traerlas del navegador de siempre.
-  useEffect(() => {
-    if (loaded && puedeImportar && !apps.length && !yaOfrecido()) abrirAsistente();
-  }, [loaded, puedeImportar, apps.length]);
   // Folded with the rest of Aplicaciones (the rail always shows the icons).
   if (folded && !rail) return null;
 
@@ -137,7 +131,6 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
         </ContextMenu>
       ))}
       <ProgramItems rail={rail} />
-      <ImportWizard />
       {editing && (
         <WebAppDialog
           initial={editing === "new" ? undefined : editing}

@@ -1,32 +1,13 @@
-// CONTRASENAS-1 / IMPORTAR-1: en Ajustes, importar del navegador de siempre y las contraseñas guardadas de las
-// aplicaciones web (paginadas, con filtro). Ver una contraseña pide confirmar al sistema; nada se guarda en claro.
+// CONTRASENAS-1: en Ajustes, las contraseñas guardadas de las aplicaciones web (paginadas, con filtro).
+// Ver una contraseña pide confirmar al sistema; nada se guarda en claro.
 import { Button, EmptyState, Icons, SearchField } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import type { SavedLogin } from "../colonia-desktop.d.ts";
-import { abrirAsistente } from "../data/migrar.ts";
 import { notify } from "../data/notices.ts";
 import { usePack, useT } from "../i18n/index.ts";
 import "../styles/webapps.css";
 
 const POR_PAGINA = 8;
-
-export function MigrarSection() {
-  const listo = usePack("migrar");
-  const desktop = window.coloniaDesktop;
-  const t = useT();
-  if (!listo || !desktop?.importSources) return null;
-  return (
-    <div className="config__section">
-      <h3 className="config__subhead">{t("migrar.cfg.title")}</h3>
-      <p className="config__hint">{t("migrar.cfg.body")}</p>
-      <div className="config__actions">
-        <Button variant="secondary" onClick={abrirAsistente}>
-          {t("migrar.cfg.open")}
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 export function LoginsSection() {
   const listo = usePack("migrar");

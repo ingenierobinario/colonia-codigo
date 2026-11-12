@@ -7,7 +7,7 @@ import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { unreadListed } from "../inbox/groupThreads.ts";
-import { AppsDock, CornerCards, DesktopInstallNotice, WebAppsDock } from "../lazy.ts";
+import { AppsDock, CornerCards, DesktopInstallNotice, NavegadoresDock, WebAppsDock } from "../lazy.ts";
 import { AccountRow } from "./AccountRow.tsx";
 import { ChannelsNav } from "./ChannelsNav.tsx";
 import { EquiposNav } from "./EquiposNav.tsx";
@@ -123,6 +123,9 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
         </Suspense>
         <Suspense fallback={null}>
           <WebAppsDock rail={rail} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <NavegadoresDock rail={rail} />
         </Suspense>
 
         <EquiposNav rail={rail} />

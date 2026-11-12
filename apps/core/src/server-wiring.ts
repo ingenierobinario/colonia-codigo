@@ -58,6 +58,7 @@ import { jobHandlers } from "./rpc/jobs.ts";
 import { mcpHandlers } from "./rpc/mcp.ts";
 import { mediaHandlers } from "./rpc/media.ts";
 import { memoryHandlers } from "./rpc/memory.ts";
+import { navegadorHandlers } from "./rpc/navegadores.ts";
 import { noticeHandlers } from "./rpc/notices.ts";
 import { notificationHandlers } from "./rpc/notifications.ts";
 import { phoneHandlers } from "./rpc/phone.ts";
@@ -307,6 +308,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...flowHandlers(d.store, d.flows, d.publicCredentials, d.flowModel, d.bus),
     ...noticeHandlers(d.store, d.nudges),
     ...webAppHandlers(d.store, d.mcp, d.secrets),
+    ...navegadorHandlers(d.store),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),

@@ -29,7 +29,8 @@ export type View =
   | "equipos"
   | "channel"
   | "engine"
-  | "webapp";
+  | "webapp"
+  | "navegador";
 
 export const PROJECT_TABS = [
   { id: "overview", label: "project.tab.overview" },
@@ -79,6 +80,8 @@ export type NavState = {
   appId: string | undefined;
   /** WEBAPP-1: the web app of the sidebar shown in the main area. */
   webAppId: string | undefined;
+  /** NAVEGADORES-1: the browser profile of the sidebar shown in the main area. */
+  navegadorId?: string | undefined;
   panel: PanelKind | null;
   /** The side panel takes half the chat area (files, changes, a terminal), instead of its usual column. */
   panelWide: boolean;
@@ -162,6 +165,7 @@ function fromHash(): Partial<NavState> {
   const panel = h.get("panel");
   const app = h.get("app");
   const webapp = h.get("webapp");
+  const navegador = h.get("navegador");
   const project = h.get("project");
   const tab = h.get("tab");
   const view = h.get("view");
@@ -191,6 +195,7 @@ function fromHash(): Partial<NavState> {
       : {}),
     ...(app ? { view: "app" as const, appId: app } : {}),
     ...(webapp ? { view: "webapp" as const, webAppId: webapp } : {}),
+    ...(navegador ? { view: "navegador" as const, navegadorId: navegador } : {}),
     ...(channel ? { view: "channel" as const, channelId: channel, channelThread: h.get("chat") ?? undefined } : {}),
     // An engine's view opens on one of its sessions or on none: never on the chat the app started with.
     ...(h.get("engine")
@@ -246,6 +251,7 @@ const PLACE = [
   "threadId",
   "appId",
   "webAppId",
+  "navegadorId",
   "channelId",
   "channelThread",
   "engineId",
@@ -315,6 +321,7 @@ nav.subscribe(() => {
   const h = new URLSearchParams();
   if (s.view === "app" && s.appId) h.set("app", s.appId);
   else if (s.view === "webapp" && s.webAppId) h.set("webapp", s.webAppId);
+  else if (s.view === "navegador" && s.navegadorId) h.set("navegador", s.navegadorId);
   else if (s.view === "project" && s.projectId) {
     h.set("project", s.projectId);
     h.set("tab", s.projectTab);
@@ -467,6 +474,9 @@ export const go = {
   },
   webapp(webAppId: string) {
     nav.set({ view: "webapp", webAppId });
+  },
+  navegador(navegadorId: string) {
+    nav.set({ view: "navegador", navegadorId });
   },
   /** The Flows screen; with a flow, its runs, and with `edit` its editor over them. */
   flows(flowProject?: string, flowId?: string, flowEdit = false) {

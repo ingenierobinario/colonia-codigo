@@ -38,6 +38,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "email.signature_import": "it only fills the owner's signature editor with Gmail's; saving it is theirs",
   "engines.set_usage": "the owner chooses whether Colonia queries and displays their external account limits",
   "secrets.set": SECRET,
+  "navegadores.set": "the owner chooses which of their browsers sit in the sidebar",
   "webapps.set": "the owner chooses which web apps sit in the sidebar and signs in to them",
   "equipos.pair_start": SECRET,
   "equipos.pair_cancel": SECRET,

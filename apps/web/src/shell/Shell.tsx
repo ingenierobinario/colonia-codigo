@@ -18,6 +18,7 @@ import {
   FlowsScreen,
   InstallArtifactDialog,
   LiveLayer,
+  NavegadorScreen,
   PhoneDialog,
   ProjectScreen,
   ResourcesScreen,
@@ -80,6 +81,8 @@ export function Shell() {
                 <AppScreen />
               ) : view === "webapp" ? (
                 <WebAppScreen />
+              ) : view === "navegador" ? (
+                <NavegadorScreen />
               ) : view === "project" ? (
                 <ProjectScreen layout={layout} />
               ) : view === "tasks" ? (
