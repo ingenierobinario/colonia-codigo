@@ -1,6 +1,6 @@
 ---
 name: colonia-social
-description: Connecting the owner's own social accounts (YouTube, X, Facebook Pages, Instagram, LinkedIn) to Colonia, each with a developer app the owner creates on that network. Use it when the owner wants to connect or reconnect one of them, asks what a network lets Colonia do, or a social tool reports an expired or refused sign-in.
+description: Connecting the owner's own social accounts (YouTube, X, Facebook Pages, Instagram, LinkedIn, TikTok) to Colonia, each with a developer app the owner creates on that network. Use it when the owner wants to connect or reconnect one of them, asks what a network lets Colonia do, or a social tool reports an expired or refused sign-in.
 ---
 
 # The owner's social networks in Colonia
@@ -15,8 +15,7 @@ at a time; the steps for each network are in its own file. Load only the one you
 | X | **X** | [references/x.md](references/x.md) | list posts with their numbers, read replies (last 7 days), post, reply |
 | Facebook Pages and Instagram | **Facebook and Instagram** | [references/meta.md](references/meta.md) | list posts with their numbers, read comments, publish, reply |
 | LinkedIn | **LinkedIn** | [references/linkedin.md](references/linkedin.md) | publish on the owner's profile (nothing can be read) |
-
-TikTok is not supported: an app that has not passed TikTok's audit can only post private videos.
+| TikTok | **TikTok** | [references/tiktok.md](references/tiktok.md) | send a video as a draft or as a private post; public posts only after TikTok reviews the app |
 
 ## How to guide
 
@@ -42,6 +41,8 @@ button.
   have gone through anyway", do not repeat it: check with `social_posts` first.
 - The tools appear only while a network is connected and on in the project.
 - Instagram needs an image (JPEG) or a video at a public https address; it has no text-only posts.
+- TikTok has its own `tiktok_send` (draft or private) and `tiktok_status`. Prefer a draft: the owner chooses who sees
+  it in the TikTok app. Never promise a public post: TikTok allows it only after reviewing the owner's app.
 
 ## When a sign-in stops working
 
@@ -51,3 +52,4 @@ button.
 | X | until the owner revokes it or it goes unused for months | sign in again |
 | Facebook and Instagram | Page access does not expire; it ends if the owner changes their password or removes the app | connect again with a new token |
 | LinkedIn | 60 days, always | sign in again every 60 days |
+| TikTok | renews itself; ends after about 180 days unused or if removed in TikTok | sign in again |

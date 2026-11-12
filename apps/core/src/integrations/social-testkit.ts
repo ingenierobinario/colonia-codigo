@@ -1,4 +1,4 @@
-// Stand-ins for X, LinkedIn and Meta's Graph API behind one fetch, for tests: the token endpoints check what a real
+// Stand-ins for X, LinkedIn, TikTok and Meta's Graph API behind one fetch, for tests: the token endpoints check what a real
 // one checks (the client, the code, the PKCE verifier, a refresh token spent on use) and every request is recorded.
 import crypto from "node:crypto";
 import type { Store } from "../domain/store.ts";
@@ -8,7 +8,15 @@ import { createSocial } from "./social.ts";
 export const SOCIAL_CLIENT = { client_id: "acme-client", client_secret: "s3cret" };
 export const META_APP = { app_id: "1234567890", app_secret: "app-s3cret", user_token: "short-user-token" };
 
-type Seen = { method: string; url: URL; headers: Record<string, string>; body: string; form: URLSearchParams };
+type Seen = {
+  method: string;
+  url: URL;
+  headers: Record<string, string>;
+  body: string;
+  form: URLSearchParams;
+  /** The size of a binary body (an upload). */
+  bytes: number;
+};
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
 
@@ -22,6 +30,75 @@ export function fakeNetworks() {
   /** Checks of an Instagram container still to answer IN_PROGRESS. */
   let processing = 0;
   const posted: Array<{ network: string; body: unknown }> = [];
+  let ttAccess = "";
+  let ttRefresh = "";
+  let ttMinted = 0;
+  let ttPrivacy = ["SELF_ONLY"];
+  /** A TikTok refusal code the next init answers with. */
+  let ttRefuse = "";
+  /** The size of the video the fake site serves. */
+  let videoSize = 1000;
+  const uploads: Array<{ range: string; type: string; bytes: number }> = [];
+
+  const tiktok = (r: Seen, path: string) => {
+    if (path === "/oauth/token/") {
+      if (
+        r.form.get("client_key") !== SOCIAL_CLIENT.client_id ||
+        r.form.get("client_secret") !== SOCIAL_CLIENT.client_secret
+      )
+        return json(401, { error: "invalid_client", error_description: "Client key or secret is incorrect." });
+      if (r.form.get("grant_type") === "authorization_code") {
+        const hex = crypto
+          .createHash("sha256")
+          .update(r.form.get("code_verifier") ?? "")
+          .digest("hex");
+        if (r.form.get("code") !== "good-code" || hex !== challenge)
+          return json(400, { error: "invalid_grant", error_description: "Authorization code is expired." });
+      } else if (r.form.get("refresh_token") !== ttRefresh)
+        return json(400, { error: "invalid_grant", error_description: "Refresh token is invalid or expired." });
+      ttMinted++;
+      ttAccess = `act.${ttMinted}`;
+      ttRefresh = `rft.${ttMinted}`;
+      return json(200, {
+        access_token: ttAccess,
+        expires_in: 86400,
+        refresh_token: ttRefresh,
+        refresh_expires_in: 31536000,
+        open_id: "tt-open-1",
+        scope: "user.info.basic,video.upload,video.publish",
+        token_type: "Bearer",
+      });
+    }
+    if (r.headers.authorization !== `Bearer ${ttAccess}`)
+      return json(401, { error: { code: "access_token_invalid", message: "The access token is invalid." } });
+    const ok = (data: unknown) => json(200, { data, error: { code: "ok", message: "", log_id: "l1" } });
+    if (path === "/user/info/") return ok({ user: { open_id: "tt-open-1", display_name: "Acme Bakery" } });
+    if (path === "/post/publish/creator_info/query/")
+      return ok({
+        creator_username: "acme.bakery",
+        creator_nickname: "Acme Bakery",
+        privacy_level_options: ttPrivacy,
+        max_video_post_duration_sec: 600,
+      });
+    if (path === "/post/publish/video/init/" || path === "/post/publish/inbox/video/init/") {
+      if (ttRefuse) {
+        const code = ttRefuse;
+        ttRefuse = "";
+        return json(403, { error: { code, message: "Please review our integration guidelines.", log_id: "l2" } });
+      }
+      const body = JSON.parse(r.body) as { source_info?: { source?: string } };
+      posted.push({ network: `tiktok${path}`, body });
+      return ok({
+        publish_id: "v_pub_1",
+        ...(body.source_info?.source === "FILE_UPLOAD"
+          ? { upload_url: "https://open-upload.tiktokapis.com/video/?upload_id=7&upload_token=t" }
+          : {}),
+      });
+    }
+    if (path === "/post/publish/status/fetch/")
+      return ok({ status: "PUBLISH_COMPLETE", publicaly_available_post_id: [], uploaded_bytes: videoSize });
+    return json(404, { error: { code: "invalid_params", message: "Not found" } });
+  };
 
   const xToken = (r: Seen) => {
     const basic = Buffer.from(`${SOCIAL_CLIENT.client_id}:${SOCIAL_CLIENT.client_secret}`).toString("base64");
@@ -202,12 +279,20 @@ export function fakeNetworks() {
       ),
       body,
       form: new URLSearchParams(body.startsWith("{") ? "" : body),
+      bytes: init?.body instanceof Uint8Array ? init.body.byteLength : 0,
     };
     seen.push(r);
     if (down) throw new TypeError("fetch failed");
     if (url.host === "api.x.com")
       return url.pathname === "/2/oauth2/token" ? xToken(r) : x(r, url.pathname.replace(/^\/2/, ""));
     if (url.host === "www.linkedin.com" || url.host === "api.linkedin.com") return linkedin(r);
+    if (url.host === "open.tiktokapis.com") return tiktok(r, url.pathname.replace(/^\/v2/, ""));
+    if (url.host === "open-upload.tiktokapis.com" && r.method === "PUT") {
+      uploads.push({ range: r.headers["content-range"] ?? "", type: r.headers["content-type"] ?? "", bytes: r.bytes });
+      return new Response(null, { status: r.bytes ? 201 : 400 });
+    }
+    if (url.host === "videos.example.com")
+      return new Response(new Uint8Array(videoSize), { status: 200, headers: { "content-type": "video/mp4" } });
     if (url.host === "graph.facebook.com") return graph(r, url.pathname.replace(/^\/v[\d.]+/, ""));
     return json(404, {});
   }) as typeof fetch;
@@ -225,6 +310,20 @@ export function fakeNetworks() {
     /** X stops honouring the access it gave (two hours passed, on its side). */
     expireAccess: () => {
       xAccess = "gone";
+    },
+    uploads,
+    /** TikTok stops honouring the access it gave. */
+    expireTikTok: () => {
+      ttAccess = "gone";
+    },
+    setTikTokPrivacy: (options: string[]) => {
+      ttPrivacy = options;
+    },
+    refuseTikTok: (code: string) => {
+      ttRefuse = code;
+    },
+    setVideoSize: (n: number) => {
+      videoSize = n;
     },
     revoke: () => {
       xAccess = "gone";
@@ -265,7 +364,7 @@ export function setupSocial() {
       waits.push(ms);
     },
   });
-  const signIn = async (id: "x" | "linkedin") => {
+  const signIn = async (id: "x" | "linkedin" | "tiktok") => {
     const { code, state } = fake.consent(social.start(id, SOCIAL_CLIENT));
     return social.finish(code, state);
   };

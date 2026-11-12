@@ -1461,6 +1461,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "res.catalog.own.x": "Publica y responde",
   "res.catalog.own.meta": "Facebook e Instagram con tu propia app",
   "res.catalog.own.linkedin": "Publica en tu perfil",
+  "res.catalog.own.tiktok": "Envía vídeos como borrador o privados",
   "res.catalog.open": "Catálogo",
   "res.catalog.custom": "Otro conector",
   "res.catalog.cat.work": "Trabajo y equipo",

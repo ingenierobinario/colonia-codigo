@@ -11,6 +11,7 @@ const NAMES: Record<string, string> = {
   youtube: "YouTube",
   x: "X",
   linkedin: "LinkedIn",
+  tiktok: "TikTok",
 };
 
 // Loaded only on /oauth/google and /oauth/social. What Google sent is read once: the code leaves the address bar right away, and

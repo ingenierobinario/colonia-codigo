@@ -1458,6 +1458,7 @@ export const en = {
   "res.catalog.own.x": "Post and reply",
   "res.catalog.own.meta": "Facebook and Instagram with your own app",
   "res.catalog.own.linkedin": "Post on your profile",
+  "res.catalog.own.tiktok": "Send videos as drafts or private posts",
   "res.catalog.open": "Catalog",
   "res.catalog.custom": "Other connector",
   "res.catalog.cat.work": "Work and teams",

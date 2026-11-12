@@ -15,7 +15,7 @@ import { useLanguage, useT } from "../i18n/index.ts";
 import { ConnectForm, type Integration } from "./IntegrationsTab.tsx";
 
 /** Colonia's own social connectors: listed with the social connectors, they connect in the same form as in Integrations. */
-const OWN_SOCIAL = ["youtube", "x", "meta", "linkedin"] as const;
+const OWN_SOCIAL = ["youtube", "x", "meta", "linkedin", "tiktok"] as const;
 
 type Category = "work" | "docs" | "design" | "sales" | "marketing" | "social" | "web" | "data" | "dev";
 type Key = { env: string; label: [es: string, en: string]; bearer?: boolean };
