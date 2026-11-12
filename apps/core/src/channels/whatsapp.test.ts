@@ -503,6 +503,30 @@ test("logged out from the phone: the channel says so and keeps no dead credentia
   assert.ok(!fs.existsSync(wa.dir));
 });
 
+test("PROPIOS-4: a stranger who wrote while offline gets no code late; writing again live, they get it", async () => {
+  // A business line (not the owner's own phone): strangers get a pairing code.
+  await env.client.call("channels.set", {
+    id: "whatsapp",
+    channel: { type: "whatsapp", agent_id: "superagent", self_owner: false },
+  });
+  await waitFor(async () => Boolean((await channel())?.qr), "a QR to scan");
+  wa.scan();
+  await waitFor(async () => (await channel())?.status === "running", "linked");
+  const CARLA = { phone: "5491100000099@s.whatsapp.net", name: "Carla" };
+  const listed = async () => (await env.client.call("pairing.list", {})).requests.some((r) => r.name === "Carla");
+
+  wa.message(CARLA, "hola, ¿estáis abiertos?", { type: "append" });
+  await new Promise((r) => setTimeout(r, 200));
+  assert.deepEqual(wa.textsTo(CARLA.phone), [], "no code late");
+  assert.equal(await listed(), false, "no request either: it would swallow the next live message");
+
+  wa.message(CARLA, "¿hay alguien?");
+  await waitFor(() => wa.textsTo(CARLA.phone).length === 1, "the code, once she writes live");
+  assert.ok(await listed());
+  wa.logOut();
+  await waitFor(async () => (await channel())?.status === "error", "unlinked for the next test");
+});
+
 test("removing the channel unlinks the device and drops its folder", async () => {
   await env.client.call("channels.set", {
     id: "whatsapp",

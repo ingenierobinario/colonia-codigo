@@ -377,6 +377,9 @@ export function createInbound(deps: {
       deps.attention({ kind: "channel", title: name, body: t.answering(shown(cfg, name, m.sender.id), cfg.label) });
       return route(cfg.id, rowId, m);
     }
+    // PROPIOS-4: words handed over late (after a reconnection) get no code late, nor a request that would make the
+    // next live message "not fresh": kept in the inbox row only; once they write again live, the code goes out.
+    if (m.late) return "ignored";
     const { request, fresh } = store.channels.pairing.request({
       channel: cfg.id,
       external_id: m.sender.id,
