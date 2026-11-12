@@ -8,6 +8,7 @@ export const WEBAPP_PRESETS: readonly WebAppPreset[] = [
   { key: "gmail", name: "Gmail", url: "https://mail.google.com/mail/u/0/" },
   { key: "outlook", name: "Outlook", url: "https://outlook.office.com/mail/" },
   { key: "slack", name: "Slack", url: "https://app.slack.com/client" },
+  { key: "teams", name: "Microsoft Teams", url: "https://teams.microsoft.com" },
 ];
 
 /** El nombre de la ficha («Gmail»), para el aviso del sistema y la etiqueta de la barra. */

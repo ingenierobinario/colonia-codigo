@@ -8,6 +8,8 @@ test("el contador sale del título de Gmail, Outlook y Slack", () => {
   assert.equal(unreadFromTitle("(5) Correo - Ana - Outlook"), 5);
   assert.equal(unreadFromTitle("general - Equipo - 2 new items - Slack"), 2);
   assert.equal(unreadFromTitle("general - Equipo - 4 elementos nuevos - Slack"), 4);
+  assert.equal(unreadFromTitle("(3) Chat | Microsoft Teams"), 3);
+  assert.equal(unreadFromTitle("Chat | Microsoft Teams"), 0);
 });
 
 test("sin cifra, vacío o borradores son 0", () => {
@@ -19,5 +21,6 @@ test("sin cifra, vacío o borradores son 0", () => {
 test("reconoce la ficha por el dominio", () => {
   assert.equal(presetOf({ url: "https://mail.google.com/mail/u/1/" })?.key, "gmail");
   assert.equal(presetOf({ url: "https://ejemplo.com" }), undefined);
-  assert.equal(WEBAPP_PRESETS.length, 3);
+  assert.equal(presetOf({ url: "https://teams.microsoft.com/v2/" })?.key, "teams");
+  assert.equal(WEBAPP_PRESETS.length, 4);
 });
