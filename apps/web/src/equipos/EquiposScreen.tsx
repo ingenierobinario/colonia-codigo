@@ -1,7 +1,7 @@
 import "../styles/screens.css";
 import "../styles/equipos.css";
-import type { Equipo, EquipoAuditEntry, EquipoLocalState } from "@colonia/protocol";
-import { Button, Dialog, EmptyState, Icons, SegmentedControl, Switch } from "@colonia/ui";
+import type { Equipo, EquipoAuditEntry, EquipoLocalState, FoundEquipo } from "@colonia/protocol";
+import { Badge, Button, Dialog, EmptyState, Field, Icons, Input, SegmentedControl, Spinner, Switch } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { reloadWhenBack } from "../config/AccessBlock.tsx";
 import { client } from "../data/client.ts";
@@ -188,6 +188,218 @@ function AddEquipo({ onDone }: { onDone: () => void }) {
   );
 }
 
+// EQUIPOS-SIN-AGENTE-1: encontrar los equipos de la red (y de Tailscale) y entrar con usuario y contraseña, sin
+// instalar nada en ellos. El método de comando + código queda plegado en «Otro método».
+const OPEN_KEY: Record<
+  string,
+  "equipos.openTerminal" | "equipos.openDesktop" | "equipos.openFiles" | "equipos.openVnc"
+> = {
+  Terminal: "equipos.openTerminal",
+  "Escritorio remoto": "equipos.openDesktop",
+  Carpetas: "equipos.openFiles",
+  VNC: "equipos.openVnc",
+};
+const OS_KEY = {
+  windows: "equipos.osWindows",
+  "linux/mac": "equipos.osUnix",
+  desconocido: "equipos.osUnknown",
+} as const;
+
+function Login({
+  host,
+  name,
+  onCancel,
+  onDone,
+}: {
+  host: string;
+  name: string;
+  onCancel: () => void;
+  onDone: () => void;
+}) {
+  const t = useT();
+  const [user, setUser] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const connect = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await client.call("equipos.connect", { host, user: user.trim(), password });
+      setPassword("");
+      onDone();
+    } catch (e) {
+      setError((e as Error).message || t("equipos.failed"));
+    }
+    setBusy(false);
+  };
+  return (
+    <form
+      className="eq-login"
+      onSubmit={(ev) => {
+        ev.preventDefault();
+        if (user.trim() && password && !busy) void connect();
+      }}
+    >
+      <div className="eq-login__head">
+        <strong>{t("equipos.loginTitle", { name })}</strong>
+        <span className="eq-muted">{t("equipos.loginHint")}</span>
+      </div>
+      <div className="eq-login__fields">
+        <Field label={t("equipos.user")}>
+          {(id) => <Input id={id} autoComplete="username" value={user} onChange={(ev) => setUser(ev.target.value)} />}
+        </Field>
+        <Field label={t("equipos.password")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(ev) => setPassword(ev.target.value)}
+            />
+          )}
+        </Field>
+      </div>
+      {error && <p className="eq-error">{error}</p>}
+      <div className="eq-row eq-row--end">
+        <Button variant="ghost" type="button" onClick={onCancel}>
+          {t("equipos.cancel")}
+        </Button>
+        <Button variant="primary" type="submit" disabled={!user.trim() || !password || busy}>
+          {busy ? <Spinner size={14} /> : <Icons.Check />} {busy ? t("equipos.connecting") : t("equipos.connect")}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function FindEquipos({ onDone }: { onDone: () => void }) {
+  const t = useT();
+  const [found, setFound] = useState<FoundEquipo[]>();
+  const [searching, setSearching] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [manual, setManual] = useState("");
+  const [picked, setPicked] = useState<{ host: string; name: string }>();
+  const search = useCallback(async () => {
+    setSearching(true);
+    setFailed(false);
+    try {
+      setFound((await client.call("equipos.discover", {})).equipos);
+    } catch {
+      setFailed(true);
+    }
+    setSearching(false);
+  }, []);
+  useEffect(() => {
+    void search();
+  }, [search]);
+  const host = manual.trim();
+  return (
+    <section className="eq-card eq-card--static" aria-label={t("equipos.findTitle")}>
+      <div className="eq-row">
+        <div className="eq-find__head">
+          <strong>{t("equipos.findTitle")}</strong>
+          <span className="eq-muted">{t("equipos.findHint")}</span>
+        </div>
+        <Button variant="secondary" disabled={searching} onClick={() => void search()}>
+          {searching ? <Spinner size={14} /> : <Icons.RefreshCw />} {t("equipos.searchAgain")}
+        </Button>
+      </div>
+      {searching && !found ? (
+        <p className="eq-muted">{t("equipos.searching")}</p>
+      ) : failed ? (
+        <p className="eq-error">{t("equipos.failed")}</p>
+      ) : found && found.length === 0 ? (
+        <p className="eq-muted">{t("equipos.noneFound")}</p>
+      ) : (
+        <ul className="eq-found">
+          {(found ?? []).map((f) => {
+            const on = picked?.host === f.ip;
+            const canLogin = f.ports.includes(22);
+            return (
+              <li key={f.ip}>
+                <button
+                  type="button"
+                  className={`eq-found__item${on ? " eq-found__item--on" : ""}`}
+                  title={f.ip}
+                  aria-pressed={on}
+                  onClick={() => setPicked(on ? undefined : { host: f.ip, name: f.name })}
+                >
+                  <span className="eq-name">
+                    <span className={`eq-dot${f.online ? " eq-dot--on" : ""}`} />
+                    <Icons.Monitor /> <span className="eq-found__name">{f.name}</span>
+                  </span>
+                  <span className="eq-found__meta">
+                    <span className="eq-muted">
+                      {t(OS_KEY[f.os])}
+                      {f.via === "tailscale" ? ` · ${t("equipos.viaTailscale")}` : ""}
+                    </span>
+                    <span className="eq-found__opens">
+                      {f.opens.length === 0 ? (
+                        <span className="eq-muted">{f.online ? t("equipos.nothingOpen") : t("equipos.offline")}</span>
+                      ) : (
+                        f.opens.map((o) => (
+                          <Badge key={o} tone={o === "Terminal" ? "brand" : "neutral"}>
+                            {OPEN_KEY[o] ? t(OPEN_KEY[o]) : o}
+                          </Badge>
+                        ))
+                      )}
+                    </span>
+                  </span>
+                  {!canLogin && f.online && <span className="eq-muted">{t("equipos.noTerminal")}</span>}
+                </button>
+                {on && (
+                  <Login
+                    host={f.ip}
+                    name={f.name}
+                    onCancel={() => setPicked(undefined)}
+                    onDone={() => {
+                      setPicked(undefined);
+                      onDone();
+                      void search();
+                    }}
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <form
+        className="eq-manual"
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          if (host) setPicked({ host, name: host });
+        }}
+      >
+        <Input
+          aria-label={t("equipos.manual")}
+          placeholder={t("equipos.manual")}
+          value={manual}
+          leadingIcon={<Icons.Search />}
+          onChange={(ev) => setManual(ev.target.value)}
+        />
+        <Button type="submit" disabled={!host}>
+          {t("equipos.manualGo")}
+        </Button>
+      </form>
+      {picked && !(found ?? []).some((f) => f.ip === picked.host) && (
+        <Login
+          host={picked.host}
+          name={picked.name}
+          onCancel={() => setPicked(undefined)}
+          onDone={() => {
+            setPicked(undefined);
+            setManual("");
+            onDone();
+          }}
+        />
+      )}
+    </section>
+  );
+}
+
 function EquipoCard({ e, refresh }: { e: Equipo; refresh: () => void }) {
   const t = useT();
   const [confirm, setConfirm] = useState(false);
@@ -353,7 +565,11 @@ function Body() {
         <p className="page__lead">{t("equipos.lead")}</p>
       </header>
       <div className="equipos">
-        <AddEquipo onDone={refreshList} />
+        <FindEquipos onDone={refreshList} />
+        <details className="eq-other">
+          <summary>{t("equipos.otherMethod")}</summary>
+          <AddEquipo onDone={refreshList} />
+        </details>
         {list && equipos.length === 0 && (
           <EmptyState variant="dashed" icon={<Icons.Monitor />} title={t("equipos.none")}>
             {t("equipos.noneHint")}
