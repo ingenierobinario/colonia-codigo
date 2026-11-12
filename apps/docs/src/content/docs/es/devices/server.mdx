@@ -49,7 +49,7 @@ En PowerShell:
 & ([scriptblock]::Create((irm 'https://colonia.ingenierobinario.com/install.ps1'))) -Server
 ```
 
-Parámetros: `-Server`, `-File <paquete>`, `-Version <x.y.z>`, `-Feed <owner/repo>`, `-NoService`, `-Uninstall`.
+Parámetros: `-Server`, `-File <paquete>`, `-Version <x.y.z>`, `-Feed <owner/repo>`, `-NoService`, `-Uninstall`. `-NoService` no instala servicio de inicio de sesión; si ya hay uno instalado lo deja como está y lo avisa (para quitarlo: `colonia service uninstall`).
 
 </TabItem>
 <TabItem label="Desde la app de escritorio">
