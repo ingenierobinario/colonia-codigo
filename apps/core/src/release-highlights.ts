@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.34.0": {
+    en: [
+      "If another program holds Colonia's port, the app says which one and how to fix it instead of waiting.",
+      "The app and the background service no longer fight at startup, and connecting no longer freezes the window.",
+      "On Linux, updates for a .deb or .rpm install bring that same package, with the command to install it.",
+      "Windows: one service per folder whatever its spelling, and reinstalling keeps your service as it was.",
+    ],
+    es: [
+      "Si otro programa ocupa el puerto de Colonia, la app dice cuál y cómo arreglarlo en vez de esperar.",
+      "La app y el servicio ya no se pelean al arrancar, y conectar ya no congela la ventana.",
+      "En Linux, si instalaste el .deb o el .rpm, la actualización trae ese paquete y la orden para instalarlo.",
+      "Windows: un solo servicio por carpeta se escriba como se escriba, y reinstalar respeta tu servicio.",
+    ],
+  },
   "2.33.0": {
     en: [
       "On Linux you can now install Colonia with a .deb or .rpm package, as well as the AppImage.",
