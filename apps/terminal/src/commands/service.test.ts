@@ -258,3 +258,45 @@ test("an entry named by an older key for the same home is adopted under the curr
     dropTestKey();
   }
 });
+
+test("a value PowerShell cannot read is read by reg, not taken for no entry", () => {
+  const calls: string[] = [];
+  const run = (cmd: string) => {
+    calls.push(cmd);
+    if (cmd === "powershell") return { ok: false, out: "powershell: not recognized", code: 1 };
+    const out = "\r\nHKEY_CURRENT_USER\\Run\r\n    ColoniaCore    REG_SZ    node.exe main.ts\r\n\r\n";
+    return { ok: true, out, code: 0 };
+  };
+  assert.equal(readRegString(TEST_KEY, "ColoniaCore", run), "node.exe main.ts");
+  assert.deepEqual(calls, ["powershell", "reg"]);
+  // PowerShell's own "not there" is final.
+  const absent = () => ({ ok: false, out: "", code: 3 });
+  assert.equal(readRegString(TEST_KEY, "ColoniaCore", absent), undefined);
+});
+
+test("a legacy entry that cannot be renamed is reported and left, never thrown", async () => {
+  await using dir = tempDir("colonia-legacy-");
+  const home = path.join(dir.path, "Mi Colonia");
+  fs.mkdirSync(home);
+  const spelled = home.toUpperCase();
+  const base = path.join(dir.path, "default");
+  const old = legacyServiceNames(spelled, base).windows;
+  const command = windowsRunCommand({ node: "node.exe", terminal: "main.ts", home: spelled, electron: false });
+  const calls: string[] = [];
+  const run = (cmd: string, args: string[]) => {
+    calls.push(`${cmd} ${args[0]}`);
+    const legacy = args[3]?.includes(`'${old}'`);
+    if (cmd === "powershell") return legacy ? { ok: true, out: command, code: 0 } : { ok: false, out: "", code: 3 };
+    return { ok: false, out: "ERROR: access denied", code: 1 };
+  };
+  const errors: unknown[] = [];
+  const original = console.error;
+  console.error = (...a: unknown[]) => errors.push(a.join(" "));
+  try {
+    assert.equal(adoptLegacyRunEntry(TEST_KEY, spelled, base, run), false);
+  } finally {
+    console.error = original;
+  }
+  assert.ok(calls.includes("reg add"), calls.join(","));
+  assert.equal(errors.length, 1);
+});

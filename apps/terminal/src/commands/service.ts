@@ -47,45 +47,65 @@ export function sh(
   args: string[],
   inherit = false,
   env: NodeJS.ProcessEnv = process.env,
-): { ok: boolean; out: string } {
+  timeout?: number,
+): { ok: boolean; out: string; code?: number } {
   try {
     const out = execFileSync(cmd, args, {
       encoding: "utf8",
       stdio: inherit ? "inherit" : "pipe",
       windowsHide: true,
       env,
+      timeout,
     });
-    return { ok: true, out: out ?? "" };
+    return { ok: true, out: out ?? "", code: 0 };
   } catch (err) {
-    const e = err as { stdout?: string; stderr?: string; message: string };
-    return { ok: false, out: `${e.stdout ?? ""}${e.stderr ?? ""}` || e.message };
+    const e = err as { stdout?: string; stderr?: string; status?: number | null; message: string };
+    return { ok: false, out: `${e.stdout ?? ""}${e.stderr ?? ""}` || e.message, code: e.status ?? undefined };
   }
 }
+
+/** How the registry helpers run a command; tests pass their own. */
+export type Runner = (cmd: string, args: string[]) => { ok: boolean; out: string; code?: number };
+const REG_TIMEOUT = 15_000;
+const runReg: Runner = (cmd, args) => sh(cmd, args, false, process.env, REG_TIMEOUT);
 
 /**
  * A REG_SZ value, or undefined when it is not there. Read through PowerShell in UTF-8: `reg query` prints in the
  * console's OEM code page (850 on a Spanish Windows), which decoded as UTF-8 turns a home with "ñ" or "á" into
- * replacement characters, so the entry no longer matched its own home.
+ * replacement characters, so the entry no longer matched its own home. Only PowerShell's own "not there" (exit 3) means
+ * absent: when PowerShell is missing, hangs (timeout) or fails, `reg query` answers instead, so an entry that could
+ * not be read is never taken for no entry (an install would then add a second one).
  */
-export function readRegString(key: string, name: string): string | undefined {
+export function readRegString(key: string, name: string, run: Runner = runReg): string | undefined {
   const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
   const ps = `[Console]::OutputEncoding = [Text.Encoding]::UTF8; $v = Get-ItemProperty -LiteralPath ${q(`Registry::${key}`)} -Name ${q(name)} -ErrorAction SilentlyContinue; if ($null -eq $v) { exit 3 }; [Console]::Out.Write([string]$v.${q(name)})`;
-  const r = sh("powershell", ["-NoProfile", "-NonInteractive", "-Command", ps]);
-  return r.ok ? r.out.replace(/^\uFEFF/, "") : undefined;
+  const r = run("powershell", ["-NoProfile", "-NonInteractive", "-Command", ps]);
+  if (r.ok) return r.out.replace(/^\uFEFF/, "");
+  if (r.code === 3) return undefined;
+  const fallback = run("reg", ["query", key, "/v", name]);
+  if (fallback.ok) return /\sREG_SZ\s+([^\r\n]*)/.exec(fallback.out)?.[1] ?? "";
+  // reg exits 1 when the value is not there; with nothing else able to read it, that is the answer.
+  return undefined;
 }
 
 /**
  * An entry an older Colonia wrote for this home under its old name (8.3 or another case in the key) is renamed to the
  * current one, so it is still found, stopped and removed, never left starting a second core at login.
  */
-export function adoptLegacyRunEntry(key: string, home: string, defaultHome?: string): boolean {
+export function adoptLegacyRunEntry(key: string, home: string, defaultHome?: string, run: Runner = runReg): boolean {
   const now = serviceNames(home, defaultHome).windows;
   const old = legacyServiceNames(home, defaultHome).windows;
-  if (old === now || readRegString(key, now) !== undefined) return false;
-  const command = readRegString(key, old);
+  if (old === now || readRegString(key, now, run) !== undefined) return false;
+  const command = readRegString(key, old, run);
   if (command === undefined || !serviceOwnsHome(command, "win32", home)) return false;
-  must("reg", ["add", key, "/v", now, "/t", "REG_SZ", "/d", command, "/f"]);
-  must("reg", ["delete", key, "/v", old, "/f"]);
+  // Renaming is a courtesy: when it fails, the entry stays under its old name and the caller goes on with what it knows.
+  const added = run("reg", ["add", key, "/v", now, "/t", "REG_SZ", "/d", command, "/f"]);
+  if (!added.ok) {
+    console.error(`could not rename the login entry ${old} to ${now}: ${added.out.trim()}`);
+    return false;
+  }
+  const removed = run("reg", ["delete", key, "/v", old, "/f"]);
+  if (!removed.ok) console.error(`could not remove the old login entry ${old}: ${removed.out.trim()}`);
   return true;
 }
 
