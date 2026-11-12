@@ -1,12 +1,20 @@
-import type { Run } from "@colonia/protocol";
+import type { Message, Run } from "@colonia/protocol";
 
 /**
  * How full the chat is, from the newest finished run (runs newest first). Engines that do not report it (Claude
  * Code, Codex) leave no figure rather than an older, stale one.
  */
-export function contextOf(runs: readonly Run[]): { used: number; window?: number } | undefined {
+export function contextOf(runs: readonly Run[], since?: string): { used: number; window?: number } | undefined {
   const last = runs.find((r) => r.usage);
+  // A chat cleared after that run starts again from nothing (LIMPIAR-CHAT-1).
+  if (last && since && last.started_at < since)
+    return last.usage?.window ? { used: 0, window: last.usage.window } : undefined;
   return last?.usage?.context ? { used: last.usage.context, window: last.usage.window } : undefined;
+}
+
+/** When the chat was last cleared: its newest "Conversation cleared" line. */
+export function clearedAt(messages: readonly Message[]): string | undefined {
+  return messages.findLast((m) => m.parts.some((p) => p.type === "notice" && p.code === "thread.cleared"))?.created_at;
 }
 
 /** Tokens this chat has spent, from the core's totals over all its runs; undefined when none reported any. */

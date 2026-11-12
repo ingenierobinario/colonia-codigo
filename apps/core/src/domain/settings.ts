@@ -88,6 +88,10 @@ export function harnessSessionsRepo({ one, all, run }: Sql) {
           ),
       );
     },
+    /** Forgets every outside session of the chat, whatever its engine (LIMPIAR-CHAT-1). */
+    dropAll(threadId: string): void {
+      run(qb.deleteFrom("harness_sessions").where("thread_id", "=", threadId));
+    },
     /** Forgets the outside session: the next turn starts a new one (a renewed context window, D-186). */
     drop(threadId: string, harness: string): void {
       run(qb.deleteFrom("harness_sessions").where("thread_id", "=", threadId).where("harness", "=", harness));

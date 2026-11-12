@@ -5,7 +5,6 @@ import { useAgentHint } from "../common/AgentFace.tsx";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { useEngineLabel } from "../common/useEngineLabel.ts";
-import { compactThread } from "../data/actions.ts";
 import { projectName } from "../data/identity.ts";
 import { isNewChat } from "../data/newChat.ts";
 import { useData } from "../data/state.ts";
@@ -17,6 +16,7 @@ import { threadMenu } from "../inbox/threadActions.tsx";
 import { ChannelFace, NewTask, TaskStatus } from "../lazy.ts";
 import { PanelSwitcher } from "../panel/PanelSwitcher.tsx";
 import { go, useNav } from "../shell/nav.ts";
+import { ClearChatDialog } from "./ClearChat.tsx";
 
 const POLICIES: WritePolicy[] = ["ask", "auto", "read-only"];
 
@@ -67,6 +67,7 @@ export function ChatHeader({
   const project = projects.find((p) => p.id === thread.project_id);
   const tools = useNav((s) => s.tools);
   const [tasking, setTasking] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const sub = thread.kind === "a2a" || thread.parent_id != null;
   // An engine session is the engine itself: its name and icon, not the agent that owns the run.
   const engine = useEngineLabel(thread.engine);
@@ -182,9 +183,9 @@ export function ChatHeader({
                       },
                     ]),
                 {
-                  label: t("chat.compact"),
-                  icon: <Icons.Layers size={14} />,
-                  onSelect: () => void compactThread(thread.id),
+                  label: t("chat.clear"),
+                  icon: <Icons.Eraser size={14} />,
+                  onSelect: () => setClearing(true),
                 },
               ],
             })}
@@ -194,6 +195,7 @@ export function ChatHeader({
         {/* Usage opens from the composer's context chip; read-only chats have no composer, so it stays here. */}
         <PanelSwitcher wide={wide} skipUsage={!sub} />
       </div>
+      {clearing && <ClearChatDialog threadId={thread.id} onClose={() => setClearing(false)} />}
       {tasking && (
         <Suspense fallback={null}>
           <NewTask projectId={project?.id} initialTitle={thread.title} onClose={() => setTasking(false)} />

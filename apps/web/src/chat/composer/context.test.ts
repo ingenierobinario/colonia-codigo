@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Run } from "@colonia/protocol";
-import { contextOf, spentOf, tokens, usageStamp } from "./context.ts";
+import { clearedAt, contextOf, spentOf, tokens, usageStamp } from "./context.ts";
 
 const run = (id: string, usage?: Run["usage"]) => ({ id, usage }) as Run;
 
@@ -45,4 +45,12 @@ test("the totals are asked again when a run starts or ends, not otherwise", () =
     usageStamp(working),
     "a run ended",
   );
+});
+
+test("a cleared chat reads empty until its next run (LIMPIAR-CHAT-1)", () => {
+  const r = { ...run("a", { input: 9, output: 1, context: 900, window: 1000 }), started_at: "2026-01-01T10:00:00Z" };
+  assert.deepEqual(contextOf([r], "2026-01-01T11:00:00Z"), { used: 0, window: 1000 });
+  assert.deepEqual(contextOf([r], "2026-01-01T09:00:00Z"), { used: 900, window: 1000 });
+  const m = (code: string, at: string) => ({ created_at: at, parts: [{ type: "notice", code }] }) as never;
+  assert.equal(clearedAt([m("thread.cleared", "x1"), m("thread.compacted", "x2"), m("thread.cleared", "x3")]), "x3");
 });

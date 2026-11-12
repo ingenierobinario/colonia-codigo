@@ -279,7 +279,8 @@ const MODES: Record<Autonomy, string> = {
     "Accept edits: edit files in your work folder and the owner's other projects without asking; a command that changes something waits for the owner.",
   manual: "Manual: every action that changes something waits for the owner.",
   plan: "Plan: read and propose; any change is refused, so write it as a proposal in your answer.",
-  total: "Total: nothing waits for the owner but a change to what they set up in Colonia or copying their browser session.",
+  total:
+    "Total: nothing waits for the owner but a change to what they set up in Colonia or copying their browser session.",
 };
 
 const MODE_NAMES: Record<Autonomy, string> = {
@@ -612,6 +613,12 @@ export function project(
   epoch?: { upto: number; summary: string; untrusted: boolean } | undefined,
 ): { items: ChatItem[]; from: number } {
   if (!epoch) return walkBack(entries, budget);
+  // A cleared chat (LIMPIAR-CHAT-1): an epoch with no summary, so the agent starts from nothing.
+  if (!epoch.summary)
+    return walkBack(
+      entries.filter((e) => e.seq > epoch.upto),
+      budget,
+    );
   const summary = summaryBlock(epoch);
   const { items, from } = walkBack(
     entries.filter((e) => e.seq > epoch.upto),

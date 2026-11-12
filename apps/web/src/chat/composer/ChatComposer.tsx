@@ -16,7 +16,7 @@ import { useT } from "../../i18n/index.ts";
 import { AttachChips } from "../../lazy.ts";
 import { go } from "../../shell/nav.ts";
 import { ContextChip } from "./ContextChip.tsx";
-import { contextOf, spentOf, usageStamp } from "./context.ts";
+import { clearedAt, contextOf, spentOf, usageStamp } from "./context.ts";
 import { useSlashMenu } from "./SlashMenu.tsx";
 import { useThreadUsage } from "./usage.ts";
 import { useAttachments } from "./useAttachments.ts";
@@ -50,6 +50,7 @@ export function ChatComposer({
   const offline = useData((s) => s.connection === "offline");
   const engine = useEngineLabel(thread.engine);
   const runsById = useData((s) => s.runs);
+  const cleared = useData((s) => clearedAt(s.messages[thread.id] ?? []));
   const text = useSyncExternalStore(subscribeDrafts, () => draftOf(thread.id));
   const setText = (v: string | ((cur: string) => string)) => {
     keepDraft(thread.id, typeof v === "string" ? v : v(draftOf(thread.id)));
@@ -224,7 +225,7 @@ export function ChatComposer({
             )}
             {!direct && <ChatModel thread={thread} agent={agent} />}
             <span className="composer__spacer" />
-            <ContextChip context={contextOf(runs)} spent={spentOf(usage?.totals)} />
+            <ContextChip context={contextOf(runs, cleared)} spent={spentOf(usage?.totals)} />
             {mic.state !== "unsupported" && (
               <IconButton
                 size="sm"

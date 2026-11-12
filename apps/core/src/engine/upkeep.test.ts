@@ -177,3 +177,24 @@ test("BANDEJA-1: a link is never a title; the words around it are, or its site",
   assert.equal(validTitle("https://example.com/"), "example.com");
   assert.equal(validTitle("Plan de lanzamiento"), "Plan de lanzamiento");
 });
+
+test("threads.clear starts the agent from nothing and keeps the chat to read (LIMPIAR-CHAT-1)", async () => {
+  const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
+  for (const n of [1, 2]) {
+    await env.client.call("threads.send", { thread: t.id, text: `paso viejo ${n}` });
+    await env.settle(t.id);
+  }
+  const r = await env.client.call("threads.clear", { thread: t.id });
+  assert.equal(r.cleared, true);
+  await env.client.call("threads.send", { thread: t.id, text: "paso nuevo" });
+  await env.settle(t.id);
+  const call = llm.calls.findLast((c) => String(c.messages.at(-1)?.content).includes("paso nuevo"));
+  const seen = call?.messages.map((m) => String(m.content)) ?? [];
+  // Memory may still recall them as earlier chats; the turns themselves are out of the history.
+  assert.ok(!seen.some((c) => /paso viejo [0-9]$/.test(c.trimEnd())), "the cleared turns are not sent again");
+  assert.ok(seen.some((c) => c.trimEnd().endsWith("paso nuevo")));
+  assert.ok(!seen.some((c) => c.includes("[summary of the earlier conversation")), "no summary rides on it");
+  const { messages } = await env.client.call("threads.get", { thread: t.id });
+  assert.ok(messages.some((m) => m.parts.some((p) => p.type === "text" && p.text.includes("paso viejo 1"))));
+  assert.ok(messages.some((m) => m.parts.some((p) => p.type === "notice" && p.code === "thread.cleared")));
+});
