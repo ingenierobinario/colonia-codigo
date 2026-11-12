@@ -48,6 +48,8 @@ export type Prefs = {
   sidebarW: number;
   sidebarCollapsed: boolean;
   listW: number;
+  /** The chat list folded to a strip with a button that opens it again. */
+  listCollapsed: boolean;
   panelW: number;
   /**
    * Each project's board on this device: its widgets' order (by id), whether it takes the whole width, and the height
@@ -100,6 +102,7 @@ const DEFAULTS: Prefs = {
   sidebarW: 0,
   sidebarCollapsed: false,
   listW: 0,
+  listCollapsed: false,
   panelW: 0,
   boards: {},
   audioEndSound: true,
@@ -139,6 +142,7 @@ function load(): Prefs {
       sidebarW: typeof raw.sidebarW === "number" ? raw.sidebarW : 0,
       sidebarCollapsed: raw.sidebarCollapsed === true,
       listW: typeof raw.listW === "number" ? raw.listW : 0,
+      listCollapsed: raw.listCollapsed === true,
       panelW: typeof raw.panelW === "number" ? raw.panelW : 0,
       boards: boardsOf(raw.boards),
       audioEndSound: raw.audioEndSound !== false,

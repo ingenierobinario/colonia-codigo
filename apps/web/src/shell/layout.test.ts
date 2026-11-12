@@ -20,3 +20,10 @@ test("a panel dragged into the list's room folds the list away", () => {
 test("no dragged width keeps the usual panel", () => {
   assert.equal(computeLayout(1600, true, true).panelW, LAYOUT.panelW);
 });
+
+test("a folded chat list leaves its strip, and a phone still shows the whole list", () => {
+  assert.equal(computeLayout(1200, false, true, "medium", { listCollapsed: true, listW: 400 }).listW, LAYOUT.listRailW);
+  assert.equal(computeLayout(1200, false, true).listW, LAYOUT.listW);
+  const phone = computeLayout(390, false, false, "medium", { listCollapsed: true });
+  assert.ok(phone.compact && phone.listW > LAYOUT.listRailW);
+});

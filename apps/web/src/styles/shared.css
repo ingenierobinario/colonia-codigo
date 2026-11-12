@@ -17,6 +17,18 @@
 .colonia-resize.listcol__resize {
   right: -4px;
 }
+/* LISTA-PLEGABLE-1: folded, a strip with the button that opens the list again. */
+.listcol--folded {
+  width: 44px;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 12px;
+  border-right: 1px solid var(--colonia-border);
+}
+/* On a phone the list is the whole screen: nothing to fold beside. */
+.workspace > .inbox .inbox__fold {
+  display: none;
+}
 
 /* A channel's logo where a tile goes: same box, no frame. */
 .kindtile {

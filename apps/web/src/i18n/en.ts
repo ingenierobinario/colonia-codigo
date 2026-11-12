@@ -310,6 +310,8 @@ export const en = {
   "nav.resize": "Resize the sidebar",
   "nav.rowsResize": "Show more or fewer {section}",
   "inbox.resize": "Resize the list",
+  "inbox.collapse": "Fold the chat list",
+  "inbox.expand": "Open the chat list",
   "nav.label": "Navigation",
   "nav.inbox": "Inbox",
   "nav.tasks": "Tasks",

@@ -309,6 +309,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "nav.resize": "Cambiar el ancho de la barra",
   "nav.rowsResize": "Mostrar más o menos {section}",
   "inbox.resize": "Cambiar el ancho de la lista",
+  "inbox.collapse": "Plegar la lista de chats",
+  "inbox.expand": "Desplegar la lista de chats",
   "nav.label": "Navegación",
   "nav.inbox": "Inbox",
   "nav.tasks": "Tareas",

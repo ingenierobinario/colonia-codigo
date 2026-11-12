@@ -66,6 +66,12 @@ export function InboxList() {
         <div className="inbox__titlerow">
           <h1 className="inbox__title">{title}</h1>
           <IconButton
+            className="inbox__fold"
+            label={t("inbox.collapse")}
+            icon={<Icons.PanelLeftClose size={16} />}
+            onClick={() => setPrefs({ listCollapsed: true })}
+          />
+          <IconButton
             label={t("inbox.markAllRead")}
             icon={<Icons.CheckCheck size={16} />}
             disabled={unreadIds.length === 0}

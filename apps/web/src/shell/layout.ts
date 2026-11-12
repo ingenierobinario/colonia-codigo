@@ -12,6 +12,7 @@ export const LAYOUT = {
   listMinW: 240,
   listMaxW: 520,
   /** A folded chat list leaves this strip to open it again. */
+  listRailW: 44,
   listW: 320,
   listWNarrow: 280,
   panelW: 420,
@@ -65,7 +66,14 @@ export function computeLayout(
   panelOpen: boolean,
   chatShown: boolean,
   transcript: keyof typeof LAYOUT.transcriptW = "medium",
-  own: { sidebarW?: number; sidebarCollapsed?: boolean; listW?: number; panelW?: number; panelWide?: boolean } = {},
+  own: {
+    sidebarW?: number;
+    sidebarCollapsed?: boolean;
+    listW?: number;
+    listCollapsed?: boolean;
+    panelW?: number;
+    panelWide?: boolean;
+  } = {},
 ): Layout {
   const rail = Boolean(own.sidebarCollapsed) || width < BREAKPOINTS.sidebarFull;
   const compact = width < BREAKPOINTS.compact;
@@ -92,7 +100,13 @@ export function computeLayout(
   // A panel dragged wide enough to squeeze the chat under its minimum folds the list away, like the wide toggle.
   const crowded = width - sidebarW - panelW - (ownListW || defaultListW) < LAYOUT.chatMinW;
   const hideList = (narrow || Boolean(own.panelWide) || (Boolean(own.panelW) && crowded)) && panelOpen && chatShown;
-  const listW = compact ? width - sidebarW : hideList ? 0 : ownListW || defaultListW;
+  const listW = compact
+    ? width - sidebarW
+    : hideList
+      ? 0
+      : own.listCollapsed
+        ? LAYOUT.listRailW
+        : ownListW || defaultListW;
   const chatW = width - sidebarW - listW - (panelOpen ? panelW : 0);
   return {
     rail,
