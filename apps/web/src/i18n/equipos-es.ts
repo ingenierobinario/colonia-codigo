@@ -18,7 +18,10 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.expired": "El código ha caducado. Crea uno nuevo.",
   "equipos.cancel": "Cancelar",
   "equipos.noAddress":
-    "A este Colonia solo se llega desde este ordenador, así que otro portátil no lo encuentra. Ábrelo con una dirección de red (por ejemplo una red privada como Tailscale) y vuelve a intentarlo.",
+    "Ahora mismo a este Colonia solo se llega desde este ordenador, así que el otro portátil no lo encontraría. Ábrelo aquí mismo y el comando aparecerá:",
+  "equipos.openLan": "Abrir a mi red local",
+  "equipos.openTailscale": "Abrir por Tailscale",
+  "equipos.opening": "Abriendo… Colonia se reinicia unos segundos.",
   "equipos.none": "Aún no hay equipos",
   "equipos.noneHint": "Cuando añadas uno aparecerá aquí, con su propio interruptor para tus agentes.",
   "equipos.connected": "Conectado",

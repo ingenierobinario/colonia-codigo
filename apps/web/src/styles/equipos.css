@@ -2,26 +2,30 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 880px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px 24px 24px;
+  box-sizing: border-box;
 }
 .equipos__lead {
-  color: var(--text-muted, inherit);
+  color: var(--colonia-fg-muted);
   margin: 0;
 }
 .eq-card {
-  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border: 1px solid var(--colonia-card-border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--surface, transparent);
+  background: var(--colonia-surface);
 }
 .eq-card:hover {
-  border-color: var(--accent, currentColor);
+  border-color: var(--colonia-border-strong);
 }
 .eq-card--static:hover {
-  border-color: var(--border, rgba(127, 127, 127, 0.25));
+  border-color: var(--colonia-card-border);
 }
 .eq-steps {
   list-style: none;
@@ -94,7 +98,7 @@
   flex: none;
 }
 .eq-dot--on {
-  background: var(--success, #2e9e5b);
+  background: var(--colonia-brand);
 }
 .eq-muted {
   font-size: 12px;
@@ -120,7 +124,7 @@
 .eq-input {
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border, rgba(127, 127, 127, 0.35));
+  border: 1px solid var(--colonia-border-strong);
   background: transparent;
   color: inherit;
   min-width: 0;
@@ -129,4 +133,15 @@
   .eq-steps {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* EQUIPOS-RED-1 */
+.eq-open {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--colonia-card-border);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-fill);
 }

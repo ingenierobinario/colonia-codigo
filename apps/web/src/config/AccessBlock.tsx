@@ -14,7 +14,7 @@ const MODES: Array<{ id: Mode; label: MessageKey; body: MessageKey }> = [
 ];
 
 /** Waits for the core to answer again after it restarted, then loads the panel anew (with the core's new token). */
-async function reloadWhenBack(): Promise<void> {
+export async function reloadWhenBack(): Promise<void> {
   await new Promise((r) => setTimeout(r, 1200));
   for (let i = 0; i < 60; i++) {
     try {

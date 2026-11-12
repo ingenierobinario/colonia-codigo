@@ -17,7 +17,10 @@ export const enEquipos = {
   "equipos.expired": "The code has expired. Create a new one.",
   "equipos.cancel": "Cancel",
   "equipos.noAddress":
-    "This Colonia can only be reached from this computer, so another laptop cannot find it. Open it through a network address (for example a private network such as Tailscale) and try again.",
+    "Right now this Colonia can only be reached from this computer, so the other laptop would not find it. Open it right here and the command will appear:",
+  "equipos.openLan": "Open to my local network",
+  "equipos.openTailscale": "Open through Tailscale",
+  "equipos.opening": "Opening… Colonia restarts for a few seconds.",
   "equipos.none": "No computers yet",
   "equipos.noneHint": "When you add one it appears here, with its own on and off switch for your agents.",
   "equipos.connected": "Connected",

@@ -3,6 +3,7 @@ import "../styles/equipos.css";
 import type { Equipo, EquipoAuditEntry, EquipoLocalState } from "@colonia/protocol";
 import { Button, Dialog, EmptyState, Icons, SegmentedControl, Switch } from "@colonia/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { reloadWhenBack } from "../config/AccessBlock.tsx";
 import { client } from "../data/client.ts";
 import { usePack, useT } from "../i18n/index.ts";
 
@@ -86,6 +87,24 @@ function AddEquipo({ onDone }: { onDone: () => void }) {
       setError(t("equipos.failed"));
     }
   };
+  // EQUIPOS-RED-1: sin dirección de red no hay comando; se abre aquí mismo, sin mandar a Ajustes.
+  const [opening, setOpening] = useState(false);
+  const openNetwork = async (mode: "lan" | "tailscale") => {
+    setOpening(true);
+    setError("");
+    try {
+      const r = await client.call("access.set", { mode });
+      if (r.restarting) {
+        await client.call("equipos.pair_cancel", {}).catch(() => {});
+        await reloadWhenBack();
+        return;
+      }
+      await start();
+    } catch {
+      setError(t("equipos.failed"));
+    }
+    setOpening(false);
+  };
   const cancel = async () => {
     setPair(undefined);
     await client.call("equipos.pair_cancel", {}).catch(() => {});
@@ -124,7 +143,19 @@ function AddEquipo({ onDone }: { onDone: () => void }) {
               { value: "unix", label: t("equipos.unix") },
             ]}
           />
-          {pair.urls.length === 0 && <p className="eq-muted">{t("equipos.noAddress")}</p>}
+          {pair.urls.length === 0 && (
+            <div className="eq-open">
+              <p className="eq-muted">{opening ? t("equipos.opening") : t("equipos.noAddress")}</p>
+              <div className="eq-row">
+                <Button variant="primary" disabled={opening} onClick={() => void openNetwork("lan")}>
+                  {t("equipos.openLan")}
+                </Button>
+                <Button disabled={opening} onClick={() => void openNetwork("tailscale")}>
+                  {t("equipos.openTailscale")}
+                </Button>
+              </div>
+            </div>
+          )}
           {cmd && (
             <div className="eq-cmd">
               <code>{cmd}</code>
@@ -316,19 +347,23 @@ function Body() {
   const [local, refreshLocal] = usePoll(loadLocal);
   const equipos = list?.equipos ?? [];
   return (
-    <section className="page equipos">
-      <h1>{t("nav.equipos")}</h1>
-      <p className="equipos__lead">{t("equipos.lead")}</p>
-      <AddEquipo onDone={refreshList} />
-      {list && equipos.length === 0 && (
-        <EmptyState variant="dashed" icon={<Icons.Monitor />} title={t("equipos.none")}>
-          {t("equipos.noneHint")}
-        </EmptyState>
-      )}
-      {equipos.map((e) => (
-        <EquipoCard key={e.id} e={e} refresh={refreshList} />
-      ))}
-      {local && <ThisEquipo s={local} refresh={refreshLocal} />}
+    <section className="page" aria-label={t("nav.equipos")}>
+      <header className="page__head">
+        <h1 className="page__title">{t("nav.equipos")}</h1>
+        <p className="page__lead">{t("equipos.lead")}</p>
+      </header>
+      <div className="equipos">
+        <AddEquipo onDone={refreshList} />
+        {list && equipos.length === 0 && (
+          <EmptyState variant="dashed" icon={<Icons.Monitor />} title={t("equipos.none")}>
+            {t("equipos.noneHint")}
+          </EmptyState>
+        )}
+        {equipos.map((e) => (
+          <EquipoCard key={e.id} e={e} refresh={refreshList} />
+        ))}
+        {local && <ThisEquipo s={local} refresh={refreshLocal} />}
+      </div>
     </section>
   );
 }
