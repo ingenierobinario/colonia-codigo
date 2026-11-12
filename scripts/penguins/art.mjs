@@ -82,14 +82,23 @@ export function glyph(fill, { id = "g", dot = false } = {}) {
 export const svg = (inner, vb = 256, title = "") =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vb} ${vb}"${title ? ` role="img" aria-labelledby="title"><title id="title">${title}</title>` : ">"}${inner}</svg>\n`;
 
-/** Icono de app: losa oscura con degradado y el pingüino de marca. `bleed` llena el cuadrado (apple-touch). */
-export function appIcon({ bleed = false } = {}) {
-  const tile = bleed
-    ? `<rect width="256" height="256" fill="url(#tile)"/>`
-    : `<rect x="10" y="10" width="236" height="236" rx="54" fill="url(#tile)"/><rect x="11" y="11" width="234" height="234" rx="53" fill="none" stroke="#ffffff" stroke-opacity=".1" stroke-width="2"/>`;
-  return svg(
-    `<defs><linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a33"/><stop offset="1" stop-color="#090e12"/></linearGradient></defs>${tile}<g transform="translate(40 36) scale(.69)">${penguin({ color: BRAND, eyes: true })}</g>`,
-  );
+/**
+ * Icono de app SIN placa: el pingüino de marca sobre fondo transparente, centrado y ocupando `fill` del lienzo
+ * (como Explorador, Chrome o VS Code en la barra de Windows). `bleed` conserva la losa a sangre del apple-touch-icon.
+ * Se escala por el ancho de la silueta y se centra por su caja.
+ */
+export function appIcon({ bleed = false, fill = 0.9 } = {}) {
+  if (bleed)
+    return svg(
+      `<defs><linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a33"/><stop offset="1" stop-color="#090e12"/></linearGradient></defs><rect width="256" height="256" fill="url(#tile)"/><g transform="translate(40 36) scale(.69)">${penguin({ color: BRAND, eyes: true })}</g>`,
+    );
+  // Sin placa, la barriga blanca se fundía con una barra de tareas clara: contorno verde oscuro por detrás de la
+  // silueta (7 u por fuera), que también la separa de una barra negra. Con él la caja pasa a x -5..261 / y 33..247.
+  const k = (256 * fill) / 266;
+  const tx = 128 - 128 * k;
+  const ty = 128 - 140 * k;
+  const edge = `<g fill="#0a5c47" stroke="#0a5c47" stroke-width="14" stroke-linejoin="round"><path d="${BODY}"/><path d="${FLIPPER}"/><path d="${FLIPPER}" transform="translate(256 0) scale(-1 1)"/><ellipse cx="84" cy="228" rx="30" ry="12"/><ellipse cx="172" cy="228" rx="30" ry="12"/></g>`;
+  return svg(`<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})">${edge}${penguin({ color: BRAND, eyes: true })}</g>`);
 }
 
 const BADGES = {

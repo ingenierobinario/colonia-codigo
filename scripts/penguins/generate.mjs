@@ -152,6 +152,13 @@ write("apps/docs/public/apple-touch-icon.png", await raster(appIcon({ bleed: tru
 const D = "apps/desktop/assets";
 write(`${D}/logo-dock.svg`, appIcon());
 write(`${D}/icon.png`, await png(appIcon(), 1024));
+// Windows (exe, barra de tareas, instalador NSIS): .ico multitamaño, pingüino sin placa al 90 %.
+write(`${D}/icon.ico`, ico(await Promise.all([16, 24, 32, 48, 64, 128, 256].map(async (s) => [s, await png(appIcon(), s)]))));
+// Linux (AppImage, .deb/.rpm, .desktop): PNG transparentes por tamaño.
+for (const s of [256, 512]) write(`${D}/icons/${s}x${s}.png`, await png(appIcon(), s));
+// macOS: sin placa, pero dentro de la rejilla de Apple (824/1024 ≈ 80 %) para no verse mayor que el resto del Dock.
+const ICNS_APP = [["ic11", 32], ["ic12", 64], ["ic07", 128], ["ic08", 256], ["ic13", 256], ["ic09", 512], ["ic14", 512], ["ic10", 1024]];
+write(`${D}/icon.icns`, icns(await Promise.all(ICNS_APP.map(async ([t, s]) => [t, await png(appIcon({ fill: 0.8 }), s)]))));
 write(`${D}/logo-green.svg`, svg(glyph(BRAND), 256, "Colonia"));
 write(`${D}/logo-white.svg`, svg(glyph("#fff"), 256, "Colonia"));
 const trays = {

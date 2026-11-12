@@ -54,7 +54,7 @@
   ],
   "mac": {
     "target": ["dmg", "zip"],
-    "icon": "assets/icon.png",
+    "icon": "assets/icon.icns",
     "category": "public.app-category.productivity",
     "identity": "-",
     "hardenedRuntime": false,
@@ -104,7 +104,7 @@
   },
   "win": {
     "target": ["nsis", "zip"],
-    "icon": "assets/icon.png"
+    "icon": "assets/icon.ico"
   },
   "nsis": {
     "oneClick": true,
@@ -113,7 +113,7 @@
   },
   "linux": {
     "target": ["AppImage", "zip", "deb", "rpm"],
-    "icon": "assets/icon.png",
+    "icon": "assets/icons",
     "category": "Utility",
     "maintainer": "Colonia",
     "synopsis": "Your agents, your projects, one local core.",
