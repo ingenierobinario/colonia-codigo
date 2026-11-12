@@ -193,8 +193,12 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
       return { output: r.output, truncated: r.truncated };
     },
     "equipos.write_file": async (a, ctx) => {
-      if (isSsh(find(a.equipo)))
-        throw badRequest("escribir archivos aún no está disponible en equipos por terminal remota");
+      // EQUIPOS-SIN-AGENTE-2: también en equipos por terminal remota, con el interruptor del dueño y la actividad.
+      const c = find(a.equipo);
+      if (isSsh(c))
+        return viaSsh(c, `escribir: ${a.path}`, who(ctx), () =>
+          d.ssh.writeFile(c.id, remoteOs(c.platform), a.path, Buffer.from(a.content_base64, "base64")),
+        );
       const r = await d.principal.request(
         find(a.equipo).id,
         { op: "write", path: a.path, content_base64: a.content_base64 },

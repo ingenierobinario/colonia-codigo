@@ -90,6 +90,12 @@
   font-weight: 600;
   min-width: 0;
 }
+/* EQUIPOS-SIN-AGENTE-2 */
+.eq-addr {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
 .eq-dot {
   width: 8px;
   height: 8px;

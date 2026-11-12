@@ -419,6 +419,8 @@ function EquipoCard({ e, refresh }: { e: Equipo; refresh: () => void }) {
         <span className="eq-name">
           <span className={`eq-dot${e.connected ? " eq-dot--on" : ""}`} />
           <Icons.Monitor /> {e.name}
+          {/* EQUIPOS-SIN-AGENTE-2: la dirección con la que se llega al equipo. */}
+          {e.address ? <span className="eq-muted eq-addr">{e.address}</span> : null}
         </span>
         <span className="eq-muted">
           {e.in_use ? t("equipos.inUse") : e.connected ? t("equipos.connected") : t("equipos.offline")}
