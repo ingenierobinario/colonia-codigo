@@ -15,3 +15,146 @@
 .webapp__where {
   cursor: default;
 }
+
+/* IMPORTAR-1: asistente de importación. Tarjetas planas; el hover solo acentúa el borde. */
+.import {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.import__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
+}
+.import__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.import__step[aria-current="step"] {
+  color: var(--colonia-fg);
+  font-weight: var(--colonia-weight-semibold);
+}
+.import__num {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--colonia-border);
+  font-size: 11px;
+}
+.import__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  list-style: none;
+  min-width: 0;
+}
+.import__legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+}
+.import__card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
+  font-size: var(--colonia-text-sm);
+  cursor: pointer;
+}
+.import__card:hover,
+.import__card[data-on] {
+  border-color: var(--colonia-fg-subtle);
+}
+.import__hint {
+  margin: 0;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+}
+.import__error {
+  margin: 8px 0 0;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-danger-soft-fg);
+}
+
+/* CONTRASENAS-1: barra de guardar contraseña sobre la web y bloque de Ajustes. */
+.loginbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
+  font-size: var(--colonia-text-sm);
+}
+.loginbar__text {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.loginbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.logins {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.logins__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
+  font-size: var(--colonia-text-sm);
+}
+.logins__row:hover {
+  border-color: var(--colonia-fg-subtle);
+}
+.logins__who {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+.logins__user {
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
+}
+.logins__secret {
+  font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
+  overflow-wrap: anywhere;
+}
+.logins__pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
+}

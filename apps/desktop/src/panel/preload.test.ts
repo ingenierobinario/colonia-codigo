@@ -132,6 +132,7 @@ test("panel requests return native replies without exposing a general invoke cap
     ["loginsList", [], "logins:list", []],
     ["loginsReveal", [7], "logins:reveal", ["7"]],
     ["loginsRemove", ["l1"], "logins:remove", ["l1"]],
+    ["loginsRemoveApp", ["a1"], "logins:remove-app", ["a1"]],
     ["answerLoginOffer", ["o1", "guardar"], "logins:answer", ["o1", "guardar"]],
     ["memory", [], "desktop:memory", []],
     ["updateStatus", [true], "desktop:update-status", [true]],

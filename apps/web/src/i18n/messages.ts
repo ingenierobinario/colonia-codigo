@@ -56,6 +56,10 @@ const PACKS = {
     en: () => import("./equipos-en.ts").then((m) => m.enEquipos),
     es: () => import("./equipos-es.ts").then((m) => m.esEquipos),
   },
+  migrar: {
+    en: () => import("./migrar-en.ts").then((m) => m.enMigrar),
+    es: () => import("./migrar-es.ts").then((m) => m.esMigrar),
+  },
   usage: {
     en: () => import("./sysusage-en.ts").then((m) => m.enSysUsage),
     es: () => import("./sysusage-es.ts").then((m) => m.esSysUsage),

@@ -75,6 +75,10 @@ export function registrarContrasenas(o: {
       : "descartada",
   );
   ipcMain.handle("logins:list", (e) => (delPanel(e) ? boveda.lista() : []));
+  ipcMain.handle(
+    "logins:remove-app",
+    (e, app: unknown) => delPanel(e) && typeof app === "string" && boveda.borrarApp(app) >= 0,
+  );
   ipcMain.handle("logins:remove", (e, id: unknown) => delPanel(e) && typeof id === "string" && boveda.borrar(id));
   ipcMain.handle("logins:reveal", async (e, id: unknown) => {
     if (!delPanel(e) || typeof id !== "string") return { ok: false };

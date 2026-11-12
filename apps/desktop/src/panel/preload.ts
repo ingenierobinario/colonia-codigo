@@ -99,6 +99,7 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
   loginsAvailable: (): Promise<unknown> => ipcRenderer.invoke("logins:available"),
   loginsList: (): Promise<unknown> => ipcRenderer.invoke("logins:list"),
   loginsReveal: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:reveal", String(id)),
+  loginsRemoveApp: (app: string): Promise<unknown> => ipcRenderer.invoke("logins:remove-app", String(app)),
   loginsRemove: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:remove", String(id)),
   answerLoginOffer: (id: string, answer: "guardar" | "nunca" | "ahora-no"): Promise<unknown> =>
     ipcRenderer.invoke("logins:answer", String(id), answer),

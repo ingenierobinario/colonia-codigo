@@ -14,6 +14,8 @@ import { enFlow } from "./flow-en.ts";
 import { esFlow } from "./flow-es.ts";
 import { enIngress } from "./ingress-en.ts";
 import { esIngress } from "./ingress-es.ts";
+import { enMigrar } from "./migrar-en.ts";
+import { esMigrar } from "./migrar-es.ts";
 import { enReceived } from "./received-en.ts";
 import { esReceived } from "./received-es.ts";
 import { enSecretary } from "./secretary-en.ts";
@@ -114,6 +116,7 @@ const en = {
   ...enIngress,
   ...enFlow,
   ...enSecretary,
+  ...enMigrar,
 };
 const es = {
   ...esBase,
@@ -127,6 +130,7 @@ const es = {
   ...esIngress,
   ...esFlow,
   ...esSecretary,
+  ...esMigrar,
 };
 
 // Each language is loaded alone, so a key it lacks would show as the bare key.

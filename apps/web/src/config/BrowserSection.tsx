@@ -2,6 +2,7 @@ import { Button, Checkbox, EmptyState, Icons, SearchField, SegmentedControl } fr
 import { useEffect, useState } from "react";
 import { cookieDomains, cookieSources, importCookies } from "../data/actions.ts";
 import { useT } from "../i18n/index.ts";
+import { LoginsSection, MigrarSection } from "./LoginsSection.tsx";
 import { SectionHead } from "./SectionHead.tsx";
 
 type Source = Awaited<ReturnType<typeof cookieSources>>[number];
@@ -22,7 +23,9 @@ export function BrowserSection() {
   return (
     <>
       <SectionHead title={t("config.browser")} lead={t("browser.cfg.lead")} />
+      <MigrarSection />
       <SessionsImport />
+      <LoginsSection />
     </>
   );
 }

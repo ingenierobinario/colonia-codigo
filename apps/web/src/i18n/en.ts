@@ -15,6 +15,7 @@ import { enTelemetry } from "./en-telemetry.ts";
 import type { EquipoKey } from "./equipos-en.ts";
 import type { enFlow } from "./flow-en.ts";
 import type { enIngress } from "./ingress-en.ts";
+import type { enMigrar } from "./migrar-en.ts";
 import type { ReceivedKey } from "./received-en.ts";
 import type { enSecretary } from "./secretary-en.ts";
 import type { SysUsageKey } from "./sysusage-en.ts";
@@ -2017,4 +2018,5 @@ export type MessageKey =
   | keyof typeof enThreadDialogs
   | keyof typeof enIngress
   | keyof typeof enFlow
-  | keyof typeof enSecretary;
+  | keyof typeof enSecretary
+  | keyof typeof enMigrar;

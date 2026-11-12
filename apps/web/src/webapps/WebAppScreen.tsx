@@ -10,6 +10,7 @@ import { useT } from "../i18n/index.ts";
 import { BrowserViewport } from "../panel/BrowserViewport.tsx";
 import { useBrowserPoppedOut } from "../panel/browserWindow.ts";
 import { nav, useNav } from "../shell/nav.ts";
+import { LoginBar } from "./LoginBar.tsx";
 import "../styles/browser-panel.css";
 import "../styles/webapps.css";
 
@@ -81,6 +82,7 @@ export function WebAppScreen() {
           onClick={() => openOutside(url)}
         />
       </div>
+      <LoginBar app={app.id} />
       {tabId ? <BrowserViewport tab={tabId} /> : <Skeleton className="browser__page" />}
     </div>
   );

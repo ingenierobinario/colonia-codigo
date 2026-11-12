@@ -132,6 +132,8 @@ declare global {
       /** Pide confirmación al sistema (Windows Hello, Touch ID o un aviso) y devuelve la contraseña. */
       loginsReveal?(id: string): Promise<{ ok: boolean; contrasena?: string }>;
       loginsRemove?(id: string): Promise<boolean>;
+      /** Borra las contraseñas de una aplicación que se quita de la barra lateral. */
+      loginsRemoveApp?(app: string): Promise<boolean>;
       answerLoginOffer?(id: string, answer: "guardar" | "nunca" | "ahora-no"): Promise<string>;
       /** Una web app ha visto un acceso nuevo: se ofrece guardarlo (el panel nunca recibe la contraseña). */
       onLoginOffer?(listener: (offer: LoginOffer) => void): () => void;
