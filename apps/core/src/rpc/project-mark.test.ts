@@ -145,3 +145,25 @@ test("the base project keeps its tile across its other changes", async () => {
   assert.equal(cleared.base.name, "Home", "and its name through a change of tile");
   await assert.rejects(env.client.call("media.get", { id: picture }));
 });
+
+test("FOTO-DUENO-1: the owner's picture is an upload it takes, deleted when replaced or removed", async () => {
+  const before = files().length;
+  const first = await upload();
+  const set = await env.client.call("owner.set", { photo: first });
+  assert.equal(set.photo, first);
+  assert.equal((await env.client.call("owner.get", {})).photo, first);
+  await env.client.call("owner.set", { about: "Panadero" });
+  assert.equal((await env.client.call("owner.get", {})).photo, first, "saving the rest keeps the picture");
+
+  const second = await upload();
+  await env.client.call("owner.set", { photo: second });
+  assert.equal(files().length, before + 1, "the picture it replaces is deleted");
+
+  await assert.rejects(env.client.call("owner.set", { photo: await upload(PNG, true) }), /owner's picture/);
+  await assert.rejects(env.client.call("owner.set", { photo: "med_0000000000000000" }), /owner's picture/);
+
+  const removed = await env.client.call("owner.set", { photo: null });
+  assert.equal(removed.photo, undefined, "back to the initials");
+  assert.equal(removed.about, "Panadero");
+  assert.equal(files().length, before + 1, "only the kept upload refused above stays");
+});

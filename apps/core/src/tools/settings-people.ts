@@ -208,6 +208,9 @@ export const PEOPLE: Readonly<Record<string, Setting>> = {
     says: () => "Change your profile",
     now: (_p, { store }) => ownerIdentity(store),
     keep: (p, { store }) => merged(ownerIdentity(store), p),
+    // FOTO-DUENO-1: the picture is uploaded from Settings → Account; an agent keeps the one there is.
+    refuse: (p, { store }) =>
+      ownersField(p, ownerIdentity(store), "photo", "their picture is uploaded from Settings → Account"),
   },
   "notices.get": {
     does: "when the owner is notified: quiet hours, daily budget, gaps between notices, the channel they reach",

@@ -108,10 +108,18 @@ export const SETTINGS = {
   /** Saved without the auxiliary model, which keeps its own key ("model_aux", plain text). */
   memory: entry(MemorySettings.omit({ aux_model: true }).partial(), {}),
   /** About the owner and their time zone (their name is the owner's person; the language is "owner_language"). */
-  owner_profile: entry(z.object({ about: z.string().catch(""), timezone: z.string().catch("") }), {
-    about: "",
-    timezone: "",
-  }),
+  owner_profile: entry(
+    z.object({
+      about: z.string().catch(""),
+      timezone: z.string().catch(""),
+      /** FOTO-DUENO-1: the media id of their picture. */
+      photo: z.string().optional().catch(undefined),
+    }),
+    {
+      about: "",
+      timezone: "",
+    },
+  ),
   /** The base project's name, description and kind (it has no folder to keep them in). */
   base_project: entry(BaseProject, { name: "Default" }),
   /** The base project's areas and roles (a real project keeps them in its .apc/organization.json). */

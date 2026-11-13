@@ -8,16 +8,20 @@ import { badRequest } from "../errors.ts";
 const glyphs = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 /** The tile to keep for what the owner sent (undefined = the initial again), refused when it cannot be drawn. */
-function checked(store: Store, current: ProjectMark | undefined, next: ProjectMark | null): ProjectMark | undefined {
+function checked(
+  store: Store,
+  current: ProjectMark | undefined,
+  next: ProjectMark | null,
+  what: string,
+): ProjectMark | undefined {
   if (!next || !Object.keys(next).length) return undefined;
   if (next.emoji && [...glyphs.segment(next.emoji)].length !== 1) throw badRequest("a project's tile shows one emoji");
   if (next.image && next.image !== current?.image) {
     const m = store.media.get(next.image);
     // Only an upload nothing else shows yet: the tile may delete it later without asking who else uses it.
     if (m?.kind !== "image" || !store.taskAttachments.pending(m.id))
-      throw badRequest("a project's picture is an image uploaded for it");
-    if (m.bytes > PROJECT_IMAGE_BYTES)
-      throw badRequest(`a project's picture is at most ${PROJECT_IMAGE_BYTES / 1024} KB`);
+      throw badRequest(`${what} is an image uploaded for it`);
+    if (m.bytes > PROJECT_IMAGE_BYTES) throw badRequest(`${what} is at most ${PROJECT_IMAGE_BYTES / 1024} KB`);
   }
   return next;
 }
@@ -28,8 +32,10 @@ export function changeMark(
   current: ProjectMark | undefined,
   next: ProjectMark | null,
   write: (mark: ProjectMark | undefined) => void,
+  /** Whose picture, for the refusals (FOTO-DUENO-1 reuses it for the owner's). */
+  what = "a project's picture",
 ): void {
-  const mark = checked(store, current, next);
+  const mark = checked(store, current, next, what);
   const replaced = current?.image && current.image !== mark?.image ? store.media.get(current.image) : undefined;
   store.tx(() => {
     if (mark?.image && mark.image !== current?.image) store.taskAttachments.take(mark.image);

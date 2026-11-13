@@ -11,7 +11,7 @@ import { readOrganization, writeOrganization } from "../apc/org.ts";
 import type { ApcSync } from "../apc/sync.ts";
 import { writeProjectMeta } from "../apc/write.ts";
 import { artifactDir } from "../domain/artifact-memory.ts";
-import { ownerIdentity, saveOwnerIdentity } from "../domain/owner.ts";
+import { ownerIdentity, saveOwnerIdentity, writeOwnerPhoto } from "../domain/owner.ts";
 import { publicProject } from "../domain/projects.ts";
 import type { EngineIds } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
@@ -71,7 +71,20 @@ export function appHandlers(deps: {
   return {
     ...projectHelperHandlers(store),
     "owner.get": () => ownerIdentity(deps.store),
-    "owner.set": (patch) => saveOwnerIdentity(deps.store, patch),
+    "owner.set": ({ photo, ...patch }) => {
+      // FOTO-DUENO-1: the owner's picture is taken like a project's: an upload of its own, deleted when replaced.
+      if (photo !== undefined) {
+        const was = ownerIdentity(deps.store).photo;
+        changeMark(
+          deps.store,
+          was ? { image: was } : undefined,
+          photo ? { image: photo } : null,
+          (m) => writeOwnerPhoto(deps.store, m?.image),
+          "the owner's picture",
+        );
+      }
+      return saveOwnerIdentity(deps.store, patch);
+    },
     "system.import_v1": async ({ keys, skills, services }) =>
       importFromV1(deps.apc, secrets, {
         ...deps.v1,

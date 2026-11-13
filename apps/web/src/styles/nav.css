@@ -391,6 +391,14 @@
   background: var(--colonia-fill-strong);
   font-size: var(--colonia-text-2xs);
   font-weight: var(--colonia-weight-semibold);
+  overflow: hidden;
+}
+/* FOTO-DUENO-1: the owner's picture fills their round avatar. */
+.owner-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .account__name {
   flex: 1;

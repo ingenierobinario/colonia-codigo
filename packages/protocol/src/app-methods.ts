@@ -902,7 +902,18 @@ export const appMethods = {
     access: "human",
   },
   "owner.set": {
-    params: OwnerIdentity.partial().strict(),
+    /** `photo`: an image uploaded for it (media.upload with task_asset), or null to go back to the initials. */
+    // Without OwnerIdentity's defaults: a field left out keeps its value instead of going back to "" (FOTO-DUENO-1).
+    params: z
+      .object({
+        name: z.string().trim().max(80),
+        about: z.string().max(2000),
+        language: z.string().regex(/^[a-z]{2}$/),
+        timezone: z.string().max(60),
+        photo: z.string().nullable(),
+      })
+      .partial()
+      .strict(),
     result: OwnerIdentity,
     effect: true,
     access: "human",
