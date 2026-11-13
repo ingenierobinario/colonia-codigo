@@ -155,10 +155,13 @@ test("EQUIPOS-ALIAS-1: los agentes ven el nombre puesto por el dueño y lo usan;
     assert.match(r.output, /hecho: uptime/, ref);
   }
   await assert.rejects(owner.call("equipos.run", { equipo: "nadie", command: "uptime" }), /son: Portátil de Marta/);
-  const list = equipoTools().find((t) => t.name === "equipo_list");
+  const list = equipoTools(core.store).find((t) => t.name === "equipo_list");
   assert.ok(list);
   const ctx = { call: (m: "equipos.list", p: Record<string, never>) => owner.call(m, p) };
-  assert.equal(await list.run({}, ctx as never), "Portátil de Marta (DESKTOP-ACME01, linux) - connected");
+  assert.equal(
+    await list.run({}, ctx as never),
+    "You may use (pass the name or the address as `equipo`):\n- Portátil de Marta, DESKTOP-ACME01 (linux, 192.168.1.40, remote terminal) - reachable now",
+  );
 });
 
 test("EQUIPOS-ALIAS-1: dos equipos no pueden llamarse igual, ni por el nombre puesto ni por el del equipo", async () => {

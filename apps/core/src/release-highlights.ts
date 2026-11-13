@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.7": {
+    en: [
+      "Stop halts what the agent was doing on screen, and the live window closes; it also has a close button.",
+      "Agents can use the computers you connected by remote terminal when you let them.",
+      "Rename each computer in «My computers», and this computer appears there as «This computer».",
+    ],
+    es: [
+      "Detener corta lo que el agente hacía en pantalla y la ventana en vivo se cierra; además tiene botón de cerrar.",
+      "Los agentes pueden usar los equipos conectados por terminal remota cuando se lo permites.",
+      "Cada equipo se puede renombrar en «Mis equipos», y este ordenador aparece ahí como «Este equipo».",
+    ],
+  },
   "2.36.6": {
     en: [
       "Tree, Activity and By chat fold their groups the same way, aligned with the chats.",
