@@ -1,15 +1,18 @@
 import type { OwnerIdentity } from "@colonia/protocol";
-import { Badge, EmptyState, Icons, Input, SegmentedControl, SettingRow, Textarea } from "@colonia/ui";
+import { Badge, Button, EmptyState, Icons, Input, SegmentedControl, SettingRow, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS, type ChannelKind } from "../channels/kinds.ts";
+import { OwnerAvatar } from "../common/OwnerAvatar.tsx";
 import { LanguageSelect, TimezoneSelect } from "../common/pickers/LocaleSelect.tsx";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
-import { initialsOf, setPrefs, TEXT_SIZES, textSizeOf, usePrefs } from "../data/prefs.ts";
+import { rememberOwner } from "../data/owner.ts";
+import { setPrefs, TEXT_SIZES, textSizeOf, usePrefs } from "../data/prefs.ts";
 import { isLanguage, LANGUAGE_NAMES, LANGUAGES, useLanguage, useT } from "../i18n/index.ts";
 import { go, useNav } from "../shell/nav.ts";
 import { EmailSignatures } from "./EmailSignatures.tsx";
+import { OwnerPhotoEditor } from "./OwnerPhotoEditor.tsx";
 import { SectionHead } from "./SectionHead.tsx";
 import "../styles/theme-switch.css";
 
@@ -20,11 +23,13 @@ export function AccountSection() {
   const you = t("account.you");
   const [owner, setOwner] = useState<OwnerIdentity>();
   const [draft, setDraft] = useState(stored);
+  const [editingPhoto, setEditingPhoto] = useState(false);
   useEffect(() => {
     void client
       .call("owner.get", {})
       .then((o) => {
         setOwner(o);
+        rememberOwner(o);
         if (o.name && !stored) setDraft(o.name);
       })
       .catch(() => {});
@@ -32,7 +37,10 @@ export function AccountSection() {
   const save = (patch: Partial<OwnerIdentity>) =>
     void client
       .call("owner.set", patch)
-      .then(setOwner)
+      .then((o) => {
+        setOwner(o);
+        rememberOwner(o);
+      })
       .catch((e: unknown) => notify(t("error.account", { error: e instanceof Error ? e.message : String(e) })));
   const saveName = () => {
     setPrefs({ displayName: draft.trim() });
@@ -42,12 +50,41 @@ export function AccountSection() {
     <>
       <SectionHead title={t("config.account")} lead={t("account.lead")} />
       <div className="account-card">
-        <span className="account-card__avatar">{initialsOf(draft.trim() || you)}</span>
+        {/* FOTO-DUENO-1: the avatar is the way to its picture. */}
+        <button
+          type="button"
+          className="account-card__photo"
+          aria-label={owner?.photo ? t("account.photo.change") : t("account.photo.add")}
+          title={owner?.photo ? t("account.photo.change") : t("account.photo.add")}
+          disabled={!owner}
+          onClick={() => setEditingPhoto(true)}
+        >
+          <OwnerAvatar className="account-card__avatar" name={draft.trim() || you} />
+          <span className="account-card__camera" aria-hidden="true">
+            <Icons.Pencil size={11} />
+          </span>
+        </button>
         <div className="account-card__text">
           <div className="account-card__name">{draft.trim() || you}</div>
           <div className="account-card__sub">{t("account.owner")}</div>
         </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="account-card__change"
+          disabled={!owner}
+          onClick={() => setEditingPhoto(true)}
+        >
+          {owner?.photo ? t("account.photo.change") : t("account.photo.add")}
+        </Button>
       </div>
+      <OwnerPhotoEditor
+        name={draft.trim() || you}
+        photo={owner?.photo}
+        open={editingPhoto}
+        onOpenChange={setEditingPhoto}
+        onSaved={setOwner}
+      />
       <SettingRow title={t("account.name")} description={t("account.nameHint")}>
         <Input
           size="sm"

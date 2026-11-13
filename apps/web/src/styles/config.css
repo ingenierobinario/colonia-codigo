@@ -136,9 +136,72 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
+  overflow: hidden;
   background: var(--colonia-fill-strong);
   font-size: var(--colonia-text-lg);
   font-weight: var(--colonia-weight-semibold);
+}
+/* FOTO-DUENO-1: the avatar opens its picture; on hover only its ring lights up (flat hover). */
+.account-card__photo {
+  position: relative;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.account-card__photo:hover:not(:disabled),
+.account-card__photo:focus-visible {
+  border-color: var(--colonia-accent);
+}
+.account-card__photo:disabled {
+  cursor: default;
+}
+.account-card__camera {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--colonia-bg);
+  border-radius: 50%;
+  background: var(--colonia-fill-strong);
+  color: var(--colonia-fg);
+}
+.account-card__text {
+  flex: 1;
+  min-width: 0;
+}
+.account-card__change {
+  flex: none;
+}
+@media (max-width: 480px) {
+  .account-card__change {
+    display: none;
+  }
+}
+.owner-photo-preview {
+  display: grid;
+  place-items: center;
+}
+.owner-photo-preview__avatar {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--colonia-fill-strong);
+  font-size: var(--colonia-text-2xl);
+  font-weight: var(--colonia-weight-semibold);
+}
+.owner-photo-preview--small {
+  overflow: hidden;
+  border-radius: 50%;
 }
 .account-card__name {
   font-size: var(--colonia-text-lg);

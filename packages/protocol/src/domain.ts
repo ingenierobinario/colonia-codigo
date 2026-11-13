@@ -1396,6 +1396,8 @@ export const OwnerIdentity = z.object({
     .default("es"),
   /** IANA ("America/Argentina/Buenos_Aires"); empty: this machine's. */
   timezone: z.string().max(60).default(""),
+  /** FOTO-DUENO-1: their profile picture, a media id (an image uploaded for it); left out, their initials. */
+  photo: z.string().optional(),
 });
 export type OwnerIdentity = z.infer<typeof OwnerIdentity>;
 

@@ -420,6 +420,12 @@ export const es: Partial<Record<MessageKey, string>> = {
   "account.timezoneHint": "Tus agentes la usan para saber qué hora es para ti.",
   "error.account": "No se pudo guardar tu cuenta: {error}",
   "account.owner": "Dueño de esta instalación",
+  "account.photo.add": "Añadir foto",
+  "account.photo.change": "Cambiar foto",
+  "account.photo.remove": "Quitar foto",
+  "account.photo.title": "Tu foto de perfil",
+  "account.photo.body":
+    "Se recorta en un cuadrado y se guarda en tu máquina. Sale en el panel en lugar de tus iniciales.",
   "account.name": "Nombre",
   "account.nameHint": "Cómo te muestra el panel y cómo te conocen tus agentes.",
   "account.cloud": "Cuenta en la nube",

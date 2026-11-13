@@ -10,16 +10,25 @@ export function ownerIdentity(store: Store): OwnerIdentity {
     about: extra.about,
     language: store.settings.get("owner_language") || "es",
     timezone: extra.timezone,
+    ...(extra.photo ? { photo: extra.photo } : {}),
   };
 }
 
-export function saveOwnerIdentity(store: Store, patch: Partial<OwnerIdentity>): OwnerIdentity {
+/** FOTO-DUENO-1: keeps the owner's picture (a media id; undefined: their initials). The caller takes the upload. */
+export function writeOwnerPhoto(store: Store, photo: string | undefined): void {
+  const { photo: _was, ...cur } = store.settings.read("owner_profile");
+  store.settings.write("owner_profile", { ...cur, ...(photo ? { photo } : {}) });
+}
+
+/** Saves what changes but the picture, which `owner.set` takes through `changeMark`. */
+export function saveOwnerIdentity(store: Store, patch: Omit<Partial<OwnerIdentity>, "photo">): OwnerIdentity {
   const name = patch.name?.trim();
   if (name) store.persons.update(store.persons.owner().id, { name });
   if (patch.language !== undefined) store.settings.set("owner_language", patch.language);
   if (patch.about !== undefined || patch.timezone !== undefined) {
     const cur = store.settings.read("owner_profile");
     store.settings.write("owner_profile", {
+      ...cur,
       about: patch.about ?? cur.about,
       timezone: patch.timezone ?? cur.timezone,
     });

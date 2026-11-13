@@ -14,7 +14,7 @@ const pictures = new Map<string, string>();
 const broken = new Set<string>();
 
 /** The picture's address; undefined while it loads, false when it could not be read. */
-function usePicture(id: string | undefined): string | false | undefined {
+export function usePicture(id: string | undefined): string | false | undefined {
   const [, redraw] = useState(0);
   useEffect(() => {
     if (!id || pictures.has(id)) return;

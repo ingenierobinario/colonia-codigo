@@ -1,5 +1,6 @@
 import { Icons, Menu, type MenuEntry } from "@colonia/ui";
-import { initialsOf, usePrefs } from "../data/prefs.ts";
+import { OwnerAvatar } from "../common/OwnerAvatar.tsx";
+import { usePrefs } from "../data/prefs.ts";
 import { openSetup } from "../data/setup.ts";
 import { type T, useT } from "../i18n/index.ts";
 import { useLanguageItems } from "./LanguageMenu.tsx";
@@ -33,9 +34,7 @@ export function AccountRow({ rail }: { rail: boolean }) {
         items={items}
         trigger={
           <button type="button" className="account__btn" aria-label={t("account.menuOf", { name })}>
-            <span className="account__avatar" aria-hidden="true">
-              {initialsOf(name)}
-            </span>
+            <OwnerAvatar className="account__avatar" name={name} />
             {!rail && (
               <>
                 <span className="account__name">{name}</span>
