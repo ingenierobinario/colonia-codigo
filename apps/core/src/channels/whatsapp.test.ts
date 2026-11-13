@@ -490,6 +490,25 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   assert.ok((now?.unread ?? 0) > unread, "unread: the owner has not seen it");
 });
 
+test("WA-LID-1: Ana under her private id alone, and the owner under her number, land in one chat", async () => {
+  const ana = (await env.client.call("threads.list", {})).threads.find(
+    (t) => t.channel?.id === "whatsapp" && t.title === "Ana",
+  );
+  assert.ok(ana, "Ana's chat");
+  const all = async () =>
+    (await env.client.call("threads.get", { thread: ana.id })).messages.map((m) =>
+      m.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])).join(""),
+    );
+  // The session knows her number for the private id, but the message carries no alternative.
+  wa.message({ ...ANA, lid: "200000000000077@lid" }, "only my private id", { type: "append", noAlt: true });
+  await waitFor(async () => (await all()).includes("only my private id"), "kept in Ana's chat");
+  wa.ownerTo(ANA, "answered under your number", { type: "append" });
+  await waitFor(async () => (await all()).includes("answered under your number"), "owner's words in the same chat");
+  const threads = (await env.client.call("threads.list", {})).threads;
+  assert.ok(!threads.some((t) => t.channel?.conversation?.endsWith("@lid")), "no twin chat under the private id");
+  assert.equal(threads.filter((t) => t.channel?.id === "whatsapp" && t.title === "Ana").length, 1, "one chat");
+});
+
 test("PROPIOS-6: the phone's history fills kept chats in order, once, as past; others are left out; earlier asked once", async () => {
   const ana = (await env.client.call("threads.list", {})).threads.find(
     (t) => t.channel?.id === "whatsapp" && t.title === "Ana",
