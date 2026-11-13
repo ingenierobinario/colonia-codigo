@@ -1,10 +1,10 @@
 import { IconButton, Icons } from "@colonia/ui";
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { type PointerEvent, useEffect, useReducer, useRef, useState } from "react";
 import { stopKeys } from "../config/desktopPrefs.ts";
 import { useT } from "../i18n/index.ts";
 import { ComputerIcon } from "./parts/ComputerIcon.tsx";
+import { LIVE_CLOSED, type LiveActivity, liveReduce, STOP_NOTICE_MS } from "./screenLiveState.ts";
 
-type Activity = { kind: "look" | "click" | "type"; app: string; window: string; x?: number; y?: number };
 type Frame = {
   data: string;
   bounds?: { x: number; y: number; width: number; height: number };
@@ -23,47 +23,47 @@ const HOME: Offset = { x: 0, y: 0 };
  * The window an agent works on, live, in a card over the chat (desktop app only). It starts small at the bottom; it
  * moves by its title bar within the chat, grows, shrinks or hides into a pill at the top, and marks where the agent
  * last clicked. When computer use ends it closes, and the next time it starts at the bottom again. Frames go from the
- * desktop to this panel only.
+ * desktop to this panel only. DETENER-VIVO-1: after the emergency stop it says so and closes by itself, and it always
+ * has a close button.
  */
 export function ScreenLive() {
   const t = useT();
-  const [last, setLast] = useState<Activity & { at: number }>();
+  const [{ last, stopped }, dispatch] = useReducer(liveReduce, LIVE_CLOSED);
   const [frame, setFrame] = useState<Frame>();
   const [size, setSize] = useState<Size>("mini");
   const [offset, setOffset] = useState<Offset>(HOME);
-  const [stopped, setStopped] = useState(false);
   const card = useRef<HTMLElement>(null);
   const drag = useRef<{ px: number; py: number; from: Offset } | undefined>(undefined);
 
   useEffect(
     () =>
       window.coloniaDesktop?.onComputerActivity?.((a) =>
-        setLast((prev) => {
-          // A new session (none running): back to its place at the bottom, small.
-          if (!prev) {
-            setOffset(HOME);
-            setSize("mini");
-          }
-          return { ...(a as Activity), at: Date.now() };
-        }),
+        dispatch({ type: "activity", activity: a as LiveActivity, at: Date.now() }),
       ),
     [],
   );
 
   // The emergency stop, pulled here or with its keys (stopKeys) from any app.
-  useEffect(() => window.coloniaDesktop?.onComputerStopped?.(setStopped), []);
+  useEffect(() => window.coloniaDesktop?.onComputerStopped?.((s) => dispatch({ type: "stopped", stopped: s })), []);
 
-  // Computer use is over after a while with no action: close, forget where it was moved.
+  // Closed (idle, stopped, or by the owner): the next session starts small at the bottom, with no old frame.
+  const open = Boolean(last);
   useEffect(() => {
-    if (!last) return;
-    const id = setTimeout(() => {
-      setLast(undefined);
-      setFrame(undefined);
-    }, IDLE_MS);
-    return () => clearTimeout(id);
-  }, [last]);
+    if (open) return;
+    setFrame(undefined);
+    setOffset(HOME);
+    setSize("mini");
+  }, [open]);
 
-  const live = Boolean(last) && size !== "hidden";
+  // Computer use is over after a while with no action, or once the stop notice was read: close.
+  useEffect(() => {
+    if (!last && !stopped) return;
+    const id = setTimeout(() => dispatch({ type: "close" }), stopped ? STOP_NOTICE_MS : IDLE_MS);
+    return () => clearTimeout(id);
+  }, [last, stopped]);
+
+  // Stopped, nothing is live any more: no more frames are asked for.
+  const live = open && !stopped && size !== "hidden";
   useEffect(() => {
     const desktop = window.coloniaDesktop;
     if (!live || !desktop?.computerFrame) return;
@@ -103,7 +103,8 @@ export function ScreenLive() {
   };
 
   if (!window.coloniaDesktop?.computerFrame || !last) return null;
-  if (size === "hidden")
+  // Hidden, the stop still shows: the card comes back to say so before it closes.
+  if (size === "hidden" && !stopped)
     return (
       <button type="button" className="screenlive__pill" onClick={() => setSize("mini")}>
         <ComputerIcon busy size={14} />
@@ -118,12 +119,12 @@ export function ScreenLive() {
   return (
     <section
       ref={card}
-      className={`screenlive screenlive--${size}`}
+      className={`screenlive screenlive--${size === "hidden" ? "mini" : size}`}
       aria-label={t("live.title")}
       style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
     >
       <div className="screenlive__head" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
-        <ComputerIcon busy size={14} />
+        <ComputerIcon busy={!stopped} size={14} />
         <span className="screenlive__title">
           {frame?.app || last.app}
           {(frame?.window || last.window) && (
@@ -153,6 +154,12 @@ export function ScreenLive() {
           label={t("live.hide")}
           icon={<Icons.EyeOff size={13} />}
           onClick={() => setSize("hidden")}
+        />
+        <IconButton
+          size="sm"
+          label={t("live.close")}
+          icon={<Icons.X size={13} />}
+          onClick={() => dispatch({ type: "close" })}
         />
       </div>
       <div className="screenlive__view">

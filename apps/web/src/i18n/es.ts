@@ -1679,6 +1679,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "live.bigger": "Agrandar",
   "live.smaller": "Reducir",
   "live.hide": "Ocultar",
+  "live.close": "Cerrar",
   "live.stop": "Detener",
   "live.stopHint":
     "Parada de emergencia: corta lo que el agente está haciendo en el ordenador, solo esta vez. También con {keys} desde cualquier app.",

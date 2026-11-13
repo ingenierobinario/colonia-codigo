@@ -103,9 +103,19 @@ export function createComputer(o: {
   let target: Target | undefined;
   /** Just after the emergency stop: what was on its way does not reach the screen. */
   let stopped = false;
-  const go = () => {
-    if (stopped) throw new Error(STOPPED);
+  /** DETENER-VIVO-1: how many times the stop was pulled, so an action knows it started before one. */
+  let stops = 0;
+  /**
+   * The check one action carries through its steps: it throws once the stop is pulled, also after the hold is over.
+   * An action that started before the stop never reaches the screen, however long it had been waiting.
+   */
+  const guard = () => {
+    const at = stops;
+    return () => {
+      if (stopped || stops !== at) throw new Error(STOPPED);
+    };
   };
+  type Go = () => void;
   const asked = new Map<ComputerPermission, number>();
   /** Shows the owner where to allow it (not again within a minute) and returns what the agent hears. */
   const missing = (kind: ComputerPermission): Error => {
@@ -124,8 +134,9 @@ export function createComputer(o: {
       throw missing("screen");
   };
 
-  async function look(app?: string, note?: string) {
+  async function look(go: Go, app?: string, note?: string) {
     if (app) await d.activate(app).catch(() => {});
+    go();
     // A browser's page is read from its picture: its elements take seconds and say less. Elsewhere a busy window
     // (a long list) can also take longer to read than to see: then the picture goes alone.
     const quick = await front(false);
@@ -135,6 +146,8 @@ export function createComputer(o: {
           ...quick,
           lines: ["(this window's elements took too long to read: look at the picture)"],
         }));
+    // Stopped while it read the window: no live view of it, no pointer, no picture for the agent.
+    go();
     target = { app: f.app, window: f.window, bounds: f.bounds };
     // What it is doing, by the window it looks at (the pointer never shows in the picture).
     const b0 = f.bounds;
@@ -155,6 +168,7 @@ export function createComputer(o: {
       ? `; the picture is ${size.width}x${size.height} px: its pixel (px,py) is the screen point (${b.x} + px*${scale.toFixed(3)}, ${b.y} + py*${scale.toFixed(3)})`
       : "";
     const header = `${screensText(b)}.\n${where}${covered}${map}; positions are screen points, centers to click\nrole\tname\tdescription\tvalue\tx,y`;
+    go();
     o.onActivity({ kind: "look", app: f.app, window: f.window });
     return {
       mime: "image/jpeg",
@@ -165,7 +179,7 @@ export function createComputer(o: {
     };
   }
 
-  async function act(method: string, params: unknown): Promise<unknown> {
+  async function act(go: Go, method: string, params: unknown): Promise<unknown> {
     const p = (params ?? {}) as {
       x?: number;
       y?: number;
@@ -175,10 +189,12 @@ export function createComputer(o: {
       url?: string;
       note?: string;
     };
-    if (method === "computer.snapshot") return look(p.app, p.note);
+    if (method === "computer.snapshot") return look(go, p.app, p.note);
     if (method === "computer.open") {
       o.cursor.say(p.note || (p.url ? new URL(p.url).host : (p.app ?? "")));
       await d.open(p.app, p.url);
+      // DETENER-VIVO-1: stopped while it opened: the wait for its window ends here, and the live view is not told.
+      go();
       const app = p.app ?? "the default browser";
       // Closed before, it takes a moment to start: wait for its window to come up, and say on which screen.
       let where: string | undefined;
@@ -186,6 +202,7 @@ export function createComputer(o: {
         const wanted = p.app.toLowerCase();
         for (let i = 0; i < 24 && !where; i++) {
           const f = await front(false).catch(() => undefined);
+          go();
           const shown = f?.app.toLowerCase() ?? "";
           if (f?.bounds && shown && (shown === wanted || wanted.includes(shown) || shown.includes(wanted))) {
             target = { app: f.app, window: f.window, bounds: f.bounds };
@@ -193,6 +210,7 @@ export function createComputer(o: {
           } else await new Promise((r) => setTimeout(r, 250));
         }
       }
+      go();
       o.onActivity({ kind: "look", app, window: p.url ?? "" });
       return where ? { app, where } : { app };
     }
@@ -207,7 +225,9 @@ export function createComputer(o: {
       o.cursor.say(p.note || `⌨ ${p.keys}`);
       // Keys go to the app in front: browsers ignore keys sent to them in the background.
       await d.activate(String(p.app ?? "")).catch(() => {});
+      go();
       const app = await d.key(String(p.app ?? ""), keys);
+      go();
       o.onActivity({ kind: "type", app, window: target?.window ?? "" });
       return { app };
     }
@@ -225,11 +245,14 @@ export function createComputer(o: {
       if (ASSISTIVE.test(done)) throw missing("accessibility");
       let how = done;
       if (done.startsWith("none")) {
+        go();
         await d.activate(name).catch(() => {});
+        go();
         await d.click(name, x, y);
         how = `a real click (nothing there takes a press: ${done.replace(/^none:? ?/, "")})`;
       }
       const app = String(p.app ?? "");
+      go();
       o.cursor.pulse();
       o.onActivity({ kind: "click", app, window: target?.window ?? "", x, y });
       return { app, how };
@@ -240,10 +263,13 @@ export function createComputer(o: {
       const name = String(p.app ?? "");
       const text = String(p.text ?? "");
       if (!(await d.insert(name, text))) {
+        go();
         await d.activate(name).catch(() => {});
+        go();
         await d.paste(name, text);
       }
       const app = String(p.app ?? "");
+      go();
       o.onActivity({ kind: "type", app, window: target?.window ?? "" });
       return { app };
     }
@@ -252,10 +278,11 @@ export function createComputer(o: {
 
   return {
     async handle(method: string, params: unknown): Promise<unknown> {
+      const go = guard();
       go();
       allowed(method);
       try {
-        return await act(method, params);
+        return await act(go, method, params);
       } catch (e) {
         // Allowed as macOS reports it, yet refused when used: an entry left behind by a reinstall.
         if (ASSISTIVE.test(errorText(e))) throw missing("accessibility");
@@ -269,6 +296,9 @@ export function createComputer(o: {
     stop() {
       if (stopped) return;
       stopped = true;
+      stops++;
+      // DETENER-VIVO-1: computer use ended: the panel's live view has no window to follow until the next action.
+      target = undefined;
       o.cursor.hide();
       o.onStopped(true);
       setTimeout(() => {
@@ -282,8 +312,10 @@ export function createComputer(o: {
       try {
         const f = await front(false);
         // Follow the same app; if the owner brought another one forward, keep the last place known.
-        if (f.app === target.app) target = { app: f.app, window: f.window, bounds: f.bounds };
+        if (f.app === target?.app) target = { app: f.app, window: f.window, bounds: f.bounds };
       } catch {}
+      // Stopped while it looked for the window.
+      if (!target) return undefined;
       const img = await picture(target.bounds, FRAME_MAX);
       return {
         data: `data:image/jpeg;base64,${img.toJPEG(60).toString("base64")}`,

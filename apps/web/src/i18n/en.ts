@@ -1674,6 +1674,7 @@ export const en = {
   "live.bigger": "Make it bigger",
   "live.smaller": "Make it smaller",
   "live.hide": "Hide",
+  "live.close": "Close",
   "live.stop": "Stop",
   "live.stopHint":
     "Emergency stop: ends what the agent is doing on the computer, this time only. Also {keys} from any app.",
