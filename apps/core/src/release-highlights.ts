@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.5": {
+    en: [
+      "WhatsApp keeps both sides of each chat together, also for contacts that write from a private id.",
+      "The bookmarks bar shows the bookmarks of profiles signed in to Google.",
+      "Your profile can have a photo, and «My computers» shows each device's name and type.",
+      "Internal, External and Browsers fold in the sidebar like the other sections.",
+    ],
+    es: [
+      "WhatsApp junta los dos lados de cada chat, también con contactos que escriben con id privado.",
+      "La barra de marcadores muestra los de perfiles con la sesión de Google iniciada.",
+      "Tu perfil puede tener foto, y «Mis equipos» muestra el nombre y el tipo de cada aparato.",
+      "Internas, Externas y Navegadores se pliegan en la barra como las demás secciones.",
+    ],
+  },
   "2.36.4": {
     en: [
       "«My computers» scans your whole network and finds computers you had not talked to yet.",
