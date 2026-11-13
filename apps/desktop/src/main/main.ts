@@ -239,8 +239,9 @@ app.whenReady().then(() => {
     layout: () => layout(),
   });
   const unparent = (view: WebContentsView) => {
+    // CIERRE-DESTRUIDO-1: closing the app destroys the windows before their tabs say they are gone.
     for (const w of [win, popout.window()])
-      if (w?.contentView.children.includes(view)) w.contentView.removeChildView(view);
+      if (w && !w.isDestroyed() && w.contentView.children.includes(view)) w.contentView.removeChildView(view);
   };
   // The tab is on screen in the browser window while it is open, else in the main window's slot.
   const stage = () => {
@@ -253,6 +254,7 @@ app.whenReady().then(() => {
   };
 
   const layout = () => {
+    if (win.isDestroyed()) return;
     const { width, height } = win.getContentBounds();
     panel.setBounds({ x: 0, y: 0, width, height });
     if (!shown) return;
