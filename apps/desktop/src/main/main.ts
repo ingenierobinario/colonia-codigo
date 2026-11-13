@@ -23,8 +23,11 @@ import { registerAppScheme, serveAppScheme, webDist } from "./app-scheme.ts";
 import { createArtifactWindows } from "./artifact-windows.ts";
 import { runAskpass } from "./askpass.ts";
 import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
+import { createDownloads } from "./browser/downloads.ts";
 import { installedBrowsers, isWebUrl, openExternal } from "./browser/external.ts";
 import { BrowserHost, blockAppOrigins } from "./browser/host.ts";
+import { pageMenu } from "./browser/page-menu.ts";
+import { permissionQuestion, TAB_ACTIONS, type TabAction } from "./browser/policy.ts";
 import { createPopout } from "./browser/popout.ts";
 import { type Bounds, clipToArea, slotToDip } from "./browser/slot.ts";
 import { COMPUTER_PLATFORMS, computerPermissions, createComputer, openPrivacy } from "./computer.ts";
@@ -196,11 +199,49 @@ app.whenReady().then(() => {
   // Every page (the panel, the quick chat, browser tabs) gets the edit menu on a right click.
   app.on("web-contents-created", (_e, contents) => {
     contents.on("context-menu", (_ev, params) => {
-      const items = editMenu(params, app.getLocale(), {
+      const copyText = (text: string) => clipboard.writeText(text);
+      const edit = editMenu(params, app.getLocale(), {
         replaceMisspelling: (word) => contents.replaceMisspelling(word),
         addToDictionary: (word) => contents.session.addWordToSpellCheckerDictionary(word),
-        copyText: (text) => clipboard.writeText(text),
+        copyText,
       });
+      // CHROME-1: a web page gets the rest of a browser's menu around the edit menu.
+      const tab = host.tabOf(contents);
+      let items = edit;
+      if (tab) {
+        const nav = contents.navigationHistory;
+        const act = (action: TabAction) => {
+          try {
+            host.act(tab, action);
+          } catch {
+            // the tab closed while its menu was open
+          }
+        };
+        const { target, page } = pageMenu(
+          params,
+          app.getLocale(),
+          { canGoBack: nav.canGoBack(), canGoForward: nav.canGoForward() },
+          {
+            openTab: (url) => void host.openFrom(tab, url).catch(() => {}),
+            saveUrl: (url) => contents.downloadURL(url),
+            copyImage: () => contents.copyImageAt(params.x, params.y),
+            copyText,
+            back: () => act("back"),
+            forward: () => act("forward"),
+            reload: () => act("reload"),
+            print: () => act("print"),
+            inspect: () => contents.inspectElement(params.x, params.y),
+          },
+        );
+        const sep: MenuItemConstructorOptions = { type: "separator" };
+        items = [
+          ...target,
+          ...(target.length && edit.length ? [sep] : []),
+          ...edit,
+          ...(target.length || edit.length ? [sep] : []),
+          ...page,
+        ];
+      }
       if (items.length) Menu.buildFromTemplate(items).popup({ frame: params.frame ?? undefined });
     });
   });
@@ -227,12 +268,27 @@ app.whenReady().then(() => {
   // The panel's language (it says so on load and on every change), for the About window.
   let language: string | undefined;
 
+  // CHROME-1: the page in full screen (a video), its window, and whether the window went full screen for it.
+  let full: { view: WebContentsView; w: BaseWindow; own: boolean; left: () => void } | undefined;
+  const endFull = () => {
+    const was = full;
+    if (!was) return;
+    full = undefined;
+    if (!was.w.isDestroyed()) {
+      was.w.off("leave-full-screen", was.left);
+      if (was.own && was.w.isFullScreen()) was.w.setFullScreen(false);
+    }
+    host.exitFullScreen(was.view);
+  };
+
   const popout = createPopout({
     url: () => base,
     preload: path.join(DIST, "panel-preload.cjs"),
     partition: "persist:colonia-ui",
     changed: (open) => {
       const pw = popout.panel();
+      // The tab changes window: a page in full screen comes out of it first.
+      endFull();
       if (open && pw) externalLinks(pw);
       panel.webContents.send("browser:popout", open);
       layout();
@@ -254,27 +310,45 @@ app.whenReady().then(() => {
     return Boolean(s && s.width > 0 && s.height > 0);
   };
 
+  // CHROME-1: the page is taken out of its window and put back only when it changes window or depth. Doing it on
+  // every report of the slot (each frame while a panel is dragged or the window resized) repainted the page from
+  // nothing each time.
+  const place = (w: BaseWindow, view: WebContentsView, front: boolean) => {
+    const kids = w.contentView.children;
+    const at = kids.indexOf(view);
+    if (at >= 0 && at === (front ? kids.length - 1 : 0)) return;
+    unparent(view);
+    if (front) w.contentView.addChildView(view);
+    else w.contentView.addChildView(view, 0);
+  };
+
   const layout = () => {
     if (win.isDestroyed()) return;
     const { width, height } = win.getContentBounds();
     panel.setBounds({ x: 0, y: 0, width, height });
     if (!shown) return;
     const { w, slot: at } = stage();
+    const area = w.getContentBounds();
+    // CHROME-1: a page in full screen takes the whole window, over the panel.
+    if (full?.view === shown) {
+      place(w, shown, true);
+      shown.setBounds({ x: 0, y: 0, width: area.width, height: area.height });
+      return;
+    }
     // Hidden tabs sit behind the panel at a real size instead of setVisible(false): an invisible view stops
     // painting, and the agent still needs screenshots and layout of the page it is driving.
-    unparent(shown);
-    const area = w.getContentBounds();
     // NAVFIX-1: the page never leaves its window, whatever the panel reported or however the window just shrank.
     const fit = at && clipToArea(at, area);
     if (fit && fit.width > 0 && fit.height > 0) {
-      w.contentView.addChildView(shown);
+      place(w, shown, true);
       shown.setBounds(fit);
     } else {
-      w.contentView.addChildView(shown, 0);
+      place(w, shown, false);
       shown.setBounds({ x: 0, y: 0, width: Math.min(area.width, 1280), height: area.height });
     }
   };
   host.onShow = (view) => {
+    if (full && full.view !== view) endFull();
     if (shown && shown !== view) unparent(shown);
     shown = view;
     layout();
@@ -283,6 +357,57 @@ app.whenReady().then(() => {
     const active = host.active ? host.list().find((t) => t.tab === host.active) : undefined;
     popout.setTitle(active?.title || "Colonia");
   });
+  host.onFullScreen = (view, on) => {
+    if (!on) {
+      if (full?.view === view) endFull();
+    } else if (view !== shown) {
+      // A page nobody is looking at has no screen to fill.
+      host.exitFullScreen(view);
+    } else if (full?.view !== view) {
+      endFull();
+      const w = stage().w;
+      const own = !w.isFullScreen();
+      // The owner taking the window out of full screen (the system's keys, its green button) takes the page out too.
+      const left = () => full?.view === view && endFull();
+      full = { view, w, own, left };
+      w.on("leave-full-screen", left);
+      if (own) w.setFullScreen(true);
+    }
+    layout();
+  };
+  const toPanels = (channel: string, ...args: unknown[]) => {
+    for (const wc of [panel.webContents, popout.panel()]) if (wc && !wc.isDestroyed()) wc.send(channel, ...args);
+  };
+  // CHROME-1: Ctrl/Cmd+F on a page opens the panel's search bar, and the keys go to it.
+  host.onFind = (tab) => {
+    const p = popout.panel() ?? panel.webContents;
+    if (p.isDestroyed()) return;
+    p.focus();
+    p.send("browser:find-open", tab);
+  };
+  host.onFound = (tab, active, total) => toPanels("browser:found", tab, active, total);
+  host.onPermission = async (_tab, permission, origin, media) => {
+    const q = permissionQuestion(permission, media, origin, (language ?? app.getLocale()).startsWith("es"));
+    const w = stage().w;
+    if (w.isDestroyed()) return false;
+    const { response } = await dialog.showMessageBox(w, {
+      type: "question",
+      message: q.message,
+      detail: q.detail,
+      buttons: q.buttons,
+      defaultId: 1,
+      cancelId: 1,
+      noLink: true,
+    });
+    return response === 0;
+  };
+  const downloads = createDownloads({
+    dir: () => app.getPath("downloads"),
+    notify: (notice) => toPanels("browser:download", notice),
+    openPath: (file) => void shell.openPath(file),
+    showInFolder: (file) => shell.showItemInFolder(file),
+  });
+  host.onDownload = (item) => downloads.take(item);
   host.onAttention = (message) => {
     openMain();
     if (Notification.isSupported()) new Notification({ title: "Colonia", body: message }).show();
@@ -319,6 +444,39 @@ app.whenReady().then(() => {
     } catch {
       // unknown tab: the panel's list is stale; the next tabs event corrects it
     }
+  });
+
+  // CHROME-1: the panel's search bar, its toolbar's zoom and stop, and the notice of a download.
+  ipcMain.on("browser:find", (e, tab: unknown, text: unknown, forward: unknown, next: unknown) => {
+    if (!ownBrowserPanel(e.sender) || typeof tab !== "string" || typeof text !== "string") return;
+    try {
+      host.find(tab, text.slice(0, 500), forward !== false, next === true);
+    } catch {
+      // the tab closed under the search bar
+    }
+  });
+  ipcMain.on("browser:find-stop", (e, tab: unknown) => {
+    if (!ownBrowserPanel(e.sender) || typeof tab !== "string") return;
+    host.stopFind(tab);
+    // The keys go back to the page the owner was reading.
+    const wc = shown?.webContents;
+    if (wc && !wc.isDestroyed()) wc.focus();
+  });
+  ipcMain.on("browser:act", (e, tab: unknown, action: unknown) => {
+    if (!ownBrowserPanel(e.sender) || typeof tab !== "string") return;
+    const known = TAB_ACTIONS.find((a) => a === action);
+    if (!known) return;
+    try {
+      host.act(tab, known);
+    } catch {
+      // unknown tab: the panel's list is stale
+    }
+  });
+  ipcMain.on("browser:download-open", (e, id: unknown) => {
+    if (ownBrowserPanel(e.sender)) downloads.open(id);
+  });
+  ipcMain.on("browser:download-show", (e, id: unknown) => {
+    if (ownBrowserPanel(e.sender)) downloads.show(id);
   });
 
   // The browser in its own window (with its toolbar), or a page in one of the owner's own browsers.

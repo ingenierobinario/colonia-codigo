@@ -25,6 +25,15 @@ class Contents extends EventEmitter {
   getTitle() {
     return "Example";
   }
+  isLoading() {
+    return false;
+  }
+  isCurrentlyAudible() {
+    return false;
+  }
+  getZoomFactor() {
+    return 1;
+  }
   getOSProcessId() {
     assert.equal(this.destroyed, false);
     return 42;

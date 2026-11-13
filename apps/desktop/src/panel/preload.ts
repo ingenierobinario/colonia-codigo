@@ -22,6 +22,29 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
     ipcRenderer.on("browser:popout", on);
     return () => ipcRenderer.removeListener("browser:popout", on);
   },
+  /** CHROME-1: search in the page, the browser's own actions on a tab, and downloads. */
+  findInPage: (tab: string, text: string, forward = true, next = false) =>
+    ipcRenderer.send("browser:find", String(tab), String(text), forward !== false, next === true),
+  stopFind: (tab: string) => ipcRenderer.send("browser:find-stop", String(tab)),
+  onFindOpen: (listener: (tab: string) => void) => {
+    const on = (_e: unknown, tab: unknown) => typeof tab === "string" && listener(tab);
+    ipcRenderer.on("browser:find-open", on);
+    return () => ipcRenderer.removeListener("browser:find-open", on);
+  },
+  onFound: (listener: (tab: string, active: number, total: number) => void) => {
+    const on = (_e: unknown, tab: unknown, active: unknown, total: unknown) =>
+      typeof tab === "string" && listener(tab, Number(active) || 0, Number(total) || 0);
+    ipcRenderer.on("browser:found", on);
+    return () => ipcRenderer.removeListener("browser:found", on);
+  },
+  tabAction: (tab: string, action: string) => ipcRenderer.send("browser:act", String(tab), String(action)),
+  onDownload: (listener: (notice: unknown) => void) => {
+    const on = (_e: unknown, notice: unknown) => listener(notice);
+    ipcRenderer.on("browser:download", on);
+    return () => ipcRenderer.removeListener("browser:download", on);
+  },
+  openDownload: (id: string) => ipcRenderer.send("browser:download-open", String(id)),
+  showDownload: (id: string) => ipcRenderer.send("browser:download-show", String(id)),
   installedBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installed"),
   /** `browser` undefined = the system's default browser. */
   openExternal: (url: string, browser?: string): Promise<unknown> =>

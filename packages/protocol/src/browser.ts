@@ -31,6 +31,17 @@ export const TabInfo = z.object({
   profile: BrowserProfile,
   control: TabControl,
   consent_epoch: z.string().max(100).optional(),
+  // CHROME-1: what a browser's own bar shows about the page. Absent = no (and 100 % zoom).
+  /** The page is still loading. */
+  loading: z.boolean().optional(),
+  /** The page is playing sound. */
+  audible: z.boolean().optional(),
+  /** The last load failed: the network's reason (ERR_CONNECTION_REFUSED…). The url is the one that failed. */
+  error: z.string().max(200).optional(),
+  /** Zoom in percent, when it is not 100. */
+  zoom: z.number().optional(),
+  /** The tab whose page opened this one (a link in a new tab, a sign-in window). */
+  opener: z.string().optional(),
 });
 export type TabInfo = z.infer<typeof TabInfo>;
 

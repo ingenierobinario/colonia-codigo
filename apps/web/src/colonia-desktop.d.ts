@@ -83,6 +83,31 @@ declare global {
       browserPoppedOut?(): boolean;
       /** The main window hears when the browser window opens or closes. */
       onBrowserPopout?(listener: (open: boolean) => void): () => void;
+      /** CHROME-1: searches the shown page; `next` moves to the following (or, with forward false, previous) match. */
+      findInPage?(tab: string, text: string, forward?: boolean, next?: boolean): void;
+      /** Ends the search and gives the keys back to the page. */
+      stopFind?(tab: string): void;
+      /** The owner pressed Ctrl/Cmd+F on a page. */
+      onFindOpen?(listener: (tab: string) => void): () => void;
+      /** Which match is selected and how many there are. */
+      onFound?(listener: (tab: string, active: number, total: number) => void): () => void;
+      /** What a browser does to a tab: zoom, print, stop, reload. */
+      tabAction?(
+        tab: string,
+        action: "find" | "zoom-in" | "zoom-out" | "zoom-reset" | "print" | "reload" | "stop" | "back" | "forward",
+      ): void;
+      /** A download of the owner's started, finished or failed. */
+      onDownload?(
+        listener: (notice: {
+          id: string;
+          name: string;
+          state: "started" | "completed" | "failed";
+          opens?: boolean;
+        }) => void,
+      ): () => void;
+      /** Opens a finished download (a program is shown in its folder instead). */
+      openDownload?(id: string): void;
+      showDownload?(id: string): void;
       /** The browsers installed on this computer (Chrome, Safari, Firefox…). */
       installedBrowsers?(): Promise<Array<{ id: string; name: string }>>;
       /** Opens a web page in the system's default browser, or in an installed one by id. */

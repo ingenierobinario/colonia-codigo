@@ -11,11 +11,12 @@ import {
 } from "@colonia/protocol";
 import { assertNavigable as checkNavigable } from "@colonia/protocol/cdp";
 import { ColoniaError } from "@colonia/protocol/client";
-import { app, type Session, session, type WebContents, WebContentsView } from "electron";
+import { app, type DownloadItem, type Session, session, type WebContents, WebContentsView } from "electron";
 import type { ProcessOwner } from "../memory.ts";
 import { CdpTab } from "./cdp.ts";
 import { discoverSources, importCookies, listDomains } from "./cookies.ts";
 import { idleTabs } from "./idle.ts";
+import { nextZoom, originOf, permissionPolicy, shortcut, type TabAction } from "./policy.ts";
 
 type Tab = {
   id: string;
@@ -28,6 +29,12 @@ type Tab = {
   control: TabControl;
   /** Last time an agent or the owner did something with it (idle tabs close: see idle.ts). */
   used: number;
+  /** CHROME-1: the last load of the page failed (no network, no such site): what Chromium said and the address. */
+  failed?: { error: string; url: string };
+  /** CHROME-1: the tab whose page opened this one (a link in a new tab, a sign-in window). */
+  opener?: string;
+  /** CHROME-1: the page is in full screen (a video). */
+  full?: boolean;
 };
 
 // NAVFIX-1: el tope de 8 protege de un agente que abre pestañas sin parar, y solo cuenta las que llevan los agentes.
@@ -98,6 +105,16 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
   appPreload: string | undefined;
   /** Called with each web app's id and its page, so the shell can tell which app a message comes from. */
   onAppView: (appId: string, wc: WebContents) => void = () => {};
+  /** CHROME-1: a page went into or out of full screen (a video player), so the window can give it the whole area. */
+  onFullScreen: (view: WebContentsView, on: boolean) => void = () => {};
+  /** CHROME-1: the owner pressed Ctrl/Cmd+F on a page: the panel shows its search bar. */
+  onFind: (tab: string) => void = () => {};
+  /** CHROME-1: how many matches the search found and which one is selected. */
+  onFound: (tab: string, active: number, total: number) => void = () => {};
+  /** CHROME-1: a page asks for the microphone, the camera, the location…: the owner answers. Unset → refused. */
+  onPermission: ((tab: string, permission: string, origin: string, media: string[]) => Promise<boolean>) | undefined;
+  /** CHROME-1: a page of the owner's started a download. Unset → downloads are cancelled, as before. */
+  onDownload: ((item: DownloadItem, tab: string) => void) | undefined;
 
   get active(): string | undefined {
     return this.#active;
@@ -105,13 +122,20 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
 
   info(tab: Tab): TabInfo {
     const wc = tab.wc;
+    const zoom = Math.round(wc.getZoomFactor() * 100) / 100;
     return {
       tab: tab.id,
-      url: wc.getURL(),
+      // A failed load leaves Chromium's own error document: the address the owner asked for is the one to show.
+      url: tab.failed ? tab.failed.url : wc.getURL(),
       title: wc.getTitle(),
       profile: tab.profile,
       control: tab.control,
       consent_epoch: tab.cdp.consentEpoch,
+      ...(wc.isLoading() ? { loading: true } : {}),
+      ...(wc.isCurrentlyAudible() ? { audible: true } : {}),
+      ...(tab.failed ? { error: tab.failed.error.slice(0, 200) } : {}),
+      ...(zoom !== 1 ? { zoom } : {}),
+      ...(tab.opener ? { opener: tab.opener } : {}),
     };
   }
 
@@ -162,7 +186,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         const nav = tab.wc.navigationHistory;
         if (p.action === "back" && nav.canGoBack()) nav.goBack();
         else if (p.action === "forward" && nav.canGoForward()) nav.goForward();
-        else if (p.action === "reload") tab.wc.reload();
+        else if (p.action === "reload") this.#reload(tab);
         await this.#settle(tab);
         return { url: tab.wc.getURL(), title: tab.wc.getTitle() };
       }
@@ -285,7 +309,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     }
   }
 
-  async open(url: string, profile: BrowserProfile, control: TabControl): Promise<Tab> {
+  async open(url: string, profile: BrowserProfile, control: TabControl, opener?: string): Promise<Tab> {
     assertNavigable(url);
     const live = [...this.#tabs.values()];
     const agents = live.filter((t) => t.control.kind === "agent" || t.control.kind === "handoff").length;
@@ -303,18 +327,57 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         contextIsolation: true,
         nodeIntegration: false,
         backgroundThrottling: false,
+        // CHROME-1: Chromium's own PDF viewer is a plugin; without it a PDF link shows nothing.
+        plugins: true,
         ...(profile.startsWith("app:") && this.appPreload ? { preload: this.appPreload } : {}),
       },
     });
+    if (profile.startsWith("app:")) this.onAppView(profile.slice("app:".length), view.webContents);
+    const tab = this.#mount(id, view, profile, control, opener);
+    this.select(id);
+    await this.#load(tab, url);
+    // CDP domains only answer once the tab has a renderer. See HISTORY.md#cdp-attach-after-load
+    await tab.cdp.attach();
+    return tab;
+  }
+
+  /** Wires a page as a tab: one the host created, or one a page opened (a link in a new tab, a sign-in window). */
+  #mount(id: string, view: WebContentsView, profile: BrowserProfile, control: TabControl, opener?: string): Tab {
     const wc = view.webContents;
-    if (profile.startsWith("app:")) this.onAppView(profile.slice("app:".length), wc);
-    // Popups stay in the same tab and keep the same owner/profile.
-    wc.setWindowOpenHandler(({ url: next }) => {
+    // CHROME-1: a page that opens a window gets a new tab, as in any browser (a sign-in window has to stay a
+    // separate page that can talk to the one that opened it). An agent's tab and a pinned web app keep everything
+    // in the page they are: the agent must find the result in the tab it drives.
+    wc.setWindowOpenHandler(({ url: next, disposition }) => {
+      const blank = next === "" || next === "about:blank";
       try {
-        assertNavigable(next);
-        void wc.loadURL(next);
-      } catch {}
-      return { action: "deny" };
+        if (!blank) assertNavigable(next);
+      } catch {
+        return { action: "deny" };
+      }
+      const from = this.#tabs.get(id);
+      const same =
+        !from ||
+        from.control.kind === "agent" ||
+        from.control.kind === "handoff" ||
+        profile.startsWith("app:") ||
+        this.#tabs.size >= MAX_TABS;
+      if (same) {
+        if (!blank) void wc.loadURL(next).catch(() => {});
+        return { action: "deny" };
+      }
+      return {
+        action: "allow",
+        createWindow: (options) => {
+          const child = new WebContentsView({
+            webContents: (options as { webContents?: WebContents }).webContents,
+            webPreferences: options.webPreferences,
+          } as ConstructorParameters<typeof WebContentsView>[0]);
+          const born = this.#mount(`t${++this.#seq}`, child, profile, { kind: "idle" }, id);
+          if (disposition === "background-tab") this.emit("changed");
+          else this.select(born.id);
+          return child.webContents;
+        },
+      };
     });
     // Same guard for clicks, redirects and subframes: a redirect must not reach what a direct load cannot.
     const guard = (e: { preventDefault(): void }, next: string) => {
@@ -331,26 +394,154 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     const touched = () => {
       if (this.#tabs.get(id)?.control.kind === "agent" && !this.#busy.has(id)) this.takeControl(id);
     };
-    wc.on("before-input-event", (_e, input) => input.type === "keyDown" && touched());
+    wc.on("before-input-event", (e, input) => {
+      if (input.type !== "keyDown") return;
+      touched();
+      // Esc leaves full screen even when the page keeps the key for itself.
+      if (input.key === "Escape" && tab.full) this.#exitFull(tab);
+      // CHROME-1: the browser's own shortcuts (find, zoom, print, reload, back). Never for an agent's key presses.
+      if (this.#busy.has(id)) return;
+      const action = shortcut(input, process.platform === "darwin");
+      // A pinned web app is not shown inside the browser panel, which is where the search bar lives.
+      if (!action || (action === "find" && profile.startsWith("app:"))) return;
+      e.preventDefault();
+      this.act(id, action);
+    });
     wc.on("before-mouse-event", (_e, mouse) => mouse.type === "mouseDown" && touched());
     const cdp = new CdpTab(wc);
-    const tab: Tab = { id, profile, view, wc, session: wc.session, cdp, control, used: Date.now() };
+    const tab: Tab = {
+      id,
+      profile,
+      view,
+      wc,
+      session: wc.session,
+      cdp,
+      control,
+      used: Date.now(),
+      ...(opener ? { opener } : {}),
+    };
     const changed = () => {
       if (this.#tabs.get(id) !== tab) return;
       if (wc.isDestroyed()) this.#remove(tab);
       else this.emit("changed");
     };
-    for (const ev of ["page-title-updated", "did-stop-loading"] as const) {
+    // CHROME-1: the panel hears a load the moment it starts and each address it reaches, not only its end: until
+    // then a slow page looked like a dead click (no spinner, the old address still in the bar).
+    for (const ev of [
+      "page-title-updated",
+      "did-start-loading",
+      "did-stop-loading",
+      "did-navigate",
+      "did-navigate-in-page",
+      "audio-state-changed",
+    ] as const) {
       wc.on(ev as "did-stop-loading", changed);
     }
+    // CHROME-1: a load that fails (no such site, connection refused, offline) used to leave a blank page.
+    wc.on("did-fail-load", (_e, code, description, failedUrl, isMainFrame) => {
+      // -3 is ERR_ABORTED: the owner went elsewhere or a download took the request; nothing failed.
+      if (!isMainFrame || code === -3) return;
+      tab.failed = { error: description || `ERR ${code}`, url: failedUrl };
+      changed();
+    });
+    wc.on("did-start-navigation", (details) => {
+      if (!details.isMainFrame || details.isSameDocument || details.url.startsWith("chrome-error://")) return;
+      if (!tab.failed) return;
+      delete tab.failed;
+      changed();
+    });
+    wc.on("enter-html-full-screen", () => {
+      tab.full = true;
+      this.onFullScreen(view, true);
+    });
+    wc.on("leave-html-full-screen", () => {
+      tab.full = false;
+      this.onFullScreen(view, false);
+    });
+    wc.on("found-in-page", (_e, result) => {
+      if (result.finalUpdate) this.onFound(id, result.activeMatchOrdinal, result.matches);
+    });
+    // Ctrl/Cmd + wheel.
+    wc.on("zoom-changed", (_e, direction) => this.act(id, direction === "in" ? "zoom-in" : "zoom-out"));
     cdp.onInvalidate = changed;
     wc.once("destroyed", () => this.#remove(tab));
     this.#tabs.set(id, tab);
-    this.select(id);
-    await this.#load(tab, url);
-    // CDP domains only answer once the tab has a renderer. See HISTORY.md#cdp-attach-after-load
-    await cdp.attach();
     return tab;
+  }
+
+  /** CHROME-1: what a browser shortcut, the toolbar or the page's menu does to a tab. */
+  act(id: string, action: TabAction): void {
+    const tab = this.#get(id);
+    const wc = tab.wc;
+    const nav = wc.navigationHistory;
+    switch (action) {
+      case "find":
+        return this.onFind(id);
+      case "zoom-in":
+      case "zoom-out":
+      case "zoom-reset":
+        wc.setZoomFactor(nextZoom(wc.getZoomFactor(), action));
+        this.emit("changed");
+        return;
+      case "print":
+        return wc.print();
+      case "reload":
+        return this.#reload(tab);
+      case "stop":
+        return wc.stop();
+      case "back":
+        if (nav.canGoBack()) nav.goBack();
+        return;
+      case "forward":
+        if (nav.canGoForward()) nav.goForward();
+        return;
+      case "devtools":
+        return wc.openDevTools({ mode: "detach" });
+    }
+  }
+
+  /** Takes a page out of full screen (the owner pressed Esc, changed tab or left the window's full screen). */
+  exitFullScreen(view: WebContentsView): void {
+    for (const t of this.#tabs.values()) if (t.view === view) this.#exitFull(t);
+  }
+
+  #exitFull(tab: Tab): void {
+    if (tab.wc.isDestroyed()) return;
+    void tab.wc
+      .executeJavaScript("document.fullscreenElement ? document.exitFullscreen() : undefined", true)
+      .catch(() => {});
+  }
+
+  /** CHROME-1: a link or an image of a page, opened in a new tab next to it. */
+  async openFrom(id: string, url: string): Promise<void> {
+    const from = this.#get(id);
+    // A pinned web app stays the one page it is.
+    if (from.profile.startsWith("app:")) return this.#load(from, url);
+    await this.open(url, from.profile, { kind: "idle" }, id);
+  }
+
+  /** Reloading a page that failed asks for its address again, not for Chromium's error document. */
+  #reload(tab: Tab): void {
+    if (tab.failed) void tab.wc.loadURL(tab.failed.url).catch(() => {});
+    else tab.wc.reload();
+  }
+
+  /** CHROME-1: searches the page; `next` moves to the following (or previous) match of the same text. */
+  find(id: string, text: string, forward = true, next = false): void {
+    const wc = this.#get(id).wc;
+    if (text) wc.findInPage(text, { forward, findNext: !next });
+    else wc.stopFindInPage("clearSelection");
+  }
+
+  stopFind(id: string): void {
+    const tab = this.#tabs.get(id);
+    if (tab && !tab.wc.isDestroyed()) tab.wc.stopFindInPage("clearSelection");
+  }
+
+  /** The tab a page belongs to. */
+  tabOf(wc: WebContents): string | undefined {
+    for (const t of this.#tabs.values()) if (t.wc === wc) return t.id;
+    return undefined;
   }
 
   select(id: string): void {
@@ -371,7 +562,9 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
   #remove(tab: Tab): void {
     if (this.#tabs.get(tab.id) !== tab) return;
     this.#tabs.delete(tab.id);
-    if (tab.profile === "incognito") {
+    // A page a private tab opened shares its session: the data goes with the last of them.
+    const shared = [...this.#tabs.values()].some((t) => t.session === tab.session);
+    if (tab.profile === "incognito" && !shared) {
       // In-memory partitions outlive destroyed contents; all retirement paths share one cleanup.
       tab.cleanup = Promise.resolve().then(async () => {
         await Promise.all([tab.session.clearStorageData(), tab.session.clearCache()]);
@@ -524,8 +717,50 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     // Camera, mic, geolocation, notifications, clipboard-read: denied unless a later UI grants them.
     // ACCESOS-1: la excepción son los avisos de las aplicaciones web fijadas (Gmail, Outlook, Slack…).
     const allow = (perm: string) => notifications && perm === "notifications";
-    ses.setPermissionRequestHandler((_wc, perm, cb) => cb(allow(perm)));
-    ses.setPermissionCheckHandler((_wc, perm) => allow(perm));
-    ses.on("will-download", (e) => e.preventDefault());
+    // CHROME-1: refusing everything also refused what a page does on a plain click: "fullscreen" (a video never
+    // went full screen) and writing to the clipboard (the "Copy" buttons did nothing). Those are granted; a device
+    // or the owner's attention is asked for, once per site while the app runs; an agent's tab never asks.
+    const granted = new Set<string>();
+    const keys = (perm: string, origin: string, media: readonly string[]) =>
+      perm === "media" && media.length ? media.map((m) => `media:${m} ${origin}`) : [`${perm} ${origin}`];
+    ses.setPermissionRequestHandler((wc, perm, cb, details) => {
+      if (allow(perm)) return cb(true);
+      const policy = permissionPolicy(perm);
+      if (policy === "allow") return cb(true);
+      const id = wc ? this.tabOf(wc) : undefined;
+      const tab = id ? this.#tabs.get(id) : undefined;
+      const origin = originOf(details.requestingUrl);
+      if (policy === "deny" || !tab || !origin || !this.onPermission) return cb(false);
+      if (tab.control.kind === "agent" || this.#busy.has(tab.id)) return cb(false);
+      const media = [...((details as { mediaTypes?: string[] }).mediaTypes ?? [])].sort();
+      const wanted = keys(perm, origin, media);
+      if (wanted.every((k) => granted.has(k))) return cb(true);
+      this.onPermission(tab.id, perm, origin, media).then(
+        (ok) => {
+          if (ok) for (const k of wanted) granted.add(k);
+          cb(ok);
+        },
+        () => cb(false),
+      );
+    });
+    ses.setPermissionCheckHandler((_wc, perm, requestingOrigin, details) => {
+      if (allow(perm) || permissionPolicy(perm) === "allow") return true;
+      const origin = originOf(requestingOrigin);
+      if (!origin) return false;
+      const type = (details as { mediaType?: string }).mediaType;
+      // Before anything was asked, "media" is checked without a device: any device granted to the site answers yes.
+      if (perm === "media" && (!type || type === "unknown"))
+        return granted.has(`media:audio ${origin}`) || granted.has(`media:video ${origin}`);
+      return granted.has(perm === "media" ? `media:${type} ${origin}` : `${perm} ${origin}`);
+    });
+    // CHROME-1: the owner's downloads go to the downloads folder; a page an agent drives still downloads nothing.
+    ses.on("will-download", (e, item, wc) => {
+      const id = wc ? this.tabOf(wc) : undefined;
+      const tab = id ? this.#tabs.get(id) : undefined;
+      if (!tab || !this.onDownload || tab.control.kind === "agent" || this.#busy.has(tab.id)) return e.preventDefault();
+      this.onDownload(item, tab.id);
+      // A tab a page opened only to hand over a file has nothing to show.
+      if (tab.opener && !wc?.getURL()) setImmediate(() => void this.close(tab.id).catch(() => {}));
+    });
   }
 }
