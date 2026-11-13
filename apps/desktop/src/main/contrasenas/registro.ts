@@ -3,7 +3,7 @@
 import path from "node:path";
 import { type BaseWindow, ipcMain, safeStorage, type WebContents } from "electron";
 import type { BrowserHost } from "../browser/host.ts";
-import { descubrirFuentes, leerFuente } from "../migrar/navegadores.ts";
+import { descubrirFuentes, leerBarra, leerFuente } from "../migrar/navegadores.ts";
 import { type CajaSecreta, crearBoveda } from "./boveda.ts";
 import { confirmarDueno } from "./confirmar.ts";
 import { crearGuardian, type Respuesta } from "./guardian.ts";
@@ -97,5 +97,10 @@ export function registrarContrasenas(o: {
   ipcMain.handle("import:read", (e, id: unknown) => {
     const f = delPanel(e) && typeof id === "string" ? descubrirFuentes().find((x) => x.id === id) : undefined;
     return f ? leerFuente(f) : undefined;
+  });
+  // NAVEGADORES-2: la barra de marcadores del perfil real, en solo lectura, para la vista de Navegadores.
+  ipcMain.handle("import:bar", (e, id: unknown) => {
+    const f = delPanel(e) && typeof id === "string" ? descubrirFuentes().find((x) => x.id === id) : undefined;
+    return f ? leerBarra(f) : [];
   });
 }

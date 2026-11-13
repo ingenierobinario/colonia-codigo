@@ -95,6 +95,8 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
   /** Importar del navegador habitual: solo marcadores y webs más visitadas, y solo cuando se pide. */
   importSources: (): Promise<unknown> => ipcRenderer.invoke("import:sources"),
   importRead: (id: string): Promise<unknown> => ipcRenderer.invoke("import:read", String(id)),
+  /** NAVEGADORES-2: la barra de marcadores de un perfil del navegador real (solo lectura). */
+  bookmarkBar: (id: string): Promise<unknown> => ipcRenderer.invoke("import:bar", String(id)),
   /** Contraseñas de las aplicaciones web: la lista nunca lleva la contraseña; verla pide confirmación del sistema. */
   loginsAvailable: (): Promise<unknown> => ipcRenderer.invoke("logins:available"),
   loginsList: (): Promise<unknown> => ipcRenderer.invoke("logins:list"),

@@ -3,6 +3,7 @@
 import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import type { ImportSource } from "../colonia-desktop.d.ts";
+import { BrowserLogo } from "./BrowserLogo.tsx";
 import { BROWSER_NAMES, loadNavegadores, navegadorId, saveNavegador, useNavegadores } from "../data/navegadores.ts";
 import { useT } from "../i18n/index.ts";
 import { go, useNav } from "../shell/nav.ts";
@@ -43,7 +44,7 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
     ? ORDER.filter((b) => free.some((s) => s.navegador === b)).map((b) => ({
         type: "submenu" as const,
         label: BROWSER_NAMES[b],
-        icon: <Icons.Globe size={14} />,
+        icon: <BrowserLogo browser={b} size={14} />, // NAVEGADORES-2: su logo, no un globo
         items: free
           .filter((s) => s.navegador === b)
           .map((s) => ({
@@ -82,7 +83,7 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
         <div key={b} className="navegadores__group">
           <NavItem
             collapsed={rail}
-            icon={<ProjectTile tone="info" icon={<Icons.Globe />} />}
+            icon={<ProjectTile tone="neutral" icon={<BrowserLogo browser={b} size={14} />} />}
             label={BROWSER_NAMES[b]}
             trailing={rail ? undefined : folded[b] ? <Icons.ChevronRight size={14} /> : <Icons.ChevronDown size={14} />}
             onClick={() => setFolded((f) => ({ ...f, [b]: !f[b] }))}

@@ -145,6 +145,14 @@ type Tab = {
   used: number;
 };
 
+/** NAVEGADORES-2: the owner's browsers under Navegadores open only in the Colonia app, where their sign-ins are. */
+export const navNeedsApp = () =>
+  new ColoniaError({
+    code: "unavailable",
+    message:
+      "the owner's browsers (Navegadores) keep their sign-ins in the Colonia app on their computer, and it is closed: ask the owner to open it, or browse without that sign-in",
+  });
+
 export function createHeadlessBrowser(deps: {
   /** Where the shared profile keeps its cookies between runs. */
   dir: string;
@@ -390,6 +398,9 @@ export function createHeadlessBrowser(deps: {
 
   async function open(url: string, profile: BrowserProfile, control: TabControl): Promise<Tab> {
     assertNavigable(url, deps.blockedPorts());
+    // NAVEGADORES-2: a Navegadores profile's sign-ins live in the Colonia app's own encrypted jar, never copied here:
+    // opening it headless would hand the agent an empty, logged-out browser that looks like the owner's.
+    if (profile.startsWith("nav:")) throw navNeedsApp();
     if (tabs.size >= MAX_TABS) throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
     const p = await ready();
     const browserContextId = await contextFor(p, profile);
@@ -600,6 +611,8 @@ export function createHeadlessBrowser(deps: {
         }
         case "browser.handoff":
           throw noHuman();
+        case "browser.signed_in":
+          return { sites: [] };
         case "browser.cookie_sources":
           return { sources: [] };
         case "browser.cookie_domains":
