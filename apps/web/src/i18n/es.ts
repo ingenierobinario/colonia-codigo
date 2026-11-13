@@ -507,6 +507,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "inbox.taskBundle.close": "Ocultar los chats de la tarea",
   "inbox.delegated.open": "Ver los chats que delegó",
   "inbox.delegated.close": "Ocultar los chats que delegó",
+  "inbox.delegated.count.one": "1 chat delegado",
+  "inbox.delegated.count.other": "{n} chats delegados",
   "inbox.delegated.from": "Delegado desde {chat}",
   "inbox.delegated.fromUnknown": "Delegado desde otro chat",
   "thread.codeHint":

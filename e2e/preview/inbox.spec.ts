@@ -85,7 +85,7 @@ for (const lang of ["en", "es"]) {
     await expect(page.locator(".colonia-tooltip")).toHaveText("Researcher · Northwind");
     await listAvatar.getByRole("img", { name: "Assistant", exact: true }).hover();
     await expect(page.locator(".colonia-tooltip")).toHaveText("Assistant · Default");
-    await consult.locator(":scope > .delegated__head .tree__session").click();
+    await consult.locator(".tree__session").first().click();
     const header = page.locator(".chat__header");
     await expect(header.getByRole("img", { name: "Researcher", exact: true })).toBeVisible();
     await expect(header.getByRole("img", { name: "Assistant", exact: true })).toBeVisible();

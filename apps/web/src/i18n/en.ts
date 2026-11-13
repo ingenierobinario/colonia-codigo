@@ -504,6 +504,8 @@ export const en = {
   "inbox.taskBundle.close": "Hide the task's chats",
   "inbox.delegated.open": "Show the chats it delegated",
   "inbox.delegated.close": "Hide the chats it delegated",
+  "inbox.delegated.count.one": "1 delegated chat",
+  "inbox.delegated.count.other": "{n} delegated chats",
   "inbox.delegated.from": "Delegated from {chat}",
   "inbox.delegated.fromUnknown": "Delegated from another chat",
   "thread.codeHint":

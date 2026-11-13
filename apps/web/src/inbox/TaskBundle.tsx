@@ -1,6 +1,5 @@
 import type { Thread } from "@colonia/protocol";
 import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, Spinner } from "@colonia/ui";
-import { useState } from "react";
 import { AgentFace } from "../common/AgentFace.tsx";
 import { shortWhen } from "../common/format.ts";
 import { taskStateActions } from "../common/taskStateActions.tsx";
@@ -12,12 +11,10 @@ import { useT } from "../i18n/index.ts";
 import { TaskStatus } from "../lazy.ts";
 import { go } from "../shell/nav.ts";
 import { ListedChat } from "./Delegated.tsx";
+import { FoldHead, useFold } from "./FoldHead.tsx";
 import { SessionRow } from "./InboxViews.tsx";
 
 const cx = (...c: Array<string | false>) => c.filter(Boolean).join(" ");
-
-/** Tasks the owner folded, kept while the panel is open so switching views or lists does not unfold them. */
-const folded = new Set<string>();
 
 /**
  * Every chat the agents keep for one task, as one row of a list: the task, who works it and whether it runs, with each
@@ -39,12 +36,7 @@ export function TaskBundle({ taskId, threads, selected }: { taskId: string; thre
       onSelect: () => void archiveTaskChats(taskId, !archived),
     },
   ];
-  const [open, setOpenState] = useState(() => !folded.has(taskId) || threads.some((th) => th.id === selected));
-  const setOpen = (next: boolean) => {
-    if (next) folded.delete(taskId);
-    else folded.add(taskId);
-    setOpenState(next);
-  };
+  const [open, setOpen] = useFold(`task:${taskId}`, { holdsSelected: threads.some((th) => th.id === selected) });
   const running = threads.some((th) => isWorking(th.state));
   const waiting = threads.some((th) => th.state === "input-required");
   const unread = threads.reduce((n, th) => n + th.unread, 0);
@@ -53,31 +45,37 @@ export function TaskBundle({ taskId, threads, selected }: { taskId: string; thre
   return (
     <div className="taskbundle">
       <ContextMenu items={items} render={<div className={cx("taskbundle__head", unread > 0 && "is-unread")} />}>
-        <button
-          type="button"
+        <FoldHead
+          open={open}
+          onToggle={() => setOpen(!open)}
           className="taskbundle__task"
-          aria-expanded={open}
-          title={open ? t("inbox.taskBundle.close") : t("inbox.taskBundle.open")}
-          onClick={() => setOpen(!open)}
-        >
-          {open ? (
-            <Icons.ChevronDown size={14} className="taskbundle__chevron" />
-          ) : (
-            <Icons.ChevronRight size={14} className="taskbundle__chevron" />
-          )}
-          <Icons.ListChecks size={14} className="taskbundle__icon" />
-          {running && <Spinner size={12} />}
-          {waiting && <Icons.Hand size={12} className="tree__waiting" />}
-          <TaskStatus id={taskId}>
-            <span className="taskbundle__title">{title}</span>
-          </TaskStatus>
-          <span className="taskbundle__faces" aria-hidden>
-            {who.slice(0, 3).map((a) => a && <AgentFace key={a.id} agent={a} size={16} />)}
-          </span>
-          <span className="tree__agentmeta">{t("inbox.taskBundle.chats", { n: threads.length })}</span>
-          {unread > 0 && <span className="tree__unread">{unread}</span>}
-          <span className="tree__when">{shortWhen(threads[0]?.updated_at ?? "")}</span>
-        </button>
+          label={open ? t("inbox.taskBundle.close") : t("inbox.taskBundle.open")}
+          unread={unread > 0}
+          lead={<Icons.ListChecks size={16} className="taskbundle__icon" />}
+          title={
+            <>
+              {running && <Spinner size={12} />}
+              {waiting && <Icons.Hand size={12} className="tree__waiting" />}
+              <TaskStatus id={taskId}>
+                <span className="taskbundle__title">{title}</span>
+              </TaskStatus>
+            </>
+          }
+          count={
+            <>
+              <span className="taskbundle__faces" aria-hidden>
+                {who.slice(0, 3).map((a) => a && <AgentFace key={a.id} agent={a} size={14} />)}
+              </span>
+              {t("inbox.taskBundle.chats", { n: threads.length })}
+            </>
+          }
+          side={
+            <>
+              {unread > 0 && <span className="tree__unread">{unread}</span>}
+              <span className="tree__when">{shortWhen(threads[0]?.updated_at ?? "")}</span>
+            </>
+          }
+        />
         <Menu
           items={items}
           trigger={<IconButton size="sm" label={t("tasks.chats.actions")} icon={<Icons.Ellipsis size={14} />} />}
