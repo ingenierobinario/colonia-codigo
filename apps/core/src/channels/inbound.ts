@@ -31,8 +31,10 @@ import type { createRooms } from "./rooms.ts";
 import type { Stickers } from "./stickers.ts";
 import type { Suggestions } from "./suggestions.ts";
 import { channelTexts } from "./texts.ts";
-import type { ChannelConfig, OwnMessage } from "./types.ts";
+import type { ChannelConfig, HistoryMessage, OwnMessage } from "./types.ts";
 
+/** PROPIOS-6: how much of one chat's recovered history the agent reads (its newest stretch). */
+const HISTORY_NOTE_CHARS = 6000;
 /** A contact gets at most this many automatic answers per hour; then the owner is told once. */
 const CONTACT_PER_HOUR = 20;
 const HOUR_MS = 3600_000;
@@ -495,6 +497,8 @@ export function createInbound(deps: {
     const key = `${channel}\n${m.external_id}`;
     // Our own send whose echo slipped through (delivery recorded its id): already in the chat.
     if (ownKept.has(key) || store.channels.outbox.byExternal(channel, m.external_id)) return;
+    // PROPIOS-6: kept before (live, or from the phone's history), even across a restart.
+    if (store.channels.own.has(channel, m.external_id)) return;
     const person = store.persons.byAddress(cfg.id, m.conversation);
     const known = person && person.role !== "owner" && person.role !== "blocked" ? person : undefined;
     const thread =
@@ -530,6 +534,7 @@ export function createInbound(deps: {
     if (!said) return;
     const name = store.persons.get(thread.channel.person_id)?.name ?? "them";
     store.tx(() => {
+      store.channels.own.add(channel, m.external_id, m.conversation);
       store.messages.add({
         thread_id: thread.id,
         author: { kind: "user", direct: true, phone: true },
@@ -546,6 +551,99 @@ export function createInbound(deps: {
         { role: "user", content: `[Your owner wrote to ${name} directly from their phone:]\n${said}` },
       ]);
       store.threads.patch(thread.id, { preview: previewOf(said) });
+    });
+  }
+
+  /** PROPIOS-6: the chat Colonia keeps for this conversation, with someone other than the owner (as `ownSent`). */
+  function keptThread(cfg: ChannelConfig, conversation: string) {
+    const person = store.persons.byAddress(cfg.id, conversation);
+    if (person && (person.role === "owner" || person.role === "blocked")) return undefined;
+    const thread =
+      store.threads.byConversation(cfg.id, conversation) ??
+      (person ? contactThread(cfg, conversation, person) : undefined);
+    const personId = thread?.channel?.person_id;
+    if (!thread || !personId || personId === OWNER_ID) return undefined;
+    const who = store.persons.get(personId);
+    return who ? { thread, person: who } : undefined;
+  }
+
+  /**
+   * PROPIOS-6: messages from WhatsApp's own history (handed over when the device links, or asked for). Only chats
+   * Colonia keeps: each message once (by the platform's id, whether it came live or before), in its place by when it
+   * was written; the owner's as theirs, the other side's already read. No turn, no notice, no unread.
+   */
+  function history(channel: string, ms: HistoryMessage[]): void {
+    const cfg = deps.configs().find((c) => c.id === channel);
+    if (!cfg) return;
+    const added = new Map<string, { name: string; lines: string[] }>();
+    let skipped = 0;
+    store.tx(() => {
+      for (const m of [...ms].sort((a, b) => a.at.localeCompare(b.at))) {
+        const text = m.text.trim();
+        const kept = text ? keptThread(cfg, m.conversation) : undefined;
+        if (!kept) {
+          skipped++;
+          continue;
+        }
+        if (m.own) {
+          // Our own send (already in the chat as the agent's) or the owner's words kept before.
+          if (store.channels.outbox.byExternal(channel, m.external_id)) continue;
+          if (!store.channels.own.add(channel, m.external_id, m.conversation, m.at)) continue;
+        } else {
+          const row = store.channels.inbox.add(
+            channel,
+            {
+              external_id: m.external_id,
+              ref: m.external_id,
+              conversation: m.conversation,
+              sender: { id: m.conversation, name: (m.name ?? kept.person.name).slice(0, 80) },
+              text,
+              private: true,
+              late: true,
+            },
+            m.at,
+          );
+          if (!row) continue;
+          store.channels.inbox.done(row, "done");
+        }
+        store.messages.add({
+          thread_id: kept.thread.id,
+          author: m.own
+            ? { kind: "user", direct: true, phone: true }
+            : { kind: "person", id: kept.person.id, name: kept.person.name, channel },
+          via: channel,
+          parts: [{ type: "text", text }],
+          at: m.at,
+          quiet: true,
+        });
+        const got = added.get(kept.thread.id) ?? { name: kept.person.name, lines: [] };
+        got.lines.push(m.own ? `You: ${text}` : untrusted("channel_message", { from: kept.person.name, channel }, text));
+        added.set(kept.thread.id, got);
+      }
+      for (const [threadId, got] of added) {
+        store.messages.resequence(threadId);
+        // What the agent reads of them next time: the newest stretch, marked as past (nothing in it is to be answered).
+        const said = got.lines.join("\n").slice(-HISTORY_NOTE_CHARS);
+        store.modelLog.append(threadId, undefined, [
+          {
+            role: "user",
+            content: `[Earlier messages of this WhatsApp chat with ${got.name}, recovered from the phone; already past, nothing to answer:]\n${said}`,
+          },
+        ]);
+      }
+    });
+    const stored = [...added.values()].reduce((n, g) => n + g.lines.length, 0);
+    log.info({ channel, given: ms.length, stored, chats: added.size, skipped }, "channel history kept");
+  }
+
+  /** PROPIOS-6: the chats Colonia keeps on a channel, each with its oldest message known (to ask for what came before). */
+  function keptChats(
+    channel: string,
+  ): Array<{ conversation: string; oldest: { id: string; fromMe: boolean; at: string } }> {
+    return store.threads.conversations(channel).flatMap(({ conversation, person_id }) => {
+      if (person_id === OWNER_ID) return [];
+      const oldest = store.channels.oldest(channel, conversation);
+      return oldest ? [{ conversation, oldest }] : [];
     });
   }
 
@@ -812,6 +910,8 @@ export function createInbound(deps: {
     action,
     reaction,
     ownSent,
+    history,
+    keptChats,
     /**
      * A request the owner approved after being asked: its first message is handled now, as if it had just arrived from
      * the person it turned out to be.

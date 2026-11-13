@@ -1169,4 +1169,16 @@ export const MIGRATIONS: readonly string[] = [
   ALTER TABLE team_computers ADD COLUMN transport TEXT;
   ALTER TABLE team_computers ADD COLUMN address TEXT;
   `,
+  // PROPIOS-6: the owner's own messages written on their phone and kept in a contact's chat, by the platform's id, so
+  // the same message handed over again (live, or in the phone's history) is kept once; `at` is when it was written.
+  `
+  CREATE TABLE channel_own (
+    channel TEXT NOT NULL,
+    external_id TEXT NOT NULL,
+    conversation TEXT NOT NULL,
+    at TEXT NOT NULL,
+    PRIMARY KEY (channel, external_id)
+  );
+  CREATE INDEX channel_own_conversation ON channel_own(channel, conversation, at);
+  `,
 ];

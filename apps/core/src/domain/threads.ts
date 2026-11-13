@@ -314,6 +314,17 @@ export function threadsRepo({ one, all, run }: Sql, bus: Bus, endSession: (threa
       );
     },
     /** The thread of a channel conversation. */
+    /** PROPIOS-6: a channel's chats with someone: their conversation and who it is. */
+    conversations(channel: string): Array<{ conversation: string; person_id: string }> {
+      return all(
+        qb
+          .selectFrom("threads")
+          .select(["conversation", "person_id"])
+          .where("channel", "=", channel)
+          .where("conversation", "is not", null)
+          .where("person_id", "is not", null),
+      ).flatMap((r) => (r.conversation && r.person_id ? [{ conversation: r.conversation, person_id: r.person_id }] : []));
+    },
     byConversation(channel: string, conversation: string): Thread | undefined {
       const r = one(
         qb.selectFrom("threads").selectAll().where("channel", "=", channel).where("conversation", "=", conversation),
@@ -770,6 +781,24 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
       run(qb.deleteFrom("messages").where("thread_id", "=", threadId).where("seq", ">=", seq));
       bus.emit({ type: "message.deleted", thread_id: threadId, message_ids: gone.map((m) => m.id) });
       return [...new Set(gone.flatMap((m) => (m.run_id ? [m.run_id] : [])))];
+    },
+    /**
+     * PROPIOS-6: numbers a thread's messages again by when they were written, so history brought in late (the phone's
+     * older messages) shows in its place and not after the newest. Nothing changes when they already are in order.
+     */
+    resequence(threadId: string): void {
+      const rows = all(
+        qb
+          .selectFrom("messages")
+          .select(["id", "seq"])
+          .where("thread_id", "=", threadId)
+          .orderBy("created_at")
+          .orderBy("seq"),
+      );
+      if (rows.every((r, i) => Number(r.seq) === i + 1)) return;
+      // Out of the way first: (thread_id, seq) is unique.
+      run(qb.updateTable("messages").set({ seq: sql<number>`-seq` }).where("thread_id", "=", threadId));
+      rows.forEach((r, i) => run(qb.updateTable("messages").set({ seq: i + 1 }).where("id", "=", r.id)));
     },
     /** Copies messages into another thread (a fork), in order, with their own times; no live events. */
     copyInto(threadId: string, messages: Message[]): void {

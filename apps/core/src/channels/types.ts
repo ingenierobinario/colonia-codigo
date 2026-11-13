@@ -23,6 +23,21 @@ export type OwnMessage = {
   files?: InboundFile[];
 };
 
+/**
+ * PROPIOS-6: one message from the platform's own history of a one-to-one chat (WhatsApp hands it over when a device
+ * links, or when asked for what came before): the owner's own (`own`) or the other side's, written at `at`.
+ */
+export type HistoryMessage = {
+  external_id: string;
+  conversation: string;
+  own: boolean;
+  /** The other side's name, as the platform gave it. */
+  name?: string;
+  text: string;
+  /** When it was written (ISO). */
+  at: string;
+};
+
 export type ChannelConfig = Omit<ChannelInfo, "token_set" | "token_hint" | "status" | "error" | "account">;
 
 export type AdapterCaps = {
@@ -84,6 +99,13 @@ export type AdapterIO = {
    * contact's chat as the owner's words; never a turn, never the contact speaking (so apart from `receive`).
    */
   ownMessage?(m: OwnMessage): void;
+  /**
+   * PROPIOS-6: messages from the platform's history. Only those of chats Colonia keeps are stored, each in its place
+   * by when it was written, once: already read, never a turn, never a notice.
+   */
+  history?(ms: HistoryMessage[]): void;
+  /** PROPIOS-6: the one-to-one chats Colonia keeps on this channel, each with its oldest message known. */
+  keptChats?(): Array<{ conversation: string; oldest: { id: string; fromMe: boolean; at: string } }>;
   /**
    * A group the bot is in, seen in an update, for a platform that cannot list them (Telegram); `left` when it was
    * removed from it. Offered in the rooms picker.

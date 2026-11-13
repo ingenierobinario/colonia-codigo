@@ -151,8 +151,11 @@ export function channelsRepo({ one, all, run }: Sql) {
   const pairingRow = (code: string) => one(qb.selectFrom("pairing").selectAll().where("code", "=", code));
   return {
     inbox: {
-      /** Stores a message; false when this platform message was already stored (a redelivery). */
-      add(channel: string, m: Inbound): string | undefined {
+      /**
+       * Stores a message; false when this platform message was already stored (a redelivery). `at`: when it was
+       * written, for one brought from the phone's history (PROPIOS-6); otherwise now.
+       */
+      add(channel: string, m: Inbound, at?: string): string | undefined {
         const id = newId("in");
         const changes = run(
           qb
@@ -165,7 +168,7 @@ export function channelsRepo({ one, all, run }: Sql) {
               sender: m.sender.id,
               payload: JSON.stringify(m),
               state: "received",
-              created_at: now(),
+              created_at: at ?? now(),
             })
             .onConflict((c) => c.doNothing()),
         );
@@ -256,6 +259,57 @@ export function channelsRepo({ one, all, run }: Sql) {
             .where("id", "=", id),
         );
       },
+    },
+    /** PROPIOS-6: the owner's own messages from their phone kept in a contact's chat, by the platform's id. */
+    own: {
+      has(channel: string, externalId: string): boolean {
+        return Boolean(
+          one(
+            qb
+              .selectFrom("channel_own")
+              .select("at")
+              .where("channel", "=", channel)
+              .where("external_id", "=", externalId),
+          ),
+        );
+      },
+      /** Notes one as kept; false when it already was (the same message handed over again). */
+      add(channel: string, externalId: string, conversation: string, at?: string): boolean {
+        return (
+          run(
+            qb
+              .insertInto("channel_own")
+              .values({ channel, external_id: externalId, conversation, at: at ?? now() })
+              .onConflict((c) => c.doNothing()),
+          ) > 0
+        );
+      },
+    },
+    /**
+     * PROPIOS-6: the oldest message known in a conversation (theirs from the inbox, or the owner's own from the phone),
+     * with the platform's id: where asking the phone for what came before starts.
+     */
+    oldest(channel: string, conversation: string): { id: string; fromMe: boolean; at: string } | undefined {
+      const theirs = one(
+        qb
+          .selectFrom("channel_inbox")
+          .select(["external_id", "created_at"])
+          .where("channel", "=", channel)
+          .where("conversation", "=", conversation)
+          .orderBy("created_at")
+          .limit(1),
+      );
+      const own = one(
+        qb
+          .selectFrom("channel_own")
+          .select(["external_id", "at"])
+          .where("channel", "=", channel)
+          .where("conversation", "=", conversation)
+          .orderBy("at")
+          .limit(1),
+      );
+      if (own && (!theirs || own.at < theirs.created_at)) return { id: own.external_id, fromMe: true, at: own.at };
+      return theirs ? { id: theirs.external_id, fromMe: false, at: theirs.created_at } : undefined;
     },
     /** Contacts' chats whose messages came outside their channel's hours (DECISIONS.md#d-136). */
     held: {

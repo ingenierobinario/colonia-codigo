@@ -40,6 +40,8 @@ before(async () => {
           selfOwner: c.self_owner === true,
           lib: async () => wa.lib,
           echoWaitMs: 40,
+          historyWaitMs: 60,
+          historyGapMs: 20,
         }),
     },
   });
@@ -486,6 +488,67 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   assert.equal(llm.calls.length, calls, "not answered late");
   const now = (await env.client.call("threads.list", {})).threads.find((t) => t.id === ana.id);
   assert.ok((now?.unread ?? 0) > unread, "unread: the owner has not seen it");
+});
+
+test("PROPIOS-6: the phone's history fills kept chats in order, once, as past; others are left out; earlier asked once", async () => {
+  const ana = (await env.client.call("threads.list", {})).threads.find(
+    (t) => t.channel?.id === "whatsapp" && t.title === "Ana",
+  );
+  assert.ok(ana, "Ana's chat");
+  const all = async () =>
+    (await env.client.call("threads.get", { thread: ana.id })).messages.map((m) => ({
+      who: m.author.kind === "user" ? "me" : m.author.kind,
+      text: m.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])).join(""),
+    }));
+  const calls = llm.calls.length;
+  const unread = ana.unread;
+  const zoe = "5491100000088@s.whatsapp.net";
+  // Long ago (2020), so they go before everything already in the chat.
+  const at = (n: number) => 1_600_000_000 + n * 60;
+  const old = [
+    { key: { id: "H-ANA-1", remoteJid: ANA.phone, fromMe: false }, pushName: "Ana", message: { conversation: "old hello" }, messageTimestamp: at(1) },
+    { key: { id: "H-ME-1", remoteJid: ANA.phone, fromMe: true }, message: { conversation: "old reply" }, messageTimestamp: at(2) },
+    { key: { id: "H-ANA-2", remoteJid: ANA.phone, fromMe: false }, pushName: "Ana", message: { conversation: "old bye" }, messageTimestamp: at(3) },
+    { key: { id: "H-ZOE-1", remoteJid: zoe, fromMe: false }, pushName: "Zoe", message: { conversation: "not kept" }, messageTimestamp: at(1) },
+    { key: { id: "H-GRP-1", remoteJid: "120363000000000002@g.us", fromMe: false }, message: { conversation: "group" }, messageTimestamp: at(1) },
+  ];
+  // Handed over out of order, and then again (duplicates).
+  const [a1, m1, a2, z1, g1] = old;
+  assert.ok(a1 && m1 && a2 && z1 && g1);
+  wa.history([a2, a1, z1, g1, m1]);
+  await waitFor(async () => (await all()).some((m) => m.text === "old bye"), "history kept");
+  wa.history(old);
+  await new Promise((r) => setTimeout(r, 150));
+  const msgs = await all();
+  assert.deepEqual(msgs.slice(0, 3), [
+    { who: "person", text: "old hello" },
+    { who: "me", text: "old reply" },
+    { who: "person", text: "old bye" },
+  ]);
+  for (const t of ["old hello", "old reply", "old bye"])
+    assert.equal(msgs.filter((m) => m.text === t).length, 1, `once: ${t}`);
+  assert.equal(llm.calls.length, calls, "no turn of the agent");
+  const after = (await env.client.call("threads.list", {})).threads;
+  assert.equal(after.find((t) => t.id === ana.id)?.unread, unread, "already read");
+  assert.ok(!after.some((t) => t.channel?.conversation === zoe), "no chat for Zoe");
+  assert.ok(!(await env.client.call("contacts.list", {})).persons.some((p) => p.name === "Zoe"), "no contact");
+
+  // Earlier messages were asked once for Ana's chat (after connecting), before her oldest one; never twice.
+  const sockets = wa.sockets;
+  wa.scan();
+  await waitFor(() => wa.sockets > sockets, "connected again");
+  await waitFor(() => wa.historyAsked.some((h) => h.key.remoteJid === ANA.phone), "asked for Ana's chat");
+  assert.equal(wa.historyAsked.filter((h) => h.key.remoteJid === ANA.phone).length, 1);
+  assert.ok(wa.historyAsked.every((h) => h.count === 50 && h.ms > 1e12), "count and time in ms");
+  const asked = wa.historyAsked.find((h) => h.key.remoteJid === ANA.phone);
+  assert.equal(asked?.key.id, "H-ANA-1", "before her oldest message");
+  assert.equal(asked?.ms, at(1) * 1000);
+  // Connecting again asks nothing more for her chat.
+  const again = wa.sockets;
+  wa.scan();
+  await waitFor(() => wa.sockets > again, "connected once more");
+  await new Promise((r) => setTimeout(r, 300));
+  assert.equal(wa.historyAsked.filter((h) => h.key.remoteJid === ANA.phone).length, 1, "never twice");
 });
 
 test("groups, and the owner writing to a friend on their phone, never reach the agent", async () => {

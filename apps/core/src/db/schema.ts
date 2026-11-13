@@ -74,6 +74,13 @@ export interface ChannelInboxTable {
   created_at: string;
 }
 
+export interface ChannelOwnTable {
+  channel: string;
+  external_id: string;
+  conversation: string;
+  at: string;
+}
+
 export interface DevicesTable {
   id: string;
   name: string;
@@ -753,6 +760,7 @@ export interface Database {
   aux_calls: AuxCallsTable;
   channel_held: ChannelHeldTable;
   channel_inbox: ChannelInboxTable;
+  channel_own: ChannelOwnTable;
   devices: DevicesTable;
   extensions: ExtensionsTable;
   flow_events: FlowEventsTable;

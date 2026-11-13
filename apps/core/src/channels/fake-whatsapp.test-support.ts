@@ -41,6 +41,8 @@ export function fakeWhatsApp(owner = OWNER_PN) {
   /** What the owner's phone keeps of every chat, in order; it sends a message again only while online. */
   const phone = { online: true, history: [] as WaMessage[] };
   const resendAsked: WaKey[] = [];
+  /** PROPIOS-6: each request for a chat's earlier messages: how many, before which, and its time in ms. */
+  const historyAsked: Array<{ count: number; key: WaKey; ms: number }> = [];
   /** Private ids WhatsApp told this device, by phone address. */
   const lids = new Map<string, string>();
   const creds = () => path.join(dir, "creds.json");
@@ -95,6 +97,10 @@ export function fakeWhatsApp(owner = OWNER_PN) {
             5,
           );
         return `PDO-${++seq}`;
+      },
+      async fetchMessageHistory(count: number, key: WaKey, ms: number) {
+        historyAsked.push({ count, key, ms });
+        return `HIST-${++seq}`;
       },
       async presenceSubscribe(jid: string) {
         watched.add(jid);
@@ -297,6 +303,11 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       return id;
     },
     echoFirst,
+    historyAsked,
+    /** PROPIOS-6: the phone hands over part of its history (as on linking, or answering a request). */
+    history(ms: WaMessage[]) {
+      sock?.emit("messaging-history.set", { messages: ms, syncType: 6 });
+    },
     /** Someone puts an emoji on a message (empty: takes theirs off). */
     react(from: Person, id: string, emoji: string) {
       deliver({

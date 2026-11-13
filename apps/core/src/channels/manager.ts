@@ -526,6 +526,8 @@ export function createChannels(deps: {
         action: (a) => void inbound.action(config.id, a),
         reaction: (r) => inbound.reaction(config.id, r),
         ownMessage: (m) => inbound.ownSent(config.id, m),
+        history: (ms) => inbound.history(config.id, ms),
+        keptChats: () => inbound.keptChats(config.id),
         status: (s, error) => {
           l.status = s;
           l.error = error;

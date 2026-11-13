@@ -14,6 +14,7 @@ import {
   type ChannelAdapter,
   ChannelRefused,
   fileName,
+  type HistoryMessage,
   type OutFile,
   type Recovered,
   SendError,
@@ -47,6 +48,11 @@ export type WaSocket = {
   presenceSubscribe?(jid: string): Promise<void>;
   /** Asks the sender's phone to upload an expired file again (its download link is old). */
   updateMediaMessage?(m: WaMessage): Promise<WaMessage>;
+  /**
+   * PROPIOS-6: asks the owner's phone for up to `count` messages of a chat written before the one given (its time in
+   * milliseconds); they come back through `messaging-history.set`.
+   */
+  fetchMessageHistory?(count: number, oldest: WaKey, oldestTimestampMs: number): Promise<string | undefined>;
   /** Asks the owner's phone to send one message again; it comes back through `messages.upsert`. */
   requestPlaceholderResend?(key: WaKey): Promise<string | undefined>;
   /** A private id's phone number (and the other way round), when WhatsApp told it. */
@@ -101,6 +107,8 @@ export type WaMessage = {
   verifiedBizName?: string | null;
   /** Set when the message arrived without content (it could not be decrypted). */
   messageStubType?: number | null;
+  /** When it was written, in seconds. */
+  messageTimestamp?: WaLength;
   message?: WaContent | null;
 };
 /** A send of ours moving on: 3 on their device, 4 read, 5 a voice note played. */
@@ -129,6 +137,15 @@ const ECHO_WAIT_MS = 1_500;
 const SERVICE = new Set(["16505361212", "16508638904"]);
 /** How long the phone has to send messages again under one address before the next one is tried. */
 const RESEND_WAIT_MS = 12_000;
+/** PROPIOS-6: after connecting, how long before the phone is asked for each kept chat's earlier messages. */
+const HISTORY_WAIT_MS = 30_000;
+/** PROPIOS-6: between two such requests, and after our last send, so they never stand in the way of a send. */
+const HISTORY_GAP_MS = 4_000;
+/** PROPIOS-6: earlier messages asked per chat, and chats asked per connection (the rest, on the next one). */
+const HISTORY_COUNT = 50;
+const HISTORY_CHATS = 40;
+/** PROPIOS-6: the chats already asked for their earlier messages, kept with the linked device (a new link asks again). */
+const HISTORY_ASKED = "colonia-history-asked.json";
 
 /** `5491100000000:12@s.whatsapp.net` → `5491100000000@s.whatsapp.net` (the device suffix is not the person). */
 export const normalJid = (jid: string | null | undefined): string => {
@@ -263,6 +280,9 @@ export function whatsappAdapter(opts: {
   resendWaitMs?: number;
   /** How long a message sent from the owner's phone waits, in case it is the echo of our own send (tests shorten it). */
   echoWaitMs?: number;
+  /** PROPIOS-6: the wait before asking for earlier messages, and between requests (tests shorten them). */
+  historyWaitMs?: number;
+  historyGapMs?: number;
 }): ChannelAdapter {
   const { dir, log } = opts;
   let lib: WaLib | undefined;
@@ -288,6 +308,10 @@ export function whatsappAdapter(opts: {
   const resending = new Map<string, (m: WaMessage) => void>();
   /** The menu each chat's other side offered last (a business's buttons), so an answer naming an option taps it. */
   const menus = new Map<string, Menu>();
+  /** PROPIOS-6: sends under way and when the last one ended: asking for history waits for both. */
+  let sendsLive = 0;
+  let lastSend = 0;
+  let historyTimer: ReturnType<typeof setTimeout> | undefined;
 
   const hasCreds = () => fs.existsSync(path.join(dir, "creds.json"));
   const remember = (id: string | null | undefined) => {
@@ -342,6 +366,13 @@ export function whatsappAdapter(opts: {
           void onMessage(m, up.type === "append").catch((err) => log?.warn({ err: errorMessage(err, 200) }, "whatsapp message not handled"));
       }
     }) as (arg: never) => void);
+    // PROPIOS-6: the phone's own history (when the device links, or asked for a chat's earlier messages).
+    s.ev.on("messaging-history.set", ((h: { messages?: WaMessage[] | null; syncType?: number | null }) => {
+      if (s !== sock) return;
+      void onHistory(s, h.messages ?? []).catch((err) =>
+        log?.warn({ err: errorMessage(err, 200) }, "whatsapp history not handled"),
+      );
+    }) as (arg: never) => void);
     s.ev.on("messages.update", ((ups: WaUpdate[]) => {
       if (s !== sock) return;
       for (const u of ups) {
@@ -379,6 +410,15 @@ export function whatsappAdapter(opts: {
       me = { pn: normalJid(s.user?.id), lid: normalJid(s.user?.lid) };
       io.status("running");
       io.identified?.({ account: `+${digitsOf(me.pn)}`, owner: me.pn });
+      clearTimeout(historyTimer);
+      historyTimer = setTimeout(
+        () =>
+          void askHistory(s).catch((err) =>
+            log?.warn({ err: errorMessage(err, 200) }, "whatsapp earlier messages not asked"),
+          ),
+        opts.historyWaitMs ?? HISTORY_WAIT_MS,
+      );
+      historyTimer.unref?.();
       return;
     }
     if (u.connection !== "close") return;
@@ -540,6 +580,105 @@ export function whatsappAdapter(opts: {
     });
   }
 
+  /**
+   * PROPIOS-6: messages from the phone's history, read as live ones are (the same filters: no groups, no broadcasts or
+   * service numbers, nothing of the owner's own "Message yourself") and handed over in one go; files are named, not
+   * downloaded (old links are long gone). Colonia keeps those of the chats it already has.
+   */
+  async function onHistory(s: WaSocket, ms: WaMessage[]): Promise<void> {
+    if (!io?.history || !me || !ms.length) return;
+    const out: HistoryMessage[] = [];
+    let dropped = 0;
+    for (const m of ms) {
+      const jid = normalJid(m.key.remoteJid);
+      const content = unwrap(m.message);
+      if (!m.key.id || ignorable(jid) || jid.endsWith("@g.us") || isSelf(jid) || !content || content.reactionMessage) {
+        dropped++;
+        continue;
+      }
+      const alt = normalJid(m.key.remoteJidAlt);
+      let who = isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
+      if (who.endsWith("@lid")) {
+        const pn = await s.signalRepository?.lidMapping?.getPNForLID?.(who)?.catch(() => undefined);
+        if (pn && isPhone(normalJid(pn))) who = normalJid(pn);
+      }
+      const media = mediaOf(content);
+      const said = [
+        textOf(content) ?? "",
+        content.audioMessage ? "[voice note]" : media ? `[${media.kind === "file" ? media.name : media.kind}]` : "",
+      ]
+        .filter(Boolean)
+        .join("\n")
+        .trim();
+      const secs = sizeOf(m.messageTimestamp);
+      if (!said || isSelf(who) || !secs) {
+        dropped++;
+        continue;
+      }
+      if (!m.key.fromMe) chats.set(m.key.id, jid);
+      out.push({
+        external_id: m.key.id,
+        conversation: who,
+        own: Boolean(m.key.fromMe),
+        ...(m.key.fromMe ? {} : { name: (m.verifiedBizName?.trim() || m.pushName?.trim() || "").slice(0, 80) || undefined }),
+        text: said,
+        at: new Date(secs * 1000).toISOString(),
+      });
+    }
+    while (chats.size > CHATS_KEPT) chats.delete(chats.keys().next().value ?? "");
+    // By its shape: how many came, how many were readable.
+    log?.info({ given: ms.length, readable: out.length, dropped }, "whatsapp history");
+    if (out.length && s === sock) io.history(out);
+  }
+
+  /** PROPIOS-6: the chats already asked for their earlier messages on this linked device. */
+  const askedFile = () => path.join(dir, HISTORY_ASKED);
+  function askedChats(): Set<string> {
+    try {
+      const v = JSON.parse(fs.readFileSync(askedFile(), "utf8")) as unknown;
+      return new Set(Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+    } catch {
+      return new Set();
+    }
+  }
+
+  /**
+   * PROPIOS-6: asks the phone, once per kept chat, for the messages written before the oldest one Colonia has (those
+   * from before the device kept the owner's own words, or from before it was linked). One request at a time, spaced,
+   * and never while a send is under way or just after one: the library sends each request as a message of its own.
+   */
+  async function askHistory(s: WaSocket): Promise<void> {
+    const fetchHistory = s.fetchMessageHistory?.bind(s);
+    if (!fetchHistory || !io?.keptChats) return;
+    const asked = askedChats();
+    const due = io.keptChats().filter((c) => !asked.has(c.conversation) && isPhone(c.conversation));
+    const gap = opts.historyGapMs ?? HISTORY_GAP_MS;
+    let n = 0;
+    for (const c of due.slice(0, HISTORY_CHATS)) {
+      // Sends go first: wait until none is under way and the last one is a moment behind.
+      while (s === sock && !stopped && (sendsLive > 0 || Date.now() - lastSend < gap))
+        await new Promise((r) => setTimeout(r, Math.max(50, Math.min(gap, 1_000))));
+      if (s !== sock || stopped || !me) return;
+      const at = Date.parse(c.oldest.at);
+      if (!Number.isFinite(at)) continue;
+      const remoteJid = chats.get(c.oldest.id) ?? c.conversation;
+      try {
+        await fetchHistory(HISTORY_COUNT, { remoteJid, id: c.oldest.id, fromMe: c.oldest.fromMe }, at);
+      } catch (err) {
+        // Not marked: the next connection tries it again.
+        log?.warn({ err: errorMessage(err, 200) }, "whatsapp earlier messages not asked");
+        continue;
+      }
+      asked.add(c.conversation);
+      n++;
+      try {
+        fs.writeFileSync(askedFile(), JSON.stringify([...asked]), { mode: 0o600 });
+      } catch {}
+      await new Promise((r) => setTimeout(r, gap));
+    }
+    if (n) log?.info({ asked: n, left: Math.max(0, due.length - n) }, "whatsapp earlier messages asked");
+  }
+
   /** A message's file, downloaded whole before it is stored (an expired link is asked of the sender's phone again). */
   async function fileOf(
     m: WaMessage,
@@ -616,6 +755,7 @@ export function whatsappAdapter(opts: {
 
   async function sendOne(jid: string, content: Record<string, unknown>): Promise<string | undefined> {
     if (!sock || !me) throw new SendError("retry", "WhatsApp is not connected");
+    sendsLive++;
     try {
       const r = await sock.sendMessage(jid, content);
       const id = r?.key?.id ?? undefined;
@@ -623,6 +763,9 @@ export function whatsappAdapter(opts: {
       return id;
     } catch (err) {
       throw new SendError("uncertain", errorMessage(err));
+    } finally {
+      sendsLive--;
+      lastSend = Date.now();
     }
   }
 
@@ -640,6 +783,7 @@ export function whatsappAdapter(opts: {
   async function stop(): Promise<void> {
     stopped = true;
     clearTimeout(retry);
+    clearTimeout(historyTimer);
     const s = sock;
     sock = undefined;
     me = undefined;
