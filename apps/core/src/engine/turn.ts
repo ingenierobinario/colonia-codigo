@@ -127,6 +127,8 @@ export type TurnDeps = {
   hasCap?: ((cap: string) => boolean) | undefined;
   /** Whether a desktop app is linked as a node (lending its browser), whatever else it lends. */
   desktopLinked?: (() => boolean) | undefined;
+  /** The owner's other computers as the prompt tells them; empty when there is none. */
+  equipos?: (() => string) | undefined;
   /** Owner text and results steered into this turn since the last call, ready to read. */
   takeSteered(): string[];
   /** The engine showed a sign of life: an outside engine's idle deadline starts over. */
@@ -325,6 +327,7 @@ export async function runTurn(deps: TurnDeps, start: RunRecord, signal: AbortSig
           deps.vm?.hasThread(thread.id) ? AGENT_WORKSPACE : scratchDir(store, deps.home, thread),
           Boolean(deps.desktopLinked?.()) && !deps.hasCap?.(COMPUTER_CAP),
           prepared.told,
+          deps.equipos?.() ?? "",
         );
   const io = (): TurnIO => ({
     agent: policy.agent,
@@ -673,6 +676,7 @@ function systemFor(
   scratch = "",
   computerOff = false,
   told: Sections = {},
+  equipos = "",
 ): { text: string; parts: PromptPart[] } {
   const lang = store.settings.get("owner_language") || "es";
   const plain = (text: string) => ({ text, parts: systemParts(text, []) });
@@ -715,6 +719,7 @@ function systemFor(
     computerOff,
     channelsOn(store),
     told,
+    equipos,
   );
   return {
     text,

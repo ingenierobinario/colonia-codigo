@@ -150,7 +150,7 @@ export function orgText(org: Organization): string {
 
 /** How an agent points the owner to a place in the panel; the panel shows the link as a button. */
 const APP_LINKS =
-  "- To send the owner to a place in the app, link it (a button there): [Config › Desktop](colonia:settings/desktop). Places: colonia:settings/<account|engines|memory|channels|desktop|devices|…>, colonia:tasks, colonia:resources/<skills|mcp|integrations>, colonia:inbox.";
+  "- To send the owner to a place in the app, link it (a button there): [Config › Desktop](colonia:settings/desktop). Places: colonia:settings/<account|engines|memory|channels|desktop|devices|…>, colonia:tasks, colonia:resources/<skills|mcp|integrations>, colonia:inbox, colonia:equipos (the owner's other computers).";
 /** What channels are and which tools write there; only when one is on, as its tools are. */
 const CHANNELS =
   "- Channels are the apps Colonia talks through (WhatsApp, Telegram, Discord…). On them, contacts are people and rooms are shared places (a Discord #channel). Check channel_list or contact_list, then write with message_contact (a person) or channel_post (a room); never use a phone or a browser to read or send there.";
@@ -179,6 +179,8 @@ export function systemPrompt(
   channels = true,
   /** What this chat's turns carry, told once (sectionLines). */
   sections: Sections = {},
+  /** EQUIPOS-AGENTE-1: the owner's other computers and the rule for them (tools/equipos.ts equiposBrief). */
+  equipos = "",
 ): string {
   const lang = LANGUAGES[ownerLanguage] ?? ownerLanguage;
   return [
@@ -217,6 +219,7 @@ export function systemPrompt(
     ...BROWSING,
     APP_LINKS,
     ...(computerOff ? [COMPUTER_OFF] : []),
+    ...(equipos ? [equipos] : []),
     // A worker of your own and what a brief holds are in delegate's description.
     "- Delegate at the start, by id, only what needs another agent's tools, project knowledge or session, or is substantial independent work; a widget, document or chart alone is no reason. Otherwise finish what you started.",
     "- Pick the agent whose role does the work, not the one titled lead, and read its limits first.",

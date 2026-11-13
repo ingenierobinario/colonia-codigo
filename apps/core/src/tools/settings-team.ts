@@ -25,9 +25,11 @@ export const TEAM: Readonly<Record<string, Setting>> = {
         (a) => `- ${inlineName(a.name)} [${a.id}]${screens[a.id] ? `, screen ${screens[a.id]}` : ""}`,
       );
       return [
-        lines.length ? "May use the computer:" : "No agent may use the computer yet.",
+        lines.length ? "May use the isolated computer:" : "No agent may use the isolated computer yet.",
         ...lines,
         "Each agent's card and its settings (Computer page) show it; the owner watches the screens in Computers.",
+        // EQUIPOS-AGENTE-1: esto se leyó como «no puedes usar el PC del dueño»; son tres cosas distintas.
+        "This is only the isolated Linux computer. It says nothing about the owner's other computers (equipo_* tools, colonia:equipos) or about this machine's screen (colonia:settings/desktop).",
       ].join("\n");
     },
   },

@@ -28,6 +28,7 @@ export const enEquipos = {
   "equipos.inUse": "In use now",
   "equipos.agents": "Let agents use it",
   "equipos.agentsHint": "Even then, each agent session asks for approval on the laptop itself.",
+  "equipos.agentsHintSsh": "Even then, each agent chat asks you for approval here, on a card, before using it.",
   "equipos.disconnect": "Disconnect",
   "equipos.disconnectTitle": "Disconnect this computer?",
   "equipos.disconnectBody": "Its key is revoked and it stops working here. To use it again you pair it from scratch.",

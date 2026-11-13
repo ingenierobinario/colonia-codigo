@@ -226,6 +226,8 @@ export function createEngine(deps: {
   hasCap?: (cap: string) => boolean;
   /** Whether a desktop app is linked as a node. */
   desktopLinked?: () => boolean;
+  /** The owner's other computers as the prompt tells them (tools/equipos.ts equiposBrief); empty when there is none. */
+  equipos?: () => string;
   /** Work on the thread once a run ended (title, compaction); never blocks the next run. */
   afterRun?: (run: RunRecord) => void;
 }) {
