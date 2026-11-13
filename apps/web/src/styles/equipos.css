@@ -256,3 +256,14 @@
 .eq-other > .eq-card {
   margin-bottom: 14px;
 }
+/* EQUIPOS-RED-3: el comando largo se parte en líneas en vez de pedir scroll horizontal. */
+.eq-cmd--wrap code {
+  overflow-x: visible;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+@media (max-width: 480px) {
+  .eq-cmd--wrap {
+    flex-direction: column;
+  }
+}

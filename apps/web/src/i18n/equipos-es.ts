@@ -76,4 +76,17 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.connect": "Conectar",
   "equipos.connecting": "Conectando…",
   "equipos.otherMethod": "Otro método: instalar Colonia en el otro equipo",
+  // EQUIPOS-RED-3
+  "equipos.noAccess": "Sin acceso remoto",
+  "equipos.noAccessTap": "Encendido, pero aún no deja entrar. Toca para ver cómo activarlo",
+  "equipos.noAccessTitle": "Activa la entrada en {name}",
+  "equipos.noAccessHint":
+    "Este equipo está encendido, pero todavía no acepta conexiones. Hazlo una sola vez, sentado delante de él.",
+  "equipos.noAccessOs": "Sistema del otro equipo",
+  "equipos.noAccessWindows":
+    "En ese equipo abre Configuración › Sistema › Características opcionales, pulsa «Ver características», busca «Servidor OpenSSH» e instálalo. O copia esto y pégalo en PowerShell abierto como administrador:",
+  "equipos.noAccessMac":
+    "En ese Mac abre Ajustes del Sistema › General › Compartir y activa «Inicio de sesión remoto».",
+  "equipos.noAccessLinux": "En ese equipo abre una terminal y pega esto:",
+  "equipos.noAccessCheck": "Ya está, comprobar",
 };

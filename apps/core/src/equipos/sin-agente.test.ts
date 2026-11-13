@@ -140,7 +140,7 @@ test("shQuote y los mensajes de error de ssh", () => {
   assert.match(explainSshError({ ...out(""), timedOut: true }), /no responde/);
 });
 
-test("discoverEquipos: junta ARP y Tailscale, descarta lo que no abre nada y no rompe sin Tailscale", async () => {
+test("discoverEquipos: junta ARP y Tailscale, quita la puerta de enlace y no rompe sin Tailscale", async () => {
   const arp = "  192.168.1.1   aa-bb-cc-dd-ee-01  dynamic\n  192.168.1.40  aa-bb-cc-dd-ee-40  dynamic\n";
   const ts = JSON.stringify({
     Peer: { k: { HostName: "portatil", TailscaleIPs: ["100.64.0.2"], OS: "windows", Online: false } },
@@ -148,9 +148,16 @@ test("discoverEquipos: junta ARP y Tailscale, descarta lo que no abre nada y no 
   const exec =
     (withTs: boolean): Exec =>
     async (cmd) =>
-      cmd === "arp" ? arp : cmd === "tailscale" && withTs ? ts : null;
-  const probe = async (ip: string) => (ip === "192.168.1.40" ? [22, 445] : []);
-  const r = await discoverEquipos({ exec: exec(true), probe, platform: "win32" });
+      cmd === "arp"
+        ? arp
+        : cmd === "tailscale" && withTs
+          ? ts
+          : cmd === "route"
+            ? "          0.0.0.0          0.0.0.0      192.168.1.1     192.168.1.10     30\n"
+            : null;
+  const probe = async (ip: string) => ({ alive: ip === "192.168.1.40", open: ip === "192.168.1.40" ? [22, 445] : [] });
+  const d = { probe, platform: "win32" as const, interfaces: {}, resolveName: async () => null };
+  const r = await discoverEquipos({ ...d, exec: exec(true) });
   assert.equal(r.tailscale, true);
   assert.deepEqual(
     r.equipos.map((e) => [e.ip, e.via, e.os, e.opens]),
@@ -159,7 +166,7 @@ test("discoverEquipos: junta ARP y Tailscale, descarta lo que no abre nada y no 
       ["192.168.1.40", "red", "windows", ["Terminal", "Carpetas"]],
     ],
   );
-  const sinTs = await discoverEquipos({ exec: exec(false), probe, platform: "win32" });
+  const sinTs = await discoverEquipos({ ...d, exec: exec(false) });
   assert.equal(sinTs.tailscale, false);
   assert.equal(sinTs.equipos.length, 1);
 });

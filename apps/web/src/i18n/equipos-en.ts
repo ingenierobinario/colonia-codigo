@@ -74,6 +74,18 @@ export const enEquipos = {
   "equipos.connect": "Connect",
   "equipos.connecting": "Connecting…",
   "equipos.otherMethod": "Other method: install Colonia on the other computer",
+  // EQUIPOS-RED-3
+  "equipos.noAccess": "No remote access",
+  "equipos.noAccessTap": "Turned on, but it doesn't let you in yet. Tap to see how to turn it on",
+  "equipos.noAccessTitle": "Turn on access to {name}",
+  "equipos.noAccessHint":
+    "This computer is on, but it doesn't accept connections yet. You only do this once, sitting at it.",
+  "equipos.noAccessOs": "The other computer's system",
+  "equipos.noAccessWindows":
+    "On that computer open Settings › System › Optional features, click «View features», search for «OpenSSH Server» and install it. Or copy this and paste it into PowerShell opened as administrator:",
+  "equipos.noAccessMac": "On that Mac open System Settings › General › Sharing and turn on «Remote Login».",
+  "equipos.noAccessLinux": "On that computer open a terminal and paste this:",
+  "equipos.noAccessCheck": "Done, check again",
 } as const;
 
 export type EquipoKey = keyof typeof enEquipos;

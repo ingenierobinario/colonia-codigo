@@ -274,6 +274,80 @@ function Login({
   );
 }
 
+// EQUIPOS-RED-3 · Comandos que activan la entrada por terminal en el otro equipo (se copian y se pegan allí).
+const SSH_WINDOWS =
+  "Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0; Start-Service sshd; Set-Service sshd -StartupType Automatic";
+const SSH_LINUX = "sudo apt install -y openssh-server && sudo systemctl enable --now ssh";
+type HelpOs = "windows" | "mac" | "linux";
+const HELP_KEY = {
+  windows: "equipos.noAccessWindows",
+  mac: "equipos.noAccessMac",
+  linux: "equipos.noAccessLinux",
+} as const;
+
+/** EQUIPOS-RED-3: el equipo está encendido pero no deja entrar. Explica qué activar en él, aquí mismo. */
+function NoAccess({
+  name,
+  os,
+  checking,
+  onCheck,
+  onCancel,
+}: {
+  name: string;
+  os: FoundEquipo["os"];
+  checking: boolean;
+  onCheck: () => void;
+  onCancel: () => void;
+}) {
+  const t = useT();
+  const [which, setWhich] = useState<HelpOs>(os === "linux/mac" ? "mac" : "windows");
+  const [copied, setCopied] = useState(false);
+  const cmd = which === "windows" ? SSH_WINDOWS : which === "linux" ? SSH_LINUX : "";
+  return (
+    <section className="eq-login" aria-label={t("equipos.noAccessTitle", { name })}>
+      <div className="eq-login__head">
+        <strong>{t("equipos.noAccessTitle", { name })}</strong>
+        <span className="eq-muted">{t("equipos.noAccessHint")}</span>
+      </div>
+      <SegmentedControl
+        label={t("equipos.noAccessOs")}
+        size="sm"
+        value={which}
+        onValueChange={(v) => setWhich(v as HelpOs)}
+        options={[
+          { value: "windows", label: t("equipos.osWindows") },
+          { value: "mac", label: "Mac" },
+          { value: "linux", label: "Linux" },
+        ]}
+      />
+      <p className="eq-muted">{t(HELP_KEY[which])}</p>
+      {cmd && (
+        <div className="eq-cmd eq-cmd--wrap">
+          <code>{cmd}</code>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void navigator.clipboard?.writeText(cmd);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            {copied ? <Icons.Check /> : <Icons.Copy />} {copied ? t("equipos.copied") : t("equipos.copy")}
+          </Button>
+        </div>
+      )}
+      <div className="eq-row eq-row--end">
+        <Button variant="secondary" onClick={onCancel}>
+          {t("equipos.cancel")}
+        </Button>
+        <Button disabled={checking} onClick={onCheck}>
+          {checking ? <Spinner size={14} /> : <Icons.RefreshCw />} {t("equipos.noAccessCheck")}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 function FindEquipos({ onDone }: { onDone: () => void }) {
   const t = useT();
   const [found, setFound] = useState<FoundEquipo[]>();
@@ -337,7 +411,11 @@ function FindEquipos({ onDone }: { onDone: () => void }) {
                     </span>
                     <span className="eq-found__opens">
                       {f.opens.length === 0 ? (
-                        <span className="eq-muted">{f.online ? t("equipos.nothingOpen") : t("equipos.offline")}</span>
+                        f.online ? (
+                          <Badge tone="neutral">{t("equipos.noAccess")}</Badge>
+                        ) : (
+                          <span className="eq-muted">{t("equipos.offline")}</span>
+                        )
                       ) : (
                         f.opens.map((o) => (
                           <Badge key={o} tone={o === "Terminal" ? "brand" : "neutral"}>
@@ -347,9 +425,22 @@ function FindEquipos({ onDone }: { onDone: () => void }) {
                       )}
                     </span>
                   </span>
-                  {!canLogin && f.online && <span className="eq-muted">{t("equipos.noTerminal")}</span>}
+                  {!canLogin && f.online && (
+                    <span className="eq-muted">
+                      {f.opens.length === 0 ? t("equipos.noAccessTap") : t("equipos.noTerminal")}
+                    </span>
+                  )}
                 </button>
-                {on && (
+                {on && f.online && !canLogin && (
+                  <NoAccess
+                    name={f.name}
+                    os={f.os}
+                    checking={searching}
+                    onCancel={() => setPicked(undefined)}
+                    onCheck={() => void search()}
+                  />
+                )}
+                {on && (canLogin || !f.online) && (
                   <Login
                     host={f.ip}
                     name={f.name}

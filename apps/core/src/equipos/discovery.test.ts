@@ -91,3 +91,115 @@ test("probePorts: abierto contra servidor local, cerrado en un puerto liberado",
     await new Promise<void>((r) => server.close(() => r()));
   }
 });
+
+// EQUIPOS-RED-3 · Barrido de la red local, sin tocar la red: interfaces, exec y sondeo inyectados.
+import type os from "node:os";
+import {
+  discoverEquipos,
+  type Exec,
+  hostsOf,
+  type LocalSubnet,
+  localSubnets,
+  parseGateways,
+  parseNbtstat,
+} from "./discovery.ts";
+
+const nic = (address: string, netmask: string, internal = false) =>
+  ({ address, netmask, family: "IPv4", mac: "00:00:00:00:00:00", internal, cidr: null }) as os.NetworkInterfaceInfo;
+
+test("localSubnets: sólo redes privadas de adaptadores reales, como mucho un /24", () => {
+  const subs = localSubnets({
+    "Wi-Fi": [nic("192.168.1.54", "255.255.255.0")],
+    "vEthernet (Default Switch)": [nic("172.20.16.1", "255.255.240.0")],
+    Ethernet: [nic("10.1.2.3", "255.255.0.0")],
+    Loopback: [nic("127.0.0.1", "255.0.0.0", true)],
+    pública: [nic("8.8.8.8", "255.255.255.0")],
+    pequeña: [nic("192.168.5.10", "255.255.255.252")],
+  });
+  assert.deepEqual(subs, [
+    { address: "192.168.1.54", first: "192.168.1.1", last: "192.168.1.254" },
+    { address: "10.1.2.3", first: "10.1.2.1", last: "10.1.2.254" },
+    { address: "192.168.5.10", first: "192.168.5.9", last: "192.168.5.10" },
+  ]);
+  assert.equal(hostsOf(subs[0] as LocalSubnet).length, 254);
+});
+
+test("parseGateways y parseNbtstat", () => {
+  assert.deepEqual(parseGateways("          0.0.0.0          0.0.0.0      192.168.1.1     192.168.1.54     30\r\n"), [
+    "192.168.1.1",
+  ]);
+  assert.deepEqual(parseGateways("default via 10.0.0.1 dev wlan0 proto dhcp\n"), ["10.0.0.1"]);
+  assert.deepEqual(parseGateways("default            192.168.0.1        UGScg          en0\n"), ["192.168.0.1"]);
+  const nb = [
+    "    Nombre               Tipo         Estado",
+    "    ---------------------------------------------",
+    "    SALON-PC       <00>  ÚNICO       Registrado",
+    "    WORKGROUP      <00>  Grupo       Registrado",
+  ].join("\r\n");
+  assert.equal(parseNbtstat(nb.replace("ÚNICO", "UNIQUE")), "SALON-PC");
+  assert.equal(parseNbtstat("Host no encontrado."), null);
+});
+
+test("discoverEquipos: barre la subred, encuentra equipos fuera de ARP y no descarta los que no abren nada", async () => {
+  let arpReads = 0;
+  const swept: string[] = [];
+  const exec: Exec = async (cmd) => {
+    if (cmd === "arp") {
+      arpReads++;
+      // El equipo .70 calla a todo, pero tras el barrido ya aparece en la tabla ARP.
+      return "  192.168.1.1   aa-bb-cc-dd-ee-01  dynamic\n  192.168.1.70  aa-bb-cc-dd-ee-70  dynamic\n  172.20.16.5  aa-bb-cc-dd-ee-99  dynamic\n";
+    }
+    if (cmd === "route") return "          0.0.0.0          0.0.0.0      192.168.1.1     192.168.1.54     30\n";
+    return null;
+  };
+  const probe = async (ip: string) => {
+    swept.push(ip);
+    if (ip === "192.168.1.1") return { alive: true, open: [80, 443] };
+    if (ip === "192.168.1.40") return { alive: true, open: [22] };
+    if (ip === "192.168.1.60") return { alive: true, open: [] }; // sólo «connection refused»
+    return { alive: false, open: [] };
+  };
+  const t0 = Date.now();
+  const r = await discoverEquipos({
+    exec,
+    probe,
+    platform: "win32",
+    interfaces: {
+      "Wi-Fi": [nic("192.168.1.54", "255.255.255.0")],
+      "vEthernet (WSL)": [nic("172.20.16.1", "255.255.240.0")],
+    },
+    resolveName: async (ip) => (ip === "192.168.1.60" ? "SALON-PC" : null),
+  });
+  assert.ok(Date.now() - t0 < 2000);
+  assert.equal(swept.length, 253, "254 direcciones menos la propia");
+  assert.ok(!swept.includes("192.168.1.54"));
+  assert.ok(arpReads >= 1);
+  assert.deepEqual(
+    r.equipos.map((e) => [e.ip, e.name, e.ports, e.online]),
+    [
+      ["192.168.1.40", "192.168.1.40", [22], true],
+      ["192.168.1.60", "SALON-PC", [], true],
+      ["192.168.1.70", "192.168.1.70", [], true],
+    ],
+  );
+  assert.equal(r.equipos[0]?.os, "linux/mac");
+});
+
+test("discoverEquipos: sin redes locales no barre nada y conserva ARP", async () => {
+  let probes = 0;
+  const r = await discoverEquipos({
+    exec: async (cmd) => (cmd === "arp" ? "  192.168.1.9  aa-bb-cc-dd-ee-09  dynamic\n" : null),
+    probe: async () => {
+      probes++;
+      return { alive: false, open: [] };
+    },
+    platform: "win32",
+    interfaces: {},
+    resolveName: async () => null,
+  });
+  assert.equal(probes, 1);
+  assert.deepEqual(
+    r.equipos.map((e) => [e.ip, e.ports]),
+    [["192.168.1.9", []]],
+  );
+});
