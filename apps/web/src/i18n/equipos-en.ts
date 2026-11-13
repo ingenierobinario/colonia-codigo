@@ -86,6 +86,18 @@ export const enEquipos = {
   "equipos.noAccessMac": "On that Mac open System Settings › General › Sharing and turn on «Remote Login».",
   "equipos.noAccessLinux": "On that computer open a terminal and paste this:",
   "equipos.noAccessCheck": "Done, check again",
+  // EQUIPOS-NOMBRE-1
+  "equipos.kindPc": "Computer",
+  "equipos.kindPhone": "Phone or tablet",
+  "equipos.kindTv": "TV or media player",
+  "equipos.kindPrinter": "Printer",
+  "equipos.kindOther": "Network device",
+  "equipos.kindUnknown": "Device",
+  "equipos.privateDevice": "Phone or tablet (private address)",
+  "equipos.privateHint":
+    "It hides its real network address, as phones and tablets do. Its name can't be read from here.",
+  "equipos.otherDevices": "Other devices on the network ({n})",
+  "equipos.otherDevicesHint": "Phones, TVs, printers and the like. You can't control them from here.",
 } as const;
 
 export type EquipoKey = keyof typeof enEquipos;

@@ -36,6 +36,11 @@ export const FoundEquipo = z.object({
   ports: z.array(z.number()),
   /** Lo que se puede abrir en él: «Terminal», «Escritorio remoto», «Carpetas», «VNC». */
   opens: z.array(z.string()),
+  /** EQUIPOS-NOMBRE-1: qué parece ser, por sus servicios de red y el fabricante de su tarjeta. */
+  kind: z.enum(["ordenador", "movil", "tele", "impresora", "otro", "desconocido"]).optional(),
+  vendor: z.string().optional(),
+  model: z.string().optional(),
+  privateMac: z.boolean().optional(),
 });
 export type FoundEquipo = z.infer<typeof FoundEquipo>;
 

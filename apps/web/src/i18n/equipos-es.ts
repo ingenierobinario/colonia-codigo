@@ -89,4 +89,16 @@ export const esEquipos: Record<EquipoKey, string> = {
     "En ese Mac abre Ajustes del Sistema › General › Compartir y activa «Inicio de sesión remoto».",
   "equipos.noAccessLinux": "En ese equipo abre una terminal y pega esto:",
   "equipos.noAccessCheck": "Ya está, comprobar",
+  // EQUIPOS-NOMBRE-1
+  "equipos.kindPc": "Ordenador",
+  "equipos.kindPhone": "Móvil o tableta",
+  "equipos.kindTv": "Tele o reproductor",
+  "equipos.kindPrinter": "Impresora",
+  "equipos.kindOther": "Aparato de red",
+  "equipos.kindUnknown": "Aparato",
+  "equipos.privateDevice": "Móvil o tableta (dirección privada)",
+  "equipos.privateHint":
+    "Oculta su dirección de red real, como hacen los móviles y tabletas. Su nombre no se puede leer desde aquí.",
+  "equipos.otherDevices": "Otros aparatos de la red ({n})",
+  "equipos.otherDevicesHint": "Móviles, teles, impresoras y similares. No se pueden manejar desde aquí.",
 };

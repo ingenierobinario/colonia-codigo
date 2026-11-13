@@ -6,6 +6,7 @@
 import { promises as dnsPromises } from "node:dns";
 import net from "node:net";
 import os from "node:os";
+import { type DeviceKind, type Identity, identifyHosts } from "./identify.ts";
 
 export type Platform = "windows" | "linux" | "darwin";
 export interface ArpEntry {
@@ -156,6 +157,12 @@ export interface FoundEquipo {
   online: boolean;
   ports: number[];
   opens: string[];
+  /** EQUIPOS-NOMBRE-1: qué parece ser (ordenador, móvil, tele, impresora…), fabricante y modelo si se supo. */
+  kind?: DeviceKind;
+  vendor?: string;
+  model?: string;
+  /** Dirección de red privada (aleatoria): casi siempre un móvil o una tableta. */
+  privateMac?: boolean;
 }
 
 /** Ejecuta un programa y devuelve su salida, o null si no existe o falla. Inyectable para las pruebas. */
@@ -172,6 +179,8 @@ export const systemExec: Exec = async (cmd, args, timeoutMs) => {
 
 const osFromTailscale = (os: string): GuessedOs =>
   /windows/i.test(os) ? "windows" : /linux|macos|darwin|ios|android/i.test(os) ? "linux/mac" : "desconocido";
+
+const tsKind = (os = ""): DeviceKind => (/ios|android/i.test(os) ? "movil" : os ? "ordenador" : "desconocido");
 
 // ---------------------------------------------------------------------------------------------------------------------
 // EQUIPOS-RED-3 · Barrido de la red local
@@ -326,6 +335,11 @@ export async function discoverEquipos(
     interfaces?: Ifaces;
     resolveName?: ResolveName;
     concurrency?: number;
+    /** EQUIPOS-NOMBRE-1: NetBIOS, mDNS, SSDP y fabricante por MAC. Inyectable para no tocar la red en las pruebas. */
+    identify?: (
+      hosts: { ip: string; mac?: string; ports: number[] }[],
+      iface?: string,
+    ) => Promise<Map<string, Identity>>;
   } = {},
 ): Promise<{ equipos: FoundEquipo[]; tailscale: boolean }> {
   const exec = d.exec ?? systemExec;
@@ -372,6 +386,7 @@ export async function discoverEquipos(
   const arp = (await readArp()).filter((a) => subnets.length === 0 || subnets.some((s) => ipInSubnet(a.ip, s)));
   const peers = tsText ? parseTailscaleStatus(tsText) : [];
   const ports = Object.keys(REFERENCE_PORTS).map(Number);
+  const macOf = new Map(arp.map((a) => [a.ip, a.mac]));
   const candidates = new Map<string, { name: string; via: FoundEquipo["via"]; online: boolean; tsOs?: string }>();
   for (const p of peers) candidates.set(p.ip, { name: p.name, via: "tailscale", online: p.online, tsOs: p.os });
   const lan = new Set<string>(arp.map((a) => a.ip));
@@ -380,24 +395,49 @@ export async function discoverEquipos(
     if (self.has(ip) || gateways.has(ip) || candidates.has(ip)) continue;
     candidates.set(ip, { name: ip, via: "red", online: true });
   }
-  const found = await Promise.all(
-    [...candidates].map(async ([ip, c]): Promise<FoundEquipo> => {
+  // 3) Puertos de los que no pasaron por el barrido, y a la vez nombre por el sistema y la identificación por UDP
+  //    (EQUIPOS-NOMBRE-1), todo con su propio tope.
+  const allPorts = new Map<string, number[]>();
+  await Promise.all(
+    [...candidates].map(async ([ip, c]) => {
       const swept = sweep.get(ip);
-      const all = !c.online ? [] : swept ? swept.open : (await probe(ip, ports, probeMs)).open;
-      const open = all.filter((p) => ports.includes(p));
-      const name = c.via === "red" ? ((await resolveName(ip)) ?? ip) : c.name;
-      const os = all.length ? guessOs(all) : c.tsOs ? osFromTailscale(c.tsOs) : "desconocido";
-      return {
-        name,
-        ip,
-        os,
-        via: c.via,
-        online: c.online,
-        ports: open,
-        opens: open.map((p) => REFERENCE_PORTS[p] ?? String(p)),
-      };
+      allPorts.set(ip, !c.online ? [] : swept ? swept.open : (await probe(ip, ports, probeMs)).open);
     }),
   );
+  const lanIps = [...candidates].filter(([, c]) => c.via === "red").map(([ip]) => ip);
+  const identify =
+    d.identify ??
+    ((hosts: { ip: string; mac?: string; ports: number[] }[], iface?: string) => identifyHosts({ hosts, iface }));
+  const [names, ids] = await Promise.all([
+    Promise.all(lanIps.map((ip) => resolveName(ip))),
+    identify(
+      lanIps.map((ip) => ({ ip, mac: macOf.get(ip), ports: allPorts.get(ip) ?? [] })),
+      subnets[0]?.address,
+    ).catch(() => new Map<string, Identity>()),
+  ]);
+  const sysName = new Map(lanIps.map((ip, i) => [ip, names[i] ?? null]));
+  const found = [...candidates].map(([ip, c]): FoundEquipo => {
+    const all = allPorts.get(ip) ?? [];
+    const open = all.filter((p) => ports.includes(p));
+    const id = ids.get(ip);
+    const name = c.via === "red" ? ((id?.ownName ? id.name : undefined) ?? sysName.get(ip) ?? id?.name ?? ip) : c.name;
+    const os = all.length ? guessOs(all) : c.tsOs ? osFromTailscale(c.tsOs) : "desconocido";
+    const kind: DeviceKind =
+      c.via === "tailscale" ? tsKind(c.tsOs) : (id?.kind ?? (all.length ? "ordenador" : "desconocido"));
+    return {
+      name,
+      ip,
+      os,
+      via: c.via,
+      online: c.online,
+      ports: open,
+      opens: open.map((p) => REFERENCE_PORTS[p] ?? String(p)),
+      kind,
+      ...(id?.vendor ? { vendor: id.vendor } : {}),
+      ...(id?.model ? { model: id.model } : {}),
+      ...(id?.privateMac ? { privateMac: true } : {}),
+    };
+  });
   const order = (e: FoundEquipo) => (e.via === "tailscale" ? 0 : 1) * 2 ** 32 + (e.via === "red" ? toInt(e.ip) : 0);
   return { equipos: found.sort((a, b) => order(a) - order(b)), tailscale: tsText !== null };
 }
