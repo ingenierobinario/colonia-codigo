@@ -1,10 +1,11 @@
 import "../styles/browser-panel.css";
 import type { TabInfo } from "@colonia/protocol";
 import { BrowserTabs, EmptyState, IconButton, Icons, Menu, type MenuEntry } from "@colonia/ui";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserClose, loadTabs } from "../data/actions.ts";
 import { useT } from "../i18n/index.ts";
+import { activeOf, adopted, afterClose, blankId, isBlank } from "../navegadores/tabstrip.ts";
 import { nav } from "../shell/nav.ts";
 import { BrowserToolbar, HandoffBar } from "./BrowserToolbar.tsx";
 import { BrowserViewport } from "./BrowserViewport.tsx";
@@ -18,8 +19,45 @@ import { useActiveTab } from "./useActiveTab.ts";
  */
 export function BrowserPanel() {
   const t = useT();
-  const { tabs, active } = useActiveTab();
-  const [adding, setAdding] = useState(false);
+  const { tabs, active: current } = useActiveTab();
+  // NAVFIX-1: como en un perfil de Navegadores, cada pestaña nueva aún vacía es una pestaña más de la tira («+» abre
+  // todas las que se quieran); antes era un interruptor y, con una vacía a la vista, «+» no hacía nada.
+  const [blanks, setBlanks] = useState<string[]>([]);
+  const [pickedBlank, setPickedBlank] = useState<string>();
+  const realIds = tabs.map((x) => x.tab);
+  const shownId = activeOf(realIds, blanks, pickedBlank && blanks.includes(pickedBlank) ? pickedBlank : current?.tab);
+  const blank = isBlank(shownId) ? shownId : undefined;
+  const active = blank ? undefined : current;
+  const adding = Boolean(blank);
+  const opening = useRef<{ blank: string | undefined; known: string[] }>(undefined);
+  const pick = (id: string | undefined) => {
+    setPickedBlank(isBlank(id) ? id : undefined);
+    if (id && !isBlank(id)) nav.set({ browserTab: id });
+  };
+  const dropBlank = (b: string | undefined) => b && setBlanks((all) => all.filter((x) => x !== b));
+  const close = (id: string) => {
+    pick(afterClose([...realIds, ...blanks], id, shownId));
+    if (isBlank(id)) dropBlank(id);
+    else void browserClose(id);
+  };
+  const opened = (from: string | undefined, tab: string | undefined) => {
+    if (opening.current?.blank === from) opening.current = undefined;
+    // Si no se pudo abrir (ya se avisó), la pestaña vacía sigue ahí para volver a intentarlo.
+    if (!tab) return;
+    dropBlank(from);
+    pick(tab);
+  };
+  // La pestaña se anuncia en cuanto existe, antes de que su página cargue: la vista pasa a ella sin esperar.
+  const realKey = realIds.join(" ");
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a change in the real tabs can bring the new one
+  useEffect(() => {
+    const o = opening.current;
+    const tab = o && adopted(o.known, realIds);
+    if (!o || !tab) return;
+    opening.current = undefined;
+    dropBlank(o.blank);
+    pick(tab);
+  }, [realKey]);
 
   useEffect(() => {
     void loadTabs();
@@ -43,21 +81,33 @@ export function BrowserPanel() {
         }
       >
         <BrowserTabs
-          value={adding ? undefined : active?.tab}
-          onValueChange={(id) => {
-            setAdding(false);
-            nav.set({ browserTab: id });
+          value={shownId}
+          onValueChange={pick}
+          onClose={close}
+          onNew={() => {
+            const b = blankId();
+            setBlanks((all) => [...all, b]);
+            setPickedBlank(b);
           }}
-          onClose={(id) => void browserClose(id)}
-          onNew={() => setAdding(true)}
           newLabel={t("browser.newTab")}
           closeLabel={t("browser.closeTab")}
-          tabs={tabs.map((x) => ({ id: x.tab, title: x.title || hostPath(x.url), url: x.url, holder: x.control.kind }))}
+          tabs={[
+            ...tabs.map((x) => ({ id: x.tab, title: x.title || hostPath(x.url), url: x.url, holder: x.control.kind })),
+            ...blanks.map((b) => ({ id: b, title: t("browser.newTab") })),
+          ]}
         />
       </PanelHeader>
       {active || adding ? (
         <div className="browser">
-          <BrowserToolbar tab={adding ? undefined : active} onOpened={() => setAdding(false)} />
+          <BrowserToolbar
+            key={shownId ?? "new"}
+            tab={active}
+            onOpening={() => {
+              opening.current = { blank, known: realIds };
+            }}
+            onOpened={(tab) => opened(blank, tab)}
+            onCancel={() => blank && close(blank)}
+          />
           {!adding && active?.control.kind === "handoff" && <HandoffBar tab={active} />}
           {adding || !active ? (
             <EmptyState icon={<Icons.Globe />} title={t("browser.newTab")}>

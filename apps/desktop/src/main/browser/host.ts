@@ -30,7 +30,11 @@ type Tab = {
   used: number;
 };
 
-const MAX_TABS = 8;
+// NAVFIX-1: el tope de 8 protege de un agente que abre pestañas sin parar, y solo cuenta las que llevan los agentes.
+// A la persona no la frena: abre las que quiera (las que deja de usar ya se cierran solas, closeIdle); el segundo
+// tope es solo un seguro de memoria.
+const MAX_AGENT_TABS = 8;
+const MAX_TABS = 50;
 const NAV_TIMEOUT_MS = 8_000;
 
 /** The honest Chromium UA: no "Electron/x" or app token. Client hints stay untouched (removing them breaks Google login). */
@@ -50,7 +54,10 @@ function partitionFor(profile: BrowserProfile, seq: number): string {
 export function signedInSites(cookies: ReadonlyArray<{ domain?: string | undefined }>): string[] {
   const counts = new Map<string, number>();
   for (const c of cookies) {
-    const site = (c.domain ?? "").replace(/^\./, "").replace(/^www\./, "").toLowerCase();
+    const site = (c.domain ?? "")
+      .replace(/^\./, "")
+      .replace(/^www\./, "")
+      .toLowerCase();
     if (site) counts.set(site, (counts.get(site) ?? 0) + 1);
   }
   return [...counts]
@@ -280,7 +287,11 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
 
   async open(url: string, profile: BrowserProfile, control: TabControl): Promise<Tab> {
     assertNavigable(url);
-    if (this.#tabs.size >= MAX_TABS)
+    const live = [...this.#tabs.values()];
+    const agents = live.filter((t) => t.control.kind === "agent" || t.control.kind === "handoff").length;
+    if (control.kind === "agent" && agents >= MAX_AGENT_TABS)
+      throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_AGENT_TABS}) reached` });
+    if (live.length >= MAX_TABS)
       throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
     const id = `t${++this.#seq}`;
     const ses = session.fromPartition(partitionFor(profile, this.#seq));

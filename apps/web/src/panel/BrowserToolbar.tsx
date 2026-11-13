@@ -7,29 +7,23 @@ import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { t as tr, useT } from "../i18n/index.ts";
 import { nav } from "../shell/nav.ts";
-
-/** "example.com" → "https://example.com"; anything that is not http(s) is refused. */
-function normalizeUrl(raw: string): string | undefined {
-  const t = raw.trim();
-  if (!t) return undefined;
-  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : `https://${t}`;
-  try {
-    const u = new URL(withScheme);
-    return u.protocol === "http:" || u.protocol === "https:" ? u.href : undefined;
-  } catch {
-    return undefined;
-  }
-}
+import { addressToUrl } from "./address.ts";
 
 /** Back · reload · address pill · who drives the tab. `tab` undefined = typing the URL of a new tab. */
 export function BrowserToolbar({
   tab,
   onOpened,
+  onOpening,
+  onCancel,
   profile,
   forward,
 }: {
   tab: TabInfo | undefined;
   onOpened: (tab?: string) => void;
+  /** NAVFIX-1: a new tab is about to open (the page is still loading): the view may move to it as soon as it exists. */
+  onOpening?: () => void;
+  /** NAVFIX-1: Escape on a new tab's address; without it, `onOpened()` as before. */
+  onCancel?: () => void;
   /** NAVEGADORES-1: a new tab opens in this browser profile, not the agents' one. */
   profile?: `nav:${string}`;
   /** PULIDO-236-1: a forward button, between back and reload as in any browser (the Navegadores view has it). */
@@ -38,15 +32,25 @@ export function BrowserToolbar({
   const t = useT();
   const [editing, setEditing] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [opening, setOpening] = useState(false);
   const isNew = tab == null;
   const draft = editing ?? (isNew ? "" : undefined);
 
   const submit = async () => {
-    const url = normalizeUrl(draft ?? "");
+    // NAVFIX-1: an address opens; anything else ("test") is searched, as in Chrome, instead of loading https://test/.
+    const url = addressToUrl(draft ?? "");
     if (!url) return notify(tr("browser.badUrl"));
-    setEditing(undefined);
-    if (tab) return void browserNavigate(tab.tab, url);
+    if (tab) {
+      setEditing(undefined);
+      return void browserNavigate(tab.tab, url);
+    }
+    if (opening) return;
+    // The typed text stays in the field while the page opens: an emptied field read as "nothing happened".
+    setOpening(true);
+    onOpening?.();
     const id = await browserOpen(url, profile);
+    setOpening(false);
+    if (id) setEditing(undefined);
     if (id && !profile) nav.set({ browserTab: id });
     onOpened(id);
   };
@@ -91,11 +95,13 @@ export function BrowserToolbar({
           aria-label={t("browser.address")}
           placeholder={t("browser.typeUrl")}
           value={draft}
+          readOnly={opening}
+          aria-busy={opening}
           onChange={(e) => setEditing(e.currentTarget.value)}
           onBlur={() => !isNew && setEditing(undefined)}
           onKeyDown={(e) => {
             if (e.key === "Enter") void submit();
-            if (e.key === "Escape") isNew ? onOpened() : setEditing(undefined);
+            if (e.key === "Escape") isNew ? (onCancel ?? onOpened)() : setEditing(undefined);
           }}
         />
       ) : (

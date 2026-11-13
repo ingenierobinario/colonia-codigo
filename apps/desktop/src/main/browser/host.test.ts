@@ -234,3 +234,17 @@ test("navigation still updates URL and invalidates document consent without reti
   assert.equal(host.active, tab.id);
   wc.close();
 });
+
+test("la persona abre más de 8 pestañas; el tope de 8 solo frena a los agentes", async () => {
+  const host = new BrowserHost();
+  for (let i = 0; i < 20; i++) await host.open("https://example.com", "shared", { kind: "idle" });
+  assert.equal(host.list().length, 20);
+  const agent = { kind: "agent", by: "a1", since: new Date(0).toISOString() } as const;
+  for (let i = 0; i < 8; i++) await host.open("https://example.com", "shared", agent);
+  await assert.rejects(host.open("https://example.com", "shared", agent), /tab limit \(8\)/);
+  // Con los agentes en su tope, la persona sigue abriendo.
+  await host.open("https://example.com", "shared", { kind: "idle" });
+  assert.equal(host.list().length, 29);
+  for (let i = 29; i < 50; i++) await host.open("https://example.com", "shared", { kind: "idle" });
+  await assert.rejects(host.open("https://example.com", "shared", { kind: "idle" }), /tab limit \(50\)/);
+});

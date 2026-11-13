@@ -25,7 +25,8 @@ import { runAskpass } from "./askpass.ts";
 import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
 import { installedBrowsers, isWebUrl, openExternal } from "./browser/external.ts";
 import { BrowserHost, blockAppOrigins } from "./browser/host.ts";
-import { type Bounds, createPopout } from "./browser/popout.ts";
+import { createPopout } from "./browser/popout.ts";
+import { type Bounds, clipToArea, slotToDip } from "./browser/slot.ts";
 import { COMPUTER_PLATFORMS, computerPermissions, createComputer, openPrivacy } from "./computer.ts";
 import { applySavedLocalTarget, loadConnection, localCoreUrl } from "./connection.ts";
 import { createConnector } from "./connector.ts";
@@ -262,11 +263,13 @@ app.whenReady().then(() => {
     // Hidden tabs sit behind the panel at a real size instead of setVisible(false): an invisible view stops
     // painting, and the agent still needs screenshots and layout of the page it is driving.
     unparent(shown);
-    if (at && onScreen()) {
+    const area = w.getContentBounds();
+    // NAVFIX-1: the page never leaves its window, whatever the panel reported or however the window just shrank.
+    const fit = at && clipToArea(at, area);
+    if (fit && fit.width > 0 && fit.height > 0) {
       w.contentView.addChildView(shown);
-      shown.setBounds(at);
+      shown.setBounds(fit);
     } else {
-      const area = w.getContentBounds();
       w.contentView.addChildView(shown, 0);
       shown.setBounds({ x: 0, y: 0, width: Math.min(area.width, 1280), height: area.height });
     }
@@ -299,11 +302,9 @@ app.whenReady().then(() => {
   panel.webContents.on("did-finish-load", fullScreen);
   layout();
 
-  ipcMain.on("panel:browser-bounds", (e, b: Bounds | null) => {
-    const next =
-      b && Number.isFinite(b.x)
-        ? { x: Math.round(b.x), y: Math.round(b.y), width: Math.round(b.width), height: Math.round(b.height) }
-        : null;
+  ipcMain.on("panel:browser-bounds", (e, b: unknown) => {
+    // NAVFIX-1: the panel reports CSS px; the window lays views out in DIP (they differ once the panel is zoomed).
+    const next = slotToDip(b, e.sender.getZoomFactor());
     if (popout.isPanel(e.sender)) return popout.setSlot(next);
     if (e.sender !== panel.webContents) return;
     slot = next;

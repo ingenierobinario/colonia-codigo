@@ -59,6 +59,7 @@ function Item({ node, open, empty }: { node: BookmarkNode; open: (url: string) =
     );
   return (
     <Menu
+      className="bmbar__menu"
       trigger={
         <button type="button" className="bmbar__item" title={label(node)}>
           <Icons.Folder size={13} />
@@ -124,6 +125,7 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
         {rest.length > 0 && (
           <Menu
             align="end"
+            className="bmbar__menu"
             trigger={
               <button
                 type="button"

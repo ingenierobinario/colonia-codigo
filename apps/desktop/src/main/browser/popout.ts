@@ -1,8 +1,7 @@
 // The browser in a window of its own: a small Colonia panel (?browser) with the tab strip and the toolbar, and the shown
 // tab's native view laid over its slot, the same way the main window does it. Closing it brings the tab back.
 import { BaseWindow, type WebContents, WebContentsView } from "electron";
-
-export type Bounds = { x: number; y: number; width: number; height: number };
+import type { Bounds } from "./slot.ts";
 
 export function createPopout(opts: {
   url: () => string;
