@@ -92,7 +92,8 @@ export function NavegadorScreen() {
           }}
         />
       </div>
-      {bar?.length ? <BookmarksBar nodes={bar} open={(u) => void openBookmark(u)} /> : null}
+      {/* MARCADORES-2: la barra está siempre que el perfil se haya leído; vacía, lo dice en vez de desaparecer. */}
+      {bar ? <BookmarksBar nodes={bar} open={(u) => void openBookmark(u)} /> : null}
       {showNew || !activeId ? (
         <div className="navegador__empty">
           <EmptyState icon={<Icons.Globe />} title={tabs.length ? t("browser.newTab") : t("navegadores.empty")}>

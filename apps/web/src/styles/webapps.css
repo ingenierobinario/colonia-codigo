@@ -211,6 +211,18 @@
   min-width: 0;
   overflow: hidden;
 }
+.bmbar__none {
+  /* MARCADORES-2: el aviso de barra vacía, a la altura de un marcador y sin llamar la atención. */
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 8px;
+  color: var(--colonia-fg-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .bmbar__row {
   display: flex;
   align-items: center;

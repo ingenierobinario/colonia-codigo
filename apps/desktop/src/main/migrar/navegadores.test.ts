@@ -9,6 +9,7 @@ import {
   barraChromium,
   barraFirefox,
   descubrirFuentes,
+  leerBarra,
   leerFuente,
   limpiarUrl,
   marcadoresChromium,
@@ -184,4 +185,53 @@ test("NAVEGADORES-2: la barra de Firefox sale de toolbar_____ con sus carpetas, 
     { titulo: "Trabajo", hijos: [{ titulo: "CRM", url: "https://crm.example.com/" }] },
   ]);
   assert.deepEqual(barraFirefox([]), []);
+});
+
+test("MARCADORES-2: perfil con la sesión de Google (solo AccountBookmarks, sin Bookmarks) — caso real del owner", (t) => {
+  const home = carpeta(t);
+  const perfil = path.join(home, "AppData", "Local", "Google", "Chrome", "User Data", "Default");
+  fs.mkdirSync(perfil, { recursive: true });
+  // Como el perfil «alexander»: AccountBookmarks + History, y ningún fichero Bookmarks.
+  fs.writeFileSync(path.join(perfil, "AccountBookmarks"), BOOKMARKS);
+  fs.writeFileSync(path.join(perfil, "History"), "");
+  const [f] = descubrirFuentes({ platform: "win32", home });
+  assert.ok(f);
+  assert.deepEqual(leerBarra(f), [
+    { titulo: "Correo", url: "https://mail.google.com/mail/u/0/#inbox?token=secreto" },
+    { titulo: "Trabajo", hijos: [{ titulo: "Notion", url: "https://www.notion.so/ws" }] },
+    { titulo: "Otros marcadores", hijos: [{ titulo: "Chat", url: "https://app.slack.com/client/T1" }] },
+  ]);
+  assert.equal(leerFuente(f).marcadores.length, 3);
+});
+
+test("MARCADORES-2: cuenta y local juntos, primero la cuenta; sin repetidos al importar; barra vacía con «Otros»", (t) => {
+  const home = carpeta(t);
+  const perfil = path.join(home, "AppData", "Local", "Google", "Chrome", "User Data", "Default");
+  fs.mkdirSync(perfil, { recursive: true });
+  const local = JSON.stringify({
+    roots: {
+      bookmark_bar: { type: "folder", children: [{ type: "url", name: "Local", url: "https://local.example/" }] },
+      other: { type: "folder", name: "Other bookmarks", children: [] },
+    },
+  });
+  fs.writeFileSync(path.join(perfil, "AccountBookmarks"), BOOKMARKS);
+  fs.writeFileSync(path.join(perfil, "Bookmarks"), local);
+  const [f] = descubrirFuentes({ platform: "win32", home });
+  assert.ok(f);
+  const barra = leerBarra(f);
+  assert.deepEqual(
+    barra.map((n) => n.titulo),
+    ["Correo", "Trabajo", "Local", "Other bookmarks"],
+  );
+  fs.writeFileSync(path.join(perfil, "Bookmarks"), BOOKMARKS); // el mismo contenido en los dos
+  assert.equal(leerFuente(f).marcadores.length, 3);
+  // Barra vacía pero con «Otros»: la barra no queda en nada.
+  const soloOtros = JSON.stringify({
+    roots: { bookmark_bar: { type: "folder", children: [] }, other: JSON.parse(BOOKMARKS).roots.other },
+  });
+  fs.writeFileSync(path.join(perfil, "AccountBookmarks"), soloOtros);
+  fs.rmSync(path.join(perfil, "Bookmarks"));
+  assert.deepEqual(leerBarra(f), [
+    { titulo: "Otros marcadores", hijos: [{ titulo: "Chat", url: "https://app.slack.com/client/T1" }] },
+  ]);
 });

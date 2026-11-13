@@ -15,16 +15,14 @@ const host = (url: string) => {
 };
 const label = (n: BookmarkNode) => n.titulo || ("url" in n ? host(n.url) : "…");
 
-/** La barra del perfil con este id de Navegadores; undefined mientras carga, [] si no tiene. */
+/** La barra del perfil con este id de Navegadores; undefined mientras carga o sin escritorio, [] si no tiene. */
 export function useBookmarkBar(id: string | undefined): BookmarkNode[] | undefined {
   const [bar, setBar] = useState<BookmarkNode[]>();
   useEffect(() => {
     setBar(undefined);
     const d = window.coloniaDesktop;
-    if (!id || !d?.importSources || !d.bookmarkBar) {
-      setBar([]);
-      return;
-    }
+    // MARCADORES-2: sin escritorio no hay perfil que leer: ni barra ni aviso de «vacía».
+    if (!id || !d?.importSources || !d.bookmarkBar) return;
     let live = true;
     d.importSources()
       .then((sources) => {
@@ -106,7 +104,15 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
     return () => ro.disconnect();
   }, [nodes]);
 
-  if (!nodes.length) return null;
+  // MARCADORES-2: sin marcadores en la barra, la barra sigue ahí con un aviso discreto (no desaparece).
+  if (!nodes.length)
+    return (
+      <nav className="bmbar" aria-label={t("navegadores.bookmarks")}>
+        <div className="bmbar__row">
+          <span className="bmbar__none">{t("navegadores.bookmarksNone")}</span>
+        </div>
+      </nav>
+    );
   const rest = nodes.slice(fit);
   const empty = t("navegadores.bookmarksEmptyFolder");
   return (
