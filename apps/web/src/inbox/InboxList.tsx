@@ -9,6 +9,7 @@ import { useT } from "../i18n/index.ts";
 import { ActivityView, TaskBundle } from "../lazy.ts";
 import { go, useNav } from "../shell/nav.ts";
 import { ListedChat } from "./Delegated.tsx";
+import { FoldHead, useFold } from "./FoldHead.tsx";
 import { archivedThreads, bundleTasks, flatChats, groupByAgent, groupByTime, unreadListed } from "./groupThreads.ts";
 import { TreeView } from "./InboxViews.tsx";
 import { NewChatMenu, startChat, useChatAgents } from "./NewChatMenu.tsx";
@@ -26,7 +27,7 @@ export function InboxList() {
   const ready = useData((s) => s.ready);
   const offline = useData((s) => s.connection === "offline");
   const [query, setQuery] = useState("");
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useFold("archived", { startOpen: false });
   const chatAgents = useChatAgents(projectId);
 
   const view = usePrefs((s) => s.inboxView);
@@ -114,7 +115,7 @@ export function InboxList() {
           onChange={(e) => setQuery(e.currentTarget.value)}
         />
       </div>
-      <div className="inbox__list">
+      <div className="inbox__list" data-view={view}>
         {!ready && offline ? (
           <EmptyState icon={<Icons.WifiOff />} title={t("inbox.offline.title")}>
             {t("inbox.offline.body")}
@@ -168,18 +169,14 @@ export function InboxList() {
         )}
         {ready && archived.length > 0 && (
           <div className="inbox__archived">
-            <button
-              type="button"
-              className="inbox__grouphead"
-              aria-expanded={showArchived}
-              onClick={() => setShowArchived((v) => !v)}
-            >
-              <Icons.Archive size={14} />
-              <span className="inbox__groupname">{t("inbox.archived")}</span>
-              <span className="inbox__groupcount">{archived.length}</span>
-              <span className="inbox__groupspacer" />
-              {showArchived ? <Icons.ChevronDown size={14} /> : <Icons.ChevronRight size={14} />}
-            </button>
+            <FoldHead
+              open={showArchived}
+              onToggle={() => setShowArchived(!showArchived)}
+              label={t("inbox.archived")}
+              lead={<Icons.Archive size={16} className="taskbundle__icon" />}
+              title={<span className="taskbundle__title">{t("inbox.archived")}</span>}
+              count={archived.length}
+            />
             {showArchived &&
               archived.map((th) => (
                 <ThreadRow

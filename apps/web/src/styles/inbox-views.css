@@ -50,7 +50,8 @@
 .tree__agenthead:hover {
   background: var(--colonia-fill);
 }
-/* LISTA-PLEGABLE-2: the chevron before an agent folds its branch to the head. */
+
+/* LISTA-PLEGABLE-2 · PLEGAR-BANDEJA-1: the chevron after an agent folds its branch to the head. */
 .tree__agentrow {
   display: flex;
   align-items: center;
@@ -59,23 +60,6 @@
 .tree__agentrow > .tree__agenthead {
   flex: 1;
   min-width: 0;
-}
-.tree__fold {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 20px;
-  height: 24px;
-  margin-left: -6px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--colonia-radius-sm);
-  background: none;
-  color: var(--colonia-text-muted, inherit);
-  cursor: pointer;
-}
-.tree__fold:hover {
-  background: var(--colonia-fill);
 }
 .tree__code,
 .tree__routine {
@@ -174,14 +158,38 @@
   align-items: center;
   gap: 2px;
 }
-.taskbundle__task {
+/* PLEGAR-BANDEJA-1 · one fold for every group of the Inbox (agent, task, routine, delegated chats, archived), the
+   sidebar's: the group's mark in the column of the avatars, its name, what it holds (never cut), the chevron last.
+   Each view says where its rows put the avatar, so a group's head lines up with the chats around it. */
+.inbox__list {
+  --fold-pad: 8px;
+  --fold-lead: 20px;
+  --fold-gap: 8px;
+}
+.inbox__list[data-view="chats"] {
+  --fold-pad: 10px;
+  --fold-lead: 36px;
+  --fold-gap: 10px;
+}
+.inbox__list[data-view="activity"] {
+  --fold-pad: 8px;
+  --fold-lead: 28px;
+  --fold-gap: 10px;
+}
+/* Under a group the chats are one line with a 16px avatar. */
+.tree__sessions > * {
+  --fold-pad: 8px;
+  --fold-lead: 16px;
+  --fold-gap: 6px;
+}
+.foldhead {
   display: flex;
-  flex: 1;
   align-items: center;
-  gap: 6px;
+  gap: var(--fold-gap);
+  width: 100%;
   min-width: 0;
-  height: 30px;
-  padding: 0 8px 0 4px;
+  min-height: 30px;
+  padding: 4px var(--fold-pad);
   border: 0;
   border-radius: var(--colonia-row-radius);
   background: none;
@@ -191,49 +199,96 @@
   text-align: left;
   cursor: pointer;
 }
-.taskbundle__task:hover {
+.taskbundle__head > .foldhead {
+  flex: 1;
+}
+.foldhead:hover,
+.foldhead__toggle:hover {
   background: var(--colonia-fill-hover);
 }
-.taskbundle__chevron {
+.foldhead__lead {
+  display: inline-grid;
+  place-items: center;
   flex: none;
-  color: var(--colonia-fg-subtle);
+  width: var(--fold-lead);
+  height: var(--fold-lead);
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-fill);
 }
-/* The guide line of the task's chats runs down from its chevron. */
-.taskbundle .tree__sessions {
-  margin-left: 11px;
+.foldhead__body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
-/* A chat's delegated chats: a chevron before its row folds them; they hang from a guide line under it. */
-.delegated__head {
+.foldhead__title {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
 }
-.delegated__fold {
+.foldhead__count {
   display: inline-flex;
   flex: none;
   align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 24px;
+  gap: 4px;
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-subtle);
+  white-space: nowrap;
+}
+.foldhead__chev {
+  flex: none;
+  color: var(--colonia-fg-subtle);
+  transition: transform 0.15s ease;
+}
+.foldhead__chev.is-closed {
+  transform: rotate(-90deg);
+}
+/* Where the chats are two lines (by chat, activity), a group's head is too: its name, and under it what it holds. */
+.inbox__list:is([data-view="chats"], [data-view="activity"]) .foldhead:not(.is-sub) {
+  padding-block: 7px;
+}
+.inbox__list:is([data-view="chats"], [data-view="activity"]) .foldhead:not(.is-sub) > .foldhead__body {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.inbox__list:is([data-view="chats"], [data-view="activity"]) .foldhead:not(.is-sub) .foldhead__title {
+  max-width: 100%;
+}
+/* A chat's delegated chats: the line under its row folds them; its text starts where the row's title does. */
+.foldhead.is-sub {
+  min-height: 24px;
+  padding-block: 2px;
+}
+.foldhead.is-sub > .foldhead__lead {
+  height: auto;
+  background: none;
+}
+.foldhead.is-sub .foldhead__count {
+  flex: 1;
+}
+/* The tree's agent: its name opens the branch, the chevron after it folds it. */
+.foldhead__toggle {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: var(--colonia-row-radius);
   background: none;
-  color: var(--colonia-fg-subtle);
   cursor: pointer;
 }
-.delegated__fold:hover {
-  background: var(--colonia-fill-hover);
-  color: var(--colonia-fg);
+/* A group's chats hang from a guide line under the middle of its mark. */
+.taskbundle > .tree__sessions,
+.delegated > .delegated__list {
+  margin-left: calc(var(--fold-pad) + var(--fold-lead) / 2);
 }
-.delegated__row {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-.delegated .delegated__list {
-  margin-left: 8px;
+.delegated > .delegated__list {
   padding-bottom: 4px;
 }
 .delegated__from {

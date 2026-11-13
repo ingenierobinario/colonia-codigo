@@ -39,7 +39,8 @@ export type Prefs = {
   channelOrderAt: string;
   projectOrder: string[];
   engineOrder: string[];
-  /** Inbox tree branches (project:agent) the owner folded to their head (LISTA-PLEGABLE-2). */
+  /** Inbox groups the owner turned from how they start: tree branches (project:agent, LISTA-PLEGABLE-2), tasks,
+   * routines, delegated chats and the archived (PLEGAR-BANDEJA-1). */
   inboxFolded: string[];
   /** Rows each sidebar section shows before the rest folds into "N more" (0 = its minimum). */
   sidebarRows: SidebarRows;

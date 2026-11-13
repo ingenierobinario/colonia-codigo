@@ -16,6 +16,7 @@ import { useT } from "../i18n/index.ts";
 import { ChannelTreeRow, TaskBundle } from "../lazy.ts";
 import { go } from "../shell/nav.ts";
 import { ListedChat } from "./Delegated.tsx";
+import { FoldChevron } from "./FoldHead.tsx";
 import type { ProjectTree } from "./groupThreads.ts";
 import { RoutineBundle } from "./RoutineBundle.tsx";
 import { ThreadAvatar } from "./ThreadAvatar.tsx";
@@ -135,16 +136,6 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
               return (
                 <div key={key} className="tree__agent">
                   <div className="tree__agentrow">
-                    <button
-                      type="button"
-                      className="tree__fold"
-                      aria-expanded={!shut}
-                      aria-label={t(shut ? "inbox.unfoldBranch" : "inbox.foldBranch")}
-                      title={t(shut ? "inbox.unfoldBranch" : "inbox.foldBranch")}
-                      onClick={() => toggleFold(key)}
-                    >
-                      {shut ? <Icons.ChevronRight size={14} /> : <Icons.ChevronDown size={14} />}
-                    </button>
                     <button type="button" className="tree__agenthead" onClick={openBranch}>
                       {b.engine ? (
                         <EngineIcon engine={b.engine} tile size={20} />
@@ -167,6 +158,17 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
                         · {b.threads.length}
                       </span>
                       {shut && unread > 0 && <span className="tree__unread">{unread}</span>}
+                    </button>
+                    {/* PLEGAR-BANDEJA-1: the chevron last, as in every group of the Inbox and the sidebar. */}
+                    <button
+                      type="button"
+                      className="foldhead__toggle"
+                      aria-expanded={!shut}
+                      aria-label={t(shut ? "inbox.unfoldBranch" : "inbox.foldBranch")}
+                      title={t(shut ? "inbox.unfoldBranch" : "inbox.foldBranch")}
+                      onClick={() => toggleFold(key)}
+                    >
+                      <FoldChevron open={!shut} />
                     </button>
                   </div>
                   {!shut && (

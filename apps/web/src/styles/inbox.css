@@ -35,44 +35,6 @@
   overflow-y: auto;
   padding: 0 8px 16px;
 }
-.inbox__group + .inbox__group {
-  margin-top: 6px;
-}
-.inbox__grouphead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  height: 30px;
-  padding: 0 8px;
-  border: 0;
-  border-radius: var(--colonia-row-radius);
-  background: none;
-  color: var(--colonia-fg-muted);
-  font-size: var(--colonia-text-xs);
-  font-weight: var(--colonia-weight-semibold);
-  cursor: pointer;
-}
-.inbox__grouphead:hover {
-  background: var(--colonia-fill-hover);
-}
-.inbox__groupname {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.inbox__groupcount {
-  font-weight: var(--colonia-weight-regular);
-  color: var(--colonia-fg-subtle);
-}
-.inbox__grouprun {
-  font-weight: var(--colonia-weight-medium);
-  color: var(--colonia-brand);
-  white-space: nowrap;
-}
-.inbox__groupspacer {
-  flex: 1;
-}
 .inbox__skeleton {
   display: flex;
   flex-direction: column;
@@ -228,8 +190,4 @@ button.chatprocesses {
 }
 .routinebundle > .tree__sessions {
   min-width: 0;
-}
-.routinebundle .tree__agentmeta {
-  flex: none;
-  white-space: nowrap;
 }
