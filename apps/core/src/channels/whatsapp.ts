@@ -320,6 +320,18 @@ export function whatsappAdapter(opts: {
     while (ownSends.size > ECHOES) ownSends.delete(ownSends.values().next().value as string);
   };
   const isSelf = (jid: string) => Boolean(me && (jid === me.pn || jid === me.lid));
+  /**
+   * WA-LID-1: the one address a person has on this line (per connection: each line has its own mapping): the phone
+   * number when the key brings it or this line's mapping knows it, the private id only when nothing tells the number.
+   */
+  async function canonicalJid(jid: string, alt: string | null | undefined, s = sock): Promise<string> {
+    if (isPhone(jid)) return jid;
+    const other = normalJid(alt);
+    if (other && isPhone(other)) return other;
+    if (!jid.endsWith("@lid")) return jid;
+    const pn = normalJid(await s?.signalRepository?.lidMapping?.getPNForLID?.(jid)?.catch(() => undefined));
+    return pn && isPhone(pn) ? pn : jid;
+  }
 
   let connecting: Promise<void> = Promise.resolve();
   function connect(): Promise<void> {
@@ -487,17 +499,14 @@ export function whatsappAdapter(opts: {
         own = true;
       }
     }
-    const alt = normalJid(m.key.remoteJidAlt);
     // One person, one address: their phone number when WhatsApp tells it, their private id otherwise.
-    let who = m.key.fromMe && !own ? me.pn : isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
-    // PROPIOS-2: what the owner types on the phone names the chat by the contact's private id and brings no phone
-    // number beside it; their chat is kept under the number, so the number is asked of the session's own mapping.
-    if (own && who.endsWith("@lid")) {
-      const pn = await sock?.signalRepository?.lidMapping?.getPNForLID?.(who)?.catch(() => undefined);
-      if (pn && isPhone(normalJid(pn))) who = normalJid(pn);
-      // PROPIOS-5: no number for that private id: the chat kept under the number will not be found. Traced by shape.
-      else log?.info({ server: "lid", offline }, "whatsapp owner's own message: no number for the private id");
-    }
+    // WA-LID-1: the same for both sides of a chat. What the contact writes and what the owner writes on the phone may
+    // each name the chat by the number or by the private id (with or without the other beside it); both are brought
+    // to the number with this line's own mapping, so the two halves of one conversation land in the same chat.
+    let who = m.key.fromMe && !own ? me.pn : await canonicalJid(jid, m.key.remoteJidAlt);
+    // PROPIOS-5: no number for that private id: the chat kept under the number will not be found. Traced by shape.
+    if (who.endsWith("@lid"))
+      log?.info({ server: "lid", own, offline }, "whatsapp message: no number for the private id");
     const name = m.key.fromMe ? "Owner" : m.verifiedBizName?.trim() || m.pushName?.trim() || `+${digitsOf(who)}`;
     const reacted = content.reactionMessage;
     if (reacted) {
@@ -596,12 +605,7 @@ export function whatsappAdapter(opts: {
         dropped++;
         continue;
       }
-      const alt = normalJid(m.key.remoteJidAlt);
-      let who = isPhone(jid) ? jid : alt && isPhone(alt) ? alt : jid;
-      if (who.endsWith("@lid")) {
-        const pn = await s.signalRepository?.lidMapping?.getPNForLID?.(who)?.catch(() => undefined);
-        if (pn && isPhone(normalJid(pn))) who = normalJid(pn);
-      }
+      const who = await canonicalJid(jid, m.key.remoteJidAlt, s);
       const media = mediaOf(content);
       const said = [
         textOf(content) ?? "",
@@ -661,7 +665,10 @@ export function whatsappAdapter(opts: {
       if (s !== sock || stopped || !me) return;
       const at = Date.parse(c.oldest.at);
       if (!Number.isFinite(at)) continue;
-      const remoteJid = chats.get(c.oldest.id) ?? c.conversation;
+      // WA-LID-1: the phone answers only for the chat as it names it now, by the private id once the contact has one:
+      // asked by the number, such a chat never answers (nothing came back for the 8 chats asked on 13-nov).
+      const lid = normalJid(await s.signalRepository?.lidMapping?.getLIDForPN?.(c.conversation)?.catch(() => undefined));
+      const remoteJid = chats.get(c.oldest.id) ?? (lid.endsWith("@lid") ? lid : c.conversation);
       try {
         await fetchHistory(HISTORY_COUNT, { remoteJid, id: c.oldest.id, fromMe: c.oldest.fromMe }, at);
       } catch (err) {

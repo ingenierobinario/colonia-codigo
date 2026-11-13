@@ -248,6 +248,8 @@ export function fakeWhatsApp(owner = OWNER_PN) {
         voice?: Buffer;
         content?: object;
         type?: "notify" | "append";
+        /** WA-LID-1: under the private id alone, without the phone as the alternative. */
+        noAlt?: boolean;
       } = {},
     ) {
       const jid = opts.group ?? (from.lid ? from.lid : from.phone);
@@ -258,7 +260,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
           key: {
             id,
             remoteJid: jid,
-            ...(from.lid && !opts.group ? { remoteJidAlt: from.phone } : {}),
+            ...(from.lid && !opts.group && !opts.noAlt ? { remoteJidAlt: from.phone } : {}),
             fromMe: false,
           },
           pushName: from.name,
