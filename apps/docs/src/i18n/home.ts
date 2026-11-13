@@ -261,7 +261,7 @@ const es = {
     {
       blob: "amatista",
       title: "Ampliar",
-      body: "Habilidades, conectores, extensiones e integraciones.",
+      body: "Habilidades, conectores, extensiones e integraciones, también con tus redes: YouTube, Instagram, Facebook, X, LinkedIn y TikTok.",
       links: [
         ["Habilidades", "/extend/skills/"],
         ["Conectores MCP", "/extend/mcp/"],
@@ -271,7 +271,7 @@ const es = {
     {
       blob: "aqua",
       title: "En todas partes",
-      body: "La aplicación de escritorio y, si lo prefieres, un servidor propio.",
+      body: "La aplicación de escritorio, tus otros equipos de casa o de la oficina y, si lo prefieres, un servidor propio.",
       links: [
         ["Aplicación de escritorio", "/devices/desktop/"],
         ["Servidor y acceso remoto", "/devices/server/"],
@@ -378,6 +378,12 @@ const es = {
           "No. Se usa desde la aplicación, hablando con los agentes. Los comandos de terminal existen para quien los quiera, pero no son necesarios.",
         path: "/start/first-steps/",
       },
+      {
+        question: "¿Pueden trabajar con mis redes sociales?",
+        answer:
+          "Sí. Conectas tus cuentas de YouTube, Instagram, Facebook, X, LinkedIn o TikTok y tus agentes leen comentarios y cifras, responden y publican con tu permiso. Cada red pide una app tuya en su web de desarrolladores, y tu agente te guía paso a paso para crearla.",
+        path: "/extend/integrations/",
+      },
     ],
     more: "Más preguntas frecuentes",
     morePath: "/reference/faq/",
@@ -430,7 +436,7 @@ const es = {
     cards: {
       mac: "Apple silicon o Intel",
       windows: "Windows x64",
-      linux: "x64 o ARM",
+      linux: "x64 o ARM · .deb, .rpm o AppImage",
     },
     need: {
       title: "Qué necesitas",
@@ -740,7 +746,7 @@ const en: HomeText = {
     {
       blob: "amatista",
       title: "Extend",
-      body: "Skills, connectors, extensions and integrations.",
+      body: "Skills, connectors, extensions and integrations, also with your social accounts: YouTube, Instagram, Facebook, X, LinkedIn and TikTok.",
       links: [
         ["Skills", "/extend/skills/"],
         ["MCP connectors", "/extend/mcp/"],
@@ -750,7 +756,7 @@ const en: HomeText = {
     {
       blob: "aqua",
       title: "Everywhere",
-      body: "The desktop app and, if you prefer, your own server.",
+      body: "The desktop app, your other computers at home or at the office and, if you prefer, your own server.",
       links: [
         ["Desktop app", "/devices/desktop/"],
         ["Server and remote", "/devices/server/"],
@@ -857,6 +863,12 @@ const en: HomeText = {
           "No. You use it from the app, talking to the agents. Terminal commands exist for those who want them, but they are not required.",
         path: "/start/first-steps/",
       },
+      {
+        question: "Can they work with my social media?",
+        answer:
+          "Yes. You connect your YouTube, Instagram, Facebook, X, LinkedIn or TikTok accounts and your agents read comments and numbers, reply and post with your permission. Each network asks for an app of your own on its developer site, and your agent walks you through creating it.",
+        path: "/extend/integrations/",
+      },
     ],
     more: "More frequently asked questions",
     morePath: "/reference/faq/",
@@ -909,7 +921,7 @@ const en: HomeText = {
     cards: {
       mac: "Apple silicon or Intel",
       windows: "Windows x64",
-      linux: "x64 or ARM",
+      linux: "x64 or ARM · .deb, .rpm or AppImage",
     },
     need: {
       title: "What you need",

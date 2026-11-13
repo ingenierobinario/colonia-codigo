@@ -155,9 +155,17 @@ after confirming that the server is running that exact release. Offline apps rec
 devices do not update atomically. Older or unsupported servers block Desktop activation and show recovery guidance.
 The first update of a server without coordination support still uses its existing update mechanism.
 
-## Web apps, passwords and import
+## Web apps, browsers and your other computers
 
-Web apps such as Gmail, Outlook, Slack or Teams open inside the app, signed in as you. When you log in to a site, Colonia offers to save the password in a vault encrypted with your operating system, and it only ever fills it on that exact site. You can see and delete saved passwords in Settings. To start fast, the import assistant brings your bookmarks and most-used sites from your browser. If the browser is open, close it to import the most-used sites too; the bookmarks come in either way.
+Under **Applications › External**, the **+** adds a **Web app** (a name and its address, such as your mail or your team chat) or a **Program** on your computer. A web app opens inside Colonia and keeps you signed in, apart from the agents' browser. When you log in to a site, Colonia offers to save the password in a vault encrypted with your operating system, and it only ever fills it on that exact site. You can see and delete saved passwords in Settings.
+
+### Browsers
+
+The **Browsers** section in the sidebar brings in the profiles of the browsers installed on your computer (Chrome, Edge, Brave, Firefox and similar), each with its real logo, its tabs and its bookmarks bar under the address. Where you are signed in there, you stay signed in, and your agents know which sites each profile has a session on and can read those tabs when you ask them. Add a profile with the **+** next to **Browsers**.
+
+### My computers
+
+**My computers** lets your agents work on your other laptops and desktops from this Colonia. **Add a computer** searches your local network and Tailscale and connects with that computer's own user and password, without installing anything on it; computers that do not accept connections yet show the one-time steps to enable remote access (OpenSSH on Windows, Remote Login on a Mac). The other way is to install Colonia there and confirm a one-time code on that machine. Each computer has its own switch for your agents, and every agent session asks for approval on the computer itself unless you allow this Colonia always. Phones, TVs and printers show up apart and cannot be used from here.
 
 ## Running it from a checkout
 

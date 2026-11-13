@@ -159,9 +159,17 @@ reconcilian al volver: los dispositivos no se actualizan de forma atómica. Los 
 compatibles bloquean la activación de Desktop y muestran cómo recuperarse. La primera actualización de un servidor
 sin coordinación todavía usa su mecanismo anterior.
 
-## Webs, contraseñas e importación
+## Aplicaciones web, navegadores y tus otros equipos
 
-Las webs como Gmail, Outlook, Slack o Teams se abren dentro de la app, con tu sesión. Cuando inicias sesión en una web, Colonia te ofrece guardar la contraseña en una caja cifrada con tu sistema operativo, y solo la rellena en esa web exacta. Puedes ver y borrar las contraseñas guardadas en Ajustes. Para empezar rápido, el asistente de importación trae los marcadores y las webs más usadas de tu navegador. Si el navegador está abierto, ciérralo para importar también las webs más usadas; los marcadores entran de todos modos.
+En **Aplicaciones › Externas**, el **+** añade una **Aplicación web** (un nombre y su dirección, como tu correo o el chat de tu equipo) o un **Programa del ordenador**. Una aplicación web se abre dentro de Colonia y recuerda tu inicio de sesión, aparte del navegador de los agentes. Cuando inicias sesión en una web, Colonia te ofrece guardar la contraseña en una caja cifrada con tu sistema operativo, y solo la rellena en esa web exacta. Puedes ver y borrar las contraseñas guardadas en Ajustes.
+
+### Navegadores
+
+La sección **Navegadores** de la barra lateral trae los perfiles de los navegadores que tienes instalados (Chrome, Edge, Brave, Firefox y similares), cada uno con su logo real, sus pestañas y su barra de marcadores bajo la dirección. Donde ya tienes la sesión iniciada, sigues dentro, y tus agentes saben en qué webs tiene sesión cada perfil y pueden leer esas pestañas cuando se lo pides. Añade un perfil con el **+** junto a **Navegadores**.
+
+### Mis equipos
+
+**Mis equipos** deja que tus agentes trabajen en tus otros portátiles y ordenadores desde este Colonia. **Añadir un equipo** busca en tu red local y en Tailscale y se conecta con el usuario y la contraseña de ese equipo, sin instalar nada en él; los equipos que aún no aceptan conexiones muestran los pasos para activar la entrada una sola vez (Servidor OpenSSH en Windows, Inicio de sesión remoto en Mac). La otra vía es instalar Colonia en ese equipo y confirmar allí un código de un solo uso. Cada equipo tiene su propio interruptor para tus agentes, y cada sesión de un agente pide aprobación en el propio equipo, salvo que permitas siempre a este Colonia. Móviles, teles e impresoras salen aparte y no se pueden manejar desde aquí.
 
 ## Ejecutarla desde el código
 
