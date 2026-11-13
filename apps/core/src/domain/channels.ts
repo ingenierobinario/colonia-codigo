@@ -31,6 +31,8 @@ export type Inbound = {
   mentions?: Array<{ id: string; handle: string }> | undefined;
   /** PROPIOS-3: delivered late, after a reconnection: kept in the chat, unread, but it starts no turn. */
   late?: boolean | undefined;
+  /** WA-TODO-1: when it was written, as the platform tells it (ISO): its place in the chat, whenever it is handed over. */
+  at?: string | undefined;
   /** A one-to-one conversation; anything else reaches the agent only as a listed room (see `room`). */
   private: boolean;
   /** A message in a server's room the owner listed: whether it called the bot (an @mention or a reply to it). */
@@ -239,6 +241,34 @@ export function channelsRepo({ one, all, run }: Sql) {
             .limit(1),
         );
         return r ? (JSON.parse(r.payload) as Inbound) : undefined;
+      },
+      /** WA-TODO-1: the messages of a channel that came in and were dropped (oldest first). */
+      ignored(channel: string): Array<{ external_id: string; created_at: string; payload: Inbound }> {
+        return all(
+          qb
+            .selectFrom("channel_inbox")
+            .select(["external_id", "created_at", "payload"])
+            .where("channel", "=", channel)
+            .where("state", "=", "ignored")
+            .orderBy("created_at"),
+        ).map((r) => ({
+          external_id: r.external_id,
+          created_at: r.created_at,
+          payload: JSON.parse(r.payload) as Inbound,
+        }));
+      },
+      /** WA-TODO-1: a dropped message is taken into its chat after all; false when it was not a dropped one. */
+      revive(channel: string, externalId: string): boolean {
+        return (
+          run(
+            qb
+              .updateTable("channel_inbox")
+              .set({ state: "done" })
+              .where("channel", "=", channel)
+              .where("external_id", "=", externalId)
+              .where("state", "=", "ignored"),
+          ) > 0
+        );
       },
       /** Handled: its files' bytes leave the row (they are in media by now), so reading the inbox stays cheap. */
       done(id: string, state: "done" | "ignored" | "failed", error?: string): void {

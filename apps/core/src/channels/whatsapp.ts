@@ -523,6 +523,10 @@ export function whatsappAdapter(opts: {
     }
     chats.set(m.key.id, jid);
     if (chats.size > CHATS_KEPT) chats.delete(chats.keys().next().value ?? "");
+    // WA-TODO-1: when it was written, not when it got here: a backlog comes all at once, and the owner's own words
+    // wait for their echo, so the order they are handed over in is not the order of the conversation.
+    const secs = sizeOf(m.messageTimestamp);
+    const at = secs ? new Date(secs * 1000).toISOString() : undefined;
     const audio = content.audioMessage;
     let text = textOf(content) ?? "";
     let voice: { mime: string; data: string } | undefined;
@@ -559,7 +563,13 @@ export function whatsappAdapter(opts: {
         ...(files ?? []),
         ...(voice ? [{ name: "Voice note.ogg", mime: voice.mime, data: voice.data }] : []),
       ];
-      io.ownMessage?.({ external_id: m.key.id, conversation: who, text, ...(kept.length ? { files: kept } : {}) });
+      io.ownMessage?.({
+        external_id: m.key.id,
+        conversation: who,
+        text,
+        ...(kept.length ? { files: kept } : {}),
+        ...(at ? { at } : {}),
+      });
       return;
     }
     if (!group) {
@@ -584,6 +594,7 @@ export function whatsappAdapter(opts: {
       text,
       private: !group,
       ...(offline ? { late: true } : {}),
+      ...(at ? { at } : {}),
       ...(voice ? { voice } : {}),
       ...(files ? { files } : {}),
     });

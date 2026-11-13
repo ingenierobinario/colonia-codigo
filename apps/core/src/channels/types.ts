@@ -21,6 +21,8 @@ export type OwnMessage = {
   conversation: string;
   text: string;
   files?: InboundFile[];
+  /** WA-TODO-1: when it was written, as the platform tells it (ISO): its place in the chat. */
+  at?: string;
 };
 
 /**

@@ -715,7 +715,10 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
       model?: string;
       /** The channel it came on. */
       via?: string | undefined;
-      /** History brought from elsewhere: its own time, and no live event per message. */
+      /**
+       * Its own time (history brought from elsewhere, or a channel message by when it was written). `quiet`: no live
+       * event per message. WA-TODO-1: without `quiet` it takes its place by that time among those already here.
+       */
       at?: string;
       quiet?: boolean;
     }): Message {
@@ -749,7 +752,15 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
           created_at: message.created_at,
         }),
       );
-      if (!m.quiet) bus.emit({ type: "message.created", message });
+      if (m.quiet) return message;
+      // WA-TODO-1: written before something already in the thread: numbered again, and those that moved are told.
+      const moved = m.at ? repo.resequence(m.thread_id) : [];
+      message.seq = moved.find((r) => r.id === message.id)?.seq ?? message.seq;
+      bus.emit({ type: "message.created", message });
+      for (const r of moved) {
+        const other = r.id === message.id ? undefined : repo.get(r.id);
+        if (other) bus.emit({ type: "message.updated", message: other });
+      }
       return message;
     },
     /** Replaces the whole message (model change, recovery). */
@@ -786,7 +797,7 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
      * PROPIOS-6: numbers a thread's messages again by when they were written, so history brought in late (the phone's
      * older messages) shows in its place and not after the newest. Nothing changes when they already are in order.
      */
-    resequence(threadId: string): void {
+    resequence(threadId: string): Array<{ id: string; seq: number }> {
       const rows = all(
         qb
           .selectFrom("messages")
@@ -795,10 +806,12 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
           .orderBy("created_at")
           .orderBy("seq"),
       );
-      if (rows.every((r, i) => Number(r.seq) === i + 1)) return;
+      const moved = rows.flatMap((r, i) => (Number(r.seq) === i + 1 ? [] : [{ id: r.id, seq: i + 1 }]));
+      if (!moved.length) return moved;
       // Out of the way first: (thread_id, seq) is unique.
       run(qb.updateTable("messages").set({ seq: sql<number>`-seq` }).where("thread_id", "=", threadId));
       rows.forEach((r, i) => run(qb.updateTable("messages").set({ seq: i + 1 }).where("id", "=", r.id)));
+      return moved;
     },
     /** Copies messages into another thread (a fork), in order, with their own times; no live events. */
     copyInto(threadId: string, messages: Message[]): void {

@@ -35,6 +35,9 @@ import type { ChannelConfig, HistoryMessage, OwnMessage } from "./types.ts";
 
 /** PROPIOS-6: how much of one chat's recovered history the agent reads (its newest stretch). */
 const HISTORY_NOTE_CHARS = 6000;
+/** WA-TODO-1: a WhatsApp address that tells the number, and the name a chat has while only the number is known. */
+const NUMBER_JID = /^\d{6,}@s\.whatsapp\.net$/;
+const numberName = (jid: string) => `+${jid.split("@")[0] ?? ""}`;
 /** A contact gets at most this many automatic answers per hour; then the owner is told once. */
 const CONTACT_PER_HOUR = 20;
 const HOUR_MS = 3600_000;
@@ -110,9 +113,10 @@ export function createInbound(deps: {
       await action(channel, { conversation: m.conversation, sender: m.sender, data: m.action });
       return "done";
     }
-    const person = store.persons.byAddress(cfg.id, m.sender.id);
-    if (!person) return stranger(cfg, m, rowId);
-    if (person.role === "blocked") return "ignored";
+    const found = store.persons.byAddress(cfg.id, m.sender.id);
+    if (!found) return stranger(cfg, m, rowId);
+    if (found.role === "blocked") return "ignored";
+    const person = named(cfg, found, m);
     const owner = person.role === "owner";
     // Where the platform cannot vouch for the owner, their words only reach the super-agent to check: they answer and approve nothing here.
     const direct = owner && ownerActsOn(cfg.type);
@@ -167,7 +171,7 @@ export function createInbound(deps: {
     // PROPIOS-3: a message handed over late (after a reconnection) is kept to read, never answered late.
     if (cfg.read_only || (!owner && person.muted) || (m.late && !owner)) {
       const said = m.voice ? `${text ? `${text}\n` : ""}[voice note]` : text;
-      const kept = keepQuiet(thread.id, cfg.id, owner ? undefined : person, said, attachments);
+      const kept = keepQuiet(thread.id, cfg.id, owner ? undefined : person, said, attachments, undefined, m.at);
       if (cfg.read_only) theirLast(thread.id, cfg.id, m, kept);
       if (person.unreviewed) report(cfg, person, m.sender.id, said, thread.id);
       return "done";
@@ -349,11 +353,54 @@ export function createInbound(deps: {
     return false;
   }
 
+  /**
+   * WA-TODO-1: someone with no address on file becomes a contact so that their chat exists, answered no more than the
+   * channel answers a stranger: waiting for the owner's review ("ask"), silenced ("ignore", and "pair": nobody approved
+   * them), free on "answer" and on a read-only channel (nothing is answered there anyway).
+   */
+  function keepStranger(cfg: ChannelConfig, name: string, externalId: string): { id: string; name: string } {
+    const silenced = cfg.strangers === "ignore" || (!cfg.read_only && cfg.strangers === "pair");
+    return store.tx(() => {
+      const p = store.persons.create({
+        name,
+        role: "contact",
+        unreviewed: !cfg.read_only && cfg.strangers === "ask",
+      });
+      store.persons.link(p.id, { channel: cfg.id, external_id: externalId, label: name });
+      if (silenced) store.persons.update(p.id, { muted: true });
+      return p;
+    });
+  }
+
+  /**
+   * WA-TODO-1: a chat the owner opened from their phone had only the number for a name; the first message of the other
+   * side tells it. Only that placeholder is replaced: a name the owner gave stays.
+   */
+  function named<P extends { id: string; name: string; role: string }>(cfg: ChannelConfig, person: P, m: Inbound): P {
+    const name = m.sender.name.trim().slice(0, 80);
+    if (person.role !== "contact" || !NUMBER_JID.test(m.sender.id) || person.name !== numberName(m.sender.id))
+      return person;
+    if (!name || name === person.name) return person;
+    store.tx(() => {
+      store.persons.update(person.id, { name });
+      const thread = store.threads.byConversation(cfg.id, m.conversation);
+      if (thread?.channel?.person_id === person.id && thread.title === person.name)
+        store.threads.patch(thread.id, { title: displayName(name, m.conversation) }, false);
+    });
+    return { ...person, name };
+  }
+
   /** Someone with no address on file, handled as the channel says: a code, a question to the owner, an answer, nothing. */
   async function stranger(cfg: ChannelConfig, m: Inbound, rowId: string): Promise<"done" | "ignored"> {
-    if (cfg.strangers === "ignore") return "ignored";
-    const t = channelTexts(store);
     const name = m.sender.name.slice(0, 80);
+    if (cfg.strangers === "ignore") {
+      // WA-TODO-1: on WhatsApp every one-to-one chat comes in. "Ignore" there is no answer, no code and no notice,
+      // not a lost message: the stranger is kept as a silenced contact and their words show in their chat.
+      if (cfg.type !== "whatsapp") return "ignored";
+      keepStranger(cfg, name, m.sender.id);
+      return route(cfg.id, rowId, m);
+    }
+    const t = channelTexts(store);
     // CANAL-LECTURA-1: read only, a stranger is kept as a contact so their words can be read; no code goes out.
     if (cfg.read_only) {
       store.tx(() => {
@@ -451,6 +498,8 @@ export function createInbound(deps: {
     attachments: string[] = [],
     /** What the agent reads about why it was not answered; by default, silenced or needing no answer. */
     note?: Record<string, string>,
+    /** WA-TODO-1: when it was written, where the platform tells: its place in the chat. */
+    at?: string,
   ): string {
     return store.tx(() => {
       const kept = store.messages.add({
@@ -464,6 +513,7 @@ export function createInbound(deps: {
             return m ? [partOfMedia(m)] : [];
           }),
         ],
+        ...written(at),
       });
       const why: Record<string, string> =
         note ?? (person?.muted ? { silenced: "yes" } : { answered: "no, it needed no answer" });
@@ -483,13 +533,23 @@ export function createInbound(deps: {
     });
   }
 
+  /**
+   * WA-TODO-1: the time a channel message is kept with: when it was written, never later than now (another clock is
+   * not trusted ahead of this one). Without it, the moment it is stored.
+   */
+  function written(at: string | undefined): { at?: string } {
+    const ms = at ? Date.parse(at) : Number.NaN;
+    if (!Number.isFinite(ms)) return {};
+    return { at: new Date(Math.min(ms, deps.now().getTime())).toISOString() };
+  }
+
   /** PROPIOS-1: platform ids of the owner's own messages already kept (a redelivery is the same message). */
   const ownKept = new Set<string>();
 
   /**
    * PROPIOS-1: the owner wrote to a contact from their own phone. Kept in that contact's chat as the owner's words and
-   * noted for the agent (as "I'll write" does), but no turn, no unread, no follow-up moved. Only a chat Colonia already
-   * keeps, or a known contact's: the owner's private chats with people Colonia does not know never come in.
+   * noted for the agent (as "I'll write" does), but no turn, no unread, no follow-up moved. WA-TODO-1: someone Colonia
+   * does not know yet gets their chat too (the owner asked for every one-to-one chat); groups never come this far.
    */
   function ownSent(channel: string, m: OwnMessage): void {
     const cfg = deps.configs().find((c) => c.id === channel);
@@ -501,9 +561,16 @@ export function createInbound(deps: {
     if (store.channels.own.has(channel, m.external_id)) return;
     const person = store.persons.byAddress(cfg.id, m.conversation);
     const known = person && person.role !== "owner" && person.role !== "blocked" ? person : undefined;
-    const thread =
+    let thread =
       store.threads.byConversation(cfg.id, m.conversation) ??
       (known ? contactThread(cfg, m.conversation, known) : undefined);
+    // WA-TODO-1: the owner wrote first to someone Colonia does not know: their chat is opened now, under their number
+    // (their name comes with their first message), and they are answered no more than a stranger is. Never under a
+    // private id: the number was not told, and their own words would open a second chat under it (WA-LID-1).
+    if (!thread && !person && cfg.type === "whatsapp" && NUMBER_JID.test(m.conversation)) {
+      const name = numberName(m.conversation);
+      thread = contactThread(cfg, m.conversation, keepStranger(cfg, name, m.conversation));
+    }
     if (!thread?.channel?.person_id || thread.channel.person_id === OWNER_ID) {
       // PROPIOS-5: by its shape (never the number): a private id here means the chat under the number was missed.
       log.info(
@@ -539,6 +606,7 @@ export function createInbound(deps: {
         thread_id: thread.id,
         author: { kind: "user", direct: true, phone: true },
         via: channel,
+        ...written(m.at),
         parts: [
           ...(text.trim() ? [{ type: "text" as const, text: text.trim() }] : []),
           ...attachments.flatMap((id) => {
@@ -603,8 +671,9 @@ export function createInbound(deps: {
             },
             m.at,
           );
-          if (!row) continue;
-          store.channels.inbox.done(row, "done");
+          // WA-TODO-1: one that came in live and was dropped then is not in the chat: it is taken in now.
+          if (row) store.channels.inbox.done(row, "done");
+          else if (!store.channels.inbox.revive(channel, m.external_id)) continue;
         }
         store.messages.add({
           thread_id: kept.thread.id,
@@ -634,6 +703,41 @@ export function createInbound(deps: {
     });
     const stored = [...added.values()].reduce((n, g) => n + g.lines.length, 0);
     log.info({ channel, given: ms.length, stored, chats: added.size, skipped }, "channel history kept");
+  }
+
+  /**
+   * WA-TODO-1: what strangers wrote on a WhatsApp line while it dropped them (the inbox kept each as "ignored") comes
+   * into their chats, as past: no turn, no notice. Only where a stranger is kept today without a code or a question
+   * ("ignore", or read only), and only those still unknown: someone blocked, or over their hourly limit, stays out.
+   */
+  function reviveIgnored(channel: string): void {
+    const cfg = deps.configs().find((c) => c.id === channel);
+    if (cfg?.type !== "whatsapp" || !(cfg.read_only || cfg.strangers === "ignore")) return;
+    const fresh = new Set<string>();
+    const back: HistoryMessage[] = [];
+    for (const row of store.channels.inbox.ignored(channel)) {
+      const m = row.payload;
+      if (!m.private || m.action || m.sender.id !== m.conversation) continue;
+      const text = [m.text.trim(), m.voice ? "[voice note]" : "", ...(m.files ?? []).map((f) => `[${f.name}]`)]
+        .filter(Boolean)
+        .join("\n");
+      if (!text) continue;
+      if (!fresh.has(m.sender.id)) {
+        if (store.persons.byAddress(cfg.id, m.sender.id)) continue;
+        keepStranger(cfg, m.sender.name.slice(0, 80), m.sender.id);
+        fresh.add(m.sender.id);
+      }
+      const at = written(m.at).at ?? row.created_at;
+      back.push({ external_id: m.external_id, conversation: m.conversation, own: false, text, at });
+    }
+    if (!back.length) return;
+    history(channel, back);
+    for (const conversation of fresh) {
+      const thread = store.threads.byConversation(cfg.id, conversation);
+      const last = back.findLast((b) => b.conversation === conversation);
+      if (thread && last && !thread.preview) store.threads.patch(thread.id, { preview: previewOf(last.text) }, false);
+    }
+    log.info({ channel, messages: back.length, chats: fresh.size }, "channel messages dropped before are kept now");
   }
 
   /** PROPIOS-6: the chats Colonia keeps on a channel, each with its oldest message known (to ask for what came before). */
@@ -910,6 +1014,7 @@ export function createInbound(deps: {
     action,
     reaction,
     ownSent,
+    reviveIgnored,
     history,
     keptChats,
     /**

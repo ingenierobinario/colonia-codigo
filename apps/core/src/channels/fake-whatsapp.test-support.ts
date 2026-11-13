@@ -250,6 +250,8 @@ export function fakeWhatsApp(owner = OWNER_PN) {
         type?: "notify" | "append";
         /** WA-LID-1: under the private id alone, without the phone as the alternative. */
         noAlt?: boolean;
+        /** WA-TODO-1: when it was written (seconds), as WhatsApp stamps every message. */
+        ts?: number;
       } = {},
     ) {
       const jid = opts.group ?? (from.lid ? from.lid : from.phone);
@@ -264,6 +266,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
             fromMe: false,
           },
           pushName: from.name,
+          ...(opts.ts ? { messageTimestamp: opts.ts } : {}),
           message: opts.voice
             ? ({
                 audioMessage: { ptt: true, mimetype: "audio/ogg; codecs=opus" },
@@ -288,7 +291,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     ownerTo(
       to: Person,
       text: string,
-      opts: { id?: string; type?: "notify" | "append"; group?: string; unmapped?: boolean } = {},
+      opts: { id?: string; type?: "notify" | "append"; group?: string; unmapped?: boolean; ts?: number } = {},
     ) {
       const id = opts.id ?? `ME-${++seq}`;
       // PROPIOS-5: `unmapped`: the session has no number for that private id.
@@ -296,6 +299,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       const m: WaMessage = {
         key: { id, remoteJid: opts.group ?? to.lid ?? to.phone, fromMe: true },
         message: { conversation: text },
+        ...(opts.ts ? { messageTimestamp: opts.ts } : {}),
       };
       phone.history.push(m);
       sock?.emit("messages.upsert", {

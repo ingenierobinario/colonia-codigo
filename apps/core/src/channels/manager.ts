@@ -508,6 +508,18 @@ export function createChannels(deps: {
   }
 
   // ── lifecycle ─────────────────────────────────────────────────────────
+  /**
+   * WA-TODO-1: what a line dropped from strangers before it kept every chat comes into their chats: when it starts and
+   * when its settings change. Never a reason not to start.
+   */
+  function bringBack(id: string): void {
+    try {
+      inbound.reviveIgnored(id);
+    } catch (err) {
+      log.warn({ channel: id, err: errorMessage(err, 200) }, "dropped channel messages not brought back");
+    }
+  }
+
   async function startOne(config: ChannelConfig, attempt = 0): Promise<void> {
     const factory = deps.factories[config.type];
     if (!factory || !config.enabled || stopped) return;
@@ -521,6 +533,7 @@ export function createChannels(deps: {
       // Saved, but the keyring does not give it now (still locked at boot): a wait, not a refusal.
       if (token === undefined && secrets.backend === "secret-service" && secrets.listed(name))
         throw new Error("The system keyring is locked. Unlock it (log in to the desktop) and this channel starts by itself");
+      bringBack(config.id);
       const r = await adapter.start({
         receive: (m) => inbound.receive(config.id, m),
         action: (a) => void inbound.action(config.id, a),
@@ -686,6 +699,7 @@ export function createChannels(deps: {
         const l = live.get(id);
         if (config && before && l && !token && l.status !== "error" && !restartsFor(before, config)) {
           l.config = { ...config, id };
+          bringBack(id);
           return;
         }
         if (!config) {

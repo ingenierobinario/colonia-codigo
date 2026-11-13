@@ -430,7 +430,8 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   const id = wa.ownerTo(ANA, "see you at nine");
   wa.ownerTo(ANA, "see you at nine", { id });
   await waitFor(async () => (await fromPhone()).length === 1, "kept in Ana's chat");
-  // A "1" is the owner's words, not an option pressed; groups and strangers are never kept.
+  // A "1" is the owner's words, not an option pressed; groups are never kept. WA-TODO-1: someone Colonia does not
+  // know gets a chat of their own (never Ana's), as a silenced contact under their number.
   wa.ownerTo(ANA, "1");
   wa.ownerTo(ANA, "group words", { group: "120363000000000009@g.us" });
   wa.ownerTo({ phone: "5491100000099@s.whatsapp.net", name: "Zoe" }, "private words");
@@ -440,8 +441,18 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   assert.equal(llm.calls.length, calls, "no turn of the agent");
   const after = (await env.client.call("threads.list", {})).threads;
   assert.equal(after.find((t) => t.id === ana.id)?.unread, unread, "not unread: the owner wrote it");
-  assert.ok(!after.some((t) => t.channel?.conversation === "5491100000099@s.whatsapp.net"), "no chat for Zoe");
-  assert.ok(!(await env.client.call("contacts.list", {})).persons.some((p) => p.name === "Zoe"), "no contact");
+  const zoe = after.filter((t) => t.channel?.conversation === "5491100000099@s.whatsapp.net");
+  assert.equal(zoe.length, 1, "a chat for Zoe");
+  assert.deepEqual(
+    (await env.client.call("threads.get", { thread: zoe[0]?.id ?? "" })).messages.map((m) => [
+      m.author.kind,
+      m.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])).join(""),
+    ]),
+    [["user", "private words"]],
+  );
+  const stranger = (await env.client.call("contacts.list", {})).persons.find((p) => p.name === "+5491100000099");
+  assert.equal(stranger?.muted, true, "kept silenced: writing to someone does not make the agent answer them");
+  assert.ok(!after.some((t) => t.channel?.conversation === "120363000000000009@g.us"), "no chat for the group");
 
   // "I'll write" whose echo beats the send's answer: one message, never a second one "from the phone".
   wa.echoFirst.value = true;
@@ -594,7 +605,7 @@ test("PROPIOS-4: a stranger who wrote while offline gets no code late; writing a
   await waitFor(async () => Boolean((await channel())?.qr), "a QR to scan");
   wa.scan();
   await waitFor(async () => (await channel())?.status === "running", "linked");
-  const CARLA = { phone: "5491100000099@s.whatsapp.net", name: "Carla" };
+  const CARLA = { phone: "5491100000098@s.whatsapp.net", name: "Carla" };
   const listed = async () => (await env.client.call("pairing.list", {})).requests.some((r) => r.name === "Carla");
 
   wa.message(CARLA, "hola, ¿estáis abiertos?", { type: "append" });
