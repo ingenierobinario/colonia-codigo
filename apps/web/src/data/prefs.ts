@@ -66,6 +66,9 @@ export type Prefs = {
   audioEndSound: boolean;
   /** Which notices make a sound as they arrive. */
   noticeSound: NoticeSound;
+  /** PESTANAS-CHAT-1: open chat tabs (left to right), and which one is on screen. */
+  chatTabs: string[];
+  chatTab: string;
 };
 
 /** `widths` are how many of the board's columns a tile spans (1 when absent). */
@@ -117,6 +120,8 @@ const DEFAULTS: Prefs = {
   boards: {},
   audioEndSound: true,
   noticeSound: "all",
+  chatTabs: [],
+  chatTab: "",
 };
 
 function load(): Prefs {
@@ -166,6 +171,10 @@ function load(): Prefs {
         raw.noticeSound === "requests" || raw.noticeSound === "messages" || raw.noticeSound === "off"
           ? raw.noticeSound
           : "all",
+      chatTabs: Array.isArray(raw.chatTabs)
+        ? [...new Set(raw.chatTabs.filter((id): id is string => typeof id === "string" && id !== ""))].slice(0, 20)
+        : [],
+      chatTab: typeof raw.chatTab === "string" ? raw.chatTab : "",
     };
   } catch {
     return DEFAULTS;

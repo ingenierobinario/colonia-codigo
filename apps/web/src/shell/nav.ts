@@ -208,7 +208,16 @@ export const nav = createStore<NavState>({
   view: "inbox",
   projectId: undefined,
   projectTab: "overview",
-  threadId: "home",
+  threadId: (typeof localStorage !== "undefined" && localStorage.getItem("colonia.prefs")
+    ? (() => {
+        try {
+          const p = JSON.parse(localStorage.getItem("colonia.prefs") ?? "{}") as { chatTab?: string };
+          return typeof p.chatTab === "string" ? p.chatTab : "home";
+        } catch {
+          return "home";
+        }
+      })()
+    : "home"),
   appId: undefined,
   webAppId: undefined,
   panel: null,

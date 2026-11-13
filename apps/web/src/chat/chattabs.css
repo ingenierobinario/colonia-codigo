@@ -1,0 +1,130 @@
+.chattabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
+  min-height: 40px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chattabs::-webkit-scrollbar {
+  display: none;
+}
+
+.chattabs__tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 8px;
+  min-width: fit-content;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--colonia-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+  flex-shrink: 0;
+}
+
+.chattabs__tab.is-active {
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
+  border-color: var(--colonia-fill-hover);
+}
+
+.chattabs__tab:hover:not(.is-active) {
+  border-color: var(--colonia-border);
+}
+
+.chattabs__content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.chattabs__title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--colonia-text-sm);
+}
+
+.chattabs__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--colonia-fg);
+  flex-shrink: 0;
+}
+
+.chattabs__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: var(--colonia-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  color: var(--colonia-fg-muted);
+  font-size: 0;
+}
+
+.chattabs__close:hover {
+  border-color: var(--colonia-border);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
+}
+
+.chattabs__new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: var(--colonia-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  color: var(--colonia-fg-muted);
+  flex-shrink: 0;
+}
+
+.chattabs__new:hover {
+  border-color: var(--colonia-border);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
+}
+
+@media (max-width: 590px) {
+  .chattabs {
+    padding: 0 4px;
+    gap: 1px;
+  }
+
+  .chattabs__tab {
+    padding: 0 4px;
+    height: 28px;
+    font-size: var(--colonia-text-xs);
+  }
+
+  .chattabs__title {
+    max-width: 80px;
+  }
+
+  .chattabs__new {
+    width: 28px;
+    height: 28px;
+  }
+}
