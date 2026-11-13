@@ -3,7 +3,7 @@
 import { BrowserTabs, EmptyState, Icons } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { hostPath } from "../common/format.ts";
-import { browserClose, loadTabs } from "../data/actions.ts";
+import { browserClose, browserNavigate, browserOpen, loadTabs } from "../data/actions.ts";
 import { BROWSER_NAMES, navProfile, useNavegadores } from "../data/navegadores.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -13,6 +13,7 @@ import { useBrowserPoppedOut } from "../panel/browserWindow.ts";
 import { nav, useNav } from "../shell/nav.ts";
 import "../styles/browser-panel.css";
 import "../styles/webapps.css";
+import { BookmarksBar, useBookmarkBar } from "./BookmarksBar.tsx";
 
 export function NavegadorScreen() {
   const t = useT();
@@ -28,6 +29,15 @@ export function NavegadorScreen() {
   const activeId = active?.tab;
   const poppedOut = useBrowserPoppedOut();
   const showNew = adding || !active;
+  const bar = useBookmarkBar(id);
+  // NAVEGADORES-2: un marcador se abre en la pestaña a la vista; sin ella, en una nueva de este perfil.
+  const openBookmark = async (url: string) => {
+    if (!profile) return;
+    if (activeId && !showNew) return void browserNavigate(activeId, url);
+    const tab = await browserOpen(url, profile);
+    setAdding(false);
+    if (tab) setPicked(tab);
+  };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new profile starts on its own first tab
   useEffect(() => {
@@ -82,6 +92,7 @@ export function NavegadorScreen() {
           }}
         />
       </div>
+      {bar?.length ? <BookmarksBar nodes={bar} open={(u) => void openBookmark(u)} /> : null}
       {showNew || !activeId ? (
         <div className="navegador__empty">
           <EmptyState icon={<Icons.Globe />} title={tabs.length ? t("browser.newTab") : t("navegadores.empty")}>

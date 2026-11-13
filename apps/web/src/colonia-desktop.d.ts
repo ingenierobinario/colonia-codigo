@@ -20,6 +20,8 @@ export type ImportRead = {
   visitadas: { host: string; visitas: number }[];
   visitadasNoDisponibles: boolean;
 };
+/** NAVEGADORES-2: a bookmark of a profile's bookmarks bar, or a folder of them. */
+export type BookmarkNode = { titulo: string; url: string } | { titulo: string; hijos: BookmarkNode[] };
 export type SavedLogin = { id: string; app: string; origen: string; usuario: string };
 export type LoginOffer = { id: string; app: string; sitio: string; usuario: string; cambia: boolean };
 export type DesktopProgram = { id: string; name: string; path: string; icon?: string };
@@ -133,6 +135,8 @@ declare global {
       importSources?(): Promise<ImportSource[]>;
       /** Marcadores y webs más visitadas de un perfil; undefined si ya no existe. */
       importRead?(id: string): Promise<ImportRead | undefined>;
+      /** NAVEGADORES-2: the bookmarks bar of a profile of the real browser (read only); [] when it has none. */
+      bookmarkBar?(id: string): Promise<BookmarkNode[]>;
       /** Si el sistema puede cifrar contraseñas; si no, Colonia no guarda ninguna. */
       loginsAvailable?(): Promise<boolean>;
       loginsList?(): Promise<SavedLogin[]>;

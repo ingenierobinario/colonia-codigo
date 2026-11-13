@@ -6,6 +6,8 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import {
+  barraChromium,
+  barraFirefox,
   descubrirFuentes,
   leerFuente,
   limpiarUrl,
@@ -155,4 +157,31 @@ test("PERFIL-NOMBRE-1: el nombre real de cada perfil sale de Local State y de pr
   assert.deepEqual(nombresChromium("roto"), {});
   assert.deepEqual(nombresFirefox("[Profile0]\nName=Win\nPath=Profiles/xy.default\n"), { "xy.default": "Win" });
   assert.deepEqual(nombresFirefox("[Profile0]\nName=Win\nPath=C:\\P\\zz.default\n"), { "zz.default": "Win" });
+});
+
+test("NAVEGADORES-2: la barra de Chromium conserva carpetas y orden, solo http(s), sin credenciales", () => {
+  const conClave = BOOKMARKS.replace("https://www.notion.so/ws", "https://ana:secreta@www.notion.so/ws?x=1");
+  assert.deepEqual(barraChromium(conClave), [
+    { titulo: "Correo", url: "https://mail.google.com/mail/u/0/#inbox?token=secreto" },
+    { titulo: "Trabajo", hijos: [{ titulo: "Notion", url: "https://www.notion.so/ws?x=1" }] },
+  ]);
+  assert.deepEqual(barraChromium("no es json"), []);
+});
+
+test("NAVEGADORES-2: la barra de Firefox sale de toolbar_____ con sus carpetas, y nada del menú", () => {
+  const filas = [
+    { id: 1, padre: 0, tipo: 2, titulo: "", url: null, guid: "root________" },
+    { id: 2, padre: 1, tipo: 2, titulo: "toolbar", url: null, guid: "toolbar_____" },
+    { id: 3, padre: 1, tipo: 2, titulo: "menu", url: null, guid: "menu________" },
+    { id: 4, padre: 2, tipo: 1, titulo: "Outlook", url: "https://outlook.office.com/mail/", guid: "a" },
+    { id: 5, padre: 2, tipo: 2, titulo: "Trabajo", url: null, guid: "b" },
+    { id: 6, padre: 5, tipo: 1, titulo: "CRM", url: "https://crm.example.com/", guid: "c" },
+    { id: 7, padre: 3, tipo: 1, titulo: "Del menú", url: "https://menu.example.com/", guid: "d" },
+    { id: 8, padre: 2, tipo: 1, titulo: "Interna", url: "place:sort=8", guid: "e" },
+  ];
+  assert.deepEqual(barraFirefox(filas), [
+    { titulo: "Outlook", url: "https://outlook.office.com/mail/" },
+    { titulo: "Trabajo", hijos: [{ titulo: "CRM", url: "https://crm.example.com/" }] },
+  ]);
+  assert.deepEqual(barraFirefox([]), []);
 });

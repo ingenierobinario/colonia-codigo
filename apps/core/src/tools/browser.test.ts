@@ -26,11 +26,17 @@ const BROWSE: Array<[string, object[]]> = [
 /** The model the scripted calls report: one that reads images unless a test says otherwise. */
 let model = "fake/gpt-4o";
 const profiles: string[] = [];
+/** What the last browser_tabs call returned to the model. */
+let toolSaid = "";
 let requestedFile: { path: string; sha256: string } | undefined;
 const llm = scriptedLlm((req, { said, afterTool }) => {
   const looks = req.messages.filter((m) => m.role === "tool").length;
   if (said.includes("look six times") && looks < 6)
     return { ...callTool(`l${looks}`, "browser_snapshot", { tab: "t1" }), model };
+  if (said.includes("list my browsers")) {
+    if (!afterTool) return { ...callTool("nav1", "browser_tabs", {}), model };
+    toolSaid = String(req.messages.findLast((m) => m.role === "tool")?.content);
+  }
   const browse = BROWSE.find(([cue]) => said.includes(cue))?.[1][looks];
   if (browse) return { ...callTool(`b${looks}`, "browser_open", browse), model };
   if (said.includes("read then send") && looks < 2)
@@ -89,6 +95,10 @@ before(async () => {
   desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
   desktop.onRequest(async (method, params) => {
     if (method === "browser.tabs") return { tabs };
+    if (method === "browser.signed_in") {
+      const { profile } = params as { profile: string };
+      return { sites: profile === "nav:chrome-default" ? ["mail.example.com", "crm.example.com"] : [] };
+    }
     if (method === "browser.approval_context") return { epoch: "epoch1" };
     if (method === "browser.evaluate") {
       evaluations.push(params);
@@ -379,4 +389,17 @@ test("WEBAPP-3: an app the owner did not pin opens nothing", async () => {
   await env.client.call("threads.send", { thread, text: "open a stranger app" });
   await env.settle(thread);
   assert.deepEqual(opened, []);
+});
+
+test("NAVEGADORES-2: browser_tabs tells the agent where the owner is signed in, by site name only", async () => {
+  await env.client.call("navegadores.set", {
+    id: "chrome-default",
+    navegador: { browser: "chrome", name: "Personal" },
+  });
+  const thread = (await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" })).id;
+  await env.client.call("threads.send", { thread, text: "list my browsers" });
+  await env.settle(thread);
+  assert.match(toolSaid, /navegador chrome-default · chrome · Personal/);
+  assert.match(toolSaid, /signed in on: mail\.example\.com, crm\.example\.com/);
+  assert.doesNotMatch(toolSaid, /No sign-ins seen/);
 });

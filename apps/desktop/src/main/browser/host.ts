@@ -46,6 +46,19 @@ function partitionFor(profile: BrowserProfile, seq: number): string {
   return `persist:colonia-agent-${profile.slice("agent:".length)}`;
 }
 
+/** NAVEGADORES-2: cookie domains → the sites, without the leading dot or "www.", most cookies first, at most 40. */
+export function signedInSites(cookies: ReadonlyArray<{ domain?: string | undefined }>): string[] {
+  const counts = new Map<string, number>();
+  for (const c of cookies) {
+    const site = (c.domain ?? "").replace(/^\./, "").replace(/^www\./, "").toLowerCase();
+    if (site) counts.set(site, (counts.get(site) ?? 0) + 1);
+  }
+  return [...counts]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 40)
+    .map(([site]) => site);
+}
+
 let blockedPorts = new Set<string>();
 
 /** Colonia's own core and panel must never load inside a tab: a driven tab would hold the owner's controls. */
@@ -234,6 +247,12 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         tab.control = resolved ? { kind: "agent", by: p.by, since: new Date().toISOString() } : { kind: "idle" };
         this.emit("changed");
         return { resolved, url: tab.wc.getURL(), title: tab.wc.getTitle() };
+      }
+      case "browser.signed_in": {
+        // NAVEGADORES-2: which sites this profile's jar keeps cookies for — host names only, never a value.
+        const p = browserMethods["browser.signed_in"].params.parse(raw);
+        const ses = session.fromPartition(partitionFor(p.profile, 0));
+        return { sites: signedInSites(await ses.cookies.get({})) };
       }
       case "browser.cookie_sources":
         return {

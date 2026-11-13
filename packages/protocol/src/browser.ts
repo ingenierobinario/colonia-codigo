@@ -46,6 +46,15 @@ export const browserMethods = {
     result: z.object({ tabs: z.array(TabInfo) }),
     effect: false,
   },
+  /**
+   * NAVEGADORES-2: the sites a Navegadores profile keeps cookies for (likely signed in), host names only — never a
+   * value. Empty in the headless browser: those sign-ins live only in the Colonia app.
+   */
+  "browser.signed_in": {
+    params: z.object({ profile: z.string().regex(/^nav:[a-z0-9][a-z0-9-]{0,63}$/) }).strict(),
+    result: z.object({ sites: z.array(z.string()) }),
+    effect: false,
+  },
   "browser.open": {
     params: z.object({ url: Url, profile: BrowserProfile.default("shared"), by: By }).strict(),
     result: TabInfo,

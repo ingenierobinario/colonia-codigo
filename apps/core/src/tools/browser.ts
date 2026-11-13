@@ -180,7 +180,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_tabs",
       description:
-        "The owner's browsers in Colonia (Navegadores: Chrome, Edge… each profile signed in on its own) and the tabs open in each. Read one with browser_text; open or move with browser_open (navegador, tab).",
+        "The owner's browsers in Colonia (Navegadores: Chrome, Edge… each profile signed in on its own), the sites each keeps a sign-in for and the tabs open in each. A site the owner is signed in to there (their mail, a CRM…): browser_open with that navegador uses their session, no login or handoff. Read a tab with browser_text; open or move with browser_open (navegador, tab).",
       args: z.object({}),
       effect: "none",
       deadlineMs: 15_000,
@@ -189,14 +189,26 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         const navs = store.settings.read("navegadores");
         if (!navs.length) return "The owner has added no browsers under Navegadores.";
         const tabs = (await ctx.call("browser.tabs", {}).catch(() => ({ tabs: [] as TabInfo[] }))).tabs;
-        return navs
-          .map((n) => {
-            const mineTabs = tabs.filter((t) => t.profile === `nav:${n.id}`);
-            const head = `navegador ${n.id} · ${n.browser} · ${n.name}`;
-            const lines = mineTabs.map((t) => `  tab ${t.tab} · ${t.title} · ${t.url}`);
-            return [head, ...(lines.length ? lines : ["  (no tabs open)"])].join("\n");
-          })
-          .join("\n");
+        // NAVEGADORES-2: the sites each profile keeps a sign-in for (host names only), so the agent knows where the
+        // owner's session already is. Only the Colonia app knows them: headless, these profiles cannot be opened.
+        const sites = await Promise.all(
+          navs.map((n) =>
+            ctx
+              .call("browser.signed_in", { profile: `nav:${n.id}` })
+              .then((r) => r.sites)
+              .catch(() => [] as string[]),
+          ),
+        );
+        const lines = navs.map((n, i) => {
+          const mineTabs = tabs.filter((t) => t.profile === `nav:${n.id}`);
+          const head = `navegador ${n.id} · ${n.browser} · ${n.name}`;
+          const signed = sites[i]?.length ? [`  signed in on: ${sites[i]?.join(", ")}`] : [];
+          const open = mineTabs.map((t) => `  tab ${t.tab} · ${t.title} · ${t.url}`);
+          return [head, ...signed, ...(open.length ? open : ["  (no tabs open)"])].join("\n");
+        });
+        if (!sites.some((s) => s.length))
+          lines.push("(No sign-ins seen: they are known only while the Colonia app is open on the owner's computer.)");
+        return lines.join("\n");
       },
     }),
     defineTool({

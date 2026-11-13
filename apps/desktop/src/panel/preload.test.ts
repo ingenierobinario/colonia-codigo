@@ -128,6 +128,7 @@ test("panel requests return native replies without exposing a general invoke cap
     ["launchProgram", ["p1"], "programs:launch", ["p1"]],
     ["importSources", [], "import:sources", []],
     ["importRead", ["chrome:Default"], "import:read", ["chrome:Default"]],
+    ["bookmarkBar", ["chrome:Default"], "import:bar", ["chrome:Default"]],
     ["loginsAvailable", [], "logins:available", []],
     ["loginsList", [], "logins:list", []],
     ["loginsReveal", [7], "logins:reveal", ["7"]],

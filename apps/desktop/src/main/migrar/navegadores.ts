@@ -286,3 +286,102 @@ export function leerFuente(f: FuenteImportar): Importado {
     visitadasNoDisponibles: lectura === undefined,
   };
 }
+
+// NAVEGADORES-2: la barra de marcadores de un perfil, tal cual la ve el navegador: marcadores y carpetas, en orden.
+// Solo lectura (Firefox, sobre una copia); la URL entera para abrirla, nunca credenciales embebidas.
+export type NodoBarra = { titulo: string; url: string } | { titulo: string; hijos: NodoBarra[] };
+const MAX_BARRA = 500;
+const MAX_PROFUNDIDAD = 6;
+
+/** La URL tal cual si es http(s) y sin usuario:contraseña; si no, nada. */
+function urlBarra(raw: unknown): string | undefined {
+  try {
+    const u = new URL(String(raw));
+    if (u.protocol !== "http:" && u.protocol !== "https:") return undefined;
+    u.username = "";
+    u.password = "";
+    return u.href;
+  } catch {
+    return undefined;
+  }
+}
+
+/** La barra de marcadores del fichero Bookmarks de Chromium (roots.bookmark_bar), con sus carpetas. */
+export function barraChromium(json: string): NodoBarra[] {
+  let raiz: { roots?: { bookmark_bar?: NodoChromium } };
+  try {
+    raiz = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  let total = 0;
+  const nodos = (lista: NodoChromium[] | undefined, nivel: number): NodoBarra[] => {
+    const out: NodoBarra[] = [];
+    for (const n of lista ?? []) {
+      if (total >= MAX_BARRA) break;
+      const titulo = String(n.name ?? "").slice(0, 200);
+      if (n.type === "url") {
+        const url = urlBarra(n.url);
+        if (url) {
+          total++;
+          out.push({ titulo, url });
+        }
+      } else if (n.type === "folder" && nivel < MAX_PROFUNDIDAD) {
+        total++;
+        out.push({ titulo, hijos: nodos(n.children, nivel + 1) });
+      }
+    }
+    return out;
+  };
+  return nodos(raiz?.roots?.bookmark_bar?.children, 0);
+}
+
+/** Filas de moz_bookmarks (con la URL ya unida) → la barra de herramientas de Firefox, con sus carpetas. */
+export function barraFirefox(
+  filas: Array<{ id: number; padre: number; tipo: number; titulo: unknown; url: unknown; guid: unknown }>,
+): NodoBarra[] {
+  const raiz = filas.find((f) => f.guid === "toolbar_____");
+  if (!raiz) return [];
+  const hijos = new Map<number, typeof filas>();
+  for (const f of filas) hijos.set(f.padre, [...(hijos.get(f.padre) ?? []), f]);
+  let total = 0;
+  const nodos = (padre: number, nivel: number): NodoBarra[] => {
+    const out: NodoBarra[] = [];
+    for (const f of hijos.get(padre) ?? []) {
+      if (total >= MAX_BARRA) break;
+      const titulo = String(f.titulo ?? "").slice(0, 200);
+      if (f.tipo === 1) {
+        const url = urlBarra(f.url);
+        if (url) {
+          total++;
+          out.push({ titulo, url });
+        }
+      } else if (f.tipo === 2 && nivel < MAX_PROFUNDIDAD) {
+        total++;
+        out.push({ titulo, hijos: nodos(f.id, nivel + 1) });
+      }
+    }
+    return out;
+  };
+  return nodos(raiz.id, 0);
+}
+
+/** La barra de marcadores de una fuente; vacía si el perfil no tiene o no se puede leer. */
+export function leerBarra(f: FuenteImportar): NodoBarra[] {
+  if (f.familia === "chromium") {
+    try {
+      return barraChromium(fs.readFileSync(path.join(f.dir, "Bookmarks"), "utf8"));
+    } catch {
+      return [];
+    }
+  }
+  const filas = consultarCopia(path.join(f.dir, "places.sqlite"), (db) =>
+    db
+      .prepare(
+        `SELECT b.id AS id, b.parent AS padre, b.type AS tipo, b.title AS titulo, b.guid AS guid, p.url AS url
+         FROM moz_bookmarks b LEFT JOIN moz_places p ON p.id = b.fk ORDER BY b.parent, b.position LIMIT 20000`,
+      )
+      .all() as Array<{ id: number; padre: number; tipo: number; titulo: unknown; url: unknown; guid: unknown }>,
+  );
+  return barraFirefox(filas ?? []);
+}

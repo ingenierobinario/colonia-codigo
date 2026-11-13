@@ -285,3 +285,11 @@ test("a remote browser transport failure kills its process and never launches ho
     output.destroy();
   }
 });
+
+test("NAVEGADORES-2: headless, an owner's browser profile is refused instead of opening empty, and knows no sign-ins", async () => {
+  await assert.rejects(
+    browser.handle("browser.open", { url: `${base}/`, by: "superagent", profile: "nav:chrome-default" }),
+    /Navegadores/,
+  );
+  assert.deepEqual(await browser.handle("browser.signed_in", { profile: "nav:chrome-default" }), { sites: [] });
+});
