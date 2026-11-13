@@ -505,6 +505,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "inbox.showLess": "Ver menos",
   "inbox.foldBranch": "Plegar",
   "inbox.unfoldBranch": "Desplegar",
+  "inbox.groupUnread": "Chats con mensajes sin leer: {n}",
   "inbox.taskBundle.chats": "{n} chats",
   "inbox.taskBundle.open": "Ver los chats de la tarea",
   "inbox.taskBundle.close": "Ocultar los chats de la tarea",

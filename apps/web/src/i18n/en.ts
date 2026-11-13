@@ -502,6 +502,7 @@ export const en = {
   "inbox.showLess": "Show less",
   "inbox.foldBranch": "Fold",
   "inbox.unfoldBranch": "Unfold",
+  "inbox.groupUnread": "Chats with unread messages: {n}",
   "inbox.taskBundle.chats": "{n} chats",
   "inbox.taskBundle.open": "Show the task's chats",
   "inbox.taskBundle.close": "Hide the task's chats",
