@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.10": {
+    en: ["Silenced chats in a channel no longer look greyed out, and every chat is listed by its last message."],
+    es: ["Los chats silenciados de un canal ya no salen en gris, y todos se ordenan por su último mensaje."],
+  },
   "2.36.9": {
     en: [
       "WhatsApp keeps every one-to-one chat, yours and theirs, in order by when each message was written.",

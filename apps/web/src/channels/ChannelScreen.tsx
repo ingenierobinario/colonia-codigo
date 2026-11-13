@@ -74,11 +74,8 @@ export function ChannelScreen() {
         return Boolean(pid) && byId.get(pid ?? "")?.role !== "owner";
       })
       .map((th) => ({ key: th.id, thread: th, person: byId.get(th.channel?.person_id ?? "") }))
-      .sort(
-        (a, b) =>
-          Number(a.person?.muted ?? false) - Number(b.person?.muted ?? false) ||
-          b.thread.updated_at.localeCompare(a.thread.updated_at),
-      );
+      // SIN-GRIS-1: every chat by its last message; a silenced one is marked by its bell, never dimmed or pushed down.
+      .sort((a, b) => b.thread.updated_at.localeCompare(a.thread.updated_at));
     // Saved contacts reachable here who have no chat yet go after the chats, by name.
     const talked = new Set(chats.map((r) => r.person?.id));
     const others = persons
