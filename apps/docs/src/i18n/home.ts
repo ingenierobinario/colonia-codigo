@@ -436,7 +436,7 @@ const es = {
     cards: {
       mac: "Apple silicon o Intel",
       windows: "Windows x64",
-      linux: "x64 o ARM · .deb, .rpm o AppImage",
+      linux: "x64 o ARM",
     },
     need: {
       title: "Qué necesitas",
@@ -921,7 +921,7 @@ const en: HomeText = {
     cards: {
       mac: "Apple silicon or Intel",
       windows: "Windows x64",
-      linux: "x64 or ARM · .deb, .rpm or AppImage",
+      linux: "x64 or ARM",
     },
     need: {
       title: "What you need",

@@ -51,7 +51,7 @@ export function linkErrors(pages, base = "/colonia") {
         continue;
       }
       // La portada española vive en la raíz; el logo de la documentación inglesa apunta allí sin ser un cambio de idioma.
-      const spanish = (value) => value === "/" || /^\/(que-puedes-hacer|novedades|tres-pasos|mapa|terminal|preguntas|comparar|descargar)\//.test(value) || value === "/es" || value.startsWith("/es/");
+      const spanish = (value) => value === "/" || /^\/(que-puedes-hacer|novedades|tres-pasos|mapa|terminal|preguntas|comparar|descargar|empezar)\//.test(value) || value === "/es" || value.startsWith("/es/");
       const targetLanguage = spanish(target) ? "es" : "en";
       const declaredLanguage = tag[0].match(/\bhreflang="([^"]+)"/)?.[1];
       // Explicit language selectors and alternate links may cross locales; ordinary navigation may not.
