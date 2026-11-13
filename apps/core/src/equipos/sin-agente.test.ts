@@ -156,7 +156,13 @@ test("discoverEquipos: junta ARP y Tailscale, quita la puerta de enlace y no rom
             ? "          0.0.0.0          0.0.0.0      192.168.1.1     192.168.1.10     30\n"
             : null;
   const probe = async (ip: string) => ({ alive: ip === "192.168.1.40", open: ip === "192.168.1.40" ? [22, 445] : [] });
-  const d = { probe, platform: "win32" as const, interfaces: {}, resolveName: async () => null };
+  const d = {
+    probe,
+    platform: "win32" as const,
+    interfaces: {},
+    resolveName: async () => null,
+    identify: async () => new Map(),
+  };
   const r = await discoverEquipos({ ...d, exec: exec(true) });
   assert.equal(r.tailscale, true);
   assert.deepEqual(

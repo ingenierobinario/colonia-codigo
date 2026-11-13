@@ -205,6 +205,30 @@ const OS_KEY = {
   desconocido: "equipos.osUnknown",
 } as const;
 
+// EQUIPOS-NOMBRE-1: qué es cada aparato, con su icono. Móviles, teles, impresoras y aparatos de red van plegados al final.
+type Kind = NonNullable<FoundEquipo["kind"]>;
+const KIND: Record<Kind, { key: Parameters<ReturnType<typeof useT>>[0]; Icon: typeof Icons.Monitor }> = {
+  ordenador: { key: "equipos.kindPc", Icon: Icons.Monitor },
+  movil: { key: "equipos.kindPhone", Icon: Icons.Smartphone },
+  tele: { key: "equipos.kindTv", Icon: Icons.Tv },
+  impresora: { key: "equipos.kindPrinter", Icon: Icons.Printer },
+  otro: { key: "equipos.kindOther", Icon: Icons.Router },
+  desconocido: { key: "equipos.kindUnknown", Icon: Icons.Monitor },
+};
+const NOT_A_COMPUTER = new Set<Kind>(["movil", "tele", "impresora", "otro"]);
+const isOther = (f: FoundEquipo) =>
+  f.via === "red" && f.ports.length === 0 && NOT_A_COMPUTER.has(f.kind ?? "desconocido");
+
+/** El título de la tarjeta: su nombre; si no tiene, fabricante y modelo; si no, qué parece; y si no, la dirección. */
+function foundTitle(f: FoundEquipo, t: ReturnType<typeof useT>): string {
+  if (f.name && f.name !== f.ip) return f.name;
+  const vm = [f.vendor, f.model].filter(Boolean).join(" ");
+  if (vm) return vm;
+  if (f.privateMac) return t("equipos.privateDevice");
+  if (f.kind && f.kind !== "desconocido") return t(KIND[f.kind].key);
+  return f.ip;
+}
+
 function Login({
   host,
   name,
@@ -368,6 +392,91 @@ function FindEquipos({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     void search();
   }, [search]);
+  const item = (f: FoundEquipo) => {
+    const on = picked?.host === f.ip;
+    const canLogin = f.ports.includes(22);
+    const title = foundTitle(f, t);
+    const kind = f.kind ?? "desconocido";
+    const Icon = KIND[kind].Icon;
+    // Debajo del título: lo que se sabe y no está ya en él, y la dirección como dato secundario.
+    const vm = [f.vendor, f.model].filter(Boolean).join(" ");
+    const detail = [
+      kind !== "desconocido" && title !== t(KIND[kind].key) && !f.privateMac ? t(KIND[kind].key) : "",
+      vm && vm !== title ? vm : "",
+      f.os !== "desconocido" ? t(OS_KEY[f.os]) : "",
+      f.via === "tailscale" ? t("equipos.viaTailscale") : "",
+      f.ip,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return (
+      <li key={f.ip}>
+        <button
+          type="button"
+          className={`eq-found__item${on ? " eq-found__item--on" : ""}`}
+          title={f.ip}
+          aria-pressed={on}
+          onClick={() => setPicked(on ? undefined : { host: f.ip, name: title })}
+        >
+          <span className="eq-name eq-found__who">
+            <span className={`eq-dot${f.online ? " eq-dot--on" : ""}`} />
+            <Icon />
+            <span className="eq-found__text">
+              <span className="eq-found__name">{title}</span>
+              <span className="eq-found__sub" title={f.privateMac ? t("equipos.privateHint") : undefined}>
+                {detail}
+              </span>
+            </span>
+          </span>
+          <span className="eq-found__meta">
+            <span className="eq-found__opens">
+              {f.opens.length === 0 ? (
+                f.online ? (
+                  <Badge tone="neutral">{t("equipos.noAccess")}</Badge>
+                ) : (
+                  <span className="eq-muted">{t("equipos.offline")}</span>
+                )
+              ) : (
+                f.opens.map((o) => (
+                  <Badge key={o} tone={o === "Terminal" ? "brand" : "neutral"}>
+                    {OPEN_KEY[o] ? t(OPEN_KEY[o]) : o}
+                  </Badge>
+                ))
+              )}
+            </span>
+          </span>
+          {!canLogin && f.online && (
+            <span className="eq-muted">
+              {f.opens.length === 0 ? t("equipos.noAccessTap") : t("equipos.noTerminal")}
+            </span>
+          )}
+        </button>
+        {on && f.online && !canLogin && (
+          <NoAccess
+            name={title}
+            os={f.os}
+            checking={searching}
+            onCancel={() => setPicked(undefined)}
+            onCheck={() => void search()}
+          />
+        )}
+        {on && (canLogin || !f.online) && (
+          <Login
+            host={f.ip}
+            name={title}
+            onCancel={() => setPicked(undefined)}
+            onDone={() => {
+              setPicked(undefined);
+              onDone();
+              void search();
+            }}
+          />
+        )}
+      </li>
+    );
+  };
+  const main = (found ?? []).filter((f) => !isOther(f));
+  const others = (found ?? []).filter(isOther);
   const host = manual.trim();
   return (
     <section className="eq-card eq-card--static" aria-label={t("equipos.findTitle")}>
@@ -387,75 +496,18 @@ function FindEquipos({ onDone }: { onDone: () => void }) {
       ) : found && found.length === 0 ? (
         <p className="eq-muted">{t("equipos.noneFound")}</p>
       ) : (
-        <ul className="eq-found">
-          {(found ?? []).map((f) => {
-            const on = picked?.host === f.ip;
-            const canLogin = f.ports.includes(22);
-            return (
-              <li key={f.ip}>
-                <button
-                  type="button"
-                  className={`eq-found__item${on ? " eq-found__item--on" : ""}`}
-                  title={f.ip}
-                  aria-pressed={on}
-                  onClick={() => setPicked(on ? undefined : { host: f.ip, name: f.name })}
-                >
-                  <span className="eq-name">
-                    <span className={`eq-dot${f.online ? " eq-dot--on" : ""}`} />
-                    <Icons.Monitor /> <span className="eq-found__name">{f.name}</span>
-                  </span>
-                  <span className="eq-found__meta">
-                    <span className="eq-muted">
-                      {t(OS_KEY[f.os])}
-                      {f.via === "tailscale" ? ` · ${t("equipos.viaTailscale")}` : ""}
-                    </span>
-                    <span className="eq-found__opens">
-                      {f.opens.length === 0 ? (
-                        f.online ? (
-                          <Badge tone="neutral">{t("equipos.noAccess")}</Badge>
-                        ) : (
-                          <span className="eq-muted">{t("equipos.offline")}</span>
-                        )
-                      ) : (
-                        f.opens.map((o) => (
-                          <Badge key={o} tone={o === "Terminal" ? "brand" : "neutral"}>
-                            {OPEN_KEY[o] ? t(OPEN_KEY[o]) : o}
-                          </Badge>
-                        ))
-                      )}
-                    </span>
-                  </span>
-                  {!canLogin && f.online && (
-                    <span className="eq-muted">
-                      {f.opens.length === 0 ? t("equipos.noAccessTap") : t("equipos.noTerminal")}
-                    </span>
-                  )}
-                </button>
-                {on && f.online && !canLogin && (
-                  <NoAccess
-                    name={f.name}
-                    os={f.os}
-                    checking={searching}
-                    onCancel={() => setPicked(undefined)}
-                    onCheck={() => void search()}
-                  />
-                )}
-                {on && (canLogin || !f.online) && (
-                  <Login
-                    host={f.ip}
-                    name={f.name}
-                    onCancel={() => setPicked(undefined)}
-                    onDone={() => {
-                      setPicked(undefined);
-                      onDone();
-                      void search();
-                    }}
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          {main.length > 0 && <ul className="eq-found">{main.map(item)}</ul>}
+          {others.length > 0 && (
+            <details className="eq-other eq-found__others">
+              <summary>
+                {t("equipos.otherDevices", { n: others.length })}
+                <span className="eq-muted eq-found__others-hint">{t("equipos.otherDevicesHint")}</span>
+              </summary>
+              <ul className="eq-found">{others.map(item)}</ul>
+            </details>
+          )}
+        </>
       )}
       <form
         className="eq-manual"

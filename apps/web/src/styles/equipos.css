@@ -191,6 +191,42 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
+}
+/* EQUIPOS-NOMBRE-1: icono del tipo de aparato, nombre y debajo qué es y su dirección. */
+.eq-found__who {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.eq-found__who > svg {
+  flex: none;
+  color: var(--colonia-fg-muted);
+}
+.eq-found__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.eq-found__sub {
+  color: var(--colonia-fg-muted);
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+.eq-found__others {
+  margin-top: 12px;
+}
+.eq-found__others > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.eq-found__others-hint {
+  font-size: 0.85em;
+}
+.eq-found__others > .eq-found {
+  margin: 0 0 14px;
 }
 .eq-found__meta {
   display: flex;

@@ -169,6 +169,7 @@ test("discoverEquipos: barre la subred, encuentra equipos fuera de ARP y no desc
       "vEthernet (WSL)": [nic("172.20.16.1", "255.255.240.0")],
     },
     resolveName: async (ip) => (ip === "192.168.1.60" ? "SALON-PC" : null),
+    identify: async () => new Map(),
   });
   assert.ok(Date.now() - t0 < 2000);
   assert.equal(swept.length, 253, "254 direcciones menos la propia");
@@ -196,10 +197,59 @@ test("discoverEquipos: sin redes locales no barre nada y conserva ARP", async ()
     platform: "win32",
     interfaces: {},
     resolveName: async () => null,
+    identify: async () => new Map(),
   });
   assert.equal(probes, 1);
   assert.deepEqual(
     r.equipos.map((e) => [e.ip, e.ports]),
     [["192.168.1.9", []]],
+  );
+});
+
+// EQUIPOS-NOMBRE-1 · La identificación por UDP se pide para los equipos de la red con su MAC, y su nombre propio
+// (Bonjour) gana al NetBIOS del sistema.
+test("discoverEquipos: pasa MAC y puertos a la identificación y usa su tipo, fabricante y nombre", async () => {
+  let asked: { ip: string; mac?: string; ports: number[] }[] = [];
+  let iface: string | undefined;
+  const r = await discoverEquipos({
+    exec: async (cmd) =>
+      cmd === "arp" ? "  192.168.1.20  ce-16-76-5e-d0-3e  dynamic\n  192.168.1.30  aa-bb-cc-dd-ee-30  dynamic\n" : null,
+    probe: async (ip) => ({ alive: ip === "192.168.1.30", open: ip === "192.168.1.30" ? [445] : [] }),
+    platform: "win32",
+    interfaces: { "Wi-Fi": [nic("192.168.1.54", "255.255.255.0")] },
+    resolveName: async (ip) => (ip === "192.168.1.30" ? "MAC-6BF692" : null),
+    identify: async (hosts, i) => {
+      asked = hosts;
+      iface = i;
+      return new Map([
+        ["192.168.1.20", { kind: "movil" as const, privateMac: true }],
+        [
+          "192.168.1.30",
+          {
+            name: "MacBook-de-Ana",
+            ownName: true,
+            vendor: "Apple",
+            model: "Mac15,12",
+            kind: "ordenador" as const,
+            privateMac: false,
+          },
+        ],
+      ]);
+    },
+  });
+  assert.equal(iface, "192.168.1.54");
+  assert.deepEqual(
+    asked.sort((a, b) => a.ip.localeCompare(b.ip)),
+    [
+      { ip: "192.168.1.20", mac: "ce:16:76:5e:d0:3e", ports: [] },
+      { ip: "192.168.1.30", mac: "aa:bb:cc:dd:ee:30", ports: [445] },
+    ],
+  );
+  assert.deepEqual(
+    r.equipos.map((e) => [e.ip, e.name, e.kind, e.vendor, e.model, e.privateMac]),
+    [
+      ["192.168.1.20", "192.168.1.20", "movil", undefined, undefined, true],
+      ["192.168.1.30", "MacBook-de-Ana", "ordenador", "Apple", "Mac15,12", undefined],
+    ],
   );
 });
