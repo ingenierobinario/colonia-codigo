@@ -501,7 +501,11 @@ export function createInbound(deps: {
       store.threads.byConversation(cfg.id, m.conversation) ??
       (known ? contactThread(cfg, m.conversation, known) : undefined);
     if (!thread?.channel?.person_id || thread.channel.person_id === OWNER_ID) {
-      log.info({ channel }, "owner's own message to someone Colonia does not keep: not stored");
+      // PROPIOS-5: by its shape (never the number): a private id here means the chat under the number was missed.
+      log.info(
+        { channel, server: m.conversation.split("@")[1] ?? "", contact: Boolean(person), chat: Boolean(thread) },
+        "owner's own message to someone Colonia does not keep: not stored",
+      );
       return;
     }
     ownKept.add(key);

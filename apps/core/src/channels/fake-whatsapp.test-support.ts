@@ -280,10 +280,11 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     ownerTo(
       to: Person,
       text: string,
-      opts: { id?: string; type?: "notify" | "append"; group?: string } = {},
+      opts: { id?: string; type?: "notify" | "append"; group?: string; unmapped?: boolean } = {},
     ) {
       const id = opts.id ?? `ME-${++seq}`;
-      if (to.lid) lids.set(to.phone, to.lid);
+      // PROPIOS-5: `unmapped`: the session has no number for that private id.
+      if (to.lid && !opts.unmapped) lids.set(to.phone, to.lid);
       const m: WaMessage = {
         key: { id, remoteJid: opts.group ?? to.lid ?? to.phone, fromMe: true },
         message: { conversation: text },

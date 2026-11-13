@@ -455,6 +455,8 @@ export function whatsappAdapter(opts: {
     if (own && who.endsWith("@lid")) {
       const pn = await sock?.signalRepository?.lidMapping?.getPNForLID?.(who)?.catch(() => undefined);
       if (pn && isPhone(normalJid(pn))) who = normalJid(pn);
+      // PROPIOS-5: no number for that private id: the chat kept under the number will not be found. Traced by shape.
+      else log?.info({ server: "lid", offline }, "whatsapp owner's own message: no number for the private id");
     }
     const name = m.key.fromMe ? "Owner" : m.verifiedBizName?.trim() || m.pushName?.trim() || `+${digitsOf(who)}`;
     const reacted = content.reactionMessage;
@@ -497,7 +499,9 @@ export function whatsappAdapter(opts: {
       else text = `${text}\n[attachment could not be downloaded: ${got.failure}]`.trim();
     }
     if (!text && !voice && !files) {
-      if (!m.key.fromMe) log?.warn({ server, kinds: Object.keys(content).slice(0, 8) }, "whatsapp message not read");
+      // PROPIOS-5: the owner's own words dropped here were silent; an echo of our send never gets this far.
+      if (!m.key.fromMe || own)
+        log?.warn({ server, own, kinds: Object.keys(content).slice(0, 8) }, "whatsapp message not read");
       return;
     }
     // The owner's own words: no menu read, no option pressed (a "1" they type is not a choice offered to them).

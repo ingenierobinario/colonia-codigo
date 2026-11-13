@@ -576,6 +576,47 @@ test("adapter: options go out numbered, a number back presses that option; Markd
   await removeDir(dir);
 });
 
+test("PROPIOS-5: the owner's own words that cannot reach their chat leave a trace by shape, never their words", async () => {
+  const fake = fakeWhatsApp();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
+  const logs: Array<{ msg: string; fields: Record<string, unknown> }> = [];
+  const keep = (fields: Record<string, unknown>, msg: string) => logs.push({ msg, fields });
+  const adapter = whatsappAdapter({
+    dir,
+    lib: async () => fake.lib,
+    echoWaitMs: 10,
+    log: { info: keep, warn: keep, error: keep },
+  });
+  const own: string[] = [];
+  const ac = new AbortController();
+  let linked = false;
+  const io: AdapterIO = {
+    receive: () => {},
+    action: () => {},
+    status: () => {},
+    signal: ac.signal,
+    ownMessage: (m) => own.push(m.conversation),
+    identified: () => {
+      linked = true;
+    },
+    qr: (code) => code && fake.scan(),
+  };
+  await adapter.start(io);
+  await waitFor(() => linked, "linked");
+  // A contact on another line, the chat named by a private id the session cannot turn into a number (fake numbers).
+  const borja = { phone: "34600000099@s.whatsapp.net", name: "Borja", lid: "300000000000099@lid" };
+  fake.ownerTo(borja, "te llamo luego", { unmapped: true });
+  await waitFor(() => own.length === 1, "handed over");
+  assert.deepEqual(own, ["300000000000099@lid"]);
+  assert.ok(logs.some((l) => l.msg.includes("no number for the private id") && l.fields.server === "lid"));
+  // Words that come with nothing readable: dropped before, silently; now traced.
+  fake.ownerTo({ phone: "34600000098@s.whatsapp.net", name: "Alejo" }, "");
+  await waitFor(() => logs.some((l) => l.msg === "whatsapp message not read" && l.fields.own === true), "traced");
+  assert.ok(!JSON.stringify(logs).includes("te llamo luego"), "never the words");
+  await adapter.stop();
+  await removeDir(dir);
+});
+
 test("BANDEJA-1: a contact named only with emoji is shown by its number; a real name stays", () => {
   assert.equal(displayName("🔥✨", "34600111222@s.whatsapp.net"), "+34600111222");
   assert.equal(displayName("Ana 🔥", "34600111222@s.whatsapp.net"), "Ana 🔥");
