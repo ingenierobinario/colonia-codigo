@@ -591,7 +591,7 @@ function EquipoCard({
       <Switch
         checked={e.agent_access}
         label={t("equipos.agents")}
-        description={t("equipos.agentsHint")}
+        description={t(e.via === "ssh" ? "equipos.agentsHintSsh" : "equipos.agentsHint")}
         onCheckedChange={(enabled) => void client.call("equipos.set_access", { id: e.id, enabled }).then(refresh)}
       />
       <div className="eq-muted">{t("equipos.history")}</div>

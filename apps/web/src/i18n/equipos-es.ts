@@ -29,6 +29,7 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.inUse": "En uso ahora",
   "equipos.agents": "Dejar que los agentes lo usen",
   "equipos.agentsHint": "Aun así, cada sesión de un agente pide aprobación en el propio portátil.",
+  "equipos.agentsHintSsh": "Aun así, cada chat de un agente te pide aprobación aquí, en una tarjeta, antes de usarlo.",
   "equipos.disconnect": "Desconectar",
   "equipos.disconnectTitle": "¿Desconectar este equipo?",
   "equipos.disconnectBody":

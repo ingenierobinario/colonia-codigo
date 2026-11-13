@@ -20,7 +20,10 @@ const allowed = async () =>
 
 test("the super-agent tells who may use the computer and turns it on for an agent once the owner approves", async () => {
   assert.match((await h.ask({ method: "environments" })).answer, /environments\.permit: let an agent use the isolated/);
-  assert.match((await h.ask({ method: "environments.status" })).answer, /^No agent may use the computer yet\./);
+  assert.match(
+    (await h.ask({ method: "environments.status" })).answer,
+    /^No agent may use the isolated computer yet\./,
+  );
 
   const on = { method: "environments.permit", params: { agent: "scout", on: true } };
   const declined = await h.ask(on, "deny");
@@ -28,7 +31,10 @@ test("the super-agent tells who may use the computer and turns it on for an agen
   assert.deepEqual(await allowed(), []);
   await h.ask(on, "approve");
   assert.deepEqual(await allowed(), ["scout"]);
-  assert.match((await h.ask({ method: "environments.status" })).answer, /May use the computer:\n- Scout \[scout\]/);
+  assert.match(
+    (await h.ask({ method: "environments.status" })).answer,
+    /May use the isolated computer:\n- Scout \[scout\]/,
+  );
   // Already so: answered without asking the owner again.
   assert.match((await h.ask(on)).answer, /already is so/);
 

@@ -182,7 +182,7 @@ export function builtinTools(
     ...memoryTools(store),
     ...mediaTools(store, home, vm),
     ...phoneTools(),
-    ...equipoTools(),
+    ...equipoTools(store),
     ...computerTools(store),
     ...taskTools(store, home),
     ...videoTools(findProgram("yt-dlp")),

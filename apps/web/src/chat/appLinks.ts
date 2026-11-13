@@ -15,7 +15,8 @@ export type AppPlace =
   | { kind: "inbox"; open: () => void }
   | { kind: "chat"; id: string; open: () => void }
   | { kind: "project"; id: string; open: () => void }
-  | { kind: "computer"; open: () => void };
+  | { kind: "computer"; open: () => void }
+  | { kind: "equipos"; open: () => void };
 
 /** The place an `colonia:` link names; undefined when it names none. */
 export function appPlace(href: string): AppPlace | undefined {
@@ -53,6 +54,9 @@ export function appPlace(href: string): AppPlace | undefined {
         kind: "computer",
         open: () => (nav.get().threadId && where === "computer" ? go.panel("computer") : go.view("computers")),
       };
+    // EQUIPOS-AGENTE-1: Mis equipos, donde el dueño deja un equipo suyo a los agentes.
+    case "equipos":
+      return a === undefined ? { kind: "equipos", open: () => go.view("equipos") } : undefined;
     case "thread":
     case "chat":
       return a ? { kind: "chat", id: a, open: () => go.inboxThread(a) } : undefined;

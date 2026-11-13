@@ -35,9 +35,18 @@ test("an app link says what it opens, so its button can show the place's icon an
   // An agent that could not start the computer points the owner to its panel.
   assert.deepEqual(kindOf("colonia:computer"), { kind: "computer" });
   assert.deepEqual(kindOf("colonia:computers"), { kind: "computer" });
+  // EQUIPOS-AGENTE-1: el agente manda al dueño a Mis equipos, donde se activa el uso por agentes.
+  assert.deepEqual(kindOf("colonia:equipos"), { kind: "equipos" });
+  assert.equal(kindOf("colonia:equipos/otro"), undefined);
 });
 
 test("an app link to no known place opens nothing", () => {
-  for (const href of ["colonia:settings/nowhere", "colonia:resources/nope", "colonia:chat", "colonia:project", "colonia:elsewhere"])
+  for (const href of [
+    "colonia:settings/nowhere",
+    "colonia:resources/nope",
+    "colonia:chat",
+    "colonia:project",
+    "colonia:elsewhere",
+  ])
     assert.equal(appPlace(href), undefined, href);
 });

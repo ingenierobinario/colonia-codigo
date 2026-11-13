@@ -140,7 +140,7 @@ import { createTelemetry } from "./telemetry.ts";
 import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
 import { createTerminals } from "./terminal/terminals.ts";
 import { asanaTools } from "./tools/asana.ts";
-import { EQUIPO_CAP } from "./tools/equipos.ts";
+import { EQUIPO_CAP, equipoCapOn, equiposBrief } from "./tools/equipos.ts";
 import { scratchRoot } from "./tools/folders.ts";
 import { googleTools } from "./tools/google.ts";
 import { imessageTools } from "./tools/imessage.ts";
@@ -617,10 +617,12 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     mcpTools: mcp.toolsFor,
     mcpServers: mcp.serversFor,
     hasCap: (cap) =>
-      (cap === EQUIPO_CAP && store.team.list().some((c) => c.agent_access && principal.connected(c.id))) ||
+      // EQUIPOS-AGENTE-1: un equipo por terminal remota (SSH) no vive en `principal`; antes dejaba al agente sin herramientas.
+      (cap === EQUIPO_CAP && equipoCapOn(store.team.list(), (id) => principal.connected(id))) ||
       Boolean(broker.withCap(cap)) ||
       (cap === BROWSER_CAP && Boolean(headless?.available())),
     desktopLinked: () => broker.list().some((n) => n.caps.includes(BROWSER_CAP) && !n.caps.includes(NO_COMPUTER_CAP)),
+    equipos: () => equiposBrief(store),
     afterRun: (run) => {
       upkeep.afterRun(run);
       memoryMaintenance.afterRun(run);
