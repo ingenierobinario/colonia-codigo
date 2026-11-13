@@ -1,6 +1,9 @@
 /* WEBAPP-1: a web app in the main area, like a browser of its own. */
 .webapp {
   flex: 1;
+  /* NAVFIX-1: sin esto la columna no encoge por debajo de su contenido (una barra de marcadores larga) y se sale de
+     la ventana, con la página nativa detrás. */
+  min-width: 0;
   min-height: 0;
   height: 100%;
   display: flex;
@@ -265,6 +268,11 @@
   justify-content: center;
   padding: 0;
   font-size: 14px;
+}
+/* NAVFIX-1: con muchos marcadores el menú no cabe en la ventana: se queda en el alto que hay y se recorre. */
+.bmbar__menu {
+  max-height: var(--available-height);
+  overflow-y: auto;
 }
 .bmbar__measure {
   position: absolute;
