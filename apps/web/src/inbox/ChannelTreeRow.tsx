@@ -2,6 +2,7 @@ import type { Agent, Thread } from "@colonia/protocol";
 import { ContextMenu, Icons, Spinner } from "@colonia/ui";
 import { KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";
+import { tabClicks } from "../chat/tabsSync.ts";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
 import { isWorking } from "../data/identity.ts";
@@ -34,7 +35,7 @@ export function ChannelTreeRow({
         className={["tree__agenthead", "tree__channel", selected && "is-selected", thread.unread > 0 && "is-unread"]
           .filter(Boolean)
           .join(" ")}
-        onClick={() => go.thread(thread.id)}
+        {...tabClicks(() => go.thread(thread.id))}
       >
         <ThreadAvatar thread={thread} agent={agent} size={20} />
         <span className="tree__agentname">{chatLabel(thread, agent, t("chat.new"))}</span>

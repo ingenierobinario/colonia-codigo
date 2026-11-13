@@ -3,6 +3,7 @@ import { AgentAvatar, ContextMenu, EngineIcon, Icons, Spinner, Tooltip } from "@
 import { Suspense, useRef, useState } from "react";
 import { KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";
+import { tabClicks } from "../chat/tabsSync.ts";
 import { AgentFace } from "../common/AgentFace.tsx";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
@@ -228,7 +229,7 @@ export function SessionRow({
       <button
         type="button"
         className={cx("tree__session", selected && "is-selected", thread.unread > 0 && "is-unread")}
-        onClick={() => go.thread(thread.id)}
+        {...tabClicks(() => go.thread(thread.id))}
       >
         {isWorking(thread.state) && <Spinner size={12} />}
         {thread.state === "input-required" && <Icons.Hand size={12} className="tree__waiting" />}

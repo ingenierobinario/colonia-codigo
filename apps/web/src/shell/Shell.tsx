@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Suspense, useEffect } from "react";
+import { tabShortcut, watchTabs } from "../chat/tabsSync.ts";
 import { applyDesktopPrefs } from "../config/desktopPrefs.ts";
 import { useSlice } from "../data/createStore.ts";
 import { usePrefs } from "../data/prefs.ts";
@@ -67,6 +68,8 @@ export function Shell() {
   const layout = computeLayout(width, panelOpen, chat && threadId != null, transcript, { ...own, panelWide });
   useShortcuts();
   useDesktopBridge();
+  // PESTANAS-CHAT-1 — the open tabs follow the chat on screen.
+  useEffect(() => watchTabs(), []);
 
   return (
     <div className="shell" style={layoutVars(layout) as CSSProperties}>
@@ -163,7 +166,7 @@ export function Shell() {
   );
 }
 
-/** ⌘K searches, ⌘, opens Config, ⌘J jumps to the super-agent's chat, ⌘[ / ⌘] go back/forward. */
+/** ⌘K searches, ⌘, opens Config, ⌘J jumps to the super-agent's chat, ⌘[ / ⌘] go back/forward; chat tabs: see tabShortcut. */
 function useShortcuts() {
   useEffect(() => {
     const resetHints = () => document.documentElement.removeAttribute("data-shortcuts-active");
@@ -183,6 +186,10 @@ function useShortcuts() {
         e.preventDefault();
         if (e.key === "ArrowLeft") go.back();
         else go.forward();
+        return;
+      }
+      if (mod && tabShortcut(e)) {
+        e.preventDefault();
         return;
       }
       if (!mod || e.altKey || e.shiftKey) return;

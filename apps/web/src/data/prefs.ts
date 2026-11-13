@@ -1,5 +1,6 @@
 // Per-device preferences (this browser only): display name, appearance and sounds. Nothing here reaches the core.
 import type { ColoniaLook } from "@colonia/ui";
+import { tabsOf } from "../chat/tabs.ts";
 import { defaultLanguage, isLanguage, type Language } from "../i18n/messages.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import type { NoticeSound } from "./noticeSound.ts";
@@ -66,6 +67,9 @@ export type Prefs = {
   audioEndSound: boolean;
   /** Which notices make a sound as they arrive. */
   noticeSound: NoticeSound;
+  /** PESTANAS-CHAT-1: the chats open in tabs, left to right, and the one on screen (see chat/tabs.ts). */
+  chatTabs: string[];
+  chatTab: string;
 };
 
 /** `widths` are how many of the board's columns a tile spans (1 when absent). */
@@ -117,6 +121,8 @@ const DEFAULTS: Prefs = {
   boards: {},
   audioEndSound: true,
   noticeSound: "all",
+  chatTabs: [],
+  chatTab: "",
 };
 
 function load(): Prefs {
@@ -166,6 +172,8 @@ function load(): Prefs {
         raw.noticeSound === "requests" || raw.noticeSound === "messages" || raw.noticeSound === "off"
           ? raw.noticeSound
           : "all",
+      chatTabs: tabsOf(raw.chatTabs, raw.chatTab).ids,
+      chatTab: typeof raw.chatTab === "string" ? raw.chatTab : "",
     };
   } catch {
     return DEFAULTS;

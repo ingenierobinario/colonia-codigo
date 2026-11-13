@@ -1,6 +1,7 @@
 import type { Agent } from "@colonia/protocol";
 import { ContextMenu, Icons, Spinner } from "@colonia/ui";
 import { Suspense } from "react";
+import { tabClicks } from "../chat/tabsSync.ts";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
@@ -62,7 +63,7 @@ export function ActivityView({ groups, selected }: { groups: ActivityGroup[]; se
                     className={["activity__row", th.id === selected && "is-selected", th.unread > 0 && "is-unread"]
                       .filter(Boolean)
                       .join(" ")}
-                    onClick={() => go.thread(th.id)}
+                    {...tabClicks(() => go.thread(th.id))}
                   >
                     <ThreadAvatar thread={th} agent={agent} size={24} slot={28} />
                     <span className="activity__body">

@@ -15,6 +15,7 @@ import { useData } from "../../data/state.ts";
 import { useT } from "../../i18n/index.ts";
 import { AttachChips } from "../../lazy.ts";
 import { go } from "../../shell/nav.ts";
+import { madeTab } from "../tabsSync.ts";
 import { ContextChip } from "./ContextChip.tsx";
 import { clearedAt, contextOf, spentOf, usageStamp } from "./context.ts";
 import { useSlashMenu } from "./SlashMenu.tsx";
@@ -37,7 +38,10 @@ const IMAGE_TYPES = "image/png,image/jpeg,image/webp,image/gif";
 export function ChatComposer({
   thread,
   agent,
-  onMade = (id) => go.madeThread(thread.id, id),
+  onMade = (id) => {
+    madeTab(thread.id, id);
+    go.madeThread(thread.id, id);
+  },
   prepare,
 }: {
   thread: Thread;

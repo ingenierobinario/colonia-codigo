@@ -1,0 +1,115 @@
+/* PESTANAS-CHAT-1 — the chat and, above it, the tabs of the chats left open. */
+.chatcol {
+  flex: 1;
+  min-width: var(--shell-chat-min-w);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chatcol > .chat {
+  min-width: 0;
+  min-height: 0;
+}
+
+.chattabs {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--colonia-border);
+  background: var(--colonia-surface);
+}
+/* More tabs than fit scroll inside the bar, never the page. */
+.chattabs__list {
+  flex: 0 1 auto;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chattabs__list::-webkit-scrollbar {
+  display: none;
+}
+
+.chattabs__tab {
+  flex: 0 1 200px;
+  display: flex;
+  align-items: center;
+  min-width: 128px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: var(--colonia-radius-sm);
+  color: var(--colonia-fg-muted);
+}
+.chattabs__tab:hover {
+  border-color: var(--colonia-border-strong);
+}
+.chattabs__tab.is-active {
+  border-color: var(--colonia-border);
+  background: var(--colonia-fill);
+  color: var(--colonia-fg);
+}
+.chattabs__tab.is-active:hover {
+  border-color: var(--colonia-border-strong);
+}
+
+.chattabs__open {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  padding: 0 2px 0 8px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--colonia-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.chattabs__open > * {
+  flex: none;
+}
+.chattabs__open > .chattabs__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chattabs__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--colonia-brand);
+}
+
+.chattabs__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 3px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--colonia-fg-muted);
+  cursor: pointer;
+}
+.chattabs__close:hover {
+  border-color: var(--colonia-border-strong);
+  color: var(--colonia-fg);
+}
+.chattabs__open:focus-visible,
+.chattabs__close:focus-visible {
+  outline: 2px solid var(--colonia-brand);
+  outline-offset: -2px;
+}
