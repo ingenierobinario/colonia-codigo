@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.9": {
+    en: [
+      "WhatsApp keeps every one-to-one chat, yours and theirs, in order by when each message was written.",
+      "Chat tabs are always above the chat, like an editor: a click opens a chat in its own tab.",
+      "The browser no longer goes blank: new tabs, bookmarks and searches work, and many bookmarks fit in one row.",
+    ],
+    es: [
+      "WhatsApp guarda todos los chats individuales, tuyos y suyos, ordenados por la hora de cada mensaje.",
+      "Las pestañas de chat están siempre arriba, como en un editor: un clic abre el chat en su pestaña.",
+      "El navegador ya no se queda en blanco: pestañas nuevas, marcadores y búsquedas funcionan.",
+    ],
+  },
   "2.36.8": {
     en: [
       "Chats open in tabs: Ctrl-click or middle-click a chat, or use its menu, and move between them above the chat.",
