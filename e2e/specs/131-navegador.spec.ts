@@ -219,6 +219,49 @@ test("un marcador abre su página en una pestaña nueva, y la vista pasa a ella 
   }
 });
 
+test("en el navegador del panel lateral «+» también abre las que se quiera y lo que no es dirección se busca", async ({
+  page,
+}) => {
+  const node = await browserNode();
+  try {
+    await rpc("setup.finish", {});
+    await desktop(page, 0);
+    await page.goto("/#panel=browser");
+    const tabs = page.locator(".sidepanel").getByRole("tab");
+    const more = page.locator(".sidepanel").getByRole("button", { name: "Nueva pestaña" });
+    for (let i = 1; i <= 3; i++) {
+      await more.click();
+      await expect(tabs).toHaveCount(i);
+      await expect(tabs.nth(i - 1)).toHaveAttribute("aria-selected", "true");
+    }
+    await address(page).fill("test");
+    await address(page).press("Enter");
+    await until(async () => node.calls("browser.open").length === 1);
+    expect(node.calls("browser.open")[0]?.url).toBe("https://www.google.com/search?q=test");
+    await expect(tabs).toHaveText(["www.google.com", "Nueva pestaña", "Nueva pestaña"]);
+    await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator(".browser__page--native")).toBeVisible();
+    const m = await page.evaluate(() => {
+      const r = document.querySelector(".browser__page--native")?.getBoundingClientRect();
+      return { right: Math.round(r?.right ?? 0), width: Math.round(r?.width ?? 0), viewport: window.innerWidth };
+    });
+    expect(m.right).toBeLessThanOrEqual(m.viewport);
+    expect(m.width).toBeGreaterThan(200);
+    // Cerrar una vacía deja la otra; con una vacía abierta, «+» sigue abriendo.
+    await tabs.nth(1).getByRole("button", { name: "Cerrar pestaña" }).click();
+    await expect(tabs).toHaveCount(2);
+    await more.click();
+    await more.click();
+    await expect(tabs).toHaveCount(4);
+    await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
+    await address(page).press("Escape");
+    await expect(tabs).toHaveCount(3);
+    expect(node.calls("browser.close")).toEqual([]);
+  } finally {
+    await node.close();
+  }
+});
+
 /** Lo que se mide de la columna del navegador: nada sale de la ventana y la página nativa va justo en su hueco. */
 async function measure(page: Page) {
   return page.evaluate(() => {
