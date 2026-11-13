@@ -207,7 +207,7 @@ function fromHash(): Partial<NavState> {
 /** PESTANAS-CHAT-1: with tabs left open, the panel starts on the one that was on screen; else on Home. */
 function startThread(): string {
   const { chatTabs, chatTab } = prefs.get();
-  return chatTabs.length > 1 && chatTabs.includes(chatTab) ? chatTab : "home";
+  return chatTabs.includes(chatTab) ? chatTab : "home";
 }
 
 export const nav = createStore<NavState>({

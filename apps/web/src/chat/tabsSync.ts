@@ -1,10 +1,11 @@
-// PESTANAS-CHAT-1 — keeps the open chat tabs (this device's prefs) in step with the chat on screen: a chat that
-// comes on screen takes the active tab, or a tab of its own when it was asked for one.
+// PESTANAS-CHAT-1 — keeps the open chat tabs (this device's prefs) in step with the chat on screen.
+// PESTANAS-CHAT-2 — every chat that comes on screen has a tab of its own, as files do in an editor: opening another
+// chat adds a tab, and one that is open already is brought forward.
 import type { MouseEvent } from "react";
 import { prefs, setPrefs } from "../data/prefs.ts";
 import { data } from "../data/state.ts";
 import { go, nav, showsChat } from "../shell/nav.ts";
-import { close, move, numbered, open, prune, renamed, show, step, type Tabs, tabsOf } from "./tabs.ts";
+import { close, move, numbered, open, prune, renamed, step, type Tabs, tabsOf } from "./tabs.ts";
 
 export function currentTabs(): Tabs {
   const p = prefs.get();
@@ -15,27 +16,16 @@ function save(next: Tabs, before: Tabs): void {
   if (next !== before) setPrefs({ chatTabs: next.ids, chatTab: next.active });
 }
 
-/** The chat `openIt` brings on screen gets a tab of its own. */
-let ownTab = false;
-export function inNewTab(openIt: () => void): void {
-  ownTab = true;
-  try {
-    openIt();
-  } finally {
-    ownTab = false;
-  }
-}
-
-/** A chat's row: a click opens it in the tab on screen; with Ctrl/⌘ or the middle button, in a tab of its own. */
+/** A chat's row: a click opens it in its tab (a new one, unless it has one already); so does the middle button. */
 export function tabClicks(openIt: () => void) {
   return {
-    onClick: (e: MouseEvent) => (e.ctrlKey || e.metaKey ? inNewTab(openIt) : openIt()),
+    onClick: () => openIt(),
     // The middle button would start the list's autoscroll instead.
     onMouseDown: (e: MouseEvent) => {
       if (e.button === 1) e.preventDefault();
     },
     onAuxClick: (e: MouseEvent) => {
-      if (e.button === 1) inNewTab(openIt);
+      if (e.button === 1) openIt();
     },
   };
 }
@@ -46,11 +36,14 @@ export function showTab(id: string): void {
   else go.thread(id);
 }
 
+/** Closing the tab on screen shows its neighbour; the last one leaves no chat open. */
 export function closeTab(id: string): void {
   const before = currentTabs();
   const next = close(before, id);
   save(next, before);
-  if (before.active === id && next.active) showTab(next.active);
+  if (before.active !== id) return;
+  if (next.active) showTab(next.active);
+  else if (nav.get().threadId === id) nav.set({ threadId: undefined });
 }
 
 export function moveTab(id: string, onto: string): void {
@@ -64,10 +57,10 @@ export function madeTab(newId: string, id: string): void {
   save(renamed(before, newId, id), before);
 }
 
-/** Ctrl/⌘ with Tab (Shift goes back), W or a number, while chats are on screen and there are tabs to act on. */
+/** Ctrl/⌘ with Tab (Shift goes back), W or a number, while chats are on screen and there is a tab to act on. */
 export function tabShortcut(e: KeyboardEvent): boolean {
   const tabs = currentTabs();
-  if (tabs.ids.length < 2 || !showsChat(nav.get()) || e.altKey) return false;
+  if (!tabs.ids.length || !showsChat(nav.get()) || e.altKey) return false;
   if (e.key === "Tab") {
     const id = step(tabs, e.shiftKey ? -1 : 1);
     if (id) showTab(id);
@@ -86,16 +79,16 @@ export function tabShortcut(e: KeyboardEvent): boolean {
 
 /** Follows the chat on screen and drops the tabs of deleted chats, until the returned function is called. */
 export function watchTabs(): () => void {
-  // What was open when the panel closed stays: the chat it starts on joins the tabs instead of taking one over.
+  // What was open when the panel closed stays: the chat it starts on joins the tabs.
   const start = nav.get().threadId;
   const stored = currentTabs();
-  if (start) save(stored.ids.length > 1 ? open(stored, start) : show(stored, start), stored);
+  if (start) save(open(stored, start), stored);
 
   const stopNav = nav.subscribe(() => {
     const id = nav.get().threadId;
     if (!id) return;
     const before = currentTabs();
-    save(ownTab ? open(before, id) : show(before, id), before);
+    save(open(before, id), before);
   });
 
   const stopData = data.subscribe(() => {
