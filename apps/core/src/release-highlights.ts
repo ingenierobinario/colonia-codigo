@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.3": {
+    en: [
+      "WhatsApp brings back earlier messages from your phone into the chats Colonia already has.",
+      "Browsers show their real logo and the profile's bookmarks bar under the address.",
+      "Your agents know which sites each browser profile is signed in to and use that session.",
+      "Closing Colonia no longer shows a JavaScript error.",
+    ],
+    es: [
+      "WhatsApp trae los mensajes anteriores del móvil a los chats que Colonia ya tiene.",
+      "Los navegadores muestran su logo real y la barra de marcadores del perfil bajo la dirección.",
+      "Tus agentes saben en qué webs tiene sesión cada perfil del navegador y la usan.",
+      "Cerrar Colonia ya no muestra un error de JavaScript.",
+    ],
+  },
   "2.36.2": {
     en: [
       "Web apps no longer open blank inside Colonia.",
