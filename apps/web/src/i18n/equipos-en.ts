@@ -21,7 +21,7 @@ export const enEquipos = {
   "equipos.openLan": "Open to my local network",
   "equipos.openTailscale": "Open through Tailscale",
   "equipos.opening": "Opening… Colonia restarts for a few seconds.",
-  "equipos.none": "No computers yet",
+  "equipos.none": "No other computers added yet",
   "equipos.noneHint": "When you add one it appears here, with its own on and off switch for your agents.",
   "equipos.connected": "Connected",
   "equipos.offline": "Not connected",
@@ -34,7 +34,7 @@ export const enEquipos = {
   "equipos.history": "Activity",
   "equipos.historyEmpty": "Nothing has happened yet.",
   "equipos.more": "Show more",
-  "equipos.this": "This computer",
+  "equipos.this": "Link to another Colonia",
   "equipos.thisPaired": "Paired with {url}",
   "equipos.asking": "Someone is asking to use this computer",
   "equipos.allow": "Allow",
@@ -98,6 +98,20 @@ export const enEquipos = {
     "It hides its real network address, as phones and tablets do. Its name can't be read from here.",
   "equipos.otherDevices": "Other devices on the network ({n})",
   "equipos.otherDevicesHint": "Phones, TVs, printers and the like. You can't control them from here.",
+  // EQUIPOS-ALIAS-1
+  "equipos.rename": "Rename",
+  "equipos.renameLabel": "Computer name",
+  "equipos.renameHint": "Enter saves, Esc cancels. Leave it empty to go back to the original name.",
+  "equipos.renameTaken": "Another computer already has that name.",
+  "equipos.realName": "Original name: {name}",
+  // ESTE-EQUIPO-1
+  "equipos.thisBadge": "This computer",
+  "equipos.thisAddress": "Address",
+  "equipos.thisNoAddress": "No network",
+  "equipos.thisState": "Status",
+  "equipos.thisOn": "On",
+  "equipos.thisSystem": "System",
+  "equipos.thisHint": "Colonia runs on this computer: your agents already work here, nothing to connect.",
 } as const;
 
 export type EquipoKey = keyof typeof enEquipos;

@@ -991,3 +991,11 @@
   font-size: 11px;
   opacity: 0.75;
 }
+
+/* ESTE-EQUIPO-1: la marca «Este equipo» junto al ordenador donde corre Colonia (EquiposNav.tsx). */
+.navitem__self {
+  font-size: 11px;
+  color: var(--colonia-fg-muted);
+  white-space: nowrap;
+  flex: none;
+}

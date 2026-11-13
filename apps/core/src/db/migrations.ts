@@ -1181,4 +1181,9 @@ export const MIGRATIONS: readonly string[] = [
   );
   CREATE INDEX channel_own_conversation ON channel_own(channel, conversation, at);
   `,
+  // EQUIPOS-ALIAS-1: the name the owner gives a computer so it is recognisable. NULL shows the computer's own name,
+  // which is kept untouched in `name`.
+  `
+  ALTER TABLE team_computers ADD COLUMN alias TEXT;
+  `,
 ];

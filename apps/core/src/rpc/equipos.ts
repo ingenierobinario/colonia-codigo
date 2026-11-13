@@ -1,11 +1,18 @@
 // Mis equipos: el panel y las herramientas de los agentes. Aquí no se salta ninguna puerta: el acceso del agente lo
 // activa el dueño en Colonia, y la aprobación (por sesión, o «siempre») la da el dueño en el propio equipo.
-import type { Equipo, EquipoAuditEntry, EquipoPlatform } from "@colonia/protocol";
+import {
+  type Equipo,
+  type EquipoAuditEntry,
+  type EquipoLocal,
+  type EquipoPlatform,
+  THIS_EQUIPO_ID,
+} from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
-import type { TeamAuditEntry, TeamComputer } from "../domain/team-computers.ts";
+import { cleanAlias, shownName, type TeamAuditEntry, type TeamComputer } from "../domain/team-computers.ts";
 import type { EquipoAgent } from "../equipos/agent.ts";
 import type { Approval } from "../equipos/approval.ts";
 import type { FoundEquipo } from "../equipos/discovery.ts";
+import type { ThisComputer } from "../equipos/local.ts";
 import type { Principal } from "../equipos/principal.ts";
 import { type RemoteOs, type SshEquipos, shQuote } from "../equipos/ssh.ts";
 import { badRequest, notFound, unauthorized, unavailable } from "../errors.ts";
@@ -18,7 +25,26 @@ export type EquiposDeps = {
   /** EQUIPOS-SIN-AGENTE-1: equipos por SSH y la búsqueda en la red. */
   ssh: SshEquipos;
   discover: () => Promise<{ equipos: FoundEquipo[]; tailscale: boolean }>;
+  /** ESTE-EQUIPO-1: el ordenador donde corre Colonia: su nombre, su sistema y sus direcciones en la red. */
+  local: () => ThisComputer;
 };
+
+/** ESTE-EQUIPO-1: ¿esa dirección (o nombre) lleva a este mismo ordenador? */
+export function isThisComputer(address: string | undefined, l: ThisComputer): boolean {
+  const a = (address ?? "").trim().toLowerCase();
+  if (!a) return false;
+  const host = l.hostname.trim().toLowerCase();
+  return (
+    a === "localhost" ||
+    a === "::1" ||
+    a.startsWith("127.") ||
+    (host !== "" && (a === host || a === `${host}.local`)) ||
+    l.addresses.some((x) => x.toLowerCase() === a)
+  );
+}
+
+/** EQUIPOS-ALIAS-1: el nombre que el dueño le puso a este ordenador vive en los ajustes: no es un equipo conectado. */
+const LOCAL_ALIAS = "equipos.local_alias";
 
 const platformOf = (p: string): EquipoPlatform =>
   p === "win32" || p === "windows"
@@ -39,9 +65,23 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
   const sshAlive = new Map<string, boolean>();
   const sshBusy = new Map<string, number>();
   const isSsh = (c: TeamComputer) => c.transport === "ssh";
+  const localView = (): EquipoLocal => {
+    const l = d.local();
+    const alias = store.settings.get(LOCAL_ALIAS) || undefined;
+    return {
+      name: alias || l.hostname,
+      hostname: l.hostname,
+      ...(alias ? { alias } : {}),
+      platform: platformOf(l.platform),
+      addresses: l.addresses,
+    };
+  };
   const view = (c: TeamComputer): Equipo => ({
     id: c.id,
-    name: c.name,
+    name: shownName(c),
+    hostname: c.name,
+    ...(c.alias ? { alias: c.alias } : {}),
+    ...(isThisComputer(c.address, d.local()) ? { local: true } : {}),
     platform: platformOf(c.platform),
     created_at: c.created_at,
     ...(c.last_seen_at ? { last_seen_at: c.last_seen_at } : {}),
@@ -53,7 +93,7 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
   });
   /** Lo mismo que principal.request para un equipo SSH: interruptor del dueño, auditoría y estado. */
   async function viaSsh<T>(c: TeamComputer, what: string, who: { name: string }, fn: () => Promise<T>): Promise<T> {
-    if (!c.agent_access) throw unauthorized(`el acceso de los agentes a «${c.name}» está desactivado`);
+    if (!c.agent_access) throw unauthorized(`el acceso de los agentes a «${shownName(c)}» está desactivado`);
     store.team.log("peticion", `${who.name}: ${what}`, c.id);
     sshBusy.set(c.id, (sshBusy.get(c.id) ?? 0) + 1);
     try {
@@ -78,14 +118,23 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
     kind: e.kind,
     detail: e.detail,
   });
-  /** Por id o por nombre: así lo escribe un agente. */
+  /** Por id o por nombre: así lo escribe un agente. EQUIPOS-ALIAS-1: vale el nombre puesto por el dueño y el del equipo. */
   const find = (ref: string): TeamComputer => {
     const all = store.team.list();
     const wanted = ref.trim().toLowerCase();
-    const hit = all.find((c) => c.id === ref) ?? all.find((c) => c.name.toLowerCase() === wanted);
-    if (!hit)
-      throw notFound(`equipo «${ref}» (los emparejados son: ${all.map((c) => c.name).join(", ") || "ninguno"})`);
+    const hit =
+      all.find((c) => c.id === ref) ??
+      all.find((c) => c.alias?.toLowerCase() === wanted) ??
+      all.find((c) => c.name.toLowerCase() === wanted);
+    if (!hit) throw notFound(`equipo «${ref}» (los emparejados son: ${all.map(shownName).join(", ") || "ninguno"})`);
     return hit;
+  };
+  /** EQUIPOS-ALIAS-1: dos equipos con el mismo nombre no se distinguen, ni a la vista ni cuando lo escribe un agente. */
+  const nameTaken = (name: string, exceptId: string): boolean => {
+    const wanted = name.toLowerCase();
+    return store.team
+      .list()
+      .some((c) => c.id !== exceptId && (c.name.toLowerCase() === wanted || c.alias?.toLowerCase() === wanted));
   };
   const who = (ctx: { agent?: { id: string; thread_id: string } | undefined; session?: string | undefined }) => ({
     session: ctx.agent?.thread_id ?? `panel:${ctx.session ?? "directo"}`,
@@ -93,7 +142,25 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
   });
 
   return {
-    "equipos.list": () => ({ equipos: store.team.list().map(view) }),
+    "equipos.list": () => ({ equipos: store.team.list().map(view), local: localView() }),
+    "equipos.rename": ({ id, alias }) => {
+      const next = cleanAlias(alias);
+      if (next && nameTaken(next, id)) throw badRequest("ya hay otro equipo con ese nombre");
+      if (id === THIS_EQUIPO_ID) {
+        store.settings.set(LOCAL_ALIAS, next);
+        const l = localView();
+        return { name: l.name, hostname: l.hostname, ...(l.alias ? { alias: l.alias } : {}) };
+      }
+      const c = store.team.get(id);
+      if (!c) throw notFound("equipo");
+      store.team.setAlias(id, next);
+      store.team.log(
+        "renombrado",
+        next ? `el dueño lo llamó «${next}»` : "el dueño le quitó el nombre que le puso",
+        id,
+      );
+      return { name: next || c.name, hostname: c.name, ...(next ? { alias: next } : {}) };
+    },
     "equipos.pair_start": () => d.principal.pairStart(),
     "equipos.pair_cancel": () => ({ canceled: d.principal.pairCancel() }),
     "equipos.set_access": ({ id, enabled }) => {
@@ -109,9 +176,10 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
     },
     "equipos.discover": async () => {
       const r = await d.discover();
-      // Lo ya añadido no se ofrece otra vez.
+      // Lo ya añadido no se ofrece otra vez. ESTE-EQUIPO-1: tampoco este ordenador, que ya sale como «Este equipo».
       const known = new Set(store.team.list().flatMap((c) => (c.address ? [c.address] : [])));
-      return { ...r, equipos: r.equipos.filter((f) => !known.has(f.ip)) };
+      const self = d.local();
+      return { ...r, equipos: r.equipos.filter((f) => !known.has(f.ip) && !isThisComputer(f.ip, self)) };
     },
     "equipos.connect": async (a) => {
       const target = {
@@ -133,7 +201,7 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
       }
       sshAlive.set(c.id, true);
       store.team.seen(c.id);
-      store.team.log("emparejado", `${c.name} conectado por terminal remota (${a.user}@${a.host})`, c.id);
+      store.team.log("emparejado", `${shownName(c)} conectado por terminal remota (${a.user}@${a.host})`, c.id);
       return view(c);
     },
     "equipos.revoke": ({ id }) => {
