@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import { Suspense, useEffect } from "react";
+import { tabShortcut, watchTabs } from "../chat/tabsSync.ts";
 import { applyDesktopPrefs } from "../config/desktopPrefs.ts";
 import { useSlice } from "../data/createStore.ts";
-import { usePrefs, setPrefs } from "../data/prefs.ts";
+import { usePrefs } from "../data/prefs.ts";
 import { data } from "../data/state.ts";
 import { useThreadDialog } from "../data/threadAdmin.ts";
 import {
@@ -42,8 +43,6 @@ import { Topbar } from "./Topbar.tsx";
 import { UpdateDialogHost } from "./UpdatePill.tsx";
 import { ShellLayout } from "./useShellLayout.ts";
 import { useViewportWidth } from "./useViewportWidth.ts";
-import { close, numbered, step, tabsOf } from "../chat/tabs.ts";
-import { watchTabsSync } from "../chat/tabsSync.ts";
 
 /** Topbar · Sidebar · main (chat workspace, a project, an app or a placeholder view). See SPEC §1. */
 export function Shell() {
@@ -69,7 +68,8 @@ export function Shell() {
   const layout = computeLayout(width, panelOpen, chat && threadId != null, transcript, { ...own, panelWide });
   useShortcuts();
   useDesktopBridge();
-  useTabsSync();
+  // PESTANAS-CHAT-1 — the open tabs follow the chat on screen.
+  useEffect(() => watchTabs(), []);
 
   return (
     <div className="shell" style={layoutVars(layout) as CSSProperties}>
@@ -166,10 +166,8 @@ export function Shell() {
   );
 }
 
-/** ⌘K searches, ⌘, opens Config, ⌘J jumps to the super-agent's chat, ⌘[ / ⌘] go back/forward,
- * ⌘Tab/⌘⇧Tab cycle tabs, ⌘W closes tab, ⌘1–9 pick tab by number. */
+/** ⌘K searches, ⌘, opens Config, ⌘J jumps to the super-agent's chat, ⌘[ / ⌘] go back/forward; chat tabs: see tabShortcut. */
 function useShortcuts() {
-  const prefs = usePrefs((s) => ({ chatTabs: s.chatTabs, chatTab: s.chatTab }));
   useEffect(() => {
     const resetHints = () => document.documentElement.removeAttribute("data-shortcuts-active");
     const updateHints = (e: KeyboardEvent) => {
@@ -190,6 +188,10 @@ function useShortcuts() {
         else go.forward();
         return;
       }
+      if (mod && tabShortcut(e)) {
+        e.preventDefault();
+        return;
+      }
       if (!mod || e.altKey || e.shiftKey) return;
       if (e.key === "k" || e.key === "K") {
         e.preventDefault();
@@ -208,33 +210,6 @@ function useShortcuts() {
       } else if (e.key === "]" || e.code === "BracketRight") {
         e.preventDefault();
         go.forward();
-      } else if (e.key === "Tab") {
-        // PESTANAS-CHAT-1: Ctrl+Tab and Ctrl+Shift+Tab cycle tabs.
-        const tabs = tabsOf(prefs.chatTabs, prefs.chatTab);
-        const next = step(tabs, e.shiftKey ? -1 : 1);
-        if (next) {
-          e.preventDefault();
-          go.thread(next);
-        }
-      } else if (e.key === "w" || e.key === "W") {
-        // Ctrl+W closes the active tab (not the whole app unless only one tab).
-        const tabs = tabsOf(prefs.chatTabs, prefs.chatTab);
-        if (tabs.ids.length <= 1) return; // Keep the app open if it's the last tab.
-        const next = close(tabs, tabs.active);
-        setPrefs({ chatTabs: next.ids, chatTab: next.active });
-        if (next.active) {
-          e.preventDefault();
-          go.thread(next.active);
-        }
-      } else if (/^[1-9]$/.test(e.key)) {
-        // Ctrl+1 to Ctrl+9: pick tab by number (9 = last).
-        const n = parseInt(e.key);
-        const tabs = tabsOf(prefs.chatTabs, prefs.chatTab);
-        const id = numbered(tabs, n);
-        if (id) {
-          e.preventDefault();
-          go.thread(id);
-        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -250,7 +225,7 @@ function useShortcuts() {
       document.removeEventListener("visibilitychange", onVisibility);
       resetHints();
     };
-  }, [prefs]);
+  }, []);
 }
 
 /** In the desktop app: apply its settings once, and open the chat the quick window hands over. */
@@ -261,9 +236,4 @@ function useDesktopBridge() {
     return window.coloniaDesktop?.onOpenThread?.((id) => go.thread(id));
   }, []);
   useColoniaFiles();
-}
-
-/** PESTANAS-CHAT-1: sync nav.threadId to prefs tabs and apply the tab rules. */
-function useTabsSync() {
-  useEffect(() => watchTabsSync(), []);
 }

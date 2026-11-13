@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { close, MAX_TABS, move, numbered, open, prune, show, step, type Tabs, tabsOf } from "./tabs.ts";
+import { close, MAX_TABS, move, numbered, open, prune, renamed, show, step, type Tabs, tabsOf } from "./tabs.ts";
 
 const tabs = (ids: string[], active = ids[0] ?? ""): Tabs => ({ ids, active });
 
@@ -44,6 +44,16 @@ test("at the limit a new tab reuses the active one instead of growing", () => {
 test("a chat made from a new-chat tab keeps the place of that tab", () => {
   const made = show(tabs(["a", "new:agent=main", "c"], "new:agent=main"), "th_1");
   assert.deepEqual(made, tabs(["a", "th_1", "c"], "th_1"));
+});
+
+test("a new chat made while another tab is on screen keeps its tab", () => {
+  assert.deepEqual(
+    renamed(tabs(["a", "new:agent=main", "c"], "a"), "new:agent=main", "th_1"),
+    tabs(["a", "th_1", "c"], "a"),
+  );
+  assert.deepEqual(renamed(tabs(["a", "new:agent=main"], "new:agent=main"), "new:agent=main", "a"), tabs(["a"], "a"));
+  const before = tabs(["a", "b"], "a");
+  assert.equal(renamed(before, "zzz", "th_1"), before);
 });
 
 test("closing the active tab hands over to the one on its right, or on its left at the end", () => {

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { cx } from "../cx";
 
 export interface ConversationRowProps {
@@ -20,7 +20,10 @@ export interface ConversationRowProps {
   /** Replace the preview with a typing line. */
   typing?: ReactNode;
   selected?: boolean;
-  onClick?: () => void;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  /** Other pointer gestures of the row (the middle button opens it somewhere else). */
+  onMouseDown?: (e: MouseEvent<HTMLButtonElement>) => void;
+  onAuxClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   className?: string;
 }
 
@@ -37,12 +40,16 @@ export function ConversationRow({
   typing,
   selected = false,
   onClick,
+  onMouseDown,
+  onAuxClick,
   className,
 }: ConversationRowProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      onMouseDown={onMouseDown}
+      onAuxClick={onAuxClick}
       aria-current={selected || undefined}
       className={cx("colonia-convrow", selected && "is-selected", unread > 0 && "is-unread", className)}
     >

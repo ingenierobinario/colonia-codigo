@@ -1,80 +1,117 @@
-// PESTANAS-CHAT-1 — sync nav.threadId to prefs.chatTabs and chatTab, applying the tab rules (show/open/close/prune).
-import { data } from "../data/state.ts";
+// PESTANAS-CHAT-1 — keeps the open chat tabs (this device's prefs) in step with the chat on screen: a chat that
+// comes on screen takes the active tab, or a tab of its own when it was asked for one.
+import type { MouseEvent } from "react";
 import { prefs, setPrefs } from "../data/prefs.ts";
-import { nav } from "../shell/nav.ts";
-import { close, open, prune, show, type Tabs, tabsOf } from "./tabs.ts";
+import { data } from "../data/state.ts";
+import { go, nav, showsChat } from "../shell/nav.ts";
+import { close, move, numbered, open, prune, renamed, show, step, type Tabs, tabsOf } from "./tabs.ts";
 
-export type ScrollMemory = { top: number; atEnd: boolean };
-const scrollByThread = new Map<string, ScrollMemory>();
-
-export function rememberScroll(threadId: string, mem: ScrollMemory): void {
-  scrollByThread.set(threadId, mem);
+export function currentTabs(): Tabs {
+  const p = prefs.get();
+  return tabsOf(p.chatTabs, p.chatTab);
 }
 
-export function recallScroll(threadId: string): ScrollMemory | undefined {
-  return scrollByThread.get(threadId);
+function save(next: Tabs, before: Tabs): void {
+  if (next !== before) setPrefs({ chatTabs: next.ids, chatTab: next.active });
 }
 
-/** Flag set by inNewTab() to open the next chat in a tab of its own, instead of replacing the active. */
-let armNextNew = false;
-
-export function inNewTab(fn: () => void): void {
-  armNextNew = true;
-  fn();
-  // Microtask boundary: React capture → React bubble (where our handler runs). Clear the flag so click listeners
-  // see it armed if they are the handler that just ran; it stays false for other captures/bubbles after this one.
-  setTimeout(() => {
-    armNextNew = false;
-  }, 0);
+/** The chat `openIt` brings on screen gets a tab of its own. */
+let ownTab = false;
+export function inNewTab(openIt: () => void): void {
+  ownTab = true;
+  try {
+    openIt();
+  } finally {
+    ownTab = false;
+  }
 }
 
-export function armed(): boolean {
-  return armNextNew;
+/** A chat's row: a click opens it in the tab on screen; with Ctrl/⌘ or the middle button, in a tab of its own. */
+export function tabClicks(openIt: () => void) {
+  return {
+    onClick: (e: MouseEvent) => (e.ctrlKey || e.metaKey ? inNewTab(openIt) : openIt()),
+    // The middle button would start the list's autoscroll instead.
+    onMouseDown: (e: MouseEvent) => {
+      if (e.button === 1) e.preventDefault();
+    },
+    onAuxClick: (e: MouseEvent) => {
+      if (e.button === 1) inNewTab(openIt);
+    },
+  };
 }
 
-/** Subscribe to nav.threadId: apply the tab rules (show, open, close, prune) and persist. */
-export function watchTabsSync(): void {
-  let prev = prefs.get();
+/** Brings a tab's chat on screen without leaving the chat list that is open. */
+export function showTab(id: string): void {
+  if (showsChat(nav.get())) nav.set({ threadId: id, listInFront: false });
+  else go.thread(id);
+}
 
-  const dispose = nav.subscribe(() => {
-    const threadId = nav.get().threadId;
-    if (!threadId) return;
+export function closeTab(id: string): void {
+  const before = currentTabs();
+  const next = close(before, id);
+  save(next, before);
+  if (before.active === id && next.active) showTab(next.active);
+}
 
-    const tabs: Tabs = tabsOf(prev.chatTabs, prev.chatTab);
+export function moveTab(id: string, onto: string): void {
+  const before = currentTabs();
+  save(move(before, id, onto), before);
+}
 
-    let next: Tabs;
-    if (armNextNew) {
-      next = open(tabs, threadId);
-      armNextNew = false;
-    } else {
-      next = show(tabs, threadId);
-    }
+/** A new chat the core just made keeps the tab it was opened in, on screen or not. */
+export function madeTab(newId: string, id: string): void {
+  const before = currentTabs();
+  save(renamed(before, newId, id), before);
+}
 
-    // Prune chats that no longer exist: a new-chat tab if the agent is unknown, or any tab in threadLoad[id]="error".
-    const ready = data.get().ready;
-    next = prune(next, (id) => {
-      // New-chat tabs: gone if data is ready and the agent is not found.
-      if (id.startsWith("new:")) return ready && !data.get().threads[id];
-      // Old chats: gone if they are explicitly loaded and not found (threadLoad[id]="error").
-      return data.get().threadLoad[id] === "error";
-    });
+/** Ctrl/⌘ with Tab (Shift goes back), W or a number, while chats are on screen and there are tabs to act on. */
+export function tabShortcut(e: KeyboardEvent): boolean {
+  const tabs = currentTabs();
+  if (tabs.ids.length < 2 || !showsChat(nav.get()) || e.altKey) return false;
+  if (e.key === "Tab") {
+    const id = step(tabs, e.shiftKey ? -1 : 1);
+    if (id) showTab(id);
+    return true;
+  }
+  if (e.shiftKey) return false;
+  if (e.key === "w" || e.key === "W") {
+    closeTab(tabs.active);
+    return true;
+  }
+  if (!/^[1-9]$/.test(e.key)) return false;
+  const id = numbered(tabs, Number(e.key));
+  if (id) showTab(id);
+  return true;
+}
 
-    setPrefs({ chatTabs: next.ids, chatTab: next.active });
-    prev = { ...prefs.get() };
+/** Follows the chat on screen and drops the tabs of deleted chats, until the returned function is called. */
+export function watchTabs(): () => void {
+  // What was open when the panel closed stays: the chat it starts on joins the tabs instead of taking one over.
+  const start = nav.get().threadId;
+  const stored = currentTabs();
+  if (start) save(stored.ids.length > 1 ? open(stored, start) : show(stored, start), stored);
+
+  const stopNav = nav.subscribe(() => {
+    const id = nav.get().threadId;
+    if (!id) return;
+    const before = currentTabs();
+    save(ownTab ? open(before, id) : show(before, id), before);
   });
 
-  // Listen to thread deletion (from forgetThreads) and prune.
-  const disposeData = data.subscribe(() => {
-    const tabs: Tabs = tabsOf(prev.chatTabs, prev.chatTab);
-    const next = prune(tabs, (id) => data.get().threadLoad[id] === "error");
-    if (next.ids !== tabs.ids || next.active !== tabs.active) {
-      setPrefs({ chatTabs: next.ids, chatTab: next.active });
-      prev = { ...prefs.get() };
-    }
+  const stopData = data.subscribe(() => {
+    const s = data.get();
+    if (!s.ready || s.connection === "offline") return;
+    const before = currentTabs();
+    // Only a chat the core no longer has: one that merely failed to load keeps its tab.
+    const next = prune(before, (id) => s.threadLoad[id] === "error" && !s.threads[id]);
+    if (next === before) return;
+    const shown = nav.get().threadId;
+    save(next, before);
+    if (shown && !next.ids.includes(shown) && next.active) showTab(next.active);
   });
 
   return () => {
-    dispose();
-    disposeData();
+    stopNav();
+    stopData();
   };
 }

@@ -1,6 +1,7 @@
 import type { Agent, Thread } from "@colonia/protocol";
 import { ContextMenu, ConversationRow, Icons, Spinner, Tag } from "@colonia/ui";
 import { CHANNEL_KINDS, type ChannelKind } from "../channels/kinds.ts";
+import { tabClicks } from "../chat/tabsSync.ts";
 import { ChatProcesses } from "../common/ChatProcesses.tsx";
 import { shortWhen } from "../common/format.ts";
 import { isWorking, routineName } from "../data/identity.ts";
@@ -27,7 +28,7 @@ export function ThreadRow({ thread, agent, selected, onOpen }: ThreadRowProps) {
       <ConversationRow
         className="threadrow"
         selected={selected}
-        onClick={onOpen}
+        {...tabClicks(onOpen)}
         avatar={<ThreadAvatar thread={thread} agent={agent} size={32} slot={36} />}
         title={
           <>

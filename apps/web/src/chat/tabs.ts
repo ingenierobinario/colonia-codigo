@@ -44,6 +44,15 @@ export function close(tabs: Tabs, id: string): Tabs {
   return { ids, active: ids[at] ?? ids[at - 1] ?? "" };
 }
 
+/** A chat that got another id (a new chat, once it is made) keeps its tab. */
+export function renamed(tabs: Tabs, from: string, to: string): Tabs {
+  const at = tabs.ids.indexOf(from);
+  if (at < 0) return tabs;
+  const active = tabs.active === from ? to : tabs.active;
+  if (tabs.ids.includes(to)) return { ids: tabs.ids.toSpliced(at, 1), active };
+  return { ids: tabs.ids.with(at, to), active };
+}
+
 /** Without the chats that no longer exist; the active tab hands over as when it is closed. */
 export function prune(tabs: Tabs, gone: (id: string) => boolean): Tabs {
   let next = tabs;

@@ -1,10 +1,11 @@
 // What can be done to a chat from its right-click menu (any Inbox view) or the chat header's "…" menu.
 import type { Agent, Thread } from "@colonia/protocol";
 import { Icons, type MenuEntry } from "@colonia/ui";
+import { inNewTab, showTab } from "../chat/tabsSync.ts";
 import { markRead } from "../data/actions.ts";
 import { openThreadDialog, updateThread } from "../data/threadAdmin.ts";
 import type { T } from "../i18n/index.ts";
-import { go } from "../shell/nav.ts";
+import { go, nav } from "../shell/nav.ts";
 
 /** Why a chat cannot be archived or deleted (Home, a task's chat), or undefined when it can. */
 function lockedBy(thread: Thread, t: T): string | undefined {
@@ -18,6 +19,16 @@ export function threadMenu(thread: Thread, o: { t: T; agent: Agent | undefined; 
   const { t, agent } = o;
   const locked = lockedBy(thread, t);
   return [
+    // PESTANAS-CHAT-1 — not offered for the chat already on screen.
+    ...(thread.id === nav.get().threadId
+      ? []
+      : [
+          {
+            label: t("thread.menu.openNewTab"),
+            icon: <Icons.AppWindow />,
+            onSelect: () => inNewTab(() => showTab(thread.id)),
+          },
+        ]),
     thread.pinned
       ? {
           label: t("thread.menu.unpin"),

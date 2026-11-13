@@ -2,7 +2,7 @@
 import type { ColoniaMode } from "@colonia/ui";
 import type { ChannelKind } from "../channels/kinds.ts";
 import { createStore, useSlice } from "../data/createStore.ts";
-import { rememberSidebar } from "../data/prefs.ts";
+import { prefs, rememberSidebar } from "../data/prefs.ts";
 import type { MessageKey } from "../i18n/index.ts";
 
 export type PanelKind =
@@ -204,20 +204,17 @@ function fromHash(): Partial<NavState> {
   };
 }
 
+/** PESTANAS-CHAT-1: with tabs left open, the panel starts on the one that was on screen; else on Home. */
+function startThread(): string {
+  const { chatTabs, chatTab } = prefs.get();
+  return chatTabs.length > 1 && chatTabs.includes(chatTab) ? chatTab : "home";
+}
+
 export const nav = createStore<NavState>({
   view: "inbox",
   projectId: undefined,
   projectTab: "overview",
-  threadId: (typeof localStorage !== "undefined" && localStorage.getItem("colonia.prefs")
-    ? (() => {
-        try {
-          const p = JSON.parse(localStorage.getItem("colonia.prefs") ?? "{}") as { chatTab?: string };
-          return typeof p.chatTab === "string" ? p.chatTab : "home";
-        } catch {
-          return "home";
-        }
-      })()
-    : "home"),
+  threadId: startThread(),
   appId: undefined,
   webAppId: undefined,
   panel: null,
