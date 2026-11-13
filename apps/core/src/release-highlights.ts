@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.4": {
+    en: [
+      "«My computers» scans your whole network and finds computers you had not talked to yet.",
+      "Computers without remote access show up too, with the steps to enable it right there.",
+    ],
+    es: [
+      "«Mis equipos» recorre toda tu red y encuentra equipos con los que aún no habías hablado.",
+      "Los equipos sin acceso remoto también salen, con los pasos para activarlo ahí mismo.",
+    ],
+  },
   "2.36.3": {
     en: [
       "WhatsApp brings back earlier messages from your phone into the chats Colonia already has.",
