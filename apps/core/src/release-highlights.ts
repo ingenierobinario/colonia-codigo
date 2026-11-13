@@ -12,7 +12,7 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
       "Tabs can be reordered by dragging, and come back when you reopen Colonia.",
     ],
     es: [
-      "Los chats se abren en pestañas: Ctrl+clic o clic central en un chat, o desde su menú, y se cambia entre ellas encima del chat.",
+      "Los chats se abren en pestañas: Ctrl+clic, clic central o desde su menú, y se cambia entre ellas arriba.",
       "Las pestañas se reordenan arrastrando y vuelven al abrir Colonia de nuevo.",
     ],
   },
