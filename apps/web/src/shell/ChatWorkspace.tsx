@@ -14,11 +14,11 @@ export function ChatWorkspace({ layout, list = <InboxList /> }: { layout: Layout
   const panel = useNav((s) => s.panel);
   const listInFront = useNav((s) => s.listInFront);
   const threadId = useNav((s) => s.threadId);
-  // PESTANAS-CHAT-1 — one chat open needs no tab bar.
+  // PESTANAS-CHAT-2 — the tab bar is always above the chat, with one tab too.
   const ids = usePrefs((s) => s.chatTabs);
   const active = usePrefs((s) => s.chatTab);
   const tabs = tabsOf(ids, active);
-  const bar = tabs.ids.length > 1 && <ChatTabs tabs={tabs} />;
+  const bar = <ChatTabs tabs={tabs} />;
 
   if (layout.compact) {
     if (listInFront || !threadId) return <div className="workspace">{list}</div>;

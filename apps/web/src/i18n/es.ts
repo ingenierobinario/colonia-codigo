@@ -580,7 +580,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "chat.toolsHint": "Mostrar u ocultar cada paso del agente (las tools que usó y qué devolvieron)",
   "chat.showTools": "Mostrar herramientas",
   "chat.tabs": "Chats abiertos",
-  "chat.newTab": "Pestaña nueva",
+  "chat.newTab": "Abrir chat nuevo",
   "chat.closeTab": "Cerrar pestaña",
   "chat.unread": "Sin leer",
   "chat.pick.title": "Elige un chat",

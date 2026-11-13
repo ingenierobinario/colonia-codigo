@@ -577,7 +577,7 @@ export const en = {
   "chat.toolsHint": "Show or hide each step the agent took (tools it used, what they returned)",
   "chat.showTools": "Show tools",
   "chat.tabs": "Open chats",
-  "chat.newTab": "New tab",
+  "chat.newTab": "Open a new chat",
   "chat.closeTab": "Close tab",
   "chat.unread": "Unread",
   "chat.pick.title": "Pick a chat",

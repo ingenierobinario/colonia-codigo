@@ -11,21 +11,21 @@
   min-height: 0;
 }
 
+/* PESTANAS-CHAT-2 — an editor's tab strip: a sunken bar, and the tab on screen in the chat's own colour, joined to it
+   (it covers the bar's bottom line) under a line of the brand colour. */
 .chattabs {
   flex: none;
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
   min-width: 0;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--colonia-border);
-  background: var(--colonia-surface);
+  height: 38px;
+  background: var(--colonia-bg);
+  box-shadow: inset 0 -1px 0 var(--colonia-border);
 }
 /* More tabs than fit scroll inside the bar, never the page. */
 .chattabs__list {
   flex: 0 1 auto;
   display: flex;
-  gap: 4px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -39,39 +39,41 @@
   display: flex;
   align-items: center;
   min-width: 128px;
-  height: 28px;
-  border: 1px solid transparent;
-  border-radius: var(--colonia-radius-sm);
+  border-right: 1px solid var(--colonia-border);
   color: var(--colonia-fg-muted);
 }
 .chattabs__tab:hover {
-  border-color: var(--colonia-border-strong);
-}
-.chattabs__tab.is-active {
-  border-color: var(--colonia-border);
   background: var(--colonia-fill);
   color: var(--colonia-fg);
 }
-.chattabs__tab.is-active:hover {
-  border-color: var(--colonia-border-strong);
+.chattabs__tab.is-active {
+  background: var(--colonia-surface);
+  box-shadow: inset 0 2px 0 var(--colonia-brand);
+  color: var(--colonia-fg);
+}
+/* Inactive tabs are dimmed down to their picture. */
+.chattabs__tab:not(.is-active):not(:hover) .chattabs__open > :not(.chattabs__title):not(.chattabs__dot) {
+  opacity: 0.7;
 }
 
 .chattabs__open {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
   height: 100%;
-  padding: 0 2px 0 8px;
+  padding: 0 2px 0 12px;
   border: 0;
-  border-radius: inherit;
   background: none;
   color: inherit;
   font: inherit;
   font-size: var(--colonia-text-sm);
   text-align: left;
   cursor: pointer;
+}
+.chattabs__tab.is-active .chattabs__open {
+  font-weight: 500;
 }
 .chattabs__open > * {
   flex: none;
@@ -90,19 +92,31 @@
   background: var(--colonia-brand);
 }
 
+/* The X: always on the tab on screen, on the others when pointed at or reached with the keyboard. */
 .chattabs__close {
   flex: none;
   display: grid;
   place-items: center;
   width: 20px;
   height: 20px;
-  margin-right: 3px;
+  margin-right: 6px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: 6px;
   background: none;
   color: var(--colonia-fg-muted);
   cursor: pointer;
+  opacity: 0;
+}
+.chattabs__tab.is-active .chattabs__close,
+.chattabs__tab:hover .chattabs__close,
+.chattabs__close:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .chattabs__close {
+    opacity: 1;
+  }
 }
 .chattabs__close:hover {
   border-color: var(--colonia-border-strong);
@@ -112,4 +126,11 @@
 .chattabs__close:focus-visible {
   outline: 2px solid var(--colonia-brand);
   outline-offset: -2px;
+}
+
+.chattabs__new {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
 }

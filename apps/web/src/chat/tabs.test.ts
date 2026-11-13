@@ -1,48 +1,53 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { close, MAX_TABS, move, numbered, open, prune, renamed, show, step, type Tabs, tabsOf } from "./tabs.ts";
+import { close, MAX_TABS, move, numbered, open, prune, renamed, step, type Tabs, tabsOf } from "./tabs.ts";
 
 const tabs = (ids: string[], active = ids[0] ?? ""): Tabs => ({ ids, active });
 
-test("a chat picked in the list takes the place of the active tab", () => {
-  assert.deepEqual(show(tabs(["a", "b", "c"], "b"), "x"), tabs(["a", "x", "c"], "x"));
+test("a chat picked in the list opens in a tab of its own, right after the active one", () => {
+  assert.deepEqual(open(tabs(["a", "b", "c"], "a"), "x"), tabs(["a", "x", "b", "c"], "x"));
+  assert.deepEqual(open(tabs(["a", "b"], "b"), "x"), tabs(["a", "b", "x"], "x"));
+});
+
+test("picking chat after chat piles the tabs up, none taking another's place", () => {
+  let now = tabs([]);
+  for (const id of ["a", "b", "c"]) now = open(now, id);
+  assert.deepEqual(now, tabs(["a", "b", "c"], "c"));
 });
 
 test("a chat that already has a tab is brought forward, not opened twice", () => {
-  assert.deepEqual(show(tabs(["a", "b", "c"], "a"), "c"), tabs(["a", "b", "c"], "c"));
   assert.deepEqual(open(tabs(["a", "b", "c"], "a"), "c"), tabs(["a", "b", "c"], "c"));
+  const again = open(open(tabs(["a", "b"], "b"), "x"), "a");
+  assert.deepEqual(open(again, "x"), tabs(["a", "b", "x"], "x"));
 });
 
-test("showing the active tab again changes nothing", () => {
+test("opening the active tab again changes nothing", () => {
   const before = tabs(["a", "b"], "b");
-  assert.equal(show(before, "b"), before);
+  assert.equal(open(before, "b"), before);
 });
 
 test("the first chat on screen becomes the first tab", () => {
-  assert.deepEqual(show(tabs([]), "a"), tabs(["a"], "a"));
+  assert.deepEqual(open(tabs([]), "a"), tabs(["a"], "a"));
 });
 
 test("with no active tab the chat is added at the end", () => {
-  assert.deepEqual(show(tabs(["a", "b"], ""), "x"), tabs(["a", "b", "x"], "x"));
-  assert.deepEqual(show(tabs(["a", "b"], "gone"), "x"), tabs(["a", "b", "x"], "x"));
-});
-
-test("a new tab opens right after the active one", () => {
-  assert.deepEqual(open(tabs(["a", "b", "c"], "a"), "x"), tabs(["a", "x", "b", "c"], "x"));
-  assert.deepEqual(open(tabs(["a", "b"], "b"), "x"), tabs(["a", "b", "x"], "x"));
   assert.deepEqual(open(tabs(["a", "b"], ""), "x"), tabs(["a", "b", "x"], "x"));
+  assert.deepEqual(open(tabs(["a", "b"], "gone"), "x"), tabs(["a", "b", "x"], "x"));
 });
 
-test("at the limit a new tab reuses the active one instead of growing", () => {
+test("at the limit a new tab still opens, and the first one that is not on screen makes way", () => {
   const ids = Array.from({ length: MAX_TABS }, (_, i) => `t${i}`);
   const next = open(tabs(ids, "t3"), "x");
   assert.equal(next.ids.length, MAX_TABS);
-  assert.equal(next.ids[3], "x");
+  assert.deepEqual(next.ids.slice(0, 4), ["t1", "t2", "t3", "x"]);
   assert.equal(next.active, "x");
+  const first = open(tabs(ids, "t0"), "x");
+  assert.deepEqual(first.ids.slice(0, 3), ["t0", "x", "t2"]);
+  assert.equal(first.ids.length, MAX_TABS);
 });
 
 test("a chat made from a new-chat tab keeps the place of that tab", () => {
-  const made = show(tabs(["a", "new:agent=main", "c"], "new:agent=main"), "th_1");
+  const made = open(renamed(tabs(["a", "new:agent=main", "c"], "new:agent=main"), "new:agent=main", "th_1"), "th_1");
   assert.deepEqual(made, tabs(["a", "th_1", "c"], "th_1"));
 });
 
@@ -59,7 +64,15 @@ test("a new chat made while another tab is on screen keeps its tab", () => {
 test("closing the active tab hands over to the one on its right, or on its left at the end", () => {
   assert.deepEqual(close(tabs(["a", "b", "c"], "b"), "b"), tabs(["a", "c"], "c"));
   assert.deepEqual(close(tabs(["a", "b", "c"], "c"), "c"), tabs(["a", "b"], "b"));
-  assert.deepEqual(close(tabs(["a"], "a"), "a"), tabs([], ""));
+});
+
+test("closing the last tab leaves none, and the next chat starts the tabs again", () => {
+  const none = close(tabs(["a"], "a"), "a");
+  assert.deepEqual(none, tabs([], ""));
+  assert.equal(step(none, 1), undefined);
+  assert.equal(numbered(none, 1), undefined);
+  assert.equal(close(none, "a"), none);
+  assert.deepEqual(open(none, "b"), tabs(["b"], "b"));
 });
 
 test("closing another tab leaves the active one alone", () => {

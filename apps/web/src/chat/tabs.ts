@@ -2,7 +2,7 @@
 // each function takes the tabs and answers the next ones, so the rules (where a tab opens, which one takes over
 // when the active closes) are the same wherever they are used.
 
-/** More tabs than this and opening another reuses the active one. */
+/** More tabs than this and opening another closes the first one that is not on screen. */
 export const MAX_TABS = 20;
 
 export type Tabs = {
@@ -20,19 +20,19 @@ export function tabsOf(rawIds: unknown, rawActive: unknown): Tabs {
   return { ids, active: typeof rawActive === "string" ? rawActive : "" };
 }
 
-/** The chat that came on screen takes the active tab's place, unless it has a tab already. */
-export function show(tabs: Tabs, id: string): Tabs {
-  if (tabs.ids.includes(id)) return tabs.active === id ? tabs : { ids: tabs.ids, active: id };
-  const at = tabs.ids.indexOf(tabs.active);
-  if (at < 0) return { ids: [...tabs.ids, id].slice(-MAX_TABS), active: id };
-  return { ids: tabs.ids.with(at, id), active: id };
-}
-
-/** The chat opens in a tab of its own, right after the active one. With no room left it takes the active one's. */
+/**
+ * PESTANAS-CHAT-2 — the chat that came on screen has a tab: its own when it had one, else a new one right after the
+ * active tab. With no room left, the first tab that is not on screen makes way.
+ */
 export function open(tabs: Tabs, id: string): Tabs {
-  if (tabs.ids.includes(id) || tabs.ids.length >= MAX_TABS) return show(tabs, id);
-  const at = tabs.ids.indexOf(tabs.active);
-  return { ids: tabs.ids.toSpliced(at < 0 ? tabs.ids.length : at + 1, 0, id), active: id };
+  if (tabs.ids.includes(id)) return tabs.active === id ? tabs : { ids: tabs.ids, active: id };
+  let ids = tabs.ids;
+  if (ids.length >= MAX_TABS) {
+    const oldest = ids.findIndex((other) => other !== tabs.active);
+    ids = ids.toSpliced(oldest < 0 ? 0 : oldest, 1);
+  }
+  const at = ids.indexOf(tabs.active);
+  return { ids: ids.toSpliced(at < 0 ? ids.length : at + 1, 0, id), active: id };
 }
 
 /** Without that tab. Closing the active one hands over to the tab on its right, or on its left at the end. */

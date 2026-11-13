@@ -1,4 +1,5 @@
-// PESTANAS-CHAT-1 — the chats open in tabs, above the chat on screen. Shown from the second tab on.
+// PESTANAS-CHAT-1 — the chats open in tabs, above the chat on screen.
+// PESTANAS-CHAT-2 — always there, as an editor's tab strip: the tab on screen joins the chat under it.
 import { IconButton, Icons, Spinner } from "@colonia/ui";
 import { type DragEvent, useEffect, useRef } from "react";
 import { isWorking, threadAgent } from "../data/identity.ts";
@@ -9,7 +10,7 @@ import { chatLabel } from "../inbox/InboxViews.tsx";
 import { useChatAgents } from "../inbox/NewChatMenu.tsx";
 import { ThreadAvatar } from "../inbox/ThreadAvatar.tsx";
 import type { Tabs } from "./tabs.ts";
-import { closeTab, inNewTab, moveTab, showTab } from "./tabsSync.ts";
+import { closeTab, moveTab, showTab } from "./tabsSync.ts";
 import "./chattabs.css";
 
 export function ChatTabs({ tabs }: { tabs: Tabs }) {
@@ -34,12 +35,14 @@ export function ChatTabs({ tabs }: { tabs: Tabs }) {
         ))}
       </div>
       {first && (
-        <IconButton
-          size="sm"
-          label={t("chat.newTab")}
-          icon={<Icons.Plus size={14} />}
-          onClick={() => inNewTab(() => showTab(newChatId({ agent: first.id })))}
-        />
+        <div className="chattabs__new">
+          <IconButton
+            size="sm"
+            label={t("chat.newTab")}
+            icon={<Icons.Plus size={14} />}
+            onClick={() => showTab(newChatId({ agent: first.id }))}
+          />
+        </div>
       )}
     </div>
   );
