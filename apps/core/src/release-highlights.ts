@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.8": {
+    en: [
+      "Chats open in tabs: Ctrl-click or middle-click a chat, or use its menu, and move between them above the chat.",
+      "Tabs can be reordered by dragging, and come back when you reopen Colonia.",
+    ],
+    es: [
+      "Los chats se abren en pestañas: Ctrl+clic o clic central en un chat, o desde su menú, y se cambia entre ellas encima del chat.",
+      "Las pestañas se reordenan arrastrando y vuelven al abrir Colonia de nuevo.",
+    ],
+  },
   "2.36.7": {
     en: [
       "Stop halts what the agent was doing on screen, and the live window closes; it also has a close button.",
