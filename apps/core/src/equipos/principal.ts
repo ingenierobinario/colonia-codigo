@@ -6,6 +6,7 @@ import type { Duplex } from "node:stream";
 import { FILE_PAYLOAD_BYTES } from "@colonia/protocol";
 import { type RawData, type WebSocket, WebSocketServer } from "ws";
 import type { Store } from "../domain/store.ts";
+import { shownName } from "../domain/team-computers.ts";
 import { notFound, unauthorized, unavailable } from "../errors.ts";
 import type { Log } from "../log.ts";
 import type { Secrets } from "../secrets.ts";
@@ -238,9 +239,9 @@ export function createPrincipal(d: PrincipalDeps) {
     async request(id: string, op: Op, who: Who): Promise<Result> {
       const c = d.store.team.get(id);
       if (!c) throw notFound("equipo");
-      if (!c.agent_access) throw unauthorized(`el acceso de los agentes a «${c.name}» está desactivado`);
+      if (!c.agent_access) throw unauthorized(`el acceso de los agentes a «${shownName(c)}» está desactivado`);
       const l = live.get(id);
-      if (!l) throw unavailable(`«${c.name}» no está conectado ahora mismo`);
+      if (!l) throw unavailable(`«${shownName(c)}» no está conectado ahora mismo`);
       const reqId = randomUUID();
       audit("peticion", `${who.name}: ${summary(op)}`, id);
       try {

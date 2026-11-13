@@ -13,7 +13,16 @@ export type TeamComputer = {
   /** EQUIPOS-SIN-AGENTE-1: «ssh» si se llega por SSH sin instalar nada; si no, el equipo corre Colonia y llama él. */
   transport?: "ssh";
   address?: string;
+  /** EQUIPOS-ALIAS-1: el nombre que le puso el dueño. `name` sigue siendo el del propio equipo. */
+  alias?: string;
 };
+
+/** EQUIPOS-ALIAS-1: lo que se enseña al dueño y a los agentes: el nombre puesto por el dueño o, si no hay, el del equipo. */
+export const shownName = (c: { name: string; alias?: string | undefined }): string => c.alias || c.name;
+
+/** EQUIPOS-ALIAS-1: un nombre escrito a mano, sin saltos ni espacios de sobra. Vacío quiere decir «el del equipo». */
+export const ALIAS_MAX = 60;
+export const cleanAlias = (raw: string): string => raw.replace(/\s+/g, " ").trim().slice(0, ALIAS_MAX);
 
 export type TeamAuditEntry = { n: number; at: string; computer_id?: string; kind: string; detail: string };
 
@@ -32,6 +41,7 @@ export function teamRepo({ one, all, run }: Sql) {
     last_seen_at: string | null;
     transport: string | null;
     address: string | null;
+    alias: string | null;
   }): TeamComputer => ({
     id: r.id,
     name: r.name,
@@ -42,6 +52,7 @@ export function teamRepo({ one, all, run }: Sql) {
     ...(r.last_seen_at ? { last_seen_at: r.last_seen_at } : {}),
     ...(r.transport === "ssh" ? { transport: "ssh" as const } : {}),
     ...(r.address ? { address: r.address } : {}),
+    ...(r.alias ? { alias: r.alias } : {}),
   });
   return {
     list(): TeamComputer[] {
@@ -90,6 +101,18 @@ export function teamRepo({ one, all, run }: Sql) {
           qb
             .updateTable("team_computers")
             .set({ agent_access: enabled ? 1 : 0 })
+            .where("id", "=", id)
+            .where("revoked_at", "is", null),
+        ) > 0
+      );
+    },
+    /** EQUIPOS-ALIAS-1: vacío borra el nombre puesto por el dueño y vuelve a verse el del equipo. */
+    setAlias(id: string, alias: string): boolean {
+      return (
+        run(
+          qb
+            .updateTable("team_computers")
+            .set({ alias: alias || null })
             .where("id", "=", id)
             .where("revoked_at", "is", null),
         ) > 0

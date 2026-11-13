@@ -725,6 +725,7 @@ export interface TeamComputersTable {
   revoked_at: string | null;
   transport: string | null;
   address: string | null;
+  alias: string | null;
 }
 
 export interface ThreadsTable {

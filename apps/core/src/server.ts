@@ -72,6 +72,7 @@ import { createEquipoAgent } from "./equipos/agent.ts";
 import { createApproval } from "./equipos/approval.ts";
 import { discoverEquipos, type FoundEquipo } from "./equipos/discovery.ts";
 import { createKeyStore } from "./equipos/keystore.ts";
+import { type ThisComputer, thisComputer } from "./equipos/local.ts";
 import { type Notify, systemNotify } from "./equipos/notify.ts";
 import { createPrincipal } from "./equipos/principal.ts";
 import { createSshEquipos, type SshEquipos, systemSshExec } from "./equipos/ssh.ts";
@@ -176,6 +177,8 @@ export type CoreOptions = {
   /** EQUIPOS-SIN-AGENTE-1: las pruebas cambian el `ssh` del sistema y la búsqueda en la red por dobles. */
   equipoSsh?: SshEquipos;
   equipoDiscover?: () => Promise<{ equipos: FoundEquipo[]; tailscale: boolean }>;
+  /** ESTE-EQUIPO-1: las pruebas dicen qué ordenador es este en vez de leer el de verdad. */
+  equipoLocal?: () => ThisComputer;
   /** Un equipo emparejado no llama al principal hasta que se arranque a mano (los tests). */
   equipoOff?: boolean;
   /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
@@ -751,6 +754,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
         approval,
         ssh: opts.equipoSsh ?? createSshEquipos({ secrets, exec: systemSshExec(config.home) }),
         discover: opts.equipoDiscover ?? (() => discoverEquipos()),
+        local: opts.equipoLocal ?? (() => thisComputer()),
       },
       internal,
       permissions,

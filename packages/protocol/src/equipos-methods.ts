@@ -7,9 +7,19 @@ import { Id } from "./domain.ts";
 export const EquipoPlatform = z.enum(["windows", "macos", "linux", "other"]);
 export type EquipoPlatform = z.infer<typeof EquipoPlatform>;
 
+/** ESTE-EQUIPO-1: el id con el que se nombra al ordenador donde corre Colonia (no es un equipo conectado). */
+export const THIS_EQUIPO_ID = "este-equipo";
+
 export const Equipo = z.object({
   id: Id,
+  /** El nombre que se enseña: el que le puso el dueño o, si no hay, el del propio equipo. */
   name: z.string(),
+  /** EQUIPOS-ALIAS-1: el nombre del propio equipo, que no cambia al renombrarlo. */
+  hostname: z.string().optional(),
+  /** EQUIPOS-ALIAS-1: el nombre que le puso el dueño, si le puso alguno. */
+  alias: z.string().optional(),
+  /** ESTE-EQUIPO-1: la conexión lleva a este mismo ordenador, el que corre Colonia. */
+  local: z.boolean().optional(),
   platform: EquipoPlatform,
   created_at: z.string(),
   last_seen_at: z.string().optional(),
@@ -25,6 +35,17 @@ export const Equipo = z.object({
   address: z.string().optional(),
 });
 export type Equipo = z.infer<typeof Equipo>;
+
+/** ESTE-EQUIPO-1: el ordenador donde corre Colonia. Los agentes ya trabajan en él: no se conecta ni se desconecta. */
+export const EquipoLocal = z.object({
+  name: z.string(),
+  hostname: z.string(),
+  alias: z.string().optional(),
+  platform: EquipoPlatform,
+  /** Sus direcciones en la red, la principal primero. */
+  addresses: z.array(z.string()),
+});
+export type EquipoLocal = z.infer<typeof EquipoLocal>;
 
 /** EQUIPOS-SIN-AGENTE-1: un equipo encontrado en la red o en Tailscale, sin instalar nada en él. */
 export const FoundEquipo = z.object({
@@ -87,7 +108,7 @@ const Path = z.string().min(1).max(1000);
 export const equiposMethods = {
   "equipos.list": {
     params: z.object({}).strict(),
-    result: z.object({ equipos: z.array(Equipo) }),
+    result: z.object({ equipos: z.array(Equipo), local: EquipoLocal.optional() }),
     effect: false,
     access: "human",
   },
@@ -156,6 +177,16 @@ export const equiposMethods = {
   "equipos.set_access": {
     params: z.object({ id: Id, enabled: z.boolean() }).strict(),
     result: Equipo,
+    effect: true,
+    access: "human",
+  },
+  /**
+   * EQUIPOS-ALIAS-1: el nombre con el que el dueño reconoce un equipo (o este ordenador, con THIS_EQUIPO_ID). Vacío
+   * vuelve al nombre del propio equipo.
+   */
+  "equipos.rename": {
+    params: z.object({ id: Id, alias: z.string().max(200) }).strict(),
+    result: z.object({ name: z.string(), hostname: z.string(), alias: z.string().optional() }),
     effect: true,
     access: "human",
   },

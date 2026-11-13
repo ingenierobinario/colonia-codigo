@@ -6,6 +6,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { reloadWhenBack } from "../config/AccessBlock.tsx";
 import { client } from "../data/client.ts";
 import { usePack, useT } from "../i18n/index.ts";
+import { EquipoName } from "./EquipoName.tsx";
+import { equiposChanged, useEquipoFocus } from "./equiposFocus.ts";
+import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
+import { ThisComputerCard } from "./ThisComputerCard.tsx";
 
 type Pair = { code: string; expires_at: string; commands: { windows: string; unix: string }; urls: string[] };
 
@@ -543,7 +547,19 @@ function FindEquipos({ onDone }: { onDone: () => void }) {
   );
 }
 
-function EquipoCard({ e, refresh }: { e: Equipo; refresh: () => void }) {
+function EquipoCard({
+  e,
+  entry,
+  all,
+  edit,
+  refresh,
+}: {
+  e: Equipo;
+  entry: EquipoEntry;
+  all: EquipoEntry[];
+  edit: number;
+  refresh: () => void;
+}) {
   const t = useT();
   const [confirm, setConfirm] = useState(false);
   const [audit, setAudit] = useState<EquipoAuditEntry[]>([]);
@@ -557,13 +573,16 @@ function EquipoCard({ e, refresh }: { e: Equipo; refresh: () => void }) {
       .catch(() => {});
   }, [e.id, stamp]);
   return (
-    <section className="eq-card">
+    <section className="eq-card" data-equipo-id={e.id}>
       <div className="eq-row">
         <span className="eq-name">
           <span className={`eq-dot${e.connected ? " eq-dot--on" : ""}`} />
-          <Icons.Monitor /> {e.name}
+          <Icons.Monitor />
+          {/* EQUIPOS-ALIAS-1: el nombre se cambia aquí mismo. */}
+          <EquipoName e={entry} all={all} edit={edit} onSaved={refresh} />
           {/* EQUIPOS-SIN-AGENTE-2: la dirección con la que se llega al equipo. */}
           {e.address ? <span className="eq-muted eq-addr">{e.address}</span> : null}
+          {entry.self && <Badge tone="brand">{t("equipos.thisBadge")}</Badge>}
         </span>
         <span className="eq-muted">
           {e.in_use ? t("equipos.inUse") : e.connected ? t("equipos.connected") : t("equipos.offline")}
@@ -703,6 +722,29 @@ function Body() {
   const [list, refreshList] = usePoll(loadList);
   const [local, refreshLocal] = usePoll(loadLocal);
   const equipos = list?.equipos ?? [];
+  // ESTE-EQUIPO-1: este ordenador va el primero y una sola vez; EQUIPOS-ALIAS-1: la barra lateral lleva a cada ficha.
+  const entries = equipoEntries(list);
+  const self = entries.find((x) => x.self);
+  const focus = useEquipoFocus();
+  const loaded = !!list;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: se mueve al llegar una petición nueva o al cargar la lista
+  useEffect(() => {
+    if (!focus || !loaded) return;
+    document.querySelector(`[data-equipo-id="${CSS.escape(focus.id)}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [focus?.n, loaded]);
+  const editOf = (id: string) => (focus?.edit && focus.id === id ? focus.n : 0);
+  const refreshAll = () => {
+    refreshList();
+    equiposChanged();
+  };
+  const card = (e: Equipo) => {
+    const entry = entries.find((x) => x.id === e.id);
+    return entry ? (
+      <EquipoCard key={e.id} e={e} entry={entry} all={entries} edit={editOf(e.id)} refresh={refreshAll} />
+    ) : null;
+  };
+  const own = equipos.find((e) => e.id === self?.id);
+  const rest = equipos.filter((e) => e !== own);
   return (
     <section className="page" aria-label={t("nav.equipos")}>
       <header className="page__head">
@@ -710,19 +752,29 @@ function Body() {
         <p className="page__lead">{t("equipos.lead")}</p>
       </header>
       <div className="equipos">
-        <FindEquipos onDone={refreshList} />
+        {own
+          ? card(own)
+          : list?.local &&
+            self && (
+              <ThisComputerCard
+                local={list.local}
+                e={self}
+                all={entries}
+                edit={editOf(self.id)}
+                onSaved={refreshList}
+              />
+            )}
+        <FindEquipos onDone={refreshAll} />
         <details className="eq-other">
           <summary>{t("equipos.otherMethod")}</summary>
-          <AddEquipo onDone={refreshList} />
+          <AddEquipo onDone={refreshAll} />
         </details>
-        {list && equipos.length === 0 && (
+        {list && rest.length === 0 && (
           <EmptyState variant="dashed" icon={<Icons.Monitor />} title={t("equipos.none")}>
             {t("equipos.noneHint")}
           </EmptyState>
         )}
-        {equipos.map((e) => (
-          <EquipoCard key={e.id} e={e} refresh={refreshList} />
-        ))}
+        {rest.map(card)}
         {local && <ThisEquipo s={local} refresh={refreshLocal} />}
       </div>
     </section>

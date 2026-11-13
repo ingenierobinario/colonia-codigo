@@ -26,7 +26,11 @@ export function equipoTools(): Tool[] {
         const usable = r.equipos.filter((e) => e.agent_access);
         if (!usable.length) return "no computer is enabled for agents";
         return usable
-          .map((e) => `${e.name} (${e.platform}) - ${e.connected ? "connected" : "not connected"}`)
+          .map((e) => {
+            // EQUIPOS-ALIAS-1: the owner's name for it first; the computer's own name stays visible beside it.
+            const own = e.hostname && e.hostname !== e.name ? `${e.hostname}, ` : "";
+            return `${e.name} (${own}${e.platform}) - ${e.connected ? "connected" : "not connected"}`;
+          })
           .join("\n");
       },
     }),
