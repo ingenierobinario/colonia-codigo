@@ -7,7 +7,7 @@ import { reloadWhenBack } from "../config/AccessBlock.tsx";
 import { client } from "../data/client.ts";
 import { usePack, useT } from "../i18n/index.ts";
 import { EquipoName } from "./EquipoName.tsx";
-import { equiposChanged, useEquipoFocus } from "./equiposFocus.ts";
+import { equiposChanged, revealEquipo, useEquipoFocus } from "./equiposFocus.ts";
 import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
 import { ThisComputerCard } from "./ThisComputerCard.tsx";
 
@@ -730,7 +730,9 @@ function Body() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: se mueve al llegar una petición nueva o al cargar la lista
   useEffect(() => {
     if (!focus || !loaded) return;
-    document.querySelector(`[data-equipo-id="${CSS.escape(focus.id)}"]`)?.scrollIntoView({ block: "nearest" });
+    // EQUIPO-FOCO-1: the card answers every pick, also when it was already on screen.
+    const el = document.querySelector<HTMLElement>(`[data-equipo-id="${CSS.escape(focus.id)}"]`);
+    if (el) revealEquipo(el, window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
   }, [focus?.n, loaded]);
   const editOf = (id: string) => (focus?.edit && focus.id === id ? focus.n : 0);
   const refreshAll = () => {
