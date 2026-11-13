@@ -30,6 +30,9 @@ export type Prefs = {
   externalSessionsFolded: boolean;
   equiposFolded: boolean;
   appsFolded: boolean;
+  appsInternalFolded: boolean;
+  appsExternalFolded: boolean;
+  navegadoresFolded: boolean;
   /** Channels in the owner's sidebar order; the first three stay visible. */
   channelOrder: string[];
   /** A manual reorder stays in place until newer channel activity arrives. */
@@ -93,6 +96,9 @@ const DEFAULTS: Prefs = {
   externalSessionsFolded: false,
   equiposFolded: false,
   appsFolded: false,
+  appsInternalFolded: false,
+  appsExternalFolded: false,
+  navegadoresFolded: false,
   channelOrder: [],
   channelOrderAt: "",
   projectOrder: [],
@@ -128,6 +134,9 @@ function load(): Prefs {
       externalSessionsFolded: raw.externalSessionsFolded === true,
       equiposFolded: raw.equiposFolded === true,
       appsFolded: raw.appsFolded === true,
+      appsInternalFolded: raw.appsInternalFolded === true,
+      appsExternalFolded: raw.appsExternalFolded === true,
+      navegadoresFolded: raw.navegadoresFolded === true,
       channelOrder: Array.isArray(raw.channelOrder)
         ? [...new Set(raw.channelOrder.filter((id): id is string => typeof id === "string"))]
         : [],

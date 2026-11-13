@@ -3,11 +3,12 @@
 import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import type { ImportSource } from "../colonia-desktop.d.ts";
-import { BrowserLogo } from "./BrowserLogo.tsx";
 import { BROWSER_NAMES, loadNavegadores, navegadorId, saveNavegador, useNavegadores } from "../data/navegadores.ts";
+import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useT } from "../i18n/index.ts";
 import { go, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
+import { BrowserLogo } from "./BrowserLogo.tsx";
 
 type Browser = keyof typeof BROWSER_NAMES;
 const ORDER = Object.keys(BROWSER_NAMES) as Browser[];
@@ -19,6 +20,7 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
   const current = useNav((s) => s.navegadorId);
   const [sources, setSources] = useState<ImportSource[]>();
   const [folded, setFolded] = useState<Partial<Record<Browser, boolean>>>({});
+  const sectionFolded = usePrefs((s) => s.navegadoresFolded); // PLEGAR-SECCIONES-1
   const desktop = typeof window.coloniaDesktop?.importSources === "function";
 
   const refresh = () => {
@@ -61,6 +63,8 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
       <SidebarSection
         rail={rail}
         title={t("navegadores.title")}
+        folded={sectionFolded}
+        onToggle={() => setPrefs({ navegadoresFolded: !sectionFolded })}
         action={
           desktop ? (
             <Menu
@@ -79,45 +83,48 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
           ) : undefined
         }
       />
-      {browsers.map((b) => (
-        <div key={b} className="navegadores__group">
-          <NavItem
-            collapsed={rail}
-            icon={<ProjectTile tone="neutral" icon={<BrowserLogo browser={b} size={14} />} />}
-            label={BROWSER_NAMES[b]}
-            trailing={rail ? undefined : folded[b] ? <Icons.ChevronRight size={14} /> : <Icons.ChevronDown size={14} />}
-            onClick={() => setFolded((f) => ({ ...f, [b]: !f[b] }))}
-          />
-          {!folded[b] &&
-            navegadores
-              .filter((n) => n.browser === b)
-              .map((n) => (
-                <ContextMenu
-                  key={n.id}
-                  items={[
-                    {
-                      label: t("navegadores.remove"),
-                      icon: <Icons.Trash2 size={14} />,
-                      danger: true,
-                      onSelect: () => {
-                        void saveNavegador(n.id, null);
-                        if (view === "navegador" && current === n.id) go.inbox();
+      {!(sectionFolded && !rail) &&
+        browsers.map((b) => (
+          <div key={b} className="navegadores__group">
+            <NavItem
+              collapsed={rail}
+              icon={<ProjectTile tone="neutral" icon={<BrowserLogo browser={b} size={14} />} />}
+              label={BROWSER_NAMES[b]}
+              trailing={
+                rail ? undefined : folded[b] ? <Icons.ChevronRight size={14} /> : <Icons.ChevronDown size={14} />
+              }
+              onClick={() => setFolded((f) => ({ ...f, [b]: !f[b] }))}
+            />
+            {!folded[b] &&
+              navegadores
+                .filter((n) => n.browser === b)
+                .map((n) => (
+                  <ContextMenu
+                    key={n.id}
+                    items={[
+                      {
+                        label: t("navegadores.remove"),
+                        icon: <Icons.Trash2 size={14} />,
+                        danger: true,
+                        onSelect: () => {
+                          void saveNavegador(n.id, null);
+                          if (view === "navegador" && current === n.id) go.inbox();
+                        },
                       },
-                    },
-                  ]}
-                >
-                  <NavItem
-                    collapsed={rail}
-                    depth={1}
-                    icon={<Icons.User size={14} />}
-                    label={n.name}
-                    active={view === "navegador" && current === n.id}
-                    onClick={() => go.navegador(n.id)}
-                  />
-                </ContextMenu>
-              ))}
-        </div>
-      ))}
+                    ]}
+                  >
+                    <NavItem
+                      collapsed={rail}
+                      depth={1}
+                      icon={<Icons.User size={14} />}
+                      label={n.name}
+                      active={view === "navegador" && current === n.id}
+                      onClick={() => go.navegador(n.id)}
+                    />
+                  </ContextMenu>
+                ))}
+          </div>
+        ))}
     </>
   );
 }

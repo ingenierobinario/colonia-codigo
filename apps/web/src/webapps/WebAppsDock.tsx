@@ -2,7 +2,7 @@
 import type { WebApp } from "@colonia/protocol";
 import { Button, ContextMenu, Dialog, IconButton, Icons, Input, Menu, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
-import { usePrefs } from "../data/prefs.ts";
+import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { loadWebApps, saveWebApp, useWebApps, webAppId } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
@@ -55,6 +55,8 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
   const unread = useUnread();
   const [editing, setEditing] = useState<WebApp | "new">();
   const folded = usePrefs((s) => s.appsFolded);
+  const externalFolded = usePrefs((s) => s.appsExternalFolded);
+  const shut = externalFolded && !rail;
   useEffect(() => {
     void loadWebApps();
   }, []);
@@ -70,6 +72,8 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
         rail={rail}
         sub
         title={t("nav.appsExternal")}
+        folded={externalFolded}
+        onToggle={() => setPrefs({ appsExternalFolded: !externalFolded })}
         action={
           <Menu
             trigger={plus}
@@ -83,34 +87,35 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
           />
         }
       />
-      {apps.map((a) => (
-        <ContextMenu
-          key={a.id}
-          items={[
-            { label: t("webapp.edit"), icon: <Icons.Pencil size={14} />, onSelect: () => setEditing(a) },
-            {
-              label: t("webapp.remove"),
-              icon: <Icons.Trash2 size={14} />,
-              danger: true,
-              onSelect: () => {
-                void saveWebApp(a.id, null).then((ok) => ok && window.coloniaDesktop?.loginsRemoveApp?.(a.id));
-                if (view === "webapp" && current === a.id) go.inbox();
+      {!shut &&
+        apps.map((a) => (
+          <ContextMenu
+            key={a.id}
+            items={[
+              { label: t("webapp.edit"), icon: <Icons.Pencil size={14} />, onSelect: () => setEditing(a) },
+              {
+                label: t("webapp.remove"),
+                icon: <Icons.Trash2 size={14} />,
+                danger: true,
+                onSelect: () => {
+                  void saveWebApp(a.id, null).then((ok) => ok && window.coloniaDesktop?.loginsRemoveApp?.(a.id));
+                  if (view === "webapp" && current === a.id) go.inbox();
+                },
               },
-            },
-          ]}
-        >
-          <NavItem
-            collapsed={rail}
-            icon={<ProjectTile tone="info" icon={<Favicon url={a.url} />} />}
-            label={a.name}
-            count={unread[a.id]}
-            attention
-            active={view === "webapp" && current === a.id}
-            onClick={() => go.webapp(a.id)}
-          />
-        </ContextMenu>
-      ))}
-      <ProgramItems rail={rail} />
+            ]}
+          >
+            <NavItem
+              collapsed={rail}
+              icon={<ProjectTile tone="info" icon={<Favicon url={a.url} />} />}
+              label={a.name}
+              count={unread[a.id]}
+              attention
+              active={view === "webapp" && current === a.id}
+              onClick={() => go.webapp(a.id)}
+            />
+          </ContextMenu>
+        ))}
+      {!shut && <ProgramItems rail={rail} />}
       {editing && (
         <WebAppDialog
           initial={editing === "new" ? undefined : editing}

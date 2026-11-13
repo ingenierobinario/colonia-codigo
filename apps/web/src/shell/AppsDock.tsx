@@ -31,6 +31,8 @@ export function AppsDock({ rail }: { rail: boolean }) {
   const runningIds = useRunningApps();
   const running = useMemo(() => new Set(runningIds), [runningIds]);
   const folded = usePrefs((s) => s.appsFolded);
+  // PLEGAR-SECCIONES-1: Internas, Externas y Navegadores se pliegan como el resto de secciones.
+  const internalFolded = usePrefs((s) => s.appsInternalFolded);
   const [memoryOf, setMemoryOf] = useState<string>();
   const [propsOf, setPropsOf] = useState<string>();
   // Newest first: one just installed or changed shows on top.
@@ -95,6 +97,8 @@ export function AppsDock({ rail }: { rail: boolean }) {
             rail={rail}
             sub
             title={t("nav.appsInternal")}
+            folded={internalFolded}
+            onToggle={() => setPrefs({ appsInternalFolded: !internalFolded })}
             action={
               <span className="appsdock__actions">
                 <IconButton
@@ -108,33 +112,34 @@ export function AppsDock({ rail }: { rail: boolean }) {
               </span>
             }
           />
-          {pinned.map(item)}
-          {loose.length > 0 && pinned.length > 0 && <hr className="appsdock__sep" />}
-          {loose.map((a) => (
-            <div key={a.id} className="appsdock__loose">
-              {item(a)}
-              {!rail && (
-                <span className="appsdock__looseactions">
-                  <IconButton
-                    size="sm"
-                    label={t("widget.installApp")}
-                    icon={<Icons.Pin size={14} />}
-                    onClick={() => void setSurfaceFlags(a.id, { app: true })}
-                  />
-                  <IconButton
-                    size="sm"
-                    className="appsdock__close"
-                    label={t("artifact.closeApp")}
-                    icon={<Icons.X size={14} />}
-                    onClick={() => {
-                      dropLive(a.id);
-                      if (view === "app" && appId === a.id) go.inbox();
-                    }}
-                  />
-                </span>
-              )}
-            </div>
-          ))}
+          {!(internalFolded && !rail) && pinned.map(item)}
+          {!(internalFolded && !rail) && loose.length > 0 && pinned.length > 0 && <hr className="appsdock__sep" />}
+          {!(internalFolded && !rail) &&
+            loose.map((a) => (
+              <div key={a.id} className="appsdock__loose">
+                {item(a)}
+                {!rail && (
+                  <span className="appsdock__looseactions">
+                    <IconButton
+                      size="sm"
+                      label={t("widget.installApp")}
+                      icon={<Icons.Pin size={14} />}
+                      onClick={() => void setSurfaceFlags(a.id, { app: true })}
+                    />
+                    <IconButton
+                      size="sm"
+                      className="appsdock__close"
+                      label={t("artifact.closeApp")}
+                      icon={<Icons.X size={14} />}
+                      onClick={() => {
+                        dropLive(a.id);
+                        if (view === "app" && appId === a.id) go.inbox();
+                      }}
+                    />
+                  </span>
+                )}
+              </div>
+            ))}
         </>
       )}
       {memory && <ArtifactMemoryDialog surface={memory} onClose={() => setMemoryOf(undefined)} />}
