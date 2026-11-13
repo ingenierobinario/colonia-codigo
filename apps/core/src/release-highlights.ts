@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.6": {
+    en: [
+      "Tree, Activity and By chat fold their groups the same way, aligned with the chats.",
+      "Group counts are never cut off, and Colonia remembers what you folded.",
+    ],
+    es: [
+      "Árbol, Actividad y Por chat pliegan sus grupos igual, alineados con los chats.",
+      "Los recuentos de los grupos ya no se cortan y Colonia recuerda lo que plegaste.",
+    ],
+  },
   "2.36.5": {
     en: [
       "WhatsApp keeps both sides of each chat together, also for contacts that write from a private id.",
