@@ -369,6 +369,7 @@ export const en = {
   "navegadores.bookmarks": "Bookmarks",
   "navegadores.bookmarksMore": "More bookmarks",
   "navegadores.bookmarksEmptyFolder": "Empty folder",
+  "navegadores.bookmarksNone": "This profile has no bookmarks on the bar",
   "navegadores.forward": "Forward",
   "navegadores.gone": "This browser is no longer here",
   "navegadores.goneBody": "It was removed from the sidebar. Add it again with + in Browsers.",

@@ -368,6 +368,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "navegadores.bookmarks": "Marcadores",
   "navegadores.bookmarksMore": "Más marcadores",
   "navegadores.bookmarksEmptyFolder": "Carpeta vacía",
+  "navegadores.bookmarksNone": "Este perfil no tiene marcadores en la barra",
   "navegadores.forward": "Adelante",
   "navegadores.gone": "Este navegador ya no está",
   "navegadores.goneBody": "Se quitó de la barra lateral. Añádelo otra vez con «+» en Navegadores.",

@@ -140,7 +140,7 @@ export function descubrirFuentes(e: Entorno = entornoReal()): FuenteImportar[] {
     const nombres = nombresChromium(leer(path.join(base, "Local State")));
     for (const perfil of lista(base).filter((n) => n === "Default" || /^Profile \d+$/.test(n))) {
       const dir = path.join(base, perfil);
-      if (fs.existsSync(path.join(dir, "Bookmarks")) || fs.existsSync(path.join(dir, "History")))
+      if (["Bookmarks", "AccountBookmarks", "History"].some((n) => fs.existsSync(path.join(dir, n))))
         out.push({
           id: `${c.navegador}:${perfil}`,
           navegador: c.navegador,
@@ -254,10 +254,12 @@ const filasUrl = (db: DatabaseSync, sql: string) =>
 /** Lee marcadores y webs más visitadas de una fuente. Solo esos dos datos: nada más del perfil se abre. */
 export function leerFuente(f: FuenteImportar): Importado {
   if (f.familia === "chromium") {
-    let marcadores: Marcador[] = [];
-    try {
-      marcadores = marcadoresChromium(fs.readFileSync(path.join(f.dir, "Bookmarks"), "utf8"));
-    } catch {}
+    // MARCADORES-2: los de la cuenta (AccountBookmarks) y los locales (Bookmarks), sin repetir.
+    const vistos = new Set<string>();
+    const marcadores = ficherosMarcadoresChromium(f.dir)
+      .flatMap(marcadoresChromium)
+      .filter((m) => !vistos.has(m.url) && vistos.add(m.url))
+      .slice(0, MAX_MARCADORES);
     const filas = consultarCopia(path.join(f.dir, "History"), (db) =>
       filasUrl(db, "SELECT url, visit_count AS visitas FROM urls ORDER BY visit_count DESC LIMIT 1500"),
     );
@@ -304,6 +306,35 @@ function urlBarra(raw: unknown): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+// MARCADORES-2: con la sesión de Google iniciada y los marcadores «en la cuenta», Chrome NO escribe Bookmarks:
+// los guarda en AccountBookmarks (mismo formato). Un perfil puede tener los dos; Chrome los muestra juntos,
+// primero los de la cuenta. Leer solo Bookmarks dejaba la barra vacía en el perfil real del owner.
+const FICHEROS_CHROMIUM = ["AccountBookmarks", "Bookmarks"];
+
+/** El JSON de cada fichero de marcadores que exista en el perfil, en el orden en que Chrome los muestra. */
+export function ficherosMarcadoresChromium(dir: string): string[] {
+  return FICHEROS_CHROMIUM.map((n) => leer(path.join(dir, n))).filter(Boolean);
+}
+
+/** La barra de marcadores de un perfil Chromium a partir de sus ficheros: la barra de cada uno, en orden, y al
+ *  final «Otros marcadores» como carpeta si tiene algo (como en Chrome). */
+export function barraChromiumPerfil(jsons: string[]): NodoBarra[] {
+  const barra = jsons.flatMap((j) => barraChromium(j));
+  const otros: NodoBarra[] = [];
+  let titulo = "";
+  for (const j of jsons) {
+    let raiz: { roots?: { other?: NodoChromium } };
+    try {
+      raiz = JSON.parse(j);
+    } catch {
+      continue;
+    }
+    titulo ||= String(raiz?.roots?.other?.name ?? "");
+    otros.push(...barraChromium(JSON.stringify({ roots: { bookmark_bar: raiz?.roots?.other } })));
+  }
+  return otros.length ? [...barra, { titulo: titulo || "Otros marcadores", hijos: otros }] : barra;
 }
 
 /** La barra de marcadores del fichero Bookmarks de Chromium (roots.bookmark_bar), con sus carpetas. */
@@ -368,13 +399,7 @@ export function barraFirefox(
 
 /** La barra de marcadores de una fuente; vacía si el perfil no tiene o no se puede leer. */
 export function leerBarra(f: FuenteImportar): NodoBarra[] {
-  if (f.familia === "chromium") {
-    try {
-      return barraChromium(fs.readFileSync(path.join(f.dir, "Bookmarks"), "utf8"));
-    } catch {
-      return [];
-    }
-  }
+  if (f.familia === "chromium") return barraChromiumPerfil(ficherosMarcadoresChromium(f.dir));
   const filas = consultarCopia(path.join(f.dir, "places.sqlite"), (db) =>
     db
       .prepare(
