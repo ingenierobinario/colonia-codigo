@@ -77,7 +77,8 @@ export function UserMessage({
 }: {
   thread: Thread;
   message: Msg;
-  messages: Msg[];
+  /** The chat's messages as they are when asked (PERF-11: not a list, which would change with every new word). */
+  messages: () => Msg[];
   text: string;
   /** Emoji put on it on a channel (the agent's reaction to the owner's words). */
   reactions?: ReactNode;
@@ -90,7 +91,7 @@ export function UserMessage({
   const send = () => {
     const next = draft?.trim();
     if (!next || next === text.trim()) return setDraft(undefined);
-    ask(later(messages, message), async () => {
+    ask(later(messages(), message), async () => {
       const ok = await rewindThread(thread.id, message.id, next);
       if (ok) setDraft(undefined);
       return ok;
@@ -154,10 +155,10 @@ export function UserMessage({
 const cx = (...c: Array<string | false | undefined>) => c.filter(Boolean).join(" ") || undefined;
 
 /** "Ask again" under an agent's answer: back to the owner's message that asked for it, sent again as it was. */
-export function Regenerate({ thread, message, messages }: { thread: Thread; message: Msg; messages: Msg[] }) {
+export function Regenerate({ thread, message, messages }: { thread: Thread; message: Msg; messages: () => Msg[] }) {
   const t = useT();
   const { ask, dialog } = useConfirm();
-  const from = askedBy(messages, message);
+  const from = askedBy(messages(), message);
   if (!from || !canRewind(thread)) return null;
   return (
     <>
@@ -165,7 +166,7 @@ export function Regenerate({ thread, message, messages }: { thread: Thread; mess
         size="sm"
         label={t("rewind.regenerate")}
         icon={<Icons.RefreshCw size={13} />}
-        onClick={() => ask(later(messages, from), () => rewindThread(thread.id, message.id))}
+        onClick={() => ask(later(messages(), from), () => rewindThread(thread.id, message.id))}
       />
       {dialog}
     </>

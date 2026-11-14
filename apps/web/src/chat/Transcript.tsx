@@ -1,4 +1,4 @@
-import type { Message as Msg, Thread } from "@colonia/protocol";
+import type { Agent, Message as Msg, Thread } from "@colonia/protocol";
 import {
   ActivityPill,
   AgentAvatar,
@@ -11,7 +11,7 @@ import {
   SystemNote,
   withMentions,
 } from "@colonia/ui";
-import { type ReactNode, Suspense, useEffect, useMemo, useRef } from "react";
+import { memo, type ReactNode, Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { ReactionList } from "../channels/MessageMarks.tsx";
 import { dayLabel, sameDay } from "../common/format.ts";
 import { useEngineLabel } from "../common/useEngineLabel.ts";
@@ -43,7 +43,11 @@ export function Transcript({ thread, comments = false, via }: { thread: Thread; 
   const messages = useMemo(() => (via ? all.filter((m) => m.via === via) : all), [all, via]);
   const agents = useShownAgents();
   const engineLabel = useEngineLabel(thread.engine);
-  const engine = thread.engine && engineLabel ? { id: thread.engine, label: engineLabel } : undefined;
+  const engineId = thread.engine;
+  const engine = useMemo(
+    () => (engineId && engineLabel ? { id: engineId, label: engineLabel } : undefined),
+    [engineId, engineLabel],
+  );
   const showTools = useNav((s) => s.tools);
   const agent = threadAgent(thread, agents);
   const scroll = useRef<StickyScrollHandle>(null);
@@ -82,18 +86,23 @@ export function Transcript({ thread, comments = false, via }: { thread: Thread; 
 
   // A reply's quote leads back to the message it was taken from.
   const texts = useMemo(() => messages.map(textOf), [messages]);
-  const quoted = (id: string, quote: string) => {
+  // PERF-11: what a row asks about the whole chat (the message a quote came from, what a rewind would remove) is read
+  // when it is asked, through functions that never change: a row is then drawn again only when its own message does,
+  // not on every word of the answer being written under it.
+  const latest = useRef({ messages, texts });
+  latest.current = { messages, texts };
+  const getMessages = useCallback(() => latest.current.messages, []);
+  const quoted = useCallback((id: string, quote: string) => {
+    const { messages, texts } = latest.current;
     const i = quotedIndex(
       texts,
       messages.findIndex((m) => m.id === id),
       quote,
     );
     return i >= 0 ? messages[i]?.id : undefined;
-  };
+  }, []);
 
   const working = isWorking(thread.state);
-  const reactionsOf = (m: Msg) =>
-    m.reactions?.length ? <ReactionList list={m.reactions} agentName={agent?.name ?? ""} /> : undefined;
   return (
     <StickyScroll
       ref={scroll}
@@ -110,84 +119,22 @@ export function Transcript({ thread, comments = false, via }: { thread: Thread; 
           {t("chat.startHint")}
         </EmptyState>
       )}
-      {rows.map(({ key, day, msg }) => (
-        <div key={key} className="transcript__row" data-msg={key}>
-          {day && <DayDivider label={day} />}
-          {thread.task_id && msg.id === messages[0]?.id && textOf(msg) === "Work on this task." && (
-            <Suspense fallback={null}>
-              <TaskDescription id={thread.task_id} />
-            </Suspense>
-          )}
-          {thread.kind === "routine" && msg.author.kind === "user" && key === rows[0]?.key ? (
-            <RoutinePrompt name={routineName(thread)} text={textOf(msg)} />
-          ) : msg.author.kind === "user" ? (
-            <>
-              <UserMedia message={msg} from="user" />
-              <UserMessage
-                thread={thread}
-                message={msg}
-                messages={messages}
-                text={textOf(msg)}
-                reactions={reactionsOf(msg)}
-              >
-                <UserFiles message={msg} />
-                <UserText text={textOf(msg)} sourceOf={(quote) => quoted(msg.id, quote)} />
-              </UserMessage>
-            </>
-          ) : msg.author.kind === "system" ? (
-            <SystemMessage message={msg} />
-          ) : msg.author.kind === "person" ? (
-            <>
-              {/* A sticker or a photo alone: what anyone put on it shows on the picture, there is no bubble. */}
-              <UserMedia
-                message={msg}
-                from="agent"
-                reactions={textOf(msg) || bubbleFiles(msg.parts).length > 0 ? undefined : reactionsOf(msg)}
-              />
-              {(textOf(msg) || bubbleFiles(msg.parts).length > 0) && (
-                <Message
-                  from="agent"
-                  variant="bubble"
-                  avatar={<AgentAvatar name={msg.author.name} size={24} />}
-                  meta={<span className="transcript__person">{msg.author.name}</span>}
-                  reactions={reactionsOf(msg)}
-                  actions={<MessageActions thread={thread} message={msg} text={textOf(msg)} speechKey={msg.id} />}
-                >
-                  <UserFiles message={msg} />
-                  <UserText text={textOf(msg)} sourceOf={(quote) => quoted(msg.id, quote)} />
-                </Message>
-              )}
-            </>
-          ) : msg.author.kind === "surface" ? (
-            <SystemNote icon={<Icons.LayoutGrid size={12} />} className="transcript__fromsurface">
-              {t("chat.fromWidget")} <b>{msg.author.title}</b>: {textOf(msg)}
-            </SystemNote>
-          ) : isAgentEvent(thread, msg) ? (
-            <Suspense fallback={<SystemNote>{textOf(msg)}</SystemNote>}>
-              <AgentEvent message={msg} agent={agents[msg.author.id]}>
-                <AgentTurn
-                  thread={thread}
-                  message={msg}
-                  agent={agents[msg.author.id]}
-                  showAvatar={false}
-                  showTools={showTools}
-                  showSkills={false}
-                />
-              </AgentEvent>
-            </Suspense>
-          ) : (
-            <AgentTurn
-              thread={thread}
-              message={msg}
-              agent={agents[msg.author.id]}
-              showAvatar={multiAgent}
-              showTools={showTools}
-              showSkills={!comments}
-              engine={engine}
-              actions={<Regenerate thread={thread} message={msg} messages={messages} />}
-            />
-          )}
-        </div>
+      {rows.map(({ key, day, msg }, i) => (
+        <Row
+          key={key}
+          thread={thread}
+          msg={msg}
+          day={day}
+          first={i === 0}
+          agent={msg.author.kind === "agent" ? agents[msg.author.id] : undefined}
+          agentName={agent?.name ?? ""}
+          multiAgent={multiAgent}
+          showTools={showTools}
+          comments={comments}
+          engine={engine}
+          getMessages={getMessages}
+          quoted={quoted}
+        />
       ))}
       {working && (
         <div className="transcript__activity">
@@ -211,6 +158,116 @@ export function Transcript({ thread, comments = false, via }: { thread: Thread; 
     </StickyScroll>
   );
 }
+
+/** One message of the chat. Memoized (PERF-11): everything it is given stays the same while its message does. */
+const Row = memo(function Row({
+  thread,
+  msg,
+  day,
+  first,
+  agent,
+  agentName,
+  multiAgent,
+  showTools,
+  comments,
+  engine,
+  getMessages,
+  quoted,
+}: {
+  thread: Thread;
+  msg: Msg;
+  day: string | undefined;
+  /** The first message shown. */
+  first: boolean;
+  /** Who wrote it, when an agent did. */
+  agent: Agent | undefined;
+  /** The chat's agent: the one who put the reactions on the owner's words. */
+  agentName: string;
+  multiAgent: boolean;
+  showTools: boolean;
+  comments: boolean;
+  engine: { id: string; label: string } | undefined;
+  getMessages: () => Msg[];
+  quoted: (id: string, quote: string) => string | undefined;
+}) {
+  const t = useT();
+  const text = textOf(msg);
+  const reactions = msg.reactions?.length ? <ReactionList list={msg.reactions} agentName={agentName} /> : undefined;
+  const sourceOf = (quote: string) => quoted(msg.id, quote);
+  return (
+    <div className="transcript__row" data-msg={msg.id}>
+      {day && <DayDivider label={day} />}
+      {thread.task_id && first && text === "Work on this task." && (
+        <Suspense fallback={null}>
+          <TaskDescription id={thread.task_id} />
+        </Suspense>
+      )}
+      {thread.kind === "routine" && msg.author.kind === "user" && first ? (
+        <RoutinePrompt name={routineName(thread)} text={text} />
+      ) : msg.author.kind === "user" ? (
+        <>
+          <UserMedia message={msg} from="user" />
+          <UserMessage thread={thread} message={msg} messages={getMessages} text={text} reactions={reactions}>
+            <UserFiles message={msg} />
+            <UserText text={text} sourceOf={sourceOf} />
+          </UserMessage>
+        </>
+      ) : msg.author.kind === "system" ? (
+        <SystemMessage message={msg} />
+      ) : msg.author.kind === "person" ? (
+        <>
+          {/* A sticker or a photo alone: what anyone put on it shows on the picture, there is no bubble. */}
+          <UserMedia
+            message={msg}
+            from="agent"
+            reactions={text || bubbleFiles(msg.parts).length > 0 ? undefined : reactions}
+          />
+          {(text || bubbleFiles(msg.parts).length > 0) && (
+            <Message
+              from="agent"
+              variant="bubble"
+              avatar={<AgentAvatar name={msg.author.name} size={24} />}
+              meta={<span className="transcript__person">{msg.author.name}</span>}
+              reactions={reactions}
+              actions={<MessageActions thread={thread} message={msg} text={text} speechKey={msg.id} />}
+            >
+              <UserFiles message={msg} />
+              <UserText text={text} sourceOf={sourceOf} />
+            </Message>
+          )}
+        </>
+      ) : msg.author.kind === "surface" ? (
+        <SystemNote icon={<Icons.LayoutGrid size={12} />} className="transcript__fromsurface">
+          {t("chat.fromWidget")} <b>{msg.author.title}</b>: {text}
+        </SystemNote>
+      ) : isAgentEvent(thread, msg) ? (
+        <Suspense fallback={<SystemNote>{text}</SystemNote>}>
+          <AgentEvent message={msg} agent={agent}>
+            <AgentTurn
+              thread={thread}
+              message={msg}
+              agent={agent}
+              showAvatar={false}
+              showTools={showTools}
+              showSkills={false}
+            />
+          </AgentEvent>
+        </Suspense>
+      ) : (
+        <AgentTurn
+          thread={thread}
+          message={msg}
+          agent={agent}
+          showAvatar={multiAgent}
+          showTools={showTools}
+          showSkills={!comments}
+          engine={engine}
+          actions={<Regenerate thread={thread} message={msg} messages={getMessages} />}
+        />
+      )}
+    </div>
+  );
+});
 
 /** What Colonia itself says in a thread: notices (paused, summarized) and plain notes. */
 function SystemMessage({ message }: { message: Msg }) {
