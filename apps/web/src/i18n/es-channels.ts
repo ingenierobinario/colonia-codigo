@@ -39,7 +39,8 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "ch.linkPhone.title": "Habla con tu agente desde tu móvil",
   "ch.linkPhone.lead":
     "Dinos cuál es tu número personal. Lo que escribas desde él a {line} le llegará a tu agente como si se lo dijeras aquí, y no se mezclará con tus contactos.",
-  "ch.linkPhone.step1": "Desde tu WhatsApp personal, mándale un mensaje a {line} y pulsa «Es mi número» cuando aparezca abajo",
+  "ch.linkPhone.step1":
+    "Desde tu WhatsApp personal, mándale un mensaje a {line} y pulsa «Es mi número» cuando aparezca abajo",
   "ch.linkPhone.step2": "O escribe aquí tu número personal (no el de la línea)",
   "ch.code.approved":
     'El código {code} ya se aprobó como contacto. Si esa cuenta es tuya, abre el contacto y elige "Esta cuenta es mía".',
@@ -210,6 +211,8 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "wa.addAccount": "Añadir otro número",
   "em.account": "Cuenta de email",
   "em.addAccount": "Añadir cuenta de email",
+  "bot.account": "Cuenta",
+  "bot.addAccount": "Añadir otra cuenta",
   "em.lead": "Un buzón para el agente: lee el correo que llega y responde en el mismo hilo.",
   "em.step1": "Dale al agente un buzón propio (una cuenta nueva de Gmail u Outlook, o una de tu dominio).",
   "em.step2":

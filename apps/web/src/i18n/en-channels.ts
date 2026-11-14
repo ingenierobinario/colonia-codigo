@@ -37,7 +37,8 @@ export const enChannels = {
   "ch.linkPhone.title": "Talk to your agent from your phone",
   "ch.linkPhone.lead":
     "Tell us your personal number. Whatever you send from it to {line} reaches your agent as if you typed it here, and stays apart from your contacts.",
-  "ch.linkPhone.step1": "From your personal WhatsApp, send a message to {line} and tap “It's my number” when it shows up below",
+  "ch.linkPhone.step1":
+    "From your personal WhatsApp, send a message to {line} and tap “It's my number” when it shows up below",
   "ch.linkPhone.step2": "Or type your personal number here (not the line's)",
   "ch.code.approved":
     'Code {code} was already approved as a contact. If that account is yours, open the contact and choose "This account is mine".',
@@ -194,6 +195,8 @@ export const enChannels = {
   "wa.addAccount": "Add another number",
   "em.account": "Email account",
   "em.addAccount": "Add email account",
+  "bot.account": "Account",
+  "bot.addAccount": "Add another account",
   "em.lead": "A mailbox for the agent: it reads the mail that arrives and answers in the same thread.",
   "em.step1": "Give the agent a mailbox of its own (a new Gmail or Outlook account, or one on your domain).",
   "em.step2":

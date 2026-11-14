@@ -1,9 +1,10 @@
 import type { ChannelInfo } from "@colonia/protocol";
 import { SUPER_AGENT_ID } from "@colonia/protocol/client";
-import { Badge, Button, Icons, Input, SettingRow, Switch, Textarea } from "@colonia/ui";
+import { Badge, Button, Icons, Input, Select, SettingRow, Switch, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
+import { accountLabel, accountsOf, newAccountId, pickAccount } from "../data/accounts.ts";
 import { type ChannelDraft, saveChannel, useChannels, watchChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
@@ -189,12 +190,68 @@ export function BotSection({ kind }: { kind: BotKind }) {
   const channels = useChannels((s) => s.channels);
   const ready = useChannels((s) => s.ready);
   useEffect(() => watchChannels(), []);
-  const channel = channels.find((c) => c.type === kind);
+  // MULTI-CUENTA-1: every account of the kind, one shown at a time and reached by its id (never "the first of its
+  // type": a second bot would have no screen, and connecting it would overwrite the first).
+  const [selected, setSelected] = useState("");
+  const [adding, setAdding] = useState(false);
+  const accounts = accountsOf(channels, kind);
+  const found = pickAccount(accounts, selected);
+  const channel = adding ? undefined : found;
+  // The id the next account takes: kept while its form is open, a new one for the account after it.
+  const [newId, setNewId] = useState("");
+  const nextId = newId || kind;
+  const startAdding = () => {
+    setNewId(
+      newAccountId(
+        kind,
+        channels.map((c) => c.id),
+      ),
+    );
+    setAdding(true);
+  };
   const name = BOTS[kind].name;
   return (
     <>
-      {ready && (channel ? <Connected channel={channel} kind={kind} /> : <Setup kind={kind} />)}
-      {WEBHOOK_KINDS.includes(kind) && <PublicAddress channelId={channel?.id ?? kind} />}
+      {accounts.length > 0 && (
+        <SettingRow title={t("bot.account")}>
+          <Select
+            label={t("bot.account")}
+            value={found?.id ?? ""}
+            onValueChange={(id) => {
+              if (id) setSelected(id);
+              setAdding(false);
+            }}
+            options={accounts.map((c) => ({ value: c.id, label: accountLabel(c) }))}
+          />
+          <Button size="sm" variant="secondary" leadingIcon={<Icons.Plus size={14} />} onClick={startAdding}>
+            {t("bot.addAccount")}
+          </Button>
+        </SettingRow>
+      )}
+      {ready &&
+        (channel ? (
+          <Connected key={channel.id} channel={channel} kind={kind} />
+        ) : (
+          <>
+            <Setup
+              key={nextId}
+              kind={kind}
+              id={nextId}
+              onConnected={() => {
+                setSelected(nextId);
+                setAdding(false);
+              }}
+            />
+            {found && (
+              <div>
+                <Button variant="ghost" onClick={() => setAdding(false)}>
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            )}
+          </>
+        ))}
+      {WEBHOOK_KINDS.includes(kind) && <PublicAddress channelId={channel?.id ?? nextId} />}
       {channel && (
         <Pairing
           channelId={channel.id}
@@ -228,7 +285,7 @@ export function useTokens(kind: BotKind) {
   };
 }
 
-function Setup({ kind }: { kind: BotKind }) {
+function Setup({ kind, id, onConnected }: { kind: BotKind; id: string; onConnected(): void }) {
   const t = useT();
   const agents = useData((s) => s.agents);
   const secretary = Object.values(agents).find((a) => a.kind === "secretary");
@@ -237,8 +294,8 @@ function Setup({ kind }: { kind: BotKind }) {
   const [busy, setBusy] = useState(false);
   const connect = async () => {
     setBusy(true);
-    await saveChannel(
-      kind,
+    const ok = await saveChannel(
+      id,
       {
         agent_id: agent,
         enabled: true,
@@ -250,6 +307,7 @@ function Setup({ kind }: { kind: BotKind }) {
       tokens.joined,
     );
     setBusy(false);
+    if (ok) onConnected();
   };
   return (
     <div className="tgsetup">
