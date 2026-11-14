@@ -1,6 +1,8 @@
 // EQUIPOS-ALIAS-1 y ESTE-EQUIPO-1 · Lo que la barra lateral y la pantalla «Mis equipos» comparten sin tocar React:
 // en qué orden van los equipos, cuál es este ordenador y qué nombre vale al renombrar.
-import { type Equipo, type EquipoLocal, THIS_EQUIPO_ID } from "@colonia/protocol";
+import type { Equipo, EquipoLocal } from "@colonia/protocol";
+// PERF-2: de `/client`, que no lleva zod; desde la raíz esta constante metía los esquemas enteros en la primera carga.
+import { THIS_EQUIPO_ID } from "@colonia/protocol/client";
 
 /** El mismo tope que guarda el servidor. */
 export const ALIAS_MAX = 60;

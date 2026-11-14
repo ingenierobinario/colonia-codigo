@@ -24,6 +24,7 @@ export {
   randomAgentName,
   SUPER_AGENT_ID,
   SURFACE_STATE_MAX,
+  THIS_EQUIPO_ID,
   TURN_STEPS,
   UPLOAD_LIMITS,
 } from "./constants.ts";

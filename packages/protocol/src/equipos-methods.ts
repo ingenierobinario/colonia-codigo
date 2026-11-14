@@ -7,8 +7,8 @@ import { Id } from "./domain.ts";
 export const EquipoPlatform = z.enum(["windows", "macos", "linux", "other"]);
 export type EquipoPlatform = z.infer<typeof EquipoPlatform>;
 
-/** ESTE-EQUIPO-1: el id con el que se nombra al ordenador donde corre Colonia (no es un equipo conectado). */
-export const THIS_EQUIPO_ID = "este-equipo";
+// PERF-2: la constante vive en constants.ts (sin zod) para que la web la tome de `@colonia/protocol/client`.
+export { THIS_EQUIPO_ID } from "./constants.ts";
 
 export const Equipo = z.object({
   id: Id,

@@ -77,6 +77,9 @@ export const PERSON_RELATIONS = [
 /** The super-agent a fresh install starts with. Older installs keep the id theirs was created with. */
 export const SUPER_AGENT_ID = "superagent";
 
+/** ESTE-EQUIPO-1: el id con el que se nombra al ordenador donde corre Colonia (no es un equipo conectado). */
+export const THIS_EQUIPO_ID = "este-equipo";
+
 /**
  * Names picked at random: a fresh super-agent's (and the setup's dice), and the new names of cloned agents. Short,
  * easy to say in Spanish and English, none twice.
