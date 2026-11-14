@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.11": {
+    en: [
+      "The built-in browser plays videos full screen, downloads files, finds text with Ctrl+F and zooms.",
+      "A page that does not load now says why, with a button to try again; a right click offers the usual options.",
+      "Each group in a project's chat tree folds away with its arrow, and keeps showing its unread chats.",
+      "Picking a computer under My computers takes you to its card and lights it up.",
+    ],
+    es: [
+      "El navegador integrado pone vídeos a pantalla completa, descarga archivos, busca con Ctrl+F y hace zoom.",
+      "Si una página no carga, ahora dice por qué y ofrece reintentar; el botón derecho trae las opciones de siempre.",
+      "Cada grupo del árbol de chats de un proyecto se pliega con su flecha y sigue mostrando sus chats sin leer.",
+      "Al elegir un equipo en Mis equipos, la pantalla va a su tarjeta y la ilumina.",
+    ],
+  },
   "2.36.10": {
     en: ["Silenced chats in a channel no longer look greyed out, and every chat is listed by its last message."],
     es: ["Los chats silenciados de un canal ya no salen en gris, y todos se ordenan por su último mensaje."],
