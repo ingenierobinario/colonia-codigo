@@ -1,11 +1,19 @@
 // NAVEGADORES-2: el logo de cada navegador, dibujado aquí (sin red ni paquete de iconos): Chrome, Edge, Brave, Firefox.
+// INSTALAR-NAV-1: y Opera, Vivaldi y Safari.
 import { useId } from "react";
 
-export type BrowserKind = "chrome" | "edge" | "brave" | "firefox";
+export type BrowserKind = "chrome" | "edge" | "brave" | "firefox" | "opera" | "vivaldi" | "safari";
 
 export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: number }) {
   const id = useId().replace(/:/g, "");
-  const common = { width: size, height: size, viewBox: "0 0 48 48", "aria-hidden": true, focusable: false, className: "browser-logo" } as const;
+  const common = {
+    width: size,
+    height: size,
+    viewBox: "0 0 48 48",
+    "aria-hidden": true,
+    focusable: false,
+    className: "browser-logo",
+  } as const;
   if (browser === "chrome")
     return (
       <svg {...common}>
@@ -76,6 +84,46 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
           fill="#FFBD4F"
           d="M7 15.5c-2.3 4.6-2.8 10.4-.6 15.8 3 7.4 10.3 12.7 18.8 12.7 7.8 0 14.6-4.5 17.9-11-3 3.4-7.6 5.4-12.4 5-7-.6-12.2-6.4-12-13.3.1-1.8.6-3.4 1.4-4.9-3.4.7-6.7-.3-8.4-2.3-1.2 1.2-3.2-.5-4.7-2Z"
         />
+      </svg>
+    );
+  if (browser === "opera")
+    return (
+      <svg {...common}>
+        <defs>
+          <linearGradient id={`${id}a`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FF1B2D" />
+            <stop offset="1" stopColor="#A70014" />
+          </linearGradient>
+        </defs>
+        <path
+          fill={`url(#${id}a)`}
+          fillRule="evenodd"
+          d="M24 4a20 20 0 1 0 0 40 20 20 0 0 0 0-40Zm0 7.5c-4.4 0-7.5 5.4-7.5 12.5s3.1 12.5 7.5 12.5 7.5-5.4 7.5-12.5-3.1-12.5-7.5-12.5Z"
+        />
+      </svg>
+    );
+  if (browser === "vivaldi")
+    return (
+      <svg {...common}>
+        <rect x="4" y="4" width="40" height="40" rx="12" fill="#EF3939" />
+        <path
+          fill="#fff"
+          d="M34.6 17.4c-.3 1.6-1.200 2.900-2 4.300l-5.700 9.900c-.6 1.100-1.500 1.800-2.800 1.900-1.400.1-2.500-.5-3.300-1.800l-3.900-6.700-3.100-5.400c-.9-1.700-.3-3.700 1.300-4.600 1.600-.9 3.600-.3 4.600 1.300l1.700 3c.9 1.700 2.500 2.800 4.500 2.900 2.800.2 5.300-1.900 5.700-4.700.1-.700.1-.900 0-1.800-.1-.900-.6-1.800-.5-2.200.3-1.300 1.400-2.100 2.700-1.800 1 .2 1.800 1.200 1.800 2.200 0 .5 0 1-.1 1.500Z"
+        />
+      </svg>
+    );
+  if (browser === "safari")
+    return (
+      <svg {...common}>
+        <defs>
+          <linearGradient id={`${id}a`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#19D7FF" />
+            <stop offset="1" stopColor="#1E64F0" />
+          </linearGradient>
+        </defs>
+        <circle cx="24" cy="24" r="20" fill={`url(#${id}a)`} />
+        <path fill="#FF3B30" d="M35.500 12.500 21.200 21.200l5.600 5.600Z" />
+        <path fill="#fff" d="M12.500 35.500 26.800 26.800l-5.600-5.600Z" />
       </svg>
     );
   return null;

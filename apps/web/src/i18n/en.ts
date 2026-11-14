@@ -379,6 +379,29 @@ export const en = {
   "navegadores.emptyBody":
     "Type an address above and press Enter. What you sign in to here stays signed in, and your agents can read these tabs when you ask them.",
   "navegadores.saveError": "Could not save the browser: {error}",
+  // INSTALAR-NAV-1
+  "navegadores.found": "On this computer",
+  "navegadores.installSection": "Install",
+  "navegadores.mainProfile": "Main",
+  "navegadores.installing": "Installing {name}",
+  "navegadores.installedTitle": "{name} installed",
+  "navegadores.installFailedTitle": "{name} was not installed",
+  "navegadores.installRunning": "This can take a few minutes. If the system asks for permission, accept it.",
+  "navegadores.installDownloading": "Downloading the installer…",
+  "navegadores.installDownloadingPct": "Downloading the installer… {percent}%",
+  "navegadores.installWaitInstaller":
+    "Follow the steps of the installer that opened. I'll add it here as soon as it finishes.",
+  "navegadores.installWaitDmg":
+    "Drag it to the Applications folder in the window that opened. I'll add it here as soon as it's there.",
+  "navegadores.installWaitPackage":
+    "Confirm the installation in the window that opened. I'll add it here as soon as it finishes.",
+  "navegadores.installWaitPage":
+    "I've opened its official page: download and install it from there. I'll add it here as soon as it's there.",
+  "navegadores.installDone": "It's in your sidebar now.",
+  "navegadores.installFailed": "I couldn't finish it. You can download it from its official page.",
+  "navegadores.installOpenPage": "Open {name}'s page",
+  "navegadores.installCancel": "Cancel",
+  "navegadores.installClose": "Close",
   "webapp.newTitle": "New web app",
   "webapp.editTitle": "Edit web app",
   "webapp.lead": "It opens inside Colonia and remembers your sign-in, apart from the agents' browser.",

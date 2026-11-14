@@ -9,8 +9,8 @@ import { shell } from "electron";
 export type InstalledBrowser = { id: string; name: string };
 type Found = InstalledBrowser & { launch: string };
 
-/** id · shown name · macOS app · Windows executable (under Program Files / LocalAppData) · Linux commands. */
-const KNOWN: Array<[string, string, string, string, string[]]> = [
+/** id · shown name · macOS app · Windows executable(s) (under Program Files / LocalAppData) · Linux commands. */
+const KNOWN: Array<[string, string, string, string | string[], string[]]> = [
   [
     "chrome",
     "Google Chrome",
@@ -30,12 +30,13 @@ const KNOWN: Array<[string, string, string, string, string[]]> = [
   ],
   ["arc", "Arc", "Arc.app", "", []],
   ["chromium", "Chromium", "Chromium.app", "Chromium/Application/chrome.exe", ["chromium", "chromium-browser"]],
-  ["vivaldi", "Vivaldi", "Vivaldi.app", "Vivaldi/Application/vivaldi.exe", ["vivaldi"]],
-  ["opera", "Opera", "Opera.app", "Opera/opera.exe", ["opera"]],
+  ["vivaldi", "Vivaldi", "Vivaldi.app", "Vivaldi/Application/vivaldi.exe", ["vivaldi", "vivaldi-stable"]],
+  // INSTALAR-NAV-1: Opera installs for one user under LocalAppData/Programs unless told otherwise.
+  ["opera", "Opera", "Opera.app", ["Opera/opera.exe", "Programs/Opera/opera.exe"], ["opera"]],
   ["zen", "Zen", "Zen.app", "", ["zen-browser"]],
 ];
 
-function locate(app: string, exe: string, commands: string[]): string | undefined {
+function locate(app: string, exe: string | string[], commands: string[]): string | undefined {
   if (process.platform === "darwin") {
     if (!app) return undefined;
     return [path.join("/Applications", app), path.join(os.homedir(), "Applications", app)].find((p) =>
@@ -43,11 +44,11 @@ function locate(app: string, exe: string, commands: string[]): string | undefine
     );
   }
   if (process.platform === "win32") {
-    if (!exe) return undefined;
     const roots = [process.env.ProgramFiles, process.env["ProgramFiles(x86)"], process.env.LOCALAPPDATA];
+    const exes = [exe].flat().filter(Boolean);
     return roots
       .filter(Boolean)
-      .map((r) => path.join(r as string, exe))
+      .flatMap((r) => exes.map((x) => path.join(r as string, x)))
       .find((p) => fs.existsSync(p));
   }
   const dirs = (process.env.PATH ?? "").split(path.delimiter).filter(Boolean);
@@ -60,8 +61,9 @@ function locate(app: string, exe: string, commands: string[]): string | undefine
 
 let cache: Found[] | undefined;
 
-/** The browsers this computer has, looked up once per run (installing one later shows after a restart). */
-export function installedBrowsers(): Found[] {
+/** The browsers this computer has, looked up once per run; `fresh` looks again (INSTALAR-NAV-1: after installing one). */
+export function installedBrowsers(fresh = false): Found[] {
+  if (fresh) cache = undefined;
   cache ??= KNOWN.flatMap(([id, name, app, exe, commands]) => {
     const launch = locate(app, exe, commands);
     return launch ? [{ id, name, launch }] : [];

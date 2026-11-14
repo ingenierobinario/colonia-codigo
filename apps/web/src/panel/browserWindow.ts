@@ -41,6 +41,11 @@ export function useInstalledBrowsers(): Array<{ id: string; name: string }> {
   return list;
 }
 
+/** INSTALAR-NAV-1: a browser was just installed: the next one to ask gets the new list. */
+export function forgetInstalledBrowsers(): void {
+  installed = undefined;
+}
+
 /** The desktop app hands it to the system (default or a named browser); a plain web panel opens a new tab. */
 export function openOutside(url: string, browser?: string): void {
   if (desktop?.openExternal) void desktop.openExternal(url, browser);
