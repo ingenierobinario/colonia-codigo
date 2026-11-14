@@ -27,6 +27,25 @@
 .eq-card--static:hover {
   border-color: var(--colonia-card-border);
 }
+/* EQUIPO-FOCO-1: the card picked in the sidebar flashes its border for about a second, then settles back. */
+.eq-card {
+  scroll-margin: 16px;
+}
+.eq-card--focus {
+  animation: eq-card-focus 1.1s ease-out;
+}
+@keyframes eq-card-focus {
+  from,
+  35% {
+    border-color: var(--colonia-brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--colonia-brand) 30%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eq-card--focus {
+    animation-timing-function: step-end;
+  }
+}
 .eq-steps {
   list-style: none;
   margin: 0;
