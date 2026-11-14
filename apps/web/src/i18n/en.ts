@@ -901,7 +901,7 @@ export const en = {
   "browser.findPrev": "Previous",
   "browser.findNext": "Next",
   "browser.downloading": "Downloading {name}…",
-  "browser.downloaded": "{name} is in your downloads folder",
+  "browser.downloaded": "Downloaded: {name}",
   "browser.downloadFailed": "{name} could not be downloaded",
   "browser.downloadOpen": "Open",
   "browser.downloadShow": "Show in folder",

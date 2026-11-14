@@ -905,7 +905,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "browser.findPrev": "Anterior",
   "browser.findNext": "Siguiente",
   "browser.downloading": "Descargando {name}…",
-  "browser.downloaded": "{name} está en tu carpeta de descargas",
+  "browser.downloaded": "Descargado: {name}",
   "browser.downloadFailed": "No se pudo descargar {name}",
   "browser.downloadOpen": "Abrir",
   "browser.downloadShow": "Ver en la carpeta",
