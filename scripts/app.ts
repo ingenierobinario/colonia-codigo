@@ -9,7 +9,9 @@ import { compileCacheEnv } from "./compile-cache.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const step = (args: string[]) => {
-  const r = spawnSync("pnpm", args, { cwd: root, stdio: "inherit" });
+  // ERR-1: en Windows pnpm es pnpm.cmd, que solo arranca a través del shell; sin él no se lanzaba nada y salía mudo.
+  const r = spawnSync("pnpm", args, { cwd: root, stdio: "inherit", shell: process.platform === "win32" });
+  if (r.error) console.error(`pnpm ${args.join(" ")}: ${r.error.message}`);
   if (r.status !== 0) process.exit(r.status ?? 1);
 };
 step(["--filter", "@colonia/ui", "build"]);
@@ -31,7 +33,7 @@ function startCore() {
   return child;
 }
 await new Promise((r) => setTimeout(r, 1500));
-const electron = devBundle() ?? path.join(root, "apps/desktop/node_modules/.bin/electron");
+const electron = devBundle() ?? electronBinary(path.join(root, "apps/desktop"));
 const desktop = spawn(electron, ["."], {
   cwd: path.join(root, "apps/desktop"),
   stdio: "inherit",
@@ -89,6 +91,17 @@ function devBundle(): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * ERR-1: what to run. On Windows node_modules/.bin/electron is a .cmd wrapper that spawn cannot start, so the program
+ * the package downloaded is run directly (its name is in the package's path.txt).
+ */
+function electronBinary(desktop: string): string {
+  if (process.platform !== "win32") return path.join(desktop, "node_modules/.bin/electron");
+  const dir = path.dirname(electronPackage(desktop));
+  const name = fs.existsSync(path.join(dir, "path.txt")) ? fs.readFileSync(path.join(dir, "path.txt"), "utf8") : "";
+  return path.join(dir, "dist", name.trim() || "electron.exe");
 }
 
 /** The electron package's folder, as installed for the desktop app. */
