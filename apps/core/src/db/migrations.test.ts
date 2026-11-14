@@ -465,3 +465,39 @@ test("a project's tables are kept with their rows, columns from the rows' fields
     cleanup();
   }
 });
+
+test("PERF-5: an install with messages on two accounts reads a conversation through the index after upgrading", () => {
+  const { db, cleanup } = upgradeFrom("CREATE INDEX channel_inbox_conversation", (db) => {
+    const row = db.prepare(
+      `INSERT INTO channel_inbox (id, channel, external_id, conversation, sender, payload, state, created_at)
+       VALUES (?, ?, ?, 'same-chat', 's', '{}', 'done', ?)`,
+    );
+    for (let i = 0; i < 6; i++) row.run(`m${i}`, i % 2 ? "wa-1" : "wa-2", `e${i}`, `2026-11-0${i + 1}`);
+  });
+  try {
+    const where = "WHERE channel = 'wa-1' AND conversation = 'same-chat' ORDER BY created_at DESC";
+    const plan = db.prepare(`EXPLAIN QUERY PLAN SELECT payload FROM channel_inbox ${where} LIMIT 1`).all();
+    const detail = plan.map((p) => String(p.detail)).join(" | ");
+    assert.match(detail, /USING INDEX channel_inbox_conversation/);
+    assert.doesNotMatch(detail, /TEMP B-TREE/);
+    // The same conversation id on the other account stays out.
+    const mine = db.prepare(`SELECT id FROM channel_inbox ${where}`).all();
+    assert.deepEqual(
+      mine.map((r) => r.id),
+      ["m5", "m3", "m1"],
+    );
+    const out = db.prepare(
+      "EXPLAIN QUERY PLAN SELECT id FROM outbox WHERE channel = 'wa-1' AND conversation = 'c' ORDER BY created_at DESC",
+    );
+    assert.match(
+      out
+        .all()
+        .map((p) => String(p.detail))
+        .join(" | "),
+      /USING (COVERING )?INDEX outbox_conversation/,
+    );
+  } finally {
+    db.close();
+    cleanup();
+  }
+});

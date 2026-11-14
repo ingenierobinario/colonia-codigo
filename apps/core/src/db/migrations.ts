@@ -1186,4 +1186,10 @@ export const MIGRATIONS: readonly string[] = [
   `
   ALTER TABLE team_computers ADD COLUMN alias TEXT;
   `,
+  // PERF-5: lo que entra y lo que sale se lee por conversación de una cuenta (último mensaje, historial, a quién
+  // mencionar). Sin estos índices cada lectura recorría todos los mensajes de la cuenta: 11 ms con 100.000 filas.
+  `
+  CREATE INDEX channel_inbox_conversation ON channel_inbox(channel, conversation, created_at);
+  CREATE INDEX outbox_conversation ON outbox(channel, conversation, created_at);
+  `,
 ];
