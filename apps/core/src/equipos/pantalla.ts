@@ -151,10 +151,10 @@ export function windowsShotInner(id: string): string {
     `$g=[Drawing.Graphics]::FromImage($bmp);$g.CopyFromScreen($b.X,$b.Y,0,0,$bmp.Size);$g.Dispose()`,
     `$k=[Math]::Min(1.0,${SCREEN_SHOT_MAX}/[Math]::Max($b.Width,$b.Height))`,
     `$w=[int][Math]::Round($b.Width*$k);$h=[int][Math]::Round($b.Height*$k)`,
-    `$o=New-Object Drawing.Bitmap $w,$h;$g=[Drawing.Graphics]::FromImage($o);$g.InterpolationMode='HighQualityBicubic';$g.DrawImage($bmp,0,0,$w,$h);$g.Dispose()`,
+    `$bm=New-Object Drawing.Bitmap $w,$h;$g=[Drawing.Graphics]::FromImage($bm);$g.InterpolationMode='HighQualityBicubic';$g.DrawImage($bmp,0,0,$w,$h);$g.Dispose()`,
     `$c=[Drawing.Imaging.ImageCodecInfo]::GetImageEncoders()|?{$_.MimeType -eq 'image/jpeg'}`,
     `$p=New-Object Drawing.Imaging.EncoderParameters 1;$p.Param[0]=New-Object Drawing.Imaging.EncoderParameter ([Drawing.Imaging.Encoder]::Quality),([long]70)`,
-    `$o.Save($I,$c,$p);$o.Dispose();$bmp.Dispose()`,
+    `$bm.Save($I,$c,$p);$bm.Dispose();$bmp.Dispose()`,
     `Set-Content -LiteralPath $O -Value "SHOT x=$($b.X) y=$($b.Y) sw=$($b.Width) sh=$($b.Height)"`,
     `}catch{Set-Content -LiteralPath $O -Value ('ERR '+$_.Exception.Message)}`,
   ].join("\n");
@@ -223,7 +223,7 @@ export function windowsDesktopScript(id: string, image: boolean): string {
     `$me=[Security.Principal.WindowsIdentity]::GetCurrent().Name`,
     `$ex=@(Get-CimInstance Win32_Process -Filter "Name='explorer.exe'"|?{$_.SessionId -ne 0})`,
     `if(!$ex){'COLONIA_GUI NO_SESSION';exit 3}`,
-    `$ss=@($ex|%{$u='';try{$o=Invoke-CimMethod -InputObject $_ -MethodName GetOwner;if($o.User){$u="$($o.Domain)\\$($o.User)"}}catch{};[pscustomobject]@{S=$_.SessionId;U=$u}}|?{$_.U})`,
+    `$ss=@($ex|%{$u='';try{$ow=Invoke-CimMethod -InputObject $_ -MethodName GetOwner;if($ow.User){$u="$($ow.Domain)\\$($ow.User)"}}catch{};[pscustomobject]@{S=$_.SessionId;U=$u}}|?{$_.U})`,
     `if(!$ss){'COLONIA_GUI OTHER_USER';exit 3}`,
     `$k=@($ss|?{$_.U -ieq $me})[0];if(!$k){$k=$ss[0]}`,
     // Con la pantalla bloqueada no hay nada que ver ni donde hacer clic: se dice, no se devuelve una imagen en negro.
@@ -233,7 +233,7 @@ export function windowsDesktopScript(id: string, image: boolean): string {
     // `iex` del archivo y no `-File`: no depende de la directiva de ejecución de scripts y lee el archivo como UTF-8.
     `Register-ScheduledTask -TaskName $N -Force -Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -Command iex([IO.File]::ReadAllText('$S'))") -Principal (New-ScheduledTaskPrincipal -UserId $k.U -LogonType Interactive) -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries)|Out-Null`,
     `Start-ScheduledTask -TaskName $N`,
-    `for($i=0;$i -lt 160 -and !(Test-Path -LiteralPath $O);$i++){Start-Sleep -Milliseconds 250}`,
+    `for($t=0;$t -lt 160 -and !(Test-Path -LiteralPath $O);$t++){Start-Sleep -Milliseconds 250}`,
     `}finally{Unregister-ScheduledTask -TaskName $N -Confirm:$false -ErrorAction SilentlyContinue;Remove-Item -LiteralPath $S -Force -ErrorAction SilentlyContinue}`,
     `if(!(Test-Path -LiteralPath $O)){'COLONIA_GUI NOT_STARTED';exit 4}`,
     `$r=(Get-Content -LiteralPath $O -Raw).Trim();Remove-Item -LiteralPath $O -Force -ErrorAction SilentlyContinue`,

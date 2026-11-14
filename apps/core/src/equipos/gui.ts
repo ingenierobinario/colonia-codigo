@@ -48,7 +48,7 @@ export function windowsGuiScript(o: GuiOpen, id: string): string {
     // Quién tiene escritorio: un explorer.exe fuera de la sesión 0. Sin ninguno, no hay nadie con la sesión iniciada.
     `$ex=@(Get-CimInstance Win32_Process -Filter "Name='explorer.exe'"|?{$_.SessionId -ne 0})`,
     `if(!$ex){'COLONIA_GUI NO_SESSION';exit 3}`,
-    `$ss=@($ex|%{$u='';try{$o=Invoke-CimMethod -InputObject $_ -MethodName GetOwner;if($o.User){$u="$($o.Domain)\\$($o.User)"}}catch{};[pscustomobject]@{S=$_.SessionId;U=$u}}|?{$_.U})`,
+    `$ss=@($ex|%{$u='';try{$ow=Invoke-CimMethod -InputObject $_ -MethodName GetOwner;if($ow.User){$u="$($ow.Domain)\\$($ow.User)"}}catch{};[pscustomobject]@{S=$_.SessionId;U=$u}}|?{$_.U})`,
     `if(!$ss){'COLONIA_GUI OTHER_USER';exit 3}`,
     `$k=@($ss|?{$_.U -ieq $me})[0];if(!$k){$k=$ss[0]}`,
     `$L=[bool](Get-Process LogonUI -ErrorAction SilentlyContinue|?{$_.SessionId -eq $k.S})`,

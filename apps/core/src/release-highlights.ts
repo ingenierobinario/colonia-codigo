@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.13": {
+    en: ["Opening an app on a connected Windows computer works again, and so do its screenshots."],
+    es: ["Abrir una app en un equipo Windows conectado vuelve a funcionar, y también sus capturas de pantalla."],
+  },
   "2.36.12": {
     en: [
       "The + under Browsers now offers to install the ones you lack: Chrome, Edge, Firefox, Brave, Opera, Vivaldi.",
@@ -173,8 +177,8 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.35.1": {
     en: [
       "The chat list and each agent in the Inbox tree fold away with one click, and stay as you left them.",
-      "\"My computers\" opens Colonia to your network right there when the command was missing.",
-      "The external sessions section is now called \"AIs\" and has a + to add another one.",
+      '"My computers" opens Colonia to your network right there when the command was missing.',
+      'The external sessions section is now called "AIs" and has a + to add another one.',
     ],
     es: [
       "La lista de chats y cada agente del árbol de la Inbox se pliegan con un clic y se quedan así.",
@@ -184,7 +188,7 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
   },
   "2.35.0": {
     en: [
-      "New \"My computers\": use your other laptops from this Colonia, with your approval each time.",
+      'New "My computers": use your other laptops from this Colonia, with your approval each time.',
       "Web apps like Gmail, Outlook, Slack and Teams open ready to use, and can save your passwords.",
       "Bring your favourite sites and bookmarks from your browser with a guided import.",
     ],
