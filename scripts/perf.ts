@@ -4,6 +4,7 @@
 // behind, and the panel's bundle. Fails when a number goes over its budget in scripts/perf-budget.json.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { fakeLlm } from "../e2e/fake-llm.ts";
@@ -22,27 +23,64 @@ const base = `http://127.0.0.1:${port}`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let seq = 0;
 
-async function rpc<T>(method: string, params: unknown = {}): Promise<T> {
-  const res = await fetch(`${base}/rpc/${method}`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "idempotency-key": `perf-${seq++}` },
-    body: JSON.stringify(params),
+// PERF-1: over node:http with one kept connection. Node's fetch answers a loopback request one Windows timer tick late
+// (15 ms measured against an empty server), which would be charged to the core on every call.
+const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
+function rpc<T>(method: string, params: unknown = {}): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const req = http.request(
+      `${base}/rpc/${method}`,
+      {
+        method: "POST",
+        agent,
+        headers: { "content-type": "application/json", "idempotency-key": `perf-${seq++}` },
+      },
+      (res) => {
+        let text = "";
+        res.setEncoding("utf8");
+        res.on("data", (d) => {
+          text += d;
+        });
+        res.on("end", () => {
+          try {
+            const body = JSON.parse(text) as { ok: boolean; result: T; error?: { message: string } };
+            if (body.ok) resolve(body.result);
+            else reject(new Error(`${method}: ${body.error?.message}`));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      },
+    );
+    req.on("error", reject);
+    req.end(JSON.stringify(params));
   });
-  const body = (await res.json()) as { ok: boolean; result: T; error?: { message: string } };
-  if (!body.ok) throw new Error(`${method}: ${body.error?.message}`);
-  return body.result;
 }
 
-/** RSS in MB and CPU seconds of a process, from ps (macOS and Linux). */
-async function usage(pid: number): Promise<{ rss: number; cpu: number }> {
-  const out = await new Promise<string>((resolve) => {
-    const ps = spawn("ps", ["-o", "rss=,time=", "-p", String(pid)]);
+const run = (command: string, args: string[]) =>
+  new Promise<string>((resolve) => {
+    const child = spawn(command, args, { windowsHide: true });
     let s = "";
-    ps.stdout.on("data", (d) => {
+    child.stdout.on("data", (d) => {
       s += d;
     });
-    ps.on("close", () => resolve(s.trim()));
+    child.on("error", () => resolve(""));
+    child.on("close", () => resolve(s.trim()));
   });
+
+/** RSS in MB and CPU seconds of a process: from ps on macOS and Linux, from PowerShell on Windows (PERF-1: it has no ps). */
+async function usage(pid: number): Promise<{ rss: number; cpu: number }> {
+  if (process.platform === "win32") {
+    const out = await run("powershell.exe", [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      `$p = Get-Process -Id ${pid}; [Console]::Out.Write(('{0} {1}' -f $p.WorkingSet64, $p.TotalProcessorTime.TotalMilliseconds.ToString([cultureinfo]::InvariantCulture)))`,
+    ]);
+    const [bytes = "0", ms = "0"] = out.split(/\s+/);
+    return { rss: Number(bytes) / 1024 / 1024, cpu: Number(ms) / 1000 };
+  }
+  const out = await run("ps", ["-o", "rss=,time=", "-p", String(pid)]);
   const [rss = "0", time = "0:0"] = out.split(/\s+/);
   const parts = time.split(":").map(Number);
   const cpu = parts.reduce((acc, n) => acc * 60 + n, 0);
@@ -109,11 +147,28 @@ await new Promise((r) => warm.once("exit", r));
 const coreEpoch = Date.now();
 const t0 = performance.now();
 const core = startCore(path.join(home, "colonia"));
+/** What a Windows process cannot start without (sockets, DLLs, temp): the rest of the environment stays out. PERF-1 */
+function windowsEnv(): NodeJS.ProcessEnv {
+  if (process.platform !== "win32") return {};
+  const keep = [
+    "SystemRoot",
+    "SystemDrive",
+    "windir",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "APPDATA",
+    "LOCALAPPDATA",
+    "ComSpec",
+  ];
+  return Object.fromEntries(keep.flatMap((k) => (process.env[k] ? [[k, process.env[k]]] : [])));
+}
 function coreEnv(coloniaHome: string): NodeJS.ProcessEnv {
   return {
     // No agent CLIs: the numbers are the core's own, whatever this machine has installed.
     PATH: [path.dirname(process.execPath), "/usr/bin", "/bin"].join(path.delimiter),
     HOME: process.env.HOME ?? os.homedir(),
+    ...windowsEnv(),
     ...compileCacheEnv(root),
     COLONIA_HOME: coloniaHome,
     COLONIA_TELEMETRY: "off",
