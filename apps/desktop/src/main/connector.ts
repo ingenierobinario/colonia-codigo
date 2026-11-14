@@ -435,12 +435,13 @@ export function createConnector(opts: {
       tunnel = undefined;
       await open();
     },
-    stop(): void {
+    /** Resolves once the core this app runs has stopped (at once when it runs none). */
+    async stop(): Promise<void> {
       connectionRevision++;
       opts.disconnected();
       openedRemote = false;
-      void core?.stop();
       tunnel?.stop();
+      await core?.stop();
     },
     /** This app runs the core itself: quitting stops the crew's routines and channels too. */
     runsCore(): boolean {

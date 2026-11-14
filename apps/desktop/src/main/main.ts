@@ -44,6 +44,7 @@ import { openedIn, openedQueue } from "./opened-files.ts";
 import { createPrograms } from "./programs.ts";
 import { createQuick, type DesktopPrefs } from "./quick.ts";
 import { confirmQuit } from "./quit-confirm.ts";
+import { waitOnQuit } from "./quit-wait.ts";
 import { createUpdateMenu } from "./update-menu.ts";
 import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
 
@@ -817,7 +818,7 @@ app.whenReady().then(() => {
         : { color: "#1a1a19", symbolColor: "#c8c8c8", height: 46 },
     );
   });
-  app.on("will-quit", () => quick.stop());
+  app.once("will-quit", () => quick.stop());
 
   ipcMain.handle("desktop:update-status", (e, check: unknown) => {
     if (e.sender !== panel.webContents) return undefined;
@@ -839,12 +840,20 @@ app.whenReady().then(() => {
   });
   ipcMain.handle("desktop:update-restart", (e) => (e.sender === panel.webContents ? updater.restart() : undefined));
   updater.start(updateMenu.found);
-  app.on("will-quit", () => {
-    updater.log("will-quit");
-    updater.stop();
-    updater.quitting();
-    connector.stop();
-  });
+  // ERR-4: the app leaves once its core has closed its store (or the wait ran out), and only then is a staged
+  // update put in place: never over a core that is still running.
+  app.on(
+    "will-quit",
+    waitOnQuit({
+      first: () => {
+        updater.log("will-quit");
+        updater.stop();
+      },
+      stop: () => connector.stop(),
+      last: () => updater.quitting(),
+      quit: () => app.quit(),
+    }),
+  );
 
   // A core that never answers would leave a background start invisible: show the waiting page after a while.
   const late = setTimeout(reveal, 45_000);
