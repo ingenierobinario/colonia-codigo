@@ -102,8 +102,11 @@ test("con el interruptor encendido, un equipo por terminal remota da al superage
   const r = await tell(`usa ${IP}`, "session");
   // Sin el arreglo: ninguna herramienta equipo_* (solo contaban los portátiles emparejados y en línea).
   assert.deepEqual(offered(), [
+    "equipo_screenshot",
+    "equipo_do",
     "equipo_list",
     "equipo_run",
+    "equipo_open",
     "equipo_read_file",
     "equipo_list_files",
     "equipo_write_file",

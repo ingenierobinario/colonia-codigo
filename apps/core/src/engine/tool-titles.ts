@@ -129,6 +129,12 @@ export const SPANISH_TITLES: Record<string, (a: Args) => string> = {
   phone_photo: () => "Pidió una foto a tu teléfono",
   equipo_list: () => "Vio tus equipos",
   equipo_run: (a) => `Ejecutó un comando en ${str(a.equipo) || "un equipo"}`,
+  equipo_open: (a) => `Abrió ${str(a.target, 60)} en ${str(a.equipo) || "un equipo"}`,
+  equipo_screenshot: (a) => `Miró la pantalla de ${str(a.equipo) || "un equipo"}`,
+  equipo_do: (a) =>
+    `En ${str(a.equipo) || "un equipo"}: ${stepsText(a.steps)
+      .replace(/\bclick\b/g, "clic")
+      .replace(/\btype\b/g, "escribir")}`.slice(0, 160),
   equipo_read_file: (a) => `Leyó un archivo de ${str(a.equipo) || "un equipo"}`,
   equipo_write_file: (a) => `Subió un archivo a ${str(a.equipo) || "un equipo"}`,
   equipo_list_files: (a) => `Miró una carpeta de ${str(a.equipo) || "un equipo"}`,
