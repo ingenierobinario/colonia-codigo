@@ -12,7 +12,11 @@ export function openDb(home: string, env: NodeJS.ProcessEnv = process.env): Db {
     throw new Error(`refusing to open the real ${at} from a test run; pass a temp home`);
   }
   const db = new DatabaseSync(path.join(home, "colonia.db"));
-  db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
+  // PERF-8: with WAL, NORMAL syncs the disk at each checkpoint instead of at every write. The file cannot be corrupted
+  // by a crash or a power cut; only the last writes before a power cut may be undone (a process that dies loses none).
+  db.exec(
+    "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;",
+  );
   migrate(db);
   return db;
 }
