@@ -280,6 +280,8 @@ export function whatsappAdapter(opts: {
   resendWaitMs?: number;
   /** How long a message sent from the owner's phone waits, in case it is the echo of our own send (tests shorten it). */
   echoWaitMs?: number;
+  /** How long before trying again after a failed reconnection (tests shorten it; the usual wait grows each time). */
+  retryMs?: number;
   /** PROPIOS-6: the wait before asking for earlier messages, and between requests (tests shorten them). */
   historyWaitMs?: number;
   historyGapMs?: number;
@@ -339,6 +341,31 @@ export function whatsappAdapter(opts: {
     return connecting;
   }
 
+  /**
+   * ERR-3: connecting again from an event, where nobody awaits it. Opening can fail (the session folder busy on
+   * Windows, the disk, the library): said on the channel and tried again later, never a rejection nobody handles.
+   */
+  function reconnect(): void {
+    void connect().catch((err) => {
+      if (stopped) return;
+      log?.warn({ err: errorMessage(err, 200) }, "whatsapp did not reconnect");
+      io?.status("error", `WhatsApp could not reconnect: ${errorMessage(err, 150)}`);
+      const wait = BACKOFF_MS[Math.min(attempts++, BACKOFF_MS.length - 1)] ?? 60_000;
+      clearTimeout(retry);
+      retry = setTimeout(reconnect, opts.retryMs ?? wait);
+      retry.unref?.();
+    });
+  }
+
+  /** ERR-3: drops the session folder. Windows keeps a file busy for a moment after its last write: tried again. */
+  async function dropSession(): Promise<void> {
+    try {
+      await fs.promises.rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (err) {
+      log?.warn({ err: errorMessage(err, 200) }, "whatsapp session folder not removed");
+    }
+  }
+
   async function openSocket(): Promise<void> {
     if (!lib || stopped) return;
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
@@ -375,7 +402,9 @@ export function whatsappAdapter(opts: {
         // PROPIOS-3: what was written while this device was offline (a reconnection, the PC asleep) comes as
         // "append", not "notify": kept all the same, the owner's as theirs, the others' unread but unanswered.
         else if (up.type === "notify" || up.type === "append")
-          void onMessage(m, up.type === "append").catch((err) => log?.warn({ err: errorMessage(err, 200) }, "whatsapp message not handled"));
+          void onMessage(m, up.type === "append").catch((err) =>
+            log?.warn({ err: errorMessage(err, 200) }, "whatsapp message not handled"),
+          );
       }
     }) as (arg: never) => void);
     // PROPIOS-6: the phone's own history (when the device links, or asked for a chat's earlier messages).
@@ -438,8 +467,8 @@ export function whatsappAdapter(opts: {
     const why = u.lastDisconnect?.error?.message ?? `closed (${code ?? "?"})`;
     if (code === lib.DisconnectReason.loggedOut) {
       // Dead credentials: retrying them in a loop is how an account gets flagged. A human links it again.
-      void stop().then(() => {
-        fs.rmSync(dir, { recursive: true, force: true });
+      void stop().then(async () => {
+        await dropSession();
         me = undefined;
         io?.qr?.(undefined);
         io?.status("error", "WhatsApp logged this device out: link it again with the QR");
@@ -449,13 +478,13 @@ export function whatsappAdapter(opts: {
     // After a scan WhatsApp asks for a restart: the linked session comes up on the next connection.
     if (code === lib.DisconnectReason.restartRequired) {
       log?.info({ channel: "whatsapp" }, "whatsapp linked: reconnecting with the new credentials");
-      void saving.then(connect, connect);
+      void saving.then(reconnect, reconnect);
       return;
     }
     log?.warn({ code, why: why.slice(0, 200) }, "whatsapp connection closed");
     // Nobody scanned yet: a fresh round of codes, a few times, then wait for the owner.
     if (!hasCreds() && code === lib.DisconnectReason.timedOut && ++qrRounds < QR_ROUNDS) {
-      void connect();
+      reconnect();
       return;
     }
     if (!hasCreds()) {
@@ -465,7 +494,7 @@ export function whatsappAdapter(opts: {
     }
     io.status("error", `WhatsApp disconnected: ${why}`.slice(0, 200));
     const wait = BACKOFF_MS[Math.min(attempts++, BACKOFF_MS.length - 1)] ?? 60_000;
-    retry = setTimeout(() => void connect(), wait);
+    retry = setTimeout(reconnect, wait);
     retry.unref?.();
   }
 
@@ -503,7 +532,7 @@ export function whatsappAdapter(opts: {
     // WA-LID-1: the same for both sides of a chat. What the contact writes and what the owner writes on the phone may
     // each name the chat by the number or by the private id (with or without the other beside it); both are brought
     // to the number with this line's own mapping, so the two halves of one conversation land in the same chat.
-    let who = m.key.fromMe && !own ? me.pn : await canonicalJid(jid, m.key.remoteJidAlt);
+    const who = m.key.fromMe && !own ? me.pn : await canonicalJid(jid, m.key.remoteJidAlt);
     // PROPIOS-5: no number for that private id: the chat kept under the number will not be found. Traced by shape.
     if (who.endsWith("@lid"))
       log?.info({ server: "lid", own, offline }, "whatsapp message: no number for the private id");
@@ -635,7 +664,9 @@ export function whatsappAdapter(opts: {
         external_id: m.key.id,
         conversation: who,
         own: Boolean(m.key.fromMe),
-        ...(m.key.fromMe ? {} : { name: (m.verifiedBizName?.trim() || m.pushName?.trim() || "").slice(0, 80) || undefined }),
+        ...(m.key.fromMe
+          ? {}
+          : { name: (m.verifiedBizName?.trim() || m.pushName?.trim() || "").slice(0, 80) || undefined }),
         text: said,
         at: new Date(secs * 1000).toISOString(),
       });
@@ -678,7 +709,9 @@ export function whatsappAdapter(opts: {
       if (!Number.isFinite(at)) continue;
       // WA-LID-1: the phone answers only for the chat as it names it now, by the private id once the contact has one:
       // asked by the number, such a chat never answers (nothing came back for the 8 chats asked on 13-nov).
-      const lid = normalJid(await s.signalRepository?.lidMapping?.getLIDForPN?.(c.conversation)?.catch(() => undefined));
+      const lid = normalJid(
+        await s.signalRepository?.lidMapping?.getLIDForPN?.(c.conversation)?.catch(() => undefined),
+      );
       const remoteJid = chats.get(c.oldest.id) ?? (lid.endsWith("@lid") ? lid : c.conversation);
       try {
         await fetchHistory(HISTORY_COUNT, { remoteJid, id: c.oldest.id, fromMe: c.oldest.fromMe }, at);
@@ -836,7 +869,7 @@ export function whatsappAdapter(opts: {
         await sock?.logout();
       } catch {}
       await stop();
-      fs.rmSync(dir, { recursive: true, force: true });
+      await dropSession();
     },
     async send(conversation, p: Presentation, files = []) {
       const options = p.buttons?.length ? p.buttons : undefined;

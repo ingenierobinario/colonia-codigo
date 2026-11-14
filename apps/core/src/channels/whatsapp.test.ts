@@ -474,9 +474,7 @@ test("PROPIOS-1: what the owner types to a contact on the phone is kept in their
   await waitFor(async () => (await fromPhone()).length === 3, "kept in Ana's chat under her number");
   assert.deepEqual(await fromPhone(), ["see you at nine", "1", "under the private id"]);
   assert.ok(
-    !(await env.client.call("threads.list", {})).threads.some(
-      (t) => t.channel?.conversation === "200000000000077@lid",
-    ),
+    !(await env.client.call("threads.list", {})).threads.some((t) => t.channel?.conversation === "200000000000077@lid"),
     "no second chat under the private id",
   );
 
@@ -536,11 +534,34 @@ test("PROPIOS-6: the phone's history fills kept chats in order, once, as past; o
   // Long ago (2020), so they go before everything already in the chat.
   const at = (n: number) => 1_600_000_000 + n * 60;
   const old = [
-    { key: { id: "H-ANA-1", remoteJid: ANA.phone, fromMe: false }, pushName: "Ana", message: { conversation: "old hello" }, messageTimestamp: at(1) },
-    { key: { id: "H-ME-1", remoteJid: ANA.phone, fromMe: true }, message: { conversation: "old reply" }, messageTimestamp: at(2) },
-    { key: { id: "H-ANA-2", remoteJid: ANA.phone, fromMe: false }, pushName: "Ana", message: { conversation: "old bye" }, messageTimestamp: at(3) },
-    { key: { id: "H-ZOE-1", remoteJid: zoe, fromMe: false }, pushName: "Zoe", message: { conversation: "not kept" }, messageTimestamp: at(1) },
-    { key: { id: "H-GRP-1", remoteJid: "120363000000000002@g.us", fromMe: false }, message: { conversation: "group" }, messageTimestamp: at(1) },
+    {
+      key: { id: "H-ANA-1", remoteJid: ANA.phone, fromMe: false },
+      pushName: "Ana",
+      message: { conversation: "old hello" },
+      messageTimestamp: at(1),
+    },
+    {
+      key: { id: "H-ME-1", remoteJid: ANA.phone, fromMe: true },
+      message: { conversation: "old reply" },
+      messageTimestamp: at(2),
+    },
+    {
+      key: { id: "H-ANA-2", remoteJid: ANA.phone, fromMe: false },
+      pushName: "Ana",
+      message: { conversation: "old bye" },
+      messageTimestamp: at(3),
+    },
+    {
+      key: { id: "H-ZOE-1", remoteJid: zoe, fromMe: false },
+      pushName: "Zoe",
+      message: { conversation: "not kept" },
+      messageTimestamp: at(1),
+    },
+    {
+      key: { id: "H-GRP-1", remoteJid: "120363000000000002@g.us", fromMe: false },
+      message: { conversation: "group" },
+      messageTimestamp: at(1),
+    },
   ];
   // Handed over out of order, and then again (duplicates).
   const [a1, m1, a2, z1, g1] = old;
@@ -569,7 +590,10 @@ test("PROPIOS-6: the phone's history fills kept chats in order, once, as past; o
   await waitFor(() => wa.sockets > sockets, "connected again");
   await waitFor(() => wa.historyAsked.some((h) => h.key.remoteJid === ANA.phone), "asked for Ana's chat");
   assert.equal(wa.historyAsked.filter((h) => h.key.remoteJid === ANA.phone).length, 1);
-  assert.ok(wa.historyAsked.every((h) => h.count === 50 && h.ms > 1e12), "count and time in ms");
+  assert.ok(
+    wa.historyAsked.every((h) => h.count === 50 && h.ms > 1e12),
+    "count and time in ms",
+  );
   const asked = wa.historyAsked.find((h) => h.key.remoteJid === ANA.phone);
   assert.equal(asked?.key.id, "H-ANA-1", "before her oldest message");
   assert.equal(asked?.ms, at(1) * 1000);
@@ -714,4 +738,45 @@ test("BANDEJA-1: a contact named only with emoji is shown by its number; a real 
   assert.equal(displayName("🔥✨", "34600111222@s.whatsapp.net"), "+34600111222");
   assert.equal(displayName("Ana 🔥", "34600111222@s.whatsapp.net"), "Ana 🔥");
   assert.equal(displayName("🔥", "123@lid"), "🔥");
+});
+
+test("ERR-3: a reconnection that cannot open the session is said on the channel and tried again, never left unhandled", async () => {
+  const fake = fakeWhatsApp();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
+  let opens = 0;
+  const lib = {
+    ...fake.lib,
+    useMultiFileAuthState: async (at: string) => {
+      // The second opening fails once, as a session file still held by Windows does.
+      if (++opens === 2) throw Object.assign(new Error("EBUSY: resource busy or locked"), { code: "EBUSY" });
+      return fake.lib.useMultiFileAuthState(at);
+    },
+  };
+  const stray: unknown[] = [];
+  const onStray = (err: unknown) => stray.push(err);
+  process.on("unhandledRejection", onStray);
+  const adapter = whatsappAdapter({ dir, lib: async () => lib, retryMs: 20 });
+  const codes: string[] = [];
+  const states: string[] = [];
+  try {
+    await adapter.start({
+      receive: () => {},
+      action: () => {},
+      status: (s, e) => states.push(`${s}:${e ?? ""}`),
+      qr: (c) => c && codes.push(c),
+      signal: new AbortController().signal,
+    });
+    await waitFor(() => codes.length === 1, "a first code");
+    fake.expire();
+    await waitFor(() => states.length === 1, "the failure said");
+    assert.ok(states[0]?.startsWith("error:WhatsApp could not reconnect: EBUSY"), states[0]);
+    await waitFor(() => codes.length === 2, "tried again: a new code");
+    assert.equal(opens, 3);
+    await new Promise((r) => setImmediate(r));
+    assert.deepEqual(stray, []);
+  } finally {
+    process.off("unhandledRejection", onStray);
+    await adapter.stop();
+    removeDir(dir);
+  }
 });
