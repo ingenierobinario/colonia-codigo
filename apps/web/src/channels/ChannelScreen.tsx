@@ -4,7 +4,8 @@ import { EmptyState, IconButton, Icons, ProjectTile, SearchField } from "@coloni
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatView } from "../chat/ChatView.tsx";
 import { shortWhen } from "../common/format.ts";
-import { loadChannels, loadPresence, type PresenceState, useChannels } from "../data/channels.ts";
+import { loadChannels, loadPresence, type PresenceState, useChannels, watchChannels } from "../data/channels.ts";
+import { keepSame, poll } from "../data/poll.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { SidePanel } from "../panel/SidePanel.tsx";
@@ -44,11 +45,7 @@ export function ChannelScreen() {
   // The card sits beside the chat on wide screens; on narrow ones it covers it, so it starts closed there.
   const [card, setCard] = useState(() => window.innerWidth >= 1280);
   // Someone new may write while this list is open: it is read again every few seconds, as the settings do.
-  useEffect(() => {
-    void loadChannels();
-    const id = setInterval(() => void loadChannels(), 5000);
-    return () => clearInterval(id);
-  }, []);
+  useEffect(() => watchChannels(), []);
   const channel = channels.find((c) => c.id === channelId);
   // WhatsApp says who is online to a device that asks; it is asked again with the list.
   const [presence, setPresence] = useState<Record<string, PresenceState>>({});
@@ -57,12 +54,14 @@ export function ChannelScreen() {
     setPresence({});
     if (!watchPresence || !channelId) return;
     let live = true;
-    const ask = () => void loadPresence(channelId).then((p) => live && setPresence(p));
-    ask();
-    const id = setInterval(ask, 5000);
+    // PERF-3: sin novedades se conserva el objeto (la lista no se repinta) y con la ventana oculta no se pregunta.
+    const stop = poll(
+      () => loadPresence(channelId).then((p) => live && setPresence((prev) => keepSame(prev, p))),
+      5000,
+    );
     return () => {
       live = false;
-      clearInterval(id);
+      stop();
     };
   }, [watchPresence, channelId]);
 

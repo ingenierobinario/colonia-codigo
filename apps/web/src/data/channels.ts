@@ -6,6 +6,7 @@ import { loadThread } from "./actions.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import { notify } from "./notices.ts";
+import { keepSame, poll } from "./poll.ts";
 import { data } from "./state.ts";
 
 type State = {
@@ -45,13 +46,15 @@ export async function loadChannels(): Promise<void> {
       client.call("notices.get", {}),
       client.call("imessage.get", {}),
     ]);
+    // PERF-3: lo que llegó igual conserva su referencia; una relectura sin novedades no repinta nada.
+    const s = store.get();
     store.set({
-      channels: c.channels,
-      persons: p.persons,
-      pairing: r.requests,
-      outbox: o.items,
-      notices: n,
-      imessage: im,
+      channels: keepSame(s.channels, c.channels),
+      persons: keepSame(s.persons, p.persons),
+      pairing: keepSame(s.pairing, r.requests),
+      outbox: keepSame(s.outbox, o.items),
+      notices: keepSame(s.notices, n),
+      imessage: keepSame(s.imessage, im),
       ready: true,
     });
   } catch (e) {
@@ -59,6 +62,9 @@ export async function loadChannels(): Promise<void> {
     notify(t("error.channels", { error: errText(e) }));
   }
 }
+
+/** PERF-3: relee los canales cada `ms` mientras la ventana se ve. Devuelve cómo pararlo. */
+export const watchChannels = (ms = 5000): (() => void) => poll(loadChannels, ms);
 
 export type ChannelDraft = {
   type?: ChannelInfo["type"];

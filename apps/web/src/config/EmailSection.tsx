@@ -4,7 +4,7 @@ import { Badge, Button, Icons, Input, Select, SettingRow, Switch, TagInput } fro
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
-import { type ChannelDraft, loadChannels, saveChannel, useChannels } from "../data/channels.ts";
+import { type ChannelDraft, saveChannel, useChannels, watchChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -194,11 +194,7 @@ function ServerFields({ title, value, onChange }: { title: string; value: MailSe
 export function EmailSection() {
   const channels = useChannels((s) => s.channels);
   const ready = useChannels((s) => s.ready);
-  useEffect(() => {
-    void loadChannels();
-    const id = setInterval(() => void loadChannels(), 5000);
-    return () => clearInterval(id);
-  }, []);
+  useEffect(() => watchChannels(), []);
   const t = useT();
   const [selected, setSelected] = useState("");
   const [adding, setAdding] = useState(false);

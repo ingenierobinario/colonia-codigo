@@ -5,7 +5,7 @@ import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { QrCode } from "../common/QrCode.tsx";
 import { RouterChain } from "../config/models/RouterChain.tsx";
 import { ProvidersGrid } from "../config/ProvidersGrid.tsx";
-import { loadChannels, saveChannel, useChannels } from "../data/channels.ts";
+import { saveChannel, useChannels, watchChannels } from "../data/channels.ts";
 import { client } from "../data/client.ts";
 import { loadCatalog, splitRef, useModels } from "../data/models.ts";
 import { notify } from "../data/notices.ts";
@@ -232,8 +232,7 @@ function WhatsAppCard() {
   // While linking the QR changes every few seconds: read it often.
   useEffect(() => {
     if (!wa || running) return;
-    const id = setInterval(() => void loadChannels(), 1500);
-    return () => clearInterval(id);
+    return watchChannels(1500);
   }, [wa, running]);
   const link = async () => {
     const boss = secretaryOf(agents);

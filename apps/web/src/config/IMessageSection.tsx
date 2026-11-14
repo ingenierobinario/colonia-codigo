@@ -4,7 +4,7 @@ import { Badge, EmptyState, Icons, SettingRow, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
-import { type ChannelDraft, loadChannels, saveChannel, setIMessage, useChannels } from "../data/channels.ts";
+import { type ChannelDraft, saveChannel, setIMessage, useChannels, watchChannels } from "../data/channels.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
@@ -17,11 +17,7 @@ export function IMessageSection() {
   const t = useT();
   const im = useChannels((s) => s.imessage);
   const channel = useChannels((s) => s.channels.find((c) => c.type === "imessage"));
-  useEffect(() => {
-    void loadChannels();
-    const id = setInterval(() => void loadChannels(), 5000);
-    return () => clearInterval(id);
-  }, []);
+  useEffect(() => watchChannels(), []);
   if (!im) return null;
   if (!im.available)
     return (

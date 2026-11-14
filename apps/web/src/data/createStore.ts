@@ -14,6 +14,15 @@ export function createStore<S extends object>(initial: S): Store<S> {
     get: () => state,
     set(next) {
       const patch = typeof next === "function" ? next(state) : next;
+      // PERF-4: un parche que no cambia nada no despierta a nadie (cada aviso hace correr todos los selectores).
+      let changed = false;
+      for (const k in patch) {
+        if (!Object.is(patch[k], state[k as keyof S])) {
+          changed = true;
+          break;
+        }
+      }
+      if (!changed) return;
       state = { ...state, ...patch };
       for (const l of listeners) l();
     },

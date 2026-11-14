@@ -6,7 +6,7 @@ import { KindTile } from "../channels/KindIcon.tsx";
 import { PhoneForm, phoneOf } from "../channels/PhoneForm.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
 import { QrCode } from "../common/QrCode.tsx";
-import { type ChannelDraft, loadChannels, saveChannel, unlinkAddress, useChannels } from "../data/channels.ts";
+import { type ChannelDraft, saveChannel, unlinkAddress, useChannels, watchChannels } from "../data/channels.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
@@ -33,11 +33,7 @@ export function WhatsAppSection() {
   const channel = connecting ? undefined : found;
   // While a QR waits it changes every few seconds: read it often then, rarely otherwise.
   const linking = accounts.some((c) => c.status === "starting");
-  useEffect(() => {
-    void loadChannels();
-    const id = setInterval(() => void loadChannels(), linking ? 1500 : 5000);
-    return () => clearInterval(id);
-  }, [linking]);
+  useEffect(() => watchChannels(linking ? 1500 : 5000), [linking]);
   return (
     <>
       {accounts.length > 0 && (
