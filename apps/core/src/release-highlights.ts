@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.14": {
+    en: [
+      "Connecting Slack takes three steps: one button creates the app already set up, then you paste its two codes.",
+      "Every channel's first step now has a button that opens the right page.",
+    ],
+    es: [
+      "Conectar Slack son tres pasos: un botón crea la app ya configurada y luego pegas sus dos códigos.",
+      "El primer paso de cada canal tiene un botón que abre la página que toca.",
+    ],
+  },
   "2.36.13": {
     en: ["Opening an app on a connected Windows computer works again, and so do its screenshots."],
     es: ["Abrir una app en un equipo Windows conectado vuelve a funcionar, y también sus capturas de pantalla."],
