@@ -171,3 +171,24 @@ test("local connection verifies the daemon home identity before lending capabili
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("ERR-2: a saved local target whose folder is gone starts the default Colonia and says so", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-gone-"));
+  const home = path.join(root, "core");
+  const data = path.join(root, "desktop");
+  fs.mkdirSync(home);
+  fs.writeFileSync(path.join(home, "home-id"), "same-home");
+  try {
+    saveLocalTarget(data, prepareLocalTarget({ home, port: 7551, home_id: "same-home" }, "stored-token"));
+    fs.rmSync(home, { recursive: true, force: true });
+    const env: NodeJS.ProcessEnv = {};
+    const said: string[] = [];
+    applySavedLocalTarget(data, env, (m) => said.push(m));
+    assert.equal(env.COLONIA_HOME, undefined);
+    assert.equal(env.COLONIA_PORT, undefined);
+    assert.equal(said.length, 1);
+    assert.ok(said[0]?.includes("cannot be read (ENOENT)"));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

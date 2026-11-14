@@ -51,11 +51,25 @@ export function forgetConnection(dataDir: string): void {
 }
 
 /** A desktop installed from the local panel retains that exact installation after a restart. */
-export function applySavedLocalTarget(dataDir: string, env: NodeJS.ProcessEnv): void {
+export function applySavedLocalTarget(
+  dataDir: string,
+  env: NodeJS.ProcessEnv,
+  warn: (message: string) => void = (message) => console.warn(`[colonia] ${message}`),
+): void {
   if (env.COLONIA_URL || env.COLONIA_HOME || env.COLONIA_PORT) return;
   const target = loadConnection(dataDir);
   if (target?.mode !== "local" || !target.home || !target.port || !target.home_id) return;
-  const identity = fs.readFileSync(path.join(target.home, "home-id"), "utf8").trim();
+  // ERR-2: a saved folder that is gone (moved, deleted, a disk not mounted) must not stop the app from opening: it
+  // starts on this computer's default Colonia and says so. A folder that is there but belongs to another still throws.
+  let identity: string;
+  try {
+    identity = fs.readFileSync(path.join(target.home, "home-id"), "utf8").trim();
+  } catch (err) {
+    warn(
+      `The saved local Colonia at ${target.home} cannot be read (${(err as NodeJS.ErrnoException).code ?? "error"}): starting the default one`,
+    );
+    return;
+  }
   if (identity !== target.home_id) throw new Error("The saved local Colonia belongs to another installation");
   env.COLONIA_HOME = target.home;
   env.COLONIA_PORT = String(target.port);
@@ -121,7 +135,10 @@ export async function verifyLocalCore(
 ): Promise<"matches" | "mismatch" | "missing"> {
   const expected = fs.readFileSync(path.join(localCoreHome(env), "home-id"), "utf8").trim();
   const token = localCoreToken(env);
-  const health = await new ColoniaClient({ url, ...(token ? { token } : {}), timeoutMs: 2000 }).call("system.health", {});
+  const health = await new ColoniaClient({ url, ...(token ? { token } : {}), timeoutMs: 2000 }).call(
+    "system.health",
+    {},
+  );
   if (!expected || !health.home_id.trim()) return "missing";
   return health.home_id === expected ? "matches" : "mismatch";
 }
