@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.12": {
+    en: [
+      "The + under Browsers now offers to install the ones you lack: Chrome, Edge, Firefox, Brave, Opera, Vivaldi.",
+      "On a connected computer, agents open apps on the visible desktop, see its screen and click or type there.",
+      "Colonia loads faster, refreshes less in the background and keeps running after an unexpected error.",
+    ],
+    es: [
+      "El + de Navegadores ofrece instalar los que te faltan: Chrome, Edge, Firefox, Brave, Opera y Vivaldi.",
+      "En un equipo conectado, los agentes abren apps en su pantalla, la ven y hacen clic o escriben en ella.",
+      "Colonia carga más rápido, consulta menos en segundo plano y sigue en pie ante un error inesperado.",
+    ],
+  },
   "2.36.11": {
     en: [
       "The built-in browser plays videos full screen, downloads files, finds text with Ctrl+F and zooms.",
