@@ -80,6 +80,7 @@ import { transcriptionHandlers } from "./rpc/transcription.ts";
 import { webAppHandlers } from "./rpc/webapps.ts";
 import { webhookHandlers } from "./rpc/webhooks.ts";
 import type { Secrets } from "./secrets.ts";
+import { saveUpload } from "./services/uploads.ts";
 import type { RuntimeHomes } from "./skills/runtimes.ts";
 import { storedPublicPages } from "./surface-pages.ts";
 import type { Telemetry } from "./telemetry.ts";
@@ -182,7 +183,7 @@ export function builtinTools(
     ...memoryTools(store),
     ...mediaTools(store, home, vm),
     ...phoneTools(),
-    ...equipoTools(store),
+    ...equipoTools(store, (a) => saveUpload(home, store, a)),
     ...computerTools(store),
     ...taskTools(store, home),
     ...videoTools(findProgram("yt-dlp")),
