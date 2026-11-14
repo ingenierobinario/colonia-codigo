@@ -378,6 +378,29 @@ export const es: Partial<Record<MessageKey, string>> = {
   "navegadores.emptyBody":
     "Escribe una dirección arriba y pulsa Enter. Donde inicies sesión aquí seguirás dentro, y tus agentes podrán leer estas pestañas cuando se lo pidas.",
   "navegadores.saveError": "No se pudo guardar el navegador: {error}",
+  // INSTALAR-NAV-1
+  "navegadores.found": "En este equipo",
+  "navegadores.installSection": "Instalar",
+  "navegadores.mainProfile": "Principal",
+  "navegadores.installing": "Instalando {name}",
+  "navegadores.installedTitle": "{name} instalado",
+  "navegadores.installFailedTitle": "{name} no se ha instalado",
+  "navegadores.installRunning": "Puede tardar unos minutos. Si el sistema te pide permiso, acéptalo.",
+  "navegadores.installDownloading": "Descargando el instalador…",
+  "navegadores.installDownloadingPct": "Descargando el instalador… {percent} %",
+  "navegadores.installWaitInstaller":
+    "Sigue los pasos del instalador que se ha abierto. Lo añado aquí en cuanto termine.",
+  "navegadores.installWaitDmg":
+    "Arrástralo a la carpeta Aplicaciones en la ventana que se ha abierto. Lo añado aquí en cuanto esté.",
+  "navegadores.installWaitPackage":
+    "Confirma la instalación en la ventana que se ha abierto. Lo añado aquí en cuanto termine.",
+  "navegadores.installWaitPage":
+    "Te he abierto su página oficial: descárgalo e instálalo desde ahí. Lo añado aquí en cuanto esté.",
+  "navegadores.installDone": "Ya lo tienes en la barra.",
+  "navegadores.installFailed": "No he podido completarlo. Puedes descargarlo desde su página oficial.",
+  "navegadores.installOpenPage": "Abrir la página de {name}",
+  "navegadores.installCancel": "Cancelar",
+  "navegadores.installClose": "Cerrar",
   "webapp.newTitle": "Nueva aplicación web",
   "webapp.editTitle": "Editar aplicación web",
   "webapp.lead": "Se abre dentro de Colonia y recuerda tu inicio de sesión, aparte del navegador de los agentes.",

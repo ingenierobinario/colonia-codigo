@@ -26,6 +26,14 @@ import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
 import { createDownloads } from "./browser/downloads.ts";
 import { installedBrowsers, isWebUrl, openExternal } from "./browser/external.ts";
 import { BrowserHost, blockAppOrigins } from "./browser/host.ts";
+import {
+  downloadToTemp,
+  execToEnd,
+  type InstallProgress,
+  installBrowser,
+  missingBrowsers,
+  realInstallEnv,
+} from "./browser/install.ts";
 import { pageMenu } from "./browser/page-menu.ts";
 import { permissionQuestion, TAB_ACTIONS, type TabAction } from "./browser/policy.ts";
 import { createPopout } from "./browser/popout.ts";
@@ -495,6 +503,46 @@ app.whenReady().then(() => {
   ipcMain.handle("browser:open-external", (e, url: unknown, browser: unknown) =>
     ownBrowserPanel(e.sender) ? openExternal(url, browser ?? undefined) : false,
   );
+  // INSTALAR-NAV-1: the browsers this computer lacks, and installing one of them (by id, from the closed list).
+  // One at a time; its progress goes to the panels, and the computer is looked at again before it says "done".
+  let installing: { id: string; stop: AbortController; done: Promise<InstallProgress> } | undefined;
+  ipcMain.handle("browser:installable", (e) =>
+    ownBrowserPanel(e.sender)
+      ? missingBrowsers(
+          process.platform,
+          installedBrowsers(true).map((b) => b.id),
+        )
+      : [],
+  );
+  ipcMain.handle("browser:install", async (e, id: unknown) => {
+    if (!ownBrowserPanel(e.sender) || typeof id !== "string") return undefined;
+    if (installing) return installing.id === id ? installing.done : undefined;
+    const stop = new AbortController();
+    const done = installBrowser(
+      id,
+      {
+        env: realInstallEnv(language ?? app.getLocale()),
+        exec: execToEnd,
+        download: downloadToTemp,
+        open: async (file) => {
+          const error = await shell.openPath(file);
+          if (error) throw new Error(error);
+        },
+        detect: (browser) => installedBrowsers(true).some((b) => b.id === browser),
+        progress: (p) => toPanels("browser:install-progress", p),
+      },
+      stop.signal,
+    );
+    installing = { id, stop, done };
+    try {
+      return await done;
+    } finally {
+      installing = undefined;
+    }
+  });
+  ipcMain.on("browser:install-cancel", (e) => {
+    if (ownBrowserPanel(e.sender)) installing?.stop.abort();
+  });
 
   const artifactWindows = createArtifactWindows({
     url: () => base,

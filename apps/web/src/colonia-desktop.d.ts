@@ -20,6 +20,17 @@ export type ImportRead = {
   visitadas: { host: string; visitas: number }[];
   visitadasNoDisponibles: boolean;
 };
+/** INSTALAR-NAV-1: how installing a browser is going. `page` is its maker's download page. */
+export type BrowserInstallProgress = {
+  id: string;
+  name: string;
+  page: string;
+  phase: "installing" | "downloading" | "waiting" | "done" | "failed";
+  /** 0–100 while downloading, when the size is known. */
+  percent?: number;
+  /** What the owner has in front while waiting. */
+  step?: "installer" | "dmg" | "package" | "page";
+};
 /** NAVEGADORES-2: a bookmark of a profile's bookmarks bar, or a folder of them. */
 export type BookmarkNode = { titulo: string; url: string } | { titulo: string; hijos: BookmarkNode[] };
 export type SavedLogin = { id: string; app: string; origen: string; usuario: string };
@@ -110,6 +121,12 @@ declare global {
       showDownload?(id: string): void;
       /** The browsers installed on this computer (Chrome, Safari, Firefox…). */
       installedBrowsers?(): Promise<Array<{ id: string; name: string }>>;
+      /** INSTALAR-NAV-1: the browsers this computer lacks and can install, from their makers. */
+      installableBrowsers?(): Promise<Array<{ id: string; name: string }>>;
+      /** Installs one by id; resolves how it ended (undefined: another one is being installed). */
+      installBrowser?(id: string): Promise<BrowserInstallProgress | undefined>;
+      cancelBrowserInstall?(): void;
+      onBrowserInstall?(listener: (progress: BrowserInstallProgress) => void): () => void;
       /** Opens a web page in the system's default browser, or in an installed one by id. */
       openExternal?(url: string, browser?: string): Promise<boolean>;
       /** Opens an artifact in a desktop window of its own (one per artifact). */

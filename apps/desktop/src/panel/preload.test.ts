@@ -114,6 +114,9 @@ test("panel requests return native replies without exposing a general invoke cap
   calls.length = 0;
   const cases: [string, unknown[], string, unknown[]][] = [
     ["installedBrowsers", [], "browser:installed", []],
+    ["installableBrowsers", [], "browser:installable", []],
+    ["installBrowser", ["firefox"], "browser:install", ["firefox"]],
+    ["installBrowser", [7], "browser:install", ["7"]],
     ["openExternal", ["https://example.com", "firefox"], "browser:open-external", ["https://example.com", "firefox"]],
     ["openExternal", [12, false], "browser:open-external", ["12", undefined]],
     ["computerPermissions", [], "computer:permissions", []],

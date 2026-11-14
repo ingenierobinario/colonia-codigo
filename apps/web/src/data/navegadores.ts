@@ -10,19 +10,9 @@ type State = { navegadores: Navegador[]; loaded: boolean };
 const store = createStore<State>({ navegadores: [], loaded: false });
 export const useNavegadores = <T>(select: (s: State) => T): T => useSlice(store, select);
 
-export const BROWSER_NAMES = { chrome: "Chrome", edge: "Edge", brave: "Brave", firefox: "Firefox" } as const;
+// INSTALAR-NAV-1: the names and the id live apart, free of the client, so what uses them can be tested.
+export { BROWSER_NAMES, navegadorId } from "./navegador-names.ts";
 export const navProfile = (id: string) => `nav:${id}` as const;
-
-/** "chrome", "Profile 1" → "chrome-profile-1": stable, so adding the same profile twice keeps one entry. */
-export function navegadorId(browser: string, profile: string): string {
-  return `${browser}-${profile}`
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64);
-}
 
 export async function loadNavegadores(): Promise<void> {
   try {
@@ -43,3 +33,6 @@ export async function saveNavegador(id: string, navegador: Omit<Navegador, "id">
     return false;
   }
 }
+
+/** INSTALAR-NAV-1: the list as it is right now, for code that runs after a wait. */
+export const currentNavegadores = (): Navegador[] => store.get().navegadores;

@@ -1189,7 +1189,8 @@ export type WebApp = z.infer<typeof WebApp>;
 /** NAVEGADORES-1: a profile of one of the owner's browsers, added under Navegadores; its tabs use profile nav:<id>. */
 export const Navegador = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/),
-  browser: z.enum(["chrome", "edge", "brave", "firefox"]),
+  // INSTALAR-NAV-1: Opera, Vivaldi and Safari too.
+  browser: z.enum(["chrome", "edge", "brave", "firefox", "opera", "vivaldi", "safari"]),
   /** The profile's own name as the browser shows it (Work, Personal…). */
   name: z.string().trim().min(1).max(80),
   email: z.string().max(200).optional(),

@@ -46,6 +46,15 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
   openDownload: (id: string) => ipcRenderer.send("browser:download-open", String(id)),
   showDownload: (id: string) => ipcRenderer.send("browser:download-show", String(id)),
   installedBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installed"),
+  /** INSTALAR-NAV-1: the browsers this computer lacks, installing one by its id, and how that is going. */
+  installableBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installable"),
+  installBrowser: (id: string): Promise<unknown> => ipcRenderer.invoke("browser:install", String(id)),
+  cancelBrowserInstall: () => ipcRenderer.send("browser:install-cancel"),
+  onBrowserInstall: (listener: (progress: unknown) => void) => {
+    const on = (_e: unknown, progress: unknown) => listener(progress);
+    ipcRenderer.on("browser:install-progress", on);
+    return () => ipcRenderer.removeListener("browser:install-progress", on);
+  },
   /** `browser` undefined = the system's default browser. */
   openExternal: (url: string, browser?: string): Promise<unknown> =>
     ipcRenderer.invoke("browser:open-external", String(url), typeof browser === "string" ? browser : undefined),
