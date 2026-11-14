@@ -137,7 +137,7 @@ export function InboxList() {
             {query ? t("inbox.noMatch", { query }) : t("inbox.emptyBody")}
           </EmptyState>
         ) : view === "tree" ? (
-          <TreeView trees={trees} selected={threadId} />
+          <TreeView trees={trees} selected={threadId} projectId={projectId} />
         ) : view === "activity" ? (
           <Suspense fallback={<InboxSkeleton />}>
             <ActivityView groups={activity} selected={threadId} />

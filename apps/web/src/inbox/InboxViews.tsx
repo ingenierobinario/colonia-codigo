@@ -23,6 +23,7 @@ import { RoutineBundle } from "./RoutineBundle.tsx";
 import { ThreadAvatar } from "./ThreadAvatar.tsx";
 import { PinMark } from "./ThreadRow.tsx";
 import { threadMenu } from "./threadActions.tsx";
+import { toggleFolded, treeFoldKey, treeUnread } from "./treeFold.ts";
 import { useThreadChannel } from "./useThreadChannel.ts";
 
 /**
@@ -44,7 +45,16 @@ const cx = (...c: Array<string | false>) => c.filter(Boolean).join(" ");
 const PER_AGENT = 3;
 
 /** 1b · Tree: project → agent → chats. Everything explicit, one click away. */
-export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: string | undefined }) {
+export function TreeView({
+  trees,
+  selected,
+  projectId,
+}: {
+  trees: ProjectTree[];
+  selected: string | undefined;
+  /** The project whose chats are listed (none: the Inbox): its groups fold apart from every other list's. */
+  projectId?: string | undefined;
+}) {
   const t = useT();
   const agents = useShownAgents();
   const threads = useData((s) => s.threads);
@@ -53,8 +63,7 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
   const channels = useChannels((s) => s.channels);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const folded = usePrefs((s) => s.inboxFolded);
-  const toggleFold = (key: string) =>
-    setPrefs({ inboxFolded: folded.includes(key) ? folded.filter((k) => k !== key) : [...folded, key] });
+  const toggleFold = (key: string) => setPrefs({ inboxFolded: toggleFolded(folded, key) });
   // BANDEJA-1: no "Unread" block repeating chats: inside each branch the unread ones go first, so none hides under
   // "N more" (which says how many unread it holds). One opened while unread keeps its place while it stays open, read
   // by then, so the row clicked does not jump away.
@@ -71,9 +80,19 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
     <>
       {trees.map((tree) => {
         const via = tree.channel ? channels.find((c) => c.id === tree.channel) : undefined;
+        // ARBOL-PLEGAR-1: each group (project, base, channel account) folds to its head, remembered per list and group.
+        const groupKey = treeFoldKey(projectId, tree);
+        const groupShut = folded.includes(groupKey);
+        const groupUnread = groupShut ? treeUnread(tree) : 0;
         return (
           <div key={tree.key} className="tree__project">
-            <div className="tree__projecthead">
+            <button
+              type="button"
+              className="tree__projecthead"
+              aria-expanded={!groupShut}
+              title={t(groupShut ? "inbox.unfoldBranch" : "inbox.foldBranch")}
+              onClick={() => toggleFold(groupKey)}
+            >
               {tree.channel ? (
                 via ? (
                   <KindIcon kind={via.type} size={16} />
@@ -83,9 +102,15 @@ export function TreeView({ trees, selected }: { trees: ProjectTree[]; selected: 
               ) : (
                 <ProjectAvatar id={tree.project?.id} name={tree.name} size={16} />
               )}
-              <span>{tree.name || t("inbox.group.channel")}</span>
-            </div>
-            {(tree.channel ? unreadFirst(tree.agents, (b) => b.threads) : tree.agents).map((b) => {
+              <span className="tree__projectname">{tree.name || t("inbox.group.channel")}</span>
+              {groupUnread > 0 && (
+                <span className="tree__unread" title={t("inbox.groupUnread", { n: groupUnread })}>
+                  {groupUnread}
+                </span>
+              )}
+              <FoldChevron open={!groupShut} />
+            </button>
+            {(groupShut ? [] : tree.channel ? unreadFirst(tree.agents, (b) => b.threads) : tree.agents).map((b) => {
               if (b.routine)
                 return (
                   <RoutineBundle

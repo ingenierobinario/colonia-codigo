@@ -10,14 +10,37 @@
 .tree__project {
   padding: 6px 4px 10px;
 }
+/* ARBOL-PLEGAR-1: a group's head is a button that folds it: its name, the unread it hides while folded, the chevron
+   last (the sidebar's). Flat hover, as every fold of the Inbox. */
 .tree__projecthead {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
   padding: 6px 8px;
+  border: 0;
+  border-radius: var(--colonia-row-radius);
+  background: none;
+  font: inherit;
   font-size: var(--colonia-text-xs);
   font-weight: var(--colonia-weight-medium);
   color: var(--colonia-fg-subtle);
+  text-align: left;
+  cursor: pointer;
+}
+.tree__projecthead:hover {
+  background: var(--colonia-fill-hover);
+}
+.tree__projecthead > :first-child {
+  flex: none;
+}
+.tree__projectname {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .tree__unreaddot {
   width: 6px;
