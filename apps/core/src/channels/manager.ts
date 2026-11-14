@@ -532,7 +532,9 @@ export function createChannels(deps: {
     try {
       // Saved, but the keyring does not give it now (still locked at boot): a wait, not a refusal.
       if (token === undefined && secrets.backend === "secret-service" && secrets.listed(name))
-        throw new Error("The system keyring is locked. Unlock it (log in to the desktop) and this channel starts by itself");
+        throw new Error(
+          "The system keyring is locked. Unlock it (log in to the desktop) and this channel starts by itself",
+        );
       bringBack(config.id);
       const r = await adapter.start({
         receive: (m) => inbound.receive(config.id, m),
@@ -715,7 +717,11 @@ export function createChannels(deps: {
       });
       return info();
     },
-    /** Boot: sends cut by a restart become "uncertain", messages not handled yet are handled, channels start. */
+    /**
+     * Boot: sends cut by a restart become "uncertain", messages not handled yet are handled, channels start.
+     * PERF-7: the channels connect behind it, each on its own; the core does not wait for the slowest network (a
+     * WhatsApp handshake, a bot API that does not answer) to start its routines, its updates and the rest.
+     */
     async start(): Promise<void> {
       stopped = false;
       const cut = store.channels.outbox.reconcile();
@@ -723,10 +729,13 @@ export function createChannels(deps: {
       unsubscribe();
       unsubscribe = deps.bus.on(onEvent);
       inbound.resume();
-      await Promise.allSettled(configs().map(startOne));
       resumeFollowUps();
-      delivery.kick();
-      void stickers.nameUnnamed().catch((err) => log.warn({ err: errorMessage(err, 200) }, "stickers not named"));
+      // In each channel's own queue: a change saved while it connects waits for it instead of starting it twice.
+      void Promise.allSettled(configs().map((c) => serially(c.id, () => startOne(c)))).then(() => {
+        if (stopped) return;
+        delivery.kick();
+        void stickers.nameUnnamed().catch((err) => log.warn({ err: errorMessage(err, 200) }, "stickers not named"));
+      });
     },
     async stop(): Promise<void> {
       rooms.stop();
