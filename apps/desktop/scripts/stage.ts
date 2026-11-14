@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { nodeOs, targetOf } from "@colonia/protocol";
 import { CLIENT_FILE, clientFromJson, clientFromPair } from "../../core/src/integrations/google-client.ts";
+import { dependents, stageSingleFile } from "./stage-dep.ts";
 import { stageProtocol } from "./stage-protocol.ts";
 
 const repo = path.resolve(import.meta.dirname, "../../..");
@@ -90,6 +91,11 @@ fs.rmSync(path.join(out, "node_modules", ".bin"), { recursive: true, force: true
 
 // After npm (which prunes what package.json does not list).
 await stageProtocol(path.join(repo, "packages/protocol"), path.join(out, "node_modules/@colonia/protocol"), version);
+// PERF-6: kysely is 254 small files read at every start; only the core imports it, by its bare name.
+const modules = path.join(out, "node_modules");
+const askers = dependents(modules, "kysely");
+if (askers.length) console.log(`kysely stays as installed: ${askers.join(", ")} ask for it`);
+else await stageSingleFile(path.join(modules, "kysely"));
 
 let sha = process.env.GITHUB_SHA?.slice(0, 12) ?? "";
 if (!sha) {
