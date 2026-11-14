@@ -13,6 +13,7 @@ import { loadCatalog, loadModelsConfig } from "./models.ts";
 import { parseNewChat, takeNewChatModel } from "./newChat.ts";
 import { notify } from "./notices.ts";
 import { hasNoticesFor } from "./notifications.ts";
+import { keepSame } from "./poll.ts";
 import { data, upsertMessage } from "./state.ts";
 import { openMarkReadDialog } from "./threadAdmin.ts";
 
@@ -35,19 +36,12 @@ export async function bootstrap(): Promise<void> {
         return { chats: data.get().vmThreads, computers: data.get().computers };
       }),
   ]);
-  const prev = data.get().threads;
-  // Keep sub-threads opened in this session: threads.list leaves them out.
-  const keep = Object.fromEntries(
-    Object.values(prev)
-      .filter((t) => t.parent_id || t.kind === "a2a")
-      .map((t) => [t.id, t]),
-  );
   data.set({
     agents: Object.fromEntries(agents.agents.map((a) => [a.id, a])),
     former: Object.fromEntries((agents.former ?? []).map((a) => [a.id, a])),
     projects: projects.projects,
     base: projects.base,
-    threads: { ...keep, ...Object.fromEntries(threads.threads.map((t) => [t.id, t])) },
+    threads: listedThreads(data.get().threads, threads.threads),
     delegated: threads.delegated ?? {},
     surfaces: Object.fromEntries(surfaces.surfaces.map((s) => [s.id, s])),
     vmThreads: computer.chats,
@@ -60,6 +54,30 @@ export async function bootstrap(): Promise<void> {
   void loadEngines();
   void loadCatalog();
   void loadModelsConfig();
+}
+
+/** The chats the core lists, over the ones here: a chat that reads the same stays the same object (nothing repaints). */
+function listedThreads(prev: Record<string, Thread>, listed: Thread[]): Record<string, Thread> {
+  // Keep sub-threads opened in this session: threads.list leaves them out.
+  const keep = Object.fromEntries(
+    Object.values(prev)
+      .filter((t) => t.parent_id || t.kind === "a2a")
+      .map((t) => [t.id, t]),
+  );
+  return { ...keep, ...Object.fromEntries(listed.map((t) => [t.id, keepSame(prev[t.id] ?? t, t)])) };
+}
+
+/**
+ * PERF-9: back to the window. The socket heard every event meanwhile (a gap in its sequence, or a new connection,
+ * already reloads everything), so this only checks what the owner looks at first: the list of chats and the open chat.
+ */
+export async function refreshLight(openThread?: string): Promise<void> {
+  const r = await client.call("threads.list", { include_archived: true, delegated: DELEGATED_SHOWN });
+  data.set((s) => ({
+    threads: listedThreads(s.threads, r.threads),
+    delegated: keepSame(s.delegated, r.delegated ?? {}),
+  }));
+  if (openThread && data.get().messages[openThread]) await loadThread(openThread);
 }
 
 /** Projects whose own chats were loaded: a new bootstrap (a reconnect) loads them again. */

@@ -4,7 +4,7 @@ import type { ColoniaSocket } from "@colonia/protocol/client";
 import { t } from "../i18n/index.ts";
 import { documentToOpen } from "../panel/documents.ts";
 import { go, nav } from "../shell/nav.ts";
-import { bootstrap, refetchLoaded } from "./actions.ts";
+import { bootstrap, refetchLoaded, refreshLight } from "./actions.ts";
 import { client } from "./client.ts";
 import { flowDraftChanged } from "./flowDrafts.ts";
 import { flowRunMoved, flowTestHeard } from "./flowTests.ts";
@@ -20,6 +20,9 @@ import { needsPairing } from "./token.ts";
 import { loadUpdates, notePanel } from "./updates.ts";
 
 const RETRY_MS = [1000, 2000, 4000, 8000, 15000];
+/** Going back and forth between windows asks once in this long. */
+const FOCUS_REFRESH_MS = 5000;
+let focusedAt = 0;
 
 let started = false;
 let socket: ColoniaSocket | undefined;
@@ -33,9 +36,13 @@ export function startLive(): void {
   if (started) return;
   started = true;
   void connect();
-  // Coming back to the window (e.g. from the terminal) reloads everything, in case an event was missed.
+  // PERF-9: coming back to the window (e.g. from the terminal) checks the chats and the open one, not everything
+  // again: a missed event shows as a gap in the sequence and that does reload it all.
   window.addEventListener("focus", () => {
-    if (data.get().connection === "online") scheduleRefetch();
+    const now = Date.now();
+    if (data.get().connection !== "online" || now - focusedAt < FOCUS_REFRESH_MS) return;
+    focusedAt = now;
+    void refreshLight(nav.get().threadId ?? undefined).catch(() => {});
   });
 }
 

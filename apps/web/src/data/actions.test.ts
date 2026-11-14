@@ -349,3 +349,32 @@ test("clearing a chat asks the core for a new context in the same chat (LIMPIAR-
   await actions.clearThread("thr_1");
   assert.deepEqual(calls, [["threads.clear", { thread: "thr_1" }]]);
 });
+
+test("PERF-9: back to the window asks for the chats and the open chat, not everything again", async (t) => {
+  const ids = ["thr_1", "thr_2", "thr_3", "thr_4", "thr_5", "thr_6"];
+  const kept = thread("thr_2");
+  const calls = rpc(t, {
+    "threads.list": { threads: [...ids.map((id) => thread(id, id === "thr_3" ? "working" : "idle"))] },
+    "threads.get": { thread: thread("thr_1"), messages: [message("first", 1), message("second", 2)], runs: [] },
+  });
+  data.set({
+    threads: Object.fromEntries(ids.map((id) => [id, id === "thr_2" ? kept : thread(id)])),
+    messages: Object.fromEntries(ids.map((id) => [id, []])),
+  });
+  await actions.refreshLight("thr_1");
+  assert.deepEqual(
+    calls.map(([method]) => method),
+    ["threads.list", "threads.get"],
+  );
+  assert.equal(data.get().threads.thr_3?.state, "working", "what changed meanwhile shows");
+  assert.equal(data.get().threads.thr_2, kept, "a chat that reads the same is not a new object");
+  assert.equal(data.get().messages.thr_1?.length, 2, "the open chat has its new messages");
+  // With no chat open, or one whose messages were never loaded, the list alone.
+  calls.length = 0;
+  await actions.refreshLight("thr_9");
+  await actions.refreshLight();
+  assert.deepEqual(
+    calls.map(([method]) => method),
+    ["threads.list", "threads.list"],
+  );
+});
