@@ -2,6 +2,7 @@ import type { Equipo, EquipoLocal } from "@colonia/protocol";
 import { ContextMenu, Icons, NavItem } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
+import { keepSame, poll } from "../data/poll.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { focusEquipo, useEquipoFocus, useEquiposChanged } from "../equipos/equiposFocus.ts";
 import { equipoEntries, realName } from "../equipos/equiposModel.ts";
@@ -20,28 +21,23 @@ export function EquiposNav({ rail }: { rail: boolean }) {
   const focus = useEquipoFocus();
   const changed = useEquiposChanged();
   const [list, setList] = useState<{ equipos: Equipo[]; local?: EquipoLocal }>();
+  const hidden = folded && !rail;
+  // PERF-10: la lista solo se pide con la seccion a la vista (ni plegada ni con la ventana oculta), y una lectura
+  // igual a la anterior no repinta.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `changed` vuelve a pedir la lista sin esperar al sondeo
   useEffect(() => {
+    if (hidden) return;
     const abort = new AbortController();
-    let timer: ReturnType<typeof setTimeout>;
-    const poll = async () => {
-      try {
-        const r = await client.withSignal(abort.signal).call("equipos.list", {});
-        if (!abort.signal.aborted) setList(r);
-      } catch {
-        /* sin conexión con el servidor: se reintenta */
-      } finally {
-        if (!abort.signal.aborted) timer = setTimeout(() => void poll(), 10_000);
-      }
-    };
-    void poll();
+    const stop = poll(async () => {
+      const r = await client.withSignal(abort.signal).call("equipos.list", {});
+      if (!abort.signal.aborted) setList((prev) => keepSame(prev, r));
+    }, 10_000);
     return () => {
       abort.abort();
-      clearTimeout(timer);
+      stop();
     };
-  }, [changed]);
+  }, [changed, hidden]);
   const entries = equipoEntries(list);
-  const hidden = folded && !rail;
   const open = (id: string, edit = false) => {
     focusEquipo(id, edit);
     go.view("equipos");
