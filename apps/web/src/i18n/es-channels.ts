@@ -213,6 +213,7 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "em.addAccount": "Añadir cuenta de email",
   "bot.account": "Cuenta",
   "bot.addAccount": "Añadir otra cuenta",
+  "bot.open": "Abrir {site}",
   "em.lead": "Un buzón para el agente: lee el correo que llega y responde en el mismo hilo.",
   "em.step1": "Dale al agente un buzón propio (una cuenta nueva de Gmail u Outlook, o una de tu dominio).",
   "em.step2":

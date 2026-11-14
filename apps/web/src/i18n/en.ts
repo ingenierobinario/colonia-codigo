@@ -1900,13 +1900,14 @@ export const en = {
   "dc.step4": "Paste the token below, write to the bot in a direct message and type its code in “This is my Discord”.",
   "sl.lead":
     "Talk with your agents from Slack, in direct messages to your app. Only people you approve reach them; everyone else gets a code you approve here.",
-  "sl.step1": "At api.slack.com/apps, create an app and turn on Socket Mode: copy the app-level token (xapp-…).",
+  "sl.step1":
+    "Create the app: press the button, pick your Slack workspace and confirm. It comes fully set up, with nothing else to change.",
   "sl.step2":
-    "Give the bot the scopes chat:write, im:history, users:read and files:write; subscribe to the message.im event.",
-  "sl.step3": "In App Home, allow messages in the Messages tab. Install the app and copy the bot token (xoxb-…).",
-  "sl.step4": "Paste both tokens below, write to the app and type its code in “This is my Slack”.",
-  "sl.botToken": "Bot token",
-  "sl.appToken": "App-level token",
+    "Install it and copy the two codes. Under Install App, press Install and copy the one that starts with xoxb-. Under Basic Information › App-Level Tokens, press Generate, add connections:write and copy the one that starts with xapp-.",
+  "sl.step3": "Paste both codes below, write to the app in Slack and type what it answers in “This is my Slack”.",
+  "sl.create": "Create the app in Slack",
+  "sl.botToken": "Bot code (starts with xoxb-)",
+  "sl.appToken": "App code (starts with xapp-)",
   "mx.lead":
     "Talk with your agents from Matrix, on any server. Only direct chats are read, and only the people you approve reach them.",
   "mx.step1": "Create an account for the agent on your Matrix server (or use one you have for it).",

@@ -197,6 +197,7 @@ export const enChannels = {
   "em.addAccount": "Add email account",
   "bot.account": "Account",
   "bot.addAccount": "Add another account",
+  "bot.open": "Open {site}",
   "em.lead": "A mailbox for the agent: it reads the mail that arrives and answers in the same thread.",
   "em.step1": "Give the agent a mailbox of its own (a new Gmail or Outlook account, or one on your domain).",
   "em.step2":

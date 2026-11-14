@@ -534,6 +534,9 @@
   color: var(--colonia-fg-muted);
   font-size: var(--colonia-text-sm);
 }
+.tgsetup__start:not(:empty) {
+  margin-top: 6px;
+}
 .tgcard__error {
   color: var(--colonia-danger-fg, var(--colonia-fg-muted));
   font-size: var(--colonia-text-xs);

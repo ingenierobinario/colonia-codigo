@@ -91,17 +91,16 @@ A tus agentes solo les llegan los mensajes directos a la app; los canales del es
 
 <Steps>
 
-1. En **api.slack.com/apps**, crea una app y activa **Socket Mode**. Copia el token de la app (`xapp-…`).
+1. En Colonia, abre **Configuración › Canales**, **Agregar canal › Slack** y pulsa **Crear la app en Slack**. Slack se
+   abre con la app ya descrita (Socket Mode, mensajes directos, botones y los permisos `chat:write`, `im:history`,
+   `users:read` y `files:write`): elige tu espacio de trabajo y confirma.
 
-2. Dale al bot los permisos `chat:write`, `im:history`, `users:read` y `files:write`, y suscríbelo al evento
-   `message.im`.
+2. Instálala y copia los dos códigos. En **Install App**, pulsa **Install** y copia el que empieza por `xoxb-`. En
+   **Basic Information › App-Level Tokens**, pulsa **Generate**, añade `connections:write` y copia el que empieza por
+   `xapp-`.
 
-3. En **App Home**, permite mensajes en la pestaña **Messages**. Instala la app y copia el token del bot (`xoxb-…`).
-
-4. En Colonia, abre **Configuración › Canales**, **Agregar canal › Slack**. Pega los dos tokens (**Token del bot** y
-   **Token de la app**), elige **Quién responde** y pulsa **Conectar bot**.
-
-5. Escribe a la app y pon su código en **Este es mi Slack**.
+3. Pega los dos códigos en Colonia, elige **Quién responde** y pulsa **Conectar bot**. Escribe a la app y pon lo que
+   te conteste en **Este es mi Slack**.
 
 </Steps>
 

@@ -90,17 +90,16 @@ direct messages to the app reach your agents; the workspace's channels are ignor
 
 <Steps>
 
-1. At **api.slack.com/apps**, create an app and turn on **Socket Mode**. Copy the app-level token (`xapp-…`).
+1. In Colonia, open **Settings › Channels**, **Add channel › Slack** and press **Create the app in Slack**. Slack opens
+   with the app already described (Socket Mode, direct messages, buttons and the scopes `chat:write`, `im:history`,
+   `users:read` and `files:write`): pick your workspace and confirm.
 
-2. Give the bot the scopes `chat:write`, `im:history`, `users:read` and `files:write`, and subscribe to the
-   `message.im` event.
+2. Install it and copy the two codes. Under **Install App**, press **Install** and copy the one that starts with
+   `xoxb-`. Under **Basic Information › App-Level Tokens**, press **Generate**, add `connections:write` and copy the
+   one that starts with `xapp-`.
 
-3. In **App Home**, allow messages in the **Messages** tab. Install the app and copy the bot token (`xoxb-…`).
-
-4. In Colonia, open **Settings › Channels**, **Add channel › Slack**. Paste both tokens (**Bot token** and **App-level
-   token**), choose **Who answers** and press **Connect bot**.
-
-5. Write to the app and type its code under **This is my Slack**.
+3. Paste both codes in Colonia, choose **Who answers** and press **Connect bot**. Write to the app and type what it
+   answers under **This is my Slack**.
 
 </Steps>
 

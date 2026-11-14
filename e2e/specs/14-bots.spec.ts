@@ -119,8 +119,8 @@ test("Slack: the app connects with both tokens, the owner links their account an
 }) => {
   const { slack } = await world.info();
   await connect(page, "Slack", [
-    ["Token del bot", slack.bot],
-    ["Token de la app", slack.app],
+    ["Código del bot (empieza por xoxb-)", slack.bot],
+    ["Código de la app (empieza por xapp-)", slack.app],
   ]);
   await linkAndTalk(page, "sl", { id: "U5150", name: "Owner" });
 });

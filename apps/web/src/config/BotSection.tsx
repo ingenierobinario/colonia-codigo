@@ -9,6 +9,7 @@ import { type ChannelDraft, saveChannel, useChannels, watchChannels } from "../d
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { botStart } from "./botStart.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
 import { PublicAddress } from "./PublicAddress.tsx";
 import { isRoomsKind, RoomsSection } from "./RoomsSection.tsx";
@@ -57,7 +58,7 @@ const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: TokenSp
   },
   slack: {
     name: "Slack",
-    steps: ["sl.step1", "sl.step2", "sl.step3", "sl.step4"],
+    steps: ["sl.step1", "sl.step2", "sl.step3"],
     tokens: [
       { label: "sl.botToken", placeholder: "xoxb-…", pattern: /^xoxb-[\w-]{10,}$/ },
       { label: "sl.appToken", placeholder: "xapp-…", pattern: /^xapp-[\w-]{10,}$/ },
@@ -184,6 +185,26 @@ export const isBotKind = (k: string): k is BotKind => Object.hasOwn(BOTS, k);
 /** How to make a kind's bot and the token(s) it takes (the setup connects Discord and Slack with it too). */
 export const botSpec = (kind: BotKind) => BOTS[kind];
 
+/**
+ * CANALES-SENCILLOS-1: the press a kind's setup starts with. It opens the platform on the page of the first step; for
+ * Slack, with the app already described, so nothing is left to configure there by hand.
+ */
+export function StartButton({ kind, ordinal = 1 }: { kind: BotKind; ordinal?: number }) {
+  const t = useT();
+  const start = botStart(kind, ordinal);
+  if (!start) return null;
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      leadingIcon={<Icons.ExternalLink size={14} />}
+      onClick={() => window.open(start.url, "_blank", "noopener")}
+    >
+      {kind === "slack" ? t("sl.create") : t("bot.open", { site: start.site })}
+    </Button>
+  );
+}
+
 /** A bot channel (Telegram, Discord, Slack): connect it, choose who answers, approve who may write, see what went out. */
 export function BotSection({ kind }: { kind: BotKind }) {
   const t = useT();
@@ -237,6 +258,7 @@ export function BotSection({ kind }: { kind: BotKind }) {
               key={nextId}
               kind={kind}
               id={nextId}
+              ordinal={accounts.length + 1}
               onConnected={() => {
                 setSelected(nextId);
                 setAdding(false);
@@ -285,7 +307,18 @@ export function useTokens(kind: BotKind) {
   };
 }
 
-function Setup({ kind, id, onConnected }: { kind: BotKind; id: string; onConnected(): void }) {
+function Setup({
+  kind,
+  id,
+  ordinal,
+  onConnected,
+}: {
+  kind: BotKind;
+  id: string;
+  /** Which account of its kind this one will be: a second Slack app gets a name of its own. */
+  ordinal: number;
+  onConnected(): void;
+}) {
   const t = useT();
   const agents = useData((s) => s.agents);
   const secretary = Object.values(agents).find((a) => a.kind === "secretary");
@@ -312,8 +345,15 @@ function Setup({ kind, id, onConnected }: { kind: BotKind; id: string; onConnect
   return (
     <div className="tgsetup">
       <ol className="tgsetup__steps">
-        {BOTS[kind].steps.map((k) => (
-          <li key={k}>{t(k)}</li>
+        {BOTS[kind].steps.map((k, i) => (
+          <li key={k}>
+            {t(k)}
+            {i === 0 && (
+              <div className="tgsetup__start">
+                <StartButton kind={kind} ordinal={ordinal} />
+              </div>
+            )}
+          </li>
         ))}
       </ol>
       {tokens.specs.map((spec, i) => (

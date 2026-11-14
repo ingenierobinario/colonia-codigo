@@ -1,7 +1,7 @@
 import { Badge, Button, Input } from "@colonia/ui";
 import { useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
-import { botSpec, useTokens } from "../config/BotSection.tsx";
+import { botSpec, StartButton, useTokens } from "../config/BotSection.tsx";
 import { saveChannel, useChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
@@ -69,11 +69,16 @@ export function BotCard({ kind, line, body }: { kind: "discord" | "slack"; line:
             {t("setup.channels.howTo", { name: spec.name })}
           </button>
           {howTo && (
-            <ol className="wiz__howto">
-              {spec.steps.map((k) => (
-                <li key={k}>{t(k)}</li>
-              ))}
-            </ol>
+            <>
+              <ol className="wiz__howto">
+                {spec.steps.map((k) => (
+                  <li key={k}>{t(k)}</li>
+                ))}
+              </ol>
+              <div>
+                <StartButton kind={kind} />
+              </div>
+            </>
           )}
         </>
       )}

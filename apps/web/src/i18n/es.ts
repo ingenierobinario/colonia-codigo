@@ -1912,13 +1912,15 @@ export const es: Partial<Record<MessageKey, string>> = {
   "dc.step4": "Pega el token abajo, escríbele al bot por mensaje directo y pon su código en “Este es mi Discord”.",
   "sl.lead":
     "Habla con tus agentes desde Slack, por mensaje directo a tu app. Solo llegan las personas que apruebes; el resto recibe un código que apruebas aquí.",
-  "sl.step1": "En api.slack.com/apps, crea una app y activa Socket Mode: copia el token de la app (xapp-…).",
+  "sl.step1":
+    "Crea la app: pulsa el botón, elige tu espacio de trabajo de Slack y confirma. Ya va con todo configurado, no hay que tocar nada más.",
   "sl.step2":
-    "Dale al bot los permisos chat:write, im:history, users:read y files:write; suscríbelo al evento message.im.",
-  "sl.step3": "En App Home, permite mensajes en la pestaña Messages. Instala la app y copia el token del bot (xoxb-…).",
-  "sl.step4": "Pega los dos tokens abajo, escríbele a la app y pon su código en “Este es mi Slack”.",
-  "sl.botToken": "Token del bot",
-  "sl.appToken": "Token de la app",
+    "Instálala y copia los dos códigos. En Install App, pulsa Install y copia el que empieza por xoxb-. En Basic Information › App-Level Tokens, pulsa Generate, añade connections:write y copia el que empieza por xapp-.",
+  "sl.step3":
+    "Pega los dos códigos aquí abajo, escríbele a la app en Slack y pon lo que te conteste en “Este es mi Slack”.",
+  "sl.create": "Crear la app en Slack",
+  "sl.botToken": "Código del bot (empieza por xoxb-)",
+  "sl.appToken": "Código de la app (empieza por xapp-)",
   "mx.lead":
     "Habla con tus agentes desde Matrix, en cualquier servidor. Solo se leen los chats directos, y solo llegan las personas que apruebas.",
   "mx.step1": "Crea una cuenta para el agente en tu servidor de Matrix (o usa una que tengas para eso).",
