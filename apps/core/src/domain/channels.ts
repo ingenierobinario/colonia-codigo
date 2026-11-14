@@ -523,6 +523,17 @@ export function channelsRepo({ one, all, run }: Sql) {
             .where("id", "=", id),
         );
       },
+      /** PERF-7: what waited for this channel to be running is due now, not when its wait ends. */
+      wake(channel: string, error: string): void {
+        run(
+          qb
+            .updateTable("outbox")
+            .set({ next_at: now(), updated_at: now() })
+            .where("channel", "=", channel)
+            .where("state", "=", "queued")
+            .where("error", "=", error),
+        );
+      },
       /** Takes back an item no sender has taken yet: false once it is being sent or was. */
       withdraw(id: string, error: string): boolean {
         return (

@@ -10,6 +10,8 @@ import { type ChannelAdapter, SendError } from "./types.ts";
 
 const MAX_ATTEMPTS = 6;
 const NOT_RUNNING_RETRY_MS = 30_000;
+/** Why a send waits while its channel connects; the channel, once running, takes those first (manager.ts). */
+export const NOT_RUNNING = "channel is not running";
 
 export type Target = { adapter: ChannelAdapter; running: boolean; read_only?: boolean } | undefined;
 
@@ -63,7 +65,7 @@ export function createDelivery(deps: {
         store.channels.outbox.fail(o.id, "failed", "channel removed");
         if (o.message_id) store.messages.setDelivery(o.message_id, "failed");
         deps.failed?.(o);
-      } else store.channels.outbox.retry(o.id, new Date(Date.now() + NOT_RUNNING_RETRY_MS), "channel is not running");
+      } else store.channels.outbox.retry(o.id, new Date(Date.now() + NOT_RUNNING_RETRY_MS), NOT_RUNNING);
       return;
     }
     if (!store.channels.outbox.claim(o.id)) return;

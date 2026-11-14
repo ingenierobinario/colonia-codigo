@@ -23,7 +23,7 @@ import type { InternalCall } from "../rpc/internal.ts";
 import type { Secrets } from "../secrets.ts";
 import { splitSpoken } from "../services/audio.ts";
 import type { Services } from "../services/registry.ts";
-import { createDelivery } from "./delivery.ts";
+import { createDelivery, NOT_RUNNING } from "./delivery.ts";
 import { guardReply } from "./guard.ts";
 import { createHeld } from "./held.ts";
 import { createInbound } from "./inbound.ts";
@@ -546,7 +546,10 @@ export function createChannels(deps: {
         status: (s, error) => {
           l.status = s;
           l.error = error;
-          if (s === "running") delivery.kick();
+          if (s !== "running") return;
+          // What was written while it connected (the core no longer waits for its channels) goes out now.
+          store.channels.outbox.wake(config.id, NOT_RUNNING);
+          delivery.kick();
         },
         qr: (code) => {
           l.qr = code;
