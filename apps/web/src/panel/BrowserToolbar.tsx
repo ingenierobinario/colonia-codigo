@@ -62,6 +62,9 @@ export function BrowserToolbar({
   };
 
   const c = tab?.control;
+  const desktop = typeof window !== "undefined" ? window.coloniaDesktop : undefined;
+  // CHROME-1: the zoom shows only while it is not the page's own size; a click puts it back.
+  const zoomed = Boolean(desktop?.tabAction) && Math.abs((tab?.zoom ?? 1) - 1) > 0.01;
   return (
     <div className="btoolbar">
       <IconButton
@@ -80,13 +83,22 @@ export function BrowserToolbar({
           onClick={() => tab && void browserHistory(tab.tab, "forward")}
         />
       )}
-      <IconButton
-        size="sm"
-        label={t("browser.reload")}
-        icon={<Icons.RotateCcw size={14} />}
-        disabled={!tab}
-        onClick={() => tab && void browserHistory(tab.tab, "reload")}
-      />
+      {tab?.loading && desktop?.tabAction ? (
+        <IconButton
+          size="sm"
+          label={t("browser.stop")}
+          icon={<Icons.X size={15} />}
+          onClick={() => desktop.tabAction?.(tab.tab, "stop")}
+        />
+      ) : (
+        <IconButton
+          size="sm"
+          label={t("browser.reload")}
+          icon={<Icons.RotateCcw size={14} />}
+          disabled={!tab}
+          onClick={() => tab && void browserHistory(tab.tab, "reload")}
+        />
+      )}
       {draft != null ? (
         <input
           className="btoolbar__input"
@@ -113,6 +125,16 @@ export function BrowserToolbar({
         >
           {tab?.url.startsWith("https://") ? <Icons.Lock size={12} /> : <Icons.Globe size={12} />}
           <span className="btoolbar__urltext">{tab ? hostPath(tab.url) : ""}</span>
+        </button>
+      )}
+      {tab && zoomed && draft == null && (
+        <button
+          type="button"
+          className="btoolbar__zoom"
+          title={t("browser.zoomReset")}
+          onClick={() => desktop?.tabAction?.(tab.tab, "zoom-reset")}
+        >
+          {Math.round((tab.zoom ?? 1) * 100)}%
         </button>
       )}
       {c?.kind === "agent" && draft == null && (

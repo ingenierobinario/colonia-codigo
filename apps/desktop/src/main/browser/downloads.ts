@@ -45,7 +45,10 @@ export function createDownloads(opts: {
         if (state !== "completed") return opts.notify({ id, name, state: "failed" });
         files.set(id, file);
         // The list of what can be opened does not grow without end.
-        if (files.size > 200) for (const old of files.keys()) if (files.size > 200) files.delete(old);
+        for (const old of files.keys()) {
+          if (files.size <= 200) break;
+          files.delete(old);
+        }
         opts.notify({ id, name, state: "completed", opens: opensDirectly(file) });
       });
     },

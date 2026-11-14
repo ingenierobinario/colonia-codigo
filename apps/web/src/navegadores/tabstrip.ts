@@ -28,6 +28,19 @@ export function afterClose(strip: readonly string[], closed: string, active: str
  * La pestaña real que acaba de aparecer mientras se abría una: el navegador la anuncia en cuanto existe, antes de
  * que la página termine de cargar, y la vista pasa a ella sin esperar (la espera dejaba la pestaña «frita»).
  */
+/**
+ * CHROME-1: la pestaña que acaba de abrir la página a la vista (un enlace que pide pestaña nueva, la ventana de
+ * «Iniciar sesión con Google»): la vista pasa a ella, como en cualquier navegador.
+ */
+export function born(
+  known: readonly string[],
+  tabs: ReadonlyArray<{ tab: string; opener?: string | undefined }>,
+  from: string | undefined,
+): string | undefined {
+  if (!from) return undefined;
+  return tabs.filter((x) => x.opener === from && !known.includes(x.tab)).at(-1)?.tab;
+}
+
 export function adopted(known: readonly string[], real: readonly string[]): string | undefined {
   return real.filter((id) => !known.includes(id)).at(-1);
 }

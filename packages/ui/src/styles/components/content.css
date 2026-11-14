@@ -556,6 +556,19 @@
 .colonia-btabs__dot.is-user {
   background: var(--colonia-brand);
 }
+.colonia-btabs__dot.is-loading {
+  width: 8px;
+  height: 8px;
+  margin: -1px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  background: none;
+  animation: colonia-spin 0.7s linear infinite;
+}
+.colonia-btabs__sound {
+  flex-shrink: 0;
+  color: var(--colonia-fg-muted);
+}
 .colonia-btabs__title {
   flex: 1;
   min-width: 0;

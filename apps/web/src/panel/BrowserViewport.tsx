@@ -1,8 +1,11 @@
 import { Button, EmptyState, Icons, Skeleton, useColonia } from "@colonia/ui";
 import { type RefObject, useEffect, useRef, useState } from "react";
+import { hostPath } from "../common/format.ts";
 import { usePageVisible } from "../common/useInView.ts";
 import { useScreenshot } from "../common/useScreenshot.ts";
+import { browserHistory } from "../data/actions.ts";
 import { useSlice } from "../data/createStore.ts";
+import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { popOutBrowser, useBrowserPoppedOut } from "./browserWindow.ts";
 import { nativeCover } from "./nativeCover.ts";
@@ -13,8 +16,31 @@ const POLL_MS = 1500;
 export function BrowserViewport({ tab }: { tab: string }) {
   const desktop = typeof window !== "undefined" ? window.coloniaDesktop : undefined;
   const poppedOut = useBrowserPoppedOut();
+  const info = useData((s) => s.tabs.find((x) => x.tab === tab));
+  // CHROME-1: a page that did not load says so, instead of a blank page under its address.
+  if (info?.error && !info.loading) return <LoadFailed tab={tab} url={info.url} error={info.error} />;
   if (desktop && poppedOut) return <PoppedOut />;
   return desktop ? <DesktopSlot desktop={desktop} /> : <ScreenshotView tab={tab} />;
+}
+
+function LoadFailed({ tab, url, error }: { tab: string; url: string; error: string }) {
+  const t = useT();
+  return (
+    <div className="browser__page">
+      <EmptyState
+        icon={<Icons.TriangleAlert />}
+        title={t("browser.failed")}
+        action={
+          <Button size="sm" variant="secondary" onClick={() => void browserHistory(tab, "reload")}>
+            {t("browser.retry")}
+          </Button>
+        }
+      >
+        {t("browser.failedBody", { host: hostPath(url).split("/")[0] ?? url })}
+        <span className="browser__errcode">{error}</span>
+      </EmptyState>
+    </div>
+  );
 }
 
 /** The page is in the browser window: say so, and offer to bring it back here. */

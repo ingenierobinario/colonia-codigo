@@ -81,6 +81,101 @@
   flex: none;
   height: 26px;
 }
+.btoolbar__zoom {
+  flex: none;
+  height: 26px;
+  margin-right: 6px;
+  padding: 0 8px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-control-radius);
+  background: none;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+.btoolbar__zoom:hover {
+  border-color: var(--colonia-border-strong);
+}
+/* CHROME-1: the page is loading: a line sweeps under the toolbar. It keeps its 2px when idle so nothing jumps. */
+.bloading {
+  flex: none;
+  position: relative;
+  height: 2px;
+  margin: -2px 10px 0;
+  overflow: hidden;
+  border-radius: 1px;
+}
+.bloading.is-on::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: 1px;
+  background: var(--colonia-brand);
+  animation: bloading 1.1s ease-in-out infinite;
+}
+@keyframes bloading {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bloading.is-on::before {
+    width: 100%;
+    animation: none;
+    opacity: 0.5;
+  }
+}
+/* CHROME-1: search in the page and the last download, between the toolbar and the page. */
+.bextra {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 10px 8px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+}
+.bextra.is-error {
+  color: var(--colonia-danger, var(--colonia-fg));
+}
+.bextra__input {
+  flex: 1;
+  min-width: 40px;
+  height: 26px;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-xs);
+}
+.bextra__count {
+  flex: none;
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.bextra__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--colonia-fg);
+}
+.browser__errcode {
+  display: block;
+  margin-top: 6px;
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
+}
 .handoff {
   flex: none;
   display: flex;

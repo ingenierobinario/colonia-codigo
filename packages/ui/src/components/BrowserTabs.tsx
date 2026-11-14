@@ -1,4 +1,4 @@
-import { Plus, X } from "lucide-react";
+import { Plus, Volume2, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { cx } from "../cx";
 
@@ -9,6 +9,10 @@ export interface BrowserTabItem {
   url?: string;
   /** Who holds the tab: agent (warning dot), handoff (pulsing warning), user (brand), idle (subtle). */
   holder?: "agent" | "handoff" | "user" | "idle";
+  /** The page is still loading: its dot turns into a spinner. */
+  loading?: boolean;
+  /** The page is playing sound. */
+  audible?: boolean;
 }
 
 export interface BrowserTabsProps {
@@ -53,8 +57,12 @@ export function BrowserTabs({
             }
           }}
         >
-          <span className={cx("colonia-btabs__dot", `is-${t.holder ?? "idle"}`)} aria-hidden="true" />
+          <span
+            className={cx("colonia-btabs__dot", `is-${t.holder ?? "idle"}`, t.loading && "is-loading")}
+            aria-hidden="true"
+          />
           <span className="colonia-btabs__title">{t.title}</span>
+          {t.audible && <Volume2 className="colonia-btabs__sound" size={12} aria-hidden="true" />}
           {onClose && (
             <button
               type="button"

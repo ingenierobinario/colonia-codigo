@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { activeOf, adopted, afterClose, blankId, isBlank } from "./tabstrip.ts";
+import { activeOf, adopted, afterClose, blankId, born, isBlank } from "./tabstrip.ts";
 
 test("«+» abre todas las pestañas vacías que se quieran: cada una tiene su id y es la que queda a la vista", () => {
   const real = ["t1"];
@@ -39,4 +39,12 @@ test("al abrir, la vista pasa a la pestaña recién anunciada sin esperar a que 
   assert.equal(adopted(["t1", "t2"], ["t1", "t2", "t3"]), "t3");
   assert.equal(adopted([], ["t7"]), "t7");
   assert.equal(adopted(["t1"], []), undefined);
+});
+
+test("la vista sigue a la pestaña que abre la página a la vista, y solo a esa", () => {
+  const tabs = [{ tab: "t1" }, { tab: "t2" }, { tab: "t3", opener: "t1" }];
+  assert.equal(born(["t1", "t2"], tabs, "t1"), "t3");
+  assert.equal(born(["t1", "t2"], tabs, "t2"), undefined);
+  assert.equal(born(["t1", "t2", "t3"], tabs, "t1"), undefined);
+  assert.equal(born(["t1", "t2"], tabs, undefined), undefined);
 });

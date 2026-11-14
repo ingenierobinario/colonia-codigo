@@ -5,11 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserClose, loadTabs } from "../data/actions.ts";
 import { useT } from "../i18n/index.ts";
-import { activeOf, adopted, afterClose, blankId, isBlank } from "../navegadores/tabstrip.ts";
+import { activeOf, adopted, afterClose, blankId, born, isBlank } from "../navegadores/tabstrip.ts";
 import { nav } from "../shell/nav.ts";
 import { BrowserToolbar, HandoffBar } from "./BrowserToolbar.tsx";
 import { BrowserViewport } from "./BrowserViewport.tsx";
 import { canPopOut, IS_BROWSER_WINDOW, openOutside, popOutBrowser, useInstalledBrowsers } from "./browserWindow.ts";
+import { PageExtras } from "./PageExtras.tsx";
 import { PanelHeader } from "./SidePanel.tsx";
 import { useActiveTab } from "./useActiveTab.ts";
 
@@ -30,6 +31,7 @@ export function BrowserPanel() {
   const active = blank ? undefined : current;
   const adding = Boolean(blank);
   const opening = useRef<{ blank: string | undefined; known: string[] }>(undefined);
+  const seen = useRef(realIds);
   const pick = (id: string | undefined) => {
     setPickedBlank(isBlank(id) ? id : undefined);
     if (id && !isBlank(id)) nav.set({ browserTab: id });
@@ -51,12 +53,16 @@ export function BrowserPanel() {
   const realKey = realIds.join(" ");
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a change in the real tabs can bring the new one
   useEffect(() => {
+    // CHROME-1: la pestaña que abre la página a la vista (enlace en pestaña nueva, ventana de inicio de sesión).
+    const child = born(seen.current, tabs, shownId);
+    seen.current = realIds;
     const o = opening.current;
     const tab = o && adopted(o.known, realIds);
-    if (!o || !tab) return;
-    opening.current = undefined;
-    dropBlank(o.blank);
-    pick(tab);
+    if (o && tab) {
+      opening.current = undefined;
+      dropBlank(o.blank);
+      pick(tab);
+    } else if (child) pick(child);
   }, [realKey]);
 
   useEffect(() => {
@@ -92,7 +98,14 @@ export function BrowserPanel() {
           newLabel={t("browser.newTab")}
           closeLabel={t("browser.closeTab")}
           tabs={[
-            ...tabs.map((x) => ({ id: x.tab, title: x.title || hostPath(x.url), url: x.url, holder: x.control.kind })),
+            ...tabs.map((x) => ({
+              id: x.tab,
+              title: x.title || hostPath(x.url),
+              url: x.url,
+              holder: x.control.kind,
+              loading: x.loading === true,
+              audible: x.audible === true,
+            })),
             ...blanks.map((b) => ({ id: b, title: t("browser.newTab") })),
           ]}
         />
@@ -108,6 +121,7 @@ export function BrowserPanel() {
             onOpened={(tab) => opened(blank, tab)}
             onCancel={() => blank && close(blank)}
           />
+          <PageExtras tab={active} />
           {!adding && active?.control.kind === "handoff" && <HandoffBar tab={active} />}
           {adding || !active ? (
             <EmptyState icon={<Icons.Globe />} title={t("browser.newTab")}>

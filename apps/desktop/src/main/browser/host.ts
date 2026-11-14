@@ -372,8 +372,9 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
             webContents: (options as { webContents?: WebContents }).webContents,
             webPreferences: options.webPreferences,
           } as ConstructorParameters<typeof WebContentsView>[0]);
-          const born = this.#mount(`t${++this.#seq}`, child, profile, { kind: "idle" }, id);
-          if (disposition === "background-tab") this.emit("changed");
+          const behind = disposition === "background-tab";
+          const born = this.#mount(`t${++this.#seq}`, child, profile, { kind: "idle" }, behind ? undefined : id);
+          if (behind) this.emit("changed");
           else this.select(born.id);
           return child.webContents;
         },
@@ -476,7 +477,8 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     const nav = wc.navigationHistory;
     switch (action) {
       case "find":
-        return this.onFind(id);
+        this.onFind(id);
+        return;
       case "zoom-in":
       case "zoom-out":
       case "zoom-reset":
@@ -484,11 +486,14 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         this.emit("changed");
         return;
       case "print":
-        return wc.print();
+        wc.print();
+        return;
       case "reload":
-        return this.#reload(tab);
+        this.#reload(tab);
+        return;
       case "stop":
-        return wc.stop();
+        wc.stop();
+        return;
       case "back":
         if (nav.canGoBack()) nav.goBack();
         return;
@@ -496,7 +501,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         if (nav.canGoForward()) nav.goForward();
         return;
       case "devtools":
-        return wc.openDevTools({ mode: "detach" });
+        wc.openDevTools({ mode: "detach" });
     }
   }
 

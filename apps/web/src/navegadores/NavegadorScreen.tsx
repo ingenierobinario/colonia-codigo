@@ -10,11 +10,12 @@ import { useT } from "../i18n/index.ts";
 import { BrowserToolbar } from "../panel/BrowserToolbar.tsx";
 import { BrowserViewport } from "../panel/BrowserViewport.tsx";
 import { useBrowserPoppedOut } from "../panel/browserWindow.ts";
+import { PageExtras } from "../panel/PageExtras.tsx";
 import { nav, useNav } from "../shell/nav.ts";
 import "../styles/browser-panel.css";
 import "../styles/webapps.css";
 import { BookmarksBar, useBookmarkBar } from "./BookmarksBar.tsx";
-import { activeOf, adopted, afterClose, blankId, isBlank } from "./tabstrip.ts";
+import { activeOf, adopted, afterClose, blankId, born, isBlank } from "./tabstrip.ts";
 
 export function NavegadorScreen() {
   const t = useT();
@@ -36,6 +37,7 @@ export function NavegadorScreen() {
   const bar = useBookmarkBar(id);
   // La pestaña vacía desde la que se está abriendo una página, y las reales que había al empezar.
   const opening = useRef<{ blank: string | undefined; known: string[] }>(undefined);
+  const seen = useRef(realIds);
   const dropBlank = (b: string | undefined) => b && setBlanks((all) => all.filter((x) => x !== b));
   const startOpening = () => {
     opening.current = { blank, known: realIds };
@@ -66,6 +68,7 @@ export function NavegadorScreen() {
     setPicked(undefined);
     setBlanks([]);
     opening.current = undefined;
+    seen.current = [];
     // The side browser and this view share the one native page: the side panel steps aside.
     if (nav.get().panel === "browser") nav.set({ panel: null });
   }, [id]);
@@ -74,12 +77,16 @@ export function NavegadorScreen() {
   const realKey = realIds.join(" ");
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a change in the real tabs can bring the new one
   useEffect(() => {
+    // CHROME-1: la pestaña que abre la página a la vista (enlace en pestaña nueva, ventana de inicio de sesión).
+    const child = born(seen.current, tabs, shownId);
+    seen.current = realIds;
     const o = opening.current;
     const tab = o && adopted(o.known, realIds);
-    if (!o || !tab) return;
-    opening.current = undefined;
-    dropBlank(o.blank);
-    setPicked(tab);
+    if (o && tab) {
+      opening.current = undefined;
+      dropBlank(o.blank);
+      setPicked(tab);
+    } else if (child) setPicked(child);
   }, [realKey]);
   useEffect(() => {
     if (activeId && !poppedOut) window.coloniaDesktop?.showBrowserTab?.(activeId);
@@ -113,7 +120,14 @@ export function NavegadorScreen() {
           newLabel={t("browser.newTab")}
           closeLabel={t("browser.closeTab")}
           tabs={[
-            ...tabs.map((x) => ({ id: x.tab, title: x.title || hostPath(x.url), url: x.url, holder: x.control.kind })),
+            ...tabs.map((x) => ({
+              id: x.tab,
+              title: x.title || hostPath(x.url),
+              url: x.url,
+              holder: x.control.kind,
+              loading: x.loading === true,
+              audible: x.audible === true,
+            })),
             ...blanks.map((b) => ({ id: b, title: t("browser.newTab") })),
           ]}
         />
@@ -131,6 +145,7 @@ export function NavegadorScreen() {
       </div>
       {/* MARCADORES-2: la barra está siempre que el perfil se haya leído; vacía, lo dice en vez de desaparecer. */}
       {bar ? <BookmarksBar nodes={bar} open={(u) => void openBookmark(u)} /> : null}
+      <PageExtras tab={active} />
       {!activeId ? (
         <div className="navegador__empty">
           <EmptyState icon={<Icons.Globe />} title={tabs.length ? t("browser.newTab") : t("navegadores.empty")}>

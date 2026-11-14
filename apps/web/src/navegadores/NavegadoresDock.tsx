@@ -3,12 +3,19 @@
 import { ContextMenu, IconButton, Icons, Menu, type MenuEntry, NavItem, ProjectTile } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import type { ImportSource } from "../colonia-desktop.d.ts";
+import { browserOpen } from "../data/actions.ts";
 import { BROWSER_NAMES, loadNavegadores, navegadorId, saveNavegador, useNavegadores } from "../data/navegadores.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useT } from "../i18n/index.ts";
-import { go, useNav } from "../shell/nav.ts";
+import { go, nav, useNav } from "../shell/nav.ts";
 import { SidebarSection } from "../shell/SidebarSection.tsx";
 import { BrowserLogo } from "./BrowserLogo.tsx";
+
+// SIN-NAVEGADOR-1: the makers' own download pages; the right installer for this system is theirs to pick.
+const INSTALL = [
+  { browser: "chrome", name: "Google Chrome", url: "https://www.google.com/chrome/" },
+  { browser: "edge", name: "Microsoft Edge", url: "https://www.microsoft.com/edge/download" },
+] as const;
 
 type Browser = keyof typeof BROWSER_NAMES;
 const ORDER = Object.keys(BROWSER_NAMES) as Browser[];
@@ -55,7 +62,19 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
             onSelect: () => add(s),
           })),
       }))
-    : [{ type: "label", label: sources ? t("navegadores.noneLeft") : t("navegadores.looking") }];
+    : sources && !sources.length && !navegadores.length
+      ? // SIN-NAVEGADOR-1: a computer without a browser gets one from its maker, opened in Colonia's own browser
+        // (the only one there is); the download lands in the downloads folder.
+        [
+          { type: "label" as const, label: t("navegadores.none") },
+          ...INSTALL.map((b) => ({
+            label: t("navegadores.install", { name: b.name }),
+            icon: <BrowserLogo browser={b.browser} size={14} />,
+            onSelect: () =>
+              void browserOpen(b.url).then((tab) => tab && nav.set({ panel: "browser", browserTab: tab })),
+          })),
+        ]
+      : [{ type: "label", label: sources ? t("navegadores.noneLeft") : t("navegadores.looking") }];
   const browsers = ORDER.filter((b) => navegadores.some((n) => n.browser === b));
 
   return (
