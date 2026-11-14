@@ -45,6 +45,7 @@ import { createPrograms } from "./programs.ts";
 import { createQuick, type DesktopPrefs } from "./quick.ts";
 import { confirmQuit } from "./quit-confirm.ts";
 import { waitOnQuit } from "./quit-wait.ts";
+import { sendTo } from "./safe-send.ts";
 import { createUpdateMenu } from "./update-menu.ts";
 import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
 
@@ -291,7 +292,7 @@ app.whenReady().then(() => {
       // The tab changes window: a page in full screen comes out of it first.
       endFull();
       if (open && pw) externalLinks(pw);
-      panel.webContents.send("browser:popout", open);
+      sendTo(panel.webContents, "browser:popout", open);
       layout();
     },
     layout: () => layout(),
@@ -377,14 +378,14 @@ app.whenReady().then(() => {
     layout();
   };
   const toPanels = (channel: string, ...args: unknown[]) => {
-    for (const wc of [panel.webContents, popout.panel()]) if (wc && !wc.isDestroyed()) wc.send(channel, ...args);
+    for (const wc of [panel.webContents, popout.panel()]) sendTo(wc, channel, ...args);
   };
   // CHROME-1: Ctrl/Cmd+F on a page opens the panel's search bar, and the keys go to it.
   host.onFind = (tab) => {
     const p = popout.panel() ?? panel.webContents;
     if (p.isDestroyed()) return;
     p.focus();
-    p.send("browser:find-open", tab);
+    sendTo(p, "browser:find-open", tab);
   };
   host.onFound = (tab, active, total) => toPanels("browser:found", tab, active, total);
   host.onPermission = async (_tab, permission, origin, media) => {
@@ -422,7 +423,7 @@ app.whenReady().then(() => {
   win.on("enter-full-screen", settled);
   win.on("leave-full-screen", settled);
   // The panel's bars leave room for the traffic lights only outside native fullscreen, which only the window knows.
-  const fullScreen = () => panel.webContents.send("window:fullscreen", win.isFullScreen());
+  const fullScreen = () => sendTo(panel.webContents, "window:fullscreen", win.isFullScreen());
   win.on("enter-full-screen", fullScreen);
   win.on("leave-full-screen", fullScreen);
   panel.webContents.on("did-finish-load", fullScreen);
@@ -502,7 +503,7 @@ app.whenReady().then(() => {
     preload: path.join(DIST, "panel-preload.cjs"),
     partition: "persist:colonia-ui",
     links: externalLinks,
-    changed: (id, open) => panel.webContents.send("artifact:window", id, open),
+    changed: (id, open) => sendTo(panel.webContents, "artifact:window", id, open),
   });
   ipcMain.on("artifact:close-window", (e, id: unknown) => {
     if (e.sender === panel.webContents && typeof id === "string") artifactWindows.close(id);
@@ -524,10 +525,10 @@ app.whenReady().then(() => {
   let computerOn = false;
   const computer = createComputer({
     cursor: createCursor(),
-    onActivity: (a) => panel.webContents.send("computer:activity", a),
+    onActivity: (a) => sendTo(panel.webContents, "computer:activity", a),
     onStopped: (stopped) => {
       if (stopped) link?.emit("computer.stopped");
-      panel.webContents.send("computer:stopped", stopped);
+      sendTo(panel.webContents, "computer:stopped", stopped);
       if (stopped && Notification.isSupported())
         new Notification({
           title: "Colonia",
@@ -693,7 +694,7 @@ app.whenReady().then(() => {
       },
       changed: (s) => {
         setMenu(s);
-        panel.webContents.send("desktop:update-changed", s);
+        sendTo(panel.webContents, "desktop:update-changed", s);
       },
     }),
     win,
@@ -723,13 +724,13 @@ app.whenReady().then(() => {
   ipcMain.handle("artifact:take-opened", (e) => (e.sender === panel.webContents ? opened.take() : []));
   tellPanel = () => {
     openMain();
-    panel.webContents.send("artifact:file-opened");
+    sendTo(panel.webContents, "artifact:file-opened");
   };
   ipcMain.on("quick:open-main", (e, threadId: unknown) => {
     if (!quick.isQuick(e.sender)) return;
     quick.hide();
     openMain();
-    if (typeof threadId === "string") panel.webContents.send("nav:thread", threadId);
+    if (typeof threadId === "string") sendTo(panel.webContents, "nav:thread", threadId);
   });
   ipcMain.on("desktop:language", (e, lang: unknown) => {
     if (e.sender === panel.webContents && (lang === "en" || lang === "es")) language = lang;
