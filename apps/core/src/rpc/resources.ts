@@ -3,6 +3,7 @@
 
 import path from "node:path";
 import type { Store } from "../domain/store.ts";
+import { parseRecipe, recipeOf, renderRecipe, NO_TARGET } from "../domain/recipe.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import type { McpConfig, McpDef } from "../mcp/config.ts";
 import { projectSecretName, type Secrets, splitSecretName } from "../secrets.ts";
@@ -10,6 +11,7 @@ import { skillInfo, writeSkill } from "../skills/edit.ts";
 import { type GitRunner, type ImportTarget, importSkills, previewSkills } from "../skills/import.ts";
 import { type RuntimeHomes, syncRuntimeSkills } from "../skills/runtimes.ts";
 import { allSkills, NO_GLOBALS, readSkillFile, setSkillOn, skillFiles, skillsOff } from "../skills/skills.ts";
+import { threadMode } from "../tools/screen-mode.ts";
 import type { Handlers } from "./router.ts";
 
 /** Where each stored secret is named: the owner's MCP servers, providers, channels, and services' own keys. */
@@ -134,6 +136,43 @@ export function resourceHandlers(deps: {
         return s ? [skillInfo(store, s, project)] : [];
       });
       return { imported, skipped: done.skipped };
+    },
+    // RECETA-1
+    "skills.recipe_export": ({ thread, run, name }) => {
+      if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
+      // El modo preferido es el que la persona usó en ese chat; sin ninguno dicho, en vivo (lo que se ve).
+      const mode = threadMode(store, thread) ?? "live";
+      const r = recipeOf(store, thread, { mode, name, run });
+      if (!r) throw badRequest("nothing to export: the agent did nothing repeatable in this chat yet");
+      return {
+        name: r.name,
+        content: renderRecipe(r),
+        mode,
+        steps: r.steps.length,
+        unnamed: r.steps.filter((s) => s.target === NO_TARGET).length,
+      };
+    },
+    "skills.recipe_import": ({ content, mode, target, project, replace }) => {
+      const r = parseRecipe(content);
+      if (!r) throw badRequest("this file is not a Colonia recipe (it has no recipe mark or no steps)");
+      if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/.test(r.name)) throw badRequest("the recipe's name is not a valid skill name");
+      const said = { name: r.name, goal: r.goal, preferred: r.mode, steps: r.steps.length };
+      // Sin modo no se guarda nada: es la mirada previa, para que la persona elija.
+      if (!mode) return { ...said, saved: false };
+      if (target === "project" && !rootOf(project))
+        throw badRequest("a project skill needs a project whose folder is on disk");
+      const taken = allSkills(store, roots, project).find((x) => x.name === r.name);
+      if (taken?.source === "colonia") throw badRequest(`${r.name} comes with Colonia; rename the recipe`);
+      if (taken && !replace) throw badRequest(`there is already a skill named ${r.name}; replace it or rename the recipe`);
+      try {
+        writeSkill({ home, projectRoot: rootOf(project), folder: r.name, target, content });
+      } catch (err) {
+        throw badRequest(errorMessage(err));
+      }
+      // El modo es de quien importa: se guarda aparte, no en el fichero (que lleva el de quien la exportó).
+      store.settings.write("recipe_modes", { ...store.settings.read("recipe_modes"), [r.name]: mode });
+      const saved = allSkills(store, roots, project).find((x) => x.name === r.name);
+      return { ...said, saved: true, ...(saved ? { skill: skillInfo(store, saved, project) } : {}) };
     },
     "resources.inheritance": ({ project }) => inheritance(project),
     "resources.inherit": ({ project, kind, on }) => {

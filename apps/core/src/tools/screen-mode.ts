@@ -42,6 +42,14 @@ export function setThreadMode(store: Settings, thread: string, mode: ScreenMode)
   if (m.size > 500) m.delete(m.keys().next().value as string);
 }
 
+/** El modo con que se maneja la pantalla en un chat, si la persona ya lo dijo (para ese chat, o en su ajuste). */
+export function threadMode(store: Settings, thread: string): ScreenMode | undefined {
+  const own = ofStore(store).get(thread);
+  if (own) return own;
+  const set = store.settings.read("desktop").computer_mode;
+  return set === "live" || set === "background" ? set : undefined;
+}
+
 /**
  * El modo de este chat. Nunca lo decide el agente: sale de lo que la persona fijó para el chat, de su ajuste, o se le
  * pregunta ahora. Devuelve `stop` (lo que se le contesta al modelo) si no hay respuesta.

@@ -222,6 +222,48 @@ export const resourceMethods = {
     effect: true,
     access: "human",
   },
+  /**
+   * RECETA-1 · What the agent did in a chat, as a portable SKILL.md (a recipe): each step says what it acts on by its
+   * text and what should be seen after, never a coordinate. Nothing is written: the caller saves or shares the text.
+   * `unnamed` counts the clicks whose element was not recorded (the importer's agent finds them from the goal).
+   */
+  "skills.recipe_export": {
+    params: z.object({ thread: Id, run: Id.optional(), name: SkillName.optional() }).strict(),
+    result: z.object({
+      name: z.string(),
+      content: z.string(),
+      mode: z.enum(["live", "background"]),
+      steps: z.number().int(),
+      unnamed: z.number().int(),
+    }),
+    effect: false,
+    access: "human",
+  },
+  /**
+   * Saves a recipe someone exported as a skill of this Colonia. `mode` is how THIS person wants it run (live, or in the
+   * background): they choose again on import, whatever the file prefers. Without `mode` nothing is written and the
+   * result says what the file holds (`preferred`), to show before choosing.
+   */
+  "skills.recipe_import": {
+    params: z
+      .object({
+        content: z.string().min(1).max(200_000),
+        mode: z.enum(["live", "background"]).optional(),
+        ...ImportTarget,
+        replace: z.boolean().default(false),
+      })
+      .strict(),
+    result: z.object({
+      name: z.string(),
+      goal: z.string(),
+      preferred: z.enum(["live", "background"]),
+      steps: z.number().int(),
+      saved: z.boolean(),
+      skill: SkillInfo.optional(),
+    }),
+    effect: true,
+    access: "human",
+  },
   /** Whether a project takes the owner's global skills and MCP servers (each can still be turned off one by one). */
   "resources.inheritance": {
     params: z.object({ project: Id }).strict(),

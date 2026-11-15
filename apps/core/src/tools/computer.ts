@@ -117,7 +117,7 @@ export function computerTools(store: Store): Tool[] {
     defineTool({
       name: "screen_do",
       description:
-        'Do several actions in a row in the app named, then see its window again once it stops changing (one approval for all of them). Each step is a click (x,y: an element\'s position from screen_snapshot; or px,py: a pixel of its last picture, for what only the picture shows), keys ("enter", "tab", "esc", "cmd+l", arrows, "pagedown") or text typed into the focused field (never passwords or payment data). Put every step you can predict in one call; it stops at the first that fails and says which. Whether the real pointer moves (live) or not (in the background) is the owner\'s choice, never yours: they are asked if they have not said.',
+        'Do several actions in a row in the app named, then see its window again once it stops changing (one approval for all of them). Each step is a click (x,y: an element\'s position from screen_snapshot; or px,py: a pixel of its last picture, for what only the picture shows), keys ("enter", "tab", "esc", "cmd+l", arrows, "pagedown") or text typed into the focused field (never passwords or payment data). Say in each step its target (the label of what you act on) and what you expect to see after it. Put every step you can predict in one call; it stops at the first that fails and says which. Whether the real pointer moves (live) or not (in the background) is the owner\'s choice, never yours: they are asked if they have not said.',
       args: z.object({
         app: z.string().min(1).max(120),
         steps: z
@@ -130,6 +130,14 @@ export function computerTools(store: Store): Tool[] {
               py: z.number().int().min(0).optional(),
               keys: z.string().min(1).max(40).optional(),
               text: z.string().min(1).max(2000).optional(),
+              // RECETA-1: lo que hace portable el paso. No cambian lo que se hace: quedan en el historial, y de ahí salen
+              // las recetas que otra persona importa (allí las coordenadas no valen, el texto sí).
+              target: z
+                .string()
+                .max(160)
+                .optional()
+                .describe('what this step acts on, in words: the visible label or what it is ("the Save button")'),
+              expect: z.string().max(160).optional().describe("what should be seen once this step has worked"),
             }),
           )
           .min(1)

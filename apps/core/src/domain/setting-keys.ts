@@ -183,6 +183,8 @@ export const SETTINGS = {
   /** iMessage on this Mac as tools: off until the owner turns it on. */
   imessage: entry(z.object({ on: z.boolean().catch(false) }), { on: false }),
   skills_off: entry(OffLists, {}),
+  /** RECETA-1: el modo que la persona eligió al importar cada receta (por nombre de skill). */
+  recipe_modes: entry(z.record(z.string(), z.enum(["live", "background"])).catch({}), {}),
   mcp_off: entry(OffLists, {}),
   model_default: entry(ModelChoice.nullable(), null),
   model_router: entry(RouterConfig, { rules: [], chain: [] }),

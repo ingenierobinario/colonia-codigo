@@ -117,6 +117,8 @@ type RawStep = {
   py?: number | undefined;
   keys?: string | undefined;
   text?: string | undefined;
+  target?: string | undefined;
+  expect?: string | undefined;
 };
 type Point = { x: number; y: number };
 /** Los pasos tal como llegan (campos opcionales) a los que entiende el equipo; lanza diciendo qué le falta a cuál. */
@@ -345,6 +347,14 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
               py: z.number().int().min(0).optional(),
               keys: z.string().min(1).max(40).optional(),
               text: z.string().min(1).max(SCREEN_TEXT_MAX).optional(),
+              // RECETA-1: lo que hace portable el paso. No cambian lo que se hace: quedan en el historial, y de ahí salen
+              // las recetas que otra persona importa (allí las coordenadas no valen, el texto sí).
+              target: z
+                .string()
+                .max(160)
+                .optional()
+                .describe('what this step acts on, in words: the visible label or what it is ("the Save button")'),
+              expect: z.string().max(160).optional().describe("what should be seen once this step has worked"),
             }),
           )
           .min(1)
