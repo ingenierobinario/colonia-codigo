@@ -9,11 +9,13 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.16": {
     en: [
       "The + menu in Channels always lists every channel, so you can add a second or third account of the same one.",
-      "Simpler setup: Matrix with the bot's user and password, email with address and password, Telegram finds the code in what you paste, Discord gives the invite link and ntfy picks its topic.",
+      "Matrix connects with the bot's user and password, and email with its address and password.",
+      "Telegram finds the code in whatever you paste, Discord gives the invite link and ntfy picks its topic.",
     ],
     es: [
       "El menú + de Canales muestra siempre todos los canales, para añadir una segunda o tercera cuenta del mismo.",
-      "Configuración más sencilla: Matrix con usuario y contraseña del bot, correo con dirección y contraseña, Telegram encuentra el código en lo que pegues, Discord da el enlace de invitación y ntfy elige su tema solo.",
+      "Matrix se conecta con usuario y contraseña del bot, y el correo con su dirección y contraseña.",
+      "Telegram encuentra el código en lo que pegues, Discord da el enlace de invitación y ntfy elige su tema.",
     ],
   },
   "2.36.15": {
