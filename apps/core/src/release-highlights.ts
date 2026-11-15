@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.21": {
+    en: [
+      "The setup assistant now takes four clear steps.",
+      "Settings › Channels shows a card with each channel's logo and a single Connect or Fix button.",
+      "Error messages tell you what to do next.",
+    ],
+    es: [
+      "El asistente de instalación ahora son cuatro pasos claros.",
+      "Ajustes › Canales muestra una tarjeta con el logo de cada canal y un solo botón Conectar o Arreglar.",
+      "Los mensajes de error dicen qué hacer a continuación.",
+    ],
+  },
   "2.36.20": {
     en: [
       "The cursor now moves reliably.",
