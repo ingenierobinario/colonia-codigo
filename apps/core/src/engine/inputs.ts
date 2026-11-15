@@ -188,7 +188,12 @@ export function createInputs(deps: {
       appOnly?: boolean | undefined;
       signal: AbortSignal;
     }): Promise<InputRecord> {
-      const waitMs = o.external ? waits.external : waits.turn;
+      // The owner already let a card of this turn go unanswered for its whole wait: they are not at the chat, so the
+      // cards that follow open without making the turn wait once more for each (six calls were six waits in a row,
+      // and an answer to an earlier card queued a new turn behind the one still waiting).
+      const away =
+        o.stays && store.inputs.pending(o.run.thread_id).some((r) => r.run_id === o.run.id && !waiting.has(r.id));
+      const waitMs = away ? 0 : o.external ? waits.external : waits.turn;
       const rec = store.inputs.create({
         run_id: o.run.id,
         thread_id: o.run.thread_id,
