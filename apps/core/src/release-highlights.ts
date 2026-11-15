@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.22": {
+    en: [
+      "When an agent asks for several approvals in a row and you're away, it no longer waits on each one.",
+      "All the cards show up and you can approve them when you're back.",
+    ],
+    es: [
+      "Si un agente pide varias aprobaciones seguidas y no estás, ya no se queda parado esperando cada una.",
+      "Las tarjetas aparecen todas y puedes aprobarlas al volver.",
+    ],
+  },
   "2.36.21": {
     en: [
       "The setup assistant now takes four clear steps.",
