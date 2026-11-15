@@ -1221,7 +1221,7 @@ export const NEWS: readonly NewsEntry[] = [
   {
     // PROYECTO-COMPARTIR-1
     id: "share-project",
-    since: "2.37.0",
+    since: "2.36.23",
     title: { en: "Share a project with someone else", es: "Comparte un proyecto con otra persona" },
     about: {
       en:

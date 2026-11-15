@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.23": {
+    en: [
+      "Share a project with someone else on Colonia: export it to a file they import, or publish it with a link.",
+      "Keys and conversations never travel; anything left to connect shows up as “Needs connecting”.",
+    ],
+    es: [
+      "Comparte un proyecto con otra persona de Colonia: expórtalo a un fichero que ella importa, o usa un enlace.",
+      "Nunca se llevan claves ni conversaciones; lo que haya que conectar aparece como «Falta conectar».",
+    ],
+  },
   "2.36.22": {
     en: [
       "When an agent asks for several approvals in a row and you're away, it no longer waits on each one.",
