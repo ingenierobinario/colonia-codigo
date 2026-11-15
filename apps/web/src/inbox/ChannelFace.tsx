@@ -56,7 +56,7 @@ export function ChannelFace({
       />
       {channel && cornerMark && (
         <span className="threadavatar__corner" role="img" aria-label={label}>
-          <KindIcon kind={channel} size={Math.max(9, Math.round(size * 0.625))} />
+          <KindIcon kind={channel} size={Math.max(9, Math.round(size * 0.56))} />
         </span>
       )}
     </span>
