@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.18": {
+    en: ["Tabs show the channel's logo (WhatsApp, Telegram, email…)."],
+    es: ["Las pestañas muestran el logo del canal (WhatsApp, Telegram, correo…)."],
+  },
   "2.36.17": {
     en: [
       "Replies start faster: the conversation's history is read once per turn, not per message.",
