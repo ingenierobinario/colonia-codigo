@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { createSecrets, keychainService, projectSecretName, splitSecretName } from "./secrets.ts";
 import { type Run, systemBackend } from "./secrets-stores.ts";
+import { tempDir } from "./testkit/platform.ts";
 
 test("secrets resolve by reference, list names only, and live in a 0600 file with the file backend", () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
@@ -191,9 +192,10 @@ test("SECRETS-MIGRAR-1: un servidor sin llavero que ya tenía secrets.json de 2.
   }
 });
 
-test("SECRETOS-ILEGIBLES-1: un secrets.json con BOM se lee, y uno ilegible se aparta antes de guardar encima", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
-  try {
+test("SECRETOS-ILEGIBLES-1: un secrets.json con BOM se lee, y uno ilegible se aparta antes de guardar encima", async () => {
+  await using dir = tempDir("colonia-secrets-");
+  const home = dir.path;
+  {
     const file = path.join(home, "secrets.json");
     const good = JSON.stringify({ openai: { value: "sk-old", updated_at: "x" } });
     fs.writeFileSync(file, `﻿${good}`);
@@ -208,7 +210,5 @@ test("SECRETOS-ILEGIBLES-1: un secrets.json con BOM se lee, y uno ilegible se ap
     const aside = fs.readdirSync(home).filter((n) => n.startsWith("secrets.json.corrupt-"));
     assert.equal(aside.length, 1, "el fichero cortado queda apartado");
     assert.equal(fs.readFileSync(path.join(home, aside[0] ?? ""), "utf8"), good.slice(0, 20));
-  } finally {
-    fs.rmSync(home, { recursive: true, force: true });
   }
 });
