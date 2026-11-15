@@ -1245,7 +1245,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "router.lead":
     "Todos los agentes usan el router: primero el #1 y, si falla, los siguientes. Un agente con modelo propio lo prueba antes. Las reglas de abajo pueden elegir otro modelo para algunos mensajes.",
   "providers.on": "Activo",
-  "router.chain": "Cadena de modelos",
+  "router.chain": "Modelos, por orden",
   "router.chainHint": "El #1 es el por defecto; si falla, se prueban los de abajo en orden.",
   "config.engines": "Motores y modelos",
   "config.agents": "Agentes",

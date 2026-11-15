@@ -1,5 +1,5 @@
-// First run: a new install opens the setup by itself. Bringing v1 in, then the super-agent, engines, memory, the
-// Telegram bot (emulated) and a project folder; then the setup again from the account menu, from scratch.
+// First run: a new install opens the setup by itself. Bringing v1 in, then the super-agent, engines, the
+// Telegram bot (emulated), a project folder and the memory folded in that last step; then the setup again from the account menu, from scratch.
 import { AGENT_NAMES } from "../../packages/protocol/src/constants.ts";
 import { expect, rpc, test, until, world } from "./kit.ts";
 
@@ -28,7 +28,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await expect(wizard.getByText("ollama/gemma-e2e").first()).toBeVisible();
   await expect(wizard.getByRole("combobox", { name: "Modelo" }).first()).toBeVisible();
   // Provider management works before leaving the wizard, including correcting a saved key.
-  await wizard.getByRole("button", { name: "Agregar proveedor", exact: true }).click();
+  await wizard.getByRole("button", { name: "Otro servicio", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("textbox", { name: "Nombre", exact: true }).fill("Acme wizard");
   await dialog.getByRole("textbox", { name: "URL base" }).fill("http://127.0.0.1:9/v1");
@@ -60,11 +60,6 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await wizard.locator(".chain__item").first().getByRole("button", { name: "Bajar", exact: true }).click();
 
   await wizard.getByRole("button", { name: "Continuar" }).click();
-  // Memory: by meaning, with v1's engine, and skills picked by meaning on.
-  await expect(wizard.getByText("Motor de embeddings: Ollama · embeddinggemma:300m.")).toBeVisible();
-  await expect(wizard.getByRole("button", { name: /Buscar por significado/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(wizard.getByRole("switch", { name: "Elegir skills por significado" })).toBeChecked();
-  await wizard.getByRole("button", { name: "Continuar" }).click();
 
   // Channels: WhatsApp links from here too (it is linked in 10-whatsapp); the emulated Telegram bot.
   await expect(wizard.getByRole("button", { name: "Vincular" })).toBeVisible();
@@ -79,6 +74,12 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await discord.getByRole("button", { name: /Cómo crear el bot de Discord/ }).click();
   await expect(discord.locator(".wiz__howto li")).toHaveCount(4);
   await wizard.getByRole("button", { name: "Continuar" }).click();
+
+  // Memory sits folded in the last step: by meaning, with v1's engine, and skills picked by meaning on.
+  await wizard.getByText("Ajustes avanzados: memoria").click();
+  await expect(wizard.getByText("Motor de embeddings: Ollama · embeddinggemma:300m.")).toBeVisible();
+  await expect(wizard.getByRole("button", { name: /Buscar por significado/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(wizard.getByRole("switch", { name: "Elegir skills por significado" })).toBeChecked();
 
   // A project with a folder.
   await wizard.getByRole("button", { name: /Elegir una carpeta/ }).click();
@@ -134,7 +135,8 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await wizard.getByRole("button", { name: "Otro nombre" }).click();
   await expect(name).toHaveValue(new RegExp(`^(${AGENT_NAMES.join("|")})$`));
   await name.fill("Robina");
-  for (let i = 0; i < 2; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
+  for (let i = 0; i < 3; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
+  await wizard.getByText("Ajustes avanzados: memoria").click();
   // Memory by meaning: v1's engine is listed with whether it answers (not "no Ollama on this machine").
   await wizard.getByRole("button", { name: /Buscar por significado/ }).click();
   const engine = wizard.locator(".res__row").filter({ hasText: "Ollama" });
@@ -159,7 +161,6 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await page.screenshot({ path: "/tmp/colonia-embed-test.png" });
   await page.keyboard.press("Escape");
   await wizard.getByRole("button", { name: /Buscar por palabras/ }).click();
-  for (let i = 0; i < 2; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
   // The base project gets a name (it could stay Default) and a kind before any folder.
   const baseName = wizard.getByRole("textbox", { name: "Nombre del proyecto base" });
   await expect(baseName).toHaveValue("Default");

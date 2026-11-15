@@ -1237,7 +1237,7 @@ export const en = {
   "router.lead":
     "Every agent uses the router: #1 first, then the next ones if it fails. An agent with its own model tries that one first. Rules below can pick another model for some messages.",
   "providers.on": "Active",
-  "router.chain": "Model chain",
+  "router.chain": "Models, in order",
   "router.chainHint": "#1 is the default; if it fails, the ones below are tried in order.",
   "config.engines": "Engines and models",
   "config.agents": "Agents",

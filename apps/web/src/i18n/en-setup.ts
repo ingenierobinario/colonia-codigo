@@ -99,6 +99,7 @@ export const enSetup = {
   "setup.engines.save": "Save",
   "setup.engines.local": "On your computer · no key",
   "setup.engines.apiKey": "Key",
+  "setup.engines.other": "Another service",
   "setup.engines.active": "Active",
   "setup.engines.useIt": "Use it",
   "setup.engines.remove": "Remove",

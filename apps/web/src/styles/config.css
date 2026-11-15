@@ -51,11 +51,13 @@
 .config__head {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
   padding-right: 32px;
 }
 .config__headtext {
-  flex: 1;
+  /* Below its natural width the text takes the row and the actions drop under it. */
+  flex: 1 1 240px;
   min-width: 0;
 }
 .config__title {
@@ -1417,31 +1419,6 @@
   display: inline-flex;
   gap: 6px;
   align-items: center;
-}
-.tgsetup__steps.is-numbered {
-  padding-left: 0;
-  list-style: none;
-  counter-reset: tgstep;
-  gap: 10px;
-}
-.tgsetup__steps.is-numbered > li {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  counter-increment: tgstep;
-}
-.tgsetup__steps.is-numbered > li::before {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--colonia-fill-strong, var(--colonia-fill));
-  color: var(--colonia-fg);
-  font-size: var(--colonia-text-xs);
-  font-weight: 600;
-  content: counter(tgstep);
 }
 .chgal__empty {
   display: flex;

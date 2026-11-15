@@ -102,6 +102,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.engines.save": "Guardar",
   "setup.engines.local": "En tu ordenador · sin clave",
   "setup.engines.apiKey": "Clave",
+  "setup.engines.other": "Otro servicio",
   "setup.engines.active": "Activo",
   "setup.engines.useIt": "Usarlo",
   "setup.engines.remove": "Quitar",

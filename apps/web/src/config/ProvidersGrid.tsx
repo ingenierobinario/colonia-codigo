@@ -1,5 +1,16 @@
 import type { ProviderInfo } from "@colonia/protocol";
-import { Badge, Button, Dialog, EngineIcon, engineBrand, IconButton, Icons, Input, ProjectTile, Switch } from "@colonia/ui";
+import {
+  Badge,
+  Button,
+  Dialog,
+  EngineIcon,
+  engineBrand,
+  IconButton,
+  Icons,
+  Input,
+  ProjectTile,
+  Switch,
+} from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { createStore, useSlice } from "../data/createStore.ts";
 import { useModels } from "../data/models.ts";
@@ -111,7 +122,7 @@ export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
         ))}
         <button type="button" className="pcard pcard--add" onClick={() => editor.set({ open: { preset: "custom" } })}>
           <Icons.Plus size={18} />
-          <span>{t("providers.add")}</span>
+          <span>{t(compact ? "setup.engines.other" : "providers.add")}</span>
         </button>
       </div>
       {open && (
@@ -143,9 +154,12 @@ function ProviderCard({ p, onEdit, compact }: { p: ProviderInfo; onEdit: () => v
         </Badge>
       </div>
       <dl className="pcard__rows">
-        <dt>{t("providers.url")}</dt>
-        <dd title={p.base_url}>{p.base_url.replace(/^https?:\/\//, "")}</dd>
-        <dt>{t("providers.key")}</dt>
+        {/* The setup guide keeps the card to what a newcomer needs: whether its key is in. */}
+        <dt hidden={compact}>{t("providers.url")}</dt>
+        <dd hidden={compact} title={p.base_url}>
+          {p.base_url.replace(/^https?:\/\//, "")}
+        </dd>
+        <dt>{t(compact ? "setup.engines.apiKey" : "providers.key")}</dt>
         <dd>{!p.needs_key ? t("providers.keyNone") : p.key_set ? `****${p.key_hint ?? ""}` : "—"}</dd>
         {!compact && (
           <>
