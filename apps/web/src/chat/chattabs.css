@@ -42,11 +42,16 @@
   border-right: 1px solid var(--colonia-border);
   color: var(--colonia-fg-muted);
 }
+.chattabs__tab {
+  --threadavatar-ring: var(--colonia-bg);
+}
 .chattabs__tab:hover {
+  --threadavatar-ring: var(--colonia-fill);
   background: var(--colonia-fill);
   color: var(--colonia-fg);
 }
 .chattabs__tab.is-active {
+  --threadavatar-ring: var(--colonia-surface);
   background: var(--colonia-surface);
   box-shadow: inset 0 2px 0 var(--colonia-brand);
   color: var(--colonia-fg);

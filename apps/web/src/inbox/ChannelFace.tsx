@@ -14,12 +14,15 @@ export function ChannelFace({
   slot = size,
   labelOnly = false,
   showMark = false,
+  cornerMark = false,
 }: {
   thread: Thread;
   size?: number;
   slot?: number;
   labelOnly?: boolean;
   showMark?: boolean;
+  /** PESTANA-CANAL-1 — the channel's mark over the corner of the face: it takes no room of its own. */
+  cornerMark?: boolean;
 }) {
   const t = useT();
   const person = useThreadPerson(thread);
@@ -51,6 +54,11 @@ export function ChannelFace({
         className="threadavatar__person"
         fallback={<Avatar name={name} size={size} />}
       />
+      {channel && cornerMark && (
+        <span className="threadavatar__corner" role="img" aria-label={label}>
+          <KindIcon kind={channel} size={Math.max(9, Math.round(size * 0.625))} />
+        </span>
+      )}
     </span>
   );
 }

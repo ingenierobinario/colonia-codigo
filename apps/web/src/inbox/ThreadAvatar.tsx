@@ -15,6 +15,7 @@ export function ThreadAvatar({
   online = false,
   animated,
   channelMark = false,
+  channelCorner = false,
 }: {
   thread: Thread;
   agent: Agent | undefined;
@@ -24,6 +25,7 @@ export function ThreadAvatar({
   online?: boolean;
   animated?: boolean;
   channelMark?: boolean;
+  channelCorner?: boolean;
 }) {
   const agents = useShownAgents();
   const parent = useData((s) => (thread.parent_id ? s.threads[thread.parent_id] : undefined));
@@ -35,7 +37,7 @@ export function ThreadAvatar({
   if (thread.channel)
     return (
       <Suspense fallback={fallback}>
-        <ChannelFace thread={thread} size={size} slot={slot} showMark={channelMark} />
+        <ChannelFace thread={thread} size={size} slot={slot} showMark={channelMark} cornerMark={channelCorner} />
       </Suspense>
     );
   return (

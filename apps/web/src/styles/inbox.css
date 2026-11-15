@@ -179,6 +179,17 @@ button.chatprocesses {
   right: -3px;
   bottom: -2px;
 }
+/* PESTANA-CANAL-1 — the channel's mark on the corner of a contact's face, ringed in the colour it sits on. */
+.threadavatar__corner {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--threadavatar-ring, var(--colonia-surface));
+}
 .threadavatar__group {
   position: absolute;
   right: -5px;

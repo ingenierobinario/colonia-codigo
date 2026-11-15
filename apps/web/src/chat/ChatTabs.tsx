@@ -2,6 +2,7 @@
 // PESTANAS-CHAT-2 — always there, as an editor's tab strip: the tab on screen joins the chat under it.
 import { IconButton, Icons, Spinner } from "@colonia/ui";
 import { type DragEvent, useEffect, useRef } from "react";
+import { CHANNEL_KINDS } from "../channels/kinds.ts";
 import { isWorking, threadAgent } from "../data/identity.ts";
 import { newChatId, useNewChat } from "../data/newChat.ts";
 import { useData, useShownAgents } from "../data/state.ts";
@@ -9,6 +10,7 @@ import { useT } from "../i18n/index.ts";
 import { chatLabel } from "../inbox/InboxViews.tsx";
 import { useChatAgents } from "../inbox/NewChatMenu.tsx";
 import { ThreadAvatar } from "../inbox/ThreadAvatar.tsx";
+import { useThreadChannel } from "../inbox/useThreadChannel.ts";
 import type { Tabs } from "./tabs.ts";
 import { closeTab, moveTab, showTab } from "./tabsSync.ts";
 import "./chattabs.css";
@@ -66,6 +68,9 @@ function ChatTab({ id, active, drag }: { id: string; active: boolean; drag: Drag
     : thread.kind === "home"
       ? (agent?.name ?? thread.title)
       : chatLabel(thread, agent, t("chat.new"));
+  // PESTANA-CANAL-1 — a contact's tab says which channel it is on: the mark on its face, the name on hover.
+  const channel = useThreadChannel(thread);
+  const hint = channel ? `${label} · ${t(CHANNEL_KINDS[channel].name)}` : label;
   const unread = !active && (thread?.unread ?? 0) > 0;
   const onDragOver = (e: DragEvent) => {
     if (!drag.over()) return;
@@ -100,10 +105,10 @@ function ChatTab({ id, active, drag }: { id: string; active: boolean; drag: Drag
         role="tab"
         aria-selected={active}
         className="chattabs__open"
-        title={label}
+        title={hint}
         onClick={() => showTab(id)}
       >
-        {thread && <ThreadAvatar thread={thread} agent={agent} size={16} slot={16} />}
+        {thread && <ThreadAvatar thread={thread} agent={agent} size={16} slot={16} channelCorner />}
         {thread && isWorking(thread.state) && <Spinner size={12} />}
         <span className="chattabs__title">{label}</span>
         {unread && <span className="chattabs__dot" role="img" aria-label={t("chat.unread")} />}
