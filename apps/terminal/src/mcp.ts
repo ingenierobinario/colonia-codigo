@@ -17,6 +17,8 @@ type Register = (
 
 const DESCRIPTIONS: Record<BrowserMethod, string> = {
   "browser.tabs": "List the open tabs of the Colonia embedded browser (id, url, profile, who controls it).",
+  "browser.signed_in":
+    "Sites a Navegadores profile (nav:<name>) keeps a sign-in for, as host names only. Empty in the headless browser.",
   "browser.open":
     "Open a tab in the Colonia browser. profile: shared (the persistent jar every agent reuses), incognito (empty, memory only) or agent:<id>.",
   "browser.navigate": "Navigate a tab to a URL (http/https only).",
