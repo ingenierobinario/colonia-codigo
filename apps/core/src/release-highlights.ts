@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.19": {
+    en: [
+      "Saving a key no longer wipes the others when the secrets file was edited by hand or cut short.",
+      "Updates install in user folders with accented or non-Latin names on Windows.",
+      "The Windows installer works on ARM computers.",
+    ],
+    es: [
+      "Guardar una clave ya no borra las demás si el fichero de secretos se editó a mano o quedó cortado.",
+      "Las actualizaciones se instalan en carpetas de usuario con tildes o letras no latinas en Windows.",
+      "El instalador de Windows funciona en equipos ARM.",
+    ],
+  },
   "2.36.18": {
     en: ["Tabs show the channel's logo (WhatsApp, Telegram, email…)."],
     es: ["Las pestañas muestran el logo del canal (WhatsApp, Telegram, correo…)."],
