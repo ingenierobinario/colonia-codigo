@@ -38,7 +38,9 @@ try {
     function Quiet([scriptblock]$run) { $ErrorActionPreference = "Continue"; & $run 2>$null }
 
     $App = if ($env:COLONIA_APP) { $env:COLONIA_APP } else { Join-Path $env:USERPROFILE ".colonia\v2\app" }
-    $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
+    # INSTALL-WIN-ARM-1: releases ship win-x64 only (RELEASE_PLATFORMS) and Windows on ARM runs it emulated; asking for
+    # win-arm64 made every install on a Snapdragon or Surface ARM laptop fail with a 404.
+    $Arch = "x64"
     $Bin = Join-Path $App "bin"
     if ($Portable) { $Server = $true; $NoService = $true }
     # Pairing needs the daemon (it holds the connection): server mode with the service, never portable.

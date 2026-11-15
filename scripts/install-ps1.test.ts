@@ -10,7 +10,7 @@ import { tempDir } from "../apps/core/src/testkit/platform.ts";
 const script = path.resolve(import.meta.dirname, "install/install.ps1");
 // install.ps1 is the Windows installer; Linux and macOS run install.sh.
 const windows = process.platform === "win32";
-const arch = process.arch === "arm64" ? "arm64" : "x64";
+const arch = "x64"; // INSTALL-WIN-ARM-1: releases ship win-x64 only
 const shell = ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass"];
 
 /** A bundle with what install.ps1 checks and the command starts: Node, and a terminal that says how it was called. */
