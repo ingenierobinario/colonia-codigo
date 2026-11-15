@@ -23,6 +23,7 @@ export * from "./notices.ts";
 export * from "./office.ts";
 export * from "./releases.ts";
 export * from "./resource-methods.ts";
+export * from "./screen-map.ts";
 export * from "./table-cells.ts";
 export * from "./table-methods.ts";
 export * from "./team-methods.ts";

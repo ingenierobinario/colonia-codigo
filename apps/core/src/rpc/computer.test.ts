@@ -60,6 +60,8 @@ before(async () => {
   home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-computer-"));
   core = await createCore(testConfig({ home }), { quiet: true, llm });
   core.store.settings.set("model_default", JSON.stringify({ model: "fake/fake-1", router: false }));
+  // La persona ya eligió cómo se maneja su pantalla (sin elección, el primer clic se lo pregunta).
+  core.store.settings.write("desktop", { ...core.store.settings.read("desktop"), computer_mode: "background" });
   core.store.settings.write("memory", {
     mode: "notes",
     skill_picker: true,

@@ -5,6 +5,7 @@ import { COMPUTER_CAP } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import { untrusted } from "./result.ts";
+import { MOVING, screenMode, settled, shotMaps, twice } from "./screen-mode.ts";
 import { defineTool, type Tool, type ToolContext } from "./types.ts";
 
 /** Actions on the computer in one turn before the owner is asked whether to go on (and again after as many more). */
@@ -47,17 +48,29 @@ export function computerTools(store: Store): Tool[] {
     .max(80)
     .optional()
     .describe("what you are doing, in a few words of the owner's language: shown beside your pointer on their screen");
-  /** A look at the window in front: the model gets its elements as outside content, and sees its picture. */
-  const look = async (ctx: ToolContext, app?: string, note?: string) => {
-    const r = await ctx.call("computer.snapshot", {
-      thread: ctx.thread.id,
-      ...(app ? { app } : {}),
-      ...(note ? { note } : {}),
-    });
+  /** CURSOR-FIABLE-1: la última captura de cada chat, para pasar un píxel suyo al punto de pantalla. */
+  const maps = shotMaps();
+  /** Una mirada (no cambia nada: si falla una vez, se repite). */
+  const snap = (ctx: ToolContext, app?: string, note?: string) =>
+    twice(() =>
+      ctx.call("computer.snapshot", {
+        thread: ctx.thread.id,
+        ...(app ? { app } : {}),
+        ...(note ? { note } : {}),
+      }),
+    );
+  /** The model gets the window's elements as outside content, and sees its picture. */
+  const show = (ctx: ToolContext, r: Awaited<ReturnType<typeof snap>>) => {
+    maps.keep(ctx.thread.id, r.map);
     // The model looks at the picture itself: the elements alone miss what a page shows.
     ctx.see?.({ media_id: r.media.id, mime: r.media.mime });
-    return untrusted("screen", { app: r.app, window: r.window }, r.elements || "(no accessible elements)");
+    const how = r.map
+      ? `\nTo click something only the picture shows, give screen_do its pixel in this picture as px,py (${r.map.px_width}x${r.map.px_height} px): Colonia turns it into the screen point. Do no arithmetic yourself.`
+      : "";
+    return untrusted("screen", { app: r.app, window: r.window }, (r.elements || "(no accessible elements)") + how);
   };
+  /** A look at the window in front. */
+  const look = async (ctx: ToolContext, app?: string, note?: string) => show(ctx, await snap(ctx, app, note));
   return [
     defineTool({
       name: "screen_snapshot",
@@ -104,7 +117,7 @@ export function computerTools(store: Store): Tool[] {
     defineTool({
       name: "screen_do",
       description:
-        'Do several actions in a row in the app named, then see its window again (one approval for all of them). Each step is a click at screen_snapshot\'s positions (sent to the app directly; the owner\'s pointer does not move), keys ("enter", "tab", "esc", "cmd+l", arrows, "pagedown") or text typed into the focused field (never passwords or payment data). Put every step you can predict in one call; it stops at the first that fails and says which.',
+        'Do several actions in a row in the app named, then see its window again once it stops changing (one approval for all of them). Each step is a click (x,y: an element\'s position from screen_snapshot; or px,py: a pixel of its last picture, for what only the picture shows), keys ("enter", "tab", "esc", "cmd+l", arrows, "pagedown") or text typed into the focused field (never passwords or payment data). Put every step you can predict in one call; it stops at the first that fails and says which. Whether the real pointer moves (live) or not (in the background) is the owner\'s choice, never yours: they are asked if they have not said.',
       args: z.object({
         app: z.string().min(1).max(120),
         steps: z
@@ -113,13 +126,15 @@ export function computerTools(store: Store): Tool[] {
               do: z.enum(["click", "key", "type"]),
               x: z.number().int().optional(),
               y: z.number().int().optional(),
+              px: z.number().int().min(0).optional(),
+              py: z.number().int().min(0).optional(),
               keys: z.string().min(1).max(40).optional(),
               text: z.string().min(1).max(2000).optional(),
             }),
           )
           .min(1)
           .max(12)
-          .describe("click takes x and y, key takes keys, type takes text"),
+          .describe("click takes x and y (screen point) or px and py (pixel of the last picture), key takes keys, type takes text"),
         look: z.boolean().optional().describe("see the window after the last step (default true)"),
         note: NOTE,
       }),
@@ -130,15 +145,36 @@ export function computerTools(store: Store): Tool[] {
       check(a) {
         for (const [i, st] of a.steps.entries()) {
           const ok =
-            st.do === "click" ? st.x !== undefined && st.y !== undefined : st.do === "key" ? !!st.keys : !!st.text;
+            st.do === "click"
+              ? (st.x !== undefined && st.y !== undefined) || (st.px !== undefined && st.py !== undefined)
+              : st.do === "key"
+                ? !!st.keys
+                : !!st.text;
           if (!ok)
             throw new Error(
-              `step ${i + 1} (${st.do}) is missing ${st.do === "click" ? "x and y" : st.do === "key" ? "keys" : "text"}`,
+              `step ${i + 1} (${st.do}) is missing ${st.do === "click" ? "x and y (or px and py)" : st.do === "key" ? "keys" : "text"}`,
             );
         }
       },
       title: (a) => `In ${String(a.app ?? "an app")}: ${stepsText(a.steps)}`.slice(0, 160),
       async run(a, ctx) {
+        // El modo lo dijo la persona (ajuste o respuesta): sin él no se toca nada.
+        const m = await screenMode(store, ctx);
+        if ("stop" in m) return m.stop;
+        // Los píxeles de la imagen se pasan a puntos antes de empezar: si uno no vale, no se hace ningún paso.
+        const at: ({ x: number; y: number } | undefined)[] = [];
+        try {
+          for (const st of a.steps)
+            at.push(
+              st.do !== "click"
+                ? undefined
+                : st.px !== undefined && st.py !== undefined
+                  ? maps.point(ctx.thread.id, st.px, st.py, "screen_snapshot")
+                  : { x: st.x ?? 0, y: st.y ?? 0 },
+            );
+        } catch (e) {
+          return `not done: ${e instanceof Error ? e.message : String(e)}`;
+        }
         const done: string[] = [];
         for (const [i, st] of a.steps.entries()) {
           const why = await budget(ctx);
@@ -146,8 +182,9 @@ export function computerTools(store: Store): Tool[] {
           const base = { app: a.app, ...(a.note ? { note: a.note } : {}) };
           try {
             if (st.do === "click") {
-              const r = await ctx.call("computer.click", { ...base, x: st.x ?? 0, y: st.y ?? 0 });
-              done.push(`${i + 1}. clicked ${st.x},${st.y}${r.how ? `: ${r.how}` : ""}`);
+              const p = at[i] ?? { x: 0, y: 0 };
+              const r = await ctx.call("computer.click", { ...base, x: p.x, y: p.y, mode: m.mode });
+              done.push(`${i + 1}. clicked ${p.x},${p.y}${r.how ? `: ${r.how}` : ""}`);
             } else if (st.do === "key") {
               await ctx.call("computer.key", { ...base, keys: st.keys ?? "" });
               done.push(`${i + 1}. pressed ${st.keys}`);
@@ -164,9 +201,9 @@ export function computerTools(store: Store): Tool[] {
           }
         }
         if (a.look === false) return `${done.join("\n")}\ntake a screen_snapshot to check it worked`;
-        // A short pause lets the app redraw before the look.
-        await new Promise((r) => setTimeout(r, 300));
-        return `${done.join("\n")}\nthe window now:\n${await look(ctx, undefined, a.note)}`;
+        // Se mira hasta que la ventana deja de cambiar (antes: 300 ms fijos y una sola mirada).
+        const s = await settled(() => snap(ctx, undefined, a.note));
+        return `${done.join("\n")}\nthe window now${s.steady ? "" : ` ${MOVING}`}:\n${show(ctx, s.shot)}`;
       },
     }),
   ];
@@ -176,9 +213,11 @@ export function computerTools(store: Store): Tool[] {
 export function stepsText(steps: unknown): string {
   if (!Array.isArray(steps)) return "";
   return steps
-    .map((st: { do?: string; x?: number; y?: number; keys?: string; text?: string }) =>
+    .map((st: { do?: string; x?: number; y?: number; px?: number; py?: number; keys?: string; text?: string }) =>
       st.do === "click"
-        ? `click ${st.x},${st.y}`
+        ? st.px !== undefined && st.x === undefined
+          ? `click px ${st.px},${st.py}`
+          : `click ${st.x},${st.y}`
         : st.do === "key"
           ? String(st.keys)
           : `type «${String(st.text).slice(0, 30)}»`,

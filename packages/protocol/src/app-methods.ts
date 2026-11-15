@@ -1,6 +1,7 @@
 // Methods behind the app screens: agents, projects, threads, surfaces.
 import { z } from "zod";
 import { composerMethods } from "./composer-methods.ts";
+import { ComputerMode } from "./screen-map.ts";
 import { CHANNEL_DEFAULTS } from "./constants.ts";
 import {
   Agent,
@@ -1279,6 +1280,8 @@ export const appMethods = {
       computer_use: z.boolean(),
       /** The Mac stays awake while Colonia works for the owner (macOS). */
       keep_awake: z.boolean(),
+      /** Cómo maneja el agente la pantalla: en vivo, en segundo plano, o preguntar cada vez. */
+      computer_mode: ComputerMode,
     }),
     effect: false,
     access: "human",
@@ -1290,6 +1293,8 @@ export const appMethods = {
         launch_at_login: z.boolean(),
         computer_use: z.boolean().default(false),
         keep_awake: z.boolean().default(true),
+        /** Sin él se conserva lo guardado: una app anterior que guarde los demás ajustes no borra la elección. */
+        computer_mode: ComputerMode.optional(),
       })
       .strict(),
     result: z.object({
@@ -1297,6 +1302,7 @@ export const appMethods = {
       launch_at_login: z.boolean(),
       computer_use: z.boolean(),
       keep_awake: z.boolean(),
+      computer_mode: ComputerMode,
     }),
     effect: true,
     access: "human",

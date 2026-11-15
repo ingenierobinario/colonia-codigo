@@ -1,7 +1,8 @@
 // The owner's computer, as a node, when they turned computer use on in the desktop app: a picture of the screen and
 // a click or typing on the app in front. The core only routes; the desktop checks the app is still the one approved.
 // The emergency stop (the desktop says so) ends the turns that were using the computer: only those, only that time.
-import { COMPUTER_CAP } from "@colonia/protocol";
+import { createHash } from "node:crypto";
+import { COMPUTER_CAP, ScreenMap } from "@colonia/protocol";
 import type { Store } from "../domain/store.ts";
 import { CallError } from "../errors.ts";
 import type { NodeBroker } from "../nodes/broker.ts";
@@ -71,19 +72,25 @@ export function computerHandlers(
         app?: string;
         window?: string;
         elements?: string;
+        map?: unknown;
       };
       if (!r?.data || !r.mime) throw new CallError({ code: "conflict", message: "no picture of the screen came back" });
+      const bytes = Buffer.from(r.data, "base64");
       const m = saveUpload(home, store, {
         name: "screen.jpg",
         mime: r.mime,
-        bytes: Buffer.from(r.data, "base64"),
+        bytes,
         ...(thread ? { thread } : {}),
       });
+      // CURSOR-FIABLE-1: la zona que muestra la imagen (una app de escritorio anterior no la manda) y su huella.
+      const map = ScreenMap.safeParse(r.map);
       return {
         media: { id: m.id, mime: m.mime },
         app: String(r.app ?? ""),
         window: String(r.window ?? ""),
         elements: String(r.elements ?? "").slice(0, 12_000),
+        ...(map.success ? { map: map.data } : {}),
+        digest: createHash("sha1").update(bytes).digest("hex").slice(0, 16),
       };
     },
     "computer.click": async (p, ctx) => {

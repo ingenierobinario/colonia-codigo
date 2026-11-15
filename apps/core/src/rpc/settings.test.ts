@@ -22,6 +22,7 @@ test("a stored setting that does not read falls back to its default instead of r
     launch_at_login: true,
     computer_use: false,
     keep_awake: true,
+    computer_mode: "ask",
   });
   assert.deepEqual(
     (await env.client.call("tasks.list", {})).columns.map((c) => c.id),
@@ -38,7 +39,16 @@ test("one bad field of the desktop prefs falls back alone; a saved value reads b
     launch_at_login: false,
     computer_use: false,
     keep_awake: true,
+    computer_mode: "ask",
   });
+  await env.client.call("desktop.set", {
+    shortcut: "Alt+K",
+    launch_at_login: true,
+    computer_use: true,
+    keep_awake: false,
+    computer_mode: "live",
+  });
+  // CURSOR-FIABLE-1: guardar los demás ajustes sin decir el modo (una app anterior) no borra el que eligió la persona.
   await env.client.call("desktop.set", {
     shortcut: "Alt+K",
     launch_at_login: true,
@@ -50,6 +60,7 @@ test("one bad field of the desktop prefs falls back alone; a saved value reads b
     launch_at_login: true,
     computer_use: true,
     keep_awake: false,
+    computer_mode: "live",
   });
 });
 

@@ -8,6 +8,7 @@ import {
   CALENDAR_LEAD,
   CHECK_EVERY,
   ChannelInfo,
+  ComputerMode,
   EmailSignatures,
   EmailSignatureValue,
   HookMode,
@@ -102,8 +103,10 @@ export const SETTINGS = {
       launch_at_login: z.boolean().catch(true),
       computer_use: z.boolean().catch(false),
       keep_awake: z.boolean().catch(true),
+      /** En vivo o en segundo plano: lo dice la persona aquí; `ask` = se le pregunta en el chat. */
+      computer_mode: ComputerMode.catch("ask"),
     }),
-    { shortcut: "Alt+Space", launch_at_login: true, computer_use: false, keep_awake: true },
+    { shortcut: "Alt+Space", launch_at_login: true, computer_use: false, keep_awake: true, computer_mode: "ask" },
   ),
   /** Saved without the auxiliary model, which keeps its own key ("model_aux", plain text). */
   memory: entry(MemorySettings.omit({ aux_model: true }).partial(), {}),

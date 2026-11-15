@@ -108,7 +108,10 @@ export function appHandlers(deps: {
     },
     "desktop.get": () => desktopPrefs(store),
     "desktop.set": (p) => {
-      store.settings.write("desktop", p);
+      store.settings.write("desktop", {
+        ...p,
+        computer_mode: p.computer_mode ?? store.settings.read("desktop").computer_mode,
+      });
       return desktopPrefs(store);
     },
     "secrets.set": ({ name, value, project }) => {

@@ -2,6 +2,7 @@
 // each one talks to the core with a token of its own, which the owner can revoke without touching the others.
 import { z } from "zod";
 import { Id } from "./domain.ts";
+import { ScreenMap } from "./screen-map.ts";
 
 export const DevicePlatform = z.enum(["ios", "android", "desktop", "other"]);
 export type DevicePlatform = z.infer<typeof DevicePlatform>;
@@ -232,6 +233,10 @@ export const deviceMethods = {
       app: z.string(),
       window: z.string(),
       elements: z.string(),
+      /** La zona de pantalla que muestra la imagen: con ella el core pasa un píxel de la captura a su punto. */
+      map: ScreenMap.optional(),
+      /** Huella de la imagen: dos capturas con la misma son la misma pantalla (ya dejó de cambiar). */
+      digest: z.string().optional(),
     }),
     effect: true,
   },
@@ -247,6 +252,12 @@ export const deviceMethods = {
         app: z.string().min(1).max(120),
         /** What the agent is doing, in a few words: shown beside its pointer on the owner's screen. */
         note: z.string().max(80).optional(),
+        /**
+         * Lo que eligió la persona: `live` = clic real, el puntero se mueve y se ve; `background` = solo se pulsa
+         * el elemento sin tocar el puntero, y si no se puede el clic falla. Sin él, lo de siempre (pulsar y, si no,
+         * clic real devolviendo el puntero).
+         */
+        mode: z.enum(["live", "background"]).optional(),
       })
       .strict(),
     result: z.object({
