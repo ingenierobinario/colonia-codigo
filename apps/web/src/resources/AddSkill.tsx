@@ -11,6 +11,7 @@ import {
   saveSkill,
 } from "../data/resources.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { RecipeFields, useRecipe } from "./ImportRecipe.tsx";
 
 type Kind = SkillImportSource["kind"];
 
@@ -40,7 +41,9 @@ export function AddSkill(props: {
   const create = useCreate(props.projectId, props.onDone);
   // Copying a skill goes where it belongs (a global one into Colonia's skills, even from a project's screen).
   const imp = useImport(props.start ? props.start.project : props.projectId, props.start, props.onDone);
+  const rec = useRecipe(props.projectId, props.onDone);
   const creating = mode === "create";
+  const recipe = mode === "recipe";
   return (
     <Dialog
       open
@@ -49,14 +52,18 @@ export function AddSkill(props: {
       title={
         creating
           ? t("res.newSkill")
-          : props.start
+          : recipe
+            ? t("res.recipe.title")
+            : props.start
             ? t(props.start.replace ? "res.useThis" : "res.copyToColonia")
             : t("res.skill.import")
       }
       description={
         creating
           ? t(props.projectId ? "res.newSkill.project" : "res.newSkill.global")
-          : t(imp.project ? "res.import.project" : "res.import.global")
+          : recipe
+            ? t("res.recipe.description")
+            : t(imp.project ? "res.import.project" : "res.import.global")
       }
       footer={
         <>
@@ -66,6 +73,10 @@ export function AddSkill(props: {
           {creating ? (
             <Button disabled={!create.valid} loading={create.busy} onClick={() => void create.run()}>
               {t("res.create")}
+            </Button>
+          ) : recipe ? (
+            <Button disabled={!rec.ready} loading={rec.busy && rec.ready} onClick={() => void rec.run()}>
+              {t("res.recipe.go")}
             </Button>
           ) : (
             <Button disabled={!imp.chosen.length} loading={imp.busy} onClick={() => void imp.run()}>
@@ -85,10 +96,17 @@ export function AddSkill(props: {
             options={[
               { value: "create", label: t("res.skill.create") },
               { value: "import", label: t("res.skill.import") },
+              { value: "recipe", label: t("res.skill.recipe") },
             ]}
           />
         )}
-        {creating ? <CreateFields {...create} /> : <ImportFields imp={imp} fixed={Boolean(props.start)} />}
+        {creating ? (
+          <CreateFields {...create} />
+        ) : recipe ? (
+          <RecipeFields rec={rec} />
+        ) : (
+          <ImportFields imp={imp} fixed={Boolean(props.start)} />
+        )}
       </div>
     </Dialog>
   );

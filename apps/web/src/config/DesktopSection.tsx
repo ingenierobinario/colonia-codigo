@@ -1,4 +1,4 @@
-import { Badge, Button, Kbd, SettingRow, Switch } from "@colonia/ui";
+import { Badge, Button, Kbd, SegmentedControl, SettingRow, Switch } from "@colonia/ui";
 import { type KeyboardEvent, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
@@ -6,7 +6,15 @@ import { useT } from "../i18n/index.ts";
 import { computerUseHere, stopKeys } from "./desktopPrefs.ts";
 import { SectionHead, SubHead } from "./SectionHead.tsx";
 
-type Prefs = { shortcut: string; launch_at_login: boolean; computer_use: boolean; keep_awake: boolean };
+/** CURSOR-FIABLE-1: how agents drive the screen; "ask" asks the owner in each chat. Never the agent's choice. */
+type ComputerMode = "ask" | "live" | "background";
+type Prefs = {
+  shortcut: string;
+  launch_at_login: boolean;
+  computer_use: boolean;
+  keep_awake: boolean;
+  computer_mode: ComputerMode;
+};
 
 const SYMBOL: Record<string, string> = { CommandOrControl: "⌘", Alt: "⌥", Shift: "⇧", Control: "⌃", Space: "Space" };
 
@@ -36,7 +44,13 @@ export function DesktopSection() {
     void client
       .call("desktop.get", {})
       .then(setPrefs, () =>
-        setPrefs({ shortcut: "Alt+Space", launch_at_login: true, computer_use: false, keep_awake: true }),
+        setPrefs({
+          shortcut: "Alt+Space",
+          launch_at_login: true,
+          computer_use: false,
+          keep_awake: true,
+          computer_mode: "ask",
+        }),
       );
   }, []);
 
@@ -110,7 +124,12 @@ export function DesktopSection() {
         </SettingRow>
       )}
       {computerUseHere() && (
-        <ComputerUse on={prefs.computer_use} onChange={(on) => void save({ ...prefs, computer_use: on })} />
+        <ComputerUse
+          on={prefs.computer_use}
+          onChange={(on) => void save({ ...prefs, computer_use: on })}
+          mode={prefs.computer_mode}
+          onMode={(computer_mode) => void save({ ...prefs, computer_mode })}
+        />
       )}
     </>
   );
@@ -119,7 +138,17 @@ export function DesktopSection() {
 type Permissions = { screen: string; accessibility: boolean };
 
 /** Computer use on this computer: the switch, and on a Mac the two permissions macOS asks for, each with a way to grant it. */
-function ComputerUse({ on, onChange }: { on: boolean; onChange: (on: boolean) => void }) {
+function ComputerUse({
+  on,
+  onChange,
+  mode,
+  onMode,
+}: {
+  on: boolean;
+  onChange: (on: boolean) => void;
+  mode: ComputerMode;
+  onMode: (mode: ComputerMode) => void;
+}) {
   const t = useT();
   const mac = window.coloniaDesktop?.platform === "darwin";
   const [perms, setPerms] = useState<Permissions>();
@@ -150,6 +179,21 @@ function ComputerUse({ on, onChange }: { on: boolean; onChange: (on: boolean) =>
       <SettingRow title={t("desktop.cu.switch")} description={t("desktop.cu.switchHint", { keys: stopKeys() })}>
         <Switch size="sm" checked={on} onCheckedChange={onChange} aria-label={t("desktop.cu.switch")} />
       </SettingRow>
+      {on && (
+        <SettingRow title={t("desktop.cu.mode")} description={t(`desktop.cu.mode.${mode}Hint`)}>
+          <SegmentedControl
+            size="sm"
+            label={t("desktop.cu.mode")}
+            value={mode}
+            onValueChange={(v) => onMode(v === "live" || v === "background" ? v : "ask")}
+            options={[
+              { value: "ask", label: t("desktop.cu.mode.ask") },
+              { value: "live", label: t("desktop.cu.mode.live") },
+              { value: "background", label: t("desktop.cu.mode.background") },
+            ]}
+          />
+        </SettingRow>
+      )}
       {/* Windows asks for neither permission. */}
       {on && perms && mac && row("screen", perms.screen === "granted")}
       {on && perms && mac && row("accessibility", perms.accessibility)}

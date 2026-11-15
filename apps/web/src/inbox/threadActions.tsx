@@ -3,6 +3,7 @@ import type { Agent, Thread } from "@colonia/protocol";
 import { Icons, type MenuEntry } from "@colonia/ui";
 import { showTab } from "../chat/tabsSync.ts";
 import { markRead } from "../data/actions.ts";
+import { exportRecipe } from "../data/recipes.ts";
 import { openThreadDialog, updateThread } from "../data/threadAdmin.ts";
 import type { T } from "../i18n/index.ts";
 import { go, nav } from "../shell/nav.ts";
@@ -72,6 +73,8 @@ export function threadMenu(thread: Thread, o: { t: T; agent: Agent | undefined; 
         ]
       : []),
     ...(o.extra ?? []),
+    // RECETA-1: what the agent did here, as a .md another person imports.
+    { label: t("thread.menu.exportRecipe"), icon: <Icons.Download />, onSelect: () => void exportRecipe(thread.id) },
     { type: "separator" },
     {
       label: t("thread.menu.delete"),
