@@ -314,7 +314,7 @@ public static class ColoniaWin {
     if (sent != list.Count) throw new Exception("Windows did not take the input (error " + Marshal.GetLastWin32Error() + "): the app may be running as administrator");
   }
 
-  public static string Click(string app, int x, int y, int idleMs, int waitMs) {
+  public static string Click(string app, int x, int y, int idleMs, int waitMs, bool stay) {
     // A click mixed with the owner's own movement is lost: wait for a pause.
     int until = Environment.TickCount + waitMs;
     while (IdleMs() < idleMs) {
@@ -332,7 +332,7 @@ public static class ColoniaWin {
     Thread.Sleep(30);
     List<INPUT> up = new List<INPUT>(); up.Add(Mouse(0x0004)); Send(up);
     Thread.Sleep(30);
-    SetCursorPos(back.X, back.Y);
+    if (!stay) SetCursorPos(back.X, back.Y);
     return "";
   }
 
@@ -418,7 +418,7 @@ public static class ColoniaWin {
       else if (op == "top") r = TopAt(int.Parse(a[0]), int.Parse(a[1]));
       else if (op == "activate") r = Activate(a[0]);
       else if (op == "press") r = Press(a[0], int.Parse(a[1]), int.Parse(a[2]));
-      else if (op == "click") r = Click(a[0], int.Parse(a[1]), int.Parse(a[2]), int.Parse(a[3]), int.Parse(a[4]));
+      else if (op == "click") r = Click(a[0], int.Parse(a[1]), int.Parse(a[2]), int.Parse(a[3]), int.Parse(a[4]), a.Length > 5 && a[5] == "1");
       else if (op == "keys") r = Keys(a[0], int.Parse(a[1]), a[2], a[3] == "1");
       else if (op == "type") r = Type(a[0], a[1]);
       else if (op == "open") r = Open(a[0], a[1]);
@@ -599,7 +599,7 @@ export const windowsDriver: ComputerDriver = {
     return call("keys", [app, k.vk, k.mods.join(","), k.extended ? "1" : "0"]);
   },
   press: (app, x, y) => call("press", [app, ...toPixels(x, y)]),
-  click: (app, x, y) => call("click", [app, ...toPixels(x, y), 500, 5_000]).then(() => {}),
+  click: (app, x, y, stay) => call("click", [app, ...toPixels(x, y), 500, 5_000, stay ? "1" : "0"]).then(() => {}),
   // UI Automation can only replace a field's whole value: text goes in as typing, at the caret.
   insert: async () => false,
   paste: (app, text) => call("type", [app, text]).then(() => {}),

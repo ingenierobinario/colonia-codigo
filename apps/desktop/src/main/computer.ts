@@ -1,6 +1,7 @@
 // Computer use, lent to the core as the "computer" capability once the owner turns it on (Config › Desktop), on macOS
 // and Windows. Every look starts by finding the window in front, on whichever screen it is, and pictures that window
 // alone. The picture comes from Electron; the window, its elements, a click and typing come from the platform's driver.
+import { windowCrop } from "@colonia/protocol";
 import { desktopCapturer, type NativeImage, screen, shell, systemPreferences } from "electron";
 import type { Bounds, ComputerDriver } from "./computer-driver.ts";
 import { macDriver } from "./computer-mac.ts";
@@ -23,6 +24,15 @@ export type ComputerActivity = { kind: "look" | "click" | "type"; app: string; w
  * is looked up again every time, so a window moved to another monitor is still found.
  */
 async function picture(bounds: Bounds | undefined, max: number): Promise<NativeImage> {
+  return (await shot(bounds, max)).img;
+}
+
+/**
+ * CURSOR-FIABLE-1: la imagen y la zona de pantalla (en puntos) que de verdad muestra. Una ventana que se sale de su
+ * pantalla (maximizada en Windows: -8,-8) se recorta, y la zona es la recortada: con ella el core pasa un píxel de la
+ * imagen a su punto sin el desvío que daba usar la zona de la ventana.
+ */
+async function shot(bounds: Bounds | undefined, max: number): Promise<{ img: NativeImage; region: Bounds }> {
   const display = bounds ? screen.getDisplayMatching(bounds) : screen.getPrimaryDisplay();
   const all = screen.getAllDisplays();
   // One size for every screen's thumbnail: big enough for the largest one at its own density.
@@ -40,16 +50,15 @@ async function picture(bounds: Bounds | undefined, max: number): Promise<NativeI
   const size = img.getSize();
   // The thumbnail keeps the screen's proportions inside the size asked: scale points to its pixels.
   const k = size.width / display.size.width;
-  if (bounds) {
-    const x = Math.max(0, Math.round((bounds.x - display.bounds.x) * k));
-    const y = Math.max(0, Math.round((bounds.y - display.bounds.y) * k));
-    const w = Math.min(size.width - x, Math.round(bounds.width * k));
-    const h = Math.min(size.height - y, Math.round(bounds.height * k));
-    if (w > 0 && h > 0) img = img.crop({ x, y, width: w, height: h });
+  let region: Bounds = { ...display.bounds };
+  const cut = bounds ? windowCrop(bounds, display.bounds, k, size) : undefined;
+  if (cut) {
+    img = img.crop(cut.crop);
+    region = cut.region;
   }
   const s = img.getSize();
   const scale = Math.min(1, max / Math.max(s.width, s.height));
-  return scale < 1 ? img.resize({ width: Math.round(s.width * scale), quality: "good" }) : img;
+  return { img: scale < 1 ? img.resize({ width: Math.round(s.width * scale), quality: "good" }) : img, region };
 }
 
 /** Browsers, by their app names (and Windows' process names): their pages are read from the picture. */
@@ -152,7 +161,7 @@ export function createComputer(o: {
     // What it is doing, by the window it looks at (the pointer never shows in the picture).
     const b0 = f.bounds;
     if (b0) void o.cursor.moveTo(b0.x + b0.width / 2, b0.y + 40, note || "👀");
-    const img = await picture(f.bounds, SHOT_MAX);
+    const { img, region } = await shot(f.bounds, SHOT_MAX);
     const where = f.bounds
       ? `window at ${f.bounds.x},${f.bounds.y}, ${f.bounds.width}x${f.bounds.height} points`
       : "the main screen";
@@ -161,12 +170,10 @@ export function createComputer(o: {
     const over = b ? await d.topAt(b.x + b.width / 2, b.y + b.height / 2).catch(() => undefined) : undefined;
     const covered =
       over && over.pid !== f.pid ? `; covered by a window of ${over.name}: the picture shows that one` : "";
-    // How a point in the picture maps to the screen, to click what only the picture shows.
+    // CURSOR-FIABLE-1: antes se le daba al modelo una fórmula para pasar píxeles a puntos (y con la zona de la
+    // ventana, no la recortada): ahora va el mapa y la cuenta la hace el core.
     const size = img.getSize();
-    const scale = b ? b.width / size.width : 1;
-    const map = b
-      ? `; the picture is ${size.width}x${size.height} px: its pixel (px,py) is the screen point (${b.x} + px*${scale.toFixed(3)}, ${b.y} + py*${scale.toFixed(3)})`
-      : "";
+    const map = `; the picture is ${size.width}x${size.height} px`;
     const header = `${screensText(b)}.\n${where}${covered}${map}; positions are screen points, centers to click\nrole\tname\tdescription\tvalue\tx,y`;
     go();
     o.onActivity({ kind: "look", app: f.app, window: f.window });
@@ -176,6 +183,7 @@ export function createComputer(o: {
       app: f.app,
       window: f.window,
       elements: [header, ...f.lines].join("\n"),
+      map: { ...region, px_width: size.width, px_height: size.height },
     };
   }
 
@@ -188,6 +196,7 @@ export function createComputer(o: {
       keys?: string;
       url?: string;
       note?: string;
+      mode?: string;
     };
     if (method === "computer.snapshot") return look(go, p.app, p.note);
     if (method === "computer.open") {
@@ -240,9 +249,29 @@ export function createComputer(o: {
       const name = String(p.app ?? "");
       // Pressed through accessibility when it can (the owner's pointer stays where it is); else a real click that
       // puts their pointer straight back.
+      // CURSOR-FIABLE-1: lo que eligió la persona. En vivo: clic real y el puntero se queda donde se hizo.
+      if (p.mode === "live") {
+        await d.activate(name).catch(() => {});
+        go();
+        try {
+          await d.click(name, x, y, true);
+        } catch (e) {
+          if (ASSISTIVE.test(errorText(e))) throw missing("accessibility");
+          throw e;
+        }
+        go();
+        o.cursor.pulse();
+        o.onActivity({ kind: "click", app: name, window: target?.window ?? "", x, y });
+        return { app: name, how: "a real click (live: the owner's pointer is there now)" };
+      }
       const done = await d.press(name, x, y).catch((e: unknown) => `none: ${errorText(e)}`);
       // Refused for want of the permission, a real click would be refused too (after waiting on the owner's mouse).
       if (ASSISTIVE.test(done)) throw missing("accessibility");
+      // En segundo plano el puntero de la persona no se toca: si aquí nada admite una pulsación, no hay clic.
+      if (p.mode === "background" && done.startsWith("none"))
+        throw new Error(
+          `nothing at ${x},${y} takes a press without the pointer (${done.replace(/^none:? ?/, "")}), and the owner chose the background: nothing was clicked. Use the keyboard (key, type) or another element, or tell the owner this step needs live mode`,
+        );
       let how = done;
       if (done.startsWith("none")) {
         go();

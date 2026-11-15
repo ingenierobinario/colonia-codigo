@@ -233,7 +233,7 @@ function run(argv) {
     $.CGEventPost($.kCGHIDEventTap, $.CGEventCreateMouseEvent(null, type, p, $.kCGMouseButtonLeft));
     delay(0.03);
   }
-  $.CGWarpMouseCursorPosition(back);
+  if (argv[3] !== "1") $.CGWarpMouseCursorPosition(back);
   $.CGAssociateMouseAndMouseCursorPosition(true);
   return argv[0];
 }`;
@@ -380,7 +380,8 @@ export const macDriver: ComputerDriver = {
     return osa(KEY, [app, String(k.code), String(k.flags)], "JavaScript");
   },
   press: (app, x, y) => osa(AX_PRESS, [app, String(x), String(y)], "JavaScript"),
-  click: (app, x, y) => osa(CLICK, [app, String(x), String(y)], "JavaScript", CLICK_MS).then(() => {}),
+  click: (app, x, y, stay) =>
+    osa(CLICK, [app, String(x), String(y), stay ? "1" : "0"], "JavaScript", CLICK_MS).then(() => {}),
   insert: (app, text) => osa(AX_TYPE, [app, text], "JavaScript").then((r) => r === "typed"),
   paste: (app, text) => osa(TYPE, [app, text], "JavaScript").then(() => {}),
 };

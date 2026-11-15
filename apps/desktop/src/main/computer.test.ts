@@ -168,3 +168,45 @@ test("DETENER-VIVO-1: after the stop the live view has no window to follow, unti
   await h.computer.handle("computer.open", { app: "calc" });
   assert.equal((await h.computer.frame())?.app, "calc");
 });
+
+test("CURSOR-FIABLE-1: en vivo el clic es real y el puntero se queda; nada se pulsa por accesibilidad", async () => {
+  const stays: (boolean | undefined)[] = [];
+  const h = harness({
+    click: async (_a, _x, _y, stay) => {
+      stays.push(stay);
+    },
+  });
+  const r = (await h.computer.handle("computer.click", { app: "calc", x: 20, y: 20, mode: "live" })) as { how: string };
+  assert.deepEqual(h.calls, ["activate"], "ni press ni otra cosa: solo el clic real");
+  assert.deepEqual(stays, [true]);
+  assert.match(r.how, /real click/);
+});
+
+test("CURSOR-FIABLE-1: en segundo plano nunca hay clic real: si nada admite la pulsación, falla y lo dice", async () => {
+  const none = harness({ press: async () => "none: nothing there" });
+  await assert.rejects(
+    none.computer.handle("computer.click", { app: "calc", x: 20, y: 20, mode: "background" }),
+    /chose the background: nothing was clicked/,
+  );
+  assert.deepEqual(none.calls, [], "el puntero de la persona no se tocó");
+  const ok = harness();
+  assert.deepEqual(await ok.computer.handle("computer.click", { app: "calc", x: 20, y: 20, mode: "background" }), {
+    app: "calc",
+    how: "pressed",
+  });
+  assert.deepEqual(ok.calls, ["press"]);
+});
+
+test("CURSOR-FIABLE-1: la captura lleva la zona que muestra de verdad, no la de la ventana que se sale", async () => {
+  // Ventana maximizada al estilo de Windows: sobresale 8 puntos por arriba y por la izquierda.
+  const h = harness({ front: async () => ({ ...CALC, bounds: { x: -8, y: -8, width: 400, height: 300 } }) });
+  const r = (await h.computer.handle("computer.snapshot", {})) as {
+    map: { x: number; y: number; width: number; height: number; px_width: number; px_height: number };
+    elements: string;
+  };
+  assert.equal(r.map.x, 0);
+  assert.equal(r.map.y, 0);
+  assert.equal(r.map.width, 392);
+  assert.equal(r.map.height, 292);
+  assert.doesNotMatch(r.elements, /px\*/, "ya no se le da una fórmula al modelo");
+});

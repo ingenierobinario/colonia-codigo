@@ -19,8 +19,11 @@ export type ComputerDriver = {
   key(app: string, keys: string): Promise<string>;
   /** Presses or focuses the element at a point without the pointer: "pressed …", "focused …" or "none: why". */
   press(app: string, x: number, y: number): Promise<string>;
-  /** A real click at a point, putting the owner's pointer back; refused when another window covers it. */
-  click(app: string, x: number, y: number): Promise<void>;
+  /**
+   * A real click at a point, putting the owner's pointer back (or leaving it there with `stay`: live mode); refused
+   * when another window covers it.
+   */
+  click(app: string, x: number, y: number, stay?: boolean): Promise<void>;
   /** Inserts text into the app's focused field in place (in front or not); false when that field does not take it. */
   insert(app: string, text: string): Promise<boolean>;
   /** Types text into the app in front, the way a person would. */
