@@ -127,6 +127,14 @@ const MAX_VOICE_BYTES = 10 * 1024 * 1024;
 /** Recent incoming messages whose chat is remembered for a reaction. */
 const CHATS_KEPT = 500;
 const BACKOFF_MS = [2_000, 5_000, 15_000, 30_000, 60_000];
+/**
+ * WA-RECONEXION-1: the computer slept. A sleeping computer freezes this process; on waking, the library finds it has
+ * heard nothing for longer than its keep-alive allows and closes every line at once. The clock is looked at every few
+ * seconds: a gap this long between two looks is a sleep, and a close this soon after one is its doing.
+ */
+const CLOCK_LOOK_MS = 5_000;
+const SLEEP_GAP_MS = 20_000;
+const AFTER_SLEEP_MS = 60_000;
 /** Rounds of QR codes (about a minute each) before linking waits for the owner to press Link again. */
 const QR_ROUNDS = 4;
 /** Our own sends come back as echoes within seconds; this only has to outlive that, bounded. */
@@ -271,6 +279,8 @@ function quiet(log: Log | undefined) {
 }
 
 export function whatsappAdapter(opts: {
+  /** The channel's id: every log line names it, so two accounts of this type can be told apart. */
+  id?: string;
   dir: string;
   /** The linked number is the owner's own phone: "Message yourself" is the owner talking. */
   selfOwner?: boolean;
@@ -285,8 +295,31 @@ export function whatsappAdapter(opts: {
   /** PROPIOS-6: the wait before asking for earlier messages, and between requests (tests shorten them). */
   historyWaitMs?: number;
   historyGapMs?: number;
+  /** The clock (tests move it to play a computer that slept). */
+  now?: () => number;
+  /** How often the clock is looked at (tests shorten it). */
+  clockLookMs?: number;
 }): ChannelAdapter {
-  const { dir, log } = opts;
+  const { dir } = opts;
+  // The session folder is named after the channel: it tells the accounts apart when no id is given.
+  const channel = opts.id ?? path.basename(dir);
+  const base = opts.log;
+  const log: Log | undefined = base && {
+    info: (f, m) => base.info({ ...f, channel }, m),
+    warn: (f, m) => base.warn({ ...f, channel }, m),
+    error: (f, m) => base.error({ ...f, channel }, m),
+  };
+  const now = opts.now ?? Date.now;
+  let looked = now();
+  let wokeAt = Number.NEGATIVE_INFINITY;
+  let clock: ReturnType<typeof setInterval> | undefined;
+  /** Looks at the clock; true when the computer woke up a moment ago. */
+  const justWoke = (): boolean => {
+    const t = now();
+    if (t - looked > SLEEP_GAP_MS) wokeAt = t;
+    looked = t;
+    return t - wokeAt < AFTER_SLEEP_MS;
+  };
   let lib: WaLib | undefined;
   let sock: WaSocket | undefined;
   let io: AdapterIO | undefined;
@@ -477,11 +510,17 @@ export function whatsappAdapter(opts: {
     }
     // After a scan WhatsApp asks for a restart: the linked session comes up on the next connection.
     if (code === lib.DisconnectReason.restartRequired) {
-      log?.info({ channel: "whatsapp" }, "whatsapp linked: reconnecting with the new credentials");
+      log?.info({}, "whatsapp linked: reconnecting with the new credentials");
       void saving.then(reconnect, reconnect);
       return;
     }
-    log?.warn({ code, why: why.slice(0, 200) }, "whatsapp connection closed");
+    // WA-RECONEXION-1: a linked line that was up and dropped (the computer slept, the network blinked) comes back
+    // by itself in seconds: that is not a failure. It is one only when the connection does not come back.
+    const first = attempts === 0;
+    const slept = justWoke();
+    const fields = { code, why: why.slice(0, 200), after_sleep: slept, attempt: attempts + 1 };
+    if (slept && first && hasCreds()) log?.info(fields, "whatsapp connection closed");
+    else log?.warn(fields, "whatsapp connection closed");
     // Nobody scanned yet: a fresh round of codes, a few times, then wait for the owner.
     if (!hasCreds() && code === lib.DisconnectReason.timedOut && ++qrRounds < QR_ROUNDS) {
       reconnect();
@@ -492,9 +531,11 @@ export function whatsappAdapter(opts: {
       io.status("error", "The QR was not scanned in time: press Link to get a new one");
       return;
     }
-    io.status("error", `WhatsApp disconnected: ${why}`.slice(0, 200));
+    if (first) io.status("starting");
+    else io.status("error", `WhatsApp disconnected: ${why}`.slice(0, 200));
     const wait = BACKOFF_MS[Math.min(attempts++, BACKOFF_MS.length - 1)] ?? 60_000;
-    retry = setTimeout(reconnect, wait);
+    clearTimeout(retry);
+    retry = setTimeout(reconnect, opts.retryMs ?? wait);
     retry.unref?.();
   }
 
@@ -835,6 +876,7 @@ export function whatsappAdapter(opts: {
     stopped = true;
     clearTimeout(retry);
     clearTimeout(historyTimer);
+    clearInterval(clock);
     const s = sock;
     sock = undefined;
     me = undefined;
@@ -852,6 +894,11 @@ export function whatsappAdapter(opts: {
       io = adapterIO;
       stopped = false;
       qrRounds = 0;
+      attempts = 0;
+      clearInterval(clock);
+      looked = now();
+      clock = setInterval(justWoke, opts.clockLookMs ?? CLOCK_LOOK_MS);
+      clock.unref?.();
       try {
         lib = await (opts.lib ?? loadBaileys)();
       } catch (err) {

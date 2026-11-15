@@ -88,8 +88,11 @@ export type AdapterIO = {
   receive(m: Inbound): void;
   /** A button press. */
   action(a: InboundAction): void;
-  /** Running, or failing (bad token, network): shown in the app. */
-  status(s: "running" | "error", error?: string): void;
+  /**
+   * Running, or failing (bad token, network): shown in the app. "starting" is a linked account whose connection
+   * dropped and is coming back by itself: nothing for the owner to do.
+   */
+  status(s: "starting" | "running" | "error", error?: string): void;
   /** A QR to link the account (none once linked or expired), shown to the owner in the app. */
   qr?(code: string | undefined): void;
   /** Someone put an emoji on a message (by the platform's id), or took theirs off (`emoji` empty). */

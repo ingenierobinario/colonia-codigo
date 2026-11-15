@@ -38,6 +38,13 @@ export function fakeWhatsApp(owner = OWNER_PN) {
   /** Who this device asked to hear coming online. */
   const watched = new Set<string>();
   const loggedOut = { value: false };
+  /** WhatsApp cannot be reached: every connection closes instead of opening. */
+  const unreachable = { value: false };
+  const lost = () =>
+    sock?.emit("connection.update", {
+      connection: "close",
+      lastDisconnect: { error: { message: "Connection was lost", output: { statusCode: REASON.timedOut } } },
+    });
   /** What the owner's phone keeps of every chat, in order; it sends a message again only while online. */
   const phone = { online: true, history: [] as WaMessage[] };
   const resendAsked: WaKey[] = [];
@@ -145,9 +152,11 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       sock = makeSocket();
       setTimeout(
         () =>
-          fs.existsSync(creds())
-            ? open()
-            : sock?.emit("connection.update", { qr: `QR-${++qrs}` }),
+          unreachable.value
+            ? lost()
+            : fs.existsSync(creds())
+              ? open()
+              : sock?.emit("connection.update", { qr: `QR-${++qrs}` }),
         5,
       );
       return sock;
@@ -227,6 +236,9 @@ export function fakeWhatsApp(owner = OWNER_PN) {
         },
       });
     },
+    /** The keep-alive finds the line silent for too long (the computer slept, the network went). */
+    lose: lost,
+    unreachable,
     /** The phone unlinks this device. */
     logOut() {
       sock?.emit("connection.update", {
