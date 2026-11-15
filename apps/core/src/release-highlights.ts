@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.17": {
+    en: [
+      "Replies start faster: the conversation's history is read once per turn, not per message.",
+      "The app opens lighter: texts for screens you don't see at first load afterwards.",
+    ],
+    es: [
+      "Las respuestas arrancan antes: el historial de la conversación se lee una vez por turno, no por mensaje.",
+      "La app abre más ligera: los textos de pantallas que no ves al principio se cargan después.",
+    ],
+  },
   "2.36.16": {
     en: [
       "The + menu in Channels always lists every channel, so you can add a second or third account of the same one.",
