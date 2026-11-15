@@ -1126,9 +1126,10 @@ export const en = {
   "channels.ready": "Available",
   "common.comingSoonShort": "Coming soon",
   "channels.add": "Add channel",
-  "channels.lead": "Where people reach you and your agents: each channel has its account and its contacts.",
-  "channels.empty": "No channel connected yet",
-  "channels.emptyBody": "Add one with the button above.",
+  "channels.lead":
+    "Where people write to you and your crew. Connect the one you already use: it is done right here, in a couple of steps.",
+  "channels.empty": "No channel is connected yet",
+  "channels.emptyBody": "Pick one below and press Connect: we guide you step by step.",
   "config.group.models": "Models",
   "account.timezoneLocal": "This computer's ({zone})",
   "tz.region.africa": "Africa",

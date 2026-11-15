@@ -3,6 +3,7 @@ import { SUPER_AGENT_ID } from "@colonia/protocol/client";
 import { Badge, Button, Icons, Input, Select, SettingRow, Switch, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
+import { ProblemLine } from "../channels/ProblemLine.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
 import { accountLabel, accountsOf, newAccountId, pickAccount } from "../data/accounts.ts";
 import { type ChannelDraft, saveChannel, useChannels, watchChannels } from "../data/channels.ts";
@@ -414,7 +415,7 @@ function Connected({ channel, kind }: { channel: ChannelInfo; kind: BotKind }) {
             label={t("providers.on")}
           />
         </div>
-        {channel.error && <div className="tgcard__error">{channel.error}</div>}
+        <ProblemLine error={channel.error} />
         {fixToken && (
           <div className="tgcard__fix">
             <span className="tgcard__fixlabel">{t(channel.token_set ? "tg.tokenFix" : "tg.tokenMissing")}</span>

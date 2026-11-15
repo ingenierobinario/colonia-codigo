@@ -4,6 +4,7 @@ import { Badge, Button, EmptyState, IconButton, Icons, Select, SettingRow, Spinn
 import { useEffect, useMemo, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { PhoneForm, phoneOf } from "../channels/PhoneForm.tsx";
+import { ProblemLine } from "../channels/ProblemLine.tsx";
 import { AgentSelect } from "../common/pickers/AgentSelect.tsx";
 import { QrCode } from "../common/QrCode.tsx";
 import { type ChannelDraft, saveChannel, unlinkAddress, useChannels, watchChannels } from "../data/channels.ts";
@@ -172,7 +173,7 @@ function Linked({ channel }: { channel: ChannelInfo }) {
             label={t("providers.on")}
           />
         </div>
-        {channel.error && <div className="tgcard__error">{channel.error}</div>}
+        <ProblemLine error={channel.error} />
         {channel.status === "starting" &&
           (channel.qr ? (
             <div className="waqr">

@@ -1,6 +1,9 @@
-import { Badge, Button, Dialog, Icons, Input, Select, Spinner, Switch } from "@colonia/ui";
+import { Button, Dialog, Icons, Input, Select, Spinner, Switch } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
-import { KindTile } from "../channels/KindIcon.tsx";
+import { KindIcon, KindTile } from "../channels/KindIcon.tsx";
+import type { ChannelKind } from "../channels/kinds.ts";
+import { CHANNEL_KINDS } from "../channels/kinds.ts";
+import { ProblemLine } from "../channels/ProblemLine.tsx";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { QrCode } from "../common/QrCode.tsx";
 import { RouterChain } from "../config/models/RouterChain.tsx";
@@ -15,6 +18,7 @@ import { type DataState, useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { kindOptions, NO_KIND } from "../project/projectKind.ts";
 import { BotCard } from "./BotCard.tsx";
+import { CardState } from "./CardState.tsx";
 import { type Draft, type StepProps, withStarters } from "./draft.ts";
 import { EmbedderCard } from "./EmbedderCard.tsx";
 import { StepHead } from "./StepsIntro.tsx";
@@ -67,7 +71,8 @@ const MEMORY: Array<{ id: Draft["memory"]; title: MessageKey; body: MessageKey; 
   { id: "off", title: "setup.memory.off", body: "setup.memory.offBody", icon: Icons.X },
 ];
 
-export function MemoryStep({ draft: d, set }: StepProps) {
+/** How the crew remembers: folded away in the last step, since it works as it comes. */
+function MemoryFields({ draft: d, set }: StepProps) {
   const t = useT();
   const [embedder, setEmbedder] = useState<string | null>();
   useEffect(() => {
@@ -78,9 +83,7 @@ export function MemoryStep({ draft: d, set }: StepProps) {
   }, []);
   return (
     <>
-      <StepHead kicker="setup.memory.kicker" title={t("setup.memory.title")} end={t("setup.memory.titleGreen")} green>
-        {t("setup.memory.body")}
-      </StepHead>
+      <p className="wiz__enginebody">{t("setup.memory.body")}</p>
       <div className="wiz__options">
         {MEMORY.map((m) => (
           <button
@@ -132,6 +135,9 @@ export function MemoryStep({ draft: d, set }: StepProps) {
   );
 }
 
+/** The kinds the setup does not connect itself: shown as marks, so the owner knows they exist. */
+const LATER: ChannelKind[] = ["email", "signal", "imessage", "matrix", "googlechat", "teams", "sms"];
+
 /** Telegram (a token and it is up), WhatsApp (a QR from the phone), Discord and Slack (their bot's token). */
 export function ChannelsStep({ name }: { name: string }) {
   const t = useT();
@@ -150,6 +156,16 @@ export function ChannelsStep({ name }: { name: string }) {
         <WhatsAppCard />
         <BotCard kind="discord" line="setup.channels.discord" body="setup.channels.discordBody" />
         <BotCard kind="slack" line="setup.channels.slack" body="setup.channels.slackBody" />
+      </div>
+      <div className="wiz__card wiz__later">
+        <span className="wiz__latermarks">
+          {LATER.map((k) => (
+            <span key={k} className="wiz__latermark" title={t(CHANNEL_KINDS[k].name)}>
+              <KindIcon kind={k} size={18} />
+            </span>
+          ))}
+        </span>
+        <span className="wiz__rowbody">{t("setup.channels.more")}</span>
       </div>
     </>
   );
@@ -183,18 +199,24 @@ function TelegramCard() {
       <div className="wiz__enginehead">
         <KindTile kind="telegram" size={34} />
         <span className="wiz__enginetitles">
-          <b className="is-mono">TELEGRAM</b>
+          <b>Telegram</b>
           <span>{t("setup.channels.telegram")}</span>
         </span>
-        {telegram?.token_set && (
-          <Badge tone="brand" dot>
-            {telegram.account ?? t("setup.channels.connected")}
-          </Badge>
-        )}
+        <CardState
+          on={Boolean(telegram?.token_set) && telegram?.status !== "error"}
+          error={telegram?.error}
+          account={telegram?.account}
+        />
       </div>
       <p className="wiz__enginebody">{t("setup.channels.telegramBody")}</p>
+      {telegram?.token_set && <ProblemLine error={telegram.error} />}
       {!telegram?.token_set && (
         <>
+          <ol className="wiz__ministeps">
+            <li>{t("setup.channels.tg1")}</li>
+            <li>{t("setup.channels.tg2")}</li>
+            <li>{t("setup.channels.tg3")}</li>
+          </ol>
           <div className="wiz__keyrow">
             <Input
               type="password"
@@ -213,7 +235,19 @@ function TelegramCard() {
               {t("setup.channels.connect")}
             </Button>
           </div>
-          <span className="wiz__hintline">{t("setup.channels.tokenHint")}</span>
+          <span className="wiz__cardfoot">
+            <Button
+              size="sm"
+              variant="secondary"
+              leadingIcon={<Icons.ExternalLink size={14} />}
+              onClick={() => window.open("https://t.me/BotFather", "_blank", "noopener")}
+            >
+              {t("setup.channels.openBotFather")}
+            </Button>
+            <span className="wiz__hintline">
+              <Icons.Lock size={12} /> {t("setup.channels.tokenHint")}
+            </span>
+          </span>
         </>
       )}
     </div>
@@ -253,14 +287,10 @@ function WhatsAppCard() {
       <div className="wiz__enginehead">
         <KindTile kind="whatsapp" size={34} />
         <span className="wiz__enginetitles">
-          <b className="is-mono">WHATSAPP</b>
+          <b>WhatsApp</b>
           <span>{t("setup.channels.whatsapp")}</span>
         </span>
-        {running && (
-          <Badge tone="brand" dot>
-            {wa.account ?? t("setup.channels.connected")}
-          </Badge>
-        )}
+        <CardState on={running} error={wa?.error} account={wa?.account} />
       </div>
       <p className="wiz__enginebody">{t("setup.channels.whatsappBody")}</p>
       {running ? (
@@ -273,7 +303,14 @@ function WhatsAppCard() {
         </div>
       ) : (
         <>
-          {wa?.error && <span className="wiz__hintline is-error">{wa.error}</span>}
+          <ProblemLine error={wa?.error} />
+          {!wa?.error && (
+            <ol className="wiz__ministeps">
+              <li>{t("setup.channels.wa1")}</li>
+              <li>{t("setup.channels.wa2")}</li>
+              <li>{t("setup.channels.wa3")}</li>
+            </ol>
+          )}
           <div className="wiz__inline">
             <Switch size="sm" checked={selfOwner} onCheckedChange={setSelfOwner} aria-label={t("ch.selfOwner")} />
             <span>{t("ch.selfOwner")}</span>
@@ -384,8 +421,22 @@ export function ProjectStep({ draft: d, set }: StepProps) {
         </div>
       )}
       {d.projectChoice === "folder" && d.path.trim() && (
-        <span className="wiz__hintline">{t("setup.project.plain")}</span>
+        <span className="wiz__hintline" title="AGENTS.md">
+          {t("setup.project.plain")}
+        </span>
       )}
+      <details className="wiz__card wiz__advanced">
+        <summary>
+          <Icons.ChevronRight size={14} />
+          <span className="wiz__rowmain">
+            <span className="wiz__rowname">{t("setup.advanced")}</span>
+            <span className="wiz__rowbody">{t("setup.advancedHint")}</span>
+          </span>
+        </summary>
+        <div className="wiz__advancedbody">
+          <MemoryFields draft={d} set={set} />
+        </div>
+      </details>
     </>
   );
 }

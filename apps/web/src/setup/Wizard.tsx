@@ -2,7 +2,7 @@ import "../styles/setup.css";
 import "../styles/screens.css";
 import "../styles/wizard.css";
 import type { ModelChoice, ProjectKind } from "@colonia/protocol";
-import { AgentAvatar, Button, IconButton, Icons } from "@colonia/ui";
+import { AgentAvatar, Badge, Button, IconButton, Icons } from "@colonia/ui";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.png";
 import { bootstrap } from "../data/actions.ts";
@@ -21,7 +21,7 @@ import { LanguageMenu } from "../shell/LanguageMenu.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { BuildVersion } from "./BuildVersion.tsx";
 import { type Draft, defaultDraft } from "./draft.ts";
-import { ChannelsStep, DoneStep, EnginesStep, MemoryStep, ProjectStep } from "./StepsConfig.tsx";
+import { ChannelsStep, DoneStep, EnginesStep, ProjectStep } from "./StepsConfig.tsx";
 import { AgentStep, GROUP, ImportStep, Welcome } from "./StepsIntro.tsx";
 
 const STEP_KEY: Record<Step, MessageKey> = {
@@ -29,16 +29,18 @@ const STEP_KEY: Record<Step, MessageKey> = {
   import: "setup.step.import",
   agent: "setup.step.agent",
   engines: "setup.step.engines",
-  memory: "setup.step.memory",
   channels: "setup.step.channels",
   project: "setup.step.project",
   done: "setup.step.done",
 };
-type Step = "welcome" | "import" | "agent" | "engines" | "memory" | "channels" | "project" | "done";
+type Step = "welcome" | "import" | "agent" | "engines" | "channels" | "project" | "done";
+/** Steps the owner may leave for later: nothing in them is needed for the crew to work. */
+const OPTIONAL: ReadonlySet<Step> = new Set(["channels", "project"]);
 
 /**
- * The first-run setup, the whole window: welcome (start fresh or bring v1), the super-agent's face, the engines, memory,
- * channels and a first project, then done. Each step saves as it goes on; the card on the right shows the crew so far.
+ * The first-run setup, the whole window: welcome (start fresh or bring v1), then a few numbered steps (the super-agent's
+ * face, the engines, and two that can be skipped: channels and a first project, which also folds memory away), then
+ * done. Each step saves as it goes on; the card on the right shows the crew so far.
  */
 export function Wizard() {
   const t = useT();
@@ -61,7 +63,6 @@ export function Wizard() {
       ...(d.mode === "import" ? (["import"] as const) : []),
       "agent",
       "engines",
-      "memory",
       "channels",
       "project",
       "done",
@@ -69,6 +70,10 @@ export function Wizard() {
     [d.mode],
   );
   const step = steps[at] ?? "welcome";
+  // The steps that count for "Step 2 of 4": everything between the welcome and the end.
+  const numbered = useMemo(() => steps.filter((s): boolean => s !== "welcome" && s !== "done"), [steps]);
+  const number = numbered.indexOf(step) + 1;
+  const optional = OPTIONAL.has(step);
 
   useEffect(() => {
     void loadModelsConfig();
@@ -142,7 +147,7 @@ export function Wizard() {
       const choice: ModelChoice = first ? { model: first, router: rest.length > 0 } : { router: true };
       return saveModelsConfig({ default: choice, router: { ...config.router, chain: rest } });
     }
-    if (step === "memory") {
+    if (step === "project") {
       try {
         const now = await client.call("memory.settings", {});
         await client.call("memory.set_settings", {
@@ -152,9 +157,6 @@ export function Wizard() {
           ...(now.aux_model ? { aux_model: now.aux_model } : {}),
         });
       } catch {}
-      return true;
-    }
-    if (step === "project") {
       const name = d.baseName.trim() || base.name;
       const kind = d.baseKind || null;
       if (name !== base.name || (kind ?? "") !== (base.kind ?? ""))
@@ -188,7 +190,6 @@ export function Wizard() {
     import: <ImportStep home={status?.v1?.home ?? "~/.colonia"} scan={scan} draft={d} set={set} />,
     agent: <AgentStep draft={d} set={set} />,
     engines: <EnginesStep draft={d} set={set} />,
-    memory: <MemoryStep draft={d} set={set} />,
     channels: <ChannelsStep name={d.name.trim() || t("agent.super")} />,
     project: <ProjectStep draft={d} set={set} />,
     done: <DoneStep name={name} onFinish={() => void finish()} />,
@@ -202,18 +203,22 @@ export function Wizard() {
           <span>Colonia</span>
         </div>
         <nav className="wiz__steps" aria-label={t("setup.menu")}>
-          {steps.map((s, i) => (
-            <button
-              key={s}
-              type="button"
-              className={`wiz__step${i <= at ? " is-done" : ""}${i === at ? " is-on" : ""}`}
-              disabled={i > at}
-              onClick={() => setAt(i)}
-            >
-              <span className="wiz__bar" />
-              {t(STEP_KEY[s])}
-            </button>
-          ))}
+          {numbered.map((s, n) => {
+            const i = steps.indexOf(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                className={`wiz__step${i < at ? " is-done" : ""}${i === at ? " is-on" : ""}`}
+                aria-current={i === at ? "step" : undefined}
+                disabled={i > at}
+                onClick={() => setAt(i)}
+              >
+                <span className="wiz__stepnum">{i < at ? <Icons.Check size={12} /> : n + 1}</span>
+                <span className="wiz__steplabel">{t(STEP_KEY[s])}</span>
+              </button>
+            );
+          })}
         </nav>
         <LanguageMenu className="topbar__lang" />
         <IconButton
@@ -229,6 +234,15 @@ export function Wizard() {
       <div className="wiz__scroll">
         <div className={`wiz__grid${step === "welcome" ? " is-single" : ""}`}>
           <div className="wiz__main">
+            {number > 0 && (
+              <div className="wiz__progress">
+                <span className="wiz__stepof">{t("setup.stepOf", { n: number, total: numbered.length })}</span>
+                <span className="wiz__meter" aria-hidden="true">
+                  <span style={{ width: `${(number / numbered.length) * 100}%` }} />
+                </span>
+                {optional && <Badge tone="neutral">{t("setup.optional")}</Badge>}
+              </div>
+            )}
             {body[step]}
             {step !== "welcome" && step !== "done" && (
               <div className="wiz__foot">
@@ -239,6 +253,17 @@ export function Wizard() {
                 )}
                 <span className="wiz__spacer" />
                 {blocked && <span className="wiz__hint">{t(blocked)}</span>}
+                {optional && (
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    disabled={busy}
+                    title={t("setup.skipHint")}
+                    onClick={() => setAt((i) => Math.min(i + 1, steps.length - 1))}
+                  >
+                    {t("setup.skip")}
+                  </Button>
+                )}
                 <Button size="lg" disabled={Boolean(blocked)} loading={busy} onClick={() => void next()}>
                   {step === "project" ? t("setup.create") : t("setup.next")}
                 </Button>

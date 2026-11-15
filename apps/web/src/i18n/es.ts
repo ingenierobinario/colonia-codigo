@@ -1131,9 +1131,10 @@ export const es: Partial<Record<MessageKey, string>> = {
   "channels.ready": "Disponibles",
   "common.comingSoonShort": "Próximamente",
   "channels.add": "Añadir canal",
-  "channels.lead": "Por dónde te hablan a ti y a tus agentes: cada canal tiene su cuenta y sus contactos.",
-  "channels.empty": "Todavía no conectaste ningún canal",
-  "channels.emptyBody": "Añade uno con el botón de arriba.",
+  "channels.lead":
+    "Por dónde te escriben a ti y a tu crew. Conecta el que ya uses: se hace aquí mismo, en un par de pasos.",
+  "channels.empty": "Todavía no hay ningún canal conectado",
+  "channels.emptyBody": "Elige uno abajo y pulsa Conectar: te guiamos paso a paso.",
   "config.group.models": "Modelos",
   "account.timezoneLocal": "La de este ordenador ({zone})",
   "tz.region.africa": "África",

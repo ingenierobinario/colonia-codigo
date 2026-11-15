@@ -288,3 +288,23 @@ button.turns__row:hover {
   font-size: var(--colonia-text-xs);
   color: var(--colonia-fg-subtle);
 }
+/* A channel's problem, said as what to do about it. */
+.chproblem {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--colonia-danger) 35%, transparent);
+  border-radius: var(--colonia-radius-md, 8px);
+  background: color-mix(in srgb, var(--colonia-danger) 8%, transparent);
+  color: var(--colonia-fg);
+  font-size: calc(13px * var(--colonia-text-scale, 1));
+  line-height: 1.4;
+}
+.chproblem > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--colonia-danger);
+}

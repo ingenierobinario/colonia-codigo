@@ -1,11 +1,13 @@
-import { Badge, Button, Input } from "@colonia/ui";
+import { Button, Input } from "@colonia/ui";
 import { useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
+import { ProblemLine } from "../channels/ProblemLine.tsx";
 import { botSpec, StartButton, useTokens } from "../config/BotSection.tsx";
 import { saveChannel, useChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { CardState } from "./CardState.tsx";
 
 /** A bot channel connected from the setup (Discord, Slack): its token(s), Connect, and how to make the bot. */
 export function BotCard({ kind, line, body }: { kind: "discord" | "slack"; line: MessageKey; body: MessageKey }) {
@@ -36,16 +38,17 @@ export function BotCard({ kind, line, body }: { kind: "discord" | "slack"; line:
       <div className="wiz__enginehead">
         <KindTile kind={kind} size={34} />
         <span className="wiz__enginetitles">
-          <b className="is-mono">{spec.name.toUpperCase()}</b>
+          <b>{spec.name}</b>
           <span>{t(line)}</span>
         </span>
-        {channel?.token_set && (
-          <Badge tone="brand" dot>
-            {channel.account ?? t("setup.channels.connected")}
-          </Badge>
-        )}
+        <CardState
+          on={Boolean(channel?.token_set) && channel?.status !== "error"}
+          error={channel?.error}
+          account={channel?.account}
+        />
       </div>
       <p className="wiz__enginebody">{t(body)}</p>
+      {channel?.token_set && <ProblemLine error={channel.error} />}
       {!channel?.token_set && (
         <>
           {tokens.specs.map((s, i) => (

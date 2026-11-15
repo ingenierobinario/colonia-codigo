@@ -1317,3 +1317,153 @@
 .sig__grow {
   flex: 1;
 }
+/* Config › Channels, "All": a card per kind with its mark, its state and one button. */
+.chgal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 12px;
+}
+.chgal__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface);
+  transition: border-color 0.15s;
+}
+.chgal__card:hover {
+  border-color: var(--colonia-fg-subtle);
+}
+.chgal__card.is-on {
+  border-color: color-mix(in srgb, var(--colonia-brand) 55%, var(--colonia-border));
+}
+.chgal__card.is-problem {
+  border-color: color-mix(in srgb, var(--colonia-danger) 55%, var(--colonia-border));
+}
+.chgal__head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+.chgal__titles {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.chgal__name {
+  font-size: var(--colonia-text-md, 14px);
+  font-weight: 600;
+}
+.chgal__account {
+  overflow: hidden;
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chgal__head .colonia-badge {
+  flex: none;
+}
+.chgal__text {
+  flex: 1;
+  margin: 0;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+  line-height: 1.45;
+}
+.chgal__more {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chgal__more > summary {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 999px;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+  list-style: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.chgal__more > summary:hover {
+  border-color: var(--colonia-fg-subtle);
+}
+.chgal__more > summary::-webkit-details-marker {
+  display: none;
+}
+.chgal__more > summary > svg {
+  transition: transform 0.15s;
+}
+.chgal__more[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.chgal__more[open] > summary {
+  margin-bottom: 12px;
+}
+.chgal__marks {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.tgsetup__steps.is-numbered {
+  padding-left: 0;
+  list-style: none;
+  counter-reset: tgstep;
+  gap: 10px;
+}
+.tgsetup__steps.is-numbered > li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  counter-increment: tgstep;
+}
+.tgsetup__steps.is-numbered > li::before {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--colonia-fill-strong, var(--colonia-fill));
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-xs);
+  font-weight: 600;
+  content: counter(tgstep);
+}
+.chgal__empty {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px dashed var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+  line-height: 1.45;
+}
+.chgal__empty > svg {
+  flex: none;
+  margin-top: 2px;
+}
+.chgal__empty > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.chgal__empty b {
+  color: var(--colonia-fg);
+  font-weight: 600;
+}
