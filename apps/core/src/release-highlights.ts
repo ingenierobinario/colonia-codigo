@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.16": {
+    en: [
+      "The + menu in Channels always lists every channel, so you can add a second or third account of the same one.",
+      "Simpler setup: Matrix with the bot's user and password, email with address and password, Telegram finds the code in what you paste, Discord gives the invite link and ntfy picks its topic.",
+    ],
+    es: [
+      "El menú + de Canales muestra siempre todos los canales, para añadir una segunda o tercera cuenta del mismo.",
+      "Configuración más sencilla: Matrix con usuario y contraseña del bot, correo con dirección y contraseña, Telegram encuentra el código en lo que pegues, Discord da el enlace de invitación y ntfy elige su tema solo.",
+    ],
+  },
   "2.36.15": {
     en: ["When the computer wakes up, WhatsApp reconnects by itself instead of showing an error."],
     es: ["Al despertar el ordenador, WhatsApp se reconecta solo en vez de mostrar un error."],
