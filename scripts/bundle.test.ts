@@ -66,6 +66,20 @@ test("zod or a lazy screen pulled onto the first load is named", (t) => {
   ]);
 });
 
+test("a late string the first load names is reported, one only a late chunk names is not", (t) => {
+  const dir = dist({
+    ...panel,
+    "assets/shared-C.js": 'export const a=t("team.title");',
+    "assets/ProjectScreen-F.js": 'export function ProjectScreen(){return t("team.empty")}',
+  });
+  t.after(() => removeDir(dir));
+  const boot = bootFiles(dir);
+  assert.ok(boot);
+  assert.deepEqual(bootProblems(dir, boot, ["ProjectScreen"], ["team.title", "team.empty"]), [
+    '"team.title" is named on the first load but arrives with the late strings: keep it in en.ts and es.ts',
+  ]);
+});
+
 test("a sourcemap names the packages and files that weigh the most", (t) => {
   const dir = dist({
     ...panel,

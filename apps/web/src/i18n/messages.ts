@@ -60,6 +60,10 @@ const PACKS = {
     en: () => import("./migrar-en.ts").then((m) => m.enMigrar),
     es: () => import("./migrar-es.ts").then((m) => m.esMigrar),
   },
+  screens: {
+    en: () => import("./screens-en.ts").then((m) => m.enScreens),
+    es: () => import("./screens-es.ts").then((m) => m.esScreens),
+  },
   usage: {
     en: () => import("./sysusage-en.ts").then((m) => m.enSysUsage),
     es: () => import("./sysusage-es.ts").then((m) => m.esSysUsage),

@@ -139,7 +139,8 @@ export function bootReport(dist: string, boot: Boot, top = 5): string {
     }
     for (const [who, n] of per) bytes.set(who, (bytes.get(who) ?? 0) + n);
   }
-  if (!mapped) return [...lines, "    (build with COLONIA_TEST_COVERAGE=1 for a sourcemap to name the modules)"].join("\n");
+  if (!mapped)
+    return [...lines, "    (build with COLONIA_TEST_COVERAGE=1 for a sourcemap to name the modules)"].join("\n");
   const heaviest = [...bytes]
     .sort((a, b) => b[1] - a[1])
     .slice(0, top)
@@ -152,9 +153,10 @@ const ZOD_MARK = "$ZodType";
 
 /**
  * What must never be on the first load: zod (the protocol's schemas, only screens that validate need them) and the
- * named lazy screens, each of which must stay a chunk of its own outside it.
+ * named lazy screens, each of which must stay a chunk of its own outside it. Nor may its code name a string that
+ * arrives after it (`lateKeys`, the i18n "screens" pack): the first screen would show the bare key until then.
  */
-export function bootProblems(dist: string, boot: Boot, lazyScreens: string[]): string[] {
+export function bootProblems(dist: string, boot: Boot, lazyScreens: string[], lateKeys: string[] = []): string[] {
   const problems: string[] = [];
   const js = boot.files.filter((f) => f.endsWith(".js"));
   const zod = owners(dist, js)?.has("zod") ?? js.some((f) => read(dist, f).includes(ZOD_MARK));
@@ -164,6 +166,13 @@ export function bootProblems(dist: string, boot: Boot, lazyScreens: string[]): s
     const own = chunks.filter((f) => f.startsWith(`assets/${screen}-`) && f.endsWith(".js"));
     if (!own.length) problems.push(`${screen} has no chunk of its own: something on the first screen imports it`);
     else if (own.some((f) => boot.files.includes(f))) problems.push(`${screen} is on the first load`);
+  }
+  const code = lateKeys.length ? boot.initial.filter((f) => f.endsWith(".js")).map((f) => read(dist, f)) : [];
+  for (const key of lateKeys) {
+    if (code.some((text) => ['"', "'", "`"].some((q) => text.includes(q + key + q))))
+      problems.push(
+        `"${key}" is named on the first load but arrives with the late strings: keep it in en.ts and es.ts`,
+      );
   }
   return problems;
 }

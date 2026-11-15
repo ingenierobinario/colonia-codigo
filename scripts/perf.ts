@@ -8,6 +8,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { fakeLlm } from "../e2e/fake-llm.ts";
+import { enScreens } from "../apps/web/src/i18n/screens-en.ts";
 import { bootFiles, bootProblems, bootReport, sumKb } from "./bundle.ts";
 import { compileCacheEnv } from "./compile-cache.ts";
 
@@ -274,7 +275,9 @@ try {
   const bundleOver = ["initial_bundle_gzip_kb", "boot_gzip_kb"].some(
     (k) => (results[k] ?? 0) > (budget[k] ?? Infinity),
   );
-  const problems = boot ? bootProblems(dist, boot, LAZY_SCREENS) : ["apps/web/dist is missing: run pnpm build:web"];
+  const problems = boot
+    ? bootProblems(dist, boot, LAZY_SCREENS, Object.keys(enScreens))
+    : ["apps/web/dist is missing: run pnpm build:web"];
   for (const problem of problems) console.log(`✘ ${problem}`);
   if (problems.length) failed = true;
   if (boot && (bundleOver || problems.length)) console.log(`\nFirst load, per chunk:\n${bootReport(dist, boot)}`);

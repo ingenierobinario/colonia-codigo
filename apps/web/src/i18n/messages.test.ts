@@ -18,6 +18,8 @@ import { enMigrar } from "./migrar-en.ts";
 import { esMigrar } from "./migrar-es.ts";
 import { enReceived } from "./received-en.ts";
 import { esReceived } from "./received-es.ts";
+import { enScreens } from "./screens-en.ts";
+import { esScreens } from "./screens-es.ts";
 import { enSecretary } from "./secretary-en.ts";
 import { esSecretary } from "./secretary-es.ts";
 import { enSysUsage } from "./sysusage-en.ts";
@@ -103,6 +105,27 @@ test("secretary capability strings load only with the super-agent's settings in 
   }
 });
 
+test("the late screens' strings stay out of the first load, and what the first screen shows of them stays in it", async () => {
+  const { loadMessages, loadPack } = await import("./messages.ts");
+  for (const lang of ["en", "es"] as const) {
+    const first = await loadMessages(lang);
+    const pack = await loadPack("screens", lang);
+    for (const key of Object.keys(enScreens) as (keyof typeof enScreens)[]) assert.equal(first[key], undefined);
+    assert.deepEqual(pack, lang === "en" ? enScreens : esScreens);
+    assert.ok(Object.keys(pack).length > 900);
+    // The sidebar, the import notice and the resource tabs are drawn before any late screen opens.
+    for (const key of [
+      "setup.menu",
+      "setup.import.failed",
+      "team.import.error",
+      "res.error",
+      "res.tab.skills",
+    ] as const) {
+      assert.notEqual(first[key], undefined);
+    }
+  }
+});
+
 // A pack's strings belong to the language as much as the main chunk's.
 const en = {
   ...base,
@@ -117,6 +140,7 @@ const en = {
   ...enFlow,
   ...enSecretary,
   ...enMigrar,
+  ...enScreens,
 };
 const es = {
   ...esBase,
@@ -131,6 +155,7 @@ const es = {
   ...esFlow,
   ...esSecretary,
   ...esMigrar,
+  ...esScreens,
 };
 
 // Each language is loaded alone, so a key it lacks would show as the bare key.

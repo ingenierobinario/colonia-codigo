@@ -6,17 +6,13 @@ import { enChat } from "./en-chat.ts";
 import type { enEmailSignatures } from "./en-email-signatures.ts";
 import { enEngines } from "./en-engines.ts";
 import { enFiles } from "./en-files.ts";
-import { enHelper } from "./en-helper.ts";
 import { enOffice } from "./en-office.ts";
-import { enResources } from "./en-resources.ts";
-import { enSetup } from "./en-setup.ts";
-import { enTeam } from "./en-team.ts";
-import { enTelemetry } from "./en-telemetry.ts";
 import type { EquipoKey } from "./equipos-en.ts";
 import type { enFlow } from "./flow-en.ts";
 import type { enIngress } from "./ingress-en.ts";
 import type { enMigrar } from "./migrar-en.ts";
 import type { ReceivedKey } from "./received-en.ts";
+import type { enScreens } from "./screens-en.ts";
 import type { enSecretary } from "./secretary-en.ts";
 import type { SysUsageKey } from "./sysusage-en.ts";
 import type { enThreadDialogs } from "./thread-dialogs-en.ts";
@@ -42,16 +38,11 @@ export const en = {
   "desktopInstall.minimize": "Minimize",
   "desktopInstall.restore": "Show notice",
   ...noticeEn,
-  ...enHelper,
   ...enOffice,
-  ...enTeam,
   ...enChannels,
-  ...enSetup,
   ...enChat,
   ...enFiles,
-  ...enResources,
   ...enEngines,
-  ...enTelemetry,
   "engineUsage.title": "AI quotas",
   "engineUsage.quick": "{engine}: {pct}% available · {window}",
   "sysUsage.title": "System resources",
@@ -2088,6 +2079,18 @@ export const en = {
   "rewind.confirmTitle": "Remove what came after?",
   "rewind.confirmBody": "{count} later messages go, and the agent forgets them. This cannot be undone.",
   "rewind.confirm": "Remove and send",
+  // Shown on the first screen, so not in the late screens pack (screens-en.ts) with the rest of their group.
+  "setup.import.failed": "Some of it could not be imported: {error}",
+  "setup.menu": "First-run setup",
+  "team.new.badName": "The name needs at least one letter.",
+  "team.import.error": "Could not import: {error}",
+  "res.error": "Resources: {error}",
+  "res.source.extension": "Extension",
+  "res.tab.skills": "Skills",
+  "res.tab.mcp": "Connectors",
+  "res.tab.integrations": "Integrations",
+  "res.tab.variables": "Variables",
+  "res.tab.extensions": "Extensions",
 } as const;
 
 /** Every key the panel may show: these, and those of the packs loaded with their screens (messages.ts PACKS). */
@@ -2103,4 +2106,5 @@ export type MessageKey =
   | keyof typeof enIngress
   | keyof typeof enFlow
   | keyof typeof enSecretary
-  | keyof typeof enMigrar;
+  | keyof typeof enMigrar
+  | keyof typeof enScreens;

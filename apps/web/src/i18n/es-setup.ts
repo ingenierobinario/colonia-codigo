@@ -42,7 +42,6 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.import.scanning": "Leyendo la versión anterior…",
   "setup.import.importing": "Importando…",
   "setup.import.result": "Importado: {list}",
-  "setup.import.failed": "Parte no se pudo importar: {error}",
   "setup.v1.projects": "Proyectos",
   "setup.v1.projectsCount": "{n} · {agents} agentes",
   "setup.v1.projectsBody":
@@ -201,7 +200,6 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.preview.imports": "IMPORTA",
   "setup.preview.unset": "Sin configurar",
   "setup.preview.groups": "{n} de {total} grupos de la versión anterior",
-  "setup.menu": "Configuración inicial",
   "pair.kicker": "VINCULAR ESTE DISPOSITIVO",
   "pair.title": "Vincula este",
   "pair.titleEnd": "dispositivo.",

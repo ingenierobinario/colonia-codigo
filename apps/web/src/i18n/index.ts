@@ -48,6 +48,8 @@ export async function addPack(pack: Pack, language?: Language): Promise<void> {
 /** Loads the chosen language before the first render, then follows the preference. */
 export async function startI18n(): Promise<void> {
   await show(prefs.get().language);
+  // The late screens' strings follow the first screen instead of holding it back; a late screen awaits them (lazy.ts).
+  void addPack("screens").catch(() => {});
   let last = prefs.get().language;
   prefs.subscribe(() => {
     const next = prefs.get().language;

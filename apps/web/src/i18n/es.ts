@@ -1,4 +1,3 @@
-import { esHelper } from "./es-helper.ts";
 // UI strings, Spanish (España). A missing key falls back to English.
 
 import { noticeEs } from "@colonia/protocol/notices";
@@ -8,10 +7,6 @@ import { esChat } from "./es-chat.ts";
 import { esEngines } from "./es-engines.ts";
 import { esFiles } from "./es-files.ts";
 import { esOffice } from "./es-office.ts";
-import { esResources } from "./es-resources.ts";
-import { esSetup } from "./es-setup.ts";
-import { esTeam } from "./es-team.ts";
-import { esTelemetry } from "./es-telemetry.ts";
 
 export const es: Partial<Record<MessageKey, string>> = {
   "panel.computer": "Ordenador",
@@ -34,16 +29,11 @@ export const es: Partial<Record<MessageKey, string>> = {
   "desktopInstall.minimize": "Minimizar",
   "desktopInstall.restore": "Mostrar aviso",
   ...noticeEs,
-  ...esHelper,
   ...esOffice,
-  ...esTeam,
   ...esChannels,
-  ...esSetup,
   ...esChat,
   ...esFiles,
-  ...esResources,
   ...esEngines,
-  ...esTelemetry,
   "engineUsage.title": "Cuotas de IA",
   "engineUsage.quick": "{engine}: {pct}% disponible · {window}",
   "sysUsage.title": "Recursos del sistema",
@@ -2109,4 +2099,16 @@ export const es: Partial<Record<MessageKey, string>> = {
   "rewind.confirmTitle": "¿Borrar lo que vino después?",
   "rewind.confirmBody": "Se borran {count} mensajes posteriores y el agente los olvida. No se puede deshacer.",
   "rewind.confirm": "Borrar y enviar",
+  // Shown on the first screen, so not in the late screens pack (screens-es.ts) with the rest of their group.
+  "setup.import.failed": "Parte no se pudo importar: {error}",
+  "setup.menu": "Configuración inicial",
+  "team.new.badName": "El nombre necesita al menos una letra.",
+  "team.import.error": "No se pudo importar: {error}",
+  "res.error": "Recursos: {error}",
+  "res.source.extension": "Extensión",
+  "res.tab.skills": "Skills",
+  "res.tab.mcp": "Conectores",
+  "res.tab.integrations": "Integraciones",
+  "res.tab.variables": "Variables",
+  "res.tab.extensions": "Extensiones",
 };

@@ -41,7 +41,6 @@ export const enSetup = {
   "setup.import.scanning": "Reading the earlier version…",
   "setup.import.importing": "Importing…",
   "setup.import.result": "Imported: {list}",
-  "setup.import.failed": "Some of it could not be imported: {error}",
   "setup.v1.projects": "Projects",
   "setup.v1.projectsCount": "{n} · {agents} agents",
   "setup.v1.projectsBody":
@@ -200,7 +199,6 @@ export const enSetup = {
   "setup.preview.imports": "IMPORTS",
   "setup.preview.unset": "Not set",
   "setup.preview.groups": "{n} of {total} groups from the earlier version",
-  "setup.menu": "First-run setup",
   "pair.kicker": "PAIR THIS DEVICE",
   "pair.title": "Pair this",
   "pair.titleEnd": "device.",
