@@ -80,15 +80,30 @@ export function createSecrets(
     } catch {}
   }
   const cache = new Map<string, string | undefined>();
+  // SECRETOS-ILEGIBLES-1: a file saved by Notepad starts with a BOM, which JSON.parse refuses; one cut short by a power
+  // loss does not parse at all. Either used to read as empty, and the next save wrote that empty list over every value.
+  // Now the BOM is skipped, and an unreadable file is set aside (secrets.json.corrupt-<time>) before anything replaces it.
+  let unreadable = false;
   const read = (): Record<string, Entry> => {
+    let text: string;
     try {
-      return JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, Entry>;
+      text = fs.readFileSync(file, "utf8");
     } catch {
       return {};
     }
+    try {
+      const parsed = JSON.parse(text.replace(/^\uFEFF/, "")) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, Entry>;
+    } catch {}
+    unreadable = true;
+    return {};
   };
   const write = (all: Record<string, Entry>) => {
     fs.mkdirSync(home, { recursive: true });
+    if (unreadable && fs.existsSync(file)) {
+      fs.copyFileSync(file, `${file}.corrupt-${Date.now()}`);
+      unreadable = false;
+    }
     const tmp = `${file}.tmp`;
     fs.writeFileSync(tmp, JSON.stringify(all, null, 2), { mode: 0o600 });
     fs.renameSync(tmp, file);

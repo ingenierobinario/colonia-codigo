@@ -190,3 +190,25 @@ test("SECRETS-MIGRAR-1: un servidor sin llavero que ya tenía secrets.json de 2.
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
+
+test("SECRETOS-ILEGIBLES-1: un secrets.json con BOM se lee, y uno ilegible se aparta antes de guardar encima", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
+  try {
+    const file = path.join(home, "secrets.json");
+    const good = JSON.stringify({ openai: { value: "sk-old", updated_at: "x" } });
+    fs.writeFileSync(file, `﻿${good}`);
+    const s = createSecrets(home, "file", {});
+    assert.equal(s.resolve("secret://openai"), "sk-old", "el BOM del Bloc de notas no borra la lista");
+    s.set("nuevo", "v");
+    assert.equal(s.resolve("secret://openai"), "sk-old", "guardar otro no se lleva el anterior");
+
+    fs.writeFileSync(file, good.slice(0, 20));
+    const t = createSecrets(home, "file", {});
+    t.set("otro", "v2");
+    const aside = fs.readdirSync(home).filter((n) => n.startsWith("secrets.json.corrupt-"));
+    assert.equal(aside.length, 1, "el fichero cortado queda apartado");
+    assert.equal(fs.readFileSync(path.join(home, aside[0] ?? ""), "utf8"), good.slice(0, 20));
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
