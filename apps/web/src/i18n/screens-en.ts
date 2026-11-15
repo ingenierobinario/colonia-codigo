@@ -1,4 +1,5 @@
 import { enHelper } from "./en-helper.ts";
+import { enProjectShare } from "./en-project-share.ts";
 import { enResources } from "./en-resources.ts";
 import { enSetup } from "./en-setup.ts";
 import { enTeam } from "./en-team.ts";
@@ -12,4 +13,5 @@ export const enScreens = {
   ...enTeam,
   ...enResources,
   ...enTelemetry,
+  ...enProjectShare,
 };

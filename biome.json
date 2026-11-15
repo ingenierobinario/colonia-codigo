@@ -209,6 +209,7 @@
                       "**/QuickChat.tsx",
                       "**/ReceivedDialog.tsx",
                       "**/ResourcesScreen.tsx",
+                      "**/ShareProjectDialog.tsx",
                       "**/RunnableCode.tsx",
                       "**/ScreenLive.tsx",
                       "**/FilesScreen.tsx",

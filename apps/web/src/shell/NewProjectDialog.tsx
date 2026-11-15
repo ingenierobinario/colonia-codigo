@@ -6,6 +6,7 @@ import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
 import { createProject } from "../data/setup.ts";
 import { useT } from "../i18n/index.ts";
+import { ImportProjectDialog } from "../project/ImportProjectDialog.tsx";
 import { kindOptions, NO_KIND } from "../project/projectKind.ts";
 import { go } from "./nav.ts";
 
@@ -40,6 +41,7 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
   const [kind, setKind] = useState<string>(NO_KIND);
   const [description, setDescription] = useState("");
   const [busy, setBusy] = useState(false);
+  const [shared, setShared] = useState(false);
   const [helper, setHelper] = useState(false);
   const enableHelper = async (project: string) => {
     if (!helper) return;
@@ -117,6 +119,8 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
     }
   };
   const submitOnEnter = (e: KeyboardEvent) => e.key === "Enter" && void add();
+  // PROYECTO-COMPARTIR-1 · A project someone shared comes in from right here.
+  if (shared) return <ImportProjectDialog onClose={onClose} />;
   return (
     <Dialog
       open
@@ -198,7 +202,8 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
           </Field>
         ) : (
           <p className="newproject__hint">
-            {t("project.new.coloniaHint")} <code>~/.colonia/v2/projects/{slugOf(name.trim() || t("project.new.example"))}</code>
+            {t("project.new.coloniaHint")}{" "}
+            <code>~/.colonia/v2/projects/{slugOf(name.trim() || t("project.new.example"))}</code>
           </p>
         )}
         <Field label={t("project.settings.name")}>
@@ -243,6 +248,17 @@ export function NewProjectDialog({ onClose }: { onClose(): void }) {
             </Field>
           </>
         )}
+        <div className="newproject__shared">
+          <span>{t("project.new.shared")}</span>
+          <Button
+            size="sm"
+            variant="secondary"
+            leadingIcon={<Icons.Download size={14} />}
+            onClick={() => setShared(true)}
+          >
+            {t("project.new.sharedAction")}
+          </Button>
+        </div>
       </div>
     </Dialog>
   );

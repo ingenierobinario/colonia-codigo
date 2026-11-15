@@ -5,7 +5,7 @@ import { inInbox, inProject, isListed, isWorking, type ProjectEntry, projectEntr
 import { rememberSidebar, setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
-import { NewProjectDialog, ProjectSettings, UnregisterProjectDialog } from "../lazy.ts";
+import { NewProjectDialog, ProjectSettings, ShareProjectDialog, UnregisterProjectDialog } from "../lazy.ts";
 import { go, useNav } from "./nav.ts";
 import { projectNavMenu } from "./ProjectNavActions.tsx";
 import { SidebarNavRow } from "./SidebarNavRow.tsx";
@@ -28,6 +28,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
   const [adding, setAdding] = useState(false);
   const [settings, setSettings] = useState<ProjectEntry>();
   const [removing, setRemoving] = useState<ProjectEntry>();
+  const [sharing, setSharing] = useState<ProjectEntry>();
   // The rail has no section header to unfold with, so it always lists them.
   const hidden = folded && !rail;
   const routines = usePrefs((s) => s.inboxRoutines);
@@ -97,6 +98,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
         () => setSettings(p),
         () => setRemoving(p),
         () => setMoreOpen(false),
+        () => setSharing(p),
         unread.get(p.id),
       )}
       key={p.id}
@@ -165,6 +167,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
         {settings && (
           <ProjectSettings project={settings} open onOpenChange={(open) => !open && setSettings(undefined)} />
         )}
+        {sharing && <ShareProjectDialog project={sharing} onClose={() => setSharing(undefined)} />}
         {removing && <UnregisterProjectDialog project={removing} onClose={() => setRemoving(undefined)} />}
       </Suspense>
     </>

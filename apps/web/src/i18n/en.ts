@@ -310,6 +310,9 @@ export const en = {
   "nav.itemOptions": "Options for {name}",
   "nav.open": "Open",
   "project.unregister": "Unregister project",
+  "project.share": "Share project",
+  "project.new.shared": "Did someone send you a project?",
+  "project.new.sharedAction": "Import project",
   "project.unregisterTitle": "Unregister {name}?",
   "project.unregisterBody":
     "The folder and its files, chats and tasks are kept. Register it again to restore the project.",

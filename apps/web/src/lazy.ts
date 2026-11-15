@@ -105,6 +105,9 @@ export const NewProjectDialog = late(() =>
 export const UnregisterProjectDialog = late(() =>
   import("./shell/UnregisterProjectDialog.tsx").then((m) => ({ default: m.UnregisterProjectDialog })),
 );
+export const ShareProjectDialog = late(() =>
+  import("./project/ShareProjectDialog.tsx").then((m) => ({ default: m.ShareProjectDialog })),
+);
 export const ProjectSettings = late(() =>
   import("./project/ProjectSettings.tsx").then((m) => ({ default: m.ProjectSettings })),
 );

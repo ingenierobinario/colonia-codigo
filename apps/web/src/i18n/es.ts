@@ -308,6 +308,9 @@ export const es: Partial<Record<MessageKey, string>> = {
   "nav.itemOptions": "Opciones de {name}",
   "nav.open": "Abrir",
   "project.unregister": "Quitar registro del proyecto",
+  "project.share": "Compartir proyecto",
+  "project.new.shared": "¿Te han pasado un proyecto?",
+  "project.new.sharedAction": "Importar proyecto",
   "project.unregisterTitle": "¿Quitar registro de {name}?",
   "project.unregisterBody":
     "Carpeta, archivos, chats y tareas se conservan. Vuelve a registrarlo para recuperar el proyecto.",

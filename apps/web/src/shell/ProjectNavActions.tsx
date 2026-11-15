@@ -21,6 +21,8 @@ export function projectNavMenu(
   onSettings: () => void,
   onRemove: () => void,
   onClose: () => void,
+  /** PROYECTO-COMPARTIR-1 · Opens «Share project» for this one. */
+  onShare: () => void,
   /** Its unread chats, for "Mark all as read". */
   unread: readonly string[] = [],
 ): MenuEntry[] {
@@ -39,6 +41,14 @@ export function projectNavMenu(
       onSelect: () => {
         onClose();
         onSettings();
+      },
+    },
+    {
+      label: t("project.share"),
+      icon: <Icons.Share />,
+      onSelect: () => {
+        onClose();
+        onShare();
       },
     },
     {
