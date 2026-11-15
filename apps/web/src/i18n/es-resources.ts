@@ -71,7 +71,7 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.recipe.file": "Archivo",
   "res.recipe.pick": "Elegir el archivo .md",
   "res.recipe.lead": "Solo se lee: nada se ejecuta al importarla.",
-  "res.recipe.steps": "{n} pasos",
+  "res.recipe.steps": "Pasos: {n}",
   "res.recipe.madeLive": "Quien la compartió la hizo en vivo. Aquí decides tú.",
   "res.recipe.madeBackground": "Quien la compartió la hizo en segundo plano. Aquí decides tú.",
   "res.recipe.mode": "Cómo quieres que se haga aquí",

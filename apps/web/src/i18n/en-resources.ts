@@ -67,7 +67,7 @@ export const enResources = {
   "res.recipe.file": "File",
   "res.recipe.pick": "Choose the .md file",
   "res.recipe.lead": "It is only read: nothing runs when you import it.",
-  "res.recipe.steps": "{n} steps",
+  "res.recipe.steps": "Steps: {n}",
   "res.recipe.madeLive": "Whoever shared it ran it live. Here you decide.",
   "res.recipe.madeBackground": "Whoever shared it ran it in the background. Here you decide.",
   "res.recipe.mode": "How you want it done here",
