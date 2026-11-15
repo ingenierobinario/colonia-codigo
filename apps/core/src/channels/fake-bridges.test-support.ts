@@ -31,8 +31,11 @@ const json = (res: http.ServerResponse, status: number, j: object) => {
   res.end(JSON.stringify(j));
 };
 
-export async function fakeMatrix(): Promise<FakeBridge> {
+export async function fakeMatrix(): Promise<
+  FakeBridge & { /** The same account by user and password. */ login: string }
+> {
   const TOKEN = "syt_fake_matrix_token_1234";
+  const PASSWORD = "fake-matrix-password";
   const sent: Array<{ room: string; text: string }> = [];
   let queue: Array<{ room: string; members: number; ev: object }> = [];
   let waiting: (() => void) | undefined;
@@ -40,9 +43,15 @@ export async function fakeMatrix(): Promise<FakeBridge> {
   const dm = (user: string) => `!dm-${user}`;
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://x");
+    const p = url.pathname;
+    if (p.endsWith("/login") && req.method === "POST") {
+      const b = (await body(req)) as { identifier?: { user?: string }; password?: string };
+      return b.identifier?.user === "@colonia:example.org" && b.password === PASSWORD
+        ? json(res, 200, { access_token: TOKEN, user_id: "@colonia:example.org", device_id: "COLONIA" })
+        : json(res, 403, { errcode: "M_FORBIDDEN", error: "Invalid username or password" });
+    }
     if (req.headers.authorization !== `Bearer ${TOKEN}`)
       return json(res, 401, { errcode: "M_UNKNOWN_TOKEN", error: "bad token" });
-    const p = url.pathname;
     if (p.endsWith("/account/whoami")) return json(res, 200, { user_id: "@colonia:example.org" });
     if (p.includes("/profile/")) return json(res, 200, { displayname: "Someone" });
     if (p.endsWith("/sync")) {
@@ -75,6 +84,7 @@ export async function fakeMatrix(): Promise<FakeBridge> {
   const base = await listen(server);
   return {
     secret: `${base} ${TOKEN}`,
+    login: `${base} @colonia:example.org ${PASSWORD}`,
     message(from, text, opts = {}) {
       const ev = {
         type: "m.room.message",

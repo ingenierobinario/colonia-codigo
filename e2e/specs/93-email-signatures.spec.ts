@@ -157,6 +157,7 @@ test("SMTP account signatures stay isolated across mailbox selection and reload"
     });
     await dialog.getByRole("button", { name: "Agregar cuenta de email", exact: true }).click();
     await dialog.getByLabel("Dirección", { exact: true }).fill("new@example.com");
+    await dialog.getByText("Más opciones", { exact: true }).click();
     await dialog.getByLabel("Correo entrante (IMAP) · Servidor", { exact: true }).fill("127.0.0.1");
     await dialog.getByLabel("Correo saliente (SMTP) · Servidor", { exact: true }).fill("127.0.0.1");
     await dialog.getByLabel("Contraseña de aplicación", { exact: true }).fill("test-only-password");

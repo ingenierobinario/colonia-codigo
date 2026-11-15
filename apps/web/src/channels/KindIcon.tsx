@@ -1,6 +1,7 @@
 import { ChannelIcon, type MenuEntry } from "@colonia/ui";
 import type { T } from "../i18n/index.ts";
-import { CHANNEL_KIND_IDS, CHANNEL_KINDS, type ChannelKind } from "./kinds.ts";
+import { type AddChoice, addChannelChoices } from "./addChoices.ts";
+import { CHANNEL_KINDS, type ChannelKind } from "./kinds.ts";
 
 /** A channel kind's mark where a tile goes: the app's own logo, full, with no frame around it. */
 export function KindTile({ kind, size = 20 }: { kind: ChannelKind; size?: number }) {
@@ -16,17 +17,19 @@ export function KindIcon({ kind, size = 14 }: { kind: ChannelKind; size?: number
   return <ChannelIcon channel={kind} size={size} />;
 }
 
-/** "Add channel": the kinds not connected yet, those that work first and the coming ones under "Coming soon". */
-export function addChannelItems(connected: readonly string[], t: T, pick: (k: ChannelKind) => void): MenuEntry[] {
-  const missing = CHANNEL_KIND_IDS.filter((k) => !connected.includes(k));
-  const entry = (k: ChannelKind): MenuEntry => ({
-    label: t(CHANNEL_KINDS[k].name),
-    icon: <KindIcon kind={k} />,
-    disabled: CHANNEL_KINDS[k].soon,
-    onSelect: () => pick(k),
+/** "Add channel": every kind, those that work first; one that has an account already adds another (`another`). */
+export function addChannelItems(
+  connected: readonly string[],
+  t: T,
+  pick: (k: ChannelKind, another: boolean) => void,
+): MenuEntry[] {
+  const entry = ({ kind, another }: AddChoice): MenuEntry => ({
+    label: t(CHANNEL_KINDS[kind].name),
+    icon: <KindIcon kind={kind} />,
+    disabled: CHANNEL_KINDS[kind].soon,
+    onSelect: () => pick(kind, another),
   });
-  const ready = missing.filter((k) => !CHANNEL_KINDS[k].soon);
-  const soon = missing.filter((k) => CHANNEL_KINDS[k].soon);
+  const { ready, soon } = addChannelChoices(connected);
   return [
     ...(ready.length ? [{ type: "label" as const, label: t("channels.ready") }, ...ready.map(entry)] : []),
     ...(soon.length ? [{ type: "label" as const, label: t("common.comingSoonShort") }, ...soon.map(entry)] : []),

@@ -1586,9 +1586,9 @@ export const es: Partial<Record<MessageKey, string>> = {
     "Se guardó con contenido externo en el chat. Los agentes la leen como dato, no como palabra tuya; edítala para darla por buena.",
   "tg.lead":
     "Habla con tus agentes desde Telegram. Solo les llegan los chats que apruebas; el resto recibe un código que apruebas aquí.",
-  "tg.step1": "En Telegram abre @BotFather, envía /newbot y sigue los pasos.",
-  "tg.step2": "Pega abajo el token que te da y elige quién responde.",
-  "tg.step3": "Escríbele a tu bot: te contesta con un código. Ponlo abajo en “Este es mi Telegram”.",
+  "tg.step1": "Pulsa «Abrir BotFather» y envíale /newbot: te pide un nombre para tu bot y te contesta con un mensaje.",
+  "tg.step2":
+    "Copia ese mensaje y pulsa «Pegar» aquí abajo. Después escríbele a tu bot y pon su código en “Este es mi Telegram”.",
   "wa.lead":
     "Un número de WhatsApp vinculado como WhatsApp Web: una línea aparte para tu agente o tu propio número. Solo responde a las personas que apruebes.",
   "wa.step1": "Pulsa Vincular: aparece un código aquí.",
@@ -1602,14 +1602,14 @@ export const es: Partial<Record<MessageKey, string>> = {
   "wa.scanHint": "Cambia cada pocos segundos; esta pantalla lo mantiene al día.",
   "wa.connecting": "Conectando con WhatsApp…",
   "wa.remove": "Desvincular WhatsApp",
-  "tg.token": "Token del bot",
+  "tg.token": "Clave del bot",
   "tg.tokenHint": "Se guarda de forma segura; no vuelve a esta pantalla.",
-  "tg.tokenFix": "Pega un token válido para volver a conectarlo.",
-  "tg.tokenMissing": "No hay token guardado: pega uno para conectarlo.",
-  "tg.tokenSaved": "Token guardado: reconectando el bot.",
-  "tg.tokenStored": "Guardado de forma segura; solo se muestran su principio y su final.",
-  "tg.tokenChangeButton": "Cambiar token",
-  "tg.tokenNew": "Pega el token nuevo",
+  "tg.tokenFix": "Pega una clave válida para volver a conectarlo.",
+  "tg.tokenMissing": "No hay clave guardada: pega una para conectarlo.",
+  "tg.tokenSaved": "Clave guardada: reconectando el bot.",
+  "tg.tokenStored": "Guardada de forma segura; solo se muestran su principio y su final.",
+  "tg.tokenChangeButton": "Cambiar clave",
+  "tg.tokenNew": "Pega la clave nueva",
   "tg.agent": "Quién responde",
   "tg.agentHint": "El agente que contesta en {channel}.",
   "tg.connect": "Conectar bot",
@@ -1906,10 +1906,10 @@ export const es: Partial<Record<MessageKey, string>> = {
     "Telegram no deja listar los grupos de un bot: uno aparece aquí cuando añaden el bot o alguien escribe ahí mientras funciona.",
   "dc.lead":
     "Habla con tus agentes desde Discord por mensaje directo a tu bot, y déjalo atender las salas de tu servidor que elijas. Por mensaje directo solo llegan las personas que apruebes.",
-  "dc.step1": "En el Discord Developer Portal, crea una aplicación y entra a Bot.",
-  "dc.step2": "Activa Message Content Intent, después Reset Token y cópialo.",
-  "dc.step3": "En Installation, añade el bot a tu cuenta (o a un servidor donde estés) para poder escribirle.",
-  "dc.step4": "Pega el token abajo, escríbele al bot por mensaje directo y pon su código en “Este es mi Discord”.",
+  "dc.step1": "En el portal de desarrolladores de Discord, crea una aplicación y entra en Bot.",
+  "dc.step2": "Activa Message Content Intent, pulsa Reset Token y copia la clave que te muestra.",
+  "dc.step3":
+    "Pégala aquí abajo y pulsa «Añadir el bot a un servidor tuyo». Después escríbele por mensaje directo y pon su código en “Este es mi Discord”.",
   "sl.lead":
     "Habla con tus agentes desde Slack, por mensaje directo a tu app. Solo llegan las personas que apruebes; el resto recibe un código que apruebas aquí.",
   "sl.step1":
@@ -1924,25 +1924,22 @@ export const es: Partial<Record<MessageKey, string>> = {
   "mx.lead":
     "Habla con tus agentes desde Matrix, en cualquier servidor. Solo se leen los chats directos, y solo llegan las personas que apruebas.",
   "mx.step1": "Crea una cuenta para el agente en tu servidor de Matrix (o usa una que tengas para eso).",
-  "mx.step2": "Entra con ella en Element, abre Ajustes › Ayuda y acerca de, y copia su token de acceso.",
-  "mx.step3":
-    "Pega la dirección del servidor y el token aquí abajo. Empieza un chat con el cifrado apagado, escríbele y pon su código en “Este es mi Matrix”.",
-  "mx.server": "Dirección del servidor",
-  "mx.token": "Token de acceso",
+  "mx.step2":
+    "Escribe su usuario y su contraseña aquí abajo. Después empieza un chat con el cifrado apagado, escríbele y pon su código en “Este es mi Matrix”.",
+  "mx.server": "Dirección del servidor (solo si no se encuentra sola)",
   "mm.lead":
     "Habla con tus agentes desde Mattermost. Solo se leen los mensajes directos, y solo llegan las personas que apruebas.",
   "mm.step1": "En System Console › Integrations › Bot accounts, activa las cuentas de bot.",
-  "mm.step2": "En Integrations › Bot accounts, añade un bot y copia su token.",
+  "mm.step2": "En Integrations › Bot accounts, añade un bot y copia la clave que te muestra.",
   "mm.step3":
-    "Pega la dirección del servidor y el token aquí abajo, escríbele al bot y pon su código en “Este es mi Mattermost”.",
+    "Pega la dirección del servidor y la clave aquí abajo, escríbele al bot y pon su código en “Este es mi Mattermost”.",
   "mm.server": "Dirección del servidor",
   "sg.lead":
     "Habla con tus agentes desde Signal con signal-cli ejecutándose en este ordenador. Solo se leen los chats entre dos personas.",
   "sg.step1":
     "Instala signal-cli y vincúlalo a un número (uno propio para el agente, o el tuyo como dispositivo vinculado).",
-  "sg.step2": "Arráncalo como daemon: signal-cli -a +NUMERO daemon --http 127.0.0.1:8080",
-  "sg.step3":
-    "Pega la dirección del daemon y el número aquí abajo, escríbele desde Signal y pon su código en “Este es mi Signal”.",
+  "sg.step2": "Déjalo en marcha: signal-cli -a +NUMERO daemon --http 127.0.0.1:8080",
+  "sg.step3": "Escribe el número aquí abajo, escríbele desde Signal y pon su código en “Este es mi Signal”.",
   "sg.daemon": "Dirección de signal-cli",
   "sg.number": "Número",
   "im.lead":

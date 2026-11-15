@@ -42,7 +42,7 @@ test("Discord: the bot connects with its token, the owner links their account an
   page,
 }) => {
   const { discord } = await world.info();
-  await connect(page, "Discord", [["Token del bot", discord]]);
+  await connect(page, "Discord", [["Clave del bot", discord]]);
   await linkAndTalk(page, "dc", { id: "5150", name: "Owner" });
 });
 

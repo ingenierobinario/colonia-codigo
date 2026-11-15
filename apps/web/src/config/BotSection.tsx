@@ -8,172 +8,16 @@ import { accountLabel, accountsOf, newAccountId, pickAccount } from "../data/acc
 import { type ChannelDraft, saveChannel, useChannels, watchChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
-import { type MessageKey, useT } from "../i18n/index.ts";
+import { useT } from "../i18n/index.ts";
+import { BOTS, type BotKind, botSecret, discordInvite, pasted, type TokenSpec } from "./botFields.ts";
 import { botStart } from "./botStart.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
 import { PublicAddress } from "./PublicAddress.tsx";
 import { isRoomsKind, RoomsSection } from "./RoomsSection.tsx";
 import { Stickers } from "./StickersSection.tsx";
+import { useChannelAdd } from "./useChannelAdd.ts";
 
-export type BotKind =
-  | "telegram"
-  | "discord"
-  | "slack"
-  | "matrix"
-  | "mattermost"
-  | "signal"
-  | "googlechat"
-  | "sms"
-  | "ntfy"
-  | "nextcloud"
-  | "irc"
-  | "twitch"
-  | "teams"
-  | "line";
-
-/**
- * One field of the secret; `plain` ones (a server's address, a number) are not hidden as they are typed, `multiline`
- * ones take a pasted file (a JSON key).
- */
-type TokenSpec = { label: MessageKey; placeholder: string; pattern: RegExp; plain?: boolean; multiline?: boolean };
-
-/**
- * What each bot channel needs: the steps to make the bot, and its token(s). Slack takes two (the bot's and the app's,
- * for Socket Mode), stored together as one secret.
- */
-/** An Azure app's or tenant's id. */
-const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
-const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: TokenSpec[] }> = {
-  telegram: {
-    name: "Telegram",
-    steps: ["tg.step1", "tg.step2", "tg.step3"],
-    // What BotFather hands out: the bot's number, a colon and its secret.
-    tokens: [{ label: "tg.token", placeholder: "123456789:AA…", pattern: /^\d+:[\w-]{20,}$/ }],
-  },
-  discord: {
-    name: "Discord",
-    steps: ["dc.step1", "dc.step2", "dc.step3", "dc.step4"],
-    tokens: [{ label: "tg.token", placeholder: "MTA…", pattern: /^[\w-]{20,}\.[\w-]{4,}\.[\w-]{20,}$/ }],
-  },
-  slack: {
-    name: "Slack",
-    steps: ["sl.step1", "sl.step2", "sl.step3"],
-    tokens: [
-      { label: "sl.botToken", placeholder: "xoxb-…", pattern: /^xoxb-[\w-]{10,}$/ },
-      { label: "sl.appToken", placeholder: "xapp-…", pattern: /^xapp-[\w-]{10,}$/ },
-    ],
-  },
-  matrix: {
-    name: "Matrix",
-    steps: ["mx.step1", "mx.step2", "mx.step3"],
-    tokens: [
-      { label: "mx.server", placeholder: "https://matrix.example.org", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "mx.token", placeholder: "syt_…", pattern: /^\S{16,}$/ },
-    ],
-  },
-  mattermost: {
-    name: "Mattermost",
-    steps: ["mm.step1", "mm.step2", "mm.step3"],
-    tokens: [
-      { label: "mm.server", placeholder: "https://chat.example.org", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "tg.token", placeholder: "abc123…", pattern: /^[a-z0-9]{20,}$/ },
-    ],
-  },
-  signal: {
-    name: "Signal",
-    steps: ["sg.step1", "sg.step2", "sg.step3"],
-    tokens: [
-      { label: "sg.daemon", placeholder: "http://127.0.0.1:8080", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "sg.number", placeholder: "+15550001111", pattern: /^\+\d{6,15}$/, plain: true },
-    ],
-  },
-  googlechat: {
-    name: "Google Chat",
-    steps: ["gc.step1", "gc.step2", "gc.step3", "gc.step4"],
-    tokens: [
-      {
-        label: "gc.subscription",
-        placeholder: "projects/acme/subscriptions/colonia-chat",
-        pattern: /^projects\/[^/\s]+\/subscriptions\/[^/\s]+$/,
-        plain: true,
-      },
-      {
-        label: "gc.key",
-        placeholder: '{ "type": "service_account", … }',
-        pattern: /^\{[\s\S]*"private_key"[\s\S]*\}$/,
-        multiline: true,
-      },
-    ],
-  },
-  sms: {
-    name: "SMS",
-    steps: ["sms.step1", "sms.step2", "sms.step3"],
-    tokens: [
-      { label: "sms.sid", placeholder: "AC0123…", pattern: /^AC[0-9a-fA-F]{32}$/, plain: true },
-      { label: "sms.token", placeholder: "abc123…", pattern: /^[A-Za-z0-9]{16,}$/ },
-      { label: "sg.number", placeholder: "+15550001111", pattern: /^\+[1-9]\d{6,14}$/, plain: true },
-    ],
-  },
-  ntfy: {
-    name: "ntfy",
-    steps: ["nt.step1", "nt.step2", "nt.step3"],
-    tokens: [
-      { label: "nt.server", placeholder: "https://ntfy.sh", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "nt.topic", placeholder: "colonia-7f3k9q2m8x", pattern: /^[-_A-Za-z0-9]{1,64}$/, plain: true },
-      { label: "nt.token", placeholder: "tk_…", pattern: /^(tk_\S+)?$/ },
-    ],
-  },
-  nextcloud: {
-    name: "Nextcloud Talk",
-    steps: ["nc.step1", "nc.step2", "nc.step3"],
-    tokens: [
-      { label: "mm.server", placeholder: "https://cloud.example.org", pattern: /^https?:\/\/\S+$/, plain: true },
-      { label: "nc.user", placeholder: "colonia-bot", pattern: /^\S+$/, plain: true },
-      { label: "nc.password", placeholder: "xxxxx-xxxxx-…", pattern: /^\S{8,}$/ },
-    ],
-  },
-  irc: {
-    name: "IRC",
-    steps: ["irc.step1", "irc.step2", "irc.step3"],
-    tokens: [
-      { label: "mm.server", placeholder: "ircs://irc.libera.chat:6697", pattern: /^ircs?:\/\/\S+$/, plain: true },
-      {
-        label: "irc.nick",
-        placeholder: "acme-bot",
-        pattern: /^[A-Za-z[\]\\`_^{|}][\w[\]\\`^{|}-]{0,29}$/,
-        plain: true,
-      },
-      { label: "irc.password", placeholder: "", pattern: /^\S*$/ },
-    ],
-  },
-  twitch: {
-    name: "Twitch",
-    steps: ["tw.step1", "tw.step2", "tw.step3"],
-    tokens: [
-      { label: "tw.login", placeholder: "acme_bot", pattern: /^\w{3,25}$/, plain: true },
-      { label: "tw.token", placeholder: "oauth:…", pattern: /^(oauth:)?\w{20,}$/ },
-      { label: "tw.channel", placeholder: "#acme", pattern: /^#?\w{3,25}$/, plain: true },
-    ],
-  },
-  teams: {
-    name: "Microsoft Teams",
-    steps: ["tm.step1", "tm.step2", "tm.step3", "tm.step4", "tm.step5"],
-    tokens: [
-      { label: "tm.appId", placeholder: "00000000-0000-0000-0000-000000000000", pattern: GUID, plain: true },
-      { label: "tm.secret", placeholder: "abc8Q~…", pattern: /^\S{8,}$/ },
-      { label: "tm.tenant", placeholder: "00000000-0000-0000-0000-000000000000", pattern: GUID, plain: true },
-    ],
-  },
-  line: {
-    name: "LINE",
-    steps: ["ln.step1", "ln.step2", "ln.step3", "ln.step4"],
-    tokens: [
-      { label: "ln.secret", placeholder: "0123456789abcdef…", pattern: /^[0-9a-fA-F]{32}$/ },
-      { label: "ln.token", placeholder: "eyJhbGciOi…", pattern: /^[A-Za-z0-9+/=._-]{40,}$/ },
-    ],
-  },
-};
+export type { BotKind } from "./botFields.ts";
 
 /** Kinds that deliver only to a webhook: their screen shows the public address to paste into the platform. */
 const WEBHOOK_KINDS: readonly BotKind[] = ["teams", "line"];
@@ -230,6 +74,7 @@ export function BotSection({ kind }: { kind: BotKind }) {
     );
     setAdding(true);
   };
+  useChannelAdd(kind, ready, startAdding);
   const name = BOTS[kind].name;
   return (
     <>
@@ -289,21 +134,18 @@ export function BotSection({ kind }: { kind: BotKind }) {
 }
 
 /** The token fields of a kind, as one value ("xoxb-… xapp-…" for Slack) once every field holds a valid token. */
-export function useTokens(kind: BotKind) {
+export function useTokens(kind: BotKind, fresh = false) {
   const specs = BOTS[kind].tokens;
-  const [values, setValues] = useState<string[]>(() => specs.map(() => ""));
-  const ok = specs.every((s, i) => s.pattern.test((values[i] ?? "").trim()));
+  // A first setup opens with what can be made up for the owner (an ntfy topic); a change of credentials opens empty.
+  const [values, setValues] = useState<string[]>(() => specs.map((s) => (fresh ? (s.initial?.() ?? "") : "")));
   return {
     specs,
     values,
-    set: (i: number, v: string) => setValues((cur) => cur.map((x, j) => (j === i ? v : x))),
+    // A code pasted inside the platform's whole message is kept alone.
+    set: (i: number, v: string) =>
+      setValues((cur) => cur.map((x, j) => (j === i && specs[i] ? pasted(specs[i], v) : x))),
     clear: () => setValues(specs.map(() => "")),
-    ok,
-    // An optional field left empty adds nothing.
-    joined: values
-      .map((v) => v.trim())
-      .filter(Boolean)
-      .join(" "),
+    ...botSecret(specs, values),
   };
 }
 
@@ -322,9 +164,38 @@ function Setup({
   const t = useT();
   const agents = useData((s) => s.agents);
   const secretary = Object.values(agents).find((a) => a.kind === "secretary");
-  const tokens = useTokens(kind);
+  const tokens = useTokens(kind, true);
   const [agent, setAgent] = useState(secretary?.id ?? SUPER_AGENT_ID);
   const [busy, setBusy] = useState(false);
+  const fields = tokens.specs.map((spec, i) => ({ spec, i }));
+  const main = fields.filter((f) => !f.spec.advanced);
+  const more = fields.filter((f) => f.spec.advanced);
+  // Discord: the bot's code is enough to build the link that adds it to a server.
+  const invite = kind === "discord" ? discordInvite(tokens.values[0] ?? "") : undefined;
+  const field = ({ spec, i }: (typeof fields)[number], last: boolean) => (
+    <div className="pform__field" key={spec.label}>
+      <span className="pform__label">{t(spec.label)}</span>
+      <TokenInput spec={spec} value={tokens.values[i] ?? ""} onChange={(v) => tokens.set(i, v)} />
+      {spec.pick && !tokens.values[i] && (
+        <div>
+          <Button
+            size="sm"
+            variant="ghost"
+            leadingIcon={<Icons.Copy size={14} />}
+            onClick={() =>
+              void navigator.clipboard
+                ?.readText()
+                .then((text) => tokens.set(i, text.trim()))
+                .catch(() => {})
+            }
+          >
+            {t("bot.paste")}
+          </Button>
+        </div>
+      )}
+      {last && <span className="pform__hint">{t("tg.tokenHint")}</span>}
+    </div>
+  );
   const connect = async () => {
     setBusy(true);
     const ok = await saveChannel(
@@ -356,13 +227,25 @@ function Setup({
           </li>
         ))}
       </ol>
-      {tokens.specs.map((spec, i) => (
-        <div className="pform__field" key={spec.label}>
-          <span className="pform__label">{t(spec.label)}</span>
-          <TokenInput spec={spec} value={tokens.values[i] ?? ""} onChange={(v) => tokens.set(i, v)} />
-          {i === tokens.specs.length - 1 && <span className="pform__hint">{t("tg.tokenHint")}</span>}
+      {main.map((f, n) => field(f, n === main.length - 1))}
+      {invite && (
+        <div>
+          <Button
+            size="sm"
+            variant="secondary"
+            leadingIcon={<Icons.ExternalLink size={14} />}
+            onClick={() => window.open(invite, "_blank", "noopener")}
+          >
+            {t("dc.invite")}
+          </Button>
         </div>
-      ))}
+      )}
+      {more.length > 0 && (
+        <details className="tgsetup__more">
+          <summary>{t("bot.more")}</summary>
+          <div className="tgsetup__moreBody">{more.map((f) => field(f, false))}</div>
+        </details>
+      )}
       <SettingRow title={t("tg.agent")} description={t("tg.agentHint", { channel: BOTS[kind].name })}>
         <AgentSelect size="sm" className="tgagent" value={agent} onChange={(id) => id && setAgent(id)} />
       </SettingRow>

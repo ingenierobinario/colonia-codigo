@@ -10,48 +10,9 @@ import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
 import { EmailSignatures } from "./EmailSignatures.tsx";
+import { ADDRESS, guessServers, PROVIDERS, type Provider, passwordPage, providerOf } from "./mailProviders.ts";
+import { useChannelAdd } from "./useChannelAdd.ts";
 
-/** Known providers: their servers, and the address domains that point to them. */
-const PROVIDERS = {
-  gmail: {
-    name: "Gmail",
-    domains: ["gmail.com", "googlemail.com"],
-    imap: { host: "imap.gmail.com", port: 993, tls: "implicit" },
-    smtp: { host: "smtp.gmail.com", port: 465, tls: "implicit" },
-  },
-  outlook: {
-    name: "Outlook",
-    domains: ["outlook.com", "hotmail.com", "live.com", "msn.com"],
-    imap: { host: "outlook.office365.com", port: 993, tls: "implicit" },
-    smtp: { host: "smtp.office365.com", port: 587, tls: "starttls" },
-  },
-  icloud: {
-    name: "iCloud",
-    domains: ["icloud.com", "me.com", "mac.com"],
-    imap: { host: "imap.mail.me.com", port: 993, tls: "implicit" },
-    smtp: { host: "smtp.mail.me.com", port: 587, tls: "starttls" },
-  },
-  yahoo: {
-    name: "Yahoo",
-    domains: ["yahoo.com", "ymail.com"],
-    imap: { host: "imap.mail.yahoo.com", port: 993, tls: "implicit" },
-    smtp: { host: "smtp.mail.yahoo.com", port: 465, tls: "implicit" },
-  },
-  fastmail: {
-    name: "Fastmail",
-    domains: ["fastmail.com", "fastmail.fm"],
-    imap: { host: "imap.fastmail.com", port: 993, tls: "implicit" },
-    smtp: { host: "smtp.fastmail.com", port: 465, tls: "implicit" },
-  },
-} as const satisfies Record<string, { name: string; domains: string[]; imap: MailServer; smtp: MailServer }>;
-type Provider = keyof typeof PROVIDERS | "other";
-
-const ADDRESS = /^[^\s<>@,;"]+@[^\s<>@,;"]+\.[^\s<>@,;"]+$/;
-const providerOf = (address: string): Provider | undefined => {
-  const domain = address.split("@")[1]?.trim().toLowerCase();
-  const hit = Object.entries(PROVIDERS).find(([, p]) => (p.domains as readonly string[]).includes(domain ?? ""));
-  return hit?.[0] as Provider | undefined;
-};
 const sameServer = (a: MailServer, b: MailServer) => a.host === b.host && a.port === b.port && a.tls === b.tls;
 
 /** The mailbox's settings as typed: a provider fills the servers, "Other" shows them. */
@@ -68,7 +29,12 @@ function useMailForm(initial?: ChannelEmail) {
   const [imap, setImap] = useState<MailServer>(initial?.imap ?? { host: "", port: 993, tls: "implicit" });
   const [smtp, setSmtp] = useState<MailServer>(initial?.smtp ?? { host: "", port: 465, tls: "implicit" });
   const provider = picked ?? providerOf(address) ?? "other";
-  const servers = provider === "other" ? { imap, smtp } : PROVIDERS[provider];
+  // CANALES-SENCILLOS-2: a domain nobody listed starts from the usual server names until the owner writes others.
+  const guess = initial ? undefined : guessServers(address);
+  const servers =
+    provider === "other"
+      ? { imap: imap.host ? imap : (guess?.imap ?? imap), smtp: smtp.host ? smtp : (guess?.smtp ?? smtp) }
+      : PROVIDERS[provider];
   const ok = ADDRESS.test(address.trim()) && Boolean(servers.imap.host) && Boolean(servers.smtp.host);
   const value = (): Omit<ChannelEmail, "allowed" | "trust_unverified" | "mailbox"> => ({
     address: address.trim().toLowerCase(),
@@ -86,6 +52,7 @@ function useMailForm(initial?: ChannelEmail) {
     setUsername,
     provider,
     setPicked,
+    servers,
     imap,
     setImap,
     smtp,
@@ -96,22 +63,38 @@ function useMailForm(initial?: ChannelEmail) {
 }
 
 function MailForm({ form }: { form: ReturnType<typeof useMailForm> }) {
+  return (
+    <>
+      <MailAddress form={form} />
+      <MailMore form={form} />
+    </>
+  );
+}
+
+function MailAddress({ form }: { form: ReturnType<typeof useMailForm> }) {
+  const t = useT();
+  return (
+    <div className="pform__field">
+      <span className="pform__label">{t("em.address")}</span>
+      <Input
+        aria-label={t("em.address")}
+        type="email"
+        autoComplete="off"
+        placeholder="agent@example.org"
+        value={form.address}
+        onChange={(e) => form.setAddress(e.currentTarget.value)}
+      />
+    </div>
+  );
+}
+
+/** What the address already answers for most mailboxes: the provider, its servers, the name on sent mail. */
+function MailMore({ form }: { form: ReturnType<typeof useMailForm> }) {
   const t = useT();
   const agentName = useData((s) => Object.values(s.agents).find((a) => a.kind === "secretary")?.name);
   const providers: Provider[] = [...(Object.keys(PROVIDERS) as Provider[]), "other"];
   return (
     <>
-      <div className="pform__field">
-        <span className="pform__label">{t("em.address")}</span>
-        <Input
-          aria-label={t("em.address")}
-          type="email"
-          autoComplete="off"
-          placeholder="agent@example.org"
-          value={form.address}
-          onChange={(e) => form.setAddress(e.currentTarget.value)}
-        />
-      </div>
       <div className="pform__field">
         <span className="pform__label">{t("em.provider")}</span>
         <div className="pform__presets">
@@ -129,8 +112,8 @@ function MailForm({ form }: { form: ReturnType<typeof useMailForm> }) {
       </div>
       {form.provider === "other" && (
         <>
-          <ServerFields title={t("em.imap")} value={form.imap} onChange={form.setImap} />
-          <ServerFields title={t("em.smtp")} value={form.smtp} onChange={form.setSmtp} />
+          <ServerFields title={t("em.imap")} value={form.servers.imap} onChange={form.setImap} />
+          <ServerFields title={t("em.smtp")} value={form.servers.smtp} onChange={form.setSmtp} />
           <div className="pform__field">
             <span className="pform__label">{t("em.username")}</span>
             <Input
@@ -200,6 +183,7 @@ export function EmailSection() {
   const [adding, setAdding] = useState(false);
   const accounts = channels.filter((c) => c.type === "email");
   const channel = accounts.find((c) => c.id === selected) ?? accounts[0];
+  useChannelAdd("email", ready, () => setAdding(true));
   const connecting = adding || !channel;
   return (
     <>
@@ -264,6 +248,7 @@ function Setup({ onConnected }: { onConnected(id: string): void }) {
   const [password, setPassword] = useState("");
   const [agent, setAgent] = useState(secretary?.id ?? SUPER_AGENT_ID);
   const [busy, setBusy] = useState(false);
+  const page = passwordPage(form.provider);
   const connect = async () => {
     setBusy(true);
     const saved = await saveChannel(
@@ -286,11 +271,23 @@ function Setup({ onConnected }: { onConnected(id: string): void }) {
   return (
     <div className="tgsetup">
       <ol className="tgsetup__steps">
-        {(["em.step1", "em.step2", "em.step3"] as const).map((k) => (
+        {(["em.step1", "em.step2"] as const).map((k) => (
           <li key={k}>{t(k)}</li>
         ))}
       </ol>
-      <MailForm form={form} />
+      <MailAddress form={form} />
+      {page && (
+        <div>
+          <Button
+            size="sm"
+            variant="secondary"
+            leadingIcon={<Icons.ExternalLink size={14} />}
+            onClick={() => window.open(page.url, "_blank", "noopener")}
+          >
+            {t("em.passwordPage", { site: page.name })}
+          </Button>
+        </div>
+      )}
       <div className="pform__field">
         <span className="pform__label">{t("em.password")}</span>
         <Input
@@ -302,6 +299,12 @@ function Setup({ onConnected }: { onConnected(id: string): void }) {
         />
         <span className="pform__hint">{t("em.passwordStored")}</span>
       </div>
+      <details className="tgsetup__more">
+        <summary>{t("bot.more")}</summary>
+        <div className="tgsetup__moreBody">
+          <MailMore form={form} />
+        </div>
+      </details>
       <SettingRow title={t("tg.agent")} description={t("tg.agentHint", { channel: "Email" })}>
         <AgentSelect size="sm" className="tgagent" value={agent} onChange={(id) => id && setAgent(id)} />
       </SettingRow>

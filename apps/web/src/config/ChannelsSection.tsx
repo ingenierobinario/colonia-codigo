@@ -32,7 +32,7 @@ const LEAD: Partial<Record<ChannelKind, MessageKey>> = {
   line: "ln.lead",
 };
 
-/** Config › Channels: a tab per connected channel, and "+" for the kinds not connected yet. */
+/** Config › Channels: a tab per connected channel, and "+" for a new one or one more account of a kind. */
 export function ChannelsSection() {
   const t = useT();
   const channels = useChannels((s) => s.channels);
@@ -47,9 +47,8 @@ export function ChannelsSection() {
   const current = picked ?? connected[0];
   // The kind being set up shows as a tab next to the connected ones until it is connected.
   const tabs = current && !connected.includes(current) ? [...connected, current] : connected;
-  const missing = CHANNEL_KIND_IDS.filter((k) => !tabs.includes(k));
 
-  const add = missing.length > 0 && (
+  const add = (
     <Menu
       align="end"
       trigger={
@@ -57,7 +56,7 @@ export function ChannelsSection() {
           {t("channels.add")}
         </Button>
       }
-      items={addChannelItems(tabs, t, go.channelConfig)}
+      items={addChannelItems(connected, t, go.channelConfig)}
     />
   );
 
@@ -66,7 +65,7 @@ export function ChannelsSection() {
       <SectionHead
         title={t("config.channels")}
         lead={current ? t(LEAD[current] ?? CHANNEL_KINDS[current].text) : t("channels.lead")}
-        actions={add || undefined}
+        actions={add}
       />
       {tabs.length > 0 && current && (
         <SegmentedControl
@@ -83,7 +82,7 @@ export function ChannelsSection() {
           {t("channels.emptyBody")}
         </EmptyState>
       ) : isBotKind(current) ? (
-        <BotSection kind={current} />
+        <BotSection key={current} kind={current} />
       ) : current === "whatsapp" ? (
         <WhatsAppSection />
       ) : current === "imessage" ? (

@@ -537,6 +537,18 @@
 .tgsetup__start:not(:empty) {
   margin-top: 6px;
 }
+/* CANALES-SENCILLOS-2: what a setup works without, folded away. */
+.tgsetup__more > summary {
+  cursor: pointer;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+}
+.tgsetup__moreBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
 .tgcard__error {
   color: var(--colonia-danger-fg, var(--colonia-fg-muted));
   font-size: var(--colonia-text-xs);

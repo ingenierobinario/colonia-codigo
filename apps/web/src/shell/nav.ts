@@ -102,6 +102,8 @@ export type NavState = {
   config: ConfigSection | null;
   /** The channel kind shown in Config › Channels (connected or being set up). */
   configChannel: ChannelKind | undefined;
+  /** A kind the owner asked one more account of ("Add channel" on a kind that has one); its screen takes it. */
+  configChannelAdd: ChannelKind | undefined;
   /** "Open on your phone" dialog. */
   phone: boolean;
   /** The usage dialog (memory, CPU, disk; the computer's and Colonia's). */
@@ -230,6 +232,7 @@ export const nav = createStore<NavState>({
   tools: true,
   config: null,
   configChannel: undefined,
+  configChannelAdd: undefined,
   phone: false,
   usageDialog: false,
   palette: false,
@@ -527,8 +530,12 @@ export const go = {
     nav.set({ config: section });
   },
   /** Config › Channels on one kind: its settings, or its setup when it is not connected yet. */
-  channelConfig(kind: ChannelKind) {
-    nav.set({ config: "channels", configChannel: kind });
+  channelConfig(kind: ChannelKind, another = false) {
+    nav.set({ config: "channels", configChannel: kind, configChannelAdd: another ? kind : undefined });
+  },
+  /** The kind's screen started the new account that was asked for. */
+  channelAddTaken() {
+    nav.set({ configChannelAdd: undefined });
   },
   palette(open: boolean) {
     nav.set({ palette: open });

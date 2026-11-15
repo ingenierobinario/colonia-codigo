@@ -12,6 +12,7 @@ import { useT } from "../i18n/index.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
 import { SubHead } from "./SectionHead.tsx";
 import { Stickers } from "./StickersSection.tsx";
+import { useChannelAdd } from "./useChannelAdd.ts";
 
 const CHANNEL_ID = "whatsapp";
 const DEFAULTS = { enabled: true, strangers: "pair", concurrency: "steer", owner_thread: "home" } as const;
@@ -29,6 +30,7 @@ export function WhatsAppSection() {
   // MULTI-WHATSAPP-1: as many numbers as the owner wants, each its own channel (and its own session on disk).
   const accounts = channels.filter((c) => c.type === "whatsapp");
   const found = accounts.find((c) => c.id === selected) ?? accounts[0];
+  useChannelAdd("whatsapp", ready, () => setAdding(true));
   const connecting = adding || !found;
   const channel = connecting ? undefined : found;
   // While a QR waits it changes every few seconds: read it often then, rarely otherwise.

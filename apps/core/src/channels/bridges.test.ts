@@ -11,7 +11,7 @@ import { callTool, say, scriptedLlm, startCore, throughOwnerCheck } from "../eng
 import { waitFor } from "../testkit/platform.ts";
 import { defineTool } from "../tools/types.ts";
 import { type FakeBridge, fakeMatrix, fakeMattermost, fakeSignal } from "./fake-bridges.test-support.ts";
-import { matrixAdapter, matrixSecret } from "./matrix.ts";
+import { matrixAdapter, matrixHomeserver, matrixSecret } from "./matrix.ts";
 import { mattermostAdapter, mattermostSecret } from "./mattermost.ts";
 import { signalAdapter, signalSecret } from "./signal.ts";
 import type { AdapterFactory } from "./types.ts";
@@ -43,14 +43,46 @@ test("each secret splits into the server's address and the token or number, in a
   assert.deepEqual(signalSecret("http://127.0.0.1:8080 15550001111"), { url: "http://127.0.0.1:8080" });
 });
 
-const CASES: Array<{ type: ChannelType; fake: () => Promise<FakeBridge>; adapter: AdapterFactory }> = [
+test("a Matrix account is a user and its password; the server is found from the user", async () => {
+  assert.deepEqual(matrixSecret("s3cret-pass @bot:example.org"), { user: "@bot:example.org", password: "s3cret-pass" });
+  assert.deepEqual(matrixSecret("@bot:example.org pw https://m.example.org/"), {
+    homeserver: "https://m.example.org",
+    user: "@bot:example.org",
+    password: "pw",
+  });
+  const asked: string[] = [];
+  const published = (async (url: string | URL | Request) => {
+    asked.push(String(url));
+    return Response.json({ "m.homeserver": { base_url: "https://matrix.example.org/" } });
+  }) as typeof fetch;
+  assert.equal(await matrixHomeserver("@bot:example.org", published), "https://matrix.example.org");
+  assert.deepEqual(asked, ["https://example.org/.well-known/matrix/client"]);
+  const nothing = (async () => new Response("", { status: 404 })) as typeof fetch;
+  assert.equal(await matrixHomeserver("@bot:example.org", nothing), "https://example.org");
+});
+
+const CASES: Array<{
+  type: ChannelType;
+  name?: string;
+  fake: () => Promise<FakeBridge>;
+  adapter: AdapterFactory;
+}> = [
   { type: "matrix", fake: fakeMatrix, adapter: matrixAdapter },
+  {
+    type: "matrix",
+    name: "matrix, signed in with user and password",
+    fake: async () => {
+      const f = await fakeMatrix();
+      return { ...f, secret: f.login };
+    },
+    adapter: matrixAdapter,
+  },
   { type: "mattermost", fake: fakeMattermost, adapter: mattermostAdapter },
   { type: "signal", fake: fakeSignal, adapter: signalAdapter },
 ];
 
 for (const c of CASES)
-  describe(c.type, () => {
+  describe(c.name ?? c.type, () => {
     const llm = scriptedLlm(
       throughOwnerCheck((req, { said, afterTool }) => {
         if (afterTool) return say(`Done: ${String(req.messages.at(-1)?.content).slice(0, 40)}`);

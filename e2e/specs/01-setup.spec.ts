@@ -69,13 +69,13 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   // Channels: WhatsApp links from here too (it is linked in 10-whatsapp); the emulated Telegram bot.
   await expect(wizard.getByRole("button", { name: "Vincular" })).toBeVisible();
   const { token, repo } = await world.info();
-  await wizard.getByRole("textbox", { name: "Token del bot", exact: true }).fill(token);
+  await wizard.getByRole("textbox", { name: "Clave del bot", exact: true }).fill(token);
   const telegram = wizard.locator(".wiz__engine").filter({ hasText: "TELEGRAM" });
   await telegram.getByRole("button", { name: "Conectar" }).click();
   await expect(wizard.getByText("@colonia_test_bot")).toBeVisible();
   // Discord and Slack connect from here too (their bot's token), with how to make the bot one click away.
   const discord = wizard.locator(".wiz__engine").filter({ hasText: "DISCORD" });
-  await expect(discord.getByRole("textbox", { name: "Discord: Token del bot" })).toBeVisible();
+  await expect(discord.getByRole("textbox", { name: "Discord: Clave del bot" })).toBeVisible();
   await discord.getByRole("button", { name: /Cómo crear el bot de Discord/ }).click();
   await expect(discord.locator(".wiz__howto li")).toHaveCount(4);
   await wizard.getByRole("button", { name: "Continuar" }).click();

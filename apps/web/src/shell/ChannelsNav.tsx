@@ -1,7 +1,6 @@
 import { IconButton, Icons, Menu } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { addChannelItems } from "../channels/KindIcon.tsx";
-import { CHANNEL_KIND_IDS } from "../channels/kinds.ts";
 import { useChannels } from "../data/channels.ts";
 import { setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
@@ -85,7 +84,7 @@ export function ChannelsNav({ rail }: { rail: boolean }) {
     t,
     go.channelConfig,
   );
-  const add = CHANNEL_KIND_IDS.some((kind) => !channels.some((channel) => channel.type === kind)) ? (
+  const add = (
     <Menu
       align="start"
       trigger={
@@ -93,7 +92,7 @@ export function ChannelsNav({ rail }: { rail: boolean }) {
       }
       items={missing}
     />
-  ) : null;
+  );
   const moreLabel = t("nav.moreChannels", { n: rest.length });
   return (
     <>

@@ -1583,9 +1583,9 @@ export const en = {
     "Saved with outside content in the chat. Agents read it as data, not as your word; edit it to vouch for it.",
   "tg.lead":
     "Talk with your agents from Telegram. Only chats you approve reach them; everyone else gets a code you approve here.",
-  "tg.step1": "In Telegram, open @BotFather, send /newbot and follow the steps.",
-  "tg.step2": "Paste the token it gives you below and pick who answers.",
-  "tg.step3": "Write to your bot: it replies with a code. Type it below in “This is my Telegram”.",
+  "tg.step1": "Press “Open BotFather” and send it /newbot: it asks for a name for your bot and answers with a message.",
+  "tg.step2":
+    "Copy that message and press “Paste” below. Then write to your bot and type its code in “This is my Telegram”.",
   "wa.lead":
     "A WhatsApp number linked like WhatsApp Web: a separate line for your agent, or your own number. It answers only the people you approve.",
   "wa.step1": "Press Link: a code shows up here.",
@@ -1598,14 +1598,14 @@ export const en = {
   "wa.scanHint": "It changes every few seconds; this page keeps it fresh.",
   "wa.connecting": "Connecting to WhatsApp…",
   "wa.remove": "Unlink WhatsApp",
-  "tg.token": "Bot token",
+  "tg.token": "Bot key",
   "tg.tokenHint": "Stored securely; it never comes back to this screen.",
-  "tg.tokenFix": "Paste a valid token to connect it again.",
-  "tg.tokenMissing": "No token stored: paste one to connect it.",
-  "tg.tokenSaved": "Token saved — connecting the bot again.",
-  "tg.tokenStored": "Stored securely; only its start and end are shown.",
-  "tg.tokenChangeButton": "Change token",
-  "tg.tokenNew": "Paste the new token",
+  "tg.tokenFix": "Paste a valid key to connect it again.",
+  "tg.tokenMissing": "No key is saved: paste one to connect it.",
+  "tg.tokenSaved": "Key saved: reconnecting the bot.",
+  "tg.tokenStored": "Stored securely; only its start and its end are shown.",
+  "tg.tokenChangeButton": "Change key",
+  "tg.tokenNew": "Paste the new key",
   "tg.agent": "Who answers",
   "tg.agentHint": "The agent that answers on {channel}.",
   "tg.connect": "Connect bot",
@@ -1894,10 +1894,10 @@ export const en = {
     "Telegram cannot list a bot's groups: one shows up here once the bot is added to it or someone writes there while it runs.",
   "dc.lead":
     "Talk with your agents from Discord in direct messages to your bot, and let it look after the rooms of your server you pick. In direct messages only people you approve reach them.",
-  "dc.step1": "In the Discord Developer Portal, create an application and open Bot.",
-  "dc.step2": "Turn on Message Content Intent, then Reset Token and copy it.",
-  "dc.step3": "Under Installation, add the bot to your account (or to a server you are in), so you can write to it.",
-  "dc.step4": "Paste the token below, write to the bot in a direct message and type its code in “This is my Discord”.",
+  "dc.step1": "In the Discord developer portal, create an application and open Bot.",
+  "dc.step2": "Turn on Message Content Intent, press Reset Token and copy the key it shows.",
+  "dc.step3":
+    "Paste it below and press “Add the bot to a server of yours”. Then send it a direct message and type its code in “This is my Discord”.",
   "sl.lead":
     "Talk with your agents from Slack, in direct messages to your app. Only people you approve reach them; everyone else gets a code you approve here.",
   "sl.step1":
@@ -1911,24 +1911,21 @@ export const en = {
   "mx.lead":
     "Talk with your agents from Matrix, on any server. Only direct chats are read, and only the people you approve reach them.",
   "mx.step1": "Create an account for the agent on your Matrix server (or use one you have for it).",
-  "mx.step2": "Sign in with it in Element, open Settings › Help & About and copy its access token.",
-  "mx.step3":
-    "Paste the server's address and the token below. Start a chat with encryption turned off, write to it and type its code in “This is my Matrix”.",
-  "mx.server": "Server address",
-  "mx.token": "Access token",
+  "mx.step2":
+    "Type its user and its password below. Then start a chat with encryption turned off, write to it and type its code in “This is my Matrix”.",
+  "mx.server": "Server address (only if it is not found by itself)",
   "mm.lead":
     "Talk with your agents from Mattermost. Only direct messages are read, and only the people you approve reach them.",
   "mm.step1": "In System Console › Integrations › Bot accounts, turn bot accounts on.",
-  "mm.step2": "In Integrations › Bot accounts, add a bot and copy its token.",
+  "mm.step2": "In Integrations › Bot accounts, add a bot and copy the key it shows.",
   "mm.step3":
-    "Paste the server's address and the token below, write to the bot and type its code in “This is my Mattermost”.",
+    "Paste the server's address and the key below, write to the bot and type its code in “This is my Mattermost”.",
   "mm.server": "Server address",
   "sg.lead":
     "Talk with your agents from Signal through signal-cli running on this computer. Only one-to-one chats are read.",
   "sg.step1": "Install signal-cli and link it to a number (a number of its own, or yours as a linked device).",
-  "sg.step2": "Start it as a daemon: signal-cli -a +NUMBER daemon --http 127.0.0.1:8080",
-  "sg.step3":
-    "Paste the daemon's address and the number below, write to it from Signal and type its code in “This is my Signal”.",
+  "sg.step2": "Leave it running: signal-cli -a +NUMBER daemon --http 127.0.0.1:8080",
+  "sg.step3": "Type the number below, write to it from Signal and type its code in “This is my Signal”.",
   "sg.daemon": "signal-cli address",
   "sg.number": "Number",
   "im.lead": "Let your agents read your recent iMessages and send one from this Mac. Sending always waits for your OK.",
