@@ -224,6 +224,24 @@ export function memoriesRepo({ one, all, run, tx }: Sql) {
           ),
       );
   };
+  const exclusions = (view: MemoryView) => {
+    return all(
+      qb
+        .selectFrom("memory_exclusions")
+        .selectAll()
+        .where((eb) =>
+          eb.or([
+            eb("scope", "=", "global"),
+            eb.and([eb("scope", "=", "project"), eb("project_id", "=", view.project_id ?? "")]),
+            eb.and([
+              eb("scope", "=", "agent"),
+              eb("agent_id", "=", view.agent_id),
+              eb.or([eb("project_id", "is", null), eb("project_id", "=", view.project_id ?? "")]),
+            ]),
+          ]),
+        ),
+    );
+  };
   const repo = {
     get(id: string): Memory | undefined {
       const r = one(qb.selectFrom("memories").selectAll().where("id", "=", id));
@@ -398,26 +416,15 @@ export function memoriesRepo({ one, all, run, tx }: Sql) {
         at: row.at,
       }));
     },
-    exclusions(view: MemoryView) {
-      return all(
-        qb
-          .selectFrom("memory_exclusions")
-          .selectAll()
-          .where((eb) =>
-            eb.or([
-              eb("scope", "=", "global"),
-              eb.and([eb("scope", "=", "project"), eb("project_id", "=", view.project_id ?? "")]),
-              eb.and([
-                eb("scope", "=", "agent"),
-                eb("agent_id", "=", view.agent_id),
-                eb.or([eb("project_id", "is", null), eb("project_id", "=", view.project_id ?? "")]),
-              ]),
-            ]),
-          ),
-      );
-    },
-    excluded(view: MemoryView, text: string, source?: { message_id?: string; run_id?: string }): boolean {
-      return repo.exclusions(view).some((m) => {
+    exclusions,
+    /** `rows` lets a caller that checks many texts read the exclusions once instead of once per text. */
+    excluded(
+      view: MemoryView,
+      text: string,
+      source?: { message_id?: string; run_id?: string },
+      rows: ReturnType<typeof exclusions> = repo.exclusions(view),
+    ): boolean {
+      return rows.some((m) => {
         const evidence = JSON.parse(m.evidence ?? "[]") as MemoryEvidence[];
         return (
           (source?.run_id !== undefined && source.run_id === m.run_id) ||

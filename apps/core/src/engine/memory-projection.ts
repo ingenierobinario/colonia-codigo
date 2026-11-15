@@ -114,7 +114,8 @@ export function memoryHistory(store: Store, entries: LogEntry[], agentId: string
       typeof item.content === "string" && snapshot
         ? item.content.slice(0, snapshot.start) + item.content.slice(snapshot.start + snapshot.length)
         : item.content;
-    if (typeof content === "string" && store.memories.excluded(view, content)) banned.add(entry.run_id);
+    if (typeof content === "string" && store.memories.excluded(view, content, undefined, excluded))
+      banned.add(entry.run_id);
   }
   const stale = new Set<string>();
   const agent = store.agents.get(agentId);
@@ -143,10 +144,15 @@ export function memoryHistory(store: Store, entries: LogEntry[], agentId: string
           !memoryEligibleChat(store, thread) ||
           thread.project_id !== projectId ||
           !thread.agent_ids.includes(agentId) ||
-          store.memories.excluded(view, message.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])).join("\n"), {
-            message_id: id,
-            ...(sourceRun ? { run_id: sourceRun } : {}),
-          })
+          store.memories.excluded(
+            view,
+            message.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])).join("\n"),
+            {
+              message_id: id,
+              ...(sourceRun ? { run_id: sourceRun } : {}),
+            },
+            excluded,
+          )
         );
       });
     if (invalid) stale.add(entry.run_id);

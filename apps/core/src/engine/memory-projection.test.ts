@@ -108,3 +108,40 @@ test("unverifiable legacy framing removes its whole run, preserving unrelated hi
     await env.cleanup();
   }
 });
+
+test("projecting a long history reads the forgotten list once, not once per entry", async () => {
+  const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
+  try {
+    const thread = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
+    for (let i = 0; i < 30; i++) {
+      const run = env.core.store.runs.create({
+        thread_id: thread.id,
+        agent_id: "superagent",
+        trigger: "system",
+        state: "queued",
+        deadline_at: "2099-01-01T00:00:00Z",
+        input: { origin: { kind: "user" }, text: `Question ${i}` },
+      });
+      env.core.store.runs.setState(run, "completed");
+      env.core.store.modelLog.append(thread.id, run.id, [
+        { role: "user", content: `Question ${i}` },
+        { role: "assistant", content: `Answer ${i}` },
+      ]);
+    }
+    const memories = env.core.store.memories;
+    const real = memories.exclusions;
+    let reads = 0;
+    memories.exclusions = (view) => {
+      reads++;
+      return real(view);
+    };
+    const stored = env.core.store.modelLog.list(thread.id);
+    const projected = memoryHistory(env.core.store, stored, "superagent");
+    memories.exclusions = real;
+    assert.equal(projected.length, stored.length);
+    assert.equal(reads, 1);
+  } finally {
+    await env.core.close();
+    await env.cleanup();
+  }
+});
