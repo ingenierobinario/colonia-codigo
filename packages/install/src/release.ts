@@ -18,16 +18,21 @@ import {
   type Release,
 } from "@colonia/protocol";
 
-/** Runs a command; never throws (a failure is a non-zero code). */
-export type Runner = (cmd: string, args: string[], timeoutMs: number) => Promise<{ code: number; out: string }>;
+/** Runs a command; never throws (a failure is a non-zero code). `dir` overrides the runner's own folder for one call. */
+export type Runner = (
+  cmd: string,
+  args: string[],
+  timeoutMs: number,
+  dir?: string,
+) => Promise<{ code: number; out: string }>;
 
 /** Runs a command in `cwd`, keeping the end of its output. */
 export const commandRunner =
   (cwd: string): Runner =>
-  (cmd, args, timeoutMs) =>
+  (cmd, args, timeoutMs, dir) =>
     new Promise((resolve) => {
       const child = spawn(cmd, args, {
-        cwd,
+        cwd: dir ?? cwd,
         stdio: ["ignore", "pipe", "pipe"],
         timeout: timeoutMs,
         windowsHide: true,
@@ -148,7 +153,9 @@ export async function installRelease(o: {
 
     const unpacked = path.join(work, "unpacked");
     fs.mkdirSync(unpacked);
-    const tar = await o.run(tarCommand(), ["-xzf", file, "-C", unpacked], 5 * 60_000);
+    // TAR-RUTA-ANSI-1: Windows's tar.exe reads its arguments in the ANSI code page, so an absolute path under a user
+    // folder like «Łukasz» or «用户» reached it mangled and every update failed. Inside `work`, both names are ASCII.
+    const tar = await o.run(tarCommand(), ["-xzf", name, "-C", "unpacked"], 5 * 60_000, work);
     if (tar.code !== 0) throw new Error(`unpacking ${name}: ${tar.out.trim().slice(-300)}`);
     const node = path.join(unpacked, "colonia", ...BUNDLE.node(o.platform.os === "win"));
     if (!fs.existsSync(node)) throw new Error(`${name} has no Node inside`);
