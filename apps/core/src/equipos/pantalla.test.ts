@@ -355,7 +355,11 @@ function fake(platform: string, answer: (command: string) => string, image: Buff
   const calls: Call[] = [];
   const seen: { media_id: string; mime: string }[] = [];
   const saved: { name: string; mime: string; bytes: Buffer; thread?: string | undefined }[] = [];
-  const store = { team: { list: () => [pc(platform)] }, settings: { get: () => "es" } } as never;
+  // La persona eligió manejar la pantalla en vivo (la de otro equipo solo se maneja así).
+  const store = {
+    team: { list: () => [pc(platform)] },
+    settings: { get: () => "es", read: () => ({ computer_mode: "live" }) },
+  } as never;
   const tools = equipoTools(store, (a) => {
     saved.push(a);
     return { id: `med_${saved.length}` };
@@ -408,7 +412,7 @@ test("equipo_screenshot en Windows: sube el script, lo lanza, trae la imagen por
   assert.deepEqual([f.saved[0]?.name, f.saved[0]?.mime, f.saved[0]?.thread], ["screen.jpg", "image/jpeg", "thr_1"]);
   assert.deepEqual(f.seen, [{ media_id: "med_1", mime: "image/jpeg" }]);
   assert.match(said, /trust="untrusted"/);
-  assert.match(said, /the picture is 1600x900 px: its pixel \(px,py\) is the screen point \(px\*2, py\*2\)/);
+  assert.match(said, /the picture is 1600x900 px\. To click, give equipo_do the pixel of this picture as px,py/);
   assert.match(said, /whole screen of DESKTOP-EVN2V0D \(3200x1800\)/);
 });
 
@@ -447,7 +451,7 @@ test("equipo_do en Linux: pide permiso siempre, valida los pasos antes y mira la
   assert.equal(t.confirm({}), "always");
   assert.throws(
     () => t.check?.({ equipo: "eqp_1", steps: [{ do: "click", x: 1 }] } as never, {} as never),
-    /step 1 \(click\) is missing x and y/,
+    /step 1 \(click\) is missing px and py \(or x and y\)/,
   );
   assert.throws(
     () => t.check?.({ equipo: "eqp_1", steps: [{ do: "key", keys: "ctrl+ñ" }] } as never, {} as never),
@@ -462,10 +466,13 @@ test("equipo_do en Linux: pide permiso siempre, valida los pasos antes y mira la
   assert.equal(f.calls[0]?.method, "equipos.run");
   assert.equal(f.calls[0]?.params.command, linuxDoScript(steps as ScreenStep[]));
   assert.match(said, /^did 2 steps on the screen of DESKTOP-EVN2V0D: click 10,20 → type «hola»\nthe screen now:\n/);
-  assert.match(said, /screen point \(px\*1\.2, py\*1\.2\)/);
+  // CURSOR-FIABLE-1: ya no se le da una fórmula; y se mira dos veces (la pantalla no cambió entre una y otra).
+  assert.match(said, /give equipo_do the pixel of this picture as px,py/);
+  assert.doesNotMatch(said, /still changing/);
+  const look = ["equipos.run", "equipos.read_file", "equipos.run"];
   assert.deepEqual(
     f.calls.map((c) => c.method),
-    ["equipos.run", "equipos.run", "equipos.read_file", "equipos.run"],
+    ["equipos.run", ...look, ...look],
   );
   // Sin mirar después: una sola orden.
   f.calls.length = 0;
