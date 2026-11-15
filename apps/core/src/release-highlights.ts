@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.20": {
+    en: [
+      "The cursor now moves reliably.",
+      "In Settings › Desktop you choose whether it works live or in the background, or have it ask.",
+      "Export a chat as a .md recipe; anyone with Colonia imports it with “+ Skill” › Recipe and repeats it.",
+    ],
+    es: [
+      "El cursor se mueve de forma fiable.",
+      "En Ajustes › Escritorio eliges si lo hace en vivo o en segundo plano, o que pregunte.",
+      "Exporta un chat como receta .md; otra persona con Colonia la importa con «+ Skill» › Receta y la repite.",
+    ],
+  },
   "2.36.19": {
     en: [
       "Saving a key no longer wipes the others when the secrets file was edited by hand or cut short.",
