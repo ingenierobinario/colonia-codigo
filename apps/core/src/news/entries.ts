@@ -1218,6 +1218,29 @@ export const NEWS: readonly NewsEntry[] = [
       "keychain or under a password, never in plain text. Both sides keep an audit of who connected and what ran.",
     actions: [],
   },
+  {
+    // PROYECTO-COMPARTIR-1
+    id: "share-project",
+    since: "2.37.0",
+    title: { en: "Share a project with someone else", es: "Comparte un proyecto con otra persona" },
+    about: {
+      en:
+        "From a project's menu, «Share project» saves it to a file or gives you a link. The other person brings it " +
+        "into their Colonia with «Import project». Your keys, chats and memory never leave your computer.",
+      es:
+        "Desde el menú de un proyecto, «Compartir proyecto» lo guarda en un fichero o te da un enlace. La otra persona " +
+        "lo trae a su Colonia con «Importar proyecto». Tus claves, tus chats y tu memoria nunca salen de tu equipo.",
+    },
+    applies: () => true,
+    text:
+      "A project can be shared as a colonia-proyecto-1 package: its instructions (AGENTS.md), agents, skills, " +
+      "organization and which connections it uses (names only). It never carries key values, tokens, cookies, " +
+      "channel sessions, chats, tasks or memory; values that look like keys inside the text are replaced. Exporting " +
+      "gives a file and a one-line code; publishing serves a snapshot at a link on this Colonia's public address, " +
+      "which works only while this Colonia is on. Importing shows what the package holds first, and lists the " +
+      "connections that still need the importer's own keys.",
+    actions: [],
+  },
 ];
 
 /** The catalog integrations among the owner's global MCP servers. */

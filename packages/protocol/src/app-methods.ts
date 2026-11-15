@@ -1,7 +1,6 @@
 // Methods behind the app screens: agents, projects, threads, surfaces.
 import { z } from "zod";
 import { composerMethods } from "./composer-methods.ts";
-import { ComputerMode } from "./screen-map.ts";
 import { CHANNEL_DEFAULTS } from "./constants.ts";
 import {
   Agent,
@@ -75,7 +74,18 @@ import { filesMethods } from "./files-methods.ts";
 import { gitMethods } from "./git-methods.ts";
 import { officeMethods } from "./office-methods.ts";
 import { resourceMethods } from "./resource-methods.ts";
+import { ComputerMode } from "./screen-map.ts";
 import { teamMethods } from "./team-methods.ts";
+
+/** What a shared project holds, in figures: shown before exporting or importing it. */
+const ProjectPackageSummary = z.object({
+  name: z.string(),
+  description: z.string(),
+  agents: z.number().int(),
+  skills: z.number().int(),
+  connections: z.number().int(),
+  organization: z.boolean(),
+});
 
 /** The parts of Colonia v1 the setup can bring in. */
 const V1Group = z.enum([
@@ -652,6 +662,62 @@ export const appMethods = {
   "projects.unregister": {
     params: z.object({ project: Id }).strict(),
     result: z.object({ ok: z.literal(true) }),
+    effect: true,
+    access: "human",
+  },
+  /**
+   * PROYECTO-COMPARTIR-1 · A project as a package another Colonia imports: its instructions, agents, skills, organization
+   * and which connections it uses. `content` is the file (readable JSON, format `colonia-proyecto-1`), `code` the same
+   * as one line to paste in a message. Never in it: variables, keys, tokens, cookies, channel sessions, chats, tasks,
+   * memory or the folder's path; `removed` counts access data taken out of the text, `skipped` files left out.
+   * `path` is its public link (`/p/<link>`) while it is published.
+   */
+  "projects.export": {
+    params: z.object({ project: Id }).strict(),
+    result: ProjectPackageSummary.extend({
+      content: z.string(),
+      code: z.string(),
+      removed: z.number().int(),
+      skipped: z.number().int(),
+      path: z.string().optional(),
+    }),
+    effect: false,
+    access: "human",
+  },
+  /**
+   * Publishes a copy of the project's package at `/p/<link>` on Colonia's public address (the one widgets use), or stops
+   * publishing it. Publishing again renews the copy and keeps the link; the copy is the package of that moment, never a
+   * live read of the folder.
+   */
+  "projects.share": {
+    params: z.object({ project: Id, shared: z.boolean() }).strict(),
+    result: z.object({ shared: z.boolean(), path: z.string().optional(), removed: z.number().int().optional() }),
+    effect: true,
+    access: "human",
+  },
+  /**
+   * Imports a shared project from its file or code (`content`) or its link (`link`: https, `/p/<link>`). Without
+   * `save` nothing is written: it says what the package holds and whether a project of that name exists (`taken`).
+   * Saving one that is taken needs `replace` (its files of the same name are overwritten, the rest stay) or another
+   * `name`. `pending` are the connections that need the importer's own access data before they work.
+   */
+  "projects.import": {
+    params: z
+      .object({
+        content: z.string().max(900_000).optional(),
+        link: z.string().trim().max(400).optional(),
+        name: z.string().trim().min(1).max(80).optional(),
+        save: z.boolean(),
+        replace: z.boolean(),
+      })
+      .strict()
+      .refine((p) => Boolean(p.content) !== Boolean(p.link), "a file, a code or a link"),
+    result: ProjectPackageSummary.extend({
+      pending: z.array(z.object({ name: z.string(), needs: z.array(z.string()), remote: z.boolean() })),
+      taken: z.boolean(),
+      saved: z.boolean(),
+      project: Project.optional(),
+    }),
     effect: true,
     access: "human",
   },

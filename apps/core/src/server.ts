@@ -110,7 +110,7 @@ import { createChatgptLogin } from "./providers/chatgpt-login.ts";
 import { createLlm, type Llm, NO_KEY, type SignIn } from "./providers/llm.ts";
 import { providerRegistry } from "./providers/registry.ts";
 import { createPublicCredentials } from "./public-credentials.ts";
-import { nativePublicRoutes, publishedPublicRoutes } from "./public-routes.ts";
+import { nativePublicRoutes, publishedPublicRoutes, sharedProjectRoutes } from "./public-routes.ts";
 import { createPublicTunnel, type NgrokStart } from "./public-tunnel.ts";
 import { localReleases, type ReleaseSource } from "./release-notes.ts";
 import { useLocalEmbedder } from "./rpc/embeddings.ts";
@@ -852,12 +852,17 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   engine.start();
   const nativeRoutes = nativePublicRoutes({ store, deliver: channels.webhook });
   const publishedRoutes = publishedPublicRoutes(store);
+  const projectRoutes = sharedProjectRoutes(config.home);
   const flowRoutes = publicCredentials.protect(flows.routes);
   const flowTestRoutes = flows.tests.routes(publicCredentials);
   const hookListener = await listenHooks({
     port: config.hooksPort,
     routes: (pathname) =>
-      nativeRoutes(pathname) ?? publishedRoutes(pathname) ?? flowRoutes(pathname) ?? flowTestRoutes(pathname),
+      nativeRoutes(pathname) ??
+      publishedRoutes(pathname) ??
+      projectRoutes(pathname) ??
+      flowRoutes(pathname) ??
+      flowTestRoutes(pathname),
     log,
   });
   hooksPort = hookListener.port;

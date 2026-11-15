@@ -27,6 +27,7 @@ Forwarded headers do not grant access and are not trusted as client identity. No
 | `/flows/<flow-path>` | POST, GET (as its webhook step says) | A separate Colonia bearer token for that exact endpoint; the registered destination owns payload validation and execution |
 | `/flows/test/<flow-path>` | POST, GET (as the drawing tested says) | Only while the owner listens for one test event on that Flow (five minutes, one event); the address's bearer token when it has one |
 | `/a/<published-share-link>` | GET, HEAD | Explicit publication; a read-only page, never artifact state, stores, secrets or actions |
+| `/p/<published-project-link>` | GET, HEAD | Explicit publication (`projects.share`); the read-only package copy saved when the owner published, never a live read of the folder, variables, channel sessions, chats or memory |
 | `/_colonia/kit@1[.minor[.patch]].js` | GET, HEAD | Static public widget kit only |
 
 Everything else is denied, including arbitrary prefixes, suffixes, private media URLs and RPC. Unknown routes return

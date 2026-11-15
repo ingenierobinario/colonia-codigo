@@ -1,6 +1,7 @@
 // Registered public resources, never a fallback proxy into the private daemon.
 import type { HookRequest, HookResponse } from "./channels/types.ts";
 import type { Store } from "./domain/store.ts";
+import { readShared } from "./shared-projects.ts";
 import { storedPublicPages, surfacePage } from "./surface-pages.ts";
 import type { PublicRoutes } from "./transport/hooks.ts";
 
@@ -18,6 +19,32 @@ export function publishedPublicRoutes(store: Store): PublicRoutes {
       handle: async (request) => {
         const response = surfacePage(pathname, pages, true) ?? { status: 404 };
         return request.method === "HEAD" ? { ...response, body: undefined } : response;
+      },
+    };
+  };
+}
+
+/**
+ * PROYECTO-COMPARTIR-1 · `/p/<enlace>`: la copia que el dueño publicó de un proyecto, solo lectura. Nunca es una lectura
+ * en vivo de su carpeta ni lleva datos de acceso (rpc/project-share.ts los quita al publicar).
+ */
+export function sharedProjectRoutes(home: string): PublicRoutes {
+  return (pathname) => {
+    const token = /^\/p\/([a-f0-9]{32})$/.exec(pathname)?.[1];
+    if (!token || readShared(home, token) === undefined) return;
+    return {
+      id: `project:${token}`,
+      methods: ["GET", "HEAD"],
+      authorize: () => true,
+      handle: async (request) => {
+        const body = readShared(home, token);
+        if (body === undefined) return { status: 404 };
+        const headers = {
+          "content-type": "application/json; charset=utf-8",
+          "cache-control": "no-store",
+          "x-content-type-options": "nosniff",
+        };
+        return request.method === "HEAD" ? { status: 200, headers } : { status: 200, headers, body };
       },
     };
   };

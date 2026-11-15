@@ -62,6 +62,7 @@ import { navegadorHandlers } from "./rpc/navegadores.ts";
 import { noticeHandlers } from "./rpc/notices.ts";
 import { notificationHandlers } from "./rpc/notifications.ts";
 import { phoneHandlers } from "./rpc/phone.ts";
+import { projectShareHandlers } from "./rpc/project-share.ts";
 import { providerHandlers } from "./rpc/providers.ts";
 import { resourceHandlers } from "./rpc/resources.ts";
 import type { Dispatch } from "./rpc/router.ts";
@@ -344,6 +345,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       mcp: d.mcp.config,
       runtimeHomes: d.runtimeHomes,
     }),
+    ...projectShareHandlers({ store: d.store, home: d.app.home, apc: d.apc }),
     ...providerHandlers(d.providers, d.secrets, d.chatgpt),
     ...app,
     "projects.create": (p: Parameters<(typeof app)["projects.create"]>[0], ctx: CallContext) => {
