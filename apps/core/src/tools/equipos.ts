@@ -31,6 +31,7 @@ import {
 } from "../equipos/pantalla.ts";
 import { stepsText } from "./computer.ts";
 import { inlineName, untrusted } from "./result.ts";
+import { digestOf, MOVING, SETTLE, screenMode, settled, shotMaps } from "./screen-mode.ts";
 import { defineTool, type Tool, type ToolContext } from "./types.ts";
 
 export const EQUIPO_CAP = "equipo";
@@ -112,17 +113,25 @@ type RawStep = {
   do: "click" | "key" | "type";
   x?: number | undefined;
   y?: number | undefined;
+  px?: number | undefined;
+  py?: number | undefined;
   keys?: string | undefined;
   text?: string | undefined;
 };
+type Point = { x: number; y: number };
 /** Los pasos tal como llegan (campos opcionales) a los que entiende el equipo; lanza diciendo qué le falta a cuál. */
-function steps(raw: readonly RawStep[]): ScreenStep[] {
+function steps(raw: readonly RawStep[], at?: (px: number, py: number) => Point): ScreenStep[] {
   return raw.map((st, i) => {
+    // CURSOR-FIABLE-1: un píxel de la última captura lo pasa a punto de pantalla el core (`at`), no el modelo.
+    if (st.do === "click" && st.px !== undefined && st.py !== undefined && st.x === undefined) {
+      const p = at ? at(st.px, st.py) : { x: 0, y: 0 };
+      return { do: "click", x: p.x, y: p.y };
+    }
     if (st.do === "click" && st.x !== undefined && st.y !== undefined) return { do: "click", x: st.x, y: st.y };
     if (st.do === "key" && st.keys) return { do: "key", keys: st.keys };
     if (st.do === "type" && st.text) return { do: "type", text: st.text };
     throw new Error(
-      `step ${i + 1} (${st.do}) is missing ${st.do === "click" ? "x and y" : st.do === "key" ? "keys" : "text"}`,
+      `step ${i + 1} (${st.do}) is missing ${st.do === "click" ? "px and py (or x and y)" : st.do === "key" ? "keys" : "text"}`,
     );
   });
 }
@@ -242,41 +251,35 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
     const r = await ctx.call("equipos.run", { equipo: c.id, command: plan.command, timeout_s: SCREEN_TIMEOUT_S });
     return parseScreenResult(r.output);
   };
-  /** La pantalla de un equipo, vista: la imagen va al modelo y el texto dice cómo pasar de sus píxeles a la pantalla. */
-  const shot = async (ctx: ToolContext, c: TeamComputer): Promise<string> => {
+  /** CURSOR-FIABLE-1: la última captura de cada equipo en cada chat, para pasar un píxel suyo a su punto. */
+  const maps = shotMaps();
+  const mapKey = (ctx: ToolContext, c: TeamComputer) => `${ctx.thread.id}:${c.id}`;
+  type Grab =
+    | { fail: string; digest?: undefined }
+    | {
+        fail?: undefined;
+        digest: string;
+        bytes: Buffer;
+        info: NonNullable<ReturnType<typeof imageInfo>>;
+        r: Extract<ScreenResult, { state: "shot" }>;
+      };
+  /** La pantalla de un equipo, traída: aún no se guarda ni se le enseña al modelo. */
+  const grab = async (ctx: ToolContext, c: TeamComputer): Promise<Grab> => {
     const os_ = guiOs(c.platform);
     const id = newId();
     const name = inlineName(c.name);
     try {
       const r = await onDesktop(ctx, c, screenShotPlan(os_, id));
       if (r.state !== "shot") {
-        if (r.state === "done") return `no picture taken on ${name}: the computer answered something else`;
-        return screenSay(r, name, "no picture taken", place(store).link);
+        if (r.state === "done") return { fail: `no picture taken on ${name}: the computer answered something else` };
+        return { fail: screenSay(r, name, "no picture taken", place(store).link) };
       }
       const file = await ctx.call("equipos.read_file", { equipo: c.id, path: r.file });
       const bytes = Buffer.from(file.content_base64, "base64");
       const info = file.truncated ? undefined : imageInfo(bytes);
       if (!info?.width || !info.height)
-        return `no picture taken on ${name}: the picture did not arrive whole (${file.size} bytes)`;
-      if (!save) return `the picture of ${name} was taken but this Colonia cannot keep pictures`;
-      const media = save({
-        name: info.mime === "image/png" ? "screen.png" : "screen.jpg",
-        mime: info.mime,
-        bytes,
-        thread: ctx.thread.id,
-      });
-      ctx.see?.({ media_id: media.id, mime: info.mime });
-      const k = Math.round((r.width / info.width) * 1000) / 1000;
-      const at = (v: number, p: string) => (v ? `${v} + ${p}` : p);
-      const map =
-        k === 1 && !r.x && !r.y
-          ? `the picture is ${info.width}x${info.height} px: its pixel (px,py) is the screen point (px,py)`
-          : `the picture is ${info.width}x${info.height} px: its pixel (px,py) is the screen point (${at(r.x, k === 1 ? "px" : `px*${k}`)}, ${at(r.y, k === 1 ? "py" : `py*${k}`)})`;
-      return untrusted(
-        "screen",
-        { equipo: c.name },
-        `the whole screen of ${name} (${r.width}x${r.height}), as its user sees it now; ${map}. Give equipo_do screen points. There is no list of elements: read the picture.`,
-      );
+        return { fail: `no picture taken on ${name}: the picture did not arrive whole (${file.size} bytes)` };
+      return { digest: digestOf(bytes), bytes, info, r };
     } finally {
       // Lo que quede allí (la captura ya leída, un script que no llegó a correr) se borra; si falla, no cambia el resultado.
       await ctx
@@ -284,12 +287,38 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
         .catch(() => undefined);
     }
   };
+  /** La captura traída se guarda, se le enseña al modelo y queda como la última de ese equipo en este chat. */
+  const present = (ctx: ToolContext, c: TeamComputer, g: Grab): string => {
+    if (g.fail !== undefined) return g.fail;
+    const name = inlineName(c.name);
+    if (!save) return `the picture of ${name} was taken but this Colonia cannot keep pictures`;
+    const { info, r } = g;
+    const media = save({
+      name: info.mime === "image/png" ? "screen.png" : "screen.jpg",
+      mime: info.mime,
+      bytes: g.bytes,
+      thread: ctx.thread.id,
+    });
+    ctx.see?.({ media_id: media.id, mime: info.mime });
+    maps.keep(
+      mapKey(ctx, c),
+      { x: r.x, y: r.y, width: r.width, height: r.height, px_width: info.width, px_height: info.height },
+      c.name,
+    );
+    return untrusted(
+      "screen",
+      { equipo: c.name },
+      `the whole screen of ${name} (${r.width}x${r.height}), as its user sees it now; the picture is ${info.width}x${info.height} px. To click, give equipo_do the pixel of this picture as px,py: Colonia turns it into the screen point (do no arithmetic yourself). There is no list of elements: read the picture.`,
+    );
+  };
+  /** La pantalla de un equipo, vista: la imagen va al modelo. */
+  const shot = async (ctx: ToolContext, c: TeamComputer): Promise<string> => present(ctx, c, await grab(ctx, c));
   return [
     // EQUIPO-GUI-1: ver la pantalla de un equipo y manejarla.
     defineTool({
       name: "equipo_screenshot",
       description:
-        "See the screen of one of the owner's other computers as whoever is signed in there sees it now: you get the picture and how its pixels map to screen points for equipo_do. If it cannot (nobody signed in, screen locked, a permission or a program missing there), it says exactly what is missing: tell the owner that.",
+        "See the screen of one of the owner's other computers as whoever is signed in there sees it now: you get the picture; equipo_do clicks by its pixels. If it cannot (nobody signed in, screen locked, a permission or a program missing there), it says exactly what is missing: tell the owner that.",
       args: z.object({ equipo }),
       effect: "external",
       confirm: "untrusted",
@@ -303,7 +332,7 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
     defineTool({
       name: "equipo_do",
       description:
-        'Click, press keys and type on the screen of one of the owner\'s other computers, several steps in a row, then see the screen again. Same steps as screen_do: a click at a screen point taken from equipo_screenshot (it moves that computer\'s pointer: its user sees it), keys ("enter", "tab", "esc", "ctrl+l", "cmd+space", arrows, "pagedown", "f5") or text typed into the focused field (never passwords or payment data). Put every step you can predict in one call; it stops at the first that fails and says which.',
+        'Click, press keys and type on the screen of one of the owner\'s other computers, several steps in a row, then see the screen again once it stops changing. Same steps as screen_do: a click at a pixel (px,py) of the last equipo_screenshot of that computer (it moves that computer\'s real pointer, its user sees it: this only works live, and the owner is the one who chooses live), keys ("enter", "tab", "esc", "ctrl+l", "cmd+space", arrows, "pagedown", "f5") or text typed into the focused field (never passwords or payment data). Put every step you can predict in one call; it stops at the first that fails and says which.',
       args: z.object({
         equipo,
         steps: z
@@ -312,13 +341,15 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
               do: z.enum(["click", "key", "type"]),
               x: z.number().int().optional(),
               y: z.number().int().optional(),
+              px: z.number().int().min(0).optional(),
+              py: z.number().int().min(0).optional(),
               keys: z.string().min(1).max(40).optional(),
               text: z.string().min(1).max(SCREEN_TEXT_MAX).optional(),
             }),
           )
           .min(1)
           .max(SCREEN_STEPS_MAX)
-          .describe("click takes x and y, key takes keys, type takes text"),
+          .describe("click takes px and py (pixel of the last picture; or x and y, a screen point), key takes keys, type takes text"),
         look: z.boolean().optional().describe("see the screen after the last step (default true)"),
       }),
       effect: "external",
@@ -339,9 +370,22 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
         const os_ = guiOs(c.platform);
         const id = newId();
         const name = inlineName(c.name);
+        // El modo lo dice la persona. En otro equipo solo hay entrada real (su puntero se mueve): en segundo plano no
+        // se hace nada, en vez de mover un puntero que la persona pidió no tocar.
+        const m = await screenMode(store, ctx);
+        if ("stop" in m) return m.stop;
+        if (m.mode === "background")
+          return `nothing was done on ${name}: the owner chose to work in the background, and the screen of another computer can only be driven live (its real pointer moves and its user sees it). Do not try another way to click there: tell the owner, who can choose live in Config › Desktop. equipo_run does not use the screen and still works.`;
+        // Los píxeles se pasan a puntos antes de tocar nada: si uno no vale, no se hace ningún paso.
+        let plan: ScreenStep[];
+        try {
+          plan = steps(a.steps, (px, py) => maps.point(mapKey(ctx, c), px, py, "equipo_screenshot", c.name));
+        } catch (e) {
+          return `nothing was done on ${name}: ${e instanceof Error ? e.message : String(e)}`;
+        }
         let r: ScreenResult;
         try {
-          r = await onDesktop(ctx, c, screenDoPlan(os_, steps(a.steps), id));
+          r = await onDesktop(ctx, c, screenDoPlan(os_, plan, id));
         } finally {
           if (os_ === "windows")
             await ctx
@@ -352,9 +396,10 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
         if (r.state !== "done") return screenSay(r, name, "nothing was done", place(store).link);
         const did = `did ${r.steps} step${r.steps === 1 ? "" : "s"} on the screen of ${name}: ${stepsText(a.steps)}`;
         if (a.look === false) return `${did}\ntake an equipo_screenshot to check it worked`;
-        // Una pausa corta deja que la app se repinte antes de mirar.
-        await new Promise((res) => setTimeout(res, 400));
-        return `${did}\nthe screen now:\n${await shot(ctx, c)}`;
+        // Se mira hasta que la pantalla deja de cambiar (antes: 400 ms fijos y una sola mirada). Cada mirada a otro
+        // equipo cuesta segundos: como mucho tres.
+        const s = await settled(() => grab(ctx, c), { looks: Math.min(3, SETTLE.looks) });
+        return `${did}\nthe screen now${s.steady || s.shot.fail !== undefined ? "" : ` ${MOVING}`}:\n${present(ctx, c, s.shot)}`;
       },
     }),
     defineTool({
