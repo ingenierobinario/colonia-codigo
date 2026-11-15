@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.15": {
+    en: ["When the computer wakes up, WhatsApp reconnects by itself instead of showing an error."],
+    es: ["Al despertar el ordenador, WhatsApp se reconecta solo en vez de mostrar un error."],
+  },
   "2.36.14": {
     en: [
       "Connecting Slack takes three steps: one button creates the app already set up, then you paste its two codes.",
