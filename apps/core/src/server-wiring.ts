@@ -186,7 +186,7 @@ export function builtinTools(
     ...routineTools(store),
     ...limitTools(store),
     ...skillTools(store, { home, apps: skillApps }),
-    ...knownProjectTools(store, { home, apps: skillApps }),
+    ...knownProjectTools(store, { home, apps: skillApps }, vm),
     ...memoryTools(store),
     ...mediaTools(store, home, vm),
     ...phoneTools(),

@@ -10,6 +10,7 @@ import { checkKnown, knownProjects } from "../domain/project-links.ts";
 import {
   connectionOf,
   FILE_MAX,
+  knownNames,
   PACKAGE_MAX,
   type PackageConnection,
   PROJECT_FORMAT,
@@ -20,6 +21,7 @@ import {
   scrub,
   sensitiveFile,
   summaryOf,
+  withKnown,
 } from "../domain/project-package.ts";
 import { publicProject } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
@@ -230,7 +232,10 @@ export function writePackage(root: string, pkg: ProjectPackage): string[] {
   writeInside(root, "AGENTS.md", pkg.instructions.trim() ? pkg.instructions : `# ${pkg.project.name}\n`);
   for (const a of pkg.agents) writeInside(root, `.apc/agents/${a.slug}.md`, a.text);
   for (const s of pkg.skills) for (const f of s.files) writeInside(root, `.apc/skills/${s.folder}/${f.path}`, f.text);
-  if (pkg.organization) writeInside(root, ".apc/organization.json", `${JSON.stringify(pkg.organization, null, 2)}\n`);
+  // Los enlaces (`knows`) no son del organigrama: se resuelven al importar y nunca llegan a este fichero.
+  const { areas = [], roles = [] } = pkg.organization ?? {};
+  if (areas.length + roles.length)
+    writeInside(root, ".apc/organization.json", `${JSON.stringify({ areas, roles }, null, 2)}\n`);
   if (pkg.connections.length) {
     const file = path.join(root, ".apc", "mcps.json");
     let doc: Record<string, unknown> = {};
@@ -337,7 +342,7 @@ export function projectShareHandlers(deps: {
     );
     // PROYECTOS-ENLAZADOS-1 · De los proyectos que conoce viaja el nombre, nunca lo que guardan.
     const knows = knownProjects(store, { project_id: p.id }).map((k) => k.name.slice(0, 80));
-    if (knows.length) b.pkg.knows = knows;
+    b.pkg = withKnown(b.pkg, knows);
     if (renderPackage(b.pkg).length > PACKAGE_MAX)
       throw badRequest("this project is too large to share: its skills hold more text than fits");
     return { ...b, id: p.id };
@@ -421,7 +426,7 @@ export function projectShareHandlers(deps: {
         throw badRequest(errorMessage(err));
       }
       // PROYECTOS-ENLAZADOS-1 · Se enlaza con los proyectos de aquí que se llamen igual; el resto queda sin resolver.
-      const links = resolveKnown(store, id, pkg.knows ?? []);
+      const links = resolveKnown(store, id, knownNames(pkg));
       if (links.found.length) store.projects.setLinks(id, { knows: links.found });
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);

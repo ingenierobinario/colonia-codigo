@@ -58,19 +58,35 @@ export function checkParent(store: Store, own: string, parent: string): string {
 }
 
 /**
+ * What the Flow that started this chat was given to read. A chat an agent opened from it (a delegation, a question to
+ * a teammate, a task's consult) has none of its own: it reads its nearest ancestor's, so the work a Flow hands down
+ * keeps the Flow's knowledge. Read at each turn, never copied: a session reused later follows its parent as it is now.
+ */
+function flowKnows(store: Store, threadId: string): string[] {
+  let id: string | undefined = threadId;
+  for (let hops = 0; id && hops <= 10; hops++) {
+    const own = store.threads.context(id).flow_knows;
+    if (Array.isArray(own)) return own.filter((x): x is string => typeof x === "string");
+    id = store.threads.get(id)?.parent_id ?? undefined;
+  }
+  return [];
+}
+
+/**
  * The projects a chat's agent may read besides its own: the ones its project knows, and the ones the Flow that started
- * the chat was given. Only those still registered; a link to one that is gone gives nothing and breaks nothing.
+ * the chat (or the chat it was delegated from) was given. Only those still registered; a link to one that is gone
+ * gives nothing and breaks nothing.
  */
 export function knownProjects(
   store: Store,
   thread: { id?: string | undefined; project_id?: string | undefined },
 ): ProjectRecord[] {
   const own = thread.project_id ? store.projects.get(thread.project_id) : undefined;
-  const flow = thread.id ? store.threads.context(thread.id).flow_knows : undefined;
-  const ids = [...new Set([...(own?.knows ?? []), ...(Array.isArray(flow) ? flow : [])])];
+  const flow = thread.id ? flowKnows(store, thread.id) : [];
+  const ids = [...new Set([...(own?.knows ?? []), ...flow])];
   const out: ProjectRecord[] = [];
   for (const id of ids) {
-    const p = typeof id === "string" && id !== thread.project_id ? store.projects.get(id) : undefined;
+    const p = id !== thread.project_id ? store.projects.get(id) : undefined;
     if (p && p.registered !== false) out.push(p);
   }
   return out;

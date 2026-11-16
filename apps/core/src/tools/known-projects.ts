@@ -12,13 +12,17 @@ import { defineTool, type Tool } from "./types.ts";
 
 const READS = ["instructions", "notes", "skill", "memory"] as const;
 
-export function knownProjectTools(store: Store, roots: SkillRoots): Tool[] {
+/**
+ * `vm`: the shared Linux computer. A chat working there has none of the Mac's folders (DECISIONS.md#d-154), so it is
+ * never told a known project's path: it reads the written knowledge here, which the core fetches for it.
+ */
+export function knownProjectTools(store: Store, roots: SkillRoots, vm?: { hasThread(id: string): boolean }): Tool[] {
   /** The project's own skills: the owner's and Colonia's are already the agent's, wherever it works. */
   const skillsOf = (p: ProjectRecord) =>
     skillsFor(store, roots, p.id).filter((s) => s.scope === "project" && s.project_id === p.id);
   const memoryOf = (p: ProjectRecord, query: string | undefined, limit: number) =>
     store.memories.list({ scope: "project", project_id: p.id, pending: false, query, limit });
-  const summary = (p: ProjectRecord) => {
+  const summary = (p: ProjectRecord, files = true) => {
     const skills = skillsOf(p).map((s) => s.name);
     const has = [
       p.context ? "instructions" : "",
@@ -26,7 +30,7 @@ export function knownProjectTools(store: Store, roots: SkillRoots): Tool[] {
       skills.length ? `skills (${skills.slice(0, 30).join(", ")})` : "",
       memoryOf(p, undefined, 1).length ? "memory" : "",
     ].filter(Boolean);
-    const folder = p.path && p.present ? ` Files, read-only: ${p.path}` : "";
+    const folder = files && p.path && p.present ? ` Files, read-only: ${p.path}` : "";
     return `- ${p.name}${p.description ? `: ${p.description}` : ""}. Has: ${has.join(", ") || "nothing written yet"}.${folder}`;
   };
   return [
@@ -51,7 +55,8 @@ export function knownProjectTools(store: Store, roots: SkillRoots): Tool[] {
       async run(a, ctx) {
         const known = knownProjects(store, ctx.thread);
         if (!known.length) return "this project knows no other project.";
-        const list = () => known.map(summary).join("\n");
+        const files = !vm?.hasThread(ctx.thread.id);
+        const list = () => known.map((p) => summary(p, files)).join("\n");
         if (!a.project) return `Projects you can read (never change):\n${list()}`;
         const wanted = a.project.toLowerCase();
         const p = known.find((k) => k.id === a.project || k.name.toLowerCase() === wanted);
@@ -60,7 +65,7 @@ export function knownProjectTools(store: Store, roots: SkillRoots): Tool[] {
           `[${what} of the project ${p.name}: knowledge to use here, read-only]\n${cap(text, 30_000)}`;
         switch (a.read) {
           case undefined:
-            return summary(p);
+            return summary(p, files);
           case "instructions":
             return p.context ? from("instructions", p.context) : `${p.name} has no instructions written.`;
           case "notes":

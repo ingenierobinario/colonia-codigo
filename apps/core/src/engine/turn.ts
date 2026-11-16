@@ -14,13 +14,12 @@ import {
 import { readOrganization } from "../apc/org.ts";
 import type { AgentRecord } from "../domain/agents.ts";
 import { memorySettings } from "../domain/memory-settings.ts";
+import type { LogEntry } from "../domain/model-log.ts";
 import { ownerIdentity, ownerTimeZone } from "../domain/owner.ts";
 import { engineOf, harnessOf, isCliRef } from "../domain/refs.ts";
 import { type RunRecord, runsOnComputer } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { previewOf, type ThreadContext, type Worker, worksInFolder } from "../domain/threads.ts";
-import type { LogEntry } from "../domain/model-log.ts";
-import { COMPACT_AT_CHARS } from "./upkeep.ts";
 import { computerBriefing, HOME_COMPUTER } from "../environments/briefing.ts";
 import { AGENT_WORKSPACE } from "../environments/worker.ts";
 import { CallError, Canceled, DeadlineExceeded, errorMessage, Shutdown, Superseded } from "../errors.ts";
@@ -97,6 +96,7 @@ import { keepContext } from "./received.ts";
 import { closeTurnLog, RESUME_NOTE } from "./recovery.ts";
 import { askedPick, type SkillPicker } from "./skill-pick.ts";
 import { channelKindOf, turnTools } from "./turn-tools.ts";
+import { COMPACT_AT_CHARS } from "./upkeep.ts";
 
 export type TurnDeps = {
   vm?: import("../environments/computer.ts").Computer | undefined;
@@ -570,16 +570,22 @@ async function buildContext(deps: TurnDeps, turn: Turn, run: RunRecord, mode: Au
             // A contact turn with no tools makes no call that could wait: it needs no mode.
             mode: turn.audience.kind === "contact" && !told.mode ? undefined : mode,
             told,
+            // On the shared computer the Mac's folders are not there: the known projects are read through the tool.
             workspace: deps.vm?.hasThread(thread.id)
-              ? told.onComputer
-                ? `Folder: ${AGENT_WORKSPACE}, on the shared Linux computer`
-                : COMPUTER_WORKSPACE(AGENT_WORKSPACE)
+              ? [
+                  told.onComputer
+                    ? `Folder: ${AGENT_WORKSPACE}, on the shared Linux computer`
+                    : COMPUTER_WORKSPACE(AGENT_WORKSPACE),
+                  knownLine(store, thread),
+                ]
+                  .filter(Boolean)
+                  .join("\n")
               : workspaceBlock(
                   thread,
                   readOnlyFolders(store, thread),
                   workDir(store, deps.home, thread),
                   told,
-                  knownLine(store, thread, !ctxState.flow_step?.bot),
+                  knownLine(store, thread),
                 ),
             computer,
             notes: ownerTurn && !sealed ? notesBlock(store.threads.context(thread.id), entries) : undefined,
@@ -795,7 +801,8 @@ async function runEngine(
   const resumed = session ? store.harnessSessions.get(t.thread.id, session) : undefined;
   const io = t.io();
   // An agent chat that moves to Claude mid-way: its fresh session gets the chat so far, in brief.
-  const recap = !t.thread.engine && session && !resumed 
+  const recap =
+    !t.thread.engine && session && !resumed
       ? recapOf(io.history, 12_000, store.threads.context(t.thread.id).compaction?.summary)
       : "";
   const outcome = await deps.harnesses.get(engine.harness).run({

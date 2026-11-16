@@ -81,6 +81,8 @@ const BOT_KEEPS = new Set([
   "browser_type",
   "task_get",
   "task_list",
+  // Read-only knowledge of the projects its own knows, or its Flow was given (DECISIONS.md#d-191).
+  "project_knowledge",
 ]);
 
 /** The kind of channel a message came on ("telegram"), for how the answer should look; none for the app. */
@@ -109,6 +111,8 @@ const VM_HOST_TOOLS = new Set([
   "task_close",
   "web_search",
   "web_read",
+  // Text the core reads for it, like recall: what the known projects hold, never their folders (D-191).
+  "project_knowledge",
 ]);
 
 /** The tools this turn may use: the agent's, narrowed by whoever asked for it up the chain; a contact's, by their flags. */

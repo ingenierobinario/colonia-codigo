@@ -38,6 +38,9 @@ const Connection = z
   })
   .strict();
 
+/** PROYECTOS-ENLAZADOS-1 · Los proyectos que este conoce, solo por NOMBRE: nada de lo que guardan viaja. */
+const Known = z.array(z.string().trim().min(1).max(80)).max(16);
+
 export const ProjectPackage = z
   .object({
     format: z.literal(PROJECT_FORMAT),
@@ -50,7 +53,14 @@ export const ProjectPackage = z
       })
       .strict(),
     instructions: z.string().max(FILE_MAX),
-    organization: z.object({ areas: z.array(z.unknown()).max(40), roles: z.array(z.unknown()).max(200) }).optional(),
+    /**
+     * PROYECTOS-ENLAZADOS-2 · `knows` viaja AQUÍ dentro: es el único objeto del paquete que no es estricto, así que
+     * una Colonia anterior (hasta la 2.36.26) lo descarta al leer y sigue importando el paquete. En cualquier otro
+     * sitio, su lector lo rechaza entero por «clave no reconocida». Quien importa enlaza por nombre lo que tenga.
+     */
+    organization: z
+      .object({ areas: z.array(z.unknown()).max(40), roles: z.array(z.unknown()).max(200), knows: Known.optional() })
+      .optional(),
     agents: z.array(z.object({ slug: Slug, text: z.string().max(FILE_MAX) }).strict()).max(200),
     skills: z
       .array(
@@ -63,14 +73,23 @@ export const ProjectPackage = z
       )
       .max(100),
     connections: z.array(Connection).max(60),
-    /**
-     * PROYECTOS-ENLAZADOS-1 · Los proyectos que este conoce, solo por NOMBRE: nada de lo que guardan viaja. Quien
-     * importa los enlaza si tiene uno con ese nombre; si no, quedan sin resolver. Sin enlaces, el campo no existe.
-     */
-    knows: z.array(z.string().trim().min(1).max(80)).max(16).optional(),
+    /** Solo se LEE: así lo escribió la 2.36.27. Ya no se escribe, porque una Colonia anterior rechaza el paquete. */
+    knows: Known.optional(),
   })
   .strict();
 export type ProjectPackage = z.infer<typeof ProjectPackage>;
+
+/** Los nombres de los proyectos que conoce el proyecto de un paquete, lo escribiera esta versión o la 2.36.27. */
+export function knownNames(pkg: ProjectPackage): string[] {
+  return [...new Set([...(pkg.organization?.knows ?? []), ...(pkg.knows ?? [])])].slice(0, 16);
+}
+
+/** El paquete con esos nombres donde una Colonia anterior los ignora; sin nombres, el paquete de siempre. */
+export function withKnown(pkg: ProjectPackage, names: string[]): ProjectPackage {
+  if (!names.length) return pkg;
+  const { areas = [], roles = [] } = pkg.organization ?? {};
+  return { ...pkg, organization: { areas, roles, knows: names.slice(0, 16) } };
+}
 export type PackageConnection = z.infer<typeof Connection>;
 
 /** Qué lleva un paquete, en cifras: lo que se enseña antes de exportar o de importar. */

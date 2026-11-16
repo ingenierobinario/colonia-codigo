@@ -3605,8 +3605,16 @@ budget is untouched. Writes stay impossible by construction: those roots are `wr
 reach, and the tool has no effect. Everything is additive: three nullable columns, optional protocol fields, a
 tolerant read (a broken value or a project since removed reads as none), so old projects and Flows load unchanged.
 A shared package carries the links by name only, never the other project's content, and only when there are any;
-importing links the names that exist here and reports the rest as unresolved.
-Limits: bots of a Flow step (D-172) get the folders, not the tool; a chat delegated from a Flow thread does not
-inherit the Flow's extra projects; a thread on the shared VM gets neither the line nor the folders; a package with
-links is refused by a Colonia older than this, whose package schema is strict. Colonia has no private or locked
+importing links the names that exist here and reports the rest as unresolved, and the import screen lets the owner
+link each of those to a project he has. The names travel inside `organization` (`organization.knows`), the one
+object of the package an older reader does not check strictly, so a Colonia from before this decision imports the
+project and drops the links (checked against the core of 2.36.26); 2.36.27 wrote them at the top, which that reader
+refused, and that form is still read. They never reach `.apc/organization.json`.
+Everyone who works for the project reads the same: the bots of a Flow step (D-172) get the tool and the folders, and
+a chat delegated from a Flow thread, at any depth, inherits the Flow's extra projects from its nearest ancestor.
+Limits: a thread on the shared VM (D-154) gets the line and `project_knowledge`, answered by the core, but not the
+folders: the VM mounts no file of the Mac and its shell runs without approval, so mounting another project there
+would hand it to every command; the tool there names no path. An older Colonia that imports a package with links
+and no team writes an empty `.apc/organization.json` (replacing a project, it overwrites the one there).
+Colonia has no private or locked
 project today: if one arrives, `knownProjects` is the single place that must honour it.

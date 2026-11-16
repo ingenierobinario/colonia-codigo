@@ -473,18 +473,12 @@ export function folderAccess(
 
 /**
  * The one line that tells a turn which projects it may read: only their names, and where the rest is asked. Nothing
- * those projects hold is in the prompt. A Flow's bot has no project_knowledge: it is told the folders it can read.
+ * those projects hold is in the prompt. The same line for every turn that has project_knowledge: an agent, a Flow's
+ * bot, a chat on the shared computer.
  */
-export function knownLine(
-  store: Store,
-  thread: { id?: string; project_id?: string | undefined },
-  tool: boolean,
-): string {
+export function knownLine(store: Store, thread: { id?: string; project_id?: string | undefined }): string {
   const known = knownProjects(store, thread);
-  if (tool)
-    return known.length
-      ? `Projects you can read, never change (project_knowledge): ${known.map((p) => p.name).join(", ")}`
-      : "";
-  const folders = known.filter((p) => p.path && p.present).map((p) => `${p.name} (${p.path})`);
-  return folders.length ? `Folders of other projects you can read, never change: ${folders.join(", ")}` : "";
+  return known.length
+    ? `Projects you can read, never change (project_knowledge): ${known.map((p) => p.name).join(", ")}`
+    : "";
 }

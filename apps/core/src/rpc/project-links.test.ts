@@ -3,7 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { after, before, test } from "node:test";
+import { z } from "zod";
 import { knownProjects } from "../domain/project-links.ts";
+import { parsePackage, renderPackage } from "../domain/project-package.ts";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
 import { removeDir, tempDir } from "../testkit/platform.ts";
@@ -40,6 +42,11 @@ after(async () => {
 });
 
 const id = (name: string) => ids[name] as string;
+const parsed = (text: string) => {
+  const p = parsePackage(text);
+  assert.ok(p.ok, JSON.stringify(p));
+  return p.pkg;
+};
 const dir = (name: string) => dirs[name] as string;
 const project = async (name: string) =>
   (await env.client.call("projects.list", {})).projects.find((p) => p.id === id(name));
@@ -254,36 +261,120 @@ test("a Flow reads the projects it was given, through the same link; an older Fl
   assert.equal("knowledgeProjects" in (await env.client.call("flows.set", { ...flow, knowledgeProjects: [] })), false);
 });
 
+/**
+ * The package reader of Colonia 2.36.26, as it shipped (domain/project-package.ts at 2de7f2d99): every object strict
+ * but `organization`. A package this version writes must still pass it, or an older Colonia refuses the whole project.
+ */
+const Reader_2_36_26 = (() => {
+  const Slug = z.string().regex(/^[a-z][a-z0-9_-]{0,80}$/);
+  const Folder = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/);
+  const RelPath = z
+    .string()
+    .max(200)
+    .regex(/^[A-Za-z0-9_][A-Za-z0-9._ -]*(\/[A-Za-z0-9_][A-Za-z0-9._ -]*)*$/);
+  const Connection = z
+    .object({
+      name: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,40}$/),
+      command: z.string().max(400).optional(),
+      args: z.array(z.string().max(1000)).max(60).default([]),
+      url: z.string().url().max(1000).optional(),
+      needs: z
+        .array(z.string().regex(/^[A-Za-z_][A-Za-z0-9_.-]{0,100}$/))
+        .max(40)
+        .default([]),
+      headers: z
+        .array(z.string().regex(/^[A-Za-z0-9-]{1,100}$/))
+        .max(40)
+        .default([]),
+    })
+    .strict();
+  return z
+    .object({
+      format: z.literal("colonia-proyecto-1"),
+      exported_at: z.string().max(40),
+      project: z
+        .object({
+          name: z.string().trim().min(1).max(80),
+          description: z.string().max(500).optional(),
+          kind: z.enum(["personal", "app", "company", "software", "other"]).optional(),
+        })
+        .strict(),
+      instructions: z.string().max(200_000),
+      organization: z.object({ areas: z.array(z.unknown()).max(40), roles: z.array(z.unknown()).max(200) }).optional(),
+      agents: z.array(z.object({ slug: Slug, text: z.string().max(200_000) }).strict()).max(200),
+      skills: z
+        .array(
+          z
+            .object({
+              folder: Folder,
+              files: z.array(z.object({ path: RelPath, text: z.string().max(200_000) }).strict()).max(60),
+            })
+            .strict(),
+        )
+        .max(100),
+      connections: z.array(Connection).max(60),
+    })
+    .strict();
+})();
+
 test("a shared project carries the names of the projects it knows, never what they hold; importing links by name", async () => {
   const out = await env.client.call("projects.export", { project: id("acme") });
-  const pkg = JSON.parse(out.content) as { knows?: string[] };
-  assert.deepEqual(pkg.knows, ["northwind"]);
+  const pkg = JSON.parse(out.content) as { knows?: string[]; organization?: { knows?: string[]; areas: unknown[] } };
+  assert.deepEqual(pkg.organization?.knows, ["northwind"]);
+  assert.equal("knows" in pkg, false, "never at the top: an older Colonia refuses a key it does not know there");
   assert.doesNotMatch(out.content, /northwind-7|bills on the 5th|Quote in euros|prices of northwind/);
   assert.equal(out.content.includes(dir("northwind")), false);
-  // A project that knows none shares the package it always did: no new field.
+  // A project that knows none shares the package it always did: no new field, no empty team.
   const plain = await env.client.call("projects.export", { project: id("globex") });
   assert.equal("knows" in JSON.parse(plain.content), false);
+  assert.equal("organization" in JSON.parse(plain.content), false);
+
+  // The reader of 2.36.26 takes the package with links and drops them; with the names at the top it refused it all.
+  const older = Reader_2_36_26.safeParse(JSON.parse(out.content));
+  assert.equal(older.success, true, JSON.stringify(older.error?.issues));
+  assert.equal("knows" in (older.data?.organization ?? {}), false);
+  assert.equal(Reader_2_36_26.safeParse({ ...JSON.parse(plain.content), knows: ["northwind"] }).success, false);
+  // The code and the link carry the same text.
+  assert.equal(Reader_2_36_26.safeParse(JSON.parse(renderPackage(parsed(out.code)))).success, true);
 
   // Here there is a northwind: the copy knows it. A name nobody has here stays unresolved and breaks nothing.
-  const copy = await env.client.call("projects.import", {
-    content: JSON.stringify({ ...pkg, knows: ["Northwind", "Initech"] }),
-    name: "Acme copy",
-    save: true,
-    replace: false,
-  });
+  const importing = (knows: object, name: string) =>
+    env.client.call("projects.import", {
+      content: JSON.stringify({ ...JSON.parse(plain.content), ...knows }),
+      name,
+      save: true,
+      replace: false,
+    });
+  const copy = await importing(
+    { organization: { areas: [], roles: [], knows: ["Northwind", "Initech"] } },
+    "Acme copy",
+  );
   assert.deepEqual(copy.project?.knows, [id("northwind")]);
   assert.deepEqual(copy.unresolved, ["Initech"]);
+  assert.equal(copy.organization, false, "links are not a team structure");
+  // The names are not the team's: with no areas or roles no team file is written, and with them it holds no names.
+  const folder = async (project: string | undefined) =>
+    (await env.client.call("projects.list", {})).projects.find((p) => p.id === project)?.path ?? "";
+  assert.equal(fs.existsSync(path.join(await folder(copy.project?.id), ".apc", "organization.json")), false);
+  const team = await importing(
+    { organization: { areas: [{ id: "sales", name: "Sales" }], roles: [], knows: ["northwind"] } },
+    "Acme team",
+  );
+  assert.deepEqual(team.project?.knows, [id("northwind")]);
+  const written = JSON.parse(
+    fs.readFileSync(path.join(await folder(team.project?.id), ".apc", "organization.json"), "utf8"),
+  );
+  assert.deepEqual(written, { areas: [{ id: "sales", name: "Sales" }], roles: [] });
+  // A package written by 2.36.27 carried the names at the top: it still links.
+  const from27 = await importing({ knows: ["northwind", "Initech"] }, "Acme 27");
+  assert.deepEqual(from27.project?.knows, [id("northwind")]);
+  assert.deepEqual(from27.unresolved, ["Initech"]);
   // A package made before links existed imports as before.
-  const old = await env.client.call("projects.import", {
-    content: plain.content,
-    name: "Globex copy",
-    save: true,
-    replace: false,
-  });
+  const old = await importing({}, "Globex copy");
   assert.equal("knows" in (old.project ?? {}), false);
   assert.equal("unresolved" in old, false);
-  for (const made of [copy, old]) {
-    const at = (await env.client.call("projects.list", {})).projects.find((p) => p.id === made.project?.id)?.path;
+  for (const made of [copy, team, from27, old]) {
+    const at = await folder(made.project?.id);
     await env.client.call("projects.unregister", { project: made.project?.id ?? "" });
     if (at) await removeDir(at);
   }
