@@ -112,16 +112,19 @@ test("background details keep another project's executor across chats and expose
 
 test("idle chats show their active commands and each process names its origin", async ({ page }) => {
   await rpc("setup.finish");
-  const { agent } = await rpc<{ agent: { name: string } }>("agents.get", { agent: "superagent" });
-  const root = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Asset export" });
-  const other = await rpc<Thread>("threads.create", { kind: "loose", agent_id: "superagent", title: "Other export" });
+  // An agent of its own: the Tree shows a few chats per agent, unread first, so the super-agent's unread chats from
+  // other specs would hide these two under "N more".
+  const id = (await rpc<{ id: string }>("agents.create", { slug: `exporter-${Date.now()}`, name: "Exporter" })).id;
+  const { agent } = await rpc<{ agent: { name: string } }>("agents.get", { agent: id });
+  const root = await rpc<Thread>("threads.create", { kind: "loose", agent_id: id, title: "Asset export" });
+  const other = await rpc<Thread>("threads.create", { kind: "loose", agent_id: id, title: "Other export" });
   const commands = [root, root, other].map((thread, i) =>
     Job.parse({
       id: `job_export_${i}`,
       kind: "terminal",
       thread_id: thread.id,
       thread_title: thread.title,
-      agent_id: "superagent",
+      agent_id: id,
       agent_name: agent.name,
       title: `render ${i}`,
       state: "working",
