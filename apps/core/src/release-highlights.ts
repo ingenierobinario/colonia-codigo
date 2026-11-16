@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.27": {
+    en: [
+      "New: a project can know other projects and look up what they know, without changing them.",
+      "For example, project A can check what projects B and C know.",
+      "Projects are now grouped as a tree in the sidebar.",
+      "A Flow can use the knowledge of several projects at once.",
+    ],
+    es: [
+      "Nuevo: un proyecto puede conocer a otros y consultar lo que saben, sin modificarlos.",
+      "Por ejemplo, el proyecto A puede consultar lo que saben los proyectos B y C.",
+      "Los proyectos se agrupan ahora en árbol en la barra lateral.",
+      "Un Flow puede usar el conocimiento de varios proyectos a la vez.",
+    ],
+  },
   "2.36.26": {
     en: [
       "New: make a full, encrypted copy of Colonia to move it to another computer.",
