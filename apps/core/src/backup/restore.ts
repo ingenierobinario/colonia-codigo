@@ -27,6 +27,8 @@ export type Pending = {
   summary: Manifest["summary"];
   /** La copia de lo que había, hecha antes de tocar nada. */
   safety?: string;
+  /** Claves que el almacén de este equipo no aceptó: hay que volver a ponerlas a mano. */
+  secrets_failed?: string[];
   rewritten?: boolean;
   cleared?: boolean;
   merged?: boolean;
@@ -149,11 +151,15 @@ export async function stageRestore(
     const m: Manifest = manifest;
     const { relink, keep } = relinkOf(deps.home, m);
     // Los secretos, al almacén de este equipo. Al fusionar, lo que ya hay aquí gana.
+    // RESTAURAR-DPAPI-1: todos de una vez (en Windows, un solo PowerShell en vez de uno por clave), y una clave que el
+    // almacén no acepta no tumba la restauración: queda anotada para volver a ponerla a mano.
+    const incoming: Record<string, string> = {};
     for (const [name, value] of Object.entries(secrets)) {
       if (typeof value !== "string" || !secretTravels(name)) continue;
       if (mode === "merge" && deps.secrets.listed(name)) continue;
-      deps.secrets.set(name, value);
+      incoming[name] = value;
     }
+    const { failed } = deps.secrets.setMany(incoming);
     const pending: Pending = {
       mode,
       at: (deps.now ?? (() => new Date()))().toISOString(),
@@ -164,6 +170,7 @@ export async function stageRestore(
       external: m.external,
       summary: m.summary,
       ...(safety ? { safety } : {}),
+      ...(failed.length ? { secrets_failed: failed } : {}),
     };
     writePending(deps.home, pending);
     return pending;

@@ -112,6 +112,14 @@ function Restored({ restored, onDismiss }: { restored: BackupRestored; onDismiss
             </Button>
           </li>
         )}
+        {(restored.secrets_failed?.length ?? 0) > 0 && (
+          <li className="bk-todo__item" data-bk="secrets-failed">
+            <Icons.Shield />
+            <span className="bk-todo__text">
+              {t("backup.done.secretsFailed", { names: restored.secrets_failed?.join(", ") ?? "" })}
+            </span>
+          </li>
+        )}
         {restored.browsers > 0 && (
           <li className="bk-todo__item" data-bk="relogin">
             <Icons.Globe />

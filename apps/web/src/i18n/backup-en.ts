@@ -74,6 +74,7 @@ export const enBackup = {
   "backup.done.from": "Brought from “{host}” · {when}",
   "backup.done.relink": "Link {names} again",
   "backup.done.relinkGo": "Open Channels",
+  "backup.done.secretsFailed": "These keys could not be saved on this computer; enter them again: {names}",
   "backup.done.relogin": "Sign in again in your browsers and apps",
   "backup.done.safety": "What was here before is saved in {file}",
   "backup.done.ok": "Got it",

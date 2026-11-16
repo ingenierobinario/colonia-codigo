@@ -37,6 +37,8 @@ export const BackupRestored = z.object({
   browsers: z.number().int(),
   /** La copia de lo que había en este equipo, hecha antes de restaurar. */
   safety: z.string().optional(),
+  /** Claves que este equipo no pudo guardar al restaurar: hay que volver a ponerlas en Secretos. */
+  secrets_failed: z.array(z.string()).optional(),
   summary: BackupSummary,
 });
 export type BackupRestored = z.infer<typeof BackupRestored>;

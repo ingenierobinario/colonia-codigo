@@ -212,3 +212,51 @@ test("SECRETOS-ILEGIBLES-1: un secrets.json con BOM se lee, y uno ilegible se ap
     assert.equal(fs.readFileSync(path.join(home, aside[0] ?? ""), "utf8"), good.slice(0, 20));
   }
 });
+
+test("RESTAURAR-DPAPI-1: cuarenta claves de una copia se sellan con un solo PowerShell, y si falla no tumba nada", () => {
+  const home = tempHome();
+  try {
+    const sys = fakeSystem({ powershell: true });
+    const s = createSecrets(home, "dpapi", {}, sys.run);
+    const values: Record<string, string> = {};
+    for (let i = 0; i < 40; i++) values[`k${i}`] = `valor-${i}`;
+    const before = sys.calls.length;
+    assert.deepEqual(s.setMany(values), { failed: [] });
+    const protects = sys.calls.slice(before).filter((c) => c.cmd === "powershell.exe");
+    // Una lectura del fichero (aún no existe: ninguna) y un Protect para las cuarenta.
+    assert.equal(protects.length, 1, `PowerShell arrancó ${protects.length} veces`);
+    assert.equal(createSecrets(home, "dpapi", {}, sys.run).resolve("secret://k39"), "valor-39");
+    assert.equal(s.list().length, 40);
+    // Un PowerShell que no contesta (spawnSync ETIMEDOUT): las claves quedan anotadas como no guardadas, sin excepción.
+    let slow = false;
+    const flaky: Run = (cmd, args, o) => {
+      if (slow && cmd === "powershell.exe")
+        throw Object.assign(new Error("spawnSync powershell.exe ETIMEDOUT"), { code: "ETIMEDOUT" });
+      return sys.run(cmd, args, o);
+    };
+    const t = createSecrets(home, "dpapi", {}, flaky);
+    slow = true;
+    assert.deepEqual(t.setMany({ nueva: "x", otra: "y" }), { failed: ["nueva", "otra"] });
+    assert.equal(t.listed("nueva"), false, "lo no guardado no aparece en la lista");
+    assert.equal(t.listed("k0"), true);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test("RESTAURAR-DPAPI-1: en el llavero de Linux una clave rechazada no impide guardar las demás", () => {
+  const home = tempHome();
+  try {
+    const sys = fakeSystem({ keyring: true });
+    const picky: Run = (cmd, args, o) => {
+      if (cmd === "secret-tool" && args[0] === "store" && args.at(-1) === "mala") throw new Error("rechazada");
+      return sys.run(cmd, args, o);
+    };
+    const s = createSecrets(home, "secret-service", {}, picky);
+    assert.deepEqual(s.setMany({ buena: "1", mala: "2", otra: "3" }), { failed: ["mala"] });
+    assert.equal(s.resolve("secret://otra"), "3");
+    assert.equal(s.listed("mala"), false);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});

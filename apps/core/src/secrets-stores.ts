@@ -32,6 +32,11 @@ export const runCommand: Run = (cmd, args, o = {}) =>
 export type ValueStore = {
   get(name: string): string | undefined;
   set(name: string, value: string | null): void;
+  /**
+   * Several values at once (RESTAURAR-DPAPI-1): a store that seals everything together (DPAPI) does it in one system
+   * call, not one per name; a restore with forty keys used to start PowerShell forty times and one slow start failed it.
+   */
+  setMany?(values: Record<string, string | null>): void;
   /** Whether the store answers at all (a keyring daemon, PowerShell); tried once, when nothing was kept there yet. */
   works(): boolean;
 };
@@ -158,6 +163,15 @@ export function dpapiStore(home: string, service: string, run: Run = runCommand)
     fs.renameSync(tmp, file);
     values = next;
   };
+  // RESTAURAR-DPAPI-1: every change goes through one Protect, however many names it carries.
+  const apply = (changes: Record<string, string | null>) => {
+    const next = { ...load() };
+    for (const [name, value] of Object.entries(changes)) {
+      if (value === null) delete next[name];
+      else next[name] = value;
+    }
+    save(next);
+  };
   return {
     get(name) {
       try {
@@ -167,11 +181,9 @@ export function dpapiStore(home: string, service: string, run: Run = runCommand)
       }
     },
     set(name, value) {
-      const next = { ...load() };
-      if (value === null) delete next[name];
-      else next[name] = value;
-      save(next);
+      apply({ [name]: value });
     },
+    setMany: (changes) => apply(changes),
     works() {
       try {
         const sample = Buffer.from("ok").toString("base64");

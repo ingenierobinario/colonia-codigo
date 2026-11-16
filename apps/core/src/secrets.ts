@@ -109,6 +109,16 @@ export function createSecrets(
     fs.renameSync(tmp, file);
   };
 
+  const indexEntry = (all: Record<string, Entry>, name: string, value: string | null) => {
+    if (value === null) delete all[name];
+    else
+      all[name] = {
+        ...(store ? {} : { value }),
+        updated_at: new Date().toISOString(),
+        ...(value.length >= HINT_MIN ? { hint: value.slice(-4) } : {}),
+      };
+  };
+
   const api = {
     backend,
     /** What the owner should know once: the keyring was wanted and is not there, so values sit in a file. */
@@ -163,14 +173,37 @@ export function createSecrets(
         store.set(name, value);
         cache.delete(name);
       }
-      if (value === null) delete all[name];
-      else
-        all[name] = {
-          ...(store ? {} : { value }),
-          updated_at: new Date().toISOString(),
-          ...(value.length >= HINT_MIN ? { hint: value.slice(-4) } : {}),
-        };
+      indexEntry(all, name, value);
       write(all);
+    },
+    /**
+     * RESTAURAR-DPAPI-1: many values in one go, as a restore does. A store that seals them together does it once; one
+     * that keeps them apart tries each, so a value it refuses does not lose the others. Returns the names not saved.
+     */
+    setMany(values: Record<string, string | null>): { failed: string[] } {
+      const names = Object.keys(values);
+      if (names.length === 0) return { failed: [] };
+      if (sealed && names.some((n) => values[n] !== null)) return { failed: names };
+      const all = read();
+      const saved: string[] = [];
+      if (store?.setMany) {
+        try {
+          store.setMany(values);
+          saved.push(...names);
+        } catch {}
+      } else
+        for (const name of names) {
+          try {
+            store?.set(name, values[name] ?? null);
+            saved.push(name);
+          } catch {}
+        }
+      for (const name of saved) {
+        cache.delete(name);
+        indexEntry(all, name, values[name] ?? null);
+      }
+      if (saved.length) write(all);
+      return { failed: names.filter((n) => !saved.includes(n)) };
     },
   };
 

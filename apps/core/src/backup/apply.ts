@@ -19,6 +19,7 @@ export type RestoreResult = {
   relink: Pending["relink"];
   browsers: number;
   safety?: string;
+  secrets_failed?: string[];
   summary: Pending["summary"];
 };
 
@@ -307,6 +308,7 @@ export function applyPendingRestore(home: string, warn: (msg: string) => void = 
       browsers: pending.browsers,
       summary: pending.summary,
       ...(pending.safety ? { safety: pending.safety } : {}),
+      ...(pending.secrets_failed?.length ? { secrets_failed: pending.secrets_failed } : {}),
     };
     const db = openDb(home);
     try {

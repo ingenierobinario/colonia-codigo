@@ -74,6 +74,7 @@ export const esBackup: Record<BackupKey, string> = {
   "backup.done.from": "Traída de «{host}» · {when}",
   "backup.done.relink": "Vuelve a vincular {names}",
   "backup.done.relinkGo": "Abrir Canales",
+  "backup.done.secretsFailed": "Estas claves no se pudieron guardar en este equipo; vuelve a ponerlas: {names}",
   "backup.done.relogin": "Vuelve a iniciar sesión en tus navegadores y aplicaciones",
   "backup.done.safety": "Lo que había antes está guardado en {file}",
   "backup.done.ok": "Entendido",
