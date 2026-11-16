@@ -18,10 +18,10 @@ test("agents and chats distinguish inheritance, primary models and explicit rout
     const thread = await rpc<Thread>("threads.create", { kind: "loose", agent_id: agent.id, title: "Model selection" });
     await open(page, `#thread=${thread.id}`);
     const chat = page.getByRole("button", { name: "Modelo de este chat", exact: true });
-    await expect(chat).toHaveText("custom/fake-2");
+    await expect(chat).toHaveText("Fake 2");
     await chat.click();
     const picker = page.locator(".mchoice");
-    await expect(picker.getByRole("status")).toContainText("Configurado: custom/fake-2");
+    await expect(picker.getByRole("status")).toContainText("Configurado: Fake 2");
     await expect(
       picker.locator(".mchoice__fallback:not([role])").filter({ hasText: "El modelo del agente" }),
     ).toContainText("En uso");
@@ -34,50 +34,50 @@ test("agents and chats distinguish inheritance, primary models and explicit rout
       name: `Modelo de ${agent.name}`,
       exact: true,
     });
-    await expect(agentButton).toHaveText("custom/fake-2");
+    await expect(agentButton).toHaveText("Fake 2");
     await agentButton.click();
     await expect(
       picker.locator(".mchoice__fallback:not([role])").filter({ hasText: "Predeterminado de la instalación" }),
     ).toContainText("En uso");
     await picker.getByRole("button", { name: "Dejar solo el router" }).click();
     await expect.poll(choiceOf).toEqual({ router: true });
-    await expect(agentButton).toHaveText("Router · #1: custom/fake-1");
+    await expect(agentButton).toHaveText("Router · #1: Fake 1");
     await expect(picker.locator(".mchoice__fallback:not([role])").filter({ hasText: /^Router:/ })).toContainText(
       "En uso",
     );
-    await picker.getByRole("option", { name: /custom\/fake-2/ }).click();
+    await picker.locator('.mlist__opt[title="custom/fake-2"]').click();
     await expect.poll(choiceOf).toEqual({ model: "custom/fake-2", router: true });
-    await expect(agentButton).toHaveText("custom/fake-2 · Respaldo: Router");
+    await expect(agentButton).toHaveText("Fake 2 · Respaldo: Router");
     await expect(picker).toBeVisible();
-    await expect(picker.getByRole("option", { selected: true })).toContainText("fake-2");
+    await expect(picker.getByRole("option", { selected: true })).toHaveAttribute("title", "custom/fake-2");
     await page.keyboard.press("Escape");
     await page.keyboard.press("Escape");
-    await expect(chat).toHaveText("custom/fake-2 · Respaldo: Router");
+    await expect(chat).toHaveText("Fake 2 · Respaldo: Router");
     await page
       .getByRole("region", { name: "Model selection", exact: true })
       .getByRole("button", { name: agent.name, exact: true })
       .click();
     const detail = page.locator(".teamdetail");
     await expect(detail.getByRole("button", { name: `Modelo de ${agent.name}`, exact: true })).toHaveText(
-      "custom/fake-2 · Respaldo: Router",
+      "Fake 2 · Respaldo: Router",
     );
     await detail.getByRole("button", { name: `Modelo de ${agent.name}`, exact: true }).click();
-    await expect(picker.getByRole("option", { selected: true })).toContainText("fake-2");
+    await expect(picker.getByRole("option", { selected: true })).toHaveAttribute("title", "custom/fake-2");
     await page.keyboard.press("Escape");
     await chat.click();
     await expect(
       picker.locator(".mchoice__fallback:not([role])").filter({ hasText: "El modelo del agente" }),
-    ).toContainText("custom/fake-2 · Respaldo: Router");
+    ).toContainText("Fake 2 · Respaldo: Router");
     await picker.getByRole("button", { name: "Dejar solo el router" }).click();
-    await expect(chat).toHaveText("Router · #1: custom/fake-1");
+    await expect(chat).toHaveText("Router · #1: Fake 1");
     await expect(picker).toBeVisible();
     await picker.getByRole("button", { name: "Volver al del agente" }).click();
-    await expect(chat).toHaveText("custom/fake-2 · Respaldo: Router");
+    await expect(chat).toHaveText("Fake 2 · Respaldo: Router");
 
     // A fixed model without fallback must stay fixed when selected again.
     await rpc("agents.update", { agent: agent.id, model_choice: { model: "custom/fake-2", router: false } });
     await page.reload();
-    await expect(chat).toHaveText("custom/fake-2");
+    await expect(chat).toHaveText("Fake 2");
     await openSettings(page);
     await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes" }).click();
     await agentButton.click();
@@ -92,11 +92,11 @@ test("agents and chats distinguish inheritance, primary models and explicit rout
       }),
     );
     try {
-      await picker.getByRole("option", { name: /custom\/fake-1/ }).click();
+      await picker.locator('.mlist__opt[title="custom/fake-1"]').click();
       await expect(page.getByText(/No se pudo cambiar el modelo: Model update refused/)).toBeVisible();
-      await expect(agentButton).toHaveText("custom/fake-2");
+      await expect(agentButton).toHaveText("Fake 2");
       await expect(picker).toBeVisible();
-      await expect(picker.getByRole("option", { selected: true })).toContainText("fake-2");
+      await expect(picker.getByRole("option", { selected: true })).toHaveAttribute("title", "custom/fake-2");
       await expect.poll(choiceOf).toEqual({ model: "custom/fake-2", router: false });
     } finally {
       await page.unroute("**/rpc/agents.update");
@@ -121,10 +121,10 @@ test("router previews identify rules and do not predict the turn's selected mode
     const thread = await rpc<Thread>("threads.create", { kind: "loose", agent_id: agent.id, title: "Routing rules" });
     await open(page, `#thread=${thread.id}`);
     const chat = page.getByRole("button", { name: "Modelo de este chat", exact: true });
-    await expect(chat).toHaveText("Router · Reglas · #1: custom/fake-1");
+    await expect(chat).toHaveText("Router · Reglas · #1: Fake 1");
     await chat.click();
     await expect(
-      page.locator(".mchoice").getByText("Router: Reglas · #1: custom/fake-1", { exact: true }),
+      page.locator(".mchoice").getByText("Router: Reglas · #1: Fake 1 (Custom)", { exact: true }),
     ).toBeVisible();
     await expect(page.locator(".mchoice").getByRole("status")).toHaveCount(0);
     await page.keyboard.press("Escape");
@@ -168,12 +168,12 @@ test("model choices keep effort visible and stay open while editing", async ({ p
   const effort = picker.getByRole("combobox", { name: "Effort", exact: true });
   await expect(effort).toBeVisible();
   await expect(effort).toBeDisabled();
-  await picker.getByRole("option", { name: /custom\/fake-2/ }).click();
+  await picker.locator('.mlist__opt[title="custom/fake-2"]').click();
   await expect(picker).toBeVisible();
   await expect(effort).toBeEnabled();
   await effort.click();
   await page.getByRole("option", { name: "Alto", exact: true }).click();
-  await expect(trigger).toContainText("custom/fake-2 · Alto");
+  await expect(trigger).toContainText("Fake 2 · Alto");
   await expect(picker).toBeVisible();
   await expect(effort).toHaveText("Alto");
   const listBox = await picker.getByRole("listbox").boundingBox();
@@ -195,10 +195,10 @@ test("model choices keep effort visible and stay open while editing", async ({ p
   expect(Math.abs(routerTitle.y + routerTitle.height / 2 - (routerAction.y + routerAction.height / 2))).toBeLessThan(1);
   await page.screenshot({ path: test.info().outputPath("model-picker-desktop.png") });
   await page.reload();
-  await expect(trigger).toContainText("custom/fake-2 · Alto");
+  await expect(trigger).toContainText("Fake 2 · Alto");
   await trigger.click();
   await expect(effort).toHaveText("Alto");
-  await picker.getByRole("option", { name: /custom\/fake-1/ }).click();
+  await picker.locator('.mlist__opt[title="custom/fake-1"]').click();
   await expect(picker).toBeVisible();
   await expect(effort).toBeDisabled();
   await expect(effort).toBeVisible();

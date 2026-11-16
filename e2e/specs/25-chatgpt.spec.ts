@@ -62,7 +62,7 @@ test("a CLI is never offered as a model for agents or the router, and the core r
   await settings.getByRole("button", { name: "Router" }).click();
   await settings.getByRole("button", { name: "Añadir un modelo" }).click();
   const list = page.getByRole("listbox", { name: "Modelos" });
-  await expect(list).toContainText("fake-1");
+  await expect(list.locator('.mlist__opt[title="custom/fake-1"]')).toHaveText("Fake 1");
   await expect(list).not.toContainText("Claude Code");
 });
 
