@@ -1,7 +1,7 @@
 import type { CatalogEngine, ModelRef } from "@colonia/protocol";
 import { Badge, EngineIcon, Icons, SearchField } from "@colonia/ui";
 import { useMemo, useState } from "react";
-import { baseRef, forAgents, refLabel, splitRef, useModels, withEffort } from "../../data/models.ts";
+import { baseRef, forAgents, listedName, refLabel, splitRef, useModels, withEffort } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 import { EffortRow } from "./RefSelect.tsx";
 
@@ -97,7 +97,7 @@ export function ModelList({
                     // Engines may list one model under two names ("Default", "Opus …").
                     key={`${m.id}:${m.name}`}
                     selected={picked === ref}
-                    name={m.name}
+                    name={listedName(m)}
                     sub={ref}
                     onPick={() => onPick(withEffort(ref, sameModel(ref)))}
                   />
@@ -114,10 +114,17 @@ export function ModelList({
 
 function Option(props: { selected: boolean; name: string; sub: string; onPick: () => void }) {
   return (
-    <button type="button" role="option" aria-selected={props.selected} className="mlist__opt" onClick={props.onPick}>
+    // SIN-JERGA-1: the ref ("anthropic/claude-opus-5-5") is for whoever looks for it, on hover; the row reads the name.
+    <button
+      type="button"
+      role="option"
+      aria-selected={props.selected}
+      className="mlist__opt"
+      title={props.sub}
+      onClick={props.onPick}
+    >
       <span className="mlist__check">{props.selected && <Icons.Check size={14} />}</span>
       <span className="mlist__name">{props.name}</span>
-      <span className="mlist__ref">{props.sub}</span>
     </button>
   );
 }

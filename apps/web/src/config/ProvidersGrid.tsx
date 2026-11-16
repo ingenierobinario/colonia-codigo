@@ -330,7 +330,9 @@ function ProviderDialog({
               type="password"
               autoComplete="off"
               value={key}
-              placeholder={initial?.key_set ? `****${initial.key_hint ?? ""} — ${t("providers.keyKeep")}` : "sk-…"}
+              placeholder={
+                initial?.key_set ? `****${initial.key_hint ?? ""} — ${t("providers.keyKeep")}` : t("providers.keyPaste")
+              }
               onChange={(e) => setKey(e.currentTarget.value)}
             />
             <span className="pform__hint">{t("providers.keyHint")}</span>

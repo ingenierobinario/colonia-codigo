@@ -3,6 +3,7 @@ import { useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { ProblemLine } from "../channels/ProblemLine.tsx";
 import { botSpec, StartButton, useTokens } from "../config/BotSection.tsx";
+import { fieldSample } from "../config/botFields.ts";
 import { saveChannel, useChannels } from "../data/channels.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
@@ -57,7 +58,7 @@ export function BotCard({ kind, line, body }: { kind: "discord" | "slack"; line:
                 type={s.plain ? "text" : "password"}
                 autoComplete="off"
                 aria-label={`${spec.name}: ${t(s.label)}`}
-                placeholder={s.placeholder}
+                placeholder={fieldSample(s, t)}
                 value={tokens.values[i]}
                 onChange={(e) => tokens.set(i, e.currentTarget.value)}
               />

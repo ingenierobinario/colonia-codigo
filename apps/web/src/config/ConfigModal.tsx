@@ -1,5 +1,5 @@
 import "../styles/screens.css";
-import { Dialog, Icons, NavItem, SearchField } from "@colonia/ui";
+import { Dialog, Icons, NavItem, SearchField, Select } from "@colonia/ui";
 import { type CSSProperties, type ReactNode, useState } from "react";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { LAYOUT } from "../shell/layout.ts";
@@ -71,14 +71,19 @@ const GROUPS: { label: MessageKey; items: NavEntry[] }[] = [
   },
 ];
 
-// The dialog portals outside .shell, so it gets its sizes here instead of the --shell-* variables.
+// The dialog portals outside .shell, so it gets its sizes here instead of the --shell-* variables. They travel as
+// variables: config.css turns them into the box, and gives a narrow window one of its own (AJUSTES-ESTRECHO-1).
 const SIZE = {
-  width: `min(${LAYOUT.configW}px, calc(100vw - 64px))`,
-  height: `min(${LAYOUT.configH}px, calc(100vh - 64px))`,
+  "--config-w": `${LAYOUT.configW}px`,
+  "--config-h": `${LAYOUT.configH}px`,
   "--config-nav-w": `${LAYOUT.configNavW}px`,
 } as CSSProperties;
 
-/** Config: a large modal with a grouped left nav (SPEC §2.12 Config). Open with go.config(section). */
+/**
+ * Config: a large modal with a grouped left nav (SPEC §2.12 Config). Open with go.config(section).
+ * AJUSTES-ESTRECHO-1: a window too narrow for the nav and a readable section side by side shows the sections as one
+ * dropdown on top and gives the section the whole width (config.css picks which of the two is on screen).
+ */
 export function ConfigModal() {
   const t = useT();
   const section = useNav((s) => s.config);
@@ -90,6 +95,9 @@ export function ConfigModal() {
       .map((i) => ({ ...i, text: t(i.label) }))
       .filter((i) => !query || `${t(g.label)} ${i.text}`.toLowerCase().includes(query)),
   })).filter((g) => g.items.length);
+  const sections = GROUPS.flatMap((g) =>
+    g.items.map((i) => ({ value: i.id, label: t(i.label), icon: i.icon, group: t(g.label) })),
+  );
 
   return (
     <Dialog
@@ -102,6 +110,17 @@ export function ConfigModal() {
       className="config"
       style={SIZE}
     >
+      <div className="config__pick">
+        <Select
+          label={t("config.sections")}
+          value={section}
+          options={sections}
+          onValueChange={(v) => {
+            const next = sections.find((s) => s.value === v);
+            if (next) go.config(next.value);
+          }}
+        />
+      </div>
       <nav className="config__nav" aria-label={t("config.sections")}>
         <SearchField
           size="sm"

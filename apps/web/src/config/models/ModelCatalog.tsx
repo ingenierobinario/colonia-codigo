@@ -2,7 +2,7 @@ import type { CatalogEngine } from "@colonia/protocol";
 import { Badge, Button, Checkbox, EngineIcon, Icons, SearchField, Skeleton } from "@colonia/ui";
 import { useMemo, useState } from "react";
 import { dayLabel } from "../../common/format.ts";
-import { loadCatalog, useModels } from "../../data/models.ts";
+import { listedName, loadCatalog, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 import { SubHead } from "../SectionHead.tsx";
 import { filterCatalog } from "./ModelList.tsx";
@@ -124,7 +124,7 @@ function EngineModels(props: {
           {models.map((m) => (
             <li key={`${m.id}:${m.name}`} className="catalog__model">
               <span className="catalog__name">
-                {m.name}
+                {listedName(m)}
                 {!m.chat && <span className="chip">{t("models.notChat")}</span>}
               </span>
               <code className="catalog__ref">

@@ -130,9 +130,10 @@ export function EngineIcon({ engine, size = 16, tile = false, label, className }
     // One-colour marks in the text colour (brand colours kept where the mark has them); on a tile, centred on the
     // neutral round tile.
     const m = marks[brand] as AcpMark;
+    // Keyed by the whole outline: two paths of one mark can start alike (LM Studio's), and a cut key would be a twin.
     const paths = m.paths.map((p) => (
       <path
-        key={p.d.slice(0, 24)}
+        key={p.d}
         d={p.d}
         fill={p.fill ?? "currentColor"}
         {...(p.evenodd ? { fillRule: "evenodd" as const } : {})}

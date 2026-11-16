@@ -9,7 +9,7 @@ import { bootstrap } from "../data/actions.ts";
 import { loadChannels, useChannels } from "../data/channels.ts";
 import { client } from "../data/client.ts";
 import { secretary } from "../data/identity.ts";
-import { loadModelsConfig, saveModelsConfig, useModels } from "../data/models.ts";
+import { loadModelsConfig, refLabel, saveModelsConfig, useModels } from "../data/models.ts";
 import { notify } from "../data/notices.ts";
 import { updateBase } from "../data/projects.ts";
 import { addProject, closeSetup, finishSetup, importV1, scanV1, useSetup, type V1Groups } from "../data/setup.ts";
@@ -289,6 +289,7 @@ function Preview({ draft: d, imports }: { draft: Draft; imports: V1Groups | unde
   };
   const all = useChannels((s) => s.channels);
   const channels = useMemo(() => all.filter((c) => c.token_set).map((c) => c.label), [all]);
+  const catalog = useModels((s) => s.catalog);
   const groups = (imports ?? []).filter((g) => g.count > 0);
   const on = groups.filter((g) => d.importOn[g.id] !== false).length;
   const row = (key: MessageKey, value: ReactNode, mono = false) => (
@@ -312,7 +313,7 @@ function Preview({ draft: d, imports }: { draft: Draft; imports: V1Groups | unde
         {d.name.trim() ? <div className="wiz__pname">{d.name.trim()}</div> : <span className="wiz__pnameempty" />}
         <span className={`wiz__ptag${ready ? " is-ready" : ""}`}>{t("agent.super")}</span>
       </div>
-      {row("setup.preview.engines", d.chain.join(" → "), true)}
+      {row("setup.preview.engines", d.chain.map((ref) => refLabel(ref, catalog)).join(" → "))}
       {row("setup.preview.memory", t(memory[d.memory]))}
       {row("setup.preview.channels", channels.join(", "))}
       {row(

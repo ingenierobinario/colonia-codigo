@@ -26,6 +26,11 @@ export type BotKind =
 export type TokenSpec = {
   label: MessageKey;
   placeholder: string;
+  /**
+   * SIN-JERGA-1: what the empty field says instead of `placeholder`, in people's words ("Paste the bot's code
+   * here"): a sample of a code ("xoxb-…") tells an owner nothing. Where to find the code is in the kind's steps.
+   */
+  hint?: MessageKey;
   pattern: RegExp;
   plain?: boolean;
   multiline?: boolean;
@@ -87,7 +92,13 @@ export const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: 
     steps: ["tg.step1", "tg.step2"],
     // What BotFather hands out: the bot's number, a colon and its secret, inside a longer message.
     tokens: [
-      { label: "tg.token", placeholder: "123456789:AA…", pattern: /^\d+:[\w-]{20,}$/, pick: /\d{5,}:[\w-]{30,}/ },
+      {
+        label: "tg.token",
+        placeholder: "123456789:AA…",
+        hint: "bot.paste",
+        pattern: /^\d+:[\w-]{20,}$/,
+        pick: /\d{5,}:[\w-]{30,}/,
+      },
     ],
   },
   discord: {
@@ -97,6 +108,7 @@ export const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: 
       {
         label: "tg.token",
         placeholder: "MTA…",
+        hint: "bot.paste",
         pattern: /^[\w-]{20,}\.[\w-]{4,}\.[\w-]{20,}$/,
         pick: /[\w-]{20,}\.[\w-]{4,}\.[\w-]{20,}/,
       },
@@ -106,8 +118,20 @@ export const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: 
     name: "Slack",
     steps: ["sl.step1", "sl.step2", "sl.step3"],
     tokens: [
-      { label: "sl.botToken", placeholder: "xoxb-…", pattern: /^xoxb-[\w-]{10,}$/, pick: /xoxb-[\w-]{10,}/ },
-      { label: "sl.appToken", placeholder: "xapp-…", pattern: /^xapp-[\w-]{10,}$/, pick: /xapp-[\w-]{10,}/ },
+      {
+        label: "sl.botToken",
+        placeholder: "xoxb-…",
+        hint: "bot.paste",
+        pattern: /^xoxb-[\w-]{10,}$/,
+        pick: /xoxb-[\w-]{10,}/,
+      },
+      {
+        label: "sl.appToken",
+        placeholder: "xapp-…",
+        hint: "bot.pasteApp",
+        pattern: /^xapp-[\w-]{10,}$/,
+        pick: /xapp-[\w-]{10,}/,
+      },
     ],
   },
   matrix: {
@@ -267,6 +291,10 @@ export const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: 
     ],
   },
 };
+
+/** What an empty field shows: its words when it has them (SIN-JERGA-1), else its sample (an address, a number). */
+export const fieldSample = (spec: TokenSpec, t: (key: MessageKey) => string): string =>
+  spec.hint ? t(spec.hint) : spec.placeholder;
 
 /** What a field keeps of what was typed or pasted: the code alone when it came inside a longer text. */
 export function pasted(spec: TokenSpec, raw: string): string {

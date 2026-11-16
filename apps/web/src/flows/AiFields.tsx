@@ -4,7 +4,16 @@ import type { Agent, CatalogEngine } from "@colonia/protocol";
 import { AgentGrid, EngineIcon, Field, Input, SegmentedControl, Select, Switch, Textarea } from "@colonia/ui";
 import type { ReactNode } from "react";
 import { blobOf } from "../data/identity.ts";
-import { baseRef, effortLabel, forAgents, modelOf, splitRef, useModels, withEffort } from "../data/models.ts";
+import {
+  baseRef,
+  effortLabel,
+  forAgents,
+  listedName,
+  modelOf,
+  splitRef,
+  useModels,
+  withEffort,
+} from "../data/models.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import type { FlowNode } from "./steps.tsx";
@@ -36,7 +45,11 @@ function modelOptions(harness: string, catalog: readonly CatalogEngine[]) {
   return engines.flatMap((e) =>
     e.models
       .filter((m) => m.chat)
-      .map((m) => ({ value: `${e.id}/${m.id}`, label: m.name, ...(harness === NATIVE ? { hint: e.label } : {}) })),
+      .map((m) => ({
+        value: `${e.id}/${m.id}`,
+        label: listedName(m),
+        ...(harness === NATIVE ? { hint: e.label } : {}),
+      })),
   );
 }
 

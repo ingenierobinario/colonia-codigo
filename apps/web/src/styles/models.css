@@ -302,6 +302,25 @@
   flex: none;
   width: 116px;
 }
+/*
+ * AJUSTES-ESTRECHO-1: on a phone-wide window a chain entry is two lines (its place and its buttons, then the model at
+ * full width), so the select never shrinks under the arrows.
+ */
+@media (max-width: 560px) {
+  .chain__item {
+    flex-wrap: wrap;
+  }
+  .chain__item > .refselect {
+    order: 1;
+    flex-basis: 100%;
+  }
+  .chain__item > button:first-of-type {
+    margin-left: auto;
+  }
+  .chain__item .refselect__model {
+    max-width: none;
+  }
+}
 
 /* The ChatGPT plan among the model APIs: fixed, first, with a soft gradient that tells it apart. */
 .pcard--plan {

@@ -5,7 +5,7 @@ category: Identity
 
 The official mark of a chat app a channel runs on: Telegram, WhatsApp, Slack, Discord, Signal, iMessage, Matrix,
 Microsoft Teams, Google Chat, Mattermost and LINE, in their own colours (Matrix in the text colour, so it shows on
-the dark theme). Email and SMS have no brand: a generic icon. Used wherever a channel is named: its tile in the
+the dark theme). Email is a coloured envelope (`outlook`: Outlook's mark, for a mailbox that is one); SMS has no brand: a generic icon. Used wherever a channel is named: its tile in the
 sidebar and settings, the "on WhatsApp" tag of a chat, the "Add channel" menu.
 
 - `channel`: the channel kind.

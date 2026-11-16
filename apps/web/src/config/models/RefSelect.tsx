@@ -1,6 +1,15 @@
 import type { CatalogEngine, ModelRef } from "@colonia/protocol";
 import { Select, type SelectOption } from "@colonia/ui";
-import { baseRef, effortLabel, modelOf, splitRef, useModels, withEffort } from "../../data/models.ts";
+import {
+  baseRef,
+  effortLabel,
+  listedName,
+  modelName,
+  modelOf,
+  splitRef,
+  useModels,
+  withEffort,
+} from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 
 /** The models one chain entry can be: its engine's own default, then each chat model the engine offers. */
@@ -16,10 +25,12 @@ export function modelOptions(
     { value: engine, label: ownDefault(e?.label ?? engine) },
     ...(e?.models ?? [])
       .filter((m) => m.chat)
-      .map((m) => ({ value: `${engine}/${m.id}`, label: m.name, ...(m.name !== m.id ? { hint: m.id } : {}) })),
+      .map((m) => ({ value: `${engine}/${m.id}`, label: listedName(m), ...(m.name !== m.id ? { hint: m.id } : {}) })),
   ];
-  // A model the catalog does not list (yet) stays choosable as it is.
-  return options.some((o) => o.value === base) ? options : [...options, { value: base, label: base }];
+  // A model the catalog does not list (yet) stays choosable, under a name people can read (NOMBRE-MODELO-1).
+  return options.some((o) => o.value === base)
+    ? options
+    : [...options, { value: base, label: modelName(base, catalog), hint: splitRef(base).model }];
 }
 
 /**

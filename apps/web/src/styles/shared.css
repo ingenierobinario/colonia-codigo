@@ -166,16 +166,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mlist__ref {
-  flex: none;
-  max-width: 50%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: var(--colonia-font-mono);
-  font-size: var(--colonia-text-2xs);
-  color: var(--colonia-fg-subtle);
-}
 
 /* Model choice popover */
 .mchoice {
@@ -238,11 +228,6 @@
 }
 .mlist__effort .colonia-select {
   width: 160px;
-}
-@media (max-width: 480px) {
-  .mlist__ref {
-    display: none;
-  }
 }
 .mlist__engine .colonia-engine {
   flex: none;

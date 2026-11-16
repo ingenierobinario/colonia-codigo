@@ -1,7 +1,13 @@
 /* Config modal: left nav + content (SPEC §2.12 Config). Tokens only; sizes from LAYOUT via ConfigModal. */
 
 .colonia-dialog.config {
+  width: min(var(--config-w), calc(100vw - 64px));
+  height: min(var(--config-h), calc(100vh - 64px));
   max-width: none;
+}
+/* The sections as one dropdown: only where the nav does not fit (AJUSTES-ESTRECHO-1, at the end of this block). */
+.config__pick {
+  display: none;
 }
 .config__nav {
   flex: none;
@@ -124,6 +130,50 @@
 }
 .config__input {
   width: 220px;
+}
+/* AJUSTES-ESTRECHO-1: under this width the nav would leave the section a strip (84px on a phone), so the sections
+   become a dropdown on top and the section takes the whole dialog. Nothing in a section is squeezed to fit: a
+   control wider than the row goes under its text, at its own width. */
+@media (max-width: 800px) {
+  .colonia-dialog.config {
+    flex-direction: column;
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
+  }
+  .config__nav {
+    display: none;
+  }
+  .config__pick {
+    flex: none;
+    display: flex;
+    /* The dialog's close button floats over the right end of this bar. */
+    padding: 12px 56px 12px 16px;
+    background: var(--colonia-sidebar);
+    border-bottom: 1px solid var(--colonia-border);
+  }
+  .config__pick > .colonia-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .config__inner {
+    max-width: none;
+    padding: 20px 16px 28px;
+  }
+  .config__head {
+    padding-right: 0;
+  }
+  .config__inner .colonia-setting__control {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  /* Text fields sharing a row (an image's width × height) share what the row has; a field is fluid by nature. */
+  .config__inner .tgtoken {
+    max-width: 100%;
+  }
+  .config__inner .tgtoken > .colonia-field {
+    min-width: 0;
+  }
 }
 
 /* Cuenta */
@@ -591,9 +641,42 @@
   width: auto;
   min-width: 160px;
 }
-.channels__tabs {
+/* PESTANAS-CANALES-1: more channels than the row holds scroll inside it (each tab keeps its width), and the edge
+   that hides some fades out. */
+.channels__tabsrow {
   align-self: flex-start;
-  width: auto;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  border-radius: var(--colonia-control-radius);
+}
+.channels__tabsrow::-webkit-scrollbar {
+  display: none;
+}
+.channels__tabs {
+  width: max-content;
+}
+.channels__tabs .colonia-segmented__item {
+  flex: none;
+}
+@supports (animation-timeline: scroll()) {
+  .channels__tabsrow {
+    animation: channels-tabs-edge linear both;
+    animation-timeline: scroll(self inline);
+  }
+}
+@keyframes channels-tabs-edge {
+  0% {
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+  2%,
+  98% {
+    mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+  }
+  100% {
+    mask-image: linear-gradient(to right, transparent, #000 36px);
+  }
 }
 .tgquiet {
   display: flex;

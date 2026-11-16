@@ -10,7 +10,7 @@ import { type ChannelDraft, saveChannel, useChannels, watchChannels } from "../d
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
-import { BOTS, type BotKind, botSecret, discordInvite, pasted, type TokenSpec } from "./botFields.ts";
+import { BOTS, type BotKind, botSecret, discordInvite, fieldSample, pasted, type TokenSpec } from "./botFields.ts";
 import { botStart } from "./botStart.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
 import { PublicAddress } from "./PublicAddress.tsx";
@@ -264,7 +264,7 @@ function TokenInput({
   spec,
   value,
   onChange,
-  placeholder = spec.placeholder,
+  placeholder,
   autoFocus,
   onEnter,
 }: {
@@ -276,6 +276,7 @@ function TokenInput({
   onEnter?(): void;
 }) {
   const t = useT();
+  const sample = placeholder ?? fieldSample(spec, t);
   if (spec.multiline)
     return (
       <Textarea
@@ -284,7 +285,7 @@ function TokenInput({
         rows={4}
         spellCheck={false}
         autoFocus={autoFocus}
-        placeholder={placeholder}
+        placeholder={sample}
         value={value}
         onChange={(e) => onChange(e.currentTarget.value)}
       />
@@ -295,7 +296,7 @@ function TokenInput({
       type={spec.plain ? "text" : "password"}
       autoComplete="off"
       autoFocus={autoFocus}
-      placeholder={placeholder}
+      placeholder={sample}
       value={value}
       onChange={(e) => onChange(e.currentTarget.value)}
       onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
@@ -335,7 +336,9 @@ function TokenField({
           key={spec.label}
           spec={spec}
           autoFocus={Boolean(onCancel) && i === 0}
-          placeholder={channel.token_set ? `${t("tg.tokenNew")} (${spec.placeholder})` : spec.placeholder}
+          placeholder={
+            channel.token_set ? (spec.hint ? t("tg.tokenNew") : `${t("tg.tokenNew")} (${spec.placeholder})`) : undefined
+          }
           value={tokens.values[i] ?? ""}
           onChange={(v) => tokens.set(i, v)}
           onEnter={() => void save()}

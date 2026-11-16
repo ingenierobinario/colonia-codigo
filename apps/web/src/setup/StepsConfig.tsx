@@ -222,7 +222,7 @@ function TelegramCard() {
               type="password"
               autoComplete="off"
               aria-label={t("setup.channels.token")}
-              placeholder="123456789:AA…"
+              placeholder={t("bot.paste")}
               value={token}
               onChange={(e) => setToken(e.currentTarget.value)}
             />

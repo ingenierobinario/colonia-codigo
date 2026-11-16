@@ -5,8 +5,11 @@ import { registerIntegrationMarks, registerMarks } from "@colonia/ui";
 import { isKey, t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
+import { baseRef, modelLabel, modelName, splitRef } from "./modelNames.ts";
 import { notify } from "./notices.ts";
 import { data } from "./state.ts";
+
+export { baseRef, listedName, modelLabel, modelName, modelOf, readableModelId, splitRef } from "./modelNames.ts";
 
 export type ModelsConfig = { default: ModelChoice; router: RouterConfig };
 
@@ -91,30 +94,9 @@ export async function setAgentModelChoice(agent: string, choice: ModelChoice | n
   }
 }
 
-/**
- * "gemini/gemini-3.6-flash" → engine "gemini", model "gemini-3.6-flash"; "claude" → engine only; "#high" at the end
- * is the reasoning effort asked for.
- */
-export function splitRef(ref: ModelRef): { engine: string; model?: string; effort?: string } {
-  const hash = ref.lastIndexOf("#");
-  const effort = hash > 0 ? ref.slice(hash + 1) : "";
-  const base = hash > 0 ? ref.slice(0, hash) : ref;
-  const i = base.indexOf("/");
-  const parts = i < 0 ? { engine: base } : { engine: base.slice(0, i), model: base.slice(i + 1) };
-  return effort ? { ...parts, effort } : parts;
-}
-
-/** The ref without its effort: the model itself. */
-export const baseRef = (ref: ModelRef): ModelRef => (ref.includes("#") ? ref.slice(0, ref.lastIndexOf("#")) : ref);
 /** The same model with this effort (none: the model's own default). */
 export const withEffort = (ref: ModelRef, effort: string | undefined): ModelRef =>
   effort ? `${baseRef(ref)}#${effort}` : baseRef(ref);
-
-/** What the catalog says of a ref's model (its efforts among it); none for an engine alone or an unknown model. */
-export function modelOf(ref: ModelRef, catalog: readonly CatalogEngine[]) {
-  const { engine, model } = splitRef(ref);
-  return model ? catalog.find((x) => x.id === engine)?.models.find((m) => m.id === model) : undefined;
-}
 
 /** Whether the catalog knows a ref (an engine alone, or one of its models). */
 export function inCatalog(ref: ModelRef, catalog: readonly CatalogEngine[]): boolean {
@@ -123,11 +105,11 @@ export function inCatalog(ref: ModelRef, catalog: readonly CatalogEngine[]): boo
   return Boolean(e) && (!model || Boolean(e?.models.some((m) => m.id === model)));
 }
 
-/** A ref as people read it: an engine alone is "<Engine> default", a model stays its ref; its effort after a dot. */
+/** A ref as people read it: an engine alone is "<Engine> default", a model is its name; its effort after a dot. */
 export function refLabel(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
   const { engine, model, effort } = splitRef(ref);
   const label = model
-    ? baseRef(ref)
+    ? modelLabel(ref, catalog)
     : t("models.engineDefault", { engine: catalog.find((x) => x.id === engine)?.label ?? engine });
   return effort ? `${label} · ${effortLabel(effort)}` : label;
 }
@@ -135,7 +117,7 @@ export function refLabel(ref: ModelRef, catalog: readonly CatalogEngine[]): stri
 /** Short form for chips and summaries: an engine alone is just its label. */
 function shortRef(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
   const { engine, model, effort } = splitRef(ref);
-  const label = model ? baseRef(ref) : (catalog.find((x) => x.id === engine)?.label ?? engine);
+  const label = model ? modelName(ref, catalog) : (catalog.find((x) => x.id === engine)?.label ?? engine);
   return effort ? `${label} · ${effortLabel(effort)}` : label;
 }
 
