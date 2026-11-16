@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.33": {
+    en: [
+      "Restoring a copy on Windows saves your passwords in one go and tells you if any was left out.",
+      "Colonia now closes properly when the system asks it to.",
+    ],
+    es: [
+      "Restaurar una copia en Windows guarda tus contraseñas de una vez y te avisa si faltó alguna.",
+      "Colonia se cierra bien cuando el sistema se lo pide.",
+    ],
+  },
   "2.36.32": {
     en: ["Closing Colonia no longer shows an error about the menu-bar icon."],
     es: ["Cerrar Colonia ya no muestra un error sobre el icono de la barra de tareas."],
