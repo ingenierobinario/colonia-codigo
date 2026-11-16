@@ -98,7 +98,9 @@ export function createBackup(deps: BackupDeps) {
     },
     list(): BackupFile[] {
       const out: BackupFile[] = [];
-      for (const folder of usualFolders(deps.home)) {
+      // La carpeta de la copia recién creada también cuenta, aunque no sea una de las de siempre.
+      const made = job.kind === "create" && job.file ? [path.dirname(job.file)] : [];
+      for (const folder of new Set([...usualFolders(deps.home), ...made])) {
         let names: string[] = [];
         try {
           names = fs.readdirSync(folder);

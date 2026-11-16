@@ -182,7 +182,11 @@ test("una copia completa lleva todo de un Colonia a otro y nada va en claro", as
     const file = done.file ?? "";
     assert.ok(file.endsWith(".colonia") && fs.existsSync(file));
     assert.equal(done.bytes, fs.statSync(file).size);
-    assert.deepEqual((await a.client.call("backup.list", {})).copies, [], "solo se listan las carpetas habituales");
+    assert.deepEqual(
+      (await a.client.call("backup.list", {})).copies.map((c) => c.file),
+      [file],
+      "la copia recién creada se lista aunque su carpeta no sea de las habituales",
+    );
     await a.core.close();
     const origin = contents(a.home);
 
