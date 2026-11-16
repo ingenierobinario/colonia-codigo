@@ -185,7 +185,8 @@ function writeInside(root: string, rel: string, text: string): void {
 }
 
 /** Vuelca el paquete en la carpeta de un proyecto. Lo que ya había con otro nombre se queda como estaba. */
-export function writePackage(root: string, pkg: ProjectPackage): void {
+export function writePackage(root: string, pkg: ProjectPackage): string[] {
+  const kept: string[] = [];
   writeInside(root, "AGENTS.md", pkg.instructions.trim() ? pkg.instructions : `# ${pkg.project.name}\n`);
   for (const a of pkg.agents) writeInside(root, `.apc/agents/${a.slug}.md`, a.text);
   for (const s of pkg.skills) for (const f of s.files) writeInside(root, `.apc/skills/${s.folder}/${f.path}`, f.text);
@@ -199,14 +200,35 @@ export function writePackage(root: string, pkg: ProjectPackage): void {
     const servers = { ...((doc.mcpServers as Record<string, unknown> | undefined) ?? {}) };
     // Cada dato que falta entra vacío: la conexión queda a la vista como «falta conectar» hasta que la persona lo rellena.
     const empty = (names: string[]) => Object.fromEntries(names.map((n) => [n, ""]));
-    for (const c of pkg.connections)
+    // CLAVES-PROPIAS-1 · Al reemplazar un proyecto que ya se tenía, la conexión que sigue siendo la misma (mismo
+    // comando y argumentos, o misma dirección) conserva los datos que la persona puso; si el servidor cambió, entran
+    // vacíos, porque esos datos se dieron a otro servidor.
+    const values = (before: unknown, names: string[]) => {
+      const old =
+        before && typeof before === "object" && !Array.isArray(before) ? (before as Record<string, unknown>) : {};
+      return Object.fromEntries(names.map((n) => [n, typeof old[n] === "string" ? (old[n] as string) : ""]));
+    };
+    for (const c of pkg.connections) {
+      const server = c.command ? { command: c.command, args: c.args } : { url: c.url };
+      const before = servers[c.name];
+      const old =
+        before && typeof before === "object" && !Array.isArray(before) ? (before as Record<string, unknown>) : {};
+      const same =
+        JSON.stringify(c.command ? { command: old.command, args: old.args ?? [] } : { url: old.url }) ===
+        JSON.stringify(server);
+      const env = same ? values(old.env, c.needs) : empty(c.needs);
+      const headers = same ? values(old.headers, c.headers) : empty(c.headers);
       servers[c.name] = {
-        ...(c.command ? { command: c.command, args: c.args } : { url: c.url }),
-        ...(c.needs.length ? { env: empty(c.needs) } : {}),
-        ...(c.headers.length ? { headers: empty(c.headers) } : {}),
+        ...server,
+        ...(c.needs.length ? { env } : {}),
+        ...(c.headers.length ? { headers } : {}),
       };
+      const filled = [...Object.values(env), ...Object.values(headers)];
+      if (same && filled.length > 0 && filled.every((v) => v !== "")) kept.push(c.name);
+    }
     writeInside(root, ".apc/mcps.json", `${JSON.stringify({ ...doc, mcpServers: servers }, null, 2)}\n`);
   }
+  return kept;
 }
 
 /** Lo que una conexión importada necesita antes de funcionar. */
@@ -334,9 +356,10 @@ export function projectShareHandlers(deps: {
       if (same && (!same.path || !same.present))
         throw badRequest(`the project named ${pkg.project.name} has no folder on disk; import it under another name`);
       let id: string;
+      let kept: string[] = [];
       try {
         if (same?.path) {
-          writePackage(same.path, pkg);
+          kept = writePackage(same.path, pkg);
           id = same.id;
         } else {
           const made = createProject(deps.apc, home, {
@@ -355,7 +378,9 @@ export function projectShareHandlers(deps: {
       }
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
-      return { ...said, saved: true, project: publicProject(project) };
+      // Lo que ya tenía sus datos no vuelve a salir como «falta conectar».
+      const pending = said.pending.filter((c) => !kept.includes(c.name));
+      return { ...said, pending, saved: true, project: publicProject(project) };
     },
   };
 }

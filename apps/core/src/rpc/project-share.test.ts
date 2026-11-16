@@ -206,6 +206,23 @@ test("exportar → importar en otro Colonia: mismo proyecto, y las conexiones qu
     assert.equal(again.project?.id, got.project?.id);
     assert.match(fs.readFileSync(path.join(root, "AGENTS.md"), "utf8"), /Atiende a los clientes/);
     assert.equal(fs.readFileSync(path.join(root, "notas-propias.md"), "utf8"), "mías\n");
+    // CLAVES-PROPIAS-1 · Reemplazar no vacía los datos que la persona ya puso en una conexión que sigue igual, y esa
+    // conexión deja de salir como pendiente; si el servidor de la conexión cambió, sus datos entran vacíos.
+    const ownFile = path.join(root, ".apc/mcps.json");
+    const mine = JSON.parse(fs.readFileSync(ownFile, "utf8"));
+    mine.mcpServers.facturas.env.FACTURAS_KEY = "clave-propia-de-b";
+    mine.mcpServers.crm.headers.Authorization = "cabecera-propia-de-b";
+    mine.mcpServers.crm.url = "https://otro-servidor.example.com/mcp";
+    fs.writeFileSync(ownFile, JSON.stringify(mine));
+    const third = await b.client.call("projects.import", { content: out.content, save: true, replace: true });
+    const after = JSON.parse(fs.readFileSync(ownFile, "utf8"));
+    assert.equal(after.mcpServers.facturas.env.FACTURAS_KEY, "clave-propia-de-b");
+    assert.equal(after.mcpServers.crm.url, "https://crm.example.com/mcp");
+    assert.equal(after.mcpServers.crm.headers.Authorization, "");
+    assert.deepEqual(
+      third.pending.map((c) => c.name),
+      ["crm"],
+    );
     // O con otro nombre: un proyecto aparte.
     const other = await b.client.call("projects.import", {
       content: out.code,
@@ -348,6 +365,11 @@ test("el texto de instrucciones conserva lo que no es un dato de acceso", () => 
   );
   assert.equal(dirty.text, `password = ${REMOVED}\n${REMOVED}\nver https://x.example.com/a?token=${REMOVED}&page=2`);
   assert.equal(dirty.removed, 3);
+  // SECRETO-ANIDADO-1 · Una clave sin valor en su línea («auth:») no se come la clave de la línea siguiente: se quita
+  // el dato, no su nombre. Y el valor que sí va solo en la línea siguiente se sigue quitando.
+  const nested = scrub(`auth:\n  client_secret: ${SEEDED.envValue}\ncredentials:\n  password = ${SEEDED.password}\n`);
+  assert.equal(nested.text, `auth:\n  client_secret: ${REMOVED}\ncredentials:\n  password = ${REMOVED}\n`);
+  assert.equal(scrub(`token:\n  ${SEEDED.envValue}\n`).text, `token:\n  ${REMOVED}\n`);
   // El código es el mismo paquete en una línea.
   const pkg = {
     format: PROJECT_FORMAT,

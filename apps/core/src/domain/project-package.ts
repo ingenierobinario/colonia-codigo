@@ -113,9 +113,11 @@ const RULES: Array<[RegExp, (m: string, ...g: string[]) => string]> = [
     (_m, k) => `${k}${REMOVED}`,
   ],
   // «contraseña: valor», «API_KEY=valor», "token": "valor". Una referencia (secret://, ${VAR}, <tu clave>) se queda.
+  // SECRETO-ANIDADO-1 · El valor puede ir en la línea siguiente, pero no si esa línea es otra «clave: valor»: en
+  // «auth:\n  client_secret: X» se tachaba «client_secret:» y X salía entero.
   [
     new RegExp(
-      `((?:^|[^A-Za-z0-9])(?:[A-Za-z0-9]+[_-])*(?:${SENSITIVE_KEY})(?:[_-][A-Za-z0-9]+)*["'\`]?\\s*(?:[:=]|=>)\\s*)("[^"\\r\\n]{3,}"|'[^'\\r\\n]{3,}'|\`[^\`\\r\\n]{3,}\`|[^\\s"'\`,;<>{}()\\[\\]$]{4,})`,
+      `((?:^|[^A-Za-z0-9])(?:[A-Za-z0-9]+[_-])*(?:${SENSITIVE_KEY})(?:[_-][A-Za-z0-9]+)*["'\`]?\\s*(?:[:=]|=>)(?:[ \\t]*|\\s*(?![^\\s:=]+[ \\t]*(?:[:=]|=>)(?:\\s|$))))("[^"\\r\\n]{3,}"|'[^'\\r\\n]{3,}'|\`[^\`\\r\\n]{3,}\`|[^\\s"'\`,;<>{}()\\[\\]$]{4,})`,
       "gi",
     ),
     (m, k, v) => (/^["'`]?(?:secret:\/\/|\/\/|\$\{|<|\{\{|«)/.test(v) || v.includes(REMOVED) ? m : `${k}${REMOVED}`),
