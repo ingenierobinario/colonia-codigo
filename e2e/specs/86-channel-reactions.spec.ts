@@ -16,7 +16,7 @@ test("the agent reacts to a sticker: the emoji shows on it, and the Inbox says s
   await world.whatsapp.media(OLGA, { stickerMessage: { mimetype: "image/webp" }, bytes: WEBP });
 
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await page.locator(".chan__rows").getByRole("button", { name: /Olga/ }).click();
   const sticker = page
     .locator(".chan__bubble")
@@ -58,7 +58,7 @@ test("the channel's settings list the stickers kept: one no model saw waits; the
   page,
 }) => {
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await page.getByRole("button", { name: "Configuración del canal" }).click();
   await expect(page.getByText("Stickers", { exact: true })).toBeVisible();
   // New ones are the agent's by default; this one no model could see, so it waits for the owner.

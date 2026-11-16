@@ -73,7 +73,7 @@ test("the chat header's menu starts with Pin; the main chat cannot be archived o
   await page.locator(".chat__header").getByRole("button", { name: "Más" }).click();
   const items = page.getByRole("menuitem");
   await expect(items.first()).toHaveText(/Fijar arriba|Desfijar/);
-  await expect(page.getByRole("menuitem", { name: "Resumir turnos anteriores" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Limpiar conversación" })).toBeVisible(); // LIMPIAR-CHAT-1 replaced «Resumir turnos anteriores»
   await expect(page.getByRole("menuitem", { name: "Borrar" })).toHaveAttribute("aria-disabled", "true");
   await expect(page.getByRole("menuitem", { name: "Archivar" })).toHaveAttribute("aria-disabled", "true");
   await expect(page.getByText("El chat principal no se puede archivar ni borrar")).toBeVisible();

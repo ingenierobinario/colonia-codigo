@@ -70,8 +70,8 @@ test("Discord rooms: the owner lists a server room, and the bot answers there wh
   await names.blur();
   await expect(names).toHaveValue("roby");
   // Its rooms may look things up on the web: by default only when the owner asks; here, for everyone.
-  await expect(page.getByRole("radio", { name: "Solo tú" })).toBeChecked();
-  await page.getByRole("radio", { name: "Todos" }).click();
+  await expect(page.getByRole("radiogroup", { name: "Buscar en la web" }).getByRole("radio", { name: "Solo tú" })).toBeChecked();
+  await page.getByRole("radiogroup", { name: "Buscar en la web" }).getByRole("radio", { name: "Todos" }).click();
   await until(async () =>
     (await rpc<{ channels: Array<{ id: string; research?: string }> }>("channels.list")).channels.some(
       (c) => c.id === "discord" && c.research === "everyone",
@@ -119,8 +119,8 @@ test("Slack: the app connects with both tokens, the owner links their account an
 }) => {
   const { slack } = await world.info();
   await connect(page, "Slack", [
-    ["Código del bot (empieza por xoxb-)", slack.bot],
-    ["Código de la app (empieza por xapp-)", slack.app],
+    ["Código del bot", slack.bot],
+    ["Código de la app", slack.app],
   ]);
   await linkAndTalk(page, "sl", { id: "U5150", name: "Owner" });
 });

@@ -20,7 +20,7 @@ test("delegated chats nest under Home in every view, fold, open, and show in the
     })
     .toBe("idle");
   const subId = sub?.id ?? "";
-  const subTitle = "Researcher: check the project sources";
+  const subTitle = "Researcher: Check the project sources";
 
   await open(page, "#");
   const list = page.locator(".inbox__list");
@@ -33,7 +33,7 @@ test("delegated chats nest under Home in every view, fold, open, and show in the
   }
   const group = list.locator('.delegated[data-thread="home"]');
   await expect(group.locator(".delegated__list")).toContainText(subTitle);
-  const fold = group.locator(".delegated__fold");
+  const fold = group.locator(":scope > .foldhead"); // PLEGAR-BANDEJA-1: one fold head for every list
   await expect(fold).toHaveAttribute("aria-expanded", "true");
   await fold.click();
   await expect(fold).toHaveAttribute("aria-expanded", "false");

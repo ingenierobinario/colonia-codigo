@@ -209,9 +209,15 @@ for (const width of [412, 1280]) {
         const mark = avatar.locator(".threadavatar__channel");
         await expect(mark).toHaveCount(0);
         if (item.platform) {
-          await expect(row).toContainText(`Por ${item.platform}`);
           if (view === "Árbol") {
-            await expect(row.locator(".tree__agentmeta")).toHaveText(`Por ${item.platform}`);
+            // BANDEJA-1: en el árbol el chat cuelga de la rama de su canal, que ya lo dice; la fila no lo repite.
+            await expect(row.locator(".tree__agentmeta")).toHaveCount(0);
+            await expect(
+              page
+                .locator(".inbox__list .tree__project")
+                .filter({ has: page.locator(".tree__channel", { hasText: item.title }) })
+                .locator(".tree__projecthead"),
+            ).toBeVisible();
             await expect(row).not.toContainText("Super-agente");
             const face = await avatar.boundingBox();
             const title = await row.locator(".tree__agentname").boundingBox();
@@ -220,7 +226,7 @@ for (const width of [412, 1280]) {
             expect(
               Math.abs((face ? face.y + face.height / 2 : 0) - (title ? title.y + title.height / 2 : 0)),
             ).toBeLessThan(1);
-          }
+          } else await expect(row).toContainText(`Por ${item.platform}`);
         }
       }
       if (view === "Árbol") {
