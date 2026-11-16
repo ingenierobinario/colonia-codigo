@@ -29,6 +29,11 @@ export const FlowDefinition = z
      * paths keeps its identifier. Left out of `flows.set`, it stays as it is (DECISIONS.md#d-178).
      */
     path: z.string().regex(FLOW_PATH_SAVED).optional(),
+    /**
+     * The other projects whose knowledge its AI steps may read, besides its own project's (always included). Left out
+     * of `flows.set`, it stays as it is; [] removes them. Only the owner sets it (DECISIONS.md#d-191).
+     */
+    knowledgeProjects: z.array(Id).max(16).optional(),
   })
   .strict();
 export type FlowDefinition = z.infer<typeof FlowDefinition>;

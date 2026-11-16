@@ -63,6 +63,11 @@ export const ProjectPackage = z
       )
       .max(100),
     connections: z.array(Connection).max(60),
+    /**
+     * PROYECTOS-ENLAZADOS-1 · Los proyectos que este conoce, solo por NOMBRE: nada de lo que guardan viaja. Quien
+     * importa los enlaza si tiene uno con ese nombre; si no, quedan sin resolver. Sin enlaces, el campo no existe.
+     */
+    knows: z.array(z.string().trim().min(1).max(80)).max(16).optional(),
   })
   .strict();
 export type ProjectPackage = z.infer<typeof ProjectPackage>;

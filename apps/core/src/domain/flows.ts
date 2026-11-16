@@ -13,6 +13,7 @@ import {
   hasPublishedFlowGraph,
 } from "./flow-graphs.ts";
 import { checkFlowIdentifier, retireFlow } from "./flow-retirement.ts";
+import { idsOf } from "./projects.ts";
 import { sql } from "./sql.ts";
 
 export type FlowDefinition = Definition;
@@ -33,9 +34,12 @@ type SavedFlow = {
   action: string;
   read_keys: string;
   path: string;
+  knowledge?: string | null;
 };
-const definition = (row: SavedFlow) =>
-  Definition.parse({
+const definition = (row: SavedFlow) => {
+  const knowledge = idsOf(row.knowledge).filter((id) => id !== row.project_id);
+  return Definition.parse({
+    ...(knowledge.length ? { knowledgeProjects: knowledge.slice(0, 16) } : {}),
     id: row.id,
     projectId: row.project_id,
     name: row.name,
@@ -46,6 +50,7 @@ const definition = (row: SavedFlow) =>
     readKeys: JSON.parse(row.read_keys),
     path: row.path,
   });
+};
 
 /** Another Flow's address is this one (or would read as it, case aside). */
 const pathTaken = (db: Db, path: string, flow?: string) =>
@@ -100,6 +105,11 @@ export function saveFlow(db: Db, value: FlowDefinition): void {
       path,
     );
   if (!result.changes) throw new Error("Flow belongs to another project");
+  // Apart from the definition: left out it stays, so a caller that never heard of it changes nothing.
+  if (flow.knowledgeProjects) {
+    const ids = [...new Set(flow.knowledgeProjects)].filter((id) => id !== flow.projectId);
+    db.prepare("UPDATE flows SET knowledge=? WHERE id=?").run(ids.length ? JSON.stringify(ids) : null, flow.id);
+  }
   // Off, a schedule owes nothing: turned on again, it counts from then.
   if (!flow.enabled) db.prepare("DELETE FROM flow_schedules WHERE flow_id=?").run(flow.id);
 }

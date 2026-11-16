@@ -3562,3 +3562,25 @@ Signal) están activos en un solo equipo, el «principal»: el otro ve sus chats
 través de él; si el principal está apagado, los envíos esperan en su bandeja de salida. Cambiar de principal es un
 gesto explícito que pide volver a vincular. Lo que frena implementarla sin riesgo: los disparadores sobre todas las
 tablas y el arranque de canales condicionado al principal tocan el camino de cada escritura y de cada mensaje.
+
+<a id="d-191"></a>
+## D-191 — 2026-11-16 — A project knows other projects, and a Flow reads from several: one read-only link
+A project may know others: its agents, working in A, look up what B and C know. One mechanism serves projects and
+Flows. `projects.knows` is a directed list (A reads from B; B learns nothing of A), not transitive (A knows B, B
+knows C: A does not read C unless it says so), at most 16, and refused when it would close a loop or name itself.
+`projects.parent` is separate and only places a project under another in the sidebar; it grants nothing, so grouping
+never widens what agents read. A Flow keeps `knowledgeProjects` (its own project always, the others by the owner's
+choice through `flows.set`; an agent's `flows.create` cannot add them), copied onto each thread its events open.
+Knowledge is: the project's instructions (AGENTS.md), the owner's notes, its own skills, its saved memory and the
+files of its folder. Never its connections, channels, credentials, secrets, chats, tasks or agents. It is reached on
+demand: the tool `project_knowledge` (shown only when there is something to read) and the known folders as read-only
+roots of the file tools. The turn's input gains one line naming the projects, nothing of their content, so the prompt
+budget is untouched. Writes stay impossible by construction: those roots are `write:false` whatever the agent's
+reach, and the tool has no effect. Everything is additive: three nullable columns, optional protocol fields, a
+tolerant read (a broken value or a project since removed reads as none), so old projects and Flows load unchanged.
+A shared package carries the links by name only, never the other project's content, and only when there are any;
+importing links the names that exist here and reports the rest as unresolved.
+Limits: bots of a Flow step (D-172) get the folders, not the tool; a chat delegated from a Flow thread does not
+inherit the Flow's extra projects; a thread on the shared VM gets neither the line nor the folders; a package with
+links is refused by a Colonia older than this, whose package schema is strict. Colonia has no private or locked
+project today: if one arrives, `knownProjects` is the single place that must honour it.

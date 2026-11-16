@@ -12,6 +12,7 @@ import type { ApcSync } from "../apc/sync.ts";
 import { writeProjectMeta } from "../apc/write.ts";
 import { artifactDir } from "../domain/artifact-memory.ts";
 import { ownerIdentity, saveOwnerIdentity, writeOwnerPhoto } from "../domain/owner.ts";
+import { checkKnown, checkParent } from "../domain/project-links.ts";
 import { publicProject } from "../domain/projects.ts";
 import type { EngineIds } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
@@ -187,9 +188,20 @@ export function appHandlers(deps: {
       if (!project) throw notFound(`project ${r.project}`);
       return { project: publicProject(project), agents: r.agents };
     },
-    "projects.update": ({ project: id, name, description, kind, autonomy, read_only_folders, mark }) => {
+    "projects.update": ({ project: id, name, description, kind, autonomy, read_only_folders, mark, parent, knows }) => {
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
+      // Links are Colonia's too, and checked before anything is written.
+      if (parent !== undefined || knows !== undefined) {
+        try {
+          store.projects.setLinks(id, {
+            ...(parent !== undefined ? { parent: parent ? checkParent(store, id, parent) : undefined } : {}),
+            ...(knows ? { knows: checkKnown(store, id, knows) } : {}),
+          });
+        } catch (err) {
+          throw badRequest(errorMessage(err));
+        }
+      }
       if (read_only_folders !== undefined) {
         let folders: string[];
         try {

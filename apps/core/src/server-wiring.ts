@@ -98,6 +98,7 @@ import { directoryTools } from "./tools/directory.ts";
 import { equipoTools } from "./tools/equipos.ts";
 import { fileTools } from "./tools/files.ts";
 import { flowTools } from "./tools/flow-tool.ts";
+import { knownProjectTools } from "./tools/known-projects.ts";
 import { limitTools } from "./tools/limits.ts";
 import { mediaTools } from "./tools/media.ts";
 import { memoryTools } from "./tools/memory.ts";
@@ -183,6 +184,7 @@ export function builtinTools(
     ...routineTools(store),
     ...limitTools(store),
     ...skillTools(store, { home, apps: skillApps }),
+    ...knownProjectTools(store, { home, apps: skillApps }),
     ...memoryTools(store),
     ...mediaTools(store, home, vm),
     ...phoneTools(),

@@ -1192,4 +1192,12 @@ export const MIGRATIONS: readonly string[] = [
   CREATE INDEX channel_inbox_conversation ON channel_inbox(channel, conversation, created_at);
   CREATE INDEX outbox_conversation ON outbox(channel, conversation, created_at);
   `,
+  // PROYECTOS-ENLAZADOS-1: `parent` groups a project under another in the sidebar and gives nothing else; `knows` is
+  // the JSON list of projects its agents may read (DECISIONS.md#d-191). `flows.knowledge` is the same list for one
+  // Flow, on top of its own project. All NULL for everything made before: nothing changes for them.
+  `
+  ALTER TABLE projects ADD COLUMN parent TEXT;
+  ALTER TABLE projects ADD COLUMN knows TEXT;
+  ALTER TABLE flows ADD COLUMN knowledge TEXT;
+  `,
 ];

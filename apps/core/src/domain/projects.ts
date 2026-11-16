@@ -26,7 +26,24 @@ const toProject = (r: Selectable<ProjectsTable>): ProjectRecord => ({
   ...autonomyOf(r.autonomy),
   ...foldersOf(r.read_only_folders),
   ...markOf(r.mark),
+  ...opt("parent", r.parent),
+  ...knowsOf(r.knows),
 });
+
+/** A stored list of project ids (`knows`, a Flow's `knowledge`); anything else reads as none. */
+export function idsOf(v: string | null | undefined): string[] {
+  try {
+    const list: unknown = v ? JSON.parse(v) : undefined;
+    return Array.isArray(list) ? [...new Set(list.filter((x): x is string => typeof x === "string" && x !== ""))] : [];
+  } catch {
+    return [];
+  }
+}
+
+function knowsOf(v: string | null): { knows?: string[] } {
+  const ids = idsOf(v);
+  return ids.length ? { knows: ids } : {};
+}
 
 /** A stored tile Colonia can draw; anything else, and one that sets nothing, reads as none. */
 function markOf(v: string | null): { mark?: ProjectMark } {
@@ -214,6 +231,17 @@ export function projectsRepo({ one, all, run }: Sql, changed: () => void) {
           .set({ mark: mark && Object.keys(mark).length ? JSON.stringify(mark) : null })
           .where("id", "=", id),
       );
+    },
+    /**
+     * The project it sits under in the sidebar and the projects its agents may read, already checked
+     * (domain/project-links.ts); a key left out stays as it is, undefined parent or [] removes it.
+     */
+    setLinks(id: string, links: { parent?: string | undefined; knows?: string[] }): void {
+      const set = {
+        ...("parent" in links ? { parent: links.parent ?? null } : {}),
+        ...(links.knows ? { knows: links.knows.length ? JSON.stringify(links.knows) : null } : {}),
+      };
+      if (Object.keys(set).length) write(qb.updateTable("projects").set(set).where("id", "=", id));
     },
     /** Retain the indexed record for existing chats and tasks, without listing or watching it. */
     unregister(id: string): void {

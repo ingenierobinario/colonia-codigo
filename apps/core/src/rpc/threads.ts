@@ -71,6 +71,9 @@ function createThread(
     });
     if (ctx.flowEvent?.graph) store.flowGraphRuns.linkThread({ ...ctx.flowEvent, ...ctx.flowEvent.graph }, t.id);
     else if (ctx.flowEvent) store.flows.setThread(ctx.flowEvent.flow, ctx.flowEvent.event, t.id);
+    // Either executor: the chat reads the projects its Flow was given, like a chat of a project that knows them.
+    const flowKnows = ctx.flowEvent ? store.flows.get(ctx.flowEvent.flow)?.knowledgeProjects : undefined;
+    if (flowKnows?.length) store.threads.mergeContext(t.id, { flow_knows: flowKnows });
     // The engine is the session: it always runs it, never the router.
     if (engine) store.threads.mergeContext(t.id, { model_choice: { model: engine, router: false } });
     return engine ? (store.threads.get(t.id) ?? t) : t;

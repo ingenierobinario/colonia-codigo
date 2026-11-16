@@ -223,6 +223,7 @@ export interface FlowsTable {
   action: Generated<string>;
   read_keys: Generated<string>;
   path: Generated<string>;
+  knowledge: string | null;
 }
 
 export interface HarnessSessionsTable {
@@ -514,6 +515,8 @@ export interface ProjectsTable {
   read_only_folders: string | null;
   context_chars: number | null;
   mark: string | null;
+  parent: string | null;
+  knows: string | null;
 }
 
 export interface PromptTextsTable {

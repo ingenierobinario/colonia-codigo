@@ -265,6 +265,8 @@ export function workspaceBlock(
   readOnly: string[] = [],
   workFolder?: string,
   told: Sections = {},
+  /** The projects it may read besides its own, as one line (knownLine, D-191). */
+  known = "",
 ): string | undefined {
   // Named beside read-only folders, else an agent takes the only path it sees for the project's own.
   const own = !(thread.cwd && thread.write) && readOnly.length && workFolder;
@@ -273,6 +275,7 @@ export function workspaceBlock(
     thread.cwd && writes ? `Folder: ${thread.cwd} · writes: ${writes}` : "",
     own ? `Folder you work in (yours to change): ${workFolder}` : "",
     readOnly.length ? `Read-only folders (read with file tools or shell, never change): ${readOnly.join(", ")}` : "",
+    known,
   ].filter(Boolean);
   return lines.length ? lines.join("\n") : undefined;
 }

@@ -178,6 +178,13 @@ export const Project = z.object({
   autonomy: Autonomy.optional(),
   /** Absolute folders its agents may read and never change (another checkout, docs); kept by Colonia. */
   read_only_folders: z.array(z.string()).optional(),
+  /** The project it sits under in the sidebar. Only where it is shown: it gives its agents nothing. Kept by Colonia. */
+  parent: Id.optional(),
+  /**
+   * The projects its agents may read (instructions, notes, skills, memory, files) and never change; one step, so what
+   * those know is not included. Kept by Colonia (DECISIONS.md#d-191).
+   */
+  knows: z.array(Id).optional(),
   /** AGENTS.md's length when it is past AGENTS_MD_LIMIT: its agents get the head and tail, not all of it. */
   agents_md_chars: z.number().int().optional(),
 });

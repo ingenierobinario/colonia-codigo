@@ -37,7 +37,7 @@ import type { RuntimeHomes } from "../skills/runtimes.ts";
 import { agentSkills, skillCatalog, skillsFor } from "../skills/skills.ts";
 import { contactToolNames } from "../tools/contact.ts";
 import { channelsOn } from "../tools/directory.ts";
-import { harnessDir, readOnlyFolders, scratchDir, workDir } from "../tools/folders.ts";
+import { harnessDir, knownLine, readOnlyFolders, scratchDir, workDir } from "../tools/folders.ts";
 import { modeOf } from "../tools/policy.ts";
 import { waitingBlock } from "../tools/requests.ts";
 import { UNTRUSTED_MARK, untrusted } from "../tools/result.ts";
@@ -574,7 +574,13 @@ async function buildContext(deps: TurnDeps, turn: Turn, run: RunRecord, mode: Au
               ? told.onComputer
                 ? `Folder: ${AGENT_WORKSPACE}, on the shared Linux computer`
                 : COMPUTER_WORKSPACE(AGENT_WORKSPACE)
-              : workspaceBlock(thread, readOnlyFolders(store, thread), workDir(store, deps.home, thread), told),
+              : workspaceBlock(
+                  thread,
+                  readOnlyFolders(store, thread),
+                  workDir(store, deps.home, thread),
+                  told,
+                  knownLine(store, thread, !ctxState.flow_step?.bot),
+                ),
             computer,
             notes: ownerTurn && !sealed ? notesBlock(store.threads.context(thread.id), entries) : undefined,
             release: ownerTurn ? releaseBlock(store.threads.context(thread.id).release) : undefined,

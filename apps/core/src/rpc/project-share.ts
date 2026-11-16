@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { withoutBom } from "../apc/read.ts";
 import type { ApcSync } from "../apc/sync.ts";
+import { checkKnown, knownProjects } from "../domain/project-links.ts";
 import {
   connectionOf,
   FILE_MAX,
@@ -26,6 +27,26 @@ import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { writeAtomic } from "../paths.ts";
 import { dropShared, putShared, sharedToken } from "../shared-projects.ts";
 import { createProject } from "./app.ts";
+
+/**
+ * PROYECTOS-ENLAZADOS-1 · Los nombres de proyectos conocidos que trae un paquete, buscados aquí: los que existen (y
+ * se pueden enlazar sin cerrar un bucle) y los que no. Los que este proyecto ya conocía se conservan.
+ */
+function resolveKnown(store: Store, own: string, names: string[]): { found: string[]; missing: string[] } {
+  const found = [...(store.projects.get(own)?.knows ?? [])];
+  const missing: string[] = [];
+  const all = store.projects.list();
+  for (const name of names) {
+    const match = all.find((p) => p.id !== own && p.name.toLowerCase() === name.toLowerCase());
+    try {
+      if (!match) throw new Error("none");
+      if (!found.includes(match.id)) found.push(...checkKnown(store, own, [match.id]));
+    } catch {
+      missing.push(name);
+    }
+  }
+  return { found: found.slice(0, 16), missing };
+}
 
 /** Un enlace de proyecto publicado: la dirección pública de otro Colonia y `/p/<32 hex>`. */
 const LINK_PATH = /^\/p\/[a-f0-9]{32}$/;
@@ -314,6 +335,9 @@ export function projectShareHandlers(deps: {
       { name: p.name, description: p.description ?? undefined, kind: KINDS.find((k) => k === p.kind) },
       now(),
     );
+    // PROYECTOS-ENLAZADOS-1 · De los proyectos que conoce viaja el nombre, nunca lo que guardan.
+    const knows = knownProjects(store, { project_id: p.id }).map((k) => k.name.slice(0, 80));
+    if (knows.length) b.pkg.knows = knows;
     if (renderPackage(b.pkg).length > PACKAGE_MAX)
       throw badRequest("this project is too large to share: its skills hold more text than fits");
     return { ...b, id: p.id };
@@ -396,11 +420,20 @@ export function projectShareHandlers(deps: {
       } catch (err) {
         throw badRequest(errorMessage(err));
       }
+      // PROYECTOS-ENLAZADOS-1 · Se enlaza con los proyectos de aquí que se llamen igual; el resto queda sin resolver.
+      const links = resolveKnown(store, id, pkg.knows ?? []);
+      if (links.found.length) store.projects.setLinks(id, { knows: links.found });
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
       // Lo que ya tenía sus datos no vuelve a salir como «falta conectar».
       const pending = said.pending.filter((c) => !kept.includes(c.name));
-      return { ...said, pending, saved: true, project: publicProject(project) };
+      return {
+        ...said,
+        pending,
+        saved: true,
+        project: publicProject(project),
+        ...(links.missing.length ? { unresolved: links.missing } : {}),
+      };
     },
   };
 }

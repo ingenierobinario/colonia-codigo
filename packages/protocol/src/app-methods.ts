@@ -602,6 +602,13 @@ export const appMethods = {
          * null = the initial again. Kept by Colonia, so it changes with the folder away too.
          */
         mark: ProjectMark.nullable().optional(),
+        /** The project it sits under in the sidebar; null = at the top again. Never itself nor one under it. */
+        parent: Id.nullable().optional(),
+        /**
+         * Replaces the projects its agents may read and never change: registered ones, never itself, and none that
+         * already knows this one (no loops). [] = none.
+         */
+        knows: z.array(Id).max(16).optional(),
       })
       .strict(),
     result: z.object({ project: Project }),
@@ -727,6 +734,8 @@ export const appMethods = {
       taken: z.boolean(),
       saved: z.boolean(),
       project: Project.optional(),
+      /** Names of projects the shared one knew that are not here: those links wait until one of that name exists. */
+      unresolved: z.array(z.string()).optional(),
     }),
     effect: true,
     access: "human",

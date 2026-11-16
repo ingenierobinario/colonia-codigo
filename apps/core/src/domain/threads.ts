@@ -66,6 +66,8 @@ export type ThreadContext = {
   worker?: Worker;
   /** A Flow's AI model step: what it may do beyond answering (DECISIONS.md#d-172). */
   flow_step?: FlowStepContext;
+  /** A chat a Flow started: the other projects that Flow was given to read, as it had them then (D-191). */
+  flow_knows?: string[];
   /** A consult an @mention in a task opened: the task, and the card in its conversation that shows the answer. */
   /** `asker`: the agent that asked on the task and the chat it asked from, where it hears the answer. */
   consult?: { task: string; card: string; review?: boolean; asker?: { agent: string; thread: string } };

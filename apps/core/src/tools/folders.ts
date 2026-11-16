@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { knownProjects } from "../domain/project-links.ts";
 import type { Store } from "../domain/store.ts";
 import { expandHome, insideReal, isInside, real, realpath } from "../paths.ts";
 import { namedPaths } from "./command-paths.ts";
@@ -174,6 +175,17 @@ export function readOnlyFolders(store: Store, thread: { project_id?: string | un
 }
 
 /**
+ * The folders of the projects a thread's agent may read besides its own (domain/project-links.ts): read, never
+ * changed, whatever its mode. Never one holding Colonia's home.
+ */
+export function knownFolders(store: Store, home: string, thread: Parameters<typeof knownProjects>[1]): string[] {
+  const colonia = real(home);
+  return knownProjects(store, thread).flatMap((p) =>
+    p.path && p.present && !isInside(real(p.path), colonia) ? [p.path] : [],
+  );
+}
+
+/**
  * The project's linked git worktrees, wherever they sit (`git worktree add ../x`): the same repository, so the same
  * project (DECISIONS.md#d-106). Only for a thread working in the project's own folder: one kept to a worktree stays in it.
  */
@@ -253,6 +265,8 @@ export function rootsOf(store: Store, home: string, thread: Thread): Root[] {
     { dir: artifactSources(home, thread.project_id), write: true, scratch: false },
     ...projectWorktrees(store, thread).map((dir) => ({ dir, write: true, scratch: false })),
     ...readOnlyFolders(store, thread).map((dir) => ({ dir, write: false, scratch: false })),
+    // Before the owner's other projects: a project it knows is read, never changed, in Auto too (D-191).
+    ...knownFolders(store, home, thread).map((dir) => ({ dir, write: false, scratch: false })),
     ...sharedRoots(home),
     // After the read-only folders and other chats' temp folders, which keep their own rule inside these.
     ...(thread.reach === "read" ? ownerProjects(store, home, thread) : []),
@@ -289,7 +303,8 @@ export function checkReadOnly(home: string, project: { path?: string | undefined
     const dir = path.resolve(p);
     if (!fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory()) throw new Error(`${given} is not a folder here`);
     const at = real(dir);
-    if (isInside(at, colonia) || isInside(colonia, at)) throw new Error(`${given} holds or is inside Colonia's own folder`);
+    if (isInside(at, colonia) || isInside(colonia, at))
+      throw new Error(`${given} holds or is inside Colonia's own folder`);
     // Read-only there would lock every chat's temp folder.
     if ([scratchRoot(home), "/tmp", "/private/tmp", os.tmpdir()].some((t) => isInside(at, real(t))))
       throw new Error(`${given} holds the system's temp folders`);
@@ -454,4 +469,22 @@ export function folderAccess(
   }
   const name = o.cwd === undefined || path.isAbsolute(file) ? file : path.join(o.cwd, file);
   return judge(roots, file, from, { ...where, write: o.write ?? false, name });
+}
+
+/**
+ * The one line that tells a turn which projects it may read: only their names, and where the rest is asked. Nothing
+ * those projects hold is in the prompt. A Flow's bot has no project_knowledge: it is told the folders it can read.
+ */
+export function knownLine(
+  store: Store,
+  thread: { id?: string; project_id?: string | undefined },
+  tool: boolean,
+): string {
+  const known = knownProjects(store, thread);
+  if (tool)
+    return known.length
+      ? `Projects you can read, never change (project_knowledge): ${known.map((p) => p.name).join(", ")}`
+      : "";
+  const folders = known.filter((p) => p.path && p.present).map((p) => `${p.name} (${p.path})`);
+  return folders.length ? `Folders of other projects you can read, never change: ${folders.join(", ")}` : "";
 }

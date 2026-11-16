@@ -5,10 +5,11 @@ import { tryFlowGraph } from "../domain/flow-graph-try.ts";
 import { validateFlowGraph } from "../domain/flow-graph-validate.ts";
 import { FlowGraphUnavailable } from "../domain/flow-graphs.ts";
 import { nextFlowTick } from "../domain/flow-schedules.ts";
-import { FlowPathError } from "../domain/flows.ts";
+import { type FlowDefinition, FlowPathError } from "../domain/flows.ts";
+import { checkKnown } from "../domain/project-links.ts";
 import { flowCronProblem } from "../domain/schedule.ts";
 import type { Store } from "../domain/store.ts";
-import { badRequest, notFound } from "../errors.ts";
+import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { type FlowModelCheck, type Flows, flowGraphIssues, flowTimeZone, validateFlowBinding } from "../flows.ts";
 import { flowGraphHandlers, pathRefused } from "./flow-graphs.ts";
 import { flowTestHandlers } from "./flow-tests.ts";
@@ -28,6 +29,16 @@ export function flowHandlers(
     const flow = store.flows.get(id);
     if (!flow) throw notFound("Flow not found");
     return flow;
+  };
+  /** Its other projects checked, only when they change: saved again with one since removed, a Flow still saves. */
+  const knowledgeChecked = (flow: FlowDefinition, previous: FlowDefinition | undefined): FlowDefinition => {
+    const knows = flow.knowledgeProjects?.filter((id) => id !== flow.projectId);
+    if (!knows || JSON.stringify(knows) === JSON.stringify(previous?.knowledgeProjects ?? [])) return flow;
+    try {
+      return { ...flow, knowledgeProjects: checkKnown(store, flow.projectId, knows, false) };
+    } catch (err) {
+      throw badRequest(errorMessage(err));
+    }
   };
   return {
     ...graphHandlers,
@@ -85,8 +96,9 @@ export function flowHandlers(
       }
       return { flows, published, drafts, schedules, time_zone: zone };
     },
-    "flows.set": (flow) => {
-      const previous = store.flows.get(flow.id);
+    "flows.set": (asked) => {
+      const previous = store.flows.get(asked.id);
+      const flow = knowledgeChecked(asked, previous);
       if (previous && previous.projectId !== flow.projectId) throw badRequest("Flow belongs to another project");
       // A published Flow runs its drawing: its old definition is history, and turning it on checks the drawing.
       const published = previous ? store.flowGraphs.get(flow.id).published : null;
