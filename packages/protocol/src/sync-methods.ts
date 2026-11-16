@@ -22,6 +22,8 @@ export const SyncStatus = z.object({
   last_sync_at: z.string().optional(),
   /** Versiones guardadas: lo que perdió frente a un cambio más reciente del otro equipo. */
   saved: z.number().int(),
+  /** Proyectos cuya carpeta no está en este equipo: hay que elegir una aquí. */
+  folders: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
 });
 export type SyncStatus = z.infer<typeof SyncStatus>;
 
@@ -63,7 +65,7 @@ export const syncMethods = {
   "sync.pair_cancel": { params: none, result: SyncStatus, effect: true, access: "human" },
   /** El código que enseña el otro equipo. Este se une a él. */
   "sync.pair_join": {
-    params: z.object({ code: z.string().min(1).max(4000), address: z.string().max(500).optional() }).strict(),
+    params: z.object({ code: z.string().min(1).max(64), address: z.string().max(500).optional() }).strict(),
     result: SyncStatus,
     effect: true,
     access: "human",
@@ -85,6 +87,20 @@ export const syncMethods = {
   "sync.recover": {
     params: z.object({ id: z.string().min(1).max(200) }).strict(),
     result: z.object({ ok: z.boolean() }),
+    effect: true,
+    access: "human",
+  },
+  /** Borra una versión guardada, o todas si no se dice cuál. Siguen ahí tras desemparejar hasta que se borran. */
+  "sync.saved_delete": {
+    params: z.object({ id: z.string().min(1).max(200).optional() }).strict(),
+    result: z.object({ deleted: z.number().int() }),
+    effect: true,
+    access: "human",
+  },
+  /** La carpeta de un proyecto en este equipo, cuando la del otro no existe aquí. */
+  "sync.set_folder": {
+    params: z.object({ project: z.string().min(1).max(200), path: z.string().min(1).max(1000) }).strict(),
+    result: SyncStatus,
     effect: true,
     access: "human",
   },

@@ -1,9 +1,12 @@
 // D-192 fase 2 · El diario de cambios de la sincronización entre dos equipos del mismo dueño.
 // Cada fila que cambia se apunta sola (disparadores), se sella con un reloj lógico y viaja al otro equipo. Si los dos
 // tocaron lo mismo, gana el último cambio y la versión que pierde queda guardada en `sync_perdidas`, recuperable.
-// Nada de esto existe en la base hasta que se empareja: `install` lo crea y `uninstall` lo borra entero.
+// Nada de esto existe en la base hasta que se empareja: `install` lo crea y `uninstall` lo quita; solo quedan las
+// versiones guardadas, hasta que el dueño las borre.
 import { createHash, createHmac } from "node:crypto";
+import fs from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
+import { AGENT_NAMES } from "@colonia/protocol";
 
 /** Las tablas que viajan, en orden de dependencia (las que otras referencian, primero). */
 export const TABLES = [
@@ -76,7 +79,12 @@ const LOCAL_SETTINGS = [
 ];
 export const settingTravels = (name: string) => !LOCAL_SETTINGS.some((p) => name.startsWith(p));
 
+/** Columnas que hablan de ESTE equipo (si la carpeta del proyecto está en su disco): ni viajan ni cuentan como cambio. */
+const LOCAL_COLUMNS: Readonly<Record<string, string[]>> = { projects: ["present"] };
+
 const LIST = "@lista:";
+/** El orden de una lista de ajustes: una fila por lista, con los `id` en su orden. */
+export const ORDER = "@orden";
 export const SECRET = "@clave";
 const LOST_SECRET = "sync.perdida.";
 /** Los secretos propios de la sincronización nunca viajan. */
@@ -119,6 +127,8 @@ export type JournalDeps = {
   /** Sal para no dejar en la base una huella reconocible de cada secreto. */
   salt?: string;
   warn?: (msg: string) => void;
+  /** Si una carpeta está en el disco de este equipo. */
+  folderHere?: (path: string) => boolean;
 };
 
 const deep = (v: unknown, f: (s: string) => string): unknown =>
@@ -168,7 +178,11 @@ function shapeOf(db: DatabaseSync, tbl: string): Shape | undefined {
       .sort((a, b) => a.pk - b.pk)
       .map((c) => c.name);
   if (!key.length) return undefined;
-  return { cols: info.map((c) => c.name), key, omit: new Set(logical?.omit ?? []) };
+  return {
+    cols: info.map((c) => c.name),
+    key,
+    omit: new Set([...(logical?.omit ?? []), ...(LOCAL_COLUMNS[tbl] ?? [])]),
+  };
 }
 
 /** Crea las tablas del diario y los disparadores que apuntan cada cambio. Se puede repetir. */
@@ -208,14 +222,53 @@ export function install(db: DatabaseSync): void {
   db.exec(meta("NEW", "i", "INSERT") + meta("NEW", "u", "UPDATE") + meta("OLD", "d", "DELETE"));
 }
 
-/** Quita todo rastro de la sincronización: la base queda como la de un Colonia que nunca se emparejó. */
+const hasSaved = (db: DatabaseSync) =>
+  !!db.prepare("SELECT 1 AS x FROM sqlite_master WHERE type = 'table' AND name = 'sync_perdidas'").get();
+
+/** Las versiones guardadas, las más recientes primero. Siguen ahí aunque ya no haya pareja. */
+export function lostIn(db: DatabaseSync, limit = 50, offset = 0): { total: number; items: Lost[] } {
+  if (!hasSaved(db)) return { total: 0, items: [] };
+  const total = (db.prepare("SELECT count(*) AS c FROM sync_perdidas").get() as { c: number }).c;
+  const items = db
+    .prepare(
+      `SELECT id, tbl, pk, origin, row, lost_at, recovered_at FROM sync_perdidas
+       ORDER BY lost_at DESC, id LIMIT ? OFFSET ?`,
+    )
+    .all(limit, offset) as Lost[];
+  return { total, items };
+}
+
+/** El dueño borra una versión guardada (o todas). Con pareja, el borrado viaja como cualquier otro cambio. */
+export function discard(db: DatabaseSync, secrets: SecretsPort | undefined, id?: string): number {
+  if (!hasSaved(db)) return 0;
+  const ids = (
+    id
+      ? db.prepare("SELECT id FROM sync_perdidas WHERE id = ?").all(id)
+      : db.prepare("SELECT id FROM sync_perdidas").all()
+  ) as { id: string }[];
+  for (const r of ids) {
+    db.prepare("DELETE FROM sync_perdidas WHERE id = ?").run(r.id);
+    if (secrets?.resolve(`secret://${LOST_SECRET}${r.id}`) !== undefined) secrets.set(LOST_SECRET + r.id, null);
+  }
+  if (!installed(db) && !lostIn(db, 1).total) db.exec("DROP TABLE IF EXISTS sync_perdidas");
+  return ids.length;
+}
+
+/**
+ * Quita la sincronización: la base queda como la de un Colonia que nunca se emparejó, salvo las versiones guardadas,
+ * que se conservan (con sus claves) hasta que el dueño las borre.
+ */
 export function uninstall(db: DatabaseSync, secrets?: SecretsPort): void {
   const names = db
-    .prepare("SELECT name, type FROM sqlite_master WHERE name LIKE 'sync!_%' ESCAPE '!' AND type IN ('trigger', 'table')")
+    .prepare(
+      "SELECT name, type FROM sqlite_master WHERE name LIKE 'sync!_%' ESCAPE '!' AND type IN ('trigger', 'table')",
+    )
     .all() as { name: string; type: string }[];
+  const keep = lostIn(db, 1).total > 0;
   for (const t of names.filter((n) => n.type === "trigger")) db.exec(`DROP TRIGGER IF EXISTS ${q(t.name)}`);
-  for (const t of names.filter((n) => n.type === "table")) db.exec(`DROP TABLE IF EXISTS ${q(t.name)}`);
-  for (const s of secrets?.list() ?? []) if (s.name.startsWith(LOST_SECRET)) secrets?.set(s.name, null);
+  for (const t of names.filter((n) => n.type === "table"))
+    if (!(keep && t.name === "sync_perdidas")) db.exec(`DROP TABLE IF EXISTS ${q(t.name)}`);
+  if (!keep) for (const s of secrets?.list() ?? []) if (s.name.startsWith(LOST_SECRET)) secrets?.set(s.name, null);
 }
 
 export function createJournal(d: JournalDeps) {
@@ -264,6 +317,10 @@ export function createJournal(d: JournalDeps) {
 
   function readRow(tbl: string, pk: string): Row | undefined {
     if (tbl.startsWith(LIST)) return listOf(tbl.slice(LIST.length)).find((e) => e.id === pk);
+    if (tbl === ORDER) {
+      const ids = listOf(pk).map((e) => e.id);
+      return ids.length ? { ids } : undefined;
+    }
     if (tbl === SECRET) {
       const value = d.secrets?.resolve(`secret://${pk}`);
       return value === undefined ? undefined : { value };
@@ -319,6 +376,18 @@ export function createJournal(d: JournalDeps) {
       else list.push(row as Row & { id: string });
       return void saveList(name, list);
     }
+    if (tbl === ORDER) {
+      // Los que el otro equipo nombra, en su orden; los que solo están aquí, detrás y como estaban.
+      const ids = row && Array.isArray(row.ids) ? (row.ids as unknown[]).map(String) : [];
+      const at = new Map(ids.map((id, i) => [id, i]));
+      const list = listOf(pk);
+      const sorted = list
+        .map((e, i) => ({ e, n: at.get(e.id) ?? ids.length + i }))
+        .sort((x, y) => x.n - y.n)
+        .map((x) => x.e);
+      if (sorted.some((e, i) => e !== list[i])) saveList(pk, sorted);
+      return;
+    }
     if (tbl === SECRET) return void d.secrets?.set(pk, row ? String(row.value) : null);
     if (tbl === "meta") {
       const key = keyOf(pk)[0];
@@ -337,8 +406,7 @@ export function createJournal(d: JournalDeps) {
     const values = cols.map((c) => decode(row[c]));
     if (one(`SELECT 1 AS x FROM ${q(tbl)} WHERE ${where(s)}`, ...key))
       run(`UPDATE ${q(tbl)} SET ${cols.map((c) => `${q(c)} = ?`).join(", ")} WHERE ${where(s)}`, ...values, ...key);
-    else
-      run(`INSERT INTO ${q(tbl)} (${cols.map(q).join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`, ...values);
+    else run(`INSERT INTO ${q(tbl)} (${cols.map(q).join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`, ...values);
   }
 
   // ── Sellar: cada cambio apuntado recibe un sello nuevo si de verdad cambió el contenido ──
@@ -380,6 +448,7 @@ export function createJournal(d: JournalDeps) {
     }
     for (const v of all<{ pk: string }>("SELECT pk FROM sync_ver WHERE tbl = ? AND deleted = 0", tbl))
       if (!seen.has(v.pk)) stamp(tbl, v.pk, undefined);
+    stamp(ORDER, name);
   }
 
   function stampSetting(key: string): void {
@@ -437,7 +506,7 @@ export function createJournal(d: JournalDeps) {
 
   // ── Guardar la versión que pierde ──
   function keep(tbl: string, pk: string, hlc: string, origin: string, row: Row, winner: string): boolean {
-    if (tbl === "sync_perdidas") return false;
+    if (tbl === "sync_perdidas" || tbl === ORDER) return false;
     const id = sha(`${tbl}\n${pk}\n${hlc}\n${origin}`);
     if (one("SELECT 1 AS x FROM sync_perdidas WHERE id = ?", id)) return false;
     let saved = row;
@@ -533,22 +602,58 @@ export function createJournal(d: JournalDeps) {
   // una fila que solo cambia en sus fechas no ha perdido nada, y no se guarda como versión.
   const bare = (row: Row): Row =>
     Object.fromEntries(Object.entries(row).filter(([k]) => k !== "created_at" && k !== "updated_at"));
-  const alike = (tbl: string, a: Row, b: Row | undefined): boolean =>
-    !!b && hashOf(tbl, bare(a)) === hashOf(tbl, bare(b));
+  // Tampoco pierde nada el asistente que aún lleva el nombre que le tocó al instalar (uno al azar de la lista): al
+  // juntar dos equipos queda el del que gana, sin versión guardada.
+  const factoryName = (tbl: string, row: Row) =>
+    tbl === "agents" &&
+    row.kind === "secretary" &&
+    typeof row.name === "string" &&
+    (AGENT_NAMES as readonly string[]).includes(row.name.replace(/ \d+$/, ""));
+  const alike = (tbl: string, loser: Row, winner: Row | undefined): boolean => {
+    if (!winner) return false;
+    const strip = (r: Row) => {
+      const out = bare(r);
+      if (factoryName(tbl, loser)) delete out.name;
+      return out;
+    };
+    return hashOf(tbl, strip(loser)) === hashOf(tbl, strip(winner));
+  };
+
+  // La carpeta de un proyecto viaja como ruta solo si existe en este equipo. Si no, este equipo conserva la suya; y si
+  // no tenía ninguna, se queda apuntada la del otro como «falta aquí» para que el dueño elija una.
+  const folderHere = d.folderHere ?? ((p: string) => fs.existsSync(p));
+  function folder(pk: string, row: Row): Row {
+    if (typeof row.path !== "string" || folderHere(row.path)) return row;
+    const local = readRow("projects", pk);
+    return local && typeof local.path === "string" ? { ...row, path: local.path } : row;
+  }
+  const present = (pk: string, row: Row) =>
+    run(
+      "UPDATE projects SET present = ? WHERE id = ?",
+      typeof row.path === "string" && !folderHere(row.path) ? 0 : 1,
+      keyOf(pk)[0],
+    );
 
   function applyOne(item: Item, out: Applied): void {
     const { tbl, pk } = item;
     if (tbl === "meta" && !settingTravels(String(keyOf(pk)[0]).slice("setting:".length))) return;
     if (tbl === SECRET && !travels(pk)) return;
     observe(item.hlc);
-    const row = item.row ? localize(tbl, item.row) : undefined;
+    const moved = item.row ? localize(tbl, item.row) : undefined;
+    const row = moved && tbl === "projects" ? folder(pk, moved) : moved;
     const ver = verOf(tbl, pk);
     if (ver && ver.hlc === item.hlc && ver.origin === item.origin) return;
     const hash = row ? hashOf(tbl, row) : "";
     const same = !!ver && ver.deleted === (row ? 0 : 1) && ver.hash === hash;
     const mine = !!ver && ver.origin === me && ver.synced === 0;
     if (ver && !newer(item.hlc, item.origin, ver.hlc, ver.origin)) {
-      if (mine && !same && row && !alike(tbl, row, readRow(tbl, pk)) && keep(tbl, pk, item.hlc, item.origin, row, ver.hlc))
+      if (
+        mine &&
+        !same &&
+        row &&
+        !alike(tbl, row, readRow(tbl, pk)) &&
+        keep(tbl, pk, item.hlc, item.origin, row, ver.hlc)
+      )
         out.kept++;
       return;
     }
@@ -568,6 +673,7 @@ export function createJournal(d: JournalDeps) {
       }
       writeRow(tbl, pk, row);
     }
+    if (tbl === "projects" && row) present(pk, row);
     // Un mensaje recolocado ya no es igual que el que envió el otro equipo: vuelve a él como cambio de este.
     if (item.origin !== sender)
       setVer(tbl, pk, { hlc: tick(), origin: me, deleted: 0, hash: hashOf(tbl, row as Row), synced: 0 });
@@ -660,24 +766,30 @@ export function createJournal(d: JournalDeps) {
             }
             queue = later;
           }
+          // Lo que entra puede dejar una lista en un orden que nadie ha anotado (un elemento que solo está aquí).
+          for (const t of out.touched)
+            if (t.startsWith(LIST)) stamp(ORDER, t.slice(LIST.length));
+            else if (t === ORDER) for (const name of LISTS) stamp(ORDER, name);
         });
       });
       return out;
     },
-    lost(limit = 50, offset = 0): { total: number; items: Lost[] } {
-      const total = one<{ c: number }>("SELECT count(*) AS c FROM sync_perdidas")?.c ?? 0;
-      const items = all<Lost>(
-        `SELECT id, tbl, pk, origin, row, lost_at, recovered_at FROM sync_perdidas
-         ORDER BY lost_at DESC, id LIMIT ? OFFSET ?`,
-        limit,
-        offset,
-      );
-      return { total, items };
-    },
+    lost: (limit = 50, offset = 0) => lostIn(db, limit, offset),
+    /** Borra una versión guardada, o todas: el borrado viaja al otro equipo. */
+    discard: (id?: string) =>
+      tx(() => {
+        const n = discard(db, d.secrets, id);
+        seal();
+        scanSecrets();
+        return n;
+      }),
     /** Devuelve una versión guardada a su sitio; lo que había pasa a ser, a su vez, una versión guardada. */
     recover(id: string): boolean {
       return tx(() => {
-        const p = one<{ tbl: string; pk: string; row: string }>("SELECT tbl, pk, row FROM sync_perdidas WHERE id = ?", id);
+        const p = one<{ tbl: string; pk: string; row: string }>(
+          "SELECT tbl, pk, row FROM sync_perdidas WHERE id = ?",
+          id,
+        );
         if (!p) return false;
         seal();
         let row = JSON.parse(p.row) as Row;

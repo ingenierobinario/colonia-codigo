@@ -5,8 +5,8 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { z } from "zod";
 import { BROWSER_CAP, ChannelInfo, type HarnessId, NO_COMPUTER_CAP, TabInfo } from "@colonia/protocol";
+import { z } from "zod";
 import {
   createDesktopInstaller,
   type DesktopInstaller,
@@ -79,7 +79,6 @@ import { type ThisComputer, thisComputer } from "./equipos/local.ts";
 import { type Notify, systemNotify } from "./equipos/notify.ts";
 import { createPrincipal } from "./equipos/principal.ts";
 import { createSshEquipos, type SshEquipos, systemSshExec } from "./equipos/ssh.ts";
-import { createSync, type Sync } from "./sync/service.ts";
 import { systemTray, type Tray } from "./equipos/tray.ts";
 import { errorMessage } from "./errors.ts";
 import { flowHttpPolicy } from "./flow-http.ts";
@@ -140,6 +139,7 @@ import { createServices } from "./services/registry.ts";
 import { mediaData } from "./services/uploads.ts";
 import { syncRuntimeSkills } from "./skills/runtimes.ts";
 import { skillsFor } from "./skills/skills.ts";
+import { createSync, type Sync } from "./sync/service.ts";
 import { createTelemetry } from "./telemetry.ts";
 import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
 import { createTerminals } from "./terminal/terminals.ts";
@@ -764,6 +764,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     log,
     urls: () => reachableAt(config.host, listening, config.publicUrl),
     local: () => `http://127.0.0.1:${listening}`,
+    ...(Number(process.env.COLONIA_SYNC_BEACON_PORT)
+      ? { beaconPort: Number(process.env.COLONIA_SYNC_BEACON_PORT) }
+      : {}),
     channels: () => channels.info(),
     changed: (touched) => {
       bus.emit({ type: "sync.updated", data: true });
@@ -882,7 +885,17 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   if (cleanup) log.info(cleanup, "captured memory cleanup: retired noisy automatic notes");
   memoryMaintenance.start();
 
-  const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm, equipos: principal, sync: pair });
+  const transport = await listen(config, {
+    dispatch,
+    store,
+    log,
+    identity,
+    broker,
+    bus,
+    vm,
+    equipos: principal,
+    sync: pair,
+  });
   listening = transport.port;
   pair.start();
   if (!opts.equipoOff) equipoAgent.start();

@@ -49,6 +49,8 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "sync.unpair": MACHINE,
   "sync.make_principal": MACHINE,
   "sync.recover": AS_OWNER,
+  "sync.saved_delete": AS_OWNER,
+  "sync.set_folder": MACHINE,
   "equipos.pair_start": SECRET,
   "equipos.pair_cancel": SECRET,
   "equipos.connect": SECRET,

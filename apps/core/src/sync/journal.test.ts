@@ -2,9 +2,10 @@
 // versión que pierde queda guardada y se puede recuperar.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { AGENT_NAMES } from "@colonia/protocol";
 import { openDb } from "../db/db.ts";
 import { removeDir, tempDir } from "../testkit/platform.ts";
-import { createJournal, install, installed, type Journal, TABLES, uninstall } from "./journal.ts";
+import { createJournal, discard, install, installed, type Journal, lostIn, TABLES, uninstall } from "./journal.ts";
 
 type Db = ReturnType<typeof openDb>;
 type T = { after: (f: () => void) => void };
@@ -52,7 +53,15 @@ function pair(t: T) {
     assert.equal(a.journal.pendingCount() + b.journal.pendingCount(), 0, "queda algo por enviar");
     return kept;
   };
-  return { a, b, flow, settle, tick: (ms = 1000) => void (now += ms) };
+  return {
+    a,
+    b,
+    flow,
+    settle,
+    tick: (ms = 1000) => {
+      now += ms;
+    },
+  };
 }
 
 const project = (db: Db, id: string, name: string) =>
@@ -74,7 +83,15 @@ function insert(db: Db, table: string, values: Record<string, unknown>) {
     .filter((c) => c.name in values || (c.nn && c.d === null))
     .map((c) => c.name);
   db.prepare(`INSERT INTO ${table} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`).run(
-    ...(cols.map((c) => (c in values ? values[c] : c.endsWith("_at") ? "2026-01-01T00:00:00Z" : c === "parts" || c === "agent_ids" ? "[]" : "x")) as never[]),
+    ...(cols.map((c) =>
+      c in values
+        ? values[c]
+        : c.endsWith("_at")
+          ? "2026-01-01T00:00:00Z"
+          : c === "parts" || c === "agent_ids"
+            ? "[]"
+            : "x",
+    ) as never[]),
   );
 }
 
@@ -225,7 +242,12 @@ test("dos mensajes escritos a la vez en el mismo chat se conservan los dos", (t)
   say(b.db, "mb", "2026-01-01T00:00:02Z");
   settle();
   const seqs = (db: Db) =>
-    (db.prepare("SELECT id, seq FROM messages WHERE thread_id = 'h1' ORDER BY seq").all() as { id: string; seq: number }[])
+    (
+      db.prepare("SELECT id, seq FROM messages WHERE thread_id = 'h1' ORDER BY seq").all() as {
+        id: string;
+        seq: number;
+      }[]
+    )
       .map((m) => `${m.id}:${m.seq}`)
       .join(" ");
   assert.equal(seqs(a.db), "ma:1 mb:2");
@@ -286,4 +308,164 @@ test("los proyectos enlazados (D-191) viajan: de quién cuelga un proyecto, a cu
     (b.db.prepare("SELECT knowledge FROM flows WHERE id = ?").get("f-1") as { knowledge: string }).knowledge,
     '["p-base"]',
   );
+});
+
+/** Dos equipos que ya tenían cosas antes de emparejarse: manda A, que es quien generó el código. */
+function joined(
+  t: T,
+  before: (da: Db, db: Db) => void,
+  here?: { a: (p: string) => boolean; b: (p: string) => boolean },
+) {
+  let now = 1_800_000_000_000;
+  const homes = [tempDir("colonia-sync-").path, tempDir("colonia-sync-").path];
+  const [da, db] = homes.map((h) => openDb(h)) as [Db, Db];
+  t.after(() => {
+    da.close();
+    db.close();
+    for (const h of homes) void removeDir(h);
+  });
+  before(da, db);
+  install(da);
+  install(db);
+  const ja = createJournal({ db: da, me: "aaa", now: () => now++, ...(here ? { folderHere: here.a } : {}) });
+  const jb = createJournal({ db, me: "bbb", now: () => now++, ...(here ? { folderHere: here.b } : {}) });
+  ja.baseline(false);
+  jb.baseline(true);
+  const settle = () => {
+    for (let i = 0; i < 4; i++)
+      for (const [from, to] of [
+        [ja, jb],
+        [jb, ja],
+      ] as const) {
+        from.seal();
+        const items = from.pending(1000);
+        to.apply(structuredClone(items));
+        from.acked(items);
+      }
+    assert.equal(ja.pendingCount() + jb.pendingCount(), 0, "queda algo por enviar");
+  };
+  return { da, db, ja, jb, settle };
+}
+
+test("el nombre al azar del asistente no es un conflicto al emparejar; uno puesto a mano sí se guarda", (t) => {
+  const agent = (db: Db, id: string, kind: string, name: string) => insert(db, "agents", { id, kind, name });
+  const nameIn = (db: Db, id: string) =>
+    (db.prepare("SELECT name FROM agents WHERE id = ?").get(id) as { name: string }).name;
+  const [uno, otro] = [AGENT_NAMES[0] as string, AGENT_NAMES[1] as string];
+  const azar = joined(t, (da, db) => {
+    agent(da, "superagent", "secretary", uno);
+    agent(db, "superagent", "secretary", `${otro} 2`);
+  });
+  azar.settle();
+  assert.equal(nameIn(azar.da, "superagent"), uno);
+  assert.equal(nameIn(azar.db, "superagent"), uno);
+  assert.equal(azar.ja.lost().total + azar.jb.lost().total, 0);
+
+  const mano = joined(t, (da, db) => {
+    agent(da, "superagent", "secretary", uno);
+    agent(db, "superagent", "secretary", "Mi mano derecha");
+    agent(da, "ventas", "agent", uno);
+    agent(db, "ventas", "agent", otro);
+  });
+  mano.settle();
+  assert.equal(nameIn(mano.db, "superagent"), uno);
+  // El nombre elegido por el dueño y el de un agente que no es el asistente sí quedan guardados.
+  assert.equal(mano.jb.lost().total, 2);
+});
+
+test("el orden de las listas viaja", (t) => {
+  const { a, b, settle, tick } = pair(t);
+  const set = (db: Db, ids: string[]) =>
+    db
+      .prepare(
+        "INSERT INTO meta (key, value) VALUES ('setting:navegadores', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+      )
+      .run(JSON.stringify(ids.map((id) => ({ id, browser: "chrome", name: id }))));
+  const get = (db: Db) =>
+    (
+      JSON.parse(
+        (db.prepare("SELECT value FROM meta WHERE key = 'setting:navegadores'").get() as { value: string }).value,
+      ) as { id: string }[]
+    ).map((e) => e.id);
+  set(a.db, ["uno", "dos", "tres"]);
+  settle();
+  assert.deepEqual(get(b.db), ["uno", "dos", "tres"]);
+  tick();
+  set(b.db, ["tres", "uno", "dos"]);
+  settle();
+  assert.deepEqual(get(a.db), ["tres", "uno", "dos"]);
+  // Cada uno añade uno a la vez: los dos acaban con los mismos y en el mismo orden.
+  tick();
+  set(a.db, ["tres", "uno", "dos", "de-a"]);
+  tick();
+  set(b.db, ["de-b", "tres", "uno", "dos"]);
+  settle();
+  assert.deepEqual(get(a.db), get(b.db));
+  assert.deepEqual([...get(a.db)].sort(), ["de-a", "de-b", "dos", "tres", "uno"]);
+  assert.equal(a.journal.lost().total + b.journal.lost().total, 0);
+});
+
+test("la carpeta de un proyecto solo viaja si existe en el otro equipo", (t) => {
+  const row = (db: Db, id: string) =>
+    db.prepare("SELECT name, path, present FROM projects WHERE id = ?").get(id) as {
+      name: string;
+      path: string;
+      present: number;
+    };
+  const put = (db: Db, id: string, p: string) =>
+    db
+      .prepare("INSERT INTO projects (id, name, path, created_at) VALUES (?, ?, ?, '2026-01-01T00:00:00Z')")
+      .run(id, id, p);
+  const { da, db, settle } = joined(t, () => {}, {
+    a: (p) => p.startsWith("/a/") || p.startsWith("/comun/"),
+    b: (p) => p.startsWith("/b/") || p.startsWith("/comun/"),
+  });
+  put(da, "igual", "/comun/igual");
+  put(da, "solo-a", "/a/solo-a");
+  settle();
+  // La que existe en los dos llega como ruta; la otra queda apuntada como «falta aquí».
+  assert.deepEqual({ ...row(db, "igual") }, { name: "igual", path: "/comun/igual", present: 1 });
+  assert.deepEqual({ ...row(db, "solo-a") }, { name: "solo-a", path: "/a/solo-a", present: 0 });
+  assert.equal(row(da, "solo-a").present, 1);
+  // B elige la suya: A conserva la que tenía, y los cambios de nombre siguen cruzando sin pisar carpetas.
+  db.prepare("UPDATE projects SET path = '/b/elegida', present = 1 WHERE id = 'solo-a'").run();
+  settle();
+  assert.equal(row(da, "solo-a").path, "/a/solo-a");
+  da.prepare("UPDATE projects SET name = 'Renombrado' WHERE id = 'solo-a'").run();
+  settle();
+  assert.deepEqual({ ...row(db, "solo-a") }, { name: "Renombrado", path: "/b/elegida", present: 1 });
+  assert.deepEqual({ ...row(da, "solo-a") }, { name: "Renombrado", path: "/a/solo-a", present: 1 });
+  assert.equal(lostIn(da).total + lostIn(db).total, 0);
+});
+
+test("al quitar la sincronización las versiones guardadas siguen ahí hasta que se borran", (t) => {
+  const { a, b, settle, tick } = pair(t);
+  project(a.db, "p1", "Original");
+  a.secrets.set("openai", "clave-uno");
+  settle();
+  a.db.prepare("UPDATE projects SET name = 'Versión de A' WHERE id = 'p1'").run();
+  a.secrets.set("openai", "clave-de-a");
+  a.journal.seal();
+  a.journal.scanSecrets();
+  tick();
+  b.db.prepare("UPDATE projects SET name = 'Versión de B' WHERE id = 'p1'").run();
+  b.secrets.set("openai", "clave-de-b");
+  settle();
+  assert.equal(a.journal.lost().total, 2);
+  const kept = [...a.store.keys()].filter((k) => k.startsWith("sync.perdida."));
+  assert.equal(kept.length, 1);
+  uninstall(a.db, a.secrets);
+  assert.equal(installed(a.db), false);
+  assert.equal(lostIn(a.db).total, 2);
+  assert.ok(a.store.has(kept[0] as string), "la clave guardada se perdió al quitar la sincronización");
+  // Borrar una, y luego todas: no queda ni la tabla ni la clave.
+  const one = lostIn(a.db).items.find((i) => i.tbl === "projects")?.id;
+  assert.equal(discard(a.db, a.secrets, one), 1);
+  assert.equal(lostIn(a.db).total, 1);
+  assert.equal(discard(a.db, a.secrets), 1);
+  assert.equal(a.store.has(kept[0] as string), false);
+  assert.deepEqual(a.db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'sync!_%' ESCAPE '!'").all(), []);
+  // Con pareja, el borrado se hace igual desde el diario.
+  assert.equal(b.journal.discard(), 2);
+  assert.equal(b.journal.lost().total, 0);
 });

@@ -1,16 +1,17 @@
-// D-192 fase 2 · Dos equipos del mismo dueño que se ven iguales. Se emparejan con un código (el mismo apretón de manos
-// que «Mis equipos», D-190: clave efímera, firma y prueba del código), hablan directo y cifrado de punta a punta, y se
+// D-192 fase 2 · Dos equipos del mismo dueño que se ven iguales. Se emparejan con un código corto (el mismo apretón de
+// manos que «Mis equipos», D-190: clave efímera, firma y prueba del código, aquí de los dos lados), se encuentran solos
+// en la red (beacon.ts), hablan directo y cifrado de punta a punta, y se
 // pasan lo que el diario (journal.ts) anota en cada uno. Uno de los dos es el principal: solo él abre las sesiones de
 // los canales y lleva el reloj de las rutinas; el otro ve su estado y envía a través de él. Sin emparejar no hay nada
 // instalado: ni tablas, ni disparadores, ni reloj.
-import { randomUUID } from "node:crypto";
+import { createHash, randomInt, randomUUID, scryptSync } from "node:crypto";
 import fs from "node:fs";
 import type { IncomingMessage } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
-import type { SyncSaved, SyncStatus } from "@colonia/protocol";
 import type { Duplex } from "node:stream";
+import type { SyncSaved, SyncStatus } from "@colonia/protocol";
 import { type RawData, WebSocket, WebSocketServer } from "ws";
 import { z } from "zod";
 import { movePath } from "../backup/apply.ts";
@@ -33,13 +34,16 @@ import {
 import { createPairing } from "../equipos/pairing.ts";
 import { ClientHello, Plain, Sealed, ServerHello } from "../equipos/wire.ts";
 import type { Log } from "../log.ts";
+import { type Beacon, type BeaconMsg, createBeacon, ownAddresses } from "./beacon.ts";
 import {
   type Applied,
   createJournal,
+  discard,
+  type Item,
   install,
   installed,
-  type Item,
   type Journal,
+  lostIn,
   type SecretsPort,
   uninstall,
 } from "./journal.ts";
@@ -48,12 +52,29 @@ export const SYNC_PATH = "/sincronizar";
 const STATE_FILE = "sincronizar.json";
 const IDENTITY = "sync.identidad";
 /** Cambia cuando los dos lados dejan de entenderse: con versiones distintas no se pasan nada. */
-const WIRE = 1;
+const WIRE = 2;
 const HANDSHAKE_MS = 15_000;
 const BATCH = 200;
 const BATCH_WAIT_MS = 60_000;
-const FILE_MAX = 64 * 1024 * 1024;
 const FILE_CHUNK = 512 * 1024;
+/** Los identificadores que tuvo este equipo en parejas anteriores: de quién era cada versión guardada. */
+const PAST_IDS = "sync:ids";
+const SEEK_MS = 5000;
+const FIND_MS = 6000;
+
+// El código que se teclea: 8 letras y números sin los que se confunden (0/O, 1/I). Como es corto, se estira antes de
+// usarlo: quien escuche la red no puede probarlos todos en los diez minutos que vale.
+const ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+const shortCode = () => Array.from({ length: 8 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
+const pretty = (code: string) => `${code.slice(0, 4)}-${code.slice(4)}`;
+const typed = (text: string) => {
+  const code = text.toUpperCase().replace(/[^0-9A-Z]/g, "");
+  return /^[2-9A-HJ-NP-Z]{8}$/.test(code) ? code : undefined;
+};
+const stretch = (code: string) =>
+  scryptSync(code, "colonia-sincronizar-2", 32, { N: 16384, r: 8, p: 1 }).toString("hex");
+const tagOf = (what: string) => createHash("sha256").update(`colonia-busca:${what}`).digest("hex").slice(0, 32);
+const trimUrl = (u: string) => u.replace(/\/+$/, "");
 const WAITING_MAX = 5000;
 const RETRY_MS = [1000, 2000, 5000, 10_000, 30_000];
 
@@ -93,15 +114,29 @@ const Msg = z.discriminatedUnion("t", [
   z.object({ t: z.literal("ok"), id: z.string() }),
   z.object({ t: z.literal("papel"), role: z.enum(["principal", "secundario"]), role_at: z.number() }),
   z.object({ t: z.literal("canales"), info: z.array(z.unknown()) }),
-  z.object({ t: z.literal("pide"), id: z.string() }),
-  z.object({ t: z.literal("fichero"), id: z.string(), data: z.string(), last: z.boolean(), missing: z.boolean() }),
+  // Los ficheros van trozo a trozo y a petición: no hay tamaño máximo y uno a medias sigue por donde iba.
+  z.object({ t: z.literal("pide"), id: z.string(), at: z.number().int().min(0) }),
+  z.object({
+    t: z.literal("fichero"),
+    id: z.string(),
+    at: z.number().int().min(0),
+    data: z.string(),
+    last: z.boolean(),
+    missing: z.boolean(),
+  }),
   z.object({ t: z.literal("adios") }),
 ]);
 type Msg = z.infer<typeof Msg>;
-const PairMsg = z.object({ t: z.literal("pair"), pub: z.string(), name: z.string(), proof: z.string(), sig: z.string() });
+const PairMsg = z.object({
+  t: z.literal("pair"),
+  pub: z.string(),
+  name: z.string(),
+  proof: z.string(),
+  sig: z.string(),
+});
 const AuthMsg = z.object({ t: z.literal("auth"), sig: z.string() });
 const PairReply = z.union([
-  z.object({ t: z.literal("paired"), name: z.string() }),
+  z.object({ t: z.literal("paired"), name: z.string(), proof: z.string() }),
   z.object({ t: z.literal("refused"), why: z.string() }),
 ]);
 
@@ -128,6 +163,10 @@ export type SyncDeps = {
   channels?(): unknown[];
   tickMs?: number;
   now?: () => number;
+  /** El puerto por el que los equipos se buscan en la red local. */
+  beaconPort?: number;
+  /** Si una carpeta está en el disco de este equipo. */
+  folderHere?: (path: string) => boolean;
 };
 
 type Wire = { send(m: object): void; recv(s: string): unknown };
@@ -137,7 +176,8 @@ const wsUrl = (base: string) => `${base.replace(/\/+$/, "").replace(/^http/, "ws
 const hex = (fingerprint: string) => fingerprint.toLowerCase().replace(/[^0-9a-f]/g, "");
 
 /** Un ajuste no tiene nombre propio: se enseña el suyo, sin el prefijo interno. */
-const settingName = (key: unknown) => (typeof key === "string" ? key.replace(/^setting:/, "").replace(/[_.:]+/g, " ") : "");
+const settingName = (key: unknown) =>
+  typeof key === "string" ? key.replace(/^setting:/, "").replace(/[_.:]+/g, " ") : "";
 const KINDS: Readonly<Record<string, SyncSaved["kind"]>> = {
   projects: "project",
   agents: "agent",
@@ -166,7 +206,8 @@ const KINDS: Readonly<Record<string, SyncSaved["kind"]>> = {
 export function createSync(d: SyncDeps) {
   const now = d.now ?? Date.now;
   const file = path.join(d.home, STATE_FILE);
-  const pairing = createPairing();
+  const pairing = createPairing({ makeCode: shortCode });
+  const folderHere = d.folderHere ?? ((p: string) => fs.existsSync(p));
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 * 1024 });
   const myName = () => (d.name?.() ?? os.hostname()).slice(0, 80) || "Mi equipo";
   const warn = (msg: string, err?: unknown) =>
@@ -188,9 +229,17 @@ export function createSync(d: SyncDeps) {
   let attempt = 0;
   let nextDial = 0;
   let shown: { code: string; expires_at: string } | undefined;
+  /** El código vigente, estirado. */
+  let secret: string | undefined;
   let stateDirty = 0;
   const wanted: string[] = [];
-  let fetching: { id: string; file: string; part: string } | undefined;
+  let fetching: { id: string; file: string; part: string; at: number } | undefined;
+  let beacon: Beacon | undefined;
+  /** Direcciones oídas en la red para la pareja: se prueban, y solo se guardan si el apretón de manos sale bien. */
+  let found: string[] = [];
+  let nextSeek = 0;
+  let seeking: { tag: string; add(urls: string[], host: string): void } | undefined;
+  let missing: { at: number; list: { id: string; name: string }[] } | undefined;
 
   function readState(): State | undefined {
     try {
@@ -240,8 +289,89 @@ export function createSync(d: SyncDeps) {
       secrets: d.secrets,
       ...(d.secretTravels ? { secretTravels: d.secretTravels } : {}),
       warn: (m) => warn(m),
+      folderHere,
     });
     if (baseline) journal.baseline(baseline === "oldest");
+  }
+
+  // ── Encontrarse en la red ──────────────────────────────────────────────────────────────────────────────────────────
+
+  const mine = () => (d.urls().length ? d.urls() : [d.local()]).map(trimUrl);
+  const pairTag = () => (state && myId ? tagOf([myId, state.peer.id].sort().join(":")) : undefined);
+  /** Las direcciones que dice el otro, y las mismas por donde de verdad llegó su voz. Nunca las de este equipo. */
+  function near(urls: string[], host: string): string[] {
+    const own = ownAddresses();
+    const here = own.has(host) || host.startsWith("127.");
+    const self = new Set(mine());
+    const out = new Set<string>();
+    for (const raw of urls) {
+      try {
+        const u = new URL(raw);
+        if (!/^https?:$/.test(u.protocol)) continue;
+        const loop = u.hostname === "localhost" || u.hostname.startsWith("127.");
+        if (!loop || here) out.add(trimUrl(u.toString()));
+        if (!here && u.hostname !== host) {
+          u.hostname = host;
+          out.add(trimUrl(u.toString()));
+        }
+      } catch {}
+    }
+    return [...out].filter((u) => !self.has(u));
+  }
+  function heard(m: BeaconMsg, host: string): void {
+    if (stopped) return;
+    const pair = pairTag();
+    if (m.t === "busca") {
+      const code = secret && !state && pairing.active() ? tagOf(secret) : undefined;
+      if (m.tag !== code && m.tag !== pair) return;
+      beacon?.say({ t: "aqui", tag: m.tag, urls: mine() });
+    }
+    if (m.tag === pair) {
+      if (link || !state) return;
+      const fresh = near(m.urls, host).filter((u) => !state?.peer.urls.includes(u) && !found.includes(u));
+      if (!fresh.length) return;
+      found = [...fresh, ...found].slice(0, 16);
+      nextDial = 0;
+      attempt = 0;
+    } else if (m.t === "aqui" && seeking?.tag === m.tag) seeking.add(m.urls, host);
+  }
+  /** La baliza solo está abierta mientras hace falta: con pareja, enseñando un código o buscando al que lo enseña. */
+  function tune(): void {
+    const on = !stopped && Boolean(state || seeking || (secret && pairing.active()));
+    if (on && !beacon)
+      beacon = createBeacon({ ...(d.beaconPort ? { port: d.beaconPort } : {}), heard, warn: (m) => warn(m) });
+    if (!on && beacon) {
+      beacon.close();
+      beacon = undefined;
+    }
+  }
+  /** Quién enseña este código en la red. */
+  function find(key: string): Promise<string[]> {
+    return new Promise((resolve) => {
+      const tag = tagOf(key);
+      const got = new Set<string>();
+      let soon: ReturnType<typeof setTimeout> | undefined;
+      const finish = () => {
+        clearTimeout(soon);
+        clearTimeout(end);
+        for (const a of asks) clearTimeout(a);
+        seeking = undefined;
+        tune();
+        resolve([...got]);
+      };
+      seeking = {
+        tag,
+        add: (urls, host) => {
+          for (const u of near(urls, host)) got.add(u);
+          if (got.size) soon ??= setTimeout(finish, 250);
+        },
+      };
+      tune();
+      const asks = [0, 300, 1000, 2000, 3500, 5000].map((ms) =>
+        setTimeout(() => beacon?.say({ t: "busca", tag, urls: [] }), ms),
+      );
+      const end = setTimeout(finish, FIND_MS);
+    });
   }
 
   // ── El enlace ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -354,7 +484,7 @@ export function createSync(d: SyncDeps) {
       remote = m.info;
       return tell();
     }
-    if (m.t === "pide") return sendFile(l, m.id);
+    if (m.t === "pide") return sendFile(l, m.id, m.at);
     if (m.t === "fichero") return receiveFile(m);
   }
 
@@ -417,27 +547,37 @@ export function createSync(d: SyncDeps) {
       if (!id) return;
       const p = mediaPath(id);
       if (!p || !inHome(p) || fs.existsSync(p)) continue;
-      fetching = { id, file: p, part: `${p}.sync-part` };
-      fs.rmSync(fetching.part, { force: true });
-      return link.send({ t: "pide", id });
+      const part = `${p}.sync-part`;
+      // Lo que ya llegó antes de un corte no se vuelve a pedir.
+      let at = 0;
+      try {
+        at = fs.statSync(part).size;
+      } catch {}
+      fetching = { id, file: p, part, at };
+      return link.send({ t: "pide", id, at });
     }
   }
-  function sendFile(l: Link, id: string): void {
-    const none = () => l.send({ t: "fichero", id, data: "", last: true, missing: true });
+  /** Un trozo, el que piden. Así un fichero de cualquier tamaño no ocupa memoria ni atasca lo demás. */
+  function sendFile(l: Link, id: string, wantAt: number): void {
+    const none = () => l.send({ t: "fichero", id, at: 0, data: "", last: true, missing: true });
     const p = mediaPath(id);
     let fd: number | undefined;
     try {
       if (!p || !inHome(p)) return none();
       const size = fs.statSync(p).size;
-      if (size > FILE_MAX) return none();
+      // Un resto que no cuadra con este fichero: se empieza de nuevo.
+      const at = wantAt > size ? 0 : wantAt;
       fd = fs.openSync(p, "r");
-      const buf = Buffer.alloc(FILE_CHUNK);
-      let sent = 0;
-      do {
-        const n = fs.readSync(fd, buf, 0, FILE_CHUNK, sent);
-        sent += n;
-        l.send({ t: "fichero", id, data: buf.subarray(0, n).toString("base64"), last: sent >= size, missing: false });
-      } while (sent < size);
+      const buf = Buffer.alloc(Math.min(FILE_CHUNK, Math.max(size - at, 0)));
+      const n = buf.length ? fs.readSync(fd, buf, 0, buf.length, at) : 0;
+      l.send({
+        t: "fichero",
+        id,
+        at,
+        data: buf.subarray(0, n).toString("base64"),
+        last: at + n >= size,
+        missing: false,
+      });
     } catch {
       none();
     } finally {
@@ -450,9 +590,13 @@ export function createSync(d: SyncDeps) {
     try {
       if (m.missing) fs.rmSync(f.part, { force: true });
       else {
+        if (m.at !== f.at && m.at !== 0) return;
+        const data = Buffer.from(m.data, "base64");
         fs.mkdirSync(path.dirname(f.file), { recursive: true });
-        fs.appendFileSync(f.part, Buffer.from(m.data, "base64"));
-        if (!m.last) return;
+        if (m.at === 0) fs.writeFileSync(f.part, data);
+        else fs.appendFileSync(f.part, data);
+        f.at = m.at + data.length;
+        if (!m.last) return void link?.send({ t: "pide", id: f.id, at: f.at });
         fs.renameSync(f.part, f.file);
       }
     } catch (err) {
@@ -473,7 +617,7 @@ export function createSync(d: SyncDeps) {
     ws: WebSocket,
     mode: "pair" | "session",
     id: string | undefined,
-    pinned: { fingerprint: string; publicKey?: string },
+    pinned: { fingerprint: string; publicKey: string } | undefined,
     onReady: (c: Wire & { tr: Buffer; pub: string }) => void,
     fail: (why: string) => void,
   ): void {
@@ -489,8 +633,9 @@ export function createSync(d: SyncDeps) {
         if (refused.success) return fail(refused.data.why);
         const h = ServerHello.parse(JSON.parse(String(raw)));
         const tr = transcript(mode, eph.pub, nonce, h.eph, h.nonce);
-        if (!sameFingerprint(fingerprintOf(h.pub), pinned.fingerprint)) return fail("ese no es el equipo del código");
-        if (pinned.publicKey && h.pub !== pinned.publicKey) return fail("la clave del otro equipo cambió");
+        // Al emparejar aún no se conoce al otro: quién es lo demuestra después, con el código.
+        if (pinned && !sameFingerprint(fingerprintOf(h.pub), pinned.fingerprint)) return fail("ese no es mi pareja");
+        if (pinned && h.pub !== pinned.publicKey) return fail("la clave del otro equipo cambió");
         if (!verifyAs("principal", tr, h.sig, h.pub)) return fail("la firma del otro equipo no es válida");
         const keys = deriveKeys(eph, h.eph, tr, "client");
         const seal = createSealer(keys.send);
@@ -559,7 +704,8 @@ export function createSync(d: SyncDeps) {
           const t = tr;
           if (!me || state) return end("busy");
           if (!verifyAs("equipo", t, p.sig, p.pub)) return end("firma no válida");
-          const result = pairing.attempt((code) => sameProof(p.proof, pairProof(code, t, p.pub)));
+          const key = secret;
+          const result = pairing.attempt(() => !!key && sameProof(p.proof, pairProof(key, t, p.pub)));
           if (result !== "ok") {
             wire.send({ t: "refused", why: result });
             phase = "dead";
@@ -573,9 +719,11 @@ export function createSync(d: SyncDeps) {
             paired_at: new Date(now()).toISOString(),
           };
           shown = undefined;
+          secret = undefined;
           open(me, "first");
           saveState();
-          wire.send({ t: "paired", name: myName() });
+          // Este equipo también demuestra que conoce el código: el que se une no tiene otra forma de saber quién es.
+          wire.send({ t: "paired", name: myName(), proof: pairProof(`equipo:${key}`, t, me.publicKey) });
           phase = "dead";
           tell();
           return void setTimeout(() => ws.close(1000, "emparejado"), 50);
@@ -599,7 +747,7 @@ export function createSync(d: SyncDeps) {
   function dial(): void {
     const me = identity();
     if (stopped || !state || !me || link || dialing || now() < nextDial) return;
-    const urls = state.peer.urls;
+    const urls = [...state.peer.urls, ...found.filter((u) => !state?.peer.urls.includes(u))];
     if (!urls.length) return;
     dialing = true;
     const peer = state.peer;
@@ -642,6 +790,7 @@ export function createSync(d: SyncDeps) {
             state.peer.urls = [url, ...state.peer.urls.filter((u) => u !== url)];
             saveState();
           }
+          found = [];
           ws.on("message", (raw) => {
             try {
               onMessage(l, Msg.parse(c.recv(String(raw))));
@@ -659,7 +808,14 @@ export function createSync(d: SyncDeps) {
   }
 
   function tick(): void {
+    tune();
     if (stopped || !state || !journal) return;
+    // Sin enlace: se pregunta por la pareja en la red, por si las dos direcciones cambiaron a la vez.
+    if (!link && now() >= nextSeek) {
+      nextSeek = now() + SEEK_MS;
+      const tag = pairTag();
+      if (tag) beacon?.say({ t: "busca", tag, urls: mine() });
+    }
     try {
       journal.seal();
       if (++ticks % 5 === 0) journal.scanSecrets();
@@ -681,7 +837,17 @@ export function createSync(d: SyncDeps) {
     if (stateDirty && now() - stateDirty > 15_000) saveState();
   }
 
-  /** Este equipo deja de tener pareja: se quita el diario y lo guardado, y los canales vuelven a ser solo suyos. */
+  const pastIds = (): string[] => {
+    try {
+      const row = d.db.prepare("SELECT value FROM meta WHERE key = ?").get(PAST_IDS) as { value: string } | undefined;
+      const v = row ? (JSON.parse(row.value) as unknown) : [];
+      return Array.isArray(v) ? v.map(String) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  /** Este equipo deja de tener pareja: se quita el diario y los canales vuelven a ser solo suyos. Las versiones guardadas se quedan. */
   function forget(): void {
     const was = state?.role;
     const old = link;
@@ -695,8 +861,14 @@ export function createSync(d: SyncDeps) {
     mismatch = false;
     wanted.length = 0;
     fetching = undefined;
+    found = [];
+    missing = undefined;
     saveState();
     try {
+      if (myId && lostIn(d.db, 1).total)
+        d.db
+          .prepare("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value")
+          .run(PAST_IDS, JSON.stringify([...new Set([...pastIds(), myId])].slice(-20)));
       uninstall(d.db, d.secrets);
       d.secrets.set(IDENTITY, null);
       // El equipo que no llevaba los canales los deja apagados: encenderlos aquí a la vez que en el otro abriría la
@@ -717,15 +889,26 @@ export function createSync(d: SyncDeps) {
     try {
       d.roleChanged?.();
     } catch {}
+    tune();
     tell();
   }
 
-  const decode = (text: string) => {
-    const m = /^(\d{6})-([0-9a-f]{32})-([A-Za-z0-9_-]*)$/.exec(text.replace(/\s+/g, ""));
-    if (!m) return undefined;
-    const urls = Buffer.from(m[3] ?? "", "base64url").toString().split("\n").filter(Boolean);
-    return { code: m[1] as string, fingerprint: m[2] as string, urls };
-  };
+  /** Proyectos cuya carpeta no está en este equipo: el dueño tiene que elegir una aquí. */
+  function folders(): { id: string; name: string }[] {
+    if (!state) return [];
+    if (missing && now() - missing.at < 3000) return missing.list;
+    let list: { id: string; name: string }[] = [];
+    try {
+      const rows = d.db.prepare("SELECT id, name, path FROM projects WHERE path IS NOT NULL ORDER BY name").all() as {
+        id: string;
+        name: string;
+        path: string;
+      }[];
+      list = rows.filter((r) => !folderHere(r.path)).map((r) => ({ id: r.id, name: r.name }));
+    } catch {}
+    missing = { at: now(), list };
+    return list;
+  }
 
   return {
     path: SYNC_PATH,
@@ -761,6 +944,7 @@ export function createSync(d: SyncDeps) {
       link = undefined;
       for (const c of wss.clients) c.terminate();
       wss.close();
+      tune();
     },
     /** Este equipo no lleva los canales ni el reloj: los lleva su pareja. */
     secondary: () => state?.role === "secundario",
@@ -776,39 +960,48 @@ export function createSync(d: SyncDeps) {
         mismatch: Boolean(link?.hello) && mismatch,
         pending: journal?.pendingCount() ?? 0,
         ...(state?.last_sync_at ? { last_sync_at: state.last_sync_at } : {}),
-        saved: journal?.lost(1, 0).total ?? 0,
+        saved: lostIn(d.db, 1).total,
+        ...(folders().length ? { folders: folders().slice(0, 20) } : {}),
       };
     },
     /** Un código para escribir en el otro equipo: vale diez minutos y una sola vez. */
     pairStart(): { code: string; expires_at: string } {
       if (state) throw new Error("este equipo ya está emparejado");
-      const me = identity(true) as Identity;
+      identity(true);
       const { code, expiresAt } = pairing.start();
-      const urls = d.urls().length ? d.urls() : [d.local()];
-      shown = {
-        code: `${code}-${idOf(me)}-${Buffer.from(urls.join("\n")).toString("base64url")}`,
-        expires_at: new Date(expiresAt).toISOString(),
-      };
+      secret = stretch(code);
+      shown = { code: pretty(code), expires_at: new Date(expiresAt).toISOString() };
+      tune();
       tell();
       return shown;
     },
     pairCancel(): void {
       pairing.cancel();
       shown = undefined;
+      secret = undefined;
+      tune();
       tell();
     },
     /** El dueño escribió aquí el código del otro equipo: este se une como secundario. */
-    pairJoin(text: string, address?: string): Promise<{ name: string }> {
-      if (state) return Promise.reject(new Error("este equipo ya está emparejado"));
-      const parsed = decode(text);
-      if (!parsed) return Promise.reject(new Error("ese código no es válido: cópialo entero del otro equipo"));
-      const urls = address ? [address] : parsed.urls;
+    async pairJoin(text: string, address?: string): Promise<{ name: string }> {
+      if (state) throw new Error("este equipo ya está emparejado");
+      const code = typed(text);
+      if (!code) throw new Error("ese código no es válido: son 8 letras y números, como ABCD-2345");
+      const key = stretch(code);
       const me = identity(true) as Identity;
+      const urls = address?.trim() ? [address.trim()] : await find(key);
+      if (state) throw new Error("este equipo ya está emparejado");
+      if (!urls.length)
+        throw new Error(
+          "no encuentro ningún equipo que enseñe ese código: revísalo y comprueba que los dos están en la misma red, o escribe la dirección del otro equipo",
+        );
       const tryAt = (i: number, last: string): Promise<{ name: string }> => {
         const url = urls[i];
         if (!url)
           return Promise.reject(
-            new Error(`no se pudo conectar con el otro equipo (${last}): comprueba que está encendido y en la misma red`),
+            new Error(
+              `no se pudo conectar con el otro equipo (${last}): comprueba que está encendido y en la misma red`,
+            ),
           );
         return new Promise<{ name: string }>((resolve, reject) => {
           const ws = new WebSocket(wsUrl(url));
@@ -822,14 +1015,14 @@ export function createSync(d: SyncDeps) {
             ws,
             "pair",
             undefined,
-            { fingerprint: parsed.fingerprint },
+            undefined,
             (c) => {
               hard = true;
               c.send({
                 t: "pair",
                 pub: me.publicKey,
                 name: myName(),
-                proof: pairProof(parsed.code, c.tr, me.publicKey),
+                proof: pairProof(key, c.tr, me.publicKey),
                 sig: signAs("equipo", c.tr, me.privateKey),
               });
               ws.on("message", (raw) => {
@@ -844,12 +1037,15 @@ export function createSync(d: SyncDeps) {
                     };
                     return fail(`!${why[m.why] ?? m.why}`);
                   }
+                  // Quien contesta sin conocer el código no es el equipo que lo enseña: se prueba el siguiente.
+                  if (!sameProof(m.proof, pairProof(`equipo:${key}`, c.tr, c.pub)))
+                    return fail("ese no es el equipo del código");
                   state = {
                     peer: {
                       id: hex(fingerprintOf(c.pub)),
                       name: m.name.slice(0, 80),
                       publicKey: c.pub,
-                      urls: [url, ...parsed.urls.filter((u) => u !== url)],
+                      urls: [url, ...urls.filter((u) => u !== url)],
                     },
                     role: "secundario",
                     role_at: now(),
@@ -861,6 +1057,7 @@ export function createSync(d: SyncDeps) {
                   try {
                     d.roleChanged?.();
                   } catch {}
+                  tune();
                   tell();
                   nextDial = 0;
                   resolve({ name: m.name });
@@ -869,7 +1066,8 @@ export function createSync(d: SyncDeps) {
                 }
               });
             },
-            (why) => fail(hard || why === "busy" ? `!${why === "busy" ? "el otro equipo ya está emparejado" : why}` : why),
+            (why) =>
+              fail(hard || why === "busy" ? `!${why === "busy" ? "el otro equipo ya está emparejado" : why}` : why),
           );
         }).catch((e: Error) => {
           // Con «!» el otro equipo contestó y dijo que no: probar otra dirección no cambia nada.
@@ -893,9 +1091,10 @@ export function createSync(d: SyncDeps) {
       link?.send({ t: "papel", role: "principal", role_at: at });
       tell();
     },
+    /** Las versiones guardadas. Siguen aquí después de desemparejar, hasta que el dueño las borre. */
     saved(limit = 20, offset = 0): { total: number; items: SavedVersion[] } {
-      const r = journal?.lost(limit, offset) ?? { total: 0, items: [] };
-      const me = myId;
+      const r = lostIn(d.db, limit, offset);
+      const me = new Set([myId, "local", ...pastIds()]);
       return {
         total: r.total,
         items: r.items.map((i) => {
@@ -911,7 +1110,7 @@ export function createSync(d: SyncDeps) {
             id: i.id,
             kind: KINDS[i.tbl] ?? (setting ? "setting" : "other"),
             label: (label ?? "").slice(0, 120),
-            mine: i.origin === me,
+            mine: me.has(i.origin),
             lost_at: i.lost_at,
             ...(i.recovered_at ? { recovered_at: i.recovered_at } : {}),
           };
@@ -919,9 +1118,19 @@ export function createSync(d: SyncDeps) {
       };
     },
     recover(id: string): boolean {
-      if (!journal) return false;
-      const tbl = journal.lost(1000, 0).items.find((i) => i.id === id)?.tbl;
-      const ok = journal.recover(id);
+      const tbl = lostIn(d.db, 1000, 0).items.find((i) => i.id === id)?.tbl;
+      if (!tbl) return false;
+      let ok = false;
+      if (journal) ok = journal.recover(id);
+      else {
+        // Sin pareja: el diario se pone solo para este cambio y se vuelve a quitar; lo guardado se queda.
+        install(d.db);
+        try {
+          ok = createJournal({ db: d.db, me: pastIds().at(-1) ?? "local", secrets: d.secrets, folderHere }).recover(id);
+        } finally {
+          uninstall(d.db, d.secrets);
+        }
+      }
       if (ok) {
         try {
           d.changed?.(new Set(tbl ? [tbl] : []));
@@ -929,6 +1138,28 @@ export function createSync(d: SyncDeps) {
         tell();
       }
       return ok;
+    },
+    /** El dueño borra una versión guardada, o todas. Con pareja, se borra también en el otro equipo. */
+    forgetSaved(id?: string): number {
+      const n = journal ? journal.discard(id) : discard(d.db, d.secrets, id);
+      if (n) {
+        pump();
+        tell();
+      }
+      return n;
+    },
+    /** La carpeta de un proyecto en ESTE equipo (la del otro no existe aquí). */
+    setFolder(project: string, folder: string): void {
+      const dir = path.resolve(folder.replace(/^~(?=$|[\\/])/, os.homedir()));
+      if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory())
+        throw new Error("esa carpeta no existe en este equipo");
+      const r = d.db.prepare("UPDATE projects SET path = ?, present = 1 WHERE id = ?").run(dir, project);
+      if (!r.changes) throw new Error("ese proyecto ya no existe");
+      missing = undefined;
+      try {
+        d.changed?.(new Set(["projects"]));
+      } catch {}
+      tell();
     },
     /** Para las pruebas: un latido ahora. */
     tick,

@@ -15,6 +15,22 @@ import { createSync, SYNC_PATH } from "./service.ts";
 
 type T = { after: (f: () => void | Promise<void>) => void };
 const quiet = { info() {}, warn() {}, error() {} } as unknown as Log;
+/** Los equipos de estas pruebas se buscan por un puerto propio: no se cruzan con un Colonia de verdad. */
+const BEACON = 47591;
+
+async function listen(sync: { upgrade: ReturnType<typeof createSync>["upgrade"] } | undefined, t: T) {
+  const server = http.createServer((_q, r) => r.writeHead(404).end());
+  const box = { sync };
+  server.on("upgrade", (req, socket, head) =>
+    req.url === SYNC_PATH && box.sync ? box.sync.upgrade(req, socket, head) : socket.destroy(),
+  );
+  await new Promise<void>((ok) => server.listen(0, "127.0.0.1", ok));
+  t.after(async () => {
+    server.closeAllConnections();
+    await new Promise((ok) => server.close(ok));
+  });
+  return { box, url: `http://127.0.0.1:${(server.address() as AddressInfo).port}` };
+}
 
 async function machine(t: T, name: string) {
   const home = tempDir("colonia-sync-").path;
@@ -38,6 +54,7 @@ async function machine(t: T, name: string) {
     local: () => url,
     name: () => name,
     tickMs: 30,
+    beaconPort: BEACON,
     changed: (s) => {
       for (const x of s) seen.touched.add(x);
     },
@@ -97,12 +114,20 @@ test("un código equivocado no empareja, y el bueno solo vale una vez", async (t
   const b = await machine(t, "B");
   const c = await machine(t, "C");
   const { code } = a.sync.pairStart();
-  const wrong = code.replace(/^\d{6}/, (d) => (d === "000000" ? "000001" : "000000"));
-  await assert.rejects(b.sync.pairJoin(wrong), /código no es correcto/);
+  // Corto, para teclearlo: ocho letras y números sin los que se confunden.
+  assert.match(code, /^[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/);
+  const wrong = code.replace(/.$/, (c) => (c === "2" ? "3" : "2"));
+  await assert.rejects(b.sync.pairJoin(wrong, a.url), /código no es correcto/);
   assert.equal(b.sync.status().paired, false);
+  // Nadie en la red enseña ese código: no se conecta con nadie.
+  await assert.rejects(b.sync.pairJoin(wrong), /no encuentro ningún equipo/);
   await assert.rejects(b.sync.pairJoin("hola"), /no es válido/);
-  await b.sync.pairJoin(code);
-  await assert.rejects(c.sync.pairJoin(code), /ya está emparejado/);
+  // Un equipo que no enseña ningún código no pasa por el que sí: no conoce el código.
+  await assert.rejects(b.sync.pairJoin(code, c.url), /no se pudo conectar/);
+  assert.equal(b.sync.status().paired, false);
+  // Tecleado a mano, sin guion y en minúsculas, y sin decir ninguna dirección: se encuentran solos.
+  await b.sync.pairJoin(code.replace("-", " ").toLowerCase());
+  await assert.rejects(c.sync.pairJoin(code, a.url), /ya está emparejado/);
   assert.equal(a.sync.status().peer?.name, "B");
 });
 
@@ -165,6 +190,7 @@ function reopen(t: T, m: M): M {
     urls: () => [],
     local: () => m.url,
     tickMs: 30,
+    beaconPort: BEACON,
     changed: (s) => {
       for (const x of s) seen.touched.add(x);
     },
@@ -234,4 +260,141 @@ test("desemparejar en uno desempareja los dos y no deja nada", async (t) => {
   // Y se puede volver a emparejar.
   await b.sync.pairJoin(a.sync.pairStart().code);
   await until(() => a.sync.status().connected, "no volvieron a conectarse");
+});
+
+test("si cambian a la vez las direcciones de los dos, se reencuentran solos", async (t) => {
+  const { a, b } = await paired(t);
+  project(a, "p1", "Antes");
+  await until(() => row(b, "p1"), "no llegó");
+  a.sync.stop();
+  b.sync.stop();
+  // Los dos vuelven en un puerto nuevo: ninguno sabe ya dónde está el otro.
+  const again = async (m: M) => {
+    const { box, url } = await listen(undefined, t);
+    const sync = createSync({
+      home: m.home,
+      db: m.db,
+      secrets: m.secrets,
+      log: quiet,
+      urls: () => [],
+      local: () => url,
+      tickMs: 30,
+      beaconPort: BEACON,
+    });
+    box.sync = sync;
+    sync.start();
+    return { ...m, sync, url };
+  };
+  const a2 = await again(a);
+  const b2 = await again(b);
+  try {
+    assert.notEqual(a2.url, a.url);
+    assert.notEqual(b2.url, b.url);
+    await until(() => a2.sync.status().connected && b2.sync.status().connected, "no se reencontraron");
+    a2.db.prepare("UPDATE projects SET name = 'Después' WHERE id = 'p1'").run();
+    await until(() => row(b2, "p1")?.name === "Después", "tras reencontrarse no llegó el cambio");
+    // La dirección nueva queda apuntada en el que marcó: la próxima vez no hace falta buscar.
+    const known = (m: M) =>
+      (JSON.parse(fs.readFileSync(path.join(m.home, "sincronizar.json"), "utf8")) as { peer: { urls: string[] } }).peer
+        .urls[0];
+    assert.ok(known(b2) === a2.url || known(a2) === b2.url);
+  } finally {
+    a2.sync.stop();
+    b2.sync.stop();
+  }
+});
+
+test("un fichero grande viaja por trozos, y uno a medias sigue por donde iba", async (t) => {
+  const { a, b } = await paired(t);
+  const put = (id: string, name: string, size: number) => {
+    const file = path.join(a.home, "media", name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    const head = Buffer.alloc(700_000, 3);
+    head.write("colonia");
+    fs.writeFileSync(file, head);
+    fs.truncateSync(file, size);
+    fs.appendFileSync(file, "fin");
+    a.db
+      .prepare("INSERT INTO media (id, kind, mime, bytes, path, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+      .run(id, "video", "video/mp4", size + 3, file, "2026-01-01T00:00:00Z");
+    return { file, there: path.join(b.home, "media", name) };
+  };
+  // 70 MB: más que el tope de 64 MB que había.
+  const big = put("grande", "grande.bin", 70 * 1024 * 1024);
+  await waitFor(() => fs.existsSync(big.there), "el fichero grande no llegó", { ms: 120_000 });
+  assert.equal(fs.statSync(big.there).size, 70 * 1024 * 1024 + 3);
+  assert.ok(fs.readFileSync(big.there).equals(fs.readFileSync(big.file)));
+  // A medias: lo que ya había llegado (marcado aquí con otra letra) no se vuelve a pedir.
+  const there = path.join(b.home, "media", "medias.bin");
+  fs.writeFileSync(`${there}.sync-part`, Buffer.alloc(600_000, 9));
+  const half = put("medias", "medias.bin", 2_000_000);
+  await until(() => fs.existsSync(half.there), "el fichero a medias no llegó");
+  const got = fs.readFileSync(half.there);
+  const sent = fs.readFileSync(half.file);
+  assert.equal(got.length, sent.length);
+  assert.equal(got[0], 9);
+  assert.ok(got.subarray(600_000).equals(sent.subarray(600_000)));
+  assert.equal(fs.existsSync(`${there}.sync-part`), false);
+});
+
+test("la carpeta de un proyecto que no está en este equipo: se avisa y se elige aquí", async (t) => {
+  const { a, b } = await paired(t);
+  project(a, "p1", "Web del cliente");
+  fs.mkdirSync(path.join(a.home, "proyectos", "p1"), { recursive: true });
+  await until(() => row(b, "p1"), "no llegó");
+  await until(() => b.sync.status().folders?.length === 1, "no avisa de la carpeta que falta");
+  assert.deepEqual(b.sync.status().folders, [{ id: "p1", name: "Web del cliente" }]);
+  assert.equal(a.sync.status().folders, undefined);
+  assert.throws(() => b.sync.setFolder("p1", path.join(b.home, "no-existe")), /no existe en este equipo/);
+  const mine = path.join(b.home, "otra-carpeta");
+  fs.mkdirSync(mine);
+  b.sync.setFolder("p1", mine);
+  assert.equal(b.sync.status().folders, undefined);
+  assert.equal(row(b, "p1")?.path, mine);
+  await until(() => a.sync.status().pending + b.sync.status().pending === 0, "quedó algo por enviar");
+  await new Promise((ok) => setTimeout(ok, 200));
+  a.db.prepare("UPDATE projects SET name = 'Web nueva' WHERE id = 'p1'").run();
+  await until(() => row(b, "p1")?.name === "Web nueva", "no llegó el cambio de nombre");
+  await until(() => a.sync.status().pending + b.sync.status().pending === 0, "quedó algo por enviar");
+  // Cada equipo conserva su carpeta.
+  assert.equal(row(a, "p1")?.path, path.join(a.home, "proyectos", "p1"));
+  assert.equal(row(b, "p1")?.path, mine);
+  assert.equal(a.sync.status().saved + b.sync.status().saved, 0);
+});
+
+test("al desemparejar, las versiones guardadas se conservan hasta que el dueño las borra", async (t) => {
+  const { a, b } = await paired(t);
+  project(a, "p1", "Original");
+  await until(() => row(b, "p1"), "no llegó");
+  b.sync.stop();
+  a.db.prepare("UPDATE projects SET name = 'Versión de A' WHERE id = 'p1'").run();
+  a.sync.tick();
+  await new Promise((ok) => setTimeout(ok, 50));
+  b.db.prepare("UPDATE projects SET name = 'Versión de B' WHERE id = 'p1'").run();
+  const b2 = reopen(t, b);
+  await until(() => a.sync.status().saved === 1 && b2.sync.status().saved === 1, "la versión perdida no se guardó");
+  a.sync.unpair();
+  await until(() => !b2.sync.status().paired, "el otro equipo siguió emparejado");
+  for (const m of [a, b2]) {
+    assert.equal(installed(m.db), false);
+    assert.equal(m.sync.status().saved, 1);
+    assert.equal(m.sync.saved().items[0]?.label, "Versión de A");
+  }
+  // Sigue sabiendo de quién era cada una.
+  assert.equal(a.sync.saved().items[0]?.mine, true);
+  assert.equal(b2.sync.saved().items[0]?.mine, false);
+  // Se recupera sin pareja, y no vuelve a quedar puesta la sincronización.
+  assert.ok(b2.sync.recover(b2.sync.saved().items[0]?.id ?? ""));
+  assert.equal(row(b2, "p1")?.name, "Versión de A");
+  assert.equal(installed(b2.db), false);
+  assert.equal(row(a, "p1")?.name, "Versión de B");
+  // Y se borran cuando el dueño quiere: una, o todas.
+  assert.equal(a.sync.forgetSaved(a.sync.saved().items[0]?.id), 1);
+  assert.equal(a.sync.status().saved, 0);
+  // (Al recuperar, lo que había puesto quedó guardado también.)
+  assert.equal(b2.sync.saved().total, 2);
+  assert.equal(b2.sync.forgetSaved(), 2);
+  assert.equal(b2.sync.status().saved, 0);
+  const left = b2.db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'sync!_%' ESCAPE '!'").all();
+  assert.deepEqual(left, []);
 });

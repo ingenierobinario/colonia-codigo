@@ -9,6 +9,9 @@ import { openDb } from "../db/db.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
 
+// Los dos equipos se buscan por un puerto propio: no se cruzan con un Colonia de verdad en esta máquina.
+process.env.COLONIA_SYNC_BEACON_PORT = "47592";
+
 type Env = Awaited<ReturnType<typeof startCore>>;
 const graph: FlowGraph = {
   schemaVersion: 2,
@@ -70,8 +73,14 @@ async function oneOfEach(from: Env, to: Env, tag: string) {
     channel: { type: "telegram", agent_id: "superagent", label: `Canal ${tag}`, enabled: true },
     token: `123456:token-${low}`,
   });
-  await from.client.call("webapps.set", { id: `app-${low}`, app: { name: `App ${tag}`, url: "https://app.example.com" } });
-  await from.client.call("navegadores.set", { id: `nav-${low}`, navegador: { browser: "chrome", name: `Perfil ${tag}` } });
+  await from.client.call("webapps.set", {
+    id: `app-${low}`,
+    app: { name: `App ${tag}`, url: "https://app.example.com" },
+  });
+  await from.client.call("navegadores.set", {
+    id: `nav-${low}`,
+    navegador: { browser: "chrome", name: `Perfil ${tag}` },
+  });
 
   await until(async () => (await names.projects(to)).includes(`Proyecto ${tag}`), `el proyecto ${tag} no llegó`);
   // La jerarquía: el agente y el Flow llegan dentro de su proyecto, no sueltos.
@@ -80,11 +89,15 @@ async function oneOfEach(from: Env, to: Env, tag: string) {
     return agents.some((a) => a.name === `Agente ${tag}` && a.project_id === project.id);
   }, `el agente ${tag} no llegó dentro de su proyecto`);
   await until(
-    async () => (await to.client.call("flows.list", { project: project.id })).flows.some((f) => f.name === `Flow ${tag}`),
+    async () =>
+      (await to.client.call("flows.list", { project: project.id })).flows.some((f) => f.name === `Flow ${tag}`),
     `el Flow ${tag} no llegó dentro de su proyecto`,
   );
   // La IA llega con su clave (solo se ve el final, igual que en el equipo donde se puso).
-  await until(async () => (await names.providers(to)).includes(`ia-${low}:${`9${low}9z`.slice(-4)}`), `la IA ${tag} no llegó con su clave`);
+  await until(
+    async () => (await names.providers(to)).includes(`ia-${low}:${`9${low}9z`.slice(-4)}`),
+    `la IA ${tag} no llegó con su clave`,
+  );
   await until(async () => (await names.channels(to)).includes(`canal-${low}`), `el canal ${tag} no llegó`);
   await until(async () => (await names.apps(to)).includes(`App ${tag}`), `la aplicación ${tag} no llegó`);
   await until(async () => (await names.browsers(to)).includes(`Perfil ${tag}`), `el navegador ${tag} no llegó`);
@@ -116,6 +129,8 @@ test("dos Colonias emparejadas se ven iguales; un conflicto se guarda; la sesió
     const joined = await b.client.call("sync.pair_join", { code: shown.pairing.code });
     assert.equal(joined.paired, true);
     assert.equal(joined.role, "secundario");
+    // Ocho caracteres, y B no ha escrito ninguna dirección: se han encontrado en la red.
+    assert.match(shown.pairing.code, /^[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/);
     await until(async () => (await a.client.call("sync.status", {})).connected, "A no ve a B");
     assert.equal((await a.client.call("sync.status", {})).role, "principal");
 
@@ -126,12 +141,21 @@ test("dos Colonias emparejadas se ven iguales; un conflicto se guarda; la sesió
     const pa = await oneOfEach(a, b, "Alfa");
     await oneOfEach(b, a, "Beta");
     for (const k of Object.keys(names) as (keyof typeof names)[]) {
-      // El orden de las listas es de cada equipo; lo que hay es lo mismo.
+      // Lo mismo y en el mismo orden.
       await until(
-        async () => JSON.stringify((await names[k](a)).sort()) === JSON.stringify((await names[k](b)).sort()),
+        async () => JSON.stringify(await names[k](a)) === JSON.stringify(await names[k](b)),
         `los dos equipos no enseñan lo mismo en ${k}`,
       );
     }
+
+    // Cada instalación le puso a su asistente un nombre al azar: juntarlas no deja ninguna versión guardada.
+    await until(
+      async () =>
+        (await a.client.call("sync.status", {})).pending + (await b.client.call("sync.status", {})).pending === 0,
+      "quedó algo por enviar",
+    );
+    assert.equal((await a.client.call("sync.status", {})).saved, 0);
+    assert.equal((await b.client.call("sync.status", {})).saved, 0);
 
     // Sesión única: los tres canales están abiertos en A (principal) y ninguno en B, que los ve a través de A.
     const all = ["canal-previo", "canal-alfa", "canal-beta"];
@@ -174,7 +198,10 @@ test("dos Colonias emparejadas se ven iguales; un conflicto se guarda; la sesió
     );
     assert.equal((await a.client.call("sync.saved", {})).items[0]?.mine, true);
     assert.deepEqual(await b.client.call("sync.recover", { id: items[0]?.id ?? "" }), { ok: true });
-    await until(async () => (await names.projects(a)).includes("Versión de A"), "lo recuperado no llegó al otro equipo");
+    await until(
+      async () => (await names.projects(a)).includes("Versión de A"),
+      "lo recuperado no llegó al otro equipo",
+    );
     await until(async () => (await names.projects(b)).includes("Versión de A"), "lo recuperado no quedó puesto");
     // Tras reiniciar, B sigue de secundario: no abrió ninguna sesión por su cuenta.
     assert.equal(mb.sessions.open.size, 0);
@@ -188,6 +215,13 @@ test("dos Colonias emparejadas se ven iguales; un conflicto se guarda; la sesió
     await a.client.call("projects.create", { name: "Solo en A" });
     await new Promise((ok) => setTimeout(ok, 1500));
     assert.ok(!(await names.projects(b)).includes("Solo en A"), "desemparejados, siguió llegando");
+    // Las versiones guardadas siguen en los dos hasta que se borran.
+    for (const e of [a, b]) {
+      const kept = await e.client.call("sync.saved", {});
+      assert.equal(kept.total, 2);
+      assert.deepEqual(await e.client.call("sync.saved_delete", {}), { deleted: 2 });
+      assert.equal((await e.client.call("sync.status", {})).saved, 0);
+    }
   } finally {
     await a.core.close().catch(() => {});
     await b.core.close().catch(() => {});

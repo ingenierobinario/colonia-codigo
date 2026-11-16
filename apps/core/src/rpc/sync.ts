@@ -40,5 +40,10 @@ export function syncHandlers(sync: Sync) {
     },
     "sync.saved": (p) => sync.saved(p.limit, p.offset),
     "sync.recover": (p) => ({ ok: sync.recover(p.id) }),
+    "sync.saved_delete": (p) => ({ deleted: sync.forgetSaved(p.id) }),
+    "sync.set_folder": (p) => {
+      said(() => sync.setFolder(p.project, p.path));
+      return sync.status();
+    },
   } satisfies Partial<Handlers>;
 }
