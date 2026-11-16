@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.32": {
+    en: ["Closing Colonia no longer shows an error about the menu-bar icon."],
+    es: ["Cerrar Colonia ya no muestra un error sobre el icono de la barra de tareas."],
+  },
   "2.36.31": {
     en: [
       "When the browser passes from one agent to another, the tabs you allowed stay allowed.",
