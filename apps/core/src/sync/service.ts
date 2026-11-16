@@ -207,7 +207,24 @@ export function createSync(d: SyncDeps) {
   const now = d.now ?? Date.now;
   const file = path.join(d.home, STATE_FILE);
   const pairing = createPairing({ makeCode: shortCode });
-  const folderHere = d.folderHere ?? ((p: string) => fs.existsSync(p));
+  const inHome = (p: string) => {
+    const rel = path.relative(d.home, p);
+    return Boolean(rel) && !rel.startsWith("..") && !path.isAbsolute(rel);
+  };
+  // La carpeta de un proyecto está «aquí» si existe. Las que Colonia guarda dentro de su propia carpeta no son del
+  // dueño sino suyas: si falta, se crea, y nadie tiene que elegir nada.
+  const folderHere =
+    d.folderHere ??
+    ((p: string) => {
+      if (fs.existsSync(p)) return true;
+      if (!inHome(p)) return false;
+      try {
+        fs.mkdirSync(p, { recursive: true });
+        return true;
+      } catch {
+        return false;
+      }
+    });
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 * 1024 });
   const myName = () => (d.name?.() ?? os.hostname()).slice(0, 80) || "Mi equipo";
   const warn = (msg: string, err?: unknown) =>
@@ -519,10 +536,6 @@ export function createSync(d: SyncDeps) {
 
   // ── Ficheros adjuntos: el otro equipo los pide cuando le llega la ficha y no tiene el fichero ───────────────────────
 
-  const inHome = (p: string) => {
-    const rel = path.relative(d.home, p);
-    return Boolean(rel) && !rel.startsWith("..") && !path.isAbsolute(rel);
-  };
   const mediaPath = (id: string) =>
     (d.db.prepare("SELECT path FROM media WHERE id = ?").get(id) as { path: string } | undefined)?.path;
 

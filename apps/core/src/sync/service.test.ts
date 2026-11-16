@@ -339,14 +339,28 @@ test("un fichero grande viaja por trozos, y uno a medias sigue por donde iba", a
 
 test("la carpeta de un proyecto que no está en este equipo: se avisa y se elige aquí", async (t) => {
   const { a, b } = await paired(t);
-  project(a, "p1", "Web del cliente");
-  fs.mkdirSync(path.join(a.home, "proyectos", "p1"), { recursive: true });
+  // Una carpeta de las que Colonia guarda dentro de la suya: el otro equipo la crea solo, sin avisar.
+  project(a, "p0", "Sin carpeta propia");
+  fs.mkdirSync(path.join(a.home, "proyectos", "p0"), { recursive: true });
+  await until(() => row(b, "p0"), "no llegó");
+  assert.equal(row(b, "p0")?.path, path.join(b.home, "proyectos", "p0"));
+  assert.ok(fs.existsSync(path.join(b.home, "proyectos", "p0")), "la carpeta de dentro de Colonia no se creó");
+  assert.equal(b.sync.status().folders, undefined);
+  // Una carpeta del dueño, fuera de Colonia, que solo está en A.
+  const outside = tempDir("colonia-fuera-");
+  t.after(() => removeDir(outside.path));
+  const theirs = path.join(outside.path, "web");
+  a.db
+    .prepare(
+      "INSERT INTO projects (id, name, path, created_at) VALUES ('p1', 'Web del cliente', ?, '2026-01-01T00:00:00Z')",
+    )
+    .run(theirs);
   await until(() => row(b, "p1"), "no llegó");
   await until(() => b.sync.status().folders?.length === 1, "no avisa de la carpeta que falta");
   assert.deepEqual(b.sync.status().folders, [{ id: "p1", name: "Web del cliente" }]);
-  assert.equal(a.sync.status().folders, undefined);
+  assert.equal(fs.existsSync(theirs), false, "se creó sola una carpeta de fuera de Colonia");
   assert.throws(() => b.sync.setFolder("p1", path.join(b.home, "no-existe")), /no existe en este equipo/);
-  const mine = path.join(b.home, "otra-carpeta");
+  const mine = path.join(outside.path, "en-el-portatil");
   fs.mkdirSync(mine);
   b.sync.setFolder("p1", mine);
   assert.equal(b.sync.status().folders, undefined);
@@ -356,8 +370,8 @@ test("la carpeta de un proyecto que no está en este equipo: se avisa y se elige
   a.db.prepare("UPDATE projects SET name = 'Web nueva' WHERE id = 'p1'").run();
   await until(() => row(b, "p1")?.name === "Web nueva", "no llegó el cambio de nombre");
   await until(() => a.sync.status().pending + b.sync.status().pending === 0, "quedó algo por enviar");
-  // Cada equipo conserva su carpeta.
-  assert.equal(row(a, "p1")?.path, path.join(a.home, "proyectos", "p1"));
+  // B conserva la que eligió. (Que A conserve la suya cuando la de B no existe allí lo prueba journal.test.ts, con
+  // dos discos de mentira: aquí los dos equipos comparten disco.)
   assert.equal(row(b, "p1")?.path, mine);
   assert.equal(a.sync.status().saved + b.sync.status().saved, 0);
 });
