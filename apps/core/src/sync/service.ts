@@ -57,6 +57,13 @@ const HANDSHAKE_MS = 15_000;
 const BATCH = 200;
 const BATCH_WAIT_MS = 60_000;
 const FILE_CHUNK = 512 * 1024;
+/**
+ * SYNC-LATIDO-1 · Un enlace cuya red se fue sin cerrar (cambio de IP, wifi caída) no avisa: sin latido seguía
+ * «conectado» y lo cambiado no llegaba hasta que vencía el lote (60 s). Se le da un toque cada PING_MS; si en
+ * SILENT_MS no se oye nada, se corta y se busca a la pareja en la red.
+ */
+const PING_MS = 5000;
+const SILENT_MS = 15_000;
 /** Los identificadores que tuvo este equipo en parejas anteriores: de quién era cada versión guardada. */
 const PAST_IDS = "sync:ids";
 const SEEK_MS = 5000;
@@ -170,7 +177,16 @@ export type SyncDeps = {
 };
 
 type Wire = { send(m: object): void; recv(s: string): unknown };
-type Link = { ws: WebSocket; client: string; send(m: Msg): void; ready: boolean; hello: boolean };
+type Link = {
+  ws: WebSocket;
+  client: string;
+  send(m: Msg): void;
+  ready: boolean;
+  hello: boolean;
+  /** SYNC-LATIDO-1: cuándo se oyó al otro por última vez y cuándo se le dio el último toque. */
+  heard: number;
+  pinged: number;
+};
 
 const wsUrl = (base: string) => `${base.replace(/\/+$/, "").replace(/^http/, "ws")}${SYNC_PATH}`;
 const hex = (fingerprint: string) => fingerprint.toLowerCase().replace(/[^0-9a-f]/g, "");
@@ -401,10 +417,18 @@ export function createSync(d: SyncDeps) {
       client,
       ready: false,
       hello: false,
+      heard: now(),
+      pinged: now(),
       send: (m) => {
         if (ws.readyState === ws.OPEN) wire.send(m);
       },
     };
+    const alive = () => {
+      l.heard = now();
+    };
+    ws.on("pong", alive);
+    ws.on("ping", alive);
+    ws.on("message", alive);
     // Los dos marcan: si se cruzan dos conexiones, queda la que abrió el equipo de identificador menor.
     if (link && link.ws !== ws) {
       if (link.client !== client && link.client < client) return void ws.close(1000, "ya hay enlace");
@@ -844,6 +868,14 @@ export function createSync(d: SyncDeps) {
       }
     }
     if (inflight && now() - inflight.at > BATCH_WAIT_MS) link?.ws.terminate();
+    // SYNC-LATIDO-1: un enlace mudo está muerto aunque el socket no lo sepa.
+    if (link && now() - link.heard > SILENT_MS) link.ws.terminate();
+    else if (link && now() - link.pinged >= PING_MS && link.ws.readyState === link.ws.OPEN) {
+      link.pinged = now();
+      try {
+        link.ws.ping();
+      } catch {}
+    }
     pump();
     if (!fetching) nextFile();
     dial();
