@@ -86,7 +86,7 @@ export function SidebarNavRow({
           }}
         />
       }
-      className={`sidebar-navrow${kind === "channel" ? " channelsnav__row" : ""}${rail ? " is-rail" : ""}${!rail && depth ? ` is-depth-${depth}` : ""}${!rail && branch ? " has-branch" : ""}${active ? " is-active" : ""}${dragging ? " is-dragging" : ""}${drop ? ` is-drop-${drop}` : ""}`}
+      className={`sidebar-navrow${kind === "channel" ? " channelsnav__row" : ""}${rail ? " is-rail" : ""}${rail && depth ? " is-under" : ""}${!rail && depth ? ` is-depth-${depth}` : ""}${!rail && branch ? " has-branch" : ""}${active ? " is-active" : ""}${dragging ? " is-dragging" : ""}${drop ? ` is-drop-${drop}` : ""}`}
     >
       <NavItem
         collapsed={rail}

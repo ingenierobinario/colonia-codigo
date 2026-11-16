@@ -20,6 +20,8 @@ export interface SelectOption {
   /** More words a searchable list finds it by (its channels' names), not shown. */
   keywords?: string;
   disabled?: boolean;
+  /** Said on hover: why an option that is listed cannot be chosen. */
+  title?: string;
 }
 
 export interface SelectProps {
@@ -50,7 +52,7 @@ export function Select({
   const current = options.find((o) => o.value === value);
   const groups = [...new Set(options.map((o) => o.group ?? ""))];
   const item = (o: SelectOption) => (
-    <BaseSelect.Item key={o.value} value={o.value} disabled={o.disabled} className="colonia-menu__item colonia-select__item">
+    <BaseSelect.Item key={o.value} value={o.value} disabled={o.disabled} title={o.title} className="colonia-menu__item colonia-select__item">
       {o.icon && <span className="colonia-select__icon">{o.icon}</span>}
       {o.description ? (
         <span className="colonia-select__lines">

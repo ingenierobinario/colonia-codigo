@@ -60,6 +60,27 @@ export function projectTree<T extends TreeEntry>(
   return rows;
 }
 
+/**
+ * The projects that already know this one, directly or through others: it cannot know any of them back, the core
+ * refuses the loop. The same walk as the core's `reaches`, so a picker can say so before the owner chooses.
+ */
+export function projectsKnowing(
+  projects: readonly { id: string; knows?: readonly string[] | undefined }[],
+  id: string,
+): Set<string> {
+  const knowing = new Set<string>();
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const p of projects)
+      if (p.id !== id && !knowing.has(p.id) && p.knows?.some((k) => k === id || knowing.has(k))) {
+        knowing.add(p.id);
+        grew = true;
+      }
+  }
+  return knowing;
+}
+
 /** The projects under this one, at any depth: none of them can be the one it sits under. */
 export function projectsUnder(projects: readonly TreeEntry[], id: string): Set<string> {
   const under = new Set<string>();

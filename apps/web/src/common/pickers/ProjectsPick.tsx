@@ -16,6 +16,7 @@ export function ProjectsPick({
   value,
   onChange,
   exclude,
+  blocked,
   fixed,
   fixedNote,
   label,
@@ -26,6 +27,8 @@ export function ProjectsPick({
   onChange(next: string[]): void;
   /** Projects that cannot be chosen: its own. */
   exclude?: readonly string[];
+  /** Projects listed but not choosable, each with why (it would close a loop): shown off, the reason on hover. */
+  blocked?: ReadonlyMap<string, string>;
   /** A project shown first that cannot be removed (a Flow's own). */
   fixed?: string | undefined;
   fixedNote?: string;
@@ -41,7 +44,9 @@ export function ProjectsPick({
   const own = listed.find((p) => p.id === fixed);
   const chosen = value.flatMap((id) => listed.find((p) => p.id === id && p.id !== fixed) ?? []);
   const ids = chosen.map((p) => p.id);
-  const free = listed.filter((p) => !ids.includes(p.id) && p.id !== fixed && !exclude?.includes(p.id));
+  const open = listed.filter((p) => !ids.includes(p.id) && p.id !== fixed && !exclude?.includes(p.id));
+  // The ones that can be chosen first; the rest stay in sight so the owner sees why they cannot.
+  const free = [...open.filter((p) => !blocked?.has(p.id)), ...open.filter((p) => blocked?.has(p.id))];
   return (
     <div className="projpick">
       {own || chosen.length ? (
@@ -80,8 +85,9 @@ export function ProjectsPick({
             value: p.id,
             label: p.name,
             icon: <ProjectAvatar id={p.id} name={p.name} size={16} />,
+            ...(blocked?.has(p.id) ? { disabled: true, title: blocked.get(p.id) ?? "" } : {}),
           }))}
-          onValueChange={(id) => id && onChange([...ids, id])}
+          onValueChange={(id) => id && !blocked?.has(id) && onChange([...ids, id])}
           trigger={
             <Button
               variant="secondary"

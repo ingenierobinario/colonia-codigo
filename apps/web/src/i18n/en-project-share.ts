@@ -71,6 +71,16 @@ export const enProjectShare = {
   "pshare.import.needs": "Asks for: {list}",
   "pshare.import.connect": "Connect",
   "pshare.import.connected": "Connected",
+  "pshare.import.unresolved": "Projects I cannot find",
+  "pshare.import.unresolvedBody":
+    "This project read from others you do not have here under that name. Say which of yours each one is, or leave it: everything else works the same.",
+  "pshare.import.unresolvedAlone":
+    "This project read from others you do not have here. When you create or import one, link it from the project settings.",
+  "pshare.import.linkPick": "Choose project",
+  "pshare.import.linkTo": "Link {name} to one of your projects",
+  "pshare.import.linked": "Linked to {name}",
+  "pshare.import.linkTaken": "{name} is already linked.",
+  "pshare.import.linkFull": "A project can read from up to {n}.",
   "pshare.import.open": "Open project",
   "pshare.err.foreign": "This is not a Colonia project.",
   "pshare.err.link": "This link is not from a published Colonia project.",

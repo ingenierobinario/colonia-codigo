@@ -75,6 +75,16 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.import.needs": "Pide: {list}",
   "pshare.import.connect": "Conectar",
   "pshare.import.connected": "Conectada",
+  "pshare.import.unresolved": "Proyectos que no encuentro",
+  "pshare.import.unresolvedBody":
+    "Este proyecto consultaba otros que aquí no tienes con ese nombre. Di cuál de los tuyos es cada uno, o déjalo así: lo demás funciona igual.",
+  "pshare.import.unresolvedAlone":
+    "Este proyecto consultaba otros que aquí no tienes. Cuando crees o importes uno, enlázalo desde la configuración del proyecto.",
+  "pshare.import.linkPick": "Elegir proyecto",
+  "pshare.import.linkTo": "Enlazar {name} con uno de tus proyectos",
+  "pshare.import.linked": "Enlazado con {name}",
+  "pshare.import.linkTaken": "{name} ya está enlazado.",
+  "pshare.import.linkFull": "Un proyecto puede consultar hasta {n}.",
   "pshare.import.open": "Abrir proyecto",
   "pshare.err.foreign": "Esto no es un proyecto de Colonia.",
   "pshare.err.link": "Este enlace no es de un proyecto publicado en Colonia.",

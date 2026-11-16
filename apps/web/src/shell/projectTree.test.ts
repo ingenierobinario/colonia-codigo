@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAX_DEPTH, projectsUnder, projectTree } from "./projectTree.ts";
+import { MAX_DEPTH, projectsKnowing, projectsUnder, projectTree } from "./projectTree.ts";
 
 const ids = (rows: { entry: { id: string }; depth: number }[]) => rows.map((r) => `${r.depth}:${r.entry.id}`);
 
@@ -47,4 +47,27 @@ test("what sits under a project, at any depth, cannot be chosen as where it sits
   const list = [{ id: "a" }, { id: "b", parent: "a" }, { id: "c", parent: "b" }, { id: "d" }];
   assert.deepEqual([...projectsUnder(list, "a")].sort(), ["b", "c"]);
   assert.deepEqual([...projectsUnder(list, "c")], []);
+});
+
+test("the projects that already know one, directly or through others, are the ones it cannot know back", () => {
+  // a → b → c, d → c, e knows nobody, f knows itself by a broken value.
+  const list = [
+    { id: "a", knows: ["b"] },
+    { id: "b", knows: ["c"] },
+    { id: "c" },
+    { id: "d", knows: ["c", "gone"] },
+    { id: "e" },
+    { id: "f", knows: ["f"] },
+  ];
+  assert.deepEqual([...projectsKnowing(list, "c")].sort(), ["a", "b", "d"]);
+  assert.deepEqual([...projectsKnowing(list, "b")], ["a"]);
+  assert.deepEqual([...projectsKnowing(list, "a")], []);
+  assert.deepEqual([...projectsKnowing(list, "e")], []);
+  // Never itself, and a loop already saved ends.
+  assert.deepEqual([...projectsKnowing(list, "f")], []);
+  const loop = [
+    { id: "x", knows: ["y"] },
+    { id: "y", knows: ["x"] },
+  ];
+  assert.deepEqual([...projectsKnowing(loop, "x")], ["y"]);
 });

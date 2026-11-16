@@ -357,6 +357,7 @@ export const en = {
   "nav.baseProject": "Base project",
   "nav.projectFold": "Fold what is inside {name}",
   "nav.projectUnfold": "Show what is inside {name}",
+  "nav.projectTree": "Show the projects as a tree",
   "nav.externalSessions": "AIs",
   "nav.addEngine": "Add or connect another AI",
   "nav.apps": "Applications",
@@ -994,6 +995,8 @@ export const en = {
   "project.settings.parentHint":
     "Shows it under that project in the sidebar. It does not change what its agents can read.",
   "project.settings.parentNone": "None",
+  "project.settings.knowsLoop": "{name} already knows this project. Two projects cannot know each other in a loop.",
+  "project.settings.parentLoop": "{name} is already inside this project.",
   "project.settings.mark": "Picture",
   "project.settings.markHint": "A picture, an emoji or an icon next to the project's name.",
   "project.mark.change": "Change the project's picture",

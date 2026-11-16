@@ -7,13 +7,14 @@ import { SearchSelect } from "../common/pickers/SearchSelect.tsx";
 import { updateProject } from "../data/projects.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
-import { projectsUnder } from "../shell/projectTree.ts";
+import { projectsKnowing, projectsUnder } from "../shell/projectTree.ts";
 
 const NONE = "~none";
 
 /**
  * The projects this one's agents may read from, and the project it sits under in the sidebar (DECISIONS.md#d-191).
- * Each change is saved at once: the core refuses a loop and says why.
+ * Each change is saved at once. A choice that would close a loop is listed but off, with the reason on hover, so the
+ * core never has to refuse one.
  */
 export function KnownProjects({ project }: { project: Project }) {
   const t = useT();
@@ -26,8 +27,13 @@ export function KnownProjects({ project }: { project: Project }) {
     setBusy(false);
   };
   const under = projectsUnder(projects, project.id);
-  const parents = listed.filter((p) => !under.has(p.id));
-  const parent = parents.find((p) => p.id === project.parent)?.id ?? NONE;
+  const parent = listed.find((p) => p.id === project.parent && !under.has(p.id))?.id ?? NONE;
+  const loops = new Map(
+    [...projectsKnowing(projects, project.id)].flatMap((id) => {
+      const p = listed.find((x) => x.id === id);
+      return p ? [[id, t("project.settings.knowsLoop", { name: p.name })] as const] : [];
+    }),
+  );
   return (
     <>
       <Field label={t("project.settings.knows")} hint={t("project.settings.knowsHint")}>
@@ -36,11 +42,12 @@ export function KnownProjects({ project }: { project: Project }) {
           empty={t("project.settings.knowsNone")}
           value={project.knows ?? []}
           exclude={[project.id]}
+          blocked={loops}
           disabled={busy}
           onChange={(knows) => void save({ knows })}
         />
       </Field>
-      {parents.length > 0 && (
+      {listed.length > 0 && (
         <Field label={t("project.settings.parent")} hint={t("project.settings.parentHint")}>
           <SearchSelect
             label={t("project.settings.parent")}
@@ -50,14 +57,17 @@ export function KnownProjects({ project }: { project: Project }) {
             disabled={busy}
             options={[
               { value: NONE, label: t("project.settings.parentNone") },
-              ...parents.map((p) => ({
+              ...[...listed.filter((p) => !under.has(p.id)), ...listed.filter((p) => under.has(p.id))].map((p) => ({
                 value: p.id,
                 label: p.name,
                 icon: <ProjectAvatar id={p.id} name={p.name} size={16} />,
+                ...(under.has(p.id)
+                  ? { disabled: true, title: t("project.settings.parentLoop", { name: p.name }) }
+                  : {}),
               })),
             ]}
             onValueChange={(v) => {
-              if (v && v !== parent) void save({ parent: v === NONE ? null : v });
+              if (v && v !== parent && !under.has(v)) void save({ parent: v === NONE ? null : v });
             }}
           />
         </Field>

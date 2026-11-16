@@ -1,6 +1,6 @@
 import "../../styles/searchselect.css";
-import { Icons, type SelectOption, useColonia } from "@colonia/ui";
 import { Combobox } from "@base-ui/react/combobox";
+import { Icons, type SelectOption, useColonia } from "@colonia/ui";
 import { type ReactElement, useMemo, useRef } from "react";
 
 export interface SearchSelectProps {
@@ -67,7 +67,13 @@ export function SearchSelect({
     return out;
   }, [options]);
   const item = (o: SelectOption) => (
-    <Combobox.Item key={o.value} value={o} disabled={o.disabled} className="colonia-menu__item colonia-select__item">
+    <Combobox.Item
+      key={o.value}
+      value={o}
+      disabled={o.disabled}
+      title={o.title}
+      className="colonia-menu__item colonia-select__item"
+    >
       {o.icon && <span className="colonia-select__icon">{o.icon}</span>}
       <span className="colonia-menu__text">{o.label}</span>
       {o.hint && <span className="colonia-select__hint">{o.hint}</span>}

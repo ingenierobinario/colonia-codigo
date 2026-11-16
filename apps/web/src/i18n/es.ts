@@ -353,6 +353,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "nav.baseProject": "Proyecto base",
   "nav.projectFold": "Plegar lo que hay dentro de {name}",
   "nav.projectUnfold": "Mostrar lo que hay dentro de {name}",
+  "nav.projectTree": "Ver los proyectos en árbol",
   "nav.externalSessions": "IAs",
   "nav.addEngine": "Añadir o conectar otra IA",
   "nav.apps": "Aplicaciones",
@@ -997,6 +998,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "project.settings.parentHint":
     "Lo muestra debajo de ese proyecto en la barra lateral. No cambia lo que sus agentes pueden leer.",
   "project.settings.parentNone": "Ninguno",
+  "project.settings.knowsLoop": "{name} ya conoce este proyecto. Dos proyectos no pueden conocerse en círculo.",
+  "project.settings.parentLoop": "{name} ya está dentro de este proyecto.",
   "project.settings.mark": "Imagen",
   "project.settings.markHint": "Una imagen, un emoji o un icono junto al nombre del proyecto.",
   "project.mark.change": "Cambiar la imagen del proyecto",

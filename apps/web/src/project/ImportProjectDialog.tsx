@@ -8,6 +8,7 @@ import { listMcp } from "../data/resources.ts";
 import { useT } from "../i18n/index.ts";
 import { McpDialog } from "../resources/McpDialog.tsx";
 import { go } from "../shell/nav.ts";
+import { UnresolvedLinks } from "./UnresolvedLinks.tsx";
 import "../styles/screens.css";
 import "../styles/project-share.css";
 
@@ -132,6 +133,9 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
                   ))}
                 </ul>
               </section>
+            )}
+            {(done.unresolved?.length ?? 0) > 0 && (
+              <UnresolvedLinks project={done.project} names={done.unresolved ?? []} />
             )}
           </div>
         ) : (

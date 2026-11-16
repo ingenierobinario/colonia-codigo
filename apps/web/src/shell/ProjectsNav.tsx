@@ -1,4 +1,4 @@
-import { IconButton, Icons } from "@colonia/ui";
+import { IconButton, Icons, Popover } from "@colonia/ui";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { inInbox, inProject, isListed, isWorking, type ProjectEntry, projectEntries } from "../data/identity.ts";
@@ -9,13 +9,15 @@ import { NewProjectDialog, ProjectSettings, ShareProjectDialog, UnregisterProjec
 import { go, useNav } from "./nav.ts";
 import { projectNavMenu } from "./ProjectNavActions.tsx";
 import { projectTree, type TreeRow } from "./projectTree.ts";
-import { SidebarNavRow } from "./SidebarNavRow.tsx";
+import { SidebarNavRow, SidebarTooltipButton } from "./SidebarNavRow.tsx";
 import { SidebarOverflow, SidebarRowsGrip, SidebarSection } from "./SidebarSection.tsx";
 
 /**
  * The Projects section: foldable as a whole, and past the rows the owner dragged it to the rest goes into a "N more"
  * popover.
  * The base space remains first, followed by the owner’s last opened or manually ordered projects.
+ * A project sits under the one its owner put it in at every width: with names, indented and with a fold button; on
+ * the icon rail, marked as inside another, with a button that opens the same tree with names beside it.
  */
 export function ProjectsNav({ rail }: { rail: boolean }) {
   const t = useT();
@@ -27,6 +29,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
   const projects = useData((s) => s.projects);
   const threads = useData((s) => s.threads);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [treeOpen, setTreeOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [settings, setSettings] = useState<ProjectEntry>();
   const [removing, setRemoving] = useState<ProjectEntry>();
@@ -35,7 +38,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
   const hidden = folded && !rail;
   const routines = usePrefs((s) => s.inboxRoutines);
   const rows = useSidebarRows("projects");
-  const { shown, rest, running, unread, ordered } = useMemo(() => {
+  const { tree, shown, rest, running, unread, ordered } = useMemo(() => {
     const entries = projectEntries(projects);
     const live = Object.values(threads).filter(isListed);
     const lastActive = new Map<string, string>();
@@ -60,19 +63,19 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
         (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity) ||
         (lastActive.get(b.id) ?? "").localeCompare(lastActive.get(a.id) ?? ""),
     );
-    // A project sits under the one its owner put it in; with none nested this is the list as it was. The rail has
-    // no way to unfold, so it lists every one.
-    const tree = projectTree(ordered, rail ? [] : closed, view === "project" ? projectId : undefined);
+    // A project sits under the one its owner put it in; with none nested this is the list as it was.
+    const tree = projectTree(ordered, closed, view === "project" ? projectId : undefined);
     // Folding a single leftover would save nothing.
     const cut = tree.length > rows + 1 ? rows : tree.length;
     return {
+      tree,
       shown: tree.slice(0, cut),
       rest: tree.slice(cut),
       ordered: ordered.map((p) => p.id),
       running,
       unread,
     };
-  }, [projects, threads, saved, routines, rows, closed, rail, view, projectId]);
+  }, [projects, threads, saved, routines, rows, closed, view, projectId]);
   // Read when a project opens, not when the list reorders after it. The page coming back on a project (a reload)
   // is not opening it.
   const inView = useRef<string[]>([]);
@@ -115,7 +118,10 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
         t,
         () => setSettings(p),
         () => setRemoving(p),
-        () => setMoreOpen(false),
+        () => {
+          setMoreOpen(false);
+          setTreeOpen(false);
+        },
         () => setSharing(p),
         unread.get(p.id),
       )}
@@ -151,12 +157,44 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
     />
   );
 
+  // The rail shows tiles only: with a project inside another, this opens the tree with its names and fold buttons.
+  const nested = tree.some((r) => r.children > 0);
+  const railTree = rail && nested && (
+    <Popover
+      side="right"
+      align="start"
+      width={280}
+      open={treeOpen}
+      onOpenChange={setTreeOpen}
+      label={t("nav.projectTree")}
+      trigger={
+        <SidebarTooltipButton label={t("nav.projectTree")} className="sidebar__add sidebar__tree">
+          <Icons.FolderTree size={14} />
+        </SidebarTooltipButton>
+      }
+    >
+      <div className="morelist__head">{t("nav.projects")}</div>
+      <div className="morelist" data-testid="project-tree">
+        {tree.map((r) => item(r, () => setTreeOpen(false)))}
+      </div>
+    </Popover>
+  );
+
   return (
     <>
       <SidebarSection
         rail={rail}
         title={t("nav.projects")}
-        action={add}
+        action={
+          railTree ? (
+            <>
+              {railTree}
+              {add}
+            </>
+          ) : (
+            add
+          )
+        }
         folded={folded}
         onToggle={() => {
           setMoreOpen(false);

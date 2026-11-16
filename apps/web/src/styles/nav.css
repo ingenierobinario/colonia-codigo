@@ -319,7 +319,17 @@
 }
 .sidebar__railaction {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: 0 0 6px 10px;
+}
+.sidebar__tree {
+  padding: 0;
+  cursor: pointer;
+}
+.sidebar__tree[aria-expanded="true"] {
+  background: var(--colonia-fill-hover);
+  color: var(--colonia-fg);
 }
 .sidebar__add {
   display: grid;
@@ -956,6 +966,17 @@
 }
 .sidebar-navrow.is-depth-3 {
   margin-left: 42px;
+}
+/* On the icon rail there is no room to indent: a project inside another carries a line on its left. */
+.sidebar-navrow.is-rail.is-under::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--colonia-border-strong, var(--colonia-border));
 }
 .sidebar-navrow__branch {
   position: absolute;
