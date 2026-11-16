@@ -94,3 +94,8 @@ test("sin dirección pública en marcha no hay base para el enlace", async (t) =
   mockRpc(t, { "webhooks.get": { mode: "off", url: "https://vieja.example.test" } });
   assert.equal(await share.publicBase(), undefined);
 });
+
+test("«Default» no se ofrece para compartir: el core no lo tiene como proyecto", () => {
+  assert.equal(share.canShareProject({ isDefault: true }), false);
+  assert.equal(share.canShareProject({ isDefault: false }), true);
+});

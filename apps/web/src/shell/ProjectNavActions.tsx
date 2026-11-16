@@ -2,6 +2,7 @@ import { Icons, type MenuEntry } from "@colonia/ui";
 import { markAllRead } from "../data/actions.ts";
 import type { ProjectEntry } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";
+import { canShareProject } from "../data/project-share.ts";
 import type { T } from "../i18n/index.ts";
 import { go } from "./nav.ts";
 
@@ -43,14 +44,18 @@ export function projectNavMenu(
         onSettings();
       },
     },
-    {
-      label: t("project.share"),
-      icon: <Icons.Share />,
-      onSelect: () => {
-        onClose();
-        onShare();
-      },
-    },
+    ...(canShareProject(project)
+      ? [
+          {
+            label: t("project.share"),
+            icon: <Icons.Share />,
+            onSelect: () => {
+              onClose();
+              onShare();
+            },
+          },
+        ]
+      : []),
     {
       label: t("inbox.markAllRead"),
       icon: <Icons.CheckCheck />,

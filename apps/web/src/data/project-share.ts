@@ -12,6 +12,9 @@ export type ProjectImport = Result<"projects.import">;
 /** Un paquete es texto corto; algo mayor no lo es (el core pone el mismo tope). */
 export const PACKAGE_FILE_MAX = 900_000;
 
+/** «Default» no es un proyecto registrado en el core (no tiene id que exportar): no se ofrece compartirlo. */
+export const canShareProject = (project: { isDefault: boolean }) => !project.isDefault;
+
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /** El nombre del fichero que se guarda: el del proyecto, sin nada que un disco rechace. */
