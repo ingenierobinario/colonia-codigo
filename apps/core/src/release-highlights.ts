@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.26": {
+    en: [
+      "New: make a full, encrypted copy of Colonia to move it to another computer.",
+      "When restoring, you see a summary of what the copy holds before anything changes.",
+      "You choose: replace what is on this computer or merge the copy with it.",
+      "Colonia tells you which accounts you need to link again on the new computer.",
+    ],
+    es: [
+      "Nuevo: crea una copia completa y cifrada de Colonia para pasarla a otro ordenador.",
+      "Al restaurar ves un resumen de lo que trae la copia antes de que cambie nada.",
+      "Tú eliges: reemplazar lo que hay en este equipo o fusionarlo con la copia.",
+      "Colonia te avisa de qué cuentas hay que volver a vincular en el equipo nuevo.",
+    ],
+  },
   "2.36.25": {
     en: [
       "Settings now works on narrow screens: a dropdown lets you jump between sections.",
