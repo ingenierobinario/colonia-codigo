@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.31": {
+    en: [
+      "When the browser passes from one agent to another, the tabs you allowed stay allowed.",
+      "Menus taller than the window now scroll inside, so every option can be reached.",
+    ],
+    es: [
+      "Cuando el navegador pasa de un agente a otro, las pestañas que permitiste siguen permitidas.",
+      "Los menús más altos que la ventana se desplazan por dentro y se llega a todas las opciones.",
+    ],
+  },
   "2.36.30": {
     en: [
       "Pairing computers now takes a short 8-character code, and Colonia finds the other one on your network.",
