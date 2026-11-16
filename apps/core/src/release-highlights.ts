@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.25": {
+    en: [
+      "Settings now works on narrow screens: a dropdown lets you jump between sections.",
+      "The Channels tabs scroll sideways when they don't all fit.",
+      "Outlook shows its own logo.",
+      "Clearer wording: the bot's code, the service address and readable model names.",
+    ],
+    es: [
+      "Ajustes ya se usa bien en pantallas estrechas: un desplegable te lleva de una sección a otra.",
+      "Las pestañas de Canales se desplazan cuando no caben todas.",
+      "Outlook aparece con su logo.",
+      "Textos más claros: el código del bot, la dirección del servicio y nombres de modelo legibles.",
+    ],
+  },
   "2.36.24": {
     en: [
       "Sharing projects: it now also removes keys written as plain text and tells you how many it removed.",
