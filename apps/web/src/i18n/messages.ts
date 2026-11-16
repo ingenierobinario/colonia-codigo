@@ -28,6 +28,10 @@ const PACKS = {
     en: () => import("./backup-en.ts").then((m) => m.enBackup),
     es: () => import("./backup-es.ts").then((m) => m.esBackup),
   },
+  sync: {
+    en: () => import("./sync-en.ts").then((m) => m.enSync),
+    es: () => import("./sync-es.ts").then((m) => m.esSync),
+  },
   flow: {
     en: () => import("./flow-en.ts").then((m) => m.enFlow),
     es: () => import("./flow-es.ts").then((m) => m.esFlow),

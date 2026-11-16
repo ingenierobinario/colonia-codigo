@@ -63,6 +63,7 @@ export const CONFIG_SECTIONS = [
   "desktop",
   "devices",
   "backup",
+  "sync",
   "api",
   "advanced",
   "logs",

@@ -1,0 +1,183 @@
+/* D-192 fase 2 · Ajustes › Sincronizar equipos. Usa las tarjetas de Copia y traslado (backup.css); aquí solo lo propio.
+   Nada es clicable salvo sus botones: las tarjetas no cambian al pasar el ratón. */
+.sy-modes {
+  align-self: flex-start;
+  max-width: 100%;
+}
+.sy-code {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.sy-code__label {
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
+}
+.sy-code__text {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--colonia-fill);
+  font-family: var(--colonia-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: var(--colonia-text-sm);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.sy-link {
+  align-self: flex-start;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: var(--colonia-weight-medium);
+  color: var(--colonia-brand);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sy-more {
+  min-width: 0;
+}
+.sy-more__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+  cursor: pointer;
+  list-style: none;
+}
+.sy-more__summary::-webkit-details-marker {
+  display: none;
+}
+.sy-more__summary > svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s ease;
+}
+.sy-more[open] > .sy-more__summary > svg {
+  transform: rotate(90deg);
+}
+.sy-more[open] > .sy-more__summary {
+  margin-bottom: 10px;
+}
+
+/* Cuatro casillas iguales; a 640 px, dos por fila (siguen cuadrando). */
+.sy-counts .bk-count {
+  justify-content: space-between;
+  min-height: 62px;
+}
+.sy-count__badge {
+  display: flex;
+  min-width: 0;
+}
+.sy-count__when {
+  font-size: var(--colonia-text-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sy-role {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sy-empty {
+  margin: 0;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--colonia-fill);
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+  text-wrap: pretty;
+}
+.sy-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--colonia-card-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.sy-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+.sy-row + .sy-row {
+  border-top: 1px solid var(--colonia-card-border);
+}
+.sy-row__kind {
+  flex: none;
+  width: 92px;
+  font-size: var(--colonia-text-xs, 12px);
+  color: var(--colonia-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sy-row__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sy-row__label {
+  font-size: var(--colonia-text-sm);
+  font-weight: var(--colonia-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sy-row__meta {
+  font-size: var(--colonia-text-xs, 12px);
+  color: var(--colonia-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sy-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.sy-pager__range {
+  margin-right: 6px;
+  font-size: var(--colonia-text-sm);
+  color: var(--colonia-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.sy-end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .sy-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sy-row {
+    flex-wrap: wrap;
+  }
+  .sy-row__kind {
+    width: auto;
+    flex: 1 0 100%;
+  }
+  .sy-role > .colonia-btn {
+    flex: 1 1 auto;
+  }
+}

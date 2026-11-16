@@ -8,6 +8,7 @@ import { AdvancedSection } from "./AdvancedSection.tsx";
 import { AgentsSection } from "./AgentsSection.tsx";
 import { ApiTokensSection } from "./ApiTokensSection.tsx";
 import { BackupSection } from "./BackupSection.tsx";
+import { SyncSection } from "./SyncSection.tsx";
 import { BrowserSection } from "./BrowserSection.tsx";
 import { ChannelsSection } from "./ChannelsSection.tsx";
 import { DesktopSection } from "./DesktopSection.tsx";
@@ -59,6 +60,7 @@ const GROUPS: { label: MessageKey; items: NavEntry[] }[] = [
     items: [
       { id: "devices", label: "config.devices", icon: <Icons.Smartphone /> },
       { id: "backup", label: "config.backup", icon: <Icons.ArchiveRestore /> },
+      { id: "sync", label: "config.sync", icon: <Icons.RefreshCw /> },
       { id: "api", label: "clients.title", icon: <Icons.KeyRound /> },
     ],
   },
@@ -192,6 +194,8 @@ function Body({ section }: { section: ConfigSection }) {
       return <DevicesSection />;
     case "backup":
       return <BackupSection />;
+    case "sync":
+      return <SyncSection />;
     case "advanced":
       return <AdvancedSection />;
     case "logs":

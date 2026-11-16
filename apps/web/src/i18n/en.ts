@@ -9,6 +9,7 @@ import { enEngines } from "./en-engines.ts";
 import { enFiles } from "./en-files.ts";
 import { enOffice } from "./en-office.ts";
 import type { EquipoKey } from "./equipos-en.ts";
+import type { SyncKey } from "./sync-en.ts";
 import type { enFlow } from "./flow-en.ts";
 import type { enIngress } from "./ingress-en.ts";
 import type { enMigrar } from "./migrar-en.ts";
@@ -1966,6 +1967,7 @@ export const en = {
     "iMessage lives in the Messages app of a Mac signed in to the account. This core runs on another system.",
   "config.devices": "Devices",
   "config.backup": "Backup & transfer",
+  "config.sync": "Sync computers",
   "devices.lead":
     "Your phone or another computer, paired with a QR: each talks to this core with a key of its own, and removing one stops only that one.",
   "access.title": "Connection",
@@ -2145,6 +2147,7 @@ export type MessageKey =
   | keyof typeof en
   | ApprovalKey
   | BackupKey
+  | SyncKey
   | ComputerKey
   | EquipoKey
   | ReceivedKey

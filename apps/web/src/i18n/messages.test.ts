@@ -24,6 +24,8 @@ import { enScreens } from "./screens-en.ts";
 import { esScreens } from "./screens-es.ts";
 import { enSecretary } from "./secretary-en.ts";
 import { esSecretary } from "./secretary-es.ts";
+import { enSync } from "./sync-en.ts";
+import { esSync } from "./sync-es.ts";
 import { enSysUsage } from "./sysusage-en.ts";
 import { esSysUsage } from "./sysusage-es.ts";
 import { enThreadDialogs } from "./thread-dialogs-en.ts";
@@ -133,6 +135,7 @@ const en = {
   ...base,
   ...enApprovals,
   ...enBackup,
+  ...enSync,
   ...enComputer,
   ...enEquipos,
   ...enReceived,
@@ -149,6 +152,7 @@ const es = {
   ...esBase,
   ...esApprovals,
   ...esBackup,
+  ...esSync,
   ...esComputer,
   ...esEquipos,
   ...esReceived,

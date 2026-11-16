@@ -1980,6 +1980,7 @@ export const es: Partial<Record<MessageKey, string>> = {
     "iMessage vive en la app Mensajes de un Mac con la cuenta iniciada. Este core se ejecuta en otro sistema.",
   "config.devices": "Dispositivos",
   "config.backup": "Copia y traslado",
+  "config.sync": "Sincronizar equipos",
   "devices.lead":
     "Tu teléfono u otro ordenador, vinculados con un QR: cada uno habla con este core con su propia llave, y quitar uno corta solo a ese.",
   "access.title": "Conexión",

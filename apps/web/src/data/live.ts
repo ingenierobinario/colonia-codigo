@@ -226,6 +226,10 @@ function apply(ev: CoreEvent): void {
     case "team.updated":
       teamChanged();
       return;
+    case "sync.updated":
+      // D-192: el otro equipo del dueño cambió algo aquí: lo que hay en pantalla se vuelve a pedir.
+      if (ev.data) scheduleRefetch();
+      return;
     case "flow.draft":
       flowDraftChanged({ flow: ev.flow, project: ev.project, version: ev.draft_version, by: ev.by });
       return;
