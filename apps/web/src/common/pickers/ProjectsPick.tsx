@@ -87,6 +87,7 @@ export function ProjectsPick({
               variant="secondary"
               size="sm"
               className="projpick__add"
+              aria-label={t("pickers.projects.add")}
               disabled={disabled}
               leadingIcon={<Icons.Plus size={14} />}
             >

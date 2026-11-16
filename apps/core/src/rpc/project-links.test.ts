@@ -1,14 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { after, before, test } from "node:test";
 import { knownProjects } from "../domain/project-links.ts";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createLog } from "../log.ts";
-import { realpath } from "../paths.ts";
-import { removeDir } from "../testkit/platform.ts";
+import { removeDir, tempDir } from "../testkit/platform.ts";
 import { folderAccess, rootsOf } from "../tools/folders.ts";
 
 // The owner's message is the call to make: `{"name": "project_knowledge", "args": {...}}`.
@@ -25,7 +23,7 @@ const ids: Record<string, string> = {};
 before(async () => {
   env = await startCore({ llm });
   for (const name of ["acme", "northwind", "globex"]) {
-    dirs[name] = realpath(fs.mkdtempSync(path.join(os.tmpdir(), `${name}-`)));
+    dirs[name] = tempDir(`${name}-`).path;
     fs.writeFileSync(
       path.join(dirs[name] as string, "AGENTS.md"),
       `# ${name}\n\nThe secret word of ${name} is ${name}-7.\n`,

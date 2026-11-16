@@ -119,6 +119,8 @@ export const SPANISH_TITLES: Record<string, (a: Args) => string> = {
   imessage_send: (a) => `Envió un iMessage a ${str(a.to ?? "alguien")}`,
   remember: (a) => `Recordó: ${str(a.text)}`,
   recall: (a) => `Buscó «${str(a.query, 60)}» en la memoria`,
+  project_knowledge: (a) =>
+    a.project ? `Consultó el proyecto ${str(a.project, 60)}` : "Miró los proyectos que conoce",
   forget: (a) => `Olvidó la nota ${str(a.id)}`,
   show_widget: (a) => `Hizo el widget ${str(a.title ?? a.name)}`,
   read_widget: (a) => (a.name ? `Leyó el widget ${str(a.name)}` : "Listó los widgets"),
