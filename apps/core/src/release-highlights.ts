@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.28": {
+    en: [
+      "New: pair two computers running Colonia with a code. Change the same thing on both and nothing is lost.",
+      "Projects, agents, Flows, AIs, channels, apps and browsers stay the same on both computers.",
+      "WhatsApp and the other single-session channels stay on one computer; the other one sees them.",
+      "It is off until you turn it on in Settings › Sync computers.",
+    ],
+    es: [
+      "Nuevo: empareja dos ordenadores con Colonia con un código. Si cambias lo mismo en los dos, nada se pierde.",
+      "Proyectos, agentes, Flows, IAs, canales, aplicaciones y navegadores se mantienen iguales en los dos.",
+      "WhatsApp y los demás canales de una sola sesión siguen en un equipo; el otro los ve.",
+      "Está desactivado hasta que lo actives en Ajustes › Sincronizar equipos.",
+    ],
+  },
   "2.36.27": {
     en: [
       "New: a project can know other projects and look up what they know, without changing them.",
