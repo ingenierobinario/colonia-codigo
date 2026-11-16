@@ -174,11 +174,12 @@ test("idle chats show their active commands and each process names its origin", 
   await expect(page).toHaveURL(new RegExp(`thread=${other.id}`));
   await expect(header.getByRole("button", { name: "Procesos activos: 1" })).toBeVisible();
   running = commands.slice(1);
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  // PERF-9: volver a la ventana ya no relee los procesos (llegan por job.updated); una recarga sí los pide.
+  await page.reload();
   await expect(inbox.getByRole("img", { name: "Procesos activos: 1" })).toHaveCount(2);
   await expect(inbox.getByRole("img", { name: "Procesos activos: 2" })).toHaveCount(0);
   running = [];
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await page.reload();
   await expect(header.locator(".chatprocesses")).toHaveCount(0);
   await expect(inbox.locator(".chatprocesses")).toHaveCount(0);
 });

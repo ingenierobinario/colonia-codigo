@@ -8,7 +8,8 @@ const owner = { id: 4242, name: "Ana" };
 type Thread = { id: string; title: string };
 const workerSessions = async () =>
   (await rpc<{ threads: Thread[] }>("threads.list", { include_subthreads: true })).threads.filter((t) =>
-    t.title.includes("→ Researcher: check the sources"),
+    // The task in a delegated chat's title starts with a capital since 2.30.0 (titles.ts shortTask).
+    t.title.includes("→ Researcher: Check the sources"),
   ).length;
 
 test.afterEach(async () => {
