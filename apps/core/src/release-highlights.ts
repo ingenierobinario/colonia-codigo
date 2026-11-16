@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.30": {
+    en: [
+      "Pairing computers now takes a short 8-character code, and Colonia finds the other one on your network.",
+      "List order, project folders and the assistant's name stay right on each computer.",
+      "If a computer changes address, they find each other again on their own.",
+      "Saved versions survive unpairing, and large files resume where they left off.",
+    ],
+    es: [
+      "Emparejar equipos pide un código corto de 8 caracteres y Colonia encuentra el otro en tu red.",
+      "El orden de las listas, las carpetas de proyecto y el nombre del asistente se respetan en cada equipo.",
+      "Si un equipo cambia de dirección, los dos se vuelven a encontrar solos.",
+      "Las versiones guardadas sobreviven al desemparejar y los ficheros grandes siguen donde se quedaron.",
+    ],
+  },
   "2.36.29": {
     en: [
       "The project tree now shows at any window width, and you can't pick a project that would go in a circle.",
