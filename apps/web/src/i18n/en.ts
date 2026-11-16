@@ -218,6 +218,7 @@ export const en = {
     "Colonia {v} is out (this app is {current}). It downloads and opens for you to drag into Applications.",
   "update.leadAppDragLinux":
     "Colonia {v} is out (this app is {current}). It downloads and Colonia shows you the new file.",
+  "update.leadPackage": "Colonia {v} is downloaded.",
   "update.leadReady": "Colonia {v} is downloaded and ready. Restart Colonia to use it.",
   "update.readyLater": "If you choose later, it goes in when you quit Colonia.",
   "update.readyLaterMenu": "If you choose later, it waits in the Colonia menu: Restart to update.",
@@ -232,7 +233,7 @@ export const en = {
     "The new Colonia opened in a window: drag it into Applications, replacing this one, and open it again.",
   "update.dragDoneLinux": "Colonia shows you the new file. Close Colonia and open it.",
   "update.packageSteps":
-    "Your new Colonia is downloaded. To install it, quit Colonia, open a terminal and paste this command (it asks for your password):",
+    "To install it, quit Colonia, open a terminal and paste this command (it asks for your password):",
   "update.packageCommand": "Command to install",
   "update.packageCopy": "Copy",
   "update.packageAfter": "Then open Colonia again.",

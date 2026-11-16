@@ -1,4 +1,4 @@
-import { Button, Dialog, Icons, Input, Spinner } from "@colonia/ui";
+import { Button, Dialog, Icons, Spinner } from "@colonia/ui";
 import { notify } from "../data/notices.ts";
 import { notesFor } from "../data/update-notes.ts";
 import { packageCommandOf } from "../data/update-target.ts";
@@ -37,8 +37,9 @@ export function UpdateDialog() {
       notify(t("files.copyFailed"));
     }
   };
-  const lead =
-    target === "both"
+  const lead = command
+    ? t("update.leadPackage", { v: app?.latest ?? app?.ready ?? "" })
+    : target === "both"
       ? t("update.leadBoth", { v: app?.latest ?? app?.ready ?? "", current: app?.current ?? "" })
       : target === "app"
         ? phase === "ready" || phase === "restarting" || phase === "stalled"
@@ -106,7 +107,10 @@ export function UpdateDialog() {
         <>
           <p className="update__note">{t("update.packageSteps")}</p>
           <div className="update__command">
-            <Input readOnly className="is-mono" aria-label={t("update.packageCommand")} value={command} />
+            {/* Whole, on as many lines as it needs: a cut command is one nobody can check before pasting it. */}
+            <code className="update__command-text" title={t("update.packageCommand")}>
+              {command}
+            </code>
             <Button variant="secondary" leadingIcon={<Icons.Copy size={14} />} onClick={() => void copyCommand()}>
               {t("update.packageCopy")}
             </Button>

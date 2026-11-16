@@ -870,16 +870,24 @@
 }
 .update__command {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: flex-start;
   min-width: 0;
   margin: 0 0 8px;
 }
-.update__command > :first-child {
-  flex: 1;
+.update__command-text {
+  flex: 1 1 220px;
   min-width: 0;
-}
-.update__command input {
+  padding: 9px 12px;
+  border-radius: var(--colonia-radius-sm);
+  background: var(--colonia-fill);
   font-family: var(--colonia-font-mono);
+  font-size: var(--colonia-text-xs);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
 }
 .update__log {
   max-height: 240px;
