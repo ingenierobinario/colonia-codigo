@@ -7,9 +7,9 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await page.goto("/");
   const wizard = page.locator(".wiz");
   await expect(wizard).toBeVisible();
-  await expect(wizard.getByText("v1.120.0")).toBeVisible();
+  await expect(wizard.getByText(/versión 1.120.0/)).toBeVisible();
 
-  await wizard.getByRole("button", { name: /Importar desde Colonia v1/ }).click();
+  await wizard.getByRole("button", { name: /Importar desde una versión anterior/ }).click();
   await expect(wizard.getByRole("switch").first()).toBeVisible();
   await expect(wizard.getByText("Ollama · embeddinggemma:300m")).toBeVisible();
   await expect(wizard.locator(".wiz__rowname").filter({ hasText: /^Motores\s*2$/ })).toBeVisible();
@@ -72,7 +72,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   const discord = wizard.locator(".wiz__engine").filter({ hasText: "DISCORD" });
   await expect(discord.getByRole("textbox", { name: "Discord: Clave del bot" })).toBeVisible();
   await discord.getByRole("button", { name: /Cómo crear el bot de Discord/ }).click();
-  await expect(discord.locator(".wiz__howto li")).toHaveCount(4);
+  await expect(discord.locator(".wiz__howto li")).toHaveCount(3);
   await wizard.getByRole("button", { name: "Continuar" }).click();
 
   // Memory sits folded in the last step: by meaning, with v1's engine, and skills picked by meaning on.
@@ -91,7 +91,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await wizard.getByRole("button", { name: "Ahora no" }).click();
   await expect(wizard.getByText("Abriendo tu chat con Robina…")).toBeVisible();
   await expect(wizard).toBeHidden();
-  await expect(page).toHaveURL(/thread=home/);
+  await expect(page.getByRole("region", { name: "Home" })).toBeVisible();
   // The super-agent greets first, in the language on screen, and its personality can be picked right there.
   await expect(page.getByText(/Soy Robina, tu super-agente/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Directo y breve" })).toBeVisible();
@@ -143,7 +143,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await expect(engine.getByText("Responde")).toBeVisible();
   await expect(wizard.getByText(/Ollama no está corriendo en esta máquina/)).toBeHidden();
   // Another engine: "Test connection" says why an address does not answer, and lists the models of one that does.
-  await wizard.getByRole("button", { name: "Agregar", exact: true }).click();
+  await wizard.getByRole("button", { name: "Añadir", exact: true }).click();
   const dialog = page.getByRole("dialog");
   const url = dialog.getByRole("textbox", { name: "URL base" });
   await expect(url).toHaveValue("http://127.0.0.1:11434");
@@ -182,16 +182,16 @@ test("right after the desktop app installs Colonia, the setup's welcome says so,
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
-  await expect(wizard.getByText("Colonia está instalado")).toBeVisible();
-  await expect(wizard.getByText(/Colonia ya está instalado; ahora armamos tu crew/)).toBeVisible();
+  await expect(wizard.getByText("Colonia está instalada")).toBeVisible();
+  await expect(wizard.getByText(/Colonia ya está instalada. En 4 pasos cortos/)).toBeVisible();
   // v1 is on this machine: the two ways in stay.
-  await expect(wizard.getByRole("button", { name: /Importar desde Colonia v1/ })).toBeVisible();
+  await expect(wizard.getByRole("button", { name: /Importar desde una versión anterior/ })).toBeVisible();
   expect(new URL(page.url()).searchParams.has("welcome")).toBe(false);
   await page.reload();
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
-  await expect(wizard.getByText("Open source")).toBeVisible();
-  await expect(wizard.getByText("Colonia está instalado")).toBeHidden();
+  await expect(wizard.getByText("se ejecuta en tu máquina")).toBeVisible();
+  await expect(wizard.getByText("Colonia está instalada")).toBeHidden();
 });
 
 test("the setup's header picks the language, kept like the app's own", async ({ page }) => {
@@ -225,7 +225,7 @@ for (const look of ["minimal", "classic"]) {
       await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
       const wizard = page.locator(".wiz");
       await wizard.getByRole("button", { name: /Empezar de cero/ }).click();
-      for (let i = 0; i < 4; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
+      for (let i = 0; i < 3; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
       await wizard.getByRole("combobox", { name: "Tipo" }).click();
       const popup = page.locator(".colonia-select__popup");
       await expect(popup).toBeVisible();

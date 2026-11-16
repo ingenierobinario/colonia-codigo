@@ -15,7 +15,7 @@ const TELEGRAM_OWNER = 4242;
 
 test("the owner links a line with the QR, then their own phone by writing to it", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "Agregar canal" }).click();
+  await page.getByRole("button", { name: "Añadir canal" }).click();
   await page.getByRole("menuitem", { name: /WhatsApp/ }).click();
   await expect(page.getByRole("switch", { name: "Esta línea es mi propio teléfono" })).not.toBeChecked();
   await page.getByRole("button", { name: "Vincular" }).click();
@@ -36,14 +36,14 @@ test("the owner links a line with the QR, then their own phone by writing to it"
   await world.whatsapp.message(ME, "soy yo");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
-  await expect(page.getByText("Vincula tu teléfono")).toBeVisible();
+  await expect(page.getByText("Habla con tu agente desde tu móvil")).toBeVisible();
   await expect(page.getByText("+5491100000007")).toBeVisible();
   await page.getByRole("button", { name: "Es mi número" }).click();
-  await expect(page.getByRole("button", { name: /^Tú Tu teléfono/ })).toBeVisible();
-  await expect(page.getByText("Vincula tu teléfono")).toBeHidden();
+  await expect(page.getByRole("button", { name: /^Tú .*Tu teléfono/ })).toBeVisible();
+  await expect(page.getByText("Habla con tu agente desde tu móvil")).toBeHidden();
 
   // The owner's chat on the channel opens a side panel like any chat.
-  await page.getByRole("button", { name: /^Tú Tu teléfono/ }).click();
+  await page.getByRole("button", { name: /^Tú .*Tu teléfono/ }).click();
   await page.getByRole("button", { name: /Abrir panel lateral|Panel:/ }).click();
   await page.getByRole("menuitem", { name: "Widget" }).click();
   await expect(page.getByRole("complementary", { name: "Panel lateral" })).toBeVisible();
