@@ -71,6 +71,8 @@ const LOCAL_SETTINGS = [
   "copia_restaurada",
   "services_offered",
   "local_alias",
+  // La lista de modelos que cada equipo descubre por su cuenta (lleva su hora): se vuelve a pedir, no se copia.
+  "catalog.",
 ];
 export const settingTravels = (name: string) => !LOCAL_SETTINGS.some((p) => name.startsWith(p));
 

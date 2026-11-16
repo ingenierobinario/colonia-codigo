@@ -136,6 +136,8 @@ type Link = { ws: WebSocket; client: string; send(m: Msg): void; ready: boolean;
 const wsUrl = (base: string) => `${base.replace(/\/+$/, "").replace(/^http/, "ws")}${SYNC_PATH}`;
 const hex = (fingerprint: string) => fingerprint.toLowerCase().replace(/[^0-9a-f]/g, "");
 
+/** Un ajuste no tiene nombre propio: se enseña el suyo, sin el prefijo interno. */
+const settingName = (key: unknown) => (typeof key === "string" ? key.replace(/^setting:/, "").replace(/[_.:]+/g, " ") : "");
 const KINDS: Readonly<Record<string, SyncSaved["kind"]>> = {
   projects: "project",
   agents: "agent",
@@ -902,7 +904,7 @@ export function createSync(d: SyncDeps) {
             row = JSON.parse(i.row) as Record<string, unknown>;
           } catch {}
           const setting = i.tbl === "meta" || i.tbl.startsWith("@");
-          const label = [row.name, row.title, row.label, row.text, row.id].find(
+          const label = [row.name, row.title, row.label, row.text, row.id, setting ? settingName(row.key) : ""].find(
             (v) => typeof v === "string" && v.trim(),
           ) as string | undefined;
           return {

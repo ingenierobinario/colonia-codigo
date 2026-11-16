@@ -166,6 +166,12 @@
   justify-content: flex-end;
 }
 
+/* Con el menú de Ajustes al lado, por debajo de 1100 px cuatro casillas cortan su rótulo: dos por fila. */
+@media (max-width: 1100px) {
+  .sy-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 640px) {
   .sy-counts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
