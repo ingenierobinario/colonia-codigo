@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { enApprovals } from "./approvals-en.ts";
 import { esApprovals } from "./approvals-es.ts";
+import { enBackup } from "./backup-en.ts";
+import { esBackup } from "./backup-es.ts";
 import { enComputer } from "./computer-en.ts";
 import { esComputer } from "./computer-es.ts";
 import { en as base } from "./en.ts";
@@ -130,6 +132,7 @@ test("the late screens' strings stay out of the first load, and what the first s
 const en = {
   ...base,
   ...enApprovals,
+  ...enBackup,
   ...enComputer,
   ...enEquipos,
   ...enReceived,
@@ -145,6 +148,7 @@ const en = {
 const es = {
   ...esBase,
   ...esApprovals,
+  ...esBackup,
   ...esComputer,
   ...esEquipos,
   ...esReceived,

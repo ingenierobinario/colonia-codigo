@@ -1,5 +1,6 @@
 import { noticeEn } from "@colonia/protocol/notices";
 import type { ApprovalKey } from "./approvals-en.ts";
+import type { BackupKey } from "./backup-en.ts";
 import type { ComputerKey } from "./computer-en.ts";
 import { enChannels } from "./en-channels.ts";
 import { enChat } from "./en-chat.ts";
@@ -1725,8 +1726,10 @@ export const en = {
   "desktop.cu.mode.live": "Live",
   "desktop.cu.mode.background": "Background",
   "desktop.cu.mode.askHint": "You choose in each chat, the first time the agent is about to touch the screen.",
-  "desktop.cu.mode.liveHint": "The pointer really moves and you see each step. Best not to use the mouse while it works.",
-  "desktop.cu.mode.backgroundHint": "Presses buttons and types without moving your pointer. If an app does not allow it, the agent tells you and leaves it alone.",
+  "desktop.cu.mode.liveHint":
+    "The pointer really moves and you see each step. Best not to use the mouse while it works.",
+  "desktop.cu.mode.backgroundHint":
+    "Presses buttons and types without moving your pointer. If an app does not allow it, the agent tells you and leaves it alone.",
   "live.title": "What the agent sees",
   "live.show": "Screen",
   "live.bigger": "Make it bigger",
@@ -1949,6 +1952,7 @@ export const en = {
   "im.onlyMacBody":
     "iMessage lives in the Messages app of a Mac signed in to the account. This core runs on another system.",
   "config.devices": "Devices",
+  "config.backup": "Backup & transfer",
   "devices.lead":
     "Your phone or another computer, paired with a QR: each talks to this core with a key of its own, and removing one stops only that one.",
   "access.title": "Connection",
@@ -2083,7 +2087,8 @@ export const en = {
   "thread.menu.markRead": "Mark as read",
   "thread.menu.exportRecipe": "Export as a recipe",
   "recipe.exported": "Recipe saved: {name}.md. Steps: {n}.",
-  "recipe.exportedUnnamed": "Recipe saved: {name}.md. Steps: {n}; with no record of what was clicked: {m}. Check it before sharing.",
+  "recipe.exportedUnnamed":
+    "Recipe saved: {name}.md. Steps: {n}; with no record of what was clicked: {m}. Check it before sharing.",
   "recipe.nothing": "The agent has not done anything repeatable in this chat yet.",
   "recipe.exportFailed": "Could not export the recipe: {error}",
   "recipe.notRecipe": "That file is not a Colonia recipe.",
@@ -2126,6 +2131,7 @@ export const en = {
 export type MessageKey =
   | keyof typeof en
   | ApprovalKey
+  | BackupKey
   | ComputerKey
   | EquipoKey
   | ReceivedKey

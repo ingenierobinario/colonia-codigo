@@ -1729,8 +1729,10 @@ export const es: Partial<Record<MessageKey, string>> = {
   "desktop.cu.mode.live": "En vivo",
   "desktop.cu.mode.background": "Segundo plano",
   "desktop.cu.mode.askHint": "Lo eliges tú en cada chat, la primera vez que el agente vaya a tocar la pantalla.",
-  "desktop.cu.mode.liveHint": "El puntero se mueve de verdad y ves cada paso. Mientras trabaja, mejor no usar el ratón.",
-  "desktop.cu.mode.backgroundHint": "Pulsa botones y escribe sin mover tu puntero. Si una app no lo permite, el agente te avisa y no la toca.",
+  "desktop.cu.mode.liveHint":
+    "El puntero se mueve de verdad y ves cada paso. Mientras trabaja, mejor no usar el ratón.",
+  "desktop.cu.mode.backgroundHint":
+    "Pulsa botones y escribe sin mover tu puntero. Si una app no lo permite, el agente te avisa y no la toca.",
   "live.title": "Lo que ve el agente",
   "live.show": "Pantalla",
   "live.bigger": "Agrandar",
@@ -1964,6 +1966,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "im.onlyMacBody":
     "iMessage vive en la app Mensajes de un Mac con la cuenta iniciada. Este core se ejecuta en otro sistema.",
   "config.devices": "Dispositivos",
+  "config.backup": "Copia y traslado",
   "devices.lead":
     "Tu teléfono u otro ordenador, vinculados con un QR: cada uno habla con este core con su propia llave, y quitar uno corta solo a ese.",
   "access.title": "Conexión",
@@ -2103,7 +2106,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "thread.menu.markRead": "Marcar como leído",
   "thread.menu.exportRecipe": "Exportar como receta",
   "recipe.exported": "Receta guardada: {name}.md. Pasos: {n}.",
-  "recipe.exportedUnnamed": "Receta guardada: {name}.md. Pasos: {n}; sin anotar dónde se pulsó: {m}. Repásala antes de compartirla.",
+  "recipe.exportedUnnamed":
+    "Receta guardada: {name}.md. Pasos: {n}; sin anotar dónde se pulsó: {m}. Repásala antes de compartirla.",
   "recipe.nothing": "En este chat el agente aún no ha hecho nada que se pueda repetir.",
   "recipe.exportFailed": "No se pudo exportar la receta: {error}",
   "recipe.notRecipe": "Ese archivo no es una receta de Colonia.",
