@@ -35,7 +35,7 @@ test("the owner links a line with the QR, then their own phone by writing to it"
 
   await world.whatsapp.message(ME, "soy yo");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await expect(page.getByText("Habla con tu agente desde tu móvil")).toBeVisible();
   await expect(page.getByText("+5491100000007")).toBeVisible();
   await page.getByRole("button", { name: "Es mi número" }).click();
@@ -66,13 +66,13 @@ test("strangers 'ask me': whoever writes is an unreviewed contact, the owner hea
   page,
 }) => {
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await page.getByRole("button", { name: "Configuración del canal" }).click();
   await page.getByRole("radio", { name: "Avisarme" }).click();
   await expect(page.getByText(/Te llega un aviso con quién escribió/)).toBeVisible();
   // A setting changes in place: the line stays connected and every section stays on screen.
   await expect(page.getByText("Conectando con WhatsApp…")).toHaveCount(0);
-  await expect(page.getByRole("radio", { name: "Se suma" })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Se añade" })).toBeVisible();
   await until(async () =>
     (await rpc<{ channels: Array<{ id: string; strangers: string }> }>("channels.list")).channels.some(
       (c) => c.id === "whatsapp" && c.strangers === "ask",
@@ -108,7 +108,7 @@ test("a contact's video plays in the chat's own player, and a document of any ty
     bytes: Buffer.from("PK\u0003\u0004 hoja").toString("base64"),
   });
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await page.getByRole("button", { name: /Lucía/ }).first().click();
   await expect(page.locator('video[aria-label="video.mp4"]')).toBeVisible();
   await expect(page.getByText("Mira cómo quedó")).toBeVisible();
@@ -127,7 +127,7 @@ test("a video kept only as a placeholder: 'Recover files' asks the phone again a
   await until(async () => (await world.whatsapp.sentTo(FRIEND.phone)).length > answers);
   await world.whatsapp.keep(id, { videoMessage: { mimetype: "video/mp4" }, bytes: mp4.toString("base64") });
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await page.getByRole("button", { name: /Lucía/ }).first().click();
   await expect(page.getByText(/cannot read this kind/)).toBeVisible();
   const calls = await world.llmCalls();
@@ -142,7 +142,7 @@ test("a video kept only as a placeholder: 'Recover files' asks the phone again a
 
 test("the line turned into the owner's own phone: 'Message yourself' is the owner", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
   await page.getByRole("button", { name: "Configuración del canal" }).click();
   await page.getByRole("switch", { name: "Esta línea es mi propio teléfono" }).click();
   await expect(page.getByText("Todavía no está vinculado", { exact: false })).toBeHidden();
