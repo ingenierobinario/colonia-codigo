@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.29": {
+    en: [
+      "The project tree now shows at any window width, and you can't pick a project that would go in a circle.",
+      "When importing, you see the projects Colonia can't find and can link them right there.",
+      "Flows and their helpers use the knowledge of every project you picked.",
+      "Packages with linked projects also open in earlier versions of Colonia.",
+    ],
+    es: [
+      "El árbol de proyectos se ve en cualquier ancho y no deja elegir un proyecto que cerraría un círculo.",
+      "Al importar, ves los proyectos que Colonia no encuentra y puedes enlazarlos ahí mismo.",
+      "Los Flows y sus ayudantes usan el conocimiento de todos los proyectos elegidos.",
+      "Los paquetes con proyectos enlazados también se abren en versiones anteriores de Colonia.",
+    ],
+  },
   "2.36.28": {
     en: [
       "New: pair two computers running Colonia with a code. Change the same thing on both and nothing is lost.",
