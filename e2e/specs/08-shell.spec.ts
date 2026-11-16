@@ -1,4 +1,4 @@
-// The frame: the list is resized (never folded away), icon buttons say what they do, the language switches with no key
+// The frame: the list is resized and folds to a tab that brings it back, icon buttons say what they do, the language switches with no key
 // left untranslated, and Settings opens every section.
 import type { Page } from "@playwright/test";
 import { expect, open, openSettings, rpc, test } from "./kit.ts";
@@ -8,9 +8,15 @@ test.beforeAll(async () => {
   await rpc("setup.finish");
 });
 
-test("the chat list resizes from its edge and never folds away; an icon button says what it does", async ({ page }) => {
+test("the chat list resizes from its edge and folds to a tab that brings it back; an icon button says what it does", async ({
+  page,
+}) => {
   await open(page);
-  await expect(page.getByRole("button", { name: "Plegar la lista" })).toHaveCount(0);
+  const list = page.getByRole("region", { name: "Inbox", exact: true });
+  await page.getByRole("button", { name: "Plegar la lista de chats", exact: true }).click();
+  await expect(list).toHaveCount(0);
+  await page.getByRole("button", { name: "Desplegar la lista de chats", exact: true }).click();
+  await expect(list).toBeVisible();
   await page.getByRole("button", { name: /herramientas/ }).hover();
   await expect(page.getByText(/cada paso del agente/)).toBeVisible();
 
@@ -28,7 +34,7 @@ test("a chain entry picks one of the model APIs' models; the CLIs are not offere
   await page.getByRole("dialog").getByRole("button", { name: "Router" }).click();
   await page.getByRole("button", { name: "Añadir un modelo" }).click();
   await expect(page.getByRole("option", { name: /GPT e2e/ })).toHaveCount(0);
-  await page.getByRole("option", { name: /fake-2/ }).click();
+  await page.getByRole("option", { name: /Fake 2/ }).click();
   await expect(page.getByRole("listbox", { name: "Modelos" })).toBeHidden();
   await page.getByRole("button", { name: "Guardar router" }).click();
   await expect
@@ -47,14 +53,14 @@ test("an agent picks its own model from the list, and one button leaves it on th
     .click();
   await expect(page.getByText("En uso", { exact: true })).toBeVisible();
   await expect(page.getByRole("checkbox", { name: /voz, imagen y embeddings/ })).toHaveCount(0);
-  await page.getByRole("option", { name: /fake-2/ }).click();
+  await page.getByRole("option", { name: /Fake 2/ }).click();
   const choiceOf = async () =>
     (await rpc<{ agents: Array<{ kind: string; model_choice?: { model: string } }> }>("agents.list")).agents.find(
       (a) => a.kind === "secretary",
     )?.model_choice?.model;
   await expect.poll(choiceOf).toBe("custom/fake-2");
 
-  await expect(page.getByRole("option", { name: /fake-2/, selected: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Fake 2/, selected: true })).toBeVisible();
   await page.getByRole("button", { name: "Dejar solo el router" }).click();
   await expect.poll(choiceOf).toBeUndefined();
   await page.keyboard.press("Escape");

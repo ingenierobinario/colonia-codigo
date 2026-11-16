@@ -30,7 +30,7 @@ test("a routine that sends a message is created and runs now", async ({ page }) 
   const bars = row.getByRole("img", { name: "Últimas activaciones" });
   await expect(bars.locator(".rtbar")).toHaveCount(14);
   await expect(bars.locator(".rtbar:not(.is-none)")).toHaveCount(1);
-  await expect(bars.locator(".rtbar.is-none").first()).toHaveAttribute("title", /No corrió/);
+  await expect(bars.locator(".rtbar.is-none").first()).toHaveAttribute("title", /No se ejecutó/);
 
   // The routine opens beside the list; a run opens its conversation in the same drawer, and back returns.
   await row.getByRole("button", { name: /ping-me/ }).click();
