@@ -27,7 +27,7 @@ function harness(stop: () => Promise<unknown>) {
   };
   return { said, quit, timeout: () => due?.() };
 }
-const settle = () => new Promise((r) => setImmediate(r));
+const settle = () => new Promise((r) => setImmediate(() => setImmediate(r)));
 
 test("quitting is held until the core has stopped, then goes through once", async () => {
   let stopped: () => void = () => {};
@@ -51,6 +51,7 @@ test("a core that never stops does not keep the app open past the wait", async (
   h.quit();
   await settle();
   h.timeout();
+  await settle();
   assert.deepEqual(h.said, ["first", "stop", "last", "quit"]);
   assert.deepEqual(h.quit(), { held: false, through: true });
 });
@@ -58,6 +59,16 @@ test("a core that never stops does not keep the app open past the wait", async (
 test("a stop that fails still lets the app quit", async () => {
   const h = harness(() => Promise.reject(new Error("no core")));
   h.quit();
+  await settle();
+  assert.deepEqual(h.said, ["first", "stop", "last", "quit"]);
+});
+
+test("CIERRE-SENAL-1: with nothing to wait for, quitting again waits for the held will-quit to return", async () => {
+  const h = harness(() => Promise.resolve());
+  h.quit();
+  // Electron drops a quit asked before the prevented will-quit has returned: none in this turn's microtasks.
+  for (let i = 0; i < 5; i++) await Promise.resolve();
+  assert.deepEqual(h.said, ["first", "stop", "last"]);
   await settle();
   assert.deepEqual(h.said, ["first", "stop", "last", "quit"]);
 });

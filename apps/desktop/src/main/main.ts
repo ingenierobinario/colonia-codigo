@@ -116,9 +116,16 @@ app.on("before-quit", (e) => {
   }
   quitting = true;
 });
-
 app.whenReady().then(() => {
   if (!single) return;
+  // CIERRE-SENAL-1: a signal (kill, systemd, the session ending) is an order, not a question: nobody is there to answer
+  // the quit dialog, which used to block the app with no window in sight. It quits in order, like a shutdown. Set once
+  // ready: Electron puts its own handlers in place while starting, and those went straight to the dialog.
+  for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"] as const)
+    process.on(signal, () => {
+      quitting = true;
+      app.quit();
+    });
   // Run straight from Electron (not the Colonia bundle `pnpm app` makes), the Dock still shows Colonia's face.
   // The packaged app already carries its bundle icon (shaped by macOS); a PNG set here would replace it as drawn.
   if (!app.isPackaged) app.dock?.setIcon(path.join(DIST, "icon.png"));

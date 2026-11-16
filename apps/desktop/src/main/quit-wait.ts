@@ -39,7 +39,10 @@ export function waitOnQuit(opts: {
       try {
         opts.last?.();
       } finally {
-        opts.quit();
+        // CIERRE-SENAL-1: never in the same turn as the will-quit it held back. Electron only clears its "quitting"
+        // flag once that event returns; a quit asked before (a core already stopped resolves at once, as on SIGTERM
+        // with nothing to wait for) was dropped, and the app stayed open with no window. The next turn goes through.
+        setImmediate(opts.quit);
       }
     };
     const cancel = after(opts.ms ?? QUIT_WAIT_MS, finish);
