@@ -1,5 +1,6 @@
 // D-192 fase 2 · Ajustes › Sincronizar equipos (DECISIONS.md#d-192): enlazar los dos ordenadores del dueño con un
-// código, ver cómo va, decidir cuál lleva los canales y recuperar la versión que perdió un cambio.
+// código corto, ver cómo va, decidir cuál lleva los canales, elegir aquí la carpeta de un proyecto que vive en el
+// otro y recuperar (o borrar) la versión que perdió un cambio.
 import "../styles/backup.css";
 import "../styles/sync.css";
 import type { SyncSaved, SyncStatus } from "@colonia/protocol";
@@ -56,9 +57,14 @@ export function SyncSection() {
     <>
       <SectionHead title={t("config.sync")} lead={t("sync.lead")} />
       {status && !status.paired && <Pair status={status} onStatus={setStatus} />}
+      {/* Las versiones guardadas siguen ahí tras dejar de sincronizar, hasta que el dueño las borra. */}
+      {status && !status.paired && status.saved > 0 && (
+        <Saved status={status} beat={beat} onChanged={() => void read()} />
+      )}
       {status?.paired && (
         <>
           <Linked status={status} />
+          <Folders status={status} onStatus={setStatus} />
           <Role status={status} onStatus={setStatus} />
           <Saved status={status} beat={beat} onChanged={() => void read()} />
           <Unpair status={status} onStatus={setStatus} />
@@ -101,6 +107,7 @@ function joinWhy(e: unknown): MessageKey {
   if (/no es correcto/.test(said)) return "sync.join.wrong";
   if (/no es válido/.test(said)) return "sync.join.invalid";
   if (/ya está emparejado/.test(said)) return "sync.join.taken";
+  if (/no encuentro/.test(said)) return "sync.join.notfound";
   return "sync.join.failed";
 }
 
@@ -113,6 +120,7 @@ function Pair({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
   const [busy, setBusy] = useState(false);
   const [why, setWhy] = useState<MessageKey>();
   const [copied, setCopied] = useState(false);
+  const [more, setMore] = useState(false);
   const pairing = status.pairing;
 
   const run = async (f: () => Promise<SyncStatus>, failed: (e: unknown) => MessageKey) => {
@@ -121,7 +129,10 @@ function Pair({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
     try {
       onStatus(await f());
     } catch (e) {
-      setWhy(failed(e));
+      const key = failed(e);
+      setWhy(key);
+      // Si no se encuentran solos, la dirección a mano queda a la vista.
+      if (key === "sync.join.notfound") setMore(true);
     } finally {
       setBusy(false);
     }
@@ -177,6 +188,7 @@ function Pair({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
                 name="sync-code"
                 autoComplete="off"
                 spellCheck={false}
+                placeholder="ABCD-2345"
                 value={code}
                 disabled={busy}
                 onChange={(e) => setCode(e.currentTarget.value)}
@@ -185,7 +197,7 @@ function Pair({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
               />
             )}
           </Field>
-          <details className="sy-more">
+          <details className="sy-more" data-sy="more" open={more} onToggle={(e) => setMore(e.currentTarget.open)}>
             <summary className="sy-more__summary">
               <Icons.ChevronRight />
               {t("sync.join.more")}
@@ -216,7 +228,12 @@ function Pair({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
               data-sy="cancel"
               variant="secondary"
               disabled={busy}
-              onClick={() => void run(() => client.call("sync.pair_cancel", {}), () => "sync.failed")}
+              onClick={() =>
+                void run(
+                  () => client.call("sync.pair_cancel", {}),
+                  () => "sync.failed",
+                )
+              }
             >
               {t("sync.pair.cancel")}
             </Button>
@@ -237,7 +254,12 @@ function Pair({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
           <Button
             data-sy="make"
             loading={busy}
-            onClick={() => void run(() => client.call("sync.pair_start", {}), () => "sync.failed")}
+            onClick={() =>
+              void run(
+                () => client.call("sync.pair_start", {}),
+                () => "sync.failed",
+              )
+            }
           >
             {t("sync.pair.make")}
           </Button>
@@ -349,12 +371,111 @@ function Role({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
   );
 }
 
-/** Lo que perdió frente a un cambio más reciente: por páginas, y se puede volver a poner. */
+/** Proyectos cuya carpeta está en el otro equipo y no en este: se elige aquí dónde están. */
+function Folders({ status, onStatus }: { status: SyncStatus; onStatus: Set }) {
+  const t = useT();
+  const [editing, setEditing] = useState<string>();
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState<string>();
+  const [why, setWhy] = useState<MessageKey>();
+  const list = status.folders ?? [];
+  if (list.length === 0) return null;
+  const save = async (project: string, dir: string) => {
+    const at = dir.trim();
+    if (!at || busy) return;
+    setBusy(project);
+    setWhy(undefined);
+    try {
+      onStatus(await client.call("sync.set_folder", { project, path: at }));
+      setEditing(undefined);
+      setTyped("");
+    } catch (e) {
+      setWhy(/no existe/.test(e instanceof Error ? e.message : String(e)) ? "sync.folders.missing" : "sync.failed");
+    } finally {
+      setBusy(undefined);
+    }
+  };
+  const choose = async (project: string) => {
+    setWhy(undefined);
+    const pick = window.coloniaDesktop?.pickFolder;
+    if (!pick) {
+      setEditing(project);
+      setTyped("");
+      return;
+    }
+    const dir = await pick();
+    if (dir) await save(project, dir);
+  };
+  return (
+    <BackupCard
+      name="sync-folders"
+      icon={<Icons.FolderOpen />}
+      title={t("sync.folders.title")}
+      hint={t("sync.folders.hint")}
+    >
+      <ul className="sy-list" data-sy="folders">
+        {list.map((p) => (
+          <li key={p.id} className="sy-row sy-row--folder" data-sy="folder-row">
+            <span className="sy-row__text">
+              <span className="sy-row__label" title={p.name}>
+                {p.name}
+              </span>
+              <span className="sy-row__meta">{t("sync.folders.here")}</span>
+            </span>
+            {editing === p.id ? (
+              <span className="sy-folder">
+                <Input
+                  name="sync-folder"
+                  aria-label={t("sync.folders.path")}
+                  placeholder={t("sync.folders.path")}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={typed}
+                  disabled={busy !== undefined}
+                  onChange={(e) => setTyped(e.currentTarget.value)}
+                  onKeyDown={(e) => e.key === "Enter" && void save(p.id, typed)}
+                  leadingIcon={<Icons.FolderOpen />}
+                />
+                <Button
+                  size="sm"
+                  data-sy="folder-save"
+                  loading={busy === p.id}
+                  disabled={!typed.trim()}
+                  onClick={() => void save(p.id, typed)}
+                >
+                  {t("sync.folders.save")}
+                </Button>
+              </span>
+            ) : (
+              <Button
+                size="sm"
+                variant="secondary"
+                data-sy="folder-pick"
+                loading={busy === p.id}
+                disabled={busy !== undefined}
+                leadingIcon={<Icons.FolderOpen />}
+                onClick={() => void choose(p.id)}
+              >
+                {t("sync.folders.pick")}
+              </Button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {why && <Note tone="error">{t(why)}</Note>}
+    </BackupCard>
+  );
+}
+
+/** Lo que perdió frente a un cambio más reciente: por páginas; se puede volver a poner, o borrar. */
 function Saved({ status, beat, onChanged }: { status: SyncStatus; beat: number; onChanged: () => void }) {
   const t = useT();
   const [page, setPage] = useState(0);
   const [list, setList] = useState<{ total: number; items: SyncSaved[] }>();
   const [busy, setBusy] = useState<string>();
+  // Qué se va a borrar: una (su id) o todas.
+  const [ask, setAsk] = useState<{ id?: string }>();
+  const [deleting, setDeleting] = useState(false);
   const asked = useRef(0);
   const load = useCallback(async (at: number) => {
     const mine = ++asked.current;
@@ -371,6 +492,20 @@ function Saved({ status, beat, onChanged }: { status: SyncStatus; beat: number; 
     if (list && page > last) setPage(last);
   }, [list, page, last]);
   const name = status.peer?.name ?? "";
+  const forget = async () => {
+    if (!ask) return;
+    setDeleting(true);
+    try {
+      await client.call("sync.saved_delete", ask.id ? { id: ask.id } : {});
+      setAsk(undefined);
+      await load(page);
+      onChanged();
+    } catch {
+      notify(t("sync.failed"));
+    } finally {
+      setDeleting(false);
+    }
+  };
   const recover = async (id: string) => {
     setBusy(id);
     try {
@@ -402,7 +537,8 @@ function Saved({ status, beat, onChanged }: { status: SyncStatus; beat: number; 
                     {v.label}
                   </span>
                   <span className="sy-row__meta">
-                    {v.mine ? t("sync.saved.mine") : t("sync.saved.theirs", { name })} · {shortWhen(v.lost_at)}
+                    {v.mine ? t("sync.saved.mine") : name ? t("sync.saved.theirs", { name }) : t("sync.saved.other")} ·{" "}
+                    {shortWhen(v.lost_at)}
                   </span>
                 </span>
                 {v.recovered_at ? (
@@ -420,40 +556,78 @@ function Saved({ status, beat, onChanged }: { status: SyncStatus; beat: number; 
                     {t("sync.saved.recover")}
                   </Button>
                 )}
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  data-sy="forget"
+                  label={t("sync.saved.delete")}
+                  disabled={busy !== undefined}
+                  onClick={() => setAsk({ id: v.id })}
+                  icon={<Icons.Trash2 />}
+                />
               </li>
             ))}
           </ul>
-          {total > PAGE && (
-            <div className="sy-pager" data-sy="pager">
-              <span className="sy-pager__range">
-                {t("sync.saved.range", {
-                  from: formatNumber(page * PAGE + 1),
-                  to: formatNumber(Math.min(total, (page + 1) * PAGE)),
-                  total: formatNumber(total),
-                })}
-              </span>
-              <IconButton
-                size="sm"
-                variant="ghost"
-                data-sy="prev"
-                label={t("sync.saved.prev")}
-                disabled={page === 0}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                icon={<Icons.ChevronLeft />}
-              />
-              <IconButton
-                size="sm"
-                variant="ghost"
-                data-sy="next"
-                label={t("sync.saved.next")}
-                disabled={page >= last}
-                onClick={() => setPage((p) => Math.min(last, p + 1))}
-                icon={<Icons.ChevronRight />}
-              />
-            </div>
-          )}
+          <div className="sy-pager" data-sy="pager">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="sy-pager__all"
+              data-sy="forget-all"
+              leadingIcon={<Icons.Trash2 />}
+              onClick={() => setAsk({})}
+            >
+              {t("sync.saved.deleteAll")}
+            </Button>
+            {total > PAGE && (
+              <>
+                <span className="sy-pager__range">
+                  {t("sync.saved.range", {
+                    from: formatNumber(page * PAGE + 1),
+                    to: formatNumber(Math.min(total, (page + 1) * PAGE)),
+                    total: formatNumber(total),
+                  })}
+                </span>
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  data-sy="prev"
+                  label={t("sync.saved.prev")}
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  icon={<Icons.ChevronLeft />}
+                />
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  data-sy="next"
+                  label={t("sync.saved.next")}
+                  disabled={page >= last}
+                  onClick={() => setPage((p) => Math.min(last, p + 1))}
+                  icon={<Icons.ChevronRight />}
+                />
+              </>
+            )}
+          </div>
         </>
       )}
+      <Dialog
+        open={ask !== undefined}
+        onOpenChange={(open) => !open && !deleting && setAsk(undefined)}
+        size="sm"
+        title={t(ask?.id ? "sync.saved.deleteTitle" : "sync.saved.deleteAllTitle")}
+        description={t("sync.saved.deleteBody")}
+        footer={
+          <>
+            <Button variant="secondary" disabled={deleting} onClick={() => setAsk(undefined)}>
+              {t("sync.pair.cancel")}
+            </Button>
+            <Button data-sy="forget-go" variant="danger" loading={deleting} onClick={() => void forget()}>
+              {t("sync.saved.deleteGo")}
+            </Button>
+          </>
+        }
+      />
     </BackupCard>
   );
 }

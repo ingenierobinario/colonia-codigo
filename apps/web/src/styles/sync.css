@@ -20,8 +20,11 @@
   border-radius: 10px;
   background: var(--colonia-fill);
   font-family: var(--colonia-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
-  font-size: var(--colonia-text-sm);
-  line-height: 1.5;
+  font-size: 26px;
+  font-weight: var(--colonia-weight-medium);
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-align: center;
   overflow-wrap: anywhere;
   user-select: all;
 }
@@ -155,6 +158,20 @@
   justify-content: flex-end;
   gap: 4px;
 }
+.sy-pager__all {
+  margin-right: auto;
+}
+.sy-folder {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.sy-folder > :first-child {
+  flex: 1;
+  min-width: 0;
+}
 .sy-pager__range {
   margin-right: 6px;
   font-size: var(--colonia-text-sm);
@@ -181,6 +198,9 @@
   }
   .sy-row__kind {
     width: auto;
+    flex: 1 0 100%;
+  }
+  .sy-folder {
     flex: 1 0 100%;
   }
   .sy-role > .colonia-btn {
