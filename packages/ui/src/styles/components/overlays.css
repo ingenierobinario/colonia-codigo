@@ -24,6 +24,9 @@
 }
 .colonia-menu {
   min-width: 200px;
+  /* MENU-ALTO-1: a menu longer than the window scrolls inside it; its last items stay reachable. */
+  max-height: var(--available-height, calc(100dvh - 16px));
+  overflow-y: auto;
   padding: 5px;
   border-radius: var(--colonia-radius-md);
   background: var(--colonia-surface-raised);
