@@ -41,6 +41,8 @@ export function officeScheduler(deps: {
   checks?: (remind: (texts: string[], ref: string) => void) => BackgroundCheck[];
   log: Log;
   now?: () => Date;
+  /** D-192: the owner's other computer keeps the clock. */
+  paused?: () => boolean;
 }) {
   const { store, attention } = deps;
   const nudges = createNudges({
@@ -74,6 +76,7 @@ export function officeScheduler(deps: {
     admit: deps.admit,
     log: deps.log,
     ...(deps.now ? { now: deps.now } : {}),
+    ...(deps.paused ? { paused: deps.paused } : {}),
     eachTick: (at) => {
       background.tick(at);
       handOwnerComments(store, deps.admit, at);

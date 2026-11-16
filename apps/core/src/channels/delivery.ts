@@ -26,6 +26,8 @@ export function createDelivery(deps: {
   media(id: string): { mime: string; data: Buffer } | undefined;
   /** An item that surely did not go out and will not be tried again on its channel. */
   failed?(o: OutboxRow): void;
+  /** D-192: the owner's other computer holds the channels and sends what waits here too. */
+  elsewhere?(): boolean;
 }) {
   const { store, log } = deps;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -41,6 +43,7 @@ export function createDelivery(deps: {
   }
 
   async function drain(): Promise<void> {
+    if (deps.elsewhere?.()) return;
     if (draining) {
       again = true;
       return;

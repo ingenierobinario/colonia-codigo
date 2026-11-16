@@ -50,6 +50,8 @@ import { emailSignatureHandlers } from "./rpc/email-signatures.ts";
 import { embeddingHandlers } from "./rpc/embeddings.ts";
 import { environmentHandlers } from "./rpc/environments.ts";
 import { type EquiposDeps, equiposHandlers } from "./rpc/equipos.ts";
+import { syncHandlers } from "./rpc/sync.ts";
+import type { Sync } from "./sync/service.ts";
 import { extensionHandlers } from "./rpc/extensions.ts";
 import { fileHandlers } from "./rpc/files.ts";
 import { flowHandlers } from "./rpc/flows.ts";
@@ -272,6 +274,8 @@ type HandlerDeps = {
   terminals: Parameters<typeof terminalHandlers>[1];
   /** COPIA-COMPLETA-1: la copia completa de Colonia y su restauración. */
   backup: Backup;
+  /** D-192: el otro equipo del dueño, sincronizado con este. */
+  sync: Sync;
   /** What the computer has and what Colonia takes of it. */
   usage: Parameters<typeof usageHandlers>[0];
 };
@@ -318,6 +322,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...webAppHandlers(d.store, d.mcp, d.secrets),
     ...navegadorHandlers(d.store),
     ...backupHandlers(d.backup),
+    ...syncHandlers(d.sync),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),
@@ -492,6 +497,8 @@ export async function listen(
     vm?: Computer | undefined;
     /** Acepta las conexiones de los equipos emparejados en /equipo. */
     equipos?: Pick<Principal, "path" | "upgrade"> | undefined;
+    /** D-192: acepta la conexión del otro equipo del dueño en /sincronizar. */
+    sync?: Pick<Sync, "path" | "upgrade"> | undefined;
   },
 ) {
   const allowedOrigins = originsFor(`http://${config.host}:${config.port || 7440}`, config.allowedOrigins);
@@ -518,7 +525,7 @@ export async function listen(
   const display = d.vm ? attachVmDisplay(server, d.vm, gate) : undefined;
   const wss = attachWs(server, {
     streamPath: d.vm ? "/vm-display" : undefined,
-    extraPath: d.equipos?.path,
+    extraPaths: [d.equipos, d.sync].flatMap((m) => (m ? [m.path] : [])),
     dispatch: d.dispatch,
     identity: d.identity,
     log: d.log,
@@ -528,11 +535,11 @@ export async function listen(
     deviceOf: (token) => d.store.devices.byToken(token),
     clientOf: (token) => d.store.clients.byToken(token),
   });
-  const team = d.equipos;
-  if (team)
-    server.on("upgrade", (req, socket, head) => {
-      if (new URL(req.url ?? "/", "http://core").pathname === team.path) team.upgrade(req, socket, head);
-    });
+  for (const other of [d.equipos, d.sync])
+    if (other)
+      server.on("upgrade", (req, socket, head) => {
+        if (new URL(req.url ?? "/", "http://core").pathname === other.path) other.upgrade(req, socket, head);
+      });
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(config.port, config.host, resolve);

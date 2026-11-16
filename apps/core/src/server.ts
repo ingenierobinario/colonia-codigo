@@ -5,7 +5,8 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { BROWSER_CAP, type HarnessId, NO_COMPUTER_CAP, TabInfo } from "@colonia/protocol";
+import { z } from "zod";
+import { BROWSER_CAP, ChannelInfo, type HarnessId, NO_COMPUTER_CAP, TabInfo } from "@colonia/protocol";
 import {
   createDesktopInstaller,
   type DesktopInstaller,
@@ -78,6 +79,7 @@ import { type ThisComputer, thisComputer } from "./equipos/local.ts";
 import { type Notify, systemNotify } from "./equipos/notify.ts";
 import { createPrincipal } from "./equipos/principal.ts";
 import { createSshEquipos, type SshEquipos, systemSshExec } from "./equipos/ssh.ts";
+import { createSync, type Sync } from "./sync/service.ts";
 import { systemTray, type Tray } from "./equipos/tray.ts";
 import { errorMessage } from "./errors.ts";
 import { flowHttpPolicy } from "./flow-http.ts";
@@ -540,8 +542,18 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     if (event.type === "run.updated" && event.run.ended_at) flows.kick();
   });
   const publicCredentials = createPublicCredentials({ store, secrets, endpoints: flows.publicEndpoints });
+  // D-192: con dos equipos sincronizados, solo el principal abre los canales y lleva el reloj. Se crea más abajo.
+  let sync: Sync | undefined;
+  const elsewhere = () => sync?.secondary() ?? false;
   const channels = createChannels({
     store,
+    elsewhere: {
+      active: elsewhere,
+      info: () => {
+        const there = z.array(ChannelInfo).safeParse(sync?.remoteChannels());
+        return there.success ? there.data : undefined;
+      },
+    },
     home: config.home,
     hookBase: webhooks.base,
     secrets,
@@ -670,6 +682,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   );
   const scheduler = officeScheduler({
     store,
+    paused: elsewhere,
     admit: (a) => engine.admit(a),
     attention,
     notifyOwner: (body, threadId) => channels.notifyOwner(body, "notice", threadId),
@@ -744,6 +757,25 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     log,
     addresses: () => reachableAt(config.host, listening, config.publicUrl),
   });
+  const pair = createSync({
+    home: config.home,
+    db,
+    secrets,
+    log,
+    urls: () => reachableAt(config.host, listening, config.publicUrl),
+    local: () => `http://127.0.0.1:${listening}`,
+    channels: () => channels.info(),
+    changed: (touched) => {
+      bus.emit({ type: "sync.updated", data: true });
+      if (touched.has("projects") || touched.has("agents")) bus.emit({ type: "team.updated" });
+      if (["@lista:channels", "@clave", "outbox"].some((t) => touched.has(t)))
+        void channels.refresh().catch((err) => log.warn({ err: errorMessage(err, 200) }, "channels did not follow"));
+    },
+    roleChanged: () =>
+      void channels.refresh().catch((err) => log.warn({ err: errorMessage(err, 200) }, "channels did not follow")),
+    told: () => bus.emit({ type: "sync.updated", data: false }),
+  });
+  sync = pair;
   const equipoKeys = createKeyStore({ home: config.home, secrets });
   const approval = createApproval({ home: config.home, notify: equipoNotify, keys: equipoKeys });
   const equipoAgent = createEquipoAgent({
@@ -784,6 +816,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
         // Only a supervisor brings a stopped core back.
         restart: config.supervised ? opts.restart : undefined,
       }),
+      sync: pair,
       backup: createBackup({
         home: config.home,
         db,
@@ -849,8 +882,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   if (cleanup) log.info(cleanup, "captured memory cleanup: retired noisy automatic notes");
   memoryMaintenance.start();
 
-  const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm, equipos: principal });
+  const transport = await listen(config, { dispatch, store, log, identity, broker, bus, vm, equipos: principal, sync: pair });
   listening = transport.port;
+  pair.start();
   if (!opts.equipoOff) equipoAgent.start();
   // Agents' shells and harnesses reach this core with `colonia`, whatever the owner's PATH holds.
   try {
@@ -941,6 +975,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       attention.stop();
       noticePush.stop();
       plugins.close();
+      pair.stop();
       await channels.stop();
       webhooks.close();
       await hookListener.close();

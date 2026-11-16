@@ -41,8 +41,8 @@ export function attachWs(
     gate: Gate;
     deviceOf?: (token: string) => { id: string; name: string } | undefined;
     streamPath?: string | undefined;
-    /** Otra ruta de enganche que atiende otro módulo (los equipos emparejados). */
-    extraPath?: string | undefined;
+    /** Otras rutas de enganche que atienden otros módulos (los equipos emparejados, el equipo sincronizado). */
+    extraPaths?: readonly string[] | undefined;
     clientOf?: ClientLookup;
   },
 ) {
@@ -65,7 +65,7 @@ export function attachWs(
   server.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://core").pathname;
     if (pathname !== "/ws") {
-      if (pathname !== deps.streamPath && pathname !== deps.extraPath) socket.destroy();
+      if (pathname !== deps.streamPath && !deps.extraPaths?.includes(pathname)) socket.destroy();
       return;
     }
     wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));

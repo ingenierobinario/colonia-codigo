@@ -22,6 +22,7 @@ const LOCAL_ONLY: Readonly<Record<string, string>> = {
   "update-coordination.json": "estado de la actualización en curso",
   "equipo.json": "la ficha de este equipo en «Mis equipos»",
   "equipo.clave.cifrada": "la llave de este equipo en «Mis equipos»",
+  "sincronizar.json": "con qué otro equipo se sincroniza ESTE (D-192 fase 2)",
   copias: "las copias guardadas aquí",
   ".restaurar": "una restauración a medias",
 };
@@ -34,7 +35,7 @@ const LOCAL_PREFIX = ["colonia.db", "daemon-lock.sqlite", "secrets.", ".restaura
 const DERIVED = new Set(["media/posters", "media/open"]);
 
 export const travelsTop = (name: string) => !(name in LOCAL_ONLY) && !LOCAL_PREFIX.some((p) => name.startsWith(p));
-export const secretTravels = (name: string) => !LOCAL_SECRETS.has(name);
+export const secretTravels = (name: string) => !LOCAL_SECRETS.has(name) && !name.startsWith("sync.");
 
 export type FileEntry = { rel: string; abs: string; size: number };
 

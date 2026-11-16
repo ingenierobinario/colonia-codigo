@@ -68,6 +68,8 @@ export const CoreEvent = z.discriminatedUnion("type", [
   }),
   /** Agents or projects changed (from any client, an agent's tool or a project's files): reload both lists. */
   z.object({ type: z.literal("team.updated") }),
+  /** D-192: the owner's other computer changed something here (data: reload what is shown), or the pair's state moved. */
+  z.object({ type: z.literal("sync.updated"), data: z.boolean() }),
   z.object({ type: z.literal("browser.tabs"), tabs: z.array(TabInfo) }),
   /** A chat waits on the computer its agent started: Linux set up the first time, booting, then ready or not. */
   z.object({

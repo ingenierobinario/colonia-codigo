@@ -54,6 +54,8 @@ export function createScheduler(deps: {
   now?: () => Date;
   /** Other work on the same clock (due reminders). */
   eachTick?: (at: Date) => void;
+  /** D-192: the owner's other computer keeps the clock (this one is the secondary of a synchronized pair). */
+  paused?: () => boolean;
 }) {
   const { store, log } = deps;
   const clock = deps.now ?? (() => new Date());
@@ -91,6 +93,7 @@ export function createScheduler(deps: {
   }
 
   function tick(): void {
+    if (deps.paused?.()) return;
     const at = clock();
     try {
       deps.eachTick?.(at);

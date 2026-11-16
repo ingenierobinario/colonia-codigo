@@ -64,6 +64,7 @@ const LOCAL_SETTINGS = [
   "task_work_since",
   "tool_once_grants",
   "tool_session_grants",
+  "memory_capture_cleanup",
   "memory_dream_snapshot",
   "memory_generation",
   "public-route-credentials",
@@ -88,7 +89,7 @@ const JSON_PATH_COLUMNS: Readonly<Record<string, string[]>> = {
 
 export type Row = Record<string, unknown>;
 export type Item = { tbl: string; pk: string; hlc: string; origin: string; del: boolean; row?: Row };
-export type Applied = { applied: number; kept: number; failed: number; touched: Set<string> };
+export type Applied = { applied: number; kept: number; failed: number; touched: Set<string>; waiting: Item[] };
 export type Lost = {
   id: string;
   tbl: string;
@@ -526,6 +527,13 @@ export function createJournal(d: JournalDeps) {
   const isUnique = (e: unknown) => /UNIQUE constraint/i.test(String((e as Error)?.message));
   const isForeign = (e: unknown) => /FOREIGN KEY constraint/i.test(String((e as Error)?.message));
 
+  // Dos instalaciones traen las mismas filas de fábrica (el agente principal, el chat de inicio) con fechas distintas:
+  // una fila que solo cambia en sus fechas no ha perdido nada, y no se guarda como versión.
+  const bare = (row: Row): Row =>
+    Object.fromEntries(Object.entries(row).filter(([k]) => k !== "created_at" && k !== "updated_at"));
+  const alike = (tbl: string, a: Row, b: Row | undefined): boolean =>
+    !!b && hashOf(tbl, bare(a)) === hashOf(tbl, bare(b));
+
   function applyOne(item: Item, out: Applied): void {
     const { tbl, pk } = item;
     if (tbl === "meta" && !settingTravels(String(keyOf(pk)[0]).slice("setting:".length))) return;
@@ -538,13 +546,14 @@ export function createJournal(d: JournalDeps) {
     const same = !!ver && ver.deleted === (row ? 0 : 1) && ver.hash === hash;
     const mine = !!ver && ver.origin === me && ver.synced === 0;
     if (ver && !newer(item.hlc, item.origin, ver.hlc, ver.origin)) {
-      if (mine && !same && row && keep(tbl, pk, item.hlc, item.origin, row, ver.hlc)) out.kept++;
+      if (mine && !same && row && !alike(tbl, row, readRow(tbl, pk)) && keep(tbl, pk, item.hlc, item.origin, row, ver.hlc))
+        out.kept++;
       return;
     }
     if (same) return void setVer(tbl, pk, { ...(ver as Ver), hlc: item.hlc, origin: item.origin, synced: 1 });
     if (mine && ver) {
       const local = readRow(tbl, pk);
-      if (local && keep(tbl, pk, ver.hlc, me, local, item.hlc)) out.kept++;
+      if (local && !(row && alike(tbl, local, row)) && keep(tbl, pk, ver.hlc, me, local, item.hlc)) out.kept++;
     }
     const sender = item.origin;
     try {
@@ -620,7 +629,7 @@ export function createJournal(d: JournalDeps) {
     /** Tras reconectar con un equipo que perdió su copia: todo vuelve a estar pendiente. */
     resend: () => void run("UPDATE sync_ver SET synced = 0"),
     apply(items: Item[]): Applied {
-      const out: Applied = { applied: 0, kept: 0, failed: 0, touched: new Set() };
+      const out: Applied = { applied: 0, kept: 0, failed: 0, touched: new Set(), waiting: [] };
       tx(() => {
         scanSecrets();
         seal();
@@ -644,7 +653,7 @@ export function createJournal(d: JournalDeps) {
             }
             if (!later.length || later.length === queue.length) {
               out.failed += later.length;
-              for (const i of later) warn(`sincronizar: ${i.tbl} depende de algo que aún no ha llegado`);
+              out.waiting.push(...later);
               break;
             }
             queue = later;

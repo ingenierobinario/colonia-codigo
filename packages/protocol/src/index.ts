@@ -15,6 +15,7 @@ export * from "./engine-usage.ts";
 export * from "./environment-methods.ts";
 export * from "./equipos-methods.ts";
 export * from "./events.ts";
+export * from "./sync-methods.ts";
 export * from "./exposure.ts";
 export * from "./files-methods.ts";
 export * from "./frames.ts";

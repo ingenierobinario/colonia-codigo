@@ -63,6 +63,8 @@ type Live = {
   account?: string | undefined;
   /** A QR to link the account, while one is waiting to be scanned. */
   qr?: string | undefined;
+  /** The credential it started with: a different one saved under it (sincronizar) starts it again. */
+  token?: string | undefined;
 };
 
 const tokenName = (id: string) => `channel-${id}`;
@@ -102,7 +104,13 @@ export function createChannels(deps: {
   followUpTimers?: RunTimers;
   /** The public address webhooks reach (`<base>`, without `/hooks/…`), while the owner has one on. */
   hookBase?: () => string | undefined;
+  /**
+   * D-192: the owner's other computer holds the channels (this one is the secondary of a synchronized pair). No
+   * session opens here (a second WhatsApp or bot connection would break the first); what shows is the other's state.
+   */
+  elsewhere?: { active(): boolean; info(): ChannelInfo[] | undefined };
 }) {
+  const away = () => deps.elsewhere?.active() ?? false;
   const retryMs = deps.retryMs ?? RETRY_MS;
   const clock = deps.now ?? (() => new Date());
   const { store, secrets, log } = deps;
@@ -139,6 +147,7 @@ export function createChannels(deps: {
     configured: (id) => configs().some((c) => c.id === id),
     media: (id) => deps.services.read(id),
     failed: (o) => notices.ownerFallback(o),
+    elsewhere: away,
   });
 
   const notices = createOwnerNotices({
@@ -522,12 +531,12 @@ export function createChannels(deps: {
 
   async function startOne(config: ChannelConfig, attempt = 0): Promise<void> {
     const factory = deps.factories[config.type];
-    if (!factory || !config.enabled || stopped) return;
+    if (!factory || !config.enabled || stopped || away()) return;
     const ac = new AbortController();
     const name = tokenName(config.id);
     const token = secrets.resolve(`secret://${name}`);
     const adapter = factory(config, token);
-    const l: Live = { config, adapter, ac, status: "starting" };
+    const l: Live = { config, adapter, ac, status: "starting", token };
     live.set(config.id, l);
     try {
       // Saved, but the keyring does not give it now (still locked at boot): a wait, not a refusal.
@@ -624,8 +633,10 @@ export function createChannels(deps: {
   };
 
   function info(): ChannelInfo[] {
+    const there = away() ? new Map((deps.elsewhere?.info() ?? []).map((c) => [c.id, c])) : undefined;
     return configs().map((c) => {
-      const l = live.get(c.id);
+      // On the secondary computer the state shown is the one of the computer that holds the session.
+      const l: Pick<Live, "status" | "error" | "account" | "qr"> | undefined = there ? there.get(c.id) : live.get(c.id);
       const token = secrets.resolve(`secret://${tokenName(c.id)}`);
       return {
         ...c,
@@ -727,7 +738,8 @@ export function createChannels(deps: {
      */
     async start(): Promise<void> {
       stopped = false;
-      const cut = store.channels.outbox.reconcile();
+      // The sends belong to the computer that holds the channels: the secondary does not judge them.
+      const cut = away() ? 0 : store.channels.outbox.reconcile();
       if (cut) log.warn({ items: cut }, "channel sends cut by the last restart are marked uncertain");
       unsubscribe();
       unsubscribe = deps.bus.on(onEvent);
@@ -739,6 +751,31 @@ export function createChannels(deps: {
         delivery.kick();
         void stickers.nameUnnamed().catch((err) => log.warn({ err: errorMessage(err, 200) }, "stickers not named"));
       });
+    },
+    /**
+     * D-192: the saved channels, their credentials or which computer holds them changed under the manager (the other
+     * computer of a synchronized pair): each live channel follows what is saved now.
+     */
+    async refresh(): Promise<void> {
+      if (stopped) return;
+      const ids = new Set([...configs().map((c) => c.id), ...live.keys()]);
+      await Promise.allSettled(
+        [...ids].map((id) =>
+          serially(id, async () => {
+            const want = configs().find((c) => c.id === id);
+            const l = live.get(id);
+            if (!want?.enabled || away()) return stopOne(id);
+            const token = secrets.resolve(`secret://${tokenName(id)}`);
+            if (l && l.status !== "error" && l.token === token && !restartsFor(l.config, want)) {
+              l.config = want;
+              return;
+            }
+            await stopOne(id);
+            await startOne(want);
+          }),
+        ),
+      );
+      if (!stopped && !away()) delivery.kick();
     },
     async stop(): Promise<void> {
       rooms.stop();
