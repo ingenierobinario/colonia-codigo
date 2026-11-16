@@ -30,7 +30,7 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   await screen.getByRole("button", { name: "Nuevo flow" }).click();
   const editor = page.getByRole("dialog", { name: "Flow sin nombre" });
   await editor.getByRole("button", { name: "Guardar", exact: true }).click();
-  await expect(editor.getByRole("alert")).toHaveText("Ponele un nombre al flow.");
+  await expect(editor.getByRole("alert")).toHaveText("Ponle un nombre al flow.");
   await editor.getByRole("textbox", { name: "Nombre del flow" }).fill(name);
   const named = page.getByRole("dialog", { name });
   await named.getByRole("button", { name: "Guardar", exact: true }).click();
@@ -39,23 +39,23 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   await page.getByRole("option", { name: `flow-intake-${stamp}`, exact: true }).click();
   await expect(named.getByRole("combobox", { name: "Proyecto", exact: true })).toHaveText(`flow-intake-${stamp}`);
   // Every kind in the list can be added.
-  await expect(named.getByRole("button", { name: "Sumar SQL" })).toBeEnabled();
-  await expect(named.getByRole("button", { name: "Sumar Cmd" })).toBeEnabled();
+  await expect(named.getByRole("button", { name: "Añadir SQL" })).toBeEnabled();
+  await expect(named.getByRole("button", { name: "Añadir Cmd" })).toBeEnabled();
   // Webhook → save → AI model, each added after the last one.
-  await named.getByRole("button", { name: "Sumar Webhook entrante" }).click();
-  await named.getByRole("button", { name: "Sumar Guardar en la tabla" }).click();
+  await named.getByRole("button", { name: "Añadir Webhook entrante" }).click();
+  await named.getByRole("button", { name: "Añadir Guardar en la tabla" }).click();
   // The save names one of the project's tables; a new one is made right there, empty.
   await named.getByRole("combobox", { name: "Tabla", exact: true }).click();
   await page.getByRole("option", { name: "Tabla nueva" }).click();
   await named.getByRole("textbox", { name: "Nombre de la tabla nueva" }).fill("inbox");
-  await named.getByRole("button", { name: "Sumar", exact: true }).click();
+  await named.getByRole("button", { name: "Añadir", exact: true }).click();
   await expect(named.getByRole("combobox", { name: "Tabla", exact: true })).toContainText("inbox");
   await named.getByRole("textbox", { name: "Clave", exact: true }).fill("latest");
-  await named.getByRole("button", { name: "Sumar Modelo IA" }).click();
+  await named.getByRole("button", { name: "Añadir Modelo IA" }).click();
 
   // A check between the webhook and the save: choose the webhook (the new steps moved it out of view), then add a check after it.
   await named.locator(".fe-order__row", { hasText: "Webhook entrante" }).click();
-  await named.getByRole("button", { name: "Sumar Condición" }).click();
+  await named.getByRole("button", { name: "Añadir Condición" }).click();
   // Its case compares a field of what arrived with a value.
   await named.getByRole("radio", { name: "Texto", exact: true }).click();
   await named.getByRole("textbox", { name: "Qué mira", exact: true }).fill("$trigger.type");
@@ -81,7 +81,7 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   await named.getByRole("button", { name: "Simular" }).click();
   await page.getByRole("textbox", { name: "Datos que llegan" }).fill('{"type":"delivery"}');
   await page.getByRole("button", { name: "Probar", exact: true }).click();
-  await expect(page.getByText("Las condiciones la cortarían. No correría nada.")).toBeVisible();
+  await expect(page.getByText("Las condiciones la cortarían. No se ejecutaría nada.")).toBeVisible();
   await page.getByRole("textbox", { name: "Datos que llegan" }).fill('{"type":"message"}');
   await page.getByRole("button", { name: "Probar", exact: true }).click();
   await expect(page.getByText(/^Llegaría a: .*Modelo IA/)).toBeVisible();
@@ -107,7 +107,7 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   await expect(detail).toBeVisible();
   await expect(page.getByText("Sin rondas todavía. Está apagado.")).toBeVisible();
   await page.getByRole("switch", { name: `Encender o apagar ${name}` }).click();
-  await expect(page.getByText("Sin rondas todavía. Corre cuando llegue un POST.")).toBeVisible();
+  await expect(page.getByText("Sin rondas todavía. Se ejecuta cuando llegue un POST.")).toBeVisible();
 
   const credential = await rpc<Result<"public_routes.rotate">>("public_routes.rotate", {
     path: `/flows/${flow?.path}`,
@@ -142,7 +142,7 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   const cut = runs.locator(".fd__run").filter({ hasText: "Cortó en la condición" });
   await expect(done).toBeVisible();
   await expect(cut).toBeVisible();
-  await expect(page.getByText("4 de 4 pasos corrieron")).toBeVisible();
+  await expect(page.getByText("4 de 4 pasos se ejecutaron")).toBeVisible();
   await expect(page.getByText(/^Respondió .+ en Colonia/)).toBeVisible();
   await page.getByRole("radio", { name: "Ronda completa" }).click();
   // The whole run's log says what arrived, as text, then each step as it started and ended.
@@ -152,7 +152,7 @@ test("a flow drawn in the editor saves as what runs, and a webhook run shows in 
   await expect(log).toContainText("«Modelo IA» terminó");
   // A run cut at the check shows the steps after it as not run.
   await cut.click();
-  await expect(page.getByText("2 de 4 pasos corrieron")).toBeVisible();
+  await expect(page.getByText("2 de 4 pasos se ejecutaron")).toBeVisible();
   await done.click();
   await page.getByRole("radio", { name: "Paso" }).click();
   await page.getByRole("button", { name: "Abrir chat" }).click();

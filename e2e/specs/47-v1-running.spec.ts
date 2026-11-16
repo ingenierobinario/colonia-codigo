@@ -27,8 +27,8 @@ test("Colonia v1 todavía prendido: la tarjeta lo dice y Apagar v1 lo apaga", as
   await open(page, "#view=inbox");
   const card = page.locator('.corner__card[data-card="v1"]');
   await expect(card).toBeVisible();
-  await expect(card).toContainText("Colonia v1 sigue prendido");
-  await card.getByRole("button", { name: "Apagar v1" }).click();
+  await expect(card).toContainText("Una versión anterior de Colonia sigue encendida");
+  await card.getByRole("button", { name: "Apagarla" }).click();
   await expect.poll(() => tookOver).toBe(1);
   await expect(card).toBeHidden();
 });

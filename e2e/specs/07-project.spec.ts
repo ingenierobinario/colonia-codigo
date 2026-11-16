@@ -73,7 +73,7 @@ test("a plain folder becomes a project from the sidebar and opens", async ({ pag
   await page.getByRole("button", { name: "Nuevo proyecto" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("textbox", { name: "Carpeta" }).fill(`${dir}/work/globex`);
-  await dialog.getByRole("button", { name: "Sumar" }).click();
+  await dialog.getByRole("button", { name: "Añadir" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("heading", { name: "globex" })).toBeVisible();
   await page.getByRole("tab", { name: "Archivos" }).click();
@@ -89,7 +89,7 @@ test("a project without a folder is made inside Colonia's, with its name and kin
   await expect(dialog.getByText("~/.colonia/v2/projects/ventas-q4")).toBeVisible();
   await dialog.getByRole("combobox", { name: "Tipo" }).click();
   await page.getByRole("option", { name: /^Empresa/ }).click();
-  await dialog.getByRole("button", { name: "Sumar" }).click();
+  await dialog.getByRole("button", { name: "Añadir" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("heading", { name: "Ventas Q4" })).toBeVisible();
   const made = (

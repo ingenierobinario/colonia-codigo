@@ -126,7 +126,7 @@ for (const phone of [false, true]) {
     // Nothing is published and the Flow is off; the POST runs what was drawn.
     const sent = await post(`/flows/test/${route}`, { name: "Ada", email: "ada@example.com" });
     expect(sent.status).toBe(202);
-    await expect(strip).toContainText("Corriendo la prueba…");
+    await expect(strip).toContainText("Ejecutando la prueba…");
     await expect(node("save")).toContainText("ok");
     const log = editor.locator(".fe-log");
     await expect(log).toContainText(`Llegó un evento · POST /flows/test/${route}`);
@@ -134,7 +134,7 @@ for (const phone of [false, true]) {
     await expect(log).toContainText("«Save the lead» terminó");
     await expect(log).toContainText("«Wait a moment» empezó");
     // The canvas only shows while it runs: a step's card has no settings to change.
-    if (!phone) await expect(editor.getByRole("button", { name: "Sumar JavaScript" })).toBeDisabled();
+    if (!phone) await expect(editor.getByRole("button", { name: "Añadir JavaScript" })).toBeDisabled();
     await node("save").click();
     await expect(editor.locator(".fe-tstep")).toContainText("ada@example.com");
     await expect(editor.locator(".fe-card").getByRole("textbox")).toHaveCount(0);

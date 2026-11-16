@@ -98,7 +98,7 @@ test("panel pairs with a code when the core asks for a token", async ({ page }) 
 
   await input.fill("WRONG234");
   await page.getByRole("button", { name: "Vincular" }).click();
-  await expect(page.getByRole("alert")).toHaveText("Ese código es incorrecto o venció. Pide uno nuevo.");
+  await expect(page.getByRole("alert")).toHaveText("Ese código es incorrecto o ha caducado. Pide uno nuevo.");
 
   await input.fill(await pairCode());
   await page.getByRole("button", { name: "Vincular" }).click();

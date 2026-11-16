@@ -56,8 +56,8 @@ for (const phone of [false, true]) {
     const nodes = editor.locator(".fe-canvas > .fc .react-flow__node");
     await expect(nodes).toHaveCount(2);
     for (const count of [3, 4]) {
-      if (phone) await editor.getByRole("button", { name: "Sumar un paso" }).click();
-      await editor.getByRole("button", { name: "Sumar JavaScript" }).click();
+      if (phone) await editor.getByRole("button", { name: "Añadir un paso" }).click();
+      await editor.getByRole("button", { name: "Añadir JavaScript" }).click();
       await expect(nodes).toHaveCount(count);
       await editor.getByRole("button", { name: "Guardar borrador" }).click();
       await expect(editor.getByRole("status").filter({ hasText: "Borrador guardado." })).toBeVisible();
@@ -79,7 +79,7 @@ for (const phone of [false, true]) {
     const canvas = page.locator(".fd__canvas");
     await expect(canvas.locator(".react-flow__node")).toHaveCount(2);
     await expect(canvas.locator(".fd__version")).toContainText(/^Versión #1 · .+ · Tú$/);
-    await expect(page.getByText("Una versión anterior. No corre")).toBeVisible();
+    await expect(page.getByText("Una versión anterior. No se ejecuta")).toBeVisible();
     await shot(page, `page-version-${at}`);
     if (phone) {
       await page.locator(".fd__rail").scrollIntoViewIfNeeded();
@@ -92,7 +92,7 @@ for (const phone of [false, true]) {
     // Restoring asks first, makes it the draft and publishes nothing.
     await page.getByRole("button", { name: "Restaurar como borrador" }).click();
     const ask = page.getByRole("dialog", { name: "¿Restaurar la versión #1 como borrador?" });
-    await expect(ask).toContainText("Lo que corre no cambia");
+    await expect(ask).toContainText("Lo que se ejecuta no cambia");
     await ask.getByRole("button", { name: "Restaurar como borrador" }).click();
     await expect(page.getByText("La versión #1 es el borrador ahora.")).toBeVisible();
     const doc = await docOf(flow);

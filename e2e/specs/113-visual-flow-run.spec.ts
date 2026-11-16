@@ -41,18 +41,18 @@ for (const lang of ["en", "es"] as const) {
             done: "Complete",
           }
         : {
-            addCheck: "Sumar Condición",
-            addSave: "Sumar Guardar en la tabla",
+            addCheck: "Añadir Condición",
+            addSave: "Añadir Guardar en la tabla",
             table: "Tabla",
             newTable: "Tabla nueva",
             newName: "Nombre de la tabla nueva",
-            create: "Sumar",
+            create: "Añadir",
             text: "Texto",
             field: "Qué mira",
             is: "Con qué compara",
             value: "Valor",
             key: "Clave",
-            saved: "Guardado. Los eventos nuevos lo corren como está dibujado.",
+            saved: "Guardado. Los eventos nuevos lo ejecutan como está dibujado.",
             close: "Salir del editor",
             done: "Completa",
           };

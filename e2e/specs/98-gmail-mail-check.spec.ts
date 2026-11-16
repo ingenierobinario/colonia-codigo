@@ -45,7 +45,7 @@ test("Gmail's settings turn the mail check on, choose how often, and bring the s
   const every = settings.getByRole("spinbutton", { name: "Cada cuánto revisar" });
   await expect(every).toHaveValue("5");
   await expect(every).toBeDisabled();
-  await settings.getByRole("switch", { name: "Avisarme de los mails nuevos" }).click();
+  await settings.getByRole("switch", { name: "Avisarme de los correos nuevos" }).click();
   await expect(every).toBeEnabled();
   await every.fill("2");
   await settings.getByRole("combobox", { name: "Cada cuánto revisar: unidad", exact: true }).click();

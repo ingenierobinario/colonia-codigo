@@ -173,5 +173,5 @@ test("on macOS without a place it can replace, the new app is downloaded and ope
   const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de Colonia" });
   await expect(dialog.getByText(/se abre para que la arrastres a Aplicaciones/)).toBeVisible();
   await dialog.getByRole("button", { name: "Descargar" }).click();
-  await expect(dialog.getByText(/arrástralo a Aplicaciones/)).toBeVisible();
+  await expect(dialog.getByText(/arrástrala a Aplicaciones/)).toBeVisible();
 });

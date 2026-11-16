@@ -22,14 +22,14 @@ const L = {
   es: {
     newFlow: "Nuevo flow",
     name: "Nombre del flow",
-    add: (k: string) => `Sumar ${k}`,
+    add: (k: string) => `Añadir ${k}`,
     hook: "Webhook entrante",
     vars: "Variables",
     check: "Condición",
     card: "Ajustes del paso",
     close: "Cerrar",
     zoomOut: "Alejar",
-    addStep: "Sumar un paso",
+    addStep: "Añadir un paso",
   },
 };
 

@@ -33,13 +33,13 @@ test("secretary switches preserve existing instructions and are absent from New 
   expect(after[0]?.id).toBe(news?.id);
   expect(after[0]?.prompt).toBe("Only urgent customer deadlines");
   expect(after[0]?.enabled).toBe(false);
-  await expect(config.getByText("Mails nuevos", { exact: true })).toBeVisible();
+  await expect(config.getByText("Correos nuevos", { exact: true })).toBeVisible();
   await expect(config.getByRole("button", { name: "Abrir integraciones", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await open(page, "#project=~default&tab=routines");
   await expect(page.locator(".rtrow", { hasText: news?.name })).toHaveCount(0);
   await page.getByRole("button", { name: "Nueva rutina", exact: true }).click();
   await page.getByRole("dialog").getByRole("combobox", { name: "Acción", exact: true }).click();
-  await expect(page.getByRole("option", { name: /Novedades del equipo|Mails/ })).toHaveCount(0);
+  await expect(page.getByRole("option", { name: /Novedades del equipo|Mails|Correos/ })).toHaveCount(0);
   await expect(page.getByRole("option", { name: /Shell/ })).toBeVisible();
 });

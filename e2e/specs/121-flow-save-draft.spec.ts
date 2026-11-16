@@ -64,13 +64,13 @@ for (const phone of [false, true]) {
     await expect(canvas.locator(".react-flow__node")).toHaveCount(2);
 
     // A JavaScript step with no code yet.
-    if (phone) await editor.getByRole("button", { name: "Sumar un paso" }).click();
-    await editor.getByRole("button", { name: "Sumar JavaScript" }).click();
+    if (phone) await editor.getByRole("button", { name: "Añadir un paso" }).click();
+    await editor.getByRole("button", { name: "Añadir JavaScript" }).click();
     await editor.getByRole("textbox", { name: "Código" }).fill("");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     // Kept as it is, and it says what is left before it can run.
     await expect(editor.getByRole("status")).toHaveText(
-      "Borrador guardado. Para que corra: «JavaScript» no está completo: completa lo que le falta.",
+      "Borrador guardado. Para que se ejecute: «JavaScript» no está completo: completa lo que le falta.",
     );
     let doc = await docOf(flow);
     expect(doc.draft?.nodes.find((n) => n.kind === "js")).toMatchObject({ code: "" });
@@ -105,10 +105,10 @@ test("on a Flow that is on, Save draft and the leave prompt keep what runs as it
   await open(page, `#view=flows&scope=${project}&flow=${flow}&edit=1`);
   const editor = page.locator(".fe");
   await expect(editor.locator(".fe-canvas > .fc .react-flow__node")).toHaveCount(2);
-  await editor.getByRole("button", { name: "Sumar JavaScript" }).click();
+  await editor.getByRole("button", { name: "Añadir JavaScript" }).click();
   await editor.getByRole("button", { name: "Guardar borrador" }).click();
   await expect(
-    editor.getByRole("status").filter({ hasText: "Borrador guardado. Lo que corre no cambia." }),
+    editor.getByRole("status").filter({ hasText: "Borrador guardado. Lo que se ejecuta no cambia." }),
   ).toBeVisible();
   await shot(page, "editor-draft-saved-on-desktop");
   let doc = await docOf(flow);
@@ -118,7 +118,7 @@ test("on a Flow that is on, Save draft and the leave prompt keep what runs as it
   const saved = doc.draftVersion;
 
   // An unsaved change, then Exit: the prompt saves it as a draft and closes.
-  await editor.getByRole("button", { name: "Sumar JavaScript" }).click();
+  await editor.getByRole("button", { name: "Añadir JavaScript" }).click();
   await editor.getByRole("button", { name: "Salir del editor" }).click();
   const prompt = page.getByRole("dialog", { name: "¿Salir sin guardar?" });
   await expect(prompt).toContainText("Guárdalos como borrador para volver a ellos, o sal y se pierden.");
@@ -136,7 +136,7 @@ test("on a Flow that is on, Save draft and the leave prompt keep what runs as it
   await expect(head).toContainText("4 pasos");
   await expect(page.locator(".fd__version")).toHaveText("Borrador");
   await shot(page, "page-draft-and-runs-desktop");
-  await page.getByRole("radio", { name: "Lo que corre" }).click();
+  await page.getByRole("radio", { name: "Lo que se ejecuta" }).click();
   await expect(head).toContainText("2 pasos");
   await expect(page.locator(".fd__version")).toHaveText("Versión actual");
 });
@@ -189,7 +189,7 @@ test("a Flow an agent made shows its draft steps in the list and on its page, ne
   await expect(page.locator(".fd__head")).toContainText("4 pasos");
   await expect(page.locator(".fd__version")).toHaveText("Borrador");
   // Nothing drawn runs yet: there is no "What runs" to switch to.
-  await expect(page.getByRole("radio", { name: "Lo que corre" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "Lo que se ejecuta" })).toHaveCount(0);
   await expect(page.locator(".fd__canvas .react-flow__node")).toHaveCount(4);
   await shot(page, "page-agent-draft-desktop");
   await page.setViewportSize({ width: 390, height: 844 });

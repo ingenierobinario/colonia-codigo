@@ -26,7 +26,7 @@ test("a chain entry picks one of the model APIs' models; the CLIs are not offere
   await open(page);
   await openSettings(page);
   await page.getByRole("dialog").getByRole("button", { name: "Router" }).click();
-  await page.getByRole("button", { name: "Agregar un modelo" }).click();
+  await page.getByRole("button", { name: "Añadir un modelo" }).click();
   await expect(page.getByRole("option", { name: /GPT e2e/ })).toHaveCount(0);
   await page.getByRole("option", { name: /fake-2/ }).click();
   await expect(page.getByRole("listbox", { name: "Modelos" })).toBeHidden();

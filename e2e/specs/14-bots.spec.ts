@@ -5,7 +5,7 @@ import { expect, open, rpc, test, until, world } from "./kit.ts";
 
 async function connect(page: Page, kind: "Discord" | "Slack", tokens: Array<[label: string, value: string]>) {
   await open(page);
-  await page.getByRole("button", { name: "Agregar canal" }).click();
+  await page.getByRole("button", { name: "Añadir canal" }).click();
   await page.getByRole("menuitem", { name: new RegExp(kind) }).click();
   for (const [label, value] of tokens) await page.getByRole("textbox", { name: label, exact: true }).fill(value);
   await page.getByRole("button", { name: "Conectar bot" }).click();
@@ -54,7 +54,7 @@ test("Discord rooms: the owner lists a server room, and the bot answers there wh
   await page.getByRole("button", { name: "Configuración del canal" }).click();
   await expect(page.getByText("Salas del servidor")).toBeVisible();
   // Rooms are picked from the bot's server; one it may not post in says so before anything is sent there.
-  const pick = page.getByRole("combobox", { name: "Agregar una sala del servidor…" });
+  const pick = page.getByRole("combobox", { name: "Añadir una sala del servidor…" });
   await pick.click();
   await expect(page.getByRole("option", { name: /#anuncios/ })).toContainText("no publicar");
   await page.getByRole("option", { name: /#general/ }).click();
@@ -63,7 +63,7 @@ test("Discord rooms: the owner lists a server room, and the bot answers there wh
   await page.getByRole("option", { name: /#anuncios/ }).click();
   await expect(page.getByText("No puede escribir")).toBeVisible();
   // Typing an id stays possible.
-  await page.getByRole("button", { name: "Agregar por ID" }).click();
+  await page.getByRole("button", { name: "Añadir por ID" }).click();
   await expect(page.getByRole("textbox", { name: "ID de la sala" })).toBeVisible();
   const names = page.getByRole("textbox", { name: "Cómo lo llaman" });
   await names.fill("roby");
@@ -127,14 +127,14 @@ test("Slack: the app connects with both tokens, the owner links their account an
 
 test("iMessage is a pair of tools on a Mac; elsewhere (this sandbox) the panel says so", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "Agregar canal" }).click();
+  await page.getByRole("button", { name: "Añadir canal" }).click();
   await page.getByRole("menuitem", { name: /iMessage/ }).click();
-  await expect(page.getByText("Solo en una Mac")).toBeVisible();
+  await expect(page.getByText("Solo en un Mac")).toBeVisible();
 });
 
 test("new channels are offered; Google Chat takes its subscription and whole JSON key", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "Agregar canal" }).click();
+  await page.getByRole("button", { name: "Añadir canal" }).click();
   for (const name of ["Google Chat", "SMS", "ntfy", "Nextcloud Talk", "IRC", "Twitch", "Microsoft Teams", "LINE"])
     await expect(page.getByRole("menuitem", { name, exact: true })).toBeEnabled();
   await page.getByRole("menuitem", { name: "Google Chat", exact: true }).click();
@@ -151,7 +151,7 @@ test("Teams shows its public address: the owner's own https URL gives the addres
   page,
 }) => {
   await open(page);
-  await page.getByRole("button", { name: "Agregar canal" }).click();
+  await page.getByRole("button", { name: "Añadir canal" }).click();
   await page.getByRole("menuitem", { name: "Microsoft Teams", exact: true }).click();
   await expect(page.getByText("Dirección pública", { exact: true })).toBeVisible();
   await page.getByRole("radio", { name: "Propia", exact: true }).click();

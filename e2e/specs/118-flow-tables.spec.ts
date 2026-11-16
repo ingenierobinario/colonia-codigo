@@ -39,7 +39,7 @@ const L = {
   es: {
     newFlow: "Nuevo flow",
     name: "Nombre del flow",
-    add: (k: string) => `Sumar ${k}`,
+    add: (k: string) => `Añadir ${k}`,
     hook: "Webhook entrante",
     save: "Guardar en la tabla",
     read: "Leer tabla",
@@ -49,7 +49,7 @@ const L = {
     table: "Tabla",
     newTable: "Tabla nueva",
     newName: "Nombre de la tabla nueva",
-    create: "Sumar",
+    create: "Añadir",
     key: "Clave",
     value: "Valor",
     varName: "Nombre",

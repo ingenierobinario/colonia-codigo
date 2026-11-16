@@ -17,9 +17,9 @@ test("a connection is picked and removed from the canvas, and a loop is never dr
   await open(page, `#view=flows&scope=${project}`);
   await page.getByRole("button", { name: "Nuevo flow" }).first().click();
   const editor = page.locator(".fe");
-  await editor.getByRole("button", { name: "Sumar Webhook entrante" }).click();
-  await editor.getByRole("button", { name: "Sumar Variables" }).click();
-  await editor.getByRole("button", { name: "Sumar JavaScript" }).click();
+  await editor.getByRole("button", { name: "Añadir Webhook entrante" }).click();
+  await editor.getByRole("button", { name: "Añadir Variables" }).click();
+  await editor.getByRole("button", { name: "Añadir JavaScript" }).click();
   await editor.getByRole("button", { name: "Cerrar", exact: true }).first().click();
   // The steps just added moved the first ones out of view: show them all.
   await editor.getByRole("button", { name: "Encuadrar" }).click();

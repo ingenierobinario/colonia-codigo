@@ -21,7 +21,7 @@ test("the base project is renamed and made a company, with areas and roles its a
   // A company shows its areas and roles.
   await page.locator(".project__tabs").getByRole("tab", { name: "Agentes" }).click();
   await page.locator(".team__tabs").getByRole("tab", { name: "Áreas y roles" }).click();
-  await page.getByRole("button", { name: "Agregar un área" }).click();
+  await page.getByRole("button", { name: "Añadir un área" }).click();
   const area = page.getByRole("dialog", { name: "Nueva área" });
   await area.getByLabel("Nombre").fill("Finanzas");
   await area.getByLabel("Objetivo").fill("Que el dinero alcance");

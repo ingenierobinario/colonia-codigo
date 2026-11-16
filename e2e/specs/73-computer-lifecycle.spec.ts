@@ -178,7 +178,7 @@ test("Computer installs only on enable, shows the chat agent's screen, follows C
     await expect(computer.getByRole("button", { name: "Encender VM", exact: true })).toBeVisible();
     // Off, it says why in one sentence, and says it once.
     await expect(computer.locator(".computer__setup").getByRole("status")).toHaveText(
-      "La apagaste. Sus archivos quedan guardados y vuelve a arrancar como estaba.",
+      "Lo apagaste. Sus archivos quedan guardados y vuelve a arrancar como estaba.",
     );
     await expect(computer.getByText(/memoria liberada|quedan guardados/)).toHaveCount(1);
     expect(running).toBe(false);

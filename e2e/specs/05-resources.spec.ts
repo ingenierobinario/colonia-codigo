@@ -59,7 +59,7 @@ test("a new MCP server takes a variable for its token from the + list, or a new 
 }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^MCP/ }).click();
+  await page.getByRole("radio", { name: /^Conectores/ }).click();
   await page.getByRole("button", { name: "MCP", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: "Nuevo servidor MCP" });
   await dialog.getByRole("textbox", { name: "Nombre" }).fill("northwind");
@@ -79,14 +79,14 @@ test("a new MCP server takes a variable for its token from the + list, or a new 
   await expect(first).toHaveText("NORTHWIND_TOKEN×");
 
   // A variable goes where the cursor is, next to text.
-  await dialog.getByRole("button", { name: "Agregar fila" }).click();
+  await dialog.getByRole("button", { name: "Añadir fila" }).click();
   await dialog.getByRole("textbox", { name: "Clave" }).nth(1).fill("AUTH_HEADER");
   await dialog.getByRole("textbox", { name: "Valor" }).nth(1).fill("Bearer ");
   await dialog.getByRole("button", { name: "Usar una variable" }).nth(1).click();
   await page.getByRole("option", { name: "NORTHWIND_API" }).click();
   await expect(dialog.getByRole("textbox", { name: "Valor" }).nth(1)).toHaveText("Bearer NORTHWIND_API×");
   // A third row's variable is taken out with its ×.
-  await dialog.getByRole("button", { name: "Agregar fila" }).click();
+  await dialog.getByRole("button", { name: "Añadir fila" }).click();
   await dialog.getByRole("textbox", { name: "Clave" }).nth(2).fill("SPARE");
   await dialog.getByRole("button", { name: "Usar una variable" }).nth(2).click();
   await page.getByRole("option", { name: "NORTHWIND_API" }).click();
@@ -213,9 +213,9 @@ test("an extension's routine says what and when, waits to be added, and once in 
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Extensiones/ }).click();
   await expect(page.getByText("Rutinas que sugiere")).toBeVisible();
-  await page.getByRole("button", { name: "Agregar a Rutinas" }).click();
+  await page.getByRole("button", { name: "Añadir a Rutinas" }).click();
   await expect(page.getByText("En Rutinas · apagada")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Agregar a Rutinas" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Añadir a Rutinas" })).toHaveCount(0);
   await page.getByRole("button", { name: "Abrir en Rutinas" }).click();
   await expect(page.getByText("Morning brief").first()).toBeVisible();
 });
@@ -309,7 +309,7 @@ test("inside a project, Project shows only its own MCP servers and variables", a
   await rpc("mcp.set", { name: "globex-shared", server: { command: "npx", args: ["-y", "@acme/shared"] } });
   await rpc("secrets.set", { name: "ACME_ONLY", value: "acme-only-value", project });
   await open(page, `#project=${project}&tab=resources`);
-  await page.getByRole("radio", { name: /^MCP/ }).click();
+  await page.getByRole("radio", { name: /^Conectores/ }).click();
   await expect(page.getByRole("button", { name: /^globex-shared/ })).toBeVisible();
   await page.getByRole("radio", { name: "Proyecto", exact: true }).click();
   await expect(page.getByRole("button", { name: /^acme-own/ })).toBeVisible();

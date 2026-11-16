@@ -31,9 +31,9 @@ test("an agent's card shows the computer off, turns it on in its settings, then 
     await page.getByRole("button", { name: /^Ver: Scout/ }).click();
     const detail = page.locator(".teamdetail");
     const row = detail.locator(".teamdetail__computer");
-    await expect(row).toContainText("Apagada para este agente");
+    await expect(row).toContainText("Apagado para este agente");
     // No agent may use it yet: the sidebar does not show the view, the card is the way in.
-    const nav = page.getByRole("button", { name: "Computadoras", exact: true });
+    const nav = page.getByRole("button", { name: "Ordenadores", exact: true });
     await expect(nav).toHaveCount(0);
     await detail.getByRole("button", { name: /^Un ordenador Linux/ }).hover();
     await expect(page.locator(".colonia-tooltip")).toContainText("Un ordenador Linux aparte de este equipo");

@@ -16,7 +16,7 @@ test("a routine that sends a message is created and runs now", async ({ page }) 
   await expect(editor).toBeHidden();
   await expect(page.getByText("ping-me")).toBeVisible();
 
-  await page.getByRole("button", { name: "Correr ahora" }).first().click();
+  await page.getByRole("button", { name: "Ejecutar ahora" }).first().click();
   const routines = await rpc<{ routines: Array<{ id: string; name: string }> }>("routines.list", {});
   const r = routines.routines.find((x) => x.name === "ping-me");
   expect(r).toBeTruthy();

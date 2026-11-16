@@ -64,7 +64,7 @@ test("a project chat shows its folder's changes, files and a terminal, and can w
 
   // Terminal: the agent ran nothing yet; the owner's own shell runs in the folder.
   await page.goto(`/#thread=${chat.id}&panel=terminal`);
-  await expect(panel.getByText("El agente no corrió comandos en este chat")).toBeVisible();
+  await expect(panel.getByText("El agente no se ejecutó comandos en este chat")).toBeVisible();
   await panel.getByRole("button", { name: "Nueva terminal" }).click();
   await expect(panel.locator(".term__xterm .xterm")).toBeVisible();
   // Keys typed before the shell prints its prompt can be lost. Root test containers use # instead of $.

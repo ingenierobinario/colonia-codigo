@@ -67,7 +67,7 @@ test("the Computers view shows two screens in use as two tiles, and opens one la
     await mockVmDisplay(page);
     await page.goto(`${env.core.url}/#view=computers`);
     const wall = page.locator(".computers");
-    await expect(page.getByRole("button", { name: /^Computadoras/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Ordenadores/ })).toBeVisible();
     // Both allowed agents have a tile before any run: off, with the way to turn them on.
     await expect(wall.locator(".computers__tile.is-off")).toHaveCount(2);
     await expect(wall.getByText("Pantalla apagada")).toHaveCount(2);
@@ -225,7 +225,7 @@ test("the wall shows an off tile per allowed agent, turns one on, and says when 
     // The memory holds two screens: a third is refused, with the names that fill it.
     await off.getByRole("button", { name: "Encender pantalla", exact: true }).click();
     await expect(off).toHaveCount(1);
-    await expect(off.getByRole("alert")).toContainText("No hay lugar para otra pantalla");
+    await expect(off.getByRole("alert")).toContainText("No hay sitio para otra pantalla");
     await expect(off.getByRole("alert")).toContainText("Roby");
 
     await wall

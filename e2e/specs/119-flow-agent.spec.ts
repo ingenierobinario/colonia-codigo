@@ -46,7 +46,7 @@ test("a Flow the super-agent draws shows in the chat and opens in the editor", a
   await expect(card).toContainText("New leads");
   await expect(card).toContainText("Acme leads");
   await expect(card).toContainText("Borrador");
-  await expect(card).toContainText("Todavía no corre: revísalo en el editor y enciéndelo.");
+  await expect(card).toContainText("Todavía no se ejecuta: revísalo en el editor y enciéndelo.");
   await expect(card.locator(".react-flow__node")).toHaveCount(2);
   await expect(card.locator(".react-flow__node").first()).toContainText("New lead");
   // Nothing was asked of the owner: a draft runs nothing.

@@ -43,7 +43,7 @@ const L = {
   es: {
     newFlow: "Nuevo flow",
     name: "Nombre del flow",
-    add: (k: string) => `Sumar ${k}`,
+    add: (k: string) => `Añadir ${k}`,
     hook: "Webhook entrante",
     vars: "Variables",
     check: "Condición",
@@ -65,7 +65,7 @@ const L = {
     close: "Salir del editor",
     toggle: (n: string) => `Encender o apagar ${n}`,
     allowTitle: "¿Dejas que este flow actúe por ti?",
-    run: "Correr este comando en",
+    run: "Ejecutar este comando en",
     write: "Cambiar la base de datos data/shop.db",
     allow: "Permitir",
     changed: "Filas cambiadas: 1",

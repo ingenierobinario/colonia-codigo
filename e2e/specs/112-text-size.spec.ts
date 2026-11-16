@@ -8,7 +8,7 @@ for (const look of ["minimal", "classic"]) {
     const normalComposer = await composer.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     await openSettings(page);
     await page.getByRole("button", { name: "Apariencia", exact: true }).click();
-    if (look === "classic") await page.getByRole("radio", { name: "Clásico v1", exact: true }).click();
+    if (look === "classic") await page.getByRole("radio", { name: "Clásico", exact: true }).click();
     const sizes = page.getByRole("radiogroup", { name: "Tamaño del texto", exact: true });
     await expect(sizes.getByRole("radio", { name: "100%", exact: true })).toBeChecked();
     const normal = await sizes

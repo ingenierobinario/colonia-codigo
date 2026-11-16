@@ -141,7 +141,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await wizard.getByRole("button", { name: /Buscar por significado/ }).click();
   const engine = wizard.locator(".res__row").filter({ hasText: "Ollama" });
   await expect(engine.getByText("Responde")).toBeVisible();
-  await expect(wizard.getByText(/Ollama no está corriendo en esta máquina/)).toBeHidden();
+  await expect(wizard.getByText(/Ollama no está ejecutándose en esta máquina/)).toBeHidden();
   // Another engine: "Test connection" says why an address does not answer, and lists the models of one that does.
   await wizard.getByRole("button", { name: "Añadir", exact: true }).click();
   const dialog = page.getByRole("dialog");

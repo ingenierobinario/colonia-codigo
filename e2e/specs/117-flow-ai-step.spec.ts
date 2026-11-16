@@ -41,7 +41,7 @@ const L = {
   es: {
     newFlow: "Nuevo flow",
     name: "Nombre del flow",
-    add: (k: string) => `Sumar ${k}`,
+    add: (k: string) => `Añadir ${k}`,
     hook: "Webhook entrante",
     ai: "Modelo IA",
     cmd: "Cmd",

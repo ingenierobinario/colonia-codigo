@@ -107,7 +107,7 @@ for (const phone of [false, true]) {
       await page.mouse.up();
     }
     await expect(viewer.locator(".react-flow__edge")).toHaveCount(1);
-    await expect(viewer.getByRole("button", { name: /Guardar|Probar|Borrar|Eliminar|Sumar/ })).toHaveCount(0);
+    await expect(viewer.getByRole("button", { name: /Guardar|Probar|Borrar|Eliminar|Añadir/ })).toHaveCount(0);
 
     // Back to every step, then closed with Esc.
     await sheet.getByRole("button", { name: "Todos los pasos" }).click();

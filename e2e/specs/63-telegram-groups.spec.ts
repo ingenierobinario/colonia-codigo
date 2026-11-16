@@ -18,7 +18,7 @@ test("Telegram groups: a group the bot is in is picked from the list, and the bo
   await page.getByRole("button", { name: "Configuración del canal" }).click();
   await expect(page.getByText("Grupos", { exact: true })).toBeVisible();
   await expect(page.getByText(/Group Privacy/)).toBeVisible();
-  const pick = page.getByRole("combobox", { name: "Agregar un grupo donde está el bot…" });
+  const pick = page.getByRole("combobox", { name: "Añadir un grupo donde está el bot…" });
   await pick.click();
   await page.getByRole("option", { name: "Acme team" }).click();
   await expect(page.getByText("Acme team", { exact: true })).toBeVisible();

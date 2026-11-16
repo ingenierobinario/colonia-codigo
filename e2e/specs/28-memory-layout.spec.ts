@@ -9,7 +9,7 @@ test("a project's memory with many notes scrolls its list only; search and Add n
   await page.setViewportSize({ width: 1100, height: 600 });
   await open(page, "#project=~default&tab=memory");
   const search = page.locator(".memory .colonia-field");
-  const add = page.getByRole("button", { name: "Agregar nota" });
+  const add = page.getByRole("button", { name: "Añadir nota" });
   await expect(search).toBeInViewport();
   await expect(add).toBeInViewport();
   const height = (await search.boundingBox())?.height ?? 0;
