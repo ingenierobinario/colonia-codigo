@@ -68,6 +68,10 @@ export function browserHandlers(
   // WEBAPP-BLANCO-1: when the browser changes hands (the desktop app connects after the core's headless browser
   // answered, or leaves), the panels still list the old backend's tabs: a web app then reuses a headless tab ("h1")
   // the desktop does not have, and its page stays blank. Tell them the new backend's tabs at once.
+  // CONSENTIMIENTO-ANUNCIO-1: that list is for the panels, not a browser event: consent keeps reading only the host's
+  // own events (without one since attachment, the host's successful execution proves the tab), or a host that lists
+  // its tabs without their consent epoch revokes the tab consent the owner has just given.
+  const announced = new WeakSet<object>();
   const announceTabs = async () => {
     const at = backend();
     let tabs: TabInfo[] = [];
@@ -80,7 +84,11 @@ export function browserHandlers(
       tabs = [];
     }
     // Changed hands again meanwhile: that change tells its own list.
-    if (backend() === at) bus?.emit({ type: "browser.tabs", tabs });
+    if (backend() === at) {
+      const event = { type: "browser.tabs" as const, tabs };
+      announced.add(event);
+      bus?.emit(event);
+    }
   };
   broker.onConnectionChange(() => {
     const next = backend();
@@ -98,7 +106,7 @@ export function browserHandlers(
         if (grant.browser?.run === e.run.id && browserEpochBackend(grant.browser.epoch)?.startsWith("vm:"))
           store?.approvals.revoke(grant.key, grant.thread_id, grant.agent_id);
     }
-    if (e.type === "browser.tabs" && store) {
+    if (e.type === "browser.tabs" && store && !announced.has(e)) {
       observedTabs = e.tabs;
       reconcileBrowserConsents(store, backend(), e.tabs);
     }
