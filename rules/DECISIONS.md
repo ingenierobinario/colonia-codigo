@@ -3549,19 +3549,45 @@ filas por identificador, listas de ajustes por `id`, ficheros y claves sin pisar
 de la carpeta del equipo de origen a la de este, también entre Windows y macOS/Linux. Si restaurar falla, lo
 preparado se aparta y Colonia arranca con lo que tenía. Una copia hecha por un Colonia más nuevo se rechaza.
 
-**Fase 2, sincronización en vivo (diseño; no implementada).** Dos equipos del mismo dueño se emparejan con el
-mecanismo de D-190 (código de un uso, Ed25519 fijado, canal X25519 + HKDF + AES-256-GCM) y hablan directo entre sí
-por la red local o por la red privada que ya usa Colonia; no hay servidor nuestro en medio ni nada se guarda fuera
-de los dos equipos. Desactivada por defecto. Cada equipo lleva un diario de cambios por fila (tabla, id, reloj
-lógico híbrido, equipo) alimentado por disparadores, y los dos se intercambian lo que el otro no ha visto. Se
-sincroniza lo mismo que viaja en la copia; no se sincroniza lo que la copia tampoco lleva. Conflictos: el último que
-cambia gana por reloj lógico (el identificador del equipo desempata) y la versión que pierde se guarda en
-`sync_perdidas` para poder verla y recuperarla; los mensajes solo se añaden, así que no chocan. Las claves viajan
-por el mismo canal cifrado y cada equipo las guarda en su almacén. Los canales de sesión única (WhatsApp, iMessage,
-Signal) están activos en un solo equipo, el «principal»: el otro ve sus chats por la sincronización y envía a
-través de él; si el principal está apagado, los envíos esperan en su bandeja de salida. Cambiar de principal es un
-gesto explícito que pide volver a vincular. Lo que frena implementarla sin riesgo: los disparadores sobre todas las
-tablas y el arranque de canales condicionado al principal tocan el camino de cada escritura y de cada mensaje.
+**Fase 2, sincronización en vivo (hecha).** Ajustes › Sincronizar equipos. Dos equipos del mismo dueño se emparejan
+con un código de un uso y hablan directo entre sí; no hay servidor nuestro en medio ni nada se guarda fuera de los
+dos. Desactivada por defecto: sin emparejar no existe en la base ni una tabla, ni un disparador, ni un reloj
+(`install` los crea al emparejar y `uninstall` los borra enteros), y Colonia se comporta exactamente igual.
+
+Emparejar reutiliza el apretón de manos de «Mis equipos» (D-190: clave efímera X25519, firma Ed25519 fijada, prueba
+del código, HKDF + AES-256-GCM), sobre un WebSocket propio del núcleo. Un equipo enseña el código (lleva dentro su
+dirección, por eso es largo) y el otro lo escribe; si no se encuentran, se puede dar la dirección a mano. Si las dos
+direcciones cambian a la vez hay que volver a emparejar. Dos versiones distintas de Colonia no se mezclan: la
+sincronización se pausa y la tarjeta pide actualizar.
+
+Qué viaja: un diario por fila (`sync/journal.ts`) alimentado por disparadores de SQLite, que son persistentes: un
+cambio hecho con el núcleo cerrado también queda apuntado. Cada cambio se sella con un reloj lógico híbrido y cada
+equipo pide al otro lo que no ha visto. Viajan las tablas de `TABLES` (proyectos con su jerarquía, agentes, personas,
+chats y mensajes, memorias, rutinas, Flows con sus borradores, tablas e historial, tareas, adjuntos, bandeja de
+salida) y los ajustes. Los ajustes que son listas (canales, aplicaciones, navegadores, proveedores de IA, agentes
+externos, servicios, firmas, servidores MCP) van elemento a elemento, no la lista entera, para que añadir un canal
+en un equipo y otro en el otro no choque. Las claves del almacén de secretos viajan por el mismo canal cifrado y
+cada equipo las guarda en su propio almacén; nunca tocan disco en claro. Los ficheros de `media/` viajan aparte,
+hasta 64 MB cada uno. No viaja lo que es de cada equipo (`LOCAL_SETTINGS`: escritorio, ordenador virtual,
+telemetría, permisos de sesión, la lista de modelos que cada equipo descubre…), ni lo que la copia de la fase 1
+tampoco lleva. Las rutas guardadas se reescriben de la carpeta de un equipo a la del otro.
+
+Conflictos: gana el último cambio por reloj lógico (el identificador del equipo desempata) y la versión que pierde
+se guarda en `sync_perdidas`, que también se sincroniza: los dos equipos ven la misma lista y cualquiera puede
+recuperarla (recuperar es un cambio más, que viaja). Al emparejar, lo que ya había en los dos con el mismo
+identificador se resuelve a favor del equipo que enseñó el código. Dos filas que solo difieren en sus fechas de alta
+no son un conflicto (las filas de fábrica nacen en cada instalación con su hora). Al desemparejar, cada equipo se
+queda con lo que tiene y las versiones guardadas se borran.
+
+Sesión única: uno de los dos equipos es el principal (al emparejar, el que enseñó el código). Solo él abre las
+sesiones de los canales y lleva el reloj de las rutinas; el otro ve el estado de los canales y envía a través de él
+por la bandeja de salida, que se sincroniza. «Llevarlos en este ordenador» cambia de principal: el anterior cierra
+sus sesiones antes de que el nuevo las abra, nunca los dos a la vez. Al desemparejar, los canales siguen encendidos
+en el que los llevaba.
+
+Límites conocidos: el orden de las listas es de cada equipo; las rutas escritas dentro de textos libres no se
+reescriben; las carpetas de proyecto y los ficheros de fuera de `media/` no viajan; el nombre con que se ve el otro
+equipo es el del sistema. Probado con dos núcleos reales en carpetas temporales (`sync/two-cores.test.ts`).
 
 <a id="d-191"></a>
 ## D-191 — 2026-11-16 — A project knows other projects, and a Flow reads from several: one read-only link
