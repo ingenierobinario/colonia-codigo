@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { quickPlacement } from "./quick-placement.ts";
+import { liveTray, quickPlacement } from "./quick-placement.ts";
 
 const size = { width: 400, height: 600 };
 
@@ -37,4 +37,13 @@ test("resized quick chats fit a smaller monitor and avoid all screen edges", () 
     y: 33,
     ...size,
   });
+});
+
+test("a destroyed tray is never handed out again", () => {
+  let destroyed = false;
+  const tray = { isDestroyed: () => destroyed };
+  assert.equal(liveTray(tray), tray);
+  destroyed = true;
+  assert.equal(liveTray(tray), undefined);
+  assert.equal(liveTray(undefined), undefined);
 });

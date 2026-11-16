@@ -867,7 +867,10 @@ app.whenReady().then(() => {
         : { color: "#1a1a19", symbolColor: "#c8c8c8", height: 46 },
     );
   });
-  app.once("will-quit", () => quick.stop());
+  app.once("will-quit", () => {
+    ipcMain.removeAllListeners("desktop:attention");
+    quick.stop();
+  });
 
   ipcMain.handle("desktop:update-status", (e, check: unknown) => {
     if (e.sender !== panel.webContents) return undefined;

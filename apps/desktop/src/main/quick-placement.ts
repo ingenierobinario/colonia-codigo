@@ -29,3 +29,8 @@ export function quickPlacement(area: Bounds, size: { width: number; height: numb
     height,
   };
 }
+
+/** The tray only while it is alive: after `destroy()` every call on it throws «Tray is destroyed». */
+export function liveTray<T extends { isDestroyed(): boolean }>(tray: T | undefined): T | undefined {
+  return tray && !tray.isDestroyed() ? tray : undefined;
+}

@@ -4,7 +4,7 @@ import path from "node:path";
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen, Tray } from "electron";
 import { setLaunchAtLogin } from "./autostart.ts";
 import { shortcutRefused } from "./linux-desktop.ts";
-import { quickPlacement } from "./quick-placement.ts";
+import { liveTray, quickPlacement } from "./quick-placement.ts";
 
 const WIDTH = 400;
 /** How long a click on the menu-bar icon waits to see whether it is a double click. */
@@ -35,6 +35,7 @@ export function createQuick(opts: {
   let menuPoint: Electron.Point | undefined;
   let unreadCount = 0;
   let pressedVisible: boolean | undefined;
+  let stopped = false;
 
   function trayImage(): Electron.NativeImage | string {
     const attention = unreadCount > 0;
@@ -55,11 +56,14 @@ export function createQuick(opts: {
   }
 
   function updateBadge(): void {
+    // The panel keeps reporting unread counts while the app quits, after stop() destroyed the tray.
+    const t = liveTray(tray);
+    if (!t) return;
     const text = unreadCount > 99 ? "99+" : unreadCount > 0 ? String(unreadCount) : "";
-    tray?.setImage(trayImage());
-    if (process.platform === "darwin") tray?.setTitle(text, { fontType: "monospacedDigit" });
+    t.setImage(trayImage());
+    if (process.platform === "darwin") t.setTitle(text, { fontType: "monospacedDigit" });
     const suffix = app.getLocale().startsWith("es") ? "avisos pendientes" : "unread notifications";
-    tray?.setToolTip(unreadCount > 0 ? `Colonia · ${unreadCount} ${suffix}` : "Colonia");
+    t.setToolTip(unreadCount > 0 ? `Colonia · ${unreadCount} ${suffix}` : "Colonia");
     app.dock?.setBadge(text);
   }
 
@@ -90,9 +94,10 @@ export function createQuick(opts: {
       // A native tray click blurs the popup before its click event reaches Electron.
       clearTimeout(dismiss);
       if (pressedVisible !== undefined) return;
-      if (tray && process.platform !== "linux") {
+      const t = liveTray(tray);
+      if (t && process.platform !== "linux") {
         const point = screen.getCursorScreenPoint();
-        const bounds = tray.getBounds();
+        const bounds = t.getBounds();
         if (
           bounds.width > 0 &&
           bounds.height > 0 &&
@@ -143,6 +148,7 @@ export function createQuick(opts: {
 
   return {
     start(): void {
+      if (stopped || liveTray(tray)) return;
       tray = new Tray(trayImage());
       updateBadge();
       if (process.platform === "darwin") nativeTheme.on("updated", updateBadge);
@@ -212,7 +218,7 @@ export function createQuick(opts: {
           clearTimeout(pending);
           pending = undefined;
           menuPoint = screen.getCursorScreenPoint();
-          tray?.popUpContextMenu(menu);
+          liveTray(tray)?.popUpContextMenu(menu);
         });
       // Load it once now so the first open is instant.
       window();
@@ -243,7 +249,7 @@ export function createQuick(opts: {
     /** Shows an integrated indicator, a macOS menu-bar count and the Dock badge. */
     badge(unread: number): void {
       const count = Number.isFinite(unread) ? Math.max(0, Math.floor(unread)) : 0;
-      if (count === unreadCount) return;
+      if (stopped || count === unreadCount) return;
       unreadCount = count;
       updateBadge();
     },
@@ -258,8 +264,10 @@ export function createQuick(opts: {
       clearTimeout(pending);
       clearTimeout(dismiss);
       globalShortcut.unregisterAll();
+      stopped = true;
       nativeTheme.off("updated", updateBadge);
-      tray?.destroy();
+      liveTray(tray)?.destroy();
+      tray = undefined;
     },
   };
 }
