@@ -12,6 +12,7 @@ import { useT } from "../i18n/index.ts";
 import { ProjectMarkEditor } from "../lazy.ts";
 import { NewProjectDialog } from "../shell/NewProjectDialog.tsx";
 import { go } from "../shell/nav.ts";
+import { KnownProjects } from "./KnownProjects.tsx";
 import { KINDS, kindOptions, NO_KIND } from "./projectKind.ts";
 import { ReadOnlyFolders } from "./ReadOnlyFolders.tsx";
 
@@ -194,6 +195,7 @@ export function ProjectSettings({
               </p>
             </Field>
           )}
+          {!project.isDefault && real && <KnownProjects project={real} />}
           {!project.isDefault && real && <ReadOnlyFolders project={real} />}
         </div>
       </Dialog>

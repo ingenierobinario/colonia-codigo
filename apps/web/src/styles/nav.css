@@ -947,6 +947,55 @@
 .sidebar-navrow:not(.is-rail):has([aria-expanded="true"]) .colonia-nav__label {
   mask-image: linear-gradient(to right, #000 calc(100% - 10px), transparent);
 }
+/* A project inside a project: its row starts further in, and the one holding others gets a button that folds them. */
+.sidebar-navrow.is-depth-1 {
+  margin-left: 14px;
+}
+.sidebar-navrow.is-depth-2 {
+  margin-left: 28px;
+}
+.sidebar-navrow.is-depth-3 {
+  margin-left: 42px;
+}
+.sidebar-navrow__branch {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  min-height: 0;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid transparent;
+  border-radius: var(--colonia-row-radius);
+  background: none;
+  color: var(--colonia-fg-muted);
+  cursor: pointer;
+}
+.sidebar-navrow__branch:hover,
+.sidebar-navrow__branch:focus-visible {
+  border-color: var(--colonia-border-strong, var(--colonia-border));
+  color: var(--colonia-fg);
+}
+.sidebar-navrow.has-branch:not(.is-rail) > .colonia-nav {
+  padding-right: 34px;
+}
+.sidebar-navrow.has-branch .sidebar-navrow__actions {
+  right: 31px;
+}
+.sidebar-navrow.has-branch:not(.is-rail):hover .colonia-nav,
+.sidebar-navrow.has-branch:not(.is-rail):focus-within .colonia-nav,
+.sidebar-navrow.has-branch:not(.is-rail):has([aria-expanded="true"]) .colonia-nav {
+  padding-right: 62px;
+}
+@media (hover: none) {
+  .sidebar-navrow.has-branch:not(.is-rail) > .colonia-nav {
+    padding-right: 62px;
+  }
+}
 .sidebar-navrow.is-dragging {
   opacity: 0.5;
 }

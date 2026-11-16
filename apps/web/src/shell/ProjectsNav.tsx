@@ -8,6 +8,7 @@ import { useT } from "../i18n/index.ts";
 import { NewProjectDialog, ProjectSettings, ShareProjectDialog, UnregisterProjectDialog } from "../lazy.ts";
 import { go, useNav } from "./nav.ts";
 import { projectNavMenu } from "./ProjectNavActions.tsx";
+import { projectTree, type TreeRow } from "./projectTree.ts";
 import { SidebarNavRow } from "./SidebarNavRow.tsx";
 import { SidebarOverflow, SidebarRowsGrip, SidebarSection } from "./SidebarSection.tsx";
 
@@ -20,6 +21,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
   const t = useT();
   const folded = usePrefs((s) => s.projectsFolded);
   const saved = usePrefs((s) => s.projectOrder);
+  const closed = usePrefs((s) => s.projectsClosed);
   const view = useNav((s) => s.view);
   const projectId = useNav((s) => s.projectId);
   const projects = useData((s) => s.projects);
@@ -58,20 +60,23 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
         (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity) ||
         (lastActive.get(b.id) ?? "").localeCompare(lastActive.get(a.id) ?? ""),
     );
+    // A project sits under the one its owner put it in; with none nested this is the list as it was. The rail has
+    // no way to unfold, so it lists every one.
+    const tree = projectTree(ordered, rail ? [] : closed, view === "project" ? projectId : undefined);
     // Folding a single leftover would save nothing.
-    const cut = ordered.length > rows + 1 ? rows : ordered.length;
+    const cut = tree.length > rows + 1 ? rows : tree.length;
     return {
-      shown: ordered.slice(0, cut),
-      rest: ordered.slice(cut),
+      shown: tree.slice(0, cut),
+      rest: tree.slice(cut),
       ordered: ordered.map((p) => p.id),
       running,
       unread,
     };
-  }, [projects, threads, saved, routines, rows]);
+  }, [projects, threads, saved, routines, rows, closed, rail, view, projectId]);
   // Read when a project opens, not when the list reorders after it. The page coming back on a project (a reload)
   // is not opening it.
   const inView = useRef<string[]>([]);
-  inView.current = shown.map((p) => p.id);
+  inView.current = shown.map((r) => r.entry.id);
   const open = view === "project" ? projectId : undefined;
   const lastOpen = useRef(open);
   useEffect(() => {
@@ -80,10 +85,23 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
     if (open) rememberSidebar("projectOrder", open, inView.current);
   }, [open]);
 
-  const item = (p: ProjectEntry, onPick?: () => void) => (
+  const item = ({ entry: p, depth, children, open: unfolded }: TreeRow<ProjectEntry>, onPick?: () => void) => (
     <SidebarNavRow
       id={p.id}
       kind="project"
+      depth={depth}
+      branch={
+        children
+          ? {
+              open: unfolded,
+              label: t(unfolded ? "nav.projectFold" : "nav.projectUnfold", { name: p.name, n: children }),
+              onToggle: () =>
+                setPrefs({
+                  projectsClosed: unfolded ? [...closed, p.id] : closed.filter((id) => id !== p.id),
+                }),
+            }
+          : undefined
+      }
       order={ordered}
       locked={p.isDefault}
       onMove={(id, index) => {
@@ -145,18 +163,18 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
           setPrefs({ projectsFolded: !folded });
         }}
       />
-      {!hidden && shown.map((p) => item(p))}
+      {!hidden && shown.map((r) => item(r))}
       {!hidden && rest.length > 0 && (
         <SidebarOverflow
           rail={rail}
           title={t("nav.moreProjects", { n: rest.length })}
           label={t("nav.moreProjects", { n: rest.length })}
           count={rest.length}
-          active={view === "project" && rest.some((p) => p.id === projectId)}
+          active={view === "project" && rest.some((r) => r.entry.id === projectId)}
           open={moreOpen}
           onOpenChange={setMoreOpen}
         >
-          {rest.map((p) => item(p, () => setMoreOpen(false)))}
+          {rest.map((r) => item(r, () => setMoreOpen(false)))}
         </SidebarOverflow>
       )}
       {!hidden && !rail && (

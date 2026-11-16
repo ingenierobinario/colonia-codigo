@@ -17,6 +17,8 @@ export function SidebarNavRow({
   order,
   onMove,
   locked = false,
+  depth = 0,
+  branch,
 }: {
   id: string;
   kind: "channel" | "project" | "engine";
@@ -31,6 +33,10 @@ export function SidebarNavRow({
   order: string[];
   onMove(id: string, index: number): void;
   locked?: boolean;
+  /** How far in it sits under another row (a project inside a project). */
+  depth?: number;
+  /** Rows sit under this one: a button of its own folds and shows them. */
+  branch?: { open: boolean; label: string; onToggle(): void } | undefined;
 }) {
   const t = useT();
   const [dragging, setDragging] = useState(false);
@@ -80,7 +86,7 @@ export function SidebarNavRow({
           }}
         />
       }
-      className={`sidebar-navrow${kind === "channel" ? " channelsnav__row" : ""}${rail ? " is-rail" : ""}${active ? " is-active" : ""}${dragging ? " is-dragging" : ""}${drop ? ` is-drop-${drop}` : ""}`}
+      className={`sidebar-navrow${kind === "channel" ? " channelsnav__row" : ""}${rail ? " is-rail" : ""}${!rail && depth ? ` is-depth-${depth}` : ""}${!rail && branch ? " has-branch" : ""}${active ? " is-active" : ""}${dragging ? " is-dragging" : ""}${drop ? ` is-drop-${drop}` : ""}`}
     >
       <NavItem
         collapsed={rail}
@@ -92,6 +98,19 @@ export function SidebarNavRow({
         active={active}
         onClick={onPick}
       />
+      {!rail && branch && (
+        <button
+          type="button"
+          className="sidebar-navrow__branch"
+          data-sidebar-actions
+          data-open={branch.open}
+          aria-label={branch.label}
+          title={branch.label}
+          onClick={branch.onToggle}
+        >
+          {branch.open ? <Icons.ChevronDown size={14} /> : <Icons.ChevronRight size={14} />}
+        </button>
+      )}
       {!rail && (
         <div className="sidebar-navrow__actions" data-sidebar-actions>
           <Menu

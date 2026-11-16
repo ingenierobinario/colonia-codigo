@@ -1,7 +1,7 @@
 import { ColoniaError } from "@colonia/protocol/client";
 import { shapeOfGraph } from "@colonia/protocol/flow-shape";
 import { Button, FlowStepTile, IconButton, Icons, Input, Select, Spinner } from "@colonia/ui";
-import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Drawer } from "../common/Drawer.tsx";
 import { client } from "../data/client.ts";
 import { useRoutines } from "../data/routines.ts";
@@ -15,6 +15,7 @@ import { slug, tidy } from "./drawing.ts";
 import { type Cover, FlowCanvas, type StepLook } from "./FlowCanvas.tsx";
 import { FlowChat } from "./FlowChat.tsx";
 import { EditorHistory } from "./FlowHistory.tsx";
+import { FlowKnowledge } from "./FlowKnowledge.tsx";
 import { connectNodes, disconnectNodes, moveNode, newNode, removeCase, removeNode } from "./graph-edit.ts";
 import { Inspector, StepList } from "./Inspector.tsx";
 import { LeaveDialog, useLeave } from "./LeaveDialog.tsx";
@@ -80,6 +81,10 @@ export function FlowEditor({
   const known = useKnown();
   const [name, setName] = useState(flow?.name ?? "");
   const [projectId, setProjectId] = useState(flow?.projectId ?? preset ?? "");
+  // The other projects its agents read from. A saved Flow keeps each change at once; a new one, with its first save.
+  const [knowledge, setKnowledge] = useState<string[]>(flow?.knowledgeProjects ?? []);
+  // The definition as last saved here, so a later change never puts back an older name or list.
+  const definition = useRef(flow);
   const [graph, setGraph] = useState<FlowGraph | undefined>(flow ? undefined : undefined);
   const [saved, setSaved] = useState<string>("");
   const [version, setVersion] = useState<number | null>(null);
@@ -276,6 +281,21 @@ export function FlowEditor({
     [trial, fresh, path, allAgents, allRoutines, t, known, testing, testView],
   );
 
+  const changeKnowledge = async (next: string[]) => {
+    const before = knowledge;
+    setKnowledge(next);
+    setSaid(null);
+    const def = definition.current;
+    if (!def) return;
+    try {
+      definition.current = await client.call("flows.set", { ...def, knowledgeProjects: next });
+      setSaid({ text: t("flow.ed.knowledgeSaved") });
+    } catch (e) {
+      setKnowledge(before);
+      setSaid({ error: true, text: e instanceof ColoniaError && e.message ? e.message : t("flow.ed.saveFailed") });
+    }
+  };
+
   const save = async () => {
     const missing = !name.trim()
       ? t("flow.ed.needName")
@@ -318,9 +338,12 @@ export function FlowEditor({
           action: s.action,
           ...(s.readKeys.length ? { readKeys: s.readKeys } : {}),
           ...(!savedPath && chosenPath ? { path: chosenPath } : {}),
+          ...(knowledge.length ? { knowledgeProjects: knowledge.filter((p) => p !== projectId) } : {}),
         });
+        definition.current = def;
         setSavedPath(pathOf(def));
-      } else if (flow && name.trim() !== flow.name) await client.call("flows.set", { ...flow, name: name.trim() });
+      } else if (flow && name.trim() !== (definition.current ?? flow).name)
+        definition.current = await client.call("flows.set", { ...(definition.current ?? flow), name: name.trim() });
       const doc = await client.call("flows.draft_save", { flow: target, expectedVersion: version, graph: clean });
       let next = { version: doc.draftVersion, published: doc.publishedRevision };
       const { issues } = await client.call("flows.validate", { flow: target, graph: clean });
@@ -386,7 +409,8 @@ export function FlowEditor({
     try {
       let target = id;
       if (target) {
-        if (flow && name.trim() !== flow.name) await client.call("flows.set", { ...flow, name: name.trim() });
+        if (flow && name.trim() !== (definition.current ?? flow).name)
+          definition.current = await client.call("flows.set", { ...(definition.current ?? flow), name: name.trim() });
         // Over an agent's draft not reviewed yet, it keeps waiting for the owner's Save.
         const doc = await client.call("flows.draft_save", {
           flow: target,
@@ -406,6 +430,11 @@ export function FlowEditor({
           ...(chosenPath ? { path: chosenPath } : {}),
         });
         target = out.flow.id;
+        const others = knowledge.filter((p) => p !== projectId);
+        // The other projects it reads from are the owner's choice: kept with the Flow just made.
+        definition.current = others.length
+          ? await client.call("flows.set", { ...out.flow, knowledgeProjects: others })
+          : out.flow;
         setSavedPath(pathOf(out.flow));
         setMade(target);
         setVersion(out.document.draftVersion);
@@ -506,6 +535,12 @@ export function FlowEditor({
             className="fe-top__select"
           />
         )}
+        <FlowKnowledge
+          projectId={projectId || undefined}
+          value={knowledge}
+          disabled={busy || frozen}
+          onChange={(next) => void changeKnowledge(next)}
+        />
         <span className="fe-top__spacer" />
         {said && !busy ? (
           <span

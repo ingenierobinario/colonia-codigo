@@ -39,6 +39,8 @@ export type Prefs = {
   /** A manual reorder stays in place until newer channel activity arrives. */
   channelOrderAt: string;
   projectOrder: string[];
+  /** Projects whose own projects, the ones under them in the sidebar, are folded away. */
+  projectsClosed: string[];
   engineOrder: string[];
   /** Inbox groups the owner turned from how they start: tree branches (project:agent, LISTA-PLEGABLE-2), tasks,
    * routines, delegated chats and the archived (PLEGAR-BANDEJA-1). */
@@ -107,6 +109,7 @@ const DEFAULTS: Prefs = {
   channelOrder: [],
   channelOrderAt: "",
   projectOrder: [],
+  projectsClosed: [],
   engineOrder: [],
   inboxFolded: [],
   sidebarRows: { channels: 0, projects: 0, engines: 0 },
@@ -150,6 +153,9 @@ function load(): Prefs {
       channelOrderAt: typeof raw.channelOrderAt === "string" ? raw.channelOrderAt : "",
       projectOrder: Array.isArray(raw.projectOrder)
         ? [...new Set(raw.projectOrder.filter((id): id is string => typeof id === "string"))]
+        : [],
+      projectsClosed: Array.isArray(raw.projectsClosed)
+        ? [...new Set(raw.projectsClosed.filter((id): id is string => typeof id === "string"))].slice(0, 200)
         : [],
       inboxFolded: Array.isArray(raw.inboxFolded)
         ? [...new Set(raw.inboxFolded.filter((id): id is string => typeof id === "string"))]

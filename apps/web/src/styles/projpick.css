@@ -1,0 +1,46 @@
+/* Several projects chosen one by one (a project's known projects, a Flow's knowledge). */
+.projpick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--colonia-space-2);
+  min-width: 0;
+}
+.projpick__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.projpick__row {
+  display: flex;
+  align-items: center;
+  gap: var(--colonia-space-2);
+  min-width: 0;
+  min-height: 36px;
+  padding: 2px 6px 2px 8px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-row-radius);
+}
+.projpick__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--colonia-text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.projpick__note {
+  flex: none;
+  padding-right: 4px;
+  color: var(--colonia-fg-subtle);
+  font-size: var(--colonia-text-xs);
+}
+.projpick__none {
+  margin: 0;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+}

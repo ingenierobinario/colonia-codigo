@@ -99,6 +99,8 @@ export type ProjectEntry = {
   kind?: string | undefined;
   /** How its owner drew its tile; nothing chosen is the initial on the project's own colour. */
   mark?: ProjectMark | undefined;
+  /** The project it sits under in the sidebar, when its owner put it in one. */
+  parent?: string | undefined;
 };
 
 /** Sidebar order: the base space first, then the real projects as the core lists them. */
@@ -114,7 +116,15 @@ export function projectEntries(projects: Project[]): ProjectEntry[] {
     },
     ...projects
       .filter((p) => p.registered !== false)
-      .map((p) => ({ id: p.id, name: p.name, path: p.path, isDefault: false, kind: p.kind, mark: p.mark })),
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        path: p.path,
+        isDefault: false,
+        kind: p.kind,
+        mark: p.mark,
+        parent: p.parent,
+      })),
   ];
 }
 
