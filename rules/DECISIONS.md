@@ -3555,9 +3555,13 @@ dos. Desactivada por defecto: sin emparejar no existe en la base ni una tabla, n
 (`install` los crea al emparejar y `uninstall` los borra enteros), y Colonia se comporta exactamente igual.
 
 Emparejar reutiliza el apretón de manos de «Mis equipos» (D-190: clave efímera X25519, firma Ed25519 fijada, prueba
-del código, HKDF + AES-256-GCM), sobre un WebSocket propio del núcleo. Un equipo enseña el código (lleva dentro su
-dirección, por eso es largo) y el otro lo escribe; si no se encuentran, se puede dar la dirección a mano. Si las dos
-direcciones cambian a la vez hay que volver a emparejar. Dos versiones distintas de Colonia no se mezclan: la
+del código, HKDF + AES-256-GCM), sobre un WebSocket propio del núcleo. Un equipo enseña un código corto de ocho
+caracteres (`ABCD-2345`, sin letras que se confundan, con botón de copiar; vale diez minutos y una sola vez) y el otro
+lo escribe, con o sin guion y en mayúsculas o minúsculas. El código no lleva la dirección: los dos equipos se
+encuentran solos en la red local preguntando en voz alta (`sync/beacon.ts`, UDP a multidifusión y a difusión; lo que
+se oye son solo candidatas, quién es quién lo decide el apretón de manos). Si no se encuentran, la tarjeta lo dice y
+abre el campo para dar la dirección a mano. Del mismo modo se reencuentran si cambian las dos direcciones a la vez:
+no hay que volver a emparejar, y la dirección nueva queda apuntada. Dos versiones distintas de Colonia no se mezclan: la
 sincronización se pausa y la tarjeta pide actualizar.
 
 Qué viaja: un diario por fila (`sync/journal.ts`) alimentado por disparadores de SQLite, que son persistentes: un
@@ -3568,16 +3572,22 @@ salida) y los ajustes. Los ajustes que son listas (canales, aplicaciones, navega
 externos, servicios, firmas, servidores MCP) van elemento a elemento, no la lista entera, para que añadir un canal
 en un equipo y otro en el otro no choque. Las claves del almacén de secretos viajan por el mismo canal cifrado y
 cada equipo las guarda en su propio almacén; nunca tocan disco en claro. Los ficheros de `media/` viajan aparte,
-hasta 64 MB cada uno. No viaja lo que es de cada equipo (`LOCAL_SETTINGS`: escritorio, ordenador virtual,
+por trozos de 512 KB y sin tope de tamaño: si se corta, se reanuda donde iba. El orden de las listas viaja como un
+cambio más. El nombre al azar que cada instalación da a su asistente no es un conflicto. No viaja lo que es de cada equipo (`LOCAL_SETTINGS`: escritorio, ordenador virtual,
 telemetría, permisos de sesión, la lista de modelos que cada equipo descubre…), ni lo que la copia de la fase 1
 tampoco lleva. Las rutas guardadas se reescriben de la carpeta de un equipo a la del otro.
+
+Carpetas de proyecto: la ruta viaja, el contenido no. Una carpeta de las que Colonia guarda dentro de la suya se crea
+sola en el otro equipo. Una del dueño, fuera de Colonia, solo se usa si existe allí; si no, la tarjeta avisa «Elige
+la carpeta en este equipo» y cada equipo conserva la suya (lo que uno elige no pisa la del otro).
 
 Conflictos: gana el último cambio por reloj lógico (el identificador del equipo desempata) y la versión que pierde
 se guarda en `sync_perdidas`, que también se sincroniza: los dos equipos ven la misma lista y cualquiera puede
 recuperarla (recuperar es un cambio más, que viaja). Al emparejar, lo que ya había en los dos con el mismo
 identificador se resuelve a favor del equipo que enseñó el código. Dos filas que solo difieren en sus fechas de alta
 no son un conflicto (las filas de fábrica nacen en cada instalación con su hora). Al desemparejar, cada equipo se
-queda con lo que tiene y las versiones guardadas se borran.
+queda con lo que tiene y las versiones guardadas siguen ahí, recuperables, hasta que el dueño las borre (una a una o
+todas, con confirmación).
 
 Sesión única: uno de los dos equipos es el principal (al emparejar, el que enseñó el código). Solo él abre las
 sesiones de los canales y lleva el reloj de las rutinas; el otro ve el estado de los canales y envía a través de él
@@ -3585,9 +3595,10 @@ por la bandeja de salida, que se sincroniza. «Llevarlos en este ordenador» cam
 sus sesiones antes de que el nuevo las abra, nunca los dos a la vez. Al desemparejar, los canales siguen encendidos
 en el que los llevaba.
 
-Límites conocidos: el orden de las listas es de cada equipo; las rutas escritas dentro de textos libres no se
-reescriben; las carpetas de proyecto y los ficheros de fuera de `media/` no viajan; el nombre con que se ve el otro
-equipo es el del sistema. Probado con dos núcleos reales en carpetas temporales (`sync/two-cores.test.ts`).
+Límites conocidos: las rutas escritas dentro de textos libres no se reescriben; el contenido de las carpetas de
+proyecto y los ficheros de fuera de `media/` no viajan; el nombre con que se ve el otro equipo es el del sistema; el
+encuentro solo funciona en la misma red local (entre redes distintas, o si la red filtra la difusión, la dirección se
+da a mano). Probado con dos núcleos reales en carpetas temporales (`sync/two-cores.test.ts`).
 
 <a id="d-191"></a>
 ## D-191 — 2026-11-16 — A project knows other projects, and a Flow reads from several: one read-only link
