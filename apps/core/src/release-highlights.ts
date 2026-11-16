@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.24": {
+    en: [
+      "Sharing projects: it now also removes keys written as plain text and tells you how many it removed.",
+      "Importing a project again doesn't erase your keys.",
+      "On Linux, the update notice shows the exact command to install, with a Copy button.",
+      "“Share project” no longer appears on the default project.",
+    ],
+    es: [
+      "Compartir proyectos: ahora quita también claves escritas como texto y te avisa de cuántas quitó.",
+      "Reimportar un proyecto no borra tus claves.",
+      "En Linux, el aviso de actualización muestra la orden exacta para instalar con un botón Copiar.",
+      "«Compartir proyecto» ya no aparece en el proyecto por defecto.",
+    ],
+  },
   "2.36.23": {
     en: [
       "Share a project with someone else on Colonia: export it to a file they import, or publish it with a link.",
