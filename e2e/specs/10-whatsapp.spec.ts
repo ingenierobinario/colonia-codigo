@@ -93,6 +93,8 @@ test("strangers 'ask me': whoever writes is an unreviewed contact, the owner hea
   await page.getByRole("button", { name: /Lucía.*Sin revisar/ }).click();
   await expect(page.getByText("hola, ¿vamos el sábado?").last()).toBeVisible();
   await page.getByRole("button", { name: "Quitar silencio" }).click();
+  // The change must have landed before the next message arrives, or it is still a silenced contact.
+  await expect(page.getByRole("button", { name: "Quitar silencio" })).toHaveCount(0);
   await world.whatsapp.message(FRIEND, "¿y a qué hora?");
   await until(async () => (await world.whatsapp.sentTo(FRIEND.phone)).some((t) => t.startsWith("Got it:")));
 });

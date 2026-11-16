@@ -18,7 +18,7 @@ test("a queued delegation result shows, named, with its chat's working turn in t
   await page.locator("button.running").click();
   const was = (await tabs.allTextContents()).map(Number);
   await page.keyboard.press("Escape");
-  const mainChat = page.locator(".workspace > .chat");
+  const mainChat = page.locator(".workspace > .chatcol > .chat");
   const composer = mainChat.getByRole("textbox").last();
   await composer.fill("start a worker and keep going");
   await composer.press("Enter");
@@ -54,7 +54,7 @@ test("a working agent stops from the running popover, only once the owner confir
   const root = await rpc<Thread>("threads.create", { kind: "loose", agent_id: agent.id, title: "Long audit" });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await open(page, `#thread=${root.id}`);
-  const composer = page.locator(".workspace > .chat").getByRole("textbox").last();
+  const composer = page.locator(".workspace > .chatcol > .chat").getByRole("textbox").last();
   await composer.fill("start a worker and keep going");
   await composer.press("Enter");
 

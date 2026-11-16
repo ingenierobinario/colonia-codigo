@@ -11,7 +11,7 @@ test("a fourth delegation shows as queued, then runs once one of the three ends"
   const root = await rpc<Thread>("threads.create", { kind: "loose", agent_id: agent.id, title: "Four parts" });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await open(page, `#thread=${root.id}&panel=processes`);
-  const mainChat = page.locator(".workspace > .chat");
+  const mainChat = page.locator(".workspace > .chatcol > .chat");
   const composer = mainChat.getByRole("textbox").last();
   await composer.fill("start four slow workers");
   await composer.press("Enter");

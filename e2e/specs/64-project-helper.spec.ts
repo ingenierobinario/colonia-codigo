@@ -20,9 +20,9 @@ test("project helper is optional, asks only missing context and stays quiet afte
     await held;
     await route.continue();
   });
-  await create.getByRole("button", { name: "Sumar" }).click();
+  await create.getByRole("button", { name: "Añadir" }).click();
   await expect.poll(() => enabling).toBe(true);
-  await expect(create.getByRole("button", { name: "Sumar" })).toBeDisabled();
+  await expect(create.getByRole("button", { name: "Añadir" })).toBeDisabled();
   await expect(create.getByRole("button", { name: "Cancelar", exact: true })).toBeDisabled();
   release?.();
   await expect(create).toBeHidden();
@@ -83,7 +83,7 @@ test("manual agent review works off; custom instructions stay intact and proposa
   await helper.getByRole("button", { name: "Revisar cambio propuesto" }).click();
   const confirm = page.getByRole("dialog", { name: "¿Aplicar las instrucciones propuestas?" });
   await expect(confirm.getByRole("textbox", { name: "Antes (eliminado)" })).toHaveValue("");
-  await expect(confirm.getByRole("textbox", { name: "Después (agregado)" })).toHaveValue(/Publish the catalog/);
+  await expect(confirm.getByRole("textbox", { name: "Después (añadido)" })).toHaveValue(/Publish the catalog/);
   await confirm.getByRole("button", { name: "Cancelar", exact: true }).click();
   await helper.getByRole("button", { name: "Cerrar", exact: true }).click();
   await expect(create.getByRole("textbox", { name: "Prompt", exact: true })).toHaveValue("");
@@ -138,7 +138,7 @@ test("import offers helper mode without changing existing contextual instruction
   await create.getByRole("radio", { name: "Importar" }).click();
   await expect(create.getByRole("combobox", { name: "Proyecto" })).toContainText("acme");
   await create.getByRole("checkbox", { name: "Ofrecer ayuda para preparar este proyecto" }).check();
-  await create.getByRole("button", { name: "Importar" }).click();
+  await create.getByRole("button", { name: "Importar", exact: true }).click();
   await expect(create).toBeHidden();
   await page.getByRole("button", { name: "Revisar contexto del proyecto" }).click();
   const helper = page.getByRole("dialog", { name: "Revisar contexto del proyecto" });

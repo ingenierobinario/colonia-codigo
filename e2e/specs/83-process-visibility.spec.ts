@@ -146,7 +146,7 @@ test("idle chats show their active commands and each process names its origin", 
   });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await open(page, `#thread=${root.id}`);
-  const header = page.locator(".workspace > .chat .chat__header");
+  const header = page.locator(".workspace > .chatcol > .chat .chat__header");
   await expect(header.getByRole("button", { name: "Procesos activos: 2" })).toBeVisible();
   const inbox = page.locator(".inbox");
   for (const view of ["Actividad", "Árbol", "Por chat"]) {

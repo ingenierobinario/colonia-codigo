@@ -52,13 +52,13 @@ test("the ChatGPT plan comes first as Codex, fixed, and connects with its own si
 
 test("a CLI is never offered as a model for agents or the router, and the core refuses one", async ({ page }) => {
   await expect(
-    rpc("agents.update", { agent: "superagent", model_choice: { model: "claude", router: false } }),
+    rpc("agents.update", { agent: "superagent", model_choice: { model: "codex", router: false } }),
   ).rejects.toThrow(/own sessions/);
   await open(page);
   await openSettings(page);
   const settings = page.getByRole("dialog", { name: "Configuración" });
   await settings.getByRole("button", { name: "Router" }).click();
-  await settings.getByRole("button", { name: "Agregar un modelo" }).click();
+  await settings.getByRole("button", { name: "Añadir un modelo" }).click();
   const list = page.getByRole("listbox", { name: "Modelos" });
   await expect(list).toContainText("fake-1");
   await expect(list).not.toContainText("Claude Code");

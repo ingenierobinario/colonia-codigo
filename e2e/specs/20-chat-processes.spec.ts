@@ -9,7 +9,7 @@ test("chat processes open A2A beside its parent, maximize and stay scoped to eac
   const root = await rpc<Thread>("threads.create", { kind: "loose", agent_id: agent.id, title: "Source review" });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await open(page, `#thread=${root.id}`);
-  const mainChat = page.locator(".workspace > .chat");
+  const mainChat = page.locator(".workspace > .chatcol > .chat");
   const composer = mainChat.getByRole("textbox").last();
   await composer.fill("start a worker to check the sources");
   await composer.press("Enter");
@@ -34,7 +34,7 @@ test("chat processes open A2A beside its parent, maximize and stay scoped to eac
   await expect(side.locator(".processes__row")).toHaveCount(0);
   await side.getByRole("button", { name: "Cerrar panel" }).click();
   await mainChat.getByRole("button", { name: "Terminal", exact: true }).click();
-  await expect(side.getByText("El agente no corrió comandos en este chat")).toBeVisible();
+  await expect(side.getByText("El agente no se ejecutó comandos en este chat")).toBeVisible();
   await expect(side.getByRole("button", { name: "Nueva terminal" })).toHaveCount(1);
   await mainChat.getByRole("button", { name: "Cambios", exact: true }).click();
   await expect(side.getByText("No hay cambios registrados en este chat")).toBeVisible();

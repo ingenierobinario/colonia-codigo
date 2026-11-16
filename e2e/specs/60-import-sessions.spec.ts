@@ -14,7 +14,7 @@ test("a Codex project and its chats come in from the new project dialog", async 
   await dialog.getByRole("radio", { name: "Importar" }).click();
   await expect(dialog.getByRole("radio", { name: "Codex" })).toBeChecked();
   await expect(dialog.getByRole("combobox", { name: "Proyecto" })).toContainText("acme · chats: 1");
-  await dialog.getByRole("button", { name: "Importar" }).click();
+  await dialog.getByRole("button", { name: "Importar", exact: true }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByText(/chats importados \(1\)/)).toBeVisible();
 
