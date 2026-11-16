@@ -670,6 +670,7 @@ export const appMethods = {
    * and which connections it uses. `content` is the file (readable JSON, format `colonia-proyecto-1`), `code` the same
    * as one line to paste in a message. Never in it: variables, keys, tokens, cookies, channel sessions, chats, tasks,
    * memory or the folder's path; `removed` counts access data taken out of the text, `skipped` files left out.
+   * `removed_in` says in which part each one was (never the data itself), so the owner knows where to look.
    * `path` is its public link (`/p/<link>`) while it is published.
    */
   "projects.export": {
@@ -678,6 +679,15 @@ export const appMethods = {
       content: z.string(),
       code: z.string(),
       removed: z.number().int(),
+      removed_in: z
+        .array(
+          z.object({
+            kind: z.enum(["description", "instructions", "agent", "skill", "connection", "organization"]),
+            name: z.string(),
+            count: z.number().int(),
+          }),
+        )
+        .default([]),
       skipped: z.number().int(),
       path: z.string().optional(),
     }),

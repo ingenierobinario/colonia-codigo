@@ -119,9 +119,25 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
           </section>
         </div>
         {pkg && pkg.removed > 0 && (
-          <p className="pshare__note" title={t("pshare.removedTitle")}>
-            {t("pshare.removed", { n: pkg.removed })}
-          </p>
+          // AVISO-QUITADOS-1 · Antes de que nada salga: cuánto se ha quitado, que puede quedar algo, y dónde mirar.
+          <div className="pshare__warn" role="status" data-testid="pshare-removed" title={t("pshare.removedTitle")}>
+            <p>
+              <Icons.Lock size={14} />
+              <span>{t("pshare.removed", { n: pkg.removed })}</span>
+            </p>
+            {pkg.removed_in.length > 0 && (
+              <details>
+                <summary>{t("pshare.removedWhere")}</summary>
+                <ul>
+                  {pkg.removed_in.map((r) => (
+                    <li key={`${r.kind}:${r.name}`}>
+                      {t(`pshare.in.${r.kind}`, { name: r.name })}: {r.count}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
         )}
         {pkg && pkg.skipped > 0 && <p className="pshare__note">{t("pshare.skipped", { n: pkg.skipped })}</p>}
 

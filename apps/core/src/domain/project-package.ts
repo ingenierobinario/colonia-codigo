@@ -93,6 +93,32 @@ const SENSITIVE_KEY =
   "pass(?:word|wd|phrase)?|contrase(?:ñ|n)a|clave(?:[ _-]?(?:api|secreta|privada))?|secreto?|secret(?:[ _-]?key)?|" +
   "token|api[ _-]?key|apikey|access[ _-]?key|auth(?:orization)?|cookie|session(?:[ _-]?id)?|credential[s]?|pwd";
 
+/** TEXTO-LIBRE-1 · Las palabras tras las que un dato suelto («el token abc123…», «la clave es abc123…») es el dato. */
+const LOOSE_KEY =
+  "pass(?:word|wd|phrase)?|contrase(?:ñ|n)a|clave(?:[ _-]?(?:api|secreta|privada))?|secret(?:[ _-]?key)?|" +
+  "token|api[ _-]?key|apikey|access[ _-]?key|pwd";
+
+/** Bits por carácter: lo que distingue «a8Kq2ZxP0vLm…» de «claude-3-5-sonnet-20241022». */
+function entropy(s: string): number {
+  const seen = new Map<string, number>();
+  for (const ch of s) seen.set(ch, (seen.get(ch) ?? 0) + 1);
+  let bits = 0;
+  for (const n of seen.values()) bits -= (n / s.length) * Math.log2(n / s.length);
+  return bits;
+}
+const MIXED = /^(?=.*[0-9])(?=.*[A-Za-z])[A-Za-z0-9_~+=.:-]{20,}$/;
+
+/**
+ * TEXTO-LIBRE-1 · Un trozo suelto (un argumento de una conexión, un tramo de una dirección) con pinta de clave: lo
+ * que ya reconoce `scrub`, o 20 caracteres o más mezclando letras y cifras. En un argumento se pide además que no
+ * parezcan palabras (`loose` = false), porque ahí también van nombres de modelo y de paquete.
+ */
+export function secretLike(piece: string, loose: boolean): boolean {
+  if (piece.includes(REMOVED)) return false;
+  if (scrub(piece).removed > 0) return true;
+  return MIXED.test(piece) && (loose || entropy(piece) >= 4);
+}
+
 /** Reglas en orden: cada una cambia el dato por REMOVED y deja el resto de la frase. */
 const RULES: Array<[RegExp, (m: string, ...g: string[]) => string]> = [
   [/-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|$)/g, () => REMOVED],
@@ -105,6 +131,9 @@ const RULES: Array<[RegExp, (m: string, ...g: string[]) => string]> = [
     /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\b(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9]{10,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bgithub_pat_[A-Za-z0-9_]{20,}|\bglpat-[A-Za-z0-9_-]{16,}|\bxox[abeprs]-[A-Za-z0-9-]{10,}|\bAIza[0-9A-Za-z_-]{30,}|\b(?:AKIA|ASIA)[0-9A-Z]{16}\b|\bya29\.[A-Za-z0-9._-]{20,}|\bEAA[A-Za-z0-9]{30,}|\bnpm_[A-Za-z0-9]{30,}|\bSG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}/g,
     () => REMOVED,
   ],
+  // TEXTO-LIBRE-1 · Tokens de bot: Discord (tres tramos) y Telegram (número:35 caracteres).
+  [/(?<![A-Za-z0-9_-])[MNO][A-Za-z0-9_-]{23,25}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}/g, () => REMOVED],
+  [/(?<![A-Za-z0-9_-])[0-9]{8,10}:[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])/g, () => REMOVED],
   // Usuario y contraseña dentro de una dirección.
   [/([a-z][a-z0-9+.-]*:\/\/)[^\s/@:]+:[^\s/@]+@/gi, (_m, scheme) => `${scheme}${REMOVED}@`],
   // Parámetros de una dirección que llevan un dato de acceso.
@@ -121,6 +150,26 @@ const RULES: Array<[RegExp, (m: string, ...g: string[]) => string]> = [
       "gi",
     ),
     (m, k, v) => (/^["'`]?(?:secret:\/\/|\/\/|\$\{|<|\{\{|«)/.test(v) || v.includes(REMOVED) ? m : `${k}${REMOVED}`),
+  ],
+  // TEXTO-LIBRE-1 · Sin dos puntos ni igual: «el token abc123def», «la clave es abc123def». Solo si el dato mezcla
+  // letras y cifras, para no tachar «la clave es importante» ni «el token de acceso».
+  [
+    new RegExp(
+      `((?:^|[^A-Za-z0-9_-])(?:${LOOSE_KEY})[ \\t]+(?:(?:es|is|ser[aá]|era|was)[ \\t]+)?["'\`]?)((?=[^\\s"'\`]*[0-9])(?=[^\\s"'\`]*[A-Za-z])[A-Za-z0-9_~+/=.:!@#%^&*-]{8,})`,
+      "gi",
+    ),
+    (m, k, v) => {
+      // El punto o los dos puntos que cierran la frase no son parte del dato.
+      const end = /[.:]+$/.exec(v)?.[0] ?? "";
+      const data = end ? v.slice(0, -end.length) : v;
+      return data.length < 8 || /^(?:secret:|https?:|\/\/)/i.test(data) ? m : `${k}${REMOVED}${end}`;
+    },
+  ],
+  // TEXTO-LIBRE-1 · Base64 corriente (con «+» y «/»): 40 o más, con mayúsculas, minúsculas y cifras, y casi sin barras
+  // para no confundirlo con una ruta.
+  [
+    /(?<![A-Za-z0-9+/=_.-])(?=[A-Za-z0-9+/]*[0-9])(?=[A-Za-z0-9+/]*[a-z])(?=[A-Za-z0-9+/]*[A-Z])[A-Za-z0-9+/]{40,}={0,2}(?![A-Za-z0-9+/=_.-])/g,
+    (m) => ((m.match(/\//g)?.length ?? 0) * 16 > m.length ? m : REMOVED),
   ],
   // Lo que queda con pinta de clave: 32 o más caracteres seguidos mezclando letras y cifras (un hash, un token).
   [
@@ -173,6 +222,11 @@ export function connectionOf(
       removed++;
       return REMOVED;
     }
+    // TEXTO-LIBRE-1 · Un argumento suelto que es una clave («npx srv a8Kq2ZxP…»).
+    if (!a.startsWith("-") && secretLike(a, false)) {
+      removed++;
+      return REMOVED;
+    }
     return clean(a).slice(0, 1000);
   });
   let url: string | undefined;
@@ -180,7 +234,20 @@ export function connectionOf(
     try {
       const u = new URL(r.url);
       if (u.username || u.password || u.search) removed++;
-      url = clean(`${u.protocol}//${u.host}${u.pathname}`);
+      // TEXTO-LIBRE-1 · Un tramo de la dirección que es una clave («…/a8Kq2ZxP…/sse»).
+      const pathname = u.pathname
+        .split("/")
+        .map((seg) => {
+          let plain = seg;
+          try {
+            plain = decodeURIComponent(seg);
+          } catch {}
+          if (!secretLike(plain, true)) return seg;
+          removed++;
+          return REMOVED;
+        })
+        .join("/");
+      url = clean(`${u.protocol}//${u.host}${pathname}`);
     } catch {
       url = undefined;
     }

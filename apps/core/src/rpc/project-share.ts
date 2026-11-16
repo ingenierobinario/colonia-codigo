@@ -70,10 +70,18 @@ function walk(dir: string, rel = "", out: string[] = []): string[] {
   return out;
 }
 
+export type RemovedIn = {
+  kind: "description" | "instructions" | "agent" | "skill" | "connection" | "organization";
+  name: string;
+  count: number;
+};
+
 export type Built = {
   pkg: ProjectPackage;
   /** Datos de acceso que se quitaron del texto. */
   removed: number;
+  /** AVISO-QUITADOS-1 · En qué parte del proyecto se quitó cada uno, para que la persona sepa dónde mirar. */
+  removedIn: RemovedIn[];
   /** Ficheros que se dejaron fuera (credenciales, binarios, demasiado grandes). */
   skipped: number;
 };
@@ -86,21 +94,31 @@ export function buildPackage(
 ): Built {
   let removed = 0;
   let skipped = 0;
-  const clean = (text: string) => {
+  const removedIn: RemovedIn[] = [];
+  const took = (kind: RemovedIn["kind"], name: string, count: number) => {
+    if (count <= 0) return;
+    removed += count;
+    const same = removedIn.find((r) => r.kind === kind && r.name === name);
+    if (same) same.count += count;
+    else removedIn.push({ kind, name, count });
+  };
+  const clean = (text: string, kind: RemovedIn["kind"], name = "") => {
     const c = scrub(text);
-    removed += c.removed;
+    took(kind, name, c.removed);
     return c.text;
   };
   const apc = path.join(root, ".apc");
   const inApc = !isLink(apc);
-  const instructions = isLink(path.join(root, "AGENTS.md")) ? "" : clean(textOf(path.join(root, "AGENTS.md")) ?? "");
+  const instructions = isLink(path.join(root, "AGENTS.md"))
+    ? ""
+    : clean(textOf(path.join(root, "AGENTS.md")) ?? "", "instructions");
 
   const agents: ProjectPackage["agents"] = [];
   if (inApc && !isLink(path.join(apc, "agents")))
     for (const rel of walk(path.join(apc, "agents"))) {
       const slug = /^([a-z][a-z0-9_-]{0,80})\.md$/.exec(rel)?.[1];
       const text = slug ? textOf(path.join(apc, "agents", rel)) : undefined;
-      if (slug && text !== undefined) agents.push({ slug, text: clean(text) });
+      if (slug && text !== undefined) agents.push({ slug, text: clean(text, "agent", slug) });
       else skipped++;
     }
 
@@ -119,7 +137,7 @@ export function buildPackage(
         const text =
           ok && !sensitiveFile(rel) && files.length < 60 ? textOf(path.join(skillsDir, f.name, rel)) : undefined;
         if (text === undefined) skipped++;
-        else files.push({ path: rel, text: clean(text) });
+        else files.push({ path: rel, text: clean(text, "skill", f.name) });
       }
       if (files.some((x) => x.path === "SKILL.md")) skills.push({ folder: f.name, files });
     }
@@ -134,7 +152,7 @@ export function buildPackage(
         for (const [name, raw] of Object.entries(servers)) {
           const c = connectionOf(name, raw);
           if (!c) continue;
-          removed += c.removed;
+          took("connection", name.slice(0, 80), c.removed);
           connections.push(c.connection);
         }
     } catch {}
@@ -145,14 +163,14 @@ export function buildPackage(
     inApc && !isLink(path.join(apc, "organization.json")) ? textOf(path.join(apc, "organization.json")) : undefined;
   if (org) {
     try {
-      const o = JSON.parse(clean(org)) as { areas?: unknown; roles?: unknown };
+      const o = JSON.parse(clean(org, "organization")) as { areas?: unknown; roles?: unknown };
       const areas = Array.isArray(o.areas) ? o.areas.slice(0, 40) : [];
       const roles = Array.isArray(o.roles) ? o.roles.slice(0, 200) : [];
       if (areas.length + roles.length) organization = { areas, roles };
     } catch {}
   }
 
-  const description = meta.description ? clean(meta.description).slice(0, 500) : "";
+  const description = meta.description ? clean(meta.description, "description").slice(0, 500) : "";
   return {
     pkg: {
       format: PROJECT_FORMAT,
@@ -169,6 +187,7 @@ export function buildPackage(
       connections: connections.slice(0, 60),
     },
     removed,
+    removedIn,
     skipped,
   };
 }
@@ -318,6 +337,7 @@ export function projectShareHandlers(deps: {
         content: renderPackage(b.pkg),
         code: packageCode(b.pkg),
         removed: b.removed,
+        removed_in: b.removedIn,
         skipped: b.skipped,
         ...(path_ ? { path: path_ } : {}),
       };

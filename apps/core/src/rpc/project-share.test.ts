@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { PROJECT_FORMAT, packageCode, parsePackage, REMOVED, scrub } from "../domain/project-package.ts";
+import { connectionOf, PROJECT_FORMAT, packageCode, parsePackage, REMOVED, scrub } from "../domain/project-package.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { sharedProjectRoutes } from "../public-routes.ts";
 import { fetchPackage } from "./project-share.ts";
@@ -350,6 +350,100 @@ test("publicar da un enlace que responde con el paquete; publicar otra vez lo re
   }
 });
 
+test("TEXTO-LIBRE-1 · una clave escrita en texto libre, en un argumento o en una dirección no sale", () => {
+  // Datos inventados con la forma de los reales, partidos para que ningún escáner de secretos los tome por buenos.
+  const random = j("a8Kq2ZxP0vLm", "7RtY3wNs9BdF", "5hJc1GeU");
+  const cases: Array<[string, string]> = [
+    ["la clave es X", j("Entra con el usuario ana. La clave es ", "Tr0ub4dor-2024", ".")],
+    ["token X", j("Usa el token ", "zx81-ALFA-99-beta", " para llamar al servicio.")],
+    ["password is X", j("The password is ", "hunter2-Winter", " for now.")],
+    ["sk-", j("sk", "-proj-", random)],
+    ["sk-ant-", j("sk", "-ant-api03-", random)],
+    ["xoxb-", j("xo", "xb-123456789012-", "abcdefABCDEF123456")],
+    ["xoxp-", j("xo", "xp-123456789012-", "abcdefABCDEF123456")],
+    ["ghp_", j("gh", "p_", random)],
+    ["github_pat_", j("github", "_pat_", random)],
+    ["AIza", j("AI", "za", random, "abc")],
+    ["bot de Discord", j("MTIzNDU2Nzg5MDEyMzQ1Njc4", ".GaBcDe.", random)],
+    ["bot de Telegram", j("1234567890", ":AAF", random)],
+    ["JWT", j("ey", "JhbGciOiJIUzI1NiJ9", ".eyJzdWIiOiIxMjM0NTY3ODkwIn0", ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV")],
+    ["Bearer", j("Cabecera Bearer ", "abc123def456ghi789")],
+    ["usuario y contraseña en una dirección", j("postgres://ana", ":Sup3rSecreta", "@db.example.com/ventas")],
+    ["?token=", j("https://api.example.com/v1?token", "=abc123def456", "&x=1")],
+    ["&secret=", j("https://api.example.com/v1?x=1&client_secret", "=abc123def456")],
+    ["?key=", j("https://api.example.com/v1?key", "=abc123def456")],
+    ["cadena larga", random],
+    ["base64", j("Zm9vYmFyMTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFla", "+/8=")],
+  ];
+  for (const [what, text] of cases) {
+    const out = scrub(`Antes. ${text}\nDespués.`);
+    assert.ok(out.removed >= 1, `${what}: no se ha quitado nada`);
+    assert.ok(out.text.startsWith("Antes. ") && out.text.endsWith("\nDespués."), `${what}: se ha comido el contexto`);
+    for (const piece of text
+      .split(/[\s?&=@:/]+/)
+      .filter((p) => p.length >= 12 && /[0-9]/.test(p) && !p.includes(".example.")))
+      assert.ok(!out.text.includes(piece), `${what}: sigue «${piece}» en «${out.text}»`);
+  }
+  // Lo mismo dentro del paquete: descripción del agente, argumento suelto y tramo de la dirección de una conexión.
+  const arg = connectionOf("uno", {
+    command: "npx",
+    args: ["-y", "srv", random, "claude-3-5-sonnet-20241022", "--port", "8080"],
+  });
+  assert.deepEqual(arg?.connection.args, ["-y", "srv", REMOVED, "claude-3-5-sonnet-20241022", "--port", "8080"]);
+  assert.equal(arg?.removed, 1);
+  const inPath = connectionOf("dos", { url: `https://mcp.example.com/v1/${random}/sse` });
+  assert.equal(inPath?.removed, 1);
+  assert.ok(!inPath?.connection.url?.includes(random));
+  assert.match(inPath?.connection.url ?? "", /^https:\/\/mcp\.example\.com\/v1\/.+\/sse$/);
+  assert.equal(
+    connectionOf("tres", { url: "https://mcp.example.com/v1/sse" })?.connection.url,
+    "https://mcp.example.com/v1/sse",
+  );
+});
+
+test("AVISO-QUITADOS-1 · exportar dice en qué parte del proyecto se quitó cada dato, sin el dato", async () => {
+  const a = await boot();
+  try {
+    const { project } = await a.client.call("projects.create", { name: "Avisos", kind: "company" });
+    const root = project.path ?? "";
+    const secret = j("zx81-ALFA-", "99-beta");
+    const random = j("a8Kq2ZxP0vLm", "7RtY3wNs9BdF", "5hJc1GeU");
+    const put = (rel: string, text: string) => {
+      fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+      fs.writeFileSync(path.join(root, rel), text);
+    };
+    put("AGENTS.md", `# Avisos\n\nLa clave es ${secret}.\n`);
+    put(".apc/agents/uno.md", `---\nname: Uno\nrole: R\ndescription: usa el token ${secret} siempre\n---\nCuerpo.\n`);
+    put(
+      ".apc/mcps.json",
+      JSON.stringify({
+        mcpServers: {
+          suelto: { command: "npx", args: ["-y", "srv", random] },
+          ruta: { url: `https://mcp.example.com/${random}/sse` },
+          limpio: { command: "npx", args: ["-y", "srv"] },
+        },
+      }),
+    );
+    await a.client.call("projects.sync", { project: project.id });
+    const out = await a.client.call("projects.export", { project: project.id });
+    assert.ok(!out.content.includes(secret) && !out.content.includes(random), out.content);
+    assert.deepEqual(
+      [...out.removed_in].sort((x, y) => `${x.kind}${x.name}`.localeCompare(`${y.kind}${y.name}`)),
+      [
+        { kind: "agent", name: "uno", count: 1 },
+        { kind: "connection", name: "ruta", count: 1 },
+        { kind: "connection", name: "suelto", count: 1 },
+        { kind: "instructions", name: "", count: 1 },
+      ],
+    );
+    assert.equal(out.removed, 4);
+    assert.ok(!JSON.stringify(out.removed_in).includes(secret));
+  } finally {
+    await a.core.close();
+    await a.cleanup();
+  }
+});
+
 test("el texto de instrucciones conserva lo que no es un dato de acceso", () => {
   const keep = [
     "Usa la variable FACTURAS_KEY (secret://FACTURAS_KEY) para entrar.",
@@ -358,6 +452,9 @@ test("el texto de instrucciones conserva lo que no es un dato de acceso", () => 
     "Pide la clave al cliente antes de seguir.",
     "Consulta https://docs.example.com/guia?page=2 y responde en menos de 24 horas.",
     "El pedido 2024-00017 va a la calle Mayor 12.",
+    "La clave es importante: el token de acceso lo da el cliente y la contraseña se cambia cada 90 días.",
+    "El modelo es claude-3-5-sonnet-20241022 y el token máximo son 4096.",
+    "Mira apps/core/src/domain/ProjectPackage2/readPackageFromDisk/index y packages/protocol/src/AppMethods.ts.",
   ].join("\n");
   assert.deepEqual(scrub(keep), { text: keep, removed: 0 });
   const dirty = scrub(

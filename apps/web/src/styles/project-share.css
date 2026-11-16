@@ -55,6 +55,33 @@
   color: var(--colonia-fg-muted);
   font-size: var(--colonia-text-sm);
 }
+.pshare__warn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--colonia-radius-md, 8px);
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
+  font-size: var(--colonia-text-sm);
+}
+.pshare__warn p {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+}
+.pshare__warn p > svg {
+  flex: none;
+  margin-top: 2px;
+}
+.pshare__warn summary {
+  cursor: pointer;
+}
+.pshare__warn ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
 .pshare__link {
   display: flex;
   gap: 8px;
