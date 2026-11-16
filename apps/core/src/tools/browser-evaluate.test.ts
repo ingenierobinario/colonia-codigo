@@ -12,7 +12,11 @@ import type { ToolContext } from "./types.ts";
 const origin = "https://example.com";
 function fixture(cwd = "") {
   const calls: unknown[] = [];
-  const store = { projects: { list: () => [] } } as unknown as Store;
+  // linkedProjects() reads the Flow links of the chat and its ancestors (2c79202b6).
+  const store = {
+    projects: { list: () => [], get: () => undefined },
+    threads: { context: () => ({}), get: () => undefined },
+  } as unknown as Store;
   const ctx = {
     agent: { id: "reader", autonomy: "total", rules: {} },
     thread: { id: "chat", cwd, reach: "fenced" },
