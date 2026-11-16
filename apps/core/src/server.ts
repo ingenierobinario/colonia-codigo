@@ -17,6 +17,8 @@ import { createAccess, type TailscaleRun } from "./access.ts";
 import { createProjectReader, type ReadProjectFiles } from "./apc/project-reader.ts";
 import { createApcSync } from "./apc/sync.ts";
 import type { TemplateRoot } from "./apc/templates.ts";
+import { applyPendingRestore } from "./backup/apply.ts";
+import { createBackup } from "./backup/service.ts";
 import { createBus } from "./bus.ts";
 import { discordAdapter } from "./channels/discord.ts";
 import { emailAdapter } from "./channels/email.ts";
@@ -232,6 +234,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const log = createLog("core", opts.quiet, opts.quiet ? undefined : coreLogSink(config.home));
   // Asked first: the owner's shell takes a moment to answer, and the first turn should already have it.
   useOwnerShell(config.supervised, { log });
+  // COPIA-COMPLETA-1: una restauración pendiente se cumple antes de que nadie abra la base.
+  applyPendingRestore(config.home, (msg) => log.warn({}, msg));
   const identity = readIdentity(config.home);
   const db = openDb(config.home);
   const bus = createBus();
@@ -779,6 +783,15 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
         addresses: () => reachableAt(config.host, listening, config.publicUrl),
         // Only a supervisor brings a stopped core back.
         restart: config.supervised ? opts.restart : undefined,
+      }),
+      backup: createBackup({
+        home: config.home,
+        db,
+        secrets,
+        version: identity.version,
+        homeId: identity.home_id,
+        restart: config.supervised ? opts.restart : undefined,
+        warn: (msg) => log.warn({}, msg),
       }),
       store,
       log,

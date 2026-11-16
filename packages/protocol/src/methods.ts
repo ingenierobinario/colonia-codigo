@@ -4,6 +4,7 @@ import { z } from "zod";
 import { appMethods } from "./app-methods.ts";
 import { artifactMethods } from "./artifact-methods.ts";
 import { asanaMethods } from "./asana-methods.ts";
+import { backupMethods } from "./backup-methods.ts";
 import { browserMethods } from "./browser.ts";
 import { desktopInstallMethods } from "./desktop-install.ts";
 import { deviceMethods } from "./device-methods.ts";
@@ -104,6 +105,7 @@ export const methods = {
   ...asanaMethods,
   ...deviceMethods,
   ...equiposMethods,
+  ...backupMethods,
   ...environmentMethods,
   ...flowMethods,
   ...tableMethods,

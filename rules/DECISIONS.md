@@ -3513,3 +3513,52 @@ password of at least 8 characters, or pairing is refused before the code is spen
 Limits: the persistent tray icon exists on Windows only (macOS and Linux get a system notification); macOS has no
 installed-programs entry beyond its background service; if the principal is offline when the laptop disconnects,
 its record stays until the owner revokes it; whoever holds the unlocked key or the password can sign.
+
+<a id="d-192"></a>
+## D-192 — 2026-11-16 — Colonia igual en dos equipos: copia completa cifrada hoy, sincronización directa entre equipos después
+**Fase 1, copia completa (hecha).** Ajustes › Copia y traslado escribe un único archivo `.colonia` cifrado con la
+contraseña de la persona (mínimo 8 caracteres) y lo restaura en otro equipo. Formato: una cabecera en claro mínima
+(versión, parámetros de scrypt, fecha, versión de Colonia) y, detrás, trozos de 1 MiB comprimidos y cifrados con
+AES-256-GCM; la clave sale de scrypt (N=32768, r=8, p=1), la cabecera va autenticada con cada trozo y el último
+trozo va marcado, así que un archivo cortado o tocado se rechaza. Los nombres de lo que lleva también van cifrados.
+Sin dependencias nuevas (`node:crypto`, `node:zlib`). La copia no viaja por el protocolo: se escribe y se lee en el
+disco del equipo donde corre Colonia, y `backup.*` solo da la orden y cuenta cómo va.
+
+Qué viaja se decide por EXCLUSIÓN (`backup/inventory.ts`): toda la carpeta de Colonia salvo lo que esa lista nombra,
+para que una carpeta nueva del núcleo entre sola en la copia. Viajan: la base entera (proyectos con su tipo y su
+orden, chats y mensajes, Flows, agentes, tareas, personas, rutinas, conocimiento y todos los ajustes: canales,
+navegadores, aplicaciones, proveedores de IA, cadena de modelos, modelo por defecto, apariencia), los ficheros de la
+carpeta (proyectos, adjuntos, estado de los canales que se puede llevar), las instrucciones y la configuración
+(`AGENTS.md`, `.apc/`) de los proyectos cuya carpeta está fuera, y todas las claves del almacén de secretos, dentro
+del archivo cifrado y nunca en claro.
+
+Qué NO viaja, y por qué: la sesión de WhatsApp, iMessage y Signal (atada al teléfono o al equipo: se vuelve a
+vincular, y la tarjeta lo dice con nombre); las sesiones iniciadas en los navegadores y aplicaciones (el navegador
+las cifra con una llave de ese equipo: viajan los navegadores y las aplicaciones con su configuración, y se vuelve a
+iniciar sesión); los archivos de trabajo de los proyectos cuya carpeta está fuera de la de Colonia; los modelos
+locales descargados y los programas instalados (se vuelven a descargar); el ordenador virtual; la identidad de la
+instalación, su dirección y su llave de acceso (`home-id`, `core.env`); la ficha y la llave de «Mis equipos» (D-190:
+cada equipo se empareja por sí mismo); los registros.
+
+Restaurar es en dos tiempos, porque la base está abierta: se comprueba la contraseña, se guarda una copia de lo que
+hay en este equipo (`copias/antes-de-restaurar-…`, misma contraseña) si hay algo que perder, se descifra a
+`.restaurar/`, las claves van directas al almacén del sistema de este equipo (nunca a disco en claro) y Colonia se
+reinicia; al arrancar, antes de abrir la base, `applyPendingRestore` cumple lo pendiente. Dos modos: «reemplazar»
+(queda exactamente lo de la copia) y «fusionar» (se añade lo que falta; en lo que coincide gana lo de este equipo:
+filas por identificador, listas de ajustes por `id`, ficheros y claves sin pisar). Las rutas guardadas se reescriben
+de la carpeta del equipo de origen a la de este, también entre Windows y macOS/Linux. Si restaurar falla, lo
+preparado se aparta y Colonia arranca con lo que tenía. Una copia hecha por un Colonia más nuevo se rechaza.
+
+**Fase 2, sincronización en vivo (diseño; no implementada).** Dos equipos del mismo dueño se emparejan con el
+mecanismo de D-190 (código de un uso, Ed25519 fijado, canal X25519 + HKDF + AES-256-GCM) y hablan directo entre sí
+por la red local o por la red privada que ya usa Colonia; no hay servidor nuestro en medio ni nada se guarda fuera
+de los dos equipos. Desactivada por defecto. Cada equipo lleva un diario de cambios por fila (tabla, id, reloj
+lógico híbrido, equipo) alimentado por disparadores, y los dos se intercambian lo que el otro no ha visto. Se
+sincroniza lo mismo que viaja en la copia; no se sincroniza lo que la copia tampoco lleva. Conflictos: el último que
+cambia gana por reloj lógico (el identificador del equipo desempata) y la versión que pierde se guarda en
+`sync_perdidas` para poder verla y recuperarla; los mensajes solo se añaden, así que no chocan. Las claves viajan
+por el mismo canal cifrado y cada equipo las guarda en su almacén. Los canales de sesión única (WhatsApp, iMessage,
+Signal) están activos en un solo equipo, el «principal»: el otro ve sus chats por la sincronización y envía a
+través de él; si el principal está apagado, los envíos esperan en su bandeja de salida. Cambiar de principal es un
+gesto explícito que pide volver a vincular. Lo que frena implementarla sin riesgo: los disparadores sobre todas las
+tablas y el arranque de canales condicionado al principal tocan el camino de cada escritura y de cada mensaje.

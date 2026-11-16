@@ -6,6 +6,7 @@ import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { BROWSER_CAP } from "@colonia/protocol";
+import type { Backup } from "./backup/service.ts";
 import type { Bus } from "./bus.ts";
 import type { CoreConfig } from "./config.ts";
 import { nativeApproval } from "./domain/approvals.ts";
@@ -36,6 +37,7 @@ import { accessHandlers } from "./rpc/access.ts";
 import { agentHandlers } from "./rpc/agents.ts";
 import { appHandlers } from "./rpc/app.ts";
 import { asanaHandlers } from "./rpc/asana.ts";
+import { backupHandlers } from "./rpc/backup.ts";
 import { browserHandlers } from "./rpc/browser.ts";
 import { channelHandlers } from "./rpc/channels.ts";
 import { clientHandlers } from "./rpc/clients.ts";
@@ -266,6 +268,8 @@ type HandlerDeps = {
   integrationFetch?: typeof fetch | undefined;
   /** The owner's shells in a chat's folder. */
   terminals: Parameters<typeof terminalHandlers>[1];
+  /** COPIA-COMPLETA-1: la copia completa de Colonia y su restauración. */
+  backup: Backup;
   /** What the computer has and what Colonia takes of it. */
   usage: Parameters<typeof usageHandlers>[0];
 };
@@ -311,6 +315,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...noticeHandlers(d.store, d.nudges),
     ...webAppHandlers(d.store, d.mcp, d.secrets),
     ...navegadorHandlers(d.store),
+    ...backupHandlers(d.backup),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),
