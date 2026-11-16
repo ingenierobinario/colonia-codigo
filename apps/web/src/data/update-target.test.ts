@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { updateTarget } from "./update-target.ts";
+import { packageCommandOf, updateTarget } from "./update-target.ts";
 
 const app = { current: "2.0.0", latest: "2.1.0", notes: [], install: "auto" as const };
 const core = { source: "release" as const, behind: 1, latest: "2.1.0", changes: [] };
@@ -16,4 +16,14 @@ test("local bundled Desktop still offers its app while a browser offers only its
   assert.equal(updateTarget({ ...core, source: "app" }, undefined, false, true), undefined);
   assert.deepEqual(updateTarget(core, undefined, false, false), { target: "core", version: "2.1.0" });
   assert.equal(updateTarget({ ...core, behind: 0 }, undefined, false, false), undefined);
+});
+
+test("a package install says its command only for the app's own downloaded update", () => {
+  const command = "sudo apt install '/home/ana/Downloads/Colonia-2.4.0-linux-amd64.deb'";
+  const app = { current: "2.3.0", latest: "2.4.0", notes: [], install: "drag" as const, command };
+  assert.equal(packageCommandOf(app, "app"), command);
+  assert.equal(packageCommandOf(app, "core"), undefined);
+  assert.equal(packageCommandOf({ ...app, install: "auto" }, "app"), undefined);
+  assert.equal(packageCommandOf({ ...app, command: undefined }, "app"), undefined);
+  assert.equal(packageCommandOf(undefined, "app"), undefined);
 });

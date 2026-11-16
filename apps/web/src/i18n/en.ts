@@ -231,6 +231,11 @@ export const en = {
   "update.dragDone":
     "The new Colonia opened in a window: drag it into Applications, replacing this one, and open it again.",
   "update.dragDoneLinux": "Colonia shows you the new file. Close Colonia and open it.",
+  "update.packageSteps":
+    "Your new Colonia is downloaded. To install it, quit Colonia, open a terminal and paste this command (it asks for your password):",
+  "update.packageCommand": "Command to install",
+  "update.packageCopy": "Copy",
+  "update.packageAfter": "Then open Colonia again.",
   "update.check": "Check again",
   "update.now": "Update now",
   "update.updating": "Updating. This can take a few minutes.",

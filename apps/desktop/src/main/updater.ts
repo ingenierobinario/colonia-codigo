@@ -45,6 +45,8 @@ export type DesktopUpdate = {
   downloading?: boolean | undefined;
   /** The newer Colonia, downloaded and checked: it goes in when Colonia restarts. */
   ready?: string | undefined;
+  /** UPDATE-PAQUETE-1 · Installed from a .deb or .rpm: the command that puts the downloaded package in. */
+  command?: string | undefined;
   checked_at?: string | undefined;
   error?: string | undefined;
 };
@@ -175,7 +177,12 @@ export function createDesktopUpdater(opts: {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const log = opts.logFile ? updateLog(opts.logFile) : () => {};
 
-  const current = (): DesktopUpdate => ({ ...status, downloading: Boolean(downloading), ready: staged?.version });
+  const current = (): DesktopUpdate => ({
+    ...status,
+    downloading: Boolean(downloading),
+    ready: staged?.version,
+    ...(pkgCommand ? { command: pkgCommand } : {}),
+  });
   const publish = () => opts.changed(current());
 
   async function check(): Promise<DesktopUpdate> {

@@ -355,3 +355,25 @@ test("a Colonia installed from a package is offered that package, never the AppI
   assert.equal(pickUpdate(feed, "2.3.0", "linux", "arm64", "deb")?.asset.name, "Colonia-2.4.0-linux-arm64.deb");
   assert.equal(pickUpdate(feed, "2.3.0", "linux", "arm64", "rpm")?.asset.name, "Colonia-2.4.0-linux-aarch64.rpm");
 });
+
+test("a Colonia installed from a .deb tells the panel the command that installs the downloaded package", async (t) => {
+  const deb = `Colonia-2.1.0-linux-${process.arch === "x64" ? "amd64" : "arm64"}.deb`;
+  const packaged = { tag_name: "v2.1.0", body: "- Better updates", assets: [asset(deb), asset(`${deb}.sha256`)] };
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.includes("/releases?")) return Response.json([packaged]);
+    return new Response(url.endsWith(".sha256") ? checksum : bytes);
+  });
+  const states: DesktopUpdate[] = [];
+  const updater = createDesktopUpdater({
+    changed: (status) => states.push(status),
+    quit: () => {},
+    linuxInstall: async () => "deb",
+  });
+  assert.equal((await updater.check()).command, undefined, "no command before the package is downloaded");
+  assert.deepEqual(await updater.install(), { ok: true, ready: false });
+  const command = `sudo apt install '${path.join(directory, deb)}'`;
+  assert.equal(updater.packageCommand(), command);
+  assert.equal(states.at(-1)?.command, command, "the same command the native menu says");
+  fs.rmSync(path.join(directory, deb));
+});

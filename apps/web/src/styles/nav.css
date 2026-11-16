@@ -868,6 +868,19 @@
 .update__note {
   margin: 0 0 8px;
 }
+.update__command {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  margin: 0 0 8px;
+}
+.update__command > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.update__command input {
+  font-family: var(--colonia-font-mono);
+}
 .update__log {
   max-height: 240px;
   margin: 0;

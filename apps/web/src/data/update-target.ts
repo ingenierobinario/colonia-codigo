@@ -19,3 +19,8 @@ export function updateTarget(
   if (coreBehind) return { target: "core", version: coreBehind.source === "git" ? undefined : coreBehind.latest };
   return undefined;
 }
+
+/** UPDATE-PAQUETE-1 · The command the owner types to put the downloaded package in (.deb/.rpm), once there is one. */
+export function packageCommandOf(app: DesktopUpdate | undefined, target: "core" | "app" | "both"): string | undefined {
+  return target === "app" && app?.install === "drag" ? app.command || undefined : undefined;
+}

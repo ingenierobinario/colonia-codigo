@@ -1,5 +1,7 @@
-import { Button, Dialog, Spinner } from "@colonia/ui";
+import { Button, Dialog, Icons, Input, Spinner } from "@colonia/ui";
+import { notify } from "../data/notices.ts";
 import { notesFor } from "../data/update-notes.ts";
+import { packageCommandOf } from "../data/update-target.ts";
 import { applyUpdate, closeUpdate, loadUpdates, restartApp, updatedByApp, useUpdates } from "../data/updates.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
 
@@ -25,6 +27,16 @@ export function UpdateDialog() {
   const drag = target === "app" && app?.install === "drag";
   const linux = window.coloniaDesktop?.platform === "linux";
   const byApp = updatedByApp(status, target);
+  // UPDATE-PAQUETE-1 · From a .deb or .rpm the new package goes in with one command: it is said here, ready to copy.
+  const command = phase === "ready" || phase === "done" ? packageCommandOf(app, target) : undefined;
+  const copyCommand = async () => {
+    try {
+      await navigator.clipboard.writeText(command ?? "");
+      notify(t("files.copied"), "info");
+    } catch {
+      notify(t("files.copyFailed"));
+    }
+  };
   const lead =
     target === "both"
       ? t("update.leadBoth", { v: app?.latest ?? app?.ready ?? "", current: app?.current ?? "" })
@@ -90,13 +102,25 @@ export function UpdateDialog() {
           )}
         </div>
       )}
-      {phase === "ready" && (
+      {command && (
+        <>
+          <p className="update__note">{t("update.packageSteps")}</p>
+          <div className="update__command">
+            <Input readOnly className="is-mono" aria-label={t("update.packageCommand")} value={command} />
+            <Button variant="secondary" leadingIcon={<Icons.Copy size={14} />} onClick={() => void copyCommand()}>
+              {t("update.packageCopy")}
+            </Button>
+          </div>
+          <p className="update__note">{t("update.packageAfter")}</p>
+        </>
+      )}
+      {phase === "ready" && !command && (
         <p className="update__note">
           {t(window.coloniaDesktop?.platform === "win32" ? "update.readyLaterMenu" : "update.readyLater")}
         </p>
       )}
       {phase === "stalled" && <p className="update__note">{t("update.restartStalled")}</p>}
-      {phase === "done" && <p className="update__note">{t(drag ? (linux ? "update.dragDoneLinux" : "update.dragDone") : "update.done")}</p>}
+      {phase === "done" && !command && <p className="update__note">{t(drag ? (linux ? "update.dragDoneLinux" : "update.dragDone") : "update.done")}</p>}
       {phase === "failed" && (
         <>
           <p className="update__note">{t("update.failed")}</p>

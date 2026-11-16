@@ -227,6 +227,11 @@ export const es: Partial<Record<MessageKey, string>> = {
   "update.dragDone":
     "Tu Colonia nueva se abrió en una ventana: arrástrala a Aplicaciones, reemplazando a esta, y ábrela de nuevo.",
   "update.dragDoneLinux": "Colonia te muestra el fichero nuevo. Cierra Colonia y ábrelo.",
+  "update.packageSteps":
+    "Tu Colonia nueva ya está descargada. Para instalarla, cierra Colonia, abre una terminal y pega esta orden (te pedirá tu contraseña):",
+  "update.packageCommand": "Orden para instalar",
+  "update.packageCopy": "Copiar",
+  "update.packageAfter": "Luego vuelve a abrir Colonia.",
   "update.check": "Volver a buscar",
   "update.now": "Actualizar ahora",
   "update.updating": "Actualizando. Puede tardar unos minutos.",

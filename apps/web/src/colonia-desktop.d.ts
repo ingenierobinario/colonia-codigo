@@ -50,6 +50,8 @@ export type DesktopUpdate = {
   downloading?: boolean;
   /** The newer app, downloaded and checked: it goes in when Colonia restarts. */
   ready?: string;
+  /** UPDATE-PAQUETE-1 · Installed from a .deb or .rpm: the command that puts the downloaded package in. */
+  command?: string;
   checked_at?: string;
   error?: string;
 };
