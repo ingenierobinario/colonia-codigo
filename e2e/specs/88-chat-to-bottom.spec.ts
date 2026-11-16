@@ -37,7 +37,8 @@ test("a contact's chat in its channel scrolls the same way, with the same button
   await until(async () => (await world.whatsapp.sentTo(nadia.phone)).length > 0);
   await page.setViewportSize({ width: 1024, height: 640 });
   await open(page);
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  // The channel in the nav: the Tree also has a "WhatsApp" group heading once another spec left chats there.
+  await page.getByRole("group", { name: "WhatsApp" }).getByRole("button", { name: "WhatsApp", exact: true }).click();
   await page.locator(".chan__rows").getByRole("button", { name: /Nadia/ }).click();
 
   const scroller = page.locator(".chan__msgs");
