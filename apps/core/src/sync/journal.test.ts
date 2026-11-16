@@ -267,3 +267,23 @@ test("al emparejar, lo que ya había se junta y manda el equipo que generó el c
   assert.equal(jb.lost().total, 1);
   assert.equal(ja.lost().total, 1);
 });
+
+test("los proyectos enlazados (D-191) viajan: de quién cuelga un proyecto, a cuáles conoce y qué lee un Flow", (t) => {
+  const { a, b, settle, tick } = pair(t);
+  project(a.db, "p-base", "Base");
+  project(a.db, "p-hijo", "Hijo");
+  insert(a.db, "flows", { id: "f-1", project_id: "p-hijo", name: "Flow" });
+  settle();
+  tick();
+  a.db.prepare("UPDATE projects SET parent = ?, knows = ? WHERE id = ?").run("p-base", '["p-base"]', "p-hijo");
+  a.db.prepare("UPDATE flows SET knowledge = ? WHERE id = ?").run('["p-base"]', "f-1");
+  settle();
+  assert.deepEqual(
+    { ...(b.db.prepare("SELECT parent, knows FROM projects WHERE id = ?").get("p-hijo") as object) },
+    { parent: "p-base", knows: '["p-base"]' },
+  );
+  assert.equal(
+    (b.db.prepare("SELECT knowledge FROM flows WHERE id = ?").get("f-1") as { knowledge: string }).knowledge,
+    '["p-base"]',
+  );
+});
