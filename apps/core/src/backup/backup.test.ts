@@ -11,6 +11,7 @@ import type { FlowGraph } from "@colonia/protocol/flow-graph";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { createSecrets } from "../secrets.ts";
 import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
+import { externalTarget } from "./apply.ts";
 import { inspectCopy } from "./restore.ts";
 
 type Env = Awaited<ReturnType<typeof startCore>>;
@@ -473,4 +474,17 @@ test("fusionar una copia añade lo que falta y no cambia lo que ya había", asyn
     await c.cleanup();
     await folder.remove();
   }
+});
+
+test("un proyecto de fuera con ruta de otro sistema se queda dentro de Colonia (TRASLADO-EXTERNO-1)", () => {
+  const win = process.platform === "win32";
+  const home = path.resolve("colonia-home");
+  const m = { fromHome: "/otro", toHome: home, fromUser: "/otro-u", toUser: "/u", fromWin: !win, toWin: win };
+  const foreign = win ? "/work/externo" : "C:\\work\\externo";
+  assert.equal(
+    externalTarget(home, { name: "Externo", path: foreign }, m),
+    path.join(home, "projects", "trasladado-Externo"),
+  );
+  const own = win ? "C:\\work\\externo" : "/work/externo";
+  assert.equal(externalTarget(home, { name: "Externo", path: own }, { ...m, fromWin: win }), own);
 });

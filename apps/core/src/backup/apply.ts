@@ -217,9 +217,12 @@ const moveOf = (home: string, from: Pending["from"]): Move => ({
 });
 
 /** Dónde queda en este equipo un proyecto cuya carpeta estaba fuera de la de Colonia. */
-function externalTarget(home: string, p: { name: string; path: string }, m: Move): string {
+export function externalTarget(home: string, p: { name: string; path: string }, m: Move): string {
   const moved = movePath(p.path, m);
-  if (path.isAbsolute(moved) && fs.existsSync(path.parse(moved).root)) return moved;
+  // En Windows «/work/x» también es absoluta (cuelga de la unidad actual), pero es de Linux o macOS: solo vale
+  // una ruta con letra de unidad o de red (TRASLADO-EXTERNO-1).
+  const native = m.toWin ? /^(?:[a-zA-Z]:[\\/]|\\\\)/.test(moved) : path.posix.isAbsolute(moved);
+  if (native && fs.existsSync(path.parse(moved).root)) return moved;
   // Una ruta de otro sistema o de un disco que aquí no existe: el proyecto se queda dentro de Colonia.
   const safe = p.name.replace(/[^\p{L}\p{N} ._-]+/gu, "-").slice(0, 60) || "proyecto";
   return path.join(home, "projects", `trasladado-${safe}`);
