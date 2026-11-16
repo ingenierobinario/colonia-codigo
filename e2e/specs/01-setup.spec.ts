@@ -23,21 +23,23 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await wizard.getByRole("button", { name: "Continuar" }).click();
 
   // Engines: the fake model is already the chain's first, and each entry says which of its engine's models it is.
-  await expect(wizard.getByText("custom/fake-1").first()).toBeVisible();
+  // The preview names them as the owner reads them, not by their refs (custom/fake-1 → ollama/gemma-e2e).
+  await expect(wizard.locator(".chain__item").first().getByRole("combobox")).toContainText("Fake 1");
   // v1's fallback came in with its Ollama, keyless.
-  await expect(wizard.getByText("ollama/gemma-e2e").first()).toBeVisible();
+  await expect(wizard.locator(".chain__item").nth(1).getByRole("combobox")).toContainText("Gemma E2e");
+  await expect(wizard.getByText("Fake 1 (Custom) → Gemma E2e", { exact: true })).toBeVisible();
   await expect(wizard.getByRole("combobox", { name: "Modelo" }).first()).toBeVisible();
   // Provider management works before leaving the wizard, including correcting a saved key.
   await wizard.getByRole("button", { name: "Otro servicio", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("textbox", { name: "Nombre", exact: true }).fill("Acme wizard");
-  await dialog.getByRole("textbox", { name: "URL base" }).fill("http://127.0.0.1:9/v1");
-  await dialog.getByRole("textbox", { name: "Clave de API" }).fill("example-wizard-key-1234");
+  await dialog.getByRole("textbox", { name: "Dirección del servicio" }).fill("http://127.0.0.1:9/v1");
+  await dialog.getByRole("textbox", { name: "Clave", exact: true }).fill("example-wizard-key-1234");
   await dialog.getByRole("button", { name: "Crear", exact: true }).click();
   const card = wizard.locator(".pcard").filter({ hasText: "Acme wizard" });
   await expect(card.getByText("****1234", { exact: true })).toBeVisible();
   await card.getByRole("button", { name: "Editar", exact: true }).click();
-  await dialog.getByRole("textbox", { name: "Clave de API" }).fill("example-wizard-key-5678");
+  await dialog.getByRole("textbox", { name: "Clave", exact: true }).fill("example-wizard-key-5678");
   await dialog.getByRole("button", { name: "Guardar", exact: true }).click();
   await expect(card.getByText("****5678", { exact: true })).toBeVisible();
   await card.getByRole("switch", { name: "Activo", exact: true }).click();
@@ -54,9 +56,9 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   // A provider that gets ready brings its everyday model to the chain by itself.
   await ollama.getByRole("switch").click();
   await expect(wizard.locator(".chain__item")).toHaveCount(2);
-  await expect(wizard.locator(".chain__item").last().getByRole("combobox")).toContainText("fake-1");
+  await expect(wizard.locator(".chain__item").last().getByRole("combobox")).toContainText("Fake 1");
   await wizard.locator(".chain__item").last().getByRole("button", { name: "Subir", exact: true }).click();
-  await expect(wizard.locator(".chain__item").first().getByRole("combobox")).toContainText("fake-1");
+  await expect(wizard.locator(".chain__item").first().getByRole("combobox")).toContainText("Fake 1");
   await wizard.locator(".chain__item").first().getByRole("button", { name: "Bajar", exact: true }).click();
 
   await wizard.getByRole("button", { name: "Continuar" }).click();
@@ -145,7 +147,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   // Another engine: "Test connection" says why an address does not answer, and lists the models of one that does.
   await wizard.getByRole("button", { name: "Añadir", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  const url = dialog.getByRole("textbox", { name: "URL base" });
+  const url = dialog.getByRole("textbox", { name: "Dirección del servicio" });
   await expect(url).toHaveValue("http://127.0.0.1:11434");
   await url.fill("http://127.0.0.1:65530");
   await dialog.getByRole("button", { name: "Probar conexión" }).click();

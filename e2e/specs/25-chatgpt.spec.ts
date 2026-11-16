@@ -38,7 +38,9 @@ test("the ChatGPT plan comes first as Codex, fixed, and connects with its own si
   await expect(groq).toContainText("Sin configurar");
   await groq.getByRole("button", { name: "Configurar" }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo proveedor" });
-  await expect(dialog.getByRole("textbox", { name: "URL base" })).toHaveValue("https://api.groq.com/openai/v1");
+  await expect(dialog.getByRole("textbox", { name: "Dirección del servicio" })).toHaveValue(
+    "https://api.groq.com/openai/v1",
+  );
   await dialog.getByRole("button", { name: "Cancelar" }).click();
   // A suggestion the owner does not want goes off the list.
   const mistral = settings.locator(".pcard.is-unset", { hasText: "Mistral" });

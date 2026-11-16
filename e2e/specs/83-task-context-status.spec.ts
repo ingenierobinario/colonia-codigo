@@ -139,8 +139,9 @@ test("task context actions keep status live and archived conversations remain re
   await expect(status.locator(".colonia-badge")).toHaveClass(/colonia-tone--brand/);
   await bundle.locator(".taskbundle__task").click({ button: "right" });
   await expect(page.getByRole("menuitem", { name: "Mover a", exact: true })).toBeDisabled();
+  // Reopening sends it back to pending (D-187), not to the column it was closed from.
   await page.getByRole("menuitem", { name: "Reabrir", exact: true }).click();
-  await expect(status).toHaveText("Revisión");
+  await expect(status).toHaveText("Para hacer");
   await bundle.getByRole("button", { name: "Acciones de la tarea" }).click();
   await page.getByRole("menuitem", { name: "Archivar chats de la tarea", exact: true }).click();
   await expect(bundle).toHaveCount(0);

@@ -158,7 +158,9 @@ export const test = base.extend<{
       );
     const errors: string[] = [];
     page.on("console", (m) => {
-      if (m.type() === "error" && !IGNORED.some((r) => r.test(m.text()))) errors.push(m.text());
+      // A logo that does not load says only "Failed to load resource": its address is in the location.
+      if (m.type() === "error" && !IGNORED.some((r) => r.test(m.text()) || r.test(m.location().url)))
+        errors.push(m.text());
     });
     page.on("pageerror", (e) => errors.push(`uncaught: ${e.message}`));
     page.on("response", (r) => {
