@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.37": {
+    en: [
+      "The first run now asks plain questions: is this your first time, or do you use it elsewhere?",
+      "Already using Colonia on another computer? Link both or restore a backup from the start.",
+      "The welcome title always reads clearly, and optional steps say: Skip, I'll do it later.",
+    ],
+    es: [
+      "El primer arranque hace preguntas llanas: ¿es tu primera vez o ya la usas en otro sitio?",
+      "¿Ya usas Colonia en otro ordenador? Enlaza los dos o recupera una copia desde el principio.",
+      "El titular de bienvenida siempre se lee bien y los pasos opcionales dicen: Saltar, lo haré luego.",
+    ],
+  },
   "2.36.36": {
     en: [
       "Connecting Telegram, Discord, Slack and other bots is now a guide, one step per screen.",
