@@ -11,6 +11,7 @@ import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { BOTS, type BotKind, botSecret, discordInvite, fieldSample, pasted, type TokenSpec } from "./botFields.ts";
+import { type GuideStep, guideOf } from "./botGuide.ts";
 import { botStart } from "./botStart.ts";
 import { Behavior, Deliveries, Notices, Pairing, People, STATUS } from "./ChannelParts.tsx";
 import { PublicAddress } from "./PublicAddress.tsx";
@@ -60,9 +61,11 @@ export function BotSection({ kind }: { kind: BotKind }) {
   // type": a second bot would have no screen, and connecting it would overwrite the first).
   const [selected, setSelected] = useState("");
   const [adding, setAdding] = useState(false);
+  // CANALES-FACIL-1: a stored account stays on its assistant until the check of its connection is over.
+  const [checkingId, setCheckingId] = useState("");
   const accounts = accountsOf(channels, kind);
   const found = pickAccount(accounts, selected);
-  const channel = adding ? undefined : found;
+  const channel = adding || (checkingId && found?.id === checkingId) ? undefined : found;
   // The id the next account takes: kept while its form is open, a new one for the account after it.
   const [newId, setNewId] = useState("");
   const nextId = newId || kind;
@@ -105,7 +108,9 @@ export function BotSection({ kind }: { kind: BotKind }) {
               kind={kind}
               id={nextId}
               ordinal={accounts.length + 1}
+              onSaved={() => setCheckingId(nextId)}
               onConnected={() => {
+                setCheckingId("");
                 setSelected(nextId);
                 setAdding(false);
               }}
@@ -154,12 +159,15 @@ function Setup({
   kind,
   id,
   ordinal,
+  onSaved,
   onConnected,
 }: {
   kind: BotKind;
   id: string;
   /** Which account of its kind this one will be: a second Slack app gets a name of its own. */
   ordinal: number;
+  /** The channel is stored: the screen stays on the assistant while the connection is checked. */
+  onSaved(): void;
   onConnected(): void;
 }) {
   const t = useT();
@@ -168,35 +176,60 @@ function Setup({
   const tokens = useTokens(kind, true);
   const [agent, setAgent] = useState(secretary?.id ?? SUPER_AGENT_ID);
   const [busy, setBusy] = useState(false);
-  const fields = tokens.specs.map((spec, i) => ({ spec, i }));
-  const main = fields.filter((f) => !f.spec.advanced);
-  const more = fields.filter((f) => f.spec.advanced);
-  // Discord: the bot's code is enough to build the link that adds it to a server.
-  const invite = kind === "discord" ? discordInvite(tokens.values[0] ?? "") : undefined;
-  const field = ({ spec, i }: (typeof fields)[number], last: boolean) => (
-    <div className="pform__field" key={spec.label}>
-      <span className="pform__label">{t(spec.label)}</span>
-      <TokenInput spec={spec} value={tokens.values[i] ?? ""} onChange={(v) => tokens.set(i, v)} />
-      {spec.pick && !tokens.values[i] && (
-        <div>
-          <Button
-            size="sm"
-            variant="ghost"
-            leadingIcon={<Icons.Copy size={14} />}
-            onClick={() =>
-              void navigator.clipboard
-                ?.readText()
-                .then((text) => tokens.set(i, text.trim()))
-                .catch(() => {})
-            }
-          >
-            {t("bot.paste")}
-          </Button>
-        </div>
-      )}
-      {last && <span className="pform__hint">{t("tg.tokenHint")}</span>}
-    </div>
-  );
+  // CANALES-FACIL-1: one step per screen, then the check of the connection.
+  const guide = guideOf(kind);
+  const [at, setAt] = useState(0);
+  const [checking, setChecking] = useState(false);
+  const saved = useChannels((s) => s.channels.find((c) => c.id === id));
+  const [waited, setWaited] = useState(false);
+  // A stored error from the try before is not this try's answer: the core gets a few seconds to start again.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!checking) return;
+    setWaited(false);
+    setSettled(false);
+    const timers = [setTimeout(() => setWaited(true), 30_000), setTimeout(() => setSettled(true), 3_000)];
+    return () => timers.forEach(clearTimeout);
+  }, [checking]);
+  const last = at >= guide.length;
+  const step = guide[at];
+  // A step can go on once the fields it asks for are valid (an empty optional one counts as its usual value).
+  const stepOk = (s: GuideStep | undefined) =>
+    !s?.fields ||
+    s.fields.every((i) => {
+      const spec = tokens.specs[i];
+      return !spec || botSecret([spec], [tokens.values[i] ?? ""]).ok;
+    });
+  const field = (i: number) => {
+    const spec = tokens.specs[i];
+    if (!spec) return null;
+    return (
+      <div className="pform__field" key={spec.label}>
+        <span className="pform__label">{t(spec.label)}</span>
+        <TokenInput spec={spec} value={tokens.values[i] ?? ""} onChange={(v) => tokens.set(i, v)} />
+        {spec.pick && !tokens.values[i] && (
+          <div>
+            <Button
+              size="sm"
+              variant="secondary"
+              leadingIcon={<Icons.Copy size={14} />}
+              onClick={() =>
+                void navigator.clipboard
+                  ?.readText()
+                  .then((text) => tokens.set(i, text.trim()))
+                  .catch(() => notify(t("guide.pasteBlocked"), "info"))
+              }
+            >
+              {t("guide.paste")}
+            </Button>
+          </div>
+        )}
+        {tokens.values[i] && !botSecret([spec], [tokens.values[i] ?? ""]).ok && (
+          <span className="pform__hint guide__bad">{t("guide.notValid")}</span>
+        )}
+      </div>
+    );
+  };
   const connect = async () => {
     setBusy(true);
     const ok = await saveChannel(
@@ -212,48 +245,154 @@ function Setup({
       tokens.joined,
     );
     setBusy(false);
-    if (ok) onConnected();
+    if (!ok) return;
+    onSaved();
+    setChecking(true);
+    setAt(guide.length);
   };
+  const copyText = (c: GuideStep["copy"]) => (typeof c === "object" ? (tokens.values[c.field] ?? "") : (c ?? ""));
+  const start = botStart(kind, ordinal);
+  const invite = kind === "discord" ? discordInvite(tokens.values[0] ?? "") : undefined;
+  const fieldsBefore = guide.findIndex((s) => s.fields?.length);
+  // Where "fix it" takes the owner back to: the step with the first field.
+  const fixAt = fieldsBefore >= 0 ? fieldsBefore : 0;
+  const status = saved?.status;
+  const done = checking && status === "running";
+  const failed = checking && settled && (status === "error" || (waited && status !== "running"));
   return (
-    <div className="tgsetup">
-      <ol className="tgsetup__steps">
-        {BOTS[kind].steps.map((k, i) => (
-          <li key={k}>
-            {t(k)}
-            {i === 0 && (
-              <div className="tgsetup__start">
-                <StartButton kind={kind} ordinal={ordinal} />
-              </div>
-            )}
-          </li>
+    <div className="tgsetup guide">
+      <div className="guide__progress" aria-hidden="true">
+        {[...guide.map((s) => s.text), "final"].map((k, i) => (
+          <span key={k} className={`guide__dot${i === at ? " is-on" : i < at ? " is-done" : ""}`} />
         ))}
-      </ol>
-      {main.map((f, n) => field(f, n === main.length - 1))}
-      {invite && (
-        <div>
-          <Button
-            size="sm"
-            variant="secondary"
-            leadingIcon={<Icons.ExternalLink size={14} />}
-            onClick={() => window.open(invite, "_blank", "noopener")}
-          >
-            {t("dc.invite")}
-          </Button>
+      </div>
+      {!last && step ? (
+        <div className="guide__step" key={at}>
+          <div className="guide__count">{t("guide.stepOf", { n: at + 1, total: guide.length + 1 })}</div>
+          <p className="guide__text">{t(step.text)}</p>
+          {step.open && (
+            <div>
+              <Button
+                variant="secondary"
+                leadingIcon={<Icons.ExternalLink size={14} />}
+                onClick={() => {
+                  const url = step.open === "start" ? start?.url : step.open?.url;
+                  if (url) window.open(url, "_blank", "noopener");
+                }}
+              >
+                {kind === "slack" && step.open === "start"
+                  ? t("sl.create")
+                  : t("bot.open", { site: step.open === "start" ? (start?.site ?? "") : step.open.site })}
+              </Button>
+            </div>
+          )}
+          {step.copy !== undefined && copyText(step.copy) && (
+            <div className="guide__copy">
+              <code>{copyText(step.copy)}</code>
+              <Button
+                size="sm"
+                variant="secondary"
+                leadingIcon={<Icons.Copy size={14} />}
+                onClick={() =>
+                  void navigator.clipboard
+                    ?.writeText(copyText(step.copy))
+                    .then(() => notify(t("guide.copied"), "info"))
+                    .catch(() => {})
+                }
+              >
+                {t("guide.copy")}
+              </Button>
+            </div>
+          )}
+          {step.fields?.filter((i) => !tokens.specs[i]?.advanced).map(field)}
+          {step.fields?.some((i) => tokens.specs[i]?.advanced) && (
+            <details className="tgsetup__more">
+              <summary>{t("bot.more")}</summary>
+              <div className="tgsetup__moreBody">{step.fields.filter((i) => tokens.specs[i]?.advanced).map(field)}</div>
+            </details>
+          )}
+          {step.invite &&
+            (invite ? (
+              <div>
+                <Button
+                  variant="secondary"
+                  leadingIcon={<Icons.ExternalLink size={14} />}
+                  onClick={() => window.open(invite, "_blank", "noopener")}
+                >
+                  {t("dc.invite")}
+                </Button>
+              </div>
+            ) : (
+              <span className="pform__hint">{t("guide.inviteLater")}</span>
+            ))}
+          {step.see && <p className="guide__see">{t(step.see)}</p>}
+        </div>
+      ) : (
+        <div className="guide__step">
+          <div className="guide__count">{t("guide.stepOf", { n: guide.length + 1, total: guide.length + 1 })}</div>
+          {!checking && (
+            <>
+              <p className="guide__text">{t("guide.final")}</p>
+              <SettingRow title={t("tg.agent")} description={t("tg.agentHint", { channel: BOTS[kind].name })}>
+                <AgentSelect size="sm" className="tgagent" value={agent} onChange={(a) => a && setAgent(a)} />
+              </SettingRow>
+              {!tokens.ok && <p className="guide__bad">{t("guide.missing")}</p>}
+            </>
+          )}
+          {checking && !done && !failed && (
+            <p className="guide__text" role="status">
+              {t("guide.checking")}
+            </p>
+          )}
+          {done && (
+            <p className="guide__ok" role="status">
+              <Icons.Check size={16} /> {t("guide.ok", { channel: BOTS[kind].name })}
+            </p>
+          )}
+          {failed && (
+            <div className="guide__fail" role="alert">
+              <p className="guide__bad">{t("guide.failed")}</p>
+              <ProblemLine error={saved?.error ?? "timed out"} />
+            </div>
+          )}
         </div>
       )}
-      {more.length > 0 && (
-        <details className="tgsetup__more">
-          <summary>{t("bot.more")}</summary>
-          <div className="tgsetup__moreBody">{more.map((f) => field(f, false))}</div>
-        </details>
-      )}
-      <SettingRow title={t("tg.agent")} description={t("tg.agentHint", { channel: BOTS[kind].name })}>
-        <AgentSelect size="sm" className="tgagent" value={agent} onChange={(id) => id && setAgent(id)} />
-      </SettingRow>
-      <div>
-        <Button disabled={!tokens.ok} loading={busy} onClick={() => void connect()}>
-          {t("tg.connect")}
-        </Button>
+      <div className="guide__nav">
+        {at > 0 && !done && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (failed) {
+                setChecking(false);
+                setAt(fixAt);
+              } else setAt(at - 1);
+            }}
+          >
+            {failed ? t("guide.fix") : t("guide.back")}
+          </Button>
+        )}
+        {!last && (
+          <Button disabled={!stepOk(step)} onClick={() => setAt(at + 1)}>
+            {t("guide.next")}
+          </Button>
+        )}
+        {last && !checking && (
+          <Button disabled={!tokens.ok} loading={busy} onClick={() => void connect()}>
+            {t("guide.connect")}
+          </Button>
+        )}
+        {failed && (
+          <Button
+            loading={busy}
+            onClick={() => {
+              setChecking(false);
+              void connect();
+            }}
+          >
+            {t("guide.retry")}
+          </Button>
+        )}
+        {done && <Button onClick={onConnected}>{t("guide.finish")}</Button>}
       </div>
     </div>
   );
