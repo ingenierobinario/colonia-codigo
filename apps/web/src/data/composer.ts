@@ -3,6 +3,7 @@ import type { ModelChoice } from "@colonia/protocol";
 import { UPLOAD_LIMITS } from "@colonia/protocol/client";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
+import { modelErrorText } from "./models.ts";
 import { chooseNewChatModel, isNewChat } from "./newChat.ts";
 import { notify } from "./notices.ts";
 import { data } from "./state.ts";
@@ -130,6 +131,6 @@ export async function setThreadModel(thread: string, choice: ModelChoice | null)
       return cur ? { threads: { ...s.threads, [thread]: { ...cur, model_choice: r.model_choice } } } : {};
     });
   } catch (e) {
-    notify(t("error.changeModel", { error: errText(e) }));
+    notify(t("error.changeModel", { error: modelErrorText(e) }));
   }
 }

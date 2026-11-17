@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { writeAtomic } from "../paths.ts";
 import { listField, parseFrontmatter } from "./frontmatter.ts";
-import { SLUG_RE, withoutBom } from "./read.ts";
+import { NATIVE_AGENT_APPS, SLUG_RE, withoutBom } from "./read.ts";
 
 export type AgentFileFields = {
   name?: string | undefined;
@@ -26,7 +26,19 @@ export type AgentFileFields = {
 };
 
 const agentsDir = (root: string) => path.join(root, ".apc", "agents");
-export const agentFile = (root: string, slug: string) => path.join(agentsDir(root), `${slug}.md`);
+/**
+ * ESCRITURA-EN-ORIGEN-1 · El fichero de un agente: el de `.apc/agents` y, si no lo hay pero el agente vive en la carpeta
+ * de otra app (`.claude/agents`, `.codex/agents`, `.agents/agents`), ese mismo: lo que Colonia cambia vuelve a su sitio.
+ */
+export const agentFile = (root: string, slug: string) => {
+  const apc = path.join(agentsDir(root), `${slug}.md`);
+  if (fs.existsSync(apc)) return apc;
+  for (const app of NATIVE_AGENT_APPS) {
+    const native = path.join(root, `.${app}`, "agents", `${slug}.md`);
+    if (fs.existsSync(native)) return native;
+  }
+  return apc;
+};
 
 const isLink = (p: string) => {
   try {
@@ -38,7 +50,11 @@ const isLink = (p: string) => {
 
 /** Refuses to write through a symlink: a repo must not be able to redirect Colonia's writes outside .apc/agents. */
 function guard(root: string, ...files: string[]): void {
-  for (const p of [path.join(root, ".apc"), agentsDir(root), ...files])
+  const native = files.flatMap((f) => {
+    const dir = path.dirname(f);
+    return path.basename(dir) === "agents" && dir !== agentsDir(root) ? [path.dirname(dir), dir] : [];
+  });
+  for (const p of [path.join(root, ".apc"), agentsDir(root), ...native, ...files])
     if (isLink(p)) throw new Error(`refusing to write through a symlink: ${path.relative(root, p)}`);
 }
 
@@ -150,19 +166,28 @@ export function updateAgentFile(root: string, slug: string, fields: AgentFileFie
 /** Renames the file and adds the old slug to its `aliases`, so references written elsewhere still resolve. */
 export function renameAgentFile(root: string, from: string, to: string): void {
   if (!SLUG_RE.test(to)) throw new Error(`invalid slug "${to}"`);
-  guard(root, agentFile(root, from), agentFile(root, to));
-  if (fs.existsSync(agentFile(root, to))) throw new Error(`an agent file already exists: .apc/agents/${to}.md`);
-  const known = listField(parseFrontmatter(fs.readFileSync(agentFile(root, from), "utf8")).fields.aliases);
+  const src = agentFile(root, from);
+  // Se renombra en la misma carpeta en la que vive.
+  const dest = path.join(path.dirname(src), `${to}.md`);
+  guard(root, src, dest);
+  if (fs.existsSync(dest) || fs.existsSync(agentFile(root, to)))
+    throw new Error(`an agent file already exists: ${path.relative(root, dest)}`);
+  const known = listField(parseFrontmatter(fs.readFileSync(src, "utf8")).fields.aliases);
   updateAgentFile(root, from, { aliases: [...new Set([...known, from])] });
-  fs.renameSync(agentFile(root, from), agentFile(root, to));
+  fs.renameSync(src, dest);
 }
 
 /** Moves the file out of the agents folder; nothing is deleted. */
 export function archiveAgentFile(root: string, slug: string): string {
-  guard(root, agentFile(root, slug));
-  const dest = path.join(agentsDir(root), ".archived", `${slug}-${new Date().toISOString().replace(/[:.]/g, "-")}.md`);
+  const src = agentFile(root, slug);
+  guard(root, src);
+  const dest = path.join(
+    path.dirname(src),
+    ".archived",
+    `${slug}-${new Date().toISOString().replace(/[:.]/g, "-")}.md`,
+  );
   fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.renameSync(agentFile(root, slug), dest);
+  fs.renameSync(src, dest);
   return path.relative(root, dest);
 }
 

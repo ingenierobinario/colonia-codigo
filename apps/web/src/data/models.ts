@@ -27,6 +27,23 @@ export function useModels<T>(select: (s: ModelsState) => T): T {
 }
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+/**
+ * ROUTER-CLAUDE-1: the core's refusal of a model, in the owner's language and without jargon; anything else as it came.
+ */
+export function modelErrorText(e: unknown, catalog: readonly CatalogEngine[] = models.get().catalog): string {
+  const raw = errText(e);
+  const label = (id: string) => catalog.find((x) => x.id === id)?.label ?? id.charAt(0).toUpperCase() + id.slice(1);
+  if (/switched off/i.test(raw)) return t("models.err.claudeOff");
+  let m = /^(\S+) (?:works|runs) only in its own (?:chats|sessions)/.exec(raw);
+  if (m?.[1]) return t("models.err.cliOnly", { engine: label(m[1]) });
+  m = /this chat is a (\S+) session/.exec(raw);
+  if (m?.[1]) return t("models.err.sessionOnly", { engine: label(m[1]) });
+  if (/^unknown engine/.test(raw)) return t("models.err.unknownEngine");
+  m = /^say which (\S+) model/.exec(raw);
+  if (m?.[1]) return t("models.err.pickModel", { engine: label(m[1]) });
+  return raw;
+}
 const missing = (e: unknown) => e instanceof ColoniaError && e.code === "unknown_method";
 
 let marks: Promise<void> | undefined;
@@ -79,7 +96,7 @@ export async function saveModelsConfig(patch: Partial<ModelsConfig>): Promise<bo
     models.set({ config: await client.call("models.set_config", patch) });
     return true;
   } catch (e) {
-    notify(t("error.change", { error: errText(e) }));
+    notify(t("error.change", { error: modelErrorText(e) }));
     return false;
   }
 }
@@ -90,7 +107,7 @@ export async function setAgentModelChoice(agent: string, choice: ModelChoice | n
     const next = await client.call("agents.update", { agent, model_choice: choice });
     data.set((s) => ({ agents: { ...s.agents, [next.id]: next } }));
   } catch (e) {
-    notify(t("error.changeModel", { error: errText(e) }));
+    notify(t("error.changeModel", { error: modelErrorText(e) }));
   }
 }
 
@@ -123,9 +140,11 @@ function shortRef(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
 
 /**
  * What agents, the router and a chat may run on: model APIs that answer now (the plans signed in from Colonia among
- * them). Claude Code, Codex and ACP agents run only in their own sessions (DECISIONS.md#d-043).
+ * them), and Claude with the owner's account while it is signed in and switched on (D-185, ROUTER-CLAUDE-1; an older
+ * core does not say: offered). Codex and ACP agents run only in their own sessions (DECISIONS.md#d-043).
  */
-export const forAgents = (e: CatalogEngine): boolean => (e.kind === "provider" || e.id === "claude") && e.available;
+export const forAgents = (e: CatalogEngine): boolean =>
+  (e.kind === "provider" || (e.id === "claude" && e.for_agents !== false)) && e.available;
 
 /** A reasoning effort as people read it ("high" → "Alto"); one this panel does not know, capitalised. */
 export function effortLabel(effort: string): string {

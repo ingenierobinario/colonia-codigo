@@ -139,12 +139,22 @@ export function appHandlers(deps: {
       secrets.set(project ? projectSecretName(project, name) : name, value);
       return { ok: true as const };
     },
-    "models.list": async ({ refresh }) => ({ engines: await deps.catalog.list(refresh) }),
+    "models.list": async ({ refresh }) => {
+      const engines = await deps.catalog.list(refresh);
+      if (!engines.some((e) => e.id === "claude" && e.available)) return { engines };
+      // ROUTER-CLAUDE-1: Claude with the account is offered to agents and the router only signed in and switched on.
+      if (refresh) claudeLinked.at = 0;
+      await refreshClaudeLinked();
+      const on = store.settings.read("claude_plan_enabled") && claudeLinked.on;
+      return { engines: engines.map((e) => (e.id === "claude" ? { ...e, for_agents: on } : e)) };
+    },
     "models.config": () => ({ default: models.defaultChoice(), router: models.router() }),
     "models.set_config": (p) => {
       const refs = [p.default?.model, ...(p.router?.chain ?? []), ...(p.router?.rules.map((r) => r.model) ?? [])];
       for (const ref of refs) {
-        const why = ref ? refProblem(ref, deps.engines) : undefined;
+        const why = ref
+          ? refProblem(ref, deps.engines, undefined, store.settings.read("claude_plan_enabled"))
+          : undefined;
         if (why) throw badRequest(why);
       }
       models.save(p);

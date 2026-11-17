@@ -491,3 +491,108 @@ test("el texto de instrucciones conserva lo que no es un dato de acceso", () => 
   const back = parsePackage(`  ${packageCode({ ...pkg, agents: [], skills: [], connections: [] })}\n`);
   assert.ok(back.ok && back.pkg.instructions === "hola");
 });
+
+test("SKILLS-AUTOCONTENIDO-1 · exportar lleva las skills del proyecto y las globales que usan sus agentes; importar no pisa las que ya hay", async () => {
+  const a = await boot();
+  const b = await boot();
+  const w = (root: string, rel: string, text: string) => {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), text);
+  };
+  try {
+    const { project } = await a.client.call("projects.create", { name: "Ventas Acme", kind: "company" });
+    const root = project.path ?? "";
+    seedProject(root);
+    w(root, ".apc/agents/tarifas.md", "---\nname: Tarifas\nskills: tarifas-acme\n---\nCalcula tarifas.\n");
+    w(root, ".claude/skills/guia-local/SKILL.md", "---\nname: guia-local\ndescription: Guía\n---\nLocal.\n");
+    w(a.home, "skills/tarifas-acme/SKILL.md", "---\nname: tarifas-acme\ndescription: Tarifas\n---\nDe A.\n");
+    w(a.home, "skills/tarifas-acme/tabla.md", "tabla\n");
+    w(a.home, "skills/sin-usar/SKILL.md", "---\nname: sin-usar\ndescription: Nadie la usa\n---\nNo.\n");
+    const out = await a.client.call("projects.export", { project: project.id });
+    const pkg = JSON.parse(out.content) as { skills: { folder: string; files: { path: string }[] }[] };
+    assert.deepEqual(pkg.skills.map((s) => s.folder).sort(), ["guia-local", "presupuestos", "tarifas-acme"]);
+    assert.ok(pkg.skills.find((s) => s.folder === "tarifas-acme")?.files.some((f) => f.path === "tabla.md"));
+
+    // En B ya hay una «tarifas-acme» distinta: no se pisa y se declara.
+    w(b.home, "skills/tarifas-acme/SKILL.md", "---\nname: tarifas-acme\ndescription: La de B\n---\nDe B.\n");
+    const got = await b.client.call("projects.import", { content: out.content, save: true, replace: false });
+    assert.deepEqual(got.skill_conflicts, [{ name: "tarifas-acme", reason: "different" }]);
+    assert.match(fs.readFileSync(path.join(b.home, "skills/tarifas-acme/SKILL.md"), "utf8"), /De B\./);
+    const dest = got.project?.path ?? "";
+    assert.ok(!fs.existsSync(path.join(dest, ".apc/skills/tarifas-acme")));
+    assert.ok(fs.existsSync(path.join(dest, ".apc/skills/guia-local/SKILL.md")));
+    assert.ok(fs.existsSync(path.join(dest, ".apc/skills/presupuestos/plantilla.md")));
+
+    // Un paquete de antes (sin las skills globales) se sigue importando igual.
+    const old = { ...JSON.parse(out.content), skills: [] };
+    const prev = await b.client.call("projects.import", {
+      content: JSON.stringify(old),
+      name: "Ventas Antiguo",
+      save: true,
+      replace: false,
+    });
+    assert.equal(prev.saved, true);
+    assert.equal(prev.skill_conflicts, undefined);
+  } finally {
+    await a.core.close();
+    await a.cleanup();
+    await b.core.close();
+    await b.cleanup();
+  }
+});
+
+test("RUTINAS-VIAJAN-1 · las rutinas viajan apagadas y sin órdenes de consola; la memoria no viaja", async () => {
+  const a = await boot();
+  const b = await boot();
+  try {
+    const { project } = await a.client.call("projects.create", { name: "Rutinas Acme", kind: "company" });
+    const root = project.path ?? "";
+    fs.mkdirSync(path.join(root, ".apc/agents"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".apc/agents/informes.md"), "---\nname: Informes\n---\nHaz informes.\n");
+    fs.writeFileSync(path.join(root, ".apc/memory.md"), "Nota privada del dueño.\n");
+    await a.client.call("projects.sync", { project: project.id });
+    const agent = a.core.store.agents.list().find((x) => x.project_id === project.id && x.slug === "informes");
+    assert.ok(agent);
+    const base = {
+      agent_id: agent.id,
+      project_id: project.id,
+      schedule: { kind: "cron" as const, cron: "0 9 * * 1-5" },
+      call_model: "always" as const,
+      enabled: true,
+      next_run_at: undefined,
+    };
+    a.core.store.routines.create({ ...base, name: "Parte diario", action: "agent", prompt: "Resume el día." });
+    a.core.store.routines.create({
+      ...base,
+      name: "Con consola",
+      action: "agent",
+      prompt: "x",
+      pre_command: "rm -rf .",
+    });
+    a.core.store.routines.create({ ...base, name: "Solo consola", action: "shell", prompt: "", pre_command: "ls" });
+    const out = await a.client.call("projects.export", { project: project.id });
+    assert.doesNotMatch(out.content, /rm -rf|Nota privada/);
+    const pkg = JSON.parse(out.content) as { organization?: { routines?: { name: string }[] } };
+    assert.deepEqual(
+      pkg.organization?.routines?.map((r) => r.name),
+      ["Parte diario"],
+    );
+
+    const got = await b.client.call("projects.import", { content: out.content, save: true, replace: false });
+    assert.equal(got.routines_off, 1);
+    const imported = b.core.store.routines.list(got.project?.id ?? "");
+    assert.deepEqual(
+      imported.map((r) => [r.name, r.enabled, r.pre_command ?? null, r.schedule]),
+      [["Parte diario", false, null, { kind: "cron", cron: "0 9 * * 1-5" }]],
+    );
+    // Importar otra vez encima no la duplica.
+    const again = await b.client.call("projects.import", { content: out.content, save: true, replace: true });
+    assert.equal(again.routines_off, undefined);
+    assert.equal(b.core.store.routines.list(got.project?.id ?? "").length, 1);
+  } finally {
+    await a.core.close();
+    await b.core.close();
+    await a.cleanup();
+    await b.cleanup();
+  }
+});

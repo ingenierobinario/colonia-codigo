@@ -254,6 +254,11 @@ export const CatalogEngine = z.object({
   fetched_at: z.string().optional(),
   /** A model API's everyday chat model: what the router chain gets when the owner adds this provider. */
   starter: z.string().optional(),
+  /**
+   * Whether agents, the router and the install default may run on it now: said for Claude with the owner's account
+   * (signed in and switched on, ROUTER-CLAUDE-1); absent elsewhere.
+   */
+  for_agents: z.boolean().optional(),
 });
 export type CatalogEngine = z.infer<typeof CatalogEngine>;
 

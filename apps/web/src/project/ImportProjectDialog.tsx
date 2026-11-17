@@ -134,6 +134,27 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
                 </ul>
               </section>
             )}
+            {(done.skill_conflicts?.length ?? 0) > 0 && (
+              <section className="pshare__card" data-testid="pshare-skill-conflicts">
+                <h3>{t("pshare.import.skillConflicts")}</h3>
+                <p>{t("pshare.import.skillConflictsBody")}</p>
+                <ul className="pshare__pending">
+                  {done.skill_conflicts?.map((c) => (
+                    <li key={c.name}>
+                      <strong>
+                        {c.reason === "reserved" ? t("pshare.import.skillReserved", { name: c.name }) : c.name}
+                      </strong>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {(done.routines_off ?? 0) > 0 && (
+              <section className="pshare__card" data-testid="pshare-routines-off">
+                <h3>{t("pshare.import.routinesOff", { count: done.routines_off ?? 0 })}</h3>
+                <p>{t("pshare.import.routinesOffBody")}</p>
+              </section>
+            )}
             {(done.unresolved?.length ?? 0) > 0 && (
               <UnresolvedLinks project={done.project} names={done.unresolved ?? []} />
             )}

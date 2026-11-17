@@ -11,7 +11,7 @@ import { isInside, realpath, tildeHome } from "../paths.ts";
 import { type RuntimeHomes, runtimes, shippedNames } from "./runtimes.ts";
 
 /** The other agent apps whose skills Colonia reads: `~/.<app>/skills`, and `.<app>/skills` inside a project. */
-export const APPS = ["claude", "codex", "cursor", "agents"] as const;
+export const APPS = ["claude", "codex", "cursor", "agents", "gemini"] as const;
 export type App = (typeof APPS)[number];
 
 export type Skill = {
@@ -107,7 +107,7 @@ function scan(
 }
 
 const NONE: ReadonlySet<string> = new Set();
-const appOf = (real: string) => /[\\/]\.(claude|codex|cursor|agents)[\\/]/.exec(real)?.[1] as App | undefined;
+const appOf = (real: string) => /[\\/]\.(claude|codex|cursor|agents|gemini)[\\/]/.exec(real)?.[1] as App | undefined;
 
 const isLink = (p: string) => {
   try {
@@ -154,7 +154,8 @@ export function allSkills(store: Store, roots: SkillRoots, projectId: string | u
           scope: "project",
           project_id: project.id,
           source,
-          own: source === "project",
+          // ESCRITURA-EN-ORIGEN-1 · Las del proyecto se editan en su sitio, vivan en `.apc` o en `.claude`/`.codex`…
+          own: true,
         })
       : [];
   // The other apps keep copies of the skills Colonia writes for them (runtimes.ts): those are Colonia's, not theirs.

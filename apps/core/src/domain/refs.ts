@@ -33,5 +33,14 @@ export const harnessOf = (ref: string): HarnessId => {
  */
 export const isCliRef = (ref: string): boolean => harnessOf(ref) !== "native";
 
+/**
+ * ROUTER-CLAUDE-1: whether agents, the router and the install default may name this ref: the model APIs, and Claude
+ * with the owner's account (it runs through their Claude Code, D-185). Codex and ACP agents stay in their own chats.
+ */
+export const agentUsableRef = (ref: string): boolean => {
+  const h = harnessOf(ref);
+  return h === "native" || h === "claude";
+};
+
 /** Which engines exist now: the agent CLIs found on this machine and the model APIs set up. */
 export type EngineIds = { harness: { has(id: string): boolean }; providers: { has(id: string): boolean } };

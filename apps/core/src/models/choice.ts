@@ -3,7 +3,7 @@
 // tries until one engine answers. Nothing here names a model: they all come from settings.
 import type { ModelChoice, ModelRef, RouterConfig, RouterRule } from "@colonia/protocol";
 import type { AgentRecord } from "../domain/agents.ts";
-import { type EngineIds, isCliRef, parseRef } from "../domain/refs.ts";
+import { agentUsableRef, type EngineIds, parseRef } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
 
 export type TurnFeatures = {
@@ -20,14 +20,14 @@ export function modelSettings(store: Store) {
     /** The install default. Before one was saved, the engine picked in Settings → Engines and models, with the router behind it. */
     defaultChoice(): ModelChoice {
       const saved = store.settings.read("model_default");
-      // A CLI saved before D-043 is not a default any more: the router decides.
-      if (saved) return saved.model && isCliRef(saved.model) ? { router: true } : saved;
+      // A CLI saved before D-043 is not a default any more: the router decides. Claude with the account is (ROUTER-CLAUDE-1).
+      if (saved) return saved.model && !agentUsableRef(saved.model) ? { router: true } : saved;
       return { router: true };
     },
     /** The router as saved, without the CLIs an older Colonia let it name (they run only in their own sessions). */
     router(): RouterConfig {
       const r = store.settings.read("model_router");
-      return { rules: r.rules.filter((x) => !isCliRef(x.model)), chain: r.chain.filter((x) => !isCliRef(x)) };
+      return { rules: r.rules.filter((x) => agentUsableRef(x.model)), chain: r.chain.filter(agentUsableRef) };
     },
     save(p: { default?: ModelChoice | undefined; router?: RouterConfig | undefined }): void {
       if (p.default) store.settings.write("model_default", p.default);
@@ -64,23 +64,21 @@ export function candidates(choice: ModelChoice, router: RouterConfig, f: TurnFea
   return [...new Set(out)];
 }
 
+/** CLAUDE-ACTIVO-1: the refusal when Claude with the account is switched off (the web shows it translated). */
+export const CLAUDE_OFF = "Claude with your account is switched off: turn it on in Settings › Engines and models";
+
 /**
  * Why a ref cannot run, or undefined when it can: the engine must exist, and a provider needs the model named
- * (only the CLIs have a default model of their own). A CLI runs only in its own sessions, and a session (`session`,
- * the CLI it belongs to) runs nothing else.
+ * (only the CLIs have a default model of their own). Claude with the owner's account runs anywhere an API model does,
+ * while it is switched on (ROUTER-CLAUDE-1); the other CLIs only in their own sessions, and a session (`session`, the
+ * CLI it belongs to) runs nothing else.
  */
-export function refProblem(
-  ref: string,
-  engines: EngineIds,
-  session?: string,
-  forAgent = false,
-): string | undefined {
+export function refProblem(ref: string, engines: EngineIds, session?: string, claudeOn = true): string | undefined {
   const { engine, model } = parseRef(ref);
   if (session) return engine === session ? undefined : `this chat is a ${session} session: it runs ${session} only`;
-  // D-185: an agent or its chat may run on the user's Claude Code; the router and the default may not.
-  if (forAgent && engine === "claude" && engines.harness.has(engine)) return undefined;
+  if (engine === "claude" && engines.harness.has(engine)) return claudeOn ? undefined : CLAUDE_OFF;
   if (engines.harness.has(engine))
-    return `${engine} runs only in its own sessions (Sessions › ${engine}); agents and the router use model APIs`;
+    return `${engine} works only in its own chats (Sessions › ${engine}), not in agents or the router`;
   if (!engines.providers.has(engine)) return `unknown engine "${engine}" in ${ref}`;
   if (!model) return `say which ${engine} model (${engine}/<model>)`;
   return undefined;

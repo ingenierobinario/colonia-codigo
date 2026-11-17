@@ -18,6 +18,8 @@ const fake = (id: "claude" | "codex"): Harness => ({
   id,
   async run(io) {
     seen.push({ harness: id, io, outside: io.outside() });
+    // Claude that cannot start (signed out, not installed): it fails before saying or doing anything.
+    if (String(io.input.content).includes("claude down")) throw new Error("claude: not signed in");
     // "probe [...]" asks the core about each of its own tool calls, as Claude Code's canUseTool does.
     // A delegated turn's words come framed as another agent's: the probe is the line that starts with it.
     const probe = /^probe (\[.*\])$/m.exec(String(io.input.content));
@@ -100,16 +102,14 @@ test("a Claude Code session runs there, with Colonia tools, cards, usage and its
   assert.equal(env.core.store.runs.steps(t.runs[0]?.id ?? "")[0]?.tool, "show_widget");
 });
 
-test("a CLI is never an agent's model, the router or the install default; one saved by an older Colonia is skipped", async () => {
+test("Claude with the account may be the router, the default and an agent's model; Codex may not (ROUTER-CLAUDE-1)", async () => {
   for (const bad of ["claude", "codex/gpt-x"]) {
     const asRouter = await env.client
-      .call("models.set_config", { router: { rules: [], chain: [bad] } })
+      .call("models.set_config", { router: { rules: [{ when: {}, model: bad }], chain: [bad] } })
       .catch((e: unknown) => e);
-    assert.ok(asRouter instanceof ColoniaError && /own sessions/.test(asRouter.message), bad);
     const asDefault = await env.client
       .call("models.set_config", { default: { model: bad, router: false } })
       .catch((e: unknown) => e);
-    assert.ok(asDefault instanceof ColoniaError && asDefault.code === "bad_request", bad);
     const asAgent = await env.client
       .call("agents.update", { agent: "superagent", model_choice: { model: bad, router: false } })
       .catch((e: unknown) => e);
@@ -117,18 +117,30 @@ test("a CLI is never an agent's model, the router or the install default; one sa
       .call("threads.model", { thread: "home", model_choice: { model: bad, router: false } })
       .catch((e: unknown) => e);
     if (bad === "claude") {
-      // D-185: an agent and its chat may run on the owner's Claude Code.
-      assert.ok(!(asAgent instanceof Error), "an agent may pick claude");
-      assert.ok(!(inChat instanceof Error), "a chat may pick claude");
+      for (const r of [asRouter, asDefault, asAgent, inChat]) assert.ok(!(r instanceof Error), String(r));
+      // Switched off, it is refused everywhere, in words without jargon.
+      env.core.store.settings.write("claude_plan_enabled", false);
+      for (const call of [
+        () => env.client.call("models.set_config", { router: { rules: [], chain: ["claude"] } }),
+        () =>
+          env.client.call("agents.update", {
+            agent: "superagent",
+            model_choice: { model: "claude/opus", router: false },
+          }),
+        () => env.client.call("threads.model", { thread: "home", model_choice: { model: "claude", router: false } }),
+      ])
+        await assert.rejects(call(), /switched off/);
+      env.core.store.settings.write("claude_plan_enabled", true);
+      await env.client.call("models.set_config", { default: { router: true }, router: { rules: [], chain: [] } });
       await env.client.call("agents.update", { agent: "superagent", model_choice: null });
       await env.client.call("threads.model", { thread: "home", model_choice: null });
       continue;
     }
-    assert.ok(asAgent instanceof ColoniaError && asAgent.code === "bad_request", bad);
-    assert.ok(inChat instanceof ColoniaError && inChat.code === "bad_request", bad);
+    for (const r of [asRouter, asDefault, asAgent, inChat])
+      assert.ok(r instanceof ColoniaError && r.code === "bad_request" && /own chats/.test(r.message), bad);
   }
-  // As an older Colonia saved them: the router and the default name CLIs; the turn runs on the model API behind them.
-  env.core.store.settings.write("model_default", { model: "claude", router: true });
+  // As an older Colonia saved them: the router and the default name Codex; the turn runs on the model API behind them.
+  env.core.store.settings.write("model_default", { model: "codex", router: true });
   env.core.store.settings.write("model_router", {
     rules: [{ when: {}, model: "codex" }],
     chain: ["codex", "fake/fake-1"],
@@ -143,6 +155,53 @@ test("a CLI is never an agent's model, the router or the install default; one sa
   assert.equal(seen.length, before_, "no CLI ran");
   assert.equal(texts(t.messages).at(-1), "native answer");
   assert.equal(t.runs[0]?.harness, "native");
+});
+
+test("the router's Claude runs the turn on Claude Code; off or unable to start, the next model answers", async () => {
+  await env.client.call("models.set_config", {
+    default: { router: true },
+    router: { rules: [], chain: ["claude/opus", "fake/fake-1"] },
+  });
+  const loose = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
+  let before_ = seen.length;
+  await env.client.call("threads.send", { thread: loose.id, text: "router claude" });
+  let t = await env.settle(loose.id);
+  assert.equal(seen.length, before_ + 1, "Claude Code ran");
+  assert.deepEqual(seen.at(-1)?.io.models, ["claude/opus"]);
+  assert.equal(t.runs[0]?.harness, "claude");
+  // #2 behind an API model: the API model answers, as before.
+  await env.client.call("models.set_config", { router: { rules: [], chain: ["fake/fake-1", "claude"] } });
+  before_ = seen.length;
+  await env.client.call("threads.send", { thread: loose.id, text: "api first" });
+  t = await env.settle(loose.id);
+  assert.equal(seen.length, before_);
+  assert.equal(t.runs[0]?.harness, "native");
+  // A rule that sends the turn to Claude.
+  await env.client.call("models.set_config", {
+    router: { rules: [{ when: { keywords: ["deep"] }, model: "claude/opus" }], chain: ["fake/fake-1"] },
+  });
+  before_ = seen.length;
+  await env.client.call("threads.send", { thread: loose.id, text: "think deep" });
+  t = await env.settle(loose.id);
+  assert.equal(seen.length, before_ + 1);
+  assert.equal(t.runs[0]?.harness, "claude");
+  // Claude cannot start: the API model behind it answers the same turn.
+  await env.client.call("models.set_config", { router: { rules: [], chain: ["claude", "fake/fake-1"] } });
+  before_ = seen.length;
+  await env.client.call("threads.send", { thread: loose.id, text: "claude down" });
+  t = await env.settle(loose.id);
+  assert.equal(seen.length, before_ + 1, "Claude was tried");
+  assert.equal(t.runs[0]?.harness, "native");
+  assert.equal(t.runs[0]?.state, "completed");
+  // Switched off: Claude is skipped.
+  env.core.store.settings.write("claude_plan_enabled", false);
+  before_ = seen.length;
+  await env.client.call("threads.send", { thread: loose.id, text: "off" });
+  t = await env.settle(loose.id);
+  assert.equal(seen.length, before_);
+  assert.equal(t.runs[0]?.harness, "native");
+  env.core.store.settings.write("claude_plan_enabled", true);
+  await env.client.call("models.set_config", { router: { rules: [], chain: ["fake/fake-1"] } });
 });
 
 test("an engine session runs its own CLI only: another engine's model is refused there", async () => {

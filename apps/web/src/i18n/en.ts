@@ -9,13 +9,13 @@ import { enEngines } from "./en-engines.ts";
 import { enFiles } from "./en-files.ts";
 import { enOffice } from "./en-office.ts";
 import type { EquipoKey } from "./equipos-en.ts";
-import type { SyncKey } from "./sync-en.ts";
 import type { enFlow } from "./flow-en.ts";
 import type { enIngress } from "./ingress-en.ts";
 import type { enMigrar } from "./migrar-en.ts";
 import type { ReceivedKey } from "./received-en.ts";
 import type { enScreens } from "./screens-en.ts";
 import type { enSecretary } from "./secretary-en.ts";
+import type { SyncKey } from "./sync-en.ts";
 import type { SysUsageKey } from "./sysusage-en.ts";
 import type { enThreadDialogs } from "./thread-dialogs-en.ts";
 
@@ -1422,6 +1422,12 @@ export const en = {
   "models.effortDefault": "Its default",
   "models.effortDefaultIs": "Default ({effort})",
   "models.engineDefault": "{engine} default",
+  "models.err.claudeOff": "Claude with your account is turned off. Turn it on in Settings › Engines and models.",
+  "models.err.cliOnly":
+    "{engine} works only in its own chats (Sessions › {engine}); agents and the router can't use it.",
+  "models.err.sessionOnly": "This chat belongs to {engine}: it can use {engine} models only.",
+  "models.err.unknownEngine": "That model is no longer available. Pick another one.",
+  "models.err.pickModel": "Pick which {engine} model to use.",
   "models.search": "Search models",
   "models.showAll": "Also show voice, image and embedding models",
   "models.noMatch": "No model matches.",
@@ -1588,6 +1594,8 @@ export const en = {
   "chat.clearConfirm": "Clear",
   "error.clear": "Could not clear the conversation: {error}",
   "notice.thread.cleared": "Conversation cleared · {time}",
+  "notice.run.failed.claudeOff":
+    "Could not answer: Claude with your account is turned off. Turn it on in Settings › Engines and models, or pick another model.",
   "memory.filter.forgotten": "Forgotten",
   "memory.lead.forgotten": "Notes you or an agent forgot. No agent sees them; bring one back or delete it for good.",
   "memory.empty.forgotten": "Nothing forgotten.",

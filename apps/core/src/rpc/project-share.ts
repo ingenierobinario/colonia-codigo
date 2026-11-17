@@ -4,7 +4,9 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { withoutBom } from "../apc/read.ts";
+import { Schedule } from "@colonia/protocol";
+import { parseFrontmatter, textField } from "../apc/frontmatter.ts";
+import { NATIVE_AGENT_APPS, projectInstructions, withoutBom } from "../apc/read.ts";
 import type { ApcSync } from "../apc/sync.ts";
 import { checkKnown, knownProjects } from "../domain/project-links.ts";
 import {
@@ -13,6 +15,7 @@ import {
   knownNames,
   PACKAGE_MAX,
   type PackageConnection,
+  type PackageRoutine,
   PROJECT_FORMAT,
   type ProjectPackage,
   packageCode,
@@ -22,12 +25,14 @@ import {
   sensitiveFile,
   summaryOf,
   withKnown,
+  withRoutines,
 } from "../domain/project-package.ts";
 import { publicProject } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { writeAtomic } from "../paths.ts";
 import { dropShared, putShared, sharedIndex, sharedToken } from "../shared-projects.ts";
+import { allSkills, type Skill, type SkillRoots } from "../skills/skills.ts";
 import { createProject } from "./app.ts";
 
 /**
@@ -109,11 +114,53 @@ export type Built = {
   skipped: number;
 };
 
+const FOLDER_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/;
+
+/**
+ * SKILLS-VIAJAN-1 · Las skills que el proyecto usa, en minúsculas: las que un agente pide en su `skills:` y las que
+ * las instrucciones o el texto de un agente nombran («usa la skill holcim-interface-tracker»). Un nombre corto o de
+ * una sola palabra común no cuenta por aparecer en el texto: solo si lleva guion, punto o barra baja, o va tras «skill».
+ */
+export function usedSkillNames(names: string[], texts: string[]): Set<string> {
+  const used = new Set<string>();
+  const listed = texts.flatMap((t) => {
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(t)?.[1] ?? "";
+    const line = /^skills\s*:\s*(.*)$/im.exec(fm);
+    if (!line) return [];
+    const rest = fm.slice(fm.indexOf(line[0]) + line[0].length);
+    const items = (line[1] ?? "").replace(/^\[|\]$/g, "").split(",");
+    for (const m of rest.matchAll(/^\s*-\s*(.+)$/gm)) items.push(m[1] ?? "");
+    return items
+      .map((x) =>
+        x
+          .trim()
+          .replace(/^["']|["']$/g, "")
+          .toLowerCase(),
+      )
+      .filter(Boolean);
+  });
+  const all = texts.join("\n").toLowerCase();
+  for (const raw of names) {
+    const name = raw.toLowerCase();
+    if (listed.includes(name)) {
+      used.add(name);
+      continue;
+    }
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const word = new RegExp(`(?<![a-z0-9_.-])${esc}(?![a-z0-9_-])`);
+    const named = new RegExp(`skills?\\W{1,3}${esc}(?![a-z0-9_-])|${esc}\\W{1,3}skill`);
+    if ((/[-_.]/.test(name) && name.length >= 4 && word.test(all)) || named.test(all)) used.add(name);
+  }
+  return used;
+}
+
 /** El proyecto de `root` como paquete. Solo lee lo que viaja: nunca la memoria, los chats ni los valores de nada. */
 export function buildPackage(
   root: string,
   meta: { name: string; description?: string | undefined; kind?: ProjectPackage["project"]["kind"] | undefined },
   now: Date,
+  /** SKILLS-VIAJAN-1 · Las skills que ve el proyecto (allSkills): de aquí salen las de otras carpetas y las globales que usa. */
+  visible?: Skill[],
 ): Built {
   let removed = 0;
   let skipped = 0;
@@ -132,37 +179,64 @@ export function buildPackage(
   };
   const apc = path.join(root, ".apc");
   const inApc = !isLink(apc);
-  const instructions = isLink(path.join(root, "AGENTS.md"))
-    ? ""
-    : clean(textOf(path.join(root, "AGENTS.md")) ?? "", "instructions");
+  const fileText = (name: string) => (isLink(path.join(root, name)) ? undefined : textOf(path.join(root, name)));
+  // AGENTES-NATIVOS-1 · El CLAUDE.md viaja dentro de las instrucciones: quien importa solo recibe AGENTS.md.
+  const instructions = clean(
+    projectInstructions((f) => (isLink(path.join(root, path.dirname(f))) ? undefined : fileText(f)), root) ?? "",
+    "instructions",
+  );
 
+  // Los de `.apc/agents` y, con el slug libre, los de `.claude/agents`, `.codex/agents` y `.agents/agents`.
   const agents: ProjectPackage["agents"] = [];
-  if (inApc && !isLink(path.join(apc, "agents")))
-    for (const rel of walk(path.join(apc, "agents"))) {
+  const agentDirs = [
+    ...(inApc ? [path.join(apc, "agents")] : []),
+    ...NATIVE_AGENT_APPS.filter((app) => !isLink(path.join(root, `.${app}`))).map((app) =>
+      path.join(root, `.${app}`, "agents"),
+    ),
+  ];
+  for (const dir of agentDirs) {
+    if (isLink(dir)) continue;
+    for (const rel of walk(dir)) {
       const slug = /^([a-z][a-z0-9_-]{0,80})\.md$/.exec(rel)?.[1];
-      const text = slug ? textOf(path.join(apc, "agents", rel)) : undefined;
+      if (slug && agents.some((a) => a.slug === slug)) continue;
+      const text = slug ? textOf(path.join(dir, rel)) : undefined;
       if (slug && text !== undefined) agents.push({ slug, text: clean(text, "agent", slug) });
-      else skipped++;
+      else if (dir === path.join(apc, "agents")) skipped++;
     }
+  }
 
+  // SKILLS-VIAJAN-1 · Una skill viaja con sus ficheros: las del proyecto (`.apc/skills`, y en su sitio `.claude/skills`…)
+  // y las globales que el proyecto usa. Sin la lista de skills visibles (pruebas antiguas), solo `.apc/skills`.
   const skills: ProjectPackage["skills"] = [];
+  const pack = (folder: string, dir: string, allowLink = false) => {
+    if (!FOLDER_RE.test(folder) || skills.some((s) => s.folder === folder) || (!allowLink && isLink(dir))) return;
+    const files: { path: string; text: string }[] = [];
+    for (const rel of walk(dir)) {
+      const ok = /^[A-Za-z0-9_][A-Za-z0-9._ -]*(\/[A-Za-z0-9_][A-Za-z0-9._ -]*)*$/.test(rel) && rel.length <= 200;
+      const text = ok && !sensitiveFile(rel) && files.length < 60 ? textOf(path.join(dir, rel)) : undefined;
+      if (text === undefined) skipped++;
+      else files.push({ path: rel, text: clean(text, "skill", folder) });
+    }
+    if (files.some((x) => x.path === "SKILL.md")) skills.push({ folder, files });
+  };
   const skillsDir = path.join(apc, "skills");
   if (inApc && !isLink(skillsDir)) {
     let folders: fs.Dirent[] = [];
     try {
       folders = fs.readdirSync(skillsDir, { withFileTypes: true });
     } catch {}
-    for (const f of folders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
-      if (!f.isDirectory() || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/.test(f.name)) continue;
-      const files: { path: string; text: string }[] = [];
-      for (const rel of walk(path.join(skillsDir, f.name))) {
-        const ok = /^[A-Za-z0-9_][A-Za-z0-9._ -]*(\/[A-Za-z0-9_][A-Za-z0-9._ -]*)*$/.test(rel) && rel.length <= 200;
-        const text =
-          ok && !sensitiveFile(rel) && files.length < 60 ? textOf(path.join(skillsDir, f.name, rel)) : undefined;
-        if (text === undefined) skipped++;
-        else files.push({ path: rel, text: clean(text, "skill", f.name) });
-      }
-      if (files.some((x) => x.path === "SKILL.md")) skills.push({ folder: f.name, files });
+    for (const f of folders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
+      if (f.isDirectory()) pack(f.name, path.join(skillsDir, f.name));
+  }
+  if (visible) {
+    const used = usedSkillNames(
+      visible.filter((s) => s.source !== "colonia").map((s) => s.name),
+      [instructions, ...agents.map((a) => a.text)],
+    );
+    for (const s of visible) {
+      if (s.source === "colonia" || (s.scope !== "project" && !used.has(s.name.toLowerCase()))) continue;
+      const folder = FOLDER_RE.test(s.name) ? s.name : path.basename(s.dir);
+      pack(folder, s.dir, s.scope === "global");
     }
   }
 
@@ -227,11 +301,13 @@ function writeInside(root: string, rel: string, text: string): void {
 }
 
 /** Vuelca el paquete en la carpeta de un proyecto. Lo que ya había con otro nombre se queda como estaba. */
-export function writePackage(root: string, pkg: ProjectPackage): string[] {
+export function writePackage(root: string, pkg: ProjectPackage, skipSkills: ReadonlySet<string> = new Set()): string[] {
   const kept: string[] = [];
   writeInside(root, "AGENTS.md", pkg.instructions.trim() ? pkg.instructions : `# ${pkg.project.name}\n`);
   for (const a of pkg.agents) writeInside(root, `.apc/agents/${a.slug}.md`, a.text);
-  for (const s of pkg.skills) for (const f of s.files) writeInside(root, `.apc/skills/${s.folder}/${f.path}`, f.text);
+  for (const s of pkg.skills)
+    if (!skipSkills.has(s.folder))
+      for (const f of s.files) writeInside(root, `.apc/skills/${s.folder}/${f.path}`, f.text);
   // Los enlaces (`knows`) no son del organigrama: se resuelven al importar y nunca llegan a este fichero.
   const { areas = [], roles = [] } = pkg.organization ?? {};
   if (areas.length + roles.length)
@@ -274,6 +350,53 @@ export function writePackage(root: string, pkg: ProjectPackage): string[] {
     writeInside(root, ".apc/mcps.json", `${JSON.stringify({ ...doc, mcpServers: servers }, null, 2)}\n`);
   }
   return kept;
+}
+
+/** El nombre de una skill del paquete: el `name:` de su SKILL.md, o su carpeta. */
+const skillNameOf = (s: ProjectPackage["skills"][number]) => {
+  const md = s.files.find((f) => f.path === "SKILL.md")?.text ?? "";
+  try {
+    return textField(parseFrontmatter(md).fields.name) ?? s.folder;
+  } catch {
+    return s.folder;
+  }
+};
+
+export type SkillConflict = { name: string; reason: "different" | "reserved" };
+
+/**
+ * SKILLS-VIAJAN-1 · Qué skills del paquete NO se escriben en el proyecto de destino, porque pisarían una que ya está:
+ * una con ese nombre que se ve desde ahí (global, de otra app o del proyecto) y dice otra cosa es un conflicto
+ * declarado; si dice lo mismo, ya está y no hace falta. Solo la propia `.apc/skills/<carpeta>` del proyecto que se
+ * reemplaza se sobrescribe, como siempre.
+ */
+export function skillPlan(
+  pkg: ProjectPackage,
+  root: string,
+  visible: Skill[],
+): { skip: Set<string>; conflicts: SkillConflict[]; same: string[] } {
+  const skip = new Set<string>();
+  const conflicts: SkillConflict[] = [];
+  const same: string[] = [];
+  const own = (dir: string, folder: string) => path.resolve(dir) === path.resolve(root, ".apc", "skills", folder);
+  for (const s of pkg.skills) {
+    const name = skillNameOf(s);
+    const there = visible.find((v) => v.name.toLowerCase() === name.toLowerCase());
+    if (!there || own(there.dir, s.folder)) continue;
+    skip.add(s.folder);
+    if (there.source === "colonia") {
+      conflicts.push({ name, reason: "reserved" });
+      continue;
+    }
+    let mine: string | undefined;
+    try {
+      mine = withoutBom(fs.readFileSync(path.join(there.dir, "SKILL.md"), "utf8"));
+    } catch {}
+    const theirs = s.files.find((f) => f.path === "SKILL.md")?.text;
+    if (mine !== undefined && mine.replace(/\r\n/g, "\n") === theirs?.replace(/\r\n/g, "\n")) same.push(name);
+    else conflicts.push({ name, reason: "different" });
+  }
+  return { skip, conflicts, same };
 }
 
 /** Lo que una conexión importada necesita antes de funcionar. */
@@ -328,9 +451,43 @@ export function projectShareHandlers(deps: {
   clock?: () => Date;
   /** Cómo se baja un enlace; las pruebas ponen el suyo. */
   fetch?: LinkFetch;
+  /** SKILLS-VIAJAN-1 · Dónde se buscan las skills (las de Colonia y las de las otras apps); por defecto, solo las de Colonia. */
+  skillRoots?: SkillRoots;
 }) {
   const { store, home } = deps;
+  const roots: SkillRoots = deps.skillRoots ?? { home };
   const now = () => deps.clock?.() ?? new Date();
+  /**
+   * RUTINAS-VIAJAN-1 · Las rutinas del proyecto con su agente, sin órdenes de consola. Una que necesita consola
+   * (pre/post o de tipo shell, watch, relay) no viaja: cuenta como dejada fuera.
+   */
+  const routinesOf = (projectId: string, b: Built): PackageRoutine[] =>
+    store.routines.list(projectId).flatMap((r) => {
+      const agent = store.agents.get(r.agent_id);
+      if (
+        agent?.project_id !== projectId ||
+        !agent.slug ||
+        (r.action !== "agent" && r.action !== "message") ||
+        r.pre_command ||
+        r.post_command
+      ) {
+        b.skipped++;
+        return [];
+      }
+      const c = scrub(r.prompt);
+      b.removed += c.removed;
+      return [
+        {
+          name: r.name.slice(0, 120),
+          agent: agent.slug,
+          schedule: r.schedule,
+          action: r.action,
+          prompt: c.text,
+          call_model: r.call_model,
+          ...(r.max_steps ? { max_steps: r.max_steps } : {}),
+        },
+      ];
+    });
   const built = (id: string): Built & { id: string } => {
     const p = store.projects.get(id);
     if (!p) throw notFound(`project ${id}`);
@@ -339,10 +496,12 @@ export function projectShareHandlers(deps: {
       p.path,
       { name: p.name, description: p.description ?? undefined, kind: KINDS.find((k) => k === p.kind) },
       now(),
+      allSkills(store, roots, p.id),
     );
     // PROYECTOS-ENLAZADOS-1 · De los proyectos que conoce viaja el nombre, nunca lo que guardan.
     const knows = knownProjects(store, { project_id: p.id }).map((k) => k.name.slice(0, 80));
     b.pkg = withKnown(b.pkg, knows);
+    b.pkg = withRoutines(b.pkg, routinesOf(p.id, b));
     if (renderPackage(b.pkg).length > PACKAGE_MAX)
       throw badRequest("this project is too large to share: its skills hold more text than fits");
     return { ...b, id: p.id };
@@ -407,9 +566,11 @@ export function projectShareHandlers(deps: {
         throw badRequest(`the project named ${pkg.project.name} has no folder on disk; import it under another name`);
       let id: string;
       let kept: string[] = [];
+      let plan: ReturnType<typeof skillPlan> | undefined;
       try {
         if (same?.path) {
-          kept = writePackage(same.path, pkg);
+          plan = skillPlan(pkg, same.path, allSkills(store, roots, same.id));
+          kept = writePackage(same.path, pkg, plan.skip);
           id = same.id;
         } else {
           const made = createProject(deps.apc, home, {
@@ -420,7 +581,8 @@ export function projectShareHandlers(deps: {
           id = made.project;
           const root = store.projects.get(id)?.path;
           if (!root) throw new Error("the project's folder could not be made");
-          writePackage(root, pkg);
+          plan = skillPlan(pkg, root, allSkills(store, roots, id));
+          writePackage(root, pkg, plan.skip);
         }
         deps.apc.sync(id);
       } catch (err) {
@@ -429,6 +591,28 @@ export function projectShareHandlers(deps: {
       // PROYECTOS-ENLAZADOS-1 · Se enlaza con los proyectos de aquí que se llamen igual; el resto queda sin resolver.
       const links = resolveKnown(store, id, knownNames(pkg));
       if (links.found.length) store.projects.setLinks(id, { knows: links.found });
+      // RUTINAS-VIAJAN-1 · Las rutinas llegan apagadas; una con el mismo nombre en el proyecto no se duplica.
+      let routinesOff = 0;
+      const have = new Set(store.routines.list(id).map((r) => r.name.toLowerCase()));
+      for (const r of pkg.organization?.routines ?? []) {
+        const agent = store.agents.list().find((a) => a.project_id === id && a.slug === r.agent);
+        const schedule = Schedule.safeParse(r.schedule);
+        if (!agent || !schedule.success || have.has(r.name.toLowerCase())) continue;
+        store.routines.create({
+          name: r.name,
+          agent_id: agent.id,
+          project_id: id,
+          schedule: schedule.data,
+          action: r.action,
+          prompt: r.prompt,
+          call_model: r.call_model ?? "always",
+          max_steps: r.max_steps,
+          enabled: false,
+          next_run_at: undefined,
+        });
+        have.add(r.name.toLowerCase());
+        routinesOff++;
+      }
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
       // Lo que ya tenía sus datos no vuelve a salir como «falta conectar».
@@ -439,6 +623,8 @@ export function projectShareHandlers(deps: {
         saved: true,
         project: publicProject(project),
         ...(links.missing.length ? { unresolved: links.missing } : {}),
+        ...(plan?.conflicts.length ? { skill_conflicts: plan.conflicts } : {}),
+        ...(routinesOff ? { routines_off: routinesOff } : {}),
       };
     },
   };

@@ -50,8 +50,6 @@ import { emailSignatureHandlers } from "./rpc/email-signatures.ts";
 import { embeddingHandlers } from "./rpc/embeddings.ts";
 import { environmentHandlers } from "./rpc/environments.ts";
 import { type EquiposDeps, equiposHandlers } from "./rpc/equipos.ts";
-import { syncHandlers } from "./rpc/sync.ts";
-import type { Sync } from "./sync/service.ts";
 import { extensionHandlers } from "./rpc/extensions.ts";
 import { fileHandlers } from "./rpc/files.ts";
 import { flowHandlers } from "./rpc/flows.ts";
@@ -75,6 +73,7 @@ import { runHandlers } from "./rpc/runs.ts";
 import { sessionHandlers } from "./rpc/sessions.ts";
 import { setupHandlers } from "./rpc/setup.ts";
 import { artifactHandlers } from "./rpc/surfaces.ts";
+import { syncHandlers } from "./rpc/sync.ts";
 import { newsHandlers, systemHandlers, telemetryHandlers, updateHandlers, usageHandlers } from "./rpc/system.ts";
 import { taskHandlers } from "./rpc/tasks.ts";
 import { teamHandlers } from "./rpc/team.ts";
@@ -88,6 +87,7 @@ import type { Secrets } from "./secrets.ts";
 import { saveUpload } from "./services/uploads.ts";
 import type { RuntimeHomes } from "./skills/runtimes.ts";
 import { storedPublicPages } from "./surface-pages.ts";
+import type { Sync } from "./sync/service.ts";
 import type { Telemetry } from "./telemetry.ts";
 import { agentSetTools } from "./tools/agent-set.ts";
 import { agentTools } from "./tools/agents.ts";
@@ -357,7 +357,12 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       mcp: d.mcp.config,
       runtimeHomes: d.runtimeHomes,
     }),
-    ...projectShareHandlers({ store: d.store, home: d.app.home, apc: d.apc }),
+    ...projectShareHandlers({
+      store: d.store,
+      home: d.app.home,
+      apc: d.apc,
+      skillRoots: { home: d.app.home, apps: d.runtimeHomes },
+    }),
     ...providerHandlers(d.providers, d.secrets, d.chatgpt),
     ...app,
     "projects.create": (p: Parameters<(typeof app)["projects.create"]>[0], ctx: CallContext) => {
@@ -421,7 +426,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       scopeOf: (caller) => d.permissions.forCaller(caller),
       locate: (thread, file) => d.permissions.path(thread, file),
       services: d.services,
-      checkModel: (ref, session) => refProblem(ref, d.engines, session, true),
+      checkModel: (ref, session) => refProblem(ref, d.engines, session, d.store.settings.read("claude_plan_enabled")),
     }),
   };
 }
