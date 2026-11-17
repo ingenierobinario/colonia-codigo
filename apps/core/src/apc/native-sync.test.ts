@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
+import { buildPackage } from "../rpc/project-share.ts";
 import { tempDir, waitFor } from "../testkit/platform.ts";
 import { readAgents, readProject } from "./read.ts";
 
@@ -81,6 +82,60 @@ test("la carpeta manda: crear, cambiar y borrar un agente en .claude/agents se v
     });
     assert.match(fs.readFileSync(path.join(root, ".claude/skills/despliegue/SKILL.md"), "utf8"), /Pasos nuevos/);
     assert.ok(!fs.existsSync(path.join(root, ".apc/skills/despliegue")));
+  } finally {
+    await env.core.close();
+    await env.cleanup();
+  }
+});
+
+test("CURSOR-GEMINI-1 · las reglas de Cursor y el GEMINI.md de .gemini son instrucciones; los agentes de .gemini se leen y viajan", async () => {
+  await using dir = tempDir("colonia-cursor-gemini-");
+  const root = dir.path;
+  w(root, ".cursorrules", "Usa tabuladores.\n");
+  w(root, ".cursor/rules/estilo.mdc", "---\ndescription: estilo\nalwaysApply: true\n---\nNada de any.\n");
+  w(root, ".gemini/GEMINI.md", "Contesta breve.\n");
+  w(root, ".gemini/agents/traductor.md", "---\nname: Traductor\n---\nTraduce.\n");
+  const ctx = readProject(root).context ?? "";
+  for (const t of [/Usa tabuladores/, /Nada de any/, /Contesta breve/]) assert.match(ctx, t);
+  assert.doesNotMatch(ctx, /alwaysApply/);
+  assert.deepEqual(
+    readAgents(root).map((a) => [a.slug, a.from]),
+    [["traductor", "gemini"]],
+  );
+  const { pkg } = buildPackage(root, { name: "X" }, new Date());
+  assert.match(pkg.instructions, /Nada de any/);
+  assert.match(pkg.instructions, /Contesta breve/);
+  assert.ok(pkg.agents.some((a) => a.slug === "traductor"));
+});
+
+test("CARPETA-NUEVA-1 · una carpeta de agentes, reglas o skills creada después de añadir el proyecto se vigila sin reabrirlo", async () => {
+  await using dir = tempDir("colonia-carpeta-nueva-");
+  const root = dir.path;
+  w(root, "CLAUDE.md", "# Solo instrucciones\n");
+  const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
+  try {
+    const { project } = await env.client.call("projects.register", { path: root });
+    const live = async () =>
+      (await env.client.call("agents.list", {})).agents.filter((a) => a.project_id === project.id).map((a) => a.name);
+    const context = () => env.core.store.projects.get(project.id)?.context ?? "";
+    assert.deepEqual(await live(), []);
+
+    // Ni .claude ni .gemini ni .cursor existían al registrar.
+    w(root, ".claude/agents/uno.md", "---\nname: Uno\n---\nHola.\n");
+    await waitFor(async () => (await live()).includes("Uno"), "el agente de un .claude/agents creado después");
+    w(root, ".claude/agents/dos.md", "---\nname: Dos\n---\nHola.\n");
+    await waitFor(async () => (await live()).includes("Dos"), "un segundo agente en esa carpeta nueva");
+    w(root, ".gemini/agents/tres.md", "---\nname: Tres\n---\nHola.\n");
+    await waitFor(async () => (await live()).includes("Tres"), "el agente de un .gemini/agents creado después");
+    w(root, ".gemini/GEMINI.md", "Regla de Gemini.\n");
+    await waitFor(async () => /Regla de Gemini/.test(context()), "el GEMINI.md de .gemini");
+    w(root, ".cursor/rules/a.mdc", "---\nalwaysApply: true\n---\nRegla de Cursor.\n");
+    await waitFor(async () => /Regla de Cursor/.test(context()), "una regla de Cursor creada después");
+    w(root, ".cursorrules", "Regla antigua de Cursor.\n");
+    await waitFor(async () => /Regla antigua de Cursor/.test(context()), "el .cursorrules");
+    w(root, ".gemini/skills/resumir/SKILL.md", "---\nname: resumir\ndescription: Resume\n---\nResume.\n");
+    const skills = await env.client.call("skills.list", { project: project.id });
+    assert.equal(skills.skills.find((s) => s.name === "resumir")?.scope, "project");
   } finally {
     await env.core.close();
     await env.cleanup();

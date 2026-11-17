@@ -80,6 +80,8 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
     "Este proyecto consultaba otros que aquí no tienes con ese nombre. Di cuál de los tuyos es cada uno, o déjalo así: lo demás funciona igual.",
   "pshare.import.unresolvedAlone":
     "Este proyecto consultaba otros que aquí no tienes. Cuando crees o importes uno, enlázalo desde la configuración del proyecto.",
+  "pshare.import.routinesOff": "{count} rutinas llegaron apagadas",
+  "pshare.import.routinesOffBody": "Mira qué hace cada una y cuándo se ejecuta, y enciende las que quieras en Rutinas.",
   "pshare.import.skillConflicts": "Skills que ya tenías",
   "pshare.import.skillConflictsBody":
     "Ya tienes una skill distinta con cada uno de estos nombres: se queda la tuya y la del proyecto no se ha copiado. Cambia el nombre de una si quieres las dos.",

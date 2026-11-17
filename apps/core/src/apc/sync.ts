@@ -63,7 +63,7 @@ export function createApcSync(deps: {
   readMs?: number;
 }) {
   const { store, log } = deps;
-  const watchers = new Map<string, fs.FSWatcher[]>();
+  const watchers = new Map<string, Map<string, fs.FSWatcher>>();
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
   // A folder still being read is not read a second time: one held read holds one thread.
   const reading = new Map<string, Promise<ProjectFiles>>();
@@ -204,14 +204,27 @@ export function createApcSync(deps: {
     });
   }
 
-  /** Watches .apc/ (recursively) and the project folder itself for AGENTS.md; changes reindex, debounced. */
+  /**
+   * Watches .apc/ (recursively), the project folder (AGENTS.md, CLAUDE.md, GEMINI.md, .cursorrules), .github/ (Copilot)
+   * and the other apps' folders (`.claude/agents`, `.gemini/`, `.cursor/rules`…); changes reindex, debounced. A folder
+   * created later (CARPETA-NUEVA-1) is picked up from the event on its parent, without reopening the project.
+   */
   function watch(root: string): void {
     if (watchers.has(root)) return;
+    const list = new Map<string, fs.FSWatcher>();
+    watchers.set(root, list);
+    let real = root;
+    try {
+      // By its real path: Windows ends the whole core at the first change in a folder watched by a short 8.3 name.
+      real = realpath(root);
+    } catch {}
     const changed = () => {
       clearTimeout(timers.get(root));
       timers.set(
         root,
         setTimeout(() => {
+          if (watchers.get(root) !== list) return;
+          wire();
           try {
             const r = syncRoot(root);
             log.info({ project: r.project, agents: r.agents }, "project files changed; reindexed");
@@ -221,28 +234,46 @@ export function createApcSync(deps: {
         }, DEBOUNCE_MS),
       );
     };
-    const list: fs.FSWatcher[] = [];
-    try {
-      // By its real path: Windows ends the whole core at the first change in a folder watched by a short 8.3 name.
-      const real = realpath(root);
-      if (fs.existsSync(path.join(real, ".apc")))
-        list.push(fs.watch(path.join(real, ".apc"), { recursive: true }, changed));
-      list.push(
-        fs.watch(real, (_e, file) => ["AGENTS.md", "CLAUDE.md", "GEMINI.md"].includes(String(file)) && changed()),
-      );
-      // FORMATOS-IA-1 · Las instrucciones de Copilot viven en .github/.
-      const gh = path.join(real, ".github");
-      if (fs.existsSync(gh) && !fs.lstatSync(gh).isSymbolicLink())
-        list.push(fs.watch(gh, (_e, file) => String(file) === "copilot-instructions.md" && changed()));
-      // AGENTES-NATIVOS-1 · Los agentes de Claude Code y Codex se leen en su sitio: un cambio ahí también reindexa.
-      for (const app of NATIVE_AGENT_APPS) {
-        const dir = path.join(real, `.${app}`, "agents");
-        if (fs.existsSync(dir) && !fs.lstatSync(path.join(real, `.${app}`)).isSymbolicLink())
-          list.push(fs.watch(dir, changed));
+    const dirOk = (dir: string) => {
+      try {
+        const st = fs.lstatSync(dir);
+        return st.isDirectory() && !st.isSymbolicLink();
+      } catch {
+        return false;
       }
-    } catch {}
-    for (const w of list) w.on("error", () => w.close());
-    watchers.set(root, list);
+    };
+    const add = (dir: string, onFile: (file: string) => boolean, recursive = false) => {
+      if (list.has(dir) || !dirOk(dir)) return;
+      try {
+        const w = fs.watch(dir, { recursive }, (_e, file) => onFile(String(file ?? "")) && changed());
+        // A folder removed (or unwatchable) is dropped, so the same path recreated is watched again.
+        w.on("error", () => {
+          w.close();
+          if (list.get(dir) === w) list.delete(dir);
+        });
+        list.set(dir, w);
+      } catch {}
+    };
+    const apps = [...new Set([...NATIVE_AGENT_APPS, "cursor"])];
+    const rootFiles = new Set(["AGENTS.md", "CLAUDE.md", "GEMINI.md", ".cursorrules", ".apc", ".github"]);
+    for (const app of apps) rootFiles.add(`.${app}`);
+    const wire = () => {
+      add(real, (f) => f === "" || rootFiles.has(f));
+      add(path.join(real, ".apc"), () => true, true);
+      // FORMATOS-IA-1 · Las instrucciones de Copilot viven en .github/.
+      add(path.join(real, ".github"), (f) => f === "" || f === "copilot-instructions.md");
+      for (const app of apps) {
+        const base = path.join(real, `.${app}`);
+        // El directorio de la app avisa cuando aparece su carpeta de agentes o de reglas, o cambia .gemini/GEMINI.md.
+        add(base, (f) => f === "" || ["agents", "rules", "GEMINI.md"].includes(f));
+        if (!dirOk(base)) continue;
+        // AGENTES-NATIVOS-1 · Los agentes de Claude Code, Codex, ~/.agents y Gemini se leen en su sitio.
+        add(path.join(base, "agents"), () => true);
+        // CURSOR-GEMINI-1 · Las reglas de Cursor son instrucciones del proyecto.
+        if (app === "cursor") add(path.join(base, "rules"), () => true);
+      }
+    };
+    wire();
   }
 
   return {
@@ -260,7 +291,7 @@ export function createApcSync(deps: {
       const project = store.projects.get(projectId);
       if (!project) return;
       if (project.path) {
-        for (const watcher of watchers.get(project.path) ?? []) watcher.close();
+        for (const watcher of watchers.get(project.path)?.values() ?? []) watcher.close();
         watchers.delete(project.path);
         clearTimeout(timers.get(project.path));
         timers.delete(project.path);
@@ -302,7 +333,7 @@ export function createApcSync(deps: {
     close(): void {
       closed = true;
       for (const end of waits) end();
-      for (const list of watchers.values()) for (const w of list) w.close();
+      for (const list of watchers.values()) for (const w of list.values()) w.close();
       for (const t of timers.values()) clearTimeout(t);
       watchers.clear();
     },

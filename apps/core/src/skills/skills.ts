@@ -11,7 +11,7 @@ import { isInside, realpath, tildeHome } from "../paths.ts";
 import { type RuntimeHomes, runtimes, shippedNames } from "./runtimes.ts";
 
 /** The other agent apps whose skills Colonia reads: `~/.<app>/skills`, and `.<app>/skills` inside a project. */
-export const APPS = ["claude", "codex", "cursor", "agents"] as const;
+export const APPS = ["claude", "codex", "cursor", "agents", "gemini"] as const;
 export type App = (typeof APPS)[number];
 
 export type Skill = {
@@ -107,7 +107,7 @@ function scan(
 }
 
 const NONE: ReadonlySet<string> = new Set();
-const appOf = (real: string) => /[\\/]\.(claude|codex|cursor|agents)[\\/]/.exec(real)?.[1] as App | undefined;
+const appOf = (real: string) => /[\\/]\.(claude|codex|cursor|agents|gemini)[\\/]/.exec(real)?.[1] as App | undefined;
 
 const isLink = (p: string) => {
   try {

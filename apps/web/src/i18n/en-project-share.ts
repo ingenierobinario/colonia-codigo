@@ -76,6 +76,9 @@ export const enProjectShare = {
     "This project read from others you do not have here under that name. Say which of yours each one is, or leave it: everything else works the same.",
   "pshare.import.unresolvedAlone":
     "This project read from others you do not have here. When you create or import one, link it from the project settings.",
+  "pshare.import.routinesOff": "{count} routines came in turned off",
+  "pshare.import.routinesOffBody":
+    "Check what each one does and when it runs, then turn on the ones you want in Routines.",
   "pshare.import.skillConflicts": "Skills you already had",
   "pshare.import.skillConflictsBody":
     "You already have a different skill with each of these names, so yours stays and the shared one was not copied. Rename one of them if you want both.",

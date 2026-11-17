@@ -748,6 +748,8 @@ export const appMethods = {
        * dice otra cosa (se queda la de aquí); `reserved`, el nombre es de una guía de Colonia.
        */
       skill_conflicts: z.array(z.object({ name: z.string(), reason: z.enum(["different", "reserved"]) })).optional(),
+      /** RUTINAS-VIAJAN-1 · Rutinas que llegaron con el paquete, apagadas. */
+      routines_off: z.number().int().optional(),
     }),
     effect: true,
     access: "human",

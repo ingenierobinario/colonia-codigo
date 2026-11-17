@@ -4,6 +4,7 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { Schedule } from "@colonia/protocol";
 import { parseFrontmatter, textField } from "../apc/frontmatter.ts";
 import { NATIVE_AGENT_APPS, projectInstructions, withoutBom } from "../apc/read.ts";
 import type { ApcSync } from "../apc/sync.ts";
@@ -14,6 +15,7 @@ import {
   knownNames,
   PACKAGE_MAX,
   type PackageConnection,
+  type PackageRoutine,
   PROJECT_FORMAT,
   type ProjectPackage,
   packageCode,
@@ -23,6 +25,7 @@ import {
   sensitiveFile,
   summaryOf,
   withKnown,
+  withRoutines,
 } from "../domain/project-package.ts";
 import { publicProject } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
@@ -179,7 +182,7 @@ export function buildPackage(
   const fileText = (name: string) => (isLink(path.join(root, name)) ? undefined : textOf(path.join(root, name)));
   // AGENTES-NATIVOS-1 · El CLAUDE.md viaja dentro de las instrucciones: quien importa solo recibe AGENTS.md.
   const instructions = clean(
-    projectInstructions((f) => (isLink(path.join(root, path.dirname(f))) ? undefined : fileText(f))) ?? "",
+    projectInstructions((f) => (isLink(path.join(root, path.dirname(f))) ? undefined : fileText(f)), root) ?? "",
     "instructions",
   );
 
@@ -454,6 +457,37 @@ export function projectShareHandlers(deps: {
   const { store, home } = deps;
   const roots: SkillRoots = deps.skillRoots ?? { home };
   const now = () => deps.clock?.() ?? new Date();
+  /**
+   * RUTINAS-VIAJAN-1 · Las rutinas del proyecto con su agente, sin órdenes de consola. Una que necesita consola
+   * (pre/post o de tipo shell, watch, relay) no viaja: cuenta como dejada fuera.
+   */
+  const routinesOf = (projectId: string, b: Built): PackageRoutine[] =>
+    store.routines.list(projectId).flatMap((r) => {
+      const agent = store.agents.get(r.agent_id);
+      if (
+        agent?.project_id !== projectId ||
+        !agent.slug ||
+        (r.action !== "agent" && r.action !== "message") ||
+        r.pre_command ||
+        r.post_command
+      ) {
+        b.skipped++;
+        return [];
+      }
+      const c = scrub(r.prompt);
+      b.removed += c.removed;
+      return [
+        {
+          name: r.name.slice(0, 120),
+          agent: agent.slug,
+          schedule: r.schedule,
+          action: r.action,
+          prompt: c.text,
+          call_model: r.call_model,
+          ...(r.max_steps ? { max_steps: r.max_steps } : {}),
+        },
+      ];
+    });
   const built = (id: string): Built & { id: string } => {
     const p = store.projects.get(id);
     if (!p) throw notFound(`project ${id}`);
@@ -467,6 +501,7 @@ export function projectShareHandlers(deps: {
     // PROYECTOS-ENLAZADOS-1 · De los proyectos que conoce viaja el nombre, nunca lo que guardan.
     const knows = knownProjects(store, { project_id: p.id }).map((k) => k.name.slice(0, 80));
     b.pkg = withKnown(b.pkg, knows);
+    b.pkg = withRoutines(b.pkg, routinesOf(p.id, b));
     if (renderPackage(b.pkg).length > PACKAGE_MAX)
       throw badRequest("this project is too large to share: its skills hold more text than fits");
     return { ...b, id: p.id };
@@ -556,6 +591,28 @@ export function projectShareHandlers(deps: {
       // PROYECTOS-ENLAZADOS-1 · Se enlaza con los proyectos de aquí que se llamen igual; el resto queda sin resolver.
       const links = resolveKnown(store, id, knownNames(pkg));
       if (links.found.length) store.projects.setLinks(id, { knows: links.found });
+      // RUTINAS-VIAJAN-1 · Las rutinas llegan apagadas; una con el mismo nombre en el proyecto no se duplica.
+      let routinesOff = 0;
+      const have = new Set(store.routines.list(id).map((r) => r.name.toLowerCase()));
+      for (const r of pkg.organization?.routines ?? []) {
+        const agent = store.agents.list().find((a) => a.project_id === id && a.slug === r.agent);
+        const schedule = Schedule.safeParse(r.schedule);
+        if (!agent || !schedule.success || have.has(r.name.toLowerCase())) continue;
+        store.routines.create({
+          name: r.name,
+          agent_id: agent.id,
+          project_id: id,
+          schedule: schedule.data,
+          action: r.action,
+          prompt: r.prompt,
+          call_model: r.call_model ?? "always",
+          max_steps: r.max_steps,
+          enabled: false,
+          next_run_at: undefined,
+        });
+        have.add(r.name.toLowerCase());
+        routinesOff++;
+      }
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
       // Lo que ya tenía sus datos no vuelve a salir como «falta conectar».
@@ -567,6 +624,7 @@ export function projectShareHandlers(deps: {
         project: publicProject(project),
         ...(links.missing.length ? { unresolved: links.missing } : {}),
         ...(plan?.conflicts.length ? { skill_conflicts: plan.conflicts } : {}),
+        ...(routinesOff ? { routines_off: routinesOff } : {}),
       };
     },
   };

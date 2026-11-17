@@ -3,7 +3,7 @@ import type { McpServerStatus, SkillInfo } from "@colonia/protocol";
 import type { MessageKey, T } from "../i18n/index.ts";
 
 /** The agent apps a skill can live in; Colonia's own, the owner's, a project's and extensions' count as Colonia. */
-export const SKILL_ENGINES = ["colonia", "claude", "codex", "cursor", "agents"] as const;
+export const SKILL_ENGINES = ["colonia", "claude", "codex", "cursor", "agents", "gemini"] as const;
 export type SkillEngine = (typeof SKILL_ENGINES)[number];
 
 export const ENGINE_LABEL: Record<SkillEngine, string> = {
@@ -12,6 +12,7 @@ export const ENGINE_LABEL: Record<SkillEngine, string> = {
   codex: "Codex",
   cursor: "Cursor",
   agents: "Agents",
+  gemini: "Gemini",
 };
 
 export const engineOf = (source: SkillInfo["source"]): SkillEngine =>

@@ -48,7 +48,7 @@ export type ApcAgent = {
 };
 
 /** AGENTES-NATIVOS-1 · Las apps cuyos agentes de proyecto se leen en su sitio, en este orden (`.apc` va antes). */
-export const NATIVE_AGENT_APPS = ["claude", "codex", "agents"] as const;
+export const NATIVE_AGENT_APPS = ["claude", "codex", "agents", "gemini"] as const;
 export type NativeApp = (typeof NATIVE_AGENT_APPS)[number];
 
 /** Windows editors and PowerShell 5 may start a UTF-8 file with a BOM; it is not part of the text. */
@@ -112,11 +112,36 @@ function contextOf(text: string | undefined, file: string, max = AGENTS_MD_LIMIT
  * FORMATOS-IA-1 · Las instrucciones de proyecto de otras apps de IA, que se suman a AGENTS.md y se vigilan igual:
  * Claude Code, Gemini y GitHub Copilot.
  */
-export const INSTRUCTION_FILES = ["CLAUDE.md", "GEMINI.md", ".github/copilot-instructions.md"] as const;
+export const INSTRUCTION_FILES = [
+  "CLAUDE.md",
+  "GEMINI.md",
+  ".gemini/GEMINI.md",
+  ".github/copilot-instructions.md",
+  ".cursorrules",
+] as const;
+
+/** CURSOR-GEMINI-1 · Las reglas de proyecto de Cursor: `.cursor/rules/*.mdc` (y `.md`), por orden de nombre. */
+export function cursorRuleFiles(root: string): string[] {
+  const dir = path.join(root, ".cursor", "rules");
+  try {
+    if (isLink(path.join(root, ".cursor")) || isLink(dir)) return [];
+    return fs
+      .readdirSync(dir)
+      .filter((f) => /^[A-Za-z0-9_][A-Za-z0-9._ -]*\.mdc?$/.test(f))
+      .sort()
+      .slice(0, 50)
+      .map((f) => `.cursor/rules/${f}`);
+  } catch {
+    return [];
+  }
+}
 
 /** Whether a folder is a project Colonia can read: .apc/, AGENTS.md or the instructions of another AI app. */
 export function isApcProject(root: string): boolean {
-  return [".apc", "AGENTS.md", ...INSTRUCTION_FILES].some((f) => fs.existsSync(path.join(root, f)));
+  return (
+    [".apc", "AGENTS.md", ...INSTRUCTION_FILES].some((f) => fs.existsSync(path.join(root, f))) ||
+    cursorRuleFiles(root).length > 0
+  );
 }
 
 /**
@@ -140,12 +165,16 @@ export function instructionsOf(
 }
 
 /** FORMATOS-IA-1 · Las instrucciones de un proyecto: AGENTS.md y las de las otras apps, leídas con `read`. */
-export function projectInstructions(read: (file: string) => string | undefined): string | undefined {
-  return instructionsOf(
-    read("AGENTS.md"),
-    read("CLAUDE.md"),
-    INSTRUCTION_FILES.slice(1).map((file) => ({ file, text: read(file) })),
-  );
+export function projectInstructions(read: (file: string) => string | undefined, root?: string): string | undefined {
+  // Una regla .mdc lleva su cabecera de Cursor (globs, alwaysApply): para el agente solo cuenta el cuerpo.
+  const rule = (file: string) => {
+    const t = read(file);
+    return t === undefined ? t : parseFrontmatter(t).body;
+  };
+  return instructionsOf(read("AGENTS.md"), read("CLAUDE.md"), [
+    ...INSTRUCTION_FILES.slice(1).map((file) => ({ file, text: read(file) })),
+    ...(root ? cursorRuleFiles(root) : []).map((file) => ({ file, text: rule(file) })),
+  ]);
 }
 
 export function readProject(root: string): ApcProject {
@@ -164,8 +193,9 @@ export function readProject(root: string): ApcProject {
   }
   const pathId = createHash("sha256").update(abs).digest("hex").slice(0, 12);
   const id = meta.colonia_id && /^[a-z0-9]{6,32}$/.test(meta.colonia_id) ? meta.colonia_id : pathId;
-  const agentsMd = projectInstructions((f) =>
-    isLink(path.join(abs, path.dirname(f))) ? undefined : readText(path.join(abs, f)),
+  const agentsMd = projectInstructions(
+    (f) => (isLink(path.join(abs, path.dirname(f))) ? undefined : readText(path.join(abs, f))),
+    abs,
   );
   const apc = path.join(abs, ".apc");
   const memoryMd = isLink(apc) ? undefined : readText(path.join(apc, "memory.md"));
