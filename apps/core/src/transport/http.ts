@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
+import { pipeline } from "node:stream";
+import { constants, createGzip } from "node:zlib";
 import { type ClientScope, FILE_PAYLOAD_BYTES, methodOpen } from "@colonia/protocol";
 import { type PublicPages, surfacePage } from "../surface-pages.ts";
 
@@ -37,7 +39,7 @@ const MIME: Record<string, string> = {
 };
 
 /** Serves the built web panel (SPA fallback to index.html). Paths cannot escape the dist folder. */
-function serveStatic(dist: string, pathname: string, res: ServerResponse): boolean {
+function serveStatic(dist: string, pathname: string, req: IncomingMessage, res: ServerResponse): boolean {
   const root = path.resolve(dist);
   let decoded: string;
   try {
@@ -49,12 +51,32 @@ function serveStatic(dist: string, pathname: string, res: ServerResponse): boole
   if (!isInside(root, file)) return false;
   if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(root, "index.html");
   if (!fs.existsSync(file)) return false;
+  const text = /\.(?:html|js|css|svg|json)$/.test(file);
+  const gzip = text && acceptsGzip(header(req, "accept-encoding"));
   res.writeHead(200, {
     "content-type": MIME[path.extname(file)] ?? "application/octet-stream",
     "cache-control": file.endsWith("index.html") ? "no-cache" : "public, max-age=31536000, immutable",
+    ...(text ? { vary: "Accept-Encoding" } : {}),
+    ...(gzip ? { "content-encoding": "gzip" } : {}),
   });
-  fs.createReadStream(file).pipe(res);
+  const source = fs.createReadStream(file);
+  const done = (error: Error | null) => {
+    if (error) res.destroy(error);
+  };
+  // Solo archivos del panel, nunca respuestas con datos del usuario; el flujo se cierra si el cliente se va.
+  if (gzip) pipeline(source, createGzip({ level: constants.Z_BEST_SPEED }), res, done);
+  else pipeline(source, res, done);
   return true;
+}
+
+function acceptsGzip(value: string | undefined): boolean {
+  const encodings = (value ?? "").split(",").map((part) => {
+    const [name, ...parameters] = part.trim().toLowerCase().split(";");
+    const quality = parameters.map((p) => p.trim()).find((p) => p.startsWith("q="));
+    return { name: name?.trim(), quality: quality === undefined ? 1 : Number(quality.slice(2)) };
+  });
+  const chosen = encodings.find((e) => e.name === "gzip") ?? encodings.find((e) => e.name === "*");
+  return chosen !== undefined && chosen.quality > 0 && chosen.quality <= 1;
 }
 
 /** Which paired device a key belongs to (undefined: not a device's, or revoked). */
@@ -137,7 +159,7 @@ export function httpHandler(
         return;
       }
     }
-    if (req.method === "GET" && webDist && serveStatic(webDist, url.pathname, res)) return;
+    if (req.method === "GET" && webDist && serveStatic(webDist, url.pathname, req, res)) return;
     send(res, 404, { ok: false, error: { code: "not_found", message: "not found" } });
   };
   return (req: IncomingMessage, res: ServerResponse): void => {

@@ -19,22 +19,34 @@ import { openMarkReadDialog } from "./threadAdmin.ts";
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+let computerRequest = 0;
+
+async function loadComputer(): Promise<void> {
+  const request = ++computerRequest;
+  const before = data.get();
+  const current = () =>
+    request === computerRequest &&
+    data.get().computers === before.computers &&
+    data.get().vmThreads === before.vmThreads;
+  try {
+    const status = await client.call("environments.status", {});
+    if (current()) data.set({ vmThreads: status.enabled ? (status.chats ?? []) : [], computers: computersOf(status) });
+  } catch (error) {
+    if (current() && error instanceof ColoniaError && error.code === "unknown_method")
+      data.set({ vmThreads: [], computers: NO_COMPUTERS });
+  }
+}
+
 /** Agents, projects, threads, surfaces and browser tabs in one round. Throws if the core is unreachable. */
 export async function bootstrap(): Promise<void> {
-  const [agents, projects, threads, surfaces, computer] = await Promise.all([
+  // Comprobar el ordenador puede arrancar procesos del sistema; no debe retener los chats ni los proyectos.
+  void loadComputer();
+  const [agents, projects, threads, surfaces] = await Promise.all([
     client.call("agents.list", {}),
     client.call("projects.list", { include_unregistered: true }),
     // Archived chats too: the Inbox keeps them apart, under Archived. And a few of each chat's delegated chats.
     client.call("threads.list", { include_archived: true, delegated: DELEGATED_SHOWN }),
     client.call("surfaces.list", {}),
-    client
-      .call("environments.status", {})
-      .then((status) => ({ chats: status.enabled ? (status.chats ?? []) : [], computers: computersOf(status) }))
-      .catch((error: unknown) => {
-        if (error instanceof ColoniaError && error.code === "unknown_method")
-          return { chats: [], computers: NO_COMPUTERS };
-        return { chats: data.get().vmThreads, computers: data.get().computers };
-      }),
   ]);
   data.set({
     agents: Object.fromEntries(agents.agents.map((a) => [a.id, a])),
@@ -44,8 +56,6 @@ export async function bootstrap(): Promise<void> {
     threads: listedThreads(data.get().threads, threads.threads),
     delegated: threads.delegated ?? {},
     surfaces: Object.fromEntries(surfaces.surfaces.map((s) => [s.id, s])),
-    vmThreads: computer.chats,
-    computers: computer.computers,
     ready: true,
   });
   for (const id of opened) void loadProjectThreads(id);

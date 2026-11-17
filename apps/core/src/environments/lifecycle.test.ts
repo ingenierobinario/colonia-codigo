@@ -29,6 +29,54 @@ function fixture() {
   return { driver, calls };
 }
 
+test("las consultas simultáneas comparten la comprobación y la siguiente vuelve a consultar", async () => {
+  const { driver } = fixture();
+  const pending = Promise.withResolvers<boolean>();
+  let checks = 0;
+  driver.installed = () => true;
+  driver.running = () => {
+    checks++;
+    return pending.promise;
+  };
+  const vm = createVmLifecycle(driver);
+  try {
+    const readings = Array.from({ length: 12 }, () => vm.status());
+    pending.resolve(true);
+    assert.ok((await Promise.all(readings)).every((s) => s.phase === "running"));
+    assert.equal(checks, 1);
+    driver.running = async () => {
+      checks++;
+      return false;
+    };
+    assert.equal((await vm.status()).phase, "stopped");
+    assert.equal(checks, 2);
+  } finally {
+    pending.resolve(false);
+    await vm.close();
+  }
+});
+
+test("detener el ordenador no espera una consulta de estado anterior", async () => {
+  const { driver } = fixture();
+  const pending = Promise.withResolvers<boolean>();
+  driver.installed = () => true;
+  driver.running = () => pending.promise;
+  const vm = createVmLifecycle(driver);
+  const before = vm.status();
+  try {
+    driver.running = async () => false;
+    vm.stop();
+    await waitFor(async () => (await vm.status()).phase === "stopped");
+    pending.resolve(true);
+    assert.equal((await before).phase, "stopped");
+    assert.equal(vm.seen(), "stopped");
+  } finally {
+    pending.resolve(false);
+    await before;
+    await vm.close();
+  }
+});
+
 test("computer is inert before activation; stop releases the guest and restart preserves installation", async () => {
   const { driver, calls } = fixture();
   const vm = createVmLifecycle(driver);

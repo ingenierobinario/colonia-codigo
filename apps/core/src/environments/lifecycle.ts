@@ -42,7 +42,7 @@ export function createVmLifecycle(driver: VmDriver) {
     });
     operation = current;
   };
-  const status = async () => {
+  const readStatus = async () => {
     if (closed) return { phase: "error" as const, supported: driver.supported, error: "Computer controller is closed" };
     if (!driver.supported) return { phase: "unsupported" as const, supported: false };
     const observed = generation;
@@ -79,6 +79,16 @@ export function createVmLifecycle(driver: VmDriver) {
       ...(phase === "preparing" && setup ? { setup: true } : {}),
       ...(error ? { error } : {}),
     };
+  };
+  let statusRequest: { generation: number; promise: ReturnType<typeof readStatus> } | undefined;
+  const status = () => {
+    if (statusRequest?.generation === generation) return statusRequest.promise;
+    // Compartir solo la comprobación en curso; iniciar o detener invalida la consulta anterior.
+    const promise = readStatus().finally(() => {
+      if (statusRequest?.promise === promise) statusRequest = undefined;
+    });
+    statusRequest = { generation, promise };
+    return promise;
   };
   const allowed = () => {
     if (closed) throw unavailable("computer controller is closed");
