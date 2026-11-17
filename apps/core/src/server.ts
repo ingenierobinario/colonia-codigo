@@ -188,6 +188,8 @@ export type CoreOptions = {
   /** The tailscale CLI and ngrok behind the public address for webhooks; tests pass fakes. */
   tailscale?: TailscaleRun;
   ngrok?: NgrokStart;
+  /** Starts cloudflared for the temporary link (tests pass a fake). */
+  cloudflared?: NgrokStart;
   /** Waits before a channel that failed to start tries again; tests shorten them. */
   channelRetryMs?: readonly number[];
   /** How long a room waits for one person's quick messages to settle (tests shorten it). */
@@ -476,6 +478,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     log,
     ...(opts.tailscale ? { tailscale: opts.tailscale } : {}),
     ...(opts.ngrok ? { ngrok: opts.ngrok } : {}),
+    home: config.home,
+    ...(opts.cloudflared ? { cloudflared: opts.cloudflared } : {}),
   });
   // A graph's model step names one exact model of an active provider that has its key (or sign-in).
   const flowModel = (ref: string) => {

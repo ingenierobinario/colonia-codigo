@@ -52,10 +52,11 @@ export const AccessState = z.object({
 export type AccessState = z.infer<typeof AccessState>;
 
 /**
- * The shared restricted public ingress address: off, Tailscale Funnel, ngrok or an owner's HTTPS proxy.
+ * The shared restricted public ingress address: off, Tailscale Funnel, ngrok, an owner's HTTPS proxy, or a temporary
+ * Cloudflare Quick Tunnel (no account; its address changes every time it starts and it is never resumed at start).
  * Only registered signed channel hooks, token-protected Flows and published read-only widgets are reachable.
  */
-export const HookMode = z.enum(["off", "tailscale", "ngrok", "custom"]);
+export const HookMode = z.enum(["off", "tailscale", "ngrok", "custom", "cloudflare"]);
 export type HookMode = z.infer<typeof HookMode>;
 /** Why the public address is not up; the panel says each in the owner's language. */
 export const HookError = z.enum([
@@ -66,6 +67,9 @@ export const HookError = z.enum([
   "ngrok_timeout",
   "ngrok_failed",
   "ngrok_stopped",
+  "cloudflare_download",
+  "cloudflare_timeout",
+  "cloudflare_stopped",
   "failed",
 ]);
 export type HookError = z.infer<typeof HookError>;
@@ -88,6 +92,8 @@ export const WebhooksState = z.object({
   error_detail: z.string().optional(),
   tailscale: z.object({ installed: z.boolean(), connected: z.boolean() }),
   ngrok: z.object({ installed: z.boolean() }),
+  /** The temporary link is being prepared (downloading cloudflared or waiting for its address): ask again shortly. */
+  starting: z.boolean().optional(),
 });
 export type WebhooksState = z.infer<typeof WebhooksState>;
 

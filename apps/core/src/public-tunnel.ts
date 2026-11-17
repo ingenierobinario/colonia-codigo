@@ -1,11 +1,12 @@
-// Public ingress infrastructure: Tailscale Funnel, ngrok or an owner's HTTPS proxy targets the restricted listener,
-// never the private daemon. The existing webhooks.* contract and saved setting select this shared tunnel.
+// Public ingress infrastructure: Tailscale Funnel, ngrok, an owner's HTTPS proxy or a temporary Cloudflare Quick Tunnel
+// (ENLACE-TEMPORAL-1) targets the restricted listener, never the private daemon. The existing webhooks.* contract and saved setting select this shared tunnel.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import { type HookError, type HookMode, tailscaleDnsName, type WebhooksState } from "@colonia/protocol";
 import { findTailscale, type TailscaleRun, tailscaleRunner } from "./access.ts";
+import { cloudflaredLine, ensureCloudflared } from "./cloudflared.ts";
 import type { Store } from "./domain/store.ts";
 import { CallError } from "./errors.ts";
 import type { Log } from "./log.ts";
@@ -14,6 +15,8 @@ import type { Log } from "./log.ts";
 const FUNNEL_PORT = 8443;
 /** How long ngrok may take to say its address before the owner is told it failed. */
 export const NGROK_WAIT_MS = 15_000;
+/** How long cloudflared may take to say its trycloudflare address (it asks Cloudflare's service for one). */
+export const CLOUDFLARE_WAIT_MS = 45_000;
 /** How long what this computer has (Tailscale connected, ngrok installed) is trusted: the panel asks every 10 s. */
 const PROBE_TTL_MS = 30_000;
 /** A tunnel that died is started again after 2 s, then 4, 8… up to a minute between tries. */
@@ -107,6 +110,20 @@ function createProbe(tailscale: () => TailscaleRun | undefined, ngrok: () => Ngr
   };
 }
 
+/** Whether Tailscale still serves Colonia's Funnel port; when it cannot even say, assume it does. */
+async function funnelStillOn(run: TailscaleRun): Promise<boolean> {
+  const st = await run(["funnel", "status", "--json"]);
+  if (!st.ok) return true;
+  try {
+    const cfg = JSON.parse(st.out || "{}") as { AllowFunnel?: Record<string, boolean>; Web?: Record<string, unknown> };
+    const on = (keys: Record<string, unknown> | undefined) =>
+      Object.keys(keys ?? {}).some((k) => k.endsWith(`:${FUNNEL_PORT}`));
+    return on(cfg.AllowFunnel) || on(cfg.Web);
+  } catch {
+    return true;
+  }
+}
+
 async function saveChoice(store: Store, tailscale: () => TailscaleRun | undefined, choice: TunnelChoice) {
   if (choice.mode === "custom" && !publicOrigin(choice.url ?? ""))
     throw new CallError({
@@ -117,9 +134,11 @@ async function saveChoice(store: Store, tailscale: () => TailscaleRun | undefine
     throw new CallError({ code: "bad_request", message: "a reserved domain must be a hostname" });
   const { mode: before, ngrok_last } = store.settings.read("webhooks");
   // Only undo Colonia's public Funnel port; private Serve and other tunnels are not Colonia's.
+  // FUNNEL-APAGAR-1 · `funnel … off` fails when there is nothing to turn off (Funnel never came up, Tailscale was
+  // removed): that must not keep the owner stuck on Tailscale. Only a Funnel still serving our port is a reason.
   if (before === "tailscale" && choice.mode !== "tailscale") {
-    const stopped = await tailscale()?.(["funnel", `--https=${FUNNEL_PORT}`, "off"]);
-    if (!stopped?.ok)
+    const run = tailscale();
+    if (run && !(await run(["funnel", `--https=${FUNNEL_PORT}`, "off"])).ok && (await funnelStillOn(run)))
       throw new CallError({
         code: "unavailable",
         message: "could not disable the public Funnel; check Tailscale before changing providers",
@@ -140,6 +159,10 @@ export function createPublicTunnel(deps: {
   log: Log;
   tailscale?: TailscaleRun | undefined;
   ngrok?: NgrokStart | undefined;
+  /** Colonia's data folder: where the verified cloudflared is kept. */
+  home?: string | undefined;
+  /** Starts cloudflared (tests pass a fake); by default the verified binary from `home`. */
+  cloudflared?: NgrokStart | undefined;
   /** How long to wait before starting a dead tunnel again, by attempt (tests pass a short one). */
   retryMs?: ((attempt: number) => number) | undefined;
 }) {
@@ -153,7 +176,16 @@ export function createPublicTunnel(deps: {
     const bin = findNgrok();
     return bin ? ngrokSpawner(bin) : undefined;
   };
+  const cloudflaredStart = async (): Promise<NgrokStart> => {
+    if (deps.cloudflared) return deps.cloudflared;
+    if (!deps.home) throw new Error("no data folder for cloudflared");
+    return ngrokSpawner(await ensureCloudflared(deps.home));
+  };
   const retryMs = deps.retryMs ?? retryAfter;
+  /** The temporary link is being prepared: downloading cloudflared or waiting for its address. */
+  let starting = false;
+  /** Bumped by every apply and by close: a cloudflared start from an older one gives up. */
+  let generation = 0;
   let url: string | undefined;
   let error: { code: HookError; detail?: string | undefined } | undefined;
   let tunnel: NgrokProcess | undefined;
@@ -186,15 +218,67 @@ export function createPublicTunnel(deps: {
     t?.stop();
   }
 
-  /** A tunnel that died while ngrok is still the choice comes back, later each time it dies again. */
-  function restartLater(domain: string | undefined) {
+  /** A tunnel that died while its provider is still the choice comes back, later each time it dies again. */
+  function restartLater(mode: "ngrok" | "cloudflare", domain: string | undefined) {
     const wait = retryMs(attempts++);
-    deps.log.info({ wait_ms: wait, attempt: attempts }, "webhooks: ngrok starts again");
+    deps.log.info({ wait_ms: wait, attempt: attempts, mode }, "webhooks: tunnel starts again");
     retry = setTimeout(() => {
       retry = undefined;
-      if (!closed && saved().mode === "ngrok" && !tunnel) void startNgrok(domain);
+      if (closed || saved().mode !== mode || tunnel) return;
+      if (mode === "ngrok") void startNgrok(domain);
+      else void startCloudflare(generation);
     }, wait);
     retry.unref();
+  }
+
+  /**
+   * Fetches cloudflared if needed and starts a Quick Tunnel to the restricted listener only. Runs in the background
+   * (the download can take longer than a call may wait): the panel asks `webhooks.get` until the address or an error.
+   */
+  async function startCloudflare(gen: number): Promise<void> {
+    starting = true;
+    let start: NgrokStart;
+    try {
+      start = await cloudflaredStart();
+    } catch (e) {
+      if (gen !== generation) return;
+      starting = false;
+      // What failed goes to the log; the panel says it in the owner's words.
+      fail("cloudflare_download");
+      deps.log.warn({ error: e instanceof Error ? e.message : String(e) }, "webhooks: cloudflared not available");
+      return;
+    }
+    if (gen !== generation || closed) return;
+    const t = start(["tunnel", "--no-autoupdate", "--url", `http://127.0.0.1:${deps.port()}`]);
+    tunnel = t;
+    const timer = setTimeout(() => {
+      if (tunnel === t && !url) {
+        starting = false;
+        fail("cloudflare_timeout");
+      }
+    }, CLOUDFLARE_WAIT_MS);
+    timer.unref();
+    t.onLine((line) => {
+      if (tunnel !== t || url) return;
+      const found = cloudflaredLine(line);
+      if (!found) return;
+      url = found;
+      error = undefined;
+      starting = false;
+      attempts = 0;
+      clearTimeout(timer);
+      deps.log.info({ url }, "webhooks: temporary link up");
+    });
+    t.onExit((code) => {
+      if (tunnel !== t) return;
+      tunnel = undefined;
+      url = undefined;
+      starting = false;
+      if (!error) fail("cloudflare_stopped", `exit ${code ?? "signal"}`);
+      deps.log.warn({ error }, "webhooks: cloudflared stopped");
+      clearTimeout(timer);
+      restartLater("cloudflare", undefined);
+    });
   }
 
   /** Starts ngrok and resolves once it says its address (or failed, or took too long). */
@@ -237,7 +321,7 @@ export function createPublicTunnel(deps: {
         if (!error) fail("ngrok_stopped", `exit ${code ?? "signal"}`);
         deps.log.warn({ error }, "webhooks: ngrok stopped");
         clearTimeout(timer);
-        restartLater(domain);
+        restartLater("ngrok", domain);
         resolve();
       });
     });
@@ -247,6 +331,8 @@ export function createPublicTunnel(deps: {
   async function apply(): Promise<void> {
     if (closed) return;
     const { mode, url: own, domain } = saved();
+    generation++;
+    starting = false;
     stopNgrok();
     url = undefined;
     error = undefined;
@@ -258,6 +344,7 @@ export function createPublicTunnel(deps: {
       if (!url) fail("failed");
     }
     if (mode === "ngrok") await startNgrok(domain);
+    if (mode === "cloudflare") void startCloudflare(generation);
     if (mode === "tailscale") {
       const run = tailscaleRun();
       const dns = await tailscaleDns(run);
@@ -277,7 +364,8 @@ export function createPublicTunnel(deps: {
     return {
       mode,
       ...(url ? { url } : {}),
-      url_may_change: mode === "ngrok" && Boolean(url) && fresh,
+      url_may_change: (mode === "ngrok" && Boolean(url) && fresh) || (mode === "cloudflare" && Boolean(url)),
+      ...(starting ? { starting: true } : {}),
       port: deps.port(),
       ...(domain ? { domain } : {}),
       ...(error ? { error: error.code, ...(error.detail ? { error_detail: error.detail } : {}) } : {}),
@@ -291,11 +379,14 @@ export function createPublicTunnel(deps: {
     base: () => url,
     /** The saved choice, applied at start (a failure only shows in the state). */
     start: () =>
-      change(() =>
-        apply().catch(() => {
+      change(() => {
+        // A temporary link is never resumed on its own: it would come back at an address nobody was given.
+        const kept = saved();
+        if (kept.mode === "cloudflare") deps.store.settings.write("webhooks", { ...kept, mode: "off" });
+        return apply().catch(() => {
           fail("failed");
-        }),
-      ),
+        });
+      }),
     set(choice: TunnelChoice): Promise<WebhooksState> {
       return change(async () => {
         if (closed) throw new CallError({ code: "unavailable", message: "public tunnel is closed" });
@@ -306,6 +397,7 @@ export function createPublicTunnel(deps: {
     },
     close() {
       closed = true;
+      generation++;
       url = undefined;
       stopNgrok();
     },

@@ -95,4 +95,11 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.err.large": "Este proyecto es demasiado grande para compartirlo.",
   "pshare.err.other": "No se pudo importar: {error}",
   "pshare.err.export": "No se pudo compartir: {error}",
+  "pshare.temp.title": "Compártelo con un enlace",
+  "pshare.temp.body": "Colonia abre un enlace gratis, sin cuenta ni instalar nada. Quien lo tenga podrá traer una copia a su Colonia mientras el tuyo esté encendido.",
+  "pshare.temp.create": "Crear enlace temporal",
+  "pshare.temp.note": "Enlace temporal: cambia cuando reinicias Colonia.",
+  "pshare.temp.retry": "Volver a probar",
+  "pshare.advanced": "Opciones avanzadas",
+  "pshare.advancedBody": "Una dirección fija con Tailscale, ngrok o tu propio servidor.",
 };

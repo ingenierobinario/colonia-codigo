@@ -363,3 +363,103 @@ test("a core whose ngrok is slow to answer starts its channels without waiting f
     await second.cleanup();
   }
 });
+
+// ENLACE-TEMPORAL-1
+test("the temporary link: cloudflared points at the restricted listener, its address shows, and it is not resumed", async () => {
+  let args: string[] = [];
+  let stopped = 0;
+  const cloudflared: NgrokStart = (a) => {
+    args = a;
+    return {
+      onLine: (fn) => {
+        setTimeout(() => fn("ERR failed to reach https://api.trycloudflare.com/tunnel"), 2);
+        setTimeout(() => fn("INF |  https://quiet-river-lamp-moon.trycloudflare.com  |"), 5);
+      },
+      onExit: () => {},
+      stop: () => {
+        stopped++;
+      },
+    };
+  };
+  const hooks = createPublicTunnel({
+    store: env.core.store,
+    port: () => 4321,
+    log: { info() {}, warn() {}, error() {} },
+    tailscale,
+    ngrok,
+    cloudflared,
+  });
+  try {
+    const set = await hooks.set({ mode: "cloudflare" });
+    assert.equal(set.mode, "cloudflare");
+    await waitFor(() => hooks.base(), "the trycloudflare address", { every: 5 });
+    assert.equal(hooks.base(), "https://quiet-river-lamp-moon.trycloudflare.com");
+    assert.deepEqual(args, ["tunnel", "--no-autoupdate", "--url", "http://127.0.0.1:4321"]);
+    const st = await hooks.state();
+    assert.equal(st.url_may_change, true, "the owner is told it changes");
+    assert.equal(st.starting, undefined);
+    hooks.close();
+    assert.equal(stopped, 1, "closing Colonia stops it");
+  } finally {
+    hooks.close();
+  }
+  const again = createPublicTunnel({
+    store: env.core.store,
+    port: () => 4321,
+    log: { info() {}, warn() {}, error() {} },
+    tailscale,
+    ngrok,
+    cloudflared,
+  });
+  try {
+    await again.start();
+    assert.equal((await again.state()).mode, "off", "a temporary link does not come back on its own");
+    assert.equal(again.base(), undefined);
+  } finally {
+    again.close();
+  }
+});
+
+test("the temporary link says why when cloudflared cannot be had, without the raw detail being the message", async () => {
+  const hooks = createPublicTunnel({
+    store: env.core.store,
+    port: () => 4321,
+    log: { info() {}, warn() {}, error() {} },
+    tailscale,
+    ngrok,
+  });
+  try {
+    await hooks.set({ mode: "cloudflare" });
+    await waitFor(async () => (await hooks.state()).error, "the error", { every: 5 });
+    const st = await hooks.state();
+    assert.equal(st.error, "cloudflare_download");
+    assert.equal(st.starting, undefined);
+    await hooks.set({ mode: "off" });
+  } finally {
+    hooks.close();
+  }
+});
+
+test("leaving Tailscale when its Funnel was never up (or Tailscale is gone) does not get stuck", async () => {
+  const calls: string[][] = [];
+  const noFunnel: TailscaleRun = async (a) => {
+    calls.push(a);
+    if (a[0] === "status") return { ok: false, out: "" };
+    if (a[1] === "status") return { ok: true, out: "{}" };
+    return { ok: false, out: "error: handler does not exist" };
+  };
+  const hooks = createPublicTunnel({
+    store: env.core.store,
+    port: () => 1234,
+    log: { info() {}, warn() {}, error() {} },
+    tailscale: noFunnel,
+    ngrok,
+  });
+  try {
+    await hooks.set({ mode: "tailscale" });
+    assert.equal((await hooks.set({ mode: "off" })).mode, "off");
+    assert.ok(calls.some((c) => c.join(" ") === "funnel status --json"));
+  } finally {
+    hooks.close();
+  }
+});

@@ -91,4 +91,11 @@ export const enProjectShare = {
   "pshare.err.large": "This project is too large to share.",
   "pshare.err.other": "Could not import it: {error}",
   "pshare.err.export": "Could not share it: {error}",
+  "pshare.temp.title": "Share it with a link",
+  "pshare.temp.body": "Colonia opens a free link, with no account and nothing to install. Anyone with it can bring a copy into their Colonia while yours is on.",
+  "pshare.temp.create": "Create temporary link",
+  "pshare.temp.note": "Temporary link: it changes when you restart Colonia.",
+  "pshare.temp.retry": "Try again",
+  "pshare.advanced": "Advanced options",
+  "pshare.advancedBody": "A fixed address with Tailscale, ngrok or your own server.",
 };

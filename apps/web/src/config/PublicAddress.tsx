@@ -8,11 +8,20 @@ import { SubHead } from "./SectionHead.tsx";
 
 const MODES: Array<{ id: HookMode; label: MessageKey; body: MessageKey }> = [
   { id: "off", label: "hooks.off", body: "hooks.offBody" },
+  { id: "cloudflare", label: "hooks.cloudflare", body: "hooks.cloudflareBody" },
   { id: "tailscale", label: "hooks.tailscale", body: "hooks.tailscaleBody" },
   { id: "ngrok", label: "hooks.ngrok", body: "hooks.ngrokBody" },
   { id: "custom", label: "hooks.custom", body: "hooks.customBody" },
 ];
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+/** FUNNEL-APAGAR-1 · Why a change was refused, in the owner's words: never the core's own English line. */
+export function hookFailureKey(e: unknown): MessageKey {
+  const said = errText(e);
+  if (said.includes("could not disable")) return "hooks.err.funnelOff";
+  if (said.includes("https:// origin")) return "hooks.err.badUrl";
+  if (said.includes("reserved domain")) return "hooks.err.badDomain";
+  return "hooks.err.generic";
+}
 /** What each reason the address is not up says; the missing or disconnected tool already has its hint above. */
 const ERRORS: Record<HookError, MessageKey | undefined> = {
   tailscale_missing: undefined,
@@ -22,6 +31,9 @@ const ERRORS: Record<HookError, MessageKey | undefined> = {
   ngrok_timeout: "hooks.err.ngrok_timeout",
   ngrok_failed: "hooks.err.ngrok_failed",
   ngrok_stopped: "hooks.err.ngrok_stopped",
+  cloudflare_download: "hooks.err.cloudflare_download",
+  cloudflare_timeout: "hooks.err.cloudflare_timeout",
+  cloudflare_stopped: "hooks.err.cloudflare_stopped",
   failed: "hooks.err.failed",
 };
 
@@ -43,7 +55,7 @@ export function PublicAddress({ channelId }: { channelId?: string }) {
       setDomain((d) => d || next.domain || "");
       setOwn((value) => value || (next.mode === "custom" ? (next.url ?? "") : ""));
     } catch (e) {
-      notify(t("hooks.failed", { error: errText(e) }));
+      notify(t("hooks.failed", { error: t(hookFailureKey(e)) }));
     }
   }, [t]);
   useEffect(() => {
@@ -63,7 +75,7 @@ export function PublicAddress({ channelId }: { channelId?: string }) {
         }),
       );
     } catch (e) {
-      notify(t("hooks.failed", { error: errText(e) }));
+      notify(t("hooks.failed", { error: t(hookFailureKey(e)) }));
     } finally {
       setBusy(false);
     }
@@ -135,6 +147,11 @@ export function PublicAddress({ channelId }: { channelId?: string }) {
             </Button>
           </div>
         </SettingRow>
+      )}
+      {state.starting && (
+        <p className="pform__hint" role="status">
+          {t("hooks.starting")}
+        </p>
       )}
       {state.error && ERRORS[state.error] && (
         <div className="tgcard__error">

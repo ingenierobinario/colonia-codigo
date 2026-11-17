@@ -4,18 +4,36 @@ import { PublicAddress } from "../config/PublicAddress.tsx";
 import type { ProjectEntry } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";
 import {
+  type Address,
+  closeTempLink,
   copyText,
   exportProject,
+  openTempLink,
   type ProjectExport,
-  publicBase,
   publishProject,
+  readAddress,
   saveProjectFile,
 } from "../data/project-share.ts";
-import { useT } from "../i18n/index.ts";
+import { type MessageKey, useT } from "../i18n/index.ts";
 import "../styles/screens.css";
 import "../styles/project-share.css";
 
 type Mode = "export" | "publish";
+
+const OFF: Address = {
+  mode: "off",
+  url_may_change: false,
+  port: 0,
+  tailscale: { installed: false, connected: false },
+  ngrok: { installed: false },
+};
+/** What the dialog says when the temporary link could not open: in plain words, with the way out. */
+const TEMP_ERRORS: Partial<Record<NonNullable<Address["error"]>, MessageKey>> = {
+  cloudflare_download: "hooks.err.cloudflare_download",
+  cloudflare_timeout: "hooks.err.cloudflare_timeout",
+  cloudflare_stopped: "hooks.err.cloudflare_stopped",
+  failed: "hooks.err.failed",
+};
 
 /**
  * PROYECTO-COMPARTIR-1 · Share a project with someone else who uses Colonia: as a file or text they import, or as a
@@ -27,10 +45,11 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
   const [pkg, setPkg] = useState<ProjectExport>();
   const [failed, setFailed] = useState(false);
   const [path, setPath] = useState<string>();
-  /** The public address: `null` while unknown, `""` when there is none. */
-  const [base, setBase] = useState<string | null>(null);
-  const [address, setAddress] = useState(false);
+  /** The public address as the core has it: `null` while unknown. */
+  const [addr, setAddr] = useState<Address | null>(null);
   const [busy, setBusy] = useState(false);
+  /** ENLACE-TEMPORAL-1 · The temporary link is being opened (the first time Colonia also fetches the tool). */
+  const [opening, setOpening] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -44,18 +63,20 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
       live = false;
     };
   }, [project.id]);
-  const checkAddress = async () => {
-    setBase(null);
-    setBase((await publicBase()) ?? "");
-  };
   useEffect(() => {
     if (mode !== "publish") return;
     let live = true;
-    void publicBase().then((b) => live && setBase(b ?? ""));
+    const read = () => void readAddress().then((a) => live && setAddr(a ?? OFF));
+    read();
+    // Advanced options change the address from inside this dialog: it is read again while the tab is open.
+    const timer = setInterval(read, 5_000);
     return () => {
       live = false;
+      clearInterval(timer);
     };
   }, [mode]);
+  const base = addr?.url && addr.mode !== "off" && !addr.error ? addr.url : "";
+  const temporary = addr?.mode === "cloudflare";
 
   const publish = async (shared: boolean, done: "pshare.refreshed" | "pshare.unpublished" | undefined) => {
     setBusy(true);
@@ -66,6 +87,22 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
     if (done) notify(t(done), "info");
   };
   const link = path && base ? `${base.replace(/\/+$/, "")}${path}` : "";
+  /** One button: the free temporary link opens and the project is published on it. */
+  const createTempLink = async () => {
+    setOpening(true);
+    const a = await openTempLink(setAddr);
+    if (a?.url && !a.error) await publish(true, undefined);
+    setOpening(false);
+  };
+  const unpublish = async () => {
+    await publish(false, "pshare.unpublished");
+    // The temporary link was opened for this: it closes with it. A fixed address set up by the owner stays.
+    if (temporary) {
+      await closeTempLink();
+      setAddr((await readAddress()) ?? OFF);
+    }
+  };
+  const tempError = temporary && addr?.error && !opening ? TEMP_ERRORS[addr.error] : undefined;
 
   return (
     <Dialog
@@ -163,30 +200,56 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
               </Button>
             </div>
           </section>
-        ) : base === null ? (
+        ) : addr === null ? (
           <section className="pshare__card">
             <Skeleton />
           </section>
-        ) : base === "" ? (
-          <section className="pshare__card pshare__card--empty">
-            <h3>{t("pshare.noAddress")}</h3>
-            <p>{t("pshare.noAddressBody")}</p>
-            {address ? (
-              <>
-                <PublicAddress />
-                <Button variant="secondary" size="sm" onClick={() => void checkAddress()}>
-                  {t("pshare.checkAddress")}
+        ) : !base ? (
+          <>
+            <section className="pshare__card" data-testid="pshare-temp">
+              <h3>{t("pshare.temp.title")}</h3>
+              <p>{t("pshare.temp.body")}</p>
+              {opening && (
+                <p role="status" className="pshare__status">
+                  <Icons.Clock size={14} />
+                  <span>{t("hooks.starting")}</span>
+                </p>
+              )}
+              {tempError && (
+                <p role="alert" className="pshare__error">
+                  {t(tempError)}
+                </p>
+              )}
+              <div className="pshare__actions">
+                <Button
+                  disabled={!pkg}
+                  loading={opening}
+                  leadingIcon={<Icons.Link size={14} />}
+                  onClick={() => void createTempLink()}
+                >
+                  {t(tempError ? "pshare.temp.retry" : "pshare.temp.create")}
                 </Button>
-              </>
-            ) : (
-              <Button variant="secondary" leadingIcon={<Icons.Globe size={14} />} onClick={() => setAddress(true)}>
-                {t("pshare.setAddress")}
-              </Button>
-            )}
-          </section>
+              </div>
+            </section>
+            <details className="pshare__advanced">
+              <summary>
+                <span>{t("pshare.advanced")}</span>
+                <small>{t("pshare.advancedBody")}</small>
+              </summary>
+              <div className="pshare__advancedBody">
+                <PublicAddress />
+              </div>
+            </details>
+          </>
         ) : link ? (
           <section className="pshare__card">
             <p>{t("pshare.published")}</p>
+            {temporary && (
+              <p className="pshare__status" data-testid="pshare-temp-note">
+                <Icons.Clock size={14} />
+                <span>{t("pshare.temp.note")}</span>
+              </p>
+            )}
             <div className="pshare__link">
               <Input readOnly className="is-mono" aria-label={t("pshare.link")} value={link} />
               <Button leadingIcon={<Icons.Copy size={14} />} onClick={() => void copyText(link, "pshare.linkCopied")}>
@@ -207,7 +270,7 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
                 variant="secondary"
                 size="sm"
                 disabled={busy}
-                onClick={() => void publish(false, "pshare.unpublished")}
+                onClick={() => void unpublish()}
               >
                 {t("pshare.unpublish")}
               </Button>

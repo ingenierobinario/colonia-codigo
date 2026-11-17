@@ -96,6 +96,53 @@ export async function publicBase(): Promise<string | undefined> {
   }
 }
 
+export type Address = Result<"webhooks.get">;
+
+/** ENLACE-TEMPORAL-1 · Cuánto se espera al enlace temporal: la primera vez Colonia descarga la herramienta. */
+export const TEMP_LINK_WAIT_MS = 4 * 60_000;
+
+/** Cómo está la dirección pública ahora mismo, o nada si no se pudo preguntar. */
+export async function readAddress(): Promise<Address | undefined> {
+  try {
+    return await client.call("webhooks.get", {});
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Abre el enlace temporal (Cloudflare, sin cuenta) y espera a que tenga dirección o diga por qué no. Devuelve el
+ * último estado visto; `onStep` recibe cada uno para que el diálogo muestre que se está preparando.
+ */
+export async function openTempLink(
+  onStep: (a: Address) => void,
+  opts: { every?: number; waitMs?: number } = {},
+): Promise<Address | undefined> {
+  let a: Address;
+  try {
+    a = await client.call("webhooks.set", { mode: "cloudflare" });
+  } catch {
+    notify(t("hooks.err.cloudflare_download"));
+    return undefined;
+  }
+  const end = Date.now() + (opts.waitMs ?? TEMP_LINK_WAIT_MS);
+  for (;;) {
+    onStep(a);
+    if (a.mode !== "cloudflare" || (a.url && !a.error) || (a.error && !a.starting) || Date.now() > end) return a;
+    await new Promise((r) => setTimeout(r, opts.every ?? 1500));
+    a = (await readAddress()) ?? a;
+  }
+}
+
+/** Cierra el enlace temporal (sólo si es el que está abierto: una dirección fija no se toca). */
+export async function closeTempLink(): Promise<void> {
+  const a = await readAddress();
+  if (a?.mode !== "cloudflare") return;
+  try {
+    await client.call("webhooks.set", { mode: "off" });
+  } catch {}
+}
+
 type Source = { link: string } | { content: string };
 
 /** Qué trae un paquete, sin guardar nada. */

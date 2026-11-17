@@ -151,3 +151,32 @@
     flex-direction: column;
   }
 }
+/* ENLACE-TEMPORAL-1 */
+.pshare__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+}
+.pshare__error {
+  color: var(--colonia-danger, #c0392b);
+  font-size: var(--colonia-text-sm);
+}
+.pshare__advanced {
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  padding: 10px 12px;
+}
+.pshare__advanced > summary {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pshare__advanced > summary small {
+  color: var(--colonia-fg-muted);
+}
+.pshare__advancedBody {
+  margin-top: 12px;
+}

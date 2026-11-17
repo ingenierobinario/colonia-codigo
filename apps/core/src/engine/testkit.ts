@@ -116,6 +116,7 @@ export async function startCore(opts: {
   /** The tailscale CLI (by default one that is not connected, never the machine's) and ngrok. */
   tailscale?: TailscaleRun;
   ngrok?: NgrokStart;
+  cloudflared?: NgrokStart;
   clock?: () => Date;
   unseenAfterMs?: number;
   /** Where push notices go (a stand-in Expo push service). */
@@ -190,6 +191,7 @@ export async function startCore(opts: {
       imessage: opts.imessage ?? null,
       tailscale: opts.tailscale ?? (async () => ({ ok: false, out: "not connected" })),
       ...(opts.ngrok ? { ngrok: opts.ngrok } : {}),
+      ...(opts.cloudflared ? { cloudflared: opts.cloudflared } : {}),
       ...(opts.clock ? { clock: opts.clock } : {}),
       ...(opts.unseenAfterMs !== undefined ? { unseenAfterMs: opts.unseenAfterMs } : {}),
       ...(opts.telemetrySink ? { telemetrySink: opts.telemetrySink } : {}),
