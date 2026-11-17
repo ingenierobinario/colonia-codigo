@@ -8,7 +8,7 @@ export type Highlights = { en: string[]; es: string[] };
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.44": {
     en: [
-      "External sessions: the name of each CLI is no longer squashed by the usage switch, which now sits on its own line.",
+      "External sessions: CLI names are no longer squashed; Show what's left sits on its own line.",
       "CLIs that are not installed no longer show a usage switch.",
     ],
     es: [
