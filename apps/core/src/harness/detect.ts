@@ -55,6 +55,11 @@ export async function which(bin: string): Promise<string | undefined> {
   return found;
 }
 
+/** After installing a program: look for it again now, not in a minute. */
+export function forgetWhich(bin: string): void {
+  whichCache.delete(bin);
+}
+
 const UNSTARTABLE = "is a Windows script Colonia cannot start by itself; install the native executable";
 
 /** Codex's native program, from the npm launcher script its shim starts: the SDK starts it without a shell. */

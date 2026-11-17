@@ -20,6 +20,7 @@ import { summary } from "../domain/surfaces.ts";
 import { usagePreferences } from "../engine-usage/preferences.ts";
 import { badRequest, conflict, errorMessage, notFound } from "../errors.ts";
 import { acpAgents, acpEngine } from "../harness/acp/agents.ts";
+import { claudeLogin } from "../harness/claude-login.ts";
 import { createEngineUsage, detectUsageEngines } from "../harness/engine-usage.ts";
 import type { Harnesses } from "../harness/index.ts";
 import { ONESHOT } from "../harness/oneshot.ts";
@@ -48,6 +49,8 @@ export function appHandlers(deps: {
   imessage: boolean;
 }) {
   const { store, harnesses, secrets } = deps;
+  // CLAUDE-CUENTA-1: the Claude plan, signed in through Claude Code; once it changes, the engines are asked again.
+  const claude = claudeLogin({ onChange: () => void harnesses.status(true).catch(() => {}) });
   const engineUsage = usagePreferences(
     store.settings,
     (enabled) =>
@@ -324,6 +327,11 @@ export function appHandlers(deps: {
     "engines.usage": () => engineUsage.read(),
     "engines.usage_preferences": () => engineUsage.get(),
     "engines.set_usage": ({ engine, enabled }) => engineUsage.set(engine, enabled),
+    "claude.status": () => claude.status(),
+    "claude.connect": () => claude.start(),
+    "claude.code": ({ code }) => claude.code(code),
+    "claude.disconnect": () => claude.disconnect(),
+    "claude.install": () => claude.install(),
     "engines.status": async ({ refresh }) => ({
       engines: await harnesses.status(refresh),
     }),

@@ -904,6 +904,20 @@ export const ChatgptStatus = z.object({
 });
 export type ChatgptStatus = z.infer<typeof ChatgptStatus>;
 
+/** The Claude plan (Pro or Max) signed in through the owner's Claude Code (`claude auth login`); Claude Code keeps it. */
+export const ClaudeAccountStatus = z.object({
+  /** Claude Code is on this machine (without it there is nothing to sign in). */
+  installed: z.boolean(),
+  connected: z.boolean(),
+  account: z.string().optional(),
+  /** The subscription Claude Code reports: pro, max… */
+  plan: z.string().optional(),
+  /** A sign-in in progress: Claude's page to open; it may show a code to paste back. */
+  pending: z.object({ url: z.string(), expires_at: z.string() }).optional(),
+  error: z.string().optional(),
+});
+export type ClaudeAccountStatus = z.infer<typeof ClaudeAccountStatus>;
+
 export const ProviderInfo = z.object({
   /** Only a masked key suffix, never a credential. */
   key_hint: z.string().max(4).optional(),

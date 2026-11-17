@@ -23,6 +23,7 @@ import {
   useProviders,
 } from "../data/providers.ts";
 import { type T, useT } from "../i18n/index.ts";
+import { ClaudePlanCard } from "./ClaudePlanCard.tsx";
 import { PROVIDER_PRESETS, presetOf } from "./models/providerPresets.ts";
 import { PlanCard } from "./PlanCard.tsx";
 
@@ -60,14 +61,16 @@ function ProviderMark({ id, label, size }: { id: string; label: string; size: nu
 }
 
 /** Brands people know by their product, not their company: Anthropic is "Claude", OpenAI's API is "ChatGPT". */
-const BRAND: Record<string, "providers.brand.anthropic" | "providers.brand.openai"> = {
+const BRAND: Record<string, "providers.brand.anthropic" | "providers.brand.openai" | "providers.brand.custom"> = {
   anthropic: "providers.brand.anthropic",
   openai: "providers.brand.openai",
+  custom: "providers.brand.custom",
 };
 /** The name shown for a kind; a label the owner typed is kept, only the preset's own label is swapped. */
 export function providerName(t: T, kind: string, label: string): string {
   const brand = BRAND[kind];
-  return brand && label === presetOf(kind)?.label ? t(brand) : label;
+  // "Custom" is the label the core gives a provider set up from its environment (COLONIA_LLM_*).
+  return brand && (label === presetOf(kind)?.label || (kind === "custom" && label === "Custom")) ? t(brand) : label;
 }
 
 /** The kind a provider is for its look: its preset, or its own id for a built-in. */
@@ -103,6 +106,7 @@ export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
     <>
       <div className={compact ? "pgrid pgrid--compact" : "pgrid"}>
         {plan && <PlanCard p={plan} compact={compact} />}
+        <ClaudePlanCard compact={compact} />
         {apis.map((p) => (
           <ProviderCard key={p.id} p={p} compact={compact} onEdit={() => editor.set({ open: { id: p.id } })} />
         ))}

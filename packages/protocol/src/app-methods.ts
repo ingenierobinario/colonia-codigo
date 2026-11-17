@@ -21,6 +21,7 @@ import {
   ChannelStrangers,
   ChannelType,
   ChatgptStatus,
+  ClaudeAccountStatus,
   ContactSuggestion,
   EngineStatus,
   Id,
@@ -888,6 +889,40 @@ export const appMethods = {
   "chatgpt.disconnect": {
     params: z.object({}).strict(),
     result: ChatgptStatus,
+    effect: true,
+    access: "human",
+  },
+  /** Whether the Claude plan is signed in through Claude Code, and a sign-in in progress. */
+  "claude.status": {
+    params: z.object({}).strict(),
+    result: ClaudeAccountStatus,
+    effect: false,
+    access: "human",
+  },
+  /** Starts Claude Code's own sign-in and gives Claude's page to open. */
+  "claude.connect": {
+    params: z.object({}).strict(),
+    result: ClaudeAccountStatus,
+    effect: true,
+    access: "human",
+  },
+  /** The code Claude's page shows at the end, handed to the sign-in in progress. */
+  "claude.code": {
+    params: z.object({ code: z.string().min(1).max(2000) }).strict(),
+    result: ClaudeAccountStatus,
+    effect: true,
+    access: "human",
+  },
+  /** Installs Claude Code with Anthropic's own installer, out of sight, when it is not on this machine. */
+  "claude.install": {
+    params: z.object({}).strict(),
+    result: ClaudeAccountStatus,
+    effect: true,
+    access: "human",
+  },
+  "claude.disconnect": {
+    params: z.object({}).strict(),
+    result: ClaudeAccountStatus,
     effect: true,
     access: "human",
   },

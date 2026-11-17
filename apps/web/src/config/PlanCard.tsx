@@ -10,7 +10,7 @@ import { PlanLogin } from "./PlanLogin.tsx";
 
 /**
  * The ChatGPT plan as a model API of Colonia's own loop, shown as Codex: first among the APIs, fixed (signed in or out,
- * switched on or off, never removed). Claude's plan has no counterpart: it runs only in Claude Code (D-043).
+ * switched on or off, never removed). Claude's plan has its own card (ClaudePlanCard), signed in through Claude Code.
  */
 export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: boolean }) {
   const t = useT();
@@ -35,16 +35,18 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
           {!connected ? t("plans.notConnected") : p.enabled ? t("providers.active") : t("providers.off")}
         </Badge>
       </div>
-      {!(compact && !connected) && <dl className="pcard__rows">
-        <dt>{t("plans.account")}</dt>
-        <dd>{connected ? (status?.account ?? t("plans.connected")) : "—"}</dd>
-        {!compact && (
-          <>
-            <dt>{t("plans.models")}</dt>
-            <dd>{count ? t("plans.modelsCount", { count }) : "—"}</dd>
-          </>
-        )}
-      </dl>}
+      {!(compact && !connected) && (
+        <dl className="pcard__rows">
+          <dt>{t("plans.account")}</dt>
+          <dd>{connected ? (status?.account ?? t("plans.connected")) : "—"}</dd>
+          {!compact && (
+            <>
+              <dt>{t("plans.models")}</dt>
+              <dd>{count ? t("plans.modelsCount", { count }) : "—"}</dd>
+            </>
+          )}
+        </dl>
+      )}
       <div className="pcard__actions">
         <Switch
           size="sm"

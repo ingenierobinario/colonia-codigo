@@ -391,3 +391,22 @@
 .catalog__summary .colonia-engine {
   flex: none;
 }
+
+/* CLAUDE-CUENTA-1: the Claude plan beside ChatGPT's, tinted with Claude's orange. */
+.pcard--claude {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #d97757 14%, var(--colonia-surface)) 0%,
+    var(--colonia-surface) 65%
+  );
+}
+.planlogin__paste {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.planlogin__paste > :first-child {
+  flex: 1 1 200px;
+  min-width: 0;
+}
