@@ -2,6 +2,7 @@
 // written there and read back through the index; what only Colonia knows (model choice, browser profile) lives in the
 // database. Global agents (no project) live in the database.
 import { type Agent, type ModelChoice, names, parentIn, reportsOf } from "@colonia/protocol";
+import { readOrganization } from "../apc/org.ts";
 import type { ApcSync } from "../apc/sync.ts";
 import {
   archiveAgentFile,
@@ -91,7 +92,7 @@ export function agentHandlers(store: Store, apc: ApcSync, engines: EngineIds, to
     return publicAgent(a);
   };
 
-  return {
+  const handlers = {
     "agents.list": () => ({
       agents: agentDirectory(store),
       // A deleted agent's prompt and settings are gone already; what is left is who it was.
@@ -258,6 +259,30 @@ export function agentHandlers(store: Store, apc: ApcSync, engines: EngineIds, to
       store.memories.removeAgentNotes(cur.id);
       store.agents.purge(cur.id);
       return { ok: true as const };
+    },
+  } satisfies Partial<Handlers>;
+
+  return {
+    ...handlers,
+    "org.assign": ({ project, agent, area, role }) => {
+      const cur = store.agents.get(agent, { activeOnly: true });
+      if (!cur || cur.project_id !== project) throw badRequest("El agente ya no pertenece al equipo de este proyecto.");
+      const kind = project ? store.projects.get(project)?.kind : store.settings.read("base_project").kind;
+      if (kind !== "company") throw badRequest("Este proyecto debe ser una empresa para asignar áreas y roles.");
+      const org = project ? readOrganization(rootOf(project)) : store.settings.read("base_org");
+      if (area && !org.areas.some((a) => a.slug === area)) throw badRequest("El área ya no existe en este proyecto.");
+      const target = role ? org.roles.find((r) => r.slug === role) : undefined;
+      if (role && !target) throw badRequest("El rol ya no existe en este proyecto.");
+      const allowed = (r: (typeof org.roles)[number]) => !r.area || r.area === area;
+      const current = role === undefined ? org.roles.filter((r) => r.name === cur.role) : [];
+      if ((target && !allowed(target)) || (current.length && !current.some(allowed))) {
+        throw badRequest("El rol pertenece a otra área.");
+      }
+      return handlers["agents.update"]({
+        agent,
+        area: area ?? "",
+        ...(role !== undefined ? { role: target?.name ?? "" } : {}),
+      });
     },
   } satisfies Partial<Handlers>;
 }

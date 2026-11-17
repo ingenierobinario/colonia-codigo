@@ -6,6 +6,7 @@ import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import { realProjectId } from "./identity.ts";
 import { notify } from "./notices.ts";
+import { data } from "./state.ts";
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const store = createStore<{ orgs: Record<string, Organization> }>({ orgs: {} });
@@ -17,6 +18,20 @@ export async function loadOrg(pid: string): Promise<void> {
     store.set((s) => ({ orgs: { ...s.orgs, [pid]: org } }));
   } catch (e) {
     notify(t("error.load", { error: errText(e) }));
+  }
+}
+
+/** Guarda la asignación en el agente y actualiza también el organigrama. */
+export async function assignAgent(pid: string, agent: string, area: string | null, role: string | null | undefined) {
+  const project = realProjectId(pid);
+  try {
+    const next = await client.call("org.assign", { project, agent, area, role });
+    data.set((s) => ({ agents: { ...s.agents, [next.id]: next } }));
+    return true;
+  } catch {
+    notify(t("org.assignError"));
+    await loadOrg(pid);
+    return false;
   }
 }
 

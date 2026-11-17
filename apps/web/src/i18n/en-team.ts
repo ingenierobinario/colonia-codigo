@@ -3,7 +3,15 @@ export const enTeam = {
   "team.import": "Import",
   "team.import.makesCompany":
     "This team makes the project a company: its areas and roles are added, and its routines start running.",
-  "org.note": "Areas group the team; each agent takes an area and a role. The agents of this project read them.",
+  "org.note":
+    "Create an area for each team and a role for each job. Choose “Assign agent” to add someone, or select their name to change their assignment.",
+  "org.assign": "Assign agent",
+  "org.assignHint":
+    "The area is the team the agent works in. The role describes their job. Choose a role from that area or a general role.",
+  "org.chooseAgent": "Choose a project agent",
+  "org.createAgentFirst": "Create your first agent in the Agents tab to assign them.",
+  "org.assignError":
+    "Couldn’t save the assignment. Check that the agent, area and role are still available and try again.",
   "org.area": "Area",
   "org.role": "Role",
   "org.addArea": "Add an area",
@@ -65,6 +73,8 @@ export const enTeam = {
   "team.stat.chats": "Chats",
   "team.stat.tasks": "Open tasks",
   "team.stat.routines": "Routines",
+  "team.chartHint":
+    "Lines connect each agent to their supervisor. The area shows which team they belong to and the role describes their work.",
   "team.noDescription": "No description yet.",
   "team.superDesc": "The system's super-agent. Running the {profile} profile.",
   "team.superDescNone": "The system's super-agent. No profile — it answers when you write.",

@@ -1,5 +1,15 @@
 import type { Agent } from "@colonia/protocol";
-import { AgentAvatar, Button, ContextMenu, EmptyState, IconButton, Icons, Menu, SegmentedControl, Tabs } from "@colonia/ui";
+import {
+  AgentAvatar,
+  Button,
+  ContextMenu,
+  EmptyState,
+  IconButton,
+  Icons,
+  Menu,
+  SegmentedControl,
+  Tabs,
+} from "@colonia/ui";
 import { type ReactNode, useMemo, useState } from "react";
 import { AgentModelPicker } from "../config/models/AgentModelPicker.tsx";
 import { PROFILE_KEY } from "../data/engines.ts";
@@ -86,7 +96,9 @@ function ProjectTeam({ project, switcher }: { project: ProjectEntry; switcher?: 
             </div>
           )}
           <div className="team__note">
-            {project.isDefault ? (
+            {mode === "tree" ? (
+              t("team.chartHint")
+            ) : project.isDefault ? (
               t("team.globalNote")
             ) : (
               <>

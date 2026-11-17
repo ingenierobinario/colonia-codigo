@@ -108,3 +108,63 @@ test("an organization.json saved with a BOM is read as written", async () => {
   );
   assert.deepEqual((await env.client.call("org.get", { project })).areas, [{ slug: "sales", name: "Ventas" }]);
 });
+
+test("la asignación comprueba proyecto, área y rol antes de guardar en el archivo del agente", async () => {
+  const { project: empresa } = await env.client.call("projects.create", { name: "Prueba de áreas", kind: "company" });
+  const agent = await env.client.call("agents.create", {
+    project_id: empresa.id,
+    name: "Ana",
+    slug: "ana",
+    role: "Perfil anterior",
+    prompt: "Instrucciones originales",
+  });
+  const other = await env.client.call("agents.create", { name: "Luz", slug: "luz", role: "", prompt: "" });
+  await env.client.call("org.set", {
+    project: empresa.id,
+    organization: {
+      areas: [
+        { slug: "ventas", name: "Ventas" },
+        { slug: "compras", name: "Compras" },
+      ],
+      roles: [
+        { slug: "negociar", name: "Negociación", area: "ventas" },
+        { slug: "apoyo", name: "Apoyo" },
+      ],
+    },
+  });
+  const assign = { project: empresa.id, agent: agent.id, area: "ventas", role: "negociar" };
+  for (const params of [
+    { ...assign, agent: other.id },
+    { ...assign, project: undefined },
+    { ...assign, area: "externa" },
+    { ...assign, role: "externo" },
+    { ...assign, area: "compras" },
+  ])
+    await assert.rejects(env.client.call("org.assign", params));
+  assert.equal((await env.client.call("agents.get", { agent: agent.id })).agent.role, "Perfil anterior");
+  // Un rol personalizado que ya tenía el agente se conserva al cambiar solamente de área.
+  await env.client.call("org.assign", { project: empresa.id, agent: agent.id, area: "compras" });
+  assert.equal((await env.client.call("agents.get", { agent: agent.id })).agent.role, "Perfil anterior");
+  const saved = await env.client.call("org.assign", assign);
+  assert.deepEqual([saved.area, saved.role], ["ventas", "Negociación"]);
+  assert.ok(empresa.path);
+  assert.match(fs.readFileSync(path.join(empresa.path, ".apc", "agents", "ana.md"), "utf8"), /Negociación/);
+  // Un rol de área tampoco puede quedar en otra área omitiendo el rol.
+  await assert.rejects(env.client.call("org.assign", { project: empresa.id, agent: agent.id, area: "compras" }));
+  const general = await env.client.call("org.assign", { ...assign, area: null, role: "apoyo" });
+  assert.deepEqual([general.area, general.role], [undefined, "Apoyo"]);
+  const cleared = await env.client.call("org.assign", { ...assign, area: null, role: null });
+  assert.deepEqual([cleared.area, cleared.role], [undefined, ""]);
+  assert.equal((await env.client.call("agents.get", { agent: agent.id })).prompt.trim(), "Instrucciones originales");
+  await env.client.call("agents.archive", { agent: agent.id });
+  await assert.rejects(env.client.call("org.assign", assign));
+});
+
+test("el proyecto base solamente asigna sus propios agentes", async () => {
+  await env.client.call("projects.update_base", { kind: "company" });
+  await env.client.call("org.set", { organization: { areas: [{ slug: "gestion", name: "Gestión" }], roles: [] } });
+  const next = await env.client.call("org.assign", { agent: "scout", area: "gestion", role: null });
+  assert.equal(next.area, "gestion");
+  await env.client.call("projects.update_base", { kind: "software" });
+  await assert.rejects(env.client.call("org.assign", { agent: "scout", area: "gestion", role: null }));
+});

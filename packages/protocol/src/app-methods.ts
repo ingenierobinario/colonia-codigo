@@ -552,6 +552,20 @@ export const appMethods = {
     effect: true,
     access: "human",
   },
+  "org.assign": {
+    params: z
+      .object({
+        project: Id.optional(),
+        agent: Id,
+        area: Id.nullable(),
+        /** Slug del rol. null lo quita y omitirlo conserva el rol actual. */
+        role: Id.nullable().optional(),
+      })
+      .strict(),
+    result: Agent,
+    effect: true,
+    access: "human",
+  },
   /** Registers a folder as a project and reads its AGENTS.md and .apc/ (never writes them). */
   "projects.register": {
     params: z

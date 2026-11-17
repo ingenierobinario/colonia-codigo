@@ -4,6 +4,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { blobOf } from "../../data/identity.ts";
 import { useT } from "../../i18n/index.ts";
 import { branchOf, layoutTeam, NODE } from "./teamLayout.ts";
+import { useChartSizes } from "./useChartSizes.ts";
 
 export type NodeInfo = {
   status: "idle" | "running" | "waiting";
@@ -59,36 +60,44 @@ export function TeamCanvas({
   const lit = hovered ? branchOf(layout, hovered) : undefined;
   const pad = 32;
   const W = layout.width + pad * 2;
-  const H = layout.height + pad * 2;
+  const stage = useRef<HTMLDivElement>(null);
+  const sizes = useChartSizes(stage, layout);
+  const rowY = (y: number) => y * sizes.scaleY;
+  const heightOf = (id: string) => sizes.heights.get(id) ?? NODE.h;
+  const H = rowY(layout.height) + pad * 2;
 
-  const box = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
-  /** The width the tree can use: the scroller's inside, so fitting never leaves a horizontal scrollbar. */
-  const room = () => scroller.current?.clientWidth ?? box.current?.clientWidth ?? W;
   const [zoom, setZoom] = useState(1);
-  const [fitted, setFitted] = useState(false);
-  // Start fitted to the width when the tree is wider than the screen; the owner can zoom from there.
+  const [autoFit, setAutoFit] = useState(true);
   useLayoutEffect(() => {
-    if (fitted || !box.current) return;
-    const avail = scroller.current?.clientWidth ?? box.current.clientWidth;
-    if (avail > 0 && W > avail) setZoom(Math.max(ZOOMS[0], Math.min(1, avail / W)));
-    setFitted(true);
-  }, [W, fitted]);
+    const el = scroller.current;
+    if (!autoFit || !el) return;
+    const fit = () => {
+      if (el.clientWidth > 0) setZoom(Math.max(ZOOMS[0], Math.min(1, el.clientWidth / W)));
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [autoFit, W]);
   // In: the first step above the current zoom; out: the last one below it (a fitted zoom sits between steps).
   const step = (dir: 1 | -1) => {
     const next = dir > 0 ? ZOOMS.find((z) => z > zoom + 0.001) : [...ZOOMS].reverse().find((z) => z < zoom - 0.001);
-    if (next) setZoom(next);
+    if (next) {
+      setAutoFit(false);
+      setZoom(next);
+    }
   };
-  const fit = () => setZoom(Math.max(ZOOMS[0], Math.min(1, room() / W)));
+  const fit = () => setAutoFit(true);
   const at = new Map(layout.nodes.map((n) => [n.id, n]));
   const curve = (from: string, to: string) => {
     const a = at.get(from);
     const b = at.get(to);
     if (!a || !b) return undefined;
     const x1 = pad + a.x + NODE.w / 2;
-    const y1 = pad + a.y + (b.y > a.y ? NODE.h : 0);
+    const y1 = pad + rowY(a.y) + (b.y > a.y ? heightOf(from) : 0);
     const x2 = pad + b.x + NODE.w / 2;
-    const y2 = pad + b.y + (b.y > a.y ? 0 : NODE.h);
+    const y2 = pad + rowY(b.y) + (b.y > a.y ? 0 : heightOf(to));
     const mid = (y1 + y2) / 2;
     return `M ${x1} ${y1} C ${x1} ${mid} ${x2} ${mid} ${x2} ${y2}`;
   };
@@ -97,10 +106,10 @@ export function TeamCanvas({
   const extra = [...live].filter((k) => !tree.has(k)).map((k) => k.split(">") as [string, string]);
 
   return (
-    <div className="teamcanvas" ref={box}>
+    <div className="teamcanvas">
       <div className="teamcanvas__scroll" ref={scroller}>
         <div className="teamcanvas__sizer" style={{ width: W * zoom, height: H * zoom }}>
-          <div className="teamcanvas__stage" style={{ width: W, height: H, transform: `scale(${zoom})` }}>
+          <div ref={stage} className="teamcanvas__stage" style={{ width: W, height: H, transform: `scale(${zoom})` }}>
             <svg className="teamcanvas__edges" width={W} height={H} aria-hidden="true">
               {layout.edges.map((e) => {
                 const d = curve(e.from, e.to);
@@ -117,7 +126,7 @@ export function TeamCanvas({
                   .filter(Boolean)
                   .join(" ");
                 return (
-                  <g key={`${e.from}>${e.to}`} className={cls}>
+                  <g key={`${e.from}>${e.to}`} className={cls} data-parent={e.from} data-child={e.to}>
                     <path d={d} className="teamcanvas__line" />
                     {on && <Pulse d={d} />}
                   </g>
@@ -137,7 +146,7 @@ export function TeamCanvas({
               <span
                 key={`${p.parent}:${p.area}`}
                 className={`teamcanvas__pill tone-${toneOf(p.area)}`}
-                style={{ left: pad + p.x, top: pad + p.y }}
+                style={{ left: pad + p.x, top: pad + rowY(p.y), maxWidth: NODE.w }}
               >
                 {areaName(p.area)} · {p.count}
               </span>
@@ -156,7 +165,8 @@ export function TeamCanvas({
                   render={
                     <div
                       className="teamcanvas__node"
-                      style={{ left: pad + n.x, top: pad + n.y, width: NODE.w, height: NODE.h }}
+                      data-agent={n.id}
+                      style={{ left: pad + n.x, top: pad + rowY(n.y), width: NODE.w }}
                     />
                   }
                 >
@@ -164,7 +174,14 @@ export function TeamCanvas({
                     name={a.name}
                     {...(a.slug || a.id ? { slug: a.slug ?? a.id } : {})}
                     {...(blobOf(a) ? { blob: blobOf(a) } : {})}
-                    {...(a.role ? { role: a.role } : {})}
+                    assignment={
+                      <dl className="teamcanvas__assignment">
+                        <dt>{t("org.area")}</dt>
+                        <dd>{a.area ? areaName(a.area) : t("agentedit.noArea")}</dd>
+                        <dt>{t("org.role")}</dt>
+                        <dd>{a.role?.trim() || t("agentedit.noRole")}</dd>
+                      </dl>
+                    }
                     description={description}
                     descriptionEmpty={descriptionEmpty}
                     {...(i.lead ? { lead: i.lead } : {})}

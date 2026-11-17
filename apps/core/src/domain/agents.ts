@@ -103,8 +103,9 @@ export function agentsRepo({ one, all, run }: Sql, changed: () => void) {
         qb.selectFrom("agents").selectAll().where("archived", "=", 0).orderBy("kind", "desc").orderBy("name"),
       ).map(toAgent);
     },
-    get(id: string): AgentRecord | undefined {
-      const r = one(qb.selectFrom("agents").selectAll().where("id", "=", id));
+    get(id: string, options?: { activeOnly: true }): AgentRecord | undefined {
+      const query = qb.selectFrom("agents").selectAll().where("id", "=", id);
+      const r = one(options?.activeOnly ? query.where("archived", "=", 0) : query);
       return r ? toAgent(r) : undefined;
     },
     /**

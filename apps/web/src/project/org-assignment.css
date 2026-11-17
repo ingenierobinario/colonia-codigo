@@ -1,0 +1,76 @@
+.org-members__agent > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.org .org__grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+.org .org__area,
+.org .colonia-card__titles,
+.org-assignment .taskform > * {
+  min-width: 0;
+}
+.org .org__area .colonia-card__title,
+.org .org__area .colonia-card__desc,
+.org .org__roles .colonia-btn,
+.org .org__roles .colonia-btn__label,
+.org-assignment .colonia-select__value {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+}
+.org .org__roles .colonia-btn,
+.org-assignment .colonia-select {
+  height: auto;
+  min-height: var(--colonia-control-h-sm);
+  max-width: 100%;
+}
+.org-members {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+.org-members:not(:empty) {
+  margin-top: 12px;
+}
+.org-members__list {
+  display: grid;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.org-members__agent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  text-align: start;
+  background: transparent;
+  border: 0;
+  border-radius: var(--colonia-radius-sm);
+  cursor: pointer;
+  color: var(--colonia-fg);
+  font: inherit;
+  font-size: var(--colonia-text-sm);
+  padding: 6px;
+  max-width: 100%;
+}
+.org-members__agent:hover,
+.org-members__agent:focus-visible {
+  background: var(--colonia-fill-hover);
+}
+.org-members__agent span {
+  color: var(--colonia-fg-muted);
+}
+
+body:has(.org-assignment) .colonia-select__popup {
+  max-width: min(var(--anchor-width), calc(100vw - 24px));
+}
+body:has(.org-assignment) .colonia-select__item {
+  height: auto;
+}
+body:has(.org-assignment) .colonia-select__item > .colonia-menu__text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

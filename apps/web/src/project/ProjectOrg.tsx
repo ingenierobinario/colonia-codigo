@@ -1,7 +1,19 @@
 // A company project's areas and roles: a card per area with its roles, then the general roles. Agents take an area
 // and a role from here (the agent editor offers them); the agents of the project read them in their prompt.
 import type { Organization } from "@colonia/protocol";
-import { Button, Card, Dialog, EmptyState, Field, IconButton, Icons, Input, Select, Skeleton, Textarea } from "@colonia/ui";
+import {
+  Button,
+  Card,
+  Dialog,
+  EmptyState,
+  Field,
+  IconButton,
+  Icons,
+  Input,
+  Select,
+  Skeleton,
+  Textarea,
+} from "@colonia/ui";
 import { type ReactNode, useMemo, useState } from "react";
 import { slugOf } from "../common/slug.ts";
 import { inProject, type ProjectEntry } from "../data/identity.ts";
@@ -9,6 +21,7 @@ import { saveOrg, useOrg } from "../data/org.ts";
 import { updateBase, updateProject } from "../data/projects.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { AreaMembers, type AssignmentTarget, OrgAssignment } from "./OrgAssignment.tsx";
 
 type Area = Organization["areas"][number];
 type Role = Organization["roles"][number];
@@ -19,6 +32,7 @@ export function ProjectOrg({ project, switcher }: { project: ProjectEntry; switc
   const org = useOrg(project.id);
   const agents = useData((s) => s.agents);
   const [area, setArea] = useState<Area | "new">();
+  const [assignment, setAssignment] = useState<AssignmentTarget>();
   const [role, setRole] = useState<{ role?: Role; area?: string }>();
   const team = useMemo(() => Object.values(agents).filter((a) => inProject(a, project.id)), [agents, project.id]);
   const agentCount = (n: number) => (n === 1 ? t("org.agents.one") : t("org.agents", { n }));
@@ -27,6 +41,7 @@ export function ProjectOrg({ project, switcher }: { project: ProjectEntry; switc
   if (!org) return <Skeleton shape="block" height={200} />;
   const rolesOf = (slug: string | undefined) => org.roles.filter((r) => (slug ? r.area === slug : !r.area));
   const general = rolesOf(undefined);
+  const unassigned = team.filter((a) => !org.areas.some((area) => area.slug === a.area));
   const chips = (roles: Role[], areaSlug?: string) => (
     <div className="org__roles">
       {roles.map((r) => (
@@ -50,7 +65,10 @@ export function ProjectOrg({ project, switcher }: { project: ProjectEntry; switc
       <div className="team__head">
         <div className="team__titles">
           {switcher ?? <div className="team__title">{t("project.tab.org")}</div>}
-          <div className="team__note">{t("org.note")}</div>
+          <div className="team__note">
+            {t("org.note")}
+            {team.length === 0 && <> {t("org.createAgentFirst")}</>}
+          </div>
         </div>
         <Button size="sm" variant="secondary" leadingIcon={<Icons.Plus size={14} />} onClick={() => setRole({})}>
           {t("org.role")}
@@ -94,14 +112,36 @@ export function ProjectOrg({ project, switcher }: { project: ProjectEntry; switc
               }
             >
               {chips(rolesOf(a.slug), a.slug)}
+              <AreaMembers
+                area={a.slug}
+                members={team.filter((member) => member.area === a.slug)}
+                canAssign={team.length > 0}
+                onAssign={setAssignment}
+              />
             </Card>
           ))}
           {general.length > 0 && (
             <Card className="org__area" title={t("org.general")} description={t("org.generalHint")}>
               {chips(general)}
+              <AreaMembers area="" members={[]} canAssign={team.length > 0} onAssign={setAssignment} />
+            </Card>
+          )}
+          {unassigned.length > 0 && (
+            <Card className="org__area" title={t("agentedit.noArea")}>
+              <AreaMembers area="" members={unassigned} canAssign={false} onAssign={setAssignment} />
             </Card>
           )}
         </div>
+      )}
+      {assignment && (
+        <OrgAssignment
+          key={project.id}
+          pid={project.id}
+          team={team}
+          org={org}
+          target={assignment}
+          onClose={() => setAssignment(undefined)}
+        />
       )}
       {area && (
         <AreaDialog
@@ -326,10 +366,7 @@ function NotCompany({ project, switcher }: { project: ProjectEntry; switcher?: R
   return (
     <div className="team org">
       <div className="team__head">
-        <div className="team__titles">
-          {switcher ?? <div className="team__title">{t("project.tab.org")}</div>}
-          <div className="team__note">{t("org.note")}</div>
-        </div>
+        <div className="team__titles">{switcher ?? <div className="team__title">{t("project.tab.org")}</div>}</div>
       </div>
       <EmptyState
         variant="dashed"

@@ -5,7 +5,15 @@ export const esTeam: Partial<Record<MessageKey, string>> = {
   "team.import": "Importar",
   "team.import.makesCompany":
     "Este equipo convierte el proyecto en una empresa: añade sus áreas y roles, y sus rutinas empiezan a ejecutar.",
-  "org.note": "Las áreas agrupan al equipo; cada agente toma un área y un rol. Los agentes de este proyecto los leen.",
+  "org.note":
+    "Crea un área por equipo y un rol por función. Pulsa «Asignar agente» para incorporar a alguien, o su nombre para cambiar su asignación.",
+  "org.assign": "Asignar agente",
+  "org.assignHint":
+    "El área indica en qué equipo trabaja el agente. El rol describe su función. Puedes elegir un rol del área o un rol general.",
+  "org.chooseAgent": "Elige un agente del proyecto",
+  "org.createAgentFirst": "Crea tu primer agente en la pestaña Agentes para poder asignarlo.",
+  "org.assignError":
+    "No se pudo guardar la asignación. Comprueba que el agente, el área y el rol siguen disponibles e inténtalo de nuevo.",
   "org.area": "Área",
   "org.role": "Rol",
   "org.addArea": "Añadir un área",
@@ -67,6 +75,8 @@ export const esTeam: Partial<Record<MessageKey, string>> = {
   "team.stat.chats": "Chats",
   "team.stat.tasks": "Tareas abiertas",
   "team.stat.routines": "Rutinas",
+  "team.chartHint":
+    "Las líneas unen a cada agente con su superior. El área indica a qué equipo pertenece y el rol describe su función.",
   "team.noDescription": "Sin descripción todavía.",
   "team.superDesc": "Super-agente del sistema. Ejecuta el perfil {profile}.",
   "team.superDescNone": "Super-agente del sistema. Sin perfil — responde cuando le escribes.",

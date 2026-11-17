@@ -11,6 +11,7 @@ export interface AgentNodeProps {
   slug?: string;
   blob?: string;
   role?: string;
+  assignment?: ReactNode;
   /** Up to two lines; the slot is always reserved so cards share one height. */
   description?: string;
   /** Muted stand-in when there is no real description (keeps the two-line slot). */
@@ -42,6 +43,7 @@ export function AgentNode({
   slug,
   blob,
   role,
+  assignment,
   description,
   descriptionEmpty = false,
   lead,
@@ -97,6 +99,7 @@ export function AgentNode({
           )}
         </div>
       )}
+      {assignment}
       <p className={cx("colonia-agentnode__desc", descriptionEmpty && "is-empty")}>{description || "\u00a0"}</p>
       {stats.length > 0 && (
         <ul className="colonia-agentnode__stats">
