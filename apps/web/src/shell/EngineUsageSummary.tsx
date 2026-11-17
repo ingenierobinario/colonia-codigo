@@ -86,7 +86,9 @@ export default function EngineUsageSummary({
       {!loading && !failed && report && !report.engines.filter(showsUsage).length && (
         <p className="usage__note">{t("engineUsage.empty")}</p>
       )}
-      {!loading && !failed && report?.engines.filter(showsUsage).map((engine) => <EngineBlock key={engine.id} engine={engine} />)}
+      {!loading &&
+        !failed &&
+        report?.engines.filter(showsUsage).map((engine) => <EngineBlock key={engine.id} engine={engine} />)}
       {!loading && !failed && report && (
         <p className="usage__note">{t("engineUsage.updated", { at: dateLabel(report.checked_at) })}</p>
       )}
@@ -132,7 +134,13 @@ function EngineBlock({ engine }: { engine: Report["engines"][number] }) {
         </div>
         {!engine.available && (
           <span className="usage__state">
-            {t(!engine.cli_installed ? "engineUsage.notInstalled" : engine.reason === "signed_out" ? "engineUsage.signedOut" : "engineUsage.unavailable")}
+            {t(
+              !engine.cli_installed
+                ? "engineUsage.notInstalled"
+                : engine.reason === "signed_out"
+                  ? "engineUsage.signedOut"
+                  : "engineUsage.unavailable",
+            )}
           </span>
         )}
       </div>
@@ -140,26 +148,24 @@ function EngineBlock({ engine }: { engine: Report["engines"][number] }) {
         engine.windows.map((window) => {
           const remaining = remainingOf(window);
           return (
-          <div className="usage__block" key={window.id}>
-            <div className="usage__headrow">
-              <span className="usage__figure">{windowLabel(window, t)}</span>
-              <span className="usage__figure">
-                {t("engineUsage.remaining", { pct: remaining })}
-              </span>
+            <div className="usage__block" key={window.id}>
+              <div className="usage__headrow">
+                <span className="usage__figure">{windowLabel(window, t)}</span>
+                <span className="usage__figure">{t("engineUsage.remaining", { pct: remaining })}</span>
+              </div>
+              {/* CUOTAS-IA-2: the bar is what is left, the same number its text says. */}
+              <Meter
+                size="sm"
+                label={`${engine.label} · ${windowLabel(window, t)}`}
+                segments={[{ value: remaining, tone: remainingTone(remaining) }]}
+                max={100}
+                valueText={t("engineUsage.remaining", { pct: remaining })}
+                className="engine-usage__meter"
+              />
+              {window.resets_at && (
+                <p className="usage__note">{t("engineUsage.resets", { at: dateLabel(window.resets_at) })}</p>
+              )}
             </div>
-            {/* CUOTAS-IA-2: the bar is what is left, the same number its text says. */}
-            <Meter
-              size="sm"
-              label={`${engine.label} · ${windowLabel(window, t)}`}
-              segments={[{ value: remaining, tone: remainingTone(remaining) }]}
-              max={100}
-              valueText={t("engineUsage.remaining", { pct: remaining })}
-              className="engine-usage__meter"
-            />
-            {window.resets_at && (
-              <p className="usage__note">{t("engineUsage.resets", { at: dateLabel(window.resets_at) })}</p>
-            )}
-          </div>
           );
         })}
     </section>

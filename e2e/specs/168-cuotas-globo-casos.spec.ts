@@ -35,7 +35,10 @@ const CASES: Array<[string, unknown[], (s: import("@playwright/test").Locator) =
   ],
   [
     "nada instalado",
-    [engine("claude", "Claude", { cli_installed: false, reason: "cli_not_found" }), engine("codex", "Codex", { cli_installed: false, reason: "cli_not_found" })],
+    [
+      engine("claude", "Claude", { cli_installed: false, reason: "cli_not_found" }),
+      engine("codex", "Codex", { cli_installed: false, reason: "cli_not_found" }),
+    ],
     async (s) => {
       await expect(s.locator(".colonia-meter")).toHaveCount(0);
     },
@@ -45,7 +48,10 @@ const CASES: Array<[string, unknown[], (s: import("@playwright/test").Locator) =
     [ok("claude", "Claude", [100, 100])],
     async (s) => {
       await expect(s.getByRole("img", { name: "Claude · 5 horas: 0% disponible" })).toBeVisible();
-      const fill = await s.locator(".engine-usage__meter .colonia-meter__fill").first().evaluate((el) => (el as HTMLElement).style.width);
+      const fill = await s
+        .locator(".engine-usage__meter .colonia-meter__fill")
+        .first()
+        .evaluate((el) => (el as HTMLElement).style.width);
       expect(Number.parseFloat(fill)).toBe(0);
     },
   ],
@@ -54,7 +60,10 @@ const CASES: Array<[string, unknown[], (s: import("@playwright/test").Locator) =
     [ok("codex", "Codex", [0, 0])],
     async (s) => {
       await expect(s.getByRole("img", { name: "Codex · 5 horas: 100% disponible" })).toBeVisible();
-      const fill = await s.locator(".engine-usage__meter .colonia-meter__fill").first().evaluate((el) => (el as HTMLElement).style.width);
+      const fill = await s
+        .locator(".engine-usage__meter .colonia-meter__fill")
+        .first()
+        .evaluate((el) => (el as HTMLElement).style.width);
       expect(Number.parseFloat(fill)).toBe(100);
       await expect(s.getByText(/Se renueva/).first()).toBeVisible();
     },

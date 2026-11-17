@@ -228,22 +228,29 @@ test("una lectura de cuota que falla se reintenta y, si sigue fallando, se ense�
     },
     signedIn: async () => true,
   });
-  assert.equal((await report()).engines[0]!.status, "ok");
+  assert.equal((await report()).engines[0]?.status, "ok");
   mode = "fail-once";
   calls = 0;
-  const retried = (await report()).engines[0]!;
+  const [retried] = (await report()).engines;
+  assert.ok(retried);
   assert.equal(calls, 2);
-  assert.equal(retried.windows[0]!.used_percent, 15);
+  assert.equal(retried.windows[0]?.used_percent, 15);
   mode = "fail";
-  const kept = (await report()).engines[0]!;
+  const [kept] = (await report()).engines;
+  assert.ok(kept);
   assert.equal(kept.status, "ok");
-  assert.equal(kept.windows[0]!.used_percent, 15);
+  assert.equal(kept.windows[0]?.used_percent, 15);
 });
 
 test("sin datos y sin sesión dice «sin sesión»; sin datos y con sesión no lo dice", async () => {
   const make = (signed: boolean | undefined) =>
-    createEngineUsage({ status: async () => [status("codex")], binary: async () => "fixture", read: async () => undefined, signedIn: async () => signed });
-  assert.equal((await make(false)()).engines[0]!.reason, "signed_out");
-  assert.equal((await make(true)()).engines[0]!.reason, "not_available");
-  assert.equal((await make(undefined)()).engines[0]!.reason, "not_available");
+    createEngineUsage({
+      status: async () => [status("codex")],
+      binary: async () => "fixture",
+      read: async () => undefined,
+      signedIn: async () => signed,
+    });
+  assert.equal((await make(false)()).engines[0]?.reason, "signed_out");
+  assert.equal((await make(true)()).engines[0]?.reason, "not_available");
+  assert.equal((await make(undefined)()).engines[0]?.reason, "not_available");
 });

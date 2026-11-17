@@ -195,7 +195,10 @@ export function createEngineUsage(deps: {
             windows: windows ?? [],
             ...(windows
               ? {}
-              : { reason: (await deps.signedIn?.(engine.id)) === false ? ("signed_out" as const) : ("not_available" as const) }),
+              : {
+                  reason:
+                    (await deps.signedIn?.(engine.id)) === false ? ("signed_out" as const) : ("not_available" as const),
+                }),
           };
         }
       }),
