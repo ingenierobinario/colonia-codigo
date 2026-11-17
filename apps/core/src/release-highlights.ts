@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.46": {
+    en: [
+      "The AI quotas bar now shows how much you have left, as a percentage.",
+      "Codex no longer shows as disconnected when a check fails for a moment.",
+      "AIs without a usage limit, like Kimi, no longer appear in the quotas bar.",
+    ],
+    es: [
+      "La barra de Cuotas de IA ahora enseña cuánto te queda, en porcentaje.",
+      "Codex ya no sale como desconectado cuando una comprobación falla un momento.",
+      "Las IAs sin límite de uso, como Kimi, ya no aparecen en la barra de cuotas.",
+    ],
+  },
   "2.36.45": {
     en: [
       "Claude with your Pro or Max account now works in the Router, as the default model and for agents.",
