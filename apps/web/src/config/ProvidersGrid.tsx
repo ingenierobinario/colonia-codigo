@@ -82,7 +82,14 @@ const rank = (p: ProviderInfo) => (p.enabled && p.key_set ? 0 : p.enabled ? 1 : 
  * Model APIs our own loop calls, as cards: the ChatGPT plan first (fixed), the ones set up (ready first), then the
  * known kinds not set up yet (each can be taken off the list), then a card to add any OpenAI-compatible one.
  */
-export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
+export function ProvidersGrid({
+  compact = false,
+  part = "all",
+}: {
+  compact?: boolean;
+  /** MOTORES-LLANO-1: Settings splits the page into the plans (with your account) and the keys (advanced). */
+  part?: "all" | "plans" | "keys";
+}) {
   const t = useT();
   const list = useProviders((s) => s.list);
   const open = useSlice(editor, (s) => s.open);
@@ -105,42 +112,47 @@ export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
   return (
     <>
       <div className={compact ? "pgrid pgrid--compact" : "pgrid"}>
-        {plan && <PlanCard p={plan} compact={compact} />}
-        <ClaudePlanCard compact={compact} />
-        {apis.map((p) => (
-          <ProviderCard key={p.id} p={p} compact={compact} onEdit={() => editor.set({ open: { id: p.id } })} />
-        ))}
-        {unset.map((k) => (
-          <div key={k.id} className="pcard is-unset">
-            <div className="pcard__top">
-              <ProviderMark id={k.id} label={k.label} size={36} />
-              <div className="pcard__titles">
-                <div className="pcard__name">{providerName(t, k.id, k.label)}</div>
-                <div className="pcard__plan">{t(k.needs_key ? "providers.withKey" : "providers.withoutKey")}</div>
+        {part !== "keys" && plan && <PlanCard p={plan} compact={compact} />}
+        {part !== "keys" && <ClaudePlanCard compact={compact} />}
+        {part !== "plans" &&
+          apis.map((p) => (
+            <ProviderCard key={p.id} p={p} compact={compact} onEdit={() => editor.set({ open: { id: p.id } })} />
+          ))}
+        {part !== "plans" &&
+          unset.map((k) => (
+            <div key={k.id} className="pcard is-unset">
+              <div className="pcard__top">
+                <ProviderMark id={k.id} label={k.label} size={36} />
+                <div className="pcard__titles">
+                  <div className="pcard__name">{providerName(t, k.id, k.label)}</div>
+                  <div className="pcard__plan">{t(k.needs_key ? "providers.withKey" : "providers.withoutKey")}</div>
+                </div>
+                <Badge tone="neutral">{t("providers.unset")}</Badge>
               </div>
-              <Badge tone="neutral">{t("providers.unset")}</Badge>
+              <p className="pcard__hint">{t(k.needs_key ? "providers.unsetKey" : "providers.unsetLocal")}</p>
+              <div className="pcard__actions">
+                <Button size="sm" variant="secondary" onClick={() => editor.set({ open: { preset: k.id } })}>
+                  {t("providers.setUp")}
+                </Button>
+                <span className="pcard__spacer" />
+                <IconButton
+                  size="sm"
+                  label={t("providers.hide", { name: providerName(t, k.id, k.label) })}
+                  icon={<Icons.Trash2 size={14} />}
+                  onClick={() => hideSuggestion(k.id)}
+                />
+              </div>
             </div>
-            <p className="pcard__hint">{t(k.needs_key ? "providers.unsetKey" : "providers.unsetLocal")}</p>
-            <div className="pcard__actions">
-              <Button size="sm" variant="secondary" onClick={() => editor.set({ open: { preset: k.id } })}>
-                {t("providers.setUp")}
-              </Button>
-              <span className="pcard__spacer" />
-              <IconButton
-                size="sm"
-                label={t("providers.hide", { name: providerName(t, k.id, k.label) })}
-                icon={<Icons.Trash2 size={14} />}
-                onClick={() => hideSuggestion(k.id)}
-              />
-            </div>
-          </div>
-        ))}
-        <button type="button" className="pcard pcard--add" onClick={() => editor.set({ open: { preset: "custom" } })}>
-          <Icons.Plus size={18} />
-          <span>{t(compact ? "setup.engines.other" : "providers.add")}</span>
-        </button>
+          ))}
+        {part !== "plans" && (
+          <button type="button" className="pcard pcard--add" onClick={() => editor.set({ open: { preset: "custom" } })}>
+            <Icons.Plus size={18} />
+            <span>{t(compact ? "setup.engines.other" : "providers.add")}</span>
+          </button>
+        )}
       </div>
-      {open && (
+      {/* Only the grid with the keyed services owns the dialog: two grids on one screen would open it twice. */}
+      {open && part !== "plans" && (
         <ProviderDialog
           key={`${open.id ?? ""}:${open.preset ?? ""}`}
           initial={editing}
@@ -156,6 +168,8 @@ export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
 function ProviderCard({ p, onEdit, compact }: { p: ProviderInfo; onEdit: () => void; compact: boolean }) {
   const t = useT();
   const ready = p.enabled && p.key_set;
+  // MOTORES-LLANO-1: a card that still needs its key has nothing to switch on: it offers the key, nothing else.
+  const missingKey = p.needs_key && !p.key_set;
   return (
     <div className={p.enabled ? "pcard" : "pcard is-off"}>
       <div className="pcard__top">
@@ -164,24 +178,23 @@ function ProviderCard({ p, onEdit, compact }: { p: ProviderInfo; onEdit: () => v
           <div className="pcard__name">{providerName(t, kindOf(p), p.label)}</div>
           <div className="pcard__plan">{t(p.needs_key ? "providers.withKey" : "providers.withoutKey")}</div>
         </div>
-        <Badge tone={ready ? "brand" : p.enabled ? "warning" : "neutral"} dot>
-          {ready ? t("providers.active") : !p.enabled ? t("providers.off") : t("providers.noKey")}
+        <Badge tone={ready ? "brand" : missingKey ? "warning" : "neutral"} dot>
+          {ready || (p.enabled && !p.needs_key)
+            ? t("providers.active")
+            : missingKey
+              ? t("providers.noKey")
+              : t("providers.off")}
         </Badge>
       </div>
       <dl className="pcard__rows">
-        {/* The setup guide keeps the card to what a newcomer needs: whether its key is in. */}
-        <dt hidden={compact}>{t("providers.url")}</dt>
-        <dd hidden={compact} title={p.base_url}>
-          {p.base_url.replace(/^https?:\/\//, "")}
-        </dd>
-        {/* In the guide a missing key is said by the badge; the row only shows once there is one. */}
-        {(!compact || (p.needs_key && p.key_set)) && (
+        {/* The service address is only shown when editing; a missing key is said by the badge. */}
+        {p.needs_key && p.key_set && (
           <>
             <dt>{t(compact ? "providers.keySaved" : "providers.key")}</dt>
-            <dd>{!p.needs_key ? t("providers.keyNone") : p.key_set ? `****${p.key_hint ?? ""}` : "—"}</dd>
+            <dd>{`****${p.key_hint ?? ""}`}</dd>
           </>
         )}
-        {!compact && (
+        {!compact && !missingKey && (
           <>
             <dt>{t("providers.models")}</dt>
             <dd>
@@ -191,14 +204,22 @@ function ProviderCard({ p, onEdit, compact }: { p: ProviderInfo; onEdit: () => v
         )}
       </dl>
       <div className="pcard__actions">
-        <Switch
-          size="sm"
-          checked={p.enabled}
-          onCheckedChange={(on) => void setProviderEnabled(p, on)}
-          label={t("providers.on")}
-        />
+        {missingKey ? (
+          <Button size="sm" variant="primary" onClick={onEdit}>
+            {t("providers.addKey")}
+          </Button>
+        ) : (
+          <Switch
+            size="sm"
+            checked={p.enabled}
+            onCheckedChange={(on) => void setProviderEnabled(p, on)}
+            label={t("providers.on")}
+          />
+        )}
         <span className="pcard__spacer" />
-        <IconButton size="sm" label={t("providers.edit")} icon={<Icons.Pencil size={14} />} onClick={onEdit} />
+        {!missingKey && (
+          <IconButton size="sm" label={t("providers.edit")} icon={<Icons.Pencil size={14} />} onClick={onEdit} />
+        )}
         <IconButton
           size="sm"
           label={t("providers.remove")}

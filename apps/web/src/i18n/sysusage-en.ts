@@ -1,16 +1,16 @@
 // Usage: what the computer has and what Colonia takes of it (its dropdown, the dialog, Advanced): loaded with them
 // (usePack in index.ts). The topbar gauge's and menus' two strings stay in en.ts.
 export const enSysUsage = {
-  "engines.showUsage": "Usage",
+  "engines.showUsage": "Show usage",
   "engines.usageHint":
-    "Show account limits in Colonia. Off by default. Without a supported source, no balance is shown. This does not turn the engine on or off.",
+    "Shows at the top, in «AI quotas», how much of your plan is left and when it renews. It does not turn the AI on or off.",
   "engines.usageCodexHint":
-    "Show account limits in Colonia. On by default when you link your ChatGPT plan. The quota source also needs a separately linked Codex CLI account. This does not turn models on or off.",
+    "Shows at the top, in «AI quotas», how much of your plan is left and when it renews. On by itself when you connect your account. It does not turn the AI on or off.",
   "engines.usageLoadError": "Could not load usage preferences. Retry to load the switch.",
   "engines.usageSaveError": "Could not save the usage preference. Your previous choice was kept.",
   "engineUsage.help": "About AI quotas",
   "engineUsage.engineHelp": "About {engine} quotas",
-  "engineUsage.empty": "No engines selected. Turn on Usage on an engine card to show its account limits here.",
+  "engineUsage.empty": "No AI shows its usage yet. Turn on «Show usage» on the ChatGPT or Claude card.",
   "engineUsage.description":
     "Account limits reported by engines on the computer running the core, not just sessions in Colonia.",
   "engineUsage.disclaimer":
@@ -25,21 +25,21 @@ export const enSysUsage = {
   "engineUsage.fiveHours": "5 hours",
   "engineUsage.weekly": "Weekly",
   "engineUsage.codexSource": "Source: Codex account limits",
-  "engineUsage.claudeSource": "Source: Claude plan limits (/usage)",
+  "engineUsage.claudeSource": "Source: your Claude plan",
   "engineUsage.window": "{minutes}-minute window",
   "engineUsage.resets": "Resets {at}",
-  "engineUsage.notInstalled": "CLI not found",
+  "engineUsage.notInstalled": "App not installed",
   "engineUsage.unsupported": "No supported quota source",
   "engineUsage.signedOut": "Sign in to the engine to check limits.",
-  "engineUsage.unavailable": "Account limits unavailable",
+  "engineUsage.unavailable": "Connected · usage not available",
   "engineUsage.source": "Source: {source}",
   "engineUsage.claudeNote":
-    "Claude plan limits through Claude Code 2.1.273 or later. Sign in to the CLI; Colonia does not read your credentials.",
+    "The usage of your Pro or Max plan, the same you see in Claude. If it does not show, connect Claude again in Settings.",
   "engineUsage.opencodeNote":
     "OpenCode uses the account of the selected provider; there is no single OpenCode balance.",
   "engineUsage.antigravityNote":
     "Check your model quota in Antigravity. No supported quota integration is available here.",
-  "engineUsage.engines": "Manage engines",
+  "engineUsage.engines": "Manage AIs",
   "sysUsage.title": "System resources",
   "sysUsage.description": "What this computer has, and how much of it Colonia takes.",
   "sysUsage.button": "System: {pct}% of memory in use",

@@ -9,8 +9,8 @@ test("usage switches persist independently of model power and preserve the choic
   await openSettings(page);
   const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
   await settings.getByRole("button", { name: "Motores y modelos", exact: true }).click();
-  const plan = settings.locator(".pcard--plan");
-  const quota = plan.getByRole("switch", { name: "Consumo", exact: true });
+  const plan = settings.locator(".pcard--plan:not(.pcard--claude)");
+  const quota = plan.getByRole("switch", { name: "Mostrar uso", exact: true });
   const power = plan.getByRole("switch", { name: "Activo", exact: true });
   await expect(quota).toBeEnabled();
   await expect(quota).not.toBeChecked();
@@ -43,12 +43,12 @@ test("usage switches persist independently of model power and preserve the choic
 
   await settings.getByRole("button", { name: "Sesiones externas", exact: true }).click();
   const claude = settings.locator(".engine", { hasText: "Claude Code" });
-  await expect(claude.getByRole("switch", { name: "Consumo", exact: true })).not.toBeChecked();
-  await claude.getByRole("switch", { name: "Consumo", exact: true }).hover();
+  await expect(claude.getByRole("switch", { name: "Mostrar uso", exact: true })).not.toBeChecked();
+  await claude.getByRole("switch", { name: "Mostrar uso", exact: true }).hover();
   await expect(page.locator(".colonia-tooltip")).toBeVisible();
-  await expect(page.locator(".colonia-tooltip")).toContainText("No enciende ni apaga el engine");
+  await expect(page.locator(".colonia-tooltip")).toContainText("No enciende ni apaga la IA");
   await page.setViewportSize({ width: 390, height: 700 });
-  await expect(claude.getByRole("switch", { name: "Consumo", exact: true })).toBeVisible();
+  await expect(claude.getByRole("switch", { name: "Mostrar uso", exact: true })).toBeVisible();
   const overflow = await claude.evaluate((card) => card.scrollWidth - card.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
@@ -59,7 +59,7 @@ test("the real usage method returns an empty state when all quota sources are of
   await open(page);
   await page.getByTestId("engine-usage-button").click();
   const summary = page.getByTestId("engine-usage-summary");
-  await expect(summary).toContainText("No hay engines seleccionados");
+  await expect(summary).toContainText("Todavía no hay ninguna IA con el uso a la vista");
   await expect(summary.locator(".colonia-meter")).toHaveCount(0);
-  await expect(summary.getByRole("button", { name: "Administrar engines" })).toBeVisible();
+  await expect(summary.getByRole("button", { name: "Gestionar IAs" })).toBeVisible();
 });

@@ -1600,3 +1600,32 @@
   color: var(--colonia-fg);
   font-weight: 600;
 }
+/* MOTORES-LLANO-1: "With a key (advanced)" folds away; its title is the toggle. */
+.config__fold {
+  margin-top: 16px;
+}
+.config__fold-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+.config__fold-summary::-webkit-details-marker {
+  display: none;
+}
+.config__fold-summary::before {
+  content: "›";
+  font-size: var(--colonia-text-md);
+  color: var(--colonia-fg-muted, currentColor);
+  transition: transform 0.15s;
+}
+.config__fold[open] > .config__fold-summary::before {
+  transform: rotate(90deg);
+}
+.config__fold-summary .config__sub {
+  margin: 0;
+}
+.config__fold > .config__hint {
+  margin-top: 8px;
+}

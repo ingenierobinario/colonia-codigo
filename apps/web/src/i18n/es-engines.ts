@@ -4,9 +4,12 @@ import type { enEngines } from "./en-engines.ts";
 export const esEngines: Record<keyof typeof enEngines, string> = {
   "config.external": "Sesiones externas",
   "engines.leadModels":
-    "Con qué piensan y trabajan tus agentes: tu plan de ChatGPT y las APIs de modelos. Las CLIs como Claude Code o Codex están en Sesiones externas.",
+    "Con qué piensan y trabajan tus agentes. Lo más sencillo es conectar la cuenta de ChatGPT o de Claude que ya pagas.",
+  "engines.groupAccount": "Con tu cuenta (recomendado)",
+  "engines.groupAccountLead": "Usa la suscripción que ya tienes. No hace falta nada más.",
+  "providers.addKey": "Añadir clave",
   "providers.hide": "Quitar {name} de la lista",
-  "providers.modelsAuto": "Auto",
+  "providers.modelsAuto": "Según el servicio",
   "plans.codex.kind": "Con tu cuenta Plus o Pro",
   "plans.codex.name": "ChatGPT",
   "providers.brand.anthropic": "Claude",

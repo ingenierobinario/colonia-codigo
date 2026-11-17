@@ -2,7 +2,9 @@ import type { ClaudeAccountStatus } from "@colonia/protocol";
 import { Badge, Button, Dialog, EngineIcon, Icons, Input } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { claudeCode, claudeConnect, claudeDisconnect, claudeInstall, claudeStatus } from "../data/claudeAccount.ts";
+import { useModels } from "../data/models.ts";
 import { useT } from "../i18n/index.ts";
+import { EngineUsageSwitch } from "./EngineUsageSwitch.tsx";
 
 /** Where Claude Code is downloaded when it is not on this machine yet. */
 const CLAUDE_CODE_DOWNLOAD = "https://claude.com/product/claude-code";
@@ -19,6 +21,9 @@ export function ClaudePlanCard({ compact = false }: { compact?: boolean }) {
     if (!open) void claudeStatus().then(setS);
   }, [open]);
   const connected = Boolean(s?.connected);
+  // MOTORES-LLANO-1: the same rows and controls as ChatGPT's card.
+  const models = useModels((m) => m.catalog.find((e) => e.id === "claude"));
+  const count = connected && models?.available ? models.models.filter((m) => m.chat).length : 0;
   return (
     <div className="pcard pcard--plan pcard--claude">
       <div className="pcard__top">
@@ -35,9 +40,16 @@ export function ClaudePlanCard({ compact = false }: { compact?: boolean }) {
         <dl className="pcard__rows">
           <dt>{t("plans.account")}</dt>
           <dd>{connected ? (s?.account ?? t("plans.connected")) : "—"}</dd>
+          {!compact && (
+            <>
+              <dt>{t("plans.models")}</dt>
+              <dd>{count ? t("plans.modelsCount", { count }) : "—"}</dd>
+            </>
+          )}
         </dl>
       )}
       <div className="pcard__actions">
+        {!compact && <EngineUsageSwitch key={String(connected)} engine="claude" />}
         <span className="pcard__spacer" />
         <Button size="sm" variant={connected ? "secondary" : "primary"} onClick={() => setOpen(true)}>
           {t(connected ? "plans.manage" : "plans.connect")}

@@ -87,7 +87,7 @@ test("AI usage shows account windows, unavailable engines and a narrow-screen ac
   await expect(page.getByTestId("engine-usage-button")).toBeVisible();
   await page.getByTestId("engine-usage-button").click();
   await expect(summary.getByText("63% disponible")).toBeVisible();
-  await summary.getByRole("button", { name: "Administrar engines" }).click();
+  await summary.getByRole("button", { name: "Gestionar IAs" }).click();
   await expect(summary).toHaveCount(0);
 });
 
@@ -123,11 +123,11 @@ test("Claude displays real account windows and its CLI source", async ({ page })
   await expect(summary.getByText("85% disponible")).toBeVisible();
   await expect(summary.getByText("13% disponible")).toBeVisible();
   await expect(summary.getByRole("img", { name: "Claude · Semanal: 87% usado" })).toBeVisible();
-  await expect(summary.getByText("Fuente: cuota del plan de Claude (/usage)")).toHaveCount(0);
+  await expect(summary.getByText("Fuente: tu plan de Claude")).toHaveCount(0);
   const help = summary.getByRole("button", { name: "Ayuda sobre cuotas de Claude", exact: true });
   await help.focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator(".colonia-help__panel")).toContainText("Fuente: cuota del plan de Claude (/usage)");
+  await expect(page.locator(".colonia-help__panel")).toContainText("Fuente: tu plan de Claude");
   await expect(page.locator(".colonia-help__panel")).not.toContainText("Sin fuente de cuota compatible");
   await page.keyboard.press("Escape");
   await expect(summary.getByText("85% disponible")).toBeVisible();

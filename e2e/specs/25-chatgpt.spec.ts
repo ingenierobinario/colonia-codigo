@@ -33,6 +33,11 @@ test("the ChatGPT plan comes first as Codex, fixed, and connects with its own si
   await expect(signIn.getByRole("checkbox")).toHaveCount(0);
   await signIn.getByRole("button", { name: "Cancelar" }).click();
 
+  // MOTORES-LLANO-1: the services paid with a key go under «Con clave (avanzado)», folded until one has a key (this
+  // world already has one, so it starts open; open it by its title otherwise).
+  const keys = settings.getByTestId("engines-keys");
+  if ((await keys.getAttribute("open")) === null) await keys.getByText("Con clave (avanzado)").click();
+  await expect(keys).toHaveAttribute("open");
   // A known model API not set up yet has its card, named with a capital, and opens already filled in.
   const groq = settings.locator(".pcard.is-unset", { hasText: "Groq" });
   await expect(groq).toContainText("Sin configurar");

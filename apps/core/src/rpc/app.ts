@@ -51,6 +51,16 @@ export function appHandlers(deps: {
   const { store, harnesses, secrets } = deps;
   // CLAUDE-CUENTA-1: the Claude plan, signed in through Claude Code; once it changes, the engines are asked again.
   const claude = claudeLogin({ onChange: () => void harnesses.status(true).catch(() => {}) });
+  // CUOTA-CLAUDE-1: whether the Claude plan is signed in, asked to Claude Code at most once a minute.
+  let claudeLinked = { at: 0, on: false };
+  const refreshClaudeLinked = async () => {
+    if (Date.now() - claudeLinked.at < 60_000) return;
+    const on = await claude.status().then(
+      (s) => s.connected,
+      () => claudeLinked.on,
+    );
+    claudeLinked = { at: Date.now(), on };
+  };
   const engineUsage = usagePreferences(
     store.settings,
     (enabled) =>
@@ -63,6 +73,7 @@ export function appHandlers(deps: {
         enabled,
       }),
     () => secrets.listed("chatgpt_login"),
+    () => claudeLinked.on,
   );
   const models = modelSettings(store);
   /** A registered project's folder, when it is on disk. */
@@ -324,8 +335,14 @@ export function appHandlers(deps: {
       if (!s) throw notFound(`surface ${surface}`);
       return s;
     },
-    "engines.usage": () => engineUsage.read(),
-    "engines.usage_preferences": () => engineUsage.get(),
+    "engines.usage": async () => {
+      await refreshClaudeLinked();
+      return engineUsage.read();
+    },
+    "engines.usage_preferences": async () => {
+      await refreshClaudeLinked();
+      return engineUsage.get();
+    },
     "engines.set_usage": ({ engine, enabled }) => engineUsage.set(engine, enabled),
     "claude.status": () => claude.status(),
     "claude.connect": () => claude.start(),

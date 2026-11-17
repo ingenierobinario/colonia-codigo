@@ -92,3 +92,45 @@ test("turning usage off while a probe is pending cannot expose its result", asyn
     db.close();
   }
 });
+
+test("CUOTA-CLAUDE-1: a signed-in Claude plan lists Claude's quota by default; opting out still wins", async () => {
+  await using home = tempDir();
+  const db = openDb(home.path);
+  try {
+    const store = createStore(db, createBus());
+    let claudeLinked = true;
+    const prefs = usagePreferences(
+      store.settings,
+      (enabled) =>
+        createEngineUsage({
+          status: async () =>
+            ["codex", "claude"].map((id) => ({ id, label: id, installed: true, logged_in: true, default: false })),
+          enabled,
+          binary: async () => "fixture",
+          read: async () => [{ id: "primary", used_percent: 15 }],
+          claudeBinary: async () => "fixture",
+          readClaude: async () => [{ id: "primary", used_percent: 40, window_minutes: 300 }],
+        }),
+      () => true,
+      () => claudeLinked,
+    );
+    assert.equal(prefs.get().engines.claude, true);
+    assert.deepEqual(
+      (await prefs.read()).engines.map((e) => [e.id, e.windows[0]?.used_percent]),
+      [
+        ["codex", 15],
+        ["claude", 40],
+      ],
+    );
+    prefs.set("claude", false);
+    assert.deepEqual(
+      (await prefs.read()).engines.map((e) => e.id),
+      ["codex"],
+    );
+    claudeLinked = false;
+    prefs.set("claude", true);
+    assert.equal(prefs.get().engines.claude, true);
+  } finally {
+    db.close();
+  }
+});

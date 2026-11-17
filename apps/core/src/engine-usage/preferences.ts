@@ -10,8 +10,10 @@ export function usagePreferences(
   settings: Store["settings"],
   makeReader: (enabled: (id: string) => boolean) => () => Promise<EngineUsageReport>,
   linked: () => boolean,
+  /** CUOTA-CLAUDE-1: a Claude plan signed in through Claude Code shows its quota by default, like ChatGPT's. */
+  claudeLinked: () => boolean = () => false,
 ) {
-  const get = () => ({ engines: { codex: linked(), ...settings.read("engine_usage") } });
+  const get = () => ({ engines: { codex: linked(), claude: claudeLinked(), ...settings.read("engine_usage") } });
   const enabled = (prefs: Preferences, id: string) => prefs[canonical(id)] === true;
   let key: string | undefined;
   let read: (() => Promise<EngineUsageReport>) | undefined;

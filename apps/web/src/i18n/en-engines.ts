@@ -2,9 +2,12 @@
 export const enEngines = {
   "config.external": "External sessions",
   "engines.leadModels":
-    "What your agents think and work with: your ChatGPT plan and the model APIs. CLIs like Claude Code or Codex are in External sessions.",
+    "What your agents think and work with. The simplest is to connect the ChatGPT or Claude account you already pay for.",
+  "engines.groupAccount": "With your account (recommended)",
+  "engines.groupAccountLead": "Uses the subscription you already have. Nothing else needed.",
+  "providers.addKey": "Add key",
   "providers.hide": "Take {name} off the list",
-  "providers.modelsAuto": "Auto",
+  "providers.modelsAuto": "Set by the service",
   "plans.codex.kind": "With your Plus or Pro account",
   "plans.codex.name": "ChatGPT",
   "providers.brand.anthropic": "Claude",

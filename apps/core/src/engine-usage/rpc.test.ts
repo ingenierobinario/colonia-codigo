@@ -17,6 +17,8 @@ test("agents cannot query owner account limits over HTTP or WebSocket", async ()
       assert.equal((await live.call("engines.set_usage", { engine: "codex", enabled: true })).engines.codex, true);
       assert.equal((await owner.call("engines.usage_preferences", {})).engines.codex, true);
       await owner.call("engines.set_usage", { engine: "codex", enabled: false });
+      // A Claude plan signed in on this machine shows by default (CUOTA-CLAUDE-1): opt out to check the empty list.
+      await owner.call("engines.set_usage", { engine: "claude", enabled: false });
       assert.deepEqual((await live.call("engines.usage", {})).engines, []);
       assert.deepEqual((await owner.call("engines.usage", {})).engines, []);
     } finally {

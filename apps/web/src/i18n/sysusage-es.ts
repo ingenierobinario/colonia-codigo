@@ -1,17 +1,17 @@
 import type { enSysUsage } from "./sysusage-en.ts";
 
 export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
-  "engines.showUsage": "Consumo",
+  "engines.showUsage": "Mostrar uso",
   "engines.usageHint":
-    "Mostrar límites de cuenta en Colonia. Apagado por defecto. Sin una fuente compatible no se muestra un saldo. No enciende ni apaga el engine.",
+    "Muestra arriba, en «Cuotas de IA», cuánto te queda de tu plan y cuándo se renueva. No enciende ni apaga la IA.",
   "engines.usageCodexHint":
-    "Mostrar límites de cuenta en Colonia. Activado por defecto al vincular tu plan ChatGPT. La fuente de cuota también necesita una cuenta vinculada por separado a Codex CLI. No enciende ni apaga los modelos.",
+    "Muestra arriba, en «Cuotas de IA», cuánto te queda de tu plan y cuándo se renueva. Se activa solo al conectar tu cuenta. No enciende ni apaga la IA.",
   "engines.usageLoadError": "No se pudieron cargar las preferencias de consumo. Reintenta para cargar el switch.",
   "engines.usageSaveError": "No se pudo guardar la preferencia de consumo. Se mantuvo tu elección anterior.",
   "engineUsage.help": "Ayuda sobre cuotas de IA",
   "engineUsage.engineHelp": "Ayuda sobre cuotas de {engine}",
   "engineUsage.empty":
-    "No hay engines seleccionados. Activa Consumo en la card de un engine para ver aquí sus límites de cuenta.",
+    "Todavía no hay ninguna IA con el uso a la vista. Activa «Mostrar uso» en la tarjeta de ChatGPT o de Claude.",
   "engineUsage.description":
     "Límites de cuenta informados por los engines en el equipo donde ejecuta el core, no solo por las sesiones de Colonia.",
   "engineUsage.disclaimer":
@@ -26,20 +26,20 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "engineUsage.fiveHours": "5 horas",
   "engineUsage.weekly": "Semanal",
   "engineUsage.codexSource": "Fuente: límites de cuenta de Codex",
-  "engineUsage.claudeSource": "Fuente: cuota del plan de Claude (/usage)",
+  "engineUsage.claudeSource": "Fuente: tu plan de Claude",
   "engineUsage.window": "Ventana de {minutes} minutos",
   "engineUsage.resets": "Se renueva {at}",
-  "engineUsage.notInstalled": "CLI no encontrada",
+  "engineUsage.notInstalled": "Programa no instalado",
   "engineUsage.unsupported": "Sin fuente de cuota compatible",
   "engineUsage.signedOut": "Inicia sesión en el engine para consultar los límites.",
-  "engineUsage.unavailable": "Límites de cuenta no disponibles",
+  "engineUsage.unavailable": "Conectado · uso no disponible",
   "engineUsage.source": "Fuente: {source}",
   "engineUsage.claudeNote":
-    "Cuota del plan de Claude mediante Claude Code 2.1.273 o posterior. Inicia sesión en el CLI; Colonia no lee tus credenciales.",
+    "El uso de tu plan Pro o Max, el mismo que ves en Claude. Si no aparece, vuelve a conectar Claude en Ajustes.",
   "engineUsage.opencodeNote": "OpenCode usa la cuenta del proveedor elegido; no tiene un saldo único.",
   "engineUsage.antigravityNote":
     "Consulta tu cuota por modelo en Antigravity. Aquí todavía no hay una integración de cuota compatible.",
-  "engineUsage.engines": "Administrar engines",
+  "engineUsage.engines": "Gestionar IAs",
   "sysUsage.title": "Recursos del sistema",
   "sysUsage.description": "Lo que tiene este ordenador y cuánto usa Colonia.",
   "sysUsage.button": "Sistema: {pct}% de la memoria en uso",
