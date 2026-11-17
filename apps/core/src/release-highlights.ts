@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.34": {
+    en: [
+      "Closing Colonia no longer shows the \"Object has been destroyed\" error.",
+      "On Windows, a downloaded update now goes in when you close Colonia.",
+    ],
+    es: [
+      "Cerrar Colonia ya no muestra el error «Object has been destroyed».",
+      "En Windows, la actualización descargada se instala al cerrar Colonia.",
+    ],
+  },
   "2.36.33": {
     en: [
       "Restoring a copy on Windows saves your passwords in one go and tells you if any was left out.",
