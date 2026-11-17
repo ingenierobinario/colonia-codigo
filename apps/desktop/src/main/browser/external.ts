@@ -5,6 +5,22 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { shell } from "electron";
+import type { FuenteImportar } from "../migrar/navegadores.ts";
+import { originalProfileCommand } from "./original-profile.ts";
+
+export async function openOriginalProfile(source: FuenteImportar): Promise<boolean> {
+  const found = installedBrowsers().find((b) => b.id === source.navegador);
+  if (!found) return false;
+  const { command, args } = originalProfileCommand(source, found.launch, process.platform);
+  const child = spawn(command, args, { detached: true, stdio: "ignore" });
+  return new Promise((resolve) => {
+    child.once("error", () => resolve(false));
+    child.once("spawn", () => {
+      child.unref();
+      resolve(true);
+    });
+  });
+}
 
 export type InstalledBrowser = { id: string; name: string };
 type Found = InstalledBrowser & { launch: string };

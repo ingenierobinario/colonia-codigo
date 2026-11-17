@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Schedule } from "@colonia/protocol";
 import { parseFrontmatter, textField } from "../apc/frontmatter.ts";
+import { portableAgents } from "../apc/portable-agents.ts";
 import { NATIVE_AGENT_APPS, projectInstructions, withoutBom } from "../apc/read.ts";
 import type { ApcSync } from "../apc/sync.ts";
 import { checkKnown, knownProjects } from "../domain/project-links.ts";
@@ -202,6 +203,18 @@ export function buildPackage(
       const text = slug ? textOf(path.join(dir, rel)) : undefined;
       if (slug && text !== undefined) agents.push({ slug, text: clean(text, "agent", slug) });
       else if (dir === path.join(apc, "agents")) skipped++;
+    }
+  }
+
+  for (const engine of ["claude", "codex"] as const) {
+    const portable = portableAgents(root, engine);
+    skipped += portable.skipped;
+    for (const agent of portable.agents) {
+      if (agents.some((a) => a.slug === agent.slug) || agents.length >= 200) {
+        skipped++;
+        continue;
+      }
+      agents.push({ slug: agent.slug, text: clean(agent.text, "agent", agent.slug) });
     }
   }
 

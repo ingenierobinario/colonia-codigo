@@ -1,10 +1,11 @@
 // NAVEGADORES-1: one browser profile inside Colonia, like the browser itself: its tabs (new, close), back, forward,
 // reload and the address. Its sign-ins persist in its own jar (profile nav:<id>), apart from the real browser's.
-import { BrowserTabs, EmptyState, Icons } from "@colonia/ui";
+import { BrowserTabs, Button, EmptyState, Icons } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserClose, browserNavigate, browserOpen, loadTabs } from "../data/actions.ts";
 import { BROWSER_NAMES, navProfile, useNavegadores } from "../data/navegadores.ts";
+import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { BrowserToolbar } from "../panel/BrowserToolbar.tsx";
@@ -34,7 +35,8 @@ export function NavegadorScreen() {
   const activeId = active?.tab;
   const poppedOut = useBrowserPoppedOut();
   const blank = isBlank(shownId) ? shownId : undefined;
-  const bar = useBookmarkBar(id);
+  const local = useBookmarkBar(id);
+  const original = local?.source;
   // La pestaña vacía desde la que se está abriendo una página, y las reales que había al empezar.
   const opening = useRef<{ blank: string | undefined; known: string[] }>(undefined);
   const seen = useRef(realIds);
@@ -144,11 +146,27 @@ export function NavegadorScreen() {
         />
       </div>
       {/* MARCADORES-2: la barra está siempre que el perfil se haya leído; vacía, lo dice en vez de desaparecer. */}
-      {bar ? <BookmarksBar nodes={bar} open={(u) => void openBookmark(u)} /> : null}
+      {local ? <BookmarksBar nodes={local.bar} open={(u) => void openBookmark(u)} /> : null}
       <PageExtras tab={active} />
       {!activeId ? (
         <div className="navegador__empty">
-          <EmptyState icon={<Icons.Globe />} title={tabs.length ? t("browser.newTab") : t("navegadores.empty")}>
+          <EmptyState
+            icon={<Icons.Globe />}
+            title={tabs.length ? t("browser.newTab") : t("navegadores.empty")}
+            action={
+              original &&
+              window.coloniaDesktop?.openOriginalProfile && (
+                <Button
+                  onClick={async () => {
+                    const opened = await window.coloniaDesktop?.openOriginalProfile?.(original).catch(() => false);
+                    if (!opened) notify(t("navegadores.originalError"));
+                  }}
+                >
+                  {t("navegadores.original")}
+                </Button>
+              )
+            }
+          >
             {tabs.length ? t("browser.newTabHint") : t("navegadores.emptyBody")}
           </EmptyState>
         </div>

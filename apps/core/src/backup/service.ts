@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import type { BackupFile, BackupInspect, BackupRestored, BackupStatus, BackupWhy } from "@colonia/protocol";
 import type { Db } from "../db/db.ts";
+import { samePath, writeAtomic } from "../paths.ts";
 import type { Secrets } from "../secrets.ts";
 import { RESULT_KEY } from "./apply.ts";
 import { ArchiveError } from "./archive.ts";
@@ -35,7 +36,17 @@ export function createBackup(deps: BackupDeps) {
   let running: Promise<void> | undefined;
   const now = () => (deps.now ?? (() => new Date()))();
 
+  // Esta preferencia pertenece al ordenador. La carpeta copias se excluye del traslado.
+  const preference = path.join(deps.home, "copias", "destino.json");
+  let previous: string | undefined;
+  try {
+    const folder: unknown = JSON.parse(fs.readFileSync(preference, "utf8"));
+    if (typeof folder === "string" && path.isAbsolute(folder)) previous = folder;
+  } catch {
+    // Una instalación nueva todavía no tiene destino elegido.
+  }
   const defaultFolder = () => {
+    if (previous) return previous;
     const downloads = path.join(os.homedir(), "Downloads");
     return fs.existsSync(downloads) ? downloads : os.homedir();
   };
@@ -100,7 +111,7 @@ export function createBackup(deps: BackupDeps) {
       const out: BackupFile[] = [];
       // La carpeta de la copia recién creada también cuenta, aunque no sea una de las de siempre.
       const made = job.kind === "create" && job.file ? [path.dirname(job.file)] : [];
-      for (const folder of new Set([...usualFolders(deps.home), ...made])) {
+      for (const folder of new Set([...usualFolders(deps.home), ...(previous ? [previous] : []), ...made])) {
         let names: string[] = [];
         try {
           names = fs.readdirSync(folder);
@@ -122,7 +133,9 @@ export function createBackup(deps: BackupDeps) {
       const folder = params.folder?.trim() || defaultFolder();
       try {
         if (!path.isAbsolute(folder)) throw new Error("relative");
-        fs.mkdirSync(folder, { recursive: true });
+        // Si el proveedor está desconectado, no crear en su lugar una carpeta local.
+        if (!previous || !samePath(previous, folder)) fs.mkdirSync(folder, { recursive: true });
+        if (!fs.statSync(folder).isDirectory()) throw new Error("folder");
         fs.accessSync(folder, fs.constants.W_OK);
       } catch {
         job = { state: "failed", kind: "create", done: 0, total: 0, why: "folder" };
@@ -133,6 +146,14 @@ export function createBackup(deps: BackupDeps) {
         const manifest = await createCopy(createDeps(), file, params.password, (phase, done, total) => {
           job = { ...job, phase, done, total };
         });
+        if (params.folder && (!previous || !samePath(previous, folder))) {
+          try {
+            writeAtomic(preference, JSON.stringify(folder), 0o600);
+            previous = folder;
+          } catch {
+            deps.warn?.("No se pudo recordar la carpeta de copias de este equipo");
+          }
+        }
         return {
           file,
           summary: manifest.summary,

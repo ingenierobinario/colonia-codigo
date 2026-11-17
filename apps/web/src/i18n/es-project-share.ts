@@ -28,7 +28,7 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.in.connection": "Conexión {name}",
   "pshare.in.organization": "Estructura del equipo",
   "pshare.removedTitle": "En la copia compartida aparecen como «quitado». Tu proyecto se queda como estaba.",
-  "pshare.skipped": "Se han dejado fuera ficheros que podían llevar claves: {n}.",
+  "pshare.skipped": "Elementos omitidos por formato, tamaño, conflictos o datos privados: {n}.",
   "pshare.exportBody": "La otra persona lo abre con «Importar proyecto».",
   "pshare.save": "Guardar en un fichero",
   "pshare.copyCode": "Copiar como texto",

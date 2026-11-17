@@ -14,7 +14,7 @@ import type { Approval } from "../equipos/approval.ts";
 import type { FoundEquipo } from "../equipos/discovery.ts";
 import type { ThisComputer } from "../equipos/local.ts";
 import type { Principal } from "../equipos/principal.ts";
-import { type RemoteOs, type SshEquipos, shQuote } from "../equipos/ssh.ts";
+import { listFolderCommand, type RemoteOs, type SshEquipos } from "../equipos/ssh.ts";
 import { badRequest, notFound, unauthorized, unavailable } from "../errors.ts";
 import type { Handlers } from "./router.ts";
 
@@ -248,16 +248,16 @@ export function equiposHandlers(store: Store, d: EquiposDeps) {
       if (isSsh(c))
         return viaSsh(c, `listar: ${a.path}`, who(ctx), () => d.ssh.listFiles(c.id, remoteOs(c.platform), a.path));
       // Un equipo con Colonia: se lista con un comando, con la misma aprobación en el propio equipo.
-      const win = platformOf(c.platform) === "windows";
       const r = await d.principal.request(
         c.id,
         {
           op: "run",
-          command: win ? `dir /a "${a.path.replace(/"/g, "")}"` : `ls -lA -- ${shQuote(a.path)}`,
+          command: listFolderCommand(remoteOs(c.platform), a.path),
         },
         who(ctx),
       );
       if (!("exit_code" in r)) throw badRequest("respuesta inesperada del equipo");
+      if (r.exit_code !== 0) throw unavailable("No se pudo leer la carpeta del equipo");
       return { output: r.output, truncated: r.truncated };
     },
     "equipos.write_file": async (a, ctx) => {

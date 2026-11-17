@@ -5,13 +5,15 @@ import {
   Dialog,
   EmptyState,
   Icons,
+  IntegrationIcon,
   MasterDetail,
   type MenuEntry,
   PickRow,
   Tag,
 } from "@colonia/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { projectName } from "../data/identity.ts";
+import { loadMarks } from "../data/models.ts";
 import { setMcp, setMcpToolMode, toggleMcp, trustMcp } from "../data/resources.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -29,6 +31,7 @@ const isGlobal = (s: McpServerStatus) => s.scope === "global" && !s.only;
 /** MCP servers: inside a project its own and the inherited global ones (each can be turned off here). */
 export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnly }: TabProps) {
   const t = useT();
+  useEffect(loadMarks, []);
   const projects = useData((s) => s.projects);
   const [picked, setPicked] = useState<string>();
   const [editing, setEditing] = useState<McpServerStatus>();
@@ -149,7 +152,12 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
   const row = (s: McpServerStatus) => (
     <ContextMenu key={keyOf(s)} items={actions(s)}>
       <PickRow
-        mono
+        className="resv__connector"
+        leading={
+          <span aria-hidden="true">
+            <IntegrationIcon id={s.name} name={s.name} size={28} />
+          </span>
+        }
         title={s.name}
         description={s.off_here ? t("res.offHere") : s.tools ? t("mcp.tools", { n: s.tools }) : t(STATUS_KEY[s.status])}
         trailing={
@@ -168,6 +176,7 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
 
   const newServer = adding && (
     <McpDialog
+      existingNames={all?.filter((s) => s.scope === "global").map((s) => s.name)}
       onClose={() => setAdding(false)}
       onSaved={async (name) => {
         setAdding(false);
@@ -179,34 +188,37 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
   // None at all yet: the invitation alone, no empty list beside it.
   if (all && !all.length && !projectId)
     return (
-      <div className="resvars">
-        <EmptyState
-          variant="dashed"
-          icon={<Icons.Server />}
-          title={t("res.noMcp")}
-          action={
-            <Button
-              size="sm"
-              variant="secondary"
-              leadingIcon={<Icons.Plus size={14} />}
-              onClick={() => setAdding(true)}
-            >
-              {t("res.catalog.custom")}
-            </Button>
-          }
-        />
-        <ConnectorCatalog
-          servers={all}
-          onAdded={async (name) => {
-            await res.loadServers();
-            setPicked(`global::${name}`);
-          }}
-        />
+      <>
         {newServer}
-      </div>
+        <div className="resvars">
+          <EmptyState
+            variant="dashed"
+            icon={<Icons.Server />}
+            title={t("res.noMcp")}
+            action={
+              <Button
+                size="sm"
+                variant="secondary"
+                leadingIcon={<Icons.Plus size={14} />}
+                onClick={() => setAdding(true)}
+              >
+                {t("res.catalog.custom")}
+              </Button>
+            }
+          />
+          <ConnectorCatalog
+            servers={all}
+            onAdded={async (name) => {
+              await res.loadServers();
+              setPicked(`global::${name}`);
+            }}
+          />
+        </div>
+      </>
     );
   return (
     <>
+      {newServer}
       <MasterDetail
         resizeKey="mcp"
         listLabel={t("res.tab.mcp")}
@@ -322,7 +334,6 @@ export function McpTab({ projectId, query, scope, adding, setAdding, res, ownOnl
           </p>
         </Dialog>
       )}
-      {newServer}
     </>
   );
 }

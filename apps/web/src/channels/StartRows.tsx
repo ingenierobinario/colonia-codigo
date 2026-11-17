@@ -187,11 +187,10 @@ export function LinkMe({ channel }: { channel: ChannelInfo }) {
   const [busy, setBusy] = useState(false);
   const bot = channel.account?.replace(/^@/, "");
   const link = async () => {
-    if (code.length !== 6) return;
+    if (busy || code.length !== 6) return;
     setBusy(true);
-    await respondPairing(code, "owner");
+    if (await respondPairing(code, "owner")) setCode("");
     setBusy(false);
-    setCode("");
   };
   return (
     <li className="chan__link">

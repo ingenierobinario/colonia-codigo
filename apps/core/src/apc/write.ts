@@ -131,7 +131,7 @@ export function writeAgentFromTemplate(
   root: string,
   slug: string,
   text: string,
-  fields: { parent: string; name?: string; role?: string },
+  fields: { parent?: string; name?: string; role?: string },
 ): void {
   if (!SLUG_RE.test(slug)) throw new Error(`invalid slug "${slug}" (lowercase letters, digits, - and _)`);
   const file = agentFile(root, slug);

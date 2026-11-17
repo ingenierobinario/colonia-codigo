@@ -160,15 +160,18 @@ const PAIRING_WAS: Record<string, MessageKey> = {
   expired: "ch.code.expired",
 };
 
-export async function respondPairing(code: string, decision: "owner" | "contact" | "deny"): Promise<void> {
+export async function respondPairing(code: string, decision: "owner" | "contact" | "deny"): Promise<boolean> {
+  let linked = false;
   try {
     await client.call("pairing.respond", { code, decision });
+    linked = true;
   } catch (e) {
     const was = e instanceof ColoniaError ? (e.detail as { pairing?: string } | undefined)?.pairing : undefined;
     const key = was ? PAIRING_WAS[was] : undefined;
     notify(key ? t(key, { code }) : t("error.channels", { error: errText(e) }));
   }
   await loadChannels();
+  return linked;
 }
 
 /** The owner's own address on a channel, typed by hand (their phone number on WhatsApp). */

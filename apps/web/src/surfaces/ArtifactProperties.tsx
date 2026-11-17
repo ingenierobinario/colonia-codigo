@@ -6,6 +6,7 @@ import { loadSurfaceDoc } from "../data/actions.ts";
 import { projectName } from "../data/identity.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { ArtifactLogoEditor } from "./ArtifactLogo.tsx";
 import { linkOf } from "./ShareMenu.tsx";
 import "../styles/artifacts.css";
 
@@ -82,6 +83,7 @@ export function ArtifactPropertiesDialog({ surface, onClose }: { surface: Surfac
       description={t("artifact.prop.hint")}
       closeLabel={t("common.close")}
     >
+      <ArtifactLogoEditor id={surface.id} logo={surface.logo} />
       {list(rows)}
       {o && (
         <>

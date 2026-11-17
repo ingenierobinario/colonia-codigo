@@ -1125,3 +1125,9 @@
 .catalog__spacer {
   flex: 1;
 }
+
+.resv__connector .colonia-pickrow__title,
+.resv__connector .colonia-pickrow__desc {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

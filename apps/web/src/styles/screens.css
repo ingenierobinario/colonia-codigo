@@ -9,3 +9,10 @@
 @import "./files.css";
 @import "./config.css";
 @import "./models.css";
+
+.engine__options {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}

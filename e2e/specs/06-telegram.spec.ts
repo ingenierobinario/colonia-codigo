@@ -14,6 +14,17 @@ test("the owner links their Telegram with the code and talks to the super-agent 
   // The pairing request is listed with what they wrote; the code links the account as the owner's.
   await expect(page.getByText("“hello bot”")).toBeVisible();
   await page.getByRole("textbox", { name: "Código" }).first().fill(code);
+  await page.route(
+    "**/rpc/pairing.respond",
+    (route) =>
+      route.fulfill({
+        json: { ok: false, error: { code: "unavailable", message: "Inténtalo de nuevo" } },
+      }),
+    { times: 1 },
+  );
+  await page.getByRole("button", { name: "Vincular" }).first().click();
+  await expect(page.getByRole("button", { name: "Vincular" }).first()).toBeEnabled();
+  await expect(page.getByRole("textbox", { name: "Código" }).first()).toHaveValue(code);
   await page.getByRole("button", { name: "Vincular" }).first().click();
   await expect(page.getByText("“hello bot”")).toBeHidden();
 

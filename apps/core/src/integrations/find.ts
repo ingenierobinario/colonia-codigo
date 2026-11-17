@@ -1,6 +1,15 @@
 // What an agent may offer the owner to connect for what they asked: integrations and channels found by words.
 import type { ConnectOffer } from "@colonia/protocol";
 
+import { knownSite } from "@colonia/protocol/known-sites";
+
+export function browserService(address: string) {
+  const url = URL.parse(address);
+  if (!url || url.protocol !== "https:" || url.port || url.username || url.password) return undefined;
+  const site = knownSite(url.hostname);
+  return site && { id: site.service, origin: url.origin };
+}
+
 export type Connectable = ConnectOffer & { connected: boolean };
 
 /** Results at most: the card shows the first few. */
@@ -21,6 +30,10 @@ const near = (a: string, b: string) =>
  * description says "designs".
  */
 export function findConnectable(all: Connectable[], query: string): Connectable[] {
+  if (/^\w+:\/\//i.test(query.trim())) {
+    const service = browserService(query);
+    return service ? all.filter((entry) => entry.id === service.id) : [];
+  }
   const q = [...new Set(words(query))];
   if (!q.length) return [];
   const scored = all.map((c) => {

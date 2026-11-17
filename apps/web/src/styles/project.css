@@ -190,17 +190,19 @@
 .overview__pill:hover {
   background: var(--colonia-fill-hover);
 }
+.overview__pillname,
+.overview__pillrole {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 .overview__pillname {
   font-size: var(--colonia-text-sm);
   font-weight: var(--colonia-weight-medium);
-  white-space: nowrap;
 }
 .overview__pillrole {
   font-size: var(--colonia-text-xs);
   color: var(--colonia-fg-subtle);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .overview__stats {
   display: grid;

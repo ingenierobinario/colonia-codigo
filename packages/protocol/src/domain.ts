@@ -1585,7 +1585,13 @@ export const ArtifactOrigin = z.object({
   installed_at: z.string().max(40),
 });
 export type ArtifactOrigin = z.infer<typeof ArtifactOrigin>;
+/** Miniatura local en PNG. El límite evita que los logos dominen la lista inicial de aplicaciones. */
+export const SurfaceLogo = z
+  .string()
+  .max(8192)
+  .regex(/^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]+=*$/);
 export const Surface = z.object({
+  logo: SurfaceLogo.optional(),
   id: Id,
   /** Stable name an agent updates by ("ventas-mes"). Unique per project (or globally when no project). */
   name: z.string(),
@@ -1623,6 +1629,7 @@ export const ArtifactSecretKey = z
   .regex(/^[a-z0-9][a-z0-9_-]*$/);
 /** What an artifact is, as a bundle names it: enough to install it again without its owner's data. */
 export const ArtifactManifest = z.object({
+  logo: SurfaceLogo.optional(),
   name: z
     .string()
     .min(1)

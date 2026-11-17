@@ -178,6 +178,7 @@ declare global {
       launchProgram?(id: string): Promise<string>;
       /** Perfiles de Chrome, Edge, Brave y Firefox encontrados en este equipo (sin rutas). Nada se lee hasta importar. */
       importSources?(): Promise<ImportSource[]>;
+      openOriginalProfile?(id: string): Promise<boolean>;
       /** Marcadores y webs más visitadas de un perfil; undefined si ya no existe. */
       importRead?(id: string): Promise<ImportRead | undefined>;
       /** NAVEGADORES-2: the bookmarks bar of a profile of the real browser (read only); [] when it has none. */

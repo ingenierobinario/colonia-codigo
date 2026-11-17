@@ -10,6 +10,25 @@ import { kitVersionOf } from "./surfaces.ts";
 
 const PAGE = `<meta name="colonia-live" content="15m"><script src="/_colonia/kit@1.2.js"></script><h1>Orders</h1>`;
 
+test("el logo se conserva al exportar, importar y cambiar de nombre la aplicación", async () => {
+  const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
+  try {
+    const s = await env.client.call("surfaces.show", { name: "prueba-logo", title: "Hola", html: PAGE });
+    const logo =
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j1ZkAAAAASUVORK5CYII=";
+    await env.client.call("surfaces.update", { surface: s.id, logo });
+    await env.client.call("surfaces.show", { name: "prueba-logo", title: "Nuevo", html: PAGE });
+    const bundle = await env.client.call("surfaces.export", { surface: s.id });
+    const installed = await env.client.call("surfaces.import", { bundle });
+    assert.equal(installed.logo, logo);
+    assert.equal((await env.client.call("surfaces.update", { surface: installed.id, logo: null })).logo, undefined);
+    assert.equal((await env.client.call("surfaces.get", { surface: s.id })).logo, logo);
+  } finally {
+    await env.core.close();
+    await env.cleanup();
+  }
+});
+
 test("a page names the kit version it loads", () => {
   assert.equal(kitVersionOf(PAGE), "1.2");
   assert.equal(kitVersionOf("<h1>plain</h1>"), undefined);

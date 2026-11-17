@@ -9,7 +9,9 @@ import { usePack, useT } from "../i18n/index.ts";
 import { EquipoName } from "./EquipoName.tsx";
 import { equiposChanged, revealEquipo, useEquipoFocus } from "./equiposFocus.ts";
 import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
+import { RemoteFolder } from "./RemoteFolder.tsx";
 import { ThisComputerCard } from "./ThisComputerCard.tsx";
+import { TransferActions } from "./TransferActions.tsx";
 
 type Pair = { code: string; expires_at: string; commands: { windows: string; unix: string }; urls: string[] };
 
@@ -596,6 +598,7 @@ function EquipoCard({
       />
       <div className="eq-muted">{t("equipos.history")}</div>
       <Audit entries={audit} />
+      {!entry.self && e.agent_access && (e.connected || e.via === "ssh") && <RemoteFolder equipo={e} />}
       <div className="eq-row">
         <span />
         <Button variant="danger" onClick={() => setConfirm(true)}>
@@ -766,6 +769,9 @@ function Body() {
                 onSaved={refreshList}
               />
             )}
+        {rest.map(card)}
+        {local && <ThisEquipo s={local} refresh={refreshLocal} />}
+        <TransferActions />
         <FindEquipos onDone={refreshAll} />
         <details className="eq-other">
           <summary>{t("equipos.otherMethod")}</summary>
@@ -776,8 +782,6 @@ function Body() {
             {t("equipos.noneHint")}
           </EmptyState>
         )}
-        {rest.map(card)}
-        {local && <ThisEquipo s={local} refresh={refreshLocal} />}
       </div>
     </section>
   );

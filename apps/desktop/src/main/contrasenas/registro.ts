@@ -2,6 +2,7 @@
 // aplicación que habla sale del registro que hace el anfitrión al crear su página, no de lo que diga la propia página.
 import path from "node:path";
 import { type BaseWindow, ipcMain, safeStorage, type WebContents } from "electron";
+import { openOriginalProfile } from "../browser/external.ts";
 import type { BrowserHost } from "../browser/host.ts";
 import { descubrirFuentes, leerBarra, leerFuente } from "../migrar/navegadores.ts";
 import { type CajaSecreta, crearBoveda } from "./boveda.ts";
@@ -94,6 +95,10 @@ export function registrarContrasenas(o: {
       ? descubrirFuentes().map(({ id, navegador, perfil, nombre, email }) => ({ id, navegador, perfil, nombre, email }))
       : [],
   );
+  ipcMain.handle("import:open-profile", (e, id: unknown) => {
+    const source = delPanel(e) && typeof id === "string" && descubrirFuentes().find((s) => s.id === id);
+    return source ? openOriginalProfile(source) : false;
+  });
   ipcMain.handle("import:read", (e, id: unknown) => {
     const f = delPanel(e) && typeof id === "string" ? descubrirFuentes().find((x) => x.id === id) : undefined;
     return f ? leerFuente(f) : undefined;

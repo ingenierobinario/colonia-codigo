@@ -60,10 +60,12 @@ test("a new MCP server takes a variable for its token from the + list, or a new 
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conectores/ }).click();
-  await page.getByRole("button", { name: "MCP", exact: true }).first().click();
-  const dialog = page.getByRole("dialog", { name: "Nuevo servidor MCP" });
+  await page.getByRole("button", { name: "Añadir conector", exact: true }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Añadir un conector" });
   await dialog.getByRole("textbox", { name: "Nombre" }).fill("northwind");
-  await dialog.getByRole("textbox", { name: "Comando" }).fill("npx -y @acme/mcp-server");
+  await expect(dialog.getByRole("textbox", { name: "URL" })).toBeVisible();
+  await dialog.getByRole("radio", { name: "Comando" }).click();
+  await dialog.getByRole("textbox", { name: "Comando" }).fill("colonia-e2e-comando-inexistente --prueba");
   // An env key is written as an env name.
   await dialog.getByRole("textbox", { name: "Clave" }).fill("api token");
   await expect(dialog.getByRole("textbox", { name: "Clave" })).toHaveValue("API_TOKEN");
@@ -297,9 +299,9 @@ test("other apps' skills show their tag and duplicates; the engines filter narro
   await dialog.getByRole("button", { name: "Importar 1" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("button", { name: /^northwind-notes/ })).toBeVisible();
-  expect(fs.readFileSync(path.join(dir, "colonia-home", "skills", "northwind-notes", "scripts", "run.sh"), "utf8")).toBe(
-    "echo hi\n",
-  );
+  expect(
+    fs.readFileSync(path.join(dir, "colonia-home", "skills", "northwind-notes", "scripts", "run.sh"), "utf8"),
+  ).toBe("echo hi\n");
 });
 
 test("inside a project, Project shows only its own MCP servers and variables", async ({ page }) => {

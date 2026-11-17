@@ -6,6 +6,7 @@ import { projectName } from "../data/identity.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { ArtifactLogo } from "../surfaces/ArtifactLogo.tsx";
 import { ArtifactMemoryDialog } from "../surfaces/ArtifactMemory.tsx";
 import { ArtifactPropertiesDialog } from "../surfaces/ArtifactProperties.tsx";
 import { artifactMenu } from "../surfaces/artifactMenu.tsx";
@@ -66,7 +67,7 @@ export function AppsDock({ rail }: { rail: boolean }) {
         collapsed={rail}
         icon={
           <span className="appsdock__icon">
-            <ProjectTile tone="violet" icon={<Icons.LayoutGrid />} />
+            <ProjectTile tone="violet" icon={<ArtifactLogo logo={a.logo} />} />
             {/* The rail hides trailing content, so there the dot sits on the icon. */}
             {rail && running.has(a.id) && <span className="navitem__running appsdock__dot" />}
           </span>
@@ -215,7 +216,7 @@ function AppLauncher({ running }: { running: ReadonlySet<string> }) {
               data-pinned={s.app || undefined}
               onClick={() => launch(s)}
             >
-              <Icons.LayoutGrid size={14} />
+              <ArtifactLogo logo={s.logo} />
               <span className="appsdock__name">
                 {s.title}
                 <small>

@@ -110,6 +110,7 @@ export function artifactHandlers(deps: {
       const manifest: ArtifactManifest = {
         name: s.name,
         title: s.title,
+        ...(s.logo ? { logo: s.logo } : {}),
         kind: s.app ? "app" : "widget",
         version: s.version,
         ...(kit ? { kit } : {}),
@@ -141,6 +142,7 @@ export function artifactHandlers(deps: {
       const created = store.surfaces.upsert({
         name,
         title: m.title,
+        ...(m.logo ? { logo: m.logo } : {}),
         html: bundle.html,
         project_id: project,
         created_by: "owner",

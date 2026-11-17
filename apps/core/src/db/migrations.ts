@@ -1200,4 +1200,5 @@ export const MIGRATIONS: readonly string[] = [
   ALTER TABLE projects ADD COLUMN knows TEXT;
   ALTER TABLE flows ADD COLUMN knowledge TEXT;
   `,
+  `ALTER TABLE surfaces ADD COLUMN logo TEXT;`,
 ];

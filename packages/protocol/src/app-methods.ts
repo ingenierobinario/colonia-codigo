@@ -62,6 +62,7 @@ import {
   ServiceTest,
   Sticker,
   Surface,
+  SurfaceLogo,
   SurfaceOrigin,
   SurfaceState,
   SurfaceSummary,
@@ -2089,7 +2090,14 @@ export const appMethods = {
     access: "human",
   },
   "surfaces.update": {
-    params: z.object({ surface: Id, pinned: z.boolean().optional(), app: z.boolean().optional() }).strict(),
+    params: z
+      .object({
+        surface: Id,
+        pinned: z.boolean().optional(),
+        app: z.boolean().optional(),
+        logo: SurfaceLogo.nullable().optional(),
+      })
+      .strict(),
     result: SurfaceSummary,
     effect: true,
   },

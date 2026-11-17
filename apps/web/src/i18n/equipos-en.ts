@@ -1,5 +1,15 @@
 // Pantalla «Mis equipos»: se carga con ella (usePack("equipos")), no con la primera pantalla del panel.
 export const enEquipos = {
+  "equipos.transfer": "Your data on another computer",
+  "equipos.transferSync": "Pair two Colonias with a code to keep changes in sync.",
+  "equipos.transferBackup":
+    "Save an encrypted backup on this computer or in a synced OneDrive, iCloud Drive or Dropbox folder. You can restore it in another Colonia.",
+  "equipos.inspect": "Inspect a folder",
+  "equipos.remoteFolder": "Folder on the remote computer",
+  "equipos.showFiles": "Show files",
+  "equipos.folderFailed": "Could not open the folder. Check the path, connection and permission on the other computer.",
+  "equipos.emptyFolder": "Empty folder.",
+  "equipos.folderLimit": "Only part of the list is shown.",
   "equipos.lead":
     "Add your laptops so your agents can work on them. Nothing happens on a computer until its owner approves it there.",
   "equipos.step1": "Copy this command",

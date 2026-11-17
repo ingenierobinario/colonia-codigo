@@ -19,6 +19,7 @@ const toSurface = (r: Selectable<SurfacesTable>): Surface => ({
   id: r.id,
   name: r.name,
   title: r.title,
+  ...opt("logo", r.logo),
   html: r.html,
   version: r.version,
   pinned: Boolean(r.pinned),
@@ -109,6 +110,7 @@ export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
       created_by: string;
       pinned?: boolean | undefined;
       app?: boolean | undefined;
+      logo?: string | undefined;
       /** Absent keeps the current origins; [] removes them. */
       connect?: string[] | undefined;
     }): Surface {
@@ -153,6 +155,7 @@ export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
         version: 1,
         pinned: s.pinned ?? false,
         app: s.app ?? false,
+        ...(s.logo ? { logo: s.logo } : {}),
         ...(s.project_id ? { project_id: s.project_id } : {}),
         ...(s.thread_id ? { thread_id: s.thread_id } : {}),
         created_by: s.created_by,
@@ -168,6 +171,7 @@ export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
           version: 1,
           pinned: Number(created.pinned),
           app: Number(created.app),
+          logo: created.logo ?? null,
           project_id: created.project_id ?? null,
           thread_id: created.thread_id ?? null,
           created_by: created.created_by,
@@ -178,14 +182,24 @@ export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
       emit(created);
       return created;
     },
-    patch(id: string, p: { pinned?: boolean | undefined; app?: boolean | undefined }): SurfaceSummary | undefined {
+    patch(
+      id: string,
+      p: { pinned?: boolean | undefined; app?: boolean | undefined; logo?: string | null | undefined },
+    ): SurfaceSummary | undefined {
       const cur = repo.get(id);
       if (!cur) return undefined;
       const next = { ...cur, pinned: p.pinned ?? cur.pinned, app: p.app ?? cur.app, updated_at: now() };
+      if (p.logo === null) delete next.logo;
+      else if (p.logo !== undefined) next.logo = p.logo;
       run(
         qb
           .updateTable("surfaces")
-          .set({ pinned: Number(next.pinned), app: Number(next.app), updated_at: next.updated_at })
+          .set({
+            pinned: Number(next.pinned),
+            app: Number(next.app),
+            logo: next.logo ?? null,
+            updated_at: next.updated_at,
+          })
           .where("id", "=", cur.id),
       );
       emit(next);

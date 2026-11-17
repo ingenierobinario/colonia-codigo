@@ -26,7 +26,7 @@ export const enProjectShare = {
   "pshare.in.connection": "Connection {name}",
   "pshare.in.organization": "Team structure",
   "pshare.removedTitle": "They show as «quitado» in the shared copy. Your project stays as it was.",
-  "pshare.skipped": "Files that could hold keys were left out: {n}.",
+  "pshare.skipped": "Skipped {n} items due to format, size, conflicts or private data.",
   "pshare.exportBody": "The other person opens it with «Import project».",
   "pshare.save": "Save to a file",
   "pshare.copyCode": "Copy as text",

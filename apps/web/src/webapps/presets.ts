@@ -1,3 +1,5 @@
+import { knownSite } from "@colonia/protocol/known-sites";
+
 // ACCESOS-1: el contador de no leídos que se lee del título de la página de cada aplicación web, que es lo que
 // esas webs actualizan sin pedir ningún permiso. Las fichas preconfiguradas del menú ya no existen.
 
@@ -15,25 +17,6 @@ export function unreadFromTitle(title: string): number {
 }
 
 // IMPORTAR-1: webs conocidas que se reconocen entre los marcadores y las más visitadas al importar.
-type Conocida = { name: string; url: string; hosts: readonly string[] };
-const CONOCIDAS: readonly Conocida[] = [
-  { name: "Gmail", url: "https://mail.google.com/mail/u/0/", hosts: ["mail.google.com"] },
-  { name: "Outlook", url: "https://outlook.office.com/mail/", hosts: ["outlook.office.com", "outlook.live.com"] },
-  { name: "Microsoft Teams", url: "https://teams.microsoft.com", hosts: ["teams.microsoft.com", "teams.live.com"] },
-  { name: "Slack", url: "https://app.slack.com/client", hosts: ["app.slack.com"] },
-  { name: "Notion", url: "https://www.notion.so", hosts: ["www.notion.so", "notion.so"] },
-  { name: "Google Calendar", url: "https://calendar.google.com", hosts: ["calendar.google.com"] },
-  { name: "Google Drive", url: "https://drive.google.com", hosts: ["drive.google.com", "docs.google.com"] },
-  { name: "WhatsApp", url: "https://web.whatsapp.com", hosts: ["web.whatsapp.com"] },
-  { name: "LinkedIn", url: "https://www.linkedin.com", hosts: ["www.linkedin.com", "linkedin.com"] },
-  { name: "Trello", url: "https://trello.com", hosts: ["trello.com"] },
-  { name: "Asana", url: "https://app.asana.com", hosts: ["app.asana.com"] },
-  { name: "GitHub", url: "https://github.com", hosts: ["github.com"] },
-  { name: "Figma", url: "https://www.figma.com", hosts: ["www.figma.com", "figma.com"] },
-  { name: "Canva", url: "https://www.canva.com", hosts: ["www.canva.com", "canva.com"] },
-  { name: "Zoom", url: "https://app.zoom.us", hosts: ["app.zoom.us", "zoom.us"] },
-];
-
 export type WebReconocida = { name: string; url: string; origen: "marcador" | "visitada" };
 
 /** Cruza marcadores y webs visitadas con las conocidas: una por web, los marcadores mandan sobre las visitas. */
@@ -43,8 +26,7 @@ export function reconocerWebs(
 ): WebReconocida[] {
   const out = new Map<string, WebReconocida>();
   const probar = (host: string, origen: WebReconocida["origen"]) => {
-    const h = host.toLowerCase();
-    const c = CONOCIDAS.find((k) => k.hosts.includes(h));
+    const c = knownSite(host);
     if (c && !out.has(c.name)) out.set(c.name, { name: c.name, url: c.url, origen });
   };
   for (const m of marcadores) {

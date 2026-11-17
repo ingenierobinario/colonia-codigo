@@ -23,24 +23,33 @@ const toPairs = (r: Record<string, string> | undefined): Pair[] =>
  */
 export function McpDialog(props: {
   server?: McpServerStatus | undefined;
+  existingNames?: readonly string[] | undefined;
   onClose(): void;
   onSaved(name: string): void;
 }) {
   const t = useT();
   const def = props.server?.definition;
   const [name, setName] = useState(props.server?.name ?? "");
-  const [kind, setKind] = useState(def?.url ? "url" : "command");
+  const [kind, setKind] = useState(def?.command ? "command" : "url");
   const [command, setCommand] = useState(def?.command ? joinCommand([def.command, ...def.args]) : "");
   const [url, setUrl] = useState(def?.url ?? "");
-  const [pairs, setPairs] = useState<Pair[]>(toPairs(def?.url ? def.headers : def?.env));
+  const [headers, setHeaders] = useState<Pair[]>(toPairs(def?.headers));
+  const [env, setEnv] = useState<Pair[]>(toPairs(def?.env));
+  const pairs = kind === "url" ? headers : env;
+  const setPairs = kind === "url" ? setHeaders : setEnv;
   const [busy, setBusy] = useState(false);
   const parts = splitCommand(command);
-  const valid = NAME.test(name) && (kind === "command" ? parts.length > 0 : /^https?:\/\/.+/.test(url));
+  const duplicate = props.existingNames?.includes(name);
+  const endpoint = URL.canParse(url) ? new URL(url) : undefined;
+  const validUrl = endpoint && /^https?:$/.test(endpoint.protocol) && !endpoint.username && !endpoint.password;
+  const valid = NAME.test(name) && !duplicate && (kind === "command" ? Boolean(parts[0]) : validUrl);
   const save = async () => {
     setBusy(true);
     const extra = pairsToRecord(pairs);
     const server: McpDraft =
-      kind === "command" ? { command: parts[0] ?? "", args: parts.slice(1), env: extra } : { url, headers: extra };
+      kind === "command"
+        ? { command: parts[0] ?? "", args: parts.slice(1), env: extra }
+        : { url: url.trim(), headers: extra };
     // An edit keeps whether it was turned off.
     if (props.server && !props.server.enabled) server.enabled = false;
     const r = await setMcp(name, server, props.server?.scope === "project" ? props.server.project_id : undefined);
@@ -74,9 +83,12 @@ export function McpDialog(props: {
             aria-label={t("res.mcpName")}
             value={name}
             disabled={Boolean(props.server)}
-            placeholder="github"
+            aria-invalid={name !== "" && (!NAME.test(name) || Boolean(duplicate))}
+            placeholder="mi-conector"
             onChange={(e) => setName(e.currentTarget.value)}
           />
+          {name && !NAME.test(name) && <small>{t("res.mcpNameHint")}</small>}
+          {duplicate && <small>{t("res.mcpNameUsed")}</small>}
         </div>
         <SegmentedControl
           size="sm"
@@ -84,8 +96,8 @@ export function McpDialog(props: {
           value={kind}
           onValueChange={setKind}
           options={[
-            { value: "command", label: t("res.command") },
             { value: "url", label: t("res.url") },
+            { value: "command", label: t("res.command") },
           ]}
         />
         {kind === "command" ? (
@@ -105,9 +117,11 @@ export function McpDialog(props: {
             <Input
               aria-label={t("res.url")}
               value={url}
+              aria-invalid={url !== "" && !validUrl}
               placeholder="https://mcp.example.com/mcp"
               onChange={(e) => setUrl(e.currentTarget.value)}
             />
+            {url && !validUrl && <small>{t("res.mcpUrlHint")}</small>}
           </div>
         )}
         <div className="pform__field">

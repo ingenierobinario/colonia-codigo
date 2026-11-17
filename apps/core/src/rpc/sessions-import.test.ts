@@ -313,3 +313,14 @@ test("Claude Code sessions group by their folder and land in the same project", 
   );
   assert.deepEqual((await env.client.call("documents.list", { thread_id: r.project.id })).documents, []);
 });
+
+test("la importación de Codex incorpora los agentes TOML creados en el proyecto", async () => {
+  fs.mkdirSync(path.join(acme, ".codex", "agents"), { recursive: true });
+  fs.writeFileSync(
+    path.join(acme, ".codex", "agents", "apuntes.toml"),
+    'name = "redaccion"\ndescription = "Prepara notas"\ndeveloper_instructions = "Conserva los títulos."\n',
+  );
+  const r = await env.client.call("sessions.import", { engine: "codex", cwd: acme });
+  const team = (await env.client.call("agents.list", {})).agents;
+  assert.ok(team.some((a) => a.project_id === r.project.id && a.slug === "redaccion"));
+});

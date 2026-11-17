@@ -126,6 +126,7 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
   launchProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:launch", String(id)),
   /** Importar del navegador habitual: solo marcadores y webs más visitadas, y solo cuando se pide. */
   importSources: (): Promise<unknown> => ipcRenderer.invoke("import:sources"),
+  openOriginalProfile: (id: string): Promise<boolean> => ipcRenderer.invoke("import:open-profile", id),
   importRead: (id: string): Promise<unknown> => ipcRenderer.invoke("import:read", String(id)),
   /** NAVEGADORES-2: la barra de marcadores de un perfil del navegador real (solo lectura). */
   bookmarkBar: (id: string): Promise<unknown> => ipcRenderer.invoke("import:bar", String(id)),

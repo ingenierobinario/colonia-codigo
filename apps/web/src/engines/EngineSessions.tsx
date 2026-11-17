@@ -88,6 +88,7 @@ export function EngineSessions() {
   };
   const ready = Boolean(engine?.installed && (engine.logged_in || engine.auth === "on_invocation"));
   const label = engine?.label ?? engineId;
+  const plan = engineId === "claude" ? "Claude" : engineId === "codex" ? "ChatGPT" : undefined;
 
   return (
     <section className="inbox" aria-label={label}>
@@ -120,14 +121,21 @@ export function EngineSessions() {
         ) : !ready ? (
           <EmptyState
             icon={<Icons.Plug />}
-            title={t(engine?.installed ? "engine.signIn" : "engine.install", { engine: label })}
+            title={t("engine.chatSetup", { engine: label })}
             action={
-              <Button size="sm" variant="secondary" onClick={() => go.config("external")}>
-                {t("engine.settings")}
-              </Button>
+              <div className="engine__options">
+                <Button size="sm" variant="secondary" onClick={() => go.config("external")}>
+                  {t("engine.settings")}
+                </Button>
+                {plan && (
+                  <Button size="sm" variant="secondary" onClick={() => go.config("engines")}>
+                    {t("engine.planForAgents", { plan })}
+                  </Button>
+                )}
+              </div>
             }
           >
-            {engine?.detail ?? t("engine.notReadyBody")}
+            {t("engine.notReadyBody", { engine: label })}
           </EmptyState>
         ) : (
           <>

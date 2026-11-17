@@ -139,3 +139,12 @@ test("WEBAPP-3: list_apps shows the owner's web apps, with their connector, and 
   assert.match(answer, /Connectors[^\n]*\n- railway$/m);
   assert.doesNotMatch(answer, /^- webapp-crm$/m, "an app's own connector is listed with the app, not twice");
 });
+
+test("una aplicación con nombre propio ofrece el servicio de su origen para autorizar sus herramientas", async () => {
+  await env.client.call("webapps.set", {
+    id: "bandeja",
+    app: { name: "Bandeja", url: "https://mail.google.com/mail/u/0/" },
+  });
+  const { answer } = await ask("what apps do I have");
+  assert.match(answer, /Bandeja .*suggest_connection.*https:\/\/mail\.google\.com(?:\s|$)/);
+});

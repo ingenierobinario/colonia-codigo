@@ -107,6 +107,14 @@ export const psEncoded = (script: string) =>
   `powershell -NoProfile -NonInteractive -EncodedCommand ${Buffer.from(script, "utf16le").toString("base64")}`;
 const psQuote = (s: string) => `'${s.replace(/'/g, "''")}'`;
 
+export function listFolderCommand(os_: RemoteOs, p: string): string {
+  return os_ === "windows"
+    ? psEncoded(
+        `Get-ChildItem -ErrorAction Stop -Force -LiteralPath ${psQuote(p)} | Format-Table Mode,LastWriteTime,Length,Name -AutoSize | Out-String -Width 220`,
+      )
+    : `ls -lA -- ${shQuote(p)}`;
+}
+
 export function osFromProbe(text: string): RemoteOs {
   const t = text.toLowerCase();
   if (t.includes("windows")) return "windows";
@@ -216,12 +224,7 @@ export function createSshEquipos(d: { secrets: Secrets; exec: SshExec }) {
     },
     async listFiles(id: string, os_: RemoteOs, p: string) {
       const t = need(id);
-      const cmd =
-        os_ === "windows"
-          ? psEncoded(
-              `Get-ChildItem -Force -LiteralPath ${psQuote(p)} | Format-Table Mode,LastWriteTime,Length,Name -AutoSize | Out-String -Width 220`,
-            )
-          : `ls -lA -- ${shQuote(p)}`;
+      const cmd = listFolderCommand(os_, p);
       const out = await d.exec(t, cmd, 30_000);
       if (out.code !== 0)
         throw new Error(out.code === 255 ? explainSshError(out) : out.stderr.trim() || "no se pudo listar esa carpeta");

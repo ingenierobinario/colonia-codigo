@@ -1,6 +1,16 @@
 import type { EquipoKey } from "./equipos-en.ts";
 
 export const esEquipos: Record<EquipoKey, string> = {
+  "equipos.transfer": "Tus datos en otro equipo",
+  "equipos.transferSync": "Enlaza dos Colonias con un código para mantener sus cambios sincronizados.",
+  "equipos.transferBackup":
+    "Guarda una copia cifrada en este equipo o en una carpeta sincronizada de OneDrive, iCloud Drive o Dropbox. Puedes restaurarla en otra Colonia.",
+  "equipos.inspect": "Revisar una carpeta",
+  "equipos.remoteFolder": "Carpeta del equipo remoto",
+  "equipos.showFiles": "Ver archivos",
+  "equipos.folderFailed": "No se pudo abrir la carpeta. Comprueba la ruta, la conexión y el permiso en el otro equipo.",
+  "equipos.emptyFolder": "Carpeta vacía.",
+  "equipos.folderLimit": "Solo se muestra una parte de la lista.",
   "equipos.lead":
     "Añade tus portátiles para que tus agentes puedan trabajar en ellos. En un equipo no pasa nada hasta que su dueño lo aprueba allí mismo.",
   "equipos.step1": "Copia este comando",

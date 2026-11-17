@@ -1,3 +1,10 @@
+.artprops__logo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--colonia-space-2);
+}
+
 /* Artifacts outside the chat: the dock, live pages, memory, install and properties. Loaded with those lazy screens. */
 
 /* Live pages run in one layer over the shell, each laid over the placeholder that shows it (LiveLayer.tsx). */

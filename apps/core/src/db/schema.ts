@@ -655,6 +655,7 @@ export interface SurfacesTable {
   connect: string | null;
   state: string | null;
   origin: string | null;
+  logo: string | null;
 }
 
 export interface TaskAttachmentsTable {

@@ -1,5 +1,5 @@
 import type { OwnerIdentity } from "@colonia/protocol";
-import { Badge, Button, EmptyState, Icons, Input, SegmentedControl, SettingRow, Textarea } from "@colonia/ui";
+import { Button, EmptyState, Icons, Input, SegmentedControl, SettingRow, Textarea } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { CHANNEL_KINDS, type ChannelKind } from "../channels/kinds.ts";
@@ -129,7 +129,9 @@ export function AccountSection() {
       )}
       <EmailSignatures />
       <SettingRow title={t("account.cloud")} description={t("account.cloudHint")}>
-        <Badge>{t("common.soon")}</Badge>
+        <Button variant="secondary" size="sm" onClick={() => go.config("backup")}>
+          {t("account.cloudAction")}
+        </Button>
       </SettingRow>
     </>
   );

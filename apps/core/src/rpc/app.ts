@@ -323,11 +323,12 @@ export function appHandlers(deps: {
           created_by: "owner",
           pinned,
           ...(from.connect ? { connect: from.connect } : {}),
+          ...(from.logo ? { logo: from.logo } : {}),
         }),
       );
     },
-    "surfaces.update": ({ surface, pinned, app }) => {
-      const s = store.surfaces.patch(surface, { pinned, app });
+    "surfaces.update": ({ surface, pinned, app, logo }) => {
+      const s = store.surfaces.patch(surface, { pinned, app, logo });
       if (!s) throw notFound(`surface ${surface}`);
       return s;
     },

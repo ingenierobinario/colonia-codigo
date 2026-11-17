@@ -3,6 +3,7 @@
 // project whose chats agents take over (import, digest, adopt).
 import fs from "node:fs";
 import path from "node:path";
+import { copyPortableAgents } from "../apc/portable-agents.ts";
 import type { ApcSync } from "../apc/sync.ts";
 import { projectOrchestrator } from "../domain/agent-directory.ts";
 import type { AuxAbout } from "../domain/aux-calls.ts";
@@ -107,6 +108,8 @@ export function sessionHandlers(store: Store, homes: NativeHomes, deps: SessionD
       const projectId = projectFor(group.cwd, name ?? group.name);
       const project = store.projects.get(projectId);
       if (!project) throw notFound(`project ${projectId}`);
+      const definitions = extras && project.path ? copyPortableAgents(project.path, engine) : undefined;
+      if (definitions?.added) deps.apc.sync(project.id);
       const owner = headOf(project.id) ?? superAgent();
       if (!owner) throw notFound("an agent to own the chats");
       // Oldest first, so the project's chat list ends with the newest on top.
@@ -131,6 +134,8 @@ export function sessionHandlers(store: Store, homes: NativeHomes, deps: SessionD
             },
           })
         : undefined;
+      if (brought && definitions?.skipped)
+        brought.skipped.push(`agent definitions: ${definitions.skipped} incompatible or unreadable`);
       return {
         project: { id: project.id, name: project.name },
         ...(brought ? { extras: brought } : {}),

@@ -16,36 +16,37 @@ const host = (url: string) => {
 const label = (n: BookmarkNode) => n.titulo || ("url" in n ? host(n.url) : "…");
 
 /** La barra del perfil con este id de Navegadores; undefined mientras carga o sin escritorio, [] si no tiene. */
-export function useBookmarkBar(id: string | undefined): BookmarkNode[] | undefined {
-  const [bar, setBar] = useState<BookmarkNode[]>();
+export function useBookmarkBar(id: string | undefined) {
+  const [profile, setProfile] = useState<{ id: string; source?: string; bar: BookmarkNode[] }>();
   useEffect(() => {
-    setBar(undefined);
     const d = window.coloniaDesktop;
     // MARCADORES-2: sin escritorio no hay perfil que leer: ni barra ni aviso de «vacía».
     if (!id || !d?.importSources || !d.bookmarkBar) return;
     let live = true;
     d.importSources()
-      .then((sources) => {
+      .then(async (sources) => {
         const s = sources.find((x) => navegadorId(x.navegador, x.perfil) === id);
-        return s ? d.bookmarkBar?.(s.id) : [];
+        const bar = s ? await d.bookmarkBar?.(s.id).catch(() => []) : [];
+        return { id, ...(s ? { source: s.id } : {}), bar: bar ?? [] };
       })
       .then(
-        (b) => live && setBar(b ?? []),
-        () => live && setBar([]),
+        (result) => live && setProfile(result),
+        () => live && setProfile({ id, bar: [] }),
       );
     return () => {
       live = false;
     };
   }, [id]);
-  return bar;
+  return profile?.id === id ? profile : undefined;
 }
 
 function entries(nodes: BookmarkNode[], open: (url: string) => void, empty: string): MenuEntry[] {
   if (!nodes.length) return [{ type: "label", label: empty }];
-  return nodes.map((n): MenuEntry =>
-    "url" in n
-      ? { label: label(n), icon: <Icons.Globe size={14} />, onSelect: () => open(n.url) }
-      : { type: "submenu", label: label(n), icon: <Icons.Folder size={14} />, items: entries(n.hijos, open, empty) },
+  return nodes.map(
+    (n): MenuEntry =>
+      "url" in n
+        ? { label: label(n), icon: <Icons.Globe size={14} />, onSelect: () => open(n.url) }
+        : { type: "submenu", label: label(n), icon: <Icons.Folder size={14} />, items: entries(n.hijos, open, empty) },
   );
 }
 

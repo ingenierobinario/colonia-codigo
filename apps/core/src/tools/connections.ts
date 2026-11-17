@@ -3,6 +3,7 @@
 import type { ConnectOffer } from "@colonia/protocol";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
+import { browserService } from "../integrations/find.ts";
 import { webAppServer } from "../rpc/webapps.ts";
 import { defineTool, type Tool } from "./types.ts";
 
@@ -20,7 +21,7 @@ export function connectionTools(store: Store): Tool[] {
     defineTool({
       name: "list_apps",
       description:
-        "The apps the owner connected to Colonia, so you use them instead of saying you cannot: their web apps (each opens with its own sign-in: browser_open with `app`; one with a connector also has tools) and their connectors (MCP servers: find their tools with mcp_search). Use it when asked about an app, an account or a service the owner works with.",
+        "Lists pinned web apps and configured MCP servers. For a service task, use its authorized integration tools or mcp_search first. For a known browser app, suggest_connection with its HTTPS origin offers authorization. Open pinned apps with browser_open and their app id.",
       args: z.object({}),
       effect: "none",
       deadlineMs: 5_000,
@@ -32,10 +33,13 @@ export function connectionTools(store: Store): Tool[] {
             .mcpServers ?? {},
         );
         const own = new Set(apps.map((a) => webAppServer(a.id)));
-        const web = apps.map(
-          (a) =>
-            `- ${a.name} (app: ${a.id}) · ${a.url}${servers.includes(webAppServer(a.id)) ? ` · connector: mcp_search server ${webAppServer(a.id)}` : ""}`,
-        );
+        const web = apps.map((app) => {
+          const server = webAppServer(app.id);
+          const label = `- ${app.name} (app: ${app.id}) · ${app.url}`;
+          if (servers.includes(server)) return `${label} · connector: mcp_search server ${server}`;
+          const service = browserService(app.url);
+          return service ? `${label} · check tools or offer access: suggest_connection with ${service.origin}` : label;
+        });
         const ext = servers.filter((s) => !own.has(s)).map((s) => `- ${s}`);
         return [
           `Web apps in Colonia (browser_open with app: <id>, signed in as the owner left them):\n${web.join("\n") || "- none"}`,
@@ -47,9 +51,14 @@ export function connectionTools(store: Store): Tool[] {
     defineTool({
       name: "suggest_connection",
       description:
-        "When what the owner asks needs an app or channel that may not be connected (Figma, Notion, GitHub, WhatsApp, Telegram, email…): finds it and, if it is not connected, shows the owner a card to connect it. Use it instead of saying you cannot.",
+        "When what the owner asks needs an app or channel that may not be connected (Figma, Notion, GitHub, WhatsApp, Telegram, email…): finds it and, if it is not connected, shows the owner a card to connect it. For a known browser site pass only its HTTPS origin. Use the service's authorized tools first. The connection card lets the owner authorize the service.",
       args: z.object({
-        query: z.string().trim().min(1).max(200).describe("the app's or channel's name, or what it does, in English"),
+        query: z
+          .string()
+          .trim()
+          .min(1)
+          .max(200)
+          .describe("service name, what it does in English, or HTTPS origin only"),
         why: z.string().trim().max(200).optional().describe("one line for the owner: what you would do with it"),
       }),
       effect: "none",
