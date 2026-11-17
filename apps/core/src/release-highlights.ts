@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.45": {
+    en: [
+      "Claude with your Pro or Max account now works in the Router, as the default model and for agents.",
+      "If Claude cannot start, the next model in the Router answers instead.",
+      "Errors when saving the Router are now clear and translated.",
+    ],
+    es: [
+      "Claude con tu cuenta Pro o Max ya funciona en el Router, como modelo por defecto y en los agentes.",
+      "Si Claude no puede arrancar, contesta el siguiente modelo del Router.",
+      "Los errores al guardar el Router ahora son claros y en tu idioma.",
+    ],
+  },
   "2.36.44": {
     en: [
       "External sessions: CLI names are no longer squashed; Show what's left sits on its own line.",
