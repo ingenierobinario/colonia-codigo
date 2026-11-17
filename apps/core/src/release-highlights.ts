@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.47": {
+    en: [
+      "External apps open faster and show their tab as soon as they are ready.",
+      "Search in page and downloads are easy to find in external apps, with full file names.",
+      "Switching language no longer leaves texts untranslated.",
+    ],
+    es: [
+      "Las aplicaciones externas abren antes y muestran su pestaña en cuanto están listas.",
+      "Buscar en la página y las descargas se encuentran fácil en las aplicaciones externas.",
+      "Al cambiar de idioma ya no quedan textos sin traducir.",
+    ],
+  },
   "2.36.46": {
     en: [
       "The AI quotas bar now shows how much you have left, as a percentage.",
