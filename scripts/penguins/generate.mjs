@@ -24,11 +24,15 @@ const write = (p, data) => {
 const raster = (source, size) => {
   const vb = Number(/viewBox="0 0 (\d+)/.exec(source)[1]);
   // Se dibuja a más resolución y se reduce: bordes limpios también a 16 px.
-  return sharp(Buffer.from(source), { density: Math.min(2400, (72 * Math.max(size * 4, 256)) / vb) }).resize(size, size, {
-    kernel: "lanczos3",
-    fit: "contain",
-    background: { r: 0, g: 0, b: 0, alpha: 0 },
-  });
+  return sharp(Buffer.from(source), { density: Math.min(2400, (72 * Math.max(size * 4, 256)) / vb) }).resize(
+    size,
+    size,
+    {
+      kernel: "lanczos3",
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  );
 };
 const png = (source, size) => raster(source, size).png({ compressionLevel: 9 }).toBuffer();
 
@@ -72,7 +76,8 @@ for (const name of names) {
   write(`packages/ui/src/blobs/bodies/${name}.webp`, webp);
   write(`apps/docs/src/assets/blobs/${name}.webp`, webp);
   const rects = EYES.map(
-    (e) => `      { x: ${e.x.toFixed(1)}, y: ${e.y.toFixed(1)}, w: ${e.w.toFixed(1)}, h: ${e.h.toFixed(1)}, rx: ${e.rx.toFixed(1)} },`,
+    (e) =>
+      `      { x: ${e.x.toFixed(1)}, y: ${e.y.toFixed(1)}, w: ${e.w.toFixed(1)}, h: ${e.h.toFixed(1)}, rx: ${e.rx.toFixed(1)} },`,
   ).join("\n");
   catalog.push(
     `  ${name}: {\n    label: ${JSON.stringify(palette[name].label)},\n    eyeColor: "${EYE_COLOR}",\n    eyes: [\n${rects}\n    ],\n    src: new URL("./bodies/${name}.webp", import.meta.url).href,\n  },`,
@@ -103,11 +108,19 @@ export const BLOB_NAMES = Object.keys(BLOBS) as BlobName[];
 write("apps/docs/src/data/blobs.json", `${JSON.stringify(docs, null, 2)}\n`);
 
 // --- Atlas de terminal: mismo formato que scripts/export-terminal-blobs.py (que exige Pillow)
-const eyesSvg = svg(EYES.map((e) => `<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" rx="${e.rx}" fill="${EYE_COLOR}"/>`).join(""));
+const eyesSvg = svg(
+  EYES.map((e) => `<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" rx="${e.rx}" fill="${EYE_COLOR}"/>`).join(
+    "",
+  ),
+);
 const eyes = await png(eyesSvg, 128);
 const atlas = {};
 for (const name of [...names].sort()) {
-  const face = await sharp(r(`packages/ui/src/blobs/bodies/${name}.webp`)).ensureAlpha().composite([{ input: eyes }]).png().toBuffer();
+  const face = await sharp(r(`packages/ui/src/blobs/bodies/${name}.webp`))
+    .ensureAlpha()
+    .composite([{ input: eyes }])
+    .png()
+    .toBuffer();
   const { data: px } = await sharp(face).raw().toBuffer({ resolveWithObject: true });
   let [x0, y0, x1, y1] = [128, 128, 0, 0];
   for (let y = 0; y < 128; y++)
@@ -119,7 +132,8 @@ for (const name of [...names].sort()) {
         y1 = Math.max(y1, y);
       }
   const box = { left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 };
-  const shrink = (input, w, h) => sharp(input).extract(box).resize(w, h, { fit: "fill", kernel: "lanczos3" }).ensureAlpha().raw().toBuffer();
+  const shrink = (input, w, h) =>
+    sharp(input).extract(box).resize(w, h, { fit: "fill", kernel: "lanczos3" }).ensureAlpha().raw().toBuffer();
   const full = await shrink(face, 26, 26);
   const half = await shrink(face, 26, 13);
   const mask = await shrink(eyes, 26, 13);
@@ -134,9 +148,16 @@ for (const name of [...names].sort()) {
   }
   // El acento de la terminal es el color del preset, no la media con la barriga blanca.
   const c = palette[name].color;
-  atlas[name] = { rows, color: [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)), pixels: deflateSync(full, { level: 9 }).toString("base64") };
+  atlas[name] = {
+    rows,
+    color: [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)),
+    pixels: deflateSync(full, { level: 9 }).toString("base64"),
+  };
 }
-const ascii = JSON.stringify(atlas, null, 2).replace(/[^\x00-\x7f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+const ascii = JSON.stringify(atlas, null, 2).replace(
+  /[\u0080-\uffff]/g,
+  (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`,
+);
 write("apps/terminal/src/blobs.json", `${ascii}\n`);
 
 // --- Logos
@@ -146,19 +167,40 @@ write("apps/docs/public/favicon.svg", mark);
 write("apps/web/src/assets/logo.png", await png(mark, 64));
 write("apps/mobile/assets/logo.png", await png(mark, 64));
 write("apps/docs/src/assets/logo.png", await png(mark, 256));
-write("apps/docs/public/apple-touch-icon.png", await raster(appIcon({ bleed: true }), 180).flatten({ background: "#0b1014" }).png().toBuffer());
+write(
+  "apps/docs/public/apple-touch-icon.png",
+  await raster(appIcon({ bleed: true }), 180)
+    .flatten({ background: "#0b1014" })
+    .png()
+    .toBuffer(),
+);
 
 // --- Escritorio
 const D = "apps/desktop/assets";
 write(`${D}/logo-dock.svg`, appIcon());
 write(`${D}/icon.png`, await png(appIcon(), 1024));
 // Windows (exe, barra de tareas, instalador NSIS): .ico multitamaño, pingüino sin placa al 90 %.
-write(`${D}/icon.ico`, ico(await Promise.all([16, 24, 32, 48, 64, 128, 256].map(async (s) => [s, await png(appIcon(), s)]))));
+write(
+  `${D}/icon.ico`,
+  ico(await Promise.all([16, 24, 32, 48, 64, 128, 256].map(async (s) => [s, await png(appIcon(), s)]))),
+);
 // Linux (AppImage, .deb/.rpm, .desktop): PNG transparentes por tamaño.
 for (const s of [256, 512]) write(`${D}/icons/${s}x${s}.png`, await png(appIcon(), s));
 // macOS: sin placa, pero dentro de la rejilla de Apple (824/1024 ≈ 80 %) para no verse mayor que el resto del Dock.
-const ICNS_APP = [["ic11", 32], ["ic12", 64], ["ic07", 128], ["ic08", 256], ["ic13", 256], ["ic09", 512], ["ic14", 512], ["ic10", 1024]];
-write(`${D}/icon.icns`, icns(await Promise.all(ICNS_APP.map(async ([t, s]) => [t, await png(appIcon({ fill: 0.8 }), s)]))));
+const ICNS_APP = [
+  ["ic11", 32],
+  ["ic12", 64],
+  ["ic07", 128],
+  ["ic08", 256],
+  ["ic13", 256],
+  ["ic09", 512],
+  ["ic14", 512],
+  ["ic10", 1024],
+];
+write(
+  `${D}/icon.icns`,
+  icns(await Promise.all(ICNS_APP.map(async ([t, s]) => [t, await png(appIcon({ fill: 0.8 }), s)]))),
+);
 write(`${D}/logo-green.svg`, svg(glyph(BRAND), 256, "Colonia"));
 write(`${D}/logo-white.svg`, svg(glyph("#fff"), 256, "Colonia"));
 const trays = {
@@ -178,16 +220,34 @@ const FILES = [
   ["coloniaapp", "app", "#7228D3"],
   ["coloniaext", "ext", "#07BB9C"],
 ];
-const ICNS = [["ic11", 32], ["ic12", 64], ["ic07", 128], ["ic08", 256], ["ic13", 256], ["ic09", 512], ["ic14", 512], ["ic10", 1024]];
+const ICNS = [
+  ["ic11", 32],
+  ["ic12", 64],
+  ["ic07", 128],
+  ["ic08", 256],
+  ["ic13", 256],
+  ["ic09", 512],
+  ["ic14", 512],
+  ["ic10", 1024],
+];
 for (const [ext, type, color] of FILES) {
   const source = fileIcon(type, color);
   write(`${D}/file-${ext}.webp`, await raster(source, 1254).webp({ quality: 90, alphaQuality: 95 }).toBuffer());
   write(`${D}/file-${ext}.png`, await png(source, 512));
-  write(`${D}/file-${ext}.ico`, ico(await Promise.all([16, 24, 32, 48, 64, 128, 256].map(async (s) => [s, await png(source, s)]))));
+  write(
+    `${D}/file-${ext}.ico`,
+    ico(await Promise.all([16, 24, 32, 48, 64, 128, 256].map(async (s) => [s, await png(source, s)]))),
+  );
   write(`${D}/file-${ext}.icns`, icns(await Promise.all(ICNS.map(async ([t, s]) => [t, await png(source, s)]))));
 }
 
 // --- Pancarta
 const row = ["menta", "brasa", "amatista", "cobalto", "coral", "noche", "kiwi", "papa"].map(presetArt);
-write("assets/banner.webp", await sharp(Buffer.from(banner(1640, 547, row))).flatten({ background: "#060a0d" }).webp({ quality: 90 }).toBuffer());
+write(
+  "assets/banner.webp",
+  await sharp(Buffer.from(banner(1640, 547, row)))
+    .flatten({ background: "#060a0d" })
+    .webp({ quality: 90 })
+    .toBuffer(),
+);
 console.log(`${names.length} pingüinos generados`);

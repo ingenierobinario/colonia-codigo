@@ -98,7 +98,9 @@ export function appIcon({ bleed = false, fill = 0.9 } = {}) {
   const tx = 128 - 128 * k;
   const ty = 128 - 140 * k;
   const edge = `<g fill="#0a5c47" stroke="#0a5c47" stroke-width="14" stroke-linejoin="round"><path d="${BODY}"/><path d="${FLIPPER}"/><path d="${FLIPPER}" transform="translate(256 0) scale(-1 1)"/><ellipse cx="84" cy="228" rx="30" ry="12"/><ellipse cx="172" cy="228" rx="30" ry="12"/></g>`;
-  return svg(`<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})">${edge}${penguin({ color: BRAND, eyes: true })}</g>`);
+  return svg(
+    `<title>Colonia</title><g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})">${edge}${penguin({ color: BRAND, eyes: true })}</g>`,
+  );
 }
 
 const BADGES = {

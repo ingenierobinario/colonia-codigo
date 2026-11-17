@@ -325,7 +325,9 @@ export function threadsRepo({ one, all, run }: Sql, bus: Bus, endSession: (threa
           .where("channel", "=", channel)
           .where("conversation", "is not", null)
           .where("person_id", "is not", null),
-      ).flatMap((r) => (r.conversation && r.person_id ? [{ conversation: r.conversation, person_id: r.person_id }] : []));
+      ).flatMap((r) =>
+        r.conversation && r.person_id ? [{ conversation: r.conversation, person_id: r.person_id }] : [],
+      );
     },
     byConversation(channel: string, conversation: string): Thread | undefined {
       const r = one(
@@ -812,7 +814,14 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
       if (!moved.length) return moved;
       // Out of the way first: (thread_id, seq) is unique.
       run(qb.updateTable("messages").set({ seq: sql<number>`-seq` }).where("thread_id", "=", threadId));
-      rows.forEach((r, i) => run(qb.updateTable("messages").set({ seq: i + 1 }).where("id", "=", r.id)));
+      rows.forEach((r, i) => {
+        run(
+          qb
+            .updateTable("messages")
+            .set({ seq: i + 1 })
+            .where("id", "=", r.id),
+        );
+      });
       return moved;
     },
     /** Copies messages into another thread (a fork), in order, with their own times; no live events. */

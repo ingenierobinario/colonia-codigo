@@ -10,13 +10,12 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     width: size,
     height: size,
     viewBox: "0 0 48 48",
-    "aria-hidden": true,
     focusable: false,
     className: "browser-logo",
   } as const;
   if (browser === "chrome")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <path fill="#EA4335" d="M24 24 6.68 14A20 20 0 0 1 41.32 14Z" />
         <path fill="#FBBC04" d="M24 24 41.32 14A20 20 0 0 1 24 44Z" />
         <path fill="#34A853" d="M24 24 24 44A20 20 0 0 1 6.68 14Z" />
@@ -26,7 +25,7 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     );
   if (browser === "edge")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <defs>
           <linearGradient id={`${id}a`} x1="0" y1="1" x2="1" y2="0">
             <stop offset="0" stopColor="#0C59A4" />
@@ -46,7 +45,7 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     );
   if (browser === "brave")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <defs>
           <linearGradient id={`${id}a`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#FF6A00" />
@@ -65,7 +64,7 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     );
   if (browser === "firefox")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <defs>
           <radialGradient id={`${id}a`} cx="0.75" cy="0.2" r="1">
             <stop offset="0" stopColor="#FFE226" />
@@ -88,7 +87,7 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     );
   if (browser === "opera")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <defs>
           <linearGradient id={`${id}a`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#FF1B2D" />
@@ -104,7 +103,7 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     );
   if (browser === "vivaldi")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <rect x="4" y="4" width="40" height="40" rx="12" fill="#EF3939" />
         <path
           fill="#fff"
@@ -114,7 +113,7 @@ export function BrowserLogo({ browser, size = 16 }: { browser: string; size?: nu
     );
   if (browser === "safari")
     return (
-      <svg {...common}>
+      <svg {...common} aria-hidden="true">
         <defs>
           <linearGradient id={`${id}a`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#19D7FF" />

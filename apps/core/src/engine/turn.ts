@@ -874,8 +874,8 @@ export function recapOf(history: ChatItem[], max = 12_000, summary?: string): st
   const SUMMARY_NOTE = "[summary of the earlier conversation";
   let size = 0;
   for (let i = history.length - 1; i >= 0; i--) {
-    const m = history[i]!;
-    if (m.role !== "user" && m.role !== "assistant") continue;
+    const m = history[i];
+    if (!m || (m.role !== "user" && m.role !== "assistant")) continue;
     let text = typeof m.content === "string" ? m.content.trim() : "";
     // The summary rides on the first kept item: it goes whole at the top instead (D-186).
     if (summary && text.startsWith(SUMMARY_NOTE)) text = text.slice(text.indexOf(summary) + summary.length).trim();

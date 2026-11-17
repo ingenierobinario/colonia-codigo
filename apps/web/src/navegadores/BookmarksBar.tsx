@@ -1,7 +1,7 @@
 // NAVEGADORES-2: la barra de marcadores del perfil del navegador real, bajo la dirección, como en el propio navegador:
 // marcadores y carpetas (una carpeta se abre como menú); lo que no cabe va a «»». Solo lectura, del perfil.
 import { Icons, Menu, type MenuEntry } from "@colonia/ui";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { BookmarkNode } from "../colonia-desktop.d.ts";
 import { navegadorId } from "../data/navegadores.ts";
 import { useT } from "../i18n/index.ts";
@@ -80,6 +80,15 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
   const row = useRef<HTMLDivElement>(null);
   const measure = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(nodes.length);
+  const items = useMemo(() => {
+    const counts = new Map<string, number>();
+    return nodes.map((node) => {
+      const bookmark = JSON.stringify([node.titulo, "url" in node ? node.url : null]);
+      const occurrence = counts.get(bookmark) ?? 0;
+      counts.set(bookmark, occurrence + 1);
+      return { node, key: `${bookmark}-${occurrence}` };
+    });
+  }, [nodes]);
 
   // Cuántos caben: cada elemento se mide en una copia oculta de la fila; el resto va a «»».
   useLayoutEffect(() => {
@@ -87,13 +96,15 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
     const m = measure.current;
     if (!el || !m) return;
     const calc = () => {
-      const widths = [...m.children].map((c) => (c as HTMLElement).getBoundingClientRect().width);
       const room = el.clientWidth;
       let used = 0;
       let n = 0;
-      for (const w of widths) {
+      for (const i of nodes.keys()) {
+        const child = m.children.item(i);
+        if (!child) break;
+        const w = child.getBoundingClientRect().width;
         const next = used + (n ? GAP : 0) + w;
-        const more = n + 1 < widths.length ? GAP + MORE : 0;
+        const more = n + 1 < nodes.length ? GAP + MORE : 0;
         if (next + more > room) break;
         used = next;
         n++;
@@ -103,6 +114,7 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
     calc();
     const ro = new ResizeObserver(calc);
     ro.observe(el);
+    for (const child of m.children) ro.observe(child);
     return () => ro.disconnect();
   }, [nodes]);
 
@@ -120,8 +132,8 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
   return (
     <nav className="bmbar" aria-label={t("navegadores.bookmarks")}>
       <div className="bmbar__row" ref={row}>
-        {nodes.slice(0, fit).map((n, i) => (
-          <Item key={`${i}-${label(n)}`} node={n} open={open} empty={empty} />
+        {items.slice(0, fit).map(({ node, key }) => (
+          <Item key={key} node={node} open={open} empty={empty} />
         ))}
         {rest.length > 0 && (
           <Menu
@@ -142,8 +154,8 @@ export function BookmarksBar({ nodes, open }: { nodes: BookmarkNode[]; open: (ur
         )}
       </div>
       <div className="bmbar__measure" ref={measure} aria-hidden="true">
-        {nodes.map((n, i) => (
-          <span key={`${i}-${label(n)}`} className="bmbar__item">
+        {items.map(({ node: n, key }) => (
+          <span key={key} className="bmbar__item">
             {"url" in n ? <Icons.Globe size={13} /> : <Icons.Folder size={13} />}
             <span className="bmbar__text">{label(n)}</span>
           </span>
