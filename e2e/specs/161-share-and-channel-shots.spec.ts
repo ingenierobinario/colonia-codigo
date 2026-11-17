@@ -17,6 +17,20 @@ async function shot(page: Page, name: string) {
 }
 
 const KINDS = ["Discord", "Slack", "ntfy", "Matrix", "IRC"] as const;
+const otherProjects: string[] = [];
+
+// Un proyecto puede quedar dentro de «N más» tras utilizar la Colonia durante un tiempo.
+test.beforeAll(async () => {
+  await rpc("setup.finish");
+  for (const name of ["Alba", "Bosque", "Casa", "Dehesa", "Estudio", "Faro"]) {
+    const { project } = await rpc<Result<"projects.create">>("projects.create", { name });
+    otherProjects.push(project.id);
+  }
+});
+
+test.afterAll(async () => {
+  for (const project of otherProjects) await rpc("projects.unregister", { project });
+});
 
 for (const mode of ["light", "dark"] as const) {
   for (const width of [390, 768, 1200]) {
@@ -25,13 +39,15 @@ for (const mode of ["light", "dark"] as const) {
       test.setTimeout(180_000);
       await page.addInitScript((m) => localStorage.setItem("colonia.mode", m), mode);
       await page.setViewportSize({ width, height: 900 });
-      await rpc("setup.finish", {});
       await rpc("webhooks.set", { mode: "off" });
       const name = `Tienda ${tag}`;
       const { project } = await rpc<Result<"projects.create">>("projects.create", { name });
       try {
         await open(page, `#project=${project.id}`);
-        await page.getByRole("button", { name, exact: true }).first().click({ button: "right" });
+        await page.getByRole("heading", { name, exact: true }).waitFor();
+        const row = page.getByRole("group", { name, exact: true });
+        if (!(await row.isVisible())) await page.getByRole("button", { name: /^\d+ más$/ }).click();
+        await row.click({ button: "right" });
         await page.getByRole("menuitem", { name: "Compartir proyecto" }).click();
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("radio", { name: "Publicar" }).click();
@@ -47,25 +63,30 @@ for (const mode of ["light", "dark"] as const) {
         await dialog.getByRole("button", { name: "Dejar de publicar" }).click();
         await page.keyboard.press("Escape");
 
+        await expect(dialog).toBeHidden();
         for (const kind of KINDS) {
-          await open(page);
-          await page.getByRole("button", { name: "Añadir canal" }).click();
+          const nav = page.getByRole("complementary", { name: "Navegación" });
+          await nav.getByRole("button", { name: "Añadir canal", exact: true }).click();
           await page
             .getByRole("menuitem", { name: kind, exact: kind !== "Discord" && kind !== "Slack" })
             .first()
             .click();
-          const next = page.getByRole("button", { name: "Siguiente" });
+          const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
+          await expect(settings.getByRole("radio", { name: kind, exact: true })).toBeChecked();
+          const next = settings.getByRole("button", { name: "Siguiente", exact: true });
           for (let step = 1; step <= 6; step++) {
-            await page.waitForTimeout(150);
+            await expect(settings.locator(".guide__count")).toHaveText(new RegExp(`^Paso ${step} de \\d+$`));
             await shot(page, `${tag}-canal-${kind.toLowerCase()}-${step}`);
             if (!(await next.isVisible()) || !(await next.isEnabled())) break;
             await next.click();
           }
           await page.keyboard.press("Escape");
+          await expect(settings).toBeHidden();
         }
       } finally {
         await rpc("projects.share", { project: project.id, shared: false }).catch(() => {});
         await rpc("webhooks.set", { mode: "off" });
+        await rpc("projects.unregister", { project: project.id });
       }
     });
   }
