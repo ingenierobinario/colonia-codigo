@@ -240,6 +240,8 @@ export const CatalogEngine = z.object({
   label: z.string(),
   available: z.boolean(),
   detail: z.string().optional(),
+  /** CATALOGO-DETALLE-1: what `detail` means, so the panel says it in the user's language (the raw text is a hint). */
+  detail_code: z.enum(["not_installed", "not_signed_in", "no_key", "refresh_failed", "failed"]).optional(),
   models: z.array(
     z.object({
       id: z.string(),

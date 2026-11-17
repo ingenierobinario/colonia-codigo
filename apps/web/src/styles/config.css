@@ -305,12 +305,10 @@
   font-weight: var(--colonia-weight-regular);
   color: var(--colonia-fg-subtle);
 }
+/* AJUSTES-GEOMETRIA-1: the kind line carries the install hint; cut with «…» it hid it at every width. */
 .engine__kind {
   font-size: var(--colonia-text-xs);
   color: var(--colonia-fg-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .engine__steps {
   display: flex;
@@ -351,15 +349,18 @@
   padding: 0;
   list-style: none;
 }
+/* AJUSTES-GEOMETRIA-1: at 390 the model picker and the profile switch left the name a 0px column (the agent had no
+   name on screen). The row wraps instead: the name keeps room to be read and the controls go under it. */
 .agentcfg__row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 10px 0;
   border-top: 1px solid var(--colonia-border);
 }
 .agentcfg__name {
-  flex: 1;
+  flex: 1 1 10em;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -564,6 +565,11 @@
 }
 .pform__hint.is-error {
   color: var(--colonia-danger-soft-fg);
+}
+/* AJUSTES-GEOMETRIA-1: a description that is the whole point of the row (Avanzado › Subsistemas) is read entire. */
+.res__desc.res__desc--full {
+  white-space: normal;
+  overflow: visible;
 }
 .res__desc.svc__why {
   color: var(--colonia-danger-soft-fg);

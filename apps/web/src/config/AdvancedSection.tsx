@@ -74,7 +74,7 @@ export function AdvancedSection() {
               <li key={name} className="res__row">
                 <div className="res__main">
                   <div className="res__name">{isKey(label) ? t(label) : name}</div>
-                  <div className="res__desc">
+                  <div className="res__desc res__desc--full">
                     {[isKey(what) ? t(what) : "", st.status !== "off" && st.detail].filter(Boolean).join(" · ")}
                   </div>
                 </div>

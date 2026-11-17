@@ -39,10 +39,20 @@ export type CatalogEngine = {
   available: boolean;
   /** Why it is not available, or why the list may be stale. */
   detail?: string;
+  /** CATALOGO-DETALLE-1: what `detail` means, for the panel to say it in the user's language. */
+  detail_code?: "not_installed" | "not_signed_in" | "no_key" | "refresh_failed" | "failed";
   models: CatalogModel[];
   fetched_at?: string;
   starter?: string;
 };
+
+/** CATALOGO-DETALLE-1: the reasons an engine gives for an empty list, by the words its own errors use. */
+function detailCode(why: string): NonNullable<CatalogEngine["detail_code"]> {
+  if (/not installed/i.test(why)) return "not_installed";
+  if (/not signed in/i.test(why)) return "not_signed_in";
+  if (/^no (api )?key/i.test(why)) return "no_key";
+  return "failed";
+}
 
 /**
  * Where an engine's list is kept. The version moves whenever more is read from an engine (efforts were added later),
@@ -234,8 +244,12 @@ export function createCatalog(deps: {
       const why = errorMessage(err);
       // A failed refresh keeps the last good list, marked stale.
       return prev?.models.length
-        ? { ...prev, detail: `could not refresh (${why}); showing the list from ${prev.fetched_at}` }
-        : { ...base, available: false, detail: why, models: [] };
+        ? {
+            ...prev,
+            detail: `could not refresh (${why}); showing the list from ${prev.fetched_at}`,
+            detail_code: "refresh_failed" as const,
+          }
+        : { ...base, available: false, detail: why, detail_code: detailCode(why), models: [] };
     }
   }
 

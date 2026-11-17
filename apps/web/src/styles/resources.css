@@ -1084,11 +1084,13 @@
   min-width: 0;
   flex: 1;
 }
-.catalog__name {
+/* AJUSTES-GEOMETRIA-1: only the connector cards. Configuración › Motores also has a .catalog with names and
+   descriptions; unscoped, this one-line rule cut the model descriptions there with «…». */
+.catalog__text .catalog__name {
   font-weight: 600;
   font-size: 13px;
 }
-.catalog__desc {
+.catalog__text .catalog__desc {
   font-size: 12px;
   opacity: 0.7;
   overflow: hidden;
