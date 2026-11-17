@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserHistory } from "../data/actions.ts";
 import { useData } from "../data/state.ts";
-import { useWebApps, webAppTab } from "../data/webapps.ts";
+import { useWebApps, webAppProfile, webAppTab } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
 import { BrowserViewport } from "../panel/BrowserViewport.tsx";
 import { useBrowserPoppedOut } from "../panel/browserWindow.ts";
@@ -25,8 +25,10 @@ export function WebAppScreen() {
   const id = useNav((s) => s.webAppId);
   const app = useWebApps((s) => s.apps.find((a) => a.id === id));
   const loaded = useWebApps((s) => s.loaded);
-  const [tabId, setTabId] = useState<string>();
-  const tab = useData((s) => s.tabs.find((x) => x.tab === tabId));
+  const [openedId, setTabId] = useState<string>();
+  const tab = useData((s) => s.tabs.find((x) => app && x.profile === webAppProfile(app.id)));
+  // La pestaña se anuncia antes de terminar la carga: mostrarla ya permite ver su primer contenido.
+  const tabId = tab?.tab;
   const poppedOut = useBrowserPoppedOut();
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function WebAppScreen() {
 
   // WEBAPP-BLANCO-1: the tab this view showed is gone (closed, or it was the core's headless one and the desktop
   // browser took over): open the app again where it can be seen instead of pointing the page at a missing tab.
-  const gone = useData((s) => Boolean(tabId) && !s.tabs.some((x) => x.tab === tabId));
+  const gone = Boolean(openedId) && !tabId;
   useEffect(() => {
     if (!gone || !app) return;
     let live = true;
