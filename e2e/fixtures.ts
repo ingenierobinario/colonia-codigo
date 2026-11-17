@@ -94,6 +94,43 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
     `#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.1.0";; login) m=$(cat "$(dirname "$0")/codex-login" 2>/dev/null); case "$m" in in) echo "Logged in using ChatGPT" >&2;; slow) sleep 45; echo "Logged in using ChatGPT" >&2;; fail-once) echo in > "$(dirname "$0")/codex-login"; exit 3;; *) echo "Not logged in" >&2; exit 1;; esac;; debug) echo '${JSON.stringify({ models: [{ slug: "gpt-e2e", display_name: "GPT e2e", supported_reasoning_levels: [{ effort: "low" }, { effort: "high" }], default_reasoning_level: "low" }] })}';; esac\n`,
   );
   for (const f of ["claude", "codex"]) fs.chmodSync(path.join(bin, f), 0o755);
+  // Windows only finds .exe/.cmd on PATH: the same two CLIs, as Node scripts behind an npm-style .cmd shim.
+  if (process.platform === "win32") {
+    const models = JSON.stringify({
+      models: [
+        {
+          slug: "gpt-e2e",
+          display_name: "GPT e2e",
+          supported_reasoning_levels: [{ effort: "low" }, { effort: "high" }],
+          default_reasoning_level: "low",
+        },
+      ],
+    });
+    const stubs: Record<string, string> = {
+      claude: `const a = process.argv[2];
+if (a === "--version") console.log("2.0.0 (Claude Code)");
+else if (a === "auth") console.log('{"loggedIn":false}');
+`,
+      codex: `const fs = require("node:fs"), path = require("node:path");
+const a = process.argv[2], flag = path.join(__dirname, "codex-login");
+const done = (code) => { process.exitCode = code; };
+if (a === "--version") console.log("codex-cli 0.1.0");
+else if (a === "debug") console.log(${JSON.stringify(models)});
+else if (a === "login") {
+  let m = "";
+  try { m = fs.readFileSync(flag, "utf8").trim(); } catch {}
+  if (m === "in") console.error("Logged in using ChatGPT");
+  else if (m === "slow") setTimeout(() => console.error("Logged in using ChatGPT"), 45000);
+  else if (m === "fail-once") { fs.writeFileSync(flag, "in\\n"); done(3); }
+  else { console.error("Not logged in"); done(1); }
+}
+`,
+    };
+    for (const [name, code] of Object.entries(stubs)) {
+      write(path.join(bin, `${name}.js`), code);
+      write(path.join(bin, `${name}.cmd`), `@"${process.execPath}" "%~dp0${name}.js" %*\r\n`);
+    }
+  }
   // node itself, without the folder it lives in (globally installed CLIs sit there too).
   try {
     fs.symlinkSync(process.execPath, path.join(bin, "node"));

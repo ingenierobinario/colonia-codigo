@@ -21,7 +21,9 @@ for (const width of [768, 960, 1200, 1440]) {
       expect(fits.sw).toBeLessThanOrEqual(fits.w + 1);
       expect(fits.h).toBeLessThan(30);
       const top = await card.locator(".engine__top").boundingBox();
-      const usage = await card.locator(".engine__usage").boundingBox();
+      // Un CLI sin instalar no lleva «Ver cuánto me queda» (2.36.44): no hay nada que medir.
+      const block = card.locator(".engine__usage");
+      const usage = (await block.count()) ? await block.boundingBox() : null;
       if (top && usage) expect(usage.y).toBeGreaterThanOrEqual(top.y + top.height);
     }
     await page.screenshot({ path: info.outputPath(`sesiones-${width}.png`) });
