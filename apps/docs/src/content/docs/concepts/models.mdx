@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-import { Aside, Steps, Tabs, TabItem, CardGrid, LinkCard } from "@astrojs/starlight/components";
+import { Steps, Tabs, TabItem, CardGrid, LinkCard } from "@astrojs/starlight/components";
 import Shot from "../../../components/Shot.astro";
 import Terminal from "../../../components/Terminal.astro";
 
@@ -19,14 +19,10 @@ on your machine. Colonia picks the right one for each turn and falls back when o
 | **Provider** | A model API that Colonia's own loop calls. Your agents think with these. | Gemini, Anthropic, OpenAI, OpenRouter, a local Ollama, your ChatGPT plan |
 | **Harness** | What runs a turn's loop. `native` is Colonia's own; the others are coding CLIs that run their own loop. | `native`, `claude` (Claude Code), `codex` (Codex), `acp` (OpenCode, Qwen Code, Gemini CLI, goose…) |
 
-Your agents, the router and the install default always use **providers** through Colonia's loop, with Colonia's tools,
-memory and safety rules. Claude Code, Codex and the other CLIs run **in their own sessions**: you talk to the CLI
-itself, in a folder, from **External sessions**. They are not models for your agents.
-
-<Aside>
-  Your Claude subscription works only inside Claude Code: Anthropic limits its sign-in to Claude Code. So in Colonia it
-  lives in Claude Code sessions, and agents that should think with Claude use an Anthropic API key.
-</Aside>
+In **Settings › Engines and models**, connect your ChatGPT account, Claude Pro or Max, or a provider key. Once
+connected, a model from your Claude plan can be an agent’s model, the default model or a choice in the router.
+Colonia runs those turns through Claude Code. **External sessions** lets you open or resume a coding conversation
+in a folder. You can reuse the same Claude account there.
 
 ## Add a provider
 

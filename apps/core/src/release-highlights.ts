@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.46": {
+    en: [
+      "Assign agents to areas and roles and see their responsibilities in the project chart.",
+      "Share projects with their skills and agents, including compatible Claude Code and Codex definitions.",
+      "Open a backup or sync another Colonia from My computers.",
+      "Choose logos for internal apps and find service connectors more easily.",
+    ],
+    es: [
+      "Asigna áreas y roles a los agentes y consulta sus responsabilidades en el organigrama del proyecto.",
+      "Comparte proyectos con sus skills y agentes, incluidos los compatibles de Claude Code y Codex.",
+      "Abre la copia de seguridad o sincroniza otra Colonia desde Mis equipos.",
+      "Elige el logo de las aplicaciones internas y encuentra más fácilmente los conectores de servicios.",
+    ],
+  },
   "2.36.45": {
     en: [
       "Claude with your Pro or Max account now works in the Router, as the default model and for agents.",

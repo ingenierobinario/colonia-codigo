@@ -57,6 +57,24 @@ export type NewsEntry = {
 export const NEWS: readonly NewsEntry[] = [
   BROWSER_JAVASCRIPT_NEWS,
   {
+    id: "project-team-assignments",
+    since: "2.36.46",
+    title: { en: "See who does what in a project", es: "Quién hace qué en un proyecto" },
+    about: {
+      en: "Assign each agent to a team area and a role. Open the project chart to see responsibilities and who reports to whom.",
+      es: "Asigna a cada agente un área y un rol. El organigrama del proyecto muestra sus responsabilidades y a quién responde.",
+    },
+    applies: () => true,
+    text: "Owners can assign an area and role to project agents and see those assignments on the organization chart.",
+    actions: [
+      {
+        label: { en: "Review my project team", es: "Revisar mi equipo" },
+        prompt:
+          "Help me review the areas and roles in a project I choose. Explain each assignment before making changes.",
+      },
+    ],
+  },
+  {
     id: "help-whats-new",
     since: "2.12.0",
     title: { en: "What's new, in the Help menu", es: "Las novedades, en el menú de ayuda" },
