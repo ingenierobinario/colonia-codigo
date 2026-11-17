@@ -80,6 +80,10 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
     "Este proyecto consultaba otros que aquí no tienes con ese nombre. Di cuál de los tuyos es cada uno, o déjalo así: lo demás funciona igual.",
   "pshare.import.unresolvedAlone":
     "Este proyecto consultaba otros que aquí no tienes. Cuando crees o importes uno, enlázalo desde la configuración del proyecto.",
+  "pshare.import.skillConflicts": "Skills que ya tenías",
+  "pshare.import.skillConflictsBody":
+    "Ya tienes una skill distinta con cada uno de estos nombres: se queda la tuya y la del proyecto no se ha copiado. Cambia el nombre de una si quieres las dos.",
+  "pshare.import.skillReserved": "{name} (este nombre es de una guía de Colonia)",
   "pshare.import.linkPick": "Elegir proyecto",
   "pshare.import.linkTo": "Enlazar {name} con uno de tus proyectos",
   "pshare.import.linked": "Enlazado con {name}",
@@ -96,7 +100,8 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.err.other": "No se pudo importar: {error}",
   "pshare.err.export": "No se pudo compartir: {error}",
   "pshare.temp.title": "Compártelo con un enlace",
-  "pshare.temp.body": "Colonia abre un enlace gratis, sin cuenta ni instalar nada. Quien lo tenga podrá traer una copia a su Colonia mientras el tuyo esté encendido.",
+  "pshare.temp.body":
+    "Colonia abre un enlace gratis, sin cuenta ni instalar nada. Quien lo tenga podrá traer una copia a su Colonia mientras el tuyo esté encendido.",
   "pshare.temp.create": "Crear enlace temporal",
   "pshare.temp.note": "Enlace temporal: cambia cuando reinicias Colonia.",
   "pshare.temp.retry": "Volver a probar",

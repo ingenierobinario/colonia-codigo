@@ -491,3 +491,52 @@ test("el texto de instrucciones conserva lo que no es un dato de acceso", () => 
   const back = parsePackage(`  ${packageCode({ ...pkg, agents: [], skills: [], connections: [] })}\n`);
   assert.ok(back.ok && back.pkg.instructions === "hola");
 });
+
+test("SKILLS-AUTOCONTENIDO-1 · exportar lleva las skills del proyecto y las globales que usan sus agentes; importar no pisa las que ya hay", async () => {
+  const a = await boot();
+  const b = await boot();
+  const w = (root: string, rel: string, text: string) => {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), text);
+  };
+  try {
+    const { project } = await a.client.call("projects.create", { name: "Ventas Acme", kind: "company" });
+    const root = project.path ?? "";
+    seedProject(root);
+    w(root, ".apc/agents/tarifas.md", "---\nname: Tarifas\nskills: tarifas-acme\n---\nCalcula tarifas.\n");
+    w(root, ".claude/skills/guia-local/SKILL.md", "---\nname: guia-local\ndescription: Guía\n---\nLocal.\n");
+    w(a.home, "skills/tarifas-acme/SKILL.md", "---\nname: tarifas-acme\ndescription: Tarifas\n---\nDe A.\n");
+    w(a.home, "skills/tarifas-acme/tabla.md", "tabla\n");
+    w(a.home, "skills/sin-usar/SKILL.md", "---\nname: sin-usar\ndescription: Nadie la usa\n---\nNo.\n");
+    const out = await a.client.call("projects.export", { project: project.id });
+    const pkg = JSON.parse(out.content) as { skills: { folder: string; files: { path: string }[] }[] };
+    assert.deepEqual(pkg.skills.map((s) => s.folder).sort(), ["guia-local", "presupuestos", "tarifas-acme"]);
+    assert.ok(pkg.skills.find((s) => s.folder === "tarifas-acme")?.files.some((f) => f.path === "tabla.md"));
+
+    // En B ya hay una «tarifas-acme» distinta: no se pisa y se declara.
+    w(b.home, "skills/tarifas-acme/SKILL.md", "---\nname: tarifas-acme\ndescription: La de B\n---\nDe B.\n");
+    const got = await b.client.call("projects.import", { content: out.content, save: true, replace: false });
+    assert.deepEqual(got.skill_conflicts, [{ name: "tarifas-acme", reason: "different" }]);
+    assert.match(fs.readFileSync(path.join(b.home, "skills/tarifas-acme/SKILL.md"), "utf8"), /De B\./);
+    const dest = got.project?.path ?? "";
+    assert.ok(!fs.existsSync(path.join(dest, ".apc/skills/tarifas-acme")));
+    assert.ok(fs.existsSync(path.join(dest, ".apc/skills/guia-local/SKILL.md")));
+    assert.ok(fs.existsSync(path.join(dest, ".apc/skills/presupuestos/plantilla.md")));
+
+    // Un paquete de antes (sin las skills globales) se sigue importando igual.
+    const old = { ...JSON.parse(out.content), skills: [] };
+    const prev = await b.client.call("projects.import", {
+      content: JSON.stringify(old),
+      name: "Ventas Antiguo",
+      save: true,
+      replace: false,
+    });
+    assert.equal(prev.saved, true);
+    assert.equal(prev.skill_conflicts, undefined);
+  } finally {
+    await a.core.close();
+    await a.cleanup();
+    await b.core.close();
+    await b.cleanup();
+  }
+});

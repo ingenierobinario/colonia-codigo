@@ -8,7 +8,7 @@ import type { Log } from "../log.ts";
 import { realpath } from "../paths.ts";
 import { listField, textField } from "./frontmatter.ts";
 import type { ProjectFiles, ReadProjectFiles } from "./project-reader.ts";
-import { type ApcAgent, type ApcProject, isApcProject, readAgents, readProject } from "./read.ts";
+import { type ApcAgent, type ApcProject, isApcProject, NATIVE_AGENT_APPS, readAgents, readProject } from "./read.ts";
 
 /**
  * An agent file's `autonomy:`, with the names files written before the five modes used (DECISIONS.md#d-106): a file in
@@ -227,7 +227,19 @@ export function createApcSync(deps: {
       const real = realpath(root);
       if (fs.existsSync(path.join(real, ".apc")))
         list.push(fs.watch(path.join(real, ".apc"), { recursive: true }, changed));
-      list.push(fs.watch(real, (_e, file) => file === "AGENTS.md" && changed()));
+      list.push(
+        fs.watch(real, (_e, file) => ["AGENTS.md", "CLAUDE.md", "GEMINI.md"].includes(String(file)) && changed()),
+      );
+      // FORMATOS-IA-1 · Las instrucciones de Copilot viven en .github/.
+      const gh = path.join(real, ".github");
+      if (fs.existsSync(gh) && !fs.lstatSync(gh).isSymbolicLink())
+        list.push(fs.watch(gh, (_e, file) => String(file) === "copilot-instructions.md" && changed()));
+      // AGENTES-NATIVOS-1 · Los agentes de Claude Code y Codex se leen en su sitio: un cambio ahí también reindexa.
+      for (const app of NATIVE_AGENT_APPS) {
+        const dir = path.join(real, `.${app}`, "agents");
+        if (fs.existsSync(dir) && !fs.lstatSync(path.join(real, `.${app}`)).isSymbolicLink())
+          list.push(fs.watch(dir, changed));
+      }
     } catch {}
     for (const w of list) w.on("error", () => w.close());
     watchers.set(root, list);

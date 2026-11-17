@@ -2,8 +2,8 @@
 // servers are in rpc/mcp.ts.
 
 import path from "node:path";
+import { NO_TARGET, parseRecipe, recipeOf, renderRecipe } from "../domain/recipe.ts";
 import type { Store } from "../domain/store.ts";
-import { parseRecipe, recipeOf, renderRecipe, NO_TARGET } from "../domain/recipe.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import type { McpConfig, McpDef } from "../mcp/config.ts";
 import { projectSecretName, type Secrets, splitSecretName } from "../secrets.ts";
@@ -112,7 +112,12 @@ export function resourceHandlers(deps: {
       // An existing skill is edited (or copied) in its own folder; a new one gets a folder named after it.
       const folder = current ? path.basename(current.dir) : name;
       try {
-        writeSkill({ home, projectRoot: rootOf(project), folder, target, content });
+        // ESCRITURA-EN-ORIGEN-1 · Una skill del proyecto que vive en `.claude/skills`… se guarda en esa misma carpeta.
+        const inPlace =
+          target === "project" && current?.scope === "project" && current.source !== "project"
+            ? current.dir
+            : undefined;
+        writeSkill({ home, projectRoot: rootOf(project), folder, target, content, dir: inPlace });
       } catch (err) {
         throw badRequest(errorMessage(err));
       }
@@ -155,7 +160,8 @@ export function resourceHandlers(deps: {
     "skills.recipe_import": ({ content, mode, target, project, replace }) => {
       const r = parseRecipe(content);
       if (!r) throw badRequest("this file is not a Colonia recipe (it has no recipe mark or no steps)");
-      if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/.test(r.name)) throw badRequest("the recipe's name is not a valid skill name");
+      if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/.test(r.name))
+        throw badRequest("the recipe's name is not a valid skill name");
       const said = { name: r.name, goal: r.goal, preferred: r.mode, steps: r.steps.length };
       // Sin modo no se guarda nada: es la mirada previa, para que la persona elija.
       if (!mode) return { ...said, saved: false };
@@ -163,7 +169,8 @@ export function resourceHandlers(deps: {
         throw badRequest("a project skill needs a project whose folder is on disk");
       const taken = allSkills(store, roots, project).find((x) => x.name === r.name);
       if (taken?.source === "colonia") throw badRequest(`${r.name} comes with Colonia; rename the recipe`);
-      if (taken && !replace) throw badRequest(`there is already a skill named ${r.name}; replace it or rename the recipe`);
+      if (taken && !replace)
+        throw badRequest(`there is already a skill named ${r.name}; replace it or rename the recipe`);
       try {
         writeSkill({ home, projectRoot: rootOf(project), folder: r.name, target, content });
       } catch (err) {

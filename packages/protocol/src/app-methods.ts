@@ -743,6 +743,11 @@ export const appMethods = {
       project: Project.optional(),
       /** Names of projects the shared one knew that are not here: those links wait until one of that name exists. */
       unresolved: z.array(z.string()).optional(),
+      /**
+       * SKILLS-VIAJAN-1 · Skills del paquete que no se escribieron porque aquí ya hay una con ese nombre: `different`,
+       * dice otra cosa (se queda la de aquí); `reserved`, el nombre es de una guía de Colonia.
+       */
+      skill_conflicts: z.array(z.object({ name: z.string(), reason: z.enum(["different", "reserved"]) })).optional(),
     }),
     effect: true,
     access: "human",

@@ -49,7 +49,20 @@ export function writeSkill(o: {
   folder: string;
   target: "global" | "project";
   content: string;
+  /** ESCRITURA-EN-ORIGEN-1 · La carpeta de una skill del proyecto que vive en la de otra app (`.claude/skills/x`). */
+  dir?: string | undefined;
 }): string {
+  if (o.target === "project" && o.dir && o.projectRoot) {
+    const rel = path.relative(o.projectRoot, o.dir);
+    if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) throw new Error("the skill is not inside the project");
+    const parts = [...rel.split(/[\\/]/), "SKILL.md"];
+    for (let i = 1; i <= parts.length; i++) {
+      const p = path.join(o.projectRoot, ...parts.slice(0, i));
+      if (isLink(p)) throw new Error(`refusing to write through a symlink: ${parts.slice(0, i).join("/")}`);
+    }
+    writeAtomic(path.join(o.dir, "SKILL.md"), o.content);
+    return o.dir;
+  }
   if (o.target === "project") {
     if (!o.projectRoot) throw new Error("a project skill needs a project whose folder is on disk");
     const parts = [".apc", "skills", o.folder, "SKILL.md"];

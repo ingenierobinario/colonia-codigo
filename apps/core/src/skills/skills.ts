@@ -154,7 +154,8 @@ export function allSkills(store: Store, roots: SkillRoots, projectId: string | u
           scope: "project",
           project_id: project.id,
           source,
-          own: source === "project",
+          // ESCRITURA-EN-ORIGEN-1 · Las del proyecto se editan en su sitio, vivan en `.apc` o en `.claude`/`.codex`…
+          own: true,
         })
       : [];
   // The other apps keep copies of the skills Colonia writes for them (runtimes.ts): those are Colonia's, not theirs.
