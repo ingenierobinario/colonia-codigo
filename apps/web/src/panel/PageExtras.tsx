@@ -96,7 +96,10 @@ function DownloadBar({ download }: { download: Download }) {
   const t = useT();
   const done = download.state === "completed";
   return (
-    <div className={download.state === "failed" ? "bextra is-error" : "bextra"} role="status">
+    <div
+      className={download.state === "failed" ? "bextra bextra--download is-error" : "bextra bextra--download"}
+      role="status"
+    >
       {download.state === "failed" ? <Icons.TriangleAlert size={14} /> : <Icons.Download size={14} />}
       <span className="bextra__text" title={download.name}>
         {t(
@@ -104,32 +107,34 @@ function DownloadBar({ download }: { download: Download }) {
           { name: download.name },
         )}
       </span>
-      {done && download.opens && (
-        <Button
+      <div className="bextra__actions">
+        {done && download.opens && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="btoolbar__btn"
+            onClick={() => desktop?.openDownload?.(download.id)}
+          >
+            {t("browser.downloadOpen")}
+          </Button>
+        )}
+        {done && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="btoolbar__btn"
+            onClick={() => desktop?.showDownload?.(download.id)}
+          >
+            {t("browser.downloadShow")}
+          </Button>
+        )}
+        <IconButton
           size="sm"
-          variant="secondary"
-          className="btoolbar__btn"
-          onClick={() => desktop?.openDownload?.(download.id)}
-        >
-          {t("browser.downloadOpen")}
-        </Button>
-      )}
-      {done && (
-        <Button
-          size="sm"
-          variant="secondary"
-          className="btoolbar__btn"
-          onClick={() => desktop?.showDownload?.(download.id)}
-        >
-          {t("browser.downloadShow")}
-        </Button>
-      )}
-      <IconButton
-        size="sm"
-        label={t("common.close")}
-        icon={<Icons.X size={14} />}
-        onClick={() => extras.set({ download: undefined })}
-      />
+          label={t("common.close")}
+          icon={<Icons.X size={14} />}
+          onClick={() => extras.set({ download: undefined })}
+        />
+      </div>
     </div>
   );
 }

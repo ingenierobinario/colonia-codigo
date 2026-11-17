@@ -9,6 +9,7 @@ import { useWebApps, webAppProfile, webAppTab } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
 import { BrowserViewport } from "../panel/BrowserViewport.tsx";
 import { useBrowserPoppedOut } from "../panel/browserWindow.ts";
+import { PageExtras } from "../panel/PageExtras.tsx";
 import { nav, useNav } from "../shell/nav.ts";
 import { LoginBar } from "./LoginBar.tsx";
 import "../styles/browser-panel.css";
@@ -30,6 +31,7 @@ export function WebAppScreen() {
   // La pestaña se anuncia antes de terminar la carga: mostrarla ya permite ver su primer contenido.
   const tabId = tab?.tab;
   const poppedOut = useBrowserPoppedOut();
+  const desktop = window.coloniaDesktop;
 
   useEffect(() => {
     setTabId(undefined);
@@ -89,6 +91,15 @@ export function WebAppScreen() {
           {url.startsWith("https://") ? <Icons.Lock size={12} /> : <Icons.Globe size={12} />}
           <span className="btoolbar__urltext">{hostPath(url)}</span>
         </span>
+        {desktop?.tabAction && (
+          <IconButton
+            size="sm"
+            label={t("browser.find")}
+            icon={<Icons.Search size={14} />}
+            disabled={!tabId}
+            onClick={() => tabId && desktop.tabAction?.(tabId, "find")}
+          />
+        )}
         <IconButton
           size="sm"
           label={t("webapp.openOutside")}
@@ -97,6 +108,7 @@ export function WebAppScreen() {
         />
       </div>
       <LoginBar app={app.id} />
+      <PageExtras tab={tab} />
       {tabId ? <BrowserViewport tab={tabId} /> : <Skeleton className="browser__page" />}
     </div>
   );
