@@ -484,13 +484,18 @@ export function createSync(d: SyncDeps) {
       if (mismatch) warn("los dos equipos tienen versiones distintas de Colonia: no se pasan nada hasta actualizar");
       else setImmediate(missingFiles);
       tell();
-      return pump();
+      pump();
+      return;
     }
-    if (m.t === "adios") return forget();
+    if (m.t === "adios") {
+      forget();
+      return;
+    }
     if (m.t === "papel") {
       setRole(m.role === "principal" ? "secundario" : "principal", m.role_at);
       saveState();
-      return tell();
+      tell();
+      return;
     }
     if (!l.ready) return;
     if (m.t === "cambios") {
@@ -499,7 +504,8 @@ export function createSync(d: SyncDeps) {
         r = journal.apply([...waiting, ...(m.items as Item[])]);
       } catch (err) {
         // Sin confirmar: el otro lo vuelve a mandar.
-        return warn("no se pudo aplicar lo recibido", err);
+        warn("no se pudo aplicar lo recibido", err);
+        return;
       }
       waiting = r.waiting.slice(-WAITING_MAX);
       l.send({ t: "ok", id: m.id });
@@ -511,7 +517,8 @@ export function createSync(d: SyncDeps) {
         warn("lo recibido entró, pero algo no se refrescó", err);
       }
       tell();
-      return pump();
+      pump();
+      return;
     }
     if (m.t === "ok") {
       if (inflight?.id !== m.id) return;
@@ -519,14 +526,16 @@ export function createSync(d: SyncDeps) {
       inflight = undefined;
       touchSync();
       tell();
-      return pump();
+      pump();
+      return;
     }
     if (m.t === "canales") {
       remote = m.info;
-      return tell();
+      tell();
+      return;
     }
-    if (m.t === "pide") return sendFile(l, m.id, m.at);
-    if (m.t === "fichero") return receiveFile(m);
+    if (m.t === "pide") sendFile(l, m.id, m.at);
+    else if (m.t === "fichero") receiveFile(m);
   }
 
   function touchSync(): void {
@@ -591,7 +600,8 @@ export function createSync(d: SyncDeps) {
         at = fs.statSync(part).size;
       } catch {}
       fetching = { id, file: p, part, at };
-      return link.send({ t: "pide", id, at });
+      link.send({ t: "pide", id, at });
+      return;
     }
   }
   /** Un trozo, el que piden. Así un fichero de cualquier tamaño no ocupa memoria ni atasca lo demás. */
@@ -600,7 +610,10 @@ export function createSync(d: SyncDeps) {
     const p = mediaPath(id);
     let fd: number | undefined;
     try {
-      if (!p || !inHome(p)) return none();
+      if (!p || !inHome(p)) {
+        none();
+        return;
+      }
       const size = fs.statSync(p).size;
       // Un resto que no cuadra con este fichero: se empieza de nuevo.
       const at = wantAt > size ? 0 : wantAt;
@@ -795,13 +808,17 @@ export function createSync(d: SyncDeps) {
         dialing = false;
         nextDial = now() + (RETRY_MS[Math.min(attempt++, RETRY_MS.length - 1)] ?? 30_000);
       };
-      if (!url || stopped || !state || link) return void (dialing = false);
+      if (!url || stopped || !state || link) {
+        dialing = false;
+        return;
+      }
       let done = false;
       let ws: WebSocket;
       try {
         ws = new WebSocket(wsUrl(url), { maxPayload: 64 * 1024 * 1024 });
       } catch {
-        return again();
+        again();
+        return;
       }
       const fail = () => {
         if (done) return;

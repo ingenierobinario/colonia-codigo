@@ -454,8 +454,8 @@ export function createJournal(d: JournalDeps) {
   function stampSetting(key: string): void {
     const name = key.slice("setting:".length);
     if (!settingTravels(name)) return;
-    if (LISTS.has(name)) return stampList(name);
-    stamp("meta", JSON.stringify([key]));
+    if (LISTS.has(name)) stampList(name);
+    else stamp("meta", JSON.stringify([key]));
   }
 
   const travels = (name: string) => !ownSecret(name) && (d.secretTravels?.(name) ?? true);
