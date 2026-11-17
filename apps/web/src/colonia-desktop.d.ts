@@ -60,7 +60,8 @@ declare global {
   interface Window {
     /** Only on the desktop app's first-run page: this computer's Colonia (server) or one elsewhere (client). */
     coloniaConnect?: {
-      local(access: "none" | "lan" | "tailscale"): Promise<ConnectAnswer>;
+      /** `intent` "move": they already use Colonia on another computer, so its setup opens on bringing their things. */
+      local(access: "none" | "lan" | "tailscale", intent?: "move"): Promise<ConnectAnswer>;
       url(url: string): Promise<ConnectAnswer>;
       ssh(target: string): Promise<ConnectAnswer>;
       /** Installs Colonia on that server over SSH (this app's version), then connects to it. */

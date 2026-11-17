@@ -9,7 +9,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await expect(wizard).toBeVisible();
   await expect(wizard.getByText(/versión 1.120.0/)).toBeVisible();
 
-  await wizard.getByRole("button", { name: /Importar desde una versión anterior/ }).click();
+  await wizard.locator("#welcome-import").click();
   await expect(wizard.getByRole("switch").first()).toBeVisible();
   await expect(wizard.getByText("Ollama · embeddinggemma:300m")).toBeVisible();
   await expect(wizard.locator(".wiz__rowname").filter({ hasText: /^Motores\s*2$/ })).toBeVisible();
@@ -79,7 +79,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
 
   // Memory sits folded in the last step: by meaning, with v1's engine, and skills picked by meaning on.
   await wizard.getByText("Ajustes avanzados: memoria").click();
-  await expect(wizard.getByText("Motor de embeddings: Ollama · embeddinggemma:300m.")).toBeVisible();
+  await expect(wizard.getByText("Búsqueda por significado: Ollama · embeddinggemma:300m.")).toBeVisible();
   await expect(wizard.getByRole("button", { name: /Buscar por significado/ })).toHaveAttribute("aria-pressed", "true");
   await expect(wizard.getByRole("switch", { name: "Elegir skills por significado" })).toBeChecked();
 
@@ -130,7 +130,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
   await page.getByRole("button", { name: /^Cuenta/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
-  await wizard.getByRole("button", { name: /Empezar de cero/ }).click();
+  await wizard.locator("#welcome-start").click();
   const name = wizard.getByRole("textbox", { name: "Nombre" });
   await expect(name).toHaveValue("Robina");
   // The dice picks another of the names a fresh install picks from.
@@ -185,9 +185,10 @@ test("right after the desktop app installs Colonia, the setup's welcome says so,
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
   await expect(wizard.getByText("Colonia está instalada")).toBeVisible();
-  await expect(wizard.getByText(/Colonia ya está instalada. En 4 pasos cortos/)).toBeVisible();
-  // v1 is on this machine: the two ways in stay.
-  await expect(wizard.getByRole("button", { name: /Importar desde una versión anterior/ })).toBeVisible();
+  await expect(wizard.getByRole("heading", { name: "¿Por dónde empezamos?" })).toBeVisible();
+  // v1 is on this machine: bringing it stays, next to "I already use it on another computer".
+  await expect(wizard.locator("#welcome-import")).toContainText("Traer lo de mi versión anterior");
+  await expect(wizard.locator("#welcome-bring")).toContainText("Ya la uso en otro ordenador");
   expect(new URL(page.url()).searchParams.has("welcome")).toBe(false);
   await page.reload();
   await page.getByRole("button", { name: /^Cuenta/ }).click();
@@ -203,13 +204,13 @@ test("the setup's header picks the language, kept like the app's own", async ({ 
   const wizard = page.locator(".wiz");
   await wizard.getByRole("button", { name: "Idioma: Español" }).click();
   await page.getByRole("menuitem", { name: "English" }).click();
-  await expect(wizard.getByRole("button", { name: /Start from scratch/ })).toBeVisible();
+  await expect(wizard.locator("#welcome-start")).toContainText("Start");
   await page.reload();
   await page.getByRole("button", { name: /^Account/ }).click();
   await page.getByRole("menuitem", { name: /setup/i }).click();
   await wizard.getByRole("button", { name: "Language: English" }).click();
   await page.getByRole("menuitem", { name: "Español" }).click();
-  await expect(wizard.getByRole("button", { name: /Empezar de cero/ })).toBeVisible();
+  await expect(wizard.locator("#welcome-start")).toContainText("Empezar");
 });
 
 for (const look of ["minimal", "classic"]) {
@@ -226,7 +227,7 @@ for (const look of ["minimal", "classic"]) {
       await page.getByRole("button", { name: /^Cuenta/ }).click();
       await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
       const wizard = page.locator(".wiz");
-      await wizard.getByRole("button", { name: /Empezar de cero/ }).click();
+      await wizard.locator("#welcome-start").click();
       for (let i = 0; i < 3; i++) await wizard.getByRole("button", { name: "Continuar" }).click();
       await wizard.getByRole("combobox", { name: "Tipo" }).click();
       const popup = page.locator(".colonia-select__popup");

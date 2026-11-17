@@ -22,7 +22,7 @@ import { go, useNav } from "../shell/nav.ts";
 import { BuildVersion } from "./BuildVersion.tsx";
 import { type Draft, defaultDraft } from "./draft.ts";
 import { ChannelsStep, DoneStep, EnginesStep, ProjectStep } from "./StepsConfig.tsx";
-import { AgentStep, GROUP, ImportStep, Welcome } from "./StepsIntro.tsx";
+import { AgentStep, type BringWay, GROUP, ImportStep, Welcome } from "./StepsIntro.tsx";
 
 const STEP_KEY: Record<Step, MessageKey> = {
   welcome: "setup.step.welcome",
@@ -184,9 +184,16 @@ export function Wizard() {
     go.inboxThread(greeted?.thread ?? "home");
   };
 
+  // MUDANZA-1: their things come from the other computer (linking both, or a backup): the setup ends here and the
+  // panel opens on that screen.
+  const bring = async (way: BringWay) => {
+    await finishSetup();
+    go.config(way);
+  };
+
   const name = d.name.trim() || t("setup.preview.unset");
   const body: Record<Step, ReactNode> = {
-    welcome: <Welcome v1={status?.v1 ?? null} agent={boss} onStart={start} />,
+    welcome: <Welcome v1={status?.v1 ?? null} agent={boss} onStart={start} onBring={(way) => void bring(way)} />,
     import: <ImportStep home={status?.v1?.home ?? "~/.colonia"} scan={scan} draft={d} set={set} />,
     agent: <AgentStep draft={d} set={set} />,
     engines: <EnginesStep draft={d} set={set} />,

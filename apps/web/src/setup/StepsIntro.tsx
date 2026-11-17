@@ -1,13 +1,13 @@
 import type { Result } from "@colonia/protocol";
 import { randomAgentName } from "@colonia/protocol/client";
-import { AgentAvatar, BLOB_NAMES, Button, Checkbox, IconButton, Icons, Input, Skeleton, Switch } from "@colonia/ui";
+import { AgentAvatar, BLOB_NAMES, Checkbox, IconButton, Icons, Input, Skeleton, Switch } from "@colonia/ui";
 import { type ReactNode, useState } from "react";
 import type { V1Group, V1Groups } from "../data/setup.ts";
 import { PRIVACY_URL, setUsage, useTelemetry } from "../data/telemetry.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { CrewHero } from "./CrewHero.tsx";
 import type { Draft, StepProps } from "./draft.ts";
-import { JUST_INSTALLED } from "./firstRun.ts";
+import { BRING_THINGS, JUST_INSTALLED } from "./firstRun.ts";
 import { LanguageChoice } from "./LanguageChoice.tsx";
 
 /** A step's kicker, title (with its muted or green end) and text. */
@@ -33,24 +33,61 @@ export function StepHead(props: {
   );
 }
 
+/** Where "I already use it on another computer" takes them: linking the two, or a backup file. */
+export type BringWay = "sync" | "backup";
+
+/** One answer card, the same as the desktop app's first question (SETUP-FACIL-1). */
+function Answer(props: {
+  id?: string;
+  icon: ReactNode;
+  title: string;
+  body: ReactNode;
+  primary?: boolean;
+  badge?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      id={props.id}
+      type="button"
+      className={`connect__answer${props.primary ? " is-primary" : ""}`}
+      onClick={props.onClick}
+    >
+      <span className="connect__answericon">{props.icon}</span>
+      <span className="connect__answertext">
+        <span className="connect__answertitle">
+          {props.title}
+          {props.badge && <span className="connect__badge">{props.badge}</span>}
+        </span>
+        <span className="connect__answerbody">{props.body}</span>
+      </span>
+      <Icons.ChevronRight size={18} className="connect__answergo" />
+    </button>
+  );
+}
+
 /**
- * The first screen: the website's hero, then what comes next (start, or start fresh / bring v1 when it is here).
- * Right after the desktop app installed Colonia it says so.
+ * The first screen: the website's hero, then one plain question (SETUP-FACIL-1). "Start" is the answer that stands
+ * out; bringing the earlier version (when it is on this computer) and "I already use it on another computer" sit
+ * under it. When they answered in the desktop app that they already use it elsewhere, it opens on that (MUDANZA-1).
  */
 export function Welcome({
   v1,
   agent,
   onStart,
+  onBring,
 }: {
   v1: Result<"setup.status">["v1"];
   /** The super-agent this install has now (its name was picked at random on a fresh one). */
   agent: { name: string; blob?: string | undefined } | undefined;
   onStart: (mode: Draft["mode"]) => void;
+  onBring: (way: BringWay) => void;
 }) {
   const t = useT();
   // Asked once, unticked: the answer goes with the first step the owner takes.
   const ask = useTelemetry((s) => s.state?.enabled === true && s.state.usage === null);
   const [share, setShare] = useState(false);
+  const [bring, setBring] = useState(BRING_THINGS);
   const begin = (mode: Draft["mode"]) => {
     if (ask) void setUsage(share);
     onStart(mode);
@@ -70,45 +107,84 @@ export function Welcome({
       </span>
     </span>
   );
+  const v1Body = v1
+    ? v1.version
+      ? t(v1.projects === 1 ? "setup.welcome.importBody.one" : "setup.welcome.importBody.other", {
+          version: v1.version,
+          home: v1.home,
+          projects: v1.projects,
+        })
+      : t(v1.projects === 1 ? "setup.welcome.importNoVersion.one" : "setup.welcome.importNoVersion.other", {
+          home: v1.home,
+          projects: v1.projects,
+        })
+    : "";
   return (
     <div className="wiz__welcome crew__stage">
       <CrewHero pill={pill} />
       <div className="wiz__welcomenext">
         <LanguageChoice className="wiz__welcomelang" />
-        <p className="wiz__body">{t(JUST_INSTALLED ? "setup.welcome.installedBody" : "setup.welcome.body")}</p>
-        {/* Two ways in only when there is a v1 to bring; otherwise just the way in. */}
-        {v1 ? (
-          <div className="wiz__choices">
-            <button type="button" className="wiz__choice" onClick={() => begin("new")}>
-              <span className="wiz__choicetitle">
-                <Icons.Sparkles size={16} />
-                {t("setup.welcome.new")}
-              </span>
-              <span className="wiz__choicebody">{t("setup.welcome.newBody")}</span>
-            </button>
-            <button type="button" className="wiz__choice is-brand" onClick={() => begin("import")}>
-              <span className="wiz__choicetitle">
-                <Icons.Download size={16} />
-                {t("setup.welcome.import")}
-              </span>
-              <span className="wiz__choicebody">
-                {v1.version
-                  ? t(v1.projects === 1 ? "setup.welcome.importBody.one" : "setup.welcome.importBody.other", {
-                      version: v1.version,
-                      home: v1.home,
-                      projects: v1.projects,
-                    })
-                  : t(v1.projects === 1 ? "setup.welcome.importNoVersion.one" : "setup.welcome.importNoVersion.other", {
-                      home: v1.home,
-                      projects: v1.projects,
-                    })}
-              </span>
-            </button>
+        {bring ? (
+          <div className="wiz__ask">
+            <h2 className="wiz__question">{t("setup.bring.title")}</h2>
+            <p className="wiz__askbody">{t("setup.bring.body")}</p>
+            <div className="connect__answers">
+              <Answer
+                id="bring-sync"
+                primary
+                icon={<Icons.ArrowRightLeft size={18} />}
+                title={t("setup.bring.sync")}
+                body={t("setup.bring.syncBody")}
+                onClick={() => onBring("sync")}
+              />
+              <Answer
+                id="bring-backup"
+                icon={<Icons.ArchiveRestore size={18} />}
+                title={t("setup.bring.backup")}
+                body={t("setup.bring.backupBody")}
+                onClick={() => onBring("backup")}
+              />
+            </div>
+            <div className="wiz__asklinks">
+              <button type="button" className="connect__other" onClick={() => setBring(false)}>
+                {t("setup.bring.back")}
+              </button>
+              <button type="button" className="connect__other" onClick={() => begin("new")}>
+                {t("setup.bring.fresh")}
+              </button>
+            </div>
           </div>
         ) : (
-          <Button id="welcome-start" size="lg" onClick={() => begin("new")}>
-            {t(JUST_INSTALLED ? "setup.next" : "setup.welcome.start")}
-          </Button>
+          <div className="wiz__ask">
+            <h2 className="wiz__question">{t("setup.welcome.question")}</h2>
+            <div className="connect__answers">
+              <Answer
+                id="welcome-start"
+                primary
+                badge={t("connect.recommended")}
+                icon={<Icons.Sparkles size={18} />}
+                title={t("setup.welcome.new")}
+                body={t("setup.welcome.newBody")}
+                onClick={() => begin("new")}
+              />
+              {v1 && (
+                <Answer
+                  id="welcome-import"
+                  icon={<Icons.Download size={18} />}
+                  title={t("setup.welcome.import")}
+                  body={v1Body}
+                  onClick={() => begin("import")}
+                />
+              )}
+              <Answer
+                id="welcome-bring"
+                icon={<Icons.Monitor size={18} />}
+                title={t("setup.welcome.bring")}
+                body={t("setup.welcome.bringBody")}
+                onClick={() => setBring(true)}
+              />
+            </div>
+          </div>
         )}
         {ask && (
           <div className="wiz__share">

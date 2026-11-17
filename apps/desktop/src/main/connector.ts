@@ -62,6 +62,8 @@ export function createConnector(opts: {
   // The remote panel (an address or SSH) is on screen: losing its server from here on waits for it again.
   let openedRemote = false;
   let connectionRevision = 0;
+  // What the first-run screen answered: the setup opens saying Colonia is installed, or on bringing their things (MUDANZA-1).
+  let welcome: "installed" | "move" = "installed";
   // ssh's questions waiting for the owner's answer on the first-run screen (never logged, never kept).
   const pending = new Map<string, (answer: string | undefined) => void>();
   useIdentity(appKeyPath(dataDir));
@@ -85,9 +87,10 @@ export function createConnector(opts: {
     e.returnValue = conn?.mode === "local" && opts.isOwnWindow(e.sender);
   });
 
-  ipcMain.handle("connect:local", async (e, access: unknown): Promise<Answer> => {
+  ipcMain.handle("connect:local", async (e, access: unknown, intent?: unknown): Promise<Answer> => {
     const revision = connectionRevision;
     if (!onChooser(e.sender)) return { ok: false, error: "not allowed" };
+    welcome = intent === "move" ? "move" : "installed";
     if (access !== "none" && access !== "lan" && access !== "tailscale") return { ok: false, error: "bad access" };
     // "Only this computer" undoes an earlier LAN or Tailscale choice too.
     const r = await runCli(["expose", access === "none" ? "off" : access]);
@@ -410,7 +413,7 @@ export function createConnector(opts: {
 
   async function load(url: string, firstRun = false): Promise<boolean> {
     const page = new URL(url);
-    if (firstRun) page.searchParams.set("welcome", "installed");
+    if (firstRun) page.searchParams.set("welcome", welcome);
     try {
       await opts.panel.loadURL(firstRun ? page.toString() : url);
       return true;

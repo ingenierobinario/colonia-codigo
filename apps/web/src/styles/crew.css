@@ -103,14 +103,6 @@
   padding-bottom: 0.08em;
   color: var(--colonia-brand);
 }
-/* The sheen only once the word turns: letters easing in under a text-clipped background would not show. */
-.crew__word.is-sheen {
-  color: transparent;
-  background: linear-gradient(95deg, var(--colonia-fg) 10%, var(--colonia-brand) 50%, var(--colonia-fg) 90%);
-  background-clip: text;
-  background-size: 200% 100%;
-  animation: crew-sheen 6s linear infinite;
-}
 .crew__parade {
   display: flex;
   gap: 10px;
@@ -188,5 +180,15 @@
   .crew__parade,
   .connect__blind {
     transition: none;
+  }
+}
+/* LETRAS-LEGIBLES-1: the word changes whole, fading in; it is never caught half-way as random glyphs. */
+.crew__swap {
+  display: inline-block;
+  animation: crew-fade 0.45s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .crew__swap {
+    animation: none;
   }
 }

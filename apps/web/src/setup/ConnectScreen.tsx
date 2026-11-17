@@ -1,5 +1,5 @@
 import "../styles/wizard.css";
-import { Button, Icons, Input, SegmentedControl } from "@colonia/ui";
+import { Button, Icons, Input, SegmentedControl, Spinner } from "@colonia/ui";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import type { SshPrompt } from "../colonia-desktop.d.ts";
 import logo from "../assets/logo.png";
@@ -12,22 +12,16 @@ import { ServerReady } from "./ServerReady.tsx";
 import { StepHead } from "./StepsIntro.tsx";
 import { LanguageChoice } from "./LanguageChoice.tsx";
 
-type Access = "none" | "lan" | "tailscale";
 type Via = "url" | "ssh";
 type Answer =
   | { ok: true; ready?: true; linger?: string }
   | { ok: false; reason?: string; error?: string; key?: string };
 
-/** How long the intro holds the hero alone before the question unrolls under it. */
-const INTRO_MS = 3400;
+/** How long the intro holds the hero alone before the question unrolls under it: short, the question is what matters. */
+const INTRO_MS = 1600;
 /** What puts the Colonia daemon on a server that has none (install.sh, attached to every release). */
 const INSTALL = "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash\ncolonia setup --headless";
 
-const ACCESS: Array<{ id: Access; icon: typeof Icons.Lock; title: MessageKey; body: MessageKey }> = [
-  { id: "none", icon: Icons.Lock, title: "connect.access.none", body: "connect.access.noneBody" },
-  { id: "lan", icon: Icons.House, title: "connect.access.lan", body: "connect.access.lanBody" },
-  { id: "tailscale", icon: Icons.Globe, title: "connect.access.tailscale", body: "connect.access.tailscaleBody" },
-];
 /** What the desktop app answers when a client connection fails, as the owner reads it. */
 const REASONS: Record<string, MessageKey> = {
   badUrl: "connect.error.badUrl",
@@ -60,8 +54,9 @@ const TERM_LINES = 400;
 export function ConnectScreen() {
   const t = useT();
   const desktop = useDesktopClass();
-  const [step, setStep] = useState<"start" | "server" | "client">("start");
-  const [access, setAccess] = useState<Access>("none");
+  const [step, setStep] = useState<"start" | "client">("start");
+  // Which of the two "here" answers is starting (its card shows it working).
+  const [starting, setStarting] = useState<"new" | "move">();
   const [via, setVia] = useState<Via>("url");
   const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
@@ -151,7 +146,17 @@ export function ConnectScreen() {
   };
   const goOn = () => void answer(() => window.coloniaConnect?.ssh(address));
   const installThere = () => void answer(() => window.coloniaConnect?.installSsh(address));
-  const startServer = () => void answer(() => window.coloniaConnect?.local(access));
+  /**
+   * SETUP-FACIL-1: both "here" answers start Colonia on this computer, reachable only from it (the safe default; other
+   * devices are opened later in Config › Devices). "move" opens its setup on bringing their things from the other one.
+   */
+  const startHere = (intent: "new" | "move") => {
+    if (busy) return;
+    setStarting(intent);
+    void answer(() =>
+      intent === "move" ? window.coloniaConnect?.local("none", "move") : window.coloniaConnect?.local("none"),
+    ).finally(() => setStarting(undefined));
+  };
   const connect = (e: FormEvent) => {
     e.preventDefault();
     if (!address.trim() || busy) return;
@@ -206,66 +211,45 @@ export function ConnectScreen() {
             <div key={intro} className={`connect__stage${revealed ? " is-ready" : ""}`}>
               <CrewHero compact={revealed} />
               <div className="connect__blind" inert={!revealed}>
-                <div className="wiz__main">
+                <div className="wiz__main connect__ask">
                   <StepHead kicker="connect.kicker" title={t("connect.title")} end={t("connect.titleEnd")} green>
                     {t("connect.body")}
                   </StepHead>
-                  <div className="wiz__choices">
-                    <Choice id="pick-server" icon={<Icons.Monitor size={16} />} onClick={() => setStep("server")}>
-                      {t("connect.server")}
-                      {t("connect.serverBody")}
+                  <div className="connect__answers">
+                    <Choice
+                      id="pick-server"
+                      primary
+                      badge={t("connect.recommended")}
+                      busy={starting === "new"}
+                      disabled={busy}
+                      icon={<Icons.Sparkles size={18} />}
+                      onClick={() => startHere("new")}
+                    >
+                      {t("connect.new")}
+                      {t("connect.newBody")}
                     </Choice>
-                    <Choice id="pick-client" icon={<Icons.Server size={16} />} onClick={() => setStep("client")}>
-                      {t("connect.client")}
-                      {t("connect.clientBody")}
+                    <Choice
+                      id="pick-move"
+                      busy={starting === "move"}
+                      disabled={busy}
+                      icon={<Icons.Monitor size={18} />}
+                      onClick={() => startHere("move")}
+                    >
+                      {t("connect.move")}
+                      {t("connect.moveBody")}
                     </Choice>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === "server" && (
-            <div className="wiz__main">
-              <StepHead
-                kicker="connect.kickerServer"
-                title={t("connect.accessTitle")}
-                end={t("connect.accessTitleEnd")}
-              >
-                {t("connect.accessBody")}
-              </StepHead>
-              <div className="wiz__options">
-                {ACCESS.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    data-access={a.id}
-                    aria-pressed={access === a.id}
-                    className={`wiz__option${access === a.id ? " is-on" : ""}`}
-                    onClick={() => setAccess(a.id)}
-                  >
-                    <span className="wiz__choicetitle">
-                      <a.icon size={16} />
-                      {t(a.title)}
+                  {error && (
+                    <span id="start-error" className="wiz__hintline is-error" role="alert" title={errorDetail}>
+                      {error}
                     </span>
-                    <span className="wiz__choicebody">{t(a.body)}</span>
+                  )}
+                  <button id="pick-client" type="button" className="connect__other" disabled={busy} onClick={() => setStep("client")}>
+                    <Icons.Link size={14} />
+                    {t("connect.elsewhere")}
                   </button>
-                ))}
-              </div>
-              <p className="wiz__hintline">{t("connect.importNext")}</p>
-              {error && (
-                <span className="wiz__hintline is-error" role="alert" title={errorDetail}>
-                  {error}
-                </span>
-              )}
-              <div className="wiz__foot">
-                <button type="button" className="wiz__back" onClick={back}>
-                  {t("setup.back")}
-                </button>
-                <span className="wiz__spacer" />
-                <Button id="server-go" size="lg" loading={busy} onClick={startServer}>
-                  {t("connect.start")}
-                </Button>
+                  <p className="connect__later">{t("connect.body.later")}</p>
+                </div>
               </div>
             </div>
           )}
@@ -403,16 +387,36 @@ export function ConnectScreen() {
   );
 }
 
-/** One of the two first choices, drawn like the setup's "start fresh / import" cards: a title line, then a body. */
-function Choice(props: { id: string; icon: ReactNode; onClick: () => void; children: [string, string] }) {
+/** One of the first answers: an icon, a title line and a line under it; the recommended one stands out. */
+function Choice(props: {
+  id: string;
+  icon: ReactNode;
+  onClick: () => void;
+  primary?: boolean;
+  badge?: string;
+  busy?: boolean;
+  disabled?: boolean;
+  children: [string, string];
+}) {
   const [title, body] = props.children;
   return (
-    <button id={props.id} type="button" className="wiz__choice" onClick={props.onClick}>
-      <span className="wiz__choicetitle">
-        {props.icon}
-        {title}
+    <button
+      id={props.id}
+      type="button"
+      className={`connect__answer${props.primary ? " is-primary" : ""}${props.busy ? " is-busy" : ""}`}
+      disabled={props.disabled}
+      aria-busy={props.busy || undefined}
+      onClick={props.onClick}
+    >
+      <span className="connect__answericon">{props.busy ? <Spinner size={18} /> : props.icon}</span>
+      <span className="connect__answertext">
+        <span className="connect__answertitle">
+          {title}
+          {props.badge && <span className="connect__badge">{props.badge}</span>}
+        </span>
+        <span className="connect__answerbody">{body}</span>
       </span>
-      <span className="wiz__choicebody">{body}</span>
+      <Icons.ChevronRight size={18} className="connect__answergo" />
     </button>
   );
 }

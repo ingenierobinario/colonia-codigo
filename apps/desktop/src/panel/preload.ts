@@ -170,7 +170,9 @@ type Answer =
 type SshPrompt = { id: string; text: string; secret: boolean };
 // The first-run screen (colonia-app://app/?connect): the main process only answers it while the window shows that page.
 contextBridge.exposeInMainWorld("coloniaConnect", {
-  local: (access: string): Promise<Answer> => ipcRenderer.invoke("connect:local", access),
+  // MUDANZA-1: "move" (they already use Colonia on another computer) opens the setup on bringing their things.
+  local: (access: string, intent?: string): Promise<Answer> =>
+    ipcRenderer.invoke("connect:local", access, ...(intent === "move" ? [intent] : [])),
   url: (url: string): Promise<Answer> => ipcRenderer.invoke("connect:url", url),
   ssh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh", target),
   installSsh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh-install", target),
