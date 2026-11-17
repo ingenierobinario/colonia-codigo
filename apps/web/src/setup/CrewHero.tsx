@@ -1,12 +1,11 @@
 import { AgentAvatar, Icons } from "@colonia/ui";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useT } from "../i18n/index.ts";
 
 /** The faces the headline cycles through, as on the website. */
 const FACES = ["menta", "orbita", "parche", "cobalto", "caracol", "trino", "perla", "noche", "kiwi", "rubi"];
 /** The row under the headline: the crew showing up one by one. */
 const PARADE = ["coral", "zafiro", "kiwi", "noche", "orbita", "brasa", "perla", "lila", "aqua"];
-const GLYPHS = "!<>-_\\/[]{}=+*^?#abcdefxyz0123456789";
 const EVERY_MS = 2600;
 const FACE_SIZE = { width: "100%", height: "100%" };
 
@@ -26,78 +25,20 @@ function Letters({ text, delay }: { text: string; delay: number }) {
   );
 }
 
-/** The last word turns into the next through random glyphs, left to right. */
-function useScramble(words: readonly string[], start: boolean): string {
-  const [shown, setShown] = useState(words[0] ?? "");
-  const index = useRef(0);
+/**
+ * The last word changes to the next one whole: it fades out and the next fades in (LETRAS-LEGIBLES-1). It used to turn
+ * through random glyphs, and a screenshot or a slow machine caught it mid-change, unreadable ("_?b7\]/0#>+b").
+ */
+function useWordCycle(words: readonly string[], start: boolean): number {
+  const [index, setIndex] = useState(0);
   useEffect(() => {
     if (!start || words.length < 2 || reducedMotion()) return;
-    let frame = 0;
     const timer = window.setInterval(() => {
-      if (document.hidden) return;
-      const from = words[index.current % words.length] ?? "";
-      index.current += 1;
-      const to = words[index.current % words.length] ?? "";
-      const len = Math.max(from.length, to.length);
-      const began = performance.now();
-      cancelAnimationFrame(frame);
-      const step = (now: number) => {
-        const p = Math.min(1, (now - began) / 650);
-        let out = "";
-        for (let i = 0; i < len; i++) {
-          if (i / len < p * 1.25 - 0.15) out += to[i] ?? "";
-          else if (i < to.length || p < 0.5) out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-        }
-        setShown(p < 1 ? out : to);
-        if (p < 1) frame = requestAnimationFrame(step);
-      };
-      frame = requestAnimationFrame(step);
+      if (!document.hidden) setIndex((i) => i + 1);
     }, EVERY_MS);
-    // A hidden window runs no animation frames: one hidden mid-change would come back stuck on random glyphs.
-    const settle = () => {
-      if (document.hidden) return;
-      cancelAnimationFrame(frame);
-      setShown(words[index.current % words.length] ?? "");
-    };
-    document.addEventListener("visibilitychange", settle);
-    return () => {
-      window.clearInterval(timer);
-      cancelAnimationFrame(frame);
-      document.removeEventListener("visibilitychange", settle);
-    };
+    return () => window.clearInterval(timer);
   }, [start, words]);
-  return shown;
-}
-
-/** Shows `target`, turning into each new value through random glyphs (the ticker's line). */
-export function useScrambleTo(target: string): string {
-  const [shown, setShown] = useState(target);
-  const last = useRef(target);
-  useEffect(() => {
-    const from = last.current;
-    last.current = target;
-    if (from === target) return;
-    if (reducedMotion()) {
-      setShown(target);
-      return;
-    }
-    const len = Math.max(from.length, target.length);
-    const began = performance.now();
-    let frame = 0;
-    const step = (now: number) => {
-      const p = Math.min(1, (now - began) / 600);
-      let out = "";
-      for (let i = 0; i < len; i++) {
-        if (i / len < p * 1.25 - 0.15) out += target[i] ?? "";
-        else if (i < target.length || p < 0.5) out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-      }
-      setShown(p < 1 ? out : target);
-      if (p < 1) frame = requestAnimationFrame(step);
-    };
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
-  }, [target]);
-  return shown;
+  return index;
 }
 
 /** "Meet ⟨blob⟩ your crew." — the website's hero: the headline assembles, then the face and the word keep changing. */
@@ -116,7 +57,8 @@ export function CrewHero({
   const words = t("connect.heroWords").split("|");
   const [face, setFace] = useState(0);
   const [cycling, setCycling] = useState(false);
-  const word = useScramble(words, cycling);
+  const at = useWordCycle(words, cycling);
+  const word = words[at % words.length] ?? "";
 
   useEffect(() => {
     if (reducedMotion()) return;
@@ -160,8 +102,15 @@ export function CrewHero({
           <Letters text={your} delay={0.4} />
         </span>
         <span className="crew__row">
-          <span className={`crew__word${cycling ? " is-sheen" : ""}`} aria-hidden="true">
-            {cycling ? word : <Letters text={words[0] ?? ""} delay={0.7} />}
+          <span className="crew__word" aria-hidden="true">
+            {cycling ? (
+              // A new key remounts the word, which fades in whole.
+              <span key={at} className="crew__swap">
+                {word}
+              </span>
+            ) : (
+              <Letters text={words[0] ?? ""} delay={0.7} />
+            )}
           </span>
         </span>
       </h1>

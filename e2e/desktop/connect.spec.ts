@@ -156,9 +156,8 @@ test("the first run asks server or client; a new server opens its installed welc
     const chooser = await question(await windowAt(first, (u) => u.startsWith("colonia-app://")));
     await expect(chooser.locator("#pick-server")).toBeVisible();
     await expect(chooser.locator("#pick-client")).toBeVisible();
+    await expect(chooser.locator("#pick-move")).toBeVisible();
     await chooser.locator("#pick-server").click();
-    await expect(chooser.locator('[data-access="none"]')).toHaveAttribute("aria-pressed", "true");
-    await chooser.locator("#server-go").click();
     const panel = await windowAt(first, (url) => url.startsWith(fresh.url));
     await expect(panel.locator(".wiz")).toBeVisible();
     const language = await panel.locator("html").getAttribute("lang");
@@ -190,7 +189,6 @@ test("choosing an already configured local server opens its panel without repeat
   try {
     const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-server").click();
-    await chooser.locator("#server-go").click();
     const panel = await windowAt(app, (url) => url.startsWith(core));
     await expect(panel.locator(".shell")).toBeVisible();
     await expect(panel.locator(".wiz")).toHaveCount(0);
@@ -243,7 +241,6 @@ test("changing connection revokes the old desktop node before choosing a new ser
     await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById("change-connection")?.click());
     chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
     await chooser.locator("#pick-server").click();
-    await chooser.locator("#server-go").click();
     expect((await windowAt(app, (u) => u.startsWith(core))) === panel).toBe(true);
     await expect(panel.locator(".shell")).toBeVisible();
     await expect.poll(browserNode).toBe("colonia-desktop");

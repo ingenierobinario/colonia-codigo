@@ -1059,3 +1059,166 @@ input.wiz__name {
 .wiz__foot {
   flex-wrap: wrap;
 }
+/* SETUP-FACIL-1: the first question, in plain words. One answer stands out (the one 95 % should pick); the other
+   sits under it; connecting elsewhere is a quiet link. Cards stack at any width: no columns to squeeze. */
+.connect__ask {
+  align-items: stretch;
+  gap: 18px;
+}
+.connect__answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.connect__answer {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 16px 18px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-lg);
+  background: var(--colonia-surface);
+  color: var(--colonia-fg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.connect__answer:hover:not(:disabled) {
+  border-color: var(--colonia-fg-subtle);
+}
+.connect__answer.is-primary {
+  min-height: 92px;
+  padding: 20px;
+  border: 1.5px solid var(--colonia-brand);
+}
+.connect__answer.is-primary:hover:not(:disabled) {
+  border-color: var(--colonia-fg);
+}
+.connect__answer:disabled {
+  cursor: default;
+}
+.connect__answer:disabled:not(.is-busy) {
+  opacity: 0.55;
+}
+.connect__answer:focus-visible {
+  outline: 2px solid var(--colonia-brand);
+  outline-offset: 2px;
+}
+.connect__answericon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--colonia-surface-2, var(--colonia-bg));
+  color: var(--colonia-fg-muted);
+}
+.connect__answer.is-primary .connect__answericon {
+  width: 48px;
+  height: 48px;
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
+}
+.connect__answertext {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.connect__answertitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: calc(16px * var(--colonia-text-scale, 1));
+  font-weight: 600;
+}
+.connect__answer.is-primary .connect__answertitle {
+  font-size: calc(18px * var(--colonia-text-scale, 1));
+}
+.connect__answerbody {
+  color: var(--colonia-fg-muted);
+  font-size: calc(13.5px * var(--colonia-text-scale, 1));
+  line-height: 1.45;
+}
+.connect__badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
+  font-size: calc(11.5px * var(--colonia-text-scale, 1));
+  font-weight: 600;
+}
+.connect__answergo {
+  flex: none;
+  color: var(--colonia-fg-subtle);
+}
+.connect__other {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  align-self: center;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--colonia-radius-md, 8px);
+  background: none;
+  color: var(--colonia-fg-muted);
+  font-size: calc(13.5px * var(--colonia-text-scale, 1));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.connect__other:hover:not(:disabled) {
+  color: var(--colonia-fg);
+}
+.connect__later {
+  margin: 0;
+  color: var(--colonia-fg-subtle);
+  font-size: calc(12.5px * var(--colonia-text-scale, 1));
+  text-align: center;
+}
+@media (max-width: 480px) {
+  .connect__answer,
+  .connect__answer.is-primary {
+    padding: 14px;
+  }
+  .connect__answergo {
+    display: none;
+  }
+}
+
+/* SETUP-FACIL-1: the welcome asks one plain question, with the answers as cards. */
+.wiz__ask {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.wiz__question {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: var(--colonia-fg);
+}
+.wiz__askbody {
+  margin: -4px 0 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--colonia-fg-muted);
+}
+.wiz__asklinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+}

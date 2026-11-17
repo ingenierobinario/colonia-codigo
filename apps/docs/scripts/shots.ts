@@ -348,8 +348,8 @@ const SHOTS: Shot[] = [
     name: "wizard-agent",
     go: async (p) => {
       await firstRun(p);
-      // With no v1 to import, the welcome step has a single way in: "Start".
-      await p.getByRole("button", { name: tr("setup.welcome.start"), exact: true }).first().click();
+      // The welcome asks one question; "Start" is the highlighted answer.
+      await p.locator("#welcome-start").click();
     },
   },
   { name: "phone-home", go: at("thread=home"), phone: true },

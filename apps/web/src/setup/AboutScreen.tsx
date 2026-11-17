@@ -4,7 +4,6 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import logo from "../assets/logo.png";
 import { elapsed } from "../common/format.ts";
 import { type MessageKey, useLanguage, useT } from "../i18n/index.ts";
-import { useScrambleTo } from "./CrewHero.tsx";
 import { startGlyphPortrait } from "./glyphPortrait.ts";
 
 const EVERY_MS = 3200;
@@ -31,7 +30,8 @@ function StatusTicker() {
     return () => window.clearInterval(timer);
   }, []);
   const current = all[at % Math.max(all.length, 1)];
-  const what = useScrambleTo(current?.what ?? "");
+  // The line changes whole, never through unreadable glyphs (LETRAS-LEGIBLES-1).
+  const what = current?.what ?? "";
   if (!current) return null;
   return (
     <div className="about__status" aria-hidden="true">
