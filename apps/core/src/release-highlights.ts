@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.40": {
+    en: [
+      "Services go by the names you know: Claude and ChatGPT, each saying if it uses your account or a key.",
+      "The intelligence step drops the jargon; choosing which model goes first is folded away until you need it.",
+      "Share › Publish fits on a phone: the publishing options wrap inside their card.",
+    ],
+    es: [
+      "Los servicios se llaman Claude y ChatGPT, y cada tarjeta dice si va con tu cuenta o con clave.",
+      "El paso de inteligencia habla claro; elegir qué modelo va primero queda plegado hasta que lo necesites.",
+      "Compartir › Publicar cabe en el móvil: las opciones de publicación bajan de línea dentro de su tarjeta.",
+    ],
+  },
   "2.36.39": {
     en: [
       "Unpublishing one project keeps the temporary link up for your other published projects.",
