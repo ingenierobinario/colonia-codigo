@@ -33,7 +33,17 @@ const SkillName = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/);
  * `skills/`; project: `.apc/skills/`; extension; claude, codex, cursor, agents: that app's own skills folder (in the
  * home or the project), read where it is, or linked into Colonia's.
  */
-export const SkillSource = z.enum(["colonia", "owner", "project", "extension", "claude", "codex", "cursor", "agents"]);
+export const SkillSource = z.enum([
+  "colonia",
+  "owner",
+  "project",
+  "extension",
+  "claude",
+  "codex",
+  "cursor",
+  "agents",
+  "gemini",
+]);
 export type SkillSource = z.infer<typeof SkillSource>;
 
 export const SkillInfo = z.object({

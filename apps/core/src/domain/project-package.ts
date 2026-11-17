@@ -41,6 +41,22 @@ const Connection = z
 /** PROYECTOS-ENLAZADOS-1 · Los proyectos que este conoce, solo por NOMBRE: nada de lo que guardan viaja. */
 const Known = z.array(z.string().trim().min(1).max(80)).max(16);
 
+/**
+ * RUTINAS-VIAJAN-1 · Una rutina viaja como texto y horario, y se importa APAGADA: quien importa decide si la enciende.
+ * Nunca viajan sus órdenes de consola (pre/post) ni las rutinas que solo son consola: serían código del otro corriendo
+ * en esta máquina. Va dentro de `organization` (no estricto) para que una Colonia anterior ignore el campo.
+ */
+export const PackageRoutine = z.object({
+  name: z.string().trim().min(1).max(120),
+  agent: Slug,
+  schedule: z.unknown(),
+  action: z.enum(["agent", "message"]),
+  prompt: z.string().max(FILE_MAX),
+  call_model: z.enum(["always", "output", "succeeds", "fails", "never"]).optional(),
+  max_steps: z.number().int().min(1).max(10_000).optional(),
+});
+export type PackageRoutine = z.infer<typeof PackageRoutine>;
+
 export const ProjectPackage = z
   .object({
     format: z.literal(PROJECT_FORMAT),
@@ -59,7 +75,12 @@ export const ProjectPackage = z
      * sitio, su lector lo rechaza entero por «clave no reconocida». Quien importa enlaza por nombre lo que tenga.
      */
     organization: z
-      .object({ areas: z.array(z.unknown()).max(40), roles: z.array(z.unknown()).max(200), knows: Known.optional() })
+      .object({
+        areas: z.array(z.unknown()).max(40),
+        roles: z.array(z.unknown()).max(200),
+        knows: Known.optional(),
+        routines: z.array(PackageRoutine).max(50).optional(),
+      })
       .optional(),
     agents: z.array(z.object({ slug: Slug, text: z.string().max(FILE_MAX) }).strict()).max(200),
     skills: z
@@ -89,6 +110,12 @@ export function withKnown(pkg: ProjectPackage, names: string[]): ProjectPackage 
   if (!names.length) return pkg;
   const { areas = [], roles = [] } = pkg.organization ?? {};
   return { ...pkg, organization: { areas, roles, knows: names.slice(0, 16) } };
+}
+/** RUTINAS-VIAJAN-1 · El paquete con sus rutinas dentro de `organization`. */
+export function withRoutines(pkg: ProjectPackage, routines: PackageRoutine[]): ProjectPackage {
+  if (!routines.length) return pkg;
+  const { areas = [], roles = [] } = pkg.organization ?? {};
+  return { ...pkg, organization: { ...pkg.organization, areas, roles, routines: routines.slice(0, 50) } };
 }
 export type PackageConnection = z.infer<typeof Connection>;
 

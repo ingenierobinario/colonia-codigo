@@ -540,3 +540,59 @@ test("SKILLS-AUTOCONTENIDO-1 · exportar lleva las skills del proyecto y las glo
     await b.cleanup();
   }
 });
+
+test("RUTINAS-VIAJAN-1 · las rutinas viajan apagadas y sin órdenes de consola; la memoria no viaja", async () => {
+  const a = await boot();
+  const b = await boot();
+  try {
+    const { project } = await a.client.call("projects.create", { name: "Rutinas Acme", kind: "company" });
+    const root = project.path ?? "";
+    fs.mkdirSync(path.join(root, ".apc/agents"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".apc/agents/informes.md"), "---\nname: Informes\n---\nHaz informes.\n");
+    fs.writeFileSync(path.join(root, ".apc/memory.md"), "Nota privada del dueño.\n");
+    await a.client.call("projects.sync", { project: project.id });
+    const agent = a.core.store.agents.list().find((x) => x.project_id === project.id && x.slug === "informes");
+    assert.ok(agent);
+    const base = {
+      agent_id: agent.id,
+      project_id: project.id,
+      schedule: { kind: "cron" as const, cron: "0 9 * * 1-5" },
+      call_model: "always" as const,
+      enabled: true,
+      next_run_at: undefined,
+    };
+    a.core.store.routines.create({ ...base, name: "Parte diario", action: "agent", prompt: "Resume el día." });
+    a.core.store.routines.create({
+      ...base,
+      name: "Con consola",
+      action: "agent",
+      prompt: "x",
+      pre_command: "rm -rf .",
+    });
+    a.core.store.routines.create({ ...base, name: "Solo consola", action: "shell", prompt: "", pre_command: "ls" });
+    const out = await a.client.call("projects.export", { project: project.id });
+    assert.doesNotMatch(out.content, /rm -rf|Nota privada/);
+    const pkg = JSON.parse(out.content) as { organization?: { routines?: { name: string }[] } };
+    assert.deepEqual(
+      pkg.organization?.routines?.map((r) => r.name),
+      ["Parte diario"],
+    );
+
+    const got = await b.client.call("projects.import", { content: out.content, save: true, replace: false });
+    assert.equal(got.routines_off, 1);
+    const imported = b.core.store.routines.list(got.project?.id ?? "");
+    assert.deepEqual(
+      imported.map((r) => [r.name, r.enabled, r.pre_command ?? null, r.schedule]),
+      [["Parte diario", false, null, { kind: "cron", cron: "0 9 * * 1-5" }]],
+    );
+    // Importar otra vez encima no la duplica.
+    const again = await b.client.call("projects.import", { content: out.content, save: true, replace: true });
+    assert.equal(again.routines_off, undefined);
+    assert.equal(b.core.store.routines.list(got.project?.id ?? "").length, 1);
+  } finally {
+    await a.core.close();
+    await b.core.close();
+    await a.cleanup();
+    await b.cleanup();
+  }
+});
