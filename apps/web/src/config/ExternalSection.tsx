@@ -107,7 +107,13 @@ const SIGN: Record<string, { in: string; out: string }> = {
 function EngineCard({ engine: e }: { engine: EngineStatus }) {
   const t = useT();
   const look = lookOf(e.id);
-  const hint = !e.installed ? t("engines.notInstalled") : !e.logged_in ? t(look.login) : undefined;
+  const hint = !e.installed
+    ? t("engines.notInstalled")
+    : e.checking
+      ? t("engine.checking")
+      : !e.logged_in
+        ? t(look.login)
+        : undefined;
   const kind = t(look.kind);
   const detail = e.detail_code ? t(`engine.detail.${e.detail_code}`) : e.detail;
   const copy = (command: string) =>

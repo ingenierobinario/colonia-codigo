@@ -76,6 +76,10 @@ export function appHandlers(deps: {
             ...acpAgents(store).map((agent) => ({ id: acpEngine(agent), label: agent.label, command: agent.command })),
           ]),
         enabled,
+        signedIn: async (id) => {
+          const found = (await harnesses.status().catch(() => [])).find((e) => e.id === id);
+          return found && !found.checking ? found.logged_in : undefined;
+        },
       }),
     () => secrets.listed("chatgpt_login"),
     () => claudeLinked.on,

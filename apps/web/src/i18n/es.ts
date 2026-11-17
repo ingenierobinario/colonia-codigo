@@ -1338,6 +1338,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "engine.detail.oneshot_windows_shim":
     "Los shims .cmd/.bat de Windows no son compatibles; instala un ejecutable nativo",
   "engine.noSession": "Sin conectar",
+  "engine.checking": "Comprobando la sesión…",
   "engine.install": "Instalar",
   "engine.kind.cli": "Sesión externa · CLI",
   "engine.kind.acp": "CLI con Agent Client Protocol",

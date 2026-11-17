@@ -329,6 +329,8 @@ export const EngineStatus = z.object({
   label: z.string(),
   installed: z.boolean(),
   logged_in: z.boolean(),
+  /** SESION-CODEX-1: the sign-in check got no answer yet (slow or failed CLI); not the same as signed out. */
+  checking: z.boolean().optional(),
   /** Authentication cannot be probed separately for one-shot CLIs. */
   auth: z.literal("on_invocation").optional(),
   detail_code: z.enum(["oneshot", "oneshot_missing", "oneshot_windows_shim"]).optional(),

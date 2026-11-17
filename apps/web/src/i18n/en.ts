@@ -1330,6 +1330,7 @@ export const en = {
   "engine.detail.oneshot_missing": "Install the headless CLI; a GUI-only installation cannot return an answer",
   "engine.detail.oneshot_windows_shim": "Windows .cmd/.bat shims are unsupported; install a native executable",
   "engine.noSession": "Signed out",
+  "engine.checking": "Checking the session…",
   "engine.install": "Install",
   "engine.kind.cli": "External session · CLI",
   "engine.kind.acp": "Agent Client Protocol CLI",
