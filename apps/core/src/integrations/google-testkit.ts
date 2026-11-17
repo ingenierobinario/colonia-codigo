@@ -108,7 +108,9 @@ export function setup(o: { builtin?: boolean } = {}) {
     offIn: (project, id) => off.has(`${project}:${id}`),
     fetch: fake.fetchImpl,
     now: () => clock,
-    ...(o.builtin ? { builtin: { clientId: "colonia.apps.googleusercontent.com", clientSecret: "colonia-public" } } : {}),
+    ...(o.builtin
+      ? { builtin: { clientId: "colonia.apps.googleusercontent.com", clientSecret: "colonia-public" } }
+      : {}),
   });
   const start = (id: "google-calendar" | "gmail" | "google-drive" | "youtube" = "google-calendar") => {
     const url = new URL(g.start(id, { client_id: "123-abc.apps.googleusercontent.com", client_secret: "s3cret" }));

@@ -87,7 +87,9 @@ export function recoverInterrupted(store: Store): { run: RunRecord; resume: bool
   const delegated = new Map(interrupted.map((run) => [run.id, stillDelegated(store, run)]));
   for (const run of interrupted) {
     const resume = resumable(store, run);
-    const text = resume ? "Interrupted by a restart of Colonia; picking it back up." : "Interrupted by a restart of Colonia.";
+    const text = resume
+      ? "Interrupted by a restart of Colonia; picking it back up."
+      : "Interrupted by a restart of Colonia.";
     closeTurnLog(store, run, `This turn was interrupted by a restart of Colonia.${delegated.get(run.id) ?? ""}`);
     const msg = run.message_id ? store.messages.get(run.message_id) : undefined;
     if (msg) {

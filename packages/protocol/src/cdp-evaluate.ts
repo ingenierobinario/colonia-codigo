@@ -13,7 +13,8 @@ export async function captureDocument(send: CdpSend): Promise<string> {
     objectGroup: "colonia-browser-review",
     returnByValue: false,
   });
-  if (!reply.result.objectId) throw new ColoniaError({ code: "bad_request", message: "cannot capture the page document" });
+  if (!reply.result.objectId)
+    throw new ColoniaError({ code: "bad_request", message: "cannot capture the page document" });
   return reply.result.objectId;
 }
 

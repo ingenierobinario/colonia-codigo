@@ -45,7 +45,9 @@ export async function openAskpass(opts: {
   const platform = opts.platform ?? process.platform;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-askpass-"));
   const endpoint =
-    process.platform === "win32" ? `\\\\.\\pipe\\colonia-askpass-${randomBytes(12).toString("hex")}` : path.join(dir, "s");
+    process.platform === "win32"
+      ? `\\\\.\\pipe\\colonia-askpass-${randomBytes(12).toString("hex")}`
+      : path.join(dir, "s");
   const key = randomBytes(24).toString("hex");
   const server = net.createServer((socket) => serve(socket, key, opts.ask));
   server.maxConnections = 1;

@@ -10,23 +10,23 @@ import {
   appRoot,
   bundleRun,
   coreMain,
+  keptServiceEnv,
   LAUNCHD_LABEL,
   launchdPlist,
+  legacyServiceNames,
   lingerLine,
   NODE_FLAGS,
   type ServiceSpec,
   STOP_FILE,
   SYSTEMD_UNIT,
   serviceEnv,
+  serviceEnvFile,
   serviceNames,
   serviceOwnsHome,
   systemdDir,
   systemdProblem,
   systemdUnit,
   terminalMain,
-  keptServiceEnv,
-  legacyServiceNames,
-  serviceEnvFile,
   WINDOWS_RUN_VALUE,
   windowsRunCommand,
   windowsStopScript,
@@ -197,7 +197,8 @@ export async function service(
 ) {
   if (sub === "help") return console.log(USAGE);
   if (opts.home) process.env.COLONIA_HOME = path.resolve(opts.home);
-  if (sub !== "run") console.log(`Target: this machine, home ${coloniaHome()} (COLONIA_URL does not control services).`);
+  if (sub !== "run")
+    console.log(`Target: this machine, home ${coloniaHome()} (COLONIA_URL does not control services).`);
   if (sub === "install") return install();
   if (sub === "logs") return logs(coloniaHome(), Number(opts.lines ?? 100), Boolean(opts.follow));
   if (sub === "uninstall") return uninstall();

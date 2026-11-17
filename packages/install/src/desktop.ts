@@ -2,7 +2,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { DesktopInstallStatus } from "@colonia/protocol";
-import { compareVersions, desktopAssetFor, fetchReleases, newerReleases, platformOf, RELEASE_FEED } from "@colonia/protocol";
+import {
+  compareVersions,
+  desktopAssetFor,
+  fetchReleases,
+  newerReleases,
+  platformOf,
+  RELEASE_FEED,
+} from "@colonia/protocol";
 import { type LinuxHost, linuxHost } from "./appimage.ts";
 import { downloadDesktop } from "./download.ts";
 import { openLinuxDesktop } from "./linux-launch.ts";

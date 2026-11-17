@@ -48,7 +48,12 @@ export function Avatar({
   else content = <span>{initials(name)}</span>;
   return (
     <span
-      className={cx("colonia-avatar", `colonia-avatar--${shape}`, !src && !emoji && "colonia-avatar--initials", className)}
+      className={cx(
+        "colonia-avatar",
+        `colonia-avatar--${shape}`,
+        !src && !emoji && "colonia-avatar--initials",
+        className,
+      )}
       style={{
         width: size,
         height: size,

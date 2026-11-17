@@ -56,5 +56,8 @@ test("una ventana entera dentro de la pantalla conserva su zona; una fuera del t
   const display = { x: 1920, y: 0, width: 2560, height: 1440 };
   const got = windowCrop({ x: 2000, y: 100, width: 800, height: 600 }, display, 2, { width: 5120, height: 2880 });
   assert.deepEqual(got?.region, { x: 2000, y: 100, width: 800, height: 600 });
-  assert.equal(windowCrop({ x: 9000, y: 100, width: 800, height: 600 }, display, 2, { width: 5120, height: 2880 }), undefined);
+  assert.equal(
+    windowCrop({ x: 9000, y: 100, width: 800, height: 600 }, display, 2, { width: 5120, height: 2880 }),
+    undefined,
+  );
 });

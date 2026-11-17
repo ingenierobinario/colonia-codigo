@@ -58,7 +58,12 @@ export function recommend(m: Machine): string {
   return "base";
 }
 
-const FFMPEG = { apt: "sudo apt install ffmpeg", dnf: "sudo dnf install ffmpeg", pacman: "sudo pacman -S ffmpeg", zypper: "sudo zypper install ffmpeg" };
+const FFMPEG = {
+  apt: "sudo apt install ffmpeg",
+  dnf: "sudo dnf install ffmpeg",
+  pacman: "sudo pacman -S ffmpeg",
+  zypper: "sudo zypper install ffmpeg",
+};
 
 /** How to get whisper.cpp's server on this system, when it is missing; on Linux, `osRelease` picks ffmpeg's command. */
 export function installHint(platform: NodeJS.Platform, osRelease = ""): string {

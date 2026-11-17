@@ -54,7 +54,11 @@ const info = async () => (await env.client.call("channels.list", {})).channels.f
 
 test("a channel whose saved token the locked keyring does not give yet waits for it, then starts by itself", async () => {
   env = await boot();
-  await env.client.call("channels.set", { id: "tg", channel: { type: "telegram", agent_id: "superagent" }, token: "123456:TEST" });
+  await env.client.call("channels.set", {
+    id: "tg",
+    channel: { type: "telegram", agent_id: "superagent" },
+    token: "123456:TEST",
+  });
   await waitFor(async () => (await info())?.status === "running");
   await env.core.close();
   // The machine boots and the core starts before anyone logs in to unlock the keyring.

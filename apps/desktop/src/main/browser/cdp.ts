@@ -78,7 +78,8 @@ export class CdpTab {
       return Buffer.from(await this.#page.screenshot(), "base64");
     } catch {
       const image = await withTimeout(this.#wc.capturePage(), 4_000);
-      if (image.isEmpty()) throw new ColoniaError({ code: "unavailable", message: "tab is not painting (window hidden?)" });
+      if (image.isEmpty())
+        throw new ColoniaError({ code: "unavailable", message: "tab is not painting (window hidden?)" });
       return (image.getSize().width > 1280 ? image.resize({ width: 1280 }) : image).toJPEG(70);
     }
   }

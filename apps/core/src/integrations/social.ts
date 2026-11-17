@@ -344,7 +344,8 @@ export function createSocial(deps: {
         );
         if (!ok(me)) throw new Error(`TikTok: ${reason(me.data, me.status)}`);
         const user = (me.data as { data?: { user?: { open_id?: string; display_name?: string } } }).data?.user;
-        if (!user?.open_id && !got.open_id) throw new Error("TikTok did not say which account signed in; sign in again");
+        if (!user?.open_id && !got.open_id)
+          throw new Error("TikTok did not say which account signed in; sign in again");
         secrets.set(refreshName("tiktok"), got.refresh_token);
         store.settings.set(
           accountKey("tiktok"),

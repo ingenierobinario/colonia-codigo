@@ -686,7 +686,9 @@ export function createInbound(deps: {
           quiet: true,
         });
         const got = added.get(kept.thread.id) ?? { name: kept.person.name, lines: [] };
-        got.lines.push(m.own ? `You: ${text}` : untrusted("channel_message", { from: kept.person.name, channel }, text));
+        got.lines.push(
+          m.own ? `You: ${text}` : untrusted("channel_message", { from: kept.person.name, channel }, text),
+        );
         added.set(kept.thread.id, got);
       }
       for (const [threadId, got] of added) {

@@ -166,5 +166,7 @@ export function IntegrationIcon({ id, name, size = 32, tone = "info", label, cla
         ))}
       </svg>
     ));
-  return <ProjectTile tone="neutral" icon={icon} size={size} label={label} className={cx("colonia-intmark", className)} />;
+  return (
+    <ProjectTile tone="neutral" icon={icon} size={size} label={label} className={cx("colonia-intmark", className)} />
+  );
 }

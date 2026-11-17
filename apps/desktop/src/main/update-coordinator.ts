@@ -162,7 +162,8 @@ export function createUpdateCoordinator(opts: {
     },
     /** Activates the staged app; a failed answer says why it stays as it is. */
     async restart(): Promise<RestartAnswer> {
-      if (!endpoint) return { ok: false, error: "Colonia lost its connection. Quit Colonia and open it again to update." };
+      if (!endpoint)
+        return { ok: false, error: "Colonia lost its connection. Quit Colonia and open it again to update." };
       if (endpoint.local) return opts.activate();
       const saved = authorized ?? pending();
       if (!saved || saved.identity !== endpoint.identity)

@@ -41,7 +41,13 @@ const DONE: Array<[string, Record<string, unknown>]> = [
       ],
     },
   ],
-  ["screen_do", { app: "Google Chrome", steps: [{ do: "click", px: 50, py: 60, target: "botón «Guardar»", expect: "aparece «Factura guardada»" }] }],
+  [
+    "screen_do",
+    {
+      app: "Google Chrome",
+      steps: [{ do: "click", px: 50, py: 60, target: "botón «Guardar»", expect: "aparece «Factura guardada»" }],
+    },
+  ],
 ];
 
 const script = () =>

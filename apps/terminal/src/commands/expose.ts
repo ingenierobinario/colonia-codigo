@@ -85,7 +85,9 @@ function exposeStatus() {
     effective[k] = v;
   }
   console.log(describeExposure(effective));
-  console.log(`port     ${corePort()}${process.env.COLONIA_URL ? ` (this terminal talks to ${process.env.COLONIA_URL})` : ""}`);
+  console.log(
+    `port     ${corePort()}${process.env.COLONIA_URL ? ` (this terminal talks to ${process.env.COLONIA_URL})` : ""}`,
+  );
   console.log(`token    ${effective.COLONIA_TOKEN ? "set" : "none (the core only accepts this computer)"}`);
   console.log(`settings ${coreEnvPath(home)}${Object.keys(file).length ? "" : " (none yet)"}`);
   if (overridden.length) console.log(`the environment overrides: ${overridden.join(", ")}`);

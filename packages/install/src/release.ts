@@ -138,7 +138,8 @@ export async function installRelease(o: {
   const name = coreBundleName(o.release.version, o.platform);
   const asset = o.release.assets.find((a) => a.name === name);
   const sum = o.release.assets.find((a) => a.name === `${name}.sha256`);
-  if (!asset || !sum) throw new Error(`Colonia ${o.release.version} has no ${name} (and its .sha256) for this computer`);
+  if (!asset || !sum)
+    throw new Error(`Colonia ${o.release.version} has no ${name} (and its .sha256) for this computer`);
 
   const work = path.join(o.app, `.update-${randomUUID().slice(0, 8)}`);
   fs.mkdirSync(work, { recursive: true });

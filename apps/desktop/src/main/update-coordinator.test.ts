@@ -137,7 +137,10 @@ test("persisted interrupted target wins over a newer feed after process restart"
 });
 
 test("a completed release does not pin an up-to-date app to the previous target", async () => {
-  for (const saved of [undefined, { identity: "https://colonia.example.com", home: "installation-a", target: "2.1.0" }]) {
+  for (const saved of [
+    undefined,
+    { identity: "https://colonia.example.com", home: "installation-a", target: "2.1.0" },
+  ]) {
     const h = harness(saved, "2.1.0");
     h.setState({
       ...h.state(),

@@ -108,7 +108,13 @@ export function Composer({
   };
   const boxed = toolbar != null;
   const attach = onAttach && (
-    <button type="button" className="colonia-composer__btn" aria-label={l.attach} onClick={onAttach} disabled={disabled}>
+    <button
+      type="button"
+      className="colonia-composer__btn"
+      aria-label={l.attach}
+      onClick={onAttach}
+      disabled={disabled}
+    >
       <Plus size={18} />
     </button>
   );

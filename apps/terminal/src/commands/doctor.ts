@@ -72,7 +72,12 @@ export function diagnose(f: DoctorFacts): { ok: boolean; lines: string[]; next: 
   if (f.core)
     return {
       ok: true,
-      lines: [`Core: answers on ${f.url} · Colonia ${f.core.version} · ${f.core.code_sha}`, installed, service, ...newer],
+      lines: [
+        `Core: answers on ${f.url} · Colonia ${f.core.version} · ${f.core.code_sha}`,
+        installed,
+        service,
+        ...newer,
+      ],
       next: f.latest ? [update] : [],
     };
   const cause = f.log ? logCause(f.log, port) : undefined;
@@ -115,9 +120,11 @@ export async function updateWithoutCore(o: {
   restart(): Promise<void>;
 }): Promise<string[]> {
   const release = newestFor((await checkReleases(o.feed, o.current, o.fetch)).newer, o.platform);
-  if (!release) return [`Colonia ${o.current} is the newest for this computer.`, "To see why the core stops: colonia doctor"];
+  if (!release)
+    return [`Colonia ${o.current} is the newest for this computer.`, "To see why the core stops: colonia doctor"];
   const done = await installRelease({ app: o.app, release, platform: o.platform, fetch: o.fetch, run: o.run });
-  if (o.service === "none") return [`Colonia ${release.version} is installed (${done}).`, "Start it: colonia service install"];
+  if (o.service === "none")
+    return [`Colonia ${release.version} is installed (${done}).`, "Start it: colonia service install"];
   await o.restart();
   return [`Colonia ${release.version} is installed (${done}).`, "The service is starting it: colonia status"];
 }
@@ -194,7 +201,9 @@ export async function updateOffline(o: { check?: boolean | undefined; env?: Node
   if (o.check) {
     const latest = await newestOnline(feed, current, platform);
     console.log(
-      card("Colonia updates", [latest ? `Colonia ${latest} is out (this is ${current})` : `Colonia ${current} is the newest`]),
+      card("Colonia updates", [
+        latest ? `Colonia ${latest} is out (this is ${current})` : `Colonia ${current} is the newest`,
+      ]),
     );
     return;
   }

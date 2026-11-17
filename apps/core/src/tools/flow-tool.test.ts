@@ -44,7 +44,11 @@ test("the colonia-flows skill names every step kind, so an agent can draw a new 
   const kinds = FlowNode.options.map((o) => o.shape.kind.value);
   assert.ok(kinds.includes("webhook") && kinds.includes("http"));
   const missing = kinds.filter((k) => !skill.includes(`| \`${k}\``));
-  assert.deepEqual(missing, [], "add each new step kind and its fields to the table in skills/colonia/colonia-flows/SKILL.md");
+  assert.deepEqual(
+    missing,
+    [],
+    "add each new step kind and its fields to the table in skills/colonia/colonia-flows/SKILL.md",
+  );
 });
 
 test("only the super-agent is offered colonia_flow, and its index lists Flows and tables", async () => {

@@ -130,7 +130,11 @@ const theme = EditorView.theme({
   ".cm-cursor": { borderLeftColor: "var(--colonia-fg)" },
   ".cm-foldGutter .cm-gutterElement": { color: "var(--colonia-fg-subtle)", cursor: "pointer" },
   ".cm-searchMatch": { backgroundColor: "var(--code-selection)" },
-  ".cm-panels": { backgroundColor: "var(--colonia-surface)", color: "var(--colonia-fg)", borderColor: "var(--colonia-border)" },
+  ".cm-panels": {
+    backgroundColor: "var(--colonia-surface)",
+    color: "var(--colonia-fg)",
+    borderColor: "var(--colonia-border)",
+  },
 });
 
 /**

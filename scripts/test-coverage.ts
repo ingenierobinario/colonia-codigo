@@ -246,7 +246,13 @@ async function runE2ESuites(
       cwd: root,
       stdio: "inherit",
       shell: process.platform === "win32",
-      env: { ...process.env, ...ports, COLONIA_TEST_COVERAGE: "1", COLONIA_TEST_COVERAGE_DIR: raw, NODE_V8_COVERAGE: raw },
+      env: {
+        ...process.env,
+        ...ports,
+        COLONIA_TEST_COVERAGE: "1",
+        COLONIA_TEST_COVERAGE_DIR: raw,
+        NODE_V8_COVERAGE: raw,
+      },
       timeout: 15 * 60_000,
     });
     if (result.status !== 0) {

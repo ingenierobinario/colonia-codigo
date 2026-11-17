@@ -12,7 +12,12 @@ import type { Tool, ToolContext } from "./types.ts";
 type Call = { method: string; params: Record<string, unknown> };
 
 /** Un ordenador de pega: cada mirada devuelve la siguiente pantalla de `frames` (la última se repite). */
-function rig(o: { mode?: "ask" | "live" | "background"; frames?: string[]; answer?: string | undefined; fail?: number }) {
+function rig(o: {
+  mode?: "ask" | "live" | "background";
+  frames?: string[];
+  answer?: string | undefined;
+  fail?: number;
+}) {
   const calls: Call[] = [];
   const seen: string[] = [];
   const asked: { prompt: string; options: string[] }[] = [];

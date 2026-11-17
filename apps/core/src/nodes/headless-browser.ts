@@ -116,7 +116,9 @@ class Pipe {
         });
       } catch (error) {
         this.#pending.delete(id);
-        reject(new ColoniaError({ code: "unavailable", message: error instanceof Error ? error.message : String(error) }));
+        reject(
+          new ColoniaError({ code: "unavailable", message: error instanceof Error ? error.message : String(error) }),
+        );
       }
     });
   }
@@ -401,7 +403,8 @@ export function createHeadlessBrowser(deps: {
     // NAVEGADORES-2: a Navegadores profile's sign-ins live in the Colonia app's own encrypted jar, never copied here:
     // opening it headless would hand the agent an empty, logged-out browser that looks like the owner's.
     if (profile.startsWith("nav:")) throw navNeedsApp();
-    if (tabs.size >= MAX_TABS) throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
+    if (tabs.size >= MAX_TABS)
+      throw new ColoniaError({ code: "unavailable", message: `tab limit (${MAX_TABS}) reached` });
     const p = await ready();
     const browserContextId = await contextFor(p, profile);
     const { targetId } = await p.send<{ targetId: string }>("Target.createTarget", {
@@ -462,7 +465,8 @@ export function createHeadlessBrowser(deps: {
   const noHuman = () =>
     new ColoniaError({
       code: "unavailable",
-      message: "this is Colonia's headless browser: nobody can take over here. Ask the owner to open the Colonia app for that.",
+      message:
+        "this is Colonia's headless browser: nobody can take over here. Ask the owner to open the Colonia app for that.",
     });
 
   return {

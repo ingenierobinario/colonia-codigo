@@ -25,7 +25,8 @@ interface Props {
 }
 const { demo, lang = "es" } = Astro.props;
 const es = lang !== "en";
-const hour = (i: number) => (es ? `12:${String(30 - i * 4).padStart(2, "0")}` : `12:${String(30 - i * 4).padStart(2, "0")} PM`);
+const hour = (i: number) =>
+  es ? `12:${String(30 - i * 4).padStart(2, "0")}` : `12:${String(30 - i * 4).padStart(2, "0")} PM`;
 // Iconos de trazo de la interfaz: sólo se escribe el contenido de cada <svg>.
 const icons = {
   inbox: '<path d="M3 13h5l2 3h4l2-3h5"/><path d="M5 5h14l2 8v6H3v-6z"/>',

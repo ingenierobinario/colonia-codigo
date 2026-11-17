@@ -95,7 +95,11 @@ test("un píxel de la captura de OTRO equipo, o sin captura, no hace clic en nin
     const none = await r.run("equipo_do", { equipo: "portatil", steps: [{ do: "click", px: 5, py: 5 }], look: false });
     assert.match(none, /take a equipo_screenshot first/);
     await r.run("equipo_screenshot", { equipo: "portatil" });
-    const other = await r.run("equipo_do", { equipo: "sobremesa", steps: [{ do: "click", px: 5, py: 5 }], look: false });
+    const other = await r.run("equipo_do", {
+      equipo: "sobremesa",
+      steps: [{ do: "click", px: 5, py: 5 }],
+      look: false,
+    });
     assert.match(other, /nothing was done/);
     assert.equal(r.did().length, 0);
   } finally {

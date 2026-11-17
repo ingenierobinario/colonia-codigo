@@ -58,7 +58,11 @@ test("the phone node releases late connections and cancels scheduled reconnects 
     load(url, context, next) {
       const base = 'const api = globalThis[Symbol.for("colonia.phone-test")];';
       if (url === "colonia-phone-test:protocol")
-        return { shortCircuit: true, format: "module", source: `${base} export const ColoniaClient = api.ColoniaClient;` };
+        return {
+          shortCircuit: true,
+          format: "module",
+          source: `${base} export const ColoniaClient = api.ColoniaClient;`,
+        };
       if (url === "colonia-phone-test:location")
         return {
           shortCircuit: true,

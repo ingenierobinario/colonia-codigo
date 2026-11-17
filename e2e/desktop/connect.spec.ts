@@ -299,7 +299,9 @@ test("a direct remote connection blocks unsupported updates through the real nat
     expect(dialogs?.[0]?.buttons).toHaveLength(3);
     expect(dialogs?.[0]?.detail).toMatch(/not applied|no se aplicó/);
     expect(fs.existsSync(path.join(home, "desktop", "pending-update.json"))).toBe(false);
-    await panel.evaluate(() => (window as { coloniaDesktop?: { restartToUpdate(): void } }).coloniaDesktop?.restartToUpdate());
+    await panel.evaluate(() =>
+      (window as { coloniaDesktop?: { restartToUpdate(): void } }).coloniaDesktop?.restartToUpdate(),
+    );
     expect(app.process().exitCode).toBeNull();
   } finally {
     await app.close();

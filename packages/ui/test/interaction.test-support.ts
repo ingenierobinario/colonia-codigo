@@ -3,9 +3,9 @@ import { createRoot } from "react-dom/client";
 import {
   ActionGroup,
   AgentGrid,
-  ColoniaProvider,
   BrowserTabs,
   Checkbox,
+  ColoniaProvider,
   Composer,
   DatePicker,
   Dialog,

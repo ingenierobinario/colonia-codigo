@@ -199,7 +199,10 @@ export function loadConfig(processEnv: NodeJS.ProcessEnv = process.env, readCore
     token: env.COLONIA_TOKEN || undefined,
     allowedOrigins: list(env.COLONIA_ALLOWED_ORIGINS),
     webDist: env.COLONIA_WEB_DIST || undefined,
-    v1: { url: env.COLONIA_V1_URL ?? "http://127.0.0.1:7430", home: env.COLONIA_V1_HOME ?? path.join(os.homedir(), ".colonia") },
+    v1: {
+      url: env.COLONIA_V1_URL ?? "http://127.0.0.1:7430",
+      home: env.COLONIA_V1_HOME ?? path.join(os.homedir(), ".colonia"),
+    },
     telegramApi: env.COLONIA_TELEGRAM_API || undefined,
     flowHttpAllow: list(env.COLONIA_FLOW_HTTP_ALLOW).filter((a) => /^127\.0\.0\.1:\d{1,5}$/.test(a)),
     discord:

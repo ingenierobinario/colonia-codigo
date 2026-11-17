@@ -33,7 +33,9 @@ export function Tooltip({
       <BaseTooltip.Trigger delay={delay} render={children} />
       <BaseTooltip.Portal container={portalRef}>
         <BaseTooltip.Positioner side={side} sideOffset={6}>
-          <BaseTooltip.Popup className={`colonia-tooltip${appearance === "surface" ? " colonia-tooltip--surface" : ""}`}>
+          <BaseTooltip.Popup
+            className={`colonia-tooltip${appearance === "surface" ? " colonia-tooltip--surface" : ""}`}
+          >
             {content}
             {shortcut && <span className="colonia-tooltip__kbd">{shortcut}</span>}
           </BaseTooltip.Popup>

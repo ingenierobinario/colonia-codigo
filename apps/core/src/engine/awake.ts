@@ -52,7 +52,10 @@ export function keepAwake(o: {
             ],
           ]
         : platform === "win32"
-          ? ["powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", encoded(AWAKE_PS.replace("{pid}", pid))]]
+          ? [
+              "powershell.exe",
+              ["-NoProfile", "-NonInteractive", "-EncodedCommand", encoded(AWAKE_PS.replace("{pid}", pid))],
+            ]
           : undefined;
   const release = () => {
     const c = child;

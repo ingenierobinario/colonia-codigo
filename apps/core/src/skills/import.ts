@@ -185,7 +185,9 @@ export type ImportTarget = {
 
 /** Names of Colonia's own skills: never taken by an imported one. */
 const coloniaNames = () =>
-  new Set(fs.readdirSync(COLONIA_SKILLS_DIR).filter((n) => fs.existsSync(path.join(COLONIA_SKILLS_DIR, n, "SKILL.md"))));
+  new Set(
+    fs.readdirSync(COLONIA_SKILLS_DIR).filter((n) => fs.existsSync(path.join(COLONIA_SKILLS_DIR, n, "SKILL.md"))),
+  );
 
 type Read = Omit<SkillCandidate, "files"> & { files: Found[] };
 

@@ -145,7 +145,9 @@ export async function takeOverV1(d: TakeoverDeps): Promise<TakeoverResult> {
   const left = await removeV1Command(d);
   const link = await linkV2(d);
   const lines = [
-    stopped ? "Colonia v1's daemon is off and will not start at login" : "Colonia v1 still answers: quit it from its own app",
+    stopped
+      ? "Colonia v1's daemon is off and will not start at login"
+      : "Colonia v1 still answers: quit it from its own app",
     left ? `v1's colonia needs administrator rights to go: ${left}` : "v1's colonia is gone",
     link.detail,
   ];

@@ -221,13 +221,11 @@ for (const mode of ["light", "dark"] as const) {
         await open(page, `#project=${hub}`);
         await page.getByRole("button", { name: "Nuevo proyecto" }).first().click();
         await page.getByRole("button", { name: "Importar proyecto" }).click();
-        await page
-          .getByTestId("pshare-file")
-          .setInputFiles({
-            name: "initech.json",
-            mimeType: "application/json",
-            buffer: Buffer.from(JSON.stringify(sent)),
-          });
+        await page.getByTestId("pshare-file").setInputFiles({
+          name: "initech.json",
+          mimeType: "application/json",
+          buffer: Buffer.from(JSON.stringify(sent)),
+        });
         await expect(page.getByTestId("pshare-brings")).toBeVisible();
         await dialog.getByLabel("Nombre").fill(copyName);
         await dialog.getByRole("button", { name: "Importar", exact: true }).click();

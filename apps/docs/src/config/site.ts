@@ -14,4 +14,5 @@ export type SectionId = "what" | "new" | "start" | "map" | "terminal" | "questio
 /** Secciones que no se publican: enlazan a páginas fuera del build. */
 export const HIDDEN_SECTIONS: SectionId[] = ["map", "compare", "download"];
 /** Ancla de una sección en la portada de ese idioma; sin sección, la portada. */
-export const sectionRoute = (lang: "es" | "en", id?: SectionId) => `${lang === "es" ? "/" : "/en/"}${id ? `#${id}` : ""}`;
+export const sectionRoute = (lang: "es" | "en", id?: SectionId) =>
+  `${lang === "es" ? "/" : "/en/"}${id ? `#${id}` : ""}`;

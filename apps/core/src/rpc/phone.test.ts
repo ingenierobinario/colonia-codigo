@@ -150,5 +150,7 @@ test("a device sets its own push; notices then reach the phone instead of a chan
 });
 
 test("a public address goes first in the pairing QR", () => {
-  assert.deepEqual(reachableAt("127.0.0.1", 7440, "https://colonia.example.ts.net"), ["https://colonia.example.ts.net"]);
+  assert.deepEqual(reachableAt("127.0.0.1", 7440, "https://colonia.example.ts.net"), [
+    "https://colonia.example.ts.net",
+  ]);
 });

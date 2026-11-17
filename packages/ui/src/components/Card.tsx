@@ -26,7 +26,10 @@ export function Card({
   ...rest
 }: CardProps) {
   return (
-    <div className={cx("colonia-card", `colonia-card--${variant}`, `colonia-card--pad-${padding}`, className)} {...rest}>
+    <div
+      className={cx("colonia-card", `colonia-card--${variant}`, `colonia-card--pad-${padding}`, className)}
+      {...rest}
+    >
       {(title || aside) && (
         <div className="colonia-card__head">
           <div className="colonia-card__titles">

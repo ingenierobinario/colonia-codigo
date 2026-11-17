@@ -65,49 +65,53 @@ const serviceUrl = `http://127.0.0.1:${(service.address() as AddressInfo).port}`
 
 const hook = path.join(root, "e2e/baileys-hook.ts");
 const desktopTrashRecord = path.join(dir, "desktop-trash.jsonl");
-const core = spawn(process.execPath, ["--no-warnings", "--import", pathToFileURL(hook).href, path.join(root, "e2e/start-core.ts")], {
-  cwd: root,
-  // The channel carries /clock to the core (e2e/start-core.ts).
-  stdio: ["ignore", "pipe", "pipe", "ipc"],
-  env: {
-    // Only the sandbox's own CLIs, node and the system: none of the machine's agents (claude, codex, opencode…).
-    PATH: [fx.bin, "/usr/bin", "/bin"].join(path.delimiter),
-    HOME: process.env.HOME ?? os.homedir(),
-    ...compileCacheEnv(root),
-    COLONIA_HOME: fx.home,
-    COLONIA_PORT: String(E2E.port),
-    // Browser regression tests resolve this insecure origin to loopback. Only allowed as an origin: a public URL
-    // would make the core count as exposed, and Devices would ask for a restart it never needs.
-    COLONIA_ALLOWED_ORIGINS: `http://panel.test:${E2E.port}`,
-    COLONIA_SECRETS: "file",
-    COLONIA_UPDATES: "off",
-    // A sandbox never reports to the Colonia project.
-    COLONIA_TELEMETRY: "off",
-    COLONIA_AGENT_NAME: "Roby",
-    COLONIA_V1_HOME: fx.v1,
-    COLONIA_V1_URL: "http://127.0.0.1:9",
-    CLAUDE_CONFIG_DIR: fx.claude,
-    // Never the owner's other agent apps' skills (~/.cursor, ~/.agents).
-    COLONIA_APPS_HOME: dir,
-    CODEX_HOME: fx.codex,
-    COLONIA_LLM_BASE_URL: llm.url,
-    COLONIA_LLM_KEY: "e2e",
-    COLONIA_LLM_MODELS: "fake-1,fake-2",
-    COLONIA_TELEGRAM_API: tg.url,
-    COLONIA_DISCORD_API: dc.urls.api,
-    COLONIA_DISCORD_GATEWAY: dc.urls.gateway,
-    COLONIA_SLACK_API: sl.api,
-    COLONIA_GOOGLE_API: google.url,
-    COLONIA_FLOW_HTTP_ALLOW: serviceUrl.replace("http://", ""),
-    // Never the owner's own Messages, even when the sandbox runs on their Mac.
-    COLONIA_IMESSAGE: "off",
-    // Never the machine's own Ollama: memory's local embedding models are looked for where nothing answers.
-    COLONIA_OLLAMA_URL: "http://127.0.0.1:9",
-    E2E_WA_PORT: String(E2E.whatsapp),
-    E2E_DESKTOP_TRASH_RECORD: desktopTrashRecord,
-    E2E_PROJECT_ROOT: fx.repo,
+const core = spawn(
+  process.execPath,
+  ["--no-warnings", "--import", pathToFileURL(hook).href, path.join(root, "e2e/start-core.ts")],
+  {
+    cwd: root,
+    // The channel carries /clock to the core (e2e/start-core.ts).
+    stdio: ["ignore", "pipe", "pipe", "ipc"],
+    env: {
+      // Only the sandbox's own CLIs, node and the system: none of the machine's agents (claude, codex, opencode…).
+      PATH: [fx.bin, "/usr/bin", "/bin"].join(path.delimiter),
+      HOME: process.env.HOME ?? os.homedir(),
+      ...compileCacheEnv(root),
+      COLONIA_HOME: fx.home,
+      COLONIA_PORT: String(E2E.port),
+      // Browser regression tests resolve this insecure origin to loopback. Only allowed as an origin: a public URL
+      // would make the core count as exposed, and Devices would ask for a restart it never needs.
+      COLONIA_ALLOWED_ORIGINS: `http://panel.test:${E2E.port}`,
+      COLONIA_SECRETS: "file",
+      COLONIA_UPDATES: "off",
+      // A sandbox never reports to the Colonia project.
+      COLONIA_TELEMETRY: "off",
+      COLONIA_AGENT_NAME: "Roby",
+      COLONIA_V1_HOME: fx.v1,
+      COLONIA_V1_URL: "http://127.0.0.1:9",
+      CLAUDE_CONFIG_DIR: fx.claude,
+      // Never the owner's other agent apps' skills (~/.cursor, ~/.agents).
+      COLONIA_APPS_HOME: dir,
+      CODEX_HOME: fx.codex,
+      COLONIA_LLM_BASE_URL: llm.url,
+      COLONIA_LLM_KEY: "e2e",
+      COLONIA_LLM_MODELS: "fake-1,fake-2",
+      COLONIA_TELEGRAM_API: tg.url,
+      COLONIA_DISCORD_API: dc.urls.api,
+      COLONIA_DISCORD_GATEWAY: dc.urls.gateway,
+      COLONIA_SLACK_API: sl.api,
+      COLONIA_GOOGLE_API: google.url,
+      COLONIA_FLOW_HTTP_ALLOW: serviceUrl.replace("http://", ""),
+      // Never the owner's own Messages, even when the sandbox runs on their Mac.
+      COLONIA_IMESSAGE: "off",
+      // Never the machine's own Ollama: memory's local embedding models are looked for where nothing answers.
+      COLONIA_OLLAMA_URL: "http://127.0.0.1:9",
+      E2E_WA_PORT: String(E2E.whatsapp),
+      E2E_DESKTOP_TRASH_RECORD: desktopTrashRecord,
+      E2E_PROJECT_ROOT: fx.repo,
+    },
   },
-});
+);
 const log = fs.createWriteStream(path.join(dir, "core.log"));
 core.stdout?.pipe(log);
 core.stderr?.pipe(log);

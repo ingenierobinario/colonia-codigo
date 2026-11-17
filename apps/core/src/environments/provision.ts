@@ -89,7 +89,10 @@ export function screenDriver(run: LimaRun, instance: string, ownLoopbackOnly = f
       await checkScreenIdentity(admin, screen, signal);
       await admin(screenArgs(screen, "systemctl", "--user", "start", `colonia-desktop@${display}.service`), signal);
       await admin(screenArgs(screen, "/usr/local/bin/colonia-appearance", mode), signal, 30_000);
-      await admin(screenArgs(screen, "systemctl", "--user", "start", `colonia-agent-terminal@${display}.service`), signal);
+      await admin(
+        screenArgs(screen, "systemctl", "--user", "start", `colonia-agent-terminal@${display}.service`),
+        signal,
+      );
     },
     async appearance(screen: number, mode: "light" | "dark") {
       await admin(screenArgs(screen, "/usr/local/bin/colonia-appearance", mode), undefined, 30_000);

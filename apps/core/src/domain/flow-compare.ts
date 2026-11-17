@@ -4,7 +4,13 @@ import type { FlowCase, FlowComparison } from "@colonia/protocol/flow-cases";
 import type { FlowBinding } from "@colonia/protocol/flow-graph";
 import type { FlowVarIndex } from "./flow-expr.ts";
 import { FlowFieldUnavailable } from "./flow-graph-validate.ts";
-import { emptyFlowValue, type FlowColonia, flowValueText, parseFlowTemplate, renderFlowTemplate } from "./flow-template.ts";
+import {
+  emptyFlowValue,
+  type FlowColonia,
+  flowValueText,
+  parseFlowTemplate,
+  renderFlowTemplate,
+} from "./flow-template.ts";
 
 export type FlowOperandReads = {
   resolve: (b: FlowBinding) => unknown;

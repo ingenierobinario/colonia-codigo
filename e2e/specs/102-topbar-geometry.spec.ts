@@ -106,13 +106,15 @@ test("shared blob eyes retain the avatar canvas inside an icon button and chat h
     const button = svg.closest("button");
     if (!button) throw new Error("Missing avatar button");
     const original = button.className;
-    const results = ["colonia-iconbtn--sm", "colonia-iconbtn--md", "colonia-iconbtn--lg", "colonia-btn"].map((variant) => {
-      button.className = `topbar__agent ${variant}`;
-      const eye = svg.getBoundingClientRect();
-      const body = svg.parentElement?.querySelector("img")?.getBoundingClientRect();
-      if (!body) throw new Error("Missing canonical blob body");
-      return { width: Math.abs(eye.width - body.width), height: Math.abs(eye.height - body.height) };
-    });
+    const results = ["colonia-iconbtn--sm", "colonia-iconbtn--md", "colonia-iconbtn--lg", "colonia-btn"].map(
+      (variant) => {
+        button.className = `topbar__agent ${variant}`;
+        const eye = svg.getBoundingClientRect();
+        const body = svg.parentElement?.querySelector("img")?.getBoundingClientRect();
+        if (!body) throw new Error("Missing canonical blob body");
+        return { width: Math.abs(eye.width - body.width), height: Math.abs(eye.height - body.height) };
+      },
+    );
     button.className = original;
     return results;
   });

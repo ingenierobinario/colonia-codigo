@@ -431,7 +431,9 @@ test("a refusal outside every folder names a next step that exists", async () =>
   const project = (await env.client.call("projects.register", { path: repo, init: true })).project.id;
   const colonia = path.join(env.home, "colonia.db");
   const roots = rootsOf(env.core.store, env.home, { id: "t_x", project_id: project, reach: "card" as const });
-  assert.deepEqual(judge(roots, colonia, repo, { home: env.home, project: true }), { refused: refusal.colonia(colonia) });
+  assert.deepEqual(judge(roots, colonia, repo, { home: env.home, project: true }), {
+    refused: refusal.colonia(colonia),
+  });
 });
 
 test("a linked git worktree of the project beside its folder is the project's, unless the thread keeps to one", async (t) => {

@@ -66,7 +66,9 @@ export function LiveBrowserCard({
         <span className="colonia-livebrowser__text">
           <span className="colonia-livebrowser__title">{title ?? url}</span>
           {status ? (
-            <span className={cx("colonia-livebrowser__status", statusTone === "warning" && "is-warning")}>{status}</span>
+            <span className={cx("colonia-livebrowser__status", statusTone === "warning" && "is-warning")}>
+              {status}
+            </span>
           ) : (
             <span className="colonia-livebrowser__status">{url}</span>
           )}

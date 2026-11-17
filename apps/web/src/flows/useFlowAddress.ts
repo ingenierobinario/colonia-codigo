@@ -52,7 +52,8 @@ export function useFlowAddress(o: {
         notify(t("flow.addr.changed"), "info");
         return true;
       } catch (e) {
-        const taken = e instanceof ColoniaError && (e.detail as { reason?: string } | undefined)?.reason === "path_taken";
+        const taken =
+          e instanceof ColoniaError && (e.detail as { reason?: string } | undefined)?.reason === "path_taken";
         notify(t(taken ? "flow.addr.taken" : "flow.addr.failed"));
         return false;
       }

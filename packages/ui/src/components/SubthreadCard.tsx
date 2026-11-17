@@ -77,7 +77,10 @@ export function SubthreadCard({
       </button>
       {summary && (
         <div className="colonia-subthread__report">
-          <div ref={body} className={cx("colonia-subthread__summary", !open && "is-folded", !open && long && "is-long")}>
+          <div
+            ref={body}
+            className={cx("colonia-subthread__summary", !open && "is-folded", !open && long && "is-long")}
+          >
             {summary}
           </div>
           {(long || open) && (

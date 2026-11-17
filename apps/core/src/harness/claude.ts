@@ -162,7 +162,11 @@ function coloniaServer({ createSdkMcpServer, tool }: Sdk, io: TurnIO, counts: Co
     tools: io.tools.map((spec) =>
       tool(spec.function.name, spec.function.description, zodShape(spec.function.parameters), async (args) => {
         counts.colonia++;
-        const r = await io.execute(`${io.run.id}-c${counts.colonia}`, spec.function.name, args as Record<string, unknown>);
+        const r = await io.execute(
+          `${io.run.id}-c${counts.colonia}`,
+          spec.function.name,
+          args as Record<string, unknown>,
+        );
         return { content: [{ type: "text" as const, text: r.text }], isError: !r.ok };
       }),
     ),

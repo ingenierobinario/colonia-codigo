@@ -142,7 +142,9 @@ export function computerTools(store: Store): Tool[] {
           )
           .min(1)
           .max(12)
-          .describe("click takes x and y (screen point) or px and py (pixel of the last picture), key takes keys, type takes text"),
+          .describe(
+            "click takes x and y (screen point) or px and py (pixel of the last picture), key takes keys, type takes text",
+          ),
         look: z.boolean().optional().describe("see the window after the last step (default true)"),
         note: NOTE,
       }),

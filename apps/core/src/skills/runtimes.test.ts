@@ -51,7 +51,11 @@ test("install creates, updates, removes retired Colonia skills and leaves every 
   const targets = runtimes({ home }).filter((r) => r.id === "claude");
 
   const first = plan(skills, targets);
-  assert.deepEqual(actions(first), ["claude:apc-context:create", "claude:colonia-runtime:remove", "claude:colonia:update"]);
+  assert.deepEqual(actions(first), [
+    "claude:apc-context:create",
+    "claude:colonia-runtime:remove",
+    "claude:colonia:update",
+  ]);
   apply(first, skills);
 
   assert.equal(fs.readFileSync(path.join(dir, "colonia", "SKILL.md"), "utf8"), skills[0]?.files["SKILL.md"]);

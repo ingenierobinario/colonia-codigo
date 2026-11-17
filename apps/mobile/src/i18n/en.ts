@@ -353,7 +353,8 @@ export const en = {
   setAutoSub: "The first chat app of yours that is connected",
   setQuiet: "Quiet hours",
   setQuietOff: "None",
-  setQuietHelp: "What Colonia would say unasked waits until they end; answers and questions still arrive, without sound.",
+  setQuietHelp:
+    "What Colonia would say unasked waits until they end; answers and questions still arrive, without sound.",
   setBudget: "Unasked messages a day",
   setNoCap: "No limit",
   setSounds: "Sounds",

@@ -308,7 +308,9 @@ export function TemplateField({
                       {v.run ? <Icons.Plus size={12} /> : v.secret ? <Icons.KeyRound size={12} /> : null}
                       <span className="colonia-tfield__label">{v.label}</span>
                       {v.hint && <span className="colonia-tfield__hint">{v.hint}</span>}
-                      {!v.run && <code className={cx("colonia-tfield__chip", v.secret && "is-secret")}>{v.insert}</code>}
+                      {!v.run && (
+                        <code className={cx("colonia-tfield__chip", v.secret && "is-secret")}>{v.insert}</code>
+                      )}
                     </button>
                   );
                 })}

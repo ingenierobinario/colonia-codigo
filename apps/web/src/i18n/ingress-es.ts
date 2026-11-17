@@ -50,7 +50,8 @@ export const esIngress: Record<keyof typeof enIngress, string> = {
   "hooks.cloudflare": "Temporal",
   "hooks.cloudflareBody": "Un enlace gratis, sin cuenta ni instalar nada. Cambia cada vez que reinicias Colonia.",
   "hooks.starting": "Preparando el enlace… la primera vez tarda un minuto.",
-  "hooks.err.cloudflare_download": "No se pudo preparar el enlace temporal. Revisa tu conexión a internet y vuelve a probar.",
+  "hooks.err.cloudflare_download":
+    "No se pudo preparar el enlace temporal. Revisa tu conexión a internet y vuelve a probar.",
   "hooks.err.cloudflare_timeout": "El enlace temporal tardó demasiado. Vuelve a probar en un momento.",
   "hooks.err.cloudflare_stopped": "El enlace temporal se detuvo. Se vuelve a abrir solo.",
   "hooks.err.funnelOff": "Tailscale sigue publicando Colonia y no se pudo parar. Abre Tailscale y vuelve a probar.",

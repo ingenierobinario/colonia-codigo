@@ -44,7 +44,10 @@ export function UpdateDialog() {
       : target === "app"
         ? phase === "ready" || phase === "restarting" || phase === "stalled"
           ? t("update.leadReady", { v: app?.ready ?? app?.latest ?? "" })
-          : t(drag ? (linux ? "update.leadAppDragLinux" : "update.leadAppDrag") : "update.leadApp", { v: app?.latest ?? "", current: app?.current ?? "" })
+          : t(drag ? (linux ? "update.leadAppDragLinux" : "update.leadAppDrag") : "update.leadApp", {
+              v: app?.latest ?? "",
+              current: app?.current ?? "",
+            })
         : byApp
           ? t("update.leadByApp", { v: status?.latest ?? "" })
           : status?.source === "release"
@@ -124,7 +127,9 @@ export function UpdateDialog() {
         </p>
       )}
       {phase === "stalled" && <p className="update__note">{t("update.restartStalled")}</p>}
-      {phase === "done" && !command && <p className="update__note">{t(drag ? (linux ? "update.dragDoneLinux" : "update.dragDone") : "update.done")}</p>}
+      {phase === "done" && !command && (
+        <p className="update__note">{t(drag ? (linux ? "update.dragDoneLinux" : "update.dragDone") : "update.done")}</p>
+      )}
       {phase === "failed" && (
         <>
           <p className="update__note">{t("update.failed")}</p>

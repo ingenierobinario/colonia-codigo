@@ -178,7 +178,10 @@ test("with a password and SASL offered, the bot logs in by SASL PLAIN and never 
   ac.abort();
   await adapter.stop();
 
-  const wrong = ircAdapter({ id: "irc", type: "irc" } as Parameters<typeof ircAdapter>[0], `${irc.url} colonia nope-nope`);
+  const wrong = ircAdapter(
+    { id: "irc", type: "irc" } as Parameters<typeof ircAdapter>[0],
+    `${irc.url} colonia nope-nope`,
+  );
   await assert.rejects(wrong.start({ ...io, signal: new AbortController().signal }), /refused the bot's password/);
   await wrong.stop();
   await irc.close();

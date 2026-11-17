@@ -187,7 +187,8 @@ export function FrameView({
 
   // What it remembers, changed elsewhere (its agent, another open copy), reaches the running page without a reload.
   useEffect(() => {
-    if (remembered) frame.current?.contentWindow?.postMessage({ colonia: nonce, kind: "state", state: remembered }, "*");
+    if (remembered)
+      frame.current?.contentWindow?.postMessage({ colonia: nonce, kind: "state", state: remembered }, "*");
   }, [remembered, nonce]);
 
   // The state is read when the frame is built, never a reason to rebuild it.

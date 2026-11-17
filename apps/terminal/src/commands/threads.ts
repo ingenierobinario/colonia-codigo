@@ -156,7 +156,11 @@ function kindOf(kind: string | undefined): ProjectKind | undefined {
   return k.data;
 }
 
-export async function projects(client: ColoniaClient, [sub, arg, ...more]: string[], o: ProjectFlags = {}): Promise<void> {
+export async function projects(
+  client: ColoniaClient,
+  [sub, arg, ...more]: string[],
+  o: ProjectFlags = {},
+): Promise<void> {
   if (!sub || sub === "list") {
     const { projects } = await client.call("projects.list", {});
     for (const p of projects) {
@@ -454,5 +458,6 @@ export async function skills(
     console.log(
       `${s.name.padEnd(32)} ${placeOf(s).padEnd(8)} ${s.on ? "   " : "off"} ${s.description.slice(0, 90)}${s.copies.length ? ` (also in ${s.copies.map((c) => c.source).join(", ")})` : ""}`,
     );
-  if (!r.skills.length) console.log("(no skills: add folders with a SKILL.md under ~/.colonia/v2/skills or .apc/skills)");
+  if (!r.skills.length)
+    console.log("(no skills: add folders with a SKILL.md under ~/.colonia/v2/skills or .apc/skills)");
 }

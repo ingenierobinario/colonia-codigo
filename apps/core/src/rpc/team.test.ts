@@ -60,7 +60,11 @@ test("install: the team keeps its shape, its lead hangs under the orchestrator, 
   const before = fs.readFileSync(path.join(repo, ".apc", "agents", "boss.md"), "utf8");
   const r = await env.client.call("agents.install", {
     project_id: project,
-    templates: ["colonia:product-team:orchestrator", "colonia:product-team:qa-engineer", "colonia:product-team:security"],
+    templates: [
+      "colonia:product-team:orchestrator",
+      "colonia:product-team:qa-engineer",
+      "colonia:product-team:security",
+    ],
     hang_under: "boss",
   });
   assert.deepEqual(r.skipped, []);
@@ -212,7 +216,10 @@ test("install: an executive comes with its routines, on, in the project; install
       ["cfo", "finance"],
     ],
   );
-  const again = await env.client.call("agents.install", { project_id: project, templates: ["colonia:executive-team:ceo"] });
+  const again = await env.client.call("agents.install", {
+    project_id: project,
+    templates: ["colonia:executive-team:ceo"],
+  });
   assert.equal(again.routines.length, 0);
   const listed = (await env.client.call("routines.list", {})).routines.filter((x) => x.agent_id === ceoId);
   assert.equal(listed.length, 2);

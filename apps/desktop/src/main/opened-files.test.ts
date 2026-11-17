@@ -7,7 +7,13 @@ import { openedIn, openedQueue, readOpened } from "./opened-files.ts";
 
 test("only Colonia files that exist count among a launch's arguments, flags and other files never", () => {
   const exists = (p: string) => !p.includes("missing");
-  const argv = ["/Applications/Colonia.app/x", "--colonia-adopt-local", "~/work/Pantry.COLONIAART", "notes.txt", "missing.coloniaext"];
+  const argv = [
+    "/Applications/Colonia.app/x",
+    "--colonia-adopt-local",
+    "~/work/Pantry.COLONIAART",
+    "notes.txt",
+    "missing.coloniaext",
+  ];
   assert.deepEqual(openedIn(argv, exists), [path.resolve("~/work/Pantry.COLONIAART")]);
 });
 

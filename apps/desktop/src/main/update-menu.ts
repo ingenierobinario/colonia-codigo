@@ -61,8 +61,8 @@ const words = (es: boolean, platform: string) => ({
         ? `Colonia te muestra el fichero de Colonia ${v}. Cierra Colonia y ábrelo.`
         : `Colonia shows you the new file for Colonia ${v}. Close Colonia and open it.`
       : es
-      ? `Se abrió Colonia ${v}: arrástralo a Aplicaciones, reemplazando este, y ábrelo de nuevo.`
-      : `Colonia ${v} opened: drag it into Applications, replacing this one, and open it again.`,
+        ? `Se abrió Colonia ${v}: arrástralo a Aplicaciones, reemplazando este, y ábrelo de nuevo.`
+        : `Colonia ${v} opened: drag it into Applications, replacing this one, and open it again.`,
   ok: es ? "Aceptar" : "OK",
   // Why this Mac app cannot update itself, and the one thing that fixes it.
   moveFirst: (place: BundlePlace | undefined) =>
@@ -114,8 +114,7 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
   /** Restarting quits Colonia; an answer back means it could not, and the owner is told why. */
   async function restart(): Promise<void> {
     const r = await updater.restart();
-    if (!r.ok)
-      await box({ type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
+    if (!r.ok) await box({ type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
   }
 
   async function update(version: string): Promise<void> {

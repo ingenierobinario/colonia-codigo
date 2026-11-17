@@ -12,11 +12,7 @@ const rank = (ip: string): number => {
 };
 
 export function thisComputer(
-  d: {
-    hostname?: () => string;
-    interfaces?: () => NodeJS.Dict<os.NetworkInterfaceInfo[]>;
-    platform?: string;
-  } = {},
+  d: { hostname?: () => string; interfaces?: () => NodeJS.Dict<os.NetworkInterfaceInfo[]>; platform?: string } = {},
 ): ThisComputer {
   const ifaces = (d.interfaces ?? os.networkInterfaces)();
   const found = Object.values(ifaces)

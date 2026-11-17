@@ -66,7 +66,9 @@ test("a daemon installed from a bundle offers the newer release by its version",
   await expect(dialog.getByText("Listo. Reinicia Colonia para usar la versión nueva.")).toBeVisible();
 });
 
-test("a browser on the desktop app's core says a newer Colonia is out, and to update it from the app", async ({ page }) => {
+test("a browser on the desktop app's core says a newer Colonia is out, and to update it from the app", async ({
+  page,
+}) => {
   await answer(page, "system.updates", (r) => ({
     ...r,
     source: "app",
@@ -140,7 +142,9 @@ test("the desktop app downloads its newer version, then asks to restart now", as
   await expect(dialog.getByText(/Salió Colonia 9\.1\.0 \(esta app es la 9\.0\.0\)/)).toBeVisible();
   await expect(dialog.getByText("feat: app updates")).toBeVisible();
   await dialog.getByRole("button", { name: "Actualizar ahora" }).click();
-  await expect(dialog.getByText("Colonia 9.1.0 ya está descargada y lista. Reinicia Colonia para usarla.")).toBeVisible();
+  await expect(
+    dialog.getByText("Colonia 9.1.0 ya está descargada y lista. Reinicia Colonia para usarla."),
+  ).toBeVisible();
   await expect(dialog.getByText("Si eliges más tarde, se instala cuando salgas de Colonia.")).toBeVisible();
   await dialog.getByRole("button", { name: "Reiniciar ahora" }).click();
   await expect(dialog.getByText("Reiniciando Colonia con la versión nueva…")).toBeVisible();
@@ -158,7 +162,9 @@ test("later: the dialog closes and the pill offers the restart", async ({ page }
   await expect(dialog).toBeHidden();
   await page.reload();
   await page.getByRole("button", { name: "Colonia 9.1.0 · Reiniciar" }).click();
-  await expect(dialog.getByText("Colonia 9.1.0 ya está descargada y lista. Reinicia Colonia para usarla.")).toBeVisible();
+  await expect(
+    dialog.getByText("Colonia 9.1.0 ya está descargada y lista. Reinicia Colonia para usarla."),
+  ).toBeVisible();
   await dialog.getByRole("button", { name: "Reiniciar ahora" }).click();
   expect(await count(page, "installs")).toBe(1);
   expect(await count(page, "restarts")).toBe(1);

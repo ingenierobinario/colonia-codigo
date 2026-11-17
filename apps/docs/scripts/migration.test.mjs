@@ -13,7 +13,10 @@ test("every built documentation page has a legacy redirect and a canonical new a
   for (const prefix of ["", "es/"]) {
     const entries = await readdir(new URL(`${prefix}docs/`, dist), { recursive: true });
     for (const file of entries.filter((entry) => entry.endsWith("index.html") && entry !== "index.html")) {
-      const route = `${prefix}docs/${file.split(sep).join("/").replace(/index\.html$/, "")}`;
+      const route = `${prefix}docs/${file
+        .split(sep)
+        .join("/")
+        .replace(/index\.html$/, "")}`;
       const html = await readFile(new URL(`${route}index.html`, dist), "utf8");
       const canonical = new URL(`${base}/${route}`, site).href;
       assert.ok(html.includes(`rel="canonical" href="${canonical}"`), route);

@@ -3,10 +3,10 @@ import { test } from "node:test";
 import { createElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
-  ColoniaProvider,
   Badge,
   Button,
   Calendar,
+  ColoniaProvider,
   dayString,
   EmptyState,
   Field,

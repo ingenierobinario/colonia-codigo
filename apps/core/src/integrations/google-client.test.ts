@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { coloniaGoogleClient, CLIENT_FILE, clientFromJson, clientFromPair } from "./google-client.ts";
+import { CLIENT_FILE, clientFromJson, clientFromPair, coloniaGoogleClient } from "./google-client.ts";
 
 const want = { clientId: "123-abc.apps.googleusercontent.com", clientSecret: "public-by-design" };
 

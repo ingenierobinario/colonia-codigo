@@ -41,17 +41,15 @@ export function DesktopSection() {
   const inApp = Boolean(window.coloniaDesktop?.applyDesktopPrefs);
 
   useEffect(() => {
-    void client
-      .call("desktop.get", {})
-      .then(setPrefs, () =>
-        setPrefs({
-          shortcut: "Alt+Space",
-          launch_at_login: true,
-          computer_use: false,
-          keep_awake: true,
-          computer_mode: "ask",
-        }),
-      );
+    void client.call("desktop.get", {}).then(setPrefs, () =>
+      setPrefs({
+        shortcut: "Alt+Space",
+        launch_at_login: true,
+        computer_use: false,
+        keep_awake: true,
+        computer_mode: "ask",
+      }),
+    );
   }, []);
 
   const save = async (next: Prefs) => {

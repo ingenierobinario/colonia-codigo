@@ -154,7 +154,8 @@ export const noticeEs: Record<NoticeKey, string> = {
   "notice.engine.fallback.title": "Cambió de modelo",
   "notice.thread.compacted":
     "Se resumieron los turnos anteriores para que el contexto de este chat sea más chico. No se empezó nada nuevo.",
-  "notice.task.stalled": "No había nada corriendo en esta tarea: Colonia le pidió al agente que siga o diga qué espera.",
+  "notice.task.stalled":
+    "No había nada corriendo en esta tarea: Colonia le pidió al agente que siga o diga qué espera.",
   "notice.pairing.request": "Alguien nuevo quiere hablar por un canal: apruébalo en Configuración › Canales.",
 };
 

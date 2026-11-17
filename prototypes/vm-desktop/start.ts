@@ -12,7 +12,8 @@ if (process.platform !== "darwin" || process.arch !== "arm64")
 const runtime = process.argv[2]
   ? path.resolve(process.argv[2])
   : path.join(os.homedir(), ".colonia/v2/labs/colonia-vm-lab-demo");
-if (!path.basename(runtime).startsWith("colonia-vm-lab-")) throw new Error("Use a dedicated colonia-vm-lab-* runtime folder");
+if (!path.basename(runtime).startsWith("colonia-vm-lab-"))
+  throw new Error("Use a dedicated colonia-vm-lab-* runtime folder");
 const limaHome = path.join(runtime, "lima");
 if (limaHome.length > 60) throw new Error("Use a shorter runtime path for Lima's SSH sockets");
 fs.mkdirSync(runtime, { recursive: true, mode: 0o700 });

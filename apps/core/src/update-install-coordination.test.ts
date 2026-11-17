@@ -22,7 +22,10 @@ for (const corrupt of [false, true]) {
       .update(corrupt ? "wrong package" : archive)
       .digest("hex");
     const assets = (v: string) =>
-      [`colonia-core-${v}-linux-x64.tar.gz`, `Colonia-${v}-linux-x64.AppImage`].flatMap((name) => [name, `${name}.sha256`]);
+      [`colonia-core-${v}-linux-x64.tar.gz`, `Colonia-${v}-linux-x64.AppImage`].flatMap((name) => [
+        name,
+        `${name}.sha256`,
+      ]);
     const fetchImpl: typeof fetch = async (input) => {
       const url = String(input);
       if (url.includes("/releases?"))

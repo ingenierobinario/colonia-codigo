@@ -43,7 +43,10 @@ test("on Linux the hint gives ffmpeg's command for the distribution, and whisper
     assert.match(hint, /^brew install whisper-cpp, and /);
     assert.match(hint, /or use a cloud service instead$/);
   }
-  assert.equal(installHint("linux", ""), "brew install whisper-cpp ffmpeg (Homebrew on Linux); or use a cloud service instead");
+  assert.equal(
+    installHint("linux", ""),
+    "brew install whisper-cpp ffmpeg (Homebrew on Linux); or use a cloud service instead",
+  );
 });
 
 test("installing downloads the model in the background with its progress, then sets it up; a cut download is dropped", async () => {

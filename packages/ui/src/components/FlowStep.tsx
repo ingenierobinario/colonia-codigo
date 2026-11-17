@@ -66,7 +66,9 @@ export function FlowStep({
       </span>
       <span className="colonia-flowstep__title">{title}</span>
       {detail !== undefined && (
-        <span className={cx("colonia-flowstep__detail", detailPlain && "colonia-flowstep__detail--plain")}>{detail}</span>
+        <span className={cx("colonia-flowstep__detail", detailPlain && "colonia-flowstep__detail--plain")}>
+          {detail}
+        </span>
       )}
       {children}
     </div>

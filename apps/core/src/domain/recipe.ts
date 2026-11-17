@@ -30,7 +30,8 @@ export type Recipe = { name: string; description: string; goal: string; mode: Re
 const KEYS = ["goal", "target", "input", "check"] as const;
 const STEPS_MAX = 80;
 /** Una línea, sin lo que rompería el formato. */
-const line = (v: unknown, max = 200) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max).trim() : "");
+const line = (v: unknown, max = 200) =>
+  typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max).trim() : "";
 const kept = (v: unknown, max?: number) => {
   const s = line(v, max);
   return s && !unsafe(s) ? s : "";
@@ -175,7 +176,11 @@ export function parseRecipe(text: string): Recipe | undefined {
     if (f && last) last[f[1] as (typeof KEYS)[number]] = (f[2] as string).trim();
   }
   if (!steps.length) return undefined;
-  const title = lines.find((l) => l.startsWith("# "))?.slice(2).trim() ?? "";
+  const title =
+    lines
+      .find((l) => l.startsWith("# "))
+      ?.slice(2)
+      .trim() ?? "";
   return {
     name,
     description: (textField(fields.description) ?? "").replace(/\s+/g, " ").trim(),

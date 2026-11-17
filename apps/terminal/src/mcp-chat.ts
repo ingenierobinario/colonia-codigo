@@ -23,7 +23,8 @@ async function answerOf(client: ColoniaClient, thread: string, runId: string, un
         run.end_reason === "step_limit" ? "(It ran out of steps: a progress report, not a final result.)\n" : "";
       return run.state === "completed" ? `${cut}${words || "(no answer)"}` : `The run ${run.state}: ${run.error ?? ""}`;
     }
-    if (run?.state === "input-required") return `Waiting for the owner to approve something in Colonia (thread ${thread}).`;
+    if (run?.state === "input-required")
+      return `Waiting for the owner to approve something in Colonia (thread ${thread}).`;
     if (Date.now() > until) return `Still working; read it later with colonia_read (thread ${thread}).`;
     await new Promise((r) => setTimeout(r, POLL_MS));
   }
@@ -32,7 +33,10 @@ async function answerOf(client: ColoniaClient, thread: string, runId: string, un
 export function registerChatTools(server: McpServer, client: ColoniaClient): void {
   server.registerTool(
     "colonia_agents",
-    { description: "List the agents in Colonia (id, name, role, project) you can ask with colonia_ask.", inputSchema: {} },
+    {
+      description: "List the agents in Colonia (id, name, role, project) you can ask with colonia_ask.",
+      inputSchema: {},
+    },
     async () => {
       try {
         const { agents } = await client.call("agents.list", {});

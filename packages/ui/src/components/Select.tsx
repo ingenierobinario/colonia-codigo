@@ -52,7 +52,13 @@ export function Select({
   const current = options.find((o) => o.value === value);
   const groups = [...new Set(options.map((o) => o.group ?? ""))];
   const item = (o: SelectOption) => (
-    <BaseSelect.Item key={o.value} value={o.value} disabled={o.disabled} title={o.title} className="colonia-menu__item colonia-select__item">
+    <BaseSelect.Item
+      key={o.value}
+      value={o.value}
+      disabled={o.disabled}
+      title={o.title}
+      className="colonia-menu__item colonia-select__item"
+    >
       {o.icon && <span className="colonia-select__icon">{o.icon}</span>}
       {o.description ? (
         <span className="colonia-select__lines">
@@ -78,10 +84,19 @@ export function Select({
     >
       <BaseSelect.Trigger
         aria-label={label}
-        className={cx("colonia-field", `colonia-field--${size}`, "colonia-select", disabled && "is-disabled", className)}
+        className={cx(
+          "colonia-field",
+          `colonia-field--${size}`,
+          "colonia-select",
+          disabled && "is-disabled",
+          className,
+        )}
       >
         {current?.icon && <span className="colonia-select__icon">{current.icon}</span>}
-        <BaseSelect.Value className={cx("colonia-select__value", !current && "is-placeholder")} placeholder={placeholder}>
+        <BaseSelect.Value
+          className={cx("colonia-select__value", !current && "is-placeholder")}
+          placeholder={placeholder}
+        >
           {() => current?.label ?? placeholder}
         </BaseSelect.Value>
         <BaseSelect.Icon className="colonia-select__chevron">

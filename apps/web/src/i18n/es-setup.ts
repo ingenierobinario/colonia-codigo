@@ -142,7 +142,8 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.embed.retry": "Probar de nuevo",
   "setup.embed.own": "Usar otro motor",
   "setup.memory.skills": "Elegir skills por significado",
-  "setup.memory.skillsBody": "En cada mensaje entran las habilidades que encajan, y se ven como etiquetas sobre la respuesta.",
+  "setup.memory.skillsBody":
+    "En cada mensaje entran las habilidades que encajan, y se ven como etiquetas sobre la respuesta.",
   "setup.memory.compact": "Reducir los chats largos",
   "setup.memory.compactBody":
     "Las partes antiguas de una conversación pasan a un resumen. Se cambia después en Config › Memoria.",
@@ -215,7 +216,8 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
     "Este navegador no deja que el panel guarde su clave (los datos del sitio están bloqueados). Permítelo y prueba de nuevo.",
   "pair.browser": "Navegador ({os})",
   "pair.desktop": "App de escritorio",
-  "connect.heroWords": "asistente.|equipo.|secretaria.|redactor.|analista.|investigador.|community manager.|diseñadora.|socio.",
+  "connect.heroWords":
+    "asistente.|equipo.|secretaria.|redactor.|analista.|investigador.|community manager.|diseñadora.|socio.",
   "connect.pill": "Colonia",
   "connect.pillMuted": "· tu equipo de IA",
   "about.statuses":
@@ -289,7 +291,8 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "connect.move": "Ya la uso en otro ordenador",
   "connect.moveBody": "Empezamos aquí y te traes tus cosas: enlazando los dos ordenadores o con una copia.",
   "connect.elsewhere": "Conectarme a una Colonia que ya funciona en otro sitio",
-  "connect.body.later": "¿Te has equivocado? No pasa nada: se cambia cuando quieras desde el menú de tu cuenta › Cambiar conexión.",
+  "connect.body.later":
+    "¿Te has equivocado? No pasa nada: se cambia cuando quieras desde el menú de tu cuenta › Cambiar conexión.",
   "setup.welcome.question": "¿Por dónde empezamos?",
   "setup.welcome.bring": "Ya la uso en otro ordenador",
   "setup.welcome.bringBody": "Te traes tus cosas: enlazando los dos ordenadores o con una copia de seguridad.",

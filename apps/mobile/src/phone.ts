@@ -9,7 +9,11 @@ const RETRY_MS = [2000, 5000, 15000, 30000];
 
 /** Keeps a node link to the core; `photo` shows the camera to the owner. Returns a stop function. */
 export function startPhoneNode(creds: Creds, photo: PhoneDeps["photo"]): () => void {
-  const client = new ColoniaClient({ url: creds.url, token: creds.token, client: { name: "colonia-phone", version: "0.0.0" } });
+  const client = new ColoniaClient({
+    url: creds.url,
+    token: creds.token,
+    client: { name: "colonia-phone", version: "0.0.0" },
+  });
   let socket: ColoniaSocket | undefined;
   let stopped = false;
   let attempt = 0;

@@ -6,8 +6,8 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { errorMessage } from "../errors.ts";
-import type { Log } from "../log.ts";
 import { childPath } from "../harness/env.ts";
+import type { Log } from "../log.ts";
 import { findProgram } from "../programs.ts";
 
 const START_TIMEOUT_MS = 60_000;

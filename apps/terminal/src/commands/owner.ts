@@ -48,7 +48,12 @@ export async function owner(client: ColoniaClient, [sub, ...pairs]: string[]) {
   if (me.about.trim()) console.log(`\n${me.about.trim()}`);
 }
 
-export async function org(client: ColoniaClient, [sub]: string[], o: { project?: string | undefined }, read = readStdin) {
+export async function org(
+  client: ColoniaClient,
+  [sub]: string[],
+  o: { project?: string | undefined },
+  read = readStdin,
+) {
   if (sub === "help") {
     console.log(USAGE.org);
     return;

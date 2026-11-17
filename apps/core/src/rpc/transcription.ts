@@ -32,7 +32,9 @@ export function transcriptionHandlers(services: Services, installer: ModelInstal
     const download = installer.progress();
     return {
       machine: { ...m, server: Boolean(m.server) },
-      ...(!m.server || !m.ffmpeg ? { install_hint: installHint(m.platform, m.platform === "linux" ? readOsRelease() : "") } : {}),
+      ...(!m.server || !m.ffmpeg
+        ? { install_hint: installHint(m.platform, m.platform === "linux" ? readOsRelease() : "") }
+        : {}),
       recommended: recommend(m),
       models: LOCAL_MODELS.map((x) => ({ ...x, installed: installer.installed(x.id) })),
       ...(download ? { download } : {}),

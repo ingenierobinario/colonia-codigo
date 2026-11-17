@@ -37,12 +37,17 @@ const {
 // a capture missing from it falls back to the English one.
 const spanish = /(^|\/)es(\/|$)/.test(Astro.url.pathname);
 const pick = (file: string) =>
-  (spanish ? shots[`../assets/shots/${name}.es${file}.webp`] : undefined) ?? shots[`../assets/shots/${name}${file}.webp`];
+  (spanish ? shots[`../assets/shots/${name}.es${file}.webp`] : undefined) ??
+  shots[`../assets/shots/${name}${file}.webp`];
 const light = pick("");
 const dark = pick("-dark");
 // A clip of the same screen (src/assets/clips/<name>[.es][-dark].webm, with an .mp4 beside it) plays in a loop over
 // the still, which stays as its poster and is all that shows to readers who ask for reduced motion. Not in split.
-const clips = import.meta.glob<string>("../assets/clips/*.{webm,mp4}", { eager: true, query: "?url", import: "default" });
+const clips = import.meta.glob<string>("../assets/clips/*.{webm,mp4}", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
 const clipOf = (file: string) => {
   const at = (lang: string, ext: string) => clips[`../assets/clips/${name}${lang}${file}.${ext}`];
   const lang = spanish ? ".es" : ""; // sin clip .es, la página en español se queda con el póster fijo (nunca un clip en inglés)

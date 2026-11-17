@@ -34,7 +34,11 @@ export function setLaunchAtLogin(on: boolean): void {
     app.setLoginItemSettings({ openAtLogin: on, ...(process.platform === "win32" ? { args: [HIDDEN_ARG] } : {}) });
     return;
   }
-  const file = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "autostart", "colonia.desktop");
+  const file = path.join(
+    process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"),
+    "autostart",
+    "colonia.desktop",
+  );
   try {
     if (on) {
       fs.mkdirSync(path.dirname(file), { recursive: true });

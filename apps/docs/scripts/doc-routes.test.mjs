@@ -33,5 +33,8 @@ test("configurable publication base is added once before locale and docs", () =>
   assert.equal(sitePath("/colonia/docs/start/install/", "/colonia/"), "/colonia/docs/start/install/");
   assert.equal(sitePath("/compare/", "/colonia/"), "/colonia/compare/");
   assert.equal(sitePath("/colonia-extra/compare/", "/colonia/"), "/colonia/colonia-extra/compare/");
-  assert.equal(sitePath("/preview/colonia/es/start/install/", "/preview/colonia/"), "/preview/colonia/es/docs/start/install/");
+  assert.equal(
+    sitePath("/preview/colonia/es/start/install/", "/preview/colonia/"),
+    "/preview/colonia/es/docs/start/install/",
+  );
 });

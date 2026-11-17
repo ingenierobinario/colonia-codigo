@@ -3,6 +3,8 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { tempDir } from "../../../core/src/testkit/platform.ts";
+import { readServiceEnv, writeServiceEnv } from "./service.ts";
 import {
   adoptBundleApp,
   appRoot,
@@ -12,18 +14,16 @@ import {
   launchdPlist,
   lingerLine,
   serviceEnv,
+  serviceEnvFile,
   serviceNames,
   serviceOwnsHome,
   systemdDir,
   systemdProblem,
   systemdUnit,
-  serviceEnvFile,
   windowsProcessPattern,
   windowsRunCommand,
   windowsSupervisorLine,
 } from "./service-files.ts";
-import { readServiceEnv, writeServiceEnv } from "./service.ts";
-import { tempDir } from "../../../core/src/testkit/platform.ts";
 
 const spec = {
   node: "/opt/node 24/bin/node",
@@ -151,7 +151,10 @@ test("existing service entries cannot authorize control of another home", () => 
   assert.equal(serviceOwnsHome(systemdUnit(spec), "linux", "/data/other"), false);
   assert.equal(serviceOwnsHome(launchdPlist(spec), "darwin", home), true);
   assert.equal(serviceOwnsHome(launchdPlist(spec), "darwin", "/data/other"), false);
-  assert.match(launchdPlist({ ...spec, label: "dev.colonia.core-custom" }), /<string>dev.colonia.core-custom<\/string>/);
+  assert.match(
+    launchdPlist({ ...spec, label: "dev.colonia.core-custom" }),
+    /<string>dev.colonia.core-custom<\/string>/,
+  );
   const command = windowsRunCommand({ node: "node.exe", terminal: "main.ts", home, electron: false });
   assert.equal(serviceOwnsHome(command, "win32", home), true);
   assert.equal(serviceOwnsHome(command, "win32", "/data/other"), false);

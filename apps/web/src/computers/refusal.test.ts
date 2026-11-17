@@ -14,5 +14,8 @@ test("a start refused for memory is read from the core's numbers, never from its
     undefined,
   );
   assert.equal(memoryRefusal(new Error("network down")), undefined);
-  assert.equal(memoryRefusal(new ColoniaError({ code: "conflict", message: "", detail: { reason: "memory" } })), undefined);
+  assert.equal(
+    memoryRefusal(new ColoniaError({ code: "conflict", message: "", detail: { reason: "memory" } })),
+    undefined,
+  );
 });

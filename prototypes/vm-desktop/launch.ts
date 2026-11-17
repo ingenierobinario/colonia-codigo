@@ -10,7 +10,8 @@ const root = path.resolve(import.meta.dirname, "../..");
 const runtime = path.resolve(process.argv[2] ?? "");
 const real = process.argv.includes("--real");
 const chosenModel = process.argv.find((arg) => arg.startsWith("--model="))?.slice(8) ?? "chatgpt/gpt-6.1-sol";
-if (!path.basename(runtime).startsWith("colonia-vm-lab-")) throw new Error("Pass a dedicated scratch colonia-vm-lab-* folder");
+if (!path.basename(runtime).startsWith("colonia-vm-lab-"))
+  throw new Error("Pass a dedicated scratch colonia-vm-lab-* folder");
 if (process.env.COLONIA_VM_LAB_CHILD !== runtime) {
   const empty = path.join(runtime, "empty");
   fs.mkdirSync(empty, { recursive: true });
@@ -48,7 +49,9 @@ const config = loadConfig(
     COLONIA_WHATS_NEW: "off",
     COLONIA_RUNTIME_SKILLS: "off",
     COLONIA_TELEMETRY: "off",
-    ...(!real ? { COLONIA_LLM_BASE_URL: "http://127.0.0.1:9/v1", COLONIA_LLM_KEY: "demo", COLONIA_LLM_MODELS: "vm-demo" } : {}),
+    ...(!real
+      ? { COLONIA_LLM_BASE_URL: "http://127.0.0.1:9/v1", COLONIA_LLM_KEY: "demo", COLONIA_LLM_MODELS: "vm-demo" }
+      : {}),
     COLONIA_OLLAMA_URL: "http://127.0.0.1:9",
   },
   false,

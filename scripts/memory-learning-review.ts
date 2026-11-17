@@ -67,7 +67,10 @@ const secrets = createSecrets(config.home, config.secrets);
 const login = createChatgptLogin({ secrets });
 const providers = values["providers-from-core"]
   ? (
-      await new ColoniaClient({ url: `http://127.0.0.1:${config.port}`, token: config.token }).call("providers.list", {})
+      await new ColoniaClient({ url: `http://127.0.0.1:${config.port}`, token: config.token }).call(
+        "providers.list",
+        {},
+      )
     ).providers
       .filter((p) => p.enabled)
       .map((p) => ({

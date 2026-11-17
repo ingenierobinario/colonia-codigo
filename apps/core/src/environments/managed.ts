@@ -143,7 +143,8 @@ export function managedVmConfig(store: Store, home: string, external?: ComputerC
       if (!host) throw new Error("Computer is not available on this system");
       const missing = missingPrerequisite(host, env.PATH);
       if (missing) throw new Error(missing.message);
-      if (limaHome.length > 70) throw new Error("Colonia home is too long for Lima's SSH sockets; use a shorter COLONIA_HOME");
+      if (limaHome.length > 70)
+        throw new Error("Colonia home is too long for Lima's SSH sockets; use a shorter COLONIA_HOME");
       fs.mkdirSync(root, { recursive: true, mode: 0o700 });
       fs.mkdirSync(limaHome, { recursive: true, mode: 0o700 });
       const wanted = ownerResources(store);

@@ -97,7 +97,10 @@ export function createCursor() {
 
   // VENTANA-DESTRUIDA-1: al salir Electron cierra la ventana del cursor antes de que el uso del ordenador pare.
   const live = () => (win && !win.isDestroyed() ? win : undefined);
-  const run = (js: string) => live()?.webContents.executeJavaScript(js).catch(() => {});
+  const run = (js: string) =>
+    live()
+      ?.webContents.executeJavaScript(js)
+      .catch(() => {});
 
   return {
     /** Glides the pointer to a screen point, then waits for it to land. */

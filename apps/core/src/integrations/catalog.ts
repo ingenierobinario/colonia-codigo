@@ -72,7 +72,10 @@ export const GOOGLE_INTEGRATIONS = [
     label: "Google Calendar",
     description: "Your calendar: events, free time, invitations.",
     scopes: ["https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar.readonly"],
-    coloniaScopes: ["https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar.readonly"],
+    coloniaScopes: [
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar.readonly",
+    ],
   },
   {
     id: "gmail",

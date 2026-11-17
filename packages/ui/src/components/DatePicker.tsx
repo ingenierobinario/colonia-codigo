@@ -280,7 +280,13 @@ export function DateRangePicker({
         <button
           type="button"
           aria-label={label}
-          className={cx("colonia-field", `colonia-field--${size}`, "colonia-datefield", !from && "is-placeholder", className)}
+          className={cx(
+            "colonia-field",
+            `colonia-field--${size}`,
+            "colonia-datefield",
+            !from && "is-placeholder",
+            className,
+          )}
         >
           <CalendarDays size={14} className="colonia-datefield__icon" />
           <span className="colonia-datefield__text">{text}</span>

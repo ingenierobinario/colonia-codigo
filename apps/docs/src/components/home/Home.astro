@@ -1,21 +1,21 @@
 ---
+import { HIDDEN_SECTIONS, RESERVAR_URL, type SectionId, sectionRoute } from "../../config/site";
 // La portada: un hero iluminado por el horizonte, con palabra rotatoria y la aplicación real, y luego cada sección.
 // Con `section`, la misma plantilla pinta sólo esa sección como subpágina del menú.
 import blobs from "../../data/blobs.json";
-import { HIDDEN_SECTIONS, RESERVAR_URL, sectionRoute, type SectionId } from "../../config/site";
 import { sitePath } from "../../doc-routes.mjs";
 import { HOME, type Lang } from "../../i18n/home";
 import Blob from "../Blob.astro";
-import StageDemo from "./StageDemo.astro";
-import FeatureScene from "./FeatureScene.astro";
 import BlobEyes from "../BlobEyes.astro";
-import BlackFriday from "./BlackFriday.astro";
 import BrandMark from "../BrandMark.astro";
 import OsIcon from "../OsIcon.astro";
 import UiIcon from "../UiIcon.astro";
 import PageMeta from "../web/PageMeta.astro";
 import WebFooter from "../web/WebFooter.astro";
 import WebHeader from "../web/WebHeader.astro";
+import BlackFriday from "./BlackFriday.astro";
+import FeatureScene from "./FeatureScene.astro";
+import StageDemo from "./StageDemo.astro";
 import "./home.css";
 
 interface Props {

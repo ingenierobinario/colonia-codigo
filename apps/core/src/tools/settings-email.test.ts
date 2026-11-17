@@ -196,8 +196,8 @@ test("even Total requires owner approval, and an edit during approval fails clos
     let input = "";
     await waitFor(async () => {
       input =
-        (await client.call("runs.pending", { thread: thread.id })).inputs.find((i) => i.tool === "colonia_settings")?.id ??
-        "";
+        (await client.call("runs.pending", { thread: thread.id })).inputs.find((i) => i.tool === "colonia_settings")
+          ?.id ?? "";
       return !!input;
     }, "signature owner approval");
     assert.deepEqual(await all(), [smtp, gmail]);

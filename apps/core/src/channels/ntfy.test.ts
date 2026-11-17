@@ -169,6 +169,9 @@ describe("the adapter alone", () => {
     const bad = fake.secret.replace(/tk_\w+/, "tk_wrong");
     const a = ntfyAdapter(config, bad, { dir });
     await assert.rejects(a.start(io([], new AbortController())), ChannelRefused);
-    await assert.rejects(ntfyAdapter(config, "colonia-only", { dir }).start(io([], new AbortController())), ChannelRefused);
+    await assert.rejects(
+      ntfyAdapter(config, "colonia-only", { dir }).start(io([], new AbortController())),
+      ChannelRefused,
+    );
   });
 });

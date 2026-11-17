@@ -60,7 +60,8 @@ export const es: Record<Key, string> = {
   pushNtfy: "Push por la app ntfy de este teléfono.",
   pushPending:
     "Con Colonia cerrada, los avisos necesitan push: instala la app ntfy, suscríbete a un tema propio y pega su dirección para este teléfono en Configuración › Conexiones › Dispositivos en tu ordenador.",
-  notificationsOff: "Las notificaciones están apagadas en este teléfono. Actívalas para que tus agentes te avisen aquí.",
+  notificationsOff:
+    "Las notificaciones están apagadas en este teléfono. Actívalas para que tus agentes te avisen aquí.",
   turnOnNotifications: "Activar notificaciones",
   notificationsDenied: "Notificaciones desactivadas en ajustes del sistema.",
   notificationsChecking: "Comprobando permiso de notificaciones…",
@@ -74,7 +75,8 @@ export const es: Record<Key, string> = {
   setQuietOn: "Silenciar en un horario",
   setQuietFrom: "Desde",
   setQuietTo: "Hasta",
-  notificationsError: "Activadas, pero el push de este teléfono no se conectó: con Colonia cerrada todavía no llega nada.",
+  notificationsError:
+    "Activadas, pero el push de este teléfono no se conectó: con Colonia cerrada todavía no llega nada.",
   notificationPreview: "Notificaciones activadas. Tus agentes pueden avisarte aquí.",
   openSettings: "Abrir ajustes",
   retry: "Reintentar",

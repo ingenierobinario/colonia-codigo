@@ -69,17 +69,34 @@ const es = {
   stageNote: "Demostración animada, con una oficina de ejemplo.",
   demo: {
     alt: "Demostración animada de Colonia: pides algo a tu secretaria y el equipo de agentes se pone a trabajar",
-    inbox: "Bandeja", tasks: "Tareas", channels: "Canales", projects: "Proyectos", project: "Tienda Acme", personal: "Personal",
-    search: "Buscar o saltar a…", tabs: ["Árbol", "Actividad", "Por chat"], today: "Hoy", role: "Secretaria · Personal",
-    placeholder: "Escribe a Nova…", working: "trabajando…",
+    inbox: "Bandeja",
+    tasks: "Tareas",
+    channels: "Canales",
+    projects: "Proyectos",
+    project: "Tienda Acme",
+    personal: "Personal",
+    search: "Buscar o saltar a…",
+    tabs: ["Árbol", "Actividad", "Por chat"],
+    today: "Hoy",
+    role: "Secretaria · Personal",
+    placeholder: "Escribe a Nova…",
+    working: "trabajando…",
     agents: [
       { name: "Vera", blob: "amatista", role: "Agente · 3", chats: ["Boletín del viernes", "Campaña de primavera"] },
       { name: "Tomás", blob: "cobalto", role: "Agente · 3", chats: ["Arreglar el pago", "Rediseño del catálogo"] },
-      { name: "Lucía", blob: "coral", role: "Agente · 4", chats: ["Lanzamiento del trimestre", "Aprobar el presupuesto"] },
+      {
+        name: "Lucía",
+        blob: "coral",
+        role: "Agente · 4",
+        chats: ["Lanzamiento del trimestre", "Aprobar el presupuesto"],
+      },
     ],
     script: [
       { from: "me", text: "¿Qué tengo pendiente hoy?" },
-      { from: "bot", text: "Tres cosas en Tienda Acme:\n1. Lucía ha preparado el plan de lanzamiento y espera tu visto bueno.\n2. Tomás tiene el arreglo del pago en revisión.\n3. Vera ha programado el boletín para el viernes a las 9:00." },
+      {
+        from: "bot",
+        text: "Tres cosas en Tienda Acme:\n1. Lucía ha preparado el plan de lanzamiento y espera tu visto bueno.\n2. Tomás tiene el arreglo del pago en revisión.\n3. Vera ha programado el boletín para el viernes a las 9:00.",
+      },
       { from: "me", text: "Dile a Lucía que miro el plan después de comer." },
       { from: "bot", text: "Hecho. Se lo he dicho a Lucía y te he puesto un aviso a las 14:00." },
     ],
@@ -350,8 +367,7 @@ const es = {
       },
       {
         question: "¿Hay que instalar algo?",
-        answer:
-          "Sí. Colonia se instala en tu ordenador con macOS, Windows o Linux.",
+        answer: "Sí. Colonia se instala en tu ordenador con macOS, Windows o Linux.",
         path: "/start/install/",
       },
       {
@@ -400,8 +416,16 @@ const es = {
         name: "Un chat de IA en el navegador",
         tag: "Para preguntas sueltas, sin nada que instalar. Colonia añade equipo, tareas y rutinas.",
         rows: [
-          ["Forma de trabajar", "Suele ser una conversación contigo cada vez", "Varios agentes con su papel, que se pasan el trabajo"],
-          ["Trabajo programado", "Depende del producto", "Rutinas que se ejecutan solas mientras Colonia esté en marcha"],
+          [
+            "Forma de trabajar",
+            "Suele ser una conversación contigo cada vez",
+            "Varios agentes con su papel, que se pasan el trabajo",
+          ],
+          [
+            "Trabajo programado",
+            "Depende del producto",
+            "Rutinas que se ejecutan solas mientras Colonia esté en marcha",
+          ],
           ["Instalación", "Normalmente ninguna", "Sí: se instala en tu ordenador"],
         ],
       },
@@ -410,7 +434,11 @@ const es = {
         name: "Un agente alojado en la nube",
         tag: "Funciona en los servidores de otro. Colonia funciona en tu ordenador.",
         rows: [
-          ["Dónde se guardan tus datos", "Normalmente en el servicio del proveedor", "En tu ordenador; la IA recibe lo que necesita cada petición"],
+          [
+            "Dónde se guardan tus datos",
+            "Normalmente en el servicio del proveedor",
+            "En tu ordenador; la IA recibe lo que necesita cada petición",
+          ],
           ["Qué IA usa", "Normalmente la que incluya el servicio", "La tuya: suscripción, clave o modelo local"],
           ["Disponibilidad", "No depende de tu ordenador", "Tu ordenador, o un servidor tuyo, debe estar encendido"],
         ],
@@ -554,9 +582,18 @@ const en: HomeText = {
   stageNote: "Animated demo, with a sample office.",
   demo: {
     alt: "Animated demo of Colonia: you ask your secretary for something and the team of agents gets to work",
-    inbox: "Inbox", tasks: "Tasks", channels: "Channels", projects: "Projects", project: "Acme Store", personal: "Personal",
-    search: "Search or jump to…", tabs: ["Tree", "Activity", "By chat"], today: "Today", role: "Secretary · Personal",
-    placeholder: "Message Nova…", working: "working…",
+    inbox: "Inbox",
+    tasks: "Tasks",
+    channels: "Channels",
+    projects: "Projects",
+    project: "Acme Store",
+    personal: "Personal",
+    search: "Search or jump to…",
+    tabs: ["Tree", "Activity", "By chat"],
+    today: "Today",
+    role: "Secretary · Personal",
+    placeholder: "Message Nova…",
+    working: "working…",
     agents: [
       { name: "Vera", blob: "amatista", role: "Agent · 3", chats: ["Friday newsletter", "Spring campaign"] },
       { name: "Tomás", blob: "cobalto", role: "Agent · 3", chats: ["Fix the checkout", "Catalog redesign"] },
@@ -564,7 +601,10 @@ const en: HomeText = {
     ],
     script: [
       { from: "me", text: "What needs my attention today?" },
-      { from: "bot", text: "Three things at Acme Store:\n1. Lucía drafted the launch plan and is waiting for your OK.\n2. Tomás has the checkout fix in review.\n3. Vera scheduled the newsletter for Friday at 9:00." },
+      {
+        from: "bot",
+        text: "Three things at Acme Store:\n1. Lucía drafted the launch plan and is waiting for your OK.\n2. Tomás has the checkout fix in review.\n3. Vera scheduled the newsletter for Friday at 9:00.",
+      },
       { from: "me", text: "Tell Lucía I'll look at the plan after lunch." },
       { from: "bot", text: "Done. I told Lucía and added a reminder for 14:00." },
     ],
@@ -835,8 +875,7 @@ const en: HomeText = {
       },
       {
         question: "Do I have to install anything?",
-        answer:
-          "Yes. Colonia installs on your macOS, Windows or Linux computer.",
+        answer: "Yes. Colonia installs on your macOS, Windows or Linux computer.",
         path: "/start/install/",
       },
       {
@@ -885,7 +924,11 @@ const en: HomeText = {
         name: "An AI chat in the browser",
         tag: "For one-off questions, nothing to install. Colonia adds a team, tasks and routines.",
         rows: [
-          ["How you work", "Usually one conversation with you at a time", "Several agents with roles, handing work to each other"],
+          [
+            "How you work",
+            "Usually one conversation with you at a time",
+            "Several agents with roles, handing work to each other",
+          ],
           ["Scheduled work", "Depends on the product", "Routines that run on their own while Colonia is running"],
           ["Installation", "Usually none", "Yes: it installs on your computer"],
         ],
@@ -895,7 +938,11 @@ const en: HomeText = {
         name: "An agent hosted in the cloud",
         tag: "It runs on someone else's servers. Colonia runs on your computer.",
         rows: [
-          ["Where your data lives", "Usually with the provider's service", "On your computer; the AI gets what each request needs"],
+          [
+            "Where your data lives",
+            "Usually with the provider's service",
+            "On your computer; the AI gets what each request needs",
+          ],
           ["Which AI it uses", "Usually the one the service includes", "Yours: subscription, key or local model"],
           ["Availability", "Does not depend on your computer", "Your computer, or a server of yours, must be on"],
         ],
@@ -903,11 +950,15 @@ const en: HomeText = {
       {
         id: "rules",
         name: "Rule-based automations",
-        tag: "\"If this, then that\". Colonia hands the work to agents that reason.",
+        tag: '"If this, then that". Colonia hands the work to agents that reason.',
         rows: [
           ["How you set it up", "You draw or define each step", "You ask in your own words"],
           ["When something changes", "The rule often needs adjusting", "The agent interprets; you review what matters"],
-          ["Predictability", "High: always does the same", "Lower: it is AI and can be wrong. That is why there are permissions"],
+          [
+            "Predictability",
+            "High: always does the same",
+            "Lower: it is AI and can be wrong. That is why there are permissions",
+          ],
         ],
       },
     ],

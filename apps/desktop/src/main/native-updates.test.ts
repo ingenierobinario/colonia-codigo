@@ -121,7 +121,9 @@ test("native updates use authenticated protocol directly without SSH or a loaded
   const url = `http://127.0.0.1:${address.port}`;
   updateCredentials(directory, encryption).write("remote-installation", "paired-device-token");
   const raw = rawUpdater();
-  const native = nativeUpdates(raw.updater, { isDestroyed: () => false } as unknown as BaseWindow, { change: async () => {} });
+  const native = nativeUpdates(raw.updater, { isDestroyed: () => false } as unknown as BaseWindow, {
+    change: async () => {},
+  });
   try {
     native.connect({ identity: "remote-installation", url, local: false });
     assert.equal(native.automatic(), false);
@@ -167,7 +169,9 @@ test("native protocol warnings respect the authenticated stable update lane", as
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
     assert.ok(address && typeof address !== "string");
-    const native = nativeUpdates(rawUpdater().updater, { isDestroyed: () => false } as unknown as BaseWindow, { change: async () => {} });
+    const native = nativeUpdates(rawUpdater().updater, { isDestroyed: () => false } as unknown as BaseWindow, {
+      change: async () => {},
+    });
     try {
       native.connect({
         identity: `lane-${lane}`,
@@ -204,7 +208,9 @@ test("credentials are identity-scoped and never persisted without OS-backed encr
 // coordinator no longer sees a local core and the update never went in on quit (2.36.17 stayed on its version).
 test("an update ready on a local core goes in on quit even after the core has been stopped", () => {
   const raw = rawUpdater();
-  const native = nativeUpdates(raw.updater, { isDestroyed: () => false } as unknown as BaseWindow, { change: async () => {} });
+  const native = nativeUpdates(raw.updater, { isDestroyed: () => false } as unknown as BaseWindow, {
+    change: async () => {},
+  });
   try {
     native.connect({ identity: "local", url: "http://127.0.0.1:1", local: true });
     const before = raw.counts().discards;

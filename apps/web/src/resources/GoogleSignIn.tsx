@@ -8,7 +8,10 @@ import { type MessageKey, useT } from "../i18n/index.ts";
 type Integration = Result<"integrations.list">["integrations"][number];
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 /** What Colonia's own sign-in leaves out (scopes Google keeps for verified security reviews). */
-const COLONIA_LIMIT: Record<string, MessageKey> = { gmail: "int.coloniaLimit.gmail", "google-drive": "int.coloniaLimit.drive" };
+const COLONIA_LIMIT: Record<string, MessageKey> = {
+  gmail: "int.coloniaLimit.gmail",
+  "google-drive": "int.coloniaLimit.drive",
+};
 /** Parts whose full use needs the owner's own client: Colonia's reaches only part of them (no paid security review). */
 const OWN_FIRST = new Set(["gmail", "google-drive"]);
 /** Signed in to with the owner's own app on that network, not with Google: no Google guide, no parts to add. */
@@ -216,7 +219,9 @@ export function GoogleSignInForm({
           />
         )}
         {client === "colonia" && <p className="int__desc">{t("int.coloniaNote")}</p>}
-        {client === "colonia" && COLONIA_LIMIT[i.id] && <p className="int__desc">{t(COLONIA_LIMIT[i.id] as MessageKey)}</p>}
+        {client === "colonia" && COLONIA_LIMIT[i.id] && (
+          <p className="int__desc">{t(COLONIA_LIMIT[i.id] as MessageKey)}</p>
+        )}
         {client === "own" &&
           (saved ? (
             <p className="int__desc">

@@ -39,7 +39,9 @@ test("Instagram helper composes once, fails closed on a recipient mismatch, and 
     const run = (args: object) =>
       page.evaluate(async (a) => {
         const helper = (
-          globalThis as unknown as { coloniaInstagramDraft: (args: object) => Promise<{ status: string; sent: boolean }> }
+          globalThis as unknown as {
+            coloniaInstagramDraft: (args: object) => Promise<{ status: string; sent: boolean }>;
+          }
         ).coloniaInstagramDraft;
         return helper(a);
       }, args);

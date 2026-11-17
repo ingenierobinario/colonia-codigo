@@ -52,7 +52,9 @@ test("past the limit it says once, in the system's language, which process takes
   w.check();
   at += 60_000;
   w.check();
-  assert.deepEqual(said, ["Colonia está usando 4.9 GB; el que más: Pestaña del navegador · shop.example.com (4.9 GB)."]);
+  assert.deepEqual(said, [
+    "Colonia está usando 4.9 GB; el que más: Pestaña del navegador · shop.example.com (4.9 GB).",
+  ]);
   at += 3_600_000;
   mb = 1000;
   w.check();

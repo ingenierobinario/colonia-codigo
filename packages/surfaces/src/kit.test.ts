@@ -21,7 +21,8 @@ test("the kit tag is replaced by the kit inline, in every accepted spelling", ()
 });
 
 test("only the first kit tag runs: repeats are dropped, other scripts stay", () => {
-  const html = '<script src="/_colonia/kit@1.js"></script><script>go()</script><script src="/_colonia/kit@1.js"></script>';
+  const html =
+    '<script src="/_colonia/kit@1.js"></script><script>go()</script><script src="/_colonia/kit@1.js"></script>';
   assert.equal(inlineKit(html, KIT), `<script data-colonia-kit>${KIT}</script><script>go()</script>`);
 });
 

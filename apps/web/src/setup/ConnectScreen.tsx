@@ -1,16 +1,16 @@
 import "../styles/wizard.css";
 import { Button, Icons, Input, SegmentedControl, Spinner } from "@colonia/ui";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
-import type { SshPrompt } from "../colonia-desktop.d.ts";
 import logo from "../assets/logo.png";
+import type { SshPrompt } from "../colonia-desktop.d.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { useDesktopClass } from "../shell/desktop.ts";
 import { BuildVersion } from "./BuildVersion.tsx";
 import { ConnectTerminal, type TermLine } from "./ConnectTerminal.tsx";
 import { CrewHero } from "./CrewHero.tsx";
+import { LanguageChoice } from "./LanguageChoice.tsx";
 import { ServerReady } from "./ServerReady.tsx";
 import { StepHead } from "./StepsIntro.tsx";
-import { LanguageChoice } from "./LanguageChoice.tsx";
 
 type Via = "url" | "ssh";
 type Answer =
@@ -244,7 +244,13 @@ export function ConnectScreen() {
                       {error}
                     </span>
                   )}
-                  <button id="pick-client" type="button" className="connect__other" disabled={busy} onClick={() => setStep("client")}>
+                  <button
+                    id="pick-client"
+                    type="button"
+                    className="connect__other"
+                    disabled={busy}
+                    onClick={() => setStep("client")}
+                  >
                     <Icons.Link size={14} />
                     {t("connect.elsewhere")}
                   </button>

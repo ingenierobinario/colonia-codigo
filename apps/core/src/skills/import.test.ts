@@ -121,7 +121,11 @@ test("a zip is previewed with its notes, then only the picked skills are copied;
   ]);
   assert.equal(fs.existsSync(path.join(home, "skills", "pdf")), false, "a preview writes nothing");
 
-  const r = await env.client.call("skills.import", { source, target: "global", pick: ["pack/pdf", "pack/colonia-mcps"] });
+  const r = await env.client.call("skills.import", {
+    source,
+    target: "global",
+    pick: ["pack/pdf", "pack/colonia-mcps"],
+  });
   assert.deepEqual(
     r.imported.map((s) => [s.name, s.source]),
     [["pdf", "owner"]],

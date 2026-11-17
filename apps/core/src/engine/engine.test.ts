@@ -300,7 +300,10 @@ test("a delegation that outlives the wait comes back as a durable input and wake
   assert.deepEqual(got.runs.map((r) => r.trigger).sort(), ["a2a_result", "user"]);
   // The late result says, outside Vera's words, what Colonia saw her do: here, nothing with an effect.
   const woken = llm.calls.find((c) => String(c.messages.at(-1)?.content).includes("<delegation_result"));
-  assert.match(String(woken?.messages.at(-1)?.content), /<\/delegation_result>\nColonia recorded no action with an effect/);
+  assert.match(
+    String(woken?.messages.at(-1)?.content),
+    /<\/delegation_result>\nColonia recorded no action with an effect/,
+  );
   const card = got.messages.flatMap((m) => m.parts).find((p) => p.type === "subthread");
   assert.ok(card && card.type === "subthread" && card.state === "completed");
 });

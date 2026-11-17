@@ -8,7 +8,6 @@ import { AdvancedSection } from "./AdvancedSection.tsx";
 import { AgentsSection } from "./AgentsSection.tsx";
 import { ApiTokensSection } from "./ApiTokensSection.tsx";
 import { BackupSection } from "./BackupSection.tsx";
-import { SyncSection } from "./SyncSection.tsx";
 import { BrowserSection } from "./BrowserSection.tsx";
 import { ChannelsSection } from "./ChannelsSection.tsx";
 import { DesktopSection } from "./DesktopSection.tsx";
@@ -23,6 +22,7 @@ import { ProfileSection } from "./ProfileSection.tsx";
 import { RouterSection } from "./RouterSection.tsx";
 import { ServicesSection } from "./ServicesSection.tsx";
 import { SoundsSection } from "./SoundsSection.tsx";
+import { SyncSection } from "./SyncSection.tsx";
 
 type NavEntry = { id: ConfigSection; label: MessageKey; icon: ReactNode; soon?: boolean };
 

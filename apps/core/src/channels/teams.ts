@@ -298,7 +298,8 @@ export function teamsAdapter(
     const who = a.from;
     if (!who?.id || who.role === "bot") return { status: 200 };
     const sender = { id: who.id, name: clean(who.name) || who.id };
-    const data = a.type === "invoke" ? a.value?.action?.data?.colonia : a.type === "message" ? a.value?.colonia : undefined;
+    const data =
+      a.type === "invoke" ? a.value?.action?.data?.colonia : a.type === "message" ? a.value?.colonia : undefined;
     if (typeof data === "string" && data) {
       // Buttons only go to personal chats (the owner's confirmations), so a click counts only there.
       if (direct) io.action({ conversation, sender, data, ...(a.replyToId ? { ref: a.replyToId } : {}) });

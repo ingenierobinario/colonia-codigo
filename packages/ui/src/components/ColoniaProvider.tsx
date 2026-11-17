@@ -36,7 +36,12 @@ export function ColoniaProvider({
   const portalRef = useRef<HTMLDivElement | null>(null);
   return (
     <ColoniaContext.Provider value={{ look, mode, portalRef }}>
-      <div className={cx("colonia", fill && "colonia-fill", className)} data-colonia-look={look} data-colonia-mode={mode} style={style}>
+      <div
+        className={cx("colonia", fill && "colonia-fill", className)}
+        data-colonia-look={look}
+        data-colonia-mode={mode}
+        style={style}
+      >
         {children}
         <div ref={portalRef} className="colonia-portal" />
       </div>

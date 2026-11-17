@@ -146,7 +146,10 @@ test("total autonomy reads and changes any folder, in a chat with no project too
       assert.equal(file.input, undefined);
       assert.equal(fs.readFileSync(made, "utf8"), "from file_write\n", `in a project: ${inProject}`);
       fs.rmSync(made);
-      const colonia = await run({ name: "file_read", args: { path: path.join(env.home, "colonia.db") } }, { inProject });
+      const colonia = await run(
+        { name: "file_read", args: { path: path.join(env.home, "colonia.db") } },
+        { inProject },
+      );
       assert.match(colonia.said, /Colonia's own folder/);
     }
     assert.equal(folders(), undefined);

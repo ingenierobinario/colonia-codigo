@@ -28,7 +28,11 @@ test("the secret is the bot's login, its token with or without oauth: and the ch
     token,
     channel: "#acme_stream",
   });
-  assert.deepEqual(twitchSecret(`coloniabot ${token} acme_stream`), { login: "coloniabot", token, channel: "#acme_stream" });
+  assert.deepEqual(twitchSecret(`coloniabot ${token} acme_stream`), {
+    login: "coloniabot",
+    token,
+    channel: "#acme_stream",
+  });
   assert.deepEqual(twitchSecret("coloniabot short #acme_stream"), { login: "coloniabot", channel: "#acme_stream" });
 });
 

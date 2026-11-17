@@ -359,7 +359,9 @@ export function equipoTools(store: Team, save?: SaveShot): Tool[] {
           )
           .min(1)
           .max(SCREEN_STEPS_MAX)
-          .describe("click takes px and py (pixel of the last picture; or x and y, a screen point), key takes keys, type takes text"),
+          .describe(
+            "click takes px and py (pixel of the last picture; or x and y, a screen point), key takes keys, type takes text",
+          ),
         look: z.boolean().optional().describe("see the screen after the last step (default true)"),
       }),
       effect: "external",

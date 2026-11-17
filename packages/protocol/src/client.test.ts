@@ -191,7 +191,11 @@ test("HTTP errors preserve code, detail and retryability; malformed responses an
     });
   }
   t.mock.method(globalThis, "fetch", async () => Response.json({ ok: false }, { status: 502 }));
-  await assert.rejects(client.call("system.health", {}), { name: "ColoniaError", code: "internal", message: "HTTP 502" });
+  await assert.rejects(client.call("system.health", {}), {
+    name: "ColoniaError",
+    code: "internal",
+    message: "HTTP 502",
+  });
   t.mock.method(globalThis, "fetch", async () => new Response("not JSON"));
   await assert.rejects(client.call("system.health", {}), SyntaxError);
   const error = new TypeError("network failed");
@@ -229,7 +233,9 @@ test("derived clients retain cancellation from both their parent and their new s
   for (const cancelled of ["parent", "child"]) {
     const parent = new AbortController();
     const child = new AbortController();
-    const client = new ColoniaClient({ url: "http://core.example.com", signal: parent.signal }).withSignal(child.signal);
+    const client = new ColoniaClient({ url: "http://core.example.com", signal: parent.signal }).withSignal(
+      child.signal,
+    );
     (cancelled === "parent" ? parent : child).abort(new Error(`${cancelled} canceled`));
     await assert.rejects(client.call("system.health", {}), new RegExp(`${cancelled} canceled`));
   }
@@ -456,7 +462,11 @@ test("nodes answer inbound requests and preserve typed failures without exposing
     result: { method: "browser.tabs", params: { by: "scout" } },
   });
   for (const [error, code, message] of [
-    [new ColoniaError({ code: "bad_request", message: "Invalid tab", detail: "private" }), "bad_request", "Invalid tab"],
+    [
+      new ColoniaError({ code: "bad_request", message: "Invalid tab", detail: "private" }),
+      "bad_request",
+      "Invalid tab",
+    ],
     [new Error("Node failed"), "internal", "Node failed"],
     ["failed", "internal", "failed"],
   ] as const) {

@@ -111,10 +111,17 @@ Atiendes a los clientes de Brezo Cerámica. Breve y amable; nunca prometas una d
     carlaNote: "Fotógrafa del catálogo de la tienda.",
     supplier: "Embalajes del Norte",
     supplierNote: "Proveedor de cajas y embalaje.",
-    owe: ["Mandar a Carla la lista de fotos", "Entrega de las fotos del catálogo", "Presupuesto de las cajas de Navidad"],
+    owe: [
+      "Mandar a Carla la lista de fotos",
+      "Entrega de las fotos del catálogo",
+      "Presupuesto de las cajas de Navidad",
+    ],
     routines: [
       ["Resumen diario", "Resume las tareas abiertas: qué ha avanzado, qué está bloqueado y qué necesita a Marta."],
-      ["Boletín del viernes", "Prepara el boletín de esta semana con las novedades y mándaselo a Marta para que lo apruebe."],
+      [
+        "Boletín del viernes",
+        "Prepara el boletín de esta semana con las novedades y mándaselo a Marta para que lo apruebe.",
+      ],
       ["Cambios pendientes de revisar", "Avísame solo cuando un cambio de la web necesite revisión."],
       ["Copia de seguridad nocturna", "Copia de seguridad del catálogo"],
     ],
@@ -272,13 +279,20 @@ export function writeDemoWorld(dir: string, lang: Lang) {
   write(
     path.join(repo, ".apc", "mcps.json"),
     JSON.stringify(
-      { mcpServers: { filesystem: { command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "./src"] } } },
+      {
+        mcpServers: {
+          filesystem: { command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "./src"] },
+        },
+      },
       null,
       2,
     ),
   );
   write(path.join(repo, "README.md"), t.readme);
-  write(path.join(repo, "package.json"), JSON.stringify({ name: "brezo-ceramica", private: true, type: "module" }, null, 2));
+  write(
+    path.join(repo, "package.json"),
+    JSON.stringify({ name: "brezo-ceramica", private: true, type: "module" }, null, 2),
+  );
   write(
     path.join(repo, "src", "cart.ts"),
     "export type Item = { sku: string; price: number; qty: number };\n\nexport const total = (items: Item[]) =>\n  items.reduce((sum, i) => sum + i.price * i.qty, 0);\n",
@@ -332,7 +346,9 @@ export function writeDemoWorld(dir: string, lang: Lang) {
   return { repo, claude, codex };
 }
 
-const widgetSales = (lang: Lang) => `<!doctype html><html><body style="margin:0;font:14px system-ui;color:#111;padding:14px">
+const widgetSales = (
+  lang: Lang,
+) => `<!doctype html><html><body style="margin:0;font:14px system-ui;color:#111;padding:14px">
 <div style="display:flex;justify-content:space-between;align-items:baseline"><b>${TEXT[lang].salesTitle}</b><span style="color:#16a34a">+18 %</span></div>
 <div style="font-size:30px;font-weight:600;margin:6px 0 10px">${lang === "es" ? "4.380 €" : "€4,380"}</div>
 <svg viewBox="0 0 280 80" width="100%" height="80"><polyline fill="none" stroke="#16a34a" stroke-width="3" points="0,62 40,58 80,50 120,54 160,36 200,30 240,22 280,12"/></svg>
@@ -366,9 +382,21 @@ const widgetOrders = (lang: Lang) => {
         ["#1046", "Elena G. · Madrid", "Set of 4 mugs", "€64", "Shipped"],
       ];
   const stats = es
-    ? [["Pedidos", "14"], ["Ventas", "612 €"], ["Ticket medio", "43,70 €"], ["Por enviar", "5"]]
-    : [["Orders", "14"], ["Sales", "€612"], ["Average order", "€43.70"], ["To ship", "5"]];
-  const head = es ? ["Pedido", "Cliente", "Productos", "Importe", "Estado"] : ["Order", "Customer", "Items", "Total", "Status"];
+    ? [
+        ["Pedidos", "14"],
+        ["Ventas", "612 €"],
+        ["Ticket medio", "43,70 €"],
+        ["Por enviar", "5"],
+      ]
+    : [
+        ["Orders", "14"],
+        ["Sales", "€612"],
+        ["Average order", "€43.70"],
+        ["To ship", "5"],
+      ];
+  const head = es
+    ? ["Pedido", "Cliente", "Productos", "Importe", "Estado"]
+    : ["Order", "Customer", "Items", "Total", "Status"];
   return `<!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;font:14px system-ui;color:#1c1917;background:#fffaf5;padding:22px}
 h1{font-size:20px;margin:0 0 16px}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
@@ -400,12 +428,7 @@ export const drawerTask = (lang: Lang) => TEXT[lang].tasks[0];
 export const telegramText = (lang: Lang) => TEXT[lang].telegram;
 
 /** Fills the core: the owner, the crew, tasks, routines, notes, chats, widgets and a Telegram bot. */
-export async function seed(
-  rpc: Rpc,
-  world: { repo: string; extension: string },
-  log: (s: string) => void,
-  lang: Lang,
-) {
+export async function seed(rpc: Rpc, world: { repo: string; extension: string }, log: (s: string) => void, lang: Lang) {
   const t = TEXT[lang];
   const step = async (what: string, fn: () => Promise<unknown>) => {
     try {
@@ -523,7 +546,13 @@ export async function seed(
 
   await step("widgets", async () => {
     const thread = luciaChat || (await chat(lucia, t.luciaTitle));
-    await rpc("surfaces.show", { name: "weekly-sales", title: t.salesTitle, html: widgetSales(lang), pinned: true, thread });
+    await rpc("surfaces.show", {
+      name: "weekly-sales",
+      title: t.salesTitle,
+      html: widgetSales(lang),
+      pinned: true,
+      thread,
+    });
     await rpc("surfaces.show", {
       name: "todays-orders",
       title: t.ordersTitle,
@@ -531,7 +560,13 @@ export async function seed(
       app: true,
       thread: "home",
     });
-    await rpc("surfaces.show", { name: "launch", title: t.launchTitle, html: widgetLaunch(lang), pinned: true, thread });
+    await rpc("surfaces.show", {
+      name: "launch",
+      title: t.launchTitle,
+      html: widgetLaunch(lang),
+      pinned: true,
+      thread,
+    });
   });
   return { shop, home: home.id, lucia, tomas, ines, luciaChat };
 }

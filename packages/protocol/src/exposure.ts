@@ -35,7 +35,10 @@ export function planExposure(
 }
 
 /** Which of the three a set of settings means (a public URL is the tailnet's; a non-loopback host, the network). */
-export function accessOf(vars: { COLONIA_HOST?: string | undefined; COLONIA_PUBLIC_URL?: string | undefined }): AccessMode {
+export function accessOf(vars: {
+  COLONIA_HOST?: string | undefined;
+  COLONIA_PUBLIC_URL?: string | undefined;
+}): AccessMode {
   if (vars.COLONIA_PUBLIC_URL) return "tailscale";
   if (vars.COLONIA_HOST && !isLoopback(vars.COLONIA_HOST)) return "lan";
   return "local";

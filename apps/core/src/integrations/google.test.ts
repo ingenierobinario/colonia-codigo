@@ -77,7 +77,11 @@ test("with Colonia's own client the owner signs in without one, and each integra
   const { g, fake, vault, settings, tick } = setup({ builtin: true });
   assert.equal(g.client().builtin, true);
   const url = new URL(g.start("google-calendar", {}));
-  assert.equal(url.searchParams.get("client_id"), "colonia.apps.googleusercontent.com", "nothing typed: Colonia's client");
+  assert.equal(
+    url.searchParams.get("client_id"),
+    "colonia.apps.googleusercontent.com",
+    "nothing typed: Colonia's client",
+  );
   // Colonia's client asks for no restricted scope: Google verifies it without a security assessment.
   const coloniaGmail = new URL(g.start("gmail", {})).searchParams.get("scope") ?? "";
   assert.match(coloniaGmail, /gmail\.send/);

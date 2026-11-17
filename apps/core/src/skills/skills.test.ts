@@ -56,7 +56,10 @@ test("Colonia's own skills: named in one sentence, loaded on demand, always on, 
   // The owner's skill with the same name as one of Colonia's does not replace it.
   const dir = path.join(env.home, "skills", "colonia-mcps");
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, "SKILL.md"), "---\nname: colonia-mcps\ndescription: Edit ~/.colonia/mcps.json.\n---\n");
+  fs.writeFileSync(
+    path.join(dir, "SKILL.md"),
+    "---\nname: colonia-mcps\ndescription: Edit ~/.colonia/mcps.json.\n---\n",
+  );
   const { skills } = await env.client.call("skills.list", {});
   const colonia = skills.filter((s) => s.source === "colonia");
   assert.ok(colonia.some((s) => s.name === "colonia-mcps") && colonia.some((s) => s.name === "colonia-variables"));
@@ -64,7 +67,11 @@ test("Colonia's own skills: named in one sentence, loaded on demand, always on, 
   assert.equal(skills.filter((s) => s.name === "colonia-mcps").length, 1);
   await assert.rejects(env.client.call("skills.toggle", { name: "colonia-mcps", on: false }), /always on/);
   await assert.rejects(
-    env.client.call("skills.save", { name: "colonia-mcps", target: "global", content: "---\nname: colonia-mcps\n---\n" }),
+    env.client.call("skills.save", {
+      name: "colonia-mcps",
+      target: "global",
+      content: "---\nname: colonia-mcps\n---\n",
+    }),
     /comes with Colonia/,
   );
 
@@ -72,7 +79,10 @@ test("Colonia's own skills: named in one sentence, loaded on demand, always on, 
   await env.client.call("threads.send", { thread: t.id, text: "how do I add an MCP" });
   await env.settle(t.id);
   const system = String(llm.calls.at(-1)?.messages[0]?.content);
-  assert.match(system, /Colonia guides \(colonia-[^)]*colonia-mcps[^)]*colonia-projects[^)]*\): load_skill the right one first/);
+  assert.match(
+    system,
+    /Colonia guides \(colonia-[^)]*colonia-mcps[^)]*colonia-projects[^)]*\): load_skill the right one first/,
+  );
   assert.doesNotMatch(system, /- colonia-mcps:/, "not one catalog line each");
   const loaded = String(llm.calls.at(-1)?.messages.at(-1)?.content);
   assert.match(loaded, /colonia mcps add/);

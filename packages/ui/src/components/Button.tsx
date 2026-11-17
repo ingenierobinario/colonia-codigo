@@ -40,7 +40,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       type={type}
-      className={cx("colonia-btn", `colonia-btn--${variant}`, `colonia-btn--${size}`, fullWidth && "colonia-btn--full", className)}
+      className={cx(
+        "colonia-btn",
+        `colonia-btn--${variant}`,
+        `colonia-btn--${size}`,
+        fullWidth && "colonia-btn--full",
+        className,
+      )}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...rest}

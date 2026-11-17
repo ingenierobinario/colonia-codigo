@@ -211,7 +211,8 @@ export const enSetup = {
   "pair.noStorage": "This browser does not let the panel keep its key (site data is blocked). Allow it and try again.",
   "pair.browser": "Browser ({os})",
   "pair.desktop": "Desktop app",
-  "connect.heroWords": "assistant.|team.|secretary.|copywriter.|analyst.|researcher.|community manager.|designer.|partner.",
+  "connect.heroWords":
+    "assistant.|team.|secretary.|copywriter.|analyst.|researcher.|community manager.|designer.|partner.",
   "connect.pill": "Colonia",
   "connect.pillMuted": "· your AI team",
   "about.statuses":
@@ -285,7 +286,8 @@ export const enSetup = {
   "connect.move": "I already use it on another computer",
   "connect.moveBody": "We start here and you bring your things: by linking both computers or from a copy.",
   "connect.elsewhere": "Connect to a Colonia already running somewhere else",
-  "connect.body.later": "Picked the wrong one? No problem: change it any time from your account menu › Change connection.",
+  "connect.body.later":
+    "Picked the wrong one? No problem: change it any time from your account menu › Change connection.",
   "setup.welcome.question": "Where do we start?",
   "setup.welcome.bring": "I already use it on another computer",
   "setup.welcome.bringBody": "Bring your things: by linking both computers or from a backup.",

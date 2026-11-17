@@ -45,7 +45,11 @@ function InstallForm({ initialProject, file }: { initialProject: string; file: F
     try {
       // A light look here; the core checks the whole file when it installs it.
       const raw = JSON.parse(await file.text()) as ArtifactBundle;
-      if (raw?.format !== "colonia-artifact@1" || typeof raw.html !== "string" || typeof raw.manifest?.name !== "string")
+      if (
+        raw?.format !== "colonia-artifact@1" ||
+        typeof raw.html !== "string" ||
+        typeof raw.manifest?.name !== "string"
+      )
         throw new Error(t("artifact.installNotArtifact"));
       setBundle(raw);
       setPin(raw.manifest.kind === "app");

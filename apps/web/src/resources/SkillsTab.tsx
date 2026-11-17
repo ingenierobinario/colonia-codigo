@@ -84,7 +84,13 @@ export function SkillsTab({ projectId, query, scope, adding, setAdding, res, own
             ? [{ label: t("res.edit"), icon: <Icons.Pencil size={14} />, onSelect: () => open(true) }]
             : []),
           ...(fromApp && !s.editable
-            ? [{ label: t("res.copyToColonia"), icon: <Icons.Copy size={14} />, onSelect: () => setCopying(copyStart(s)) }]
+            ? [
+                {
+                  label: t("res.copyToColonia"),
+                  icon: <Icons.Copy size={14} />,
+                  onSelect: () => setCopying(copyStart(s)),
+                },
+              ]
             : []),
           // Colonia's own skills are always on.
           ...(s.source === "colonia"

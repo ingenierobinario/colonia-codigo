@@ -4,10 +4,17 @@
 export const CORE_ENV_FILE = "core.env";
 
 /** The only keys the file may set; anything else in it is ignored. */
-export const CORE_ENV_KEYS = ["COLONIA_HOST", "COLONIA_PORT", "COLONIA_TOKEN", "COLONIA_PUBLIC_URL", "COLONIA_ALLOWED_ORIGINS"] as const;
+export const CORE_ENV_KEYS = [
+  "COLONIA_HOST",
+  "COLONIA_PORT",
+  "COLONIA_TOKEN",
+  "COLONIA_PUBLIC_URL",
+  "COLONIA_ALLOWED_ORIGINS",
+] as const;
 export type CoreEnvKey = (typeof CORE_ENV_KEYS)[number];
 
-const HEADER = "# Colonia core settings (KEY=VALUE). Written by `colonia expose`; the process environment wins over this file.";
+const HEADER =
+  "# Colonia core settings (KEY=VALUE). Written by `colonia expose`; the process environment wins over this file.";
 
 export function parseCoreEnv(text: string): Record<string, string> {
   const vars: Record<string, string> = {};

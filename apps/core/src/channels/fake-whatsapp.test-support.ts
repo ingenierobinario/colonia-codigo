@@ -3,19 +3,12 @@
 // phone's copy of each message (sent again on request while the phone is online).
 import fs from "node:fs";
 import path from "node:path";
-import type {
-  WaContent,
-  WaKey,
-  WaLib,
-  WaMessage,
-  WaSocket,
-} from "./whatsapp.ts";
+import type { WaContent, WaKey, WaLib, WaMessage, WaSocket } from "./whatsapp.ts";
 
 const OWNER_PN = "5491100000001@s.whatsapp.net";
 const OWNER_LID = "100000000000001@lid";
 const REASON = { loggedOut: 401, restartRequired: 515, timedOut: 408 };
-const PIXEL =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+const PIXEL = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
 export type Person = { phone: string; name: string; lid?: string };
 
@@ -23,8 +16,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
   let dir = "";
   /** The platform the device presents itself as (the second field of `browser`). */
   let platform = "";
-  let sock:
-    (WaSocket & { emit(event: string, arg: unknown): void }) | undefined;
+  let sock: (WaSocket & { emit(event: string, arg: unknown): void }) | undefined;
   let seq = 0;
   let qrs = 0;
   let sockets = 0;
@@ -61,10 +53,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     const s = {
       ev: {
         on(event: string, fn: (arg: never) => void) {
-          listeners.set(event, [
-            ...(listeners.get(event) ?? []),
-            fn as (arg: unknown) => void,
-          ]);
+          listeners.set(event, [...(listeners.get(event) ?? []), fn as (arg: unknown) => void]);
         },
       },
       user: undefined as WaSocket["user"],
@@ -88,21 +77,14 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       signalRepository: {
         lidMapping: {
           getLIDForPN: async (pn: string) => lids.get(pn),
-          getPNForLID: async (lid: string) =>
-            [...lids].find(([, l]) => l === lid)?.[0],
+          getPNForLID: async (lid: string) => [...lids].find(([, l]) => l === lid)?.[0],
         },
       },
       // The phone sends one message again, found by its id under the address it came on.
       async requestPlaceholderResend(key: WaKey) {
         resendAsked.push(key);
-        const m = phone.history.find(
-          (x) => x.key.id === key.id && x.key.remoteJid === key.remoteJid,
-        );
-        if (phone.online && m)
-          setTimeout(
-            () => s.emit("messages.upsert", { type: "notify", messages: [m] }),
-            5,
-          );
+        const m = phone.history.find((x) => x.key.id === key.id && x.key.remoteJid === key.remoteJid);
+        if (phone.online && m) setTimeout(() => s.emit("messages.upsert", { type: "notify", messages: [m] }), 5);
         return `PDO-${++seq}`;
       },
       async fetchMessageHistory(count: number, key: WaKey, ms: number) {
@@ -125,11 +107,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     };
     return s;
   };
-  const echo = (
-    id: string,
-    jid: string,
-    content: Record<string, unknown>,
-  ): WaMessage => ({
+  const echo = (id: string, jid: string, content: Record<string, unknown>): WaMessage => ({
     key: { id, remoteJid: jid, fromMe: true },
     message: {
       conversation: typeof content.text === "string" ? content.text : undefined,
@@ -175,10 +153,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       return { state: {}, saveCreds };
     },
     async downloadMediaMessage(m) {
-      return Buffer.from(
-        (m.message as WaContent & { bytes?: string })?.bytes ?? "",
-        "base64",
-      );
+      return Buffer.from((m.message as WaContent & { bytes?: string })?.bytes ?? "", "base64");
     },
     async fetchLatestBaileysVersion() {
       return { version: [2, 3000, 0] };
@@ -342,9 +317,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
     /** Their phone tells how far one of our sends got: 3 on their device, 4 read. */
     receipt(id: string, status: number) {
       const to = sent.find((x) => x.id === id)?.jid;
-      sock?.emit("messages.update", [
-        { key: { id, remoteJid: to, fromMe: true }, update: { status } },
-      ]);
+      sock?.emit("messages.update", [{ key: { id, remoteJid: to, fromMe: true }, update: { status } }]);
     },
     /** Someone comes online or leaves (`last` in seconds), as WhatsApp tells a device that asked. */
     presence(jid: string, type: "available" | "unavailable", last?: number) {
@@ -367,10 +340,7 @@ export function fakeWhatsApp(owner = OWNER_PN) {
       const m = phone.history.find((x) => x.key.id === id);
       if (m) m.message = content as WaContent;
     },
-    textsTo: (jid: string) =>
-      sent
-        .filter((s) => s.jid === jid)
-        .map((s) => String(s.content.text ?? "")),
+    textsTo: (jid: string) => sent.filter((s) => s.jid === jid).map((s) => String(s.content.text ?? "")),
     loggedOut,
   };
 }

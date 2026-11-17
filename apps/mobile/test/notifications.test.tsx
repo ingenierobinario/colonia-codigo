@@ -213,7 +213,11 @@ test("denied notification permission schedules nothing and a silent preview has 
   await notificationPreview();
   expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith(
     expect.objectContaining({
-      content: expect.objectContaining({ title: "Colonia", sound: false, data: { source: "colonia-live", sound: false } }),
+      content: expect.objectContaining({
+        title: "Colonia",
+        sound: false,
+        data: { source: "colonia-live", sound: false },
+      }),
     }),
   );
 });

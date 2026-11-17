@@ -16,10 +16,14 @@ export const ffmpegFrame: FrameMaker = (video, out) =>
   new Promise((resolve, reject) => {
     // Seeking before -i is fast; 0.5 s skips a black first frame and still fits the shortest clip.
     const args = ["-hide_banner", "-loglevel", "error", "-y", "-ss", "0.5", "-i", video];
-    const p = spawn(findProgram("ffmpeg") ?? "ffmpeg", [...args, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "5", "-f", "image2", out], {
-      stdio: ["ignore", "ignore", "pipe"],
-      windowsHide: true,
-    });
+    const p = spawn(
+      findProgram("ffmpeg") ?? "ffmpeg",
+      [...args, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "5", "-f", "image2", out],
+      {
+        stdio: ["ignore", "ignore", "pipe"],
+        windowsHide: true,
+      },
+    );
     let err = "";
     const timer = setTimeout(() => p.kill("SIGKILL"), POSTER_MS);
     p.stderr.on("data", (c: Buffer) => {

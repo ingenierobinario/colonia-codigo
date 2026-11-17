@@ -47,10 +47,12 @@ export const enIngress = {
   "hooks.cloudflare": "Temporary",
   "hooks.cloudflareBody": "A free link with no account or setup. It changes every time Colonia restarts.",
   "hooks.starting": "Preparing the link… the first time takes a minute.",
-  "hooks.err.cloudflare_download": "Could not prepare the temporary link. Check your internet connection and try again.",
+  "hooks.err.cloudflare_download":
+    "Could not prepare the temporary link. Check your internet connection and try again.",
   "hooks.err.cloudflare_timeout": "The temporary link took too long. Try again in a moment.",
   "hooks.err.cloudflare_stopped": "The temporary link stopped. It starts again on its own.",
-  "hooks.err.funnelOff": "Tailscale is still publishing Colonia and could not be stopped. Open Tailscale and try again.",
+  "hooks.err.funnelOff":
+    "Tailscale is still publishing Colonia and could not be stopped. Open Tailscale and try again.",
   "hooks.err.badUrl": "Write an address that starts with https://, without anything after the domain.",
   "hooks.err.badDomain": "The reserved domain is not valid, for example acme.ngrok.app.",
   "hooks.err.generic": "try again in a moment.",

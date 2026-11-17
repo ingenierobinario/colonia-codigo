@@ -55,8 +55,8 @@ export function AddSkill(props: {
           : recipe
             ? t("res.recipe.title")
             : props.start
-            ? t(props.start.replace ? "res.useThis" : "res.copyToColonia")
-            : t("res.skill.import")
+              ? t(props.start.replace ? "res.useThis" : "res.copyToColonia")
+              : t("res.skill.import")
       }
       description={
         creating

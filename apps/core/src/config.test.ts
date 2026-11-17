@@ -21,7 +21,12 @@ test("core.env in the home supplies defaults for the exposure keys", () => {
 });
 
 test("the process environment wins over core.env, and other keys in the file are ignored", () => {
-  const c = loadConfig({ COLONIA_HOME: home, COLONIA_PORT: "7600", COLONIA_TOKEN: "from-env", COLONIA_SECRETS: "file" });
+  const c = loadConfig({
+    COLONIA_HOME: home,
+    COLONIA_PORT: "7600",
+    COLONIA_TOKEN: "from-env",
+    COLONIA_SECRETS: "file",
+  });
   assert.equal(c.port, 7600);
   assert.equal(c.token, "from-env");
   assert.equal(c.host, "0.0.0.0");

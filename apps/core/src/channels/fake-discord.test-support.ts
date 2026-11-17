@@ -88,7 +88,9 @@ export async function fakeDiscord(token: string) {
       if (f.op === 2) {
         if (f.d?.token !== token) return ws.close(4004, "Authentication failed");
         identified.push({ intents: f.d.intents ?? 0 });
-        ws.send(JSON.stringify({ op: 0, s: ++seq, t: "READY", d: { user: { id: "1", username: "colonia_test_bot" } } }));
+        ws.send(
+          JSON.stringify({ op: 0, s: ++seq, t: "READY", d: { user: { id: "1", username: "colonia_test_bot" } } }),
+        );
       }
     });
   });

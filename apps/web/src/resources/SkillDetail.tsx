@@ -1,4 +1,15 @@
-import { Badge, Button, Dialog, Icons, MarkdownView, SegmentedControl, Skeleton, Switch, Tag, Textarea } from "@colonia/ui";
+import {
+  Badge,
+  Button,
+  Dialog,
+  Icons,
+  MarkdownView,
+  SegmentedControl,
+  Skeleton,
+  Switch,
+  Tag,
+  Textarea,
+} from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { useMarkdownLabels } from "../common/useMarkdownLabels.ts";
 import { projectName } from "../data/identity.ts";

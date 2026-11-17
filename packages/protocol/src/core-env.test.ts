@@ -24,5 +24,7 @@ test("serializes in a stable order with a header and a trailing newline, and rea
 });
 
 test("only the known keys become core defaults, and empty values do not", () => {
-  assert.deepEqual(coreEnvDefaults({ COLONIA_PORT: "7500", COLONIA_HOME: "/elsewhere", COLONIA_TOKEN: "" }), { COLONIA_PORT: "7500" });
+  assert.deepEqual(coreEnvDefaults({ COLONIA_PORT: "7500", COLONIA_HOME: "/elsewhere", COLONIA_TOKEN: "" }), {
+    COLONIA_PORT: "7500",
+  });
 });

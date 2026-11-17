@@ -400,13 +400,15 @@ export function barraFirefox(
 /** La barra de marcadores de una fuente; vacía si el perfil no tiene o no se puede leer. */
 export function leerBarra(f: FuenteImportar): NodoBarra[] {
   if (f.familia === "chromium") return barraChromiumPerfil(ficherosMarcadoresChromium(f.dir));
-  const filas = consultarCopia(path.join(f.dir, "places.sqlite"), (db) =>
-    db
-      .prepare(
-        `SELECT b.id AS id, b.parent AS padre, b.type AS tipo, b.title AS titulo, b.guid AS guid, p.url AS url
+  const filas = consultarCopia(
+    path.join(f.dir, "places.sqlite"),
+    (db) =>
+      db
+        .prepare(
+          `SELECT b.id AS id, b.parent AS padre, b.type AS tipo, b.title AS titulo, b.guid AS guid, p.url AS url
          FROM moz_bookmarks b LEFT JOIN moz_places p ON p.id = b.fk ORDER BY b.parent, b.position LIMIT 20000`,
-      )
-      .all() as Array<{ id: number; padre: number; tipo: number; titulo: unknown; url: unknown; guid: unknown }>,
+        )
+        .all() as Array<{ id: number; padre: number; tipo: number; titulo: unknown; url: unknown; guid: unknown }>,
   );
   return barraFirefox(filas ?? []);
 }

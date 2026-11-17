@@ -10,7 +10,9 @@ test("un enlace del agente a Config › Escritorio es un botón que abre esa sec
   const port = (listener.address() as AddressInfo).port;
   await new Promise<void>((resolve) => listener.close(() => resolve()));
   const llm = scriptedLlm(() =>
-    say("Está apagado: lo enciendes en [Config › Escritorio](colonia:settings/desktop). [Otro lado](colonia:nowhere) no existe."),
+    say(
+      "Está apagado: lo enciendes en [Config › Escritorio](colonia:settings/desktop). [Otro lado](colonia:nowhere) no existe.",
+    ),
   );
   const env = await startCore({ port, llm });
   try {

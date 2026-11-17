@@ -114,7 +114,14 @@ export type ServiceSpec = {
  */
 export function serviceEnv(env: NodeJS.ProcessEnv): Record<string, string> {
   const out: Record<string, string> = { COLONIA_SUPERVISED: "1" };
-  for (const k of ["COLONIA_HOME", "COLONIA_APP", "COLONIA_RELEASES", "ELECTRON_RUN_AS_NODE", "COLONIA_WEB_DIST", "PATH"]) {
+  for (const k of [
+    "COLONIA_HOME",
+    "COLONIA_APP",
+    "COLONIA_RELEASES",
+    "ELECTRON_RUN_AS_NODE",
+    "COLONIA_WEB_DIST",
+    "PATH",
+  ]) {
     const v = env[k];
     if (v) out[k] = v;
   }

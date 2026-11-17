@@ -149,7 +149,11 @@ test("two accounts: the same person on each is a chat, a contact and a count of 
   await settle();
   assert.deepEqual(await texts(ANDORRA, DAN.phone), ["this is for the other number"]);
   assert.deepEqual(await texts(ANDORRA, EVA.phone), ["written from the second phone"]);
-  assert.deepEqual(await texts(SPAIN, DAN.phone), ["hello, are you there?", "second one"], "the first line's chat is as it was");
+  assert.deepEqual(
+    await texts(SPAIN, DAN.phone),
+    ["hello, are you there?", "second one"],
+    "the first line's chat is as it was",
+  );
   assert.equal((await texts(SPAIN, EVA.phone)).length, 4);
   const first = await contact(SPAIN, DAN.phone);
   const second = await contact(ANDORRA, DAN.phone);

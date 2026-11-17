@@ -37,7 +37,8 @@ export function createPrograms(d: Deps) {
       const list = JSON.parse(fs.readFileSync(d.file, "utf8"));
       return Array.isArray(list)
         ? list.filter(
-            (x): x is Program => typeof x?.id === "string" && typeof x?.name === "string" && typeof x?.path === "string",
+            (x): x is Program =>
+              typeof x?.id === "string" && typeof x?.name === "string" && typeof x?.path === "string",
           )
         : [];
     } catch {

@@ -3,7 +3,7 @@
 // It holds no zod: the core validates params and results, so a browser never downloads the schema registry.
 
 import { PROTOCOL_VERSION } from "./constants.ts";
-import type { Actor, ColoniaErrorShape, ClientRole, EventFrame, ServerFrame, WelcomeFrame } from "./frames.ts";
+import type { Actor, ClientRole, ColoniaErrorShape, EventFrame, ServerFrame, WelcomeFrame } from "./frames.ts";
 import type { MethodName, Params, Result } from "./methods.ts";
 import { secureRequestKey } from "./request-key.ts";
 

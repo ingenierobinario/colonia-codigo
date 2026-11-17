@@ -6,7 +6,15 @@ import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
 import { removeDir } from "../testkit/platform.ts";
-import { childEnv, childPath, commandEnv, useColoniaCommand, useOwnerShell, useUsualDirs, withOwnerShell } from "./env.ts";
+import {
+  childEnv,
+  childPath,
+  commandEnv,
+  useColoniaCommand,
+  useOwnerShell,
+  useUsualDirs,
+  withOwnerShell,
+} from "./env.ts";
 import type { LoginEnv } from "./login-env.ts";
 
 const run = promisify(execFile);

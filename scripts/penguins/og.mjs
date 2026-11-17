@@ -14,8 +14,20 @@ const crew = [
   ["#E5484D", "crest"],
 ];
 const TEXT = {
-  "og-es.jpg": ["Tu propio equipo de", "agentes de IA,", "en tu ordenador.", "Una secretaria y un equipo por proyecto.", "Pago único, con todo el código."],
-  "og.jpg": ["Your own team of", "AI agents,", "on your computer.", "A secretary and a team per project.", "One-time payment, full source code."],
+  "og-es.jpg": [
+    "Tu propio equipo de",
+    "agentes de IA,",
+    "en tu ordenador.",
+    "Una secretaria y un equipo por proyecto.",
+    "Pago único, con todo el código.",
+  ],
+  "og.jpg": [
+    "Your own team of",
+    "AI agents,",
+    "on your computer.",
+    "A secretary and a team per project.",
+    "One-time payment, full source code.",
+  ],
 };
 for (const [file, [a, b, c, s1, s2]] of Object.entries(TEXT)) {
   const row = crew
@@ -32,5 +44,7 @@ for (const [file, [a, b, c, s1, s2]] of Object.entries(TEXT)) {
 <text x="64" y="104" font-size="30" font-weight="700">Colonia <tspan font-size="24" font-weight="400" fill="#4b5563">· Ingeniero Binario</tspan></text>
 <g font-size="56" font-weight="700"><text x="64" y="256">${a}</text><text x="64" y="326">${b}</text><text x="64" y="396">${c}</text></g>
 <g font-size="24" fill="#374151"><text x="64" y="466">${s1}</text><text x="64" y="500">${s2}</text></g></g></svg>`;
-  await sharp(Buffer.from(svg)).jpeg({ quality: 88, mozjpeg: true }).toFile(path.join(root, "apps/docs/public", file));
+  await sharp(Buffer.from(svg))
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toFile(path.join(root, "apps/docs/public", file));
 }

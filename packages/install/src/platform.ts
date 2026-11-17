@@ -22,7 +22,11 @@ export async function installDesktopFile(
     if (!app) throw new Error("The desktop installer did not finish. Try again or open the installer manually.");
     return app;
   }
-  const destination = path.join(opts.userHome, "Applications", opts.platform === "darwin" ? "Colonia.app" : "Colonia.AppImage");
+  const destination = path.join(
+    opts.userHome,
+    "Applications",
+    opts.platform === "darwin" ? "Colonia.app" : "Colonia.AppImage",
+  );
   const staged = `${destination}.install-${randomUUID()}`;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   try {

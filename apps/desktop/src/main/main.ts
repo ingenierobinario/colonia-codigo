@@ -45,6 +45,8 @@ import { registrarContrasenas } from "./contrasenas/registro.ts";
 import { createCursor } from "./cursor.ts";
 import { editMenu } from "./edit-menu.ts";
 import { hasTrayHost, sandboxNotice, sandboxText } from "./linux-desktop.ts";
+import { logUncaught } from "./main-errors.ts";
+import { liveWindow, mainOpener, whileWindowLives } from "./main-window.ts";
 import { artifactOwners, itemName, memoryReport, memoryText, memoryWatch, size } from "./memory.ts";
 import { nativeUpdates } from "./native-updates.ts";
 import { startNodeLink } from "./node-link.ts";
@@ -55,8 +57,6 @@ import { confirmQuit } from "./quit-confirm.ts";
 import { waitOnQuit } from "./quit-wait.ts";
 import { sendTo } from "./safe-send.ts";
 import { createUpdateMenu } from "./update-menu.ts";
-import { logUncaught } from "./main-errors.ts";
-import { liveWindow, mainOpener, whileWindowLives } from "./main-window.ts";
 import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
 
 // ssh runs this same executable as its SSH_ASKPASS (askpass.ts): it answers one question and exits before the app's
@@ -726,7 +726,8 @@ app.whenReady().then(() => {
   });
   // Tests quit the app themselves (COLONIA_QUIT_CONFIRM=off); a shutdown or a logout never waits on a question.
   if (process.env.COLONIA_QUIT_CONFIRM !== "off")
-    askBeforeQuit = () => confirmQuit(liveWindow(win), { es: app.getLocale().startsWith("es"), runsCore: connector.runsCore() });
+    askBeforeQuit = () =>
+      confirmQuit(liveWindow(win), { es: app.getLocale().startsWith("es"), runsCore: connector.runsCore() });
   powerMonitor.on("shutdown", () => {
     quitting = true;
   });

@@ -76,7 +76,10 @@ const SCRIPT: Record<Lang, Array<[RegExp, string]>> = {
       /pago|cupón/i,
       "Me pongo. El campo del cupón falla cuando el carrito está vacío; el arreglo está listo y las pruebas pasan.",
     ],
-    [/boletín/i, "Borrador listo: «Tres juegos para Navidad por menos de 40 €». Programado para el viernes a las 9:00."],
+    [
+      /boletín/i,
+      "Borrador listo: «Tres juegos para Navidad por menos de 40 €». Programado para el viernes a las 9:00.",
+    ],
   ],
 };
 
@@ -102,7 +105,9 @@ function answer(messages: Message[], lang: Lang): string {
     return es ? "Una pregunta rápida" : "Quick question";
   }
   for (const [rx, text] of SCRIPT[lang]) if (rx.test(said)) return text;
-  return es ? "De acuerdo. Me encargo y te aviso cuando esté." : "Sure. I'll take care of it and let you know when it's done.";
+  return es
+    ? "De acuerdo. Me encargo y te aviso cuando esté."
+    : "Sure. I'll take care of it and let you know when it's done.";
 }
 
 /** pace: milliseconds between streamed pieces (0 for the stills; the clips use a little, so the answer is seen being written). */

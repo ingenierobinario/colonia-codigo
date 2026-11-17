@@ -36,7 +36,9 @@ for (const mode of ["light", "dark"] as const) {
       await expect(wizard.getByText("—", { exact: true })).toHaveCount(0);
       // El interruptor del consumo (un rayo sin texto) no pinta nada en una guía de bienvenida.
       await expect(wizard.locator(".engine-usage-switch")).toHaveCount(0);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(
+        0,
+      );
 
       if (!shots) return;
       fs.mkdirSync(shots, { recursive: true });
@@ -44,7 +46,10 @@ for (const mode of ["light", "dark"] as const) {
       const fold = wizard.getByText("Elegir qué modelo va primero");
       if (await fold.count()) {
         await fold.click();
-        await page.screenshot({ path: path.join(shots, `${mode[0]}${width}-setup-inteligencia-orden.png`), fullPage: true });
+        await page.screenshot({
+          path: path.join(shots, `${mode[0]}${width}-setup-inteligencia-orden.png`),
+          fullPage: true,
+        });
       }
     });
   }

@@ -17,4 +17,3 @@ test("sin cifra, vacío o borradores son 0", () => {
   assert.equal(unreadFromTitle(""), 0);
   assert.equal(unreadFromTitle("Borradores (2) - ana@gmail.com - Gmail"), 0);
 });
-

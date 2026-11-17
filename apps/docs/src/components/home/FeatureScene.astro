@@ -3,22 +3,60 @@
 // Todo se mide en em y el em sale del ancho del panel (container query), así que escalan enteras.
 import Blob from "../Blob.astro";
 
-interface Props { kind: string; lang: string; }
+interface Props {
+  kind: string;
+  lang: string;
+}
 const { kind, lang } = Astro.props;
 const es = lang !== "en";
 const team = [
-  { name: "Tomás", blob: "cobalto", role: es ? "Desarrollo" : "Developer", text: es ? "Arregla la tienda y prueba cada cambio." : "Fixes the store and tests every change." },
-  { name: "Marta", blob: "brasa", role: es ? "Atención al cliente" : "Customer desk", text: es ? "Contesta por WhatsApp y sólo te avisa si hace falta." : "Answers on WhatsApp and only pings you when needed." },
-  { name: "Vera", blob: "amatista", role: "Marketing", text: es ? "Escribe las campañas y las programa." : "Writes the campaigns and schedules them." },
+  {
+    name: "Tomás",
+    blob: "cobalto",
+    role: es ? "Desarrollo" : "Developer",
+    text: es ? "Arregla la tienda y prueba cada cambio." : "Fixes the store and tests every change.",
+  },
+  {
+    name: "Marta",
+    blob: "brasa",
+    role: es ? "Atención al cliente" : "Customer desk",
+    text: es
+      ? "Contesta por WhatsApp y sólo te avisa si hace falta."
+      : "Answers on WhatsApp and only pings you when needed.",
+  },
+  {
+    name: "Vera",
+    blob: "amatista",
+    role: "Marketing",
+    text: es ? "Escribe las campañas y las programa." : "Writes the campaigns and schedules them.",
+  },
 ] as const;
 const steps = es
-  ? [["Validar la oferta", "Vera"], ["Preparar el anuncio", "Lucía"], ["Planificar la primera entrega", "Tomás"]]
-  : [["Validate the offer", "Vera"], ["Draft the announcement", "Lucía"], ["Plan the first delivery", "Tomás"]];
+  ? [
+      ["Validar la oferta", "Vera"],
+      ["Preparar el anuncio", "Lucía"],
+      ["Planificar la primera entrega", "Tomás"],
+    ]
+  : [
+      ["Validate the offer", "Vera"],
+      ["Draft the announcement", "Lucía"],
+      ["Plan the first delivery", "Tomás"],
+    ];
 const bars = [38, 52, 44, 68, 60, 82, 94];
 const days = es ? ["L", "M", "X", "J", "V", "S", "D"] : ["M", "T", "W", "T", "F", "S", "S"];
 const chats = es
-  ? [["Telegram", "¿Sigue en pie lo del jueves?", "#2aabee"], ["WhatsApp", "Pedido 1042: ya está en camino.", "#25d366"], ["Discord", "Lista la nota de la versión.", "#5865f2"], ["Slack", "Informe semanal enviado.", "#e01e5a"]]
-  : [["Telegram", "Is Thursday still on?", "#2aabee"], ["WhatsApp", "Order 1042 is on its way.", "#25d366"], ["Discord", "Release note is ready.", "#5865f2"], ["Slack", "Weekly report sent.", "#e01e5a"]];
+  ? [
+      ["Telegram", "¿Sigue en pie lo del jueves?", "#2aabee"],
+      ["WhatsApp", "Pedido 1042: ya está en camino.", "#25d366"],
+      ["Discord", "Lista la nota de la versión.", "#5865f2"],
+      ["Slack", "Informe semanal enviado.", "#e01e5a"],
+    ]
+  : [
+      ["Telegram", "Is Thursday still on?", "#2aabee"],
+      ["WhatsApp", "Order 1042 is on its way.", "#25d366"],
+      ["Discord", "Release note is ready.", "#5865f2"],
+      ["Slack", "Weekly report sent.", "#e01e5a"],
+    ];
 ---
 <div class="fs" aria-hidden="true">
   {kind === "team" && (

@@ -647,7 +647,8 @@ export const esFlow: Record<keyof typeof enFlow, string> = {
   "flow.tables.removeColumnTitle": "¿Borrar la columna {name}?",
   "flow.tables.removeColumnBody":
     "Su valor se va de todas las filas. Los Flows que la llenan se detienen hasta que los cambies.",
-  "flow.tables.renameNote": "Los Flows que usan el nombre antiguo se detienen hasta que la elijas de nuevo en sus pasos.",
+  "flow.tables.renameNote":
+    "Los Flows que usan el nombre antiguo se detienen hasta que la elijas de nuevo en sus pasos.",
   "flow.tables.newName": "Nombre nuevo",
   "flow.tables.noColumns": "Esta tabla todavía no tiene columnas. Añade una para empezar a llenarla.",
   "flow.tables.noRows": "Todavía no hay filas.",

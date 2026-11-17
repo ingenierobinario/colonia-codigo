@@ -148,7 +148,10 @@ test("an AI step names an agent or a bot, with the permission mode of its harnes
   assert.ok(codes(ai({})).includes("ai_source"));
   assert.ok(codes(ai({ agent: "superagent", bot: { name: "B", system: "S" } })).includes("ai_source"));
   assert.ok(!codes(ai({ agent: "superagent", autonomy: "auto", delegate: true })).includes("ai_mode"));
-  assert.ok(codes(ai({ agent: "superagent", write: "auto" })).includes("ai_mode"), "Colonia's harness has no write mode");
+  assert.ok(
+    codes(ai({ agent: "superagent", write: "auto" })).includes("ai_mode"),
+    "Colonia's harness has no write mode",
+  );
   assert.ok(codes(ai({ agent: "superagent", model: "claude", autonomy: "total" })).includes("ai_mode"));
   assert.ok(codes(ai({ agent: "superagent", model: "codex", delegate: true })).includes("ai_mode"));
   assert.ok(!codes(ai({ agent: "superagent", model: "claude/opus", write: "read-only" })).includes("ai_mode"));

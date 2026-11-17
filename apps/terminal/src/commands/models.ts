@@ -16,7 +16,11 @@ function parseChoice(arg: string | undefined, router: boolean): ModelChoice | nu
   return { model: arg, router };
 }
 
-export async function models(client: ColoniaClient, [sub, ...args]: string[], o: { refresh?: boolean; router?: boolean }) {
+export async function models(
+  client: ColoniaClient,
+  [sub, ...args]: string[],
+  o: { refresh?: boolean; router?: boolean },
+) {
   if (!sub || sub === "list") {
     const { engines } = await client.call("models.list", { refresh: o.refresh ?? false });
     for (const e of engines) {
@@ -133,7 +137,8 @@ export async function agentEdit(
     return;
   }
   if (sub === "clone") {
-    if (!args.length) throw new Error("usage: colonia agents clone <agent…> [--project <id>] [--rename] [--under <slug>]");
+    if (!args.length)
+      throw new Error("usage: colonia agents clone <agent…> [--project <id>] [--rename] [--under <slug>]");
     const r = await client.call("agents.clone", {
       agents: args,
       rename: o.rename ?? false,

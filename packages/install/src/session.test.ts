@@ -6,7 +6,8 @@ test("a user service borrows only graphical settings, never another Colonia targ
   const env = desktopSessionEnv(
     "linux",
     { COLONIA_HOME: "/selected" },
-    () => "DISPLAY=:1\nWAYLAND_DISPLAY=wayland-0\nXDG_RUNTIME_DIR=/run/user/1000\nCOLONIA_HOME=/other\nCOLONIA_TOKEN=outside\n",
+    () =>
+      "DISPLAY=:1\nWAYLAND_DISPLAY=wayland-0\nXDG_RUNTIME_DIR=/run/user/1000\nCOLONIA_HOME=/other\nCOLONIA_TOKEN=outside\n",
   );
   assert.equal(env.DISPLAY, ":1");
   assert.equal(env.WAYLAND_DISPLAY, "wayland-0");

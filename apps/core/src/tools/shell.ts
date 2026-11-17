@@ -307,7 +307,8 @@ export function shellTools(
         const { base, at: cwd } = where;
         const limit = a.background ? (a.timeout_s ?? BACKGROUND_S) : Math.min(a.timeout_s ?? 120, 600);
         // Colonia's own home (database, secrets index, job logs) is never an agent's to read or change.
-        if (namesColoniaHome(a.command, home, ctx.thread.project_id)) return "refused: Colonia's own folder is off limits";
+        if (namesColoniaHome(a.command, home, ctx.thread.project_id))
+          return "refused: Colonia's own folder is off limits";
         if (cwd === base) fs.mkdirSync(base, { recursive: true });
         else if (!fs.existsSync(cwd)) return `${a.cwd} does not exist`;
         const r = await ctx.runCommand({

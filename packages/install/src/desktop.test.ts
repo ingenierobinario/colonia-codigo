@@ -199,7 +199,9 @@ test("download errors, absent checksums and oversized payloads remain retryable 
           return Response.json([
             {
               tag_name: "v2.9.1",
-              assets: [{ name: "Colonia-2.9.1-linux-x64.AppImage", browser_download_url: "https://releases.example/app" }],
+              assets: [
+                { name: "Colonia-2.9.1-linux-x64.AppImage", browser_download_url: "https://releases.example/app" },
+              ],
             },
           ]);
         if (failure === "size" && !String(input).includes("/releases?") && !String(input).endsWith(".sha256"))

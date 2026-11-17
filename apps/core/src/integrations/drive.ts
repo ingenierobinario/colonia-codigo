@@ -110,7 +110,9 @@ export function driveApi(g: Google) {
       const as = EXPORTS[mime];
       const textual = mime.startsWith("text/") || /json|xml|csv|markdown|yaml/.test(mime);
       if (!as && !textual)
-        throw new Error(`${file.name} is a ${mime || "binary"} file Colonia cannot read as text; open ${file.link ?? id}`);
+        throw new Error(
+          `${file.name} is a ${mime || "binary"} file Colonia cannot read as text; open ${file.link ?? id}`,
+        );
       const text = await g.call<string>(ID, as ? `${fileUrl(id)}/export` : fileUrl(id), {
         query: as ? { mimeType: as } : { alt: "media", supportsAllDrives: true },
         text: true,

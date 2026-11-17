@@ -206,21 +206,33 @@ if (process.env.SHOTS_SERVE) {
 type Shot = { name: string; go: (p: Page) => Promise<void>; phone?: boolean; clip?: "dialog" };
 const at = (hash: string) => async (p: Page) => {
   await p.goto(`${core}/#${hash}`);
-  await p.getByRole("button", { name: tr("nav.inbox") }).first().waitFor();
+  await p
+    .getByRole("button", { name: tr("nav.inbox") })
+    .first()
+    .waitFor();
 };
 const settings = (key: string) => async (p: Page) => {
   await at("thread=home")(p);
   await p.keyboard.press("ControlOrMeta+Comma");
   const dialog = p.getByRole("dialog", { name: tr("config.title") });
   // The shortcut may not reach the panel; Settings also opens from the account menu (bottom left).
-  if (!(await dialog.waitFor({ timeout: 5_000 }).then(() => true, () => false))) {
+  if (
+    !(await dialog.waitFor({ timeout: 5_000 }).then(
+      () => true,
+      () => false,
+    ))
+  ) {
     await p
       .getByRole("button", { name: new RegExp(`^${esc(tr("account.menuOf", { name: "" }).trim())}`) })
       .first()
       .click();
     await p.getByText(tr("config.title"), { exact: true }).first().click();
   }
-  await dialog.getByRole("navigation").getByRole("button", { name: tr(key), exact: true }).first().click();
+  await dialog
+    .getByRole("navigation")
+    .getByRole("button", { name: tr(key), exact: true })
+    .first()
+    .click();
 };
 const project = (tab: string) => at(`project=${ids.shop}&tab=${tab}`);
 const resources = (key: string) => async (p: Page) => {
@@ -326,7 +338,11 @@ const SHOTS: Shot[] = [
     name: "app-widget",
     go: async (p) => {
       await at("thread=home")(p);
-      await p.getByRole("complementary").getByRole("button", { name: ordersTitle(lang) }).first().click();
+      await p
+        .getByRole("complementary")
+        .getByRole("button", { name: ordersTitle(lang) })
+        .first()
+        .click();
       // The widget draws its figures on load and marks body[data-state] when it's done.
       await p.frameLocator("iframe").first().locator("body[data-state]").waitFor({ timeout: 20_000 });
     },
@@ -340,7 +356,10 @@ const SHOTS: Shot[] = [
         .getByRole("button", { name: new RegExp(`^${esc(tr("account.menuOf", { name: "" }).trim())}`) })
         .first()
         .click();
-      await p.getByRole("menuitem", { name: tr("phone.open"), exact: true }).first().click();
+      await p
+        .getByRole("menuitem", { name: tr("phone.open"), exact: true })
+        .first()
+        .click();
     },
   },
   { name: "wizard-welcome", go: firstRun },
@@ -357,13 +376,16 @@ const SHOTS: Shot[] = [
 
 const browser = await chromium.launch({ executablePath: process.env.SHOTS_CHROMIUM || undefined });
 const prefs = async (p: Page, mode: "light" | "dark") =>
-  p.addInitScript(([mode, language]) => {
-    try {
-      localStorage.setItem("colonia.mode", mode);
-      localStorage.setItem("colonia.prefs", JSON.stringify({ language, look: "minimal", displayName: "Marta" }));
-      localStorage.setItem("colonia.corner", JSON.stringify({ discord: true, star: true }));
-    } catch {}
-  }, [mode, lang] as const);
+  p.addInitScript(
+    ([mode, language]) => {
+      try {
+        localStorage.setItem("colonia.mode", mode);
+        localStorage.setItem("colonia.prefs", JSON.stringify({ language, look: "minimal", displayName: "Marta" }));
+        localStorage.setItem("colonia.corner", JSON.stringify({ discord: true, star: true }));
+      } catch {}
+    },
+    [mode, lang] as const,
+  );
 // The demo lives in a temp folder; it shows the way a reader's own one would, under ~ (kept so across re-renders).
 const tidyPaths = (p: Page) =>
   p.addInitScript(
@@ -441,7 +463,11 @@ const cursor = (p: Page) =>
         transition: "scale .12s",
       });
       document.documentElement.appendChild(c);
-      addEventListener("mousemove", (e) => (c.style.transform = `translate(${e.clientX - 3}px,${e.clientY - 2}px)`), true);
+      addEventListener(
+        "mousemove",
+        (e) => (c.style.transform = `translate(${e.clientX - 3}px,${e.clientY - 2}px)`),
+        true,
+      );
       addEventListener("mousedown", () => (c.style.scale = "0.82"), true);
       addEventListener("mouseup", () => (c.style.scale = "1"), true);
     };
@@ -459,11 +485,7 @@ const glide = async (p: Page, loc: ReturnType<Page["locator"]>, click = true) =>
 };
 const tabOrButton = (p: Page, label: string) => {
   const name = new RegExp(`^${esc(label)}`);
-  return p
-    .getByRole("tab", { name })
-    .or(p.getByRole("button", { name }))
-    .or(p.getByRole("link", { name }))
-    .first();
+  return p.getByRole("tab", { name }).or(p.getByRole("button", { name })).or(p.getByRole("link", { name })).first();
 };
 const CLIPS: Clip[] = [
   {
@@ -541,7 +563,13 @@ const CLIPS: Clip[] = [
       await p.mouse.wheel(0, 400);
       await p.waitForTimeout(1000);
       const dialog = p.getByRole("dialog", { name: tr("config.title") });
-      await glide(p, dialog.getByRole("navigation").getByRole("button", { name: tr("config.interruptions"), exact: true }).first());
+      await glide(
+        p,
+        dialog
+          .getByRole("navigation")
+          .getByRole("button", { name: tr("config.interruptions"), exact: true })
+          .first(),
+      );
       await p.waitForTimeout(1800);
     },
   },
@@ -552,7 +580,9 @@ const CLIPS: Clip[] = [
       await at("thread=home")(p);
       await p.mouse.move(700, 300);
       await glide(p, p.getByRole("textbox").last());
-      await p.keyboard.type(lang === "es" ? "Planifica el lanzamiento de Navidad" : "Plan the Christmas launch", { delay: 60 });
+      await p.keyboard.type(lang === "es" ? "Planifica el lanzamiento de Navidad" : "Plan the Christmas launch", {
+        delay: 60,
+      });
       await p.waitForTimeout(250);
       await p.keyboard.press("Enter");
       await p.waitForTimeout(4200);
@@ -602,7 +632,10 @@ async function record(clip: Clip, theme: "light" | "dark", file: string) {
       (async () => {
         // The first moments (blank page, loading) stay out of the clip: it starts once the screen is drawn.
         const go = clip.go(page);
-        await page.getByRole("button", { name: tr("nav.inbox") }).first().waitFor();
+        await page
+          .getByRole("button", { name: tr("nav.inbox") })
+          .first()
+          .waitFor();
         await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
         from = (Date.now() - t0) / 1000;
         await go;
@@ -624,15 +657,58 @@ async function record(clip: Clip, theme: "light" | "dark", file: string) {
   const encode = (crf: number) => {
     const webm = path.join(clipsOut, `${file}.webm`);
     const mp4 = path.join(clipsOut, `${file}.mp4`);
-    const common = ["-y", "-loglevel", "error", "-ss", start.toFixed(2), "-t", length.toFixed(2), "-i", video as string, "-an"];
+    const common = [
+      "-y",
+      "-loglevel",
+      "error",
+      "-ss",
+      start.toFixed(2),
+      "-t",
+      length.toFixed(2),
+      "-i",
+      video as string,
+      "-an",
+    ];
     execFileSync(
       ffmpeg,
-      [...common, "-vf", vf, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", String(crf), "-row-mt", "1", "-deadline", "good", "-cpu-used", "4", webm],
+      [
+        ...common,
+        "-vf",
+        vf,
+        "-c:v",
+        "libvpx-vp9",
+        "-b:v",
+        "0",
+        "-crf",
+        String(crf),
+        "-row-mt",
+        "1",
+        "-deadline",
+        "good",
+        "-cpu-used",
+        "4",
+        webm,
+      ],
       { timeout: 120_000 },
     );
     execFileSync(
       ffmpeg,
-      [...common, "-vf", vf, "-c:v", "libx264", "-crf", String(crf - 12), "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", mp4],
+      [
+        ...common,
+        "-vf",
+        vf,
+        "-c:v",
+        "libx264",
+        "-crf",
+        String(crf - 12),
+        "-preset",
+        "slow",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        mp4,
+      ],
       { timeout: 120_000 },
     );
     return [fs.statSync(webm).size, fs.statSync(mp4).size];
@@ -650,7 +726,9 @@ if (process.env.SHOTS_CLIPS) {
       for (let attempt = 1; ; attempt++) {
         try {
           const { length, sizes } = await record(clip, theme, file);
-          log(`✓ ${file} ${length.toFixed(1)} s · webm ${(sizes[0] / 1024).toFixed(0)} KB · mp4 ${(sizes[1] / 1024).toFixed(0)} KB`);
+          log(
+            `✓ ${file} ${length.toFixed(1)} s · webm ${(sizes[0] / 1024).toFixed(0)} KB · mp4 ${(sizes[1] / 1024).toFixed(0)} KB`,
+          );
           break;
         } catch (e) {
           log(`✗ ${file} (attempt ${attempt}): ${(e as Error).message.split("\n")[0]}`);

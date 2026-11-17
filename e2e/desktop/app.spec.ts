@@ -440,7 +440,9 @@ test("notifications add and clear the integrated tray indicator, menu-bar count 
   const badge = async (count: number) => {
     await main.evaluate(
       (count) =>
-        (window as unknown as { coloniaDesktop: { setAttention: (count: number) => void } }).coloniaDesktop.setAttention(count),
+        (
+          window as unknown as { coloniaDesktop: { setAttention: (count: number) => void } }
+        ).coloniaDesktop.setAttention(count),
       count,
     );
     return app.evaluate(({ app, nativeImage }) => {

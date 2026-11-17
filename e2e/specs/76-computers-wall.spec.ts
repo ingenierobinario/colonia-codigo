@@ -168,7 +168,9 @@ test("a screen kept up after its run shows on the wall as idle, opens large with
     await page.goto(`${env.core.url}/#thread=${other.id}&panel=computer`);
     const computer = page.locator(".computer");
     await expect(
-      computer.getByText("Este chat se ejecuta en este equipo. La pantalla de Roby en el ordenador es de su otro chat."),
+      computer.getByText(
+        "Este chat se ejecuta en este equipo. La pantalla de Roby en el ordenador es de su otro chat.",
+      ),
     ).toBeVisible();
     await expect(computer.getByRole("button", { name: "Usar el ordenador aquí", exact: true })).toBeVisible();
     await computer.getByRole("button", { name: "Abrir ese chat", exact: true }).click();

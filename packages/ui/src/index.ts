@@ -7,7 +7,6 @@ export { AgentAvatar, type AgentAvatarProps } from "./components/AgentAvatar";
 export { AgentChip, type AgentChipProps } from "./components/AgentChip";
 export { AgentGrid, type AgentGridOption, type AgentGridProps } from "./components/AgentGrid";
 export { AgentNode, type AgentNodeProps, type AgentNodeStat } from "./components/AgentNode";
-export { type ColoniaLook, type ColoniaMode, ColoniaProvider, type ColoniaProviderProps, useColonia } from "./components/ColoniaProvider";
 export { Avatar, type AvatarProps } from "./components/Avatar";
 export { AvatarStack, type AvatarStackProps } from "./components/AvatarStack";
 export { Badge, type BadgeProps } from "./components/Badge";
@@ -16,6 +15,13 @@ export { Button, type ButtonProps } from "./components/Button";
 export { Card, type CardProps } from "./components/Card";
 export { ChannelIcon, type ChannelIconProps } from "./components/ChannelIcon";
 export { Checkbox, type CheckboxProps } from "./components/Checkbox";
+export {
+  type ColoniaLook,
+  type ColoniaMode,
+  ColoniaProvider,
+  type ColoniaProviderProps,
+  useColonia,
+} from "./components/ColoniaProvider";
 export { Composer, type ComposerProps } from "./components/Composer";
 export { ContextMenu, type ContextMenuProps } from "./components/ContextMenu";
 export { ConversationRow, type ConversationRowProps } from "./components/ConversationRow";
