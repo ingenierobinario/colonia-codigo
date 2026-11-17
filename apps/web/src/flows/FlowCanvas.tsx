@@ -164,7 +164,7 @@ function Focus({ request, cover }: { request: { id: string; seq: number } | null
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     void setViewport(
       { x: (w - right) / 2 - x * zoom, y: (h - bottom) / 2 - y * zoom, zoom },
-      { duration: still ? 0 : 250 },
+      { duration: still ? 0 : 250, interpolate: "linear" },
     );
   }, [request, measured, cover, getInternalNode, getViewport, setViewport]);
   return null;

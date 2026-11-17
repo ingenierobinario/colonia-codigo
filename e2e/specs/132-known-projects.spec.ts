@@ -121,8 +121,9 @@ for (const mode of ["light", "dark"] as const) {
         await expect(page.getByRole("option", { name: brandName })).not.toHaveAttribute("aria-disabled", "true");
         await shot(page, `${tag}-3b-circulo-apagado`);
         await loop.click({ force: true });
-        await page.keyboard.press("Escape");
+        if (await loop.isVisible()) await page.keyboard.press("Escape");
         await expect(page.getByRole("option")).toHaveCount(0);
+        await expect(dialog).toBeVisible();
         await expect(dialog.locator(".projpick__row")).toHaveCount(0);
         expect((await projectOf(docs))?.knows ?? []).toEqual([]);
         expect(await sideways(page)).toBeLessThanOrEqual(0);
@@ -145,8 +146,9 @@ for (const mode of ["light", "dark"] as const) {
         await expect(page.getByRole("option", { name: brandName })).not.toHaveAttribute("aria-disabled", "true");
         await shot(page, `${tag}-4b-padre-apagado`);
         await inside.click({ force: true });
-        await page.keyboard.press("Escape");
+        if (await inside.isVisible()) await page.keyboard.press("Escape");
         await expect(page.getByRole("option")).toHaveCount(0);
+        await expect(dialog).toBeVisible();
         expect((await projectOf(hub))?.parent).toBeUndefined();
         expect(await sideways(page)).toBeLessThanOrEqual(0);
         await page.keyboard.press("Escape");
