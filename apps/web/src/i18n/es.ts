@@ -1271,7 +1271,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "router.lead":
     "Todos los agentes usan el router: primero el #1 y, si falla, los siguientes. Un agente con modelo propio lo prueba antes. Las reglas de abajo pueden elegir otro modelo para algunos mensajes.",
   "providers.on": "Activo",
-  "router.chain": "Modelos, por orden",
+  "router.chain": "Qué modelo va primero",
   "router.chainHint": "El #1 es el por defecto; si falla, se prueban los de abajo en orden.",
   "config.engines": "Motores y modelos",
   "config.agents": "Agentes",
@@ -1473,9 +1473,9 @@ export const es: Partial<Record<MessageKey, string>> = {
   "router.thenUse": "Entonces usar",
   "router.alwaysUse": "Sin condiciones: cada turno usa",
   "router.ruleModel": "Modelo de esta regla",
-  "router.noChain": "La cadena está vacía.",
+  "router.noChain": "Aún no has elegido ningún modelo.",
   "router.noEngine":
-    "La cadena está vacía porque todavía no hay ningún motor conectado. Inicia sesión en uno o pega su API key y su modelo de uso diario se añade a la cadena.",
+    "Aún no hay nada conectado. Entra con tu cuenta o pega una clave arriba y su modelo habitual aparece aquí.",
   "router.addToChain": "Añadir un modelo",
   "router.removeFromChain": "Quitar de la cadena",
   "router.unknownRefs": "{count} fuera del catálogo",

@@ -28,14 +28,14 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
       <div className="pcard__top">
         <EngineIcon engine="codex" tile size={compact ? 28 : 36} />
         <div className="pcard__titles">
-          <div className="pcard__name">{p.label}</div>
+          <div className="pcard__name">{t("plans.codex.name")}</div>
           <div className="pcard__plan">{t("plans.codex.kind")}</div>
         </div>
         <Badge tone={connected && p.enabled ? "brand" : connected ? "neutral" : "warning"} dot>
           {!connected ? t("plans.notConnected") : p.enabled ? t("providers.active") : t("providers.off")}
         </Badge>
       </div>
-      <dl className="pcard__rows">
+      {!(compact && !connected) && <dl className="pcard__rows">
         <dt>{t("plans.account")}</dt>
         <dd>{connected ? (status?.account ?? t("plans.connected")) : "—"}</dd>
         {!compact && (
@@ -44,7 +44,7 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
             <dd>{count ? t("plans.modelsCount", { count }) : "—"}</dd>
           </>
         )}
-      </dl>
+      </dl>}
       <div className="pcard__actions">
         <Switch
           size="sm"
@@ -52,7 +52,7 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
           onCheckedChange={(on) => void setProviderEnabled(p, on)}
           label={t("providers.on")}
         />
-        <EngineUsageSwitch key={String(connected)} engine="codex" />
+        {!compact && <EngineUsageSwitch key={String(connected)} engine="codex" />}
         <span className="pcard__spacer" />
         <Button size="sm" variant={connected ? "secondary" : "primary"} onClick={() => setLogin(true)}>
           {t(connected ? "plans.manage" : "plans.connect")}

@@ -68,7 +68,7 @@ function UsageControl({ engine, onRetry }: { engine: string; onRetry: () => void
             label={
               <>
                 <Icons.Zap size={14} />
-                <span className="sr-only">{t("engines.showUsage")}</span>
+                {t("engines.showUsage")}
               </>
             }
             onCheckedChange={(on) => void save(on)}

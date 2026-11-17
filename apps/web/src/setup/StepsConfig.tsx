@@ -58,9 +58,18 @@ export function EnginesStep({ draft: d, set }: StepProps) {
         {t("setup.engines.body")}
       </StepHead>
       <ProvidersGrid compact />
-      <div className="wiz__card wiz__chain">
-        <RouterChain chain={d.chain} onChange={(chain) => set({ chain })} />
-      </div>
+      {/* The order only matters once something is connected, and it fills itself: folded, for whoever wants it. */}
+      {d.chain.length > 0 && (
+        <details className="wiz__card wiz__advanced">
+          <summary>
+            <Icons.ChevronRight size={14} />
+            <span className="wiz__rowname">{t("setup.engines.chainFold")}</span>
+          </summary>
+          <div className="wiz__advancedbody wiz__chain">
+            <RouterChain chain={d.chain} onChange={(chain) => set({ chain })} />
+          </div>
+        </details>
+      )}
     </>
   );
 }

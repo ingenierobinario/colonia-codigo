@@ -97,7 +97,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.engines.title": "¿Qué inteligencia",
   "setup.engines.titleGreen": "usas ya?",
   "setup.engines.body":
-    "Es lo que hace pensar a tu crew. Entra con la cuenta que ya tengas (ChatGPT, Claude…) o pega la clave que te da el servicio. Con una basta para empezar.",
+    "Es lo que hace pensar a tu asistente. Entra con la cuenta que ya tengas (ChatGPT, Claude…) o pega la clave que te da el servicio. Con una basta para empezar.",
   "setup.engines.addKey": "Añadir clave",
   "setup.engines.save": "Guardar",
   "setup.engines.local": "En tu ordenador · sin clave",

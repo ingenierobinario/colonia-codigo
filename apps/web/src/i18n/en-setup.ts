@@ -94,7 +94,7 @@ export const enSetup = {
   "setup.engines.title": "Which AI",
   "setup.engines.titleGreen": "do you already use?",
   "setup.engines.body":
-    "It is what makes your crew think. Sign in with the account you already have (ChatGPT, Claude…) or paste the key the service gives you. One is enough to start.",
+    "It is what makes your assistant think. Sign in with the account you already have (ChatGPT, Claude…) or paste the key the service gives you. One is enough to start.",
   "setup.engines.addKey": "Add key",
   "setup.engines.save": "Save",
   "setup.engines.local": "On your computer · no key",

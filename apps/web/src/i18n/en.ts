@@ -1265,7 +1265,7 @@ export const en = {
   "router.lead":
     "Every agent uses the router: #1 first, then the next ones if it fails. An agent with its own model tries that one first. Rules below can pick another model for some messages.",
   "providers.on": "Active",
-  "router.chain": "Models, in order",
+  "router.chain": "Which model goes first",
   "router.chainHint": "#1 is the default; if it fails, the ones below are tried in order.",
   "config.engines": "Engines and models",
   "config.agents": "Agents",
@@ -1475,9 +1475,9 @@ export const en = {
   "router.thenUse": "Then use",
   "router.alwaysUse": "No conditions: every turn uses",
   "router.ruleModel": "Model for this rule",
-  "router.noChain": "The chain is empty.",
+  "router.noChain": "No model chosen yet.",
   "router.noEngine":
-    "The chain is empty because no engine is connected yet. Sign in to one or paste its API key, and its everyday model joins the chain.",
+    "Nothing is connected yet. Sign in with your account or paste a key above, and its usual model shows up here.",
   "router.addToChain": "Add a model",
   "router.removeFromChain": "Remove from the chain",
   "router.unknownRefs": "{count} not in the catalog",

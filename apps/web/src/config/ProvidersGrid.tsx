@@ -22,7 +22,7 @@ import {
   setProviderEnabled,
   useProviders,
 } from "../data/providers.ts";
-import { useT } from "../i18n/index.ts";
+import { type T, useT } from "../i18n/index.ts";
 import { PROVIDER_PRESETS, presetOf } from "./models/providerPresets.ts";
 import { PlanCard } from "./PlanCard.tsx";
 
@@ -57,6 +57,17 @@ function ProviderMark({ id, label, size }: { id: string; label: string; size: nu
   ) : (
     <ProjectTile tone={presetOf(id)?.tone ?? "neutral"} initial={label.slice(0, 1).toUpperCase()} size={size} />
   );
+}
+
+/** Brands people know by their product, not their company: Anthropic is "Claude", OpenAI's API is "ChatGPT". */
+const BRAND: Record<string, "providers.brand.anthropic" | "providers.brand.openai"> = {
+  anthropic: "providers.brand.anthropic",
+  openai: "providers.brand.openai",
+};
+/** The name shown for a kind; a label the owner typed is kept, only the preset's own label is swapped. */
+export function providerName(t: T, kind: string, label: string): string {
+  const brand = BRAND[kind];
+  return brand && label === presetOf(kind)?.label ? t(brand) : label;
 }
 
 /** The kind a provider is for its look: its preset, or its own id for a built-in. */
@@ -100,8 +111,8 @@ export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
             <div className="pcard__top">
               <ProviderMark id={k.id} label={k.label} size={36} />
               <div className="pcard__titles">
-                <div className="pcard__name">{k.label}</div>
-                <div className="pcard__id">{k.id}</div>
+                <div className="pcard__name">{providerName(t, k.id, k.label)}</div>
+                <div className="pcard__plan">{t(k.needs_key ? "providers.withKey" : "providers.withoutKey")}</div>
               </div>
               <Badge tone="neutral">{t("providers.unset")}</Badge>
             </div>
@@ -113,7 +124,7 @@ export function ProvidersGrid({ compact = false }: { compact?: boolean }) {
               <span className="pcard__spacer" />
               <IconButton
                 size="sm"
-                label={t("providers.hide", { name: k.label })}
+                label={t("providers.hide", { name: providerName(t, k.id, k.label) })}
                 icon={<Icons.Trash2 size={14} />}
                 onClick={() => hideSuggestion(k.id)}
               />
@@ -145,9 +156,9 @@ function ProviderCard({ p, onEdit, compact }: { p: ProviderInfo; onEdit: () => v
     <div className={p.enabled ? "pcard" : "pcard is-off"}>
       <div className="pcard__top">
         <ProviderMark id={kindOf(p)} label={p.label} size={compact ? 28 : 36} />
-        <div className="pcard__titles">
-          <div className="pcard__name">{p.label}</div>
-          <div className="pcard__id">{p.id}</div>
+        <div className="pcard__titles" title={p.id}>
+          <div className="pcard__name">{providerName(t, kindOf(p), p.label)}</div>
+          <div className="pcard__plan">{t(p.needs_key ? "providers.withKey" : "providers.withoutKey")}</div>
         </div>
         <Badge tone={ready ? "brand" : p.enabled ? "warning" : "neutral"} dot>
           {ready ? t("providers.active") : !p.enabled ? t("providers.off") : t("providers.noKey")}
@@ -159,8 +170,13 @@ function ProviderCard({ p, onEdit, compact }: { p: ProviderInfo; onEdit: () => v
         <dd hidden={compact} title={p.base_url}>
           {p.base_url.replace(/^https?:\/\//, "")}
         </dd>
-        <dt>{t(compact ? "setup.engines.apiKey" : "providers.key")}</dt>
-        <dd>{!p.needs_key ? t("providers.keyNone") : p.key_set ? `****${p.key_hint ?? ""}` : "—"}</dd>
+        {/* In the guide a missing key is said by the badge; the row only shows once there is one. */}
+        {(!compact || (p.needs_key && p.key_set)) && (
+          <>
+            <dt>{t(compact ? "providers.keySaved" : "providers.key")}</dt>
+            <dd>{!p.needs_key ? t("providers.keyNone") : p.key_set ? `****${p.key_hint ?? ""}` : "—"}</dd>
+          </>
+        )}
         {!compact && (
           <>
             <dt>{t("providers.models")}</dt>
@@ -230,7 +246,7 @@ function ProviderDialog({
   const start = presetOf(initial?.preset ?? initial?.id ?? preset ?? "opencode-zen");
   const [draft, setDraft] = useState<ProviderDraft>(() => ({
     id: initial?.id ?? "",
-    label: initial?.label ?? start?.label ?? "",
+    label: initial?.label ?? (start ? providerName(t, start.id, start.label) : ""),
     preset: initial?.preset ?? start?.id ?? "custom",
     transport: initial?.transport ?? start?.transport ?? "openai-chat",
     base_url: initial?.base_url ?? start?.base_url ?? "",
@@ -254,7 +270,7 @@ function ProviderDialog({
       transport: p.transport,
       base_url: p.base_url,
       needs_key: p.needs_key,
-      label: initial ? d.label : p.label,
+      label: initial ? d.label : providerName(t, p.id, p.label),
     }));
   };
   const save = async () => {
@@ -296,7 +312,7 @@ function ProviderDialog({
               onClick={() => pickPreset(p.id)}
             >
               <ProviderMark id={p.id} label={p.label} size={18} />
-              {p.label}
+              {providerName(t, p.id, p.label)}
             </button>
           ))}
         </div>

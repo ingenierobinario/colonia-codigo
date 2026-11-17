@@ -185,3 +185,13 @@
 .pshare__advancedBody > .config__lead {
   display: none;
 }
+/* «Cómo se publica» tiene cinco opciones: en un móvil no caben en una fila y la última se salía de la tarjeta. */
+.pshare__advancedBody .colonia-segmented {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.pshare__advancedBody .colonia-setting__control {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}

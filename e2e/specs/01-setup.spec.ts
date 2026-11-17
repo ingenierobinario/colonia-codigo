@@ -22,7 +22,11 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await name.fill("Robina");
   await wizard.getByRole("button", { name: "Continuar" }).click();
 
-  // Engines: the fake model is already the chain's first, and each entry says which of its engine's models it is.
+  // Engines: the model order sits folded under one plain line; Anthropic and OpenAI go by Claude and ChatGPT.
+  await expect(wizard.getByText("Modelos, por orden")).toBeHidden();
+  await expect(wizard.locator(".pcard").filter({ hasText: /^Anthropic/ })).toHaveCount(0);
+  await wizard.getByText("Elegir qué modelo va primero").click();
+  // The fake model is already the chain's first, and each entry says which of its engine's models it is.
   // The preview names them as the owner reads them, not by their refs (custom/fake-1 → ollama/gemma-e2e).
   await expect(wizard.locator(".chain__item").first().getByRole("combobox")).toContainText("Fake 1");
   // v1's fallback came in with its Ollama, keyless.
@@ -47,7 +51,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
   await card.getByRole("button", { name: "Quitar", exact: true }).click();
   await expect(card).toHaveCount(0);
   // A built-in one removed is gone too, not back as a suggestion of its kind.
-  const anthropic = wizard.locator(".pcard").filter({ hasText: /^Anthropic/ });
+  const anthropic = wizard.locator(".pcard").filter({ hasText: /^ClaudeCon clave/ });
   await anthropic.getByRole("button", { name: "Quitar", exact: true }).click();
   await expect(anthropic).toHaveCount(0);
   const ollama = wizard.locator(".pcard").filter({ hasText: /^Ollama/ });
