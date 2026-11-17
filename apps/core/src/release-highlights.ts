@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.39": {
+    en: [
+      "Unpublishing one project keeps the temporary link up for your other published projects.",
+      "The link closes only when no published project is left.",
+      "Share › Publish advanced options read cleanly, and the IRC setup asks for its data on the right step.",
+    ],
+    es: [
+      "Dejar de publicar un proyecto ya no apaga el enlace temporal de los demás publicados.",
+      "El enlace solo se cierra cuando no queda ningún proyecto publicado.",
+      "Las opciones avanzadas de Publicar se leen bien y el asistente de IRC pide sus datos en su paso.",
+    ],
+  },
   "2.36.38": {
     en: [
       "Colonia looks for a newer version every hour instead of every six, so updates arrive the same day.",
@@ -54,7 +66,7 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
   },
   "2.36.34": {
     en: [
-      "Closing Colonia no longer shows the \"Object has been destroyed\" error.",
+      'Closing Colonia no longer shows the "Object has been destroyed" error.',
       "On Windows, a downloaded update now goes in when you close Colonia.",
     ],
     es: [
