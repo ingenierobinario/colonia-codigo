@@ -43,11 +43,19 @@ for (const language of ["es", "en"] as const) {
       (language) => localStorage.setItem("colonia.prefs", JSON.stringify({ language, sidebarCollapsed: true })),
       language,
     );
-    await page.goto(`/#project=${project.id}&tab=team`);
+    let orgRequests = 0;
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname === "/rpc/org.get") orgRequests++;
+    });
+    await Promise.all([
+      page.waitForResponse((response) => new URL(response.url()).pathname === "/rpc/org.get" && response.ok()),
+      page.goto(`/#project=${project.id}&tab=team`),
+    ]);
     const nodes = page.locator(".teamcanvas__node");
     const leadNode = nodes.filter({ hasText: "Dirección" });
     const memberNode = nodes.filter({ hasText: "Asistente" });
     await expect(leadNode.locator("dl dd")).toHaveText([area, role]);
+    expect(orgRequests, "Una consulta de áreas y roles al abrir el organigrama").toBe(1);
     await expect(memberNode.locator("dl dd")).toHaveText(
       language === "es" ? ["Sin área", "Sin rol"] : ["No area", "No role"],
     );

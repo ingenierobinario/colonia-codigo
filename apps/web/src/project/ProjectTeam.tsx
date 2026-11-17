@@ -1,4 +1,4 @@
-import type { Agent } from "@colonia/protocol";
+import type { Agent, Organization } from "@colonia/protocol";
 import {
   AgentAvatar,
   Button,
@@ -37,7 +37,7 @@ export function ProjectAgents({ project }: { project: ProjectEntry }) {
   const agents = useData((s) => s.agents);
   const [view, setView] = useState<"agents" | "org">("agents");
   const count = useMemo(() => teamOf(agents, project.id).length, [agents, project.id]);
-  const areas = useOrg(project.id)?.areas.length ?? 0;
+  const org = useOrg(project.id);
   const switcher = (
     <Tabs
       variant="pill"
@@ -46,19 +46,27 @@ export function ProjectAgents({ project }: { project: ProjectEntry }) {
       onValueChange={(v) => setView(v === "org" ? "org" : "agents")}
       items={[
         { value: "agents", label: t("overview.agents"), count },
-        { value: "org", label: t("project.tab.org"), count: areas },
+        { value: "org", label: t("project.tab.org"), count: org?.areas.length ?? 0 },
       ]}
     />
   );
   return view === "org" ? (
-    <ProjectOrg project={project} switcher={switcher} />
+    <ProjectOrg project={project} org={org} switcher={switcher} />
   ) : (
-    <ProjectTeam project={project} switcher={switcher} />
+    <ProjectTeam project={project} org={org} switcher={switcher} />
   );
 }
 
 /** Team: the project's agents as an org chart (lead on top) or a list; import, details and models. */
-function ProjectTeam({ project, switcher }: { project: ProjectEntry; switcher?: ReactNode }) {
+function ProjectTeam({
+  project,
+  org,
+  switcher,
+}: {
+  project: ProjectEntry;
+  org: Organization | undefined;
+  switcher?: ReactNode;
+}) {
   const t = useT();
   const agents = useData((s) => s.agents);
   const [mode, setMode] = useState("tree");
@@ -73,7 +81,6 @@ function ProjectTeam({ project, switcher }: { project: ProjectEntry; switcher?: 
   const leads = (a: Agent) => a.id === lead?.id || a.orchestrator === true;
   const { info, live } = useTeamInfo(lead?.id, lead ? leadLabel(lead, t) : "");
   const current = team.find((a) => a.id === selected);
-  const org = useOrg(project.id);
   const actions: AgentActions = {
     onOpen: (a) => {
       setMode("tree");

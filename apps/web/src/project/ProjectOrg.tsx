@@ -17,7 +17,7 @@ import {
 import { type ReactNode, useMemo, useState } from "react";
 import { slugOf } from "../common/slug.ts";
 import { inProject, type ProjectEntry } from "../data/identity.ts";
-import { saveOrg, useOrg } from "../data/org.ts";
+import { saveOrg } from "../data/org.ts";
 import { updateBase, updateProject } from "../data/projects.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -27,9 +27,16 @@ type Area = Organization["areas"][number];
 type Role = Organization["roles"][number];
 const GENERAL = "~general";
 
-export function ProjectOrg({ project, switcher }: { project: ProjectEntry; switcher?: ReactNode }) {
+export function ProjectOrg({
+  project,
+  org,
+  switcher,
+}: {
+  project: ProjectEntry;
+  org: Organization | undefined;
+  switcher?: ReactNode;
+}) {
   const t = useT();
-  const org = useOrg(project.id);
   const agents = useData((s) => s.agents);
   const [area, setArea] = useState<Area | "new">();
   const [assignment, setAssignment] = useState<AssignmentTarget>();
