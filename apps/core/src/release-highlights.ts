@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.43": {
+    en: [
+      "Claude with your account gets an On switch like ChatGPT; when off, Colonia does not use it.",
+      "The usage switch now says Show what's left and no longer sits glued to On.",
+      "The account cards no longer cut their button on mid-size screens.",
+    ],
+    es: [
+      "Motores y modelos: Claude con tu cuenta tiene interruptor Activo, como ChatGPT. Apagado, Colonia no lo usa.",
+      "El interruptor de uso se llama Ver cuánto me queda y ya no va pegado a Activo.",
+      "Las tarjetas de tu cuenta ya no cortan el botón en pantallas medianas.",
+    ],
+  },
   "2.36.42": {
     en: [
       "AI quotas include Claude: 5-hour session and weekly limit, what's left and when each renews.",
