@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.41": {
+    en: [
+      "Claude with your Pro or Max plan: press Connect, sign in on Claude's page and you're done, no keys to paste.",
+      "If this computer doesn't have Claude Code yet, Colonia installs it for you.",
+      "Every Claude card shows Claude's orange spark, and the custom service is now called Other AI service.",
+    ],
+    es: [
+      "Claude con tu plan Pro o Max: pulsa Conectar, entra en la página de Claude y listo, sin pegar claves.",
+      "Si el ordenador aún no tiene Claude Code, Colonia lo instala por ti.",
+      "Las tarjetas de Claude llevan su chispa naranja, y el servicio propio se llama Otro servicio de IA.",
+    ],
+  },
   "2.36.40": {
     en: [
       "Services go by the names you know: Claude and ChatGPT, each saying if it uses your account or a key.",
