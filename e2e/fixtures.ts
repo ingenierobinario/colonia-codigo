@@ -93,6 +93,10 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
   );
   for (const f of ["claude", "codex"]) fs.chmodSync(path.join(bin, f), 0o755);
   // node itself, without the folder it lives in (globally installed CLIs sit there too).
-  fs.symlinkSync(process.execPath, path.join(bin, "node"));
+  try {
+    fs.symlinkSync(process.execPath, path.join(bin, "node"));
+  } catch {
+    fs.copyFileSync(process.execPath, path.join(bin, "node.exe"));
+  }
   return { home, v1, claude, codex, repo, bin };
 }

@@ -127,7 +127,6 @@ function EngineCard({ engine: e }: { engine: EngineStatus }) {
           </div>
           <div className="engine__kind">{detail ? `${kind} · ${detail}` : kind}</div>
         </div>
-        <EngineUsageSwitch engine={e.id} />
         <Menu
           align="end"
           trigger={<IconButton size="sm" label={t("chat.more")} icon={<Icons.Ellipsis size={14} />} />}
@@ -162,6 +161,11 @@ function EngineCard({ engine: e }: { engine: EngineStatus }) {
           label={t(e.auth === "on_invocation" ? "engine.authOnInvocation" : "engine.loggedIn")}
         />
       </ol>
+      {e.installed && (
+        <div className="engine__usage">
+          <EngineUsageSwitch engine={e.id} />
+        </div>
+      )}
       {hint && <p className="engine__hint">{hint}</p>}
     </div>
   );

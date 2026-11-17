@@ -9,6 +9,7 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { fakeDiscord } from "../apps/core/src/channels/fake-discord.test-support.ts";
 import { fakeSlack } from "../apps/core/src/channels/fake-slack.test-support.ts";
 import { fakeTelegram } from "../apps/core/src/channels/fake-telegram.test-support.ts";
@@ -64,7 +65,7 @@ const serviceUrl = `http://127.0.0.1:${(service.address() as AddressInfo).port}`
 
 const hook = path.join(root, "e2e/baileys-hook.ts");
 const desktopTrashRecord = path.join(dir, "desktop-trash.jsonl");
-const core = spawn(process.execPath, ["--no-warnings", "--import", hook, path.join(root, "e2e/start-core.ts")], {
+const core = spawn(process.execPath, ["--no-warnings", "--import", pathToFileURL(hook).href, path.join(root, "e2e/start-core.ts")], {
   cwd: root,
   // The channel carries /clock to the core (e2e/start-core.ts).
   stdio: ["ignore", "pipe", "pipe", "ipc"],
@@ -200,7 +201,7 @@ const control = http.createServer((req, res) => {
 control.listen(E2E.control, "127.0.0.1");
 
 // Ready when the core answers.
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 600; i++) {
   try {
     if ((await fetch(`http://127.0.0.1:${E2E.port}/health`)).ok) break;
   } catch {}

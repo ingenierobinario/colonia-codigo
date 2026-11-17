@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.44": {
+    en: [
+      "External sessions: the name of each CLI is no longer squashed by the usage switch, which now sits on its own line.",
+      "CLIs that are not installed no longer show a usage switch.",
+    ],
+    es: [
+      "Sesiones externas: el nombre de cada CLI ya no queda aplastado; Ver cuánto me queda va en su propia línea.",
+      "Los CLI que no están instalados ya no muestran el interruptor de uso.",
+    ],
+  },
   "2.36.43": {
     en: [
       "Claude with your account gets an On switch like ChatGPT; when off, Colonia does not use it.",
