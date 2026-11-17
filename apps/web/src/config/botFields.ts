@@ -238,7 +238,7 @@ export const BOTS: Record<BotKind, { name: string; steps: MessageKey[]; tokens: 
   },
   irc: {
     name: "IRC",
-    steps: ["irc.step1", "irc.step2", "irc.step3"],
+    steps: ["irc.step1", "irc.step2"],
     tokens: [
       {
         label: "mm.server",

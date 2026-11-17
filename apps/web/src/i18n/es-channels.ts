@@ -300,8 +300,8 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
   "nc.password": "Contraseña de aplicación",
   "irc.lead": "Habla con tus agentes por IRC, en mensajes privados y en los canales que listes.",
   "irc.step1": "Elige una red y un nick para el bot; registra el nick con el NickServ de la red si te lo pide.",
-  "irc.step2": "Escribe el servidor de la red y el nick aquí abajo.",
-  "irc.step3": "Envíale un mensaje privado al bot y pon su código en “Este es mi IRC”.",
+  "irc.step2":
+    "Escribe el servidor de la red y el nick aquí abajo. Cuando esté conectado, envíale un mensaje privado al bot y pon su código en “Este es mi IRC”.",
   "irc.nick": "Nick",
   "irc.password": "Contraseña (opcional)",
   "tw.lead": "Tu agente en el chat de un canal de Twitch. El chat es una sala: listala y elige cuándo habla el bot.",

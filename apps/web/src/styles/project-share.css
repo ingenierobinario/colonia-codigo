@@ -180,3 +180,8 @@
 .pshare__advancedBody {
   margin-top: 12px;
 }
+/* El título y la explicación de Ajustes repiten aquí el resumen, y sus márgenes negativos los solapaban. */
+.pshare__advancedBody > .config__sub,
+.pshare__advancedBody > .config__lead {
+  display: none;
+}

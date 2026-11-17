@@ -284,8 +284,8 @@ export const enChannels = {
   "nc.password": "App password",
   "irc.lead": "Talk with your agents on IRC, in private messages and the channels you list.",
   "irc.step1": "Pick a network and a nick for the bot; register the nick with the network's NickServ if it asks.",
-  "irc.step2": "Type the network's server and the nick below.",
-  "irc.step3": "Send the bot a private message and type its code in “This is my IRC”.",
+  "irc.step2":
+    "Type the network's server and the nick below. Once it is connected, send the bot a private message and type its code in “This is my IRC”.",
   "irc.nick": "Nick",
   "irc.password": "Password (optional)",
   "tw.lead": "Your agent in a Twitch channel's chat. The chat is a room: list it and choose when the bot speaks.",
