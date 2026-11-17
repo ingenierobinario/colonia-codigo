@@ -1,0 +1,77 @@
+name: verify
+
+on:
+  push:
+    branches: [staging, main, codex/colonia-integracion-local]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COLONIA_SECRETS: file
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          browser: linux
+          mobile: "true"
+      - name: Preparar la pantalla virtual y Electron
+        run: |
+          sudo apt-get install --no-install-recommends -y libgtk-3-0t64 openbox xvfb xauth
+          node apps/desktop/node_modules/electron/install.js
+      - name: Verificar el repositorio
+        run: pnpm verify
+      - name: Guardar los informes de pruebas y rendimiento
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes-linux
+          path: |
+            coverage/all/functions.md
+            e2e/.out/perf*.json
+            test-results/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+
+  macos-web:
+    name: Panel y Chromium (macOS 15)
+    runs-on: macos-15
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          browser: chromium
+      - name: Compilar el panel
+        run: pnpm build:web
+      - name: Ejecutar las pruebas unitarias del panel
+        working-directory: apps/web
+        run: npm test
+      - name: Probar el panel en Chromium
+        run: pnpm exec playwright test --project chromium --reporter=line
+      - name: Guardar los resultados de Chromium si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromium-macos
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
