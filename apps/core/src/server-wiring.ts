@@ -357,7 +357,12 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       mcp: d.mcp.config,
       runtimeHomes: d.runtimeHomes,
     }),
-    ...projectShareHandlers({ store: d.store, home: d.app.home, apc: d.apc }),
+    ...projectShareHandlers({
+      store: d.store,
+      home: d.app.home,
+      apc: d.apc,
+      skillRoots: { home: d.app.home, apps: d.runtimeHomes },
+    }),
     ...providerHandlers(d.providers, d.secrets, d.chatgpt),
     ...app,
     "projects.create": (p: Parameters<(typeof app)["projects.create"]>[0], ctx: CallContext) => {

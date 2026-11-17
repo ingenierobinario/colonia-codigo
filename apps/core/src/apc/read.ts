@@ -43,7 +43,13 @@ export type ApcAgent = {
   tools: string[];
   aliases: string[];
   fields: Fields;
+  /** AGENTES-NATIVOS-1 · Leído en su sitio desde la carpeta de otra app (`.claude/agents`…), no desde `.apc/agents`. */
+  from?: NativeApp | undefined;
 };
+
+/** AGENTES-NATIVOS-1 · Las apps cuyos agentes de proyecto se leen en su sitio, en este orden (`.apc` va antes). */
+export const NATIVE_AGENT_APPS = ["claude", "codex", "agents"] as const;
+export type NativeApp = (typeof NATIVE_AGENT_APPS)[number];
 
 /** Windows editors and PowerShell 5 may start a UTF-8 file with a BOM; it is not part of the text. */
 export const withoutBom = (text: string): string => text.replace(/^\uFEFF/, "");
@@ -102,9 +108,44 @@ function contextOf(text: string | undefined, file: string, max = AGENTS_MD_LIMIT
   return body.length > max ? cap(body, file, max) : body.trim();
 }
 
-/** Whether a folder is an APC project (has .apc/ or AGENTS.md). */
+/**
+ * FORMATOS-IA-1 · Las instrucciones de proyecto de otras apps de IA, que se suman a AGENTS.md y se vigilan igual:
+ * Claude Code, Gemini y GitHub Copilot.
+ */
+export const INSTRUCTION_FILES = ["CLAUDE.md", "GEMINI.md", ".github/copilot-instructions.md"] as const;
+
+/** Whether a folder is a project Colonia can read: .apc/, AGENTS.md or the instructions of another AI app. */
 export function isApcProject(root: string): boolean {
-  return fs.existsSync(path.join(root, ".apc")) || fs.existsSync(path.join(root, "AGENTS.md"));
+  return [".apc", "AGENTS.md", ...INSTRUCTION_FILES].some((f) => fs.existsSync(path.join(root, f)));
+}
+
+/**
+ * AGENTES-NATIVOS-1 · Las instrucciones del proyecto: AGENTS.md y, si lo hay y dice otra cosa, el CLAUDE.md de Claude
+ * Code (uno que solo apunta a AGENTS.md no añade nada).
+ */
+export function instructionsOf(
+  agentsMd: string | undefined,
+  claudeMd: string | undefined,
+  more: { file: string; text: string | undefined }[] = [],
+): string | undefined {
+  let out = agentsMd;
+  const seen = new Set([agentsMd?.trim() ?? ""]);
+  for (const { file, text } of [{ file: "CLAUDE.md", text: claudeMd }, ...more]) {
+    const c = text?.trim() ?? "";
+    if (!c || seen.has(c) || /^@?\.?\/?AGENTS\.md$/i.test(c)) continue;
+    seen.add(c);
+    out = out?.trim() ? `${out.trimEnd()}\n\n---\n# ${file}\n\n${c}\n` : text;
+  }
+  return out;
+}
+
+/** FORMATOS-IA-1 · Las instrucciones de un proyecto: AGENTS.md y las de las otras apps, leídas con `read`. */
+export function projectInstructions(read: (file: string) => string | undefined): string | undefined {
+  return instructionsOf(
+    read("AGENTS.md"),
+    read("CLAUDE.md"),
+    INSTRUCTION_FILES.slice(1).map((file) => ({ file, text: read(file) })),
+  );
 }
 
 export function readProject(root: string): ApcProject {
@@ -123,7 +164,9 @@ export function readProject(root: string): ApcProject {
   }
   const pathId = createHash("sha256").update(abs).digest("hex").slice(0, 12);
   const id = meta.colonia_id && /^[a-z0-9]{6,32}$/.test(meta.colonia_id) ? meta.colonia_id : pathId;
-  const agentsMd = readText(path.join(abs, "AGENTS.md"));
+  const agentsMd = projectInstructions((f) =>
+    isLink(path.join(abs, path.dirname(f))) ? undefined : readText(path.join(abs, f)),
+  );
   const apc = path.join(abs, ".apc");
   const memoryMd = isLink(apc) ? undefined : readText(path.join(apc, "memory.md"));
   return {
@@ -140,8 +183,24 @@ export function readProject(root: string): ApcProject {
   };
 }
 
+/**
+ * Los agentes del proyecto: los de `.apc/agents` y, leídos en su sitio, los de `.claude/agents`, `.codex/agents` y
+ * `.agents/agents` (AGENTES-NATIVOS-1). Con el mismo slug manda el primero. De los de otra app no se toma `tools:`:
+ * nombra herramientas de esa app, no de Colonia, y dejaría al agente sin ninguna.
+ */
 export function readAgents(root: string): ApcAgent[] {
-  return readAgentDir(path.join(path.resolve(root), ".apc", "agents"));
+  const abs = path.resolve(root);
+  const out = readAgentDir(path.join(abs, ".apc", "agents"));
+  const seen = new Set(out.map((a) => a.slug));
+  for (const app of NATIVE_AGENT_APPS) {
+    if (isLink(path.join(abs, `.${app}`))) continue;
+    for (const a of readAgentDir(path.join(abs, `.${app}`, "agents"))) {
+      if (seen.has(a.slug)) continue;
+      seen.add(a.slug);
+      out.push({ ...a, tools: [], from: app });
+    }
+  }
+  return out;
 }
 
 /** Every `<slug>.md` agent file directly inside a folder (no symlinks). Also reads template folders. */

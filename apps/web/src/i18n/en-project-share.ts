@@ -76,6 +76,10 @@ export const enProjectShare = {
     "This project read from others you do not have here under that name. Say which of yours each one is, or leave it: everything else works the same.",
   "pshare.import.unresolvedAlone":
     "This project read from others you do not have here. When you create or import one, link it from the project settings.",
+  "pshare.import.skillConflicts": "Skills you already had",
+  "pshare.import.skillConflictsBody":
+    "You already have a different skill with each of these names, so yours stays and the shared one was not copied. Rename one of them if you want both.",
+  "pshare.import.skillReserved": "{name} (a Colonia guide uses this name)",
   "pshare.import.linkPick": "Choose project",
   "pshare.import.linkTo": "Link {name} to one of your projects",
   "pshare.import.linked": "Linked to {name}",
@@ -92,7 +96,8 @@ export const enProjectShare = {
   "pshare.err.other": "Could not import it: {error}",
   "pshare.err.export": "Could not share it: {error}",
   "pshare.temp.title": "Share it with a link",
-  "pshare.temp.body": "Colonia opens a free link, with no account and nothing to install. Anyone with it can bring a copy into their Colonia while yours is on.",
+  "pshare.temp.body":
+    "Colonia opens a free link, with no account and nothing to install. Anyone with it can bring a copy into their Colonia while yours is on.",
   "pshare.temp.create": "Create temporary link",
   "pshare.temp.note": "Temporary link: it changes when you restart Colonia.",
   "pshare.temp.retry": "Try again",
