@@ -200,6 +200,7 @@
 }
 .catalog__summary {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 10px 2px;
@@ -226,12 +227,11 @@
   font-size: var(--colonia-text-2xs);
   color: var(--colonia-fg-subtle);
 }
+/* AJUSTES-GEOMETRIA-1: the meta line is never cut with «…» (it carries why an engine is off). Where the row has no
+   room it goes under the name, at full width, instead of being squeezed to a 40px column. */
 .catalog__meta {
-  flex: 1;
+  flex: 1 1 16em;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: var(--colonia-text-xs);
   color: var(--colonia-fg-muted);
 }
