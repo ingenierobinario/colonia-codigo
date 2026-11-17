@@ -123,9 +123,13 @@ jobs:
           retention-days: 7
 
   macos-web:
-    name: Panel y Chromium (macOS 15)
+    name: Panel y Chromium (macOS 15, ${{ matrix.part }}/3)
     runs-on: macos-15
     timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -136,15 +140,16 @@ jobs:
       - name: Compilar el panel
         run: pnpm build:web
       - name: Ejecutar las pruebas unitarias del panel
+        if: matrix.part == 1
         working-directory: apps/web
         run: npm test
       - name: Probar el panel en Chromium
-        run: pnpm exec playwright test --project chromium --reporter=line
+        run: pnpm exec playwright test --project chromium --shard=${{ matrix.part }}/3 --reporter=line
       - name: Guardar los resultados de Chromium si falla
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: chromium-macos
+          name: chromium-macos-${{ matrix.part }}
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
