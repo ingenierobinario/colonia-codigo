@@ -21,15 +21,23 @@ export type T = (key: MessageKey, vars?: Vars) => string;
 
 let shown: { lang: Language; messages: Messages; packs: ReadonlySet<Pack> } | undefined;
 const listeners = new Set<() => void>();
-let wanted: Language | undefined;
+let revision = 0;
 /** Packs a screen asked for: a language switch loads them again with the language. */
 const asked = new Set<Pack>();
 
 async function show(lang: Language): Promise<void> {
-  wanted = lang;
+  const request = ++revision;
   const packs = [...asked];
   const [messages, ...extra] = await Promise.all([loadMessages(lang), ...packs.map((p) => loadPack(p, lang))]);
-  if (wanted !== lang) return;
+  if (request !== revision) return;
+  // Una pantalla puede pedir traducciones mientras se descarga el nuevo idioma.
+  for (;;) {
+    const missing = [...asked].filter((p) => !packs.includes(p));
+    if (!missing.length) break;
+    extra.push(...(await Promise.all(missing.map((p) => loadPack(p, lang)))));
+    if (request !== revision) return;
+    packs.push(...missing);
+  }
   shown = { lang, messages: Object.assign({}, messages, ...extra), packs: new Set(packs) };
   for (const l of listeners) l();
 }
@@ -38,7 +46,7 @@ async function show(lang: Language): Promise<void> {
 export async function addPack(pack: Pack, language?: Language): Promise<void> {
   if (!language) asked.add(pack);
   const lang = language ?? shown?.lang;
-  if (!lang || shown?.packs.has(pack)) return;
+  if (!lang || (shown?.lang === lang && shown.packs.has(pack))) return;
   const messages = await loadPack(pack, lang);
   if (shown?.lang !== lang || shown.packs.has(pack)) return;
   shown = { lang, messages: { ...shown.messages, ...messages }, packs: new Set([...shown.packs, pack]) };

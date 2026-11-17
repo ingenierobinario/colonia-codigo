@@ -52,13 +52,28 @@ export async function saveWebApp(id: string, app: Omit<WebApp, "id"> | null, key
 }
 
 /** The tab already showing this app, or a new one opened on its address. */
+const opening = new Map<string, Promise<string | undefined>>();
+
 export async function webAppTab(app: WebApp): Promise<string | undefined> {
   const profile = webAppProfile(app.id);
   const open = data.get().tabs.find((x) => x.profile === profile);
   if (open) return open.tab;
+  const pending = opening.get(profile);
+  if (pending) return pending;
+  const request = openWebApp(app, profile);
+  opening.set(profile, request);
+  try {
+    return await request;
+  } finally {
+    opening.delete(profile);
+  }
+}
+
+async function openWebApp(app: WebApp, profile: `app:${string}`): Promise<string | undefined> {
   try {
     const info = await client.call("browser.open", { url: app.url, profile, by: "operator" });
-    data.set((s) => ({ tabs: [...s.tabs.filter((x) => x.tab !== info.tab), info] }));
+    // Los eventos recibidos durante la apertura pueden contener una navegación más reciente.
+    data.set((s) => (s.tabs.some((x) => x.tab === info.tab) ? {} : { tabs: [...s.tabs, info] }));
     return info.tab;
   } catch (e) {
     notify(t("error.openTab", { error: e instanceof Error ? e.message : String(e) }));
