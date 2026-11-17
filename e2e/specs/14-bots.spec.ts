@@ -7,8 +7,16 @@ async function connect(page: Page, kind: "Discord" | "Slack", tokens: Array<[lab
   await open(page);
   await page.getByRole("button", { name: "Añadir canal" }).click();
   await page.getByRole("menuitem", { name: new RegExp(kind) }).click();
-  for (const [label, value] of tokens) await page.getByRole("textbox", { name: label, exact: true }).fill(value);
-  await page.getByRole("button", { name: "Conectar bot" }).click();
+  // CANALES-FACIL-1: the setup is an assistant, one step per screen; each field shows on the step that asks for it.
+  for (const [label, value] of tokens) {
+    const box = page.getByRole("textbox", { name: label, exact: true });
+    while (!(await box.isVisible())) await page.getByRole("button", { name: "Siguiente" }).click();
+    await box.fill(value);
+  }
+  const go = page.getByRole("button", { name: "Conectar y comprobar" });
+  while (!(await go.isVisible())) await page.getByRole("button", { name: "Siguiente" }).click();
+  await go.click();
+  await page.getByRole("button", { name: "Terminar" }).click();
   await expect(page.getByText("@colonia", { exact: false }).first()).toBeVisible();
   await expect(page.getByText(`Este es mi ${kind}`)).toBeVisible();
 }
@@ -70,7 +78,9 @@ test("Discord rooms: the owner lists a server room, and the bot answers there wh
   await names.blur();
   await expect(names).toHaveValue("roby");
   // Its rooms may look things up on the web: by default only when the owner asks; here, for everyone.
-  await expect(page.getByRole("radiogroup", { name: "Buscar en la web" }).getByRole("radio", { name: "Solo tú" })).toBeChecked();
+  await expect(
+    page.getByRole("radiogroup", { name: "Buscar en la web" }).getByRole("radio", { name: "Solo tú" }),
+  ).toBeChecked();
   await page.getByRole("radiogroup", { name: "Buscar en la web" }).getByRole("radio", { name: "Todos" }).click();
   await until(async () =>
     (await rpc<{ channels: Array<{ id: string; research?: string }> }>("channels.list")).channels.some(
@@ -138,13 +148,17 @@ test("new channels are offered; Google Chat takes its subscription and whole JSO
   for (const name of ["Google Chat", "SMS", "ntfy", "Nextcloud Talk", "IRC", "Twitch", "Microsoft Teams", "LINE"])
     await expect(page.getByRole("menuitem", { name, exact: true })).toBeEnabled();
   await page.getByRole("menuitem", { name: "Google Chat", exact: true }).click();
-  const connect = page.getByRole("button", { name: "Conectar bot" });
-  await page.getByRole("textbox", { name: "Suscripción", exact: true }).fill("projects/acme/subscriptions/colonia-chat");
-  await expect(connect).toBeDisabled();
+  // The data goes on the last step of the assistant: it cannot go on until both fields are valid.
+  const next = page.getByRole("button", { name: "Siguiente" });
+  const sub = page.getByRole("textbox", { name: "Suscripción", exact: true });
+  while (!(await sub.isVisible())) await next.click();
+  await sub.fill("projects/acme/subscriptions/colonia-chat");
+  await expect(next).toBeDisabled();
   const key =
     '{\n  "type": "service_account",\n  "client_email": "colonia@acme.iam.gserviceaccount.com",\n  "private_key": "-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----\\n"\n}';
   await page.getByRole("textbox", { name: "Clave de la cuenta de servicio (JSON)", exact: true }).fill(key);
-  await expect(connect).toBeEnabled();
+  await next.click();
+  await expect(page.getByRole("button", { name: "Conectar y comprobar" })).toBeEnabled();
 });
 
 test("Teams shows its public address: the owner's own https URL gives the address to paste into Azure", async ({

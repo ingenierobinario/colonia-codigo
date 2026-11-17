@@ -349,4 +349,58 @@ export const enChannels = {
   "ch.problem.conflict": "Another app is using this same account. Close it there or make a new account for Colonia.",
   "ch.problem.other": "It could not connect. Turn it off and on again; if it stays the same, connect it again.",
   "ch.problem.detail": "Show the technical detail",
+  "guide.stepOf": "Step {n} of {total}",
+  "guide.next": "Next",
+  "guide.back": "Back",
+  "guide.copy": "Copy",
+  "guide.copied": "Copied. Now paste it there.",
+  "guide.paste": "Paste what I copied",
+  "guide.pasteBlocked": "Colonia could not read what you copied: click the box and press Ctrl+V (Cmd+V on a Mac).",
+  "guide.notValid": "That does not look right yet. Copy the whole message again and paste it here.",
+  "guide.inviteLater": "Go back one step and paste the bot's code first: then this button appears.",
+  "guide.final":
+    "Last step: choose who answers there and press “Connect and check”. Colonia tries the connection at once and tells you if something is missing.",
+  "guide.missing": "A field of the steps before is still empty or wrong: go back and fill it in.",
+  "guide.connect": "Connect and check",
+  "guide.checking": "Checking the connection… this takes a few seconds.",
+  "guide.ok": "Done! {channel} is connected. Write to it from your phone to try it.",
+  "guide.failed": "It did not connect. This is what to do:",
+  "guide.fix": "Fix it",
+  "guide.retry": "Try again",
+  "guide.finish": "Finish",
+  "guide.tg.1":
+    "Press “Open BotFather”. BotFather is Telegram's official robot for making bots: it opens in your Telegram app (or on the web if you do not have it).",
+  "guide.tg.1see": "You will see a chat with BotFather. If there is a “Start” button at the bottom, press it.",
+  "guide.tg.2":
+    "Copy this, paste it in the BotFather chat and send it. It asks for a name (for example “My helper”) and then a username that ends in “bot” (for example “myhelper_bot”). Send each one as a message.",
+  "guide.tg.2see":
+    "If the name is taken it asks for another: add a few numbers. When it works, it answers with a long message that starts with “Done! Congratulations”.",
+  "guide.tg.3":
+    "Copy that whole long message (on the phone: hold your finger on it and press Copy) and press “Paste what I copied”. You do not need to understand it: Colonia takes what it needs.",
+  "guide.dc.1":
+    "Press “Open Discord Developer Portal” and sign in with your usual Discord account. Press “New Application” at the top right, write a name (for example “Colonia”), tick the box and press “Create”.",
+  "guide.dc.1see": "You will see your new application's page, with a menu on the left.",
+  "guide.dc.2":
+    "In the menu on the left, press “Bot”. Scroll down to “Message Content Intent” and turn it on (it goes blue). Press “Save Changes” in the bar that appears at the bottom.",
+  "guide.dc.2see": "The switch stays blue after saving.",
+  "guide.dc.3":
+    "On that same page, at the top, press “Reset Token” and then “Yes, do it!” (it may ask for your password). A long code appears: press “Copy” and then “Paste what I copied” here.",
+  "guide.dc.4":
+    "Now put the bot in your server: press the button, choose your server and press “Authorize”. If you have no server, make one first in Discord with the “+” on the left.",
+  "guide.sl.1":
+    "Press “Create the app in Slack” and sign in. Choose your workspace at the top and press “Next”, “Next” and “Create”. Everything is already filled in: you do not have to change anything.",
+  "guide.sl.1see": "You will see the page of your new app “Colonia”, with a menu on the left.",
+  "guide.sl.2":
+    "In the menu on the left, press “Install App”, then “Install to …” and “Allow”. A code that starts with xoxb- appears: press “Copy” next to it and then “Paste what I copied” here.",
+  "guide.sl.3":
+    "In the menu on the left, press “Basic Information”. Scroll down to “App-Level Tokens” and press “Generate Token and Scopes”. Write any name, press “Add Scope”, choose the one below (you can copy it) and press “Generate”. Copy the code that starts with xapp- and press “Paste what I copied”.",
+  "guide.nt.1":
+    "ntfy is a free app that shows Colonia's notices on your phone, with no account. Install it: press the button and pick your phone's store (Google Play or App Store).",
+  "guide.nt.2":
+    "In the ntfy app, press “+”, paste this name (press Copy first) and press “Subscribe”. Colonia made it up so nobody else can guess it: keep it as it is.",
+  "guide.mx.1":
+    "If the agent has no Matrix account yet, make one free: press “Open Element” and create an account (a username and a password; the email is optional).",
+  "guide.mx.1see": "Your user looks like @name:matrix.org. Write it down with the password.",
+  "guide.mx.2":
+    "Write that user and its password here. Then, from your own Matrix account, start a chat with it with encryption off, so the agent can read it.",
 } as const;

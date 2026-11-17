@@ -365,4 +365,58 @@ export const esChannels: Partial<Record<MessageKey, string>> = {
     "Otra aplicación está usando esta misma cuenta. Ciérrala allí o crea una cuenta nueva para Colonia.",
   "ch.problem.other": "No se pudo conectar. Apágalo y enciéndelo de nuevo; si sigue igual, vuelve a conectarlo.",
   "ch.problem.detail": "Ver el detalle técnico",
+  "guide.stepOf": "Paso {n} de {total}",
+  "guide.next": "Siguiente",
+  "guide.back": "Atrás",
+  "guide.copy": "Copiar",
+  "guide.copied": "Copiado. Ahora pégalo allí.",
+  "guide.paste": "Pegar lo que he copiado",
+  "guide.pasteBlocked": "Colonia no ha podido leer lo que copiaste: pulsa en la casilla y pulsa Ctrl+V (Cmd+V en Mac).",
+  "guide.notValid": "Esto todavía no parece correcto. Vuelve a copiar el mensaje entero y pégalo aquí.",
+  "guide.inviteLater": "Vuelve un paso atrás y pega primero el código del bot: entonces aparece este botón.",
+  "guide.final":
+    "Último paso: elige quién contesta ahí y pulsa «Conectar y comprobar». Colonia prueba la conexión al momento y te dice si falta algo.",
+  "guide.missing": "Un dato de los pasos anteriores está vacío o mal: vuelve atrás y rellénalo.",
+  "guide.connect": "Conectar y comprobar",
+  "guide.checking": "Comprobando la conexión… tarda unos segundos.",
+  "guide.ok": "¡Listo! {channel} está conectado. Escríbele desde tu móvil para probarlo.",
+  "guide.failed": "No se ha conectado. Esto es lo que hay que hacer:",
+  "guide.fix": "Corregirlo",
+  "guide.retry": "Volver a probar",
+  "guide.finish": "Terminar",
+  "guide.tg.1":
+    "Pulsa «Abrir BotFather». BotFather es el robot oficial de Telegram para crear bots: se abre en tu Telegram (o en la web si no lo tienes instalado).",
+  "guide.tg.1see": "Verás un chat con BotFather. Si abajo aparece un botón «Iniciar» o «Start», púlsalo.",
+  "guide.tg.2":
+    "Copia esto, pégalo en el chat de BotFather y envíalo. Te pedirá un nombre (por ejemplo «Mi ayudante») y después un nombre de usuario que acabe en «bot» (por ejemplo «miayudante_bot»). Envía cada uno como un mensaje.",
+  "guide.tg.2see":
+    "Si el nombre está cogido te pedirá otro: añádele unos números. Cuando acierte, te contesta con un mensaje largo que empieza por «Done! Congratulations».",
+  "guide.tg.3":
+    "Copia ese mensaje largo entero (en el móvil: deja el dedo encima y pulsa Copiar) y pulsa «Pegar lo que he copiado». No hace falta entenderlo: Colonia saca lo que necesita.",
+  "guide.dc.1":
+    "Pulsa «Abrir Discord Developer Portal» y entra con tu cuenta de Discord de siempre. Arriba a la derecha pulsa «New Application», escribe un nombre (por ejemplo «Colonia»), marca la casilla y pulsa «Create».",
+  "guide.dc.1see": "Verás la página de tu aplicación nueva, con un menú a la izquierda.",
+  "guide.dc.2":
+    "En el menú de la izquierda pulsa «Bot». Baja hasta «Message Content Intent» y enciéndelo (se pone azul). Pulsa «Save Changes» en la barra que aparece abajo.",
+  "guide.dc.2see": "El interruptor sigue azul después de guardar.",
+  "guide.dc.3":
+    "En esa misma página, arriba, pulsa «Reset Token» y luego «Yes, do it!» (puede pedirte tu contraseña). Aparece un código largo: pulsa «Copy» y después «Pegar lo que he copiado» aquí.",
+  "guide.dc.4":
+    "Ahora mete el bot en tu servidor: pulsa el botón, elige tu servidor y pulsa «Autorizar». Si no tienes servidor, créalo antes en Discord con el «+» de la izquierda.",
+  "guide.sl.1":
+    "Pulsa «Crear la app en Slack» e inicia sesión. Elige tu espacio de trabajo arriba y pulsa «Next», «Next» y «Create». Ya va todo rellenado: no tienes que cambiar nada.",
+  "guide.sl.1see": "Verás la página de tu app nueva «Colonia», con un menú a la izquierda.",
+  "guide.sl.2":
+    "En el menú de la izquierda pulsa «Install App», luego «Install to …» y «Allow». Aparece un código que empieza por xoxb-: pulsa «Copy» a su lado y después «Pegar lo que he copiado» aquí.",
+  "guide.sl.3":
+    "En el menú de la izquierda pulsa «Basic Information». Baja hasta «App-Level Tokens» y pulsa «Generate Token and Scopes». Escribe cualquier nombre, pulsa «Add Scope», elige el de abajo (puedes copiarlo) y pulsa «Generate». Copia el código que empieza por xapp- y pulsa «Pegar lo que he copiado».",
+  "guide.nt.1":
+    "ntfy es una app gratuita que te enseña los avisos de Colonia en el móvil, sin crear cuenta. Instálala: pulsa el botón y elige la tienda de tu móvil (Google Play o App Store).",
+  "guide.nt.2":
+    "En la app de ntfy pulsa «+», pega este nombre (pulsa antes Copiar) y pulsa «Suscribirse». Colonia lo ha inventado para que nadie más lo adivine: déjalo tal cual.",
+  "guide.mx.1":
+    "Si el agente aún no tiene cuenta de Matrix, créale una gratis: pulsa «Abrir Element» y crea una cuenta (un usuario y una contraseña; el correo es opcional).",
+  "guide.mx.1see": "Tu usuario tiene esta forma: @nombre:matrix.org. Apúntalo junto con la contraseña.",
+  "guide.mx.2":
+    "Escribe aquí ese usuario y su contraseña. Después, desde tu propia cuenta de Matrix, abre un chat con él con el cifrado apagado, para que el agente pueda leerlo.",
 };

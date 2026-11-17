@@ -586,6 +586,79 @@
   color: var(--colonia-fg-muted);
   font-size: var(--colonia-text-sm);
 }
+/* CANALES-FACIL-1: the setup as an assistant, one step per screen. */
+.guide {
+  padding: 16px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 12px;
+  background: var(--colonia-surface);
+}
+.guide__progress {
+  display: flex;
+  gap: 6px;
+}
+.guide__dot {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--colonia-border);
+}
+.guide__dot.is-done,
+.guide__dot.is-on {
+  background: var(--colonia-accent);
+}
+.guide__dot.is-on {
+  opacity: 0.6;
+}
+.guide__step {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.guide__count {
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+}
+.guide__text {
+  margin: 0;
+  line-height: 1.5;
+}
+.guide__see {
+  margin: 0;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+}
+.guide__copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.guide__copy code {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--colonia-surface-raised);
+  overflow-wrap: anywhere;
+}
+.guide__bad {
+  margin: 0;
+  color: var(--colonia-danger);
+}
+.guide__ok {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--colonia-accent);
+  font-weight: 600;
+}
+.guide__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
 .tgsetup__start:not(:empty) {
   margin-top: 6px;
 }
