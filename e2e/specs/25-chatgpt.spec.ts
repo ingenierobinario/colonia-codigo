@@ -60,7 +60,7 @@ test("the ChatGPT plan comes first as Codex, fixed, and connects with its own si
 test("a CLI is never offered as a model for agents or the router, and the core refuses one", async ({ page }) => {
   await expect(
     rpc("agents.update", { agent: "superagent", model_choice: { model: "codex", router: false } }),
-  ).rejects.toThrow(/own sessions/);
+  ).rejects.toThrow(/own chats/);
   await open(page);
   await openSettings(page);
   const settings = page.getByRole("dialog", { name: "Configuración" });

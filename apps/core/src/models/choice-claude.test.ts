@@ -6,11 +6,12 @@ import { refProblem } from "./choice.ts";
 
 const engines = { harness: new Set(["claude", "codex"]), providers: new Set(["openai"]) } as unknown as EngineIds;
 
-test("an agent may pick a Claude model; the router and the default may not (D-185)", () => {
-  assert.equal(refProblem("claude/sonnet", engines, undefined, true), undefined);
-  assert.match(refProblem("claude/sonnet", engines) ?? "", /own sessions/);
-  assert.match(refProblem("codex/gpt-5", engines, undefined, true) ?? "", /own sessions/);
-  assert.match(refProblem("claude/sonnet", engines, "codex", true) ?? "", /codex session/);
+test("Claude with the account runs for agents, the router and the default while it is on; Codex never (ROUTER-CLAUDE-1)", () => {
+  assert.equal(refProblem("claude/sonnet", engines), undefined);
+  assert.equal(refProblem("claude", engines, undefined, true), undefined);
+  assert.match(refProblem("claude/sonnet", engines, undefined, false) ?? "", /switched off/);
+  assert.match(refProblem("codex/gpt-5", engines) ?? "", /own chats/);
+  assert.match(refProblem("claude/sonnet", engines, "codex") ?? "", /codex session/);
 });
 
 test("a fresh Claude session gets the chat so far, newest kept when it is long", () => {

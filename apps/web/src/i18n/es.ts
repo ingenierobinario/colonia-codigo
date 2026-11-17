@@ -1419,6 +1419,12 @@ export const es: Partial<Record<MessageKey, string>> = {
   "models.effortDefault": "El de siempre",
   "models.effortDefaultIs": "Por defecto ({effort})",
   "models.engineDefault": "{engine} por defecto",
+  "models.err.claudeOff": "Claude con tu cuenta está apagado. Enciéndelo en Ajustes › Motores y modelos.",
+  "models.err.cliOnly":
+    "{engine} solo funciona en sus propias conversaciones (Sesiones › {engine}); no puede usarse en agentes ni en el router.",
+  "models.err.sessionOnly": "Esta conversación es de {engine}: solo puede usar modelos de {engine}.",
+  "models.err.unknownEngine": "Ese modelo ya no está disponible. Elige otro.",
+  "models.err.pickModel": "Elige qué modelo de {engine} quieres usar.",
   "models.search": "Buscar modelos",
   "models.showAll": "Mostrar también los de voz, imagen y embeddings",
   "models.noMatch": "Ningún modelo coincide.",
@@ -1587,6 +1593,8 @@ export const es: Partial<Record<MessageKey, string>> = {
   "chat.clearConfirm": "Limpiar",
   "error.clear": "No se pudo limpiar la conversación: {error}",
   "notice.thread.cleared": "Conversación limpiada · {time}",
+  "notice.run.failed.claudeOff":
+    "No se pudo responder: Claude con tu cuenta está apagado. Enciéndelo en Ajustes › Motores y modelos o elige otro modelo.",
   "memory.filter.forgotten": "Olvidadas",
   "memory.lead.forgotten":
     "Notas que tú o un agente olvidaron. Ningún agente las ve; puedes traer una de vuelta o borrarla para siempre.",

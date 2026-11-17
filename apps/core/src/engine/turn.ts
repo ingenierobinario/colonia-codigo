@@ -16,7 +16,7 @@ import type { AgentRecord } from "../domain/agents.ts";
 import { memorySettings } from "../domain/memory-settings.ts";
 import type { LogEntry } from "../domain/model-log.ts";
 import { ownerIdentity, ownerTimeZone } from "../domain/owner.ts";
-import { engineOf, harnessOf, isCliRef } from "../domain/refs.ts";
+import { agentUsableRef, engineOf, harnessOf } from "../domain/refs.ts";
 import { type RunRecord, runsOnComputer } from "../domain/runs.ts";
 import type { Store } from "../domain/store.ts";
 import { previewOf, type ThreadContext, type Worker, worksInFolder } from "../domain/threads.ts";
@@ -26,7 +26,7 @@ import { CallError, Canceled, DeadlineExceeded, errorMessage, Shutdown, Supersed
 import type { Harnesses, TurnIO, TurnOutcome } from "../harness/index.ts";
 import { systemNote } from "../harness/native.ts";
 import type { Log } from "../log.ts";
-import { candidates, modelSettings } from "../models/choice.ts";
+import { CLAUDE_OFF, candidates, modelSettings } from "../models/choice.ts";
 import type { ChatItem, Usage } from "../providers/types.ts";
 import { ProviderError } from "../providers/types.ts";
 import { contextWindow } from "../providers/windows.ts";
@@ -160,7 +160,8 @@ export type Turn = {
   worker?: Worker | undefined;
 };
 /** What runs a turn: our loop with its chain of model APIs, or a CLI in its own session with one model. */
-type Engine = { harness: HarnessId; refs: string[] };
+/** `fallback`: API models to run instead when Claude with the account cannot start (not installed, signed out). */
+type Engine = { harness: HarnessId; refs: string[]; fallback?: string[] };
 
 export async function runTurn(deps: TurnDeps, start: RunRecord, signal: AbortSignal): Promise<RunRecord> {
   const { store } = deps;
@@ -760,16 +761,12 @@ export function enginePick(deps: TurnDeps, turn: Turn, start: RunRecord, history
     const ref = chosen?.model && engineOf(chosen.model) === own ? chosen.model : own;
     return { harness: harnessOf(ref), refs: [ref] };
   }
-  // D-185: an agent (or its chat) may pick a Claude model; that turn runs on the user's Claude Code with the agent's
-  // prompt and Colonia's tools. The router and the install default stay on model APIs.
-  if (chosen?.model && harnessOf(chosen.model) === "claude") {
-    // CLAUDE-ACTIVO-1: switched off in Settings, Colonia does not run on the Claude plan.
-    if (!deps.store.settings.read("claude_plan_enabled"))
-      throw new Error("Claude with your account is switched off; turn it on in Settings → Engines and models");
-    return { harness: "claude", refs: [chosen.model] };
-  }
+  // D-185 + ROUTER-CLAUDE-1: the agent's model, the router's rule and its chain may name Claude with the owner's
+  // account; that turn runs on their Claude Code with the agent's prompt and Colonia's tools. Codex and ACP agents run
+  // only in their own sessions. Switched off (CLAUDE-ACTIVO-1), Colonia does not run on the Claude plan.
+  const claudeOn = deps.store.settings.read("claude_plan_enabled");
   const settings = modelSettings(deps.store);
-  const refs = candidates(chosen ?? settings.defaultChoice(), settings.router(), {
+  const all = candidates(chosen ?? settings.defaultChoice(), settings.router(), {
     text: turn.input.text,
     context_chars: history.reduce((n, m) => n + String(m.content ?? "").length, 0),
     // An image earlier in the chat still travels with each call: the model must be able to see it.
@@ -779,12 +776,19 @@ export function enginePick(deps: TurnDeps, turn: Turn, start: RunRecord, history
     channel: turn.thread.channel?.id ?? "app",
     trigger: start.trigger,
     agent_kind: turn.agent.kind,
-  }).filter((r) => !isCliRef(r));
-  if (!refs.length)
+  }).filter(agentUsableRef);
+  const claudeRefs = all.filter((r) => harnessOf(r) === "claude");
+  const apiRefs = all.filter((r) => harnessOf(r) === "native");
+  // Claude first: the turn runs there, and the API models behind it are its fallback when Claude cannot start.
+  if (claudeOn && all[0] && harnessOf(all[0]) === "claude")
+    return { harness: "claude", refs: [all[0]], fallback: apiRefs };
+  if (!apiRefs.length)
     throw new Error(
-      "no model chosen for this agent and the router has none; connect a model API in Settings → Engines and models",
+      claudeRefs.length && !claudeOn
+        ? CLAUDE_OFF
+        : "no model chosen for this agent and the router has none; connect a model API in Settings → Engines and models",
     );
-  return { harness: "native", refs };
+  return { harness: "native", refs: apiRefs };
 }
 
 /** Runs the turn on its engine. A CLI resumes its own session and keeps its id; our log keeps its answer too. */
@@ -801,6 +805,38 @@ async function runEngine(
   },
 ): Promise<TurnOutcome> {
   const { store } = deps;
+  if (engine.fallback?.length) {
+    // ROUTER-CLAUDE-1: Claude that fails before doing anything (not installed, signed out, plan limit) hands the turn
+    // to the API models behind it; once it has written or used a tool, its failure is the turn's.
+    let acted = false;
+    const io = t.io;
+    const watched = (): TurnIO => {
+      const x = io();
+      const mark =
+        <A extends unknown[], R>(f: (...a: A) => R) =>
+        (...a: A): R => {
+          acted = true;
+          return f(...a);
+        };
+      return {
+        ...x,
+        onText: mark(x.onText),
+        execute: mark(x.execute),
+        approve: mark(x.approve),
+        observe: mark(x.observe),
+      };
+    };
+    try {
+      return await runEngine(deps, { harness: engine.harness, refs: engine.refs }, { ...t, io: watched });
+    } catch (err) {
+      if (acted || t.signal.aborted) throw err;
+      deps.log.warn(
+        { run: t.run().id, err: errorMessage(err) },
+        "Claude did not start: the turn goes to the next model",
+      );
+      return runEngine(deps, { harness: "native", refs: engine.fallback }, t);
+    }
+  }
   t.onHarness(engine.harness);
   const session = t.thread.engine ?? (engine.harness === "claude" ? "claude" : undefined);
   const resumed = session ? store.harnessSessions.get(t.thread.id, session) : undefined;
@@ -972,7 +1008,14 @@ function failRun(
       noModel ? "run.noModel" : "run.failed",
       limit ? message : noModel ? "No model could answer." : message,
       {
-        vars: limit ? (until ? { variant: "limit", until } : { variant: "limitUnknown" }) : {},
+        // ROUTER-CLAUDE-1: Claude switched off is said in the owner's language, not as an error.
+        vars: limit
+          ? until
+            ? { variant: "limit", until }
+            : { variant: "limitUnknown" }
+          : reason === CLAUDE_OFF
+            ? { variant: "claudeOff" }
+            : {},
         detail: reason.slice(0, 2000),
       },
     );
