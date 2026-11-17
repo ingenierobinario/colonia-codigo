@@ -268,12 +268,7 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
               >
                 {t("pshare.refresh")}
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={busy}
-                onClick={() => void unpublish()}
-              >
+              <Button variant="secondary" size="sm" disabled={busy} onClick={() => void unpublish()}>
                 {t("pshare.unpublish")}
               </Button>
             </div>
