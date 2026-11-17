@@ -27,7 +27,7 @@ import { publicProject } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { writeAtomic } from "../paths.ts";
-import { dropShared, putShared, sharedToken } from "../shared-projects.ts";
+import { dropShared, putShared, sharedIndex, sharedToken } from "../shared-projects.ts";
 import { createProject } from "./app.ts";
 
 /**
@@ -375,7 +375,8 @@ export function projectShareHandlers(deps: {
       if (!shared) {
         if (!store.projects.get(project)) throw notFound(`project ${project}`);
         dropShared(home, project);
-        return { shared: false };
+        // ENLACE-TEMPORAL-2 · Cuántos siguen publicados: el enlace temporal sólo se cierra cuando ya no queda ninguno.
+        return { shared: false, left: Object.keys(sharedIndex(home)).length };
       }
       const b = built(project);
       // Publicar otra vez renueva la copia y conserva el enlace que ya se pasó.

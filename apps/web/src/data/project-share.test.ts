@@ -99,3 +99,22 @@ test("«Default» no se ofrece para compartir: el core no lo tiene como proyecto
   assert.equal(share.canShareProject({ isDefault: true }), false);
   assert.equal(share.canShareProject({ isDefault: false }), true);
 });
+
+test("ENLACE-TEMPORAL-2 · dejar de publicar uno no cierra el enlace temporal mientras quede otro publicado", async (t) => {
+  const calls = mockRpc(t, {
+    "projects.share": (p: { project: string }) => ({ shared: false, left: p.project === "prj_a" ? 1 : 0 }),
+    "webhooks.get": { mode: "cloudflare", url: "https://x.trycloudflare.com" },
+    "webhooks.set": { mode: "off" },
+  });
+  assert.equal(await share.unpublishProject("prj_a"), true);
+  assert.deepEqual(
+    calls.map(([m]) => m),
+    ["projects.share"],
+  );
+  assert.equal(await share.unpublishProject("prj_b"), true);
+  assert.deepEqual(
+    calls.map(([m]) => m),
+    ["projects.share", "projects.share", "webhooks.get", "webhooks.set"],
+  );
+  assert.deepEqual(calls.at(-1)?.[1], { mode: "off" });
+});

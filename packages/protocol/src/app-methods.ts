@@ -703,12 +703,18 @@ export const appMethods = {
   },
   /**
    * Publishes a copy of the project's package at `/p/<link>` on Colonia's public address (the one widgets use), or stops
-   * publishing it. Publishing again renews the copy and keeps the link; the copy is the package of that moment, never a
+   * publishing it (`left` then says how many stay published). Publishing again renews the copy and keeps the link; the copy is the package of that moment, never a
    * live read of the folder.
    */
   "projects.share": {
     params: z.object({ project: Id, shared: z.boolean() }).strict(),
-    result: z.object({ shared: z.boolean(), path: z.string().optional(), removed: z.number().int().optional() }),
+    result: z.object({
+      shared: z.boolean(),
+      path: z.string().optional(),
+      removed: z.number().int().optional(),
+      /** On unpublish: how many projects are still published (the temporary link closes only at 0). */
+      left: z.number().int().optional(),
+    }),
     effect: true,
     access: "human",
   },

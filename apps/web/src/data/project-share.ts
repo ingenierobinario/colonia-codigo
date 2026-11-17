@@ -143,6 +143,22 @@ export async function closeTempLink(): Promise<void> {
   } catch {}
 }
 
+/**
+ * ENLACE-TEMPORAL-2 · Deja de publicar un proyecto. El enlace temporal es de todos los publicados: sólo se cierra cuando
+ * ya no queda ninguno (antes se cerraba siempre y los demás proyectos se quedaban sin enlace). Devuelve si se retiró.
+ */
+export async function unpublishProject(project: string): Promise<boolean> {
+  let left: number | undefined;
+  try {
+    left = (await client.call("projects.share", { project, shared: false })).left;
+  } catch (e) {
+    notify(t("pshare.err.export", { error: errText(e) }));
+    return false;
+  }
+  if (left === 0) await closeTempLink();
+  return true;
+}
+
 type Source = { link: string } | { content: string };
 
 /** Qué trae un paquete, sin guardar nada. */

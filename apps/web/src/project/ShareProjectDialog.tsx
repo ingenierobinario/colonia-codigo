@@ -5,7 +5,6 @@ import type { ProjectEntry } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";
 import {
   type Address,
-  closeTempLink,
   copyText,
   exportProject,
   openTempLink,
@@ -13,6 +12,7 @@ import {
   publishProject,
   readAddress,
   saveProjectFile,
+  unpublishProject,
 } from "../data/project-share.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import "../styles/screens.css";
@@ -78,7 +78,7 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
   const base = addr?.url && addr.mode !== "off" && !addr.error ? addr.url : "";
   const temporary = addr?.mode === "cloudflare";
 
-  const publish = async (shared: boolean, done: "pshare.refreshed" | "pshare.unpublished" | undefined) => {
+  const publish = async (shared: boolean, done: "pshare.refreshed" | undefined) => {
     setBusy(true);
     const r = await publishProject(project.id, shared);
     setBusy(false);
@@ -95,12 +95,14 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
     setOpening(false);
   };
   const unpublish = async () => {
-    await publish(false, "pshare.unpublished");
-    // The temporary link was opened for this: it closes with it. A fixed address set up by the owner stays.
-    if (temporary) {
-      await closeTempLink();
-      setAddr((await readAddress()) ?? OFF);
-    }
+    setBusy(true);
+    // ENLACE-TEMPORAL-2 · The temporary link closes only when no other project is still published on it.
+    const ok = await unpublishProject(project.id);
+    setBusy(false);
+    if (!ok) return;
+    setPath(undefined);
+    notify(t("pshare.unpublished"), "info");
+    if (temporary) setAddr((await readAddress()) ?? OFF);
   };
   const tempError = temporary && addr?.error && !opening ? TEMP_ERRORS[addr.error] : undefined;
 

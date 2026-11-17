@@ -339,7 +339,18 @@ test("publicar da un enlace que responde con el paquete; publicar otra vez lo re
       /not a Colonia project link/,
     );
 
-    assert.deepEqual(await a.client.call("projects.share", { project: project.id, shared: false }), { shared: false });
+    // ENLACE-TEMPORAL-2 · Con otro proyecto publicado, retirar éste deja el otro en pie y lo dice (`left`).
+    const { project: other } = await a.client.call("projects.create", { name: "Ventas" });
+    const otherLink = await a.client.call("projects.share", { project: other.id, shared: true });
+    assert.deepEqual(await a.client.call("projects.share", { project: project.id, shared: false }), {
+      shared: false,
+      left: 1,
+    });
+    assert.equal((await get(otherLink.path ?? ""))?.status, 200);
+    assert.deepEqual(await a.client.call("projects.share", { project: other.id, shared: false }), {
+      shared: false,
+      left: 0,
+    });
     assert.equal(routes(one.path ?? ""), undefined);
     assert.equal((await a.client.call("projects.export", { project: project.id })).path, undefined);
   } finally {
