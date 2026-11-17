@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.38": {
+    en: [
+      "Colonia looks for a newer version every hour instead of every six, so updates arrive the same day.",
+      "Each update check is noted in the update log, found or not.",
+    ],
+    es: [
+      "Colonia busca una versión nueva cada hora en vez de cada seis, así que las novedades llegan el mismo día.",
+      "Cada comprobación de actualizaciones queda apuntada en el registro, haya novedad o no.",
+    ],
+  },
   "2.36.37": {
     en: [
       "The first run now asks plain questions: is this your first time, or do you use it elsewhere?",
