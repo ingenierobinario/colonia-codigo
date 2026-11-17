@@ -108,7 +108,7 @@ export function BotSection({ kind }: { kind: BotKind }) {
               kind={kind}
               id={nextId}
               ordinal={accounts.length + 1}
-              onSaved={() => setCheckingId(nextId)}
+              onSaving={(on) => setCheckingId(on ? nextId : "")}
               onConnected={() => {
                 setCheckingId("");
                 setSelected(nextId);
@@ -159,15 +159,16 @@ function Setup({
   kind,
   id,
   ordinal,
-  onSaved,
+  onSaving,
   onConnected,
 }: {
   kind: BotKind;
   id: string;
   /** Which account of its kind this one will be: a second Slack app gets a name of its own. */
   ordinal: number;
-  /** The channel is stored: the screen stays on the assistant while the connection is checked. */
-  onSaved(): void;
+  /** The channel is being stored: the screen stays on the assistant, from before the store answers (the list of
+   * channels can show it first) until the check of its connection is over. False when it could not be stored. */
+  onSaving(on: boolean): void;
   onConnected(): void;
 }) {
   const t = useT();
@@ -232,6 +233,7 @@ function Setup({
   };
   const connect = async () => {
     setBusy(true);
+    onSaving(true);
     const ok = await saveChannel(
       id,
       {
@@ -245,8 +247,7 @@ function Setup({
       tokens.joined,
     );
     setBusy(false);
-    if (!ok) return;
-    onSaved();
+    if (!ok) return onSaving(false);
     setChecking(true);
     setAt(guide.length);
   };
