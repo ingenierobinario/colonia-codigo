@@ -27,6 +27,12 @@ for (const mode of ["light", "dark"] as const) {
         expect(text, jerga).not.toContain(jerga);
       }
       await expect(wizard.locator(".pcard").filter({ hasText: /^ChatGPTCon tu cuenta Plus o Pro/ })).toHaveCount(1);
+      // CLAUDE-CUENTA-1: el plan de Claude se conecta como el de ChatGPT, con su chispa naranja y sin la «A» de la empresa.
+      const claudePlan = wizard.locator(".pcard").filter({ hasText: /^ClaudeCon tu cuenta Pro o Max/ });
+      await expect(claudePlan).toHaveCount(1);
+      await expect(claudePlan.getByRole("button", { name: "Conectar" })).toBeVisible();
+      await expect(claudePlan.locator(".colonia-engine--claude")).toHaveCount(1);
+      await expect(wizard.locator(".colonia-engine--anthropic")).toHaveCount(0);
       await expect(wizard.getByText("—", { exact: true })).toHaveCount(0);
       // El interruptor del consumo (un rayo sin texto) no pinta nada en una guía de bienvenida.
       await expect(wizard.locator(".engine-usage-switch")).toHaveCount(0);
