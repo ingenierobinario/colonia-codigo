@@ -6,7 +6,7 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
-  "2.36.46": {
+  "2.36.47": {
     en: [
       "Assign agents to areas and roles and see their responsibilities in the project chart.",
       "Share projects with their skills and agents, including compatible Claude Code and Codex definitions.",

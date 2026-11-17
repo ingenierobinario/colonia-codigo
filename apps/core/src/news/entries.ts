@@ -58,7 +58,7 @@ export const NEWS: readonly NewsEntry[] = [
   BROWSER_JAVASCRIPT_NEWS,
   {
     id: "project-team-assignments",
-    since: "2.36.46",
+    since: "2.36.47",
     title: { en: "See who does what in a project", es: "Quién hace qué en un proyecto" },
     about: {
       en: "Assign each agent to a team area and a role. Open the project chart to see responsibilities and who reports to whom.",
