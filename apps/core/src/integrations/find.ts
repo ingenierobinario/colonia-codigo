@@ -5,7 +5,7 @@ import { knownSite } from "@colonia/protocol/known-sites";
 
 export function browserService(address: string) {
   const url = URL.parse(address);
-  if (!url || url.protocol !== "https:" || url.port || url.username || url.password) return undefined;
+  if (url?.protocol !== "https:" || url.port || url.username || url.password) return undefined;
   const site = knownSite(url.hostname);
   return site && { id: site.service, origin: url.origin };
 }

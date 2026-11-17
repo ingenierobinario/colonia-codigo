@@ -12,7 +12,7 @@ export async function openOriginalProfile(source: FuenteImportar): Promise<boole
   const found = installedBrowsers().find((b) => b.id === source.navegador);
   if (!found) return false;
   const { command, args } = originalProfileCommand(source, found.launch, process.platform);
-  const child = spawn(command, args, { detached: true, stdio: "ignore" });
+  const child = spawn(command, args, { detached: true, stdio: "ignore", windowsHide: false });
   return new Promise((resolve) => {
     child.once("error", () => resolve(false));
     child.once("spawn", () => {
