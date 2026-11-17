@@ -17,8 +17,8 @@ env:
   COLONIA_SECRETS: file
 
 jobs:
-  verify:
-    name: verify
+  preflight:
+    name: Pruebas y rendimiento (Linux)
     runs-on: ubuntu-24.04
     timeout-minutes: 300
     steps:
@@ -34,19 +34,92 @@ jobs:
         run: |
           sudo apt-get install --no-install-recommends -y libgtk-3-0t64 openbox xvfb xauth
           node apps/desktop/node_modules/electron/install.js
-      - name: Verificar el repositorio
-        run: pnpm verify
-      - name: Guardar los informes de pruebas y rendimiento
+      - name: Comprobar el código y ejecutar las pruebas unitarias
+        run: pnpm preflight
+      - name: Medir el panel y el motor
+        run: |
+          COLONIA_TEST_COVERAGE=1 pnpm build:web
+          node --no-warnings scripts/perf.ts
+      - name: Guardar el informe de rendimiento
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: informes-linux
-          path: |
-            coverage/all/functions.md
-            e2e/.out/perf*.json
-            test-results/
+          path: e2e/.out/perf*.json
           include-hidden-files: true
           if-no-files-found: ignore
+          retention-days: 7
+
+  coverage:
+    name: Cobertura de ${{ matrix.name }}
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: unitarias, args: "--part=unit" }
+          - { name: escritorio, args: "--part=desktop" }
+          - { name: panel-1, args: "--part=web --shard=1/6" }
+          - { name: panel-2, args: "--part=web --shard=2/6" }
+          - { name: panel-3, args: "--part=web --shard=3/6" }
+          - { name: panel-4, args: "--part=web --shard=4/6" }
+          - { name: panel-5, args: "--part=web --shard=5/6" }
+          - { name: panel-6, args: "--part=web --shard=6/6" }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          browser: linux
+          mobile: ${{ matrix.name == 'unitarias' }}
+      - name: Preparar la pantalla virtual y Electron
+        if: matrix.name == 'escritorio'
+        run: |
+          sudo apt-get install --no-install-recommends -y libgtk-3-0t64 openbox xvfb xauth
+          node apps/desktop/node_modules/electron/install.js
+      - name: Ejecutar la parte con su propia Colonia de prueba
+        run: node scripts/test-coverage.ts --e2e ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cobertura-${{ matrix.name }}
+          path: |
+            coverage/all/parts/*/status.json
+            coverage/all/parts/*/functions.json
+            test-results/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+
+  verify:
+    needs: [preflight, coverage, macos-web]
+    runs-on: ubuntu-24.04
+    if: ${{ !cancelled() }}
+    steps:
+      - name: Comprobar el resultado de todas las pruebas
+        env:
+          PREFLIGHT: ${{ needs.preflight.result }}
+          COVERAGE: ${{ needs.coverage.result }}
+          MACOS: ${{ needs.macos-web.result }}
+        run: test "$PREFLIGHT" = success && test "$COVERAGE" = success && test "$MACOS" = success
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cobertura-*
+          path: coverage/all/parts
+      - name: Reunir las ocho partes de la cobertura
+        run: node scripts/test-coverage.ts --e2e --merge --expect-parts=8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: informe-cobertura
+          path: coverage/all/functions.md
           retention-days: 7
 
   macos-web:

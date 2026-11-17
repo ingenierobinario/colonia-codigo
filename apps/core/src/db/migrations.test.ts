@@ -13,11 +13,17 @@ function upgradeFrom(marker: string, fill: (db: DatabaseSync) => void) {
   assert.ok(at > 0, `no migration with ${marker}`);
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-migrate-"));
   const old = new DatabaseSync(path.join(home, "colonia.db"));
-  old.exec("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
-  for (const m of MIGRATIONS.slice(0, at)) old.exec(m);
-  old.prepare("INSERT INTO meta (key, value) VALUES ('schema_version', ?)").run(String(at));
-  fill(old);
-  old.close();
+  try {
+    // Construir el estado anterior de una vez evita sincronizar el disco por cada sentencia del historial.
+    old.exec("BEGIN");
+    old.exec("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+    for (const m of MIGRATIONS.slice(0, at)) old.exec(m);
+    old.prepare("INSERT INTO meta (key, value) VALUES ('schema_version', ?)").run(String(at));
+    fill(old);
+    old.exec("COMMIT");
+  } finally {
+    old.close();
+  }
   return { db: openDb(home), cleanup: () => fs.rmSync(home, { recursive: true, force: true }) };
 }
 
