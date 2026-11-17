@@ -3,6 +3,27 @@ import { expect, rpc, test } from "./kit.ts";
 
 const name = "Seguimiento semanal de solicitudes internacionales con un título largo y legible";
 
+test("el resumen carga el editor del proyecto la primera vez que se abre", async ({ page }) => {
+  const { project } = await rpc<Result<"projects.create">>("projects.create", { name: "Proyecto de lectura" });
+  await rpc("setup.finish");
+  let editorRequests = 0;
+  page.on("request", (request) => {
+    if (/\/assets\/ProjectSettings-[\w-]+\.js$/.test(new URL(request.url()).pathname)) editorRequests++;
+  });
+  await page.goto(`/#project=${project.id}`);
+  const settings = page.getByRole("button", { name: /configuración del proyecto|project settings/i });
+  await expect(settings).toBeVisible();
+  expect(editorRequests).toBe(0);
+  await settings.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  expect(editorRequests).toBe(1);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await settings.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  expect(editorRequests).toBe(1);
+});
+
 for (const language of ["es", "en"] as const) {
   test(`desde el proyecto se encuentran sus skills y sus Flows en ${language}`, async ({ page }) => {
     await rpc("setup.finish");

@@ -99,6 +99,25 @@ export const DesktopInstallNotice = late(() =>
 );
 
 // Project dialogs, opened rarely.
+export const ProjectAgents = late(() =>
+  import("./project/ProjectTeam.tsx").then((m) => ({ default: m.ProjectAgents })),
+);
+export const ProjectFiles = late(() =>
+  import("./project/files/ProjectFiles.tsx").then((m) => ({ default: m.ProjectFiles })),
+);
+export const ProjectArtifacts = late(() =>
+  import("./project/ProjectArtifacts.tsx").then((m) => ({ default: m.ProjectArtifacts })),
+);
+export const ProjectMemory = late(() =>
+  import("./project/ProjectMemory.tsx").then((m) => ({ default: m.ProjectMemory })),
+);
+export const ResourcesView = late(() =>
+  import("./resources/ResourcesView.tsx").then((m) => ({ default: m.ResourcesView })),
+);
+export const RoutinesPane = late(() =>
+  import("./routines/RoutinesPane.tsx").then((m) => ({ default: m.RoutinesPane })),
+);
+export const ProjectTasks = late(() => import("./tasks/TasksList.tsx").then((m) => ({ default: m.ProjectTasks })));
 export const NewProjectDialog = late(() =>
   import("./shell/NewProjectDialog.tsx").then((m) => ({ default: m.NewProjectDialog })),
 );

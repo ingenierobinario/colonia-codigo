@@ -9,19 +9,21 @@ import { parseNewChat } from "../data/newChat.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { NewChatMenu } from "../inbox/NewChatMenu.tsx";
-import { ProjectMarkEditor } from "../lazy.ts";
-import { ResourcesView } from "../resources/ResourcesView.tsx";
-import { RoutinesPane } from "../routines/RoutinesPane.tsx";
+import {
+  ProjectAgents,
+  ProjectArtifacts,
+  ProjectFiles,
+  ProjectMarkEditor,
+  ProjectMemory,
+  ProjectSettings,
+  ProjectTasks,
+  ResourcesView,
+  RoutinesPane,
+} from "../lazy.ts";
 import { ChatWorkspace } from "../shell/ChatWorkspace.tsx";
 import type { Layout } from "../shell/layout.ts";
 import { go, nav, PROJECT_TABS, type ProjectTab, useNav } from "../shell/nav.ts";
-import { ProjectTasks } from "../tasks/TasksList.tsx";
-import { ProjectFiles } from "./files/ProjectFiles.tsx";
-import { ProjectArtifacts } from "./ProjectArtifacts.tsx";
-import { ProjectMemory } from "./ProjectMemory.tsx";
 import { ProjectOverview } from "./ProjectOverview.tsx";
-import { ProjectSettings } from "./ProjectSettings.tsx";
-import { ProjectAgents } from "./ProjectTeam.tsx";
 import { kindIcon, kindLabel } from "./projectKind.ts";
 import { useProjectCounts } from "./useProjectCounts.ts";
 
@@ -63,7 +65,9 @@ export function ProjectScreen({ layout }: { layout: Layout }) {
     <section className="project" aria-label={project.name}>
       <ProjectHeader project={project} tab={tab} />
       <div className="project__body">
-        <TabBody project={project} tab={tab} layout={layout} />
+        <Suspense fallback={<div role="status">{t("project.loading")}</div>}>
+          <TabBody project={project} tab={tab} layout={layout} />
+        </Suspense>
       </div>
     </section>
   );
@@ -72,7 +76,7 @@ export function ProjectScreen({ layout }: { layout: Layout }) {
 function ProjectHeader({ project, tab }: { project: ProjectEntry; tab: ProjectTab }) {
   const t = useT();
   const counts = useProjectCounts(project.id);
-  const [settings, setSettings] = useState(false);
+  const [settings, setSettings] = useState<boolean>();
   // The editor arrives the first time it is opened, and then stays to give the focus back when it closes.
   const [mark, setMark] = useState<boolean>();
   const KindIcon = kindIcon(project.kind);
@@ -136,7 +140,11 @@ function ProjectHeader({ project, tab }: { project: ProjectEntry; tab: ProjectTa
           count: counts[x.id],
         }))}
       />
-      <ProjectSettings project={project} open={settings} onOpenChange={setSettings} />
+      {settings !== undefined && (
+        <Suspense fallback={null}>
+          <ProjectSettings project={project} open={settings} onOpenChange={setSettings} />
+        </Suspense>
+      )}
       {mark !== undefined && (
         <Suspense fallback={null}>
           <ProjectMarkEditor project={project} open={mark} onOpenChange={setMark} />
