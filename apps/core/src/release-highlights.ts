@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.35": {
+    en: [
+      "Share a project with one click: Colonia creates a free temporary link.",
+      "Tailscale, ngrok and your own address are now under Advanced options.",
+      "Turning off Tailscale no longer shows an error when it was not publishing.",
+    ],
+    es: [
+      "Comparte un proyecto en un clic: Colonia crea un enlace temporal gratis.",
+      "Tailscale, ngrok y tu propia dirección pasan a Opciones avanzadas.",
+      "Apagar Tailscale ya no da error cuando no estaba publicando.",
+    ],
+  },
   "2.36.34": {
     en: [
       "Closing Colonia no longer shows the \"Object has been destroyed\" error.",
