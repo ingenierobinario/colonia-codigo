@@ -2,27 +2,22 @@
 import type { TabInfo, WebApp } from "@colonia/protocol";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
-import { createStore, useSlice } from "./createStore.ts";
+import { useSlice } from "./createStore.ts";
 import { notify } from "./notices.ts";
+import { createPinnedCatalog } from "./pinnedCatalog.ts";
 import { data } from "./state.ts";
 
-type State = { apps: WebApp[]; keyed: string[]; loaded: boolean };
-const store = createStore<State>({ apps: [], keyed: [], loaded: false });
-export const useWebApps = <T>(select: (s: State) => T): T => useSlice(store, select);
+const store = createPinnedCatalog<{ apps: WebApp[]; keyed: string[] }>({ apps: [], keyed: [] }, () =>
+  client.call("webapps.list", {}),
+);
+export const useWebApps = <T>(select: (s: ReturnType<typeof store.get>) => T): T => useSlice(store, select);
 
 /** The tab profile of a web app: its sign-in lives there, apart from the agents' browser. */
 export const webAppProfile = (id: string) => `app:${id}` as const;
 // NAVEGADORES-1: a Navegadores profile's tabs (nav:) live in their own view too, not in the side browser.
 export const isWebAppTab = (tab: TabInfo) => tab.profile.startsWith("app:") || tab.profile.startsWith("nav:");
 
-export async function loadWebApps(): Promise<void> {
-  try {
-    const { apps, keyed } = await client.call("webapps.list", {});
-    store.set({ apps, keyed, loaded: true });
-  } catch {
-    store.set({ loaded: true });
-  }
-}
+export const loadWebApps = store.load;
 
 /** "Business Stack" → "business-stack", made unique among the others. */
 export function webAppId(name: string, taken: readonly string[]): string {
@@ -42,8 +37,7 @@ export function webAppId(name: string, taken: readonly string[]): string {
 /** key: a value saves the connector's key, null removes it, absent keeps it. */
 export async function saveWebApp(id: string, app: Omit<WebApp, "id"> | null, key?: string | null): Promise<boolean> {
   try {
-    const { apps, keyed } = await client.call("webapps.set", { id, app, ...(key !== undefined && { key }) });
-    store.set({ apps, keyed });
+    await store.save(() => client.call("webapps.set", { id, app, ...(key !== undefined && { key }) }));
     return true;
   } catch (e) {
     notify(t("webapp.saveError", { error: e instanceof Error ? e.message : String(e) }));

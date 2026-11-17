@@ -1,11 +1,11 @@
 // WEBAPP-1: a web app pinned in the sidebar, shown in the main area like a browser of its own: back, reload, its
 // address and "open outside". In the desktop app the page is the real browser view; elsewhere, its screenshots.
-import { EmptyState, IconButton, Icons, Skeleton } from "@colonia/ui";
+import { Button, EmptyState, IconButton, Icons, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserHistory } from "../data/actions.ts";
 import { useData } from "../data/state.ts";
-import { useWebApps, webAppProfile, webAppTab } from "../data/webapps.ts";
+import { loadWebApps, useWebApps, webAppProfile, webAppTab } from "../data/webapps.ts";
 import { useT } from "../i18n/index.ts";
 import { BrowserViewport } from "../panel/BrowserViewport.tsx";
 import { useBrowserPoppedOut } from "../panel/browserWindow.ts";
@@ -26,6 +26,10 @@ export function WebAppScreen() {
   const id = useNav((s) => s.webAppId);
   const app = useWebApps((s) => s.apps.find((a) => a.id === id));
   const loaded = useWebApps((s) => s.loaded);
+  const failed = useWebApps((s) => s.failed);
+  useEffect(() => {
+    void loadWebApps();
+  }, []);
   const [openedId, setTabId] = useState<string>();
   const tab = useData((s) => s.tabs.find((x) => app && x.profile === webAppProfile(app.id)));
   // La pestaña se anuncia antes de terminar la carga: mostrarla ya permite ver su primer contenido.
@@ -62,13 +66,29 @@ export function WebAppScreen() {
   }, [tabId, poppedOut]);
 
   if (!app)
-    return loaded ? (
+    return failed ? (
+      <div className="webapp">
+        <EmptyState
+          icon={<Icons.Globe />}
+          title={t("webapp.loadError")}
+          action={
+            <Button size="sm" onClick={() => void loadWebApps()}>
+              {t("common.retry")}
+            </Button>
+          }
+        />
+      </div>
+    ) : loaded ? (
       <div className="webapp">
         <EmptyState icon={<Icons.Globe />} title={t("webapp.gone")}>
           {t("webapp.goneBody")}
         </EmptyState>
       </div>
-    ) : null;
+    ) : (
+      <div className="webapp" aria-busy="true">
+        <Skeleton className="browser__page" />
+      </div>
+    );
   const url = tab?.url ?? app.url;
   return (
     <div className="webapp">

@@ -1,10 +1,10 @@
 // NAVEGADORES-1: one browser profile inside Colonia, like the browser itself: its tabs (new, close), back, forward,
 // reload and the address. Its sign-ins persist in its own jar (profile nav:<id>), apart from the real browser's.
-import { BrowserTabs, Button, EmptyState, Icons } from "@colonia/ui";
+import { BrowserTabs, Button, EmptyState, Icons, Skeleton } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { hostPath } from "../common/format.ts";
 import { browserClose, browserNavigate, browserOpen, loadTabs } from "../data/actions.ts";
-import { BROWSER_NAMES, navProfile, useNavegadores } from "../data/navegadores.ts";
+import { BROWSER_NAMES, loadNavegadores, navProfile, useNavegadores } from "../data/navegadores.ts";
 import { notify } from "../data/notices.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -23,6 +23,7 @@ export function NavegadorScreen() {
   const id = useNav((s) => s.navegadorId);
   const navegador = useNavegadores((s) => s.navegadores.find((n) => n.id === id));
   const loaded = useNavegadores((s) => s.loaded);
+  const failed = useNavegadores((s) => s.failed);
   const profile = id ? navProfile(id) : undefined;
   const allTabs = useData((s) => s.tabs);
   const tabs = allTabs.filter((x) => x.profile === profile);
@@ -66,6 +67,7 @@ export function NavegadorScreen() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new profile starts on its own first tab
   useEffect(() => {
+    void loadNavegadores();
     void loadTabs();
     setPicked(undefined);
     setBlanks([]);
@@ -95,13 +97,29 @@ export function NavegadorScreen() {
   }, [activeId, poppedOut]);
 
   if (!navegador || !profile)
-    return loaded ? (
+    return failed ? (
+      <div className="webapp">
+        <EmptyState
+          icon={<Icons.Globe />}
+          title={t("navegadores.loadError")}
+          action={
+            <Button size="sm" onClick={() => void loadNavegadores()}>
+              {t("common.retry")}
+            </Button>
+          }
+        />
+      </div>
+    ) : loaded ? (
       <div className="webapp">
         <EmptyState icon={<Icons.Globe />} title={t("navegadores.gone")}>
           {t("navegadores.goneBody")}
         </EmptyState>
       </div>
-    ) : null;
+    ) : (
+      <div className="webapp" aria-busy="true">
+        <Skeleton className="browser__page" />
+      </div>
+    );
 
   return (
     <div className="webapp navegador">

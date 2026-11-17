@@ -11,6 +11,7 @@ import { flowRunMoved, flowTestHeard } from "./flowTests.ts";
 import { jobsChanged } from "./jobs.ts";
 import { loadNotifications, notificationChanged } from "./notifications.ts";
 import { denied } from "./pairing.ts";
+import { refreshPinnedCatalogs } from "./pinnedCatalog.ts";
 import { routineRunChanged } from "./routines.ts";
 import { data, upsertMessage } from "./state.ts";
 import { loadTasks, taskChanged, taskDeleted, tasksLoaded } from "./tasks.ts";
@@ -80,6 +81,7 @@ async function connect(): Promise<void> {
     lastSeq.clear();
     s.onEvent(onFrame);
     // Subscribe first, then read: nothing that happens in between is lost.
+    if (gen > 1) refreshPinnedCatalogs();
     await bootstrap();
     await refetchLoaded();
     void loadNotifications();
