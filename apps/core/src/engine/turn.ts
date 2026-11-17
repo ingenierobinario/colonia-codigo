@@ -752,7 +752,7 @@ function systemFor(
  * An engine session runs its CLI with the model the chat picked (one of that CLI's), else the CLI's default. Any other
  * chat runs our loop over the chosen model and the router's chain; a CLI ref saved before D-043 is skipped.
  */
-function enginePick(deps: TurnDeps, turn: Turn, start: RunRecord, history: ChatItem[]): Engine {
+export function enginePick(deps: TurnDeps, turn: Turn, start: RunRecord, history: ChatItem[]): Engine {
   // The chat's own model (picked in its composer) first, then the agent's, then the install default.
   const chosen = deps.store.threads.context(turn.thread.id).model_choice ?? turn.agent.model_choice;
   const own = turn.thread.engine;
@@ -762,7 +762,12 @@ function enginePick(deps: TurnDeps, turn: Turn, start: RunRecord, history: ChatI
   }
   // D-185: an agent (or its chat) may pick a Claude model; that turn runs on the user's Claude Code with the agent's
   // prompt and Colonia's tools. The router and the install default stay on model APIs.
-  if (chosen?.model && harnessOf(chosen.model) === "claude") return { harness: "claude", refs: [chosen.model] };
+  if (chosen?.model && harnessOf(chosen.model) === "claude") {
+    // CLAUDE-ACTIVO-1: switched off in Settings, Colonia does not run on the Claude plan.
+    if (!deps.store.settings.read("claude_plan_enabled"))
+      throw new Error("Claude with your account is switched off; turn it on in Settings → Engines and models");
+    return { harness: "claude", refs: [chosen.model] };
+  }
   const settings = modelSettings(deps.store);
   const refs = candidates(chosen ?? settings.defaultChoice(), settings.router(), {
     text: turn.input.text,

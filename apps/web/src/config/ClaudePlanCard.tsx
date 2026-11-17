@@ -1,7 +1,14 @@
 import type { ClaudeAccountStatus } from "@colonia/protocol";
-import { Badge, Button, Dialog, EngineIcon, Icons, Input } from "@colonia/ui";
+import { Badge, Button, Dialog, EngineIcon, Icons, Input, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
-import { claudeCode, claudeConnect, claudeDisconnect, claudeInstall, claudeStatus } from "../data/claudeAccount.ts";
+import {
+  claudeCode,
+  claudeConnect,
+  claudeDisconnect,
+  claudeInstall,
+  claudeSetEnabled,
+  claudeStatus,
+} from "../data/claudeAccount.ts";
 import { useModels } from "../data/models.ts";
 import { useT } from "../i18n/index.ts";
 import { EngineUsageSwitch } from "./EngineUsageSwitch.tsx";
@@ -21,19 +28,21 @@ export function ClaudePlanCard({ compact = false }: { compact?: boolean }) {
     if (!open) void claudeStatus().then(setS);
   }, [open]);
   const connected = Boolean(s?.connected);
+  // CLAUDE-ACTIVO-1: on unless switched off (an older core does not say: on).
+  const enabled = s?.enabled !== false;
   // MOTORES-LLANO-1: the same rows and controls as ChatGPT's card.
   const models = useModels((m) => m.catalog.find((e) => e.id === "claude"));
   const count = connected && models?.available ? models.models.filter((m) => m.chat).length : 0;
   return (
-    <div className="pcard pcard--plan pcard--claude">
+    <div className={enabled ? "pcard pcard--plan pcard--claude" : "pcard pcard--plan pcard--claude is-off"}>
       <div className="pcard__top">
         <EngineIcon engine="claude" tile size={compact ? 28 : 36} />
         <div className="pcard__titles">
           <div className="pcard__name">{t("plans.claude.name")}</div>
           <div className="pcard__plan">{t("plans.claude.kind")}</div>
         </div>
-        <Badge tone={connected ? "brand" : "warning"} dot>
-          {connected ? t("providers.active") : t("plans.notConnected")}
+        <Badge tone={connected && enabled ? "brand" : connected ? "neutral" : "warning"} dot>
+          {!connected ? t("plans.notConnected") : enabled ? t("providers.active") : t("providers.off")}
         </Badge>
       </div>
       {!(compact && !connected) && (
@@ -49,6 +58,16 @@ export function ClaudePlanCard({ compact = false }: { compact?: boolean }) {
         </dl>
       )}
       <div className="pcard__actions">
+        <Switch
+          size="sm"
+          checked={enabled}
+          onCheckedChange={(on) =>
+            void claudeSetEnabled(on).then((next) => {
+              if (next) setS(next);
+            })
+          }
+          label={t("providers.on")}
+        />
         {!compact && <EngineUsageSwitch key={String(connected)} engine="claude" />}
         <span className="pcard__spacer" />
         <Button size="sm" variant={connected ? "secondary" : "primary"} onClick={() => setOpen(true)}>

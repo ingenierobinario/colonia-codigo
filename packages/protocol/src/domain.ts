@@ -915,6 +915,8 @@ export const ClaudeAccountStatus = z.object({
   /** A sign-in in progress: Claude's page to open; it may show a code to paste back. */
   pending: z.object({ url: z.string(), expires_at: z.string() }).optional(),
   error: z.string().optional(),
+  /** CLAUDE-ACTIVO-1: whether agents may run on it; off keeps the sign-in but Colonia does not use it. */
+  enabled: z.boolean().optional(),
 });
 export type ClaudeAccountStatus = z.infer<typeof ClaudeAccountStatus>;
 

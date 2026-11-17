@@ -920,6 +920,13 @@ export const appMethods = {
     effect: true,
     access: "human",
   },
+  /** CLAUDE-ACTIVO-1: turns the Claude plan on or off for agents, keeping the sign-in. */
+  "claude.set_enabled": {
+    params: z.object({ enabled: z.boolean() }).strict(),
+    result: ClaudeAccountStatus,
+    effect: true,
+    access: "human",
+  },
   "claude.disconnect": {
     params: z.object({}).strict(),
     result: ClaudeAccountStatus,

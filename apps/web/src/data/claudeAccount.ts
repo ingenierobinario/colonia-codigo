@@ -44,3 +44,6 @@ export async function claudeChanged(): Promise<void> {
   await loadEngines(true);
   void loadCatalog(true);
 }
+
+/** CLAUDE-ACTIVO-1: the Claude plan on or off for agents; the sign-in stays. */
+export const claudeSetEnabled = (enabled: boolean) => act(() => client.call("claude.set_enabled", { enabled }));

@@ -60,7 +60,6 @@ export const enEngines = {
   "plan.login.copied": "Code copied",
   "plan.login.waiting": "Waiting for you to finish in the browser…",
   "plan.login.connectedAs": "Connected as {account}",
-  "plan.login.useIt": "Use ChatGPT for my agents",
   "plan.login.disconnect": "Disconnect",
   "plan.login.failed": "Could not sign in: {error}",
   "providers.unset": "Not set up",

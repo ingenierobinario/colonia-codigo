@@ -459,6 +459,7 @@
 .pcard--plan .pcard__actions {
   flex-wrap: wrap;
   row-gap: 8px;
+  column-gap: 16px;
 }
 .pcard__titles {
   flex: 1;

@@ -1,8 +1,9 @@
 import type { ChatgptStatus, ProviderInfo } from "@colonia/protocol";
-import { Badge, Button, EngineIcon } from "@colonia/ui";
+import { Badge, Button, EngineIcon, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { chatgptStatus } from "../data/chatgpt.ts";
 import { useModels } from "../data/models.ts";
+import { setProviderEnabled } from "../data/providers.ts";
 import { useT } from "../i18n/index.ts";
 import { EngineUsageSwitch } from "./EngineUsageSwitch.tsx";
 import { PlanLogin } from "./PlanLogin.tsx";
@@ -46,15 +47,20 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
           )}
         </dl>
       )}
-      {/* MOTORES-LLANO-2: the same rows and controls as Claude's card; switching it off lives in Manage. */}
       <div className="pcard__actions">
+        <Switch
+          size="sm"
+          checked={p.enabled}
+          onCheckedChange={(on) => void setProviderEnabled(p, on)}
+          label={t("providers.on")}
+        />
         {!compact && <EngineUsageSwitch key={String(connected)} engine="codex" />}
         <span className="pcard__spacer" />
         <Button size="sm" variant={connected ? "secondary" : "primary"} onClick={() => setLogin(true)}>
           {t(connected ? "plans.manage" : "plans.connect")}
         </Button>
       </div>
-      {login && <PlanLogin p={p} onClose={() => setLogin(false)} />}
+      {login && <PlanLogin onClose={() => setLogin(false)} />}
     </div>
   );
 }

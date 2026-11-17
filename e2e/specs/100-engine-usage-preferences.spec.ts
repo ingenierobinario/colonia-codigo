@@ -11,13 +11,14 @@ test("usage switches persist independently of model power and preserve the choic
   await settings.getByRole("button", { name: "Motores y modelos", exact: true }).click();
   const plan = settings.locator(".pcard--plan:not(.pcard--claude)");
   const quota = plan.getByRole("switch", { name: "Ver cuánto me queda", exact: true });
-  // MOTORES-LLANO-2: encender o pausar ChatGPT vive en Administrar; la tarjeta solo lleva el de la cuota.
-  await expect(plan.getByRole("switch")).toHaveCount(1);
+  const power = plan.getByRole("switch", { name: "Activo", exact: true });
   await expect(quota).toBeEnabled();
   await expect(quota).not.toBeChecked();
+  const powered = await power.isChecked();
   const height = await plan.evaluate((card) => card.getBoundingClientRect().height);
   await quota.click();
   await expect(quota).toBeChecked();
+  expect(await power.isChecked()).toBe(powered);
   const prefs = await rpc<{ engines: Record<string, boolean> }>("engines.usage_preferences");
   expect(prefs.engines.codex).toBe(true);
   expect(await plan.evaluate((card) => card.getBoundingClientRect().height)).toBe(height);
@@ -38,6 +39,7 @@ test("usage switches persist independently of model power and preserve the choic
   await quota.focus();
   await page.keyboard.press("Space");
   await expect(quota).not.toBeChecked();
+  await expect(power).toBeChecked({ checked: powered });
 
   await settings.getByRole("button", { name: "Sesiones externas", exact: true }).click();
   const claude = settings.locator(".engine", { hasText: "Claude Code" });

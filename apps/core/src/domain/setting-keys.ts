@@ -74,6 +74,8 @@ export const SETTINGS = {
   email_signatures: entry(EmailSignatures, []),
   email_signature_default: entry(EmailSignatureValue.nullable(), null),
   engine_usage: entry(z.record(z.string(), z.boolean()), {}),
+  /** CLAUDE-ACTIVO-1: the Claude plan (Pro or Max) on or off for agents; on unless the owner turned it off. */
+  claude_plan_enabled: entry(z.boolean(), true),
   project_helper: entry(
     z.record(
       z.string(),

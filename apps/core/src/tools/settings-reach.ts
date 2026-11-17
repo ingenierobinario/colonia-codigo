@@ -73,6 +73,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "claude.connect": SECRET,
   "claude.code": SECRET,
   "claude.disconnect": SECRET,
+  "claude.set_enabled": SECRET,
   "claude.install": SECRET,
   "integrations.connect": SECRET,
   "integrations.disconnect": SECRET,

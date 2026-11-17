@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { Organization, ProjectKind, ProjectMark } from "@colonia/protocol";
+import type { ClaudeAccountStatus, Organization, ProjectKind, ProjectMark } from "@colonia/protocol";
 import { declaresApp } from "../../../../packages/surfaces/src/kit.ts";
 import { readOrganization, writeOrganization } from "../apc/org.ts";
 import type { ApcSync } from "../apc/sync.ts";
@@ -51,6 +51,11 @@ export function appHandlers(deps: {
   const { store, harnesses, secrets } = deps;
   // CLAUDE-CUENTA-1: the Claude plan, signed in through Claude Code; once it changes, the engines are asked again.
   const claude = claudeLogin({ onChange: () => void harnesses.status(true).catch(() => {}) });
+  // CLAUDE-ACTIVO-1: every answer about the plan says too whether it is switched on.
+  const withEnabled = async (s: Promise<ClaudeAccountStatus>): Promise<ClaudeAccountStatus> => ({
+    ...(await s),
+    enabled: store.settings.read("claude_plan_enabled"),
+  });
   // CUOTA-CLAUDE-1: whether the Claude plan is signed in, asked to Claude Code at most once a minute.
   let claudeLinked = { at: 0, on: false };
   const refreshClaudeLinked = async () => {
@@ -344,11 +349,15 @@ export function appHandlers(deps: {
       return engineUsage.get();
     },
     "engines.set_usage": ({ engine, enabled }) => engineUsage.set(engine, enabled),
-    "claude.status": () => claude.status(),
-    "claude.connect": () => claude.start(),
-    "claude.code": ({ code }) => claude.code(code),
-    "claude.disconnect": () => claude.disconnect(),
-    "claude.install": () => claude.install(),
+    "claude.status": () => withEnabled(claude.status()),
+    "claude.connect": () => withEnabled(claude.start()),
+    "claude.code": ({ code }) => withEnabled(claude.code(code)),
+    "claude.disconnect": () => withEnabled(claude.disconnect()),
+    "claude.install": () => withEnabled(claude.install()),
+    "claude.set_enabled": ({ enabled }) => {
+      store.settings.write("claude_plan_enabled", enabled);
+      return withEnabled(claude.status());
+    },
     "engines.status": async ({ refresh }) => ({
       engines: await harnesses.status(refresh),
     }),
