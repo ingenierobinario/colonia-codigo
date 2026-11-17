@@ -4,6 +4,8 @@ import { documentationId, documentationPath, sitePath } from "../src/doc-routes.
 
 test("documentation moves beneath docs with locale first and stable anchors", () => {
   assert.equal(documentationPath("/start/install/#windows"), "/docs/start/install/#windows");
+  assert.equal(documentationPath("/cases/weekly-report/"), "/docs/cases/weekly-report/");
+  assert.equal(documentationPath("/es/cases/weekly-report/"), "/es/docs/cases/weekly-report/");
   assert.equal(documentationPath("/es/concepts/agents/?from=nav#team"), "/es/docs/concepts/agents/?from=nav#team");
   assert.equal(documentationId("start/install.mdx"), "docs/start/install");
   assert.equal(documentationId("es/start/install.mdx"), "es/docs/start/install");

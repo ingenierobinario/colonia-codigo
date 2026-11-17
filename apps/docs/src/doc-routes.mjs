@@ -1,5 +1,6 @@
 export const docSections = [
   "start",
+  "cases",
   "concepts",
   "office",
   "apps",

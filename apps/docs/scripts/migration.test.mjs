@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
 import { sep } from "node:path";
 import { test } from "node:test";
+import { documentationId } from "../src/doc-routes.mjs";
 import { publicMarketingRoutes, sitemapErrors } from "./sitemap.mjs";
 
 const dist = new URL("../dist/", import.meta.url);
@@ -9,7 +10,7 @@ const base = (process.env.DOCS_BASE ?? "/").replace(/\/$/, "");
 const site = process.env.DOCS_SITE ?? "https://colonia.ingenierobinario.com";
 
 test("every built documentation page has a legacy redirect and a canonical new address", async () => {
-  let count = 0;
+  const routes = new Set();
   for (const prefix of ["", "es/"]) {
     const entries = await readdir(new URL(`${prefix}docs/`, dist), { recursive: true });
     for (const file of entries.filter((entry) => entry.endsWith("index.html") && entry !== "index.html")) {
@@ -25,10 +26,14 @@ test("every built documentation page has a legacy redirect and a canonical new a
       assert.ok(redirect.includes(`content="0;url=${base}/${route}"`), legacy);
       assert.ok(redirect.includes(`rel="canonical" href="${canonical}"`), legacy);
       assert.ok(redirect.includes('content="noindex,follow"'), legacy);
-      count++;
+      routes.add(route);
     }
   }
-  assert.equal(count, 100, "all documentation pages keep their redirect");
+  const source = await readdir(new URL("../src/content/docs/", import.meta.url), { recursive: true });
+  const expected = source
+    .filter((file) => /\.mdx?$/.test(file))
+    .map((file) => `${documentationId(file.split(sep).join("/"))}/`);
+  assert.deepEqual(routes, new Set(expected), "cada página de la colección conserva su redirección");
 });
 
 test("sitemap lists only canonical pages, including bilingual documentation", async () => {

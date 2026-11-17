@@ -62,7 +62,8 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const path = new URL(page).pathname.slice(base.length - 1);
-        return fullDocs ? sitePath(path) === path && !["/docs/", "/es/docs/"].includes(path) : true;
+        const alias = ["/es/", "/empezar/", "/docs/", "/es/docs/"].includes(path);
+        return !alias && (!fullDocs || sitePath(path) === path);
       },
     }),
     ...(fullDocs ? [installScripts()] : []),

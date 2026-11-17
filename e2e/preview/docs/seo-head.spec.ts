@@ -2,10 +2,8 @@ import { expect, test } from "@playwright/test";
 
 // Every landing page names its own address, both languages and a default, and shows the preview in its language.
 for (const [path, image] of [
-  ["/", "/og.jpg"],
-  ["/es/", "/og-es.jpg"],
-  ["/compare/", "/og.jpg"],
-  ["/es/compare/best-ai-agent-apps/", "/og-es.jpg"],
+  ["/", "/og-es.jpg"],
+  ["/en/", "/og.jpg"],
 ] as const) {
   test(`${path}: canonical, languages and preview image`, async ({ page, baseURL }) => {
     await page.goto(path);
@@ -39,10 +37,11 @@ test("robots.txt points at the sitemap", async ({ request }) => {
   expect(body).toMatch(/^Sitemap: https:\/\/.+\/sitemap-index\.xml$/m);
 });
 
-test("llms.txt lists the guide and the comparisons with full addresses", async ({ request }) => {
+test("llms.txt enlaza la guía, los casos prácticos y las preguntas de la portada inglesa", async ({ request }) => {
   const body = await (await request.get("/llms.txt")).text();
   expect(body).toMatch(/^# Colonia\n\n> /);
   expect(body).toMatch(/^- \[Install\]\(https:\/\/.+\/docs\/start\/install\/\): /m);
-  expect(body).toMatch(/^- \[Colonia vs OpenClaw\]\(https:\/\/.+\/compare\/openclaw\/\): /m);
+  expect(body).toMatch(/^- \[Weekly report\]\(https:\/\/.+\/docs\/cases\/weekly-report\/\): /m);
+  expect(body).toMatch(/^- \[Questions\]\(https:\/\/.+\/en\/#questions\)$/m);
   expect(body).not.toContain("/es/docs/");
 });

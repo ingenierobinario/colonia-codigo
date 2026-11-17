@@ -39,11 +39,11 @@ test("root and trailing-slash bases keep route and fragment checks active", () =
   for (const base of ["/", "", "/colonia/"]) {
     const prefix = base.replace(/\/+$/, "");
     const pages = new Map([
-      ["/", `<a href="${prefix}/b/#ready">B</a>`],
-      ["/b/", '<h2 id="ready">Ready</h2>'],
+      ["/", `<a href="${prefix}/es/b/#ready">B</a>`],
+      ["/es/b/", '<h2 id="ready">Listo</h2>'],
     ]);
     assert.deepEqual(linkErrors(pages, base), []);
-    pages.set("/", `<a href="${prefix}/b/#missing">B</a><a href="${prefix}/lost/">Lost</a>`);
+    pages.set("/", `<a href="${prefix}/es/b/#missing">B</a><a href="${prefix}/es/lost/">Perdido</a>`);
     assert.equal(linkErrors(pages, base).length, 2);
   }
 });

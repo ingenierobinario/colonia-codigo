@@ -7,6 +7,7 @@ import { HOME } from "../i18n/home";
 // El sitio como mapa para modelos de lenguaje (llmstxt.org): qué es Colonia y cada página de la guía en inglés con su resumen.
 const sectionNames: Record<string, string> = {
   start: "Start here",
+  cases: "Use cases",
   concepts: "Core ideas",
   office: "Your office",
   channels: "Channels",
@@ -37,6 +38,6 @@ export const GET: APIRoute = async ({ site }) => {
         `- [${entry.data.title}](${url(`/${entry.id}/`)})${entry.data.description ? `: ${entry.data.description}` : ""}`,
       );
   }
-  lines.push("", "## Optional", "", `- [Compare](${url("/en/compare/")})`, `- [Get Colonia](${RESERVAR_URL})`);
+  lines.push("", "## Optional", "", `- [Questions](${url("/en/#questions")})`, `- [Get Colonia](${RESERVAR_URL})`);
   return new Response(`${lines.join("\n")}\n`, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
 };
