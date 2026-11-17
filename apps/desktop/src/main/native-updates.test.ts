@@ -53,6 +53,7 @@ function rawUpdater() {
   let installs = 0;
   let restarts = 0;
   let quits = 0;
+  let discards = 0;
   return {
     updater: {
       enabled: true,
@@ -74,12 +75,14 @@ function rawUpdater() {
       quitting: () => {
         quits++;
       },
-      discard: () => {},
+      discard: () => {
+        discards++;
+      },
       log: () => {},
       start: () => {},
       stop: () => {},
     } as ReturnType<typeof createDesktopUpdater>,
-    counts: () => ({ installs, restarts, quits }),
+    counts: () => ({ installs, restarts, quits, discards }),
   };
 }
 
@@ -204,10 +207,13 @@ test("an update ready on a local core goes in on quit even after the core has be
   const native = nativeUpdates(raw.updater, { isDestroyed: () => false } as unknown as BaseWindow, { change: async () => {} });
   try {
     native.connect({ identity: "local", url: "http://127.0.0.1:1", local: true });
+    const before = raw.counts().discards;
     native.willQuit();
     native.connect(undefined);
     native.quitting();
     assert.equal(raw.counts().quits, 1);
+    // The core going away on the way out must not throw the downloaded update away before it goes in.
+    assert.equal(raw.counts().discards, before);
   } finally {
     native.stop();
   }

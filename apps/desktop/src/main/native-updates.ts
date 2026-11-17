@@ -98,7 +98,9 @@ export function nativeUpdates(
   });
 
   function connect(connection: NativeUpdateConnection | undefined): void {
-    if (active?.identity !== connection?.identity || active?.local !== connection?.local) updater.discard();
+    // ACTUALIZA-AL-SALIR-1: once quitting, the local core stopping is not a connection change: the update stays ready.
+    if (applyOnQuit === undefined && (active?.identity !== connection?.identity || active?.local !== connection?.local))
+      updater.discard();
     active = connection;
     recovery.clear();
     if (!connection) {
