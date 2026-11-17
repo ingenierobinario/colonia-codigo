@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.42": {
+    en: [
+      "AI quotas include Claude: 5-hour session and weekly limit, what's left and when each renews.",
+      "The top bar counts Claude too, and its button now says Manage AIs.",
+      "Engines and models: With your account (recommended) first, With a key (advanced) folded below.",
+    ],
+    es: [
+      "Las cuotas de IA incluyen a Claude: sesión de 5 horas y límite semanal, lo que queda y cuándo se renueva.",
+      "La barra superior también cuenta a Claude, y su botón ahora dice Gestionar IAs.",
+      "Motores y modelos: Con tu cuenta (recomendado) arriba y Con clave (avanzado) plegado debajo.",
+    ],
+  },
   "2.36.41": {
     en: [
       "Claude with your Pro or Max plan: press Connect, sign in on Claude's page and you're done, no keys to paste.",
