@@ -1,7 +1,7 @@
 import type { enSysUsage } from "./sysusage-en.ts";
 
 export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
-  "engines.showUsage": "Mostrar uso",
+  "engines.showUsage": "Ver cuánto me queda",
   "engines.usageHint":
     "Muestra arriba, en «Cuotas de IA», cuánto te queda de tu plan y cuándo se renueva. No enciende ni apaga la IA.",
   "engines.usageCodexHint":

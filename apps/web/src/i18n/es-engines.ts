@@ -63,6 +63,7 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "plan.login.copied": "Código copiado",
   "plan.login.waiting": "Esperando que termines en el navegador…",
   "plan.login.connectedAs": "Conectado como {account}",
+  "plan.login.useIt": "Usar ChatGPT en mis agentes",
   "plan.login.disconnect": "Desconectar",
   "plan.login.failed": "No se pudo iniciar sesión: {error}",
   "providers.unset": "Sin configurar",

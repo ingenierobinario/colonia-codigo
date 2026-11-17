@@ -1,8 +1,9 @@
-import type { ChatgptStatus } from "@colonia/protocol";
-import { Button, Dialog, EngineIcon, Icons } from "@colonia/ui";
+import type { ChatgptStatus, ProviderInfo } from "@colonia/protocol";
+import { Button, Dialog, EngineIcon, Icons, Switch } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { chatgptChanged, chatgptConnect, chatgptDisconnect, chatgptStatus } from "../data/chatgpt.ts";
 import { notify } from "../data/notices.ts";
+import { setProviderEnabled } from "../data/providers.ts";
 import { useT } from "../i18n/index.ts";
 
 /** Where ChatGPT turns on the device-code sign-in Codex uses; without it the code is never accepted. */
@@ -13,7 +14,7 @@ const SECURITY_SETTINGS = "https://chatgpt.com/#settings/Security";
  * or Colonia v1's sign-in taken over. The setting ChatGPT may ask for first is a hint while waiting and the answer to a
  * refusal, never a gate. Codex CLI's own sign-in is never used.
  */
-export function PlanLogin({ onClose }: { onClose(): void }) {
+export function PlanLogin({ p, onClose }: { p?: ProviderInfo; onClose(): void }) {
   const t = useT();
   const [s, setS] = useState<ChatgptStatus>();
   const [busy, setBusy] = useState(false);
@@ -69,10 +70,21 @@ export function PlanLogin({ onClose }: { onClose(): void }) {
     >
       <div className="planlogin">
         {!s ? null : s.connected ? (
-          <p className="chatgpt__ok">
-            <Icons.CircleCheck size={16} />
-            {s.account ? t("plan.login.connectedAs", { account: s.account }) : t("plans.connected")}
-          </p>
+          <>
+            <p className="chatgpt__ok">
+              <Icons.CircleCheck size={16} />
+              {s.account ? t("plan.login.connectedAs", { account: s.account }) : t("plans.connected")}
+            </p>
+            {/* MOTORES-LLANO-2: pausing the plan without signing out, out of the card so both plans look the same. */}
+            {p && (
+              <Switch
+                size="sm"
+                checked={p.enabled}
+                onCheckedChange={(on) => void setProviderEnabled(p, on)}
+                label={t("plan.login.useIt")}
+              />
+            )}
+          </>
         ) : s.pending ? (
           <div className="chatgpt__code">
             <p>{t("plan.login.step1")}</p>

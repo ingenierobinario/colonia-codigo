@@ -82,7 +82,8 @@ for (const mode of ["light", "dark"] as const) {
       await expect(plans).toHaveCount(2);
       for (const plan of [plans.nth(0), plans.nth(1)]) {
         await expect(plan.locator("dt")).toHaveText(["Cuenta", "Modelos"]);
-        await expect(plan.getByRole("switch", { name: "Mostrar uso" })).toHaveCount(1);
+        await expect(plan.getByRole("switch", { name: "Ver cuánto me queda" })).toHaveCount(1);
+        await expect(plan.getByRole("switch")).toHaveCount(1);
       }
       const text = await settings.innerText();
       for (const jerga of ["APIs", "loop", "token", "CLIs", "engines", "Dirección del servicio", "Consumo"]) {

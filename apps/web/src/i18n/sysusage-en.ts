@@ -1,7 +1,7 @@
 // Usage: what the computer has and what Colonia takes of it (its dropdown, the dialog, Advanced): loaded with them
 // (usePack in index.ts). The topbar gauge's and menus' two strings stay in en.ts.
 export const enSysUsage = {
-  "engines.showUsage": "Show usage",
+  "engines.showUsage": "Show what's left",
   "engines.usageHint":
     "Shows at the top, in «AI quotas», how much of your plan is left and when it renews. It does not turn the AI on or off.",
   "engines.usageCodexHint":

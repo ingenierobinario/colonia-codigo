@@ -10,15 +10,14 @@ test("usage switches persist independently of model power and preserve the choic
   const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
   await settings.getByRole("button", { name: "Motores y modelos", exact: true }).click();
   const plan = settings.locator(".pcard--plan:not(.pcard--claude)");
-  const quota = plan.getByRole("switch", { name: "Mostrar uso", exact: true });
-  const power = plan.getByRole("switch", { name: "Activo", exact: true });
+  const quota = plan.getByRole("switch", { name: "Ver cuánto me queda", exact: true });
+  // MOTORES-LLANO-2: encender o pausar ChatGPT vive en Administrar; la tarjeta solo lleva el de la cuota.
+  await expect(plan.getByRole("switch")).toHaveCount(1);
   await expect(quota).toBeEnabled();
   await expect(quota).not.toBeChecked();
-  const powered = await power.isChecked();
   const height = await plan.evaluate((card) => card.getBoundingClientRect().height);
   await quota.click();
   await expect(quota).toBeChecked();
-  expect(await power.isChecked()).toBe(powered);
   const prefs = await rpc<{ engines: Record<string, boolean> }>("engines.usage_preferences");
   expect(prefs.engines.codex).toBe(true);
   expect(await plan.evaluate((card) => card.getBoundingClientRect().height)).toBe(height);
@@ -39,16 +38,15 @@ test("usage switches persist independently of model power and preserve the choic
   await quota.focus();
   await page.keyboard.press("Space");
   await expect(quota).not.toBeChecked();
-  await expect(power).toBeChecked({ checked: powered });
 
   await settings.getByRole("button", { name: "Sesiones externas", exact: true }).click();
   const claude = settings.locator(".engine", { hasText: "Claude Code" });
-  await expect(claude.getByRole("switch", { name: "Mostrar uso", exact: true })).not.toBeChecked();
-  await claude.getByRole("switch", { name: "Mostrar uso", exact: true }).hover();
+  await expect(claude.getByRole("switch", { name: "Ver cuánto me queda", exact: true })).not.toBeChecked();
+  await claude.getByRole("switch", { name: "Ver cuánto me queda", exact: true }).hover();
   await expect(page.locator(".colonia-tooltip")).toBeVisible();
   await expect(page.locator(".colonia-tooltip")).toContainText("No enciende ni apaga la IA");
   await page.setViewportSize({ width: 390, height: 700 });
-  await expect(claude.getByRole("switch", { name: "Mostrar uso", exact: true })).toBeVisible();
+  await expect(claude.getByRole("switch", { name: "Ver cuánto me queda", exact: true })).toBeVisible();
   const overflow = await claude.evaluate((card) => card.scrollWidth - card.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
