@@ -15,17 +15,25 @@ function fakeElectron() {
   const calls: Call[] = [];
   const thrown: string[] = [];
   class Emitter {
-    on() {
+    handlers = new Map<string, ((...a: unknown[]) => void)[]>();
+    on(event: string, fn: (...a: unknown[]) => void) {
+      this.handlers.set(event, [...(this.handlers.get(event) ?? []), fn]);
       return this;
     }
     off() {
       return this;
     }
+    emit(event: string, ...args: unknown[]) {
+      for (const fn of this.handlers.get(event) ?? []) fn(...args);
+    }
   }
+  const windows: BrowserWindow[] = [];
+  const trays: Tray[] = [];
   class Tray extends Emitter {
     #destroyed = false;
     constructor(_image: unknown) {
       super();
+      trays.push(this);
       calls.push({ what: "new Tray", destroyed: false });
     }
     #use(what: string) {
@@ -63,18 +71,37 @@ function fakeElectron() {
     }
   }
   class BrowserWindow extends Emitter {
+    destroyed = false;
     webContents = { isDevToolsOpened: () => false, getOSProcessId: () => 1 };
-    isDestroyed = () => false;
+    constructor(_o: unknown) {
+      super();
+      windows.push(this);
+    }
+    isDestroyed = () => this.destroyed;
+    #use(what: string) {
+      if (this.destroyed) {
+        thrown.push(`window.${what}`);
+        throw new TypeError("Object has been destroyed");
+      }
+    }
     setVisibleOnAllWorkspaces() {}
     loadURL() {
       return Promise.resolve();
     }
-    hide() {}
+    hide() {
+      this.#use("hide");
+    }
+    isVisible() {
+      this.#use("isVisible");
+      return false;
+    }
   }
   const image = { setTemplateImage() {} };
   return {
     calls,
     thrown,
+    windows,
+    trays,
     module: {
       app: { getLocale: () => "es-ES", dock: undefined, setLoginItemSettings() {}, getPath: () => os.tmpdir() },
       BrowserWindow,
@@ -143,4 +170,26 @@ test("BANDEJA-DESTRUIDA-1: el contador que llega después de stop() no toca la b
   // Un segundo stop (otra salida) tampoco.
   assert.doesNotThrow(() => quick.stop());
   assert.deepEqual(fake.thrown, [], `se tocó la bandeja destruida: ${fake.thrown.join(", ")}`);
+});
+
+test("VENTANA-DESTRUIDA-1: la bandeja que se pulsa con la ventana rápida ya cerrada (la app sale) no la toca", async () => {
+  const fake = fakeElectron();
+  const { createQuick } = await loadQuick(fake);
+  let opened = 0;
+  const quick = createQuick({
+    url: () => "http://127.0.0.1:1",
+    preload: "",
+    partition: "persist:quick",
+    assets: os.tmpdir(),
+    openMain: () => opened++,
+  });
+  quick.start();
+  // Al salir, Electron cierra todas las ventanas antes de will-quit (que es donde se para la bandeja).
+  for (const w of fake.windows) w.destroyed = true;
+  const tray = fake.trays[0];
+  assert.ok(tray);
+  assert.doesNotThrow(() => tray.emit("double-click"));
+  assert.doesNotThrow(() => quick.hide());
+  assert.equal(opened, 1, "pide abrir la principal (que ya sabe no tocar una ventana destruida)");
+  assert.deepEqual(fake.thrown, [], `se tocó una ventana destruida: ${fake.thrown.join(", ")}`);
 });

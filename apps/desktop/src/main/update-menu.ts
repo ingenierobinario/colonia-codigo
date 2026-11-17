@@ -2,6 +2,7 @@
 // and the native questions it asks when the owner started it there: restart now or later.
 import { type BaseWindow, dialog, type MenuItemConstructorOptions, Notification } from "electron";
 import type { BundlePlace } from "./app-bundle.ts";
+import { liveWindow } from "./main-window.ts";
 import { updateNotice } from "./update-notes.ts";
 import type { DesktopUpdate, RestartAnswer } from "./updater.ts";
 
@@ -84,10 +85,15 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
   const { updater, window } = opts;
   const t = words(opts.es, opts.platform);
   let told: string | undefined;
+  // VENTANA-DESTRUIDA-1: una pregunta que llega con la ventana ya cerrada (la app sale) va sin ventana madre.
+  const box = (o: Electron.MessageBoxOptions) => {
+    const w = liveWindow(window);
+    return w ? dialog.showMessageBox(w, o) : dialog.showMessageBox(o);
+  };
 
   async function askRestart(version: string): Promise<void> {
     const command = updater.packageCommand?.();
-    const { response } = await dialog.showMessageBox(window, {
+    const { response } = await box({
       type: "info",
       message: t.readyTitle(version),
       detail:
@@ -109,20 +115,20 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
   async function restart(): Promise<void> {
     const r = await updater.restart();
     if (!r.ok)
-      await dialog.showMessageBox(window, { type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
+      await box({ type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
   }
 
   async function update(version: string): Promise<void> {
     const r = await updater.install();
     if (!r.ok) {
-      await dialog.showMessageBox(window, { type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
+      await box({ type: "warning", message: t.failed, detail: r.error, buttons: [t.ok] });
       return;
     }
     if (r.ready) await askRestart(version);
     else {
       const command = updater.packageCommand?.();
       const detail = command ? t.packageSteps(command) : t.moveFirst(updater.place);
-      await dialog.showMessageBox(window, {
+      await box({
         type: "info",
         message: command ? t.readyTitle(version) : t.dragged(version),
         ...(detail ? { detail } : {}),
@@ -134,7 +140,7 @@ export function createUpdateMenu(opts: { updater: Updater; window: BaseWindow; e
   async function checkNow(): Promise<void> {
     const s = await updater.check();
     if (s.latest) return update(s.latest);
-    await dialog.showMessageBox(window, {
+    await box({
       type: s.error ? "warning" : "info",
       message: s.error ? t.failed : t.upToDate,
       detail: s.error ? `${t.noFeed}\n${s.error}` : t.version(s.current),

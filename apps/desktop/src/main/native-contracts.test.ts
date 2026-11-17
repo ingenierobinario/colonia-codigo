@@ -57,7 +57,7 @@ const { confirmQuit } = await import("./quit-confirm.ts");
 hooks.deregister();
 Reflect.deleteProperty(globalThis, boundary);
 
-const window = {} as BaseWindow;
+const window = { isDestroyed: () => false } as unknown as BaseWindow;
 const initial: DesktopUpdate = { current: "2.0.0", notes: [], install: "auto" };
 function harness(
   options: {

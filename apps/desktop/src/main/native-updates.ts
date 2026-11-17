@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ColoniaClient, PROTOCOL_VERSION } from "@colonia/protocol/client";
 import { app, type BaseWindow, dialog, safeStorage } from "electron";
+import { liveWindow } from "./main-window.ts";
 import { createUpdateCoordinator, type PendingUpdate } from "./update-coordinator.ts";
 import { updateCredentials } from "./update-credentials.ts";
 import type { createDesktopUpdater } from "./updater.ts";
@@ -19,10 +20,12 @@ function updateRecovery(
       lastError = undefined;
     },
     show(error: string) {
-      if (lastError === error || actions.stopped()) return;
+      // VENTANA-DESTRUIDA-1: sin ventana (la app sale) no hay a quién preguntar.
+      const parent = liveWindow(window);
+      if (lastError === error || actions.stopped() || !parent) return;
       lastError = error;
       void dialog
-        .showMessageBox(window, {
+        .showMessageBox(parent, {
           type: "warning",
           message: es ? "La actualización de Colonia está bloqueada" : "Colonia update is blocked",
           detail: es
@@ -162,7 +165,9 @@ export function nativeUpdates(
       return answer;
     },
     quitting: () => {
+      // ACTUALIZA-AL-SALIR-1: saltarse la instalación al salir sin dejar rastro escondía por qué no se actualizaba.
       if (coordinator.canApplyOnQuit()) updater.quitting();
+      else updater.log("quit: update not applied (no local core connected)");
     },
     stop: () => {
       stopped = true;

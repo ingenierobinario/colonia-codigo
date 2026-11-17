@@ -19,15 +19,17 @@ const TEXT = {
   },
 };
 
-export function confirmQuit(win: BaseWindow, opts: { es: boolean; runsCore: boolean }): boolean {
+export function confirmQuit(win: BaseWindow | undefined, opts: { es: boolean; runsCore: boolean }): boolean {
   const text = opts.es ? TEXT.es : TEXT.en;
-  const answer = dialog.showMessageBoxSync(win, {
+  const options: Electron.MessageBoxSyncOptions = {
     type: "question",
     message: text.message,
     detail: opts.runsCore ? `${text.tabs} ${text.core}` : text.tabs,
     buttons: [text.quit, text.cancel],
     defaultId: 0,
     cancelId: 1,
-  });
+  };
+  // VENTANA-DESTRUIDA-1: sin ventana viva, la pregunta va sola.
+  const answer = win ? dialog.showMessageBoxSync(win, options) : dialog.showMessageBoxSync(options);
   return answer === 0;
 }

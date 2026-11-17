@@ -55,6 +55,8 @@ import { confirmQuit } from "./quit-confirm.ts";
 import { waitOnQuit } from "./quit-wait.ts";
 import { sendTo } from "./safe-send.ts";
 import { createUpdateMenu } from "./update-menu.ts";
+import { logUncaught } from "./main-errors.ts";
+import { liveWindow, mainOpener, whileWindowLives } from "./main-window.ts";
 import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
 
 // ssh runs this same executable as its SSH_ASKPASS (askpass.ts): it answers one question and exits before the app's
@@ -72,6 +74,8 @@ const MEMORY_LIMIT_MB = 4096;
 // single-instance lock, so it never meets the owner's running Colonia.
 app.setPath("userData", process.env.COLONIA_DESKTOP_DATA ?? path.join(app.getPath("appData"), "@colonia", "desktop"));
 app.setName("Colonia");
+// FALLO-SIN-DIALOGO-1: una excepción no capturada se registra en logs/main.log en vez de bloquear con un diálogo.
+logUncaught(process, path.join(app.getPath("logs"), "main.log"));
 // Windows files notifications and taskbar pins under this id: the installer's shortcut carries the same one.
 if (process.platform === "win32") app.setAppUserModelId("com.ingenierobinario.colonia");
 // Wayland groups a window under the launcher whose file name this is; the installer writes that file.
@@ -147,22 +151,12 @@ app.whenReady().then(() => {
     backgroundColor: "#1a1a19",
     show: !background,
   });
-  const foregroundMain = () => {
+  // VENTANA-DESTRUIDA-1: openMain no toca la ventana una vez destruida (la app está saliendo).
+  const { open: openMain } = mainOpener(win, () => {
     background = false;
     // Steal focus so a double-click on the tray brings Colonia above other apps on every display.
     if (process.platform === "darwin") app.focus({ steal: true });
-    win.show();
-    win.moveTop();
-    win.focus();
-  };
-  const openMain = () => {
-    if (win.isMinimized()) {
-      // Restoring is asynchronous: focus after the native window finishes its transition.
-      win.removeListener("restore", foregroundMain);
-      win.once("restore", foregroundMain);
-      win.restore();
-    } else foregroundMain();
-  };
+  });
   /** Ends a background start: Colonia has something to show, or nowhere else to be found. */
   const reveal = () => {
     if (background) openMain();
@@ -193,8 +187,7 @@ app.whenReady().then(() => {
     // A tray extension can come or go while Colonia runs.
     findTrayHost();
   });
-  app.on("activate", openMain);
-  app.on("second-instance", (_event, argv) => {
+  const secondInstance = (_event: unknown, argv: string[]) => {
     if (
       argv.includes("--colonia-adopt-local") &&
       JSON.stringify(loadConnection(app.getPath("userData"))) !== openedConnection
@@ -212,7 +205,9 @@ app.whenReady().then(() => {
     opened.add(files);
     // Another login-item start (a second session, a restart of Explorer) does not pop the window.
     if (!(argv.includes(HIDDEN_ARG) && files.length === 0)) openMain();
-  });
+  };
+  // VENTANA-DESTRUIDA-1: sin ventana (cerrada al salir) no hay nada que reabrir: estos eventos se quitan con ella.
+  whileWindowLives(app, win, { activate: openMain, "second-instance": secondInstance });
   // Every page (the panel, the quick chat, browser tabs) gets the edit menu on a right click.
   app.on("web-contents-created", (_e, contents) => {
     contents.on("context-menu", (_ev, params) => {
@@ -731,7 +726,7 @@ app.whenReady().then(() => {
   });
   // Tests quit the app themselves (COLONIA_QUIT_CONFIRM=off); a shutdown or a logout never waits on a question.
   if (process.env.COLONIA_QUIT_CONFIRM !== "off")
-    askBeforeQuit = () => confirmQuit(win, { es: app.getLocale().startsWith("es"), runsCore: connector.runsCore() });
+    askBeforeQuit = () => confirmQuit(liveWindow(win), { es: app.getLocale().startsWith("es"), runsCore: connector.runsCore() });
   powerMonitor.on("shutdown", () => {
     quitting = true;
   });
@@ -815,7 +810,9 @@ app.whenReady().then(() => {
   // The owner picks a folder (a project's) with the system's own dialog; only the panel may ask.
   ipcMain.handle("panel:pick-folder", async (e) => {
     if (e.sender !== panel.webContents) return undefined;
-    const r = await dialog.showOpenDialog(win, { properties: ["openDirectory", "createDirectory"] });
+    const parent = liveWindow(win);
+    const props: Electron.OpenDialogOptions = { properties: ["openDirectory", "createDirectory"] };
+    const r = await (parent ? dialog.showOpenDialog(parent, props) : dialog.showOpenDialog(props));
     return r.canceled ? undefined : r.filePaths[0];
   });
   // PROGRAMAS-1: the owner's desktop programs; picked with the system dialog, launched by id. Only the panel asks.
@@ -823,7 +820,9 @@ app.whenReady().then(() => {
     file: path.join(app.getPath("userData"), "programs.json"),
     platform: process.platform,
     pick: async (filters) => {
-      const r = await dialog.showOpenDialog(win, {
+      const parent = liveWindow(win);
+      if (!parent) return [];
+      const r = await dialog.showOpenDialog(parent, {
         properties: ["openFile", "multiSelections"],
         filters,
         defaultPath:
@@ -841,7 +840,7 @@ app.whenReady().then(() => {
   registrarContrasenas({
     host,
     panel: panel.webContents,
-    ventana: () => win,
+    ventana: () => liveWindow(win),
     idioma: () => language,
     datos: app.getPath("userData"),
     dist: DIST,
@@ -866,6 +865,7 @@ app.whenReady().then(() => {
   ipcMain.on("desktop:titlebar", (e, mode: unknown) => {
     if (e.sender !== panel.webContents) return;
     if (mode !== "light" && mode !== "dark") return;
+    if (win.isDestroyed()) return;
     win.setBackgroundColor(mode === "light" ? "#f4f3f0" : "#1a1a19");
     if (process.platform === "darwin") return;
     win.setTitleBarOverlay(
@@ -964,11 +964,15 @@ app.whenReady().then(() => {
     },
   });
   const tick = setInterval(() => {
+    // VENTANA-DESTRUIDA-1: mientras la app sale (hasta 7 s), el panel ya no existe.
+    if (panel.webContents.isDestroyed()) return;
     void host.closeIdle((view) => view === shown && onScreen());
     watch.check();
   }, 60_000);
   tick.unref();
-  ipcMain.handle("desktop:memory", (e) => (e.sender === panel.webContents ? report() : undefined));
+  ipcMain.handle("desktop:memory", (e) =>
+    e.sender === panel.webContents && !panel.webContents.isDestroyed() ? report() : undefined,
+  );
 });
 
 app.on("window-all-closed", () => app.quit());

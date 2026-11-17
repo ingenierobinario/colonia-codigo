@@ -4,6 +4,7 @@ import path from "node:path";
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen, Tray } from "electron";
 import { setLaunchAtLogin } from "./autostart.ts";
 import { shortcutRefused } from "./linux-desktop.ts";
+import { liveWindow } from "./main-window.ts";
 import { liveTray, quickPlacement } from "./quick-placement.ts";
 
 const WIDTH = 400;
@@ -36,6 +37,9 @@ export function createQuick(opts: {
   let unreadCount = 0;
   let pressedVisible: boolean | undefined;
   let stopped = false;
+  // VENTANA-DESTRUIDA-1: al salir, Electron cierra esta ventana antes de que will-quit pare la bandeja; en ese hueco
+  // un clic en la bandeja o el temporizador del clic tocaban la ventana destruida.
+  const live = () => liveWindow(win);
 
   function trayImage(): Electron.NativeImage | string {
     const attention = unreadCount > 0;
@@ -110,7 +114,7 @@ export function createQuick(opts: {
       }
       dismiss = setTimeout(() => {
         dismiss = undefined;
-        if (!win?.isFocused() && !win?.webContents.isDevToolsOpened()) win?.hide();
+        if (!live()?.isFocused() && !live()?.webContents.isDevToolsOpened()) live()?.hide();
       }, DOUBLE_CLICK_MS + 50);
     });
     win.on("focus", () => clearTimeout(dismiss));
@@ -135,6 +139,8 @@ export function createQuick(opts: {
 
   function toggle(fromTray: boolean, target = placement(fromTray)): void {
     clearTimeout(dismiss);
+    // Parada (la app sale): no se crea otra ventana.
+    if (stopped) return;
     const w = window();
     if (w.isVisible()) {
       w.hide();
@@ -156,24 +162,24 @@ export function createQuick(opts: {
         // Mouse-down precedes mouse-up's click, even when a secondary display reports stale tray bounds.
         tray.on("mouse-down", () => {
           clearTimeout(dismiss);
-          pressedVisible = Boolean(win?.isVisible());
+          pressedVisible = Boolean(live()?.isVisible());
         });
         tray.on("mouse-leave", () => {
           if (pressedVisible === undefined) return;
           pressedVisible = undefined;
-          if (!win?.isFocused() && !win?.webContents.isDevToolsOpened()) win?.hide();
+          if (!live()?.isFocused() && !live()?.webContents.isDevToolsOpened()) live()?.hide();
         });
       }
       // One click opens the quick chat; a double click opens Colonia. The click waits a moment so a double click does
       // not flash the quick chat first.
       tray.on("click", (_event, bounds, point) => {
         clearTimeout(dismiss);
-        const wasVisible = pressedVisible ?? win?.isVisible();
+        const wasVisible = pressedVisible ?? live()?.isVisible();
         pressedVisible = undefined;
         if (process.platform === "linux" && pending) {
           clearTimeout(pending);
           pending = undefined;
-          win?.hide();
+          live()?.hide();
           opts.openMain();
           return;
         }
@@ -184,7 +190,7 @@ export function createQuick(opts: {
         const target = placement(true, clickPoint, bounds);
         pending = setTimeout(() => {
           pending = undefined;
-          if (wasVisible) win?.hide();
+          if (wasVisible) live()?.hide();
           else toggle(true, target);
         }, DOUBLE_CLICK_MS);
       });
@@ -193,7 +199,7 @@ export function createQuick(opts: {
         clearTimeout(dismiss);
         clearTimeout(pending);
         pending = undefined;
-        win?.hide();
+        live()?.hide();
         opts.openMain();
       });
       const text = app.getLocale().startsWith("es") ? MENU.es : MENU.en;
@@ -201,7 +207,7 @@ export function createQuick(opts: {
         {
           label: text.open,
           click: () => {
-            win?.hide();
+            live()?.hide();
             opts.openMain();
           },
         },
@@ -242,7 +248,7 @@ export function createQuick(opts: {
       pending = undefined;
       clearTimeout(dismiss);
       pressedVisible = undefined;
-      win?.hide();
+      live()?.hide();
     },
     /** Opens it (centered under the top of the screen) or hides it when it is in front. */
     toggle,

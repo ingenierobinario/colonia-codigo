@@ -95,7 +95,9 @@ export function createCursor() {
     return { w: win, lx: x - at.x, ly: y - at.y };
   }
 
-  const run = (js: string) => win?.webContents.executeJavaScript(js).catch(() => {});
+  // VENTANA-DESTRUIDA-1: al salir Electron cierra la ventana del cursor antes de que el uso del ordenador pare.
+  const live = () => (win && !win.isDestroyed() ? win : undefined);
+  const run = (js: string) => live()?.webContents.executeJavaScript(js).catch(() => {});
 
   return {
     /** Glides the pointer to a screen point, then waits for it to land. */
@@ -118,7 +120,7 @@ export function createCursor() {
         run(`moveTo(${Math.round(lx)},${Math.round(ly)},${JSON.stringify(s.slice(0, 80))})`),
       );
     },
-    hide: () => win?.hide(),
-    close: () => win?.destroy(),
+    hide: () => live()?.hide(),
+    close: () => live()?.destroy(),
   };
 }
