@@ -73,6 +73,8 @@ const core = spawn(process.execPath, ["--no-warnings", "--import", pathToFileURL
     // Only the sandbox's own CLIs, node and the system: none of the machine's agents (claude, codex, opencode…).
     PATH: [fx.bin, "/usr/bin", "/bin"].join(path.delimiter),
     HOME: process.env.HOME ?? os.homedir(),
+    // Windows also looks in the owner's folders (~/.local/bin…): a home of its own keeps the real codex.exe out.
+    ...(process.platform === "win32" ? { USERPROFILE: fx.home } : {}),
     ...compileCacheEnv(root),
     COLONIA_HOME: fx.home,
     COLONIA_PORT: String(E2E.port),

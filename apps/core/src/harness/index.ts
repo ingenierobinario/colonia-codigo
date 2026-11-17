@@ -16,12 +16,13 @@ import { acpAgents, acpEngine } from "./acp/agents.ts";
 import { acpHarness } from "./acp/harness.ts";
 import { claudeHarness } from "./claude.ts";
 import { codexHarness, type McpCommand } from "./codex.ts";
-import { type CliStatus, detectClaude, detectCodex, sdkPath, which } from "./detect.ts";
+import { type CliStatus, detectClaude, detectCodex, forgetWhich, sdkPath, settleStatus, which } from "./detect.ts";
 import { nativeHarness } from "./native.ts";
 import { ONESHOT, oneshotHarness, oneshotStatus } from "./oneshot.ts";
 import type { Harness, TurnIO } from "./types.ts";
 
 const STATUS_CACHE_MS = 60_000;
+const UNSURE_RETRY_MS = 5_000;
 
 /** A run's tools, reachable out of process (Codex's MCP proxy) only with the run's token. */
 type Gate = Pick<TurnIO, "tools" | "execute" | "run">;
@@ -87,6 +88,7 @@ export function createHarnesses(deps: {
   }
 
   let cache: { at: number; claude: CliStatus; codex: CliStatus } | undefined;
+  let checking: Promise<void> | undefined;
   const models = modelSettings(store);
   /** The engine of the install default's model ("native" when the default is the router alone). */
   const defaultId = (): HarnessId => {
@@ -110,6 +112,8 @@ export function createHarnesses(deps: {
         label: a.label,
         installed: true,
         logged_in: seen?.available === true,
+        // REV-CUOTAS-1: not checked yet is not "signed out".
+        ...(seen ? {} : { checking: true }),
         detail: !seen
           ? "ACP · sign-in is checked when its models are listed"
           : `ACP${seen.detail ? ` · ${seen.detail}` : ""}`,
@@ -123,11 +127,28 @@ export function createHarnesses(deps: {
     get: (id: HarnessId): Harness => registry[id],
     defaultId,
     async status(refresh = false): Promise<EngineStatus[]> {
-      if (refresh || !cache || Date.now() - cache.at > STATUS_CACHE_MS) {
-        const [claude, codex] = await Promise.all([detectClaude(), detectCodex()]);
-        cache = { at: Date.now(), claude, codex };
-        deps.onDetected?.({ claude, codex });
+      // SESION-CODEX-1: a check with no answer keeps the last good one and is asked again soon, never cached as
+      // "signed out"; concurrent callers share one check instead of racing two.
+      const unsure = cache && (cache.claude.unsure || cache.codex.unsure);
+      // Asked to look again (Actualizar): a CLI installed a moment ago is found now, not in a minute.
+      if (refresh) for (const bin of ["claude", "codex"]) forgetWhich(bin);
+      if (refresh || !cache || Date.now() - cache.at > (unsure ? UNSURE_RETRY_MS : STATUS_CACHE_MS)) {
+        checking ??= Promise.all([detectClaude(), detectCodex()])
+          .then(([claude, codex]) => {
+            const last = cache;
+            cache = {
+              at: Date.now(),
+              claude: settleStatus(claude, last?.claude),
+              codex: settleStatus(codex, last?.codex),
+            };
+            deps.onDetected?.({ claude: cache.claude, codex: cache.codex });
+          })
+          .finally(() => {
+            checking = undefined;
+          });
+        await checking;
       }
+      if (!cache) throw new Error("engine status unavailable");
       const d = defaultId();
       const label = llm.label();
       return [
@@ -139,8 +160,8 @@ export function createHarnesses(deps: {
           detail: label,
           default: d === "native",
         },
-        { id: "claude", label: "Claude Code", ...cache.claude, default: d === "claude" },
-        { id: "codex", label: "Codex", ...cache.codex, default: d === "codex" },
+        { id: "claude", label: "Claude Code", ...wire(cache.claude), default: d === "claude" },
+        { id: "codex", label: "Codex", ...wire(cache.codex), default: d === "codex" },
         ...(await Promise.all(
           (Object.keys(ONESHOT) as Array<keyof typeof ONESHOT>).map(async (id) => ({
             id,
@@ -161,6 +182,11 @@ export function createHarnesses(deps: {
     openGate,
     closeGate: (token: string) => gates.delete(token),
   };
+}
+
+/** The protocol's shape: an unanswered check reads as "checking", never as "signed out". */
+function wire({ unsure, ...status }: CliStatus) {
+  return { ...status, ...(unsure ? { checking: true as const } : {}) };
 }
 
 export type Harnesses = ReturnType<typeof createHarnesses>;

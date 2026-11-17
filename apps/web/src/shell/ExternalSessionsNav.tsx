@@ -109,6 +109,8 @@ function EngineState({ engine }: { engine: EngineStatus | undefined }) {
   const t = useT();
   if (!engine) return null;
   if (engine.installed && engine.logged_in) return <span className="sidebar__running" title={t("engine.loggedIn")} />;
+  // SESION-CODEX-1: an unanswered check is not "signed out".
+  if (engine.installed && engine.checking) return <span className="sidebar__soon">{t("engine.checking")}</span>;
   return <span className="sidebar__soon">{engine.installed ? t("engine.noSession") : t("engine.install")}</span>;
 }
 

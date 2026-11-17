@@ -11,7 +11,7 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "engineUsage.help": "Ayuda sobre cuotas de IA",
   "engineUsage.engineHelp": "Ayuda sobre cuotas de {engine}",
   "engineUsage.empty":
-    "Todavía no hay ninguna IA con el uso a la vista. Activa «Mostrar uso» en la tarjeta de ChatGPT o de Claude.",
+    "Todavía no hay ninguna IA con su cuota a la vista. Actívala con «Ver cuánto me queda» en la tarjeta de ChatGPT o de Claude.",
   "engineUsage.description":
     "Límites de cuenta informados por los engines en el equipo donde ejecuta el core, no solo por las sesiones de Colonia.",
   "engineUsage.disclaimer":
@@ -31,8 +31,8 @@ export const esSysUsage: Record<keyof typeof enSysUsage, string> = {
   "engineUsage.resets": "Se renueva {at}",
   "engineUsage.notInstalled": "Programa no instalado",
   "engineUsage.unsupported": "Sin fuente de cuota compatible",
-  "engineUsage.signedOut": "Inicia sesión en el engine para consultar los límites.",
-  "engineUsage.unavailable": "Conectado · uso no disponible",
+  "engineUsage.signedOut": "Sin sesión iniciada",
+  "engineUsage.unavailable": "Sin datos de cuota ahora mismo",
   "engineUsage.source": "Fuente: {source}",
   "engineUsage.claudeNote":
     "El uso de tu plan Pro o Max, el mismo que ves en Claude. Si no aparece, vuelve a conectar Claude en Ajustes.",

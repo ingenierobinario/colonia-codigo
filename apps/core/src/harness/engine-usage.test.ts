@@ -81,7 +81,7 @@ test("Codex deadline is bounded and kills a silent child", async () => {
       () => fs.existsSync(log) && fs.readFileSync(log, "utf8").includes("account/rateLimits/read"),
       "quota request",
     );
-    timers.tick(8_000);
+    timers.tick(20_000);
     assert.equal(await pending, undefined);
     assert.equal(timers.pending(), 0);
   });
@@ -209,4 +209,41 @@ test("quota requests in flight are shared and a later request can refresh", asyn
   assert.equal(result.engines[0]?.status, "unavailable");
   await report();
   assert.equal(calls, 2);
+});
+
+test("una lectura de cuota que falla se reintenta y, si sigue fallando, se enseña la última buena (REV-CUOTAS-1)", async () => {
+  let calls = 0;
+  let mode: "ok" | "fail-once" | "fail" = "ok";
+  const report = createEngineUsage({
+    status: async () => [status("codex")],
+    binary: async () => "fixture",
+    read: async () => {
+      calls++;
+      if (mode === "fail") return undefined;
+      if (mode === "fail-once") {
+        mode = "ok";
+        return undefined;
+      }
+      return [{ id: "primary", window_minutes: 10080, used_percent: 15 }];
+    },
+    signedIn: async () => true,
+  });
+  assert.equal((await report()).engines[0]!.status, "ok");
+  mode = "fail-once";
+  calls = 0;
+  const retried = (await report()).engines[0]!;
+  assert.equal(calls, 2);
+  assert.equal(retried.windows[0]!.used_percent, 15);
+  mode = "fail";
+  const kept = (await report()).engines[0]!;
+  assert.equal(kept.status, "ok");
+  assert.equal(kept.windows[0]!.used_percent, 15);
+});
+
+test("sin datos y sin sesión dice «sin sesión»; sin datos y con sesión no lo dice", async () => {
+  const make = (signed: boolean | undefined) =>
+    createEngineUsage({ status: async () => [status("codex")], binary: async () => "fixture", read: async () => undefined, signedIn: async () => signed });
+  assert.equal((await make(false)()).engines[0]!.reason, "signed_out");
+  assert.equal((await make(true)()).engines[0]!.reason, "not_available");
+  assert.equal((await make(undefined)()).engines[0]!.reason, "not_available");
 });

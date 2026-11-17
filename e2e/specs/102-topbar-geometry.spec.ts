@@ -46,7 +46,7 @@ test("pending usage has one anonymous preview until the empty report arrives", a
   await expect(loading.locator("section")).toHaveCount(1);
   await expect(loading).not.toContainText("100%");
   usage.resolve();
-  await expect(page.getByTestId("engine-usage-summary")).toContainText("No hay engines seleccionados");
+  await expect(page.getByTestId("engine-usage-summary")).toContainText("Todavía no hay ninguna IA con su cuota a la vista");
   await expect(page.getByTestId("engine-usage-summary").locator(".colonia-meter")).toHaveCount(0);
 });
 

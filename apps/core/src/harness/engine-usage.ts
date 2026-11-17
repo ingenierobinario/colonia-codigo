@@ -41,7 +41,7 @@ export async function readCodexUsage(
       child.stdin.end();
       child.kill("SIGKILL");
     };
-    const cancel = (options.runTimers?.after ?? after)(options.timeoutMs ?? 8_000, stop);
+    const cancel = (options.runTimers?.after ?? after)(options.timeoutMs ?? 20_000, stop);
     const send = (frame: unknown) => child.stdin.write(`${JSON.stringify(frame)}\n`);
     child.on("error", stop);
     child.stdin.on("error", stop);
@@ -140,8 +140,13 @@ export function createEngineUsage(deps: {
   readClaude?: typeof readClaudeUsage;
   now?: () => Date;
   enabled?: (id: string) => boolean;
+  /** Whether the engine's CLI is signed in (undefined: not known), asked only when its quota could not be read. */
+  signedIn?: (id: string) => Promise<boolean | undefined>;
 }) {
   let pending: Promise<EngineUsageReport> | undefined;
+  // CUOTAS-IA-2: the last windows each engine reported. A read that times out or fails (a cold app-server on
+  // Windows) keeps showing them instead of "not available"; the next read replaces them.
+  const lastGood = new Map<string, EngineUsageWindow[]>();
   const report = async (): Promise<EngineUsageReport> => {
     const statuses = (await deps.status()).filter(
       (engine) => engine.id !== "native" && (deps.enabled?.(engine.id) ?? true),
@@ -177,7 +182,9 @@ export function createEngineUsage(deps: {
             : // Stopped with a kill, which a shim's launcher would not pass on: the native program.
               (deps.binary ?? (() => sdkPath("codex").catch(() => undefined))))();
           const read = claude ? (deps.readClaude ?? readClaudeUsage) : (deps.read ?? readCodexUsage);
-          const windows = binary ? await read(binary) : undefined;
+          const fresh = binary ? ((await read(binary)) ?? (await read(binary))) : undefined;
+          if (fresh) lastGood.set(engine.id, fresh);
+          const windows = fresh ?? lastGood.get(engine.id);
           return {
             id: engine.id,
             label: engine.label,
@@ -186,7 +193,9 @@ export function createEngineUsage(deps: {
             source: claude ? "claude_cli" : "codex_app_server",
             status: windows ? "ok" : "unavailable",
             windows: windows ?? [],
-            ...(windows ? {} : { reason: "not_available" as const }),
+            ...(windows
+              ? {}
+              : { reason: (await deps.signedIn?.(engine.id)) === false ? ("signed_out" as const) : ("not_available" as const) }),
           };
         }
       }),

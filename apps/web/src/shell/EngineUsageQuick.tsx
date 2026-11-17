@@ -1,5 +1,6 @@
 import type { Result } from "@colonia/protocol";
 import { EngineIcon } from "@colonia/ui";
+import { remainingOf } from "./engineUsageModel.ts";
 
 type Report = Result<"engines.usage">;
 
@@ -13,9 +14,7 @@ export function quickWindows(report: Report | undefined) {
           Number.isFinite(next.used_percent) && (!best || next.used_percent > best.used_percent) ? next : best,
         undefined,
       );
-      return window
-        ? [{ engine, window, remaining: Math.round(100 - Math.max(0, Math.min(100, window.used_percent))) }]
-        : [];
+      return window ? [{ engine, window, remaining: remainingOf(window) }] : [];
     })
     .slice(0, 4);
 }
