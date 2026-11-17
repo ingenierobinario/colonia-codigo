@@ -86,7 +86,7 @@ export function EngineSessions() {
       setResuming(undefined);
     }
   };
-  const ready = Boolean(engine?.installed && (engine.logged_in || engine.auth === "on_invocation"));
+  const ready = Boolean(engine?.installed && (engine.logged_in || engine.checking || engine.auth === "on_invocation"));
   const label = engine?.label ?? engineId;
 
   return (

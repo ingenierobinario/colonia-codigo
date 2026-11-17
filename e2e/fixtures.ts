@@ -80,7 +80,9 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
       },
     ),
   );
-  // Claude Code and Codex as this sandbox's only CLIs: installed, signed out. The machine's own are never found.
+  // Claude Code and Codex as this sandbox's only CLIs: installed, signed out. REV-CUOTAS-1: `bin/codex-login` changes
+  // what `codex login status` answers ("in", "slow": slower than the check, "fail-once": dies once and then is signed in),
+  // printed on stderr with the real CLI's exit codes. The machine's own are never found.
   const bin = path.join(dir, "bin");
   write(
     path.join(bin, "claude"),
@@ -89,7 +91,7 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
   write(
     path.join(bin, "codex"),
     // `debug models`: one model that takes reasoning efforts, as the real CLI lists them.
-    `#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.1.0";; login) echo "Not logged in";; debug) echo '${JSON.stringify({ models: [{ slug: "gpt-e2e", display_name: "GPT e2e", supported_reasoning_levels: [{ effort: "low" }, { effort: "high" }], default_reasoning_level: "low" }] })}';; esac\n`,
+    `#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.1.0";; login) m=$(cat "$(dirname "$0")/codex-login" 2>/dev/null); case "$m" in in) echo "Logged in using ChatGPT" >&2;; slow) sleep 45; echo "Logged in using ChatGPT" >&2;; fail-once) echo in > "$(dirname "$0")/codex-login"; exit 3;; *) echo "Not logged in" >&2; exit 1;; esac;; debug) echo '${JSON.stringify({ models: [{ slug: "gpt-e2e", display_name: "GPT e2e", supported_reasoning_levels: [{ effort: "low" }, { effort: "high" }], default_reasoning_level: "low" }] })}';; esac\n`,
   );
   for (const f of ["claude", "codex"]) fs.chmodSync(path.join(bin, f), 0o755);
   // node itself, without the folder it lives in (globally installed CLIs sit there too).

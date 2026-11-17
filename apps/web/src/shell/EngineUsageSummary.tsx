@@ -2,7 +2,7 @@ import type { Result } from "@colonia/protocol";
 import { Button, Help, Icons, Meter } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { currentLocale, type MessageKey, useT } from "../i18n/index.ts";
-import { windowLabel } from "./engineUsageModel.ts";
+import { remainingOf, remainingTone, showsUsage, windowLabel } from "./engineUsageModel.ts";
 import { go } from "./nav.ts";
 import { UsageLoading } from "./UsageLoading.tsx";
 
@@ -83,10 +83,10 @@ export default function EngineUsageSummary({
           {t("engineUsage.failed")}
         </p>
       )}
-      {!loading && !failed && report && !report.engines.length && (
+      {!loading && !failed && report && !report.engines.filter(showsUsage).length && (
         <p className="usage__note">{t("engineUsage.empty")}</p>
       )}
-      {!loading && !failed && report?.engines.map((engine) => <EngineBlock key={engine.id} engine={engine} />)}
+      {!loading && !failed && report?.engines.filter(showsUsage).map((engine) => <EngineBlock key={engine.id} engine={engine} />)}
       {!loading && !failed && report && (
         <p className="usage__note">{t("engineUsage.updated", { at: dateLabel(report.checked_at) })}</p>
       )}
@@ -132,37 +132,36 @@ function EngineBlock({ engine }: { engine: Report["engines"][number] }) {
         </div>
         {!engine.available && (
           <span className="usage__state">
-            {t(
-              !engine.cli_installed
-                ? "engineUsage.notInstalled"
-                : engine.reason === "unsupported"
-                  ? "engineUsage.unsupported"
-                  : "engineUsage.unavailable",
-            )}
+            {t(!engine.cli_installed ? "engineUsage.notInstalled" : engine.reason === "signed_out" ? "engineUsage.signedOut" : "engineUsage.unavailable")}
           </span>
         )}
       </div>
       {engine.available &&
-        engine.windows.map((window) => (
+        engine.windows.map((window) => {
+          const remaining = remainingOf(window);
+          return (
           <div className="usage__block" key={window.id}>
             <div className="usage__headrow">
               <span className="usage__figure">{windowLabel(window, t)}</span>
               <span className="usage__figure">
-                {t("engineUsage.remaining", { pct: Math.round(100 - window.used_percent) })}
+                {t("engineUsage.remaining", { pct: remaining })}
               </span>
             </div>
+            {/* CUOTAS-IA-2: the bar is what is left, the same number its text says. */}
             <Meter
               size="sm"
               label={`${engine.label} · ${windowLabel(window, t)}`}
-              value={window.used_percent}
+              segments={[{ value: remaining, tone: remainingTone(remaining) }]}
               max={100}
-              valueText={t("engineUsage.used", { pct: Math.round(window.used_percent) })}
+              valueText={t("engineUsage.remaining", { pct: remaining })}
+              className="engine-usage__meter"
             />
             {window.resets_at && (
               <p className="usage__note">{t("engineUsage.resets", { at: dateLabel(window.resets_at) })}</p>
             )}
           </div>
-        ))}
+          );
+        })}
     </section>
   );
 }

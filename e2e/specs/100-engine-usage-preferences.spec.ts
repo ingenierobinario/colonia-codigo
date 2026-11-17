@@ -59,7 +59,7 @@ test("the real usage method returns an empty state when all quota sources are of
   await open(page);
   await page.getByTestId("engine-usage-button").click();
   const summary = page.getByTestId("engine-usage-summary");
-  await expect(summary).toContainText("Todavía no hay ninguna IA con el uso a la vista");
+  await expect(summary).toContainText("Todavía no hay ninguna IA con su cuota a la vista");
   await expect(summary.locator(".colonia-meter")).toHaveCount(0);
   await expect(summary.getByRole("button", { name: "Gestionar IAs" })).toBeVisible();
 });

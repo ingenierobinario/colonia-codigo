@@ -30,8 +30,8 @@ export const enSysUsage = {
   "engineUsage.resets": "Resets {at}",
   "engineUsage.notInstalled": "App not installed",
   "engineUsage.unsupported": "No supported quota source",
-  "engineUsage.signedOut": "Sign in to the engine to check limits.",
-  "engineUsage.unavailable": "Connected · usage not available",
+  "engineUsage.signedOut": "Not signed in",
+  "engineUsage.unavailable": "No quota data right now",
   "engineUsage.source": "Source: {source}",
   "engineUsage.claudeNote":
     "The usage of your Pro or Max plan, the same you see in Claude. If it does not show, connect Claude again in Settings.",

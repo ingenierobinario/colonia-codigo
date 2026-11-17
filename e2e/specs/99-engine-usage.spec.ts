@@ -70,11 +70,13 @@ test("AI usage shows account windows, unavailable engines and a narrow-screen ac
   await expect(summary.getByText("9% disponible")).toBeVisible();
   await expect(summary.getByText("5 horas", { exact: true })).toBeVisible();
   await expect(summary.getByText("Semanal", { exact: true })).toBeVisible();
-  await expect(summary.getByRole("img", { name: "Codex · 5 horas: 37% usado" })).toBeVisible();
+  await expect(summary.getByRole("img", { name: "Codex · 5 horas: 63% disponible" })).toBeVisible();
   await expect(summary.getByText(/Se renueva/)).toBeVisible();
   const claude = summary.locator("section").filter({ has: page.getByRole("heading", { name: "Claude", exact: true }) });
-  await expect(claude.locator(".colonia-meter")).toHaveCount(0);
-  await expect(claude).toContainText("Sin fuente de cuota compatible");
+  // REV-CUOTAS-1: un motor sin fuente de cuota no aparece (nada de «Sin fuente de cuota compatible» a la vista).
+  await expect(claude).toHaveCount(0);
+  await expect(summary).not.toContainText("OpenCode");
+  await expect(summary).not.toContainText("Sin fuente de cuota");
   await expect(summary.getByText(/Sin datos no significa consumo ilimitado/)).toHaveCount(0);
   await summary.getByRole("button", { name: "Ayuda sobre cuotas de IA", exact: true }).click();
   await expect(page.locator(".colonia-help__panel")).toContainText("Sin datos no significa consumo ilimitado");
@@ -122,7 +124,7 @@ test("Claude displays real account windows and its CLI source", async ({ page })
   const summary = page.getByTestId("engine-usage-summary");
   await expect(summary.getByText("85% disponible")).toBeVisible();
   await expect(summary.getByText("13% disponible")).toBeVisible();
-  await expect(summary.getByRole("img", { name: "Claude · Semanal: 87% usado" })).toBeVisible();
+  await expect(summary.getByRole("img", { name: "Claude · Semanal: 13% disponible" })).toBeVisible();
   await expect(summary.getByText("Fuente: tu plan de Claude")).toHaveCount(0);
   const help = summary.getByRole("button", { name: "Ayuda sobre cuotas de Claude", exact: true });
   await help.focus();

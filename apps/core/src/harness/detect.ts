@@ -12,22 +12,55 @@ import { childEnv } from "./env.ts";
 const run = promisify(execFile);
 
 async function cli(cmd: string, args: string[], env: NodeJS.ProcessEnv = childEnv()): Promise<string | undefined> {
+  return (await answer(cmd, args, env)).out;
+}
+
+/**
+ * SESION-CODEX-1: what a CLI said, and whether it said anything at all. A CLI that answers with an exit code other
+ * than 0 still answered (`codex login status` exits 1 when signed out); one that timed out, could not start or said
+ * nothing did not, and that is not the same as "signed out".
+ */
+async function answer(
+  cmd: string,
+  args: string[],
+  env: NodeJS.ProcessEnv = childEnv(),
+  timeout = 15_000,
+): Promise<{ out?: string; failed: boolean }> {
+  // On Windows an npm-installed CLI is a .cmd shim: what it starts is run instead.
+  const start = spawnable(cmd, args);
+  if (!start) return { failed: true };
   try {
-    // On Windows an npm-installed CLI is a .cmd shim: what it starts is run instead.
-    const start = spawnable(cmd, args);
-    if (!start) return undefined;
     // Some CLIs (codex login status) answer on stderr.
     const { stdout, stderr } = await run(start.file, start.args, {
-      timeout: 15_000,
+      timeout,
       maxBuffer: 1024 * 1024,
       windowsHide: true,
       // What an agent's CLI gets: a script that starts with "env node" needs the owner's PATH to find Node.
       env,
     });
-    return stdout.trim() || stderr.trim() || undefined;
-  } catch {
-    return undefined;
+    const out = stdout.trim() || stderr.trim() || undefined;
+    return out ? { out, failed: false } : { failed: true };
+  } catch (err) {
+    const e = err as { killed?: boolean; signal?: string | null; code?: unknown; stdout?: string; stderr?: string };
+    const out = (e.stdout ?? "").trim() || (e.stderr ?? "").trim() || undefined;
+    // Killed by the timeout or never started: no answer, whatever it printed so far.
+    if (e.killed || e.signal || typeof e.code !== "number" || !out) return { failed: true };
+    return { out, failed: false };
   }
+}
+
+/** Two tries, the second with more time: a cold start on Windows can take longer than the first allows. */
+async function patient(cmd: string, args: string[]) {
+  const first = await answer(cmd, args);
+  return first.failed ? answer(cmd, args, childEnv(), 30_000) : first;
+}
+
+/** `codex login status`: signed in (any method), signed out, or no answer. */
+export function codexLogin(out: string | undefined): boolean | undefined {
+  if (!out) return undefined;
+  if (/\bnot\s+logged\s+in\b|\blogged\s+out\b|\bnot\s+signed\s+in\b/i.test(out)) return false;
+  if (/\blogged\s+in\b|\bsigned\s+in\b/i.test(out)) return true;
+  return undefined;
 }
 
 /** Where `bin` is for a program started with `env`: the owner's PATH, not only the one this core was started with. */
@@ -97,24 +130,36 @@ export async function sdkPath(engine: "claude" | "codex", lookup = which): Promi
 const unstartable = (bin: string): CliStatus | undefined =>
   spawnable(bin) ? undefined : { installed: false, logged_in: false, detail: `${bin} ${UNSTARTABLE}` };
 
-export type CliStatus = { installed: boolean; logged_in: boolean; version?: string; detail?: string };
+/** `unsure`: the CLI did not answer (timeout, failed start): its session is unknown, not signed out. */
+export type CliStatus = { installed: boolean; logged_in: boolean; version?: string; detail?: string; unsure?: boolean };
+
+/**
+ * SESION-CODEX-1: a check that got no answer never turns a signed-in engine into a signed-out one. It keeps the last
+ * answer it had; with none yet it says it is still checking.
+ */
+export function settleStatus(next: CliStatus, last: CliStatus | undefined): CliStatus {
+  if (!next.unsure) return next;
+  if (last && !last.unsure && last.installed) return { ...last, ...(next.version ? { version: next.version } : {}) };
+  return { ...next, logged_in: false, unsure: true };
+}
 
 export async function detectClaude(): Promise<CliStatus> {
   const bin = await which("claude");
   if (!bin) return { installed: false, logged_in: false };
   const broken = unstartable(bin);
   if (broken) return broken;
-  const [version, auth] = await Promise.all([cli(bin, ["--version"]), cli(bin, ["auth", "status", "--json"])]);
-  let logged = false;
+  const [version, auth] = await Promise.all([cli(bin, ["--version"]), patient(bin, ["auth", "status", "--json"])]);
+  let logged: boolean | undefined;
   let detail: string | undefined;
   try {
-    const a = JSON.parse(auth ?? "{}") as { loggedIn?: boolean; authMethod?: string; subscriptionType?: string };
-    logged = Boolean(a.loggedIn);
+    const a = JSON.parse(auth.out ?? "") as { loggedIn?: boolean; authMethod?: string; subscriptionType?: string };
+    if (typeof a.loggedIn === "boolean") logged = a.loggedIn;
     detail = [a.authMethod, a.subscriptionType].filter(Boolean).join(" · ") || undefined;
   } catch {}
   return {
     installed: true,
-    logged_in: logged,
+    logged_in: logged === true,
+    ...(logged === undefined ? { unsure: true } : {}),
     ...(version ? { version: version.split(" ")[0] } : {}),
     ...(detail ? { detail } : {}),
   };
@@ -125,11 +170,14 @@ export async function detectCodex(): Promise<CliStatus> {
   if (!bin) return { installed: false, logged_in: false };
   const broken = unstartable(bin);
   if (broken) return broken;
-  const [version, login] = await Promise.all([cli(bin, ["--version"]), cli(bin, ["login", "status"])]);
+  const [version, status] = await Promise.all([cli(bin, ["--version"]), patient(bin, ["login", "status"])]);
+  const login = status.out;
+  const logged = codexLogin(login);
   return {
     installed: true,
-    logged_in: /logged in/i.test(login ?? ""),
+    logged_in: logged === true,
+    ...(logged === undefined ? { unsure: true } : {}),
     ...(version ? { version: version.replace(/^codex-cli\s*/, "") } : {}),
-    ...(login ? { detail: login.replace(/^Logged in using\s*/i, "") } : {}),
+    ...(login && logged ? { detail: login.replace(/^Logged in using\s*/i, "") } : {}),
   };
 }

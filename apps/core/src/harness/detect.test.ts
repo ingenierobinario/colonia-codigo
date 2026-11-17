@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { assertPath, tempDir } from "../testkit/platform.ts";
-import { codexNative, lookup, sdkPath } from "./detect.ts";
+import { codexLogin, codexNative, lookup, sdkPath, settleStatus } from "./detect.ts";
 
 const write = (file: string, text = "") => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -67,4 +67,24 @@ test("an SDK gets a program that starts without a shell: the shim's target, neve
     sdkPath("claude", async () => more),
     /Windows script/,
   );
+});
+
+test("«Not logged in» no se lee como sesión iniciada; una salida rara no decide nada", () => {
+  assert.equal(codexLogin("Logged in using ChatGPT"), true);
+  assert.equal(codexLogin("Not logged in"), false);
+  assert.equal(codexLogin("You are logged out"), false);
+  assert.equal(codexLogin("error: timeout"), undefined);
+  assert.equal(codexLogin(undefined), undefined);
+});
+
+test("una comprobación fallida o lenta nunca pasa a «desconectado»: se conserva el último estado bueno", () => {
+  const good = { id: "codex", installed: true, logged_in: true, version: "0.1" } as never;
+  const unsure = { id: "codex", installed: true, logged_in: false, unsure: true, version: "0.2" } as never;
+  const kept = settleStatus(unsure, good) as { logged_in: boolean; unsure?: boolean };
+  assert.equal(kept.logged_in, true);
+  assert.ok(!kept.unsure);
+  const first = settleStatus(unsure, undefined) as { logged_in: boolean; unsure?: boolean };
+  assert.equal(first.unsure, true);
+  const out = { id: "codex", installed: true, logged_in: false } as never;
+  assert.equal((settleStatus(out, good) as { logged_in: boolean }).logged_in, false);
 });

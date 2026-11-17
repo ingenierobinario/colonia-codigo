@@ -15,7 +15,9 @@ export function cachedEngineUsage(
         return reset > (cached?.at ?? time) && reset <= time;
       }),
     );
-    if (cached && !resetPassed && time >= cached.at && time - cached.at < 60_000) {
+    // A report with an engine that could not be read is asked again sooner: a slow start is not a minute of nothing.
+    const missing = cached?.report.engines.some((engine) => engine.reason === "not_available");
+    if (cached && !resetPassed && time >= cached.at && time - cached.at < (missing ? 10_000 : 60_000)) {
       return Promise.resolve(cached.report);
     }
     pending ??= read()
