@@ -66,10 +66,10 @@ function UsageControl({ engine, onRetry }: { engine: string; onRetry: () => void
             checked={enabled}
             disabled={saving || !ready}
             label={
-              <>
+              <span className="engine-usage-label">
                 <Icons.Zap size={14} />
                 {t("engines.showUsage")}
-              </>
+              </span>
             }
             onCheckedChange={(on) => void save(on)}
           />
