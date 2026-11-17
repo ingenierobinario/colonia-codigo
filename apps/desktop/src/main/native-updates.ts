@@ -63,6 +63,7 @@ export function nativeUpdates(
   });
   let active: NativeUpdateConnection | undefined;
   let stopped = false;
+  let applyOnQuit: boolean | undefined;
   const recovery = updateRecovery(window, {
     retry: async () => {
       await request();
@@ -164,9 +165,16 @@ export function nativeUpdates(
       if (!answer.ok) updater.log(`restart refused: ${answer.error}`);
       return answer;
     },
+    /**
+     * ACTUALIZA-AL-SALIR-1: whether the update may go in on quit is decided when the quit starts, while the local core
+     * is still connected. Asked at the end (after the core this app runs has been stopped), the answer was always «no»:
+     * Windows never installed a downloaded update on quit and stayed on its version until a manual restart.
+     */
+    willQuit: () => {
+      applyOnQuit = coordinator.canApplyOnQuit();
+    },
     quitting: () => {
-      // ACTUALIZA-AL-SALIR-1: saltarse la instalación al salir sin dejar rastro escondía por qué no se actualizaba.
-      if (coordinator.canApplyOnQuit()) updater.quitting();
+      if (applyOnQuit ?? coordinator.canApplyOnQuit()) updater.quitting();
       else updater.log("quit: update not applied (no local core connected)");
     },
     stop: () => {

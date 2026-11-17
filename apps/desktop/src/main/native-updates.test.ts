@@ -196,3 +196,19 @@ test("credentials are identity-scoped and never persisted without OS-backed encr
   unavailable.write("server-a", "paired-device-token");
   assert.equal(cache.read("server-a"), undefined);
 });
+
+// ACTUALIZA-AL-SALIR-1: on Windows the app stops the core it runs before the update goes in. Asked at the end, the
+// coordinator no longer sees a local core and the update never went in on quit (2.36.17 stayed on its version).
+test("an update ready on a local core goes in on quit even after the core has been stopped", () => {
+  const raw = rawUpdater();
+  const native = nativeUpdates(raw.updater, { isDestroyed: () => false } as unknown as BaseWindow, { change: async () => {} });
+  try {
+    native.connect({ identity: "local", url: "http://127.0.0.1:1", local: true });
+    native.willQuit();
+    native.connect(undefined);
+    native.quitting();
+    assert.equal(raw.counts().quits, 1);
+  } finally {
+    native.stop();
+  }
+});

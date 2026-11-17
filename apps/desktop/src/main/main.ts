@@ -906,6 +906,7 @@ app.whenReady().then(() => {
     waitOnQuit({
       first: () => {
         updater.log("will-quit");
+        updater.willQuit();
         updater.stop();
       },
       stop: () => connector.stop(),
