@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.36": {
+    en: [
+      "Connecting Telegram, Discord, Slack and other bots is now a guide, one step per screen.",
+      "Each step opens the right page and copies what you must paste there.",
+      "At the end Colonia checks the connection and tells you plainly what to fix.",
+    ],
+    es: [
+      "Conectar Telegram, Discord, Slack y otros bots es ahora una guía, un paso por pantalla.",
+      "Cada paso abre la página que toca y copia lo que hay que pegar allí.",
+      "Al final Colonia comprueba la conexión y te dice en claro qué corregir.",
+    ],
+  },
   "2.36.35": {
     en: [
       "Share a project with one click: Colonia creates a free temporary link.",
