@@ -2,12 +2,12 @@
 // («Tray is destroyed») si alguien toca la bandeja después de destruirla. Reproduce la salida: will-quit llama a stop()
 // y el panel sigue mandando el contador de avisos, que llega a badge().
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { build } from "esbuild";
+import { removeDir, tempDir } from "../../../core/src/testkit/platform.ts";
 
 type Call = { what: string; destroyed: boolean };
 
@@ -117,7 +117,7 @@ function fakeElectron() {
 
 /** quick.ts tal y como está en el árbol (o en `QUICK_SRC`, para comprobar una versión anterior), con ese Electron. */
 async function loadQuick(fake: ReturnType<typeof fakeElectron>) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-quick-"));
+  const dir = tempDir("colonia-quick-").path;
   const out = path.join(dir, "quick.mjs");
   (globalThis as { __fakeElectron?: unknown }).__fakeElectron = fake.module;
   await build({
@@ -143,7 +143,7 @@ async function loadQuick(fake: ReturnType<typeof fakeElectron>) {
   try {
     return (await import(pathToFileURL(out).href)) as typeof import("./quick.ts");
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    await removeDir(dir);
   }
 }
 

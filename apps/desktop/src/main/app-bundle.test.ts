@@ -32,7 +32,7 @@ test("the app knows why it cannot replace itself: a temporary copy, its disk ima
     bundlePlace("/private/var/folders/x/AppTranslocation/1234/d/Colonia.app/Contents/MacOS/Colonia", all),
     "translocated",
   );
-  assert.equal(bundlePlace("/Volumes/Colonia 2.3.0/Colonia.app/Contents/MacOS/Colonia", none), "disk-image");
+  assert.equal(bundlePlace("/Volumes/Acme 2.3.0/Colonia.app/Contents/MacOS/Colonia", none), "disk-image");
   // An external disk the owner can write is a place like any other.
   assert.equal(bundlePlace("/Volumes/disk/Apps/Colonia.app/Contents/MacOS/Colonia", all), "ok");
   assert.equal(bundlePlace("/Applications/Colonia.app/Contents/MacOS/Colonia", none), "read-only");

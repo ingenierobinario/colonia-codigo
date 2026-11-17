@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { tempDir } from "../testkit/platform.ts";
 import { parseClaudeUsage, readClaudeUsage } from "./claude-usage.ts";
 
 const body = {
@@ -76,15 +77,11 @@ test("Claude without a usable login or answer is unavailable", async () => {
 });
 
 test("Claude reads the login from CLAUDE_CONFIG_DIR", async () => {
-  const { mkdtemp, writeFile, rm } = await import("node:fs/promises");
-  const { tmpdir } = await import("node:os");
+  const { writeFile } = await import("node:fs/promises");
   const { join } = await import("node:path");
-  const dir = await mkdtemp(join(tmpdir(), "colonia-claude-"));
-  try {
-    await writeFile(join(dir, ".credentials.json"), login(Date.now() + 60_000));
-    const windows = await readClaudeUsage("claude", { env: { CLAUDE_CONFIG_DIR: dir }, fetch: reply(body) });
-    assert.equal(windows?.[1]?.used_percent, 87);
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+  await using folder = tempDir("colonia-claude-");
+  const dir = folder.path;
+  await writeFile(join(dir, ".credentials.json"), login(Date.now() + 60_000));
+  const windows = await readClaudeUsage("claude", { env: { CLAUDE_CONFIG_DIR: dir }, fetch: reply(body) });
+  assert.equal(windows?.[1]?.used_percent, 87);
 });

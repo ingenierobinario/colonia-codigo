@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { prepareLocalTarget, saveLocalTarget } from "../../../../packages/install/src/paths.ts";
+import { removeDir, tempDir } from "../../../core/src/testkit/platform.ts";
 import {
   applySavedLocalTarget,
   forgetConnection,
@@ -21,8 +22,8 @@ import {
 } from "./connection.ts";
 import { sshArgs } from "./ssh-tunnel.ts";
 
-test("web installation retains the exact home and port after a desktop restart without environment variables", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-target-"));
+test("web installation retains the exact home and port after a desktop restart without environment variables", async () => {
+  const root = tempDir("colonia-desktop-target-").path;
   const home = path.join(root, "core");
   const data = path.join(root, "desktop");
   fs.mkdirSync(home);
@@ -54,12 +55,12 @@ test("web installation retains the exact home and port after a desktop restart w
     assert.equal(clientEnv.COLONIA_HOME, undefined);
     assert.equal(initialConnection(data, clientEnv)?.mode, "url");
   } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+    await removeDir(root);
   }
 });
 
-test("a chosen connection is kept, read back and forgotten; a broken file means none", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-conn-"));
+test("a chosen connection is kept, read back and forgotten; a broken file means none", async () => {
+  const dir = tempDir("colonia-conn-").path;
   assert.equal(loadConnection(dir), undefined);
   saveConnection(dir, { mode: "ssh", target: "user@example.com" });
   assert.deepEqual(loadConnection(dir), { mode: "ssh", target: "user@example.com" });
@@ -67,7 +68,7 @@ test("a chosen connection is kept, read back and forgotten; a broken file means 
   assert.equal(loadConnection(dir), undefined);
   forgetConnection(dir);
   assert.equal(loadConnection(dir), undefined);
-  fs.rmSync(dir, { recursive: true, force: true });
+  await removeDir(dir);
 });
 
 test("an address the owner types becomes an origin; https is assumed and other schemes are refused", () => {
@@ -92,12 +93,12 @@ test("the tunnel forwards the core's own port, passes the ssh port apart and end
   assert.ok(!sshArgs("server", 7440).includes("-p"));
 });
 
-test("the local core's token comes from core.env in its home, when there is one", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-home-"));
+test("the local core's token comes from core.env in its home, when there is one", async () => {
+  const home = tempDir("colonia-home-").path;
   assert.equal(localCoreToken({ COLONIA_HOME: home }), undefined);
   fs.writeFileSync(path.join(home, "core.env"), "COLONIA_HOST=0.0.0.0\nCOLONIA_TOKEN=abc123\n");
   assert.equal(localCoreToken({ COLONIA_HOME: home }), "abc123");
-  fs.rmSync(home, { recursive: true, force: true });
+  await removeDir(home);
 });
 
 test("the embedded core logs into its home's logs folder, where the service and pnpm dev log too", () => {
@@ -105,8 +106,8 @@ test("the embedded core logs into its home's logs folder, where the service and 
   assert.equal(localCoreLogFile({}), path.join(os.homedir(), ".colonia", "v2", "logs", "core.log"));
 });
 
-test("an explicit URL is connect-only, even when a local connection was saved", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-conn-target-"));
+test("an explicit URL is connect-only, even when a local connection was saved", async () => {
+  const dir = tempDir("colonia-conn-target-").path;
   try {
     saveConnection(dir, { mode: "local" });
     assert.deepEqual(initialConnection(dir, { COLONIA_URL: "https://core.example.com", COLONIA_CONNECTION: "local" }), {
@@ -137,12 +138,12 @@ test("an explicit URL is connect-only, even when a local connection was saved", 
     assert.match(warned[0] ?? "", /environment variable/);
     assert.ok(warned[1]?.includes(path.join(dir, "core.env")), warned[1]);
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    await removeDir(dir);
   }
 });
 
 test("local connection verifies the daemon home identity before lending capabilities", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-conn-home-"));
+  const dir = tempDir("colonia-conn-home-").path;
   let remoteIdentity = "selected-home";
   const server = createServer((_req, res) => {
     res.setHeader("content-type", "application/json");
@@ -168,19 +169,19 @@ test("local connection verifies the daemon home identity before lending capabili
   } finally {
     server.closeAllConnections();
     await new Promise<void>((resolve) => server.close(() => resolve()));
-    fs.rmSync(dir, { recursive: true, force: true });
+    await removeDir(dir);
   }
 });
 
-test("ERR-2: a saved local target whose folder is gone starts the default Colonia and says so", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-desktop-gone-"));
+test("ERR-2: a saved local target whose folder is gone starts the default Colonia and says so", async () => {
+  const root = tempDir("colonia-desktop-gone-").path;
   const home = path.join(root, "core");
   const data = path.join(root, "desktop");
   fs.mkdirSync(home);
   fs.writeFileSync(path.join(home, "home-id"), "same-home");
   try {
     saveLocalTarget(data, prepareLocalTarget({ home, port: 7551, home_id: "same-home" }, "stored-token"));
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
     const env: NodeJS.ProcessEnv = {};
     const said: string[] = [];
     applySavedLocalTarget(data, env, (m) => said.push(m));
@@ -189,6 +190,6 @@ test("ERR-2: a saved local target whose folder is gone starts the default Coloni
     assert.equal(said.length, 1);
     assert.ok(said[0]?.includes("cannot be read (ENOENT)"));
   } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+    await removeDir(root);
   }
 });

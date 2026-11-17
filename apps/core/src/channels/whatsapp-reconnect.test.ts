@@ -1,10 +1,8 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import type { Log } from "../log.ts";
-import { removeDir, waitFor } from "../testkit/platform.ts";
+import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
 import { fakeWhatsApp } from "./fake-whatsapp.test-support.ts";
 import { whatsappAdapter } from "./whatsapp.ts";
 
@@ -15,6 +13,7 @@ async function account(home: string, id: string, lines: Line[], clock: { t: numb
   const fake = fakeWhatsApp();
   const states: string[] = [];
   const codes: string[] = [];
+  let observed = clock.t;
   const write = (level: string) => (fields: Record<string, unknown>, msg: string) =>
     void lines.push({ level, msg, fields });
   const log: Log = { info: write("info"), warn: write("warn"), error: write("error") };
@@ -25,7 +24,10 @@ async function account(home: string, id: string, lines: Line[], clock: { t: numb
     log,
     retryMs: 20,
     historyWaitMs: 60_000,
-    now: () => clock.t,
+    now: () => {
+      observed = clock.t;
+      return clock.t;
+    },
     clockLookMs: 2,
   });
   await adapter.start({
@@ -38,7 +40,7 @@ async function account(home: string, id: string, lines: Line[], clock: { t: numb
   await waitFor(() => codes.length === 1, `${id}: a code to scan`);
   fake.scan();
   await waitFor(() => states.at(-1) === "running", `${id}: linked`);
-  return { id, fake, states, adapter };
+  return { id, fake, states, adapter, observed: () => observed };
 }
 
 const closes = (lines: Line[], id: string) =>
@@ -47,7 +49,7 @@ const closes = (lines: Line[], id: string) =>
 // WA-RECONEXION-1: on 13 November both accounts dropped twelve times, each time a second or two after the computer
 // woke up, and each time the app showed them as failed with a "link again" button although they were back in seconds.
 test("two linked accounts that drop when the computer wakes come back without ever showing as failed", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-wake-"));
+  const home = tempDir("colonia-wa-wake-").path;
   const lines: Line[] = [];
   const clock = { t: 1_000_000 };
   const spain = await account(home, "whatsapp", lines, clock);
@@ -77,7 +79,10 @@ test("two linked accounts that drop when the computer wakes come back without ev
     // Later, with the computer awake, one account loses the network: only that one moves, and it is a warning.
     for (let i = 0; i < 10; i++) {
       clock.t += 10_000;
-      await new Promise((r) => setTimeout(r, 30));
+      await waitFor(
+        () => spain.observed() === clock.t && andorra.observed() === clock.t,
+        "ambas cuentas observan el reloj",
+      );
     }
     for (const a of [spain, andorra]) a.states.length = 0;
     andorra.fake.lose();
@@ -90,12 +95,12 @@ test("two linked accounts that drop when the computer wakes come back without ev
   } finally {
     await spain.adapter.stop();
     await andorra.adapter.stop();
-    removeDir(home);
+    await removeDir(home);
   }
 });
 
 test("a linked account that does not come back shows as failed, keeps trying and recovers by itself", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-down-"));
+  const home = tempDir("colonia-wa-down-").path;
   const lines: Line[] = [];
   const clock = { t: 1_000_000 };
   const spain = await account(home, "whatsapp", lines, clock);
@@ -119,6 +124,6 @@ test("a linked account that does not come back shows as failed, keeps trying and
   } finally {
     await spain.adapter.stop();
     await andorra.adapter.stop();
-    removeDir(home);
+    await removeDir(home);
   }
 });

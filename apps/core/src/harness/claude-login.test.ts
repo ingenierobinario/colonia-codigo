@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { tempDir } from "../testkit/platform.ts";
 import { claudeLogin } from "./claude-login.ts";
 import { fakeProgram } from "./fake-program.test-support.ts";
 
@@ -10,8 +9,7 @@ const PROMPT =
   "Opening browser to sign in…\nIf the browser didn't open, visit: https://claude.com/cai/oauth/authorize?code=true&state=x\nPaste code here if prompted > ";
 
 // A stand-in `claude`: `auth status` reads a state file, `auth login` prints Claude's page and waits for the code.
-function fakeClaude() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-claude-login-"));
+function fakeClaude(dir: string) {
   const state = path.join(dir, "state.json").split(path.sep).join("/");
   const prog = fakeProgram(
     dir,
@@ -30,11 +28,12 @@ else if (cmd === "login") {
 }`,
   );
   Object.assign(process.env, prog.env);
-  return { bin: prog.bin, dir };
+  return prog.bin;
 }
 
 test("signs the Claude plan in through Claude Code's own sign-in, with the code Claude's page shows", async () => {
-  const { bin, dir } = fakeClaude();
+  await using folder = tempDir("colonia-claude-login-");
+  const bin = fakeClaude(folder.path);
   let changed = 0;
   const login = claudeLogin({ find: async () => bin, onChange: () => changed++ });
   assert.deepEqual(await login.status(), { installed: true, connected: false });
@@ -48,11 +47,11 @@ test("signs the Claude plan in through Claude Code's own sign-in, with the code 
   assert.ok(changed >= 1);
   const out = await login.disconnect();
   assert.equal(out.connected, false);
-  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test("a refused code ends the sign-in with the reason, and no Claude Code says so", async () => {
-  const { bin, dir } = fakeClaude();
+  await using folder = tempDir("colonia-claude-login-");
+  const bin = fakeClaude(folder.path);
   const login = claudeLogin({ find: async () => bin });
   await login.start();
   const refused = await login.code("bad");
@@ -60,5 +59,4 @@ test("a refused code ends the sign-in with the reason, and no Claude Code says s
   assert.equal(refused.pending, undefined);
   assert.ok(refused.error);
   assert.deepEqual(await claudeLogin({ find: async () => undefined }).status(), { installed: false, connected: false });
-  fs.rmSync(dir, { recursive: true, force: true });
 });

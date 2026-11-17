@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { tempDir } from "../../../../core/src/testkit/platform.ts";
 import { type CajaSecreta, crearBoveda } from "./boveda.ts";
 import { crearGuardian, type Oferta } from "./guardian.ts";
 
@@ -13,8 +12,8 @@ const caja: CajaSecreta = {
 };
 
 const montar = (t: { after(fn: () => void): void }) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-test-guardian-"));
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const { path: dir, remove } = tempDir("colonia-test-guardian-");
+  t.after(remove);
   const b = crearBoveda({ archivo: path.join(dir, "l.json"), caja });
   const ofertas: Oferta[] = [];
   return { b, ofertas, g: crearGuardian(b, (o) => ofertas.push(o)) };
@@ -51,8 +50,8 @@ test("no se vuelve a ofrecer lo ya guardado, «nunca» se respeta y lo que no es
 
 test("una oferta caducada o repetida no guarda nada", (t) => {
   let ahora = 1000;
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-test-guardian-"));
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const { path: dir, remove } = tempDir("colonia-test-guardian-");
+  t.after(remove);
   const b = crearBoveda({ archivo: path.join(dir, "l.json"), caja });
   const ofertas: Oferta[] = [];
   const g = crearGuardian(

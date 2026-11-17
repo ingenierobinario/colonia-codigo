@@ -1,14 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { createSecrets, keychainService, projectSecretName, splitSecretName } from "./secrets.ts";
 import { type Run, systemBackend } from "./secrets-stores.ts";
-import { tempDir } from "./testkit/platform.ts";
+import { removeDir, tempDir } from "./testkit/platform.ts";
 
-test("secrets resolve by reference, list names only, and live in a 0600 file with the file backend", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
+test("secrets resolve by reference, list names only, and live in a 0600 file with the file backend", async () => {
+  const home = tempDir("colonia-secrets-").path;
   try {
     const s = createSecrets(home, "file", { MY_KEY: "from-env" });
     s.set("gemini", "k-123");
@@ -27,12 +26,12 @@ test("secrets resolve by reference, list names only, and live in a 0600 file wit
     s.set("gemini", null);
     assert.equal(s.resolve("secret://gemini"), undefined);
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });
 
-test("a project's own value wins over the global one there, and only there", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
+test("a project's own value wins over the global one there, and only there", async () => {
+  const home = tempDir("colonia-secrets-").path;
   try {
     const s = createSecrets(home, "file", {});
     s.set("GH_TOKEN", "global-value");
@@ -47,7 +46,7 @@ test("a project's own value wins over the global one there, and only there", () 
     });
     assert.deepEqual(splitSecretName("GH_TOKEN"), { name: "GH_TOKEN" });
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });
 
@@ -86,7 +85,7 @@ function fakeSystem(o: { keyring?: boolean; powershell?: boolean } = {}) {
   return { run, keyring, calls };
 }
 
-const tempHome = () => fs.mkdtempSync(path.join(os.tmpdir(), "colonia-secrets-"));
+const tempHome = () => tempDir("colonia-secrets-").path;
 
 test("each system has its store: Keychain on macOS, DPAPI on Windows, the Secret Service on Linux", () => {
   assert.equal(systemBackend("darwin"), "keychain");
@@ -94,7 +93,7 @@ test("each system has its store: Keychain on macOS, DPAPI on Windows, the Secret
   assert.equal(systemBackend("linux"), "secret-service");
 });
 
-test("on Linux values go to the keyring by stdin, the file keeps only names, and old file values move once", () => {
+test("on Linux values go to the keyring by stdin, the file keeps only names, and old file values move once", async () => {
   const home = tempHome();
   try {
     fs.writeFileSync(path.join(home, "secrets.json"), JSON.stringify({ old: { value: "from-file", updated_at: "x" } }));
@@ -117,11 +116,11 @@ test("on Linux values go to the keyring by stdin, the file keeps only names, and
     assert.equal(s.resolve("secret://old"), undefined);
     assert.equal(sys.keyring.has(`${keychainService(home)}/old`), false);
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });
 
-test("without a keyring a Linux server saves nothing in a file; once values went to the keyring it stays chosen", () => {
+test("without a keyring a Linux server saves nothing in a file; once values went to the keyring it stays chosen", async () => {
   const server = tempHome();
   const desktop = tempHome();
   try {
@@ -143,12 +142,12 @@ test("without a keyring a Linux server saves nothing in a file; once values went
     );
     assert.equal(fs.existsSync(path.join(desktop, "secrets.json")), false);
   } finally {
-    fs.rmSync(server, { recursive: true, force: true });
-    fs.rmSync(desktop, { recursive: true, force: true });
+    await removeDir(server);
+    await removeDir(desktop);
   }
 });
 
-test("on Windows values are sealed with DPAPI in one file, apart from the index", () => {
+test("on Windows values are sealed with DPAPI in one file, apart from the index", async () => {
   const home = tempHome();
   try {
     const sys = fakeSystem({ powershell: true });
@@ -170,13 +169,13 @@ test("on Windows values are sealed with DPAPI in one file, apart from the index"
       () => createSecrets(bare, "dpapi", {}, fakeSystem().run).set("k", "v"),
       "no PowerShell: no plain file",
     );
-    fs.rmSync(bare, { recursive: true, force: true });
+    await removeDir(bare);
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });
 
-test("SECRETS-MIGRAR-1: un servidor sin llavero que ya tenía secrets.json de 2.32.0 no pierde sus secretos al actualizar", () => {
+test("SECRETS-MIGRAR-1: un servidor sin llavero que ya tenía secrets.json de 2.32.0 no pierde sus secretos al actualizar", async () => {
   const home = tempHome();
   try {
     fs.writeFileSync(
@@ -188,7 +187,7 @@ test("SECRETS-MIGRAR-1: un servidor sin llavero que ya tenía secrets.json de 2.
     s.set("otro", "nuevo");
     assert.equal(s.resolve("secret://otro"), "nuevo");
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });
 
@@ -213,7 +212,7 @@ test("SECRETOS-ILEGIBLES-1: un secrets.json con BOM se lee, y uno ilegible se ap
   }
 });
 
-test("RESTAURAR-DPAPI-1: cuarenta claves de una copia se sellan con un solo PowerShell, y si falla no tumba nada", () => {
+test("RESTAURAR-DPAPI-1: cuarenta claves de una copia se sellan con un solo PowerShell, y si falla no tumba nada", async () => {
   const home = tempHome();
   try {
     const sys = fakeSystem({ powershell: true });
@@ -240,11 +239,11 @@ test("RESTAURAR-DPAPI-1: cuarenta claves de una copia se sellan con un solo Powe
     assert.equal(t.listed("nueva"), false, "lo no guardado no aparece en la lista");
     assert.equal(t.listed("k0"), true);
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });
 
-test("RESTAURAR-DPAPI-1: en el llavero de Linux una clave rechazada no impide guardar las demás", () => {
+test("RESTAURAR-DPAPI-1: en el llavero de Linux una clave rechazada no impide guardar las demás", async () => {
   const home = tempHome();
   try {
     const sys = fakeSystem({ keyring: true });
@@ -257,6 +256,6 @@ test("RESTAURAR-DPAPI-1: en el llavero de Linux una clave rechazada no impide gu
     assert.equal(s.resolve("secret://otra"), "3");
     assert.equal(s.listed("mala"), false);
   } finally {
-    fs.rmSync(home, { recursive: true, force: true });
+    await removeDir(home);
   }
 });

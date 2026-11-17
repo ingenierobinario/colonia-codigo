@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { tempDir } from "../../../../core/src/testkit/platform.ts";
 import { type CajaSecreta, crearBoveda, origenDe } from "./boveda.ts";
 
 // Cifrado de prueba: invierte los bytes y los marca. Basta para comprobar que el disco nunca ve el texto.
@@ -13,8 +13,8 @@ const cajaFalsa = (disponible = true): CajaSecreta => ({
 });
 
 const montar = (t: { after(fn: () => void): void }, caja = cajaFalsa()) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-test-boveda-"));
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const { path: dir, remove } = tempDir("colonia-test-boveda-");
+  t.after(remove);
   const archivo = path.join(dir, "logins.json");
   return { dir, archivo, b: crearBoveda({ archivo, caja }) };
 };

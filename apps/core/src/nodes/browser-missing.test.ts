@@ -19,7 +19,7 @@ test("other systems keep the short reason and never look for Flatpaks", () => {
     looked.push(file);
     return true;
   };
-  assert.equal(browserMissing("darwin", "/Users/u", see), "no Chrome, Chromium or Edge on this machine");
+  assert.equal(browserMissing("darwin", "/Users/acme", see), "no Chrome, Chromium or Edge on this machine");
   assert.equal(browserMissing("win32", "/u", see), "no Chrome, Chromium or Edge on this machine");
   assert.deepEqual(looked, []);
 });

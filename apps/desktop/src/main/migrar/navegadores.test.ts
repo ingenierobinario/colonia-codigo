@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
+import { tempDir } from "../../../../core/src/testkit/platform.ts";
 import {
   barraChromium,
   barraFirefox,
@@ -19,8 +20,8 @@ import {
 } from "./navegadores.ts";
 
 const carpeta = (t: { after(fn: () => void): void }) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-test-nav-"));
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const { path: dir, remove } = tempDir("colonia-test-nav-");
+  t.after(remove);
   return dir;
 };
 const huella = (f: string) => createHash("sha256").update(fs.readFileSync(f)).digest("hex");

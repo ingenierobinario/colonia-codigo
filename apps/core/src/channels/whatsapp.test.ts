@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { after, before, test } from "node:test";
 import { UPLOAD_LIMITS } from "@colonia/protocol";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
-import { removeDir, waitFor } from "../testkit/platform.ts";
+import { removeDir, tempDir, waitFor } from "../testkit/platform.ts";
 import { fakeWhatsApp } from "./fake-whatsapp.test-support.ts";
 import { displayName } from "./inbound.ts";
 import type { AdapterIO } from "./types.ts";
@@ -87,7 +85,7 @@ test("a person's profile picture comes from the channel, kept as media; one who 
 
 test("codes keep coming for a few rounds while nobody scans, then linking waits for the owner", async () => {
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
+  const dir = tempDir("colonia-wa-").path;
   const adapter = whatsappAdapter({ dir, lib: async () => fake.lib });
   const codes: string[] = [];
   const states: string[] = [];
@@ -660,7 +658,7 @@ test("removing the channel unlinks the device and drops its folder", async () =>
 
 test("adapter: options go out numbered, a number back presses that option; Markdown reads as WhatsApp", async () => {
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
+  const dir = tempDir("colonia-wa-").path;
   const adapter = whatsappAdapter({ dir, selfOwner: true, lib: async () => fake.lib });
   const actions: string[] = [];
   const ac = new AbortController();
@@ -695,7 +693,7 @@ test("adapter: options go out numbered, a number back presses that option; Markd
 
 test("PROPIOS-5: the owner's own words that cannot reach their chat leave a trace by shape, never their words", async () => {
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
+  const dir = tempDir("colonia-wa-").path;
   const logs: Array<{ msg: string; fields: Record<string, unknown> }> = [];
   const keep = (fields: Record<string, unknown>, msg: string) => logs.push({ msg, fields });
   const adapter = whatsappAdapter({
@@ -735,14 +733,14 @@ test("PROPIOS-5: the owner's own words that cannot reach their chat leave a trac
 });
 
 test("BANDEJA-1: a contact named only with emoji is shown by its number; a real name stays", () => {
-  assert.equal(displayName("🔥✨", "34600111222@s.whatsapp.net"), "+34600111222");
-  assert.equal(displayName("Ana 🔥", "34600111222@s.whatsapp.net"), "Ana 🔥");
+  assert.equal(displayName("🔥✨", "34600001111@s.whatsapp.net"), "+34600001111");
+  assert.equal(displayName("Ana 🔥", "34600001111@s.whatsapp.net"), "Ana 🔥");
   assert.equal(displayName("🔥", "123@lid"), "🔥");
 });
 
 test("ERR-3: a reconnection that cannot open the session is said on the channel and tried again, never left unhandled", async () => {
   const fake = fakeWhatsApp();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-wa-"));
+  const dir = tempDir("colonia-wa-").path;
   let opens = 0;
   const lib = {
     ...fake.lib,
@@ -777,6 +775,6 @@ test("ERR-3: a reconnection that cannot open the session is said on the channel 
   } finally {
     process.off("unhandledRejection", onStray);
     await adapter.stop();
-    removeDir(dir);
+    await removeDir(dir);
   }
 });

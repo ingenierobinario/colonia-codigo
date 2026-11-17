@@ -53,9 +53,10 @@ export function parseTerms(text: string): { matchers: Matcher[]; allow: string[]
 
 function termFiles(env = process.env): string[] {
   if (env.COLONIA_PRIVATE_TERMS) return fs.existsSync(env.COLONIA_PRIVATE_TERMS) ? [env.COLONIA_PRIVATE_TERMS] : [];
-  return [path.join(REPO, "spec", "private-terms.txt"), path.join(os.homedir(), ".colonia", "private-terms.txt")].filter(
-    (f) => fs.existsSync(f),
-  );
+  return [
+    path.join(REPO, "spec", "private-terms.txt"),
+    path.join(os.homedir(), ".colonia", "private-terms.txt"),
+  ].filter((f) => fs.existsSync(f));
 }
 
 // Invented numbers carry four identical digits, doubled pairs or a counting run; real ones almost never do.
@@ -180,10 +181,13 @@ function readCommits(range: string[]): Commit[] {
     });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const files = termFiles();
   const { matchers, allow, errors } = parseTerms(files.map((f) => fs.readFileSync(f, "utf8")).join("\n"));
-  for (const e of errors) console.error(`check:private: ${e}`);
+  if (errors.length) {
+    for (const e of errors) console.error(`check:private: ${e}`);
+    process.exit(1);
+  }
   // --commits [range…]: scan commits instead of files (default: those on no remote yet).
   const at = process.argv.indexOf("--commits");
   const range = at < 0 ? [] : process.argv.slice(at + 1);

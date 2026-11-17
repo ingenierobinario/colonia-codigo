@@ -53,7 +53,9 @@ const sha256File = (file: string) =>
 
 const untar = (archive: string, dir: string) =>
   new Promise<void>((resolve, reject) =>
-    execFile("tar", ["-xzf", archive, "-C", dir, "cloudflared"], (err) => (err ? reject(err) : resolve())),
+    execFile("tar", ["-xzf", archive, "-C", dir, "cloudflared"], { windowsHide: true }, (err) =>
+      err ? reject(err) : resolve(),
+    ),
   );
 
 let pending: Promise<string> | undefined;
