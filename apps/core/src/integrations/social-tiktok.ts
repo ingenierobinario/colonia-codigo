@@ -89,7 +89,7 @@ export function tiktokApi(social: Social) {
     };
   }
 
-  async function download(url: string): Promise<{ bytes: Buffer; type: string }> {
+  async function download(url: string) {
     const res = await social.transfer("TikTok: the video", url);
     if (!res.ok) throw new Error(`TikTok: the video could not be fetched (HTTP ${res.status})`);
     const declared = Number(res.headers.get("content-length"));

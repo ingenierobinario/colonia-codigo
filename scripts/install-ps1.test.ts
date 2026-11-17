@@ -58,14 +58,16 @@ test("a portable install works in a folder with spaces and accents, and again ov
     const clean = { ...process.env, COLONIA_APP: undefined };
     // cmd /c strips the outer quotes of a line that holds more than two: /s and a quoted whole keep the path in one piece.
     const line = `""${path.join(app, "bin", "colonia.cmd")}" status "a b""`;
-    const out = execFileSync("cmd.exe", ["/d", "/s", "/c", line], {
+    const result = spawnSync("cmd.exe", ["/d", "/s", "/c", line], {
       env: clean,
       encoding: "utf8",
       windowsHide: true,
       windowsVerbatimArguments: true,
-      stdio: ["ignore", "pipe", "ignore"],
+      stdio: ["ignore", "pipe", "pipe"],
     });
-    return JSON.parse(out.trim());
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout.trim());
   };
 
   const first = install("2.12.1");
