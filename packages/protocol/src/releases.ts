@@ -6,7 +6,9 @@
  * the base URL of a GitHub-shaped API such as a local test feed); "off" disables.
  */
 export const RELEASE_FEED = "ingenierobinario/colonia";
-export const RELEASE_CHECK_EVERY_MS = 6 * 3600_000;
+// BUSCA-CADA-HORA-1: cada hora (antes 6 h: una versión publicada tras arrancar no llegaba en la jornada). 24 consultas
+// al día quedan muy por debajo del límite anónimo de GitHub (60 por hora).
+export const RELEASE_CHECK_EVERY_MS = 3600_000;
 
 export type ReleaseAsset = { name: string; url: string };
 /** The languages a release says its notes in. */

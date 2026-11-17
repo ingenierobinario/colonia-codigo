@@ -377,3 +377,20 @@ test("a Colonia installed from a .deb tells the panel the command that installs 
   assert.equal(states.at(-1)?.command, command, "the same command the native menu says");
   fs.rmSync(path.join(directory, deb));
 });
+
+// BUSCA-CADA-HORA-1: con 6 h entre comprobaciones, una versión publicada justo después de arrancar no llegaba en toda
+// la jornada, y update.log no decía nada porque solo apuntaba los fallos.
+test("the app asks for a newer Colonia at least every hour and logs every check, found or not", async (t) => {
+  const { RELEASE_CHECK_EVERY_MS } = await import("@colonia/protocol");
+  assert.ok(RELEASE_CHECK_EVERY_MS <= 3600_000, `checks every ${RELEASE_CHECK_EVERY_MS} ms`);
+  await using dir = tempDir("colonia-check-");
+  const logFile = path.join(dir.path, "update.log");
+  const updater = createDesktopUpdater({ changed: () => {}, quit: () => {}, logFile });
+  t.mock.method(globalThis, "fetch", async () => Response.json([]));
+  await updater.check();
+  t.mock.method(globalThis, "fetch", async () => Response.json([release]));
+  await updater.check();
+  const lines = fs.readFileSync(logFile, "utf8");
+  assert.match(lines, /check: up to date/);
+  assert.match(lines, /check: 2\.1\.0 is out/);
+});

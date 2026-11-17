@@ -198,6 +198,8 @@ export function createDesktopUpdater(opts: {
         install: found ? mode : "none",
         checked_at: new Date().toISOString(),
       };
+      // BUSCA-CADA-HORA-1: cada comprobación deja su línea; sin ella, update.log no distinguía «no buscó» de «al día».
+      log(found ? `check: ${found.release.version} is out` : "check: up to date");
     } catch (err) {
       status = {
         ...status,
