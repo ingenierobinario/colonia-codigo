@@ -1,6 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { comparisons } from "../../../apps/docs/src/data/comparisons.ts";
-import { readingNav } from "../web-nav.ts";
 
 test.use({ javaScriptEnabled: false });
 
@@ -12,15 +10,17 @@ for (const pre of ["", "/es"]) {
   });
 }
 
-test("comparison navigation and sources remain usable without scripts", async ({ page }) => {
-  await page.goto("/compare/hermes-agent/");
-  await expect(page.locator("a[data-section][aria-current]")).toHaveCount(0);
-  await (await readingNav(page)).locator('a[href="#sources"]').click();
-  await expect(page).toHaveURL(/#sources$/);
-  await expect(page.getByRole("heading", { name: "Sources and scope", exact: true })).toBeInViewport();
-  await page.getByRole("link", { name: "ES", exact: true }).click();
-  await expect(page.locator("html")).toHaveAttribute("lang", "es");
-  await page.locator('.comparison-card[href$="/openclaw/"]').click();
-  const openclaw = comparisons.find((item) => item.slug === "openclaw");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Colonia vs OpenClaw: ${openclaw?.tagline.es}`);
-});
+for (const lang of ["es", "en"] as const) {
+  const home = lang === "es" ? "/" : "/en/";
+  test(`${lang}: las preguntas y el cambio de idioma funcionan sin JavaScript`, async ({ page }) => {
+    await page.goto(home);
+    await page.locator(`.web-footer a[href="${home}#questions"]`).click();
+    const first = page.locator("#questions details").first();
+    await first.locator("summary").click();
+    await expect(first.locator(".home-questions__answer")).toBeVisible();
+    const next = lang === "es" ? "en" : "es";
+    await page.locator(`.lang a[hreflang="${next}"]`).click();
+    await expect(page).toHaveURL(next === "es" ? "/" : "/en/");
+    await expect(page.locator("html")).toHaveAttribute("lang", next);
+  });
+}

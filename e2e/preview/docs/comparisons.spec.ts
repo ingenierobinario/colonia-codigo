@@ -1,166 +1,99 @@
 import { expect, test } from "@playwright/test";
-import { comparisons } from "../../../apps/docs/src/data/comparisons.ts";
-import { readingNav } from "../web-nav.ts";
 
-const tagline = (slug: string, lang: "en" | "es") =>
-  comparisons.find((item) => item.slug === slug)?.tagline[lang] ?? "";
-
-for (const lang of ["en", "es"] as const) {
-  const prefix = lang === "es" ? "/es" : "";
-  for (const [slug, name] of [
-    ["hermes-agent", "Hermes Agent"],
-    ["openclaw", "OpenClaw"],
-    ["openbot", "OpenBot"],
-    ["claude-cowork", "Claude Cowork"],
-    ["chatgpt-dots", "ChatGPT dots"],
-    ["manus", "Manus"],
-    ["devin", "Devin"],
-    ["paperclip", "Paperclip"],
-    ["viktor", "Viktor"],
-    ["grok-bot", "Grok Bot"],
-    ["muse", "Muse"],
-    ["instinct", "Instinct"],
+for (const lang of ["es", "en"] as const) {
+  const pre = lang === "es" ? "/es" : "";
+  const home = lang === "es" ? "/" : "/en/";
+  for (const [slug, title] of [
+    ["concepts/agents", lang === "es" ? "Agentes" : "Agents"],
+    ["office/chat", "Chat"],
+    ["start/install", lang === "es" ? "Instalación" : "Install"],
   ] as const) {
-    test(`${lang}: ${name} sources, language, reading progress and responsive layout`, async ({ page }, testInfo) => {
+    test(`${lang}: la guía ${slug} muestra contenido, imágenes y enlaces de sección`, async ({ page }) => {
       const errors: string[] = [];
       page.on("pageerror", (error) => errors.push(error.message));
-      await page.goto(`${prefix}/compare/${slug}/`);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Colonia vs ${name}: ${tagline(slug, lang)}`);
+      const response = await page.goto(`${pre}/docs/${slug}/`);
+      expect(response?.status()).toBe(200);
       await expect(page.locator("html")).toHaveAttribute("lang", lang);
-      const rows = page.locator(".compare-table tbody tr");
-      await expect(rows).toHaveCount(8);
-      await expect(rows.nth(1).locator("td").first()).toContainText("Android");
-      for (const cell of await page.locator(".compare-table tbody td").all()) {
-        expect(await cell.locator(".row-sources a").count()).toBeGreaterThan(0);
-        for (const source of await cell.locator(".row-sources a").all()) {
-          await expect(source).toHaveAttribute("href", /^https:/);
-          await expect(source).toHaveAccessibleName(new RegExp(`^${lang === "es" ? "Fuente" : "Source"}:`));
-        }
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+      const sections = page.locator("main h2[id]");
+      expect(await sections.count()).toBeGreaterThan(1);
+      const id = await sections.nth(1).getAttribute("id");
+      await page.goto(`${pre}/docs/${slug}/#${id}`);
+      await expect(sections.nth(1)).toBeInViewport();
+      for (const img of await page.locator("main img:visible").all()) {
+        await img.scrollIntoViewIfNeeded();
+        await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
       }
-      if (slug === "openclaw") {
-        await expect(rows.nth(3).locator("td:last-child a")).toHaveAttribute(
-          "href",
-          "https://docs.openclaw.ai/concepts/multi-agent",
-        );
-        await expect(rows.nth(5).locator("td:last-child a").first()).toHaveAttribute(
-          "href",
-          "https://docs.openclaw.ai/automation/cron-jobs",
-        );
-      }
-      if (slug === "openbot") {
-        for (const platform of ["Slack", "Discord", "Telegram"])
-          await expect(rows.nth(5).locator("td").last()).toContainText(platform);
-        await expect(rows.nth(7).locator("td").last()).toContainText("PolyForm Noncommercial 1.0.0");
-      }
-      // Every image in the page's content and footer; the reading navigation's blob is checked once it shows.
-      for (const image of await page.locator("main img, .web-footer img").all()) {
-        await image.scrollIntoViewIfNeeded();
-        await expect(image).toHaveJSProperty("complete", true);
-        expect(await image.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-      }
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-      expect(await page.evaluate(() => window.innerWidth)).toBe(page.viewportSize()?.width);
-      await page.locator("h1").scrollIntoViewIfNeeded();
-      await page.evaluate(() => window.scrollTo(0, 0));
-      await page.screenshot({ path: testInfo.outputPath("hero.png") });
-      const rail = await readingNav(page, lang);
-      await rail.locator('a[href="#overview"]').click();
-      await expect(page).toHaveURL(/#overview$/);
-      await expect(rail.locator('[aria-current="location"]')).toHaveAttribute("href", "#overview");
-      const guide = rail.locator(".colonia-blob img:visible").first();
-      await expect(guide).toHaveJSProperty("complete", true);
-      expect(await guide.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-      await page.screenshot({ path: testInfo.outputPath("table.png") });
-      await page
-        .locator("#sources")
-        .evaluate((section) => section.scrollIntoView({ block: "start", behavior: "instant" }));
-      await expect(rail.locator('[aria-current="location"]')).toHaveAttribute("href", "#sources");
-      // Every page a row cites is listed with its title under Sources.
-      const listed = await page
-        .locator("#source-other a")
-        .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-      expect(listed.length).toBeGreaterThan(1);
-      for (const href of await page
-        .locator(".compare-table td:last-child .row-sources a")
-        .evaluateAll((links) => links.map((a) => a.getAttribute("href"))))
-        expect(listed).toContain(href);
-      await page.screenshot({ path: testInfo.outputPath("sources.png") });
-      await page.getByRole("link", { name: lang === "es" ? "EN" : "ES", exact: true }).click();
-      await expect(page).toHaveURL(`${lang === "es" ? "" : "/es"}/compare/${slug}/`);
-      await expect(page.locator("html")).toHaveAttribute("lang", lang === "es" ? "en" : "es");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(errors).toEqual([]);
     });
   }
-  test(`${lang}: comparison index leads to each product`, async ({ page }) => {
-    await page.goto(`${prefix}/compare/`);
-    await expect(page.locator(".comparison-card")).toHaveCount(12);
-    await expect(page.locator('.comparison-card[aria-current="page"]')).toHaveCount(0);
-    await page.locator('.comparison-card[href$="/openbot/"]').click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Colonia vs OpenBot: ${tagline("openbot", lang)}`);
-    // Keep comparing lists every product, the one being read marked as such.
-    await expect(page.locator(".comparison-card")).toHaveCount(12);
-    await expect(page.locator('.comparison-card[aria-current="page"]')).toHaveAttribute(
-      "href",
-      `${prefix}/compare/openbot/`,
-    );
-    await page.locator('.comparison-card[href$="/hermes-agent/"]').click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      `Colonia vs Hermes Agent: ${tagline("hermes-agent", lang)}`,
-    );
+  test(`${lang}: el menú de documentación enlaza guías del idioma elegido`, async ({ page, request, isMobile }) => {
+    await page.goto(home);
+    if (isMobile) await page.locator(".nav__toggle").click();
+    else await page.locator(".nav__docs-link").focus();
+    const guide = page.locator(".nav__docs .nav__menu-list--docs a");
+    await expect(guide).toHaveCount(6);
+    for (const link of await guide.all()) {
+      const href = (await link.getAttribute("href")) ?? "";
+      expect(href).toMatch(new RegExp(`^${pre}/docs/`));
+      expect((await request.get(href)).status()).toBe(200);
+    }
+    await guide.first().click();
+    await expect(page).toHaveURL(`${pre}/docs/concepts/agents/`);
   });
 }
 
 for (const reducedMotion of ["no-preference", "reduce"] as const) {
-  test(`blob bodies and eyes appear together (${reducedMotion})`, async ({ page }) => {
+  test(`los ojos aparecen junto con la imagen del pingüino · ${reducedMotion}`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion });
-    let releaseBodies = () => {};
-    const bodiesHeld = new Promise<void>((resolve) => {
-      releaseBodies = resolve;
+    let release = () => {};
+    const held = new Promise<void>((done) => {
+      release = done;
     });
-    await page.route("**/*.webp", async (route) => {
-      await bodiesHeld;
+    await page.route("**/menta.*.webp", async (route) => {
+      await held;
       await route.continue();
     });
     try {
-      await page.goto("/es/compare/openbot/", { waitUntil: "domcontentloaded" });
-      // Home in the hero's chat, four in the short answer, Scout, and the crew card.
-      const blobs = page.locator(".compare-main .colonia-blob");
-      await expect(blobs).toHaveCount(9);
-      for (const blob of await blobs.all()) {
-        expect(await blob.locator("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(0);
-        await expect(blob.locator("svg")).toBeHidden();
-        await expect(blob.locator("img")).toHaveAttribute("loading", "lazy");
-      }
-      releaseBodies();
-      for (const blob of await blobs.all()) {
-        await blob.scrollIntoViewIfNeeded();
-        await expect(blob.locator("svg")).toBeVisible();
-        expect(await blob.locator("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      const blob = page.locator(".web-header .brand .colonia-blob");
+      await expect(blob.locator("img")).toHaveAttribute("loading", "lazy");
+      await expect(blob.locator("svg")).toBeHidden();
+      release();
+      await expect(blob.locator("svg")).toBeVisible();
+      expect(await blob.locator("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+      for (const theme of ["dark", "light"]) {
+        if ((await page.locator("html").getAttribute("data-theme")) !== theme) await page.locator("#theme").click();
+        for (const width of [390, 768, 960, 1200, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          const aligned = await blob.evaluate((element) => {
+            const body = element.querySelector("img")?.getBoundingClientRect();
+            const eyes = element.querySelector("svg")?.getBoundingClientRect();
+            return (
+              body !== undefined &&
+              eyes !== undefined &&
+              Math.abs(body.x - eyes.x) <= 1 &&
+              Math.abs(body.y - eyes.y) <= 1 &&
+              Math.abs(body.width - eyes.width) <= 1 &&
+              Math.abs(body.height - eyes.height) <= 1 &&
+              document.documentElement.scrollWidth <= innerWidth + 1
+            );
+          });
+          expect(aligned, `${width} · ${theme}`).toBe(true);
+        }
       }
     } finally {
-      releaseBodies();
+      release();
     }
   });
 }
 
-test("failed blob bodies never leave visible eyes", async ({ page }) => {
-  await page.route("**/*.webp", (route) => route.abort());
-  await page.goto("/compare/hermes-agent/");
-  const blobs = page.locator(".compare-main .colonia-blob");
-  await expect(blobs).toHaveCount(9);
-  for (const blob of await blobs.all()) {
-    await blob.scrollIntoViewIfNeeded();
-    await expect(blob.locator("img")).toHaveJSProperty("complete", true);
-    await expect(blob.locator("svg")).toBeHidden();
-    await expect(blob.locator("img")).toHaveJSProperty("naturalWidth", 0);
-  }
-});
-
-test("reading navigation works from the keyboard", async ({ page }) => {
-  await page.goto("/compare/hermes-agent/");
-  const link = (await readingNav(page)).locator('a[href="#difference"]');
-  await link.focus();
-  await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/#difference$/);
-  await expect(link).toHaveAttribute("aria-current", "location");
+test("si la imagen falla no quedan ojos flotando", async ({ page }) => {
+  await page.route("**/menta.*.webp", (route) => route.abort());
+  await page.goto("/");
+  const blob = page.locator(".web-header .brand .colonia-blob");
+  await expect(blob.locator("img")).toHaveJSProperty("complete", true);
+  await expect(blob.locator("img")).toHaveJSProperty("naturalWidth", 0);
+  await expect(blob.locator("svg")).toBeHidden();
 });

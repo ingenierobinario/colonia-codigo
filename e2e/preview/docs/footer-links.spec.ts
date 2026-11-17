@@ -1,56 +1,41 @@
 import { expect, test } from "@playwright/test";
-import { comparisons } from "../../../apps/docs/src/data/comparisons.ts";
 
 for (const lang of ["en", "es"] as const) {
-  const pre = lang === "es" ? "/es" : "";
-
-  test(`${lang}: every footer link resolves, in this language`, async ({ page, request }) => {
-    await page.goto(`${pre}/compare/`);
+  const home = lang === "es" ? "/" : "/en/";
+  test(`${lang}: los enlaces del pie llevan a las secciones en el mismo idioma`, async ({ page }) => {
+    await page.goto(home);
     const footer = page.locator(".web-footer");
-    const hrefs = await footer
-      .locator(".web-footer__row a")
-      .evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
-    expect(hrefs.length).toBeGreaterThanOrEqual(60);
-    expect(hrefs).toContain("mailto:manu@incubit.com.ar");
-    // Every comparison is listed, not just the first few.
-    for (const item of comparisons) expect(hrefs).toContain(`${pre}/compare/${item.slug}/`);
-    for (const href of new Set(hrefs)) {
-      if (href.startsWith("mailto:")) continue;
-      if (/^https?:/.test(href)) {
-        expect(href).toMatch(/^https:\/\/(github\.com|discord\.gg|www\.youtube\.com)\//);
-        continue;
-      }
-      if (lang === "es") expect(href, "a Spanish page").toMatch(/^\/es\//);
-      const [path, fragment] = href.split("#");
-      const response = await request.get(path ?? "/");
-      expect(response.status(), href).toBe(200);
-      if (fragment) expect(await response.text(), href).toContain(`id="${fragment}"`);
+    await expect(footer.locator(".brand")).toHaveAttribute("href", home);
+    const nav = footer.getByRole("navigation");
+    await expect(nav).toHaveCount(2);
+    const links = nav.getByRole("link");
+    await expect(links).toHaveCount(6);
+    for (const id of ["what", "new", "start", "terminal", "questions"]) {
+      const link = nav.locator(`a[href="${home}#${id}"]`);
+      await link.click();
+      await expect(page).toHaveURL(`${home}#${id}`);
+      await expect(page.locator(`#${id} h2`).first()).toBeInViewport();
     }
+    await expect(nav.locator("a[href^='https:']")).toHaveAttribute(
+      "href",
+      (await page.locator("#heroReserve").getAttribute("href")) ?? "",
+    );
+    await expect(footer.locator(".web-footer__platforms li")).toHaveText(["macOS", "Windows", "Linux"]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }
 
-test("on a phone the footer's columns stack in two, Compare folds, and links are full size @phone", async ({
-  page,
-}) => {
-  await page.addInitScript(() => localStorage.setItem("colonia-website-analytics-v1", "declined"));
-  await page.goto("/es/");
-  const groups = page.locator(".web-footer");
-  await groups.locator(".web-footer__row").first().scrollIntoViewIfNeeded();
-  const columns = await groups
-    .locator(".web-footer__row .web-footer__col:not(.web-footer__col--compare)")
-    .evaluateAll((cols) => [...new Set(cols.map((n) => Math.round(n.getBoundingClientRect().left)))]);
-  expect(columns).toHaveLength(2);
-  // The long list of comparisons starts folded, and opens.
-  const fold = groups.locator(".web-footer__fold");
-  await expect(fold).not.toHaveAttribute("open");
-  await fold.locator("summary").tap();
-  await expect(fold).toHaveAttribute("open", "");
-  await expect(fold.locator("a").first()).toBeVisible();
-  for (const link of await groups.locator(".web-footer__row a").all()) {
+test("el pie mantiene las dos columnas y enlaces táctiles dentro de la pantalla @phone", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator(".web-footer");
+  await footer.scrollIntoViewIfNeeded();
+  const columns = await footer
+    .locator(".web-footer__col")
+    .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().left)));
+  expect(new Set(columns).size).toBe(2);
+  for (const link of await footer.locator(".web-footer__row a").all()) {
     const box = await link.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(page.viewportSize()?.width ?? 0);
   }
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

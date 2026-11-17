@@ -22,7 +22,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm --dir apps/docs exec astro preview --host 127.0.0.1 --port 4410",
     cwd: fileURLToPath(new URL("../", import.meta.url)),
-    url: "http://127.0.0.1:4410/compare/",
+    url: "http://127.0.0.1:4410/",
     reuseExistingServer: true,
   },
 });

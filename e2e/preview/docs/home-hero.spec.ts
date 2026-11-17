@@ -1,58 +1,29 @@
 import { expect, test } from "@playwright/test";
-import { featured } from "../../../apps/docs/src/data/comparisons.ts";
 import { decodePng } from "../png.ts";
 
 for (const lang of ["en", "es"] as const) {
   const pre = lang === "es" ? "/es" : "";
+  const home = lang === "es" ? "/" : "/en/";
 
-  // Below 1000 px the links live in the menu sheet, without the dropdown.
-  test(`${lang}: the header's Compare menu opens on hover and focus and leads to comparisons @desktop`, async ({
-    page,
-  }, testInfo) => {
-    await page.goto(`${pre}/`);
-    const menu = page.locator(".web-header .nav__cmp .nav__menu");
+  test(`${lang}: el menú de guías se abre con el teclado y lleva a la introducción @desktop`, async ({ page }) => {
+    await page.goto(home);
+    const trigger = page.locator(".nav__docs-link");
+    const menu = page.locator(".nav__docs .nav__menu");
     await expect(menu).toBeHidden();
-    await page.locator(".nav__cmp-link").hover();
+    await trigger.hover();
     await expect(menu).toBeVisible();
-    // The most relevant comparison as the card, the next three beside it, in the data's order.
-    const [lead, ...rest] = featured;
-    const card = menu.locator(".nav__feat");
-    await expect(card).toHaveAttribute("href", `${pre}/compare/${lead?.slug}/`);
-    await expect(card).toContainText(`Colonia vs ${lead?.name}`);
-    await expect(card.locator(".nav__feat-date")).toBeVisible();
-    // The blob sits inside the card, never past its edge.
-    const cardBox = await card.boundingBox();
-    const blobBox = await card.locator(".nav__feat-blob").boundingBox();
-    expect(blobBox?.x ?? 0).toBeGreaterThanOrEqual(cardBox?.x ?? 0);
-    expect((blobBox?.x ?? 0) + (blobBox?.width ?? 0)).toBeLessThanOrEqual((cardBox?.x ?? 0) + (cardBox?.width ?? 0));
-    expect(blobBox?.y ?? 0).toBeGreaterThanOrEqual(cardBox?.y ?? 0);
-    await expect(card.locator(".nav__feat-new")).toHaveText(lang === "es" ? "Nuevo" : "New");
-    const items = menu.locator(".nav__menu-list a");
-    await expect(items).toHaveCount(3);
-    for (const [i, item] of (await items.all()).entries()) {
-      await expect(item).toHaveAttribute("href", `${pre}/compare/${rest[i]?.slug}/`);
-      expect(await item.locator("img").evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-    }
-    await expect(menu.locator(".nav__menu-foot a").last()).toHaveAttribute("href", `${pre}/compare/#comparisons`);
-    await expect(menu.locator(".nav__menu-foot a").first()).toHaveAttribute(
-      "href",
-      `${pre}/compare/best-ai-agent-apps/`,
-    );
-    await page.screenshot({ path: testInfo.outputPath("compare-menu.png") });
-    // The pointer leaving closes it, after a short grace.
     await page.mouse.move(700, 700);
     await expect(menu).toBeHidden();
-    // From the keyboard, focusing Compare opens it and its links are reachable.
-    await page.locator(".nav__cmp-link").focus();
+    await trigger.focus();
     await expect(menu).toBeVisible();
     await page.keyboard.press("Tab");
-    await expect(card).toBeFocused();
+    await expect(menu.locator(".nav__feat")).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page).toHaveURL(`${pre}/compare/${lead?.slug}/`);
+    await expect(page).toHaveURL(`${pre}/docs/start/introduction/`);
   });
 
   test(`${lang}: the header becomes a bar once the page scrolls`, async ({ page }) => {
-    await page.goto(`${pre}/`);
+    await page.goto(home);
     const header = page.locator(".web-header");
     await expect(header).not.toHaveAttribute("data-scrolled");
     await page.evaluate(() => scrollTo(0, 400));
@@ -61,24 +32,16 @@ for (const lang of ["en", "es"] as const) {
     await expect(header).not.toHaveAttribute("data-scrolled");
   });
 
-  test(`${lang}: the install panel floats over the status line without moving the page`, async ({ page }) => {
-    await page.goto(`${pre}/`);
-    const stage = page.locator("[data-stage-card]");
-    const before = await stage.boundingBox();
-    const status = page.locator("#status");
-    await expect(status).toBeVisible();
-    await page.locator(".hero__term").click();
-    await expect(page.locator("#heroInstall")).toBeVisible();
-    await expect(page.locator(".hero__term")).toHaveAttribute("aria-expanded", "true");
-    await expect(status).toHaveClass(/is-away/);
-    expect((await stage.boundingBox())?.y).toBe(before?.y);
-    await page.locator("#heroInstall [data-term='server']").click();
-    await expect(page.locator("#heroInstall [data-pane='server'] code")).toHaveText(
-      "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash -s -- --server",
+  test(`${lang}: la portada identifica la reserva y lleva a las funciones`, async ({ page }) => {
+    await page.goto(home);
+    await expect(page.locator("#heroReserve")).toHaveAccessibleName(
+      lang === "es" ? "Quiero mi colonia" : "I want my Colonia",
     );
+    await expect(page.locator("#heroReserve")).toHaveAttribute("href", /^https:\/\//);
+    await expect(page.locator("#status")).toBeVisible();
     await page.locator(".hero__term").click();
-    await expect(page.locator("#heroInstall")).toBeHidden();
-    await expect(status).not.toHaveClass(/is-away/);
+    await expect(page).toHaveURL(`${home}#what`);
+    await expect(page.locator("#what h2")).toBeInViewport();
   });
 }
 
@@ -114,7 +77,6 @@ for (const theme of ["dark", "light"] as const) {
     const webgl = await page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl")));
     expect(webgl, "the horizon needs WebGL").toBe(true);
     await expect(page.locator(".hero")).toHaveClass(/has-horizon/);
-    await page.locator("[data-analytics-consent] [data-cookie-reject]").click();
     const card = page.locator("[data-stage-card]");
     const shoot = async (cardTop: number) => {
       await page.evaluate((top) => {
@@ -148,9 +110,11 @@ for (const theme of ["dark", "light"] as const) {
     // Past the card's bottom (its caption, the next section) no light is added to the page: no channel is brighter
     // than the background (the card's drop shadow may only darken it).
     const bottom = await shoot(-((await card.boundingBox())?.height ?? 0) + 200);
-    const background = await page.evaluate(() =>
-      (getComputedStyle(document.body).backgroundColor.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number),
-    );
+    // A esta altura hay contenido real en los márgenes. Comparamos los mismos píxeles sin el lienzo para aislar su luz.
+    await page.locator("#horizon").evaluate((canvas) => {
+      (canvas as HTMLElement).style.visibility = "hidden";
+    });
+    const reference = decodePng(await page.screenshot());
     await testInfo.attach("below-card.png", { body: await page.screenshot(), contentType: "image/png" });
     const gutters = [
       2,
@@ -160,9 +124,10 @@ for (const theme of ["dark", "light"] as const) {
     ];
     for (let y = bottom.box.y + bottom.box.height + 16; y < bottom.box.y + bottom.box.height + 400; y += 8)
       for (const x of gutters) {
+        const original = reference.at(x, y);
         const [r, g, b] = bottom.pixels.at(x, y);
         expect(
-          Math.max(r - (background[0] ?? 0), g - (background[1] ?? 0), b - (background[2] ?? 0)),
+          Math.max(r - original[0], g - original[1], b - original[2]),
           `light at ${x},${Math.round(y)}`,
         ).toBeLessThanOrEqual(2);
       }
@@ -171,15 +136,12 @@ for (const theme of ["dark", "light"] as const) {
 
 for (const lang of ["en", "es"] as const) {
   const pre = lang === "es" ? "/es" : "";
-  const entries =
-    lang === "es" ? ["Producto", "Guías", "Comparar", "Preguntas"] : ["Product", "Docs", "Compare", "Questions"];
-  const paths = ["/#what", "/docs/start/introduction/", "/compare/", "/#questions"];
+  const home = lang === "es" ? "/" : "/en/";
+  const entries = lang === "es" ? ["Producto", "Documentación", "Preguntas"] : ["Product", "Docs", "Questions"];
+  const paths = [`${home}#what`, `${pre}/docs/start/introduction/`, `${home}#questions`];
 
-  test(`${lang}: the header's pill is Product, Docs, Compare and Questions, and never overflows`, async ({
-    page,
-    isMobile,
-  }) => {
-    await page.goto(`${pre}/compare/openbot/`);
+  test(`${lang}: la cabecera muestra producto, documentación y preguntas sin desbordar`, async ({ page, isMobile }) => {
+    await page.goto(home);
     const toggle = page.locator(".web-header .nav__toggle");
     if (isMobile) {
       await toggle.click();
@@ -187,13 +149,11 @@ for (const lang of ["en", "es"] as const) {
     }
     const links = page.locator(".web-header .nav__links > a:not(.nav__sheet-get), .web-header .nav__drop-link");
     await expect(links).toHaveText(entries);
-    for (const [i, path] of paths.entries()) await expect(links.nth(i)).toHaveAttribute("href", `${pre}${path}`);
-    await expect(links.nth(2)).toHaveAttribute("aria-current", "page");
+    for (const [i, path] of paths.entries()) await expect(links.nth(i)).toHaveAttribute("href", path);
     if (isMobile) {
       // In the sheet each menu is a group, open under its entry, and the sheet scrolls inside the screen.
-      await expect(page.locator(".web-header .nav__menu-sections a")).toHaveCount(8);
+      await expect(page.locator(".web-header .nav__menu-sections a")).toHaveCount(5);
       await expect(page.locator(".web-header .nav__menu-list--docs a")).toHaveCount(6);
-      await expect(page.locator(".web-header .nav__cmp .nav__menu-list a").first()).toBeVisible();
       // Every group fits the screen's width.
       for (const card of await page.locator(".web-header .nav__menu-card").all()) {
         const box = await card.boundingBox();
@@ -225,28 +185,29 @@ for (const lang of ["en", "es"] as const) {
 
 for (const lang of ["en", "es"] as const) {
   const pre = lang === "es" ? "/es" : "";
+  const home = lang === "es" ? "/" : "/en/";
 
   // Dropdowns open on hover from 1000 px.
   test(`${lang}: Product and Docs menus lead to the home's sections and the guide @desktop`, async ({
     page,
     request,
   }) => {
-    await page.goto(`${pre}/compare/`);
+    await page.goto(home);
     const product = page.locator(".web-header .nav__product .nav__menu");
     await page.locator(".nav__product .nav__drop-link").hover();
     await expect(product).toBeVisible();
     const sections = product.locator("a[data-section]");
-    await expect(sections).toHaveCount(8);
+    await expect(sections).toHaveCount(5);
     for (const link of await sections.all()) {
       const id = await link.getAttribute("data-section");
-      await expect(link).toHaveAttribute("href", `${pre}/#${id}`);
-      expect(await (await request.get(`${pre}/`)).text()).toContain(`id="${id}"`);
+      await expect(link).toHaveAttribute("href", `${home}#${id}`);
+      expect(await (await request.get(home)).text()).toContain(`id="${id}"`);
     }
     // Choosing one goes there and closes the menu.
-    await sections.filter({ hasText: lang === "es" ? "Mapa de la guía" : "Docs map" }).click();
-    await expect(page).toHaveURL(`${pre}/#map`);
+    await product.locator('a[data-section="start"]').click();
+    await expect(page).toHaveURL(`${home}#start`);
     await expect(product).toBeHidden();
-    await expect(page.locator('.nav__product a[data-section="map"]')).toHaveAttribute("aria-current", "location");
+    await expect(page.locator('.nav__product a[data-section="start"]')).toHaveAttribute("aria-current", "location");
     // Docs: the start page as a card and one row per guide section, each a page in this language.
     const docs = page.locator(".web-header .nav__docs .nav__menu");
     await page.locator(".nav__docs .nav__drop-link").hover();
@@ -263,7 +224,7 @@ for (const lang of ["en", "es"] as const) {
     // Menus stay inside the page at every width they show.
     for (const width of [1440, 1100, 1000]) {
       await page.setViewportSize({ width, height: 900 });
-      for (const name of ["product", "docs", "cmp"]) {
+      for (const name of ["product", "docs"]) {
         await page.locator(`.nav__${name} .nav__drop-link`).hover();
         const box = await page.locator(`.nav__${name} .nav__menu-card`).boundingBox();
         expect(box?.x ?? -1, `${name} at ${width}`).toBeGreaterThanOrEqual(0);
