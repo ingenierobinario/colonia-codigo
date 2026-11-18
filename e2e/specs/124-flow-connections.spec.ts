@@ -1,27 +1,65 @@
 // A connection drawn in the Flow editor can be taken away: clicking it marks it and shows a bin, and Delete does the
 // same. A connection that would close a loop is never made.
 import type { Locator, Page } from "@playwright/test";
-import { expect, open, rpc, test } from "./kit.ts";
+import type { Result } from "../../packages/protocol/src/index.ts";
+import { expect, open, rpc, test, until } from "./kit.ts";
 
-/** Clicks a connection where it is drawn, halfway along. */
+/** Pulsa el trazo visible una vez que el lienzo se ha colocado tras el arrastre. */
 async function pick(page: Page, link: Locator) {
-  const box = await link.locator(".react-flow__edge-path").boundingBox();
-  if (!box) throw new Error("connection not drawn");
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const point = await until(() =>
+    link.evaluate(async (edge) => {
+      const path = edge.querySelector<SVGPathElement>(".react-flow__edge-path");
+      const before = path?.getScreenCTM();
+      if (!path || !before || !path.getTotalLength()) return false;
+      await new Promise(requestAnimationFrame);
+      const after = path.getScreenCTM();
+      if (!after || before.toString() !== after.toString()) return false;
+      for (const fraction of [0.5, 0.25, 0.75]) {
+        const { x, y } = path.getPointAtLength(path.getTotalLength() * fraction).matrixTransform(after);
+        if (edge.contains(document.elementFromPoint(x, y))) return { x, y };
+      }
+      return false;
+    }),
+  );
+  await page.mouse.click(point.x, point.y);
 }
 
 test("a connection is picked and removed from the canvas, and a loop is never drawn", async ({ page }) => {
   await rpc("setup.finish", {});
   const project = (await rpc<{ project: { id: string } }>("projects.create", { name: "Acme links" })).project.id;
   await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "es" })));
-  await open(page, `#view=flows&scope=${project}`);
-  await page.getByRole("button", { name: "Nuevo flow" }).first().click();
+  const graph: NonNullable<Result<"flows.graph_get">["draft"]> = {
+    schemaVersion: 2,
+    nodes: [
+      { id: "webhook-1", kind: "webhook", label: "Entrada" },
+      {
+        id: "vars-1",
+        kind: "vars",
+        label: "Variables",
+        vars: [{ name: "nivel", value: { kind: "literal", value: 1 } }],
+      },
+      {
+        id: "js-1",
+        kind: "js",
+        label: "Código",
+        code: "return 1",
+        input: { kind: "event", path: [] },
+        timeoutMs: 2000,
+      },
+    ],
+    edges: [
+      { source: "webhook-1", target: "vars-1" },
+      { source: "vars-1", target: "js-1" },
+    ],
+    layout: [
+      { node: "webhook-1", x: 0, y: 0 },
+      { node: "vars-1", x: 310, y: 120 },
+      { node: "js-1", x: 620, y: 30 },
+    ],
+  };
+  const made = await rpc<Result<"flows.create">>("flows.create", { project, name: "Conexiones", graph });
+  await open(page, `#view=flows&scope=${project}&flow=${made.flow.id}&edit=1`);
   const editor = page.locator(".fe");
-  await editor.getByRole("button", { name: "Añadir Webhook entrante" }).click();
-  await editor.getByRole("button", { name: "Añadir Variables" }).click();
-  await editor.getByRole("button", { name: "Añadir JavaScript" }).click();
-  await editor.getByRole("button", { name: "Cerrar", exact: true }).first().click();
-  // The steps just added moved the first ones out of view: show them all.
   await editor.getByRole("button", { name: "Encuadrar" }).click();
   const edges = editor.locator(".react-flow__edge");
   await expect(edges).toHaveCount(2);
