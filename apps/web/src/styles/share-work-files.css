@@ -1,16 +1,65 @@
-.share-files, .share-files__browser { min-width: 0; overflow-wrap: anywhere; }
-.share-files > button { align-self: start; }
-.share-files ul { margin: 4px 0 8px; padding-inline-start: 1.3em; }
-.share-files__chosen { display: flex; align-items: center; gap: 8px; }
-.share-files__chosen span { min-width: 0; }
-.share-files__chosen button { flex: none; }
-.share-files button:not([class]), .share-files__browser label {
-  display: inline-flex; align-items: center; gap: 6px; max-width: 100%; text-align: start;
-  padding: 4px 6px; border-radius: 4px; color: inherit; background: transparent; border: 0; cursor: pointer;
+.share-files,
+.share-files__browser {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
-.share-files button:not([class]):hover, .share-files__browser label:hover { background: var(--colonia-hover); }
-.share-files svg, .share-files input[type="checkbox"] { flex: none; }
-.share-files__browser { display: grid; gap: 3px; border: 1px solid var(--colonia-border); border-radius: 8px; margin: 8px 0 0; padding: 8px; }
-.share-files__browser legend { max-width: 100%; padding-inline: 4px; }
-.share-files__browser > button, .share-files__browser label { justify-self: start; }
-.share-files__browser span { min-width: 0; overflow-wrap: anywhere; }
+.share-files > button {
+  align-self: start;
+}
+.share-files ul {
+  margin: 4px 0 8px;
+  padding-inline-start: 1.3em;
+}
+.share-files__chosen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.share-files__chosen span {
+  min-width: 0;
+}
+.share-files__chosen button {
+  flex: none;
+}
+.share-files button:not([class]),
+.share-files__browser label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  text-align: start;
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.share-files button:not([class]):hover,
+.share-files__browser label:hover {
+  background: var(--colonia-hover);
+}
+.share-files svg,
+.share-files input[type="checkbox"] {
+  flex: none;
+}
+.share-files__browser {
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 8px;
+  margin: 8px 0 0;
+  padding: 8px;
+}
+.share-files__browser legend {
+  max-width: 100%;
+  padding-inline: 4px;
+}
+.share-files__browser > button,
+.share-files__browser label {
+  justify-self: start;
+}
+.share-files__browser span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
