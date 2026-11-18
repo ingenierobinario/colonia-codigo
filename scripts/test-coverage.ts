@@ -241,7 +241,7 @@ async function runE2ESuites(
   let failed = false;
   const ports = await sandboxPorts();
   const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const run = (command: string, args: string[]) => {
+  const run = (command: string, args: string[], minutes = 15) => {
     const result = spawnSync(command, args, {
       cwd: root,
       stdio: "inherit",
@@ -253,7 +253,7 @@ async function runE2ESuites(
         COLONIA_TEST_COVERAGE_DIR: raw,
         NODE_V8_COVERAGE: raw,
       },
-      timeout: 15 * 60_000,
+      timeout: minutes * 60_000,
     });
     if (result.status !== 0) {
       failed = true;
@@ -265,7 +265,8 @@ async function runE2ESuites(
   snapshot(path.join(root, "packages/ui/dist"));
   if (which.web) {
     const shard = typeof which.web === "string" ? [`--shard=${which.web}`] : [];
-    run(pnpm, ["exec", "playwright", "test", "--project", "chromium", ...shard]);
+    // Una partición de 92 recorridos ya tarda 15 minutos antes de recoger la cobertura.
+    run(pnpm, ["exec", "playwright", "test", "--project", "chromium", ...shard], shard.length ? 60 : 180);
   }
   if (!which.desktop) return failed;
   run(pnpm, ["--filter", "@colonia/desktop", "build"]);
@@ -283,6 +284,25 @@ async function runE2ESuites(
   return failed;
 }
 
+/** Divide los paquetes grandes sin perder el directorio de trabajo ni el límite por proceso. */
+export function unitBatches(relativeFiles: string[], limit = 24): { area: string; files: string[] }[] {
+  if (!Number.isSafeInteger(limit) || limit < 1) throw new Error("El tamaño del lote debe ser un entero positivo");
+  const groups = new Map<string, string[]>();
+  for (const file of relativeFiles) {
+    const area = file.match(/^(?:scripts(?=[/\\])|[^/\\]+[/\\][^/\\]+)/)?.[0];
+    if (!area) throw new Error(`Ruta de prueba sin paquete: ${file}`);
+    const group = groups.get(area) ?? [];
+    group.push(file);
+    groups.set(area, group);
+  }
+  const batches = [];
+  for (const [area, files] of groups) {
+    for (let start = 0; start < files.length; start += limit)
+      batches.push({ area, files: files.slice(start, start + limit) });
+  }
+  return batches;
+}
+
 /** The unit suites, area by area, then the mobile app's own; their coverage lands in `raw` and `nativeOutput`. */
 function runUnitSuites(root: string, raw: string, nativeOutput: string, snapshot: (directory: string) => void) {
   let failed = false;
@@ -294,14 +314,6 @@ function runUnitSuites(root: string, raw: string, nativeOutput: string, snapshot
       // The docs site installs on its own and its tests read the built site: Pages builds it, then runs them (check).
       !file.startsWith(path.join(root, "apps/docs")),
   );
-  const groups = new Map<string, string[]>();
-  for (const file of allTests) {
-    const relative = path.relative(root, file);
-    const area = relative.startsWith("scripts/") ? "scripts" : relative.split(path.sep).slice(0, 2).join(path.sep);
-    const group = groups.get(area) ?? [];
-    group.push(relative);
-    groups.set(area, group);
-  }
   // UI tests consume the public build, including JSX and the design-system export boundary.
   const build = spawnSync(process.execPath, ["scripts/build.mjs"], {
     cwd: path.join(root, "packages/ui"),
@@ -309,7 +321,7 @@ function runUnitSuites(root: string, raw: string, nativeOutput: string, snapshot
   });
   if (build.status !== 0) failed = true;
   snapshot(path.join(root, "packages/ui/dist"));
-  for (const [area, files] of groups) {
+  for (const { area, files } of unitBatches(allTests.map((file) => path.relative(root, file)))) {
     console.log(`\nCoverage: ${area} (${files.length} files)`);
     const cwd = area === "scripts" ? root : path.join(root, area);
     const run = spawnSync(

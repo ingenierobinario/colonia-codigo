@@ -9,7 +9,31 @@ import {
   mergeCoverage,
   missingParts,
   sandboxPorts,
+  unitBatches,
 } from "./test-coverage.ts";
+
+test("la cobertura reparte cada paquete sin omitir archivos y ejecuta los scripts desde la raíz", () => {
+  const files = [
+    "apps/core/a.test.ts",
+    "scripts/a.test.ts",
+    "apps/core/b.test.ts",
+    "apps/core/c.test.ts",
+    "packages/ui/c.test.ts",
+  ];
+  const expected = [
+    { area: "apps/core", files: ["apps/core/a.test.ts", "apps/core/b.test.ts"] },
+    { area: "apps/core", files: ["apps/core/c.test.ts"] },
+    { area: "scripts", files: ["scripts/a.test.ts"] },
+    { area: "packages/ui", files: ["packages/ui/c.test.ts"] },
+  ];
+  for (const sep of ["/", "\\"]) {
+    const native = (file: string) => file.replaceAll("/", sep);
+    assert.deepEqual(
+      unitBatches(files.map(native), 2),
+      expected.map(({ area, files }) => ({ area: native(area), files: files.map(native) })),
+    );
+  }
+});
 
 test("coverage sandboxes use distinct available loopback ports and honor explicit overrides", async () => {
   const ports = await sandboxPorts({});
