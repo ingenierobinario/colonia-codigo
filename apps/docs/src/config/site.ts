@@ -13,6 +13,8 @@ export const WINDOWS_INSTALLER_URL = "";
 export type SectionId = "what" | "new" | "start" | "map" | "terminal" | "questions" | "compare" | "download";
 /** Secciones que no se publican: enlazan a páginas fuera del build. */
 export const HIDDEN_SECTIONS: SectionId[] = ["map", "compare", "download"];
-/** Ancla de una sección en la portada de ese idioma; sin sección, la portada. */
+/** VSL-BF-1: la portada es la página de venta con vídeo; la landing del producto vive en /producto/ y /en/product/. */
+export const homeRoute = (lang: "es" | "en") => (lang === "es" ? "/" : "/en/");
+/** Ancla de una sección en la landing del producto de ese idioma; sin sección, la landing. */
 export const sectionRoute = (lang: "es" | "en", id?: SectionId) =>
-  `${lang === "es" ? "/" : "/en/"}${id ? `#${id}` : ""}`;
+  `${lang === "es" ? "/producto/" : "/en/product/"}${id ? `#${id}` : ""}`;

@@ -53,7 +53,7 @@ export function linkErrors(pages, base = "/colonia") {
       // La portada española vive en la raíz; el logo de la documentación inglesa apunta allí sin ser un cambio de idioma.
       const spanish = (value) =>
         value === "/" ||
-        /^\/(que-puedes-hacer|novedades|tres-pasos|mapa|terminal|preguntas|comparar|descargar|empezar)\//.test(value) ||
+        /^\/(producto|que-puedes-hacer|novedades|tres-pasos|mapa|terminal|preguntas|comparar|descargar|empezar)\//.test(value) ||
         value === "/es" ||
         value.startsWith("/es/");
       const targetLanguage = spanish(target) ? "es" : "en";

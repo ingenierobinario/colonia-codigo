@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import { HIDDEN_SECTIONS, RESERVAR_URL, type SectionId, sectionRoute } from "../../config/site";
+import { HIDDEN_SECTIONS, RESERVAR_URL, type SectionId, homeRoute, sectionRoute } from "../../config/site";
 import blobs from "../../data/blobs.json";
 import { sitePath } from "../../doc-routes.mjs";
 import { HOME, type Lang } from "../../i18n/home";
@@ -11,8 +11,11 @@ import "./web.css";
 interface Props {
   lang: Lang;
   section?: SectionId;
+  /** VSL-BF-1: en la portada (VSL) el cambio de idioma lleva a la otra portada, no a la landing del producto. */
+  home?: boolean;
 }
-const { lang, section } = Astro.props;
+const { lang, section, home = false } = Astro.props;
+const swap = (l: Lang) => href(home ? homeRoute(l) : sectionRoute(l, section));
 const t = HOME[lang];
 const pre = lang === "es" ? "/es" : "";
 const href = (path: string) => sitePath(path, import.meta.env.BASE_URL);
@@ -54,7 +57,7 @@ const guides: [string, string, BlobName][] = [
 </script>
 <nav class="web-header" id="nav" aria-label={t.nav.main}>
   <div class="wrap nav__in">
-    <a class="brand" href={page()}><Blob name="menta" size={26} /><span>Colonia</span></a>
+    <a class="brand" href={href(homeRoute(lang))}><Blob name="menta" size={26} /><span>Colonia</span></a>
     <div class="nav__links" id="navLinks">
       <div class="nav__drop nav__product">
         <a class="nav__drop-link" href={page("what")}>{t.nav.product}<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" /></svg></a>
@@ -99,8 +102,8 @@ const guides: [string, string, BlobName][] = [
     </div>
     <div class="nav__cta">
       <div class="lang" role="group" aria-label={t.langLabel}>
-        <a href={href(sectionRoute("en", section))} class:list={{ on: lang === "en" }} hreflang="en" lang="en">EN</a>
-        <a href={href(sectionRoute("es", section))} class:list={{ on: lang === "es" }} hreflang="es" lang="es">ES</a>
+        <a href={swap("en")} class:list={{ on: lang === "en" }} hreflang="en" lang="en">EN</a>
+        <a href={swap("es")} class:list={{ on: lang === "es" }} hreflang="es" lang="es">ES</a>
       </div>
       <button class="icon-btn" id="theme" type="button" aria-label={t.themeLabel} title={t.themeLabel}>
         <UiIcon name="sun" class="sun" /><UiIcon name="moon" class="moon" />
