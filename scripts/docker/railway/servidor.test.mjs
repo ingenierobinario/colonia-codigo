@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { copyFile, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -11,9 +13,29 @@ const fuente = process.env.COLONIA_RAILWAY_SOURCE ?? fileURLToPath(new URL(".", 
 const manifest = readFileSync(join(fuente, "estable.txt"), "utf8");
 const source = readFileSync(join(fuente, "obtener.sh"), "utf8");
 const version = manifest.split(/\r?\n/)[0];
-const image = process.env.COLONIA_RAILWAY_IMAGE ?? `colonia-railway-prueba:${version}`;
 const execute = promisify(execFile);
 const node = "/opt/colonia/node/bin/node";
+
+async function prepararImagen() {
+  if (process.env.COLONIA_RAILWAY_IMAGE) return process.env.COLONIA_RAILWAY_IMAGE;
+  const contexto = await mkdtemp(join(tmpdir(), "colonia-prueba-imagen-"));
+  try {
+    const directorio = join(contexto, "scripts", "docker");
+    const dockerfile = join(directorio, "Dockerfile");
+    await mkdir(join(directorio, "railway"), { recursive: true });
+    await copyFile(join(fuente, "..", "Dockerfile"), dockerfile);
+    for (const fichero of ["estable.txt", "obtener.sh", "iniciar.sh"]) {
+      await copyFile(join(fuente, fichero), join(directorio, "railway", fichero));
+    }
+    const { stdout } = await execute("docker", ["build", "--quiet", "--file", dockerfile, contexto], {
+      windowsHide: true,
+      timeout: 10 * 60_000,
+    });
+    return stdout.trim();
+  } finally {
+    await rm(contexto, { recursive: true, force: true });
+  }
+}
 
 // Este cliente se ejecuta en un segundo contenedor. Todas sus peticiones llegan al servidor por su red privada.
 async function client() {
@@ -77,6 +99,7 @@ async function client() {
 }
 
 test("servidor de plantilla de Railway con el bundle público, volumen y acceso autenticado", async (t) => {
+  const image = await prepararImagen();
   const suffix = randomUUID();
   const name = `colonia-prueba-${suffix}`;
   const volume = `${name}-datos`;
