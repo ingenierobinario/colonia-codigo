@@ -1,5 +1,6 @@
 import { LINKS } from "../data/links.ts";
 
+export const RAILWAY_REFERRAL = "dBUtql";
 const railwayId = /^[A-Za-z0-9_-]+$/;
 
 /** Los identificadores públicos proceden de la plantilla y del enlace de invitación del editor. */
@@ -8,7 +9,26 @@ export function hostingLinks(language: string, template?: string, referral?: str
   if (!template || !railwayId.test(template)) return { guide, deploy: undefined, referred: false };
 
   const deploy = new URL(`https://railway.com/new/template/${template}`);
-  const referred = Boolean(referral && railwayId.test(referral));
-  if (referred && referral) deploy.searchParams.set("referralCode", referral);
+  const invitation = referral || RAILWAY_REFERRAL;
+  const referred = railwayId.test(invitation);
+  if (referred) deploy.searchParams.set("referralCode", invitation);
   return { guide, deploy: deploy.href, referred };
+}
+
+/** Invitación efímera para el escritorio. La dirección y el código viajan separados. */
+export function cloudInvitation(text: string): { address: string; code: string } | undefined {
+  const parts = text.trim().split(/\s+/);
+  if (parts.length !== 2) return undefined;
+  const [raw, value] = parts;
+  if (!raw || !value) return undefined;
+  const code = value.toUpperCase();
+  if (!/^[2-9A-HJ-NP-Z]{4}-?[2-9A-HJ-NP-Z]{4}$/.test(code)) return undefined;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.pathname !== "/")
+      return undefined;
+    return { address: url.origin, code };
+  } catch {
+    return undefined;
+  }
 }

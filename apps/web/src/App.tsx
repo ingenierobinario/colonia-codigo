@@ -1,5 +1,5 @@
 import { ColoniaProvider } from "@colonia/ui";
-import { type CSSProperties, Suspense, useEffect, useLayoutEffect } from "react";
+import { type CSSProperties, Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { loadThreadWhenReady } from "./data/actions.ts";
 import { startLive } from "./data/live.ts";
 import { checkAccess, useGate } from "./data/pairing.ts";
@@ -12,6 +12,7 @@ import {
   ArtifactWindow,
   BrowserPanel,
   ConnectScreen,
+  HostedWelcome,
   OAuthReturn,
   PairScreen,
   QuickChat,
@@ -89,6 +90,13 @@ function Main() {
 /** The app itself, once the core lets this panel in. */
 function Panel() {
   const setup = useSetup((s) => s.open);
+  const fresh = useSetup((s) => Boolean(s.status?.fresh && !s.status.done));
+  const [hosted, setHosted] = useState(
+    () =>
+      !window.coloniaDesktop &&
+      location.protocol === "https:" &&
+      new URLSearchParams(location.hash.slice(1)).get("host") === "welcome",
+  );
   // Las peticiones iniciales de la barra lateral comparten las conexiones HTTP con el chat.
   useLayoutEffect(() => {
     // La ventana rápida siempre abre el chat principal, aunque su módulo aún se esté descargando.
@@ -127,7 +135,16 @@ function Panel() {
       )}
       {!QUICK && setup && (
         <Suspense fallback={null}>
-          <Wizard />
+          {hosted && fresh ? (
+            <HostedWelcome
+              onNew={() => {
+                window.history.replaceState(null, "", "#view=equipos");
+                setHosted(false);
+              }}
+            />
+          ) : (
+            <Wizard />
+          )}
         </Suspense>
       )}
     </>

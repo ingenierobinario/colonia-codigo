@@ -200,6 +200,8 @@
                       "**/NewProjectDialog.tsx",
                       "**/OAuthReturn.tsx",
                       "**/PairScreen.tsx",
+                      "**/HostedWelcome.tsx",
+                      "**/HostingOfferDialog.tsx",
                       "**/PhoneDialog.tsx",
                       "**/ProcessesPanel.tsx",
                       "**/ProjectMarkEditor.tsx",

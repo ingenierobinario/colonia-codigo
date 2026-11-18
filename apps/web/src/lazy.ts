@@ -54,9 +54,12 @@ export const TaskDescription = late(() =>
 export const EngineSessions = late(() =>
   import("./engines/EngineSessions.tsx").then((m) => ({ default: m.EngineSessions })),
 );
-export const ProjectScreen = late(() =>
-  import("./project/ProjectScreen.tsx").then((m) => ({ default: m.ProjectScreen })),
-);
+const loadRoutinesPane = () => import("./routines/RoutinesPane.tsx").then((m) => ({ default: m.RoutinesPane }));
+export const ProjectScreen = late(() => {
+  // Con una pestaña elegida en el enlace se pueden descargar su código y el del proyecto a la vez.
+  if (new URLSearchParams(location.hash.slice(1)).get("tab") === "routines") void loadRoutinesPane().catch(() => {});
+  return import("./project/ProjectScreen.tsx").then((m) => ({ default: m.ProjectScreen }));
+});
 export const ResourcesScreen = late(() =>
   import("./project/ResourcesScreen.tsx").then((m) => ({ default: m.ResourcesScreen })),
 );
@@ -79,6 +82,16 @@ export const TasksScreen = late(() => import("./tasks/TasksScreen.tsx").then((m)
 export const FilesScreen = late(() => import("./files/FilesScreen.tsx").then((m) => ({ default: m.FilesScreen })));
 export const ComputersScreen = late(() =>
   import("./computers/ComputersScreen.tsx").then((m) => ({ default: m.ComputersScreen })),
+);
+export const HostedWelcome = lazy(() =>
+  Promise.all([import("./equipos/HostedWelcome.tsx"), addPack("equipos")]).then(([m]) => ({
+    default: m.HostedWelcome,
+  })),
+);
+export const HostingOfferDialog = lazy(() =>
+  Promise.all([import("./equipos/HostingOfferDialog.tsx"), addPack("equipos")]).then(([m]) => ({
+    default: m.HostingOfferDialog,
+  })),
 );
 export const EquiposScreen = late(() =>
   Promise.all([import("./equipos/EquiposScreen.tsx"), addPack("equipos")]).then(([m]) => ({
@@ -128,9 +141,7 @@ export const IntegrationsTab = late(() =>
 );
 export const AddSkill = late(() => import("./resources/AddSkill.tsx").then((m) => ({ default: m.AddSkill })));
 export const SkillDetail = late(() => import("./resources/SkillDetail.tsx").then((m) => ({ default: m.SkillDetail })));
-export const RoutinesPane = late(() =>
-  import("./routines/RoutinesPane.tsx").then((m) => ({ default: m.RoutinesPane })),
-);
+export const RoutinesPane = late(loadRoutinesPane);
 export const ProjectTasks = late(() => import("./tasks/TasksList.tsx").then((m) => ({ default: m.ProjectTasks })));
 export const NewProjectDialog = late(() =>
   import("./shell/NewProjectDialog.tsx").then((m) => ({ default: m.NewProjectDialog })),

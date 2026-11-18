@@ -53,7 +53,7 @@ export async function pairWithOwnerKey(
   const owner = new ColoniaClient({ url: window.location.origin, token: key.trim() });
   try {
     const { code } = await owner.call("devices.pair_start", {});
-    return await pairWith(code, device);
+    return await pairWith(code, device, !window.coloniaDesktop && location.protocol === "https:");
   } catch (error) {
     if (needsPairing(error)) return { why: "ownerDenied" };
     return { why: "ownerUnavailable" };
@@ -64,6 +64,7 @@ export async function pairWithOwnerKey(
 export async function pairWith(
   code: string,
   device: { name: string; platform: "desktop" | "other" },
+  hosting = false,
 ): Promise<PairFailure | undefined> {
   let token: string;
   try {
@@ -78,6 +79,7 @@ export async function pairWith(
   } catch {
     return { why: "noStorage" };
   }
+  if (hosting) window.history.replaceState(null, "", "#view=equipos&host=welcome");
   window.location.reload();
   return undefined;
 }

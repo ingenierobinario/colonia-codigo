@@ -6,6 +6,7 @@ import { useSlice } from "../data/createStore.ts";
 import { usePrefs } from "../data/prefs.ts";
 import { data } from "../data/state.ts";
 import { useThreadDialog } from "../data/threadAdmin.ts";
+import { useHostingOffer } from "../equipos/hostingOffer.ts";
 import {
   AppScreen,
   ChannelScreen,
@@ -17,6 +18,7 @@ import {
   EquiposScreen,
   FilesScreen,
   FlowsScreen,
+  HostingOfferDialog,
   InstallArtifactDialog,
   LiveLayer,
   NavegadorScreen,
@@ -57,6 +59,7 @@ export function Shell() {
   const own = usePrefs((s) => s);
   const config = useNav((s) => s.config != null);
   const palette = useNav((s) => s.palette);
+  const hostingOffer = useHostingOffer();
   const threadDialog = useThreadDialog() != null;
   const phone = useNav((s) => s.phone);
   const usageDialog = useNav((s) => s.usageDialog);
@@ -147,6 +150,11 @@ export function Shell() {
       {peek && (
         <Suspense fallback={null}>
           <TaskPeek />
+        </Suspense>
+      )}
+      {hostingOffer && (
+        <Suspense fallback={null}>
+          <HostingOfferDialog />
         </Suspense>
       )}
       <UpdateDialogHost />

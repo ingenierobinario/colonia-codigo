@@ -1,13 +1,54 @@
 // Pantalla «Mis equipos»: se carga con ella (usePack("equipos")), no con la primera pantalla del panel.
 export const enEquipos = {
+  "equipos.offerTitle": "Keep Colonia working when you turn off your computer?",
+  "equipos.offerHint":
+    "Your automation is active. With an always-on server it can also run when you close Colonia or turn off this computer.",
+  "equipos.offerLater": "Not now",
+  "equipos.offerSee": "View server options",
+  "equipos.hostingPeer": "Your other computer runs the automations",
+  "equipos.hostingSecondary": "This desktop works with the primary server",
+  "equipos.hostingPrimary": "This computer runs the automations",
+  "equipos.hostingUpdate": "Update both devices to use this sync mode.",
+  "equipos.hostingPending": "Some changes are still syncing.",
+  "equipos.hostingCurrent": "Both devices are connected and recorded changes are up to date.",
+  "equipos.hostingReconnect": "Sync will resume when the connection returns.",
+  "equipos.hostingInviteLabel": "Server invitation",
+  "equipos.hostingConsent":
+    "Your chats, projects, routines and provider keys will sync to the server shown. The server will run your automations. Only the local folders you select will be copied. Browser sessions stay on this PC.",
+  "equipos.hostingAccept": "Sync with this server",
+  "equipos.hostingJoin": "I have a server. Link this PC",
+  "equipos.hostingFromPC":
+    "Generate an invitation for your desktop. During the first sync, the desktop's data takes precedence when it overlaps with data on this server.",
+  "equipos.hostingInvite": "Create desktop invitation",
+  "equipos.hostingCopied": "Invitation copied",
+  "equipos.hostingCopy": "Copy invitation",
+  "equipos.hostingReadError": "Couldn’t check the sync status.",
+  "equipos.hostingJoinError":
+    "Couldn’t link these devices. Check your connection and make sure the invitation is still valid.",
+  "equipos.hostingRetry": "Try again",
+  "equipos.hostingAddFolders": "Add folders to the server",
+  "equipos.hostingSendFolders": "Send selected folders",
+  "equipos.hostingFolderHint": "New folders are copied once. The server keeps the copies it has already received.",
+  "equipos.hostingFolders": "Also include these project folders",
+  "equipos.hostingPasteHint":
+    "In Colonia on the server, open My devices and choose Create desktop invitation. Paste the address and code here.",
+  "equipos.hostingWelcome": "Connect this server to your desktop",
+  "equipos.hostingWelcomeHint":
+    "To use your existing Colonia here, copy the invitation and paste it into My devices on your PC.",
+  "equipos.hostingNew": "Set up a new Colonia",
+  "equipos.hostingOpen": "Open my Colonia",
+  "equipos.hostingFilesDone": "The server has confirmed {files} files in {completed} project folders.",
+  "equipos.hostingFilesWorking":
+    "Copying the selected folders. The server has confirmed {completed} of {total}. Keep this PC on until the copy finishes.",
+  "equipos.hostingFilesFailed": "The copy stopped after {completed} of {total} folders.",
+  "equipos.hostingFileSource": "Check that you can open the folder on this PC.",
+  "equipos.hostingFileDestination": "Check free space and permissions on the server.",
   "equipos.hosting": "Colonia on a server",
   "equipos.hostingHint": "Your agents can keep working when you turn off this computer.",
   "equipos.hostingRailway": "Create my server on Railway",
   "equipos.hostingGuide": "Install on my own server",
-  "equipos.hostingPlan":
-    "Railway will ask you to sign in and confirm hosting. The cost depends on your plan and usage.",
-  "equipos.hostingReferral":
-    "Railway charges for hosting based on your plan and usage. If you sign up through this referral link, Colonia may earn a commission.",
+  "equipos.hostingPlan": "Railway will ask you to sign in and confirm that you want to create the server.",
+  "equipos.hostingReferral": "If you sign up through this referral link, Colonia may earn a commission.",
   "equipos.transfer": "Your data on another computer",
   "equipos.transferSync": "Pair two Colonias with a code to keep changes in sync.",
   "equipos.transferBackup":

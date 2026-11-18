@@ -1,14 +1,55 @@
 import type { EquipoKey } from "./equipos-en.ts";
 
 export const esEquipos: Record<EquipoKey, string> = {
+  "equipos.offerTitle": "¿Quieres que Colonia siga trabajando cuando apagues el ordenador?",
+  "equipos.offerHint":
+    "Tu automatización ya está activa. Con un servidor encendido, podrá ejecutarse también cuando cierres Colonia o apagues este equipo.",
+  "equipos.offerLater": "Ahora no",
+  "equipos.offerSee": "Ver opciones de servidor",
+  "equipos.hostingPeer": "Las automatizaciones se ejecutan en tu otro equipo",
+  "equipos.hostingSecondary": "Este escritorio trabaja con el servidor principal",
+  "equipos.hostingPrimary": "Este equipo ejecuta las automatizaciones",
+  "equipos.hostingUpdate": "Actualiza ambos equipos para utilizar este modo de sincronización.",
+  "equipos.hostingPending": "Hay cambios pendientes de sincronizar.",
+  "equipos.hostingCurrent": "Los dos equipos están conectados y al día con los cambios registrados.",
+  "equipos.hostingReconnect": "Se retomará la sincronización al recuperar la conexión.",
+  "equipos.hostingInviteLabel": "Invitación del servidor",
+  "equipos.hostingConsent":
+    "Se sincronizarán los chats, proyectos, rutinas y claves de proveedores con el servidor indicado. El servidor ejecutará las automatizaciones. Solo se copiarán las carpetas de disco que selecciones. Las sesiones del navegador permanecen en el PC.",
+  "equipos.hostingAccept": "Sincronizar con este servidor",
+  "equipos.hostingJoin": "Ya tengo servidor. Vincular este PC",
+  "equipos.hostingFromPC":
+    "Genera una invitación para tu escritorio. En la primera sincronización se conservarán los datos del PC cuando coincidan con los de este servidor.",
+  "equipos.hostingInvite": "Generar invitación para el PC",
+  "equipos.hostingCopied": "Invitación copiada",
+  "equipos.hostingCopy": "Copiar invitación",
+  "equipos.hostingReadError": "No se ha podido consultar la sincronización.",
+  "equipos.hostingJoinError": "No se pudo vincular. Comprueba la conexión y que la invitación siga vigente.",
+  "equipos.hostingRetry": "Volver a intentar",
+  "equipos.hostingAddFolders": "Añadir carpetas al servidor",
+  "equipos.hostingSendFolders": "Enviar las carpetas seleccionadas",
+  "equipos.hostingFolderHint":
+    "Se copiará una vez el contenido de las carpetas nuevas. El servidor conservará las copias que ya recibió.",
+  "equipos.hostingFolders": "Incluir también las carpetas de estos proyectos",
+  "equipos.hostingPasteHint":
+    "En la Colonia del servidor, abre Mis equipos y elige Generar invitación para el PC. Pega aquí la dirección y el código.",
+  "equipos.hostingWelcome": "Conecta este servidor con tu escritorio",
+  "equipos.hostingWelcomeHint":
+    "Para utilizar aquí la Colonia que ya tienes, copia la invitación y pégala en Mis equipos en el PC.",
+  "equipos.hostingNew": "Configurar como Colonia nueva",
+  "equipos.hostingOpen": "Abrir mi Colonia",
+  "equipos.hostingFilesDone": "El servidor ha confirmado {files} archivos en {completed} carpetas de proyecto.",
+  "equipos.hostingFilesWorking":
+    "Copiando las carpetas elegidas. El servidor ha confirmado {completed} de {total}. Mantén el PC encendido hasta que termine.",
+  "equipos.hostingFilesFailed": "La copia se detuvo después de {completed} de {total} carpetas.",
+  "equipos.hostingFileSource": "Comprueba que puedes abrir la carpeta en este PC.",
+  "equipos.hostingFileDestination": "Comprueba el espacio disponible y los permisos del servidor.",
   "equipos.hosting": "Colonia en un servidor",
   "equipos.hostingHint": "Tus agentes pueden seguir trabajando cuando apagas este ordenador.",
   "equipos.hostingRailway": "Crear mi servidor en Railway",
   "equipos.hostingGuide": "Instalar en mi propio servidor",
-  "equipos.hostingPlan":
-    "Railway te pedirá iniciar sesión y confirmar el alojamiento. El coste depende de tu plan y consumo.",
-  "equipos.hostingReferral":
-    "Railway cobra según el plan y el uso. Si creas una cuenta con este enlace de invitación, Colonia puede recibir una comisión.",
+  "equipos.hostingPlan": "Railway te pedirá iniciar sesión y confirmar la creación del servidor.",
+  "equipos.hostingReferral": "Si creas una cuenta con este enlace de invitación, Colonia puede recibir una comisión.",
   "equipos.transfer": "Tus datos en otro equipo",
   "equipos.transferSync": "Enlaza dos Colonias con un código para mantener sus cambios sincronizados.",
   "equipos.transferBackup":

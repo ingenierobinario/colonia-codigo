@@ -1,5 +1,6 @@
 // Routines (routines.*): read when their screen opens and after every change; runs show up as normal runs.
 import type { CallModel, Routine, RoutineAction, RoutineRun, Schedule } from "@colonia/protocol";
+import { offerHostingAfterActivation } from "../equipos/hostingOffer.ts";
 import { t } from "../i18n/index.ts";
 import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
@@ -69,6 +70,7 @@ export async function saveRoutine(d: RoutineDraft): Promise<boolean> {
       enabled: d.enabled,
     });
     await loadRoutines();
+    if (d.enabled && d.schedule.kind !== "manual") void offerHostingAfterActivation();
     return true;
   } catch (e) {
     fail(e);

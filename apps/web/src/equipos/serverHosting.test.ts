@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hostingLinks } from "./serverHosting.ts";
+import { isLocalHostingDesktop } from "./hostingOffer.ts";
+import { cloudInvitation, hostingLinks } from "./serverHosting.ts";
 
 test("una plantilla publicada abre el despliegue en Railway", () => {
   const links = hostingLinks("es", "prueba-colonia");
-  assert.equal(links.deploy, "https://railway.com/new/template/prueba-colonia");
-  assert.equal(links.referred, false);
+  assert.equal(links.deploy, "https://railway.com/new/template/prueba-colonia?referralCode=dBUtql");
+  assert.equal(links.referred, true);
+  assert.equal(hostingLinks("es", "prueba-colonia", "").deploy, links.deploy);
 });
 
 test("el enlace aplica la referencia sin cambiar de proveedor ni compartir datos del equipo", () => {
@@ -23,4 +25,32 @@ test("sin plantilla válida se puede instalar en un servidor siguiendo la guía 
     assert.equal(links.guide, "https://colonia.ingenierobinario.com/es/docs/devices/server/");
   }
   assert.equal(hostingLinks("en").guide, "https://colonia.ingenierobinario.com/docs/devices/server/");
+});
+
+test("el código temporal queda separado del dominio HTTPS que se sincroniza", () => {
+  assert.deepEqual(cloudInvitation(" https://prueba.example/  ABCD-2345 "), {
+    address: "https://prueba.example",
+    code: "ABCD-2345",
+  });
+  for (const text of [
+    "",
+    "http://prueba.example ABCD-2345",
+    "https://u:p@prueba.example ABCD-2345",
+    "https://prueba.example/?clave=x ABCD-2345",
+    "https://prueba.example/#ABC ABCD-2345",
+    "https://prueba.example 0000-0000",
+    "https://prueba.example/sub ABCD-2345",
+    "https://prueba.example ABCD-2345 sobra",
+  ]) {
+    assert.equal(cloudInvitation(text), undefined);
+  }
+});
+
+test("el escritorio ofrece llevar al servidor solo el motor local confirmado por Electron", () => {
+  for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
+    assert.equal(isLocalHostingDesktop(true, host), true);
+    assert.equal(isLocalHostingDesktop(false, host), false);
+    assert.equal(isLocalHostingDesktop(undefined, host), false);
+  }
+  assert.equal(isLocalHostingDesktop(true, "colonia.example"), false);
 });

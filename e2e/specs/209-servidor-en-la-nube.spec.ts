@@ -73,7 +73,7 @@ for (const language of ["es", "en"] as const) {
       await page.addInitScript((lang) => {
         localStorage.setItem("colonia.prefs", JSON.stringify({ language: lang, sidebarCollapsed: true }));
         Object.assign(window, {
-          coloniaDesktop: { openExternal: (url: string) => sessionStorage.setItem("enlace", url) },
+          coloniaDesktop: { coreLocal: true, openExternal: (url: string) => sessionStorage.setItem("enlace", url) },
         });
       }, language);
       await page.route("**/rpc/equipos.discover", (route) =>
@@ -97,8 +97,9 @@ for (const language of ["es", "en"] as const) {
         const link = new URL(await page.evaluate(() => sessionStorage.getItem("enlace") ?? ""));
         expect(link.origin).toBe("https://railway.com");
         expect(link.pathname).toBe(`/new/template/${process.env.VITE_COLONIA_RAILWAY_TEMPLATE}`);
-        expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || null);
-        if (process.env.VITE_COLONIA_RAILWAY_REFERRAL) await expect(card).toContainText(/comisión|commission/);
+        expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
+        await expect(card).toContainText(/comisión|commission/);
+        await expect(card).not.toContainText(/Railway cobra|Railway charges|coste|cost depends/i);
       } else await expect(deploy).toHaveCount(0);
       await card.getByRole("button", { name: /propio servidor|my own server/ }).click();
       expect(await page.evaluate(() => sessionStorage.getItem("enlace"))).toBe(

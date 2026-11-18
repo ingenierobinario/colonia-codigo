@@ -459,3 +459,53 @@
 .eq-task p {
   overflow-wrap: anywhere;
 }
+
+.eq-hosting-pair {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.eq-hosting-pair form {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.eq-hosting-pair > button {
+  justify-self: start;
+}
+.eq-hosting-pair .colonia-input,
+.eq-hosting-pair input[type="text"] {
+  max-width: 100%;
+  min-width: 0;
+}
+.eq-hosting-address {
+  overflow-wrap: anywhere;
+}
+
+.eq-hosting-folders {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  max-height: 14rem;
+  overflow-y: auto;
+  border: 0;
+  padding: 0;
+}
+.eq-hosting-folders legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.35rem;
+}
+.eq-hosting-folders label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  overflow-wrap: anywhere;
+}
+.eq-hosting-folders input {
+  flex: none;
+}
+.eq-hosting-address code {
+  white-space: normal;
+  user-select: all;
+}

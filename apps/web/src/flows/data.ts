@@ -6,6 +6,7 @@ import type { FlowGraphIssue } from "../../../../packages/protocol/src/flow-grap
 import { loadChannels, useChannels } from "../data/channels.ts";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
+import { offerHostingAfterActivation } from "../equipos/hostingOffer.ts";
 import { isKey, type MessageKey, t as translate } from "../i18n/index.ts";
 import { go, nav } from "../shell/nav.ts";
 import { blank } from "./complete.ts";
@@ -34,7 +35,9 @@ export type RunDetail = Result<"flows.run_get">;
  */
 export async function setEnabled(flow: Flow, enabled: boolean) {
   if (enabled && !(await publishSaved(flow))) return undefined;
-  return client.call("flows.set", { ...flow, enabled });
+  const saved = await client.call("flows.set", { ...flow, enabled });
+  if (enabled) void offerHostingAfterActivation();
+  return saved;
 }
 
 /**
