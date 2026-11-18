@@ -196,9 +196,11 @@ test("un marcador abre su página en una pestaña nueva, y la vista pasa a ella 
     await expect(strip(page).first()).toHaveAttribute("aria-selected", "true");
     await expect(page.locator(".btoolbar__urltext")).toHaveText("marcador0.example.com");
     await expect(page.locator(".browser__page--native")).toBeVisible();
-    await until(async () => (await state(page)).shown.includes("t1"));
-    const s = await state(page);
-    expect(s.slot && s.slot.width > 0 && s.slot.height > 0).toBe(true);
+    // El escritorio selecciona la pestaña y recibe sus medidas en el siguiente fotograma.
+    await until(async () => {
+      const { shown, slot } = await state(page);
+      return shown.includes("t1") && slot !== null && slot.width > 0 && slot.height > 0;
+    }, 3_000);
     expect(Date.now() - began).toBeLessThan(3_000);
     expect(node.calls("browser.open")).toEqual([
       { url: "https://marcador0.example.com/", by: "operator", profile: PROFILE },
