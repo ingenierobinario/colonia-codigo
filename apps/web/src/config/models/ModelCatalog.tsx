@@ -101,11 +101,12 @@ function EngineModels(props: {
         <EngineIcon engine={e.id} size={16} />
         <span className="catalog__label">{e.label}</span>
         <span className="catalog__id">{e.id}</span>
-        <span className="catalog__meta">
+        {/* CATALOGO-DETALLE-1: the reason in the user's language; the engine's own words stay in the tooltip. */}
+        <span className="catalog__meta" title={e.detail}>
           {t(e.kind === "harness" ? "models.kind.harness" : "models.kind.provider")} ·{" "}
           {t("models.count", { count: props.total })}
           {e.fetched_at && ` · ${t("models.fetchedAt", { when: dayLabel(e.fetched_at) })}`}
-          {e.detail && (!e.available || stale) && ` · ${e.detail}`}
+          {e.detail && (!e.available || stale) && ` · ${t(`models.detail.${e.detail_code ?? "failed"}`)}`}
         </span>
         {!e.available ? (
           <Badge tone="warning">{t("models.unavailable")}</Badge>
