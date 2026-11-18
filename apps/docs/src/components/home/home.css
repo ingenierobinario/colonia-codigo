@@ -2664,11 +2664,11 @@ a.hero__term {
   .hv-count__label { text-wrap: balance; }
 }
 
-/* MOCKUP-VIVO-1: la captura real de la app cobra vida. Cuatro velos blancos tapan los mensajes del chat y se
- * retiran en orden (pregunta, «escribiendo…», respuesta), en bucle. Las franjas son % de la captura, medidas
- * sobre la imagen; las dos capturas (es/en) comparten maquetación. Sin movimiento si el visitante lo pide. */
-.hv-win__shot { position: relative; display: block; line-height: 0; }
-.hv-win__m { position: absolute; left: 43%; right: 1%; background: #fff; opacity: 1; animation: hv-m1 14s linear infinite; }
+/* MOCKUP-VIVO-2: la captura real de la app cobra vida, en bucle de 12 s. El texto se escribe en la caja,
+ * sale el mensaje, Nova «escribe» y llega su respuesta; dos veces. Cuatro velos blancos tapan los mensajes y se
+ * retiran en orden. Posiciones en % de la captura, medidas sobre la imagen (es/en comparten maquetación). */
+.hv-win__shot { position: relative; display: block; line-height: 0; container-type: inline-size; }
+.hv-win__m { position: absolute; left: 43%; right: 1%; background: #fff; opacity: 1; animation: hv-m1 12s linear infinite; }
 .hv-win__m--1 { top: 19.8%; height: 5.8%; }
 .hv-win__m--2 { top: 25.6%; height: 21.2%; animation-name: hv-m2; }
 .hv-win__m--3 { top: 46.8%; height: 6%; animation-name: hv-m3; }
@@ -2676,13 +2676,25 @@ a.hero__term {
 .hv-win__m--2::after, .hv-win__m--4::after {
   content: ""; position: absolute; left: 3.2%; top: clamp(4px, 1vw, 12px); width: clamp(30px, 4vw, 46px); aspect-ratio: 46 / 26; border-radius: 999px;
   background: radial-gradient(circle at 26% 50%, #8a8f98 0 11%, transparent 12%), radial-gradient(circle at 50% 50%, #a3a8b0 0 11%, transparent 12%), radial-gradient(circle at 74% 50%, #bcc0c6 0 11%, transparent 12%), #eef0f2;
-  opacity: 0; animation: hv-t2 14s linear infinite;
+  opacity: 0; animation: hv-t2 12s linear infinite;
 }
 .hv-win__m--4::after { animation-name: hv-t4; }
-@keyframes hv-m1 { 0%, 7% { opacity: 1; } 10%, 95% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes hv-m2 { 0%, 29% { opacity: 1; } 32%, 95% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes hv-m3 { 0%, 45% { opacity: 1; } 48%, 95% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes hv-m4 { 0%, 63% { opacity: 1; } 66%, 95% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes hv-t2 { 0%, 13% { opacity: 0; } 15%, 28% { opacity: 1; } 30%, 100% { opacity: 0; } }
-@keyframes hv-t4 { 0%, 51% { opacity: 0; } 53%, 62% { opacity: 1; } 64%, 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .hv-win__m { display: none; } }
+.hv-win__type { position: absolute; left: 45.4%; top: 87.2%; width: 40%; height: 3.6%; background: #fff; opacity: 0; animation: hv-tyc 12s linear infinite; font-size: 1cqw; line-height: 1; color: #1b1c1f; }
+.hv-win__ty { position: absolute; left: 0.3cqw; top: 50%; transform: translateY(-50%); max-width: 0; overflow: hidden; white-space: nowrap; font-weight: 400; line-height: 1.5; border-right: 1px solid #1b1c1f; opacity: 0; animation: hv-ty1 12s linear infinite; }
+.hv-win__ty--2 { animation-name: hv-ty2; }
+@keyframes hv-m1 { 0%, 13% { opacity: 1; } 15%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes hv-m2 { 0%, 28% { opacity: 1; } 30%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes hv-m3 { 0%, 47% { opacity: 1; } 49%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes hv-m4 { 0%, 60% { opacity: 1; } 62%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes hv-t2 { 0%, 16% { opacity: 0; } 17%, 27% { opacity: 1; } 28.5%, 100% { opacity: 0; } }
+@keyframes hv-t4 { 0%, 50% { opacity: 0; } 51%, 59% { opacity: 1; } 60.5%, 100% { opacity: 0; } }
+@keyframes hv-tyc { 0%, 2.9% { opacity: 0; } 3%, 13% { opacity: 1; } 13.5%, 33.9% { opacity: 0; } 34%, 47% { opacity: 1; } 47.5%, 100% { opacity: 0; } }
+@keyframes hv-ty1 { 0%, 2.9% { opacity: 0; max-width: 0; } 3% { opacity: 1; max-width: 0; animation-timing-function: steps(18, end); } 11%, 13% { opacity: 1; max-width: 26ch; } 13.5%, 100% { opacity: 0; max-width: 0; } }
+@keyframes hv-ty2 { 0%, 33.9% { opacity: 0; max-width: 0; } 34% { opacity: 1; max-width: 0; animation-timing-function: steps(34, end); } 45%, 47% { opacity: 1; max-width: 52ch; } 47.5%, 100% { opacity: 0; max-width: 0; } }
+
+/* VSL-BF-10: el vídeo, un poco más grande; se compensa cerrando el aire entre vídeo, botón y cuenta atrás. */
+.hv-video { width: min(100%, 900px, calc((100svh - 580px) * 16 / 9)); min-width: min(100%, 576px); }
+.hv-actions { margin-top: 28px; }
+.hv-buy { gap: 18px; }
+@media (min-width: 561px) and (max-height: 820px) { .hv-video { width: min(100%, 900px, calc((100svh - 515px) * 16 / 9)); min-width: min(100%, 470px); } .hv-actions { margin-top: 22px; } }
+@media (max-width: 560px) { .hv-video { width: 100%; min-width: 0; } }
