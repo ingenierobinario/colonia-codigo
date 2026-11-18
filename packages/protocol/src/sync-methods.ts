@@ -15,19 +15,39 @@ export const ProjectFilesStatus = z.object({
   why: z.enum(["source", "destination", "unsupported"]).optional(),
 });
 
+const continuousProjects = z.array(z.string().min(1).max(160)).min(1).max(256);
+export const SyncedFolders = z.object({
+  supported: z.boolean().optional(),
+  projects: z.array(
+    z.object({
+      id: z.string(),
+      local: z.boolean(),
+      remote: z.boolean(),
+      state: z.enum(["waiting", "syncing", "current", "offline", "failed"]),
+      conflicts: z.number().int().nonnegative(),
+    }),
+  ),
+});
+
 export const SyncStatus = z.object({
   paired: z.boolean(),
   /** Si otro equipo puede llegar a este; si no, el código solo sirve dentro de este mismo equipo. */
   reachable: z.boolean(),
   /** El código que hay que escribir en el otro equipo, mientras vale. */
   pairing: z
-    .object({ code: z.string(), expires_at: z.string(), initial_source: z.literal("joining_device").optional() })
+    .object({
+      code: z.string(),
+      expires_at: z.string(),
+      initial_source: z.literal("joining_device").optional(),
+      allow_managed_folder_sync: z.literal(true).optional(),
+    })
     .optional(),
   peer: z.object({ name: z.string() }).optional(),
   /** El principal lleva los canales y las rutinas; el otro los ve y los usa a través de él. */
   role: SyncRole.optional(),
   can_copy_projects: z.boolean().optional(),
   project_files: ProjectFilesStatus.optional(),
+  folder_sync: SyncedFolders.optional(),
   connected: z.boolean(),
   /** Los dos equipos tienen versiones de Colonia que no se entienden: hay que actualizar. */
   mismatch: z.boolean(),
@@ -76,7 +96,12 @@ export const syncMethods = {
   "sync.status": { params: none, result: SyncStatus, effect: false, access: "human" },
   /** Un código para escribir en el otro equipo. Este queda como principal. */
   "sync.pair_start": {
-    params: z.object({ initial_source: z.literal("joining_device").optional() }).strict(),
+    params: z
+      .object({
+        initial_source: z.literal("joining_device").optional(),
+        allow_managed_folder_sync: z.literal(true).optional(),
+      })
+      .strict(),
     result: SyncStatus,
     effect: true,
     access: "human",
@@ -90,6 +115,7 @@ export const syncMethods = {
         code: z.string().min(1).max(64),
         address: z.string().max(500).optional(),
         projects: selectedProjects.optional(),
+        continuous_projects: continuousProjects.optional(),
       })
       .strict(),
     result: SyncStatus,
@@ -126,6 +152,13 @@ export const syncMethods = {
   /** La carpeta de un proyecto en este equipo, cuando la del otro no existe aquí. */
   "sync.set_folder": {
     params: z.object({ project: z.string().min(1).max(200), path: z.string().min(1).max(1000) }).strict(),
+    result: SyncStatus,
+    effect: true,
+    access: "human",
+  },
+  /** Autoriza o interrumpe los cambios futuros de esta carpeta en la pareja actual. */
+  "sync.set_folder_sync": {
+    params: z.object({ project: z.string().min(1).max(160), enabled: z.boolean() }).strict(),
     result: SyncStatus,
     effect: true,
     access: "human",

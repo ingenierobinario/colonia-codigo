@@ -4,6 +4,7 @@ export function prepareWorkLocations(db: DatabaseSync) {
   db.exec(`CREATE TABLE IF NOT EXISTS sync_work_locations(
     project TEXT PRIMARY KEY, local_path TEXT NOT NULL, source_path TEXT
   );
+  CREATE TABLE IF NOT EXISTS sync_work_origins(peer TEXT NOT NULL, project TEXT NOT NULL, folder TEXT NOT NULL, PRIMARY KEY(peer,project));
   CREATE TABLE IF NOT EXISTS sync_work_receipts(
     peer TEXT NOT NULL, transfer TEXT NOT NULL, project TEXT NOT NULL, sha TEXT NOT NULL, PRIMARY KEY(peer,transfer)
   );`);

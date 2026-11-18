@@ -14,8 +14,8 @@ export function syncHandlers(sync: Sync) {
   };
   return {
     "sync.status": () => sync.status(),
-    "sync.pair_start": ({ initial_source }) => {
-      said(() => sync.pairStart(initial_source));
+    "sync.pair_start": ({ initial_source, allow_managed_folder_sync }) => {
+      said(() => sync.pairStart(initial_source, allow_managed_folder_sync));
       return sync.status();
     },
     "sync.pair_cancel": () => {
@@ -24,7 +24,7 @@ export function syncHandlers(sync: Sync) {
     },
     "sync.pair_join": async (p) => {
       try {
-        await sync.pairJoin(p.code, p.address, p.projects);
+        await sync.pairJoin(p.code, p.address, p.projects, p.continuous_projects);
       } catch (err) {
         throw badRequest((err as Error).message);
       }
@@ -43,6 +43,10 @@ export function syncHandlers(sync: Sync) {
     "sync.saved_delete": (p) => ({ deleted: sync.forgetSaved(p.id) }),
     "sync.set_folder": (p) => {
       said(() => sync.setFolder(p.project, p.path));
+      return sync.status();
+    },
+    "sync.set_folder_sync": ({ project, enabled }) => {
+      said(() => sync.setFolderSync(project, enabled));
       return sync.status();
     },
     "sync.copy_projects": ({ projects }) => {

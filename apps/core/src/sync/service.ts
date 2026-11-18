@@ -35,6 +35,8 @@ import { createPairing } from "../equipos/pairing.ts";
 import { ClientHello, Plain, Sealed, ServerHello } from "../equipos/wire.ts";
 import type { Log } from "../log.ts";
 import { type Beacon, type BeaconMsg, createBeacon, ownAddresses } from "./beacon.ts";
+import { folderIdentity } from "./continuous-folder-permissions.ts";
+import { continuousFolders, type FolderLink, FolderMessage } from "./continuous-folders.ts";
 import {
   type Applied,
   createJournal,
@@ -94,6 +96,7 @@ const State = z.object({
   role_at: z.number(),
   paired_at: z.string(),
   work: z.enum(["receive", "send"]).optional(),
+  managed_folders: z.literal(true).optional(),
   last_sync_at: z.string().optional(),
 });
 type State = z.infer<typeof State>;
@@ -119,6 +122,7 @@ const Msg = z.discriminatedUnion("t", [
     role_at: z.number(),
     urls: z.array(z.string()),
     accepts_project_files: z.literal(1).optional(),
+    folder_sync: z.literal(1).optional(),
   }),
   z.object({ t: z.literal("cambios"), id: z.string(), items: z.array(ItemZ) }),
   z.object({ t: z.literal("ok"), id: z.string() }),
@@ -136,6 +140,7 @@ const Msg = z.discriminatedUnion("t", [
   }),
   z.object({ t: z.literal("adios") }),
   z.object({ t: z.literal("archivos-proyecto"), data: WorkMessage }),
+  z.object({ t: z.literal("carpetas-vivas"), data: FolderMessage }),
 ]);
 type Msg = z.infer<typeof Msg>;
 const InitialSource = z.literal("joining_device");
@@ -190,6 +195,7 @@ type Link = {
   send(m: Msg): void;
   ready: boolean;
   work: WorkLink;
+  folders: FolderLink;
   acceptsProjectFiles: boolean;
   hello: boolean;
   /** SYNC-LATIDO-1: cuándo se oyó al otro por última vez y cuándo se le dio el último toque. */
@@ -258,6 +264,7 @@ export function createSync(d: SyncDeps) {
   let state = readState();
   let journal: Journal | undefined;
   let work: ProjectWork | undefined;
+  let continuous: ReturnType<typeof continuousFolders> | undefined;
   let myId = "";
   let link: Link | undefined;
   let stopped = true;
@@ -335,9 +342,11 @@ export function createSync(d: SyncDeps) {
       folderHere,
     });
     if (baseline) journal.baseline(baseline === "oldest");
+    if (state) continuous = continuousFolders(d.db, d.home, state.peer.id, Boolean(state.managed_folders), tell, now);
     if (state?.work)
       work = projectWork(d.db, d.home, state.peer.id, state.work, tell, () => {
         missing = undefined;
+        continuous?.installed();
         d.changed?.(new Set(["projects", "agents"]));
         tell();
       });
@@ -434,6 +443,7 @@ export function createSync(d: SyncDeps) {
       ready: false,
       acceptsProjectFiles: false,
       work: { send: (data) => l.send({ t: "archivos-proyecto", data }) },
+      folders: { send: (data) => l.send({ t: "carpetas-vivas", data }) },
       hello: false,
       heard: now(),
       pinged: now(),
@@ -452,6 +462,7 @@ export function createSync(d: SyncDeps) {
       if (link.client !== client && link.client < client) return void ws.close(1000, "ya hay enlace");
       const old = link;
       work?.detach();
+      continuous?.detach();
       link = undefined;
       old.ws.close(1000, "sustituida");
     }
@@ -462,6 +473,7 @@ export function createSync(d: SyncDeps) {
     ws.on("close", () => {
       if (link !== l) return;
       work?.detach();
+      continuous?.detach();
       link = undefined;
       inflight = undefined;
       fetching = undefined;
@@ -478,6 +490,7 @@ export function createSync(d: SyncDeps) {
       role: state.role,
       role_at: state.role_at,
       urls: d.urls(),
+      folder_sync: 1,
       ...(state.work === "receive" ? { accepts_project_files: 1 as const } : {}),
     });
     return l;
@@ -503,8 +516,13 @@ export function createSync(d: SyncDeps) {
         if (!mine) setRole(m.role === "principal" ? "secundario" : "principal", m.role_at);
       }
       saveState();
-      if (mismatch) warn("los dos equipos tienen versiones distintas de Colonia: no se pasan nada hasta actualizar");
-      else setImmediate(missingFiles);
+      if (mismatch) {
+        continuous?.detach();
+        warn("los dos equipos tienen versiones distintas de Colonia: no se pasan nada hasta actualizar");
+      } else {
+        continuous?.attach(l.folders, m.folder_sync === 1);
+        setImmediate(missingFiles);
+      }
       tell();
       pump();
       return;
@@ -520,6 +538,10 @@ export function createSync(d: SyncDeps) {
       return;
     }
     if (!l.ready) return;
+    if (m.t === "carpetas-vivas") {
+      void continuous?.receive(l.folders, m.data).catch((err) => warn("no se pudo sincronizar la carpeta", err));
+      return;
+    }
     if (m.t === "archivos-proyecto") {
       if (
         (state.work === "send" && state.role === "secundario") ||
@@ -823,6 +845,7 @@ export function createSync(d: SyncDeps) {
             peer: { id: hex(fingerprintOf(p.pub)), name: p.name.slice(0, 80), publicKey: p.pub, urls: [] },
             role: "principal",
             ...(source ? { work: "receive" as const } : {}),
+            ...(source && shown?.allow_managed_folder_sync ? { managed_folders: true as const } : {}),
             role_at: now(),
             paired_at: new Date(now()).toISOString(),
           };
@@ -957,6 +980,7 @@ export function createSync(d: SyncDeps) {
       } catch {}
     }
     pump();
+    continuous?.pump();
     if (!fetching) nextFile();
     dial();
     if (stateDirty && now() - stateDirty > 15_000) saveState();
@@ -974,6 +998,8 @@ export function createSync(d: SyncDeps) {
 
   /** Este equipo deja de tener pareja: se quita el diario y los canales vuelven a ser solo suyos. Las versiones guardadas se quedan. */
   function forget(): void {
+    continuous?.dispose(true);
+    continuous = undefined;
     work?.dispose(true);
     work = undefined;
     const was = state?.role;
@@ -1060,6 +1086,8 @@ export function createSync(d: SyncDeps) {
       timer.unref?.();
     },
     stop(): void {
+      continuous?.dispose(false);
+      continuous = undefined;
       work?.dispose(false);
       work = undefined;
       stopped = true;
@@ -1087,6 +1115,7 @@ export function createSync(d: SyncDeps) {
           ? { can_copy_projects: state.role === "secundario" && Boolean(link?.ready && link.acceptsProjectFiles) }
           : {}),
         ...(progress ? { project_files: progress } : {}),
+        ...(continuous ? { folder_sync: continuous.status() } : {}),
         reachable: d.urls().length > 0,
         ...(shown && !state ? { pairing: shown } : {}),
         ...(state ? { peer: { name: state.peer.name }, role: state.role } : {}),
@@ -1099,8 +1128,10 @@ export function createSync(d: SyncDeps) {
       };
     },
     /** Un código para escribir en el otro equipo: vale diez minutos y una sola vez. */
-    pairStart(source?: "joining_device"): NonNullable<SyncStatus["pairing"]> {
+    pairStart(source?: "joining_device", managed?: boolean): NonNullable<SyncStatus["pairing"]> {
       if (state) throw new Error("este equipo ya está emparejado");
+      if (managed && !source)
+        throw new Error("Las carpetas recibidas solo se autorizan en una invitación de servidor.");
       identity(true);
       const { code, expiresAt } = pairing.start();
       secret = stretch(code);
@@ -1108,6 +1139,7 @@ export function createSync(d: SyncDeps) {
         code: pretty(code),
         expires_at: new Date(expiresAt).toISOString(),
         ...(source ? { initial_source: source } : {}),
+        ...(managed ? { allow_managed_folder_sync: true as const } : {}),
       };
       tune();
       tell();
@@ -1121,8 +1153,21 @@ export function createSync(d: SyncDeps) {
       tell();
     },
     /** El dueño escribió aquí el código del otro equipo: este se une como secundario. */
-    async pairJoin(text: string, address?: string, projects?: string[]): Promise<{ name: string }> {
+    async pairJoin(
+      text: string,
+      address?: string,
+      projects?: string[],
+      continuousProjects?: string[],
+    ): Promise<{ name: string }> {
       if (projects) validateWorkSelection(d.db, projects);
+      if (continuousProjects) {
+        const copied = new Set(projects);
+        for (const project of continuousProjects) {
+          if (!copied.has(project))
+            throw new Error("Elige para sincronizar una de las carpetas seleccionadas para copiar.");
+          folderIdentity(d.db, project);
+        }
+      }
       if (state) throw new Error("este equipo ya está emparejado");
       const code = typed(text);
       if (!code) throw new Error("ese código no es válido: son 8 letras y números, como ABCD-2345");
@@ -1199,6 +1244,7 @@ export function createSync(d: SyncDeps) {
                   };
                   open(me, m.initial_source ? "first" : "oldest");
                   if (projects) work?.select(projects);
+                  for (const project of continuousProjects ?? []) continuous?.set(project, true);
                   saveState();
                   ws.close();
                   try {
@@ -1301,6 +1347,10 @@ export function createSync(d: SyncDeps) {
         throw new Error("Se necesita un servidor vinculado para trabajo continuo.");
       work.select(projects);
       pump();
+    },
+    setFolderSync(project: string, enabled: boolean) {
+      if (!continuous) throw new Error("Vincula los dos equipos antes de sincronizar una carpeta.");
+      continuous.set(project, enabled);
     },
     setFolder(project: string, folder: string): void {
       const dir = path.resolve(folder.replace(/^~(?=$|[\\/])/, os.homedir()));

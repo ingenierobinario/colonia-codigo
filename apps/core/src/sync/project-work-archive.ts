@@ -6,6 +6,7 @@ import { readArchive, writeArchive } from "../backup/archive.ts";
 import { fileTarget, publishArchive, reserveFolder, writeAll } from "../backup/project-file-io.ts";
 import { addProjectFile, cleanProjectDefinition, projectFileAllowed, projectFiles } from "../backup/project-files.ts";
 import { realpath } from "../paths.ts";
+import { folderIdentity } from "./continuous-folder-permissions.ts";
 import { workLocation } from "./project-work-location.ts";
 
 const format = "colonia-archivos-equipo-1";
@@ -170,6 +171,9 @@ export async function installProjectWork(opts: {
         "INSERT INTO sync_work_locations(project,local_path,source_path) VALUES(?,?,?) ON CONFLICT(project) DO UPDATE SET local_path=excluded.local_path,source_path=excluded.source_path",
       ).run(project, root, source ?? null);
       db.prepare("UPDATE projects SET path=?,present=1 WHERE id=?").run(root, project);
+      db.prepare(
+        "INSERT INTO sync_work_origins(peer,project,folder) VALUES(?,?,?) ON CONFLICT(peer,project) DO UPDATE SET folder=excluded.folder",
+      ).run(peer, project, folderIdentity(db, project));
       db.prepare("INSERT INTO sync_work_receipts(peer,transfer,project,sha) VALUES(?,?,?,?)").run(
         peer,
         transfer,

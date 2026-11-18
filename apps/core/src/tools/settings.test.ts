@@ -104,6 +104,13 @@ test("the card's title names the area, not the method", () => {
   assert.equal(title?.({ method: "contacts.list", params: { query: "x" } }), "Revisó la configuración");
 });
 
+test("solo la persona puede elegir qué carpetas viajan una vez o siguen sincronizadas", () => {
+  for (const method of ["sync.copy_projects", "sync.set_folder_sync"] as const) {
+    assert.equal(methods[method].access, "human");
+    assert.ok(Object.hasOwn(OWNER_ONLY, method));
+  }
+});
+
 test("every owner method that changes something is placed: colonia_settings, a tool of its own, the owner's, or not yet", () => {
   const placed = [
     Object.keys(SETTINGS),
