@@ -112,6 +112,8 @@ for (const mode of ["light", "dark"] as const) {
         await page.getByRole("button", { name: "Configuración del proyecto" }).click();
         // The project that already knows this one is listed but off, and says why: choosing it would close the loop.
         await (await reach(dialog.getByRole("combobox", { name: "Añadir proyecto" }))).click();
+        const search = page.getByPlaceholder("Busca un proyecto");
+        await search.fill(tag);
         const loop = page.getByRole("option", { name: hubName });
         await expect(loop).toHaveAttribute("aria-disabled", "true");
         await expect(loop).toHaveAttribute(
@@ -121,7 +123,8 @@ for (const mode of ["light", "dark"] as const) {
         await expect(page.getByRole("option", { name: brandName })).not.toHaveAttribute("aria-disabled", "true");
         await shot(page, `${tag}-3b-circulo-apagado`);
         await loop.click({ force: true });
-        if (await loop.isVisible()) await page.keyboard.press("Escape");
+        await expect(search).toBeFocused();
+        await search.press("Escape");
         await expect(page.getByRole("option")).toHaveCount(0);
         await expect(dialog).toBeVisible();
         await expect(dialog.locator(".projpick__row")).toHaveCount(0);
@@ -140,13 +143,15 @@ for (const mode of ["light", "dark"] as const) {
         await open(page, `#project=${hub}`);
         await page.getByRole("button", { name: "Configuración del proyecto" }).click();
         await (await reach(dialog.getByRole("combobox", { name: "Dentro de" }))).click();
+        await search.fill(tag);
         const inside = page.getByRole("option", { name: docsName });
         await expect(inside).toHaveAttribute("aria-disabled", "true");
         await expect(inside).toHaveAttribute("title", `${docsName} ya está dentro de este proyecto.`);
         await expect(page.getByRole("option", { name: brandName })).not.toHaveAttribute("aria-disabled", "true");
         await shot(page, `${tag}-4b-padre-apagado`);
         await inside.click({ force: true });
-        if (await inside.isVisible()) await page.keyboard.press("Escape");
+        await expect(search).toBeFocused();
+        await search.press("Escape");
         await expect(page.getByRole("option")).toHaveCount(0);
         await expect(dialog).toBeVisible();
         expect((await projectOf(hub))?.parent).toBeUndefined();

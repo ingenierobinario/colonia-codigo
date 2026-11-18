@@ -71,6 +71,7 @@ export function SearchSelect({
       key={o.value}
       value={o}
       disabled={o.disabled}
+      onMouseDown={o.disabled ? (event) => event.preventDefault() : undefined}
       title={o.title}
       className="colonia-menu__item colonia-select__item"
     >
