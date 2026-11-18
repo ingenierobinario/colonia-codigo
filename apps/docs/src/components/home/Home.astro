@@ -1,4 +1,7 @@
 ---
+import { Image } from "astro:assets";
+import shotEs from "../../assets/shots/home-hero.es.webp";
+import shotEn from "../../assets/shots/home-hero.webp";
 import { HIDDEN_SECTIONS, RESERVAR_URL, type SectionId, sectionRoute } from "../../config/site";
 // La portada: un hero iluminado por el horizonte, con palabra rotatoria y la aplicación real, y luego cada sección.
 // Con `section`, la misma plantilla pinta sólo esa sección como subpágina del menú.
@@ -80,7 +83,7 @@ const cards = [
 ---
 
 <!doctype html>
-<html lang={lang} data-theme="dark">
+<html lang={lang} data-theme={vsl ? "light" : "dark"}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -119,8 +122,8 @@ const cards = [
         <canvas class="hero__horizon" id="horizon" aria-hidden="true"></canvas>
         {vsl ? (
         <div class="wrap hero__in hv-hero">
-          <h1 class="hero__title hv-h1">{v.h1} <span class="hero__word">{v.h1b}</span></h1>
-          <p class="hero__sub hv-sub">{v.sub}</p>
+          <h1 class="hero__title hv-h1">{v.h1} <mark class="hv-mark">{v.h1b}</mark></h1>
+          <p class="hero__sub hv-sub" set:html={v.sub} />
           <div class="hv-video" data-video={VIDEO}>
             <img class="hv-video__cover" src="/vsl/cover.webp" alt="" width="1600" height="900" fetchpriority="high" />
             <button class="hv-play" type="button" aria-label={v.playHint}>
@@ -181,12 +184,19 @@ const cards = [
 
       <section class="stage">
         <div class="wrap stage__in">
+          {vsl ? (
+          <div class="hv-win" data-reveal>
+            <div class="hv-win__bar" aria-hidden="true"><i></i><i></i><i></i><span>Colonia</span></div>
+            <Image class="hv-win__img" src={lang === "es" ? shotEs : shotEn} alt={v.shotAlt} widths={[720, 1200, 1600, 2400]} sizes="(max-width: 1200px) 100vw, 1168px" quality={88} loading="lazy" />
+          </div>
+          ) : (<>
           <div class="stage__bubble stage__bubble--l" aria-hidden="true"><Blob name="coral" size={32} /><span class="stage__say">{t.bubbles[0]}</span></div>
           <div class="stage__bubble stage__bubble--r" aria-hidden="true"><span class="stage__say">{t.bubbles[1]}</span><Blob name="cobalto" size={32} /></div>
           <div class="stage__shot" data-reveal data-stage-card>
             <StageDemo demo={t.demo} lang={lang} />
           </div>
-          <p class="stage__note">{t.stageNote}</p>
+          </>)}
+          <p class="stage__note">{vsl ? v.shotNote : t.stageNote}</p>
         </div>
       </section>
       </>)}
