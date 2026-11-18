@@ -1,13 +1,14 @@
 import { IconButton, Icons, Popover } from "@colonia/ui";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
-import { inInbox, inProject, isListed, isWorking, type ProjectEntry, projectEntries } from "../data/identity.ts";
+import { type ProjectEntry, projectEntries } from "../data/identity.ts";
 import { rememberSidebar, setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { NewProjectDialog, ProjectSettings, ShareProjectDialog, UnregisterProjectDialog } from "../lazy.ts";
 import { go, useNav } from "./nav.ts";
 import { projectNavMenu } from "./ProjectNavActions.tsx";
+import { projectActivity } from "./projectActivity.ts";
 import { projectTree, type TreeRow } from "./projectTree.ts";
 import { SidebarNavRow, SidebarTooltipButton } from "./SidebarNavRow.tsx";
 import { SidebarOverflow, SidebarRowsGrip, SidebarSection } from "./SidebarSection.tsx";
@@ -27,6 +28,7 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
   const view = useNav((s) => s.view);
   const projectId = useNav((s) => s.projectId);
   const projects = useData((s) => s.projects);
+  const base = useData((s) => s.base);
   const threads = useData((s) => s.threads);
   const [moreOpen, setMoreOpen] = useState(false);
   const [treeOpen, setTreeOpen] = useState(false);
@@ -38,24 +40,12 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
   const hidden = folded && !rail;
   const routines = usePrefs((s) => s.inboxRoutines);
   const rows = useSidebarRows("projects");
-  const { tree, shown, rest, running, unread, ordered } = useMemo(() => {
-    const entries = projectEntries(projects);
-    const live = Object.values(threads).filter(isListed);
-    const lastActive = new Map<string, string>();
-    const running = new Set<string>();
-    for (const p of entries)
-      for (const th of live) {
-        if (!inProject(th, p.id)) continue;
-        if (isWorking(th.state)) running.add(p.id);
-        if ((lastActive.get(p.id) ?? "") < th.updated_at) lastActive.set(p.id, th.updated_at);
-      }
-    // What the Inbox would count as unread, a routine's news included when it lists them.
-    const unread = new Map<string, string[]>();
-    for (const th of Object.values(threads)) {
-      if (th.unread === 0 || !inInbox(th, routines)) continue;
-      const pid = entries.find((p) => inProject(th, p.id))?.id ?? "";
-      unread.set(pid, [...(unread.get(pid) ?? []), th.id]);
-    }
+  const entries = useMemo(() => projectEntries(projects, base), [projects, base]);
+  const { lastActive, running, unread } = useMemo(
+    () => projectActivity(entries, Object.values(threads), routines),
+    [entries, threads, routines],
+  );
+  const { tree, shown, rest, ordered } = useMemo(() => {
     const rank = new Map(saved.map((id, index) => [id, index]));
     const ordered = [...entries].sort(
       (a, b) =>
@@ -72,10 +62,8 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
       shown: tree.slice(0, cut),
       rest: tree.slice(cut),
       ordered: ordered.map((p) => p.id),
-      running,
-      unread,
     };
-  }, [projects, threads, saved, routines, rows, closed, view, projectId]);
+  }, [entries, lastActive, saved, rows, closed, view, projectId]);
   // Read when a project opens, not when the list reorders after it. The page coming back on a project (a reload)
   // is not opening it.
   const inView = useRef<string[]>([]);
@@ -129,15 +117,13 @@ export function ProjectsNav({ rail }: { rail: boolean }) {
       rail={rail && !onPick}
       icon={<ProjectAvatar id={p.id} name={p.name} />}
       label={p.name}
+      description={p.isDefault ? t("nav.baseProject") : undefined}
       trailing={
-        <>
-          {p.isDefault && <Icons.Lock size={12} aria-label={t("nav.baseProject")} />}
-          {running.has(p.id) ? (
-            <span className="sidebar__running" title={t("common.running")} />
-          ) : (
-            unread.has(p.id) && <span className="sidebar__unread" title={t("inbox.unread")} />
-          )}
-        </>
+        running.has(p.id) ? (
+          <span className="sidebar__running" title={t("common.running")} />
+        ) : (
+          unread.has(p.id) && <span className="sidebar__unread" title={t("inbox.unread")} />
+        )
       }
       active={view === "project" && projectId === p.id}
       onPick={() => {

@@ -7,6 +7,7 @@ export function SidebarNavRow({
   id,
   kind,
   label,
+  description,
   rail,
   active,
   icon,
@@ -23,6 +24,7 @@ export function SidebarNavRow({
   id: string;
   kind: "channel" | "project" | "engine";
   label: string;
+  description?: string | undefined;
   rail: boolean;
   active: boolean;
   icon: ReactNode;
@@ -90,8 +92,30 @@ export function SidebarNavRow({
     >
       <NavItem
         collapsed={rail}
-        icon={icon}
-        label={label}
+        icon={
+          rail && description ? (
+            <span className="sidebar-navrow__global-icon">
+              {icon}
+              <Icons.Crown aria-hidden="true" />
+            </span>
+          ) : (
+            icon
+          )
+        }
+        label={
+          description && !rail ? (
+            <>
+              <span>{label}</span>
+              <span className="sidebar-navrow__global-role" aria-hidden="true">
+                <Icons.Crown />
+                {description}
+              </span>
+            </>
+          ) : (
+            label
+          )
+        }
+        description={description}
         count={count}
         attention={(count ?? 0) > 0}
         trailing={trailing}

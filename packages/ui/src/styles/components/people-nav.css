@@ -262,6 +262,10 @@ button.colonia-agentchip:hover {
   justify-content: center;
   padding: 0;
 }
+.colonia-nav__hint {
+  max-inline-size: min(40ch, 72vw);
+  overflow-wrap: anywhere;
+}
 .colonia-nav__dot {
   position: absolute;
   top: 5px;

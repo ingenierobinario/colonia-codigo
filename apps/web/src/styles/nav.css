@@ -961,6 +961,43 @@
 .sidebar-navrow.is-depth-1 {
   margin-left: 14px;
 }
+/* Los nombres personalizados se muestran completos incluso al abrir el menú de la fila. */
+.sidebar-navrow[data-project-id]:not(.is-rail) > .colonia-nav {
+  height: auto;
+  min-height: 34px;
+  padding-block: 5px;
+}
+.sidebar-navrow[data-project-id]:not(.is-rail) .colonia-nav__label {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+  mask-image: none;
+}
+.sidebar-navrow__global-role {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-xs);
+  font-weight: var(--colonia-weight-medium);
+}
+.sidebar-navrow__global-role svg,
+.sidebar .sidebar-navrow__global-icon > svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: var(--colonia-fg-muted);
+}
+.sidebar-navrow__global-icon {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+.sidebar-navrow.is-rail:has(.sidebar-navrow__global-icon) > .colonia-nav {
+  height: 42px;
+}
 .sidebar-navrow.is-depth-2 {
   margin-left: 28px;
 }

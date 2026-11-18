@@ -4,6 +4,8 @@ import { Tooltip } from "./Tooltip";
 
 export interface NavItemProps {
   label: ReactNode;
+  /** Optional context for the accessible name and the collapsed row's tooltip. */
+  description?: string | undefined;
   /** Leading icon (lucide, 16px) or a small AgentAvatar/project avatar. */
   icon?: ReactNode;
   /** Right-aligned counter (Inbox 3). */
@@ -27,6 +29,7 @@ export interface NavItemProps {
 /** Sidebar navigation row: Home, Inbox, In progress, a project, a project section. */
 export function NavItem({
   label,
+  description,
   icon,
   count,
   attention = false,
@@ -61,7 +64,14 @@ export function NavItem({
     </>
   );
   const el = href ? (
-    <a className={cls} href={href} aria-current={active ? "page" : undefined} aria-label={name} onClick={onClick}>
+    <a
+      className={cls}
+      href={href}
+      aria-current={active ? "page" : undefined}
+      aria-label={name}
+      aria-description={description}
+      onClick={onClick}
+    >
       {inner}
     </a>
   ) : (
@@ -70,6 +80,7 @@ export function NavItem({
       className={cls}
       aria-current={active ? "page" : undefined}
       aria-label={name}
+      aria-description={description}
       disabled={disabled}
       onClick={onClick}
     >
@@ -78,7 +89,10 @@ export function NavItem({
   );
   // In the rail only the icon shows: its name comes up beside it.
   return name ? (
-    <Tooltip content={name} side="right">
+    <Tooltip
+      content={<span className="colonia-nav__hint">{description ? `${name} · ${description}` : name}</span>}
+      side="right"
+    >
       {el}
     </Tooltip>
   ) : (

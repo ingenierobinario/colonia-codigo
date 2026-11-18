@@ -107,15 +107,15 @@ export type ProjectEntry = {
 export const canShareProject = (project: { isDefault: boolean }) => !project.isDefault;
 
 /** Sidebar order: the base space first, then the real projects as the core lists them. */
-export function projectEntries(projects: Project[]): ProjectEntry[] {
+export function projectEntries(projects: Project[], base = data.get().base): ProjectEntry[] {
   return [
     {
       id: DEFAULT_PID,
-      name: baseName(),
+      name: base.name,
       path: undefined,
       isDefault: true,
-      kind: data.get().base.kind,
-      mark: data.get().base.mark,
+      kind: base.kind,
+      mark: base.mark,
     },
     ...projects
       .filter((p) => p.registered !== false)
