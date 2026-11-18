@@ -2,13 +2,28 @@ name: Instaladores
 
 on:
   workflow_dispatch:
+    inputs:
+      tarea:
+        description: Trabajo que se ejecutará en esta rama
+        type: choice
+        options:
+          - instaladores
+          - escritorio-windows
+        default: instaladores
 
 env:
   VITE_COLONIA_RAILWAY_TEMPLATE: ${{ vars.COLONIA_RAILWAY_TEMPLATE }}
   VITE_COLONIA_RAILWAY_REFERRAL: ${{ vars.COLONIA_RAILWAY_REFERRAL }}
 
 jobs:
+  escritorio-windows:
+    if: inputs.tarea == 'escritorio-windows'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/escritorio-windows.yml
+
   instalador:
+    if: inputs.tarea != 'escritorio-windows'
     strategy:
       fail-fast: false
       matrix:

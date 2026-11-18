@@ -22,8 +22,25 @@ export type BackupSummary = z.infer<typeof BackupSummary>;
 
 const ChannelRef = z.object({ id: z.string(), type: z.string(), name: z.string() });
 
+export const ProjectBackupScope = z.object({
+  kind: z.literal("project"),
+  project_id: z.string().min(1).max(128),
+  name: z.string().min(1).max(500),
+});
+export type ProjectBackupScope = z.infer<typeof ProjectBackupScope>;
+
 /** Por qué una copia no se pudo escribir o leer. */
-export const BackupWhy = z.enum(["foreign", "newer", "password", "broken", "missing", "folder", "busy", "failed"]);
+export const BackupWhy = z.enum([
+  "foreign",
+  "newer",
+  "password",
+  "broken",
+  "missing",
+  "folder",
+  "busy",
+  "failed",
+  "scope",
+]);
 export type BackupWhy = z.infer<typeof BackupWhy>;
 
 /** Lo que quedó tras restaurar una copia, hasta que la persona lo da por visto. */
@@ -52,6 +69,8 @@ export const BackupStatus = z.object({
   /** El archivo que se escribió, al acabar una copia. */
   file: z.string().optional(),
   summary: BackupSummary.optional(),
+  scope: ProjectBackupScope.optional(),
+  imported_project: z.object({ id: z.string(), name: z.string(), path: z.string() }).optional(),
   bytes: z.number().optional(),
   why: BackupWhy.optional(),
   /** Tras preparar una restauración: Colonia se reinicia sola, o hay que cerrarla y abrirla. */
@@ -84,6 +103,7 @@ export const BackupInspect = z.discriminatedUnion("ok", [
     platform: z.string(),
     app_version: z.string(),
     summary: BackupSummary,
+    scope: ProjectBackupScope.optional(),
     keys: z.number().int(),
     files: z.number().int(),
     bytes: z.number(),
@@ -113,7 +133,12 @@ export const backupMethods = {
   /** Empieza a escribir una copia; cómo va se pregunta con `backup.status`. */
   "backup.create": {
     params: z
-      .object({ folder: FilePath.optional(), password: NewPassword, include_work: z.boolean().optional() })
+      .object({
+        folder: FilePath.optional(),
+        password: NewPassword,
+        include_work: z.boolean().optional(),
+        project_id: z.string().min(1).max(128).optional(),
+      })
       .strict(),
     result: BackupStatus,
     effect: true,
@@ -129,7 +154,14 @@ export const backupMethods = {
   },
   /** Prepara la restauración y reinicia Colonia para cumplirla. Antes guarda una copia de lo que hay. */
   "backup.restore": {
-    params: z.object({ file: FilePath, password: Password, mode: z.enum(["replace", "merge"]) }).strict(),
+    params: z
+      .object({
+        file: FilePath,
+        password: Password,
+        mode: z.enum(["replace", "merge"]),
+        destination: FilePath.optional(),
+      })
+      .strict(),
     result: BackupStatus,
     effect: true,
     access: "human",

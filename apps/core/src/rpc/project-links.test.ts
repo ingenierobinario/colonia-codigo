@@ -317,7 +317,7 @@ const Reader_2_36_26 = (() => {
     .strict();
 })();
 
-test("a shared project carries the names of the projects it knows, never what they hold; importing links by name", async () => {
+test("a shared project carries the names of the projects it knows, never what they hold; importing links by name", async (t) => {
   const out = await env.client.call("projects.export", { project: id("acme") });
   const pkg = JSON.parse(out.content) as { knows?: string[]; organization?: { knows?: string[]; areas: unknown[] } };
   assert.deepEqual(pkg.organization?.knows, ["northwind"]);
@@ -325,7 +325,11 @@ test("a shared project carries the names of the projects it knows, never what th
   assert.doesNotMatch(out.content, /northwind-7|bills on the 5th|Quote in euros|prices of northwind/);
   assert.equal(out.content.includes(dir("northwind")), false);
   // A project that knows none shares the package it always did: no new field, no empty team.
-  const plain = await env.client.call("projects.export", { project: id("globex") });
+  const { project: empty } = await env.client.call("projects.create", { name: "Proyecto vacío" });
+  t.after(async () => {
+    await env.client.call("projects.unregister", { project: empty.id });
+  });
+  const plain = await env.client.call("projects.export", { project: empty.id });
   assert.equal("knows" in JSON.parse(plain.content), false);
   assert.equal("organization" in JSON.parse(plain.content), false);
 

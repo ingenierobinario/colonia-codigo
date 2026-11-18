@@ -22,12 +22,15 @@ const clean = (x: unknown) =>
   x && typeof x === "object" ? Object.fromEntries(Object.entries(x).filter(([, v]) => v !== null)) : x;
 
 export function readOrganization(root: string): Organization {
-  let raw: { areas?: unknown; roles?: unknown };
   try {
-    raw = JSON.parse(withoutBom(fs.readFileSync(orgFile(root), "utf8"))) as typeof raw;
+    return parseOrganization(fs.readFileSync(orgFile(root), "utf8"));
   } catch {
     return EMPTY_ORG;
   }
+}
+
+export function parseOrganization(text: string): Organization {
+  const raw = JSON.parse(withoutBom(text)) as { areas?: unknown; roles?: unknown };
   const each = <T>(list: unknown, schema: { safeParse(x: unknown): { success: boolean; data?: T } }) =>
     (Array.isArray(list) ? list : []).flatMap((x) => {
       const r = schema.safeParse(clean(x));

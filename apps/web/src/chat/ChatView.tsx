@@ -1,8 +1,8 @@
 import { Button, EmptyState, Icons, Skeleton } from "@colonia/ui";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useLayoutEffect } from "react";
 import { useContactChat } from "../channels/useContactChat.ts";
 import { usePageVisible } from "../common/useInView.ts";
-import { loadThread, markRead } from "../data/actions.ts";
+import { loadThreadWhenReady, markRead } from "../data/actions.ts";
 import { threadAgent } from "../data/identity.ts";
 import { retryNow } from "../data/live.ts";
 import { isNewChat, useNewChat } from "../data/newChat.ts";
@@ -45,9 +45,9 @@ export function ChatView({
   const offline = useData((s) => s.connection === "offline");
   const contact = useContactChat(thread);
 
-  useEffect(() => {
-    if (threadId && ready && load == null && !isNewChat(threadId)) void loadThread(threadId);
-  }, [threadId, ready, load]);
+  useLayoutEffect(() => {
+    if (threadId && load == null && !isNewChat(threadId)) return loadThreadWhenReady(threadId);
+  }, [threadId, load]);
 
   const unread = thread?.unread ?? 0;
   useEffect(() => {

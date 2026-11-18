@@ -18,7 +18,7 @@ const SMALL_MAX = 64 * 1024;
 /** Tope del cifrado de un trozo: el trozo en claro más lo que deflate puede añadir. */
 const FRAME_MAX = CHUNK + 64 * 1024;
 
-export type ArchiveWhy = "foreign" | "newer" | "password" | "broken";
+export type ArchiveWhy = "foreign" | "newer" | "password" | "broken" | "scope" | "folder";
 
 /** Por qué no se pudo leer una copia; el RPC lo traduce a una frase para la persona. */
 export class ArchiveError extends Error {
@@ -66,7 +66,7 @@ export type ArchiveWriter = {
   /** Añade una entrada con sus bytes en memoria. */
   add(p: string, bytes: Buffer): Promise<void>;
   /** Añade un fichero del disco, leído por trozos. */
-  addFile(p: string, file: string): Promise<void>;
+  addFile(p: string, file: string, verify?: (fd: number) => void): Promise<void>;
   /** Cierra el archivo; sin esto la copia no vale (le falta el trozo final). */
   close(): Promise<void>;
   /** Suelta el archivo a medias (tras un fallo). */
@@ -140,20 +140,32 @@ export async function writeArchive(
       await push(entryHead({ p, n: bytes.length }));
       await push(bytes);
     },
-    async addFile(p, source) {
-      const src = fs.openSync(source, "r");
+    async addFile(p, source, verify) {
+      const src = fs.openSync(
+        source,
+        verify ? fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK : "r",
+      );
       try {
+        verify?.(src);
         // El tamaño se fija al abrir: si el fichero crece mientras se copia, viaja lo que había; si mengua, se rellena.
         const size = fs.fstatSync(src).size;
         await push(entryHead({ p, n: size }));
         let left = size;
         while (left > 0) {
           const buf = Buffer.alloc(Math.min(CHUNK, left));
-          const got = fs.readSync(src, buf, 0, buf.length, size - left);
-          if (got < buf.length) buf.fill(0, got);
+          let used = 0;
+          while (used < buf.length) {
+            const count = fs.readSync(src, buf, used, buf.length - used, size - left + used);
+            if (!count) {
+              if (verify) throw new Error("El archivo cambió mientras se copiaba.");
+              break;
+            }
+            used += count;
+          }
           left -= buf.length;
           await push(buf);
         }
+        verify?.(src);
       } finally {
         fs.closeSync(src);
       }

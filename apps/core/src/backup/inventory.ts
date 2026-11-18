@@ -34,7 +34,14 @@ const LOCAL_ONLY: Readonly<Record<string, string>> = {
 /** Secretos que no viajan: son de este equipo, no de la persona. */
 const LOCAL_SECRETS = new Set(["equipo.clave"]);
 
-const LOCAL_PREFIX = ["colonia.db", "daemon-lock.sqlite", "secrets.", ".restaurar"];
+const LOCAL_PREFIX = [
+  "colonia.db",
+  "daemon-lock.sqlite",
+  "secrets.",
+  ".restaurar",
+  ".exportar-proyecto-",
+  ".importar-proyecto-",
+];
 /** Rutas relativas que se regeneran solas. */
 const DERIVED = new Set(["media/posters", "media/open"]);
 
@@ -44,11 +51,12 @@ export const secretTravels = (name: string) => !LOCAL_SECRETS.has(name) && !name
 export type FileEntry = { rel: string; abs: string; size: number };
 
 /** Los ficheros de `dir`, relativos con «/», sin seguir enlaces simbólicos. */
-async function walkFiles(
+export async function walkFiles(
   dir: string,
   rel: string,
-  skip: (rel: string) => boolean,
+  skip: (rel: string, entry: fs.Dirent) => boolean,
   out: FileEntry[] = [],
+  singleLink = false,
 ): Promise<FileEntry[]> {
   let entries: fs.Dirent[];
   try {
@@ -59,13 +67,13 @@ async function walkFiles(
   }
   for (const e of entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
     const r = rel ? `${rel}/${e.name}` : e.name;
-    if (e.isSymbolicLink() || skip(r)) continue;
+    if (e.isSymbolicLink() || skip(r, e)) continue;
     const abs = path.join(dir, e.name);
-    if (e.isDirectory()) await walkFiles(abs, r, skip, out);
+    if (e.isDirectory()) await walkFiles(abs, r, skip, out, singleLink);
     else if (e.isFile()) {
       try {
         const st = await fs.promises.lstat(abs);
-        if (st.isFile()) out.push({ rel: r, abs, size: st.size });
+        if (st.isFile() && (!singleLink || st.nlink === 1)) out.push({ rel: r, abs, size: st.size });
       } catch (err) {
         if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
       }
@@ -205,8 +213,10 @@ export async function externalFiles(root: string, includeWork = false): Promise<
   });
 }
 
+export const PRIVATE_PROJECT_FORMAT = "colonia-copia-proyecto-1";
 export type Manifest = {
-  format: "colonia-copia-1";
+  format: "colonia-copia-1" | typeof PRIVATE_PROJECT_FORMAT;
+  scope?: import("@colonia/protocol").ProjectBackupScope;
   created_at: string;
   app_version: string;
   schema_version: number;

@@ -8,7 +8,7 @@ Object.defineProperty(globalThis, "window", {
   configurable: true,
   value: Object.assign(new EventTarget(), { location: { origin: "http://panel.example.test" } }),
 });
-const { bootstrap } = await import("./actions.ts");
+const { bootstrap, loadThreadWhenReady } = await import("./actions.ts");
 after(() => {
   if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
   else Reflect.deleteProperty(globalThis, "window");
@@ -16,6 +16,24 @@ after(() => {
 const initial = data.get();
 beforeEach(() => data.set(initial));
 const status = { enabled: true, supported: true, chats: ["chat-equipo"], allowed: ["agente"], screens: [] };
+
+test("cambiar de chat durante el arranque solo solicita el historial que sigue abierto, una vez", async (t) => {
+  const requests: string[] = [];
+  t.mock.method(globalThis, "fetch", async (_url: string, init: RequestInit) => {
+    const { thread } = JSON.parse(String(init.body));
+    requests.push(thread);
+    return Response.json({ ok: true, result: { thread: { id: thread }, messages: [], runs: [] } });
+  });
+  const leave = loadThreadWhenReady("anterior");
+  leave?.();
+  loadThreadWhenReady("actual");
+  loadThreadWhenReady("actual");
+  assert.deepEqual(requests, []);
+  data.set({ ready: true });
+  await waitFor(() => data.get().threadLoad.actual === "ready", "historial abierto");
+  loadThreadWhenReady("actual");
+  assert.deepEqual(requests, ["actual"]);
+});
 
 function replies(t: TestContext, environment: () => Promise<unknown>) {
   const values: Record<string, unknown> = {
