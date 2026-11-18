@@ -28,6 +28,7 @@ import {
   withKnown,
   withRoutines,
 } from "../domain/project-package.ts";
+import { importProjectFlows, reviewProjectFlows, withProjectFlows } from "../domain/project-package-flows.ts";
 import { publicProject } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
@@ -515,6 +516,7 @@ export function projectShareHandlers(deps: {
     const knows = knownProjects(store, { project_id: p.id }).map((k) => k.name.slice(0, 80));
     b.pkg = withKnown(b.pkg, knows);
     b.pkg = withRoutines(b.pkg, routinesOf(p.id, b));
+    b.pkg = withProjectFlows(store, p.id, b.pkg);
     if (renderPackage(b.pkg).length > PACKAGE_MAX)
       throw badRequest("this project is too large to share: its skills hold more text than fits");
     return { ...b, id: p.id };
@@ -566,7 +568,9 @@ export function projectShareHandlers(deps: {
       const text = p.link ? await fetchPackage(p.link, deps.fetch) : (p.content ?? "");
       const parsed = parsePackage(text);
       if (!parsed.ok) throw refuse(parsed);
-      const pkg = p.name ? { ...parsed.pkg, project: { ...parsed.pkg.project, name: p.name } } : parsed.pkg;
+      const pkg = reviewProjectFlows(
+        p.name ? { ...parsed.pkg, project: { ...parsed.pkg.project, name: p.name } } : parsed.pkg,
+      );
       const same = store.projects.list().find((x) => x.name.toLowerCase() === pkg.project.name.toLowerCase());
       const said = { ...summaryOf(pkg), pending: pendingOf(pkg), taken: Boolean(same) };
       // Sin `save` no se toca nada: es la mirada previa, para que la persona vea qué trae antes de aceptarlo.
@@ -626,12 +630,14 @@ export function projectShareHandlers(deps: {
         have.add(r.name.toLowerCase());
         routinesOff++;
       }
+      const flowReview = importProjectFlows(store, id, pkg);
       const project = store.projects.get(id);
       if (!project) throw notFound(`project ${id}`);
       // Lo que ya tenía sus datos no vuelve a salir como «falta conectar».
       const pending = said.pending.filter((c) => !kept.includes(c.name));
       return {
         ...said,
+        ...(flowReview.length ? { flow_review: flowReview } : {}),
         pending,
         saved: true,
         project: publicProject(project),

@@ -73,6 +73,7 @@ import {
   WritePolicy,
 } from "./domain.ts";
 import { filesMethods } from "./files-methods.ts";
+import { ProjectFlowReview } from "./flow-methods.ts";
 import { gitMethods } from "./git-methods.ts";
 import { officeMethods } from "./office-methods.ts";
 import { resourceMethods } from "./resource-methods.ts";
@@ -87,6 +88,8 @@ const ProjectPackageSummary = z.object({
   skills: z.number().int(),
   connections: z.number().int(),
   organization: z.boolean(),
+  flows: z.number().int().nonnegative().optional(),
+  flow_review: z.array(ProjectFlowReview).optional(),
 });
 
 /** The parts of Colonia v1 the setup can bring in. */

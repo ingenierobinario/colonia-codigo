@@ -10,6 +10,19 @@ export const enProjectShare = {
   "pshare.goes.agents": "Agents: {n}",
   "pshare.goes.skills": "Skills: {n}",
   "pshare.goes.connections": "Connections without their keys: {n}",
+  "pshare.flows.count": "Flows imported switched off · {n}",
+  "pshare.flows.settings":
+    "Review step settings before publishing. Commands, scripts, database queries and delivery destinations need local configuration. Agents use read-only access.",
+  "pshare.flows.agents": "Choose a local agent for steps whose original agent was unavailable.",
+  "pshare.flows.routines": "Choose a local routine for each routine action.",
+  "pshare.flows.tables":
+    "Check that the named project tables exist on this device. Table rows stay on the source device.",
+  "pshare.flows.knowledge":
+    "Additional project knowledge is private. Select any projects the Flow may read on this device.",
+  "pshare.flows.existing": "A previous import already created this Flow. Its local changes have been kept.",
+  "pshare.flows.invalid": "A Flow contained an incompatible definition and was left out.",
+  "pshare.flows.versions":
+    "The latest drawing opens as a draft. Its previous published drawing is kept in local draft history.",
   "pshare.goes.organization": "Team structure",
   "pshare.stays.keys": "Keys and passwords",
   "pshare.stays.chats": "Chats",

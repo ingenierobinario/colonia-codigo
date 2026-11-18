@@ -6,6 +6,18 @@ import { FLOW_PATH, FLOW_PATH_SAVED } from "./flow-path.ts";
 const Id = z.string().regex(/^[A-Za-z0-9_-]{1,100}$/);
 const FlowToken = z.object({ token: z.string().nullable(), rotated_at: z.string().nullable() }).strict();
 const Scalar = z.union([z.string().max(4096), z.number().finite(), z.boolean(), z.null()]);
+/** Qué ajustes de un Flow compartido requieren atención en el equipo que lo importa. */
+export const ProjectFlowReview = z.enum([
+  "settings",
+  "agents",
+  "routines",
+  "tables",
+  "knowledge",
+  "existing",
+  "invalid",
+  "versions",
+]);
+export type ProjectFlowReview = z.infer<typeof ProjectFlowReview>;
 export const FlowAction = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("none") }).strict(),
   z.object({ kind: z.literal("agent"), agent: Id, prompt: z.string().min(1).max(8000) }).strict(),

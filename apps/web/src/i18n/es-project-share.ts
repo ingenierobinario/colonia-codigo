@@ -12,6 +12,19 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.goes.agents": "Agentes: {n}",
   "pshare.goes.skills": "Skills: {n}",
   "pshare.goes.connections": "Conexiones sin sus claves: {n}",
+  "pshare.flows.count": "Flows que se importan apagados · {n}",
+  "pshare.flows.settings":
+    "Revisa los pasos antes de publicarlos. Los comandos, scripts, consultas y destinos de envío se configuran en este equipo. Los agentes usan permisos de solo lectura.",
+  "pshare.flows.agents": "Elige un agente local en los pasos cuyo agente original no estaba disponible.",
+  "pshare.flows.routines": "Elige una rutina local en cada acción de rutina.",
+  "pshare.flows.tables":
+    "Comprueba que las tablas del proyecto existan en este equipo. Sus filas se quedan en el equipo de origen.",
+  "pshare.flows.knowledge":
+    "El acceso a otros proyectos es privado. Elige qué proyectos puede consultar el Flow en este equipo.",
+  "pshare.flows.existing": "Una importación anterior ya creó este Flow. Se han conservado los cambios locales.",
+  "pshare.flows.invalid": "Se ha omitido un Flow cuya definición era incompatible.",
+  "pshare.flows.versions":
+    "Se abre el último dibujo como borrador. El dibujo publicado antes se guarda en el historial local de borradores.",
   "pshare.goes.organization": "Estructura del equipo",
   "pshare.stays.keys": "Claves y contraseñas",
   "pshare.stays.chats": "Chats",

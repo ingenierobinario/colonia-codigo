@@ -2,6 +2,8 @@
 // skills, organización y las conexiones que usa (solo cuáles son, nunca sus valores). Lo que no viaja nunca: claves,
 // tokens, cookies, sesiones de canal, contraseñas, chats, tareas, memoria ni rutas del disco de quien exporta.
 import { gunzipSync, gzipSync } from "node:zlib";
+import { FlowDraftGraph } from "@colonia/protocol/flow-graph";
+import { FlowDefinition, ProjectFlowReview } from "@colonia/protocol/flow-methods";
 import { z } from "zod";
 
 export const PROJECT_FORMAT = "colonia-proyecto-1";
@@ -57,6 +59,22 @@ export const PackageRoutine = z.object({
 });
 export type PackageRoutine = z.infer<typeof PackageRoutine>;
 
+const PackageDrawing = FlowDraftGraph.refine((g) => Buffer.byteLength(JSON.stringify(g)) <= 131072);
+export const PackageFlow = FlowDefinition.pick({
+  name: true,
+  predicates: true,
+  tableKey: true,
+  readKeys: true,
+  action: true,
+})
+  .extend({
+    key: z.string().regex(/^[a-f0-9]{32}$/),
+    drawing: PackageDrawing.optional(),
+    previousDrawing: PackageDrawing.optional(),
+  })
+  .strict();
+export type PackageFlow = z.infer<typeof PackageFlow>;
+
 export const ProjectPackage = z
   .object({
     format: z.literal(PROJECT_FORMAT),
@@ -80,6 +98,8 @@ export const ProjectPackage = z
         roles: z.array(z.unknown()).max(200),
         knows: Known.optional(),
         routines: z.array(PackageRoutine).max(50).optional(),
+        flows: z.array(PackageFlow).max(1000).optional(),
+        flowReview: z.array(ProjectFlowReview).max(8).optional(),
       })
       .optional(),
     agents: z.array(z.object({ slug: Slug, text: z.string().max(FILE_MAX) }).strict()).max(200),
@@ -109,7 +129,7 @@ export function knownNames(pkg: ProjectPackage): string[] {
 export function withKnown(pkg: ProjectPackage, names: string[]): ProjectPackage {
   if (!names.length) return pkg;
   const { areas = [], roles = [] } = pkg.organization ?? {};
-  return { ...pkg, organization: { areas, roles, knows: names.slice(0, 16) } };
+  return { ...pkg, organization: { ...pkg.organization, areas, roles, knows: names.slice(0, 16) } };
 }
 /** RUTINAS-VIAJAN-1 · El paquete con sus rutinas dentro de `organization`. */
 export function withRoutines(pkg: ProjectPackage, routines: PackageRoutine[]): ProjectPackage {
@@ -127,6 +147,8 @@ export type PackageSummary = {
   skills: number;
   connections: number;
   organization: boolean;
+  flows?: number;
+  flow_review?: ProjectFlowReview[];
 };
 
 export const summaryOf = (p: ProjectPackage): PackageSummary => ({
@@ -135,6 +157,8 @@ export const summaryOf = (p: ProjectPackage): PackageSummary => ({
   agents: p.agents.length,
   skills: p.skills.length,
   connections: p.connections.length,
+  ...(p.organization?.flows?.length ? { flows: p.organization.flows.length } : {}),
+  ...(p.organization?.flowReview?.length ? { flow_review: p.organization.flowReview } : {}),
   organization: Boolean(p.organization && p.organization.areas.length + p.organization.roles.length),
 });
 

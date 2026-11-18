@@ -15,6 +15,7 @@ import {
   unpublishProject,
 } from "../data/project-share.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { SharedFlowSummary } from "./SharedFlowSummary.tsx";
 import "../styles/screens.css";
 import "../styles/project-share.css";
 
@@ -145,6 +146,7 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
             ) : (
               <Skeleton />
             )}
+            {pkg && <SharedFlowSummary value={pkg} />}
           </section>
           <section className="pshare__card">
             <h3>{t("pshare.stays")}</h3>

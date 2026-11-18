@@ -8,6 +8,7 @@ import { listMcp } from "../data/resources.ts";
 import { useT } from "../i18n/index.ts";
 import { McpDialog } from "../resources/McpDialog.tsx";
 import { go } from "../shell/nav.ts";
+import { SharedFlowSummary } from "./SharedFlowSummary.tsx";
 import { UnresolvedLinks } from "./UnresolvedLinks.tsx";
 import "../styles/screens.css";
 import "../styles/project-share.css";
@@ -110,6 +111,7 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
             <section className="pshare__card">
               <h3>{t("pshare.import.brings")}</h3>
               {tags(done)}
+              <SharedFlowSummary value={done} />
             </section>
             {done.pending.length > 0 && (
               <section className="pshare__card">
@@ -224,6 +226,7 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
                 <h3>{t("pshare.import.brings")}</h3>
                 {preview.description && <p>{preview.description}</p>}
                 {tags(preview)}
+                <SharedFlowSummary value={preview} />
                 <Field label={t("pshare.import.name")}>
                   {(id) => (
                     <Input id={id} maxLength={80} value={name} onChange={(e) => setName(e.currentTarget.value)} />
