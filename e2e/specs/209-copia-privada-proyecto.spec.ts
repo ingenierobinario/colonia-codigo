@@ -142,7 +142,7 @@ for (const language of ["es", "en"] as const) {
       if (!id) throw new Error("No se abrió el proyecto restaurado");
       importedId = id;
       const copy = (await rpc<Result<"projects.list">>("projects.list", {})).projects.find((p) => p.id === id);
-      expect(copy?.path && path.dirname(copy.path)).toBe(destination);
+      expect(copy?.path && fs.realpathSync.native(path.dirname(copy.path))).toBe(fs.realpathSync.native(destination));
       expect(fs.readFileSync(path.join(copy?.path ?? "", "informe.txt"), "utf8")).toBe("Informe de origen");
       expect(fs.readFileSync(path.join(source, "informe.txt"), "utf8")).toBe("Informe de origen");
     } finally {
