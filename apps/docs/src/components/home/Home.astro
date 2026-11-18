@@ -100,7 +100,7 @@ const cards = [
       <div class="hv-ribbon" role="note" aria-label={`${v.ribbon} · ${v.ends}`}>
         <div class="hv-ribbon__track"><div class="hv-ribbon__run">
           {[0, 1, 2, 3].map((n) => (
-            <span class="hv-ribbon__item" aria-hidden={n > 0 ? "true" : undefined}><b>BLACK FRIDAY</b> · {v.ribbon.replace(/^Black Friday · /, "")} · {v.ends} <span class="hv-clock" data-clock>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span>
+            <span class="hv-ribbon__item" aria-hidden={n > 0 ? "true" : undefined}><b>BLACK FRIDAY</b>&nbsp; {v.ribbon.replace(/^Black Friday · /, "")} · {v.ends} <span class="hv-clock" data-clock>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span>
           ))}
         </div></div>
         <a class="hv-ribbon__cta" href={RESERVAR_URL}>{v.cta}</a>
