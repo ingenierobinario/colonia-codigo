@@ -3,7 +3,9 @@ import type { FlowDraftGraph, FlowDraftNode } from "@colonia/protocol/flow-graph
 import type { FlowDefinition, ProjectFlowReview } from "@colonia/protocol/flow-methods";
 import { redactedJson } from "../log.ts";
 import { matchesFlowPredicates } from "./flow-evaluate.ts";
+import { flowNodeBindings, flowVarIndex } from "./flow-graph-validate.ts";
 import { PackageFlow, type ProjectPackage, REMOVED, scrub } from "./project-package.ts";
+import { isCliRef } from "./refs.ts";
 import type { Store } from "./store.ts";
 
 type Review = Set<ProjectFlowReview>;
@@ -46,12 +48,13 @@ function portableNode(node: FlowDraftNode, agents: AgentMap, review: Review): Fl
       review.add("routines");
       return { ...node, routine: "" };
     case "agent": {
+      const cli = Boolean(node.model && isCliRef(node.model));
       if (node.autonomy === "total" || node.autonomy === "auto" || node.write === "auto" || node.delegate) settings();
       return {
         ...node,
         ...(node.agent ? { agent: localAgent(agents, node.agent, review) } : {}),
-        autonomy: "manual",
-        write: "read-only",
+        autonomy: cli ? undefined : "manual",
+        write: cli ? "read-only" : undefined,
         delegate: false,
       };
     }
@@ -90,6 +93,19 @@ function portableNode(node: FlowDraftNode, agents: AgentMap, review: Review): Fl
   }
 }
 
+function hasBrokenLinks(graph: FlowDraftGraph) {
+  const ids = new Set(graph.nodes.map((node) => node.id));
+  const variables = flowVarIndex(graph);
+  return (
+    ids.size !== graph.nodes.length ||
+    graph.edges.some((e) => !ids.has(e.source) || !ids.has(e.target)) ||
+    graph.layout.some((position) => !ids.has(position.node)) ||
+    graph.nodes.some((node) =>
+      flowNodeBindings(node, variables).some((binding) => binding.kind === "node" && !ids.has(binding.node)),
+    )
+  );
+}
+
 function portableFlow(flow: PackageFlow, agents: AgentMap, review: Review): PackageFlow | undefined {
   const drawing = (g: FlowDraftGraph) => ({ ...g, nodes: g.nodes.map((node) => portableNode(node, agents, review)) });
   let action: FlowDefinition["action"] = { kind: "none" };
@@ -121,7 +137,7 @@ function portableFlow(flow: PackageFlow, agents: AgentMap, review: Review): Pack
     return text;
   });
   const parsed = PackageFlow.safeParse({ ...cleaned, key: flow.key });
-  if (parsed.success) {
+  if (parsed.success && ![parsed.data.previousDrawing, parsed.data.drawing].some((g) => g && hasBrokenLinks(g))) {
     try {
       matchesFlowPredicates({}, parsed.data.predicates);
       return parsed.data;
