@@ -17,14 +17,16 @@ Nothing here needs root, and the server doesn't need Node installed: the bundle 
 
 ### Create a server on Railway
 
-When **Create my server on Railway** is available under **My computers**, you can keep Colonia running while your computer is off.
+After you enable a routine or Flow on the desktop, **View server options** opens **My computers**. You can choose **Not now** and come back to My computers later.
 
-1. Open the button, sign in to Railway or create an account, and review your plan before confirming the deployment. Each account manages and pays for its own server.
-2. Once Railway shows the **Colonia** service is active, open its HTTPS address. On the pairing screen, choose **I own this server**.
-3. Open **Variables** in the **Colonia** service, copy the private value of `COLONIA_TOKEN` and paste it in **Server key**. Colonia pairs the browser with its own device key.
-4. To add another device, create a code under **Settings › Connections › Devices › Pair a device**. The code is valid for ten minutes.
+1. If **Create my server on Railway** appears, choose it, sign in to Railway or create an account, then confirm the deployment. Once the **Colonia** service is active, open its HTTPS address.
+2. Choose **I own this server**. Open **Variables** in the Railway service, copy the private value of `COLONIA_TOKEN` and paste it in **Server key**. That browser receives its own device key.
+3. On the server choose **Create desktop invitation** and copy the invitation. On your usual desktop open **My computers**, choose **I have a server. Link this PC** and paste it. Check the domain shown and select the project folders you want to transfer.
+4. Choose **Sync with this server**. Chats, projects, routines and provider keys will sync over the encrypted connection. Wait for confirmation that your selected folders have arrived before turning off the PC.
 
-The service volume keeps your projects and conversations between restarts. To use a computer or server you already own, choose an installation method below.
+The server runs your automations. Results appear on the desktop when it reconnects. Later you can choose **Add folders to the server** to send a copy of other projects. Each folder is copied once. Browser sessions and tools that require your computer are available on that device while it is on.
+
+To use a computer or server you already own, choose one of the installation methods below.
 
 <Tabs>
 <TabItem label="Linux and macOS">

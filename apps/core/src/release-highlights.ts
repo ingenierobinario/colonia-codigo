@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.51": {
+    en: [
+      "When you enable a routine or a Flow, you can link a server from the desktop app.",
+      "The server runs your automations while your PC is off. Results sync when you reconnect.",
+      "You choose which folders make up the server's initial working copy.",
+      "You can move a project in an encrypted copy that includes its documents, chats, attachments, roles and agents.",
+    ],
+    es: [
+      "Al activar una rutina o un Flow, puedes vincular un servidor desde el escritorio.",
+      "El servidor ejecuta tus automatizaciones con el PC apagado. Los resultados se sincronizan al volver.",
+      "Eliges qué carpetas forman la copia de trabajo inicial del servidor.",
+      "Puedes mover un proyecto en una copia cifrada que incluye documentos, chats, adjuntos, roles y agentes.",
+    ],
+  },
   "2.36.50": {
     en: [
       "Assign agents to areas and roles and see their responsibilities in the project chart.",
