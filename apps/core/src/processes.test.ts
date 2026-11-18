@@ -135,41 +135,39 @@ test("a probe that gets no answer in time says unknown, never that the process i
   assert.deepEqual(await probeProcess(process.pid), { state: "running", start: await processStart(process.pid) });
 });
 
-test("en Linux un zombi ya ha terminado y un proceso detenido todavía conserva su identidad", {
-  skip: process.platform !== "linux",
-}, async () => {
+test("en Linux un zombi ya ha terminado y un proceso detenido todavía conserva su identidad", async () => {
   const start = "Wed Nov  4 22:12:01 2026";
   const state =
     (status: string): ProbeRun =>
     (_file, _args, _timeout, done) =>
       done(null, `${status}  ${start}\n`);
-  assert.deepEqual(await probeProcess(123, 100, state("Zs")), { state: "gone" });
-  assert.deepEqual(await probeProcess(123, 100, state("T")), { state: "running", start });
+  assert.deepEqual(await probeProcess(123, 100, state("Zs"), "linux"), { state: "gone" });
+  assert.deepEqual(await probeProcess(123, 100, state("T"), "linux"), { state: "running", start });
 });
 
-test("el cierre espera al hijo que aún trabaja aunque su líder ya haya terminado", {
-  skip: process.platform !== "linux",
-}, async () => {
-  const worker = `
+// portable: los grupos de procesos que reciben SIGTERM son propios de Unix. Windows cierra el árbol con taskkill.
+if (process.platform !== "win32")
+  test("el cierre espera al hijo que aún trabaja aunque su líder ya haya terminado", async () => {
+    const worker = `
     process.on("SIGTERM", () => setTimeout(() => { console.log("cerrado"); process.exit(0); }, 450));
     console.log("preparado");
     setInterval(() => {}, 1000);`;
-  const leader = `require("node:child_process").spawn(process.execPath, ["-e", ${JSON.stringify(worker)}], { stdio: "inherit" })`;
-  const child = spawn(process.execPath, ["-e", leader], { detached: true, stdio: ["ignore", "pipe", "ignore"] });
-  assert.ok(child.pid);
-  let output = "";
-  child.stdout.setEncoding("utf8").on("data", (part: string) => {
-    output += part;
+    const leader = `require("node:child_process").spawn(process.execPath, ["-e", ${JSON.stringify(worker)}], { stdio: "inherit" })`;
+    const child = spawn(process.execPath, ["-e", leader], { detached: true, stdio: ["ignore", "pipe", "ignore"] });
+    assert.ok(child.pid);
+    let output = "";
+    child.stdout.setEncoding("utf8").on("data", (part: string) => {
+      output += part;
+    });
+    try {
+      await once(child.stdout, "data");
+      assert.match(output, /preparado/);
+      await stopTree(child.pid, { graceMs: 5000 });
+      assert.match(output, /cerrado/);
+    } finally {
+      await stopTree(child.pid, { graceMs: 0 });
+    }
   });
-  try {
-    await once(child.stdout, "data");
-    assert.match(output, /preparado/);
-    await stopTree(child.pid, { graceMs: 5000 });
-    assert.match(output, /cerrado/);
-  } finally {
-    await stopTree(child.pid, { graceMs: 0 });
-  }
-});
 
 test("a process that is gone is gone, and a TERM it obeys ends the stop before its grace", async () => {
   const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], {

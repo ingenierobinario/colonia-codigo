@@ -109,7 +109,7 @@ const deadState = (state: string) => /^[ZXx]/.test(state);
 function onlyDeadMembers(pid: number): Promise<boolean> {
   // spawnCommand y los agentes abren una sesión con el PID del líder. Una sesión puede contener varios grupos.
   return new Promise((resolve) =>
-    execFile("ps", ["-s", String(pid), "-o", "pgid=,stat="], { timeout: 500 }, (err, out) => {
+    execFile("ps", ["-s", String(pid), "-o", "pgid=,stat="], { timeout: 500, windowsHide: true }, (err, out) => {
       if (err) return resolve(false);
       const group = String(pid);
       const states = out
@@ -187,9 +187,14 @@ export type ProbeRun = (
 const systemProbe: ProbeRun = (file, args, timeoutMs, done) =>
   execFile(file, args, { encoding: "utf8", timeout: timeoutMs, windowsHide: true }, (err, out) => done(err, out));
 
-export function probeProcess(pid: number, timeoutMs = 10_000, run: ProbeRun = systemProbe): Promise<ProcessProbe> {
+export function probeProcess(
+  pid: number,
+  timeoutMs = 10_000,
+  run: ProbeRun = systemProbe,
+  platform: NodeJS.Platform = process.platform,
+): Promise<ProcessProbe> {
   const [file, args] =
-    process.platform === "win32"
+    platform === "win32"
       ? [
           "powershell.exe",
           [
@@ -200,12 +205,12 @@ export function probeProcess(pid: number, timeoutMs = 10_000, run: ProbeRun = sy
             `$p = Get-Process -Id ${pid} -ErrorAction SilentlyContinue; if (-not $p) { exit 3 }; $p.StartTime.ToUniversalTime().ToString('o')`,
           ],
         ]
-      : ["ps", ["-p", String(pid), "-o", process.platform === "linux" ? "stat=,lstart=" : "lstart="]];
-  const noSuch = process.platform === "win32" ? 3 : 1;
+      : ["ps", ["-p", String(pid), "-o", platform === "linux" ? "stat=,lstart=" : "lstart="]];
+  const noSuch = platform === "win32" ? 3 : 1;
   return new Promise((resolve) =>
     run(file, args as string[], timeoutMs, (err, out) => {
       const start = out?.trim();
-      if (!err && start && process.platform === "linux") {
+      if (!err && start && platform === "linux") {
         const [, state, started] = /^(\S+)\s+(.+)$/.exec(start) ?? [];
         if (!state || !started)
           return resolve({ state: "unknown", why: "ps devolvió un estado de proceso incompleto" });
