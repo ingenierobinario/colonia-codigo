@@ -128,6 +128,20 @@ jobs:
         run: |
           python3 -B -m unittest discover -s scripts/docker/railway -p test_empaquetar.py
           python3 -B scripts/docker/railway/empaquetar.py "${TAG#v}" dist
+      - name: Arrancar y comprobar el servidor de la plantilla con el bundle de esta entrega
+        run: |
+          version="${TAG#v}"
+          plantilla="$(mktemp -d)"
+          archivo="colonia-railway-$version.zip"
+          bundle="colonia-core-$version-linux-x64.tar.gz"
+          (cd dist && sha256sum --check "$archivo.sha256")
+          unzip -q "dist/$archivo" -d "$plantilla"
+          cp "dist/$bundle" "$plantilla/$bundle"
+          export COLONIA_RAILWAY_IMAGE="colonia-railway-prueba:$version"
+          export COLONIA_RAILWAY_SOURCE="$plantilla/scripts/docker/railway"
+          docker build --platform linux/amd64 --build-arg "BUNDLE=$bundle" \
+            -f "$plantilla/scripts/docker/Dockerfile" -t "$COLONIA_RAILWAY_IMAGE" "$plantilla"
+          node --test scripts/docker/railway/servidor.test.mjs
       - name: Notas de la versión
         run: |
           # Lo que trae la versión, en los dos idiomas. Sin notas escritas (o sin Node), el mensaje de la etiqueta.

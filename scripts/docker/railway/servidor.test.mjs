@@ -2,10 +2,15 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-const version = readFileSync(new URL("./estable.txt", import.meta.url), "utf8").split(/\r?\n/)[0];
+const fuente = process.env.COLONIA_RAILWAY_SOURCE ?? fileURLToPath(new URL(".", import.meta.url));
+const manifest = readFileSync(join(fuente, "estable.txt"), "utf8");
+const source = readFileSync(join(fuente, "obtener.sh"), "utf8");
+const version = manifest.split(/\r?\n/)[0];
 const image = process.env.COLONIA_RAILWAY_IMAGE ?? `colonia-railway-prueba:${version}`;
 const execute = promisify(execFile);
 const node = "/opt/colonia/node/bin/node";
@@ -148,8 +153,6 @@ test("servidor de plantilla de Railway con el bundle público, volumen y acceso 
       await docker(["exec", observer, node, "--input-type=module", "-e", `await (${client.toString()})()`, operation]),
     );
   await t.test("rechaza un bundle alterado antes de extraerlo", async () => {
-    const source = readFileSync(new URL("./obtener.sh", import.meta.url), "utf8");
-    const manifest = readFileSync(new URL("./estable.txt", import.meta.url), "utf8");
     const fake = [
       "set -eu",
       "mkdir -p /tmp/prueba",
@@ -164,6 +167,25 @@ test("servidor de plantilla de Railway con el bundle público, volumen y acceso 
       docker(["exec", observer, "sh", "-c", fake, "sh", source, manifest]),
       (err) => err.code === 1 && /SHA-256/.test(err.stderr),
     );
+  });
+  await t.test("verifica el archivo local contra el pin, incluso sin acceso a la descarga", async () => {
+    const script = [
+      "set -eu",
+      'cd "$(mktemp -d)"',
+      'printf %s "$1" > obtener.sh',
+      "printf original > candidato.tar.gz",
+      "hash=$(sha256sum candidato.tar.gz | cut -d' ' -f1)",
+      'printf "2.0.0\\nx64 %s\\narm64 %s\\n" "$hash" "$hash" > pin',
+      "printf '#!/bin/sh\\nexit 92\\n' > curl",
+      "chmod +x curl",
+      'export PATH="$PWD:$PATH"',
+      "sh obtener.sh pin verificado.tar.gz candidato.tar.gz",
+      "cmp candidato.tar.gz verificado.tar.gz",
+      "printf alterado > candidato.tar.gz",
+      "if sh obtener.sh pin verificado.tar.gz candidato.tar.gz 2>motivo; then exit 1; fi",
+      "grep -q SHA-256 motivo",
+    ].join("\n");
+    await docker(["exec", observer, "sh", "-c", script, "sh", source]);
   });
   await t.test("exige un secreto, un dominio válido y el volumen de la plantilla", async () => {
     for (const [change, expected] of [

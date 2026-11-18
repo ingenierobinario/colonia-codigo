@@ -28,4 +28,6 @@ docker build -f scripts/docker/Dockerfile -t colonia-railway-prueba:2.36.49 .
 node --test scripts/docker/railway/servidor.test.mjs
 ```
 
-La prueba crea una red interna, un secreto ficticio y un volumen temporal. Comprueba el acceso desde un segundo contenedor, la identidad, el proyecto persistente y el usuario del servicio después de recrearlo. Para usar otra etiqueta de imagen local, define `COLONIA_RAILWAY_IMAGE`. El flujo local existente admite `--build-arg BUNDLE=out/colonia-core-<versión>-linux-x64.tar.gz`.
+La prueba crea una red interna, un secreto ficticio y un volumen temporal. Comprueba el acceso desde un segundo contenedor, la identidad, el proyecto persistente y el usuario del servicio después de recrearlo. Para usar otra etiqueta de imagen local, define `COLONIA_RAILWAY_IMAGE`.
+
+Antes de publicar, GitHub Actions descomprime el ZIP de la candidata y añade al contexto de construcción su bundle Linux x64. El Dockerfile admite `--build-arg BUNDLE=<ruta dentro del contexto>` y comprueba el SHA-256 del archivo local con el mismo pin de la plantilla que se usará para la descarga pública. El humo lee el pin y el script de ese ZIP a través de `COLONIA_RAILWAY_SOURCE`, que apunta a su directorio `scripts/docker/railway`.

@@ -9,12 +9,12 @@ RUN apt-get update \
 
 FROM sistema AS bundle
 ARG BUNDLE=scripts/docker/railway/estable.txt
-COPY ${BUNDLE} /tmp/entrada
-COPY scripts/docker/railway/obtener.sh /tmp/obtener.sh
+WORKDIR /tmp/fuente
+COPY scripts/docker/railway/obtener.sh scripts/docker/railway/estable.txt scripts/docker/railway/
+COPY ${BUNDLE} ${BUNDLE}
 RUN mkdir -p /opt \
- && if [ "$BUNDLE" = scripts/docker/railway/estable.txt ]; then \
-      sh /tmp/obtener.sh /tmp/entrada /tmp/colonia.tar.gz && tar -xzf /tmp/colonia.tar.gz -C /opt; \
-    else tar -xzf /tmp/entrada -C /opt; fi \
+ && sh scripts/docker/railway/obtener.sh scripts/docker/railway/estable.txt /tmp/colonia.tar.gz "$BUNDLE" \
+ && tar -xzf /tmp/colonia.tar.gz -C /opt \
  && test -x /opt/colonia/node/bin/node && test -f /opt/colonia/apps/core/src/main.ts
 
 FROM sistema

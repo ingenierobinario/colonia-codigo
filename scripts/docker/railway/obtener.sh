@@ -12,8 +12,12 @@ esac
 hash=$(awk -v arch="$arch" '$1 == arch { print $2 }' "$manifest")
 [ "${#hash}" -eq 64 ] && printf '%s\n' "$hash" | grep -Eq '^[0-9a-f]+$' || exit 1
 asset="colonia-core-$version-linux-$arch.tar.gz"
-curl -q --fail --silent --show-error --location --connect-timeout 20 --max-time 300 --retry 3 --proto '=https' --proto-redir '=https' \
-  "https://github.com/ingenierobinario/colonia/releases/download/v$version/$asset" -o "$output"
+if [ "${3:-$manifest}" = "$manifest" ]; then
+  curl -q --fail --silent --show-error --location --connect-timeout 20 --max-time 300 --retry 3 --proto '=https' --proto-redir '=https' \
+    "https://github.com/ingenierobinario/colonia/releases/download/v$version/$asset" -o "$output"
+else
+  cp -- "$3" "$output"
+fi
 printf '%s  %s\n' "$hash" "$output" | sha256sum --check --status || {
   echo 'La suma SHA-256 del bundle no coincide con la versión pública fijada.' >&2
   exit 1
