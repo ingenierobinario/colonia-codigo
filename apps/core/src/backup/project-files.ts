@@ -33,6 +33,15 @@ const single = new Set<string>([
   ".dockerignore",
 ]);
 
+const nativeRoots = new Set(native);
+const nativeParents = new Set([
+  ...native,
+  ...[...native, ...single].flatMap((entry) => {
+    const parts = entry.split("/");
+    return parts.slice(1).map((_, i) => parts.slice(0, i + 1).join("/"));
+  }),
+]);
+
 function allowed(rel: string, directory: boolean): boolean {
   const parts = rel.split("/");
   if (
@@ -53,9 +62,12 @@ function allowed(rel: string, directory: boolean): boolean {
   )
     return false;
   if (single.has(rel)) return !directory;
-  if (directory && [...native, ...single].some((prefix) => prefix === rel || prefix.startsWith(`${rel}/`))) return true;
-  const prefix = native.find((folder) => rel.startsWith(`${folder}/`));
-  const body = prefix ? rel.slice(prefix.length + 1) : rel;
+  if (directory && nativeParents.has(rel)) return true;
+  const first = parts[0] ?? "";
+  const firstTwo = parts.slice(0, 2).join("/");
+  let body = rel;
+  if (parts.length > 1 && nativeRoots.has(first)) body = parts.slice(1).join("/");
+  else if (parts.length > 2 && nativeRoots.has(firstTwo)) body = parts.slice(2).join("/");
   return body.split("/").every((part) => !sensitiveFile(part));
 }
 
@@ -138,7 +150,9 @@ export async function projectFiles(
   }
   const base = realpath(root);
   const installation = real(home);
-  if (isInside(base, installation) || isInside(base, real(os.homedir()))) {
+  const managed = path.join(installation, "projects");
+  const reservedInstallation = isInside(installation, base) && (!isInside(managed, base) || samePath(managed, base));
+  if (reservedInstallation || isInside(base, installation) || isInside(base, real(os.homedir()))) {
     throw new Error("Selecciona la carpeta concreta que pertenece al proyecto.");
   }
   const reserved = new Set<string>();

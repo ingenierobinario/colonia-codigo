@@ -149,3 +149,22 @@ test("una copia verificada avisa si el documento se acorta mientras se lee", asy
     writer.abort();
   }
 });
+
+test("solo las carpetas de proyectos administrados pueden copiarse dentro de la instalación", async (t) => {
+  const dir = tempDir("colonia-ambito-privado-");
+  t.after(() => dir.remove());
+  const home = path.join(dir.path, "colonia");
+  const managed = path.join(home, "projects");
+  const own = path.join(managed, "p-123");
+  const media = path.join(home, "media");
+  fs.mkdirSync(own, { recursive: true });
+  fs.mkdirSync(media, { recursive: true });
+  fs.writeFileSync(path.join(media, "privado.txt"), "Datos de otro proyecto");
+  fs.writeFileSync(path.join(own, "tarea.md"), "Trabajo propio");
+  await assert.rejects(projectFiles(media, home, []), /carpeta/);
+  await assert.rejects(projectFiles(managed, home, []), /carpeta/);
+  assert.deepEqual(
+    (await projectFiles(own, home, [])).map((f) => f.rel),
+    ["tarea.md"],
+  );
+});
