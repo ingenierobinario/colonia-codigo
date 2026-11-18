@@ -55,6 +55,26 @@ export type NewsEntry = {
 };
 
 export const NEWS: readonly NewsEntry[] = [
+  {
+    id: "conversation-import-and-agent-pointer",
+    since: "2.36.52",
+    title: {
+      en: "Bring in your chats and see which agent is acting",
+      es: "Importa tus chats y ve qué agente está actuando",
+    },
+    about: {
+      en: "Import ChatGPT and Claude conversations or compatible Claude Code and Cowork transcripts into a project from files you choose. The pointer and live view now show the name and avatar of the agent taking the action, even after a handoff.",
+      es: "Importa al proyecto que elijas conversaciones de ChatGPT y Claude o registros compatibles de Claude Code y Cowork desde tus archivos. El puntero y la vista en vivo muestran el nombre y el avatar del agente que actúa, también cuando otro toma el relevo.",
+    },
+    applies: () => true,
+    text: "Owners can bring exported conversations into a project without connecting a provider account. The live pointer identifies the agent acting, including after a handoff.",
+    actions: [
+      {
+        label: { en: "How to import my chats", es: "Cómo importar mis chats" },
+        prompt: "Show me how to choose conversation files and import them into a project.",
+      },
+    ],
+  },
   BROWSER_JAVASCRIPT_NEWS,
   {
     id: "project-team-assignments",

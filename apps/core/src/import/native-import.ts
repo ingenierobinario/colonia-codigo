@@ -68,9 +68,9 @@ export function importedThread(store: Store, engine: NativeEngine, id: string): 
 }
 
 /** The newest stretch of a log within `chars`, starting at an owner's turn. */
-function newest<T extends { role: string; content: string }>(items: T[], chars: number): T[] {
+export function newestImportedHistory<T extends { role: string; content: string }>(items: T[]): T[] {
   let i = items.length;
-  for (let used = 0; i > 0 && used + (items[i - 1]?.content.length ?? 0) <= chars; i--)
+  for (let used = 0; i > 0 && used + (items[i - 1]?.content.length ?? 0) <= LOG_CHARS; i--)
     used += items[i - 1]?.content.length ?? 0;
   while (i < items.length && items[i]?.role !== "user") i++;
   return items.slice(i);
@@ -268,7 +268,7 @@ export function importSessions(
         }
       }
       // The model's view of the chat, so going on with it there has the earlier turns (its newest stretch).
-      if (log.length) store.modelLog.append(thread.id, undefined, newest(log, LOG_CHARS));
+      if (log.length) store.modelLog.append(thread.id, undefined, newestImportedHistory(log));
       store.threads.settle(thread.id, last.at, last.text.slice(0, 140));
       store.settings.set(
         doneKey(o.engine, s.id),

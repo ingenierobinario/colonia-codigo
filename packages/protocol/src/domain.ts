@@ -526,6 +526,13 @@ const KnownPart = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("text"),
     text: z.string(),
+    /** Provenance of an offline transcript. Tool output and system turns remain passive text. */
+    imported_from: z
+      .object({
+        source: z.enum(["chatgpt", "claude", "claude-code", "cowork"]),
+        role: z.enum(["user", "assistant", "system", "tool", "note"]),
+      })
+      .optional(),
     /** A task consult's reply, kept as words for history readers and as a traced event for operators. */
     response: z
       .object({
