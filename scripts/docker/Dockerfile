@@ -1,24 +1,31 @@
-# The Colonia daemon in a container, from a release's daemon bundle (the same one install.sh installs).
-#
-#   docker build -f scripts/docker/Dockerfile --build-arg BUNDLE=out/colonia-core-2.2.0-linux-x64.tar.gz -t colonia .
-#   docker run -d --name colonia -p 7440:7440 -v colonia-data:/data -e COLONIA_TOKEN=<a long random string> colonia
-#   docker exec -it colonia colonia pair            # pair the desktop app or the phone with it
-#
-# It listens on every interface of the container, so it refuses to start without COLONIA_TOKEN. Updates come with a
-# new image (COLONIA_UPDATES=off): the bundle never rewrites itself inside a container.
-FROM debian:bookworm-slim
-ARG BUNDLE
+# Desde la raíz del repositorio se usa la versión pública fijada para la plantilla.
+# Un bundle local sigue admitiendo --build-arg BUNDLE=out/colonia-core-<versión>-linux-x64.tar.gz.
+FROM debian:bookworm-slim AS sistema
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl git tini procps chromium fonts-liberation ffmpeg \
+ && apt-get install -y --no-install-recommends ca-certificates curl git tini procps chromium fonts-liberation ffmpeg util-linux \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --create-home --uid 1000 colonia \
  && mkdir -p /data && chown colonia:colonia /data
-# ADD unpacks a local .tar.gz: the bundle's colonia/ folder lands in /opt/colonia.
-ADD ${BUNDLE} /opt/
-RUN printf '#!/bin/sh\nexec /opt/colonia/node/bin/node --disable-warning=ExperimentalWarning /opt/colonia/apps/terminal/src/main.ts "$@"\n' \
+
+FROM sistema AS bundle
+ARG BUNDLE=scripts/docker/railway/estable.txt
+COPY ${BUNDLE} /tmp/entrada
+COPY scripts/docker/railway/obtener.sh /tmp/obtener.sh
+RUN mkdir -p /opt \
+ && if [ "$BUNDLE" = scripts/docker/railway/estable.txt ]; then \
+      sh /tmp/obtener.sh /tmp/entrada /tmp/colonia.tar.gz && tar -xzf /tmp/colonia.tar.gz -C /opt; \
+    else tar -xzf /tmp/entrada -C /opt; fi \
+ && test -x /opt/colonia/node/bin/node && test -f /opt/colonia/apps/core/src/main.ts
+
+FROM sistema
+COPY --from=bundle /opt/colonia /opt/colonia
+COPY scripts/docker/railway/iniciar.sh /usr/local/bin/colonia-iniciar
+RUN install -d -o colonia -g colonia -m 0700 /data.startup \
+ && chmod 755 /usr/local/bin/colonia-iniciar \
+ && printf '#!/bin/sh\nexec /opt/colonia/node/bin/node --disable-warning=ExperimentalWarning /opt/colonia/apps/terminal/src/main.ts "$@"\n' \
       > /usr/local/bin/colonia \
  && chmod 755 /usr/local/bin/colonia
-# Chromium cannot build its own sandbox as a plain user inside a default container; the container is the boundary.
+# Chromium se ejecuta con el aislamiento del contenedor.
 RUN printf '#!/bin/sh\nexec chromium --no-sandbox "$@"\n' > /usr/local/bin/colonia-chromium \
  && chmod 755 /usr/local/bin/colonia-chromium
 ENV COLONIA_CHROME=/usr/local/bin/colonia-chromium
@@ -27,5 +34,5 @@ WORKDIR /opt/colonia
 ENV COLONIA_HOME=/data COLONIA_HOST=0.0.0.0 COLONIA_PORT=7440 COLONIA_SECRETS=file COLONIA_UPDATES=off COLONIA_RUNTIME_SKILLS=off
 VOLUME /data
 EXPOSE 7440
-HEALTHCHECK --interval=30s --timeout=5s CMD curl -fsS http://127.0.0.1:7440/health >/dev/null || exit 1
-ENTRYPOINT ["tini", "--", "/opt/colonia/node/bin/node", "--disable-warning=ExperimentalWarning", "/opt/colonia/apps/core/src/main.ts"]
+HEALTHCHECK --interval=30s --timeout=5s CMD if [ -n "${RAILWAY_SERVICE_ID:-}" ]; then p="$PORT"; else p="${COLONIA_PORT:-7440}"; fi; curl -qfsS "http://127.0.0.1:$p/health" >/dev/null || exit 1
+ENTRYPOINT ["/usr/local/bin/colonia-iniciar"]
