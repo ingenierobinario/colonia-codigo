@@ -67,7 +67,7 @@ export const enEngines = {
   "providers.unsetKey": "Paste a key to use its models.",
   "providers.unsetLocal": "Runs on your machine; no key needed.",
   "external.lead":
-    "The CLIs of your subscriptions. You use them from External sessions in the sidebar, each with its own chat and tools: they are not models for your agents or the router.",
+    "A session is a chat with a tool such as Claude Code or Codex. If your provider supports it, connect the account your agents use in Engines and models.",
   "external.models": "Their models",
   "external.modelsLead": "What each CLI offers in its own sessions, as it reports it.",
   "models.effortLevel.none": "None",

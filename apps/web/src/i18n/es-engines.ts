@@ -70,7 +70,7 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "providers.unsetKey": "Pega una clave para usar sus modelos.",
   "providers.unsetLocal": "Se ejecuta en tu máquina; no necesita clave.",
   "external.lead":
-    "Las CLIs de tus suscripciones. Las usas desde Sesiones externas en la barra lateral, cada una con su propio chat y sus herramientas: no son modelos para tus agentes ni para el router.",
+    "Una sesión es un chat con una herramienta como Claude Code o Codex. Si tu proveedor lo permite, conecta la cuenta de tus agentes en Motores y modelos.",
   "external.models": "Sus modelos",
   "external.modelsLead": "Lo que ofrece cada CLI en sus propias sesiones, según lo que informa.",
   "models.effortLevel.none": "Ninguno",
