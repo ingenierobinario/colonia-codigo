@@ -308,7 +308,7 @@ test("perder el enlace retira también una acción pendiente y permite la siguie
   h.computer.disconnect();
   slow.open(true);
   await assert.rejects(pending, STOP);
-  assert.deepEqual(h.activity, []);
+  assert.equal(h.activity.length, 0);
   assert.equal(await h.computer.frame(), undefined);
   await h.computer.handle("computer.key", { app: "calc", keys: "enter", actor: { id: "dos", name: "Sol" } });
   assert.equal(h.activity.at(-1)?.actor?.id, "dos");
