@@ -367,6 +367,10 @@ nav.subscribe(() => {
   if (s.panel && showsChat(s)) h.set("panel", s.panel);
   if (s.panel === "document" && showsChat(s) && s.panelDocument) h.set("document", s.panelDocument);
   if (s.panel === "widget" && showsChat(s) && s.panelWidget) h.set("widget", s.panelWidget);
+  // Una actualización de tema o panel conserva el alta del servidor hasta que el propietario elija cómo seguir.
+  if (s.view === "equipos" && new URLSearchParams(window.location.hash.slice(1)).get("host") === "welcome") {
+    h.set("host", "welcome");
+  }
   const next = `#${h.toString()}`;
   if (window.location.hash !== next) history.replaceState(null, "", next);
   rememberPlace(placeOf(s));

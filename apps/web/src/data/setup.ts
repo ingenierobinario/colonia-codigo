@@ -25,13 +25,17 @@ export async function loadSetup(): Promise<void> {
 export const openSetup = () => store.set({ open: true });
 export const closeSetup = () => store.set({ open: false });
 
-export async function finishSetup(): Promise<void> {
+export async function finishSetup({ requireConfirmation = false } = {}): Promise<boolean> {
+  let confirmed = false;
   try {
     await client.call("setup.finish", {});
+    confirmed = true;
   } catch (e) {
     notify(t("error.change", { error: errText(e) }));
+    if (requireConfirmation) return false;
   }
   store.set((s) => ({ open: false, status: s.status ? { ...s.status, done: true } : s.status }));
+  return confirmed;
 }
 
 export type V1Groups = Result<"setup.v1_scan">["groups"];
