@@ -10,7 +10,9 @@ test("desde Ajustes se elige un proyecto y se puede volver a la copia de toda la
     await rpc("setup.finish");
     await page.addInitScript(() => localStorage.setItem("colonia.prefs", JSON.stringify({ language: "es" })));
     await open(page, "#view=equipos");
+    const settingsReady = page.waitForResponse("**/rpc/backup.status");
     await page.locator(".eq-transfer").getByRole("button", { name: "Copia y traslado" }).click();
+    await settingsReady;
     const create = page.locator("[data-bk=create]");
     const scope = create.getByRole("combobox", { name: "Qué quieres copiar" });
     await expect(scope).toHaveText("Toda mi Colonia");
