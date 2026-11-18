@@ -278,6 +278,7 @@ test("every long-running method gives its server time to finish and other method
     ["memory.reindex", {}, 600_000],
     ["sessions.projects", {}, 60_000],
     ["sessions.import", {}, 300_000],
+    ["sessions.import_conversation", {}, 300_000],
     ["sessions.digest", {}, 660_000],
     ["channels.recover", {}, 170_000],
     ["runs.wait", {}, 70_000],
