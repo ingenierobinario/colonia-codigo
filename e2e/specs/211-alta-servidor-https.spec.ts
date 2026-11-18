@@ -1,3 +1,4 @@
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "./kit.ts";
@@ -6,8 +7,13 @@ const origin = "https://colonia-alta.example.test";
 const owner = "clave-ficticia-del-propietario";
 const device = "credencial-ficticia-del-navegador";
 const code = "ABCD-2345";
-const panel = new URL("../../apps/web/dist/", import.meta.url);
+const panel = process.env.COLONIA_WEB_DIST || fileURLToPath(new URL("../../apps/web/dist/", import.meta.url));
 const welcome = "Conecta este servidor con tu escritorio";
+
+// El panel puede seguir consultando el motor al cerrar el diálogo. Cada prueba termina sus peticiones.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: "wait" });
+});
 
 async function geometry(dialog: Locator) {
   const page = dialog.page();
@@ -86,7 +92,7 @@ async function server(page: Page, baseURL: string | undefined, returning = false
     const url = new URL(request.url());
     if (url.pathname === "/" || /^\/assets\/[\w-][\w.-]*$/.test(url.pathname)) {
       const file = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
-      return r.fulfill({ path: fileURLToPath(new URL(file, panel)) });
+      return r.fulfill({ path: path.join(panel, file) });
     }
     const ok = (result: unknown) => r.fulfill({ json: { ok: true, result } });
     const error = (code: string, message: string) => r.fulfill({ json: { ok: false, error: { code, message } } });
