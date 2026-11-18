@@ -36,6 +36,7 @@ const ORDER = Object.keys(BROWSER_NAMES) as Browser[];
 export function NavegadoresDock({ rail }: { rail: boolean }) {
   const t = useT();
   const navegadores = useNavegadores((s) => s.navegadores);
+  const failed = useNavegadores((s) => s.failed);
   const view = useNav((s) => s.view);
   const current = useNav((s) => s.navegadorId);
   const [sources, setSources] = useState<ImportSource[]>();
@@ -72,7 +73,7 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
     });
   }, []);
 
-  if (!desktop && !navegadores.length) return null;
+  if (!desktop && !navegadores.length && !failed) return null;
 
   const added = new Set(navegadores.map((n) => n.id));
   const free = (sources ?? []).filter((s) => !added.has(navegadorId(s.navegador, s.perfil)));
@@ -181,6 +182,14 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
           ) : undefined
         }
       />
+      {failed && (!sectionFolded || rail) && (
+        <NavItem
+          collapsed={rail}
+          icon={<Icons.RotateCcw size={14} />}
+          label={t("navegadores.retry")}
+          onClick={() => void loadNavegadores(true)}
+        />
+      )}
       {install && !rail && (
         <InstalarNavegador
           progress={install}

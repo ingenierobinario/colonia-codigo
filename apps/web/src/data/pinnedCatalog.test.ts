@@ -21,7 +21,7 @@ test("al reconectar se renueva el catálogo en uso y se descarta la respuesta de
   assert.equal(calls, 2);
 });
 
-test("una lectura fallida se puede reintentar y la lectura completada sirve a la barra y a la ruta", async () => {
+test("la pantalla y la barra conservan un fallo de precarga hasta el reintento de la persona", async () => {
   let calls = 0;
   const catalog = createPinnedCatalog({ items: [] as string[] }, async () => {
     if (++calls === 1) throw new Error("Sin conexión");
@@ -30,7 +30,26 @@ test("una lectura fallida se puede reintentar y la lectura completada sirve a la
   await Promise.all([catalog.load(), catalog.load()]);
   assert.equal(calls, 1);
   assert.deepEqual(catalog.get(), { items: [], loaded: false, failed: true });
+  await Promise.all([catalog.load(), catalog.load()]);
+  assert.equal(calls, 1);
+  assert.equal(catalog.get().failed, true);
+  await catalog.load(true);
   await catalog.load();
+  assert.equal(calls, 2);
+  assert.deepEqual(catalog.get(), { items: ["Trabajo"], loaded: true, failed: false });
+});
+
+test("al reconectar se recupera un catálogo que sólo conocía la barra y cuya lectura falló", async () => {
+  let connected = false;
+  let calls = 0;
+  const catalog = createPinnedCatalog({ items: [] as string[] }, async () => {
+    calls++;
+    if (!connected) throw new Error("Sin conexión");
+    return { items: ["Trabajo"] };
+  });
+  await catalog.load();
+  connected = true;
+  refreshPinnedCatalogs();
   await catalog.load();
   assert.equal(calls, 2);
   assert.deepEqual(catalog.get(), { items: ["Trabajo"], loaded: true, failed: false });
