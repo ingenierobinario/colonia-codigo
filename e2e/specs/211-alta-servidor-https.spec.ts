@@ -68,6 +68,7 @@ async function geometry(dialog: Locator) {
 
 async function server(page: Page, baseURL: string | undefined, inFlight: Set<Promise<void>>, returning = false) {
   if (!baseURL) throw new Error("Falta el núcleo temporal de Playwright.");
+  const core = new URL(baseURL);
   const starts: unknown[] = [];
   const urls: string[] = [];
   const finishes: boolean[] = [];
@@ -133,8 +134,8 @@ async function server(page: Page, baseURL: string | undefined, inFlight: Set<Pro
         return finishes.at(-1) ? ok({ done: true }) : error("internal", "Respuesta de prueba al guardar");
       default: {
         // Las peticiones restantes se resuelven dentro del núcleo temporal de Playwright.
-        const local = new URL(url.pathname + url.search, baseURL);
-        const headers: Record<string, string> = { ...request.headers(), origin: new URL(baseURL).origin };
+        const local = new URL(url.pathname + url.search, core);
+        const headers: Record<string, string> = { ...request.headers(), origin: core.origin };
         delete headers.authorization;
         const response = await r.fetch({ url: local.href, headers });
         return r.fulfill({ response });
