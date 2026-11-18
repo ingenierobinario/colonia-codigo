@@ -1,5 +1,24 @@
 // PROYECTO-COMPARTIR-1 · Share a project and bring one in.
 export const enProjectShare = {
+  "pshare.files.count": "Files selected · {n}",
+  "pshare.files.help":
+    "Choose up to 60 individual files. Each file can be up to 200 KB. Review the contents of documents and archives. Anyone with the package can read them.",
+  "pshare.files.published": "Files in the current link · {n}",
+  "pshare.files.included": "Files included · {n}",
+  "pshare.files.kept": "Existing files kept · {n}",
+  "pshare.files.remove": "Remove {name}",
+  "pshare.files.hide": "Close file picker",
+  "pshare.files.choose": "Choose project files",
+  "pshare.files.root": "Project folder",
+  "pshare.files.up": "Parent folder",
+  "pshare.files.loadError": "Could not open this folder.",
+  "pshare.files.loading": "Loading files…",
+  "pshare.files.empty": "No files to choose in this folder.",
+  "pshare.files.exact": "Full relative path from the project folder",
+  "pshare.files.add": "Add file",
+  "pshare.files.invalid":
+    "A selected file is unavailable, exceeds 200 KB or contains private data. Remove it or choose another file.",
+  "pshare.files.changed": "The files have changed. Review the selection again before continuing.",
   "pshare.title": "Share project",
   "pshare.how": "How to share it",
   "pshare.export": "Export",
@@ -12,7 +31,7 @@ export const enProjectShare = {
   "pshare.goes.connections": "Connections without their keys: {n}",
   "pshare.flows.count": "Flows imported switched off · {n}",
   "pshare.flows.settings":
-    "Review step settings before publishing. Commands, scripts, database queries and delivery destinations need local configuration. Agents use read-only access.",
+    "Review step settings before publishing. Commands, scripts, database queries and delivery destinations need local configuration. Agents ask for approval or use read-only access.",
   "pshare.flows.agents": "Choose a local agent for steps whose original agent was unavailable.",
   "pshare.flows.routines": "Choose a local routine for each routine action.",
   "pshare.flows.tables":

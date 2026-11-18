@@ -37,6 +37,8 @@ export function sourceOf(text: string): { link: string } | { content: string } |
 
 /** Por qué no se pudo traer, dicho para quien no sabe qué es un paquete. */
 export function importErrorKey(error: string): MessageKey {
+  if (error.includes("work files: selection changed")) return "pshare.files.changed";
+  if (error.includes("work files:") && !error.includes("package too large")) return "pshare.files.invalid";
   if (error.includes("not a Colonia project link")) return "pshare.err.link";
   if (error.includes("not a Colonia project")) return "pshare.err.foreign";
   if (error.includes("newer Colonia")) return "pshare.err.newer";
@@ -48,14 +50,15 @@ export function importErrorKey(error: string): MessageKey {
 }
 
 /** Qué se compartiría de un proyecto, con el fichero y el código ya hechos. */
-export async function exportProject(project: string): Promise<ProjectExport | undefined> {
-  try {
-    return await client.call("projects.export", { project });
-  } catch (e) {
-    const error = errText(e);
-    notify(error.includes("too large") ? t("pshare.err.large") : t("pshare.err.export", { error }));
-    return undefined;
-  }
+export function exportProject(project: string, files: string[] = []): Promise<ProjectExport> {
+  return client.call("projects.export", { project, ...(files.length ? { files } : {}) });
+}
+
+export function exportErrorMessage(cause: unknown): string {
+  const error = errText(cause);
+  return error.includes("work files:") || error.includes("too large")
+    ? t(importErrorKey(error))
+    : t("pshare.err.export", { error });
 }
 
 export function saveProjectFile(pkg: ProjectExport): void {
@@ -75,12 +78,21 @@ export async function copyText(text: string, done: MessageKey): Promise<boolean>
 }
 
 /** Publica (o renueva) la copia del proyecto, o deja de publicarla. Devuelve la ruta del enlace mientras esté publicada. */
-export async function publishProject(project: string, shared: boolean): Promise<{ path?: string } | undefined> {
+export async function publishProject(
+  project: string,
+  shared: boolean,
+  files: string[] = [],
+  digest?: string,
+): Promise<{ path?: string } | undefined> {
   try {
-    const r = await client.call("projects.share", { project, shared });
+    const r = await client.call("projects.share", {
+      project,
+      shared,
+      ...(files.length ? { files, files_digest: digest } : {}),
+    });
     return r.path ? { path: r.path } : {};
   } catch (e) {
-    notify(t("pshare.err.export", { error: errText(e) }));
+    notify(exportErrorMessage(e));
     return undefined;
   }
 }
@@ -172,9 +184,15 @@ export async function readProject(source: Source, name?: string): Promise<Projec
 }
 
 /** Lo guarda como proyecto de esta persona: nuevo, con otro nombre, o encima del que ya tenía con ese nombre. */
-export async function importProject(source: Source, replace: boolean, name?: string) {
+export async function importProject(source: Source, replace: boolean, name?: string, filesDigest?: string | null) {
   try {
-    const r = await client.call("projects.import", { ...source, ...(name ? { name } : {}), save: true, replace });
+    const r = await client.call("projects.import", {
+      ...source,
+      ...(name ? { name } : {}),
+      save: true,
+      replace,
+      ...(filesDigest !== undefined ? { files_digest: filesDigest } : {}),
+    });
     return r.project ? { ...r, project: r.project } : undefined;
   } catch (e) {
     const error = errText(e);

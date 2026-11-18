@@ -6,6 +6,7 @@ import { notify } from "../data/notices.ts";
 import {
   type Address,
   copyText,
+  exportErrorMessage,
   exportProject,
   openTempLink,
   type ProjectExport,
@@ -16,6 +17,7 @@ import {
 } from "../data/project-share.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
 import { SharedFlowSummary } from "./SharedFlowSummary.tsx";
+import { ShareWorkFiles, WorkFileList } from "./ShareWorkFiles.tsx";
 import "../styles/screens.css";
 import "../styles/project-share.css";
 
@@ -41,11 +43,17 @@ const TEMP_ERRORS: Partial<Record<NonNullable<Address["error"]>, MessageKey>> = 
  * link on this Colonia's public address. It shows what goes and what never does before anything leaves.
  */
 export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry; onClose(): void }) {
+  return <ProjectPackageDialog key={project.id} project={project} onClose={onClose} />;
+}
+
+function ProjectPackageDialog({ project, onClose }: { project: ProjectEntry; onClose(): void }) {
   const t = useT();
+  const [selected, setSelected] = useState<string[]>([]);
   const [mode, setMode] = useState<Mode>("export");
   const [pkg, setPkg] = useState<ProjectExport>();
-  const [failed, setFailed] = useState(false);
+  const [error, setError] = useState<string>();
   const [path, setPath] = useState<string>();
+  const [publishedFiles, setPublishedFiles] = useState<string[]>();
   /** The public address as the core has it: `null` while unknown. */
   const [addr, setAddr] = useState<Address | null>(null);
   const [busy, setBusy] = useState(false);
@@ -54,16 +62,25 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
 
   useEffect(() => {
     let live = true;
-    void exportProject(project.id).then((r) => {
-      if (!live) return;
-      if (!r) return setFailed(true);
-      setPkg(r);
-      setPath(r.path);
-    });
+    const read = () =>
+      void exportProject(project.id, selected).then(
+        (r) => {
+          if (!live) return;
+          setPkg(r);
+          setPath(r.path);
+          setPublishedFiles(r.published_files);
+        },
+        (cause) => {
+          if (live) setError(exportErrorMessage(cause));
+        },
+      );
+    const timer = selected.length ? setTimeout(read, 120) : undefined;
+    if (!timer) read();
     return () => {
+      clearTimeout(timer);
       live = false;
     };
-  }, [project.id]);
+  }, [project.id, selected]);
   useEffect(() => {
     if (mode !== "publish") return;
     let live = true;
@@ -81,10 +98,19 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
 
   const publish = async (shared: boolean, done: "pshare.refreshed" | undefined) => {
     setBusy(true);
-    const r = await publishProject(project.id, shared);
+    if (!pkg) {
+      setBusy(false);
+      return;
+    }
+    const r = await publishProject(project.id, shared, selected, pkg.files_digest);
     setBusy(false);
-    if (!r) return;
+    if (!r) {
+      setPkg(undefined);
+      setSelected((files) => [...files]);
+      return;
+    }
     setPath(r.path);
+    setPublishedFiles(pkg.files ?? []);
     if (done) notify(t(done), "info");
   };
   const link = path && base ? `${base.replace(/\/+$/, "")}${path}` : "";
@@ -141,8 +167,8 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
                 {pkg.connections > 0 && <Tag>{t("pshare.goes.connections", { n: pkg.connections })}</Tag>}
                 {pkg.organization && <Tag>{t("pshare.goes.organization")}</Tag>}
               </div>
-            ) : failed ? (
-              <p>{t("pshare.err.export", { error: "—" })}</p>
+            ) : error ? (
+              <p role="alert">{error}</p>
             ) : (
               <Skeleton />
             )}
@@ -159,6 +185,16 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
             </div>
           </section>
         </div>
+        <ShareWorkFiles
+          project={project.id}
+          selected={selected}
+          disabled={busy || opening}
+          onSelect={(names) => {
+            setPkg(undefined);
+            setError(undefined);
+            setSelected(names);
+          }}
+        />
         {pkg && pkg.removed > 0 && (
           // AVISO-QUITADOS-1 · Antes de que nada salga: cuánto se ha quitado, que puede quedar algo, y dónde mirar.
           <div className="pshare__warn" role="status" data-testid="pshare-removed" title={t("pshare.removedTitle")}>
@@ -248,6 +284,7 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
         ) : link ? (
           <section className="pshare__card">
             <p>{t("pshare.published")}</p>
+            <WorkFileList files={publishedFiles} state="published" />
             {temporary && (
               <p className="pshare__status" data-testid="pshare-temp-note">
                 <Icons.Clock size={14} />
@@ -264,7 +301,7 @@ export function ShareProjectDialog({ project, onClose }: { project: ProjectEntry
               <Button
                 variant="secondary"
                 size="sm"
-                disabled={busy}
+                disabled={busy || !pkg}
                 title={t("pshare.refreshTitle")}
                 onClick={() => void publish(true, "pshare.refreshed")}
               >

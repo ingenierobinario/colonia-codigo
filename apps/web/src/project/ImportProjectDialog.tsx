@@ -9,6 +9,7 @@ import { useT } from "../i18n/index.ts";
 import { McpDialog } from "../resources/McpDialog.tsx";
 import { go } from "../shell/nav.ts";
 import { SharedFlowSummary } from "./SharedFlowSummary.tsx";
+import { WorkFileList } from "./ShareWorkFiles.tsx";
 import { UnresolvedLinks } from "./UnresolvedLinks.tsx";
 import "../styles/screens.css";
 import "../styles/project-share.css";
@@ -56,7 +57,12 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
   const save = async () => {
     if (!source || !preview || !ready || busy) return;
     setBusy(true);
-    const r = await importProject(source, replace && !renamed, renamed ? name.trim() : undefined);
+    const r = await importProject(
+      source,
+      replace && !renamed,
+      renamed ? name.trim() : undefined,
+      "link" in source ? (preview.files_digest ?? null) : undefined,
+    );
     setBusy(false);
     if (!r) return;
     notify(t("pshare.import.done", { name: r.project.name }), "info");
@@ -111,6 +117,8 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
             <section className="pshare__card">
               <h3>{t("pshare.import.brings")}</h3>
               {tags(done)}
+              <WorkFileList files={done.files} />
+              <WorkFileList files={done.kept_files} state="kept" />
               <SharedFlowSummary value={done} />
             </section>
             {done.pending.length > 0 && (
@@ -226,6 +234,7 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
                 <h3>{t("pshare.import.brings")}</h3>
                 {preview.description && <p>{preview.description}</p>}
                 {tags(preview)}
+                <WorkFileList files={preview.files} />
                 <SharedFlowSummary value={preview} />
                 <Field label={t("pshare.import.name")}>
                   {(id) => (

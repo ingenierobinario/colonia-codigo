@@ -81,7 +81,12 @@ import { ComputerMode } from "./screen-map.ts";
 import { teamMethods } from "./team-methods.ts";
 
 /** What a shared project holds, in figures: shown before exporting or importing it. */
+const SelectedWorkFiles = z.array(z.string().min(1).max(240)).max(60);
+const WorkFilesDigest = z.string().regex(/^[a-f0-9]{64}$/);
+
 const ProjectPackageSummary = z.object({
+  files: SelectedWorkFiles.optional(),
+  files_digest: WorkFilesDigest.optional(),
   name: z.string(),
   description: z.string(),
   agents: z.number().int(),
@@ -700,8 +705,9 @@ export const appMethods = {
    * `path` is its public link (`/p/<link>`) while it is published.
    */
   "projects.export": {
-    params: z.object({ project: Id }).strict(),
+    params: z.object({ project: Id, files: SelectedWorkFiles.optional() }).strict(),
     result: ProjectPackageSummary.extend({
+      published_files: SelectedWorkFiles.optional(),
       content: z.string(),
       code: z.string(),
       removed: z.number().int(),
@@ -726,7 +732,14 @@ export const appMethods = {
    * live read of the folder.
    */
   "projects.share": {
-    params: z.object({ project: Id, shared: z.boolean() }).strict(),
+    params: z
+      .object({
+        project: Id,
+        shared: z.boolean(),
+        files: SelectedWorkFiles.optional(),
+        files_digest: WorkFilesDigest.optional(),
+      })
+      .strict(),
     result: z.object({
       shared: z.boolean(),
       path: z.string().optional(),
@@ -751,6 +764,7 @@ export const appMethods = {
         name: z.string().trim().min(1).max(80).optional(),
         save: z.boolean(),
         replace: z.boolean(),
+        files_digest: WorkFilesDigest.nullable().optional(),
       })
       .strict()
       .refine((p) => Boolean(p.content) !== Boolean(p.link), "a file, a code or a link"),
@@ -765,6 +779,7 @@ export const appMethods = {
        * SKILLS-VIAJAN-1 · Skills del paquete que no se escribieron porque aquí ya hay una con ese nombre: `different`,
        * dice otra cosa (se queda la de aquí); `reserved`, el nombre es de una guía de Colonia.
        */
+      kept_files: SelectedWorkFiles.optional(),
       skill_conflicts: z.array(z.object({ name: z.string(), reason: z.enum(["different", "reserved"]) })).optional(),
       /** RUTINAS-VIAJAN-1 · Rutinas que llegaron con el paquete, apagadas. */
       routines_off: z.number().int().optional(),

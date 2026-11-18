@@ -5,6 +5,7 @@ import { gunzipSync, gzipSync } from "node:zlib";
 import { FlowDraftGraph } from "@colonia/protocol/flow-graph";
 import { FlowDefinition, ProjectFlowReview } from "@colonia/protocol/flow-methods";
 import { z } from "zod";
+import { WorkFilePayload } from "./work-file-payload.ts";
 
 export const PROJECT_FORMAT = "colonia-proyecto-1";
 /** El paquete entero, como texto: cabe en una llamada al core y en un enlace compartido. */
@@ -94,6 +95,7 @@ export const ProjectPackage = z
      */
     organization: z
       .object({
+        files: WorkFilePayload.optional(),
         areas: z.array(z.unknown()).max(40),
         roles: z.array(z.unknown()).max(200),
         knows: Known.optional(),
@@ -141,6 +143,7 @@ export type PackageConnection = z.infer<typeof Connection>;
 
 /** Qué lleva un paquete, en cifras: lo que se enseña antes de exportar o de importar. */
 export type PackageSummary = {
+  files?: string[];
   name: string;
   description: string;
   agents: number;
@@ -154,6 +157,7 @@ export type PackageSummary = {
 export const summaryOf = (p: ProjectPackage): PackageSummary => ({
   name: p.project.name,
   description: p.project.description ?? "",
+  ...(p.organization?.files?.length ? { files: p.organization.files.map((file) => file.path) } : {}),
   agents: p.agents.length,
   skills: p.skills.length,
   connections: p.connections.length,

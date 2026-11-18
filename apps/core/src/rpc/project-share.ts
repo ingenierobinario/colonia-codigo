@@ -33,9 +33,10 @@ import { publicProject } from "../domain/projects.ts";
 import type { Store } from "../domain/store.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { writeAtomic } from "../paths.ts";
-import { dropShared, putShared, sharedIndex, sharedToken } from "../shared-projects.ts";
+import { dropShared, putShared, readShared, sharedIndex, sharedToken } from "../shared-projects.ts";
 import { allSkills, type Skill, type SkillRoots } from "../skills/skills.ts";
 import { createProject } from "./app.ts";
+import { importWorkFiles, selectedWorkFiles, workFilesDigest } from "./project-work-files.ts";
 
 /**
  * PROYECTOS-ENLAZADOS-1 · Los nombres de proyectos conocidos que trae un paquete, buscados aquí: los que existen (y
@@ -502,7 +503,7 @@ export function projectShareHandlers(deps: {
         },
       ];
     });
-  const built = (id: string): Built & { id: string } => {
+  const built = (id: string, names: string[] = []): Built & { id: string } => {
     const p = store.projects.get(id);
     if (!p) throw notFound(`project ${id}`);
     if (!p.path || !p.present) throw badRequest("this project has no folder on disk to share");
@@ -517,13 +518,11 @@ export function projectShareHandlers(deps: {
     b.pkg = withKnown(b.pkg, knows);
     b.pkg = withRoutines(b.pkg, routinesOf(p.id, b));
     b.pkg = withProjectFlows(store, p.id, b.pkg);
+    const files = selectedWorkFiles(p.path, names);
+    if (files.length) b.pkg.organization = { areas: [], roles: [], ...b.pkg.organization, files };
     if (renderPackage(b.pkg).length > PACKAGE_MAX)
       throw badRequest("this project is too large to share: its skills hold more text than fits");
     return { ...b, id: p.id };
-  };
-  const linkOf = (id: string) => {
-    const token = sharedToken(home, id);
-    return token ? `/p/${token}` : undefined;
   };
   const refuse = (r: Exclude<ReturnType<typeof parsePackage>, { ok: true }>) =>
     r.why === "newer"
@@ -532,27 +531,42 @@ export function projectShareHandlers(deps: {
         ? badRequest(`this Colonia project is damaged (${r.detail ?? "incomplete"})`)
         : badRequest("this is not a Colonia project");
   return {
-    "projects.export": ({ project }: { project: string }) => {
-      const b = built(project);
-      const path_ = linkOf(b.id);
+    "projects.export": ({ project, files }: { project: string; files?: string[] | undefined }) => {
+      const b = built(project, files);
+      const token = sharedToken(home, b.id);
+      const copy = token ? parsePackage(readShared(home, token) ?? "") : undefined;
       return {
         ...summaryOf(b.pkg),
+        ...(b.pkg.organization?.files?.length ? { files_digest: workFilesDigest(b.pkg.organization.files) } : {}),
         content: renderPackage(b.pkg),
         code: packageCode(b.pkg),
         removed: b.removed,
         removed_in: b.removedIn,
         skipped: b.skipped,
-        ...(path_ ? { path: path_ } : {}),
+        ...(token ? { path: `/p/${token}` } : {}),
+        ...(copy?.ok ? { published_files: copy.pkg.organization?.files?.map((item) => item.path) ?? [] } : {}),
       };
     },
-    "projects.share": ({ project, shared }: { project: string; shared: boolean }) => {
+    "projects.share": ({
+      project,
+      shared,
+      files,
+      files_digest,
+    }: {
+      project: string;
+      shared: boolean;
+      files?: string[] | undefined;
+      files_digest?: string | undefined;
+    }) => {
       if (!shared) {
         if (!store.projects.get(project)) throw notFound(`project ${project}`);
         dropShared(home, project);
         // ENLACE-TEMPORAL-2 · Cuántos siguen publicados: el enlace temporal sólo se cierra cuando ya no queda ninguno.
         return { shared: false, left: Object.keys(sharedIndex(home)).length };
       }
-      const b = built(project);
+      const b = built(project, files);
+      if (files_digest && files_digest !== workFilesDigest(b.pkg.organization?.files ?? []))
+        throw badRequest("work files: selection changed");
       // Publicar otra vez renueva la copia y conserva el enlace que ya se pasó.
       const token = sharedToken(home, b.id) ?? randomUUID().replaceAll("-", "");
       putShared(home, b.id, token, renderPackage(b.pkg));
@@ -561,6 +575,7 @@ export function projectShareHandlers(deps: {
     "projects.import": async (p: {
       content?: string | undefined;
       link?: string | undefined;
+      files_digest?: string | null | undefined;
       save: boolean;
       replace: boolean;
       name?: string | undefined;
@@ -572,7 +587,15 @@ export function projectShareHandlers(deps: {
         p.name ? { ...parsed.pkg, project: { ...parsed.pkg.project, name: p.name } } : parsed.pkg,
       );
       const same = store.projects.list().find((x) => x.name.toLowerCase() === pkg.project.name.toLowerCase());
-      const said = { ...summaryOf(pkg), pending: pendingOf(pkg), taken: Boolean(same) };
+      const files = pkg.organization?.files ?? [];
+      const digest = files.length ? workFilesDigest(files) : null;
+      if (p.files_digest !== undefined && p.files_digest !== digest) throw badRequest("work files: selection changed");
+      const said = {
+        ...summaryOf(pkg),
+        ...(digest ? { files_digest: digest } : {}),
+        pending: pendingOf(pkg),
+        taken: Boolean(same),
+      };
       // Sin `save` no se toca nada: es la mirada previa, para que la persona vea qué trae antes de aceptarlo.
       if (!p.save) return { ...said, saved: false };
       if (same && !p.replace)
@@ -583,11 +606,13 @@ export function projectShareHandlers(deps: {
         throw badRequest(`the project named ${pkg.project.name} has no folder on disk; import it under another name`);
       let id: string;
       let kept: string[] = [];
+      let keptFiles: string[] = [];
       let plan: ReturnType<typeof skillPlan> | undefined;
       try {
         if (same?.path) {
           plan = skillPlan(pkg, same.path, allSkills(store, roots, same.id));
           kept = writePackage(same.path, pkg, plan.skip);
+          keptFiles = importWorkFiles(same.path, files);
           id = same.id;
         } else {
           const made = createProject(deps.apc, home, {
@@ -600,6 +625,7 @@ export function projectShareHandlers(deps: {
           if (!root) throw new Error("the project's folder could not be made");
           plan = skillPlan(pkg, root, allSkills(store, roots, id));
           writePackage(root, pkg, plan.skip);
+          keptFiles = importWorkFiles(root, files);
         }
         deps.apc.sync(id);
       } catch (err) {
@@ -640,6 +666,7 @@ export function projectShareHandlers(deps: {
         ...(flowReview.length ? { flow_review: flowReview } : {}),
         pending,
         saved: true,
+        ...(keptFiles.length ? { kept_files: keptFiles } : {}),
         project: publicProject(project),
         ...(links.missing.length ? { unresolved: links.missing } : {}),
         ...(plan?.conflicts.length ? { skill_conflicts: plan.conflicts } : {}),

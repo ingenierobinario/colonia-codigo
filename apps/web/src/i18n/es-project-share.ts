@@ -2,6 +2,25 @@ import type { enProjectShare } from "./en-project-share.ts";
 
 // PROYECTO-COMPARTIR-1 · Español de en-project-share.ts.
 export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
+  "pshare.files.count": "Archivos seleccionados · {n}",
+  "pshare.files.help":
+    "Elige hasta 60 archivos. Cada archivo admite hasta 200 KB. Revisa el contenido de documentos y archivos comprimidos. Cualquier persona que reciba el paquete podrá leerlos.",
+  "pshare.files.published": "Archivos en el enlace actual · {n}",
+  "pshare.files.included": "Archivos incluidos · {n}",
+  "pshare.files.kept": "Archivos existentes conservados · {n}",
+  "pshare.files.remove": "Quitar {name}",
+  "pshare.files.hide": "Cerrar selector de archivos",
+  "pshare.files.choose": "Elegir archivos del proyecto",
+  "pshare.files.root": "Carpeta del proyecto",
+  "pshare.files.up": "Carpeta superior",
+  "pshare.files.loadError": "No se pudo abrir esta carpeta.",
+  "pshare.files.loading": "Cargando archivos…",
+  "pshare.files.empty": "En esta carpeta no hay archivos que se puedan elegir.",
+  "pshare.files.exact": "Ruta relativa desde la carpeta del proyecto",
+  "pshare.files.add": "Añadir archivo",
+  "pshare.files.invalid":
+    "Un archivo elegido no está disponible, supera los 200 KB o contiene datos privados. Quítalo o elige otro archivo.",
+  "pshare.files.changed": "Los archivos han cambiado. Vuelve a revisar la selección antes de continuar.",
   "pshare.title": "Compartir proyecto",
   "pshare.how": "Cómo compartirlo",
   "pshare.export": "Exportar",
@@ -14,7 +33,7 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.goes.connections": "Conexiones sin sus claves: {n}",
   "pshare.flows.count": "Flows que se importan apagados · {n}",
   "pshare.flows.settings":
-    "Revisa los pasos antes de publicarlos. Los comandos, scripts, consultas y destinos de envío se configuran en este equipo. Los agentes usan permisos de solo lectura.",
+    "Revisa los pasos antes de publicarlos. Los comandos, scripts, consultas y destinos de envío se configuran en este equipo. Los agentes piden aprobación o usan acceso de solo lectura.",
   "pshare.flows.agents": "Elige un agente local en los pasos cuyo agente original no estaba disponible.",
   "pshare.flows.routines": "Elige una rutina local en cada acción de rutina.",
   "pshare.flows.tables":
