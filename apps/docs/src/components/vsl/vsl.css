@@ -1,194 +1,180 @@
-/* VSL-BF-3: portada de Black Friday con la estructura limpia de intro-training: barra azul marino con logo
-   y oferta, fondo claro con círculos, nubes y destellos, titular con subrayado a mano en verde Colonia y el
-   vídeo en una tarjeta blanca dentro de la primera pantalla. Amarillo Black Friday solo para la oferta. */
+/* VSL-BF-2: portada de Black Friday. Negro profundo, amarillo BF para la oferta, verde Colonia para la acción.
+   Es siempre oscura a propósito (estética Black Friday), con cualquier tema del sistema. */
 html:has(body.bfv) { overflow-x: clip; }
 .bfv {
-  --bg: #f4f7fd; --bg2: #eaf0fa; --card: #fff; --line: #dfe6f2; --line2: #c9d4e6;
-  --fg: #0f1b33; --mut: #56617a; --navy: #0d1b3e; --navy2: #15284f;
-  --green: hsl(152 62% 38%); --green-d: hsl(152 62% 31%); --green-l: hsl(152 62% 92%);
-  --bf: #ffd23f; --orange: #ff7a1a; --red: #e5484d; --col: 760px; --wide: 1080px;
-  margin: 0; background: var(--bg); color: var(--fg); color-scheme: light;
+  --bg: #050505; --bg2: #0d0d0f; --card: #131316; --line: #26262b;
+  --fg: #f6f6f4; --mut: #a2a2a8; --green: hsl(152 62% 47%); --green-d: hsl(152 62% 40%);
+  --bf: #ffd23f; --red: #ff3b30; --col: 760px; --wide: 1080px;
+  margin: 0; background: var(--bg); color: var(--fg); color-scheme: dark;
   font-family: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased; overflow-x: clip;
 }
 .bfv *, .bfv *::before, .bfv *::after { box-sizing: border-box; }
-.bfv :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
-.bfv [hidden] { display: none !important; }
+.bfv :focus-visible { outline: 3px solid var(--bf); outline-offset: 3px; }
 
-/* Barra superior: azul marino con logo y oferta + cinta amarilla con botón al checkout */
-.bfv-bar { position: sticky; top: 0; z-index: 50; }
-.bfv-top { position: relative; display: flex; align-items: center; justify-content: center; min-height: 54px; padding: 8px 20px; background: var(--navy); color: #fff; }
-.bfv-logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; }
-.bfv-logo img { height: 30px; width: auto; filter: brightness(0) invert(1); }
-.bfv-pill { display: inline-flex; align-items: center; gap: 10px; padding: 4px 6px 4px 4px; border-radius: 999px; background: rgb(255 255 255 / .08); border: 1px solid rgb(255 255 255 / .16); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
-.bfv-pill > b { background: var(--bf); color: #1a1300; border-radius: 999px; padding: 4px 10px; font-weight: 900; }
-.bfv-clock { display: inline-flex; gap: 4px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 12.5px; }
-.bfv-clock span { background: #fff; color: var(--navy); border-radius: 999px; padding: 3px 8px; font-weight: 500; }
-.bfv-clock b { font-weight: 700; margin-right: 1px; }
-
-.bfv-ribbon { display: flex; align-items: stretch; background: var(--bf); color: #1a1300; font-size: 13.5px; font-weight: 600; box-shadow: 0 6px 18px -10px rgb(13 27 62 / .45); }
+/* Cinta superior fija en movimiento, con botón al checkout */
+.bfv-ribbon { position: sticky; top: 0; z-index: 50; display: flex; align-items: stretch; background: var(--bf); color: #0a0a0a; font-size: 14px; font-weight: 600; }
 .bfv-marquee { flex: 1; min-width: 0; overflow: hidden; display: flex; align-items: center;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
           mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
-.bfv-track { display: flex; width: max-content; animation: bfvMarq 34s linear infinite; }
+.bfv-track { display: flex; width: max-content; animation: bfvMarq 38s linear infinite; }
 .bfv-run { display: flex; flex: none; }
-.bfv-item { display: inline-flex; align-items: center; gap: 10px; padding: 8px 0 8px 10px; white-space: nowrap; }
+.bfv-item { display: inline-flex; align-items: center; gap: 10px; padding: 10px 0 10px 10px; white-space: nowrap; }
 .bfv-item > b { font-weight: 900; letter-spacing: .08em; }
 .bfv-dot { opacity: .55; margin: 0 6px; }
 @keyframes bfvMarq { to { transform: translateX(-50%); } }
 .bfv-ribbon:hover .bfv-track { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .bfv-track { animation: none; } }
-.bfv-ribbon-cta { flex: none; display: inline-flex; align-items: center; margin: 5px 8px 5px 4px; padding: 0 18px; border-radius: 999px; background: var(--navy); color: #fff; font-weight: 800; font-size: 13.5px; text-decoration: none; white-space: nowrap; border: 2px solid var(--navy); transition: background .15s, color .15s; }
-.bfv-ribbon-cta:hover { background: transparent; color: var(--navy); }
-@media (max-width: 860px) { .bfv-logo span, .bfv-logo { font-size: 0; letter-spacing: 0; gap: 0; } }
-@media (max-width: 520px) {
-  .bfv-top { justify-content: flex-end; padding-right: 12px; }
-  .bfv-logo { left: 14px; }
-  .bfv-pill-t { display: none; }
-  .bfv-pill { gap: 6px; font-size: 12.5px; }
-  .bfv-clock { font-size: 11.5px; gap: 3px; } .bfv-clock span { padding: 3px 6px; }
-  .bfv-ribbon { font-size: 12.5px; } .bfv-ribbon-cta { padding: 0 12px; font-size: 12.5px; margin-right: 6px; }
-}
+.bfv-clock { display: inline-flex; gap: 4px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 13px; }
+.bfv-clock span { background: #0a0a0a; color: var(--bf); border-radius: 6px; padding: 3px 7px; font-weight: 500; }
+.bfv-clock b { font-weight: 700; margin-right: 1px; }
+.bfv-ribbon-cta { flex: none; display: inline-flex; align-items: center; margin: 6px 8px 6px 4px; padding: 0 18px; border-radius: 999px; background: #0a0a0a; color: var(--bf); font-weight: 800; font-size: 14px; text-decoration: none; white-space: nowrap; border: 2px solid #0a0a0a; transition: background .15s, color .15s; }
+.bfv-ribbon-cta:hover { background: transparent; color: #0a0a0a; }
+@media (max-width: 520px) { .bfv-ribbon { font-size: 13px; } .bfv-ribbon-cta { padding: 0 12px; font-size: 12.5px; margin-right: 6px; } .bfv-clock { font-size: 12px; } }
+.bfv [hidden] { display: none !important; }
+
+.bfv-top { display: flex; justify-content: center; padding: 28px 16px 0; }
+.bfv-logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; letter-spacing: -.02em; }
+.bfv-logo i { width: 14px; height: 14px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 5px hsl(152 62% 47% / .18); }
+
+.bfv-col { width: 100%; max-width: var(--col); margin: 0 auto; padding: 0 20px; }
+.bfv-wide { width: 100%; max-width: var(--wide); margin: 0 auto; padding: 0 20px; }
+.bfv-center { text-align: center; display: flex; flex-direction: column; align-items: center; }
 
 /* Hero */
-.bfv-col { width: 100%; max-width: var(--col); margin: 0 auto; padding: 0 20px; }
-.bfv-hero { position: relative; padding: 26px 0 56px; overflow: hidden; isolation: isolate; }
-.bfv-deco { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-.bfv-circ { position: absolute; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #dbe7fb 0%, #e6eefc 55%, transparent 71%); }
-.bfv-circ--l { width: 560px; height: 560px; left: -260px; top: -240px; }
-.bfv-circ--r { width: 640px; height: 640px; right: -300px; top: -180px; }
-.bfv-cloud { position: absolute; width: 120px; fill: #fff; filter: drop-shadow(0 6px 10px rgb(13 27 62 / .07)); }
-.bfv-cloud--l { left: 7%; top: 120px; }
-.bfv-cloud--r { right: 8%; top: 46px; width: 92px; }
-.bfv-spark { position: absolute; width: 18px; fill: #9fb8e6; }
-.bfv-spark--a { left: 16%; top: 40px; }
-.bfv-spark--b { right: 17%; top: 190px; width: 14px; fill: var(--bf); }
-.bfv-spark--c { left: 22%; top: 250px; width: 12px; }
-@media (max-width: 960px) { .bfv-cloud, .bfv-spark--c { display: none; } .bfv-spark--a { left: 6%; } .bfv-spark--b { right: 6%; } }
-
-.bfv-head { text-align: center; }
-.bfv-eyebrow { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 14px; padding: 6px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 8px -4px rgb(13 27 62 / .15); color: var(--navy); font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-.bfv-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-l); flex: none; }
-.bfv-h1 { margin: 0 auto; max-width: 20ch; font-size: clamp(30px, 3.6vw, 46px); line-height: 1.12; font-weight: 800; letter-spacing: -.03em; text-wrap: balance; color: var(--navy); }
-.bfv-h1 em { font-style: normal; color: var(--green); white-space: nowrap; padding-bottom: .12em;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8.5C40 3 90 2.5 198 6.5' fill='none' stroke='%2324a36a' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") left bottom / 100% .32em no-repeat; }
-.bfv-sub { margin: 12px auto 0; max-width: 56ch; font-size: clamp(15.5px, 1.35vw, 18px); line-height: 1.5; color: var(--mut); text-wrap: pretty; }
-.bfv-sub b { color: var(--fg); font-weight: 700; }
-.bfv-watch { margin: 14px 0 0; color: var(--red); font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-.bfv-watch span { font-size: 11px; }
-.bfv-watch span:last-child { display: inline-block; animation: bfvBob 1.6s ease-in-out infinite; }
-@keyframes bfvBob { 50% { transform: translateY(3px); } }
-@media (prefers-reduced-motion: reduce) { .bfv-watch span:last-child { animation: none; } }
-
-/* Vídeo en tarjeta blanca */
-.bfv-videocol { width: 100%; max-width: 920px; margin: 12px auto 0; padding: 0 20px; }
-.bfv-card { position: relative; padding: 10px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); box-shadow: 0 30px 60px -28px rgb(13 27 62 / .35), 0 2px 6px rgb(13 27 62 / .05); }
-.bfv-video { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: var(--navy); }
-.bfv-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.bfv-play { position: absolute; inset: 0; width: 100%; padding: 0; border: 0; cursor: pointer; background: none; display: grid; place-items: center; font: inherit; color: #fff; }
-.bfv-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
-.bfv-play::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgb(8 16 38 / .62)); }
-.bfv-play:hover .bfv-cover { transform: scale(1.02); }
-.bfv-play-btn { position: relative; z-index: 1; width: clamp(68px, 9vw, 96px); aspect-ratio: 1; border-radius: 50%; background: var(--green); display: grid; place-items: center; box-shadow: 0 0 0 10px rgb(255 255 255 / .35), 0 18px 40px -10px rgb(0 0 0 / .5); transition: transform .2s; }
-.bfv-play-btn svg { width: 44%; fill: #fff; margin-left: 6%; }
+.bfv-hero { padding: clamp(36px, 6vw, 64px) 0 clamp(56px, 8vw, 96px); text-align: center;
+  background: radial-gradient(900px 420px at 50% 0%, hsl(152 62% 47% / .13), transparent 70%); }
+.bfv-eyebrow { margin: 0 0 18px; color: var(--green); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.bfv-h1 { margin: 0 auto; max-width: 18ch; text-wrap: balance; font-size: clamp(38px, 6.6vw, 76px); line-height: 1.02; letter-spacing: -.045em; font-weight: 800; }
+.bfv-h1 em { display: block; font-style: normal; color: var(--green); text-wrap: balance; }
+.bfv-sub { margin: 24px auto 0; max-width: 34em; font-size: clamp(17px, 1.9vw, 21px); line-height: 1.55; color: var(--mut); }
+.bfv-videocol { width: 100%; max-width: 960px; margin: clamp(32px, 5vw, 48px) auto 0; padding: 0 20px; }
+.bfv-video {
+  position: relative; aspect-ratio: 16 / 9; border-radius: 20px; overflow: visible;
+  background: radial-gradient(120% 90% at 50% 40%, #1b2a22 0%, #0b0d0c 60%, #050505 100%);
+  border: 1px solid var(--line); box-shadow: 0 40px 120px -30px hsl(152 62% 47% / .35), 0 0 0 1px #000;
+}
+.bfv-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 20px; }
+.bfv-play {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 20px; cursor: pointer; color: var(--fg);
+  background:
+    linear-gradient(transparent 0 calc(100% - 1px), #ffffff08 0) 0 0 / 100% 28px,
+    transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; font: inherit;
+}
+.bfv-play-glow { position: absolute; width: 38%; aspect-ratio: 1; border-radius: 50%; background: hsl(152 62% 47% / .22); filter: blur(40px); }
+.bfv-play-btn {
+  position: relative; display: grid; place-items: center; width: clamp(76px, 11vw, 112px); aspect-ratio: 1; border-radius: 50%;
+  background: var(--green); animation: bfvPulse 2s ease-out infinite; transition: transform .2s;
+}
+.bfv-play-btn svg { width: 42%; fill: #04130b; margin-left: 6%; }
 .bfv-play:hover .bfv-play-btn { transform: scale(1.06); }
-.bfv-owner { position: absolute; z-index: 1; left: 16px; bottom: 14px; display: flex; align-items: center; gap: 10px; text-align: left; }
-.bfv-owner img { width: clamp(46px, 6vw, 64px); height: auto; aspect-ratio: 1; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 6px 16px -4px rgb(0 0 0 / .45); }
-.bfv-owner span { font-size: 12.5px; line-height: 1.3; text-shadow: 0 1px 6px rgb(0 0 0 / .5); }
-.bfv-owner b { display: block; font-size: 15px; font-weight: 800; }
-@media (max-width: 520px) { .bfv-owner span { display: none; } .bfv-owner { left: 10px; bottom: 10px; } .bfv-card { padding: 6px; border-radius: 16px; } .bfv-video { border-radius: 11px; } }
+@keyframes bfvPulse { 0% { box-shadow: 0 0 0 0 hsl(152 62% 47% / .55); } 80%, 100% { box-shadow: 0 0 0 26px hsl(152 62% 47% / 0); } }
+.bfv-play-t { position: relative; font-size: clamp(17px, 2.2vw, 24px); font-weight: 800; letter-spacing: -.02em; }
+.bfv-play-h { position: relative; font-size: 13px; color: var(--mut); }
+@media (max-width: 520px) { .bfv-play-h { display: none; } .bfv-play { gap: 10px; } }
 
-.bfv-seal { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 104px; height: 104px; border-radius: 50%; background: var(--bf); color: #1a1300; font-size: 11px; font-weight: 700; line-height: 1.15; text-align: center; transform: rotate(-10deg); box-shadow: 0 12px 26px -10px rgb(13 27 62 / .45); }
-.bfv-seal b { font-size: 26px; font-weight: 900; letter-spacing: -.03em; }
-.bfv-seal--video { position: absolute; right: -22px; top: -26px; z-index: 2; }
-@media (max-width: 1040px) { .bfv-seal--video { right: 6px; top: -22px; } }
-@media (max-width: 700px) { .bfv-seal { width: 78px; height: 78px; font-size: 9px; } .bfv-seal b { font-size: 19px; } .bfv-seal--video { right: 4px; top: -18px; } }
+.bfv-seal {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+  width: 92px; height: 92px; border-radius: 50%; background: var(--bf); color: #0a0a0a; text-align: center;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; transform: rotate(-10deg);
+  box-shadow: 0 10px 30px -8px #ffd23f88; padding: 0 8px; flex: none;
+}
+.bfv-seal b { font-size: 24px; font-weight: 900; letter-spacing: -.03em; margin-bottom: 3px; text-transform: none; }
+.bfv-seal--video { position: absolute; top: -26px; right: -18px; z-index: 2; pointer-events: none; }
+@media (max-width: 1040px) { .bfv-seal--video { right: 6px; } }
+@media (max-width: 700px) { .bfv-seal--video { width: 74px; height: 74px; top: -20px; right: 6px; } .bfv-seal--video b { font-size: 19px; } }
+.bfv-video.is-playing .bfv-seal--video { display: none; }
 
-/* Llamadas a la acción */
-.bfv-ctabox { margin-top: 28px; text-align: center; }
-.bfv-ctarow { display: flex; justify-content: center; }
-.bfv-cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 58px; padding: 0 30px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 800; font-size: 18px; text-decoration: none; border: 2px solid var(--green); box-shadow: 0 14px 30px -12px hsl(152 62% 30% / .7); transition: background .15s, border-color .15s; }
-.bfv-cta:hover { background: var(--green-d); border-color: var(--green-d); }
-.bfv-cta svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.bfv-ctabox { margin-top: clamp(32px, 4vw, 44px); }
+.bfv-ctarow { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.bfv-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 66px; padding: 0 40px;
+  border-radius: 999px; background: var(--green); color: #04130b; font-weight: 800; font-size: clamp(18px, 2vw, 21px);
+  text-decoration: none; letter-spacing: -.01em; border: 2px solid transparent;
+  box-shadow: 0 18px 50px -14px hsl(152 62% 47% / .7); transition: transform .15s, background .15s, border-color .15s;
+}
+.bfv-cta svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.bfv-cta:hover { background: hsl(152 62% 52%); border-color: #fff; transform: translateY(-1px); }
 .bfv-cta--full { width: 100%; }
-.bfv-trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: 14px 0 0; color: var(--mut); font-size: 14px; }
+.bfv-trust { margin: 18px 0 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 18px; color: var(--mut); font-size: 14px; }
 .bfv-trust span::before { content: "✓"; color: var(--green); font-weight: 800; margin-right: 6px; }
-.bfv-center { text-align: center; margin-top: 36px; }
+@media (max-width: 520px) {
+  .bfv-ctarow { flex-direction: column-reverse; gap: 14px; }
+  .bfv-ctarow .bfv-cta { width: 100%; }
+  .bfv-ctarow .bfv-seal { width: auto; height: auto; flex-direction: row; gap: 8px; border-radius: 999px; padding: 7px 14px; transform: none; font-size: 11px; }
+  .bfv-ctarow .bfv-seal b { font-size: 18px; margin: 0; }
+}
 
 /* Secciones */
-.bfv-sec { padding: 80px 0; background: var(--card); }
-.bfv-alt { background: var(--bg); }
-.bfv-h2 { margin: 0; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.12; font-weight: 800; letter-spacing: -.03em; color: var(--navy); text-wrap: balance; }
-.bfv-lead { margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--mut); }
-.bfv-wide { width: 100%; max-width: var(--wide); margin: 0 auto; padding: 0 20px; }
-.bfv-stats { margin-top: 36px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.bfv-stat { padding: 24px; border-radius: 20px; background: var(--card); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; transition: border-color .15s; }
-.bfv-stat:hover { border-color: var(--line2); }
-.bfv-stat b { font-size: 42px; font-weight: 900; letter-spacing: -.04em; color: var(--green); line-height: 1; }
-.bfv-stat span { font-weight: 700; font-size: 16px; }
-.bfv-stat small { color: var(--mut); font-size: 13.5px; line-height: 1.4; }
-@media (max-width: 900px) { .bfv-stats { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 420px) { .bfv-stat { padding: 18px; } .bfv-stat b { font-size: 34px; } }
+.bfv-sec { padding: clamp(72px, 10vw, 128px) 0; }
+.bfv-alt { background: var(--bg2); border-block: 1px solid #ffffff0d; }
+.bfv-h2 { margin: 0 0 18px; font-size: clamp(32px, 4.6vw, 52px); line-height: 1.06; letter-spacing: -.04em; font-weight: 800; }
+.bfv-lead { margin: 0; font-size: clamp(17px, 1.8vw, 20px); line-height: 1.55; color: var(--mut); }
 
-.bfv-gains { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 14px; }
-.bfv-gains li { display: flex; gap: 18px; padding: 22px 24px; border-radius: 20px; background: var(--bg); border: 1px solid var(--line); transition: border-color .15s; }
-.bfv-gains li:hover { border-color: var(--line2); }
-.bfv-n { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--green-l); color: var(--green-d); display: grid; place-items: center; font-weight: 800; font-family: "Geist Mono", ui-monospace, monospace; font-size: 14px; }
-.bfv-gains h3 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.01em; color: var(--navy); }
-.bfv-gains p { margin: 6px 0 0; color: var(--mut); line-height: 1.5; }
+.bfv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: clamp(40px, 5vw, 56px); }
+@media (max-width: 960px) { .bfv-stats { grid-template-columns: repeat(2, 1fr); max-width: var(--col); } }
+.bfv-stat { display: flex; flex-direction: column; gap: 8px; padding: 28px 24px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); }
+.bfv-stat b { font-size: clamp(44px, 5vw, 60px); line-height: 1; font-weight: 800; letter-spacing: -.05em; color: var(--green); }
+.bfv-stat span { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.bfv-stat small { font-size: 14px; color: var(--mut); line-height: 1.45; }
+@media (max-width: 420px) { .bfv-stat { padding: 22px 18px; } }
 
-/* Oferta: tarjeta azul marino para que destaque sobre el fondo claro */
-.bfv-offer { position: relative; padding: 40px; border-radius: 26px; background: var(--navy); color: #fff; box-shadow: 0 30px 60px -30px rgb(13 27 62 / .6); }
-.bfv-offer .bfv-h2 { color: #fff; }
-.bfv-offer-tag { display: inline-block; margin-bottom: 14px; padding: 5px 12px; border-radius: 999px; background: var(--bf); color: #1a1300; font-size: 12px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
-.bfv-stack { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
-.bfv-stack li { display: flex; gap: 12px; line-height: 1.45; color: #dce4f3; }
-.bfv-stack svg { flex: none; width: 22px; height: 22px; fill: none; stroke: hsl(152 62% 55%); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-.bfv-deal { display: flex; align-items: center; gap: 14px; margin: 26px 0 20px; padding: 14px 18px; border-radius: 14px; background: rgb(255 210 63 / .12); border: 1px solid rgb(255 210 63 / .4); font-weight: 700; }
-.bfv-deal b { white-space: nowrap; flex: none; color: var(--bf); font-size: 26px; font-weight: 900; }
-.bfv-note { margin: 14px 0 0; color: #a9b6d0; font-size: 13.5px; line-height: 1.5; text-align: center; }
-@media (max-width: 520px) { .bfv-offer { padding: 28px 20px; } }
+.bfv-gains { list-style: none; margin: 36px 0 48px; padding: 0; display: grid; gap: 0; }
+.bfv-gains li { display: grid; grid-template-columns: 64px 1fr; gap: 8px; padding: 28px 0; border-top: 1px solid var(--line); }
+.bfv-gains li:last-child { border-bottom: 1px solid var(--line); }
+.bfv-n { font-family: "Geist Mono", monospace; font-size: 15px; color: var(--green); font-weight: 700; padding-top: 6px; }
+.bfv-gains h3 { margin: 0 0 8px; font-size: clamp(21px, 2.4vw, 26px); letter-spacing: -.025em; line-height: 1.2; }
+.bfv-gains p { margin: 0; color: var(--mut); font-size: 17px; line-height: 1.6; }
+@media (max-width: 520px) { .bfv-gains li { grid-template-columns: 1fr; } .bfv-n { padding: 0; } }
+
+.bfv-offer { position: relative; padding: clamp(32px, 5vw, 52px); border-radius: 24px; background: var(--card); border: 2px solid var(--bf); box-shadow: 0 40px 100px -40px #ffd23f55; }
+.bfv-offer-tag { position: absolute; top: -15px; left: clamp(32px, 5vw, 52px); background: var(--bf); color: #0a0a0a; font-weight: 900; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; }
+.bfv-stack { list-style: none; margin: 28px 0; padding: 0; display: grid; gap: 16px; }
+.bfv-stack li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; font-size: 17px; line-height: 1.5; }
+.bfv-stack svg { width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: hsl(152 62% 47% / .16); fill: none; stroke: var(--green); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; margin-top: 1px; }
+.bfv-deal { display: flex; align-items: center; gap: 14px; margin: 0 0 22px; padding: 16px 20px; border-radius: 14px; background: #ffd23f14; border: 1px dashed #ffd23f80; font-weight: 700; font-size: 18px; }
+.bfv-deal b { font-size: 32px; font-weight: 900; color: var(--bf); letter-spacing: -.03em; white-space: nowrap; flex: none; }
+.bfv-note { margin: 16px 0 0; color: var(--mut); font-size: 14px; line-height: 1.5; text-align: center; }
 
 .bfv-faq { margin-top: 32px; display: grid; gap: 12px; }
-.bfv-faq details { border-radius: 16px; background: var(--bg); border: 1px solid var(--line); transition: border-color .15s; }
-.bfv-faq details:hover, .bfv-faq details[open] { border-color: var(--line2); }
-.bfv-faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 22px; font-weight: 700; font-size: 17px; letter-spacing: -.01em; color: var(--navy); }
+.bfv-faq details { border-radius: 16px; background: var(--card); border: 1px solid var(--line); transition: border-color .15s; }
+.bfv-faq details:hover, .bfv-faq details[open] { border-color: #3a3a42; }
+.bfv-faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 24px; font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
 .bfv-faq summary::-webkit-details-marker { display: none; }
-.bfv-faq summary i { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--green-l); position: relative; }
-.bfv-faq summary i::before, .bfv-faq summary i::after { content: ""; position: absolute; left: 6px; right: 6px; top: 10px; height: 2px; background: var(--green-d); border-radius: 2px; transition: transform .2s; }
+.bfv-faq summary i { flex: none; width: 14px; height: 14px; position: relative; }
+.bfv-faq summary i::before, .bfv-faq summary i::after { content: ""; position: absolute; inset: 6px 0 auto; height: 2px; background: var(--green); border-radius: 2px; transition: transform .2s; }
 .bfv-faq summary i::after { transform: rotate(90deg); }
-.bfv-faq details[open] summary i::after { transform: none; }
-.bfv-faq details p { margin: 0; padding: 0 22px 20px; color: var(--mut); line-height: 1.55; }
+.bfv-faq details[open] summary i::after { transform: rotate(0); }
+.bfv-faq details p { margin: 0; padding: 0 24px 22px; color: var(--mut); font-size: 17px; line-height: 1.6; }
 
-.bfv-final { background: var(--navy); color: #fff; }
-.bfv-final .bfv-h2 { color: #fff; }
-.bfv-final .bfv-lead, .bfv-final .bfv-trust { color: #b6c2da; }
-.bfv-bigclock { display: flex; justify-content: center; gap: 10px; margin: 28px 0; }
-.bfv-bigclock span { display: flex; flex-direction: column; align-items: center; min-width: 74px; padding: 12px 8px; border-radius: 16px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .14); font-size: 12px; color: #b6c2da; text-transform: uppercase; letter-spacing: .1em; }
-.bfv-bigclock b { font-family: "Geist Mono", ui-monospace, monospace; font-size: 34px; color: var(--bf); letter-spacing: 0; }
-@media (max-width: 420px) { .bfv-bigclock { gap: 6px; } .bfv-bigclock span { min-width: 62px; } .bfv-bigclock b { font-size: 28px; } }
+.bfv-final { background: radial-gradient(800px 400px at 50% 100%, #ffd23f1c, transparent 70%); border-top: 1px solid #ffffff0d; }
+.bfv-bigclock { display: flex; gap: 10px; margin: 36px 0 40px; font-family: "Geist Mono", monospace; }
+.bfv-bigclock span { display: flex; flex-direction: column; align-items: center; min-width: 76px; padding: 14px 6px 10px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); color: var(--mut); font-size: 12px; text-transform: uppercase; }
+.bfv-bigclock b { font-size: clamp(30px, 4vw, 40px); color: var(--bf); font-weight: 700; line-height: 1.05; }
+@media (max-width: 420px) { .bfv-bigclock span { min-width: 64px; } }
 
-.bfv-foot { margin: 0; padding: 28px 20px 96px; text-align: center; color: #8d97ad; font-size: 13px; background: var(--navy); border-top: 1px solid rgb(255 255 255 / .08); }
+.bfv-foot { margin: 0; padding: 32px 16px 110px; text-align: center; color: #6c6c72; font-size: 13px; }
 
-/* WhatsApp: botón flotante + globo de Carla (tarjeta blanca y botón verde, como intro-training) */
+/* WhatsApp: botón flotante y globo del equipo */
 .bfv-fab { position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 58px; height: 58px; border-radius: 50%; background: #25d366; display: grid; place-items: center; box-shadow: 0 12px 30px -6px #25d36699; transition: transform .2s; }
 .bfv-fab:hover { transform: translateY(-3px); }
 .bfv-fab svg { width: 30px; height: 30px; fill: #fff; }
 .bfv-tip {
-  position: fixed; right: 20px; bottom: 92px; z-index: 61; width: min(320px, calc(100vw - 40px));
-  padding: 18px 18px 16px; border-radius: 18px; background: #fff; color: var(--fg); border: 1px solid var(--line);
-  box-shadow: 0 24px 50px -16px rgb(13 27 62 / .35);
-  opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity .3s, transform .3s, visibility .3s;
+  position: fixed; right: 20px; bottom: 92px; z-index: 60; width: 290px; max-width: calc(100vw - 40px);
+  background: #fff; color: #111; border-radius: 18px 18px 4px 18px; padding: 16px 34px 16px 16px;
+  box-shadow: 0 24px 60px -10px #000c; opacity: 0; visibility: hidden; transform: translateY(12px) scale(.96);
+  transform-origin: bottom right; transition: opacity .35s, transform .45s cubic-bezier(.34, 1.56, .64, 1), visibility .35s;
 }
 .bfv-tip.on { opacity: 1; visibility: visible; transform: none; }
-.bfv-tip-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.bfv-tip-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.bfv-tip-head span { font-size: 12px; color: var(--mut); font-weight: 600; line-height: 1.3; }
-.bfv-tip-head b { display: block; font-size: 14.5px; color: var(--navy); font-weight: 800; }
-.bfv-tip p { margin: 0; font-size: 16px; line-height: 1.35; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
-.bfv-tip small { display: block; margin-top: 6px; font-size: 13.5px; color: var(--mut); }
-.bfv-tip-btn { display: flex; justify-content: center; margin-top: 14px; padding: 12px; border-radius: 12px; background: var(--green); color: #fff; font-weight: 800; font-size: 15px; text-decoration: none; transition: background .15s; }
-.bfv-tip-btn:hover { background: var(--green-d); }
-.bfv-tip-x { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--bg); color: var(--mut); font-size: 20px; line-height: 1; cursor: pointer; }
-.bfv-tip-x:hover { color: var(--fg); }
-@media (max-width: 520px) { .bfv-spark { display: none; } .bfv-eyebrow { font-size: 10px; letter-spacing: .06em; padding: 6px 11px; gap: 7px; } }
+.bfv-tip-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bfv-tip-head img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.bfv-tip-head span { font-size: 11.5px; color: #666; font-weight: 600; line-height: 1.3; }
+.bfv-tip-head b { display: block; font-size: 14px; color: #111; font-weight: 800; }
+.bfv-tip p { margin: 0; font-size: 14.5px; line-height: 1.45; font-weight: 700; }
+.bfv-tip small { display: block; margin-top: 4px; font-size: 12.5px; color: #666; font-weight: 500; }
+.bfv-tip-btn { display: inline-flex; margin-top: 12px; padding: 10px 16px; border-radius: 12px; background: #25d366; color: #fff; font-weight: 800; font-size: 13.5px; text-decoration: none; animation: bfvWa 2s ease-in-out infinite; }
+@keyframes bfvWa { 0%, 100% { box-shadow: 0 0 0 0 #25d36666; } 55% { box-shadow: 0 0 0 9px #25d36600; } }
+.bfv-tip-x { position: absolute; top: 6px; right: 8px; width: 28px; height: 28px; border: 0; background: none; font-size: 22px; line-height: 1; color: #888; cursor: pointer; border-radius: 50%; }
+@media (max-width: 520px) { .bfv-fab { right: 14px; bottom: 14px; width: 54px; height: 54px; } .bfv-tip { right: 14px; bottom: 80px; } }
+@media (prefers-reduced-motion: reduce) { .bfv-play-btn, .bfv-tip-btn { animation: none; } }
