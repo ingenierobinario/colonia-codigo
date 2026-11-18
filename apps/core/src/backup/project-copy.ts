@@ -10,6 +10,7 @@ import { isInside, real, realpath, samePath } from "../paths.ts";
 import { ArchiveError, readArchive, writeArchive } from "./archive.ts";
 import type { CreateDeps, Progress } from "./create.ts";
 import { type FileEntry, type Manifest, PRIVATE_PROJECT_FORMAT, type Summary } from "./inventory.ts";
+import { fileTarget, publishArchive, reserveFolder, writeAll } from "./project-file-io.ts";
 import { addProjectFile, cleanProjectDefinition, projectFileAllowed, projectFiles } from "./project-files.ts";
 import {
   indexId,
@@ -28,10 +29,6 @@ import {
 
 const bad = () => new ArchiveError("broken");
 
-function reserveFolder(parent: string, prefix: string): string {
-  const created = fs.mkdtempSync(path.toNamespacedPath(path.join(parent, prefix)));
-  return path.join(realpath(parent), path.basename(created));
-}
 const RECORD_LIMIT = 32 * 1024 * 1024;
 const FLOW_LIMIT = 64 * 1024 * 1024;
 const ENTRY_LIMIT = 1_000_000;
@@ -80,13 +77,6 @@ function mediaEntry(source: string, sourceRoot: string, size: number): FileEntry
     throw bad();
   return { abs, rel: path.relative(root, abs).split(path.sep).join("/"), size };
 }
-const writeAll = (fd: number, bytes: Buffer) => {
-  for (let n = 0; n < bytes.length; ) {
-    const written = fs.writeSync(fd, bytes, n, bytes.length - n);
-    if (!written) throw bad();
-    n += written;
-  }
-};
 
 /** La base original solo se lee. El archivo contiene filas permitidas del proyecto y ningún archivo SQLite. */
 export async function createProjectCopy(
@@ -102,7 +92,7 @@ export async function createProjectCopy(
   const records = path.join(temp, "filas");
   const media: { name: string; file: FileEntry }[] = [];
   const mediaRoot = path.join(deps.home, "media");
-  const part = `${file}.${path.basename(temp)}.parcial`;
+  let outputFolder: string | undefined;
   try {
     db.exec("BEGIN");
     const p = db.prepare("SELECT id,name,path FROM projects WHERE id=? AND registered=1").get(projectId);
@@ -159,6 +149,8 @@ export async function createProjectCopy(
       bytes,
     };
     if (manifest.files > ENTRY_LIMIT) throw bad();
+    outputFolder = reserveFolder(path.dirname(file), ".exportar-proyecto-");
+    const part = path.join(outputFolder, "cifrado.parcial");
     const writer = await writeArchive(part, password, { created_at: manifest.created_at, app_version: deps.version });
     try {
       await writer.add("manifest.json", Buffer.from(JSON.stringify(manifest)));
@@ -177,18 +169,7 @@ export async function createProjectCopy(
         progress("files", done, bytes);
       }
       await writer.close();
-      // No sustituye otra copia si dos procesos eligen el mismo nombre.
-      try {
-        fs.linkSync(part, file);
-      } catch (err) {
-        if (
-          !["EPERM", "EACCES", "ENOSYS", "ENOTSUP", "EOPNOTSUPP", "EXDEV"].includes(
-            (err as NodeJS.ErrnoException).code ?? "",
-          )
-        )
-          throw err;
-        fs.copyFileSync(part, file, fs.constants.COPYFILE_EXCL);
-      }
+      publishArchive(part, file);
     } catch (error) {
       writer.abort();
       throw error;
@@ -196,7 +177,7 @@ export async function createProjectCopy(
     return manifest;
   } finally {
     db.close();
-    fs.rmSync(part, { force: true });
+    if (outputFolder) fs.rmSync(outputFolder, { recursive: true, force: true });
     fs.rmSync(temp, { recursive: true, force: true });
   }
 }
@@ -249,19 +230,6 @@ function destinationParent(db: DatabaseSync, home: string, chosen?: string) {
   if (entry && !entry.isDirectory()) throw new ArchiveError("folder");
   fs.mkdirSync(parent, { recursive: true });
   return parent;
-}
-function fileTarget(root: string, rel: string) {
-  const dst = path.join(root, ...rel.split("/"));
-  if (!isInside(root, dst)) throw bad();
-  let parent = root;
-  for (const part of rel.split("/").slice(0, -1)) {
-    parent = path.join(parent, part);
-    const st = fs.lstatSync(parent, { throwIfNoEntry: false });
-    if (st && !st.isDirectory()) throw bad();
-    if (!st) fs.mkdirSync(parent, { mode: 0o700 });
-  }
-  if (!samePath(realpath(parent), parent)) throw bad();
-  return dst;
 }
 
 /** Descifra enteramente en carpetas reservadas. Solo después escribe la base local en una transacción. */

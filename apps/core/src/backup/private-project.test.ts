@@ -209,6 +209,11 @@ test("la copia privada de un proyecto excluye al vecino y se fusiona con identid
     const made = await source.client.call("backup.status", {});
     assert.equal(made.state, "done");
     assert.ok(made.file);
+    assert.deepEqual(
+      fs.readdirSync(tmp.path),
+      [path.basename(made.file)],
+      "el destino solo contiene el archivo cifrado terminado",
+    );
     const entries: string[] = [];
     const material: Buffer[] = [];
     await readArchive(made.file, password, (entry) => {
