@@ -191,4 +191,4 @@ html:has(body.bfv) { overflow-x: clip; }
 .bfv-tip-btn:hover { background: var(--green-d); }
 .bfv-tip-x { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--bg); color: var(--mut); font-size: 20px; line-height: 1; cursor: pointer; }
 .bfv-tip-x:hover { color: var(--fg); }
-@media (max-width: 520px) { .bfv-spark { display: none; } .bfv-eyebrow { font-size: 9.5px; letter-spacing: .02em; padding: 6px 10px; gap: 6px; } }
+@media (max-width: 520px) { .bfv-spark { display: none; } .bfv-eyebrow { font-size: 10px; letter-spacing: .06em; padding: 6px 11px; gap: 7px; } }
