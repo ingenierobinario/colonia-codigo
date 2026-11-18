@@ -33,6 +33,21 @@ test("browser counters keep their temporary bundle mappings after the bundle has
   ]);
 });
 
+test("recupera el informe de cobertura si el escritor termina durante la lectura", (t) => {
+  const raw = tempDir("colonia-coverage-escritura-").path;
+  t.after(() => removeDir(raw));
+  const file = path.join(raw, "coverage.json");
+  fs.writeFileSync(file, '{"result":[{"url":"prueba","functions":[]}]}');
+  const original = fs.readFileSync;
+  let reads = 0;
+  t.mock.method(fs, "readFileSync", (...args: Parameters<typeof original>) => {
+    if (args[0] === file && reads++ === 0) return '{"result":[{"url":"pr';
+    return original(...args);
+  });
+  assert.equal(readCoveragePayloads(raw).scripts[0]?.url, "prueba");
+  assert.equal(reads, 2);
+});
+
 test("invalid coverage payloads fail instead of silently dropping counters", (t) => {
   const raw = tempDir("colonia-coverage-invalid-").path;
   t.after(() => removeDir(raw));
