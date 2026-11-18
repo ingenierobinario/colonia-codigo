@@ -3,59 +3,15 @@
 En el flujo **Publicar versión**, una etiqueta de versión o una ejecución manual con la opción de prueba desactivada distribuye la actualización estable. El flujo fija un único commit para los cinco instaladores y comprueba su ejecución de `verify` en `main`. Con **Publicarla como prelanzamiento** activado, los usuarios del canal estable siguen recibiendo su versión habitual. Una versión que ya es estable conserva sus instaladores. Para distribuir cambios posteriores se crea otra versión.
 
 
-How v2 leaves the private working repo and reaches people. What was built for updates is
-[D-044](DECISIONS.md#d-044).
+## Where the update goes
 
-## History
+Development, verification, tags and builds belong to the private source repository. The publication workflow uploads the finished assets to the public repository used by installed clients. Keep the source branches and their history on the private remote. The update protocol is documented in [D-044](DECISIONS.md#d-044).
 
-The private working repo's older commits carry a work email, AI-tool trailers and a few real names, so its history
-is never pushed as is. Before publishing, a copy of `main` is rewritten outside the repo with `git filter-repo`:
+## What a desktop release carries
 
-- every author and committer becomes the owner's GitHub noreply address, dates in UTC;
-- `Co-Authored-By` (AI tools), `Claude-Session` and "Generated with" trailers are dropped;
-- the few real names left in old file versions and messages become placeholders.
+A stable release uses one commit verified on `staging` and then on `main`. The private workflow `publicar-version.yml` pins that commit and builds on five runners. They produce Windows x64, macOS Intel and Apple Silicon, and Linux x64 and arm64 packages. Each runner checks its installer, desktop ZIP and core bundle and starts the packaged application. Linux also supplies DEB and RPM packages. The final job checks the combined 40 files, including the SHA-256 files and both installation scripts, before uploading them. Mobile packaging is covered in the [mobile guide](../apps/mobile/README.md).
 
-The final tree must equal `main`'s (`git rev-parse HEAD^{tree}` on both) and `pnpm check:commits HEAD` must pass on
-the copy. The rewrite script and its replacement list live beside the checkout, never in it (they would publish
-what they remove).
-
-From then on new commits must be public-safe as they are made: `pnpm check:commits` scans the commits on no remote
-yet (or a range: `pnpm check:commits HEAD^..HEAD` for only the last commit), and `verify` runs it over the commits each push or pull request brings
-to the public repo ([D-087](DECISIONS.md#d-087)).
-
-## Where v2 lives
-
-v2 is `main` of the public repo (`ingenierobinario/colonia`) since 2.11.0, and its releases are GitHub's "Latest"
-(`COLONIA_V2_LATEST=true`). How it got there: v2 grew on its own branch, `release/v2`, beside v1's `main`; at the
-launch `release/v2` took v1's `main` in with `git merge -s ours --allow-unrelated-histories`, `main` fast-forwarded
-to it and `release/v2` was deleted. v1's last `main` stays as branch `v1`, with v1's docs (built into `/v1/` by
-`pages.yml`) and its own semantic-release, which publishes v1 to npm from that branch. `verify` leaves the commits
-`origin/v1` holds out of its commit check.
-
-Day-to-day work goes to `staging` (verify runs on every push there); `main` is the last release. Cutting a version
-fast-forwards `main` to a `staging` commit whose verify passed, waits for verify on `main`, then tags it (below).
-`pages.yml` publishes the site from `main`, so the docs change with a release, not with each push. The site lives at
-`https://colonia.ingenierobinario.com/`, the repository's Pages custom domain (DNS in Cloudflare, DNS only, pointing at GitHub Pages);
-
-## What a release carries
-
-The release starts as a draft. After all desktop, daemon and Android jobs upload successfully, the publication
-job waits for the `verify.yml` run on `main` for that exact tag commit to pass, then exposes it to update
-clients and announcements. Failed builds or verification leave the draft available for repair. Tags build the
-release artifacts; verification runs on the branch commit once, rather than duplicating the same suites for its tag.
-Its jobs run in parallel parts ([TESTING.md](TESTING.md#ci)); publication still requires the whole workflow to
-pass, and a failed job can be retried on its own.
-
-`release.yml` on a `v2.x.y` tag: for linux x64/arm64, win x64, mac arm64/x64 the desktop installer (AppImage, NSIS
-`.exe`, `.dmg`, plus a `.zip`), the daemon bundle `colonia-core-<v>-<os>-<arch>.tar.gz`, a `.sha256` beside each,
-`install.sh` / `install.ps1`; and the Android APK. Nothing is signed yet but the APK (with the repo's
-`ANDROID_KEYSTORE_*` secrets, the same as v1's): macOS needs an Apple Developer ID and notarization, Windows an
-Authenticode certificate (Azure Trusted Signing is the cheap one). Until then the install docs must say how to open
-an unsigned app (macOS: right-click › Open, or System Settings › Privacy & Security; Windows: SmartScreen › More info).
-
-The phone app is `dev.colonia.mobile`. Its APK
-carries arm64-v8a only by default (`COLONIA_ANDROID_ABIS` adds more) and its versionCode follows the tag (2.1.3 → 20103); Expo push needs the owner's EAS project
-and Firebase app, set once as repo variable/secret ([apps/mobile/README.md](../apps/mobile/README.md#push)).
+For a private test on one machine, build and run the candidate locally. To offer an opt-in download, use the manual workflow's prerelease option and a new version number. Stable clients keep their current update. To distribute an approved prerelease, rerun the workflow with the verified source and the same version number, with the prerelease option cleared. A stable version keeps its existing installers.
 
 ## Documentation coverage before release
 
@@ -73,9 +29,7 @@ and unresolved gaps. Do not infer coverage from release news, green builds or co
 git fetch origin && git push origin origin/staging:main   # refused unless it is a fast-forward
 ```
 
-Only a commit `verify` already passed on `main` is tagged (AGENTS.md rule 28). A tag builds every installer
-and the APK in about ten minutes, but publication waits for that commit's verify run: tagging before it ends ties
-the release to a run that may still fail, and a red run leaves a draft that only a new tag (and a new version) fixes.
+Tag the commit after its verification on `main` succeeds (AGENTS.md rule 28). Creating the tag starts the desktop release workflow. Its preparation job checks that same commit before any installer is built.
 
 ```bash
 git fetch origin main
@@ -85,8 +39,7 @@ pnpm release:check --tag v2.10.0 origin/main       # checks, then tags that comm
 ```
 
 `scripts/release-check.ts` reads the newest `verify.yml` run of that exact commit on `main` (`gh run list
---commit`), the run the publish job will wait for; a rerun that turned it green counts. The publish job's wait stays
-as the second guard, for a tag made by hand.
+--commit`), the same run checked by the preparation job. A successful rerun counts for a tag created manually as well.
 
 ## What people are told
 
@@ -161,12 +114,12 @@ keeps updating from that feed (`colonia upgrade`). The desktop app installs onto
 What the tag workflow (`publicar-version.yml`) proves before publishing: each runner checks its slice of `out/` against
 `scripts/release-assets.ts` (names and checksums), installs its core bundle with `install.sh`/`install.ps1` and starts
 it with the Node inside, then starts the packaged app from its zip on its embedded core (`scripts/smoke-artifacts.ts`;
-on macOS `codesign --verify --deep --strict` first). The publish job checks the exact 32-file set and every checksum
+on macOS `codesign --verify --deep --strict` first). The publish job checks the exact 40-file set and every checksum
 before `gh release` runs. `smoke-artifacts.ts` is for a throwaway runner only: `install.ps1` writes the user PATH.
 
 ## Verified before the beta
 
-Tried for real on the network, from a local feed, with builds made the way `release.yml` makes them:
+Tried for real on the network, from a local feed, with builds made by the packaging scripts:
 
 | Path | Linux (Ubuntu 24.04, systemd) | Windows 11 | macOS |
 |---|---|---|---|
