@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.48": {
+    en: [
+      "Settings no longer cuts or squeezes names and descriptions, on any screen size.",
+      "When a model list can't load, the reason now appears in your language.",
+    ],
+    es: [
+      "Configuración ya no corta ni aplasta nombres ni descripciones, en ningún tamaño de pantalla.",
+      "Cuando una lista de modelos no carga, el motivo aparece en tu idioma.",
+    ],
+  },
   "2.36.47": {
     en: [
       "External apps open faster and show their tab as soon as they are ready.",
