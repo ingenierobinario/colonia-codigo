@@ -24,7 +24,7 @@ export function syncHandlers(sync: Sync) {
     },
     "sync.pair_join": async (p) => {
       try {
-        await sync.pairJoin(p.code, p.address);
+        await sync.pairJoin(p.code, p.address, p.projects);
       } catch (err) {
         throw badRequest((err as Error).message);
       }
@@ -43,6 +43,10 @@ export function syncHandlers(sync: Sync) {
     "sync.saved_delete": (p) => ({ deleted: sync.forgetSaved(p.id) }),
     "sync.set_folder": (p) => {
       said(() => sync.setFolder(p.project, p.path));
+      return sync.status();
+    },
+    "sync.copy_projects": ({ projects }) => {
+      said(() => sync.copyProjects(projects));
       return sync.status();
     },
   } satisfies Partial<Handlers>;

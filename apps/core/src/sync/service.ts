@@ -47,6 +47,7 @@ import {
   type SecretsPort,
   uninstall,
 } from "./journal.ts";
+import { type ProjectWork, projectWork, validateWorkSelection, type WorkLink, WorkMessage } from "./project-work.ts";
 
 export const SYNC_PATH = "/sincronizar";
 const STATE_FILE = "sincronizar.json";
@@ -92,6 +93,7 @@ const State = z.object({
   role: z.enum(["principal", "secundario"]),
   role_at: z.number(),
   paired_at: z.string(),
+  work: z.enum(["receive", "send"]).optional(),
   last_sync_at: z.string().optional(),
 });
 type State = z.infer<typeof State>;
@@ -116,6 +118,7 @@ const Msg = z.discriminatedUnion("t", [
     role: z.enum(["principal", "secundario"]),
     role_at: z.number(),
     urls: z.array(z.string()),
+    accepts_project_files: z.literal(1).optional(),
   }),
   z.object({ t: z.literal("cambios"), id: z.string(), items: z.array(ItemZ) }),
   z.object({ t: z.literal("ok"), id: z.string() }),
@@ -132,11 +135,13 @@ const Msg = z.discriminatedUnion("t", [
     missing: z.boolean(),
   }),
   z.object({ t: z.literal("adios") }),
+  z.object({ t: z.literal("archivos-proyecto"), data: WorkMessage }),
 ]);
 type Msg = z.infer<typeof Msg>;
 const InitialSource = z.literal("joining_device");
 const PairMsg = z.object({
   accepts_initial_source: InitialSource.optional(),
+  wants_project_files: z.literal(true).optional(),
   t: z.literal("pair"),
   pub: z.string(),
   name: z.string(),
@@ -184,6 +189,8 @@ type Link = {
   client: string;
   send(m: Msg): void;
   ready: boolean;
+  work: WorkLink;
+  acceptsProjectFiles: boolean;
   hello: boolean;
   /** SYNC-LATIDO-1: cuándo se oyó al otro por última vez y cuándo se le dio el último toque. */
   heard: number;
@@ -250,6 +257,7 @@ export function createSync(d: SyncDeps) {
 
   let state = readState();
   let journal: Journal | undefined;
+  let work: ProjectWork | undefined;
   let myId = "";
   let link: Link | undefined;
   let stopped = true;
@@ -327,6 +335,12 @@ export function createSync(d: SyncDeps) {
       folderHere,
     });
     if (baseline) journal.baseline(baseline === "oldest");
+    if (state?.work)
+      work = projectWork(d.db, d.home, state.peer.id, state.work, tell, () => {
+        missing = undefined;
+        d.changed?.(new Set(["projects", "agents"]));
+        tell();
+      });
   }
 
   // ── Encontrarse en la red ──────────────────────────────────────────────────────────────────────────────────────────
@@ -418,6 +432,8 @@ export function createSync(d: SyncDeps) {
       ws,
       client,
       ready: false,
+      acceptsProjectFiles: false,
+      work: { send: (data) => l.send({ t: "archivos-proyecto", data }) },
       hello: false,
       heard: now(),
       pinged: now(),
@@ -435,6 +451,7 @@ export function createSync(d: SyncDeps) {
     if (link && link.ws !== ws) {
       if (link.client !== client && link.client < client) return void ws.close(1000, "ya hay enlace");
       const old = link;
+      work?.detach();
       link = undefined;
       old.ws.close(1000, "sustituida");
     }
@@ -444,6 +461,7 @@ export function createSync(d: SyncDeps) {
     attempt = 0;
     ws.on("close", () => {
       if (link !== l) return;
+      work?.detach();
       link = undefined;
       inflight = undefined;
       fetching = undefined;
@@ -460,6 +478,7 @@ export function createSync(d: SyncDeps) {
       role: state.role,
       role_at: state.role_at,
       urls: d.urls(),
+      ...(state.work === "receive" ? { accepts_project_files: 1 as const } : {}),
     });
     return l;
   }
@@ -467,6 +486,7 @@ export function createSync(d: SyncDeps) {
   function onMessage(l: Link, m: Msg): void {
     if (link !== l || !state || !journal) return;
     if (m.t === "hola") {
+      l.acceptsProjectFiles = m.accepts_project_files === 1;
       l.hello = true;
       mismatch = m.v !== WIRE || m.schema !== schema();
       l.ready = !mismatch;
@@ -500,6 +520,15 @@ export function createSync(d: SyncDeps) {
       return;
     }
     if (!l.ready) return;
+    if (m.t === "archivos-proyecto") {
+      if (
+        (state.work === "send" && state.role === "secundario") ||
+        (state.work === "receive" && state.role === "principal")
+      ) {
+        void work?.receive(l.work, m.data).catch((err) => warn("no se pudo terminar el traspaso de carpetas", err));
+      }
+      return;
+    }
     if (m.t === "cambios") {
       let r: Applied;
       try {
@@ -549,7 +578,14 @@ export function createSync(d: SyncDeps) {
   function pump(): void {
     if (!link?.ready || inflight || !journal) return;
     const items = journal.pending(BATCH);
-    if (!items.length) return;
+    if (!items.length) {
+      if (state?.work === "send" && state.role === "secundario") {
+        void work
+          ?.pump(link.work, link.acceptsProjectFiles)
+          .catch((err) => warn("no se pudieron enviar las carpetas", err));
+      }
+      return;
+    }
     inflight = { id: randomUUID(), items, at: now() };
     link.send({ t: "cambios", id: inflight.id, items });
   }
@@ -560,6 +596,7 @@ export function createSync(d: SyncDeps) {
     state.role = role;
     state.role_at = at;
     if (was === role) return;
+    work?.detach();
     if (role === "principal") remote = undefined;
     sentChannels = "";
     try {
@@ -765,6 +802,11 @@ export function createSync(d: SyncDeps) {
           }
           // El papel de principal y la precedencia de los datos se acuerdan por separado.
           const source = shown?.initial_source;
+          if (p.wants_project_files && !source) {
+            wire.send({ t: "refused", why: "esta invitación no permite copiar carpetas al servidor" });
+            phase = "dead";
+            return void setTimeout(() => ws.close(1000, "invitación sin carpetas"), 50);
+          }
           if (source && p.accepts_initial_source !== source) {
             wire.send({
               t: "refused",
@@ -780,6 +822,7 @@ export function createSync(d: SyncDeps) {
           state = {
             peer: { id: hex(fingerprintOf(p.pub)), name: p.name.slice(0, 80), publicKey: p.pub, urls: [] },
             role: "principal",
+            ...(source ? { work: "receive" as const } : {}),
             role_at: now(),
             paired_at: new Date(now()).toISOString(),
           };
@@ -931,6 +974,8 @@ export function createSync(d: SyncDeps) {
 
   /** Este equipo deja de tener pareja: se quita el diario y los canales vuelven a ser solo suyos. Las versiones guardadas se quedan. */
   function forget(): void {
+    work?.dispose(true);
+    work = undefined;
     const was = state?.role;
     const old = link;
     link = undefined;
@@ -1015,6 +1060,8 @@ export function createSync(d: SyncDeps) {
       timer.unref?.();
     },
     stop(): void {
+      work?.dispose(false);
+      work = undefined;
       stopped = true;
       clearInterval(timer);
       try {
@@ -1033,8 +1080,13 @@ export function createSync(d: SyncDeps) {
     remoteChannels: () => remote,
     status(): SyncStatus {
       if (shown && Date.parse(shown.expires_at) <= now()) shown = undefined;
+      const progress = work?.status();
       return {
         paired: Boolean(state),
+        ...(state?.work === "send"
+          ? { can_copy_projects: state.role === "secundario" && Boolean(link?.ready && link.acceptsProjectFiles) }
+          : {}),
+        ...(progress ? { project_files: progress } : {}),
         reachable: d.urls().length > 0,
         ...(shown && !state ? { pairing: shown } : {}),
         ...(state ? { peer: { name: state.peer.name }, role: state.role } : {}),
@@ -1069,7 +1121,8 @@ export function createSync(d: SyncDeps) {
       tell();
     },
     /** El dueño escribió aquí el código del otro equipo: este se une como secundario. */
-    async pairJoin(text: string, address?: string): Promise<{ name: string }> {
+    async pairJoin(text: string, address?: string, projects?: string[]): Promise<{ name: string }> {
+      if (projects) validateWorkSelection(d.db, projects);
       if (state) throw new Error("este equipo ya está emparejado");
       const code = typed(text);
       if (!code) throw new Error("ese código no es válido: son 8 letras y números, como ABCD-2345");
@@ -1107,6 +1160,7 @@ export function createSync(d: SyncDeps) {
               c.send({
                 t: "pair",
                 accepts_initial_source: "joining_device",
+                ...(projects ? { wants_project_files: true as const } : {}),
                 pub: me.publicKey,
                 name: myName(),
                 proof: pairProof(key, c.tr, me.publicKey),
@@ -1127,6 +1181,10 @@ export function createSync(d: SyncDeps) {
                   // Quien contesta sin conocer el código no es el equipo que lo enseña: se prueba el siguiente.
                   if (!sameProof(m.proof, pairProof(`equipo:${key}`, c.tr, c.pub)))
                     return fail("ese no es el equipo del código");
+                  if (projects && !m.initial_source)
+                    return fail(
+                      "!El servidor no ha aceptado recibir las carpetas. Actualiza Colonia y genera allí una nueva invitación para el trabajo continuo.",
+                    );
                   state = {
                     peer: {
                       id: hex(fingerprintOf(c.pub)),
@@ -1135,10 +1193,12 @@ export function createSync(d: SyncDeps) {
                       urls: [url, ...urls.filter((u) => u !== url)],
                     },
                     role: "secundario",
+                    ...(m.initial_source ? { work: "send" as const } : {}),
                     role_at: now(),
                     paired_at: new Date(now()).toISOString(),
                   };
                   open(me, m.initial_source ? "first" : "oldest");
+                  if (projects) work?.select(projects);
                   saveState();
                   ws.close();
                   try {
@@ -1236,6 +1296,12 @@ export function createSync(d: SyncDeps) {
       return n;
     },
     /** La carpeta de un proyecto en ESTE equipo (la del otro no existe aquí). */
+    copyProjects(projects?: string[]) {
+      if (!work || state?.work !== "send" || state.role !== "secundario")
+        throw new Error("Se necesita un servidor vinculado para trabajo continuo.");
+      work.select(projects);
+      pump();
+    },
     setFolder(project: string, folder: string): void {
       const dir = path.resolve(folder.replace(/^~(?=$|[\\/])/, os.homedir()));
       if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory())

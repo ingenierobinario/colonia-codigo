@@ -5,6 +5,16 @@ import { z } from "zod";
 export const SyncRole = z.enum(["principal", "secundario"]);
 export type SyncRole = z.infer<typeof SyncRole>;
 
+const selectedProjects = z.array(z.string().min(1).max(160)).min(1).max(10000);
+export const ProjectFilesStatus = z.object({
+  state: z.enum(["working", "done", "failed"]),
+  projects: z.number().int().nonnegative(),
+  completed: z.number().int().nonnegative(),
+  files: z.number().int().nonnegative(),
+  bytes: z.number().int().nonnegative(),
+  why: z.enum(["source", "destination", "unsupported"]).optional(),
+});
+
 export const SyncStatus = z.object({
   paired: z.boolean(),
   /** Si otro equipo puede llegar a este; si no, el código solo sirve dentro de este mismo equipo. */
@@ -16,6 +26,8 @@ export const SyncStatus = z.object({
   peer: z.object({ name: z.string() }).optional(),
   /** El principal lleva los canales y las rutinas; el otro los ve y los usa a través de él. */
   role: SyncRole.optional(),
+  can_copy_projects: z.boolean().optional(),
+  project_files: ProjectFilesStatus.optional(),
   connected: z.boolean(),
   /** Los dos equipos tienen versiones de Colonia que no se entienden: hay que actualizar. */
   mismatch: z.boolean(),
@@ -73,7 +85,13 @@ export const syncMethods = {
   "sync.pair_cancel": { params: none, result: SyncStatus, effect: true, access: "human" },
   /** El código que enseña el otro equipo. Este se une a él. */
   "sync.pair_join": {
-    params: z.object({ code: z.string().min(1).max(64), address: z.string().max(500).optional() }).strict(),
+    params: z
+      .object({
+        code: z.string().min(1).max(64),
+        address: z.string().max(500).optional(),
+        projects: selectedProjects.optional(),
+      })
+      .strict(),
     result: SyncStatus,
     effect: true,
     access: "human",
@@ -108,6 +126,12 @@ export const syncMethods = {
   /** La carpeta de un proyecto en este equipo, cuando la del otro no existe aquí. */
   "sync.set_folder": {
     params: z.object({ project: z.string().min(1).max(200), path: z.string().min(1).max(1000) }).strict(),
+    result: SyncStatus,
+    effect: true,
+    access: "human",
+  },
+  "sync.copy_projects": {
+    params: z.object({ projects: selectedProjects.optional() }).strict(),
     result: SyncStatus,
     effect: true,
     access: "human",
