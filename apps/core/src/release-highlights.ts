@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.53": {
+    en: [
+      "The sidebar has an AI accounts section: connect ChatGPT or Claude and import your chats from there.",
+      "If Codex, Claude Code or Kimi is missing, install it with one button where Colonia runs.",
+    ],
+    es: [
+      "La barra lateral tiene una sección Cuentas de IA: conecta ChatGPT o Claude e importa tus chats desde ahí.",
+      "Si falta Codex, Claude Code o Kimi, se instala con un botón donde se ejecuta Colonia.",
+    ],
+  },
   "2.36.52": {
     en: [
       "The agent's cursor shows the name and avatar of whoever moves it, even when the agent changes.",

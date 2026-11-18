@@ -198,7 +198,7 @@ test("Sesiones externas: plegado independiente, persistente y accesible desde ba
   });
   await open(page);
   const sidebar = page.locator(".sidebar");
-  const fold = sidebar.getByRole("button", { name: "IAs", exact: true }); // nav.externalSessions se llama «IAs»
+  const fold = sidebar.getByRole("button", { name: "Sesiones de este equipo", exact: true }); // nav.externalSessions
   const engine = sidebar.getByRole("button", { name: /^Codex/ });
   const projects = sidebar.getByRole("button", { name: "Proyectos", exact: true });
   const channels = sidebar.getByRole("button", { name: "Canales", exact: true });
