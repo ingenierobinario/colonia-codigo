@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
+    "./conversation-export": "./src/conversation-export.ts",
     "./project-files": "./src/project-files.ts",
     "./known-sites": "./src/known-sites.ts",
     "./cdp": "./src/cdp.ts",

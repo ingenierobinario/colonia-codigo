@@ -11,6 +11,7 @@ import type { Store } from "../domain/store.ts";
 import { summary } from "../domain/surfaces.ts";
 import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { applyExtras } from "../import/apply-extras.ts";
+import { importConversation } from "../import/conversation.ts";
 import { digestChat } from "../import/native-digest.ts";
 import { nativeExtras } from "../import/native-extras.ts";
 import { importedThread, importSessions, nativeProjects } from "../import/native-import.ts";
@@ -86,6 +87,13 @@ export function sessionHandlers(store: Store, homes: NativeHomes, deps: SessionD
     return t;
   };
   return {
+    "sessions.import_conversation": ({ project_id, conversation }) => {
+      const project = store.projects.get(project_id);
+      if (!project) throw notFound("project");
+      const owner = (headOf(project_id) ?? superAgent())?.id;
+      if (!owner) throw notFound("agent");
+      return importConversation(store, project_id, owner, conversation);
+    },
     "sessions.projects": ({ engine }) => ({
       projects: nativeProjects(homes, engine).map((g) => {
         const project_id = projectAt(store, g.cwd);

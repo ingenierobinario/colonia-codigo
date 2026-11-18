@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { composerMethods } from "./composer-methods.ts";
 import { CHANNEL_DEFAULTS } from "./constants.ts";
+import { ExportConversation } from "./conversation-export-shape.ts";
 import {
   Agent,
   AgentListing,
@@ -148,6 +149,12 @@ const MemoryJobs = z.array(
 );
 
 export const appMethods = {
+  "sessions.import_conversation": {
+    params: z.object({ project_id: Id, conversation: ExportConversation }).strict(),
+    result: z.object({ thread: Id, added: z.number().int().nonnegative(), created: z.boolean() }),
+    effect: true,
+    access: "human",
+  },
   "memory.status": {
     params: z.object({}).strict(),
     result: z.object({ jobs: MemoryJobs }),

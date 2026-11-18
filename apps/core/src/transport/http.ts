@@ -21,6 +21,7 @@ const FILE_METHODS: ReadonlySet<string> = new Set([
   "media.listen",
   "skills.preview",
   "skills.import",
+  "sessions.import_conversation",
   // An artifact's store holds up to 5 MB; a bundle carries its database.
   "surfaces.store_set",
   "surfaces.import",

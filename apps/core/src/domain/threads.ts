@@ -108,6 +108,13 @@ export type ThreadContext = {
   memory_family?: string;
   memory_cutoff?: string;
   imported?: { engine: "claude" | "codex"; session: string };
+  /** Offline conversation provenance, including the original role of passive tool and system text. */
+  archived_conversation?: {
+    source: string;
+    id: string;
+    branch: string;
+    turns: { id: string; message: string; role: string; signature: string }[];
+  };
   /** What an imported chat is about, for the agent that takes it over (sessions.digest). */
   digest?: { text: string; at: string };
   /** The chat that told the owner what an update brought (domain/whats-new.ts): the releases it covers. */
