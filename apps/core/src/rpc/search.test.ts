@@ -59,25 +59,40 @@ test("a deleted chat's messages leave the index", async () => {
 test("an install from before the index gets its old messages indexed when it upgrades", () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-search-"));
   try {
+    const beforeIndex = MIGRATIONS.findIndex((sql) => sql.includes("CREATE VIRTUAL TABLE messages_fts"));
+    assert.ok(beforeIndex > 0, "se necesita el esquema anterior a la búsqueda de mensajes");
     const old = new DatabaseSync(path.join(home, "colonia.db"));
-    old.exec("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
-    for (const m of MIGRATIONS.slice(0, -1)) old.exec(m);
-    old.prepare("INSERT INTO meta (key, value) VALUES ('schema_version', ?)").run(String(MIGRATIONS.length - 1));
-    const at = new Date().toISOString();
-    old
-      .prepare("INSERT INTO threads (id, kind, title, agent_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-      .run("t_old", "loose", "Old", "[]", at, at);
-    old
-      .prepare("INSERT INTO messages (id, thread_id, seq, author, parts, created_at) VALUES (?, ?, ?, ?, ?, ?)")
-      .run("m_old", "t_old", 1, '{"kind":"user"}', '[{"type":"text","text":"el presupuesto de Acme"}]', at);
-    old.close();
+    try {
+      old.exec("BEGIN");
+      old.exec("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+      for (const m of MIGRATIONS.slice(0, beforeIndex)) old.exec(m);
+      old.prepare("INSERT INTO meta (key, value) VALUES ('schema_version', ?)").run(String(beforeIndex));
+      const at = new Date().toISOString();
+      old
+        .prepare("INSERT INTO threads (id, kind, title, agent_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+        .run("t_old", "loose", "Old", "[]", at, at);
+      old
+        .prepare("INSERT INTO messages (id, thread_id, seq, author, parts, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+        .run("m_old", "t_old", 1, '{"kind":"user"}', '[{"type":"text","text":"el presupuesto de Acme"}]', at);
+      old.exec("COMMIT");
+      assert.equal(
+        old.prepare("SELECT name FROM sqlite_schema WHERE name = 'messages_fts'").get(),
+        undefined,
+        "la fixture histórica debe carecer del índice de mensajes",
+      );
+    } finally {
+      old.close();
+    }
     const db = openDb(home);
-    const hits = createStore(db, createBus()).messages.search("presupuesto");
-    db.close();
-    assert.deepEqual(
-      hits.map((h) => h.message.id),
-      ["m_old"],
-    );
+    try {
+      const hits = createStore(db, createBus()).messages.search("presupuesto");
+      assert.deepEqual(
+        hits.map((h) => h.message.id),
+        ["m_old"],
+      );
+    } finally {
+      db.close();
+    }
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
