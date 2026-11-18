@@ -4,7 +4,7 @@ import { stopKeys } from "../config/desktopPrefs.ts";
 import { blobOf } from "../data/identity.ts";
 import { useT } from "../i18n/index.ts";
 import { ComputerIcon } from "./parts/ComputerIcon.tsx";
-import { createLiveFeed, type LiveActivity } from "./screenLiveState.ts";
+import { activity } from "./screenLiveDesktop.ts";
 
 type Frame = {
   data: string;
@@ -18,12 +18,6 @@ type Offset = { x: number; y: number };
 
 const FRAME_MS = 700;
 const HOME: Offset = { x: 0, y: 0 };
-const activity = createLiveFeed((dispatch) => {
-  window.coloniaDesktop?.onComputerActivity?.((a) =>
-    dispatch(a ? { type: "activity", activity: a as LiveActivity, at: Date.now() } : { type: "handoff" }),
-  );
-  window.coloniaDesktop?.onComputerStopped?.((stopped) => dispatch({ type: "stopped", stopped }));
-});
 
 /**
  * The window an agent works on, live, in a card over the chat (desktop app only). It starts small at the bottom; it

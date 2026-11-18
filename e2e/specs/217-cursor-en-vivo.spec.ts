@@ -125,12 +125,37 @@ for (const lang of ["es", "en"] as const) {
       },
       { lang, image },
     );
-    await Promise.all([
-      page.waitForResponse((r) => new URL(r.url()).pathname === "/rpc/threads.get" && r.ok()),
-      page.goto("/#thread=" + thread),
-    ]);
-    await expect(page.getByRole("textbox", { name: /^Escríbele a|^Message/ })).toBeVisible();
-    await expect.poll(() => page.evaluate(() => typeof (window as Fake).activity)).toBe("function");
+    // El motor puede avisar mientras se descarga la vista. El primer gesto debe sobrevivir a esa espera.
+    const chunk = /\/assets\/ScreenLive-[\w-]+\.js$/;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(chunk, async (route) => {
+      await held;
+      await route.continue();
+    });
+    const received = page.waitForResponse(chunk);
+    let listening = false;
+    try {
+      await Promise.all([
+        page.waitForResponse((r) => new URL(r.url()).pathname === "/rpc/threads.get" && r.ok()),
+        page.waitForRequest(chunk),
+        page.goto("/#thread=" + thread, { waitUntil: "domcontentloaded" }),
+      ]);
+      await expect(page.getByRole("textbox", { name: /^Escríbele a|^Message/ })).toBeVisible();
+      listening = await page.evaluate((actor) => {
+        const w = window as Fake;
+        w.frame = { action: 0 };
+        w.activity?.({ kind: "click", app: "Editor", window: "Documento", actor, action: 0, x: 30, y: 30 });
+        return typeof w.activity === "function";
+      }, first);
+    } finally {
+      release();
+    }
+    await received;
+    expect(listening, "el escritorio ya escuchaba antes de montar la tarjeta").toBe(true);
+    await expect(page.locator(".screenlive__pointer-label")).toHaveText(first.name);
     const send = async (actor: typeof first, action: number, x: number, y: number, frame = action) => {
       await page.evaluate(
         ({ actor, action, x, y, frame }) => {

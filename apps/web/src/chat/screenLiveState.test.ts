@@ -73,3 +73,19 @@ test("el relevo recibido entre dos montajes del chat llega al nuevo montaje y ca
   t.mock.timers.tick(180_000);
   assert.deepEqual(feed.get(), LIVE_CLOSED);
 });
+
+test("el primer gesto queda disponible antes de que se cargue la tarjeta del chat", () => {
+  let actor: (event: LiveEvent) => void = () => assert.fail("el escritorio aún no escucha");
+  const feed = createLiveFeed((listener) => {
+    actor = listener;
+  });
+  actor({
+    type: "activity",
+    at: 1,
+    activity: { kind: "look", app: "Editor", window: "Documento", actor: { id: "uno", name: "Alba" } },
+  });
+  const off = feed.subscribe(() => {});
+  assert.equal(feed.get().last?.actor?.id, "uno");
+  feed.dispatch({ type: "close" });
+  off();
+});

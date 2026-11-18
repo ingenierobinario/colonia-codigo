@@ -52,7 +52,6 @@ export function liveReduce(s: LiveState, e: LiveEvent): LiveState {
 /** La actividad pertenece al escritorio. El diseño compacto puede sustituir el chat mientras llega un clic. */
 export function createLiveFeed(connect: (dispatch: (event: LiveEvent) => void) => void) {
   let state = LIVE_CLOSED;
-  let connected = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
   const dispatch = (event: LiveEvent) => {
@@ -65,15 +64,12 @@ export function createLiveFeed(connect: (dispatch: (event: LiveEvent) => void) =
     }
     for (const listener of listeners) listener();
   };
+  connect(dispatch);
   return {
     get: () => state,
     dispatch,
     subscribe(listener: () => void) {
       listeners.add(listener);
-      if (!connected) {
-        connected = true;
-        connect(dispatch);
-      }
       return () => {
         listeners.delete(listener);
       };

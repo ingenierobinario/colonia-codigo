@@ -12,9 +12,8 @@ import { ComputerProgress, ContactChat, ScreenLive } from "../lazy.ts";
 import { go, useNav } from "../shell/nav.ts";
 import { ChatHeader } from "./ChatHeader.tsx";
 import { ChatComposer } from "./composer/ChatComposer.tsx";
+import { hasComputerActivity } from "./screenLiveDesktop.ts";
 import { Transcript } from "./Transcript.tsx";
-
-const COMPUTER = Boolean(window.coloniaDesktop?.onComputerActivity);
 
 /** `via`: a channel's part of the chat (Home seen from that channel), read there; the whole chat is written in. */
 export function ChatView({
@@ -143,7 +142,7 @@ export function ChatView({
           <ChatComposer key={thread.id} thread={thread} agent={agent} />
         </>
       )}
-      {COMPUTER && (
+      {hasComputerActivity && (
         <Suspense fallback={null}>
           <ScreenLive />
         </Suspense>
