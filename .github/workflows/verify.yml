@@ -48,10 +48,16 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      - name: Construir el panel para medir su primera carga
+        run: COLONIA_TEST_COVERAGE=1 pnpm build:web
       - name: Medir el panel y el motor
-        run: |
-          COLONIA_TEST_COVERAGE=1 pnpm build:web
-          node --no-warnings scripts/perf.ts
+        id: medir
+        run: node --no-warnings scripts/perf.ts
+      - name: Registrar pausas del motor tras superar un límite
+        if: failure() && steps.medir.outcome == 'failure' && hashFiles('e2e/.out/perf.json') != ''
+        env:
+          PERF_DIAGNOSTICS: "1"
+        run: node --no-warnings scripts/perf.ts
       - name: Guardar el informe de rendimiento
         if: always()
         uses: actions/upload-artifact@v4
