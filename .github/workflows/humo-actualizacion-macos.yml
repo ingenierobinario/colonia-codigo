@@ -43,3 +43,6 @@ jobs:
           node scripts/release-assets.ts "$COLONIA_VERSION" out --platform mac-arm64
       - name: Actualizar la aplicación pública y comprobar su nueva ventana
         run: node scripts/smoke-mac-update.ts
+      - name: Diagnosticar el arranque independiente del mismo paquete si falla la actualización
+        if: failure() && hashFiles('out/Colonia-*-mac-arm64.zip') != ''
+        run: node scripts/smoke-artifacts.ts "$COLONIA_VERSION" mac arm64 out

@@ -65,6 +65,8 @@ async function smoke() {
     COLONIA_CONNECTION: "local",
     COLONIA_RELEASES: feedUrl,
     DO_NOT_TRACK: "1",
+    ELECTRON_ENABLE_LOGGING: "1",
+    ELECTRON_LOG_FILE: path.join(dir, "electron.log"),
     COLONIA_TELEMETRY: "off",
     COLONIA_RUNTIME_SKILLS: "off",
     COLONIA_SECRETS: "file",
@@ -176,7 +178,12 @@ async function smoke() {
     );
   } catch (error) {
     const installed = path.join(bundle, "Contents", "Resources", "colonia", "build.json");
-    for (const file of [installed, path.join(logs, "update.log"), path.join(logs, "main.log")]) {
+    for (const file of [
+      installed,
+      path.join(logs, "update.log"),
+      path.join(logs, "main.log"),
+      settings.ELECTRON_LOG_FILE,
+    ]) {
       if (fs.existsSync(file)) console.error(path.basename(file), fs.readFileSync(file, "utf8").slice(-8000));
     }
     const coreLog = path.join(settings.COLONIA_HOME, "logs", "core.log");
@@ -190,6 +197,24 @@ async function smoke() {
           .slice(-12)
           .join("\n"),
       );
+    // Si LaunchServices deja la app abierta sin motor, la pila del proceso distingue un diálogo nativo de un fallo al iniciar.
+    const processList = execFileSync("ps", ["-axo", "pid=,ppid=,command="], { encoding: "utf8" });
+    for (const line of processList
+      .split("\n")
+      .filter((line) => line.includes(`${bundle}/Contents/`) || line.includes("SecurityAgent.app/Contents/")))
+      console.error("Proceso de escritorio:", line.trim());
+    const bin = path.join(dir, appBinary(p));
+    const proc = processList.split("\n").find((line) => line.trim().split(/\s+/).slice(2).join(" ").startsWith(bin));
+    const pid = proc?.trim().split(/\s+/)[0];
+    if (pid) {
+      const sample = path.join(dir, "muestra.txt");
+      spawnSync("/usr/bin/sample", [pid, "1", "1", "-file", sample], { timeout: 8000, windowsHide: true });
+      if (fs.existsSync(sample)) {
+        const stack = fs.readFileSync(sample, "utf8").split("\n");
+        const start = stack.findIndex((line) => line.includes("Call graph:"));
+        if (start >= 0) console.error("Hilo principal al esperar el motor:", stack.slice(start, start + 70).join("\n"));
+      }
+    }
     throw error;
   } finally {
     for (const finish of cleanup.reverse()) {
