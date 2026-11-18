@@ -208,6 +208,13 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
     "Esta Colonia pide vincular este navegador o ordenador antes de abrirse. Pide un código en Colonia › Configuración › Conexiones › Dispositivos en la máquina donde se ejecuta, o con colonia pair en un servidor.",
   "pair.code": "Código de vinculación",
   "pair.placeholder": "ABCD2345",
+  "pair.useOwnerKey": "Este servidor es mío",
+  "pair.useCode": "Usar un código de vinculación",
+  "pair.ownerKey": "Clave del servidor",
+  "pair.ownerHelp":
+    "En Railway, abre el servicio Colonia, entra en Variables y copia COLONIA_TOKEN. Este dispositivo recibirá su propia clave.",
+  "pair.ownerDenied": "El servidor ha rechazado la clave. Compruébala y vuelve a intentarlo.",
+  "pair.ownerUnavailable": "No se pudo contactar con el servidor. Comprueba la conexión y vuelve a intentarlo.",
   "pair.submit": "Vincular",
   "pair.badCode": "Ese código es incorrecto o ha caducado. Pide uno nuevo.",
   "pair.locked": "Demasiados códigos incorrectos: espera unos minutos y pide uno nuevo.",

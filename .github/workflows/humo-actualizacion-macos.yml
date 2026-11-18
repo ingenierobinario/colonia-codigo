@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+env:
+  VITE_COLONIA_RAILWAY_TEMPLATE: ${{ vars.COLONIA_RAILWAY_TEMPLATE }}
+  VITE_COLONIA_RAILWAY_REFERRAL: ${{ vars.COLONIA_RAILWAY_REFERRAL }}
+
 jobs:
   actualizar:
     runs-on: macos-15

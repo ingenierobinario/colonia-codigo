@@ -204,6 +204,13 @@ export const enSetup = {
     "This Colonia asks to pair this browser or computer before it opens. Get a code in Colonia › Settings › Connections › Devices on the machine that runs it, or with colonia pair on a server.",
   "pair.code": "Pairing code",
   "pair.placeholder": "ABCD2345",
+  "pair.useOwnerKey": "I own this server",
+  "pair.useCode": "Use a pairing code",
+  "pair.ownerKey": "Server key",
+  "pair.ownerHelp":
+    "In Railway, open the Colonia service, then Variables, and copy COLONIA_TOKEN. This device will receive its own key.",
+  "pair.ownerDenied": "The server did not accept that key. Check it and try again.",
+  "pair.ownerUnavailable": "Could not reach the server. Check your connection and try again.",
   "pair.submit": "Pair",
   "pair.badCode": "That code is wrong or expired. Ask for a new one.",
   "pair.locked": "Too many wrong codes: wait a few minutes and ask for a new one.",

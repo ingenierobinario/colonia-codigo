@@ -24,6 +24,8 @@ on:
         default: true
 
 env:
+  VITE_COLONIA_RAILWAY_TEMPLATE: ${{ vars.COLONIA_RAILWAY_TEMPLATE }}
+  VITE_COLONIA_RAILWAY_REFERRAL: ${{ vars.COLONIA_RAILWAY_REFERRAL }}
   TAG: ${{ inputs.tag || github.ref_name }}
   FEED: ingenierobinario/colonia
 

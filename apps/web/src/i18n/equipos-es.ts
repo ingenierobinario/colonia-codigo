@@ -1,6 +1,14 @@
 import type { EquipoKey } from "./equipos-en.ts";
 
 export const esEquipos: Record<EquipoKey, string> = {
+  "equipos.hosting": "Colonia en un servidor",
+  "equipos.hostingHint": "Tus agentes pueden seguir trabajando cuando apagas este ordenador.",
+  "equipos.hostingRailway": "Crear mi servidor en Railway",
+  "equipos.hostingGuide": "Instalar en mi propio servidor",
+  "equipos.hostingPlan":
+    "Railway te pedirá iniciar sesión y confirmar el alojamiento. El coste depende de tu plan y consumo.",
+  "equipos.hostingReferral":
+    "Railway cobra según el plan y el uso. Si creas una cuenta con este enlace de invitación, Colonia puede recibir una comisión.",
   "equipos.transfer": "Tus datos en otro equipo",
   "equipos.transferSync": "Enlaza dos Colonias con un código para mantener sus cambios sincronizados.",
   "equipos.transferBackup":

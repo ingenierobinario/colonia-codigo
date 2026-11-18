@@ -1,5 +1,13 @@
 // Pantalla «Mis equipos»: se carga con ella (usePack("equipos")), no con la primera pantalla del panel.
 export const enEquipos = {
+  "equipos.hosting": "Colonia on a server",
+  "equipos.hostingHint": "Your agents can keep working when you turn off this computer.",
+  "equipos.hostingRailway": "Create my server on Railway",
+  "equipos.hostingGuide": "Install on my own server",
+  "equipos.hostingPlan":
+    "Railway will ask you to sign in and confirm hosting. The cost depends on your plan and usage.",
+  "equipos.hostingReferral":
+    "Railway charges for hosting based on your plan and usage. If you sign up through this referral link, Colonia may earn a commission.",
   "equipos.transfer": "Your data on another computer",
   "equipos.transferSync": "Pair two Colonias with a code to keep changes in sync.",
   "equipos.transferBackup":

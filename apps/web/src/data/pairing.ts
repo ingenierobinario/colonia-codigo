@@ -1,5 +1,6 @@
 // The pairing gate: a core reachable from other devices asks for a token. A panel without one (or with a revoked one)
 // shows "Pair this device" instead of the app, trades a one-time code for a device token and keeps it in this browser.
+import { ColoniaClient } from "@colonia/protocol/client";
 import { access, client, keyStore } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import { needsPairing, osName, pairError, TOKEN_KEY } from "./token.ts";
@@ -38,7 +39,26 @@ export function thisDevice(browser: (os: string) => string, desktop: string) {
 }
 
 /** Why pairing did not happen; `detail` is the core's own words for an unexpected failure. */
-export type PairFailure = { why: ReturnType<typeof pairError> | "noStorage"; detail?: string };
+export type PairFailure = {
+  why: ReturnType<typeof pairError> | "noStorage" | "ownerDenied" | "ownerUnavailable";
+  detail?: string;
+};
+
+/** La clave del servidor autoriza únicamente la petición HTTP que abre una vinculación de un solo uso. */
+export async function pairWithOwnerKey(
+  key: string,
+  device: { name: string; platform: "desktop" | "other" },
+): Promise<PairFailure | undefined> {
+  if (!window.isSecureContext || !key.trim()) return { why: "ownerDenied" };
+  const owner = new ColoniaClient({ url: window.location.origin, token: key.trim() });
+  try {
+    const { code } = await owner.call("devices.pair_start", {});
+    return await pairWith(code, device);
+  } catch (error) {
+    if (needsPairing(error)) return { why: "ownerDenied" };
+    return { why: "ownerUnavailable" };
+  }
+}
 
 /** Trades the code for this device's token, keeps it, and reloads with it; or says why not. */
 export async function pairWith(

@@ -3,6 +3,10 @@ name: Instaladores
 on:
   workflow_dispatch:
 
+env:
+  VITE_COLONIA_RAILWAY_TEMPLATE: ${{ vars.COLONIA_RAILWAY_TEMPLATE }}
+  VITE_COLONIA_RAILWAY_REFERRAL: ${{ vars.COLONIA_RAILWAY_REFERRAL }}
+
 jobs:
   instalador:
     strategy:

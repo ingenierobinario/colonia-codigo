@@ -11,6 +11,7 @@ import { equiposChanged, revealEquipo, useEquipoFocus } from "./equiposFocus.ts"
 import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
 import { RemoteFolder } from "./RemoteFolder.tsx";
 import { RemoteTask } from "./RemoteTask.tsx";
+import { ServerHosting } from "./ServerHosting.tsx";
 import { ThisComputerCard } from "./ThisComputerCard.tsx";
 import { TransferActions } from "./TransferActions.tsx";
 
@@ -774,6 +775,7 @@ function Body() {
         {rest.map(card)}
         {local && <ThisEquipo s={local} refresh={refreshLocal} />}
         <TransferActions />
+        <ServerHosting />
         <FindEquipos onDone={refreshAll} />
         <details className="eq-other">
           <summary>{t("equipos.otherMethod")}</summary>
