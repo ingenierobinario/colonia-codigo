@@ -98,7 +98,10 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
       setStatus(next);
       if (next.pairing?.initial_source !== "joining_device") setIssue("update");
     });
-  const available = projects.filter((p) => p.path && p.present !== false && p.registered !== false && !p.unreadable);
+  const available = projects.filter(
+    (p) =>
+      p.path && p.registered !== false && !p.unreadable && !status?.folders?.some((missing) => missing.id === p.id),
+  );
   const chooseAgain = status?.project_files?.state === "failed" && status.project_files.why === "selection";
   const folders = available.length > 0 && (
     <fieldset className="eq-hosting-folders">

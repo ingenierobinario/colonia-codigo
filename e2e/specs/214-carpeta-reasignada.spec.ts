@@ -10,6 +10,16 @@ for (const language of ["es", "en"] as const)
       await rpc("setup.finish");
       const name = `Compartir materiales revisados ${language} ${mode}`;
       const { project } = await rpc<{ project: { id: string } }>("projects.create", { name });
+      const missing = { id: `${project.id}-missing`, name: `${name} (USB)` };
+      await page.route("**/rpc/projects.list", async (route) => {
+        const response = await route.fetch();
+        const reply = await response.json();
+        const row = reply.result.projects.find((p: { id: string }) => p.id === project.id);
+        expect(row).toBeTruthy();
+        row.present = false; // El explorador aún no ha vuelto a indexar esta carpeta.
+        reply.result.projects.push({ ...row, ...missing, present: true });
+        await route.fulfill({ response, json: reply });
+      });
       await page.addInitScript(
         ({ language, mode }) => {
           localStorage.setItem("colonia.prefs", JSON.stringify({ language, mode, sidebarCollapsed: true }));
@@ -27,6 +37,8 @@ for (const language of ["es", "en"] as const)
         mismatch: false,
         pending: 0,
         saved: 0,
+        folders: [missing],
+        folder_sync: { supported: true, projects: [] },
       };
       const calls: unknown[] = [];
       await page.route("**/rpc/sync.status", (r) =>
@@ -56,7 +68,15 @@ for (const language of ["es", "en"] as const)
       await expect(choose).toBeVisible();
       await expect(card.getByRole("button", { name: /Volver a intentar|Try again/ })).toHaveCount(0);
       await choose.click();
-      const folder = card.getByRole("checkbox", { name, exact: true });
+      const list = card.locator("fieldset.eq-hosting-folders");
+      const folder = list.getByRole("checkbox", { name, exact: true });
+      await expect(folder).toBeEnabled();
+      await expect(list.getByRole("checkbox", { name: missing.name, exact: true })).toHaveCount(0);
+      const sync = card.getByRole("group", { name: /Carpetas sincronizadas|Synced folders/ });
+      await sync.locator("summary").click();
+      await expect(sync.getByRole("checkbox", { name, exact: true })).toBeEnabled();
+      await expect(sync.getByRole("checkbox", { name: missing.name, exact: true })).toBeDisabled();
+      await sync.locator("summary").click();
       await expect(folder).not.toBeChecked();
       const send = card.getByRole("button", { name: /Enviar las carpetas seleccionadas|Send selected folders/ });
       await expect(send).toBeDisabled();

@@ -52,7 +52,6 @@ export function FolderSync({ status, onStatus }: { status: SyncStatus; onStatus:
           const hasPath =
             Boolean(project.path) &&
             project.registered !== false &&
-            project.present !== false &&
             !project.unreadable &&
             !status.folders?.some((p) => p.id === project.id);
           const hint = prefix + project.id;
