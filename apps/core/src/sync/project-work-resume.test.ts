@@ -164,6 +164,7 @@ for (const scenario of [
     assert.throws(() => sender.select());
     // Elegir explícitamente la ruta actual autoriza sólo esta raíz y no borra documentos de ambas carpetas.
     sender.select(["p_prueba"]);
+    if (scenario === "con el archivo preparado") db.prepare("UPDATE projects SET present=0 WHERE id='p_prueba'").run();
     await sender.pump(channel, true);
     assert.deepEqual(
       frames.map((f) => f.op),
