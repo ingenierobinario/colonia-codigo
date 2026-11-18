@@ -52,14 +52,23 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
       ["Sol", "coral", true],
     ] as const) {
       const point = await instance.evaluate(
-        async ({ screen }, { name, blob, edge }) => {
+        async ({ BrowserWindow, screen }, { name, blob, edge }) => {
           const cursor = await (globalThis as Main).cursorDePrueba;
           const b = screen.getPrimaryDisplay().bounds;
           const x = b.x + (edge ? b.width - 2 : 2);
           const y = b.y + (edge ? b.height - 2 : 2);
           const physicalBefore = screen.getCursorScreenPoint();
           await cursor.moveTo(x, y, "Documento de prueba", { id: name, name, blob });
-          return { x, y, physicalBefore, physicalAfter: screen.getCursorScreenPoint() };
+          const win = BrowserWindow.getAllWindows().find((window) => window.isVisible());
+          if (!win) throw new Error("Falta la ventana visible del puntero");
+          return {
+            x,
+            y,
+            display: b,
+            content: win.getContentBounds(),
+            physicalBefore,
+            physicalAfter: screen.getCursorScreenPoint(),
+          };
         },
         { name, blob, edge },
       );
@@ -76,6 +85,8 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
         return {
           x: screenX + tip.x + 5,
           y: screenY + tip.y + 4,
+          localX: tip.x + 5,
+          localY: tip.y + 4,
           left: label.left,
           right: label.right,
           top: label.top,
@@ -85,6 +96,16 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
           scroll: document.documentElement.scrollWidth,
         };
       });
+      await info.attach(`medidas-${blob}`, {
+        body: JSON.stringify({ ...size, point }),
+        contentType: "application/json",
+      });
+      expect(Math.abs(point.content.x + size.localX - point.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(point.content.y + size.localY - point.y)).toBeLessThanOrEqual(1);
+      expect(size.localX).toBeGreaterThanOrEqual(0);
+      expect(size.localY).toBeGreaterThanOrEqual(0);
+      expect(size.localX).toBeLessThan(size.width);
+      expect(size.localY).toBeLessThan(size.height);
       expect(Math.abs(size.x - point.x)).toBeLessThanOrEqual(1);
       expect(Math.abs(size.y - point.y)).toBeLessThanOrEqual(1);
       expect(size.left).toBeGreaterThanOrEqual(0);
@@ -92,10 +113,6 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
       expect(size.right).toBeLessThanOrEqual(size.width);
       expect(size.bottom).toBeLessThanOrEqual(size.height);
       expect(size.scroll).toBe(size.width);
-      await info.attach("medidas-" + blob, {
-        body: JSON.stringify({ ...size, physicalBefore: point.physicalBefore, physicalAfter: point.physicalAfter }),
-        contentType: "application/json",
-      });
     }
     expect(
       await instance.evaluate(async ({ BrowserWindow }) => {

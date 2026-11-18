@@ -34,21 +34,32 @@ const native = {
     static loaded = gate<void>();
     static moves: string[] = [];
     static shows = 0;
+    static visibleTop = 0;
+    private visible = false;
+    private unconstrained: boolean;
+    constructor(options: { frame?: boolean; enableLargerThanScreen?: boolean }) {
+      this.unconstrained = options.frame === false && options.enableLargerThanScreen === true;
+    }
     webContents = {
       executeJavaScript: async (js: string) => {
         native.BrowserWindow.moves.push(js);
       },
     };
     loadFile = (): Promise<void> => native.BrowserWindow.loaded.done;
-    getBounds = () => display.bounds;
+    // Cocoa permite situar la ventana oculta sobre el menú. Al mostrarla aplica sus límites.
+    getBounds = () => ({ ...display.bounds, y: this.visible && !this.unconstrained ? 25 : display.bounds.y });
     isDestroyed = () => false;
     setIgnoreMouseEvents() {}
     setAlwaysOnTop() {}
     setBounds() {}
     setVisibleOnAllWorkspaces() {}
     setContentProtection() {}
-    hide() {}
+    hide() {
+      this.visible = false;
+    }
     showInactive() {
+      this.visible = true;
+      native.BrowserWindow.visibleTop = this.getBounds().y;
       native.BrowserWindow.shows++;
     }
   },
@@ -287,6 +298,9 @@ test("una captura que termina después del relevo no se presenta como la del nue
 });
 
 test("detener o desconectar mientras se carga el puntero no vuelve a mostrar la ventana antigua", async () => {
+  native.BrowserWindow.loaded = gate<void>();
+  native.BrowserWindow.moves = [];
+  native.BrowserWindow.shows = 0;
   const cursor = createCursor();
   cursor.say("Primera tarea", { id: "uno", name: "Alba", blob: "menta" });
   cursor.hide();
@@ -299,6 +313,17 @@ test("detener o desconectar mientras se carga el puntero no vuelve a mostrar la 
   assert.equal(native.BrowserWindow.shows, 1);
   assert.match(native.BrowserWindow.moves[0] ?? "", /Sol/);
   assert.doesNotMatch(native.BrowserWindow.moves[0] ?? "", /Alba/);
+});
+
+test("la punta coincide con el punto de la barra de menús cuando Cocoa muestra la ventana", async () => {
+  native.BrowserWindow.loaded.open();
+  const cursor = createCursor();
+  await cursor.moveTo(2, 2, "Documento de prueba", { id: "alba", name: "Alba" });
+  const dibujo = native.BrowserWindow.moves.at(-1);
+  assert.ok(dibujo);
+  assert.ok(dibujo.startsWith("drawCursor(..."));
+  const [x, y] = JSON.parse(dibujo.slice("drawCursor(...".length, -1));
+  assert.deepEqual({ x, y: native.BrowserWindow.visibleTop + y }, { x: 2, y: 2 });
 });
 
 test("perder el enlace retira también una acción pendiente y permite la siguiente conexión", async () => {
