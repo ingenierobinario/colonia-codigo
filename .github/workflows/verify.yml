@@ -168,6 +168,12 @@ jobs:
         run: npm test
       - name: Probar el panel en Chromium
         run: pnpm exec playwright test --project chromium --shard=${{ matrix.part }}/3 --reporter=line
+      - name: Medir la ventana del cursor en Electron
+        if: matrix.part == 1
+        run: |
+          node apps/desktop/node_modules/electron/install.js
+          pnpm --filter @colonia/desktop build
+          pnpm exec playwright test e2e/desktop/cursor.spec.ts --project desktop --no-deps --workers=1 --retries=0 --reporter=line --output test-results/cursor-macos
       - name: Guardar los resultados de Chromium si falla
         if: failure()
         uses: actions/upload-artifact@v4

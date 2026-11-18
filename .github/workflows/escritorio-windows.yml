@@ -16,6 +16,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+        with:
+          browser: chromium
       - name: Preparar Electron y compilar el panel y el escritorio
         shell: pwsh
         run: |
@@ -52,9 +54,10 @@ jobs:
             COLONIA_SECRETS = 'file'; COLONIA_UPDATES = 'off'; COLONIA_TELEMETRY = 'off'
             GIT_TERMINAL_PROMPT = '0'; GIT_CONFIG_NOSYSTEM = '1'
             NODE_PATH = (Resolve-Path 'apps/desktop/node_modules').Path
+            PLAYWRIGHT_BROWSERS_PATH = (Join-Path $env:LOCALAPPDATA "ms-playwright")
           }
           foreach ($entry in $settings.GetEnumerator()) { $start.Environment[$entry.Key] = $entry.Value }
-          foreach ($arg in 'node_modules/@playwright/test/cli.js','test','e2e/desktop/app.spec.ts','e2e/desktop/connect.spec.ts','--project=desktop','--no-deps','--workers=1','--retries=0','--reporter=line') {
+          foreach ($arg in 'node_modules/@playwright/test/cli.js','test','e2e/desktop/app.spec.ts','e2e/desktop/connect.spec.ts','e2e/desktop/cursor.spec.ts','e2e/specs/216-importar-conversaciones.spec.ts','e2e/specs/217-cursor-en-vivo.spec.ts','--project=desktop','--project=chromium','--no-deps','--workers=1','--retries=0','--reporter=line') {
             $start.ArgumentList.Add($arg)
           }
           $suite = [Diagnostics.Process]::Start($start)
