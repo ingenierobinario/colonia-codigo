@@ -6,7 +6,9 @@ import { VSL } from "../../i18n/vsl";
 import PageMeta from "../web/PageMeta.astro";
 import "./vsl.css";
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = VSL[lang];
 const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(t.wa.text)}`;
