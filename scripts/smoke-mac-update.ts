@@ -2,10 +2,12 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
+import { saveConnection } from "../apps/desktop/src/main/connection.ts";
 import type { DesktopUpdate } from "../apps/web/src/colonia-desktop.d.ts";
 import { appBinary, unzipCommand } from "./smoke-artifacts.ts";
 
@@ -19,6 +21,17 @@ export function updatedCore(previous: Health, current: Health | undefined, expec
     current.home_id === previous.home_id &&
     Date.parse(current.started_at) > Date.parse(previous.started_at)
   );
+}
+
+// LaunchServices abre la aplicación como Finder. El perfil predeterminado del runner debe resolver al mismo directorio temporal.
+export function linkTemporaryDesktop(profile: string, normal: string) {
+  fs.mkdirSync(profile);
+  fs.mkdirSync(path.dirname(normal), { recursive: true });
+  fs.symlinkSync(profile, normal, "junction");
+  return () => {
+    if (fs.readlinkSync(normal) === profile || fs.realpathSync(normal) === fs.realpathSync(profile))
+      fs.unlinkSync(normal);
+  };
 }
 
 async function waitFor<T>(description: string, read: () => Promise<T | undefined>): Promise<T> {
@@ -62,7 +75,15 @@ async function smoke() {
     if (response?.ok) return (await response.json()).result;
   };
   const cleanup: Array<() => unknown> = [];
+  const logs = path.join(os.homedir(), "Library", "Logs", "Colonia");
+  let observed = "";
   try {
+    cleanup.push(
+      linkTemporaryDesktop(
+        settings.COLONIA_DESKTOP_DATA,
+        path.join(os.homedir(), "Library", "Application Support", "@colonia", "desktop"),
+      ),
+    );
     const [cmd, args] = unzipCommand(p, PREVIOUS_ZIP, dir);
     execFileSync(cmd, args);
     execFileSync("codesign", ["--verify", "--deep", "--strict", bundle]);
@@ -102,6 +123,12 @@ async function smoke() {
     assert.equal(previous.name, "colonia-core");
     assert.equal(previous.version, PREVIOUS_VERSION);
     assert.equal(fs.readFileSync(path.join(settings.COLONIA_HOME, "home-id"), "utf8").trim(), previous.home_id);
+    saveConnection(settings.COLONIA_DESKTOP_DATA, {
+      mode: "local",
+      home: settings.COLONIA_HOME,
+      home_id: previous.home_id,
+      port: Number(settings.COLONIA_PORT),
+    });
     const browser = await chromium.connectOverCDP(debugUrl, { timeout: 45_000 });
     const panel = await waitFor("el panel de la aplicación pública", async () => {
       for (const page of browser.contexts().flatMap((ctx) => ctx.pages())) {
@@ -125,6 +152,13 @@ async function smoke() {
     if (restart) assert(restart.ok, JSON.stringify(restart));
     const next = await waitFor("el motor actualizado con el mismo perfil", async () => {
       const current = await health();
+      const identity = current
+        ? [current.version, current.code_sha, current.home_id === previous.home_id, current.started_at].join(" / ")
+        : "sin respuesta";
+      if (identity !== observed) {
+        console.log("Motor tras solicitar el reinicio:", identity);
+        observed = identity;
+      }
       return updatedCore(previous, current, expected) ? current : undefined;
     });
     assert(old.pid);
@@ -140,6 +174,23 @@ async function smoke() {
     console.log(
       `Actualización macOS verificada: ${previous.version} → ${next.version}, commit ${next.code_sha}, mismo perfil y ventana visible (PID ${pid}).`,
     );
+  } catch (error) {
+    const installed = path.join(bundle, "Contents", "Resources", "colonia", "build.json");
+    for (const file of [installed, path.join(logs, "update.log"), path.join(logs, "main.log")]) {
+      if (fs.existsSync(file)) console.error(path.basename(file), fs.readFileSync(file, "utf8").slice(-8000));
+    }
+    const coreLog = path.join(settings.COLONIA_HOME, "logs", "core.log");
+    if (fs.existsSync(coreLog))
+      console.error(
+        "Últimas incidencias del motor temporal:",
+        fs
+          .readFileSync(coreLog, "utf8")
+          .split("\n")
+          .filter((line) => /error|already running|exited|port is|missing/i.test(line))
+          .slice(-12)
+          .join("\n"),
+      );
+    throw error;
   } finally {
     for (const finish of cleanup.reverse()) {
       try {

@@ -1,6 +1,8 @@
 name: Actualización de escritorio en macOS
 
 on:
+  push:
+    branches: [codex/macos-pruebas]
   workflow_call:
   workflow_dispatch:
 
