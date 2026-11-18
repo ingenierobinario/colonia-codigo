@@ -10,6 +10,7 @@ import { EquipoName } from "./EquipoName.tsx";
 import { equiposChanged, revealEquipo, useEquipoFocus } from "./equiposFocus.ts";
 import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
 import { RemoteFolder } from "./RemoteFolder.tsx";
+import { RemoteTask } from "./RemoteTask.tsx";
 import { ThisComputerCard } from "./ThisComputerCard.tsx";
 import { TransferActions } from "./TransferActions.tsx";
 
@@ -596,6 +597,7 @@ function EquipoCard({
         description={t(e.via === "ssh" ? "equipos.agentsHintSsh" : "equipos.agentsHint")}
         onCheckedChange={(enabled) => void client.call("equipos.set_access", { id: e.id, enabled }).then(refresh)}
       />
+      {!entry.self && <RemoteTask computer={e} />}
       <div className="eq-muted">{t("equipos.history")}</div>
       <Audit entries={audit} />
       {!entry.self && e.agent_access && (e.connected || e.via === "ssh") && <RemoteFolder equipo={e} />}

@@ -433,3 +433,29 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.eq-task,
+.eq-task form {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.eq-task form {
+  width: 100%;
+}
+
+.eq-task form > :first-child {
+  width: 100%;
+  min-width: 0;
+}
+
+.eq-task p {
+  margin: 0;
+}
+
+.eq-task label,
+.eq-task p {
+  overflow-wrap: anywhere;
+}

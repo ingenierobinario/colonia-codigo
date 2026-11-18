@@ -4,6 +4,18 @@ export const enEquipos = {
   "equipos.transferSync": "Pair two Colonias with a code to keep changes in sync.",
   "equipos.transferBackup":
     "Save an encrypted backup on this computer or in a synced OneDrive, iCloud Drive or Dropbox folder. You can restore it in another Colonia.",
+  "equipos.task": "Request a task",
+  "equipos.taskLabel": "What would you like to do on “{name}”?",
+  "equipos.taskHint":
+    "You can review the request in a chat with your super-agent. Work starts when you send it and the computer allows access.",
+  "equipos.taskTitle": "Task on {name}",
+  "equipos.taskDraft": "Target computer: {name} ({id}).\n\n{task}",
+  "equipos.taskReview": "Review in chat",
+  "equipos.taskAccess": "Turn on agent access to request a task.",
+  "equipos.taskOffline": "You can request a task when this computer reconnects.",
+  "equipos.taskUnavailable":
+    "The computer is no longer available or its access has changed. Check its status and try again.",
+  "equipos.taskFailed": "The chat could not be prepared. Your request is still here.",
   "equipos.inspect": "Inspect a folder",
   "equipos.remoteFolder": "Folder on the remote computer",
   "equipos.showFiles": "Show files",

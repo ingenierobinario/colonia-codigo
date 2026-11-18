@@ -5,6 +5,18 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.transferSync": "Enlaza dos Colonias con un código para mantener sus cambios sincronizados.",
   "equipos.transferBackup":
     "Guarda una copia cifrada en este equipo o en una carpeta sincronizada de OneDrive, iCloud Drive o Dropbox. Puedes restaurarla en otra Colonia.",
+  "equipos.task": "Pedir una tarea",
+  "equipos.taskLabel": "¿Qué quieres hacer en «{name}»?",
+  "equipos.taskHint":
+    "Podrás revisar la solicitud en el chat con tu superagente. El trabajo empieza cuando la envías y el equipo permite el acceso.",
+  "equipos.taskTitle": "Tarea en {name}",
+  "equipos.taskDraft": "Equipo de destino: {name} ({id}).\n\n{task}",
+  "equipos.taskReview": "Revisar en el chat",
+  "equipos.taskAccess": "Activa el acceso de tus agentes para pedir una tarea.",
+  "equipos.taskOffline": "Podrás pedir una tarea cuando el equipo vuelva a conectarse.",
+  "equipos.taskUnavailable":
+    "El equipo ha dejado de estar disponible o ha cambiado su permiso. Comprueba su estado e inténtalo de nuevo.",
+  "equipos.taskFailed": "No se pudo preparar el chat. Tu solicitud sigue aquí.",
   "equipos.inspect": "Revisar una carpeta",
   "equipos.remoteFolder": "Carpeta del equipo remoto",
   "equipos.showFiles": "Ver archivos",
