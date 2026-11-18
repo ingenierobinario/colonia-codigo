@@ -103,6 +103,9 @@ export type ProjectEntry = {
   parent?: string | undefined;
 };
 
+/** «Default» no es un proyecto registrado en el core (no tiene id que exportar): no se ofrece compartirlo. */
+export const canShareProject = (project: { isDefault: boolean }) => !project.isDefault;
+
 /** Sidebar order: the base space first, then the real projects as the core lists them. */
 export function projectEntries(projects: Project[]): ProjectEntry[] {
   return [

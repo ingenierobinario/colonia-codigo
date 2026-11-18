@@ -1,7 +1,11 @@
 import type { Agent, Organization } from "@colonia/protocol";
 import { Button, Dialog, Field, Icons, Select } from "@colonia/ui";
 import { useState } from "react";
-import { assignAgent } from "../data/org.ts";
+import { client } from "../data/client.ts";
+import { realProjectId } from "../data/identity.ts";
+import { notify } from "../data/notices.ts";
+import { loadOrg } from "../data/org.ts";
+import { data } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import "./org-assignment.css";
 
@@ -80,9 +84,21 @@ export function OrgAssignment({
   const save = async () => {
     if (!agent || busy) return;
     setBusy(true);
-    const ok = await assignAgent(pid, agent.id, area || null, role === KEEP ? undefined : role === NONE ? null : role);
-    setBusy(false);
-    if (ok) onClose();
+    try {
+      const next = await client.call("org.assign", {
+        project: realProjectId(pid),
+        agent: agent.id,
+        area: area || null,
+        role: role === KEEP ? undefined : role === NONE ? null : role,
+      });
+      data.set((s) => ({ agents: { ...s.agents, [next.id]: next } }));
+      onClose();
+    } catch {
+      notify(t("org.assignError"));
+      await loadOrg(pid);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <Dialog

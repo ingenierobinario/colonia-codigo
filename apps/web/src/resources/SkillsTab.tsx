@@ -4,12 +4,12 @@ import { projectName } from "../data/identity.ts";
 import { type SkillInfo, toggleSkill } from "../data/resources.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { AddSkill, SkillDetail } from "../lazy.ts";
 import { nav, useNav } from "../shell/nav.ts";
-import { AddSkill, type ImportStart } from "./AddSkill.tsx";
+import type { ImportStart } from "./AddSkill.tsx";
 import { copyTag, ENGINE_LABEL, engineOf, inEngines, sourceTag, unusedIn } from "./labels.ts";
 import type { TabProps } from "./ResourcesView.tsx";
 import { ScopedGroups, useInheritance } from "./ScopedGroups.tsx";
-import { SkillDetail } from "./SkillDetail.tsx";
 
 const keyOf = (s: SkillInfo) => `${s.scope}:${s.project_id ?? ""}:${s.name}`;
 

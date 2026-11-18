@@ -114,6 +114,18 @@ export const ProjectMemory = late(() =>
 export const ResourcesView = late(() =>
   import("./resources/ResourcesView.tsx").then((m) => ({ default: m.ResourcesView })),
 );
+export const McpTab = late(() => import("./resources/McpTab.tsx").then((m) => ({ default: m.McpTab })));
+export const VariablesTab = late(() =>
+  import("./resources/VariablesTab.tsx").then((m) => ({ default: m.VariablesTab })),
+);
+export const ExtensionsTab = late(() =>
+  import("./resources/ExtensionsTab.tsx").then((m) => ({ default: m.ExtensionsTab })),
+);
+export const IntegrationsTab = late(() =>
+  import("./resources/IntegrationsTab.tsx").then((m) => ({ default: m.IntegrationsTab })),
+);
+export const AddSkill = late(() => import("./resources/AddSkill.tsx").then((m) => ({ default: m.AddSkill })));
+export const SkillDetail = late(() => import("./resources/SkillDetail.tsx").then((m) => ({ default: m.SkillDetail })));
 export const RoutinesPane = late(() =>
   import("./routines/RoutinesPane.tsx").then((m) => ({ default: m.RoutinesPane })),
 );

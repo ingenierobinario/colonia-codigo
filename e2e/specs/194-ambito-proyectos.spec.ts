@@ -38,6 +38,22 @@ test("el tema del sistema cambia con el panel abierto y respeta el tema elegido"
   await expect(panel).toHaveAttribute("data-colonia-mode", "dark");
 });
 
+test("ver las skills de un proyecto solo descarga la pestaña Variables al abrirla", async ({ page }) => {
+  await rpc("setup.finish");
+  const { project } = await rpc<Result<"projects.create">>("projects.create", { name: "Recursos bajo demanda" });
+  let variableRequests = 0;
+  page.on("request", (request) => {
+    if (/\/assets\/VariablesTab-[\w-]+\.js$/.test(new URL(request.url()).pathname)) variableRequests++;
+  });
+  await page.goto(`/#project=${project.id}`);
+  await page.getByRole("tab", { name: /skills/i }).click();
+  await expect(page.getByRole("radio", { name: /^Skills/ })).toBeChecked();
+  expect(variableRequests).toBe(0);
+  await page.getByRole("radio", { name: /^Variables/ }).click();
+  await expect(page.locator(".resvars")).toBeVisible();
+  expect(variableRequests).toBeGreaterThan(0);
+});
+
 for (const language of ["es", "en"] as const) {
   test(`desde el proyecto se encuentran sus skills y sus Flows en ${language}`, async ({ page }) => {
     await rpc("setup.finish");
@@ -111,16 +127,20 @@ test("los nombres y funciones del equipo se leen completos en el resumen", async
     await expect(page.locator(".colonia[data-colonia-mode]").first()).toHaveAttribute("data-colonia-mode", colorScheme);
     for (const width of [390, 768, 960, 1200, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      const geometry = await pill.evaluate((el) => {
-        const overview = el.closest(".overview");
-        const fields = [...el.querySelectorAll(".overview__pillname,.overview__pillrole")];
-        return {
-          labels: fields.length,
-          readable: fields.every((field) => field.scrollWidth <= field.clientWidth + 1),
-          fits: !!overview && overview.scrollWidth <= overview.clientWidth + 1 && el.scrollWidth <= el.clientWidth + 1,
-        };
-      });
-      expect(geometry, `${colorScheme} ${width}`).toEqual({ labels: 2, readable: true, fits: true });
+      const geometry = () =>
+        pill.evaluate((el) => {
+          const overview = el.closest(".overview");
+          const fields = [...el.querySelectorAll(".overview__pillname,.overview__pillrole")];
+          return {
+            labels: fields.length,
+            readable: fields.every((field) => field.scrollWidth <= field.clientWidth + 1),
+            fits:
+              !!overview && overview.scrollWidth <= overview.clientWidth + 1 && el.scrollWidth <= el.clientWidth + 1,
+          };
+        });
+      await expect
+        .poll(geometry, { message: `${colorScheme} ${width}` })
+        .toEqual({ labels: 2, readable: true, fits: true });
     }
   }
 });

@@ -1,17 +1,14 @@
-import { Button, Icons, Menu, SearchField, SegmentedControl } from "@colonia/ui";
-import { type ReactNode, useState } from "react";
+import { Button, Icons, Menu, SearchField, SegmentedControl, Skeleton } from "@colonia/ui";
+import { type ReactNode, Suspense, useState } from "react";
 import { type ProjectEntry, projectName } from "../data/identity.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { ExtensionsTab, IntegrationsTab, McpTab, VariablesTab } from "../lazy.ts";
 import { go, type ResourceTab, useNav } from "../shell/nav.ts";
 import { BrowserConsents } from "./BrowserConsents.tsx";
-import { ExtensionsTab } from "./ExtensionsTab.tsx";
-import { IntegrationsTab } from "./IntegrationsTab.tsx";
 import { ENGINE_LABEL, SKILL_ENGINES, type SkillEngine } from "./labels.ts";
-import { McpTab } from "./McpTab.tsx";
 import { SkillsTab } from "./SkillsTab.tsx";
 import { useResources } from "./useResources.ts";
-import { VariablesTab } from "./VariablesTab.tsx";
 
 const TABS: Array<{ id: ResourceTab; label: MessageKey; add?: MessageKey; search?: MessageKey }> = [
   { id: "skills", label: "res.tab.skills", add: "res.add.skill", search: "res.search.skills" },
@@ -225,7 +222,17 @@ export function ResourcesView({ project }: { project?: ProjectEntry }) {
         )}
         {note && <p className="resv__inherit">{note}</p>}
       </div>
-      <div className="resv__body">{body}</div>
+      <div className="resv__body">
+        <Suspense
+          fallback={
+            <div role="status" aria-label={t(def.label)} aria-busy="true">
+              <Skeleton />
+            </div>
+          }
+        >
+          {body}
+        </Suspense>
+      </div>
     </section>
   );
 }

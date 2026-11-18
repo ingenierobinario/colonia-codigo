@@ -1,8 +1,7 @@
 import { Icons, type MenuEntry } from "@colonia/ui";
 import { markAllRead } from "../data/actions.ts";
-import type { ProjectEntry } from "../data/identity.ts";
+import { canShareProject, type ProjectEntry } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";
-import { canShareProject } from "../data/project-share.ts";
 import type { T } from "../i18n/index.ts";
 import { go } from "./nav.ts";
 
