@@ -4,8 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { ColoniaError } from "@colonia/protocol/client";
+import { createBus } from "../bus.ts";
+import { createHooks } from "../engine/hooks.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
+import { createLog } from "../log.ts";
 import { removeDir, waitFor } from "../testkit/platform.ts";
+import { createPlugins } from "./plugins.ts";
 
 // A plugin that counts the task updates it sees and, asked for context, reports what its sandbox let it do.
 const PLUGIN = `
@@ -66,6 +70,24 @@ after(async () => {
   await env.core.close();
   await env.cleanup();
   for (const d of dirs) await removeDir(d);
+});
+
+test("sin plugins activos los eventos no necesitan consultar la conversación", async (t) => {
+  const bus = createBus();
+  const sealed = t.mock.fn(() => true);
+  const plugins = createPlugins({
+    home: env.home,
+    bus,
+    hooks: createHooks(),
+    log: createLog("prueba", true),
+    approved: () => undefined,
+    secrets: env.core.secrets,
+    sealed,
+  });
+  t.after(() => plugins.close());
+  const thread = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
+  bus.emit({ type: "thread.updated", thread });
+  assert.equal(sealed.mock.callCount(), 0);
 });
 
 test("a plugin watches what it named and adds context to owner turns, as outside data", async () => {

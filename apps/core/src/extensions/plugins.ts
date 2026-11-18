@@ -164,6 +164,7 @@ export function createPlugins(deps: {
           ? e.run.thread_id
           : undefined;
   const off = deps.bus.on((e: CoreEvent) => {
+    if (!live.size) return;
     const thread = threadOf(e);
     if (thread && deps.sealed(thread)) return;
     for (const l of live.values()) {

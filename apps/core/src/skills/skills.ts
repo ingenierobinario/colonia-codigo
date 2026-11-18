@@ -37,6 +37,28 @@ export type SkillRoots = { home: string; apps?: RuntimeHomes | undefined };
 /** Colonia's own guides to changing Colonia itself: shipped with the core, always on, read-only, and they keep their names. */
 export const COLONIA_SKILLS_DIR = path.join(import.meta.dirname, "colonia");
 const isColonia = (s: Skill) => s.source === "colonia";
+// Sólo guardamos cabeceras de la distribución. Los catálogos del usuario y del proyecto siempre se leen en origen.
+type SkillHeader = Pick<Skill, "name" | "description">;
+const bundledHeaders = new Map<string, { stat: fs.Stats; header: SkillHeader }>();
+
+function skillHeader(file: string, folder: string, bundledStat?: fs.Stats): SkillHeader {
+  const cached = bundledStat && bundledHeaders.get(file);
+  if (
+    cached &&
+    bundledStat &&
+    cached.stat.mtimeMs === bundledStat.mtimeMs &&
+    cached.stat.ctimeMs === bundledStat.ctimeMs &&
+    cached.stat.size === bundledStat.size
+  )
+    return cached.header;
+  const { fields } = parseFrontmatter(fs.readFileSync(file, "utf8"));
+  const header = {
+    name: textField(fields.name) ?? folder,
+    description: (textField(fields.description) ?? "").replace(/\s+/g, " ").trim(),
+  };
+  if (bundledStat) bundledHeaders.set(file, { stat: bundledStat, header });
+  return header;
+}
 
 /** Skills the owner turned off: "*" everywhere, or per project id. Kept in settings, never in the skill's folder. */
 type OffList = Record<string, string[]>;
@@ -94,12 +116,13 @@ function scan(
     const dir = path.join(root, n);
     const file = path.join(dir, "SKILL.md");
     try {
-      if (!allowLinks && (fs.lstatSync(dir).isSymbolicLink() || fs.lstatSync(file).isSymbolicLink())) return [];
-      const { fields } = parseFrontmatter(fs.readFileSync(file, "utf8"));
-      const description = (textField(fields.description) ?? "").replace(/\s+/g, " ").trim();
+      if (!allowLinks && fs.lstatSync(dir).isSymbolicLink()) return [];
+      const stat = allowLinks ? undefined : fs.lstatSync(file);
+      if (stat?.isSymbolicLink()) return [];
+      const header = skillHeader(file, n, base.source === "colonia" ? stat : undefined);
       // A skill the owner linked in from another app's folder says whose it is (it is shared with that app).
       const source = base.source === "owner" && isLink(dir) ? (appOf(realpath(dir)) ?? "owner") : base.source;
-      return [{ name: textField(fields.name) ?? n, description, ...base, source, dir, copies: [] }];
+      return [{ ...header, ...base, source, dir, copies: [] }];
     } catch {
       return [];
     }
@@ -188,15 +211,17 @@ export function allSkills(store: Store, roots: SkillRoots, projectId: string | u
  */
 function firstPerName(found: Skill[]): Skill[] {
   const reserved = new Set(found.filter(isColonia).map((s) => s.name));
-  const first = new Map<string, { skill: Skill; dirs: Set<string> }>();
+  const first = new Map<string, { skill: Skill; dirs?: Set<string> }>();
   for (const s of found) {
     if (!isColonia(s) && reserved.has(s.name)) continue;
-    const dir = realDir(s.dir);
     const kept = first.get(s.name);
     if (!kept) {
-      first.set(s.name, { skill: s, dirs: new Set([dir]) });
+      first.set(s.name, { skill: s });
       continue;
     }
+    // Sólo un nombre repetido necesita comprobar si ambas rutas llevan a la misma carpeta.
+    kept.dirs ??= new Set([realDir(kept.skill.dir)]);
+    const dir = realDir(s.dir);
     if (kept.dirs.has(dir)) continue;
     kept.dirs.add(dir);
     kept.skill.copies.push({ source: s.source, scope: s.scope, dir: s.dir, same: sameText(kept.skill.dir, s.dir) });

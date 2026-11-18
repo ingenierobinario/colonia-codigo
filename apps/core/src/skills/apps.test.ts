@@ -35,7 +35,7 @@ before(async () => {
   skill(path.join(home, "codex-home", "skills"), "release-notes", "Writes release notes.");
   skill(path.join(home, ".cursor", "skills"), "slides", "Makes decks.");
   skill(path.join(home, ".agents", "skills"), "shared", "Linked from the shared folder.");
-  fs.symlinkSync(path.join(home, ".agents", "skills", "shared"), path.join(home, "skills", "shared"));
+  fs.symlinkSync(path.join(home, ".agents", "skills", "shared"), path.join(home, "skills", "shared"), "junction");
   env = await startCore({ llm, home });
   repo = realpath(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-skill-apps-repo-")));
   fs.writeFileSync(path.join(repo, "AGENTS.md"), "# Acme\n");

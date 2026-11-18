@@ -5,6 +5,7 @@ import { after, before, test } from "node:test";
 import { callTool, say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { realpath } from "../paths.ts";
 import { removeDir } from "../testkit/platform.ts";
+import { COLONIA_SKILLS_DIR } from "./skills.ts";
 
 const llm = scriptedLlm((req, { said, afterTool }) => {
   if (afterTool) return say(`Loaded: ${String(req.messages.at(-1)?.content).slice(0, 200)}`);
@@ -88,6 +89,37 @@ test("Colonia's own skills: named in one sentence, loaded on demand, always on, 
   assert.match(loaded, /colonia mcps add/);
   assert.doesNotMatch(loaded, /Edit ~\/\.colonia\/mcps\.json/);
   await removeDir(dir);
+});
+
+test("el catálogo reutiliza las guías incluidas y detecta los cambios del usuario al volver a consultarlo", async (t) => {
+  const dir = fs.mkdtempSync(path.join(env.home, "skills", "catalogo-"));
+  t.after(() => removeDir(dir));
+  const file = path.join(dir, "SKILL.md");
+  const write = (description: string) =>
+    fs.writeFileSync(file, `---\nname: catalogo-editable\ndescription: ${description}\n---\n`);
+  write("Primera descripción");
+  const first = await env.client.call("skills.list", {});
+  const bundled = first.skills.filter((skill) => skill.source === "colonia");
+  assert.ok(bundled.length > 0);
+  assert.equal(first.skills.find((s) => s.name === "catalogo-editable")?.description, "Primera descripción");
+  write("Segunda descripción");
+  const reads = t.mock.method(fs, "readFileSync");
+  const paths =
+    process.platform === "win32" ? t.mock.method(fs.realpathSync, "native") : t.mock.method(fs, "realpathSync");
+  const next = await env.client.call("skills.list", {});
+  assert.deepEqual(
+    next.skills.filter((s) => s.source === "colonia"),
+    bundled,
+  );
+  assert.equal(next.skills.find((s) => s.name === "catalogo-editable")?.description, "Segunda descripción");
+  assert.equal(
+    reads.mock.calls.filter(({ arguments: [f] }) => String(f).startsWith(COLONIA_SKILLS_DIR + path.sep)).length,
+    0,
+  );
+  assert.equal(
+    paths.mock.calls.filter(({ arguments: [f] }) => String(f).startsWith(COLONIA_SKILLS_DIR + path.sep)).length,
+    0,
+  );
 });
 
 test("an empty file argument loads SKILL.md, and a folder lists its files instead of failing", async () => {
