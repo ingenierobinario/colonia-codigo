@@ -41,9 +41,11 @@ export function platformAssets(version: string, p: Platform): string[] {
   return files.flatMap((f) => [f, `${f}.sha256`]);
 }
 
-/** Every file of a release: each platform's slice plus the two install scripts. */
+/** Every file of a release: each platform's slice plus the two install scripts and the checked Railway deployment source. */
 export const expectedAssets = (version: string, platforms = RELEASE_PLATFORMS) => [
   ...platforms.flatMap((p) => platformAssets(version, p)),
+  `colonia-railway-${version}.zip`,
+  `colonia-railway-${version}.zip.sha256`,
   "install.sh",
   "install.ps1",
 ];

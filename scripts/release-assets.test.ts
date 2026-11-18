@@ -25,10 +25,10 @@ function fill(dir: string, names: string[]) {
   }
 }
 
-test("a release carries 40 distinct files", () => {
+test("la entrega contiene 42 archivos distintos, incluida la plantilla pública y su suma", () => {
   const all = expectedAssets(V);
-  assert.equal(all.length, 40);
-  assert.equal(new Set(all).size, 40);
+  assert.equal(all.length, 42);
+  assert.equal(new Set(all).size, 42);
   for (const n of [
     "colonia-core-1.2.3-win-x64.tar.gz.sha256",
     "Colonia-1.2.3-linux-x86_64.AppImage",
@@ -37,6 +37,8 @@ test("a release carries 40 distinct files", () => {
     "Colonia-1.2.3-linux-arm64.deb",
     "Colonia-1.2.3-linux-aarch64.rpm",
     "install.ps1",
+    "colonia-railway-1.2.3.zip",
+    "colonia-railway-1.2.3.zip.sha256",
   ])
     assert.ok(all.includes(n), n);
 });

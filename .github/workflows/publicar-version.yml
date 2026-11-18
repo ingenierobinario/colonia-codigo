@@ -124,6 +124,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24.11"
+      - name: Preparar la fuente pública de la plantilla de Railway
+        run: |
+          python3 -B -m unittest discover -s scripts/docker/railway -p test_empaquetar.py
+          python3 -B scripts/docker/railway/empaquetar.py "${TAG#v}" dist
       - name: Notas de la versión
         run: |
           # Lo que trae la versión, en los dos idiomas. Sin notas escritas (o sin Node), el mensaje de la etiqueta.
@@ -140,6 +144,6 @@ jobs:
           MODO: ${{ inputs.prueba && 'prueba' || 'estable' }}
         run: |
           ls -la dist
-          # Los 40 ficheros exactos y cada suma, antes de que nada sea público (create ya sube como borrador).
+          # Comprobamos los 42 ficheros y sus sumas antes de enviarlos al repositorio público.
           node scripts/release-assets.ts "${TAG#v}" dist
           node scripts/publicar-entrega.ts "$TAG" "$FEED" dist notas.md "$MODO"

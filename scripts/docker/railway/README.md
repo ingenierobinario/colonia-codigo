@@ -2,6 +2,8 @@
 
 La imagen usa el bundle Linux público fijado en `estable.txt`. Comprueba el SHA-256 de la arquitectura antes de extraerlo. El repositorio de la plantilla solo necesita el directorio `scripts/docker` con esa misma ruta desde la raíz y finales de línea LF. La imagen de Debian y los bundles se descargan de forma anónima. [Versión fijada de Colonia 2.36.49](https://github.com/ingenierobinario/colonia/releases/tag/v2.36.49)
 
+En cada nueva entrega, `colonia-railway-<versión>.zip` y su `.sha256` acompañan a los instaladores públicos. El ZIP contiene una guía, el Dockerfile, dos scripts y el archivo de versión y sumas calculado desde ambos bundles Linux de esa versión. Descomprímelo en el repositorio de la plantilla.
+
 ## Configuración de la plantilla
 
 1. En el editor de plantillas, añade un servicio desde un repositorio accesible que contenga esa fuente. Usa la raíz del repositorio como directorio de construcción. En las variables del servicio configura `RAILWAY_DOCKERFILE_PATH=/scripts/docker/Dockerfile`. Deja el comando de inicio vacío para usar el de la imagen y selecciona `/health` como ruta de comprobación del despliegue.
