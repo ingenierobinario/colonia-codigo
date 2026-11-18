@@ -21,6 +21,8 @@ export function createCursor() {
         ...d.bounds,
         transparent: true,
         frame: false,
+        // Al mostrar una ventana sin marco, AppKit permite este origen incluso sobre la barra de menús.
+        enableLargerThanScreen: true,
         focusable: false,
         hasShadow: false,
         resizable: false,
@@ -30,7 +32,6 @@ export function createCursor() {
       });
       win.setIgnoreMouseEvents(true);
       win.setAlwaysOnTop(true, "screen-saver");
-      // At this level macOS lets it cover the menu bar too; asked before, it moved the window down under it.
       win.setBounds(d.bounds);
       win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
       // Out of every screen picture: the agent must not see its own pointer.
