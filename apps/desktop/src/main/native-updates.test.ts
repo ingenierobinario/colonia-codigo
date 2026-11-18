@@ -224,3 +224,52 @@ test("an update ready on a local core goes in on quit even after the core has be
     native.stop();
   }
 });
+
+test("no abre el llavero hasta encontrar una credencial del equipo solicitado", async () => {
+  await using dir = tempDir();
+  let consultas = 0;
+  const cache = updateCredentials(dir.path, {
+    ...encryption,
+    available: () => {
+      consultas++;
+      return true;
+    },
+  });
+  assert.equal(cache.read("equipo-remoto"), undefined);
+  assert.equal(consultas, 0);
+  cache.write("equipo-remoto", "dato-de-prueba");
+  consultas = 0;
+  assert.equal(cache.read("otro-equipo"), undefined);
+  assert.equal(consultas, 0);
+  assert.equal(cache.read("equipo-remoto"), "dato-de-prueba");
+  assert.equal(consultas, 1);
+});
+
+test("la conexión local utiliza la autenticación local y no pide la del actualizador remoto", async () => {
+  const auth: Array<string | undefined> = [];
+  const server = http.createServer((request, response) => {
+    auth.push(request.headers.authorization);
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ ok: true, result: { protocol: PROTOCOL_VERSION } }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert(address && typeof address === "object");
+  const cache = updateCredentials(directory, encryption);
+  cache.write("local", "dato-remoto-de-prueba");
+  const native = nativeUpdates(rawUpdater().updater, { isDestroyed: () => false } as unknown as BaseWindow, {
+    change: async () => {},
+  });
+  try {
+    const local = { identity: "local", local: true, url: `http://127.0.0.1:${address.port}` };
+    native.connect(local);
+    await waitFor(() => auth.length === 1, "la conexión local");
+    native.connect({ ...local, token: "dato-local-de-prueba" });
+    await waitFor(() => auth.length === 2, "la conexión local autenticada");
+    assert.deepEqual(auth, [undefined, "Bearer dato-local-de-prueba"]);
+  } finally {
+    cache.write("local", undefined);
+    native.stop();
+    await new Promise<void>((resolve, reject) => server.close((e) => (e ? reject(e) : resolve())));
+  }
+});

@@ -12,10 +12,15 @@ export function updateCredentials(
   const file = path.join(directory, "update-credentials.json");
   return {
     read(identity: string): string | undefined {
-      if (!encryption.available()) return undefined;
       try {
         const saved = JSON.parse(fs.readFileSync(file, "utf8")) as { identity: string; encrypted: string };
-        if (saved.identity === identity) return encryption.decrypt(Buffer.from(saved.encrypted, "base64"));
+        if (
+          saved.identity === identity &&
+          typeof saved.encrypted === "string" &&
+          saved.encrypted &&
+          encryption.available()
+        )
+          return encryption.decrypt(Buffer.from(saved.encrypted, "base64"));
       } catch {}
       return undefined;
     },

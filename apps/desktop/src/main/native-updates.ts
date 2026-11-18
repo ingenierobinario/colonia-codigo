@@ -109,7 +109,7 @@ export function nativeUpdates(
     }
     const client = new ColoniaClient({
       url: connection.url,
-      token: connection.token ?? credentials.read(connection.identity),
+      token: connection.token ?? (connection.local ? undefined : credentials.read(connection.identity)),
       client: { name: "colonia-desktop", version: app.getVersion() },
       timeoutMs: 130_000,
     });
