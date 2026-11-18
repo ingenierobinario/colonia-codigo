@@ -12,6 +12,7 @@ import { jobsChanged } from "./jobs.ts";
 import { loadNotifications, notificationChanged } from "./notifications.ts";
 import { denied } from "./pairing.ts";
 import { refreshPinnedCatalogs } from "./pinnedCatalog.ts";
+import { invalidateProjectDirectory, loadProjectDirectory } from "./projects.ts";
 import { routineRunChanged } from "./routines.ts";
 import { data, upsertMessage } from "./state.ts";
 import { loadTasks, taskChanged, taskDeleted, tasksLoaded } from "./tasks.ts";
@@ -60,6 +61,7 @@ export function retryNow(): void {
 
 async function connect(): Promise<void> {
   const gen = ++generation;
+  invalidateProjectDirectory();
   // While retrying keep "offline" (and its banner) until a connection actually succeeds.
   if (data.get().connection !== "offline") data.set({ connection: "connecting" });
   let s: ColoniaSocket | undefined;
@@ -67,13 +69,13 @@ async function connect(): Promise<void> {
     // The health probe fails fast when the core is down; the socket alone can wait for its full timeout. A refused
     // socket says nothing of why: the probe's error does (a revoked token shows the pairing gate).
     const probe = client.call("system.health", {});
-    const [sock, health] = await Promise.all([
-      client.connect().catch(async (e: unknown) => {
-        await probe;
-        throw e;
-      }),
-      probe,
-    ]);
+    const handshake = client.connect().catch(async (e: unknown) => {
+      await probe;
+      throw e;
+    });
+    // El acceso HTTP ya se comprobó antes de montar el panel. El enlace directo puede dibujarse mientras llega welcome.
+    const preview = gen === 1 && nav.get().view === "project" ? loadProjectDirectory().catch(() => {}) : undefined;
+    const [sock, health] = await Promise.all([handshake, probe]);
     s = sock;
     notePanel(health);
     if (gen !== generation) return s.close();
@@ -82,7 +84,11 @@ async function connect(): Promise<void> {
     s.onEvent(onFrame);
     // Subscribe first, then read: nothing that happens in between is lost.
     if (gen > 1) refreshPinnedCatalogs();
-    await bootstrap();
+    // El directorio inicial pudo leerse antes de suscribir los eventos. Al terminar esa lectura se verifica otra vez,
+    // compartiendo cualquier consulta que ya se haya iniciado por una actualización recibida desde entonces.
+    const confirmed = preview?.then(() => (gen === generation ? loadProjectDirectory() : undefined));
+    await bootstrap(confirmed);
+    if (gen !== generation) return;
     await refetchLoaded();
     void loadNotifications();
     void loadUpdates({ panelChecked: true });
@@ -96,6 +102,7 @@ async function connect(): Promise<void> {
   } catch (e) {
     s?.close();
     if (gen !== generation) return;
+    invalidateProjectDirectory();
     if (needsPairing(e)) return denied();
     data.set({ connection: "offline", error: e instanceof Error ? e.message : String(e) });
   }

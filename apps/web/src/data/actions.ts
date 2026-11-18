@@ -14,6 +14,7 @@ import { parseNewChat, takeNewChatModel } from "./newChat.ts";
 import { notify } from "./notices.ts";
 import { hasNoticesFor } from "./notifications.ts";
 import { keepSame } from "./poll.ts";
+import { refreshProjectDirectory } from "./projects.ts";
 import { data, upsertMessage } from "./state.ts";
 import { openMarkReadDialog } from "./threadAdmin.ts";
 
@@ -38,21 +39,19 @@ async function loadComputer(): Promise<void> {
 }
 
 /** Agents, projects, threads, surfaces and browser tabs in one round. Throws if the core is unreachable. */
-export async function bootstrap(): Promise<void> {
+export async function bootstrap(directory = refreshProjectDirectory()): Promise<void> {
   // Comprobar el ordenador puede arrancar procesos del sistema; no debe retener los chats ni los proyectos.
   void loadComputer();
-  const [agents, projects, threads, surfaces] = await Promise.all([
+  const [agents, threads, surfaces] = await Promise.all([
     client.call("agents.list", {}),
-    client.call("projects.list", { include_unregistered: true }),
     // Archived chats too: the Inbox keeps them apart, under Archived. And a few of each chat's delegated chats.
     client.call("threads.list", { include_archived: true, delegated: DELEGATED_SHOWN }),
     client.call("surfaces.list", {}),
+    directory,
   ]);
   data.set({
     agents: Object.fromEntries(agents.agents.map((a) => [a.id, a])),
     former: Object.fromEntries((agents.former ?? []).map((a) => [a.id, a])),
-    projects: projects.projects,
-    base: projects.base,
     threads: listedThreads(data.get().threads, threads.threads),
     delegated: threads.delegated ?? {},
     surfaces: Object.fromEntries(surfaces.surfaces.map((s) => [s.id, s])),
@@ -99,6 +98,8 @@ const opened = new Set<string>();
  */
 export async function loadProjectThreads(projectId: string): Promise<void> {
   opened.add(projectId);
+  // Si el enlace directo ya mostró el proyecto, bootstrap leerá sus chats justo después de instalar la lista global.
+  if (!data.get().ready) return;
   try {
     const { threads } = await client.call("threads.list", { project_id: projectId, include_archived: true });
     data.set((s) => ({ threads: { ...s.threads, ...Object.fromEntries(threads.map((t) => [t.id, t])) } }));

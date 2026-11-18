@@ -6,6 +6,7 @@ import { client } from "./client.ts";
 import { realProjectId } from "./identity.ts";
 import { notify } from "./notices.ts";
 import { loadOrg } from "./org.ts";
+import { invalidateProjectDirectory, loadProjectDirectory, refreshProjectDirectory } from "./projects.ts";
 import { loadRoutines } from "./routines.ts";
 import { data } from "./state.ts";
 
@@ -72,8 +73,7 @@ export async function installTemplates(
     if (r.routines.length) void loadRoutines();
     // A team with a kind made the project a company: its kind and its areas and roles changed too.
     if (r.project_kind) {
-      const { projects, base } = await client.call("projects.list", { include_unregistered: true });
-      data.set({ projects, base });
+      await refreshProjectDirectory();
       void loadOrg(projectId);
     }
     return { installed: r.installed.length, routines: r.routines.length, skipped: r.skipped };
@@ -163,16 +163,15 @@ let teamTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** The core said agents or projects changed (an agent made one, a project's files moved): reload both lists. */
 export function teamChanged(): void {
+  invalidateProjectDirectory();
   if (teamTimer) return;
   teamTimer = setTimeout(() => {
     teamTimer = undefined;
-    void Promise.all([client.call("agents.list", {}), client.call("projects.list", { include_unregistered: true })])
-      .then(([agents, projects]) =>
+    void Promise.all([client.call("agents.list", {}), loadProjectDirectory()])
+      .then(([agents]) =>
         data.set({
           agents: Object.fromEntries(agents.agents.map((a) => [a.id, a])),
           former: Object.fromEntries((agents.former ?? []).map((a) => [a.id, a])),
-          projects: projects.projects,
-          base: projects.base,
         }),
       )
       .catch(() => {});

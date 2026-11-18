@@ -8,6 +8,35 @@ import { data } from "./state.ts";
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+let pendingDirectory: Promise<void> | undefined;
+
+/** Un cambio del equipo o una nueva conexión deja en desuso la lectura iniciada anteriormente. */
+export function invalidateProjectDirectory(): void {
+  pendingDirectory = undefined;
+}
+
+export function loadProjectDirectory(): Promise<void> {
+  if (pendingDirectory) return pendingDirectory;
+  const { projects: previous, base: previousBase } = data.get();
+  const request = client
+    .call("projects.list", { include_unregistered: true })
+    .then(({ projects, base }) => {
+      const current = data.get();
+      if (request === pendingDirectory && current.projects === previous && current.base === previousBase)
+        data.set({ projects, base });
+    })
+    .finally(() => {
+      if (pendingDirectory === request) pendingDirectory = undefined;
+    });
+  pendingDirectory = request;
+  return request;
+}
+
+export function refreshProjectDirectory(): Promise<void> {
+  invalidateProjectDirectory();
+  return loadProjectDirectory();
+}
+
 /** Saves the change and shows it everywhere the project is listed; the project, or nothing when it failed. */
 export async function updateProject(p: Params<"projects.update">): Promise<Project | undefined> {
   try {
