@@ -2344,32 +2344,35 @@ a.hero__term {
   .hv-cta { width: 100%; }
 }
 
-/* VSL-BF-5: fondo azul marino de Ingeniero Binario (solo tokens del modo vsl), cinta de Black Friday en movimiento,
- * marca IB junto a Colonia, play fuera de los nombres de la portada y línea de confianza legible. */
+/* VSL-BF-6: portada de Black Friday en tema CLARO (el de la landing, data-theme="light", con fondo casi blanco),
+ * tira amarilla en movimiento con botón en pastilla, claim con marcador verde, play centrado y captura real de la app. */
 .home--vsl {
-  --colonia-bg: hsl(224 60% 12%);
-  --colonia-surface: hsl(224 50% 15%);
-  --colonia-surface-raised: hsl(224 46% 17%);
-  --colonia-card: hsl(224 48% 16%);
-  --colonia-fill: hsl(224 42% 19%);
-  --colonia-fill-strong: hsl(224 38% 25%);
-  --colonia-fg: hsl(214 40% 95%);
-  --colonia-fg-muted: hsl(218 30% 78%);
-  --colonia-fg-subtle: hsl(218 24% 68%);
-  --colonia-border: hsl(224 34% 26%);
-  --colonia-border-strong: hsl(224 30% 36%);
-  --colonia-shadow-md: 0 2px 8px rgb(3 8 24 / 0.45), 0 12px 32px rgb(3 8 24 / 0.5);
-  --colonia-shadow-lift: 0 40px 120px -40px rgb(3 8 24 / 0.7);
+  --colonia-bg: hsl(210 20% 98%);
+  --colonia-surface: #fff;
+  --colonia-surface-raised: #fff;
+  --colonia-card: #fff;
+  --colonia-fill: hsl(214 20% 95%);
+  --colonia-fill-strong: hsl(214 18% 90%);
+  --colonia-border: hsl(214 18% 87%);
+  --colonia-border-strong: hsl(214 14% 78%);
+  --hv-green: hsl(152 68% 28%);
+  --hv-mark: hsl(146 70% 80%);
   --hv-bf: #ffd21f;
-  --hv-bf-ink: #0b1430;
+  --hv-bf-ink: #15171c;
   background: var(--colonia-bg);
 }
+.home--vsl .hero__horizon { display: none; }
+.home--vsl .hero__aura {
+  display: block;
+  background: radial-gradient(ellipse 70% 55% at 50% 0%, hsl(152 60% 88% / 0.75), transparent 70%);
+}
 
+/* La tira: corre a lo ancho y el botón es una pastilla con margen; el texto se funde antes de llegar a él. */
 .hv-ribbon {
   flex-wrap: nowrap;
   justify-content: flex-start;
   gap: 0;
-  padding: 0;
+  padding: 0 8px 0 0;
   border-bottom: 0;
   background: var(--hv-bf);
   backdrop-filter: none;
@@ -2377,7 +2380,13 @@ a.hero__term {
   font-size: 14px;
   font-weight: 600;
 }
-.hv-ribbon__track { flex: 1; min-width: 0; overflow: hidden; }
+.hv-ribbon__track {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
+}
 .hv-ribbon__run { display: flex; width: max-content; animation: hv-run 38s linear infinite; }
 .hv-ribbon__item { display: inline-flex; align-items: center; gap: 8px; padding: 10px 28px; white-space: nowrap; }
 .hv-ribbon__item > b { font-weight: 800; letter-spacing: 0.06em; }
@@ -2385,52 +2394,125 @@ a.hero__term {
 .hv-ribbon .hv-clock { font-size: 13.5px; }
 .hv-ribbon__cta {
   flex: none;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  padding: 0 18px;
-  border-radius: 0;
+  align-self: center;
+  margin-left: 4px;
+  padding: 6px 16px;
+  border-radius: 999px;
   background: var(--hv-bf-ink);
   color: var(--hv-bf);
+  font-size: 13.5px;
   font-weight: 700;
-  box-shadow: -14px 0 18px -6px var(--hv-bf);
+  line-height: 1.2;
 }
+.hv-ribbon__cta:hover { filter: none; background: #000; }
 @keyframes hv-run { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) {
   .hv-ribbon__run { animation: none; width: auto; margin: 0 auto; }
-  .hv-ribbon__track { display: flex; justify-content: center; }
+  .hv-ribbon__track { display: flex; justify-content: center; -webkit-mask-image: none; mask-image: none; }
   .hv-ribbon__item[aria-hidden] { display: none; }
 }
 
+/* Marca: el logo de Ingeniero Binario es oscuro y ya se lee sobre claro. */
 .hv-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--colonia-fg); }
 .hv-brand > i { font-style: normal; color: var(--colonia-fg-subtle); }
-.hv-ib { filter: invert(1); }
 .hv-ib__name { font-weight: 700; font-size: 13px; letter-spacing: 0.14em; }
 .hv-foot { display: grid; justify-items: center; gap: 8px; }
 .hv-foot p { margin: 0; }
 .hv-foot .hv-logo { font-size: 15px; }
 
-/* Play abajo a la izquierda, sobre la alfombra vacía: Hanna, José y Lucía quedan a la vista. */
+/* Hero: claim grande con marcador verde; en el subclaim, en negrita lo que vende. */
+.hv-h1 { max-width: 19ch; font-size: clamp(38px, 5.3vw, 76px); font-weight: 700; letter-spacing: -0.045em; line-height: 1.02; color: var(--colonia-fg); }
+.hv-mark {
+  padding: 0 0.08em;
+  background: linear-gradient(transparent 60%, var(--hv-mark) 60%, var(--hv-mark) 92%, transparent 92%);
+  color: var(--hv-green);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.hv-sub { max-width: 720px; color: var(--colonia-fg-muted); }
+.hv-sub b { color: var(--colonia-fg); font-weight: 700; }
+
+/* Play grande, centrado sobre la portada; la etiqueta, debajo; la foto, en la esquina. */
 .hv-play {
-  grid-auto-flow: column;
-  place-content: end start;
+  grid-auto-flow: row;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 0;
+  background: radial-gradient(circle at center, rgb(10 20 16 / 0.22), transparent 55%);
+}
+.hv-play__btn { width: clamp(72px, 9vw, 104px); background: var(--hv-green); box-shadow: 0 0 0 12px color-mix(in srgb, var(--hv-green) 26%, transparent), 0 12px 30px rgb(0 0 0 / 0.25); }
+.hv-play__btn svg { fill: #fff; }
+.hv-play__t { background: rgb(15 23 20 / 0.72); color: #fff; }
+.hv-owner { left: auto; right: 14px; border-color: #fff; box-shadow: 0 4px 14px rgb(0 0 0 / 0.2); }
+.hv-video { border-color: var(--colonia-border); box-shadow: 0 0 0 6px hsl(152 50% 92%), 0 30px 70px -30px rgb(15 23 42 / 0.35); }
+
+/* Botón principal más grande, con sombra suave; debajo, la línea de confianza con sus tres checks. */
+.hv-cta {
+  height: 64px;
+  padding: 0 40px;
+  border-radius: 999px;
+  background: var(--hv-green);
+  color: #fff;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: 0 14px 34px -12px color-mix(in srgb, var(--hv-green) 70%, transparent), 0 2px 6px rgb(15 23 42 / 0.12);
+}
+.hv-cta:hover { filter: brightness(1.1); }
+.hv-trust { gap: 4px 18px; color: var(--colonia-fg-muted); font-weight: 500; text-shadow: none; }
+.hv-trust span::before { content: "✓ "; color: var(--hv-green); font-weight: 800; }
+.hv-stat b { color: var(--hv-green); }
+.hv-stack svg { stroke: var(--hv-green); }
+
+/* La aplicación de verdad (captura de la oficina de ejemplo), en una ventana limpia y sin burbujas encima. */
+.hv-win {
+  overflow: hidden;
+  border: 1px solid var(--colonia-border);
+  border-radius: clamp(12px, 1.4vw, 18px);
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(15 23 42 / 0.06), 0 40px 90px -40px rgb(15 23 42 / 0.4);
+}
+.hv-win__bar {
+  position: relative;
+  display: flex;
   align-items: center;
-  padding: 0 0 7% 22%;
-  background: linear-gradient(to top, rgb(11 20 48 / 0.32), transparent 45%);
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--colonia-border);
+  background: hsl(214 20% 96%);
 }
-.hv-owner { left: auto; right: 14px; }
+.hv-win__bar i { width: 11px; height: 11px; border-radius: 50%; background: hsl(214 14% 80%); }
+.hv-win__bar span { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12.5px; font-weight: 600; color: var(--colonia-fg-subtle); }
+.hv-win__img { display: block; width: 100%; height: auto; }
+
 @media (max-width: 560px) {
-  .hv-play { padding: 0 0 6% 6%; gap: 8px; }
-  .hv-play__btn { width: 52px; }
-  .hv-play__t { font-size: 12.5px; }
-  .hv-owner { width: 42px; height: 42px; right: 10px; bottom: 10px; }
-  .hv-ribbon { font-size: 12.5px; }
+  .hv-ribbon { font-size: 12.5px; padding-right: 6px; }
   .hv-ribbon__item { padding: 9px 18px; }
-  .hv-ribbon__cta { padding: 0 12px; font-size: 12.5px; }
+  .hv-ribbon__cta { padding: 5px 11px; font-size: 12px; }
+  .hv-ribbon__track { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
   .hv-ib__name { font-size: 11.5px; letter-spacing: 0.1em; }
+  .hv-h1 { font-size: clamp(34px, 9.6vw, 44px); }
+  .hv-play { gap: 8px; }
+  .hv-play__btn { width: 60px; box-shadow: 0 0 0 8px color-mix(in srgb, var(--hv-green) 26%, transparent); }
+  .hv-play__t { padding: 3px 10px; font-size: 12px; }
+  .hv-owner { width: 40px; height: 40px; right: 8px; bottom: 8px; }
+  .hv-cta { height: 58px; font-size: 18px; }
+  .hv-win__bar { height: 26px; }
+  .hv-win__bar i { width: 8px; height: 8px; }
+  .hv-win__bar span { font-size: 11px; }
 }
-.hv-trust { color: var(--colonia-fg); font-weight: 500; text-shadow: 0 1px 8px var(--colonia-bg); }
+
+/* El play queda en el centro exacto: la etiqueta cuelga debajo sin desplazarlo. */
+.hv-play { --hv-btn: clamp(72px, 9vw, 104px); }
+.hv-play__btn { width: var(--hv-btn); }
+.hv-play__t { position: absolute; top: calc(50% + var(--hv-btn) / 2 + 18px); left: 50%; transform: translateX(-50%); white-space: nowrap; }
 @media (max-width: 560px) {
-  .hv-play__t { display: none; }
-  .hv-trust { padding: 8px 14px; border-radius: 14px; background: color-mix(in srgb, var(--colonia-bg) 82%, transparent); }
+  .hv-play { --hv-btn: 60px; }
+  .hv-play__t { top: calc(50% + var(--hv-btn) / 2 + 12px); }
+}
+/* Pantallas bajas (1366x768): claim algo menor para que el botón entre sin scroll. */
+@media (min-width: 561px) and (max-height: 820px) {
+  .hv-h1 { font-size: clamp(36px, 4.4vw, 60px); }
+  .hv-sub { margin-top: 12px; }
 }
