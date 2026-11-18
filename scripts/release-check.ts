@@ -10,7 +10,6 @@ import { fileURLToPath } from "node:url";
 
 export const RELEASE_BRANCH = "main";
 export const VERIFY_WORKFLOW = "verify.yml";
-const DEFAULT_REPO = "ingenierobinario/colonia";
 
 export type VerifyRun = { databaseId: number; status: string; conclusion: string; url: string; headSha: string };
 export type Verdict = { verified: true; run: VerifyRun } | { verified: false; pending?: VerifyRun; reason: string };
@@ -51,7 +50,7 @@ export function parseArgs(argv: readonly string[]) {
   };
   const wait = rest.includes("--wait");
   const tag = take("--tag");
-  const repo = take("--repo") ?? process.env.COLONIA_RELEASE_REPO ?? DEFAULT_REPO;
+  const repo = take("--repo") ?? process.env.COLONIA_RELEASE_REPO;
   const positional = rest.filter((a) => a !== "--wait");
   if (positional.some((a) => a.startsWith("-")))
     throw new Error(`unknown flag ${positional.find((a) => a.startsWith("-"))}`);
@@ -68,12 +67,12 @@ export function check(argv: readonly string[], run: Run = exec, log = console.lo
     return 1;
   }
   const sha = resolved.stdout.trim();
+  const repositoryArgs = repo ? ["-R", repo] : [];
   const list = () => {
     const out = run("gh", [
       "run",
       "list",
-      "-R",
-      repo,
+      ...repositoryArgs,
       "--workflow",
       VERIFY_WORKFLOW,
       "--branch",
@@ -91,7 +90,7 @@ export function check(argv: readonly string[], run: Run = exec, log = console.lo
   let v = list();
   if (!v.verified && v.pending && wait) {
     log(`release:check: watching ${v.pending.url}`);
-    run("gh", ["run", "watch", String(v.pending.databaseId), "-R", repo, "--interval", "30"], true);
+    run("gh", ["run", "watch", String(v.pending.databaseId), ...repositoryArgs, "--interval", "30"], true);
     v = list();
   }
   if (!v.verified) {

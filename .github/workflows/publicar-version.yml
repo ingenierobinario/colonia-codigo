@@ -27,8 +27,39 @@ env:
   TAG: ${{ inputs.tag || github.ref_name }}
   FEED: ingenierobinario/colonia
 
+concurrency:
+  group: entrega-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
+  preparar:
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      sha: ${{ steps.fijar.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || (github.event_name == 'push' && github.sha) || env.TAG }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.11"
+      - name: Fijar el commit para todos los instaladores
+        id: fijar
+        run: |
+          [[ "$TAG" =~ ^v2\.[0-9]+\.[0-9]+$ ]] || exit 1
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Comprobar la verificación del commit en main
+        if: github.event_name == 'push' || !inputs.prueba
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/release-check.ts --repo "$GITHUB_REPOSITORY" HEAD
+
   instalador:
+    needs: preparar
     strategy:
       fail-fast: true
       matrix:
@@ -42,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || env.TAG }}
+          ref: ${{ needs.preparar.outputs.sha }}
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Compilar
@@ -77,12 +108,12 @@ jobs:
           retention-days: 7
 
   publicar:
-    needs: instalador
+    needs: [preparar, instalador]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || env.TAG }}
+          ref: ${{ needs.preparar.outputs.sha }}
           fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
@@ -104,12 +135,9 @@ jobs:
       - name: Publicar en el repositorio público
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          MODO: ${{ inputs.prueba && 'prueba' || 'estable' }}
         run: |
           ls -la dist
           # Los 40 ficheros exactos y cada suma, antes de que nada sea público (create ya sube como borrador).
           node scripts/release-assets.ts "${TAG#v}" dist
-          if gh release view "$TAG" -R "$FEED" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/* -R "$FEED" --clobber
-          else
-            gh release create "$TAG" dist/* -R "$FEED" --target main --title "Colonia ${TAG#v}" --notes-file notas.md               ${{ inputs.prueba && '--prerelease' || '' }}
-          fi
+          node scripts/publicar-entrega.ts "$TAG" "$FEED" dist notas.md "$MODO"

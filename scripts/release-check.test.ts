@@ -26,7 +26,7 @@ test("only a commit whose newest verify run passed is verified", () => {
 });
 
 test("arguments: a ref, --wait, --tag v2.x.y and --repo", () => {
-  assert.deepEqual(parseArgs([]), { ref: "HEAD", wait: false, tag: undefined, repo: "ingenierobinario/colonia" });
+  assert.deepEqual(parseArgs([]), { ref: "HEAD", wait: false, tag: undefined, repo: process.env.COLONIA_RELEASE_REPO });
   assert.deepEqual(parseArgs(["--tag", "v2.10.0", "main", "--wait", "--repo", "acme/colonia"]), {
     ref: "main",
     wait: true,

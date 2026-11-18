@@ -1,5 +1,8 @@
 # Releasing Colonia v2
 
+En el flujo **Publicar versión**, una etiqueta de versión o una ejecución manual con la opción de prueba desactivada distribuye la actualización estable. El flujo fija un único commit para los cinco instaladores y comprueba su ejecución de `verify` en `main`. Con **Publicarla como prelanzamiento** activado, los usuarios del canal estable siguen recibiendo su versión habitual. Una versión que ya es estable conserva sus instaladores. Para distribuir cambios posteriores se crea otra versión.
+
+
 How v2 leaves the private working repo and reaches people. What was built for updates is
 [D-044](DECISIONS.md#d-044).
 
