@@ -10,7 +10,9 @@ export const SyncStatus = z.object({
   /** Si otro equipo puede llegar a este; si no, el código solo sirve dentro de este mismo equipo. */
   reachable: z.boolean(),
   /** El código que hay que escribir en el otro equipo, mientras vale. */
-  pairing: z.object({ code: z.string(), expires_at: z.string() }).optional(),
+  pairing: z
+    .object({ code: z.string(), expires_at: z.string(), initial_source: z.literal("joining_device").optional() })
+    .optional(),
   peer: z.object({ name: z.string() }).optional(),
   /** El principal lleva los canales y las rutinas; el otro los ve y los usa a través de él. */
   role: SyncRole.optional(),
@@ -61,7 +63,13 @@ const none = z.object({}).strict();
 export const syncMethods = {
   "sync.status": { params: none, result: SyncStatus, effect: false, access: "human" },
   /** Un código para escribir en el otro equipo. Este queda como principal. */
-  "sync.pair_start": { params: none, result: SyncStatus, effect: true, access: "human", replay: false },
+  "sync.pair_start": {
+    params: z.object({ initial_source: z.literal("joining_device").optional() }).strict(),
+    result: SyncStatus,
+    effect: true,
+    access: "human",
+    replay: false,
+  },
   "sync.pair_cancel": { params: none, result: SyncStatus, effect: true, access: "human" },
   /** El código que enseña el otro equipo. Este se une a él. */
   "sync.pair_join": {

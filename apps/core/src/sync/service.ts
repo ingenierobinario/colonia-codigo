@@ -134,7 +134,9 @@ const Msg = z.discriminatedUnion("t", [
   z.object({ t: z.literal("adios") }),
 ]);
 type Msg = z.infer<typeof Msg>;
+const InitialSource = z.literal("joining_device");
 const PairMsg = z.object({
+  accepts_initial_source: InitialSource.optional(),
   t: z.literal("pair"),
   pub: z.string(),
   name: z.string(),
@@ -143,7 +145,7 @@ const PairMsg = z.object({
 });
 const AuthMsg = z.object({ t: z.literal("auth"), sig: z.string() });
 const PairReply = z.union([
-  z.object({ t: z.literal("paired"), name: z.string(), proof: z.string() }),
+  z.object({ t: z.literal("paired"), name: z.string(), proof: z.string(), initial_source: InitialSource.optional() }),
   z.object({ t: z.literal("refused"), why: z.string() }),
 ]);
 
@@ -261,7 +263,7 @@ export function createSync(d: SyncDeps) {
   let dialing = false;
   let attempt = 0;
   let nextDial = 0;
-  let shown: { code: string; expires_at: string } | undefined;
+  let shown: SyncStatus["pairing"];
   /** El código vigente, estirado. */
   let secret: string | undefined;
   let stateDirty = 0;
@@ -761,7 +763,20 @@ export function createSync(d: SyncDeps) {
             phase = "dead";
             return void setTimeout(() => ws.close(1008, "cerrado"), 50);
           }
-          // Quien generó el código es el principal y, en lo que los dos ya tenían, manda lo suyo.
+          // El papel de principal y la precedencia de los datos se acuerdan por separado.
+          const source = shown?.initial_source;
+          if (source && p.accepts_initial_source !== source) {
+            wire.send({
+              t: "refused",
+              why: "actualiza Colonia en el escritorio para conservar sus datos al emparejarlo",
+            });
+            shown = undefined;
+            secret = undefined;
+            tune();
+            tell();
+            phase = "dead";
+            return void setTimeout(() => ws.close(1008, "actualización necesaria"), 50);
+          }
           state = {
             peer: { id: hex(fingerprintOf(p.pub)), name: p.name.slice(0, 80), publicKey: p.pub, urls: [] },
             role: "principal",
@@ -770,10 +785,15 @@ export function createSync(d: SyncDeps) {
           };
           shown = undefined;
           secret = undefined;
-          open(me, "first");
+          open(me, source ? "oldest" : "first");
           saveState();
           // Este equipo también demuestra que conoce el código: el que se une no tiene otra forma de saber quién es.
-          wire.send({ t: "paired", name: myName(), proof: pairProof(`equipo:${key}`, t, me.publicKey) });
+          wire.send({
+            t: "paired",
+            name: myName(),
+            proof: pairProof(`equipo:${key}`, t, me.publicKey),
+            ...(source ? { initial_source: source } : {}),
+          });
           phase = "dead";
           tell();
           return void setTimeout(() => ws.close(1000, "emparejado"), 50);
@@ -1027,12 +1047,16 @@ export function createSync(d: SyncDeps) {
       };
     },
     /** Un código para escribir en el otro equipo: vale diez minutos y una sola vez. */
-    pairStart(): { code: string; expires_at: string } {
+    pairStart(source?: "joining_device"): NonNullable<SyncStatus["pairing"]> {
       if (state) throw new Error("este equipo ya está emparejado");
       identity(true);
       const { code, expiresAt } = pairing.start();
       secret = stretch(code);
-      shown = { code: pretty(code), expires_at: new Date(expiresAt).toISOString() };
+      shown = {
+        code: pretty(code),
+        expires_at: new Date(expiresAt).toISOString(),
+        ...(source ? { initial_source: source } : {}),
+      };
       tune();
       tell();
       return shown;
@@ -1082,6 +1106,7 @@ export function createSync(d: SyncDeps) {
               hard = true;
               c.send({
                 t: "pair",
+                accepts_initial_source: "joining_device",
                 pub: me.publicKey,
                 name: myName(),
                 proof: pairProof(key, c.tr, me.publicKey),
@@ -1113,7 +1138,7 @@ export function createSync(d: SyncDeps) {
                     role_at: now(),
                     paired_at: new Date(now()).toISOString(),
                   };
-                  open(me, "oldest");
+                  open(me, m.initial_source ? "first" : "oldest");
                   saveState();
                   ws.close();
                   try {

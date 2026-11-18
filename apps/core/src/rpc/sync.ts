@@ -14,8 +14,8 @@ export function syncHandlers(sync: Sync) {
   };
   return {
     "sync.status": () => sync.status(),
-    "sync.pair_start": () => {
-      said(() => sync.pairStart());
+    "sync.pair_start": ({ initial_source }) => {
+      said(() => sync.pairStart(initial_source));
       return sync.status();
     },
     "sync.pair_cancel": () => {
