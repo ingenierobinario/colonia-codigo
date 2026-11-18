@@ -15,6 +15,10 @@ export const ScreenMap = z.object({
 });
 export type ScreenMap = z.infer<typeof ScreenMap>;
 
+/** Identidad de presentación que el motor añade a una acción para el escritorio. */
+export const ComputerActor = z.object({ id: z.string().min(1), name: z.string().min(1), blob: z.string().optional() });
+export type ComputerActor = z.infer<typeof ComputerActor>;
+
 /** Cómo maneja el agente la pantalla: lo elige siempre la persona. `ask` = aún no lo ha dicho. */
 export const ComputerMode = z.enum(["ask", "live", "background"]);
 export type ComputerMode = z.infer<typeof ComputerMode>;

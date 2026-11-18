@@ -55,6 +55,7 @@ let home = "";
 let owner: ColoniaClient;
 let desktop: ColoniaSocket | undefined;
 const calls: string[] = [];
+const identities: unknown[] = [];
 
 before(async () => {
   home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-computer-"));
@@ -103,6 +104,7 @@ test("computer use exists only while the desktop lends it; in Auto a look at the
   desktop = await new ColoniaClient({ url: core.url }).connect("node", ["browser", "computer"]);
   desktop.onRequest(async (method, params) => {
     calls.push(method);
+    identities.push((params as { actor?: unknown }).actor);
     if (method === "computer.snapshot")
       return {
         mime: "image/jpeg",
@@ -127,6 +129,11 @@ test("computer use exists only while the desktop lends it; in Auto a look at the
   await settle(thread);
   assert.equal((await owner.call("runs.pending", { thread })).inputs.length, 0, "a look is a read: no card");
   const parts = (await owner.call("threads.get", { thread })).messages.flatMap((m) => m.parts);
+  const agent = core.store.agents.get("superagent");
+  assert.ok(agent);
+  assert.deepEqual(identities.at(-1), { id: agent.id, name: agent.name, ...(agent.blob ? { blob: agent.blob } : {}) });
+  await owner.call("computer.snapshot", {});
+  assert.equal(identities.at(-1), undefined, "la acción de la persona no hereda al agente");
   // The chat shows "controlling the computer" and the live view, not a picture per look.
   assert.ok(!parts.some((p) => p.type === "image"), "no picture of the screen lands in the chat");
   const msgs = llm.calls.at(-1)?.messages ?? [];

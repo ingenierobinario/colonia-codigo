@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { LIVE_CLOSED, type LiveEvent, type LiveState, liveReduce } from "./screenLiveState.ts";
+import { createLiveFeed, LIVE_CLOSED, type LiveEvent, type LiveState, liveReduce } from "./screenLiveState.ts";
 
 const look = (at: number): LiveEvent => ({
   type: "activity",
@@ -39,4 +39,37 @@ test("DETENER-VIVO-1: the end of a hold with nothing stopped here changes nothin
   const open = run([look(1)]);
   assert.equal(liveReduce(open, { type: "stopped", stopped: false }), open);
   assert.deepEqual(liveReduce(LIVE_CLOSED, { type: "stopped", stopped: false }), LIVE_CLOSED);
+});
+
+test("el relevo retira la identidad y conserva la posición y el tamaño elegidos hasta la nueva acción", () => {
+  const initial = run([look(1)]);
+  const between = liveReduce(initial, { type: "handoff" });
+  assert.equal(between.last, undefined);
+  assert.equal(between.handoff, true);
+  assert.equal(liveReduce(between, look(3)).handoff, undefined);
+});
+
+test("el relevo recibido entre dos montajes del chat llega al nuevo montaje y caduca al quedar inactivo", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let emit: (event: LiveEvent) => void = () => assert.fail("sin enlace");
+  let connections = 0;
+  const feed = createLiveFeed((fn) => {
+    emit = fn;
+    connections++;
+  });
+  const detach = feed.subscribe(() => {});
+  emit(look(1));
+  detach();
+  emit({
+    ...look(2),
+    type: "activity",
+    activity: { kind: "click", app: "Calc", window: "1", actor: { id: "dos", name: "Sol" } },
+    at: 2,
+  });
+  const close = feed.subscribe(() => {});
+  assert.equal(feed.get().last?.actor?.id, "dos");
+  assert.equal(connections, 1);
+  close();
+  t.mock.timers.tick(180_000);
+  assert.deepEqual(feed.get(), LIVE_CLOSED);
 });

@@ -1,12 +1,14 @@
-import { IconButton, Icons } from "@colonia/ui";
-import { type PointerEvent, useEffect, useReducer, useRef, useState } from "react";
+import { AgentAvatar, IconButton, Icons } from "@colonia/ui";
+import { type PointerEvent, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { stopKeys } from "../config/desktopPrefs.ts";
+import { blobOf } from "../data/identity.ts";
 import { useT } from "../i18n/index.ts";
 import { ComputerIcon } from "./parts/ComputerIcon.tsx";
-import { LIVE_CLOSED, type LiveActivity, liveReduce, STOP_NOTICE_MS } from "./screenLiveState.ts";
+import { createLiveFeed, type LiveActivity } from "./screenLiveState.ts";
 
 type Frame = {
   data: string;
+  action?: number;
   bounds?: { x: number; y: number; width: number; height: number };
   app: string;
   window: string;
@@ -15,9 +17,13 @@ type Size = "mini" | "large" | "hidden";
 type Offset = { x: number; y: number };
 
 const FRAME_MS = 700;
-/** With no agent action for this long, computer use is over: the card closes and its place is forgotten. */
-const IDLE_MS = 3 * 60_000;
 const HOME: Offset = { x: 0, y: 0 };
+const activity = createLiveFeed((dispatch) => {
+  window.coloniaDesktop?.onComputerActivity?.((a) =>
+    dispatch(a ? { type: "activity", activity: a as LiveActivity, at: Date.now() } : { type: "handoff" }),
+  );
+  window.coloniaDesktop?.onComputerStopped?.((stopped) => dispatch({ type: "stopped", stopped }));
+});
 
 /**
  * The window an agent works on, live, in a card over the chat (desktop app only). It starts small at the bottom; it
@@ -28,57 +34,44 @@ const HOME: Offset = { x: 0, y: 0 };
  */
 export function ScreenLive() {
   const t = useT();
-  const [{ last, stopped }, dispatch] = useReducer(liveReduce, LIVE_CLOSED);
-  const [frame, setFrame] = useState<Frame>();
+  const { last, stopped, handoff } = useSyncExternalStore(activity.subscribe, activity.get);
+  const [capture, setFrame] = useState<Frame>();
   const [size, setSize] = useState<Size>("mini");
   const [offset, setOffset] = useState<Offset>(HOME);
   const card = useRef<HTMLElement>(null);
   const drag = useRef<{ px: number; py: number; from: Offset } | undefined>(undefined);
-
-  useEffect(
-    () =>
-      window.coloniaDesktop?.onComputerActivity?.((a) =>
-        dispatch({ type: "activity", activity: a as LiveActivity, at: Date.now() }),
-      ),
-    [],
-  );
-
-  // The emergency stop, pulled here or with its keys (stopKeys) from any app.
-  useEffect(() => window.coloniaDesktop?.onComputerStopped?.((s) => dispatch({ type: "stopped", stopped: s })), []);
 
   // Closed (idle, stopped, or by the owner): the next session starts small at the bottom, with no old frame.
   const open = Boolean(last);
   useEffect(() => {
     if (open) return;
     setFrame(undefined);
+    if (handoff) return;
     setOffset(HOME);
     setSize("mini");
-  }, [open]);
-
-  // Computer use is over after a while with no action, or once the stop notice was read: close.
-  useEffect(() => {
-    if (!last && !stopped) return;
-    const id = setTimeout(() => dispatch({ type: "close" }), stopped ? STOP_NOTICE_MS : IDLE_MS);
-    return () => clearTimeout(id);
-  }, [last, stopped]);
+  }, [open, handoff]);
 
   // Stopped, nothing is live any more: no more frames are asked for.
+  const action = last?.action;
+  const frame = capture?.action === action ? capture : undefined;
   const live = open && !stopped && size !== "hidden";
   useEffect(() => {
     const desktop = window.coloniaDesktop;
     if (!live || !desktop?.computerFrame) return;
     let stop = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const tick = async () => {
       const f = (await desktop.computerFrame?.().catch(() => undefined)) as Frame | undefined;
       if (stop) return;
-      if (f) setFrame(f);
-      setTimeout(() => void tick(), FRAME_MS);
+      if (f && f.action === action) setFrame(f);
+      timer = setTimeout(() => void tick(), FRAME_MS);
     };
     void tick();
     return () => {
       stop = true;
+      clearTimeout(timer);
     };
-  }, [live]);
+  }, [live, action]);
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button")) return;
@@ -112,10 +105,21 @@ export function ScreenLive() {
       </button>
     );
   const b = frame?.bounds;
-  const dot =
+  const point =
     b && last.kind === "click" && last.x !== undefined && last.y !== undefined
-      ? { left: `${((last.x - b.x) / b.width) * 100}%`, top: `${((last.y - b.y) / b.height) * 100}%` }
+      ? { x: (last.x - b.x) / b.width, y: (last.y - b.y) / b.height }
       : undefined;
+  const dot =
+    point && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1
+      ? { left: `${point.x * 100}%`, top: `${point.y * 100}%` }
+      : undefined;
+  const actor = !stopped && last.actor;
+  const badge = actor && (
+    <span className="screenlive__actor" role="img" aria-label={t("live.actor", { name: actor.name })}>
+      <AgentAvatar name={actor.name} blob={blobOf(actor)} size={20} animated={false} />
+      <span>{actor.name}</span>
+    </span>
+  );
   return (
     <section
       ref={card}
@@ -159,16 +163,31 @@ export function ScreenLive() {
           size="sm"
           label={t("live.close")}
           icon={<Icons.X size={13} />}
-          onClick={() => dispatch({ type: "close" })}
+          onClick={() => activity.dispatch({ type: "close" })}
         />
       </div>
+      {!dot && badge}
       <div className="screenlive__view">
         {frame ? (
           <img src={frame.data} alt={t("live.title")} draggable={false} />
         ) : (
           <div className="screenlive__wait">{t("live.wait")}</div>
         )}
-        {dot && !stopped && <span className="screenlive__dot" style={dot} />}
+        {dot && point && !stopped && (
+          <>
+            <span className="screenlive__dot" style={dot} />
+            {badge && (
+              <span
+                className="screenlive__pointer-label"
+                data-left={point.x > 0.5}
+                data-above={point.y > 0.5}
+                style={dot}
+              >
+                {badge}
+              </span>
+            )}
+          </>
+        )}
         {stopped && (
           <div className="screenlive__stopped" role="status">
             <span>{t("live.stopped")}</span>

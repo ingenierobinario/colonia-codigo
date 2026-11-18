@@ -2,7 +2,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { type BuildOptions, build } from "esbuild";
+import { BLOBS } from "../../../packages/ui/src/blobs/catalog.ts";
 import { buildVersion } from "../../../scripts/version.ts";
+import { cursorFace } from "./cursor-face.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const out = path.join(root, "dist");
@@ -43,5 +45,14 @@ await build({
 for (const f of fs.readdirSync(path.join(root, "assets"))) {
   if (/\.(png|svg)$/.test(f) || /^tray-.*\.ico$/.test(f))
     fs.copyFileSync(path.join(root, "assets", f), path.join(out, f));
+}
+for (const file of ["cursor.html", "cursor-overlay.js"]) {
+  fs.copyFileSync(path.join(root, "assets", file), path.join(out, file));
+}
+// El puntero usa el mismo cuerpo y los mismos ojos que la ficha del agente, sin cargar imágenes de la red.
+const faces = path.join(out, "cursor-faces");
+fs.mkdirSync(faces, { recursive: true });
+for (const [name, preset] of Object.entries(BLOBS)) {
+  fs.writeFileSync(path.join(faces, name + ".svg"), cursorFace(preset));
 }
 console.log("built apps/desktop/dist");

@@ -512,7 +512,7 @@
   overflow: hidden;
 }
 .screenlive--mini {
-  width: 260px;
+  width: min(260px, calc(100% - 32px));
 }
 .screenlive--large {
   width: min(640px, calc(100% - 32px));
@@ -543,7 +543,7 @@
   position: relative;
   background: #000;
 }
-.screenlive__view img {
+.screenlive__view > img {
   display: block;
   width: 100%;
   height: auto;
@@ -564,6 +564,37 @@
   background: #2fb67c;
   box-shadow: 0 0 0 4px rgba(47, 182, 124, 0.35);
   pointer-events: none;
+}
+.screenlive__actor {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  color: var(--colonia-fg);
+  font-size: var(--colonia-text-xs);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.screenlive__actor > :first-child {
+  flex: none;
+}
+.screenlive__pointer-label {
+  --dx: 8px;
+  --dy: 6px;
+  position: absolute;
+  width: max-content;
+  max-width: calc(50% - 9px);
+  transform: translate(var(--dx), var(--dy));
+  border-radius: 7px;
+  background: var(--colonia-surface-raised);
+  box-shadow: 0 1px 5px #0004;
+  pointer-events: none;
+}
+.screenlive__pointer-label[data-left="true"] {
+  --dx: calc(-100% - 8px);
+}
+.screenlive__pointer-label[data-above="true"] {
+  --dy: calc(-100% - 6px);
 }
 /* Hidden, it waits as a pill at the top right of the chat, under its header: easy to find, out of the way. */
 .screenlive__pill {

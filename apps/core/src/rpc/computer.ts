@@ -60,12 +60,14 @@ export function computerHandlers(
           "the owner pulled the emergency stop on this turn: do not use the computer again in it; say so and end the turn",
       });
     using.set(a.run_id, { thread: a.thread_id, at: Date.now() });
+    const agent = store.agents.get(a.id);
+    return agent ? { id: agent.id, name: agent.name, ...(agent.blob ? { blob: agent.blob } : {}) } : undefined;
   };
 
   return {
     "computer.snapshot": async ({ thread, app, note }, ctx) => {
-      enter(ctx);
-      const ask = { ...(app ? { app } : {}), ...(note ? { note } : {}) };
+      const actor = enter(ctx);
+      const ask = { actor, ...(app ? { app } : {}), ...(note ? { note } : {}) };
       const r = (await broker.invoke(COMPUTER_CAP, "computer.snapshot", ask, SNAPSHOT_MS)) as {
         mime?: string;
         data?: string;
@@ -94,22 +96,28 @@ export function computerHandlers(
       };
     },
     "computer.click": async (p, ctx) => {
-      enter(ctx);
-      return (await broker.invoke(COMPUTER_CAP, "computer.click", p, CLICK_MS)) as { app: string; how?: string };
+      const actor = enter(ctx);
+      return (await broker.invoke(COMPUTER_CAP, "computer.click", { ...p, actor }, CLICK_MS)) as {
+        app: string;
+        how?: string;
+      };
     },
     "computer.type": async (p, ctx) => {
-      enter(ctx);
-      return (await broker.invoke(COMPUTER_CAP, "computer.type", p, ACT_MS)) as { app: string };
+      const actor = enter(ctx);
+      return (await broker.invoke(COMPUTER_CAP, "computer.type", { ...p, actor }, ACT_MS)) as { app: string };
     },
     "computer.key": async (p, ctx) => {
-      enter(ctx);
-      return (await broker.invoke(COMPUTER_CAP, "computer.key", p, ACT_MS)) as { app: string };
+      const actor = enter(ctx);
+      return (await broker.invoke(COMPUTER_CAP, "computer.key", { ...p, actor }, ACT_MS)) as { app: string };
     },
     "computer.open": async (p, ctx) => {
-      enter(ctx);
+      const actor = enter(ctx);
       if (!p.url && !p.app) throw new CallError({ code: "bad_request", message: "say a url, an app, or both" });
       // An app that was closed takes a few seconds to start and show its window.
-      return (await broker.invoke(COMPUTER_CAP, "computer.open", p, ACT_MS + 8_000)) as { app: string; where?: string };
+      return (await broker.invoke(COMPUTER_CAP, "computer.open", { ...p, actor }, ACT_MS + 8_000)) as {
+        app: string;
+        where?: string;
+      };
     },
   } satisfies Partial<Handlers>;
 }
