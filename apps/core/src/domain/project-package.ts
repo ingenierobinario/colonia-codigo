@@ -243,9 +243,7 @@ export function scrub(text: string): { text: string; removed: number } {
 }
 
 /** Nombres de fichero que guardan credenciales o sesiones: no se exportan aunque estén dentro de una skill. */
-const SENSITIVE_FILE =
-  /(^|\/)(\.env(\..*)?|\.npmrc|\.netrc|\.pypirc|id_[a-z0-9]+|.*\.(pem|key|p12|pfx|jks|keystore|crt|cer|der|sqlite|db)|.*(cookie|credential|secret|token|session|password|passwd)s?[^/]*)$/i;
-export const sensitiveFile = (rel: string) => SENSITIVE_FILE.test(rel) || rel.split("/").some((s) => s.startsWith("."));
+export { sensitiveFile } from "./project-file-name.ts";
 
 /** Una conexión tal como viaja: qué servidor es y qué hay que rellenar, sin un solo valor. */
 export function connectionOf(
