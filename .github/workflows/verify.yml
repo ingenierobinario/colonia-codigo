@@ -18,7 +18,7 @@ env:
 
 jobs:
   preflight:
-    name: Pruebas y rendimiento (Linux)
+    name: Pruebas unitarias y comprobaciones (Linux)
     runs-on: ubuntu-24.04
     timeout-minutes: 300
     steps:
@@ -36,6 +36,16 @@ jobs:
           node apps/desktop/node_modules/electron/install.js
       - name: Comprobar el código y ejecutar las pruebas unitarias
         run: pnpm preflight
+
+  rendimiento:
+    name: Rendimiento del motor y primera carga del panel (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
       - name: Medir el panel y el motor
         run: |
           COLONIA_TEST_COVERAGE=1 pnpm build:web
@@ -99,17 +109,18 @@ jobs:
     uses: ./.github/workflows/humo-actualizacion-macos.yml
 
   verify:
-    needs: [preflight, coverage, macos-web, macos-actualizacion]
+    needs: [preflight, rendimiento, coverage, macos-web, macos-actualizacion]
     runs-on: ubuntu-24.04
     if: ${{ !cancelled() }}
     steps:
       - name: Comprobar el resultado de todas las pruebas
         env:
           PREFLIGHT: ${{ needs.preflight.result }}
+          PERF: ${{ needs.rendimiento.result }}
           COVERAGE: ${{ needs.coverage.result }}
           MACOS: ${{ needs.macos-web.result }}
           ACTUALIZACION: ${{ needs.macos-actualizacion.result }}
-        run: test "$PREFLIGHT" = success && test "$COVERAGE" = success && test "$MACOS" = success && test "$ACTUALIZACION" = success
+        run: test "$PREFLIGHT" = success && test "$PERF" = success && test "$COVERAGE" = success && test "$MACOS" = success && test "$ACTUALIZACION" = success
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
