@@ -235,40 +235,21 @@ file (`App`, `main`, `shell/`, `inbox/`, `chat/`) that imports one of its module
 `e2e/specs/89-first-load.spec.ts` checks what opening the inbox fetches, its own late parts included.
 
 ## CI
-`.github/workflows/verify.yml` runs on every push to `main` and every pull request. Every job starts from
-`.github/actions/setup` (Node, `pnpm install`, and when the job needs them Playwright's Chromium and `apps/mobile`'s
-own install, both cached: the browser by Playwright's version, the mobile `node_modules` by its lockfile). The jobs
-start together:
 
-| Job | What | Machines |
+El flujo `.github/workflows/verify.yml` comprueba los cambios de `staging`, `main`, la rama de integración y las solicitudes de incorporación. Cada máquina prepara el repositorio con `.github/actions/setup`.
+
+| Trabajo | Comprobación | Entorno |
 |---|---|---|
-| Static checks and lightness budgets | commits, `pnpm preflight:static` (private terms, schema, lint, typecheck, test quality), mobile types, Android bundle; then `pnpm build:web` with coverage maps and `scripts/perf.ts` | 1 Linux |
-| Unit tests | every package's tests, `node scripts/test-shard.ts <i>/2`, plus the POSIX installer onboarding | 2 Linux |
-| Coverage | `node scripts/test-coverage.ts --e2e --part=…`: unit, panel in three (`--part=web --shard=i/3`), desktop | 5 Linux |
-| Coverage report | merges the parts (`--merge --expect-parts=5`: a function ran if any part ran it; a part that never uploaded fails it) | 1 Linux |
-| Unit tests (portability) | the unit tests only, `test-shard.ts` over 4 Windows and 2 macOS machines | 6 |
+| Pruebas y comprobaciones | `pnpm preflight` ejecuta los controles estáticos y las pruebas unitarias | Ubuntu 24.04 |
+| Rendimiento | Compilación web con mapas y `scripts/perf.ts` con presupuesto de arranque, memoria, latencia y tamaño | Ubuntu 24.04 dedicado |
+| Cobertura | Tras `preflight`, unitarias, escritorio y seis grupos de Playwright | Ocho máquinas Ubuntu |
+| Panel | Compilación web, unitarias del panel y Chromium repartido en tres grupos | Tres máquinas macOS 15 |
+| Actualización nativa | Actualización desde el último ZIP público a la candidata temporal y comprobación de la ventana, el commit y el perfil | macOS 15 Apple Silicon |
+| Resultado | Comprueba todos los trabajos y reúne las ocho partes de cobertura | Ubuntu 24.04 |
 
-Static checks and unit tests together are `pnpm preflight`; coverage does not replace them (it runs the suites
-another way, with instrumentation). The budgets share the static job: a separate one sat in the runner queue for a
-quarter of an hour while taking one minute. `test-shard.ts` reads each package's own `test` script and deals the
-files out in turn; every part runs each package's build step first. The aggregate `verify` job requires every
-other job, so branch protection that requires it waits for all of them; a failed job can be retried on its own.
+Los informes de rendimiento, cobertura y fallos de Chromium se conservan siete días. El de rendimiento está en el artefacto `informes-linux`. El de cobertura agregado está en `informe-cobertura`.
 
-Windows: tests that wait scale their waits by `TEST_TIME_SCALE=3`, and a failed file runs once more
-(`--rerun-failed`): passing then, it is reported as flaky (a warning annotation and a row in the job summary) and
-the job stays green; failing again, the job is red ([D-145](DECISIONS.md#d-145)). Linux and macOS never rerun.
-`.github/workflows/windows.yml` runs the same Windows parts on every push to `feat/**` and `fix/**` (or by hand),
-so Windows sees a branch before it merges.
-
-Tags: release tags build installers, and publication waits for the verify run of the exact commit on `main`,
-without running the suites again. Tag only a commit that run already passed: `pnpm release:check --tag v2.x.y`
-([RELEASE.md](RELEASE.md#tagging-a-release), AGENTS.md rule 28).
-
-Reports are kept 14 days: `verify-reports` carries Playwright HTML, failed-test snapshots and coverage;
-`perf-reports` explicitly includes `e2e/.out/perf.json`, even though its directory is hidden. The `autofix` job is
-off by default: with the repo variable `COLONIA_AUTOFIX=true` and the secret `ANTHROPIC_API_KEY`, a failure on main
-hands the reports to an agent that fixes the cause and opens a pull request (never merged on its own, never by
-weakening a gate).
+Para etiquetar una versión se comprueba el resultado de `verify` del mismo commit en `main`. El flujo de publicación construye y prueba los instaladores de cada plataforma. [Proceso de publicación](RELEASE.md#tagging-a-release).
 
 ## 6. Embedded browser (real path)
 ```bash
