@@ -127,7 +127,11 @@ export function createBackup(deps: BackupDeps) {
       }
       return out.sort((a, b) => (a.modified_at < b.modified_at ? 1 : -1)).slice(0, 30);
     },
-    create(params: { folder?: string | undefined; password: string }): BackupStatus {
+    create(params: {
+      folder?: string | undefined;
+      password: string;
+      include_work?: boolean | undefined;
+    }): BackupStatus {
       const stop = busy();
       if (stop) return stop;
       const folder = params.folder?.trim() || defaultFolder();
@@ -143,9 +147,14 @@ export function createBackup(deps: BackupDeps) {
       }
       const file = copyName(folder, "Colonia-copia", now());
       start({ state: "working", kind: "create", phase: "snapshot", done: 0, total: 0 }, async () => {
-        const manifest = await createCopy(createDeps(), file, params.password, (phase, done, total) => {
-          job = { ...job, phase, done, total };
-        });
+        const manifest = await createCopy(
+          { ...createDeps(), includeWork: params.include_work },
+          file,
+          params.password,
+          (phase, done, total) => {
+            job = { ...job, phase, done, total };
+          },
+        );
         if (params.folder && (!previous || !samePath(previous, folder))) {
           try {
             writeAtomic(preference, JSON.stringify(folder), 0o600);

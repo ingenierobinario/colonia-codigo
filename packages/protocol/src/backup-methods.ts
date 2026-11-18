@@ -112,7 +112,9 @@ export const backupMethods = {
   },
   /** Empieza a escribir una copia; cómo va se pregunta con `backup.status`. */
   "backup.create": {
-    params: z.object({ folder: FilePath.optional(), password: NewPassword }).strict(),
+    params: z
+      .object({ folder: FilePath.optional(), password: NewPassword, include_work: z.boolean().optional() })
+      .strict(),
     result: BackupStatus,
     effect: true,
     access: "human",

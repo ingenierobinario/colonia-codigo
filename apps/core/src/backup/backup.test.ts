@@ -133,7 +133,9 @@ async function seed(a: Env, outside: string) {
   fs.mkdirSync(path.join(outside, ".apc"), { recursive: true });
   fs.writeFileSync(path.join(outside, "AGENTS.md"), "# Proyecto de fuera\n\nNormas del proyecto de fuera.\n");
   fs.writeFileSync(path.join(outside, ".apc", "project.json"), JSON.stringify({ name: "De fuera", kind: "team" }));
-  fs.writeFileSync(path.join(outside, "trabajo.txt"), "archivo de trabajo que no viaja\n");
+  fs.writeFileSync(path.join(outside, "trabajo.txt"), "documento del proyecto externo\n");
+  fs.mkdirSync(path.join(outside, ".codex", "agents"), { recursive: true });
+  fs.writeFileSync(path.join(outside, ".codex", "agents", "revision.toml"), 'name = "Revisión"\n');
   const out = await a.client.call("projects.create", { path: outside });
   await a.client.call("agents.create", {
     project_id: project.id,
@@ -290,6 +292,10 @@ test("una copia completa lleva todo de un Colonia a otro y nada va en claro", as
     // PROYECTO DE FUERA: vuelven sus instrucciones y su configuración; los archivos de trabajo no viajan.
     assert.ok(fs.readFileSync(path.join(outside, "AGENTS.md"), "utf8").includes("Normas del proyecto de fuera"));
     assert.ok(fs.existsSync(path.join(outside, ".apc", "project.json")));
+    assert.equal(
+      fs.readFileSync(path.join(outside, ".codex", "agents", "revision.toml"), "utf8"),
+      'name = "Revisión"\n',
+    );
     assert.ok(!fs.existsSync(path.join(outside, "trabajo.txt")));
     // CHATS y sus mensajes, también buscables.
     assert.equal(got.chats, origin.chats);
@@ -381,12 +387,14 @@ test("fusionar una copia añade lo que falta y no cambia lo que ya había", asyn
   let c = await start();
   try {
     const ids = await seed(a, outside);
-    await a.client.call("backup.create", { folder: tmp, password: PASSWORD });
+    await a.client.call("backup.create", { folder: tmp, password: PASSWORD, include_work: true });
     const done = await until(a);
     assert.equal(done.state, "done", `la copia falló: ${done.why}`);
     const file = done.file ?? "";
     await a.core.close();
     const origin = contents(a.home);
+    fs.unlinkSync(path.join(outside, "trabajo.txt"));
+    fs.writeFileSync(path.join(outside, "AGENTS.md"), "normas del equipo de destino");
 
     // Lo que ya hay en el equipo de destino.
     const { project: local } = await c.client.call("projects.create", { name: "Proyecto local" });
@@ -417,6 +425,8 @@ test("fusionar una copia añade lo que falta y no cambia lo que ya había", asyn
     await c.core.close();
     c = await start(c.home);
     const got = contents(c.home);
+    assert.equal(fs.readFileSync(path.join(outside, "trabajo.txt"), "utf8"), "documento del proyecto externo\n");
+    assert.equal(fs.readFileSync(path.join(outside, "AGENTS.md"), "utf8"), "normas del equipo de destino");
 
     const ids_ = (text: string) => (JSON.parse(text) as { id: string | number }[]).map((r) => String(r.id));
     // PROYECTOS y CHATS: están los de los dos equipos.

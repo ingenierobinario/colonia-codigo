@@ -1,6 +1,6 @@
 // COPIA-COMPLETA-1 · Crear una copia: contraseña dos veces, dónde se guarda, y cómo va.
 import type { BackupStatus } from "@colonia/protocol";
-import { Button, Field, IconButton, Icons, Input } from "@colonia/ui";
+import { Button, Checkbox, Field, IconButton, Icons, Input } from "@colonia/ui";
 import { useState } from "react";
 import { formatBytes } from "../common/format.ts";
 import { client } from "../data/client.ts";
@@ -13,6 +13,7 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
   const [password, setPassword] = useState("");
   const [again, setAgain] = useState("");
   const [folder, setFolder] = useState<string>();
+  const [includeWork, setIncludeWork] = useState(false);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const mine = status.kind === "create";
@@ -27,7 +28,11 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
     setBusy(true);
     try {
       const dir = folder?.trim();
-      const next = await client.call("backup.create", { password, ...(dir ? { folder: dir } : {}) });
+      const next = await client.call("backup.create", {
+        password,
+        ...(dir ? { folder: dir } : {}),
+        ...(includeWork ? { include_work: true } : {}),
+      });
       if (next.why === "busy") return notify(t("backup.why.busy"));
       onStatus(next);
       if (next.state !== "failed") {
@@ -98,6 +103,12 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
           />
         )}
       </Field>
+      <Checkbox
+        checked={includeWork}
+        onCheckedChange={setIncludeWork}
+        disabled={working}
+        label={t("backup.includeWork")}
+      />
       {mine && working && <Progress status={status} />}
       {mine && status.state === "failed" && <Note tone="error">{t(whyKey(status.why))}</Note>}
       {mine && status.state === "done" && status.file && (

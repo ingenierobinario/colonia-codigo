@@ -194,6 +194,8 @@ const moveFile = (from: string, to: string) => {
 
 /** Pasa el árbol `from` a `to`. Con `keep`, lo que ya existe en el destino se queda como está. */
 function moveTree(from: string, to: string, keep: boolean): void {
+  const existing = fs.lstatSync(to, { throwIfNoEntry: false });
+  if (keep && existing && !existing.isDirectory()) return;
   let entries: fs.Dirent[];
   try {
     entries = fs.readdirSync(from, { withFileTypes: true });
@@ -204,7 +206,7 @@ function moveTree(from: string, to: string, keep: boolean): void {
     const a = path.join(from, e.name);
     const b = path.join(to, e.name);
     if (e.isDirectory()) moveTree(a, b, keep);
-    else if (e.isFile() && !(keep && fs.existsSync(b))) moveFile(a, b);
+    else if (e.isFile() && !(keep && fs.lstatSync(b, { throwIfNoEntry: false }))) moveFile(a, b);
   }
 }
 

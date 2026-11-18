@@ -87,7 +87,9 @@ export const esBackup: Record<BackupKey, string> = {
   "backup.stays": "Se queda en este equipo",
   "backup.stay.sessions": "La sesión de WhatsApp, iMessage y Signal: se vuelve a vincular.",
   "backup.stay.logins": "Las sesiones abiertas en navegadores y aplicaciones: se vuelve a iniciar sesión.",
-  "backup.stay.external": "Los archivos de los proyectos guardados fuera de la carpeta de Colonia.",
+  "backup.includeWork": "Incluir documentos y código de mis proyectos externos",
+  "backup.stay.external":
+    "Los archivos de trabajo externos que no hayas elegido incluir, las carpetas privadas y las dependencias instaladas.",
   "backup.stay.models": "Los modelos descargados y el ordenador virtual: se vuelven a descargar.",
   "backup.stay.devices": "«Mis equipos» y los dispositivos emparejados: cada ordenador se empareja por sí mismo.",
 };

@@ -87,7 +87,8 @@ export const enBackup = {
   "backup.stays": "Stays on this computer",
   "backup.stay.sessions": "The WhatsApp, iMessage and Signal session: you link it again.",
   "backup.stay.logins": "Sessions open in browsers and apps: you sign in again.",
-  "backup.stay.external": "The files of projects kept outside Colonia's folder.",
+  "backup.includeWork": "Include documents and code from my external projects",
+  "backup.stay.external": "External work files you chose to leave out, private folders and installed dependencies.",
   "backup.stay.models": "Downloaded models and the virtual computer: they download again.",
   "backup.stay.devices": "“My computers” and paired devices: each computer pairs by itself.",
 } as const;

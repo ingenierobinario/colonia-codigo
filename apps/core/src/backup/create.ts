@@ -25,6 +25,7 @@ export type CreateDeps = {
   secrets: Secrets;
   version: string;
   homeId: string;
+  includeWork?: boolean | undefined;
   now?: () => Date;
 };
 
@@ -64,10 +65,11 @@ export async function createCopy(
     deps.db.prepare("VACUUM INTO ?").run(snapshot);
     const facts = factsOf(snapshot, deps.home);
     const bound = new Set(facts.channels.filter((c) => SESSION_BOUND.has(c.type)).map((c) => c.id));
-    const files = homeFiles(deps.home, bound);
+    const files = await homeFiles(deps.home, bound);
     const external: { rel: string; file: FileEntry }[] = [];
     for (const p of facts.external)
-      for (const f of externalFiles(p.path)) external.push({ rel: `external/${p.id}/${f.rel}`, file: f });
+      for (const f of await externalFiles(p.path, deps.includeWork))
+        external.push({ rel: `external/${p.id}/${f.rel}`, file: f });
 
     const secrets: Record<string, string> = {};
     for (const { name } of deps.secrets.list()) {

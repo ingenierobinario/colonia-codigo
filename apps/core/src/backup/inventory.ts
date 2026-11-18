@@ -2,8 +2,12 @@
 // una lista de EXCLUSIÓN: lo que no esté aquí viaja, así una carpeta nueva del núcleo entra sola en la copia en vez
 // de quedarse fuera sin que nadie lo note.
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { INSTRUCTION_FILES, NATIVE_AGENT_APPS } from "../apc/read.ts";
+import { sensitiveFile } from "../domain/project-file-name.ts";
+import { APPS } from "../skills/skills.ts";
 
 /** Canales cuya sesión está atada al equipo o al teléfono que la abrió: no se clonan, se vuelven a vincular. */
 export const SESSION_BOUND = new Set(["whatsapp", "imessage", "signal"]);
@@ -40,34 +44,38 @@ export const secretTravels = (name: string) => !LOCAL_SECRETS.has(name) && !name
 export type FileEntry = { rel: string; abs: string; size: number };
 
 /** Los ficheros de `dir`, relativos con «/», sin seguir enlaces simbólicos. */
-export function walkFiles(
+async function walkFiles(
   dir: string,
   rel: string,
   skip: (rel: string) => boolean,
   out: FileEntry[] = [],
-): FileEntry[] {
+): Promise<FileEntry[]> {
   let entries: fs.Dirent[];
   try {
-    entries = fs.readdirSync(dir, { withFileTypes: true });
-  } catch {
+    entries = await fs.promises.readdir(dir, { withFileTypes: true });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     return out;
   }
   for (const e of entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
     const r = rel ? `${rel}/${e.name}` : e.name;
     if (e.isSymbolicLink() || skip(r)) continue;
     const abs = path.join(dir, e.name);
-    if (e.isDirectory()) walkFiles(abs, r, skip, out);
+    if (e.isDirectory()) await walkFiles(abs, r, skip, out);
     else if (e.isFile()) {
       try {
-        out.push({ rel: r, abs, size: fs.statSync(abs).size });
-      } catch {}
+        const st = await fs.promises.lstat(abs);
+        if (st.isFile()) out.push({ rel: r, abs, size: st.size });
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+      }
     }
   }
   return out;
 }
 
 /** Los ficheros de la carpeta de Colonia que viajan. `bound` son los ids de canal cuya sesión se queda aquí. */
-export function homeFiles(home: string, bound: ReadonlySet<string>): FileEntry[] {
+export function homeFiles(home: string, bound: ReadonlySet<string>): Promise<FileEntry[]> {
   return walkFiles(home, "", (rel) => {
     const parts = rel.split("/");
     if (parts.length === 1) return !travelsTop(rel);
@@ -170,19 +178,31 @@ export function factsOf(dbFile: string, home: string): DbFacts {
   }
 }
 
-/** Lo que viaja de un proyecto cuya carpeta está fuera: sus instrucciones y su configuración, no los archivos de trabajo. */
-export function externalFiles(root: string): FileEntry[] {
-  const out: FileEntry[] = [];
-  const agents = path.join(root, "AGENTS.md");
-  try {
-    const st = fs.lstatSync(agents);
-    if (st.isFile()) out.push({ rel: "AGENTS.md", abs: agents, size: st.size });
-  } catch {}
-  try {
-    if (fs.lstatSync(path.join(root, ".apc")).isDirectory())
-      walkFiles(path.join(root, ".apc"), ".apc", () => false, out);
-  } catch {}
-  return out;
+const fileKey = (name: string) => (process.platform === "win32" ? name.toLowerCase() : name);
+const projectFiles = new Set(["AGENTS.md", ...INSTRUCTION_FILES].map(fileKey));
+const nativeFolders = new Set([
+  ".cursor/rules",
+  ...NATIVE_AGENT_APPS.map((app) => `.${app}/agents`),
+  ...APPS.map((app) => `.${app}/skills`),
+]);
+const definitionRoots = new Set([...projectFiles, ...nativeFolders].map((entry) => entry.split("/")[0]));
+
+/** Las definiciones viajan siempre. La persona puede añadir documentos y código a su copia privada cifrada. */
+export async function externalFiles(root: string, includeWork = false): Promise<FileEntry[]> {
+  const stat = fs.lstatSync(root, { throwIfNoEntry: false });
+  if (!stat?.isDirectory()) return [];
+  if (includeWork && insideDir(fs.realpathSync(root), os.homedir()))
+    throw new Error("Elige una carpeta de proyecto dentro de tu carpeta personal para copiar sus archivos.");
+  return walkFiles(root, "", (rel) => {
+    const key = fileKey(rel);
+    const parts = key.split("/");
+    if (parts[0] === ".apc" || projectFiles.has(key) || (parts.length === 1 && definitionRoots.has(key))) return false;
+    const native = nativeFolders.has(parts.slice(0, 2).join("/"));
+    if (native && parts.length === 2) return false;
+    if (!native && !includeWork) return true;
+    const name = native ? parts.slice(2).join("/") : key;
+    return sensitiveFile(name) || parts.includes("node_modules") || /\.colonia(?:\.parcial)?$/i.test(name);
+  });
 }
 
 export type Manifest = {
