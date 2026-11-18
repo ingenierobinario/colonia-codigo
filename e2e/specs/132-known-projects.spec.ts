@@ -48,6 +48,13 @@ const reach = async (target: Locator) => {
 };
 const sideways = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 
+/** Una opción deshabilitada recibe el puntero, pero Playwright no la activa con locator.click(). */
+async function clickDisabledOption(page: Page, option: Locator) {
+  await option.hover();
+  await page.mouse.down();
+  await page.mouse.up();
+}
+
 for (const mode of ["light", "dark"] as const) {
   for (const width of [390, 768, 960, 1200, 1440]) {
     const at = `${mode} ${width}`;
@@ -122,7 +129,7 @@ for (const mode of ["light", "dark"] as const) {
         );
         await expect(page.getByRole("option", { name: brandName })).not.toHaveAttribute("aria-disabled", "true");
         await shot(page, `${tag}-3b-circulo-apagado`);
-        await loop.click({ force: true });
+        await clickDisabledOption(page, loop);
         await expect(search).toBeFocused();
         await search.press("Escape");
         await expect(page.getByRole("option")).toHaveCount(0);
@@ -149,7 +156,7 @@ for (const mode of ["light", "dark"] as const) {
         await expect(inside).toHaveAttribute("title", `${docsName} ya está dentro de este proyecto.`);
         await expect(page.getByRole("option", { name: brandName })).not.toHaveAttribute("aria-disabled", "true");
         await shot(page, `${tag}-4b-padre-apagado`);
-        await inside.click({ force: true });
+        await clickDisabledOption(page, inside);
         await expect(search).toBeFocused();
         await search.press("Escape");
         await expect(page.getByRole("option")).toHaveCount(0);
