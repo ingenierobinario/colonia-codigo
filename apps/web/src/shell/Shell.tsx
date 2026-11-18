@@ -1,11 +1,13 @@
 import type { CSSProperties } from "react";
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { tabShortcut, watchTabs } from "../chat/tabsSync.ts";
 import { applyDesktopPrefs } from "../config/desktopPrefs.ts";
 import { useSlice } from "../data/createStore.ts";
+import { useNavegadores } from "../data/navegadores.ts";
 import { usePrefs } from "../data/prefs.ts";
 import { data } from "../data/state.ts";
 import { useThreadDialog } from "../data/threadAdmin.ts";
+import { useWebApps } from "../data/webapps.ts";
 import { useHostingOffer } from "../equipos/hostingOffer.ts";
 import {
   AppScreen,
@@ -50,6 +52,11 @@ import { useViewportWidth } from "./useViewportWidth.ts";
 export function Shell() {
   const width = useViewportWidth();
   const view = useNav((s) => s.view);
+  const [initialPinned, setInitialPinned] = useState(() => (view === "webapp" || view === "navegador" ? view : null));
+  const finishOpening = useCallback(() => setInitialPinned(null), []);
+  useEffect(() => {
+    if (initialPinned && initialPinned !== view) finishOpening();
+  }, [initialPinned, view, finishOpening]);
   const flowProject = useNav((s) => s.flowProject);
   const chat = useNav(showsChat);
   const panel = useNav((s) => s.panel);
@@ -76,7 +83,7 @@ export function Shell() {
 
   return (
     <div className="shell" style={layoutVars(layout) as CSSProperties}>
-      <Topbar />
+      <Topbar deferQuota={initialPinned === view} />
       <OfflineBanner />
       <div className="shell__body">
         <Sidebar rail={layout.rail} width={layout.sidebarW} />
@@ -109,6 +116,9 @@ export function Shell() {
                 <ChatWorkspace layout={layout} list={<EngineSessions />} />
               ) : (
                 <ChatWorkspace layout={layout} />
+              )}
+              {initialPinned && initialPinned === view && (
+                <PinnedFirstPaint view={initialPinned} done={finishOpening} />
               )}
             </Suspense>
           </ShellLayout.Provider>
@@ -172,6 +182,21 @@ export function Shell() {
       <Toasts />
     </div>
   );
+}
+
+/** Dentro del Suspense de la pantalla: el catálogo y el módulo pueden llegar en cualquier orden. */
+function PinnedFirstPaint({ view, done }: { view: "navegador" | "webapp"; done: () => void }) {
+  const browserReady = useNavegadores((s) => s.loaded || s.failed);
+  const appReady = useWebApps((s) => s.loaded || s.failed);
+  const ready = view === "navegador" ? browserReady : appReady;
+  useEffect(() => {
+    if (!ready) return;
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(done);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [ready, done]);
+  return null;
 }
 
 /** ⌘K searches, ⌘, opens Config, ⌘J jumps to the super-agent's chat, ⌘[ / ⌘] go back/forward; chat tabs: see tabShortcut. */

@@ -27,10 +27,15 @@ export const AttachChips = late(() =>
 );
 
 // Screens and dialogs loaded when first opened: the chat is what the panel opens on.
-export const WebAppScreen = late(() => import("./webapps/WebAppScreen.tsx").then((m) => ({ default: m.WebAppScreen })));
-export const NavegadorScreen = late(() =>
-  import("./navegadores/NavegadorScreen.tsx").then((m) => ({ default: m.NavegadorScreen })),
-);
+const pinnedScreens = {
+  webapp: () => import("./webapps/WebAppScreen.tsx").then((m) => ({ default: m.WebAppScreen })),
+  navegador: () => import("./navegadores/NavegadorScreen.tsx").then((m) => ({ default: m.NavegadorScreen })),
+};
+export const WebAppScreen = late(pinnedScreens.webapp);
+export const NavegadorScreen = late(pinnedScreens.navegador);
+export function preloadPinnedScreen(view: keyof typeof pinnedScreens) {
+  return Promise.all([pinnedScreens[view](), addPack("screens")]);
+}
 export const NavegadoresDock = late(() =>
   import("./navegadores/NavegadoresDock.tsx").then((m) => ({ default: m.NavegadoresDock })),
 );

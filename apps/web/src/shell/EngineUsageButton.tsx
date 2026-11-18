@@ -12,7 +12,7 @@ import { sharedUsageRequest } from "./engineUsageRequest.ts";
 
 type Report = Result<"engines.usage">;
 
-export default function EngineUsageButton() {
+export default function EngineUsageButton({ deferQuota }: { deferQuota: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [quick, setQuick] = useState<Report>();
@@ -24,7 +24,7 @@ export default function EngineUsageButton() {
   const visible = useVisible();
   const load = useMemo(() => sharedUsageRequest(() => client.call("engines.usage", {})), []);
   useEffect(() => {
-    if (!visible || open) return;
+    if (deferQuota || !visible || open) return;
     let active = true;
     const read = () =>
       void load().then(
@@ -41,7 +41,7 @@ export default function EngineUsageButton() {
       active = false;
       clearInterval(timer);
     };
-  }, [visible, open, load, onReport]);
+  }, [deferQuota, visible, open, load, onReport]);
   const previews = quickWindows(quick);
   const tooltip = [
     t("engineUsage.title"),

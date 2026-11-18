@@ -22,14 +22,16 @@ export function denied(): void {
 }
 
 /** One cheap call before the app starts: a refusal shows the gate; a core that is down shows the app (offline). */
-export async function checkAccess(): Promise<void> {
+export async function checkAccess(onGranted?: () => void): Promise<void> {
   try {
     await client.call("system.ping", {});
-    gate.set({ gate: "open" });
   } catch (e) {
     if (needsPairing(e)) denied();
     else gate.set({ gate: "open" });
+    return;
   }
+  onGranted?.();
+  gate.set({ gate: "open" });
 }
 
 /** This device as the owner's list names it. */

@@ -60,7 +60,7 @@ function useCrumbs(): string[] {
   return thread ? [inbox, projectName(projects, thread.project_id), thread.title] : [inbox];
 }
 
-export function Topbar() {
+export function Topbar({ deferQuota }: { deferQuota: boolean }) {
   const t = useT();
   const desktop = useDesktopClass();
   const rightRef = useTopbarFit();
@@ -142,7 +142,7 @@ export function Topbar() {
           <Suspense
             fallback={<IconButton size="sm" label={t("engineUsage.title")} icon={<Icons.Zap size={14} />} disabled />}
           >
-            <EngineUsageButton />
+            <EngineUsageButton deferQuota={deferQuota} />
           </Suspense>
           <Suspense
             fallback={

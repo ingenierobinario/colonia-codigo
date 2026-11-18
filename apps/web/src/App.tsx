@@ -2,10 +2,12 @@ import { ColoniaProvider } from "@colonia/ui";
 import { type CSSProperties, Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { loadThreadWhenReady } from "./data/actions.ts";
 import { startLive } from "./data/live.ts";
+import { loadNavegadores } from "./data/navegadores.ts";
 import { checkAccess, useGate } from "./data/pairing.ts";
 import { usePrefs } from "./data/prefs.ts";
 import { loadSetup, useSetup } from "./data/setup.ts";
 import { loadTelemetry } from "./data/telemetry.ts";
+import { loadWebApps } from "./data/webapps.ts";
 import { useLanguage } from "./i18n/index.ts";
 import {
   AboutScreen,
@@ -15,11 +17,12 @@ import {
   HostedWelcome,
   OAuthReturn,
   PairScreen,
+  preloadPinnedScreen,
   QuickChat,
   Wizard,
 } from "./lazy.ts";
 import { IS_BROWSER_WINDOW } from "./panel/browserWindow.ts";
-import { useNav } from "./shell/nav.ts";
+import { nav, useNav } from "./shell/nav.ts";
 import { Shell } from "./shell/Shell.tsx";
 
 /** The page Google, X or LinkedIn sends the browser back to after the owner signs in (the core serves the panel there). */
@@ -58,7 +61,14 @@ function Main() {
   const lang = useLanguage();
   const gate = useGate();
   useEffect(() => {
-    void checkAccess();
+    void checkAccess(() => {
+      if (QUICK || ARTIFACT || IS_BROWSER_WINDOW || OAUTH_RETURN) return;
+      const { view } = nav.get();
+      if (view !== "navegador" && view !== "webapp") return;
+      // El enlace ya autorizado pide su lista y su pantalla antes de montar la barra lateral.
+      void (view === "navegador" ? loadNavegadores() : loadWebApps());
+      void preloadPinnedScreen(view).catch(() => {});
+    });
   }, []);
   useEffect(() => {
     document.documentElement.lang = lang;
