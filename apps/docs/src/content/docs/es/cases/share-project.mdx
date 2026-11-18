@@ -1,0 +1,62 @@
+---
+title: Compartir un proyecto
+description: Pásale a otra persona tu equipo montado, o los pasos de algo que tu agente ya sabe hacer, sin que salgan tus claves ni tus conversaciones.
+sidebar:
+  order: 8
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+**El problema:** has dejado un proyecto que funciona (agentes con su papel, skills, rutinas, Flows) y un socio, un
+cliente o un compañero quiere lo mismo. Explicárselo de palabra lleva horas, y mandarle tus ficheros arrastra tus claves.
+
+**Con Colonia:** exportas el proyecto a un fichero, lo copias como texto o publicas un enlace. La otra persona ve qué
+trae antes de importar nada. Tus claves, chats, memoria y tareas no salen nunca de tu ordenador.
+
+## 1 · Comparte
+
+<Steps>
+
+1. En el menú del proyecto, elige **Compartir proyecto**.
+2. Mira **Qué se comparte** (instrucciones, agentes, skills, conexiones sin sus claves, estructura del equipo, Flows) y
+   **Qué no sale nunca de tu equipo** (claves y contraseñas, chats, memoria, tareas, canales y sus sesiones).
+3. Si hace falta, pulsa **Elegir archivos del proyecto** y marca documentos concretos.
+4. Elige cómo:
+   - **Exportar › Guardar en un fichero** o **Copiar como texto** para pegarlo en un mensaje.
+   - **Publicar › Crear enlace temporal**: Colonia abre un enlace gratis, sin cuenta ni instalar nada. Funciona
+     mientras tu Colonia esté encendida y cambia cuando la reinicias. **Copiar enlace** y se lo mandas.
+
+</Steps>
+
+Si en el texto había algo que parece una clave, Colonia lo quita de la copia compartida y te dice cuántas quitó y
+dónde estaban. Tu proyecto se queda como estaba.
+
+## 2 · La otra persona lo importa
+
+<Steps>
+
+1. Al añadir un proyecto, en «¿Te han pasado un proyecto?», pulsa **Importar proyecto**. Elige el fichero o pega el enlace o el texto.
+2. **Ver qué trae**, y después **Importar**.
+3. Lo que necesita conexión aparece en **Falta conectar**: pone sus propias claves con **Conectar** y funciona.
+
+</Steps>
+
+Los Flows y las rutinas llegan **apagados**: nada se ejecuta hasta que la otra persona los revisa y los enciende. Si el
+proyecto consultaba otros proyectos que ella no tiene, Colonia le deja enlazarlos con los suyos ahí mismo.
+
+<Aside type="tip">
+Los agentes y skills de Claude Code, Codex, Cursor o Gemini que tengas en la carpeta del proyecto salen en él y viajan
+también al compartirlo.
+</Aside>
+
+## Solo los pasos: una receta
+
+¿No quieres pasar el proyecto entero, solo algo que tu agente ya ha hecho bien (por ejemplo, dar de alta un cliente en
+una web)? En el menú del chat, **Exportar como receta**: se guarda un `.md` con los pasos. La otra persona lo importa
+con **+ Skill › Receta**, elige si su agente lo hará en vivo (ve moverse el puntero) o en segundo plano, y pulsa
+**Importar receta**. Importarla solo la lee: nada se ejecuta hasta que se lo pide a su agente.
+
+## Siguiente
+
+- Tu propia Colonia en otro ordenador: [En casa y en la oficina](/es/cases/two-computers/).
+- Qué hay dentro de un proyecto: [Proyectos](/es/concepts/projects/).

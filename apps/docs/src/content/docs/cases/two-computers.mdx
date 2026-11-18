@@ -1,0 +1,64 @@
+---
+title: At home and at the office
+description: Use the same Colonia on two computers, or move all of it to a new one, without setting anything up again.
+sidebar:
+  order: 7
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+**The problem:** you've built your team on your home computer (projects, agents, routines, channels) and now you want
+it on your laptop too. Or you're changing computers and don't want to start from scratch.
+
+**With Colonia:** two ways. **Sync computers** keeps two computers the same, live. **Backup & transfer** makes an
+encrypted backup that you restore on another computer. Both are in **My computers** and in **Settings**.
+
+## Way A · Two computers that look the same
+
+Projects, agents, Flows, AIs, channels, apps and browsers. What you change on one shows up on the other.
+
+<Steps>
+
+1. On the computer that's already set up, open **Settings › Sync computers**, choose **Show a code here** and click
+   **Create code**. You get an 8-character code (like `ABCD-2345`) that works once.
+2. On the other computer, with Colonia open, go to the same place, choose **I have a code**, type it and click
+   **Link**.
+3. The two find each other on your network and talk directly, encrypted. The state turns to up to date.
+
+</Steps>
+
+- WhatsApp and the other single-session channels stay on the first computer; the other one sees their conversations.
+- If one computer is off, the other waits and catches up on its own when it's back. If both change the same thing,
+  nothing is lost: it's kept in the saved versions.
+- The computer that creates the code keeps running your channels and routines, so nothing runs twice.
+
+## Way B · Move it to a new computer
+
+<Steps>
+
+1. On your usual computer, open **Backup & transfer** and choose a password (at least 8 characters; without it the
+   backup can't be opened and there's no way to recover it). Click **Make backup**.
+2. If you have projects whose folder lives outside Colonia, tick **Include documents and code from my external
+   projects**.
+3. Take the `.colonia` file to the new computer (USB stick or your cloud). If you save it in a OneDrive, iCloud Drive
+   or Dropbox folder, it will already be there.
+4. On the new computer, open **Backup & transfer**, pick the backup, type its password and click **See what it
+   brings**. Before anything changes you see how many projects, chats, agents, routines and channels it brings.
+5. Choose **Replace** or **Merge** (what's missing is added and, where they match, the new computer's version stays)
+   and click **Restore**.
+
+</Steps>
+
+Projects, chats, Flows, tasks, routines, knowledge, AIs with their keys, agents, channels and your settings travel.
+The WhatsApp, iMessage and Signal sessions and the logins in browsers and apps stay on the source computer: when it
+finishes, Colonia tells you what to link again and takes you to **Channels**.
+
+<Aside type="tip">
+First time opening Colonia on the new computer? The welcome assistant asks whether you already use it somewhere else
+and lets you link the two or recover a backup from the start.
+</Aside>
+
+## Next
+
+- Use another computer from here without installing Colonia on it: [Computers](/office/computers/).
+- Give a project to someone else: [Share a project](/cases/share-project/).

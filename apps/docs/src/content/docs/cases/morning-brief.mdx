@@ -1,0 +1,71 @@
+---
+title: The morning brief
+description: An agent reads your email and chats before you arrive, checks them against your tasks and leaves you only what needs your decision.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+**The problem:** you start the day with dozens of unread emails and chats. Three of them matter (a client who says
+yes, another asking for an invoice, one who says no) and you have to read everything to find them. And sometimes your
+follow-up list says one thing and your sent mail says another.
+
+**With Colonia:** at the time you choose, an agent reads what came in since the last check, compares it with your
+tasks and leaves you a short brief: what changed, what is pending and what needs your decision. It sends nothing on
+its own.
+
+## 1 · Connect what it should read
+
+- **Email**: Gmail in **Resources › Integrations**, or another provider in **Settings › Channels › Email**. Step by
+  step in [Email inbox](/cases/email-inbox/).
+- **WhatsApp** or another messaging app, if your clients write to you there: [Work from your
+  phone](/cases/mobile/).
+
+## 2 · Give an agent the job
+
+<Steps>
+
+1. Create a project for this work (for example, **Clients**) or use one you already have.
+2. In **Agents**, add one with a clear role: "Client manager. You read client email and chats, keep each client's
+   tasks up to date and tell me what needs my decision".
+3. In **Tasks**, keep one task per client or deal, with its state. That is the list the agent checks what it reads
+   against.
+
+</Steps>
+
+## 3 · Schedule the brief
+
+<Steps>
+
+1. In the project, open **Routines** and click **New routine**.
+2. **Agent**: the manager you just created. **When**: **On a schedule**, Monday to Friday at **09:00**.
+3. Write the brief:
+
+   > Read client email and chats since the last check. Compare them with the tasks: tell me if a task says "pending"
+   > and the email shows it is done, or the other way round, or if an amount changed. Give me the brief in three
+   > blocks: changed, pending, needs my decision. Send nothing. If a source fails, say so.
+
+4. **Save**, then click the run button to try it now.
+
+</Steps>
+
+## 4 · Decide in minutes
+
+The brief reaches you in the app and, if you pick it in **Settings › Interruptions › Chat app for notices**, on your
+phone. Reply right there: "Draft the follow-up to the hosting brand with the new price". The agent leaves it as a
+**draft**; you review it and send it.
+
+<Aside type="tip">
+What the agent learns about each client stays in the project's memory, so tomorrow you don't explain anything again.
+If one day it can't read a source, the brief says so instead of filling the gap.
+</Aside>
+
+<Aside type="caution">
+For the routine to run on time, the computer must be on with Colonia open (or running in the background).
+</Aside>
+
+## Next
+
+- Who can send what without asking you: [Autonomy](/concepts/autonomy/).
+- All about [Routines](/office/routines/) and [Memory](/concepts/memory/).
