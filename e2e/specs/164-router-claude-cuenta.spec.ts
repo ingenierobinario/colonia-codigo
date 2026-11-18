@@ -10,10 +10,11 @@ test("el router, un agente y el superagente aceptan Claude con la cuenta; apagad
     refresh: true,
   });
   const claude = engines.find((e) => e.id === "claude");
-  expect(claude, "Claude Code instalado en el sandbox").toBeTruthy();
+  expect(claude?.available, "el SDK ha podido consultar el catálogo de prueba").toBe(true);
+  expect(claude?.models.map((model) => model.id)).toContain("default");
   // El CLI falso no tiene sesión iniciada: no se ofrece a agentes ni al router.
   expect(claude?.for_agents).toBe(false);
-  const ref = `claude/${claude?.models[0]?.id ?? "default"}`;
+  const ref = "claude/default";
   try {
     await rpc("models.set_config", { router: { chain: [ref], rules: [] } });
     await rpc("models.set_config", { router: { chain: ["custom/fake-1", ref], rules: [] } });

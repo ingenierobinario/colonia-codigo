@@ -84,10 +84,8 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
   // what `codex login status` answers ("in", "slow": slower than the check, "fail-once": dies once and then is signed in),
   // printed on stderr with the real CLI's exit codes. The machine's own are never found.
   const bin = path.join(dir, "bin");
-  write(
-    path.join(bin, "claude"),
-    `#!/bin/sh\ncase "$1" in --version) echo "2.0.0 (Claude Code)";; auth) echo '{"loggedIn":false}';; esac\n`,
-  );
+  const claudeCli = fs.readFileSync(new URL("./fake-claude-cli.js", import.meta.url), "utf8");
+  write(path.join(bin, "claude"), claudeCli);
   write(
     path.join(bin, "codex"),
     // `debug models`: one model that takes reasoning efforts, as the real CLI lists them.
@@ -106,12 +104,7 @@ export function writeFixtures(dir: string, opts: { embedUrl: string }) {
         },
       ],
     });
-    const stubs: Record<string, string> = {
-      claude: `const a = process.argv[2];
-if (a === "--version") console.log("2.0.0 (Claude Code)");
-else if (a === "auth") console.log('{"loggedIn":false}');
-`,
-      codex: `const fs = require("node:fs"), path = require("node:path");
+    const codexCli = `const fs = require("node:fs"), path = require("node:path");
 const a = process.argv[2], flag = path.join(__dirname, "codex-login");
 const done = (code) => { process.exitCode = code; };
 if (a === "--version") console.log("codex-cli 0.1.0");
@@ -124,11 +117,14 @@ else if (a === "login") {
   else if (m === "fail-once") { fs.writeFileSync(flag, "in\\n"); done(3); }
   else { console.error("Not logged in"); done(1); }
 }
-`,
-    };
-    for (const [name, code] of Object.entries(stubs)) {
-      write(path.join(bin, `${name}.js`), code);
-      write(path.join(bin, `${name}.cmd`), `@"${process.execPath}" "%~dp0${name}.js" %*\r\n`);
+`;
+    // El SDK ejecuta los .js con Node en Windows. El simulador de Codex requiere CommonJS.
+    for (const [name, file, code] of [
+      ["claude", "claude.js", claudeCli],
+      ["codex", "codex.cjs", codexCli],
+    ] as const) {
+      write(path.join(bin, file), code);
+      write(path.join(bin, `${name}.cmd`), `@"${process.execPath}" "%~dp0${file}" %*\r\n`);
     }
   }
   // node itself, without the folder it lives in (globally installed CLIs sit there too).
