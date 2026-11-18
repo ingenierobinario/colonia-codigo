@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Locator, Page } from "@playwright/test";
-import { expect, test } from "./kit.ts";
+import type { Locator, Page, Route } from "@playwright/test";
+import { test as base, expect } from "./kit.ts";
 
 const origin = "https://colonia-alta.example.test";
 const owner = "clave-ficticia-del-propietario";
@@ -10,9 +10,17 @@ const code = "ABCD-2345";
 const panel = process.env.COLONIA_WEB_DIST || fileURLToPath(new URL("../../apps/web/dist/", import.meta.url));
 const welcome = "Conecta este servidor con tu escritorio";
 
-// El panel puede seguir consultando el motor al cerrar el diálogo. Cada prueba termina sus peticiones.
-test.afterEach(async ({ page }) => {
-  await page.unrouteAll({ behavior: "wait" });
+const test = base.extend<{ hosted: (returning?: boolean) => ReturnType<typeof server> }>({
+  hosted: async ({ page, baseURL }, use) => {
+    const inFlight = new Set<Promise<void>>();
+    try {
+      await use((returning) => server(page, baseURL, inFlight, returning));
+    } finally {
+      // Deja que las consultas del documento se resuelvan por la ruta HTTPS hasta que termine la navegación.
+      await page.goto("about:blank");
+      await Promise.all(inFlight);
+    }
+  },
 });
 
 async function geometry(dialog: Locator) {
@@ -58,7 +66,7 @@ async function geometry(dialog: Locator) {
   }
 }
 
-async function server(page: Page, baseURL: string | undefined, returning = false) {
+async function server(page: Page, baseURL: string | undefined, inFlight: Set<Promise<void>>, returning = false) {
   if (!baseURL) throw new Error("Falta el núcleo temporal de Playwright.");
   const starts: unknown[] = [];
   const urls: string[] = [];
@@ -68,7 +76,8 @@ async function server(page: Page, baseURL: string | undefined, returning = false
   page.on("websocket", (socket) => urls.push(socket.url()));
   page.on("framenavigated", (frame) => urls.push(frame.url()));
   await page.addInitScript(
-    ({ returning, device }) => {
+    ({ returning, device, origin }) => {
+      if (location.origin !== origin) return;
       localStorage.setItem("colonia.prefs", JSON.stringify({ language: returning ? "en" : "es" }));
       if (returning) localStorage.setItem("colonia.token", device);
       Object.defineProperty(navigator, "clipboard", {
@@ -79,7 +88,7 @@ async function server(page: Page, baseURL: string | undefined, returning = false
         },
       });
     },
-    { returning, device },
+    { returning, device, origin },
   );
   await page.routeWebSocket("wss://colonia-alta.example.test/ws", (socket) => {
     socket.onMessage((raw) => {
@@ -87,7 +96,7 @@ async function server(page: Page, baseURL: string | undefined, returning = false
       if (frame.t === "hello") socket.send(JSON.stringify({ t: "welcome", session: "sesion-de-prueba" }));
     });
   });
-  await page.route(`${origin}/**`, async (r) => {
+  async function respond(r: Route) {
     const request = r.request();
     const url = new URL(request.url());
     if (url.pathname === "/" || /^\/assets\/[\w-][\w.-]*$/.test(url.pathname)) {
@@ -131,15 +140,24 @@ async function server(page: Page, baseURL: string | undefined, returning = false
         return r.fulfill({ response });
       }
     }
+  }
+  await page.route(`${origin}/**`, async (route) => {
+    const task = respond(route);
+    inFlight.add(task);
+    try {
+      await task;
+    } finally {
+      inFlight.delete(task);
+    }
   });
   return { starts, urls, finishes };
 }
 
 test("el propietario genera una invitación HTTPS por elección y puede configurar una Colonia nueva", async ({
   page,
-  baseURL,
+  hosted,
 }) => {
-  const state = await server(page, baseURL);
+  const state = await hosted();
   await page.goto(origin);
   await page.getByRole("button", { name: "Este servidor es mío" }).click();
   const form = page.locator("form.pair");
@@ -165,8 +183,8 @@ test("el propietario genera una invitación HTTPS por elección y puede configur
     for (const secret of [owner, device, "CDEF3456", code]) expect(url).not.toContain(secret);
 });
 
-test("el propietario vinculado puede volver a guardar un alta que el servidor rechazó", async ({ page, baseURL }) => {
-  const state = await server(page, baseURL, true);
+test("el propietario vinculado puede volver a guardar un alta que el servidor rechazó", async ({ page, hosted }) => {
+  const state = await hosted(true);
   await page.goto(`${origin}/#view=equipos&host=welcome`);
   const dialog = page.getByRole("dialog", { name: "Connect this server to your desktop" });
   const open = dialog.getByRole("button", { name: "Open my Colonia" });
