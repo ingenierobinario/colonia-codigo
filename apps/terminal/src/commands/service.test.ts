@@ -171,37 +171,35 @@ for (const packaged of [false, true]) {
   for (const shape of ["plain", "electron", "legacy"] as const) {
     {
       const electron = shape === "electron";
-      {
-        test(`Windows stop uses the registered command: packaged=${packaged}, shape=${shape}`, () => {
-          const root = packaged ? "C:\\Program Files\\Colonia\\current" : "C:\\work\\colonia";
-          const node = `${root}\\${electron ? "electron.exe" : "node.exe"}`;
-          const terminal = `${root}\\apps\\terminal\\src\\main.ts`;
-          const home = "C:\\Colonia's data\\v2";
-          let command = windowsRunCommand({
-            node,
-            terminal,
-            home,
-            electron,
-          });
-          if (shape === "legacy") command = legacy(command);
-          const script = windowsStopScript(home, command);
-          const searchedCommand = /-ceq '((?:''|[^'])*)'/.exec(script)?.[1]?.replaceAll("''", "'");
-          assert.equal(searchedCommand, command, "stop searches for exactly the registered line");
-          const patterns = [...script.matchAll(/-imatch '((?:''|[^'])*)'/g)].map(
-            (m) => new RegExp((m[1] as string).replaceAll("''", "'"), "i"),
-          );
-          assert.equal(patterns.length, 2);
-          const supervisor = windowsRunCommand({ node, terminal, home, electron: false });
-          assert.match(supervisor, patterns[0] as RegExp);
-          assert.doesNotMatch(`${supervisor} --extra`, patterns[0] as RegExp);
-          assert.doesNotMatch(supervisor.replace("service run", "service install"), patterns[0] as RegExp);
-          assert.doesNotMatch(supervisor.replace(home, `${home}-other`), patterns[0] as RegExp);
-          const core = `"${node}" ${NODE_FLAGS.join(" ")} "${root}\\apps\\core\\src\\main.ts"`;
-          assert.match(core, patterns[1] as RegExp);
-          assert.doesNotMatch(`${core} --extra`, patterns[1] as RegExp);
-          if (packaged) assert.ok(script.includes("current"));
+      test(`Windows stop uses the registered command: packaged=${packaged}, shape=${shape}`, () => {
+        const root = packaged ? "C:\\Program Files\\Colonia\\current" : "C:\\work\\colonia";
+        const node = `${root}\\${electron ? "electron.exe" : "node.exe"}`;
+        const terminal = `${root}\\apps\\terminal\\src\\main.ts`;
+        const home = "C:\\Colonia's data\\v2";
+        let command = windowsRunCommand({
+          node,
+          terminal,
+          home,
+          electron,
         });
-      }
+        if (shape === "legacy") command = legacy(command);
+        const script = windowsStopScript(home, command);
+        const searchedCommand = /-ceq '((?:''|[^'])*)'/.exec(script)?.[1]?.replaceAll("''", "'");
+        assert.equal(searchedCommand, command, "stop searches for exactly the registered line");
+        const patterns = [...script.matchAll(/-imatch '((?:''|[^'])*)'/g)].map(
+          (m) => new RegExp((m[1] as string).replaceAll("''", "'"), "i"),
+        );
+        assert.equal(patterns.length, 2);
+        const supervisor = windowsRunCommand({ node, terminal, home, electron: false });
+        assert.match(supervisor, patterns[0] as RegExp);
+        assert.doesNotMatch(`${supervisor} --extra`, patterns[0] as RegExp);
+        assert.doesNotMatch(supervisor.replace("service run", "service install"), patterns[0] as RegExp);
+        assert.doesNotMatch(supervisor.replace(home, `${home}-other`), patterns[0] as RegExp);
+        const core = `"${node}" ${NODE_FLAGS.join(" ")} "${root}\\apps\\core\\src\\main.ts"`;
+        assert.match(core, patterns[1] as RegExp);
+        assert.doesNotMatch(`${core} --extra`, patterns[1] as RegExp);
+        if (packaged) assert.ok(script.includes("current"));
+      });
     }
   }
 }
