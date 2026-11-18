@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:"><style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font:600 12px/1.25 -apple-system,system-ui}
+body{position:relative;overflow:clip}
+#c{position:absolute;left:0;top:0;transform:translate(-100px,-100px);transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .3s;opacity:0}
+#p{display:block;overflow:visible;filter:drop-shadow(0 0 5px rgba(22,176,131,.75)) drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.sp{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}
+.sp2{animation-delay:.6s}.sp3{animation-delay:1.2s}
+@keyframes tw{0%,100%{opacity:.55;transform:scale(.75)}50%{opacity:1;transform:scale(1.15)}}
+#l{position:absolute;display:flex;align-items:center;gap:6px;box-sizing:border-box;width:max-content;max-width:min(280px,calc(100vw - 6px));padding:5px 9px;border-radius:9px;background:#121b17;border:1px solid #359875;color:#f4fff9;box-shadow:0 3px 9px #0005}
+[hidden]{display:none!important}#words{display:grid;min-width:0;overflow-wrap:anywhere}
+#face,#initial{flex:none;width:24px;height:24px}#initial{display:grid;place-items:center;border-radius:50%;background:#30634d}#t{font-weight:450}
+@media(prefers-color-scheme:light){#l{background:#f6fff9;color:#163326}#initial{background:#c6e7d6}}
+@media(prefers-reduced-motion:reduce){#c,.sp,#r.on{transition:none;animation:none}}
+#r{position:absolute;left:-11px;top:-12px;width:32px;height:32px;border-radius:50%;border:2.5px solid #16b083;box-shadow:0 0 10px rgba(22,176,131,.75);opacity:0}
+#r.on{animation:ring .6s ease-out}
+@keyframes ring{0%{opacity:1;transform:scale(.35)}100%{opacity:0;transform:scale(1.7)}}
+</style></head><body><div id="c"><div id="r"></div>
+<svg id="p" width="34" height="34" viewBox="0 0 34 34">
+<path d="M5 4.2 24.6 18.6c.8.6.5 1.8-.5 2l-8 1.6c-.4.1-.7.3-.9.6l-4.7 6.6c-.6.8-1.8.6-2-.4L4.1 5.3c-.2-.9.6-1.6.9-1.1z" fill="#fff" stroke="#16b083" stroke-width="3.2" stroke-linejoin="round"/>
+<path class="sp" d="M28 21.5l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="#fff" stroke="#16b083" stroke-width="1.1" stroke-linejoin="round"/>
+<path class="sp sp2" d="M22.5 26.5l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z" fill="#fff" stroke="#16b083" stroke-width="1.1" stroke-linejoin="round"/>
+<path class="sp sp3" d="M27.3 30.2l.45 1.05 1.05.45-1.05.45-.45 1.05-.45-1.05-1.05-.45 1.05-.45z" fill="#fff" stroke="#16b083" stroke-width="1.1" stroke-linejoin="round"/>
+</svg>
+<div id="l" hidden><img id="face" alt=""><span id="initial" hidden></span><span id="words"><strong id="name"></strong><span id="t"></span></span></div></div>
+<script src="cursor-overlay.js"></script>
+</body></html>

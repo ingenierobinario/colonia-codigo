@@ -1773,6 +1773,7 @@ export const en = {
     "The pointer really moves and you see each step. Best not to use the mouse while it works.",
   "desktop.cu.mode.backgroundHint":
     "Presses buttons and types without moving your pointer. If an app does not allow it, the agent tells you and leaves it alone.",
+  "live.actor": "In control: {name}",
   "live.title": "What the agent sees",
   "live.show": "Screen",
   "live.bigger": "Make it bigger",

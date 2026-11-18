@@ -705,7 +705,7 @@ app.whenReady().then(() => {
       updater.connect(undefined);
       link?.stop();
       link = undefined;
-      if (computerOn) computer.stop();
+      computer.disconnect();
       computerOn = false;
       armStop();
     },
@@ -717,11 +717,19 @@ app.whenReady().then(() => {
       link?.stop();
       link = undefined;
       if (!node) return;
-      link = startNodeLink(host, node.url, () => {}, node.token, {
-        on: () => computerOn && COMPUTER_PLATFORMS.includes(process.platform),
-        handle: computer.handle,
-        unsupported: !COMPUTER_PLATFORMS.includes(process.platform),
-      });
+      link = startNodeLink(
+        host,
+        node.url,
+        (status) => {
+          if (status === "offline") computer.disconnect();
+        },
+        node.token,
+        {
+          on: () => computerOn && COMPUTER_PLATFORMS.includes(process.platform),
+          handle: computer.handle,
+          unsupported: !COMPUTER_PLATFORMS.includes(process.platform),
+        },
+      );
     },
   });
   // Tests quit the app themselves (COLONIA_QUIT_CONFIRM=off); a shutdown or a logout never waits on a question.
@@ -789,6 +797,7 @@ app.whenReady().then(() => {
   ipcMain.on("desktop:prefs", (e, prefs: DesktopPrefs & { computerUse?: boolean }) => {
     if (e.sender !== panel.webContents || typeof prefs?.shortcut !== "string") return;
     computerOn = prefs.computerUse === true;
+    if (!computerOn) computer.disconnect();
     armStop();
     link?.refresh();
     const error = quick.apply(

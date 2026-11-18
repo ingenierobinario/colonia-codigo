@@ -1,7 +1,7 @@
 // Computer use, lent to the core as the "computer" capability once the owner turns it on (Config › Desktop), on macOS
 // and Windows. Every look starts by finding the window in front, on whichever screen it is, and pictures that window
 // alone. The picture comes from Electron; the window, its elements, a click and typing come from the platform's driver.
-import { windowCrop } from "@colonia/protocol";
+import { ComputerActor, windowCrop } from "@colonia/protocol";
 import { desktopCapturer, type NativeImage, screen, shell, systemPreferences } from "electron";
 import type { Bounds, ComputerDriver } from "./computer-driver.ts";
 import { macDriver } from "./computer-mac.ts";
@@ -17,15 +17,15 @@ const SHOT_MAX = 1600;
 const FRAME_MAX = 900;
 
 type Target = { app: string; window: string; bounds: Bounds | undefined };
-export type ComputerActivity = { kind: "look" | "click" | "type"; app: string; window: string; x?: number; y?: number };
-
-/**
- * A picture of `bounds` (a window) from the screen it is on, or of the main screen when there are none: each screen
- * is looked up again every time, so a window moved to another monitor is still found.
- */
-async function picture(bounds: Bounds | undefined, max: number): Promise<NativeImage> {
-  return (await shot(bounds, max)).img;
-}
+export type ComputerActivity = {
+  kind: "look" | "click" | "type";
+  app: string;
+  window: string;
+  x?: number;
+  y?: number;
+  actor?: ComputerActor;
+  action?: number;
+};
 
 /**
  * CURSOR-FIABLE-1: la imagen y la zona de pantalla (en puntos) que de verdad muestra. Una ventana que se sale de su
@@ -101,7 +101,7 @@ function screensText(bounds?: Bounds): string {
 export function createComputer(o: {
   cursor: AgentCursor;
   driver?: ComputerDriver;
-  onActivity(a: ComputerActivity): void;
+  onActivity(a: ComputerActivity | null): void;
   onStopped(stopped: boolean): void;
   /** macOS refused something computer use needs: show the owner where to allow it. */
   onPermission?(kind: ComputerPermission): void;
@@ -110,6 +110,11 @@ export function createComputer(o: {
   const front = d.front;
   /** The window an agent is working on: what the panel's live view follows. */
   let target: Target | undefined;
+  let latest = 0;
+  // Las acciones sucesivas en la misma ventana comparten el sondeo de imágenes del panel.
+  let firstAction = 0;
+  let lastActor: string | undefined;
+  let requestedApp: string | undefined;
   /** Just after the emergency stop: what was on its way does not reach the screen. */
   let stopped = false;
   /** DETENER-VIVO-1: how many times the stop was pulled, so an action knows it started before one. */
@@ -143,7 +148,12 @@ export function createComputer(o: {
       throw missing("screen");
   };
 
-  async function look(go: Go, app?: string, note?: string) {
+  type Presentation = {
+    actor: ComputerActor | undefined;
+    current(): boolean;
+    report(a: ComputerActivity): void;
+  };
+  async function look(go: Go, view: Presentation, app?: string, note?: string) {
     if (app) await d.activate(app).catch(() => {});
     go();
     // A browser's page is read from its picture: its elements take seconds and say less. Elsewhere a busy window
@@ -157,10 +167,16 @@ export function createComputer(o: {
         }));
     // Stopped while it read the window: no live view of it, no pointer, no picture for the agent.
     go();
-    target = { app: f.app, window: f.window, bounds: f.bounds };
+    if (view.current()) {
+      if (target && (target.app !== f.app || target.window !== f.window)) firstAction = latest;
+      target = { app: f.app, window: f.window, bounds: f.bounds };
+    }
     // What it is doing, by the window it looks at (the pointer never shows in the picture).
     const b0 = f.bounds;
-    if (b0) void o.cursor.moveTo(b0.x + b0.width / 2, b0.y + 40, note || "👀");
+    if (view.current()) {
+      if (b0) void o.cursor.moveTo(b0.x + b0.width / 2, b0.y + 40, note || "👀", view.actor).catch(() => {});
+      else o.cursor.say(note || "👀", view.actor);
+    }
     const { img, region } = await shot(f.bounds, SHOT_MAX);
     const where = f.bounds
       ? `window at ${f.bounds.x},${f.bounds.y}, ${f.bounds.width}x${f.bounds.height} points`
@@ -176,7 +192,7 @@ export function createComputer(o: {
     const map = `; the picture is ${size.width}x${size.height} px`;
     const header = `${screensText(b)}.\n${where}${covered}${map}; positions are screen points, centers to click\nrole\tname\tdescription\tvalue\tx,y`;
     go();
-    o.onActivity({ kind: "look", app: f.app, window: f.window });
+    view.report({ kind: "look", app: f.app, window: f.window });
     return {
       mime: "image/jpeg",
       data: img.toJPEG(70).toString("base64"),
@@ -187,7 +203,7 @@ export function createComputer(o: {
     };
   }
 
-  async function act(go: Go, method: string, params: unknown): Promise<unknown> {
+  async function act(go: Go, view: Presentation, method: string, params: unknown): Promise<unknown> {
     const p = (params ?? {}) as {
       x?: number;
       y?: number;
@@ -198,9 +214,9 @@ export function createComputer(o: {
       note?: string;
       mode?: string;
     };
-    if (method === "computer.snapshot") return look(go, p.app, p.note);
+    if (method === "computer.snapshot") return look(go, view, p.app, p.note);
     if (method === "computer.open") {
-      o.cursor.say(p.note || (p.url ? new URL(p.url).host : (p.app ?? "")));
+      o.cursor.say(p.note || (p.url ? new URL(p.url).host : (p.app ?? "")), view.actor);
       await d.open(p.app, p.url);
       // DETENER-VIVO-1: stopped while it opened: the wait for its window ends here, and the live view is not told.
       go();
@@ -214,13 +230,13 @@ export function createComputer(o: {
           go();
           const shown = f?.app.toLowerCase() ?? "";
           if (f?.bounds && shown && (shown === wanted || wanted.includes(shown) || shown.includes(wanted))) {
-            target = { app: f.app, window: f.window, bounds: f.bounds };
+            if (view.current()) target = { app: f.app, window: f.window, bounds: f.bounds };
             where = `${screensText(f.bounds)}; its window "${f.window}" is at ${f.bounds.x},${f.bounds.y} ${f.bounds.width}x${f.bounds.height}`;
           } else await new Promise((r) => setTimeout(r, 250));
         }
       }
       go();
-      o.onActivity({ kind: "look", app, window: p.url ?? "" });
+      view.report({ kind: "look", app, window: p.url ?? "" });
       return where ? { app, where } : { app };
     }
     if (method === "computer.key") {
@@ -231,19 +247,19 @@ export function createComputer(o: {
         throw new Error(`${p.keys} closes or quits things: ask the owner to do it`);
       if (!d.canPress(keys)) throw new Error(`cannot press "${p.keys}": use names like enter, tab, esc, cmd+l, arrows`);
       go();
-      o.cursor.say(p.note || `⌨ ${p.keys}`);
+      o.cursor.say(p.note || `⌨ ${p.keys}`, view.actor);
       // Keys go to the app in front: browsers ignore keys sent to them in the background.
       await d.activate(String(p.app ?? "")).catch(() => {});
       go();
       const app = await d.key(String(p.app ?? ""), keys);
       go();
-      o.onActivity({ kind: "type", app, window: target?.window ?? "" });
+      view.report({ kind: "type", app, window: target?.window ?? "" });
       return { app };
     }
     if (method === "computer.click") {
       const x = Number(p.x);
       const y = Number(p.y);
-      await o.cursor.moveTo(x, y, p.note || p.app || "");
+      await o.cursor.moveTo(x, y, p.note || p.app || "", view.actor);
       // The stop may come while the pointer glides there: then no click.
       go();
       const name = String(p.app ?? "");
@@ -260,8 +276,8 @@ export function createComputer(o: {
           throw e;
         }
         go();
-        o.cursor.pulse();
-        o.onActivity({ kind: "click", app: name, window: target?.window ?? "", x, y });
+        if (view.current()) o.cursor.pulse();
+        view.report({ kind: "click", app: name, window: target?.window ?? "", x, y });
         return { app: name, how: "a real click (live: the owner's pointer is there now)" };
       }
       const done = await d.press(name, x, y).catch((e: unknown) => `none: ${errorText(e)}`);
@@ -282,13 +298,13 @@ export function createComputer(o: {
       }
       const app = String(p.app ?? "");
       go();
-      o.cursor.pulse();
-      o.onActivity({ kind: "click", app, window: target?.window ?? "", x, y });
+      if (view.current()) o.cursor.pulse();
+      view.report({ kind: "click", app, window: target?.window ?? "", x, y });
       return { app, how };
     }
     if (method === "computer.type") {
       go();
-      o.cursor.say(p.note || "⌨");
+      o.cursor.say(p.note || "⌨", view.actor);
       const name = String(p.app ?? "");
       const text = String(p.text ?? "");
       if (!(await d.insert(name, text))) {
@@ -299,10 +315,22 @@ export function createComputer(o: {
       }
       const app = String(p.app ?? "");
       go();
-      o.onActivity({ kind: "type", app, window: target?.window ?? "" });
+      view.report({ kind: "type", app, window: target?.window ?? "" });
       return { app };
     }
     throw new Error(`unknown method ${method}`);
+  }
+
+  let active = false;
+  function endPresentation() {
+    active = false;
+    firstAction = 0;
+    latest++;
+    stops++;
+    lastActor = undefined;
+    requestedApp = undefined;
+    target = undefined;
+    o.cursor.hide();
   }
 
   return {
@@ -311,7 +339,39 @@ export function createComputer(o: {
       go();
       allowed(method);
       try {
-        return await act(go, method, params);
+        const request = params as { actor?: unknown; app?: string } | null;
+        const actor = ComputerActor.safeParse(request?.actor).data;
+        const following = active;
+        active = true;
+        const action = ++latest;
+        if (
+          !following ||
+          method === "computer.open" ||
+          lastActor !== actor?.id ||
+          (request?.app && (target?.app ?? requestedApp) !== request.app)
+        ) {
+          firstAction = action;
+          if (following) {
+            o.cursor.hide();
+            o.onActivity(null);
+          }
+          target = undefined;
+        }
+        lastActor = actor?.id;
+        requestedApp = request?.app;
+        const current = () => latest === action && !stopped;
+        return await act(
+          go,
+          {
+            actor,
+            current,
+            report(a) {
+              if (current()) o.onActivity({ ...a, action: firstAction, ...(actor ? { actor } : {}) });
+            },
+          },
+          method,
+          params,
+        );
       } catch (e) {
         // Allowed as macOS reports it, yet refused when used: an entry left behind by a reinstall.
         if (ASSISTIVE.test(errorText(e))) throw missing("accessibility");
@@ -325,32 +385,37 @@ export function createComputer(o: {
     stop() {
       if (stopped) return;
       stopped = true;
-      stops++;
-      // DETENER-VIVO-1: computer use ended: the panel's live view has no window to follow until the next action.
-      target = undefined;
-      o.cursor.hide();
+      endPresentation();
       o.onStopped(true);
       setTimeout(() => {
         stopped = false;
         o.onStopped(false);
       }, STOP_HOLD_MS);
     },
+    disconnect() {
+      if (!active) return;
+      endPresentation();
+      o.onActivity(null);
+    },
     /** A live frame of the window an agent is working on (found again on its screen), for the panel only. */
-    async frame(): Promise<{ data: string; bounds?: Bounds; app: string; window: string } | undefined> {
-      if (!target) return undefined;
+    async frame(): Promise<{ data: string; bounds: Bounds; app: string; window: string; action: number } | undefined> {
+      const action = firstAction;
+      if (stopped || (!target && !requestedApp)) return;
       try {
         const f = await front(false);
-        // Follow the same app; if the owner brought another one forward, keep the last place known.
-        if (f.app === target?.app) target = { app: f.app, window: f.window, bounds: f.bounds };
+        if (firstAction !== action) return;
+        if (f.app === (target?.app ?? requestedApp)) target = { app: f.app, window: f.window, bounds: f.bounds };
       } catch {}
-      // Stopped while it looked for the window.
-      if (!target) return undefined;
-      const img = await picture(target.bounds, FRAME_MAX);
+      const shown = target;
+      if (firstAction !== action || !shown) return;
+      const { img, region } = await shot(shown.bounds, FRAME_MAX);
+      if (firstAction !== action) return;
       return {
         data: `data:image/jpeg;base64,${img.toJPEG(60).toString("base64")}`,
-        ...(target.bounds ? { bounds: target.bounds } : {}),
-        app: target.app,
-        window: target.window,
+        bounds: region,
+        app: shown.app,
+        window: shown.window,
+        action,
       };
     },
   };

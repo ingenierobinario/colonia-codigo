@@ -1775,6 +1775,7 @@ export const es: Partial<Record<MessageKey, string>> = {
     "El puntero se mueve de verdad y ves cada paso. Mientras trabaja, mejor no usar el ratón.",
   "desktop.cu.mode.backgroundHint":
     "Pulsa botones y escribe sin mover tu puntero. Si una app no lo permite, el agente te avisa y no la toca.",
+  "live.actor": "En control: {name}",
   "live.title": "Lo que ve el agente",
   "live.show": "Pantalla",
   "live.bigger": "Agrandar",
