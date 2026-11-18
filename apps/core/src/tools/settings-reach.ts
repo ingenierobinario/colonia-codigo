@@ -8,6 +8,7 @@ export const BY_TOOL: Readonly<Record<string, string>> = {
   "agents.update": "agent_set",
   "agents.archive": "agent_set",
   "org.set": "agent_set",
+  "org.assign": "agent_set",
   "agents.set_limits": "agent_limits",
   "threads.go_on": "agent_limits",
   "routines.set": "routine_set",
@@ -56,6 +57,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "equipos.connect": SECRET,
   "equipos.revoke": SECRET,
   "equipos.set_access": POWER,
+  "equipos.rename": "la persona elige el nombre con el que reconoce cada equipo emparejado",
   "equipos.local_pair": SECRET,
   "equipos.local_unlock": SECRET,
   "equipos.local_decide": AS_OWNER,
@@ -157,6 +159,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "environments.screen": PANEL,
   "channels.recover": PANEL,
   "surfaces.import": PANEL,
+  "skills.recipe_import": "la persona revisa el recurso compartido y decide su ámbito antes de importarlo",
   // PROYECTO-COMPARTIR-1
   "projects.share": "the owner decides which of their projects is reachable from the internet, and when it stops",
   "projects.import": "the owner looks at what a shared project brings before it becomes one of theirs",
