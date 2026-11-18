@@ -2343,3 +2343,94 @@ a.hero__term {
   .hv-owner { width: 42px; height: 42px; left: 10px; bottom: 10px; }
   .hv-cta { width: 100%; }
 }
+
+/* VSL-BF-5: fondo azul marino de Ingeniero Binario (solo tokens del modo vsl), cinta de Black Friday en movimiento,
+ * marca IB junto a Colonia, play fuera de los nombres de la portada y línea de confianza legible. */
+.home--vsl {
+  --colonia-bg: hsl(224 60% 12%);
+  --colonia-surface: hsl(224 50% 15%);
+  --colonia-surface-raised: hsl(224 46% 17%);
+  --colonia-card: hsl(224 48% 16%);
+  --colonia-fill: hsl(224 42% 19%);
+  --colonia-fill-strong: hsl(224 38% 25%);
+  --colonia-fg: hsl(214 40% 95%);
+  --colonia-fg-muted: hsl(218 30% 78%);
+  --colonia-fg-subtle: hsl(218 24% 68%);
+  --colonia-border: hsl(224 34% 26%);
+  --colonia-border-strong: hsl(224 30% 36%);
+  --colonia-shadow-md: 0 2px 8px rgb(3 8 24 / 0.45), 0 12px 32px rgb(3 8 24 / 0.5);
+  --colonia-shadow-lift: 0 40px 120px -40px rgb(3 8 24 / 0.7);
+  --hv-bf: #ffd21f;
+  --hv-bf-ink: #0b1430;
+  background: var(--colonia-bg);
+}
+
+.hv-ribbon {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0;
+  border-bottom: 0;
+  background: var(--hv-bf);
+  backdrop-filter: none;
+  color: var(--hv-bf-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.hv-ribbon__track { flex: 1; min-width: 0; overflow: hidden; }
+.hv-ribbon__run { display: flex; width: max-content; animation: hv-run 38s linear infinite; }
+.hv-ribbon__item { display: inline-flex; align-items: center; gap: 8px; padding: 10px 28px; white-space: nowrap; }
+.hv-ribbon__item > b { font-weight: 800; letter-spacing: 0.06em; }
+.hv-ribbon .hv-clock b { color: var(--hv-bf-ink); font-weight: 800; }
+.hv-ribbon .hv-clock { font-size: 13.5px; }
+.hv-ribbon__cta {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 0;
+  background: var(--hv-bf-ink);
+  color: var(--hv-bf);
+  font-weight: 700;
+  box-shadow: -14px 0 18px -6px var(--hv-bf);
+}
+@keyframes hv-run { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .hv-ribbon__run { animation: none; width: auto; margin: 0 auto; }
+  .hv-ribbon__track { display: flex; justify-content: center; }
+  .hv-ribbon__item[aria-hidden] { display: none; }
+}
+
+.hv-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--colonia-fg); }
+.hv-brand > i { font-style: normal; color: var(--colonia-fg-subtle); }
+.hv-ib { filter: invert(1); }
+.hv-ib__name { font-weight: 700; font-size: 13px; letter-spacing: 0.14em; }
+.hv-foot { display: grid; justify-items: center; gap: 8px; }
+.hv-foot p { margin: 0; }
+.hv-foot .hv-logo { font-size: 15px; }
+
+/* Play abajo a la izquierda, sobre la alfombra vacía: Hanna, José y Lucía quedan a la vista. */
+.hv-play {
+  grid-auto-flow: column;
+  place-content: end start;
+  align-items: center;
+  padding: 0 0 7% 22%;
+  background: linear-gradient(to top, rgb(11 20 48 / 0.32), transparent 45%);
+}
+.hv-owner { left: auto; right: 14px; }
+@media (max-width: 560px) {
+  .hv-play { padding: 0 0 6% 6%; gap: 8px; }
+  .hv-play__btn { width: 52px; }
+  .hv-play__t { font-size: 12.5px; }
+  .hv-owner { width: 42px; height: 42px; right: 10px; bottom: 10px; }
+  .hv-ribbon { font-size: 12.5px; }
+  .hv-ribbon__item { padding: 9px 18px; }
+  .hv-ribbon__cta { padding: 0 12px; font-size: 12.5px; }
+  .hv-ib__name { font-size: 11.5px; letter-spacing: 0.1em; }
+}
+.hv-trust { color: var(--colonia-fg); font-weight: 500; text-shadow: 0 1px 8px var(--colonia-bg); }
+@media (max-width: 560px) {
+  .hv-play__t { display: none; }
+  .hv-trust { padding: 8px 14px; border-radius: 14px; background: color-mix(in srgb, var(--colonia-bg) 82%, transparent); }
+}

@@ -97,13 +97,15 @@ const cards = [
   </head>
   <body class:list={["h home", { "home--sub": section, "home--vsl": vsl }]}>
     {vsl ? (<>
-      <div class="hv-ribbon" role="note">
-        <span class="hv-ribbon__tag">Black Friday</span>
-        <span class="hv-ribbon__txt">{v.ribbon.replace(/^Black Friday · /, "")}</span>
-        <span class="hv-clock" data-clock aria-label={v.ends}>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span>
+      <div class="hv-ribbon" role="note" aria-label={`${v.ribbon} · ${v.ends}`}>
+        <div class="hv-ribbon__track"><div class="hv-ribbon__run">
+          {[0, 1, 2, 3].map((n) => (
+            <span class="hv-ribbon__item" aria-hidden={n > 0 ? "true" : undefined}><b>BLACK FRIDAY</b> · {v.ribbon.replace(/^Black Friday · /, "")} · {v.ends} <span class="hv-clock" data-clock>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span>
+          ))}
+        </div></div>
         <a class="hv-ribbon__cta" href={RESERVAR_URL}>{v.cta}</a>
       </div>
-      <header class="hv-top"><span class="hv-logo"><Blob name="menta" size={26} /><span>Colonia</span></span></header>
+      <header class="hv-top"><span class="hv-brand"><img class="hv-ib" src="/vsl/ib-logo.png" alt="" width="23" height="24" /><span class="hv-ib__name">INGENIERO BINARIO</span><i aria-hidden="true">·</i><span class="hv-logo"><Blob name="menta" size={26} /><span>Colonia</span></span></span></header>
     </>) : (<>
     <a class="skip-link" href="#main">{t.skip}</a>
     <WebHeader lang={lang} section={section} />
@@ -560,7 +562,7 @@ const cards = [
     </main>
 
     {vsl ? (<>
-    <p class="hv-foot">© 2026 {v.rights}</p>
+    <div class="hv-foot"><span class="hv-brand"><img class="hv-ib" src="/vsl/ib-logo.png" alt="" width="19" height="20" /><span class="hv-ib__name">INGENIERO BINARIO</span><i aria-hidden="true">·</i><span class="hv-logo"><Blob name="menta" size={20} /><span>Colonia</span></span></span><p>© 2026 {v.rights}</p></div>
     <!-- VSL-BF-4: el globo de WhatsApp solo sale al pausar o terminar el vídeo; el botón flotante, siempre. -->
     <div class="hv-tip" id="hvTip" role="dialog" aria-label={v.wa.role}>
       <button class="hv-tip__x" type="button" aria-label={v.wa.close}>&times;</button>
