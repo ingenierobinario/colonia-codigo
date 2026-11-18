@@ -7,6 +7,7 @@ import { createHash, createHmac } from "node:crypto";
 import fs from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import { AGENT_NAMES } from "@colonia/protocol";
+import { secretTravels as portableInBackup } from "../backup/inventory.ts";
 import { prepareWorkLocations, workLocation } from "./project-work-location.ts";
 
 /** Las tablas que viajan, en orden de dependencia (las que otras referencian, primero). */
@@ -88,8 +89,7 @@ const LIST = "@lista:";
 export const ORDER = "@orden";
 export const SECRET = "@clave";
 const LOST_SECRET = "sync.perdida.";
-/** Los secretos propios de la sincronización nunca viajan. */
-export const ownSecret = (name: string) => name.startsWith("sync.") && !name.startsWith(LOST_SECRET);
+const secretMarker = JSON.stringify({ $secreto: 1 });
 
 const PATH_COLUMNS: Readonly<Record<string, string[]>> = { projects: ["path"], threads: ["cwd"], media: ["path"] };
 const JSON_PATH_COLUMNS: Readonly<Record<string, string[]>> = {
@@ -248,9 +248,10 @@ export function discard(db: DatabaseSync, secrets: SecretsPort | undefined, id?:
       ? db.prepare("SELECT id FROM sync_perdidas WHERE id = ?").all(id)
       : db.prepare("SELECT id FROM sync_perdidas").all()
   ) as { id: string }[];
+  const names = new Set(secrets?.list().map((s) => s.name));
   for (const r of ids) {
     db.prepare("DELETE FROM sync_perdidas WHERE id = ?").run(r.id);
-    if (secrets?.resolve(`secret://${LOST_SECRET}${r.id}`) !== undefined) secrets.set(LOST_SECRET + r.id, null);
+    if (names.has(LOST_SECRET + r.id)) secrets?.set(LOST_SECRET + r.id, null);
   }
   if (!installed(db) && !lostIn(db, 1).total) db.exec("DROP TABLE IF EXISTS sync_perdidas");
   return ids.length;
@@ -315,9 +316,65 @@ export function createJournal(d: JournalDeps) {
   // ── Leer y escribir una fila por su clave ──
   const where = (s: Shape) => s.key.map((c) => `${q(c)} IS ?`).join(" AND ");
   const keyOf = (pk: string): unknown[] => JSON.parse(pk) as unknown[];
+  const singleKey = (pk: string): string | undefined => {
+    try {
+      const keys = keyOf(pk);
+      return Array.isArray(keys) && keys.length === 1 && typeof keys[0] === "string" ? keys[0] : undefined;
+    } catch {
+      return undefined;
+    }
+  };
   const pkOf = (s: Shape, row: Row) => JSON.stringify(s.key.map((c) => row[c]));
 
+  // Los conflictos de una clave portable se guardan en el llavero. Solo viajan si el diario identifica su origen.
+  const portableSecret = (name: string) => portableInBackup(name) && (d.secretTravels?.(name) ?? true);
+  const savedTarget = (id: string) =>
+    one<{ tbl: string; pk: string; hlc: string; origin: string }>(
+      "SELECT tbl,pk,hlc,origin FROM sync_perdidas WHERE id=?",
+      id,
+    );
+  const savedId = (tbl: string, pk: string, hlc: string, origin: string) => sha([tbl, pk, hlc, origin].join("\n"));
+  function validSavedSecret(id: string, row: Row): boolean {
+    return (
+      row.tbl === SECRET &&
+      typeof row.pk === "string" &&
+      portableSecret(row.pk) &&
+      typeof row.hlc === "string" &&
+      typeof row.origin === "string" &&
+      savedId(SECRET, row.pk, row.hlc, row.origin) === id
+    );
+  }
+  const travels = (name: string) => {
+    if (!name.startsWith(LOST_SECRET)) return portableSecret(name);
+    const id = name.slice(LOST_SECRET.length);
+    const info = savedTarget(id);
+    return Boolean(info && validSavedSecret(id, info));
+  };
+  function targetAllowed(tbl: string, pk: string): boolean {
+    if (tbl === SECRET) return travels(pk);
+    if (tbl === ORDER) return LISTS.has(pk);
+    if (tbl.startsWith(LIST)) return LISTS.has(tbl.slice(LIST.length));
+    if (tbl !== "meta") return true;
+    const key = singleKey(pk);
+    return typeof key === "string" && key.startsWith("setting:") && settingTravels(key.slice("setting:".length));
+  }
+  function savedAllowed(row: Row): boolean {
+    if (typeof row.tbl !== "string" || typeof row.pk !== "string" || row.tbl === "sync_perdidas") return false;
+    return row.tbl === SECRET ? portableSecret(row.pk) : targetAllowed(row.tbl, row.pk);
+  }
+  function allowed(tbl: string, pk: string, incoming?: Row): boolean {
+    if (tbl !== "sync_perdidas") return targetAllowed(tbl, pk);
+    const id = singleKey(pk);
+    if (id === undefined) return false;
+    const local = savedTarget(id);
+    const permitted = (row: Row) => (row.tbl === SECRET ? validSavedSecret(id, row) : savedAllowed(row));
+    return (!local || permitted(local)) && (!incoming || (incoming.id === id && permitted(incoming)));
+  }
+  function forgetVersion(tbl: string, pk: string): void {
+    run("DELETE FROM sync_ver WHERE tbl=? AND pk=?", tbl, pk);
+  }
   function readRow(tbl: string, pk: string): Row | undefined {
+    if (!allowed(tbl, pk)) return undefined;
     if (tbl.startsWith(LIST)) return listOf(tbl.slice(LIST.length)).find((e) => e.id === pk);
     if (tbl === ORDER) {
       const ids = listOf(pk).map((e) => e.id);
@@ -341,6 +398,7 @@ export function createJournal(d: JournalDeps) {
       const pinned = workLocation(d.db, String(r.id));
       if (pinned && r.path === pinned.local_path) out.path = pinned.source_path;
     }
+    if (tbl === "sync_perdidas" && out.tbl === SECRET) out.row = secretMarker;
     return out;
   }
 
@@ -372,6 +430,12 @@ export function createJournal(d: JournalDeps) {
     );
 
   function writeRow(tbl: string, pk: string, row: Row | undefined): void {
+    if (!allowed(tbl, pk, row)) return;
+    if (tbl === "sync_perdidas" && row?.tbl === SECRET) row = { ...row, row: secretMarker };
+    if (tbl === "sync_perdidas" && !row) {
+      const id = String(keyOf(pk)[0]);
+      if (savedTarget(id)?.tbl === SECRET) d.secrets?.set(LOST_SECRET + id, null);
+    }
     if (tbl.startsWith(LIST)) {
       const name = tbl.slice(LIST.length);
       const list = listOf(name);
@@ -445,6 +509,7 @@ export function createJournal(d: JournalDeps) {
 
   /** Anota el estado actual de una fila como cambio de este equipo. Devuelve si había algo nuevo. */
   function stamp(tbl: string, pk: string, row = readRow(tbl, pk)): boolean {
+    if (!allowed(tbl, pk, row)) return false;
     const ver = verOf(tbl, pk);
     const hash = row ? hashOf(tbl, row) : "";
     const deleted = row ? 0 : 1;
@@ -474,7 +539,6 @@ export function createJournal(d: JournalDeps) {
     else stamp("meta", JSON.stringify([key]));
   }
 
-  const travels = (name: string) => !ownSecret(name) && (d.secretTravels?.(name) ?? true);
   /** Los secretos no tienen disparadores: se comparan con lo último visto. */
   function scanSecrets(): void {
     if (!d.secrets) return;
@@ -487,15 +551,18 @@ export function createJournal(d: JournalDeps) {
       stamp(SECRET, s.name, { value });
     }
     for (const v of all<{ pk: string }>("SELECT pk FROM sync_ver WHERE tbl = ? AND deleted = 0", SECRET))
-      if (!seen.has(v.pk)) stamp(SECRET, v.pk, undefined);
+      if (!travels(v.pk)) forgetVersion(SECRET, v.pk);
+      else if (!seen.has(v.pk)) stamp(SECRET, v.pk, undefined);
   }
 
   function seal(): void {
     const max = one<{ n: number | null }>("SELECT max(n) AS n FROM sync_dirty")?.n;
     if (!max) return;
     for (const c of all<{ tbl: string; pk: string }>("SELECT DISTINCT tbl, pk FROM sync_dirty WHERE n <= ?", max)) {
-      if (c.tbl === "meta") stampSetting(String(keyOf(c.pk)[0]));
-      else stamp(c.tbl, c.pk);
+      if (c.tbl === "meta") {
+        const key = singleKey(c.pk);
+        if (key?.startsWith("setting:")) stampSetting(key);
+      } else stamp(c.tbl, c.pk);
     }
     run("DELETE FROM sync_dirty WHERE n <= ?", max);
   }
@@ -522,8 +589,8 @@ export function createJournal(d: JournalDeps) {
 
   // ── Guardar la versión que pierde ──
   function keep(tbl: string, pk: string, hlc: string, origin: string, row: Row, winner: string): boolean {
-    if (tbl === "sync_perdidas" || tbl === ORDER) return false;
-    const id = sha(`${tbl}\n${pk}\n${hlc}\n${origin}`);
+    if (tbl === "sync_perdidas" || tbl === ORDER || (tbl === SECRET && !portableSecret(pk))) return false;
+    const id = savedId(tbl, pk, hlc, origin);
     if (one("SELECT 1 AS x FROM sync_perdidas WHERE id = ?", id)) return false;
     let saved = row;
     if (tbl === SECRET) {
@@ -652,8 +719,7 @@ export function createJournal(d: JournalDeps) {
 
   function applyOne(item: Item, out: Applied): void {
     const { tbl, pk } = item;
-    if (tbl === "meta" && !settingTravels(String(keyOf(pk)[0]).slice("setting:".length))) return;
-    if (tbl === SECRET && !travels(pk)) return;
+    if (!allowed(tbl, pk, item.row)) return;
     observe(item.hlc);
     const moved = item.row ? localize(tbl, item.row) : undefined;
     const row = moved && tbl === "projects" ? folder(pk, moved) : moved;
@@ -701,6 +767,15 @@ export function createJournal(d: JournalDeps) {
     out.touched.add(tbl);
   }
 
+  // Las versiones antiguas podían dejar una identidad en la cola. Retirar su marca no toca el llavero ni el historial local.
+  tx(() => {
+    for (const v of all<{ tbl: string; pk: string }>(
+      "SELECT tbl,pk FROM sync_ver WHERE tbl IN (?, 'sync_perdidas', 'meta')",
+      SECRET,
+    ))
+      if (!allowed(v.tbl, v.pk)) forgetVersion(v.tbl, v.pk);
+  });
+
   return {
     /** Primera vez: todo lo que ya hay se anota. Con `low`, como «lo más antiguo» (pierde ante el otro equipo). */
     baseline(asOldest: boolean): void {
@@ -736,8 +811,34 @@ export function createJournal(d: JournalDeps) {
         limit,
       );
       const out: Item[] = [];
+      const savedHeaders = new Set<string>();
       let bytes = 0;
       for (const v of rows) {
+        if (!allowed(v.tbl, v.pk)) {
+          forgetVersion(v.tbl, v.pk);
+          continue;
+        }
+        if (v.tbl === "sync_perdidas") {
+          if (savedHeaders.has(v.pk)) continue;
+          savedHeaders.add(v.pk);
+        }
+        if (v.tbl === SECRET && v.pk.startsWith(LOST_SECRET)) {
+          const id = v.pk.slice(LOST_SECRET.length);
+          const pk = JSON.stringify([id]);
+          const origin = verOf("sync_perdidas", pk);
+          if (origin && !origin.synced) {
+            if (!savedHeaders.has(pk)) {
+              const info = readRow("sync_perdidas", pk);
+              if (info) {
+                savedHeaders.add(pk);
+                bytes += stable(info).length;
+                out.push({ tbl: "sync_perdidas", pk, hlc: origin.hlc, origin: origin.origin, del: false, row: info });
+              }
+            }
+            if (bytes > maxBytes) break;
+            continue;
+          }
+        }
         const row = v.deleted ? undefined : readRow(v.tbl, v.pk);
         const item: Item = { tbl: v.tbl, pk: v.pk, hlc: v.hlc, origin: v.origin, del: !row, ...(row ? { row } : {}) };
         bytes += row ? stable(row).length : 0;
@@ -809,7 +910,7 @@ export function createJournal(d: JournalDeps) {
           "SELECT tbl, pk, row FROM sync_perdidas WHERE id = ?",
           id,
         );
-        if (!p) return false;
+        if (!p || !savedAllowed(p) || (p.tbl === SECRET && !travels(LOST_SECRET + id))) return false;
         seal();
         let row = JSON.parse(p.row) as Row;
         if (p.tbl === SECRET) {

@@ -469,3 +469,96 @@ test("al quitar la sincronización las versiones guardadas siguen ahí hasta que
   assert.equal(b.journal.discard(), 2);
   assert.equal(b.journal.lost().total, 0);
 });
+
+test("las identidades locales no se consultan ni se cambian al sincronizar las claves elegidas", (t) => {
+  const { a, b, settle } = pair(t);
+  a.store.set("equipo.clave", "identidad-del-doble-a");
+  a.store.set("sync.identidad", "vinculo-del-doble-a");
+  a.store.set("proveedor-elegido", "valor-de-prueba");
+  b.store.set("equipo.clave", "identidad-del-doble-b");
+  const consultados: string[] = [];
+  const real = a.secrets.resolve;
+  t.mock.method(a.secrets, "resolve", (ref: string) => {
+    consultados.push(ref);
+    return real(ref);
+  });
+  settle();
+  assert.equal(b.store.get("equipo.clave"), "identidad-del-doble-b");
+  assert.equal(b.store.get("proveedor-elegido"), "valor-de-prueba");
+  assert.ok(!consultados.some((n) => n === "secret://equipo.clave" || n === "secret://sync.identidad"));
+  const writes = t.mock.method(b.secrets, "set");
+  const key = { tbl: "@clave", pk: "equipo.clave", hlc: "180000050000000000001", origin: "antiguo" };
+  b.journal.apply([
+    { ...key, del: false, row: { value: "solo-un-doble" } },
+    { ...key, del: true },
+  ]);
+  assert.ok(!writes.mock.calls.some((c) => c.arguments[0] === "equipo.clave"));
+});
+
+test("el diario anterior conserva la identidad local y descarta sus marcas pendientes y conflictos privados", (t) => {
+  const { a } = pair(t);
+  const id = "a".repeat(32),
+    saved = `sync.perdida.${id}`;
+  a.store.set("equipo.clave", "valor-ficticio-local");
+  a.store.set(saved, "copia-ficticia-antigua");
+  const insert = a.db.prepare(
+    "INSERT OR REPLACE INTO sync_ver(tbl,pk,hlc,origin,deleted,hash,synced) VALUES(?,?,'0001','antiguo',0,'prueba',0)",
+  );
+  a.db
+    .prepare(
+      "INSERT INTO sync_perdidas(id,tbl,pk,hlc,origin,row,lost_at) VALUES(?,'@clave','equipo.clave','0001','antiguo','{}','2026-01-01')",
+    )
+    .run(id);
+  insert.run("@clave", "equipo.clave");
+  insert.run("@clave", saved);
+  insert.run("meta", "marca-incompleta");
+  insert.run("sync_perdidas", JSON.stringify([id]));
+  const consultados: string[] = [];
+  const raw = a.secrets.resolve;
+  t.mock.method(a.secrets, "resolve", (ref: string) => {
+    consultados.push(ref);
+    return raw(ref);
+  });
+  const j = createJournal({ db: a.db, me: "actual", secrets: a.secrets, secretTravels: () => true });
+  j.resend();
+  j.scanSecrets();
+  j.seal();
+  const outgoing = j.pending(1000);
+  assert.ok(!outgoing.some((x) => x.pk === "equipo.clave" || x.pk === saved || x.pk === JSON.stringify([id])));
+  assert.ok(!consultados.includes("secret://equipo.clave") && !consultados.includes(`secret://${saved}`));
+  assert.equal(j.recover(id), false);
+  assert.equal(a.db.prepare("SELECT 1 FROM sync_ver WHERE pk='marca-incompleta'").get(), undefined);
+  assert.equal(a.store.get("equipo.clave"), "valor-ficticio-local");
+  assert.equal(a.store.get(saved), "copia-ficticia-antigua");
+  assert.equal(
+    a.db
+      .prepare("SELECT count(*) AS n FROM sync_ver WHERE pk IN (?,?,?)")
+      .get("equipo.clave", saved, JSON.stringify([id]))?.n,
+    0,
+  );
+});
+
+test("un equipo nuevo recibe el origen antes de la versión guardada de una clave de proveedor", (t) => {
+  const { a, b, tick, settle } = pair(t);
+  a.store.set("proveedor-elegido", "inicial");
+  settle();
+  a.store.set("proveedor-elegido", "anterior-portable");
+  a.journal.scanSecrets();
+  tick();
+  b.store.set("proveedor-elegido", "actual-portable");
+  settle();
+  const lost = a.journal.lost().items.find((i) => i.tbl === "@clave" && i.pk === "proveedor-elegido");
+  assert.ok(lost);
+  // Una actualización de los metadatos puede hacerlos más recientes que el contenido del llavero.
+  a.db.prepare("UPDATE sync_perdidas SET recovered_at=? WHERE id=?").run(new Date().toISOString(), lost.id);
+  a.journal.seal();
+  a.journal.resend();
+  const fresh = pair(t).b;
+  for (let items = a.journal.pending(1); items.length; items = a.journal.pending(1)) {
+    assert.equal(fresh.journal.apply(items).failed, 0);
+    a.journal.acked(items);
+  }
+  assert.equal(fresh.store.get("proveedor-elegido"), "actual-portable");
+  assert.equal(fresh.journal.recover(lost.id), true);
+  assert.equal(fresh.store.get("proveedor-elegido"), "anterior-portable");
+});
