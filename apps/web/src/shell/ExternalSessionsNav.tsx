@@ -1,6 +1,6 @@
 import type { EngineStatus } from "@colonia/protocol";
-import { EngineIcon, engineBrand, IconButton, Icons } from "@colonia/ui";
-import { useEffect, useState } from "react";
+import { EngineIcon, engineBrand, IconButton, Icons, NavItem } from "@colonia/ui";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { rememberSidebar, setPrefs, usePrefs, useSidebarRows } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -8,12 +8,16 @@ import { go, useNav } from "./nav.ts";
 import { orderItems, SidebarNavRow } from "./SidebarNavRow.tsx";
 import { SidebarOverflow, SidebarRowsGrip, SidebarSection } from "./SidebarSection.tsx";
 
+const ChatGPT = lazy(() => import("../config/PlanLogin.tsx").then((m) => ({ default: m.PlanLogin })));
+const Claude = lazy(() => import("../config/ClaudePlanCard.tsx").then((m) => ({ default: m.ClaudeLogin })));
+
 /**
  * Last opened engine first, with the same row actions and manual ordering as the other sections; past the rows the
  * owner dragged it to, the rest folds into "N more" like Projects.
  */
 export function ExternalSessionsNav({ rail }: { rail: boolean }) {
   const t = useT();
+  const [account, setAccount] = useState<"chatgpt" | "claude">();
   const folded = usePrefs((s) => s.externalSessionsFolded);
   const saved = usePrefs((s) => s.engineOrder);
   const engines = useData((s) => s.engines);
@@ -66,6 +70,32 @@ export function ExternalSessionsNav({ rail }: { rail: boolean }) {
   );
   return (
     <>
+      <SidebarSection rail={rail} title={t("nav.aiAccounts")} />
+      <NavItem
+        collapsed={rail}
+        icon={<SessionIcon engine="codex" />}
+        label="ChatGPT"
+        onClick={() => setAccount("chatgpt")}
+      />
+      <NavItem
+        collapsed={rail}
+        icon={<SessionIcon engine="claude" />}
+        label="Claude"
+        onClick={() => setAccount("claude")}
+      />
+      <NavItem
+        collapsed={rail}
+        icon={<Icons.Download />}
+        label={t("chatImport.title")}
+        onClick={async () => {
+          const { openConversationImport } = await import("../data/threadAdmin.ts");
+          openConversationImport(undefined);
+        }}
+      />
+      <Suspense fallback={null}>
+        {account === "chatgpt" && <ChatGPT onClose={() => setAccount(undefined)} />}
+        {account === "claude" && <Claude onClose={() => setAccount(undefined)} />}
+      </Suspense>
       <SidebarSection
         rail={rail}
         title={t("nav.externalSessions")}
@@ -84,6 +114,14 @@ export function ExternalSessionsNav({ rail }: { rail: boolean }) {
           setPrefs({ externalSessionsFolded: !folded });
         }}
       />
+      {!hidden && !shown.length && (
+        <NavItem
+          collapsed={rail}
+          icon={<Icons.Download />}
+          label={t("nav.installTools")}
+          onClick={() => go.config("external")}
+        />
+      )}
       {!hidden && shown.slice(0, cut).map((engine) => row(engine))}
       {!hidden && rest.length > 0 && (
         <SidebarOverflow

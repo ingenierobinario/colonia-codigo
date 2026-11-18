@@ -23,6 +23,7 @@ import { acpAgents, acpEngine } from "../harness/acp/agents.ts";
 import { claudeLogin } from "../harness/claude-login.ts";
 import { createEngineUsage, detectUsageEngines } from "../harness/engine-usage.ts";
 import type { Harnesses } from "../harness/index.ts";
+import { installEngine } from "../harness/install-engine.ts";
 import { ONESHOT } from "../harness/oneshot.ts";
 import { importFromV1 } from "../import/v1.ts";
 import type { Catalog } from "../models/catalog.ts";
@@ -373,6 +374,7 @@ export function appHandlers(deps: {
       store.settings.write("claude_plan_enabled", enabled);
       return withEnabled(claude.status());
     },
+    "engines.install": ({ id }) => installEngine(id),
     "engines.status": async ({ refresh }) => ({
       engines: await harnesses.status(refresh),
     }),

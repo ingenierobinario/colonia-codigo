@@ -276,6 +276,8 @@ test("every long-running method gives its server time to finish and other method
     ["surfaces.export", {}, 180_000],
     ["surfaces.import", {}, 180_000],
     ["memory.reindex", {}, 600_000],
+    ["engines.install", { id: "codex" }, 360_000],
+    ["claude.install", {}, 360_000],
     ["sessions.projects", {}, 60_000],
     ["sessions.import", {}, 300_000],
     ["sessions.import_conversation", {}, 300_000],

@@ -25,6 +25,7 @@ const USUAL_DIRS = [
 /** Where version managers of Node and friends put what `npm install -g` installs, under the user's folder. */
 const USER_DIRS = [
   [".local", "bin"],
+  [".kimi-code", "bin"],
   [".volta", "bin"],
   [".bun", "bin"],
   [".asdf", "shims"],
@@ -76,6 +77,8 @@ export function windowsDirs(env: Env = process.env, list: (dir: string) => strin
     });
   return [
     win.join(home, ".local", "bin"),
+    win.join(home, ".kimi-code", "bin"),
+    win.join(local, "Programs", "OpenAI", "Codex", "bin"),
     win.join(roaming, "npm"),
     pnpm,
     win.join(pnpm, "bin"),

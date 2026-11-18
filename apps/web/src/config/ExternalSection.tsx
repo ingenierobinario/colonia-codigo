@@ -1,6 +1,8 @@
 import type { EngineStatus } from "@colonia/protocol";
 import { Button, EmptyState, EngineIcon, IconButton, Icons, Menu, Skeleton } from "@colonia/ui";
 import { useEffect, useState } from "react";
+import { claudeInstall } from "../data/claudeAccount.ts";
+import { client } from "../data/client.ts";
 import { loadEngines } from "../data/engines.ts";
 import { loadCatalog } from "../data/models.ts";
 import { notify } from "../data/notices.ts";
@@ -85,7 +87,11 @@ export function ExternalSection() {
             .filter(
               (e) =>
                 e.id !== "native" &&
-                (e.installed || e.id === "claude" || e.id === "codex" || e.auth === "on_invocation"),
+                (e.id === "acp:kimi" ||
+                  e.installed ||
+                  e.id === "claude" ||
+                  e.id === "codex" ||
+                  e.auth === "on_invocation"),
             )
             .map((e) => (
               <EngineCard key={e.id} engine={e} />
@@ -106,6 +112,25 @@ const SIGN: Record<string, { in: string; out: string }> = {
 
 function EngineCard({ engine: e }: { engine: EngineStatus }) {
   const t = useT();
+  const [installing, setInstalling] = useState(false);
+  const install = async () => {
+    setInstalling(true);
+    try {
+      const id = e.id;
+      const result =
+        id === "claude"
+          ? await claudeInstall()
+          : id === "codex" || id === "acp:kimi"
+            ? await client.call("engines.install", { id })
+            : undefined;
+      if (!result?.installed) notify(t("engine.installError"));
+      await loadEngines(true);
+    } catch {
+      notify(t("engine.installError"));
+    } finally {
+      setInstalling(false);
+    }
+  };
   const look = lookOf(e.id);
   const hint = !e.installed
     ? t("engines.notInstalled")
@@ -171,6 +196,11 @@ function EngineCard({ engine: e }: { engine: EngineStatus }) {
         <div className="engine__usage">
           <EngineUsageSwitch engine={e.id} />
         </div>
+      )}
+      {!e.installed && ["claude", "codex", "acp:kimi"].includes(e.id) && (
+        <Button size="sm" loading={installing} disabled={installing} onClick={install}>
+          {t("engine.installHere")}
+        </Button>
       )}
       {hint && <p className="engine__hint">{hint}</p>}
     </div>

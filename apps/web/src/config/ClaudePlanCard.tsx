@@ -79,7 +79,7 @@ export function ClaudePlanCard({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function ClaudeLogin({ onClose }: { onClose(): void }) {
+export function ClaudeLogin({ onClose }: { onClose(): void }) {
   const t = useT();
   const [s, setS] = useState<ClaudeAccountStatus>();
   const [busy, setBusy] = useState(false);

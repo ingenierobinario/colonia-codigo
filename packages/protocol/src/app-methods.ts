@@ -510,6 +510,12 @@ export const appMethods = {
     effect: true,
     access: "human",
   },
+  "engines.install": {
+    params: z.object({ id: z.enum(["codex", "acp:kimi"]) }).strict(),
+    result: z.object({ installed: z.boolean() }),
+    access: "human",
+    effect: true,
+  },
   "engines.status": {
     params: z.object({ refresh: z.boolean().default(false) }).strict(),
     result: z.object({ engines: z.array(EngineStatus) }),

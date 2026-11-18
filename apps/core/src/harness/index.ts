@@ -104,7 +104,12 @@ export function createHarnesses(deps: {
     const defaultEngine = engineOf(models.defaultChoice().model ?? "");
     const out: EngineStatus[] = [];
     for (const a of acpAgents(store)) {
-      if (!(await which(a.command))) continue;
+      if (!(await which(a.command))) {
+        if (a.id === "kimi" && a.command === "kimi") {
+          out.push({ id: acpEngine(a), label: a.label, installed: false, logged_in: false, default: false });
+        }
+        continue;
+      }
       const id = acpEngine(a);
       const seen = cachedCatalog(store, id);
       out.push({
