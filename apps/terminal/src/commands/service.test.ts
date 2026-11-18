@@ -278,9 +278,13 @@ test("a legacy entry that cannot be renamed is reported and left, never thrown",
   await using dir = tempDir("colonia-legacy-");
   const home = path.join(dir.path, "Mi Colonia");
   fs.mkdirSync(home);
-  const spelled = home.toUpperCase();
+  // El nombre antiguo conserva el enlace al faltar la carpeta final. El actual resuelve el directorio padre.
+  const alias = path.join(dir.path, "enlace");
+  fs.symlinkSync(home, alias, "junction");
+  const spelled = path.join(alias, "pendiente");
   const base = path.join(dir.path, "default");
   const old = legacyServiceNames(spelled, base).windows;
+  assert.notEqual(old, serviceNames(spelled, base).windows);
   const command = windowsRunCommand({ node: "node.exe", terminal: "main.ts", home: spelled, electron: false });
   const calls: string[] = [];
   const run = (cmd: string, args: string[]) => {
@@ -298,5 +302,7 @@ test("a legacy entry that cannot be renamed is reported and left, never thrown",
     console.error = original;
   }
   assert.ok(calls.includes("reg add"), calls.join(","));
+  assert.equal(calls.includes("reg delete"), false);
   assert.equal(errors.length, 1);
+  assert.match(String(errors[0]), /access denied/);
 });
