@@ -40,46 +40,86 @@ const icons = {
   doc: '<path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  // Los de la barra real (Sidebar.tsx): Inbox · Tareas · Flows · Recursos · Archivos.
+  flows:
+    '<circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 8v8M18 10c0 4-6 3-11 7"/>',
+  layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  clip: '<path d="m20 11-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7"/>',
+  panel: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/>',
+  back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  fwd: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+  bolt: '<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
+  checks: '<path d="m3 12 4 4 7-8M11 15l1 1 8-9"/>',
+  filter: '<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  wrench: '<path d="M15 4a5 5 0 0 0-5 6.5L4 16.5 7.5 20l6-6A5 5 0 0 0 20 9l-3 3-3-3 3-3a5 5 0 0 0-2-2z"/>',
+  dots: '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  spark: '<path d="M12 4v4M12 16v4M4 12h4M16 12h4M7 7l2 2M15 15l2 2M17 7l-2 2M9 15l-2 2"/>',
+  wa: '<path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/>',
+  tg: '<path d="m21 4-18 7 6 2 2 6 3-4 5 4z"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 17h.01"/>',
+  screen: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
 };
+const chats = es ? "Buscar chats" : "Search chats";
+const superAgent = es ? "Super-agente" : "Super-agent";
 ---
 
 <div class="demo" role="img" aria-label={demo.alt} data-stage-demo data-working={demo.working}>
   <div class="demo__scale">
-    <div class="demo__bar"><span></span><span></span><span></span><em><svg viewBox="0 0 24 24" set:html={icons.search} />{demo.search}<kbd>Ctrl K</kbd></em></div>
+    <!-- Calcado de la app (apps/web: Topbar, Sidebar en modo barra de iconos, InboxList, ChatHeader, ChatComposer). -->
+    <div class="demo__bar">
+      <svg viewBox="0 0 24 24" set:html={icons.panel} /><svg class="is-dim" viewBox="0 0 24 24" set:html={icons.back} /><svg class="is-dim" viewBox="0 0 24 24" set:html={icons.fwd} />
+      <Blob name="menta" size={22} /><span class="demo__crumb">{demo.inbox} <i>/</i> {demo.project} <i>/</i> <b>Home</b></span>
+      <em aria-hidden="true"><svg viewBox="0 0 24 24" set:html={icons.search} /></em>
+      <span class="demo__barend"><svg viewBox="0 0 24 24" set:html={icons.bell} /><svg viewBox="0 0 24 24" set:html={icons.bolt} /><Blob name="menta" size={22} /></span>
+    </div>
     <div class="demo__body">
-      <aside class="demo__side">
-        <b class="is-on"><span><svg viewBox="0 0 24 24" set:html={icons.inbox} />{demo.inbox}</span><i data-demo-count>3</i></b>
-        <b><span><svg viewBox="0 0 24 24" set:html={icons.tasks} />{demo.tasks}</span></b>
-        <small>{demo.channels}</small>
-        <b><span><svg viewBox="0 0 24 24" set:html={icons.chat} />Telegram</span></b>
-        <b><span><svg viewBox="0 0 24 24" set:html={icons.chat} />WhatsApp</span></b>
-        <small>{demo.projects}</small>
-        <b><span><svg viewBox="0 0 24 24" set:html={icons.folder} />{demo.project}</span></b>
-        <b><span><svg viewBox="0 0 24 24" set:html={icons.folder} />{demo.personal}</span></b>
+      <aside class="demo__side" aria-hidden="true">
+        <b class="is-on is-dot"><svg viewBox="0 0 24 24" set:html={icons.inbox} /></b>
+        <b><svg viewBox="0 0 24 24" set:html={icons.tasks} /></b>
+        <b><svg viewBox="0 0 24 24" set:html={icons.flows} /></b>
+        <b><svg viewBox="0 0 24 24" set:html={icons.layers} /></b>
+        <b><svg viewBox="0 0 24 24" set:html={icons.clip} /></b>
+        <hr />
+        <b class="is-dot demo__wa"><svg viewBox="0 0 24 24" set:html={icons.wa} /></b>
+        <b class="demo__tg"><svg viewBox="0 0 24 24" set:html={icons.tg} /></b>
+        <b class="demo__mail"><svg viewBox="0 0 24 24" set:html={icons.mail} /></b>
+        <hr />
+        <b><u class="demo__ltr demo__ltr--t">{demo.project.charAt(0)}</u></b>
+        <b><u class="demo__ltr">{demo.personal.charAt(0)}</u></b>
         <div class="demo__foot">
-          <b><span><svg viewBox="0 0 24 24" set:html={icons.files} />{es ? "Recursos" : "Resources"}</span></b>
-          <b><span><svg viewBox="0 0 24 24" set:html={icons.gear} />{es ? "Ajustes" : "Settings"}</span></b>
-          <p><Blob name="coral" size={24} /><span>{es ? "Tu cuenta" : "Your account"}</span></p>
+          <b><svg viewBox="0 0 24 24" set:html={icons.screen} /></b>
+          <b><svg viewBox="0 0 24 24" set:html={icons.help} /></b>
+          <b><u class="demo__me">{es ? "TÚ" : "YOU"}</u></b>
         </div>
       </aside>
       <section class="demo__list">
-        <strong>{demo.inbox}</strong>
+        <div class="demo__listhead"><strong>{demo.inbox}</strong><span><svg viewBox="0 0 24 24" set:html={icons.checks} /><svg viewBox="0 0 24 24" set:html={icons.filter} /><svg viewBox="0 0 24 24" set:html={icons.edit} /></span></div>
         <div class="demo__tabs">{demo.tabs.map((tab, i) => <span class={i === 0 ? "is-on" : ""}>{tab}</span>)}</div>
+        <div class="demo__find"><svg viewBox="0 0 24 24" set:html={icons.search} />{chats}</div>
+        <p class="demo__group"><u class="demo__ltr demo__ltr--t">{demo.project.charAt(0)}</u>{demo.project}</p>
+        <div class="demo__agent">
+          <p><Blob name="menta" size={22} /><b>Nova</b><span>{superAgent} · 1</span></p>
+          <div class="demo__row is-sel"><span>Home</span><time>{hour(0)}</time></div>
+        </div>
         {demo.agents.map((a, i) => (
           <div class="demo__agent" data-demo-agent={i}>
             <p><Blob name={a.blob as any} size={22} /><b>{a.name}</b><span data-demo-role>{a.role}</span></p>
-            {a.chats.map((c, n) => <div class="demo__row"><span>{c}</span>{n === 0 && i < 2 && <mark>{i + 1}</mark>}<time>{hour(i * 2 + n)}</time></div>)}
+            {a.chats.slice(0, 1).map((c, n) => <div class="demo__row"><span>{c}</span>{n === 0 && i < 2 && <mark data-demo-count={i === 0 ? "" : undefined}>{i + 1}</mark>}<time>{hour(i * 2 + 1)}</time></div>)}
           </div>
         ))}
       </section>
       <section class="demo__chat">
-        <header><Blob name="menta" size={30} /><span><b>Nova</b><small>{demo.role}</small></span><div class="demo__tools" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={icons.search} /><svg viewBox="0 0 24 24" set:html={icons.doc} /><svg viewBox="0 0 24 24" set:html={icons.term} /><svg viewBox="0 0 24 24" set:html={icons.files} /></div></header>
+        <header><Blob name="menta" size={30} /><span><span class="demo__who"><b>Nova</b><small>{superAgent}</small></span><em><i></i>{demo.project} / Home</em></span><div class="demo__tools" aria-hidden="true"><i class="demo__wrench"><svg viewBox="0 0 24 24" set:html={icons.wrench} /></i><svg viewBox="0 0 24 24" set:html={icons.dots} /><svg viewBox="0 0 24 24" set:html={icons.globe} /></div></header>
         <div class="demo__msgs" data-demo-msgs>
           <p class="demo__day">{demo.today}</p>
           {demo.script.map((m) => <div class:list={["demo__msg", `demo__msg--${m.from}`]} data-from={m.from}>{m.text}{m.from === "bot" && <small>{`Nova · ${hour(0)}`}</small>}</div>)}
           <div class="demo__typing" data-demo-typing hidden><i></i><i></i><i></i></div>
         </div>
-        <div class="demo__composer"><span data-demo-input>{demo.placeholder}</span><div class="demo__keys"><svg viewBox="0 0 24 24" set:html={icons.plus} /><u>{es ? "Automático" : "Auto"}</u><svg viewBox="0 0 24 24" set:html={icons.mic} /><i aria-hidden="true">↑</i></div></div>
+        <div class="demo__composer"><span data-demo-input>{demo.placeholder}</span><div class="demo__keys"><svg viewBox="0 0 24 24" set:html={icons.plus} /><u><svg viewBox="0 0 24 24" set:html={icons.spark} />Router ⌄</u><b></b><svg viewBox="0 0 24 24" set:html={icons.bolt} /><svg viewBox="0 0 24 24" set:html={icons.mic} /><i aria-hidden="true">↑</i></div></div>
       </section>
     </div>
   </div>
@@ -219,6 +259,48 @@ const icons = {
   .is-compact .demo__msgs { padding: 14px 18px; }
   .is-compact .demo__composer { margin: 0 18px 16px; }
   .is-compact .demo__msg { max-width: 86%; }
+  /* MOCKUP-REAL-1: como la app de hoy — barra de iconos de 60px, lista agrupada por proyecto, cabecera con insignia. */
+  .demo__bar { gap: 12px; color: var(--colonia-fg-muted); font-size: 13px; }
+  .demo__bar .is-dim { opacity: .45; }
+  .demo__crumb { color: var(--colonia-fg-muted); white-space: nowrap; }
+  .demo__crumb i { margin: 0 4px; font-style: normal; opacity: .6; }
+  .demo__crumb b { color: var(--colonia-fg); font-weight: 500; }
+  .demo__bar em { display: grid; place-items: center; width: 30px; height: 30px; margin: 0 auto; padding: 0; border-radius: 50%; }
+  .demo__barend { display: flex; align-items: center; gap: 16px; }
+  .demo__body { grid-template-columns: 60px 280px 1fr; }
+  .demo__side { align-items: center; gap: 6px; padding: 12px 0; border-right: 1px solid var(--colonia-border); }
+  .demo__side b { position: relative; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border-radius: 10px; color: var(--colonia-fg-muted); }
+  .demo__side b.is-on { color: var(--colonia-fg); }
+  .demo__side b svg { width: 18px; height: 18px; }
+  .demo__side b.is-dot::after { content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--colonia-danger); }
+  .demo__side hr { width: 28px; margin: 4px 0; border: 0; border-top: 1px solid var(--colonia-border); }
+  .demo__wa { color: #25d366 !important; } .demo__tg { color: #2aa5e0 !important; } .demo__mail { color: var(--colonia-info) !important; }
+  .demo__ltr { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: var(--colonia-brand-soft); color: var(--colonia-brand-soft-fg); font-size: 11px; font-weight: 600; text-decoration: none; }
+  .demo__ltr--t { background: var(--colonia-info-soft); color: var(--colonia-info-soft-fg); }
+  .demo__me { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--colonia-fill-strong); color: var(--colonia-fg); font-size: 10px; font-weight: 600; text-decoration: none; }
+  .demo__foot { align-items: center; padding-top: 6px; border-top: 1px solid var(--colonia-border); }
+  .demo__listhead { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
+  .demo__listhead span { display: flex; gap: 14px; color: var(--colonia-fg-muted); }
+  .demo__tabs { border-radius: 999px; }
+  .demo__tabs span { border-radius: 999px; }
+  .demo__find { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 7px 12px; border-radius: 999px; background: var(--colonia-fill); color: var(--colonia-fg-subtle); }
+  .demo__group { display: flex; align-items: center; gap: 8px; margin: 4px 0 6px 6px; color: var(--colonia-fg-muted); font-size: 12px; }
+  .demo__row { margin-left: 18px; padding-left: 12px; border-left: 1px solid var(--colonia-border-strong); border-radius: 0 8px 8px 0; }
+  .demo__row.is-sel { background: var(--colonia-fill-strong); color: var(--colonia-fg); }
+  .demo__agent { margin-bottom: 6px; }
+  .demo__chat header > span { gap: 2px; }
+  .demo__who { flex-direction: row !important; align-items: center; gap: 8px; }
+  .demo__who small { padding: 1px 8px; border-radius: 999px; background: var(--colonia-brand-soft); color: var(--colonia-brand-soft-fg) !important; }
+  .demo__chat header em { display: flex; align-items: center; gap: 6px; color: var(--colonia-fg-subtle); font-size: 11.5px; font-style: normal; }
+  .demo__chat header em i { width: 10px; height: 10px; border-radius: 3px; background: var(--colonia-brand-soft); }
+  .demo__tools { align-items: center; color: var(--colonia-fg-muted); }
+  .demo__wrench { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--colonia-brand-soft); color: var(--colonia-brand-soft-fg); }
+  .demo__composer { flex-direction: column; align-items: stretch; gap: 14px; border-radius: 22px; }
+  .demo__keys { gap: 14px; }
+  .demo__keys u { display: flex; align-items: center; gap: 5px; color: var(--colonia-fg-muted); }
+  .demo__keys b { flex: 1; }
+  .demo__keys i { background: var(--colonia-fg-subtle); color: var(--colonia-bg); }
+  .is-compact .demo__crumb, .is-compact .demo__bar .is-dim { display: none; }
   @keyframes demo-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } }
   @keyframes demo-dot { 0%, 60%, 100% { opacity: 0.35; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
 </style>
