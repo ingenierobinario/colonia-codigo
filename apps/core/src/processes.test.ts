@@ -13,6 +13,7 @@ import {
   stopTree,
   stopWhenParentCloses,
 } from "./processes.ts";
+import { scaled } from "./testkit/platform.ts";
 
 const has = (...files: string[]) => {
   const set = new Set(files.map((f) => f.toLowerCase()));
@@ -81,7 +82,9 @@ test("the chosen shell executes a command and returns its output", async () => {
   assert.match(output, /colonia-ready/);
 });
 
-test("a command's tree is stopped, and its start time names it while it runs", { timeout: 20_000 }, async () => {
+test("a command's tree is stopped, and its start time names it while it runs", {
+  timeout: scaled(20_000),
+}, async () => {
   const child = spawn(
     process.execPath,
     [
@@ -98,14 +101,15 @@ test("a command's tree is stopped, and its start time names it while it runs", {
   });
   try {
     assert.ok(Number.isInteger(descendant) && descendant > 0);
-    assert.ok(await processStart(pid));
-    assert.ok(await processStart(descendant));
+    const started = await Promise.all([processStart(pid), processStart(descendant)]);
+    assert.ok(started[0]);
+    assert.ok(started[1]);
     // Settled means gone: the whole tree, with nothing else waited on.
     await stopTree(pid, { graceMs: 0 });
-    assert.equal(await processStart(pid), undefined);
-    assert.equal(await processStart(descendant), undefined);
-  } finally {
+    assert.deepEqual(await Promise.all([processStart(pid), processStart(descendant)]), [undefined, undefined]);
+  } catch (error) {
     await stopTree(pid, { graceMs: 0 });
+    throw error;
   }
 });
 
