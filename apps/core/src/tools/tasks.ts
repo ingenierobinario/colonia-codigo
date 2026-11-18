@@ -228,12 +228,12 @@ export function taskTools(store: Store, home: string): Tool[] {
     defineTool({
       name: "task_list",
       description:
-        "List this project's tasks by newest activity (default open), with ids, columns and commitments. The global super-agent sees all projects.",
+        "List project tasks, newest activity first (default: open). Includes IDs, columns and commitments. Global super-agent: all projects.",
       args: z.object({
         mine: z.boolean().optional(),
         state: z.enum(["open", "done", "dropped"]).optional(),
-        commitments: z.boolean().optional().describe("Only commitments (tasks with a person on the other side)."),
-        limit: z.number().int().min(1).max(200).optional().describe("At most this many (default 200)."),
+        commitments: z.boolean().optional().describe("Only tasks with a commitment to a person."),
+        limit: z.number().int().min(1).max(200).optional().describe("Default: 200."),
       }),
       effect: "none",
       deadlineMs: 5_000,
