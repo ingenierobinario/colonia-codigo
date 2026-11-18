@@ -6,6 +6,7 @@ import { watchEvents } from "../data/live.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
+import { FolderSync } from "./FolderSync.tsx";
 import { isLocalHostingDesktop } from "./hostingOffer.ts";
 import { cloudInvitation } from "./serverHosting.ts";
 
@@ -20,6 +21,7 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
   const [copiedCode, setCopiedCode] = useState("");
   const projects = useData((state) => state.projects);
   const [selected, setSelected] = useState<string[]>([]);
+  const [continuous, setContinuous] = useState(false);
   const [expired, setExpired] = useState(false);
   const readAgain = useRef<() => void>(() => {});
   useEffect(() => {
@@ -74,34 +76,45 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
   const link = () =>
     act(async () => {
       if (!token) return;
-      setStatus(await client.call("sync.pair_join", { ...token, ...(selected.length ? { projects: selected } : {}) }));
+      setStatus(
+        await client.call("sync.pair_join", {
+          ...token,
+          ...(selected.length ? { projects: selected } : {}),
+          ...(continuous && selected.length ? { continuous_projects: selected } : {}),
+        }),
+      );
+      setContinuous(false);
       setInvitation("");
       setSelected([]);
       setJoining(false);
     });
   const start = () =>
     act(async () => {
-      const next = await client.call("sync.pair_start", { initial_source: "joining_device" });
+      const next = await client.call("sync.pair_start", {
+        initial_source: "joining_device",
+        allow_managed_folder_sync: true,
+      });
       setStatus(next);
       if (next.pairing?.initial_source !== "joining_device") setIssue("update");
     });
-  const folders = projects.some((p) => p.path) && (
+  const available = projects.filter((p) => p.path && p.present !== false && p.registered !== false && !p.unreadable);
+  const folders = available.length > 0 && (
     <fieldset className="eq-hosting-folders">
       <legend>{t("equipos.hostingFolders")}</legend>
-      {projects
-        .filter((p) => p.path)
-        .map((p) => (
-          <label key={p.id}>
-            <input
-              type="checkbox"
-              checked={selected.includes(p.id)}
-              onChange={(e) =>
-                setSelected((before) => (e.target.checked ? [...before, p.id] : before.filter((id) => id !== p.id)))
-              }
-            />
-            <span>{p.name}</span>
-          </label>
-        ))}
+      {available.map((p) => (
+        <label key={p.id}>
+          <input
+            type="checkbox"
+            checked={selected.includes(p.id)}
+            onChange={(e) => {
+              const next = e.currentTarget.checked ? [...selected, p.id] : selected.filter((id) => id !== p.id);
+              setSelected(next);
+              if (!next.length) setContinuous(false);
+            }}
+          />
+          <span>{p.name}</span>
+        </label>
+      ))}
     </fieldset>
   );
   const copyFolders = () =>
@@ -212,6 +225,7 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
                 {t("equipos.hostingAddFolders")}
               </Button>
             ))}
+          <FolderSync status={status} onStatus={setStatus} />
           <Button variant="secondary" onClick={() => go.config("sync")}>
             {t("config.sync")}
           </Button>
@@ -238,6 +252,17 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
                 )}
               </Field>
               {folders}
+              {selected.length > 0 && (
+                <label className="eq-hosting-continuous">
+                  <input
+                    type="checkbox"
+                    checked={continuous}
+                    onChange={(e) => setContinuous(e.currentTarget.checked)}
+                  />
+                  <span>{t("equipos.folderSyncOptIn")}</span>
+                </label>
+              )}
+              {continuous && <p className="eq-muted">{t("equipos.folderSyncHint")}</p>}
               <p className="eq-muted">{t("equipos.hostingConsent")}</p>
               {token && <p className="eq-hosting-address">{new URL(token.address).host}</p>}
               <div className="eq-row">
@@ -250,6 +275,7 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
                   disabled={working}
                   onClick={() => {
                     setInvitation("");
+                    setContinuous(false);
                     setSelected([]);
                     setJoining(false);
                     setIssue(undefined);

@@ -10,6 +10,7 @@ import { formatNumber, shortWhen } from "../common/format.ts";
 import { client } from "../data/client.ts";
 import { watchEvents } from "../data/live.ts";
 import { notify } from "../data/notices.ts";
+import { FolderSync } from "../equipos/FolderSync.tsx";
 import { type MessageKey, usePack, useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
 import { BackupCard, Note } from "./BackupParts.tsx";
@@ -65,6 +66,7 @@ export function SyncSection() {
         <>
           <Linked status={status} />
           <Folders status={status} onStatus={setStatus} />
+          <FolderSync status={status} onStatus={setStatus} />
           <Role status={status} onStatus={setStatus} />
           <Saved status={status} beat={beat} onChanged={() => void read()} />
           <Unpair status={status} onStatus={setStatus} />

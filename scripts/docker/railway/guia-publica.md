@@ -12,3 +12,18 @@ Este archivo contiene la fuente de una plantilla de servidor. El Dockerfile desc
 Para actualizar, sustituye la fuente por el ZIP de la nueva entrega y vuelve a desplegar conservando el servicio, su clave y el volumen.
 
 [Editor de plantillas de Railway](https://docs.railway.com/templates/create) · [Volúmenes de Railway](https://docs.railway.com/volumes) · [Versiones públicas de Colonia](https://github.com/ingenierobinario/colonia/releases)
+
+## English
+
+This ZIP contains the source for a Railway service running Colonia. The Dockerfile downloads the selected public Linux release and verifies its SHA-256 checksum for the target architecture.
+
+1. Unzip into a repository that Railway can read. Preserve the directory layout and use LF line endings.
+2. In Railway's template editor, add a service from that repository. Use the repository root as the build directory, set `RAILWAY_DOCKERFILE_PATH=/scripts/docker/Dockerfile`, and leave the start command empty.
+3. Turn off **Serverless** to keep Colonia running while the desktop is off. Use one replica, mount a volume at `/data`, and set `COLONIA_HOME=/data/colonia` and `RAILWAY_RUN_UID=0`. The entrypoint prepares the volume, then starts Colonia as an unprivileged user.
+4. Set the template variable `COLONIA_TOKEN` to `${{secret(64)}}`. Each installation gets its own key, which is preserved across redeployments.
+5. Generate a public HTTP domain and set the health check path to `/health`. Colonia uses Railway's assigned port and accepts the domain's HTTPS origin.
+6. Open the service's HTTPS address. The key for linking your browser is in the private `COLONIA_TOKEN` variable.
+
+To update, use the ZIP from the next release and redeploy the same service with its existing key and volume.
+
+[Railway template editor](https://docs.railway.com/templates/create) · [Railway volumes](https://docs.railway.com/volumes) · [Colonia releases](https://github.com/ingenierobinario/colonia/releases)

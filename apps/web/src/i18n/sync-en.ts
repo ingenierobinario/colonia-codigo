@@ -105,8 +105,7 @@ export const enSync = {
   "sync.stays": "Stays on each computer",
   "sync.stay.sessions": "Open sessions of WhatsApp and the like: they live on the computer that runs the channels",
   "sync.stay.logins": "Sign-ins saved inside each browser",
-  "sync.stay.folders":
-    "Files outside Colonia and where each project's folder is: if it does not match, you choose it here",
+  "sync.stay.folders": "Folders you have not selected for sync. Each computer keeps its own project paths.",
   "sync.stay.models": "AI models downloaded to the computer",
 } as const;
 

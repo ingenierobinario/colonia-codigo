@@ -150,7 +150,7 @@ test("el propietario genera una invitación HTTPS por elección y puede configur
   await dialog.getByRole("button", { name: "Copiar invitación" }).click();
   await expect(dialog.getByRole("button", { name: "Invitación copiada" })).toBeVisible();
   expect(await page.evaluate(() => sessionStorage.getItem("copia-sintetica"))).toBe(`${origin} ${code}`);
-  expect(state.starts).toEqual([{ initial_source: "joining_device" }]);
+  expect(state.starts).toEqual([{ initial_source: "joining_device", allow_managed_folder_sync: true }]);
   await dialog.getByRole("button", { name: "Configurar como Colonia nueva" }).click();
   await expect(page.locator(".wiz")).toBeVisible();
   await expect(page).toHaveURL(`${origin}/#view=equipos`);

@@ -109,7 +109,6 @@ export const esSync: Record<SyncKey, string> = {
   "sync.stays": "Se queda en cada ordenador",
   "sync.stay.sessions": "Las sesiones abiertas de WhatsApp y similares: viven en el ordenador que lleva los canales",
   "sync.stay.logins": "Los inicios de sesión guardados dentro de cada navegador",
-  "sync.stay.folders":
-    "Los archivos de fuera de Colonia y dónde está la carpeta de cada proyecto: si no coincide, la eliges aquí",
+  "sync.stay.folders": "Las carpetas que no elijas sincronizar. Cada equipo conserva su propia ruta de proyecto.",
   "sync.stay.models": "Los modelos de IA descargados en el ordenador",
 };

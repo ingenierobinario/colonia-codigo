@@ -1,0 +1,39 @@
+.folder-sync {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.folder-sync summary {
+  font-weight: var(--colonia-weight-medium);
+  cursor: pointer;
+}
+.folder-sync > p,
+.folder-sync__status {
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+}
+.folder-sync > p,
+.folder-sync ul {
+  margin: 0.5rem 0;
+}
+.folder-sync ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+.folder-sync label,
+.eq-hosting-continuous {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.folder-sync input,
+.eq-hosting-continuous input {
+  margin: 0;
+}
+.folder-sync__status p {
+  margin: 0.2rem 0 0;
+}

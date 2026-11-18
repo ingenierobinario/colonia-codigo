@@ -1,44 +1,5 @@
-import type { Locator } from "@playwright/test";
+import { hostingGeometry } from "./hosting-geometry.ts";
 import { expect, open, rpc, test } from "./kit.ts";
-
-async function geometry(root: Locator) {
-  for (const width of [390, 768, 960, 1200, 1440]) {
-    await root.page().setViewportSize({ width, height: 900 });
-    await expect
-      .poll(
-        () =>
-          root.evaluate((el) => {
-            const elements = Array.from(el.querySelectorAll("button, input, legend, code")).filter(
-              (e) => e.getBoundingClientRect().width,
-            );
-            const buttons = elements.filter((e) => e.tagName === "BUTTON").map((e) => e.getBoundingClientRect());
-            return (
-              document.documentElement.scrollWidth <= innerWidth + 1 &&
-              elements.every((e) => {
-                const box = e.getBoundingClientRect();
-                return (
-                  box.left >= -1 &&
-                  box.right <= innerWidth + 1 &&
-                  (e.tagName !== "BUTTON" ||
-                    (e.scrollHeight <= e.clientHeight + 1 && e.scrollWidth <= e.clientWidth + 1))
-                );
-              }) &&
-              buttons.every((a, i) =>
-                buttons
-                  .slice(i + 1)
-                  .every(
-                    (b) =>
-                      Math.min(a.right, b.right) - Math.max(a.left, b.left) <= 1 ||
-                      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) <= 1,
-                  ),
-              )
-            );
-          }),
-        { message: `Controles utilizables a ${width} px` },
-      )
-      .toBe(true);
-  }
-}
 
 test("la pestaña de rutinas empieza a cargar aunque el código de la vista del proyecto siga en tránsito", async ({
   page,
@@ -127,7 +88,7 @@ for (const language of ["es", "en"] as const) {
       await editor.getByRole("textbox", { name: /Qué hacer|What to do/i }).fill("Revisar el programa de prueba.");
       await editor.getByRole("button", { name: /^Guardar$|^Save$/ }).click();
       await expect(offer).toBeVisible();
-      await geometry(offer);
+      await hostingGeometry(offer);
       await offer.getByRole("button", { name: /Ver opciones de servidor|View server options/ }).click();
       const card = page.getByRole("region", { name: /Colonia en un servidor|Colonia on a server/ });
       await expect(card).toBeFocused();
@@ -142,11 +103,21 @@ for (const language of ["es", "en"] as const) {
       const folder = card.getByRole("checkbox", { name, exact: true });
       await expect(folder).not.toBeChecked();
       await folder.check();
-      await geometry(card);
+      const ongoing = card.getByRole("checkbox", { name: /Mantener sincronizadas|Keep the selected folders in sync/ });
+      await expect(ongoing).not.toBeChecked();
+      if (language === "en") await ongoing.check();
+      await hostingGeometry(card);
       expect(sent).toEqual([]);
       await submit.click();
       await expect(card.getByText(/servidor principal|primary server/)).toBeVisible();
-      expect(sent).toEqual([{ address: "https://servidor-prueba.example", code: "ABCD-2345", projects: [project.id] }]);
+      expect(sent).toEqual([
+        {
+          address: "https://servidor-prueba.example",
+          code: "ABCD-2345",
+          projects: [project.id],
+          ...(language === "en" ? { continuous_projects: [project.id] } : {}),
+        },
+      ]);
       await card.getByRole("button", { name: /Añadir carpetas al servidor|Add folders to the server/ }).click();
       await expect(folder).not.toBeChecked();
       await card.getByRole("button", { name: /Ahora no|Not now/ }).click();
