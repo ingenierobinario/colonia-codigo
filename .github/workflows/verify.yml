@@ -95,8 +95,11 @@ jobs:
           overwrite: true
           retention-days: 7
 
+  macos-actualizacion:
+    uses: ./.github/workflows/humo-actualizacion-macos.yml
+
   verify:
-    needs: [preflight, coverage, macos-web]
+    needs: [preflight, coverage, macos-web, macos-actualizacion]
     runs-on: ubuntu-24.04
     if: ${{ !cancelled() }}
     steps:
@@ -105,7 +108,8 @@ jobs:
           PREFLIGHT: ${{ needs.preflight.result }}
           COVERAGE: ${{ needs.coverage.result }}
           MACOS: ${{ needs.macos-web.result }}
-        run: test "$PREFLIGHT" = success && test "$COVERAGE" = success && test "$MACOS" = success
+          ACTUALIZACION: ${{ needs.macos-actualizacion.result }}
+        run: test "$PREFLIGHT" = success && test "$COVERAGE" = success && test "$MACOS" = success && test "$ACTUALIZACION" = success
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
