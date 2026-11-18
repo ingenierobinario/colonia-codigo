@@ -85,7 +85,7 @@ async function connect(): Promise<void> {
     await bootstrap();
     await refetchLoaded();
     void loadNotifications();
-    void loadUpdates();
+    void loadUpdates({ panelChecked: true });
     if (tasksLoaded()) void loadTasks();
     routineRunChanged();
     data.set({ connection: "online", error: undefined });

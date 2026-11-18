@@ -62,7 +62,7 @@ export function UpdateDialog() {
       footer={
         phase === "idle" ? (
           <>
-            <Button variant="secondary" onClick={() => void loadUpdates(true)}>
+            <Button variant="secondary" onClick={() => void loadUpdates({ check: true })}>
               {t("update.check")}
             </Button>
             {byApp ? (

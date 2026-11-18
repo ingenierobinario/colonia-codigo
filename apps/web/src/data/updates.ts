@@ -94,15 +94,15 @@ async function loadApp(check: boolean): Promise<void> {
 // Started from the app menu, or found by the app's own check: the pill and the card follow it.
 window.coloniaDesktop?.onUpdateStatus?.((app) => store.set({ app }));
 
-export async function loadUpdates(check = false): Promise<void> {
+export async function loadUpdates({ check = false, panelChecked = false } = {}): Promise<void> {
   void loadApp(check);
   try {
     const [status, health] = await Promise.all([
       client.call("system.updates", { check }),
-      client.call("system.health", {}),
+      panelChecked ? undefined : client.call("system.health", {}),
     ]);
     store.set({ status });
-    notePanel(health);
+    if (health) notePanel(health);
   } catch {
     // An older core, or offline: nothing to show.
   }

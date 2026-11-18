@@ -1,5 +1,5 @@
 import { ColoniaProvider } from "@colonia/ui";
-import { type CSSProperties, Suspense, useEffect } from "react";
+import { type CSSProperties, Suspense, useEffect, useLayoutEffect } from "react";
 import { startLive } from "./data/live.ts";
 import { checkAccess, useGate } from "./data/pairing.ts";
 import { usePrefs } from "./data/prefs.ts";
@@ -88,7 +88,8 @@ function Main() {
 /** The app itself, once the core lets this panel in. */
 function Panel() {
   const setup = useSetup((s) => s.open);
-  useEffect(() => startLive(), []);
+  // Las peticiones iniciales de la barra lateral comparten las conexiones HTTP con el chat.
+  useLayoutEffect(() => startLive(), []);
   useEffect(() => {
     if (QUICK || IS_BROWSER_WINDOW || ARTIFACT) return;
     void loadSetup();
