@@ -1,0 +1,193 @@
+---
+// VSL-BF-1: portada de venta de Black Friday (vídeo + página de venta). Sin precio: solo en el checkout.
+import { RESERVAR_URL, sectionRoute } from "../../config/site";
+import { sitePath } from "../../doc-routes.mjs";
+import type { Lang } from "../../i18n/home";
+import { VSL } from "../../i18n/vsl";
+import PageMeta from "../web/PageMeta.astro";
+import WebFooter from "../web/WebFooter.astro";
+import WebHeader from "../web/WebHeader.astro";
+import "./vsl.css";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = VSL[lang];
+const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(
+  lang === "es" ? "¡Hola! Estoy viendo Colonia y tengo algunas preguntas" : "Hi! I am looking at Colonia and I have some questions",
+)}`;
+const product = sitePath(sectionRoute(lang));
+---
+
+<html lang={lang} data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <PageMeta lang={lang} title={t.title} description={t.description} path="/" esPath="/" enPath="/en/" imageAlt={t.h1.join(" ")} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400;500;600&display=swap" />
+  </head>
+  <body class="h vsl">
+    <a class="skip-link" href="#main">{lang === "es" ? "Saltar al contenido" : "Skip to content"}</a>
+    <WebHeader lang={lang} home />
+
+    <main id="main">
+      <section class="v-hero">
+        <div class="wrap v-narrow">
+          <p class="v-badge">{t.badge}</p>
+          <h1 class="v-h1">{t.h1[0]} <span>{t.h1[1]}</span></h1>
+          <p class="v-sub">{t.sub}</p>
+        </div>
+        <div class="wrap">
+          <div class="v-video">
+            <iframe
+              src="https://player.vimeo.com/video/1247943905?autopause=0&player_id=0&app_id=58479"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              title="BF_VSL_training_final"></iframe>
+          </div>
+          <script is:inline src="https://player.vimeo.com/api/player.js"></script>
+        </div>
+        <div class="wrap v-ctawrap">
+          <a class="v-cta" href={RESERVAR_URL}>{t.cta}</a>
+          <p class="v-note">{t.ctaNote.join(" · ")}</p>
+          <div class="v-count" data-count>
+            <span class="v-count-l">{t.endsLabel}</span>
+            <div class="v-count-n">
+              {t.units.map((u, i) => (<span><b data-u={i}>--</b><small>{u}</small></span>))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <p class="sec-label">{t.pain.eyebrow}</p>
+          <h2 class="h2">{t.pain.title}</h2>
+          <div class="v-grid v-grid-2">
+            {t.pain.items.map(([h, p]) => (<article class="v-card"><h3>{h}</h3><p>{p}</p></article>))}
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <p class="sec-label">{t.shift.eyebrow}</p>
+          <h2 class="h2">{t.shift.title}</h2>
+          <div class="v-grid v-grid-2">
+            <article class="v-card v-before"><h3>{t.shift.before}</h3><ul>{t.shift.beforeItems.map((x) => <li>{x}</li>)}</ul></article>
+            <article class="v-card v-after"><h3>{t.shift.after}</h3><ul>{t.shift.afterItems.map((x) => <li>{x}</li>)}</ul></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <p class="sec-label">{t.benefits.eyebrow}</p>
+          <h2 class="h2">{t.benefits.title}</h2>
+          <div class="v-grid v-grid-3">
+            {t.benefits.items.map(([f, b, p]) => (<article class="v-card"><h3>{f} <span class="v-muted">{b}</span></h3><p>{p}</p></article>))}
+          </div>
+          <div class="v-ctarow"><a class="v-cta" href={RESERVAR_URL}>{t.cta}</a></div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <p class="sec-label">{t.proof.eyebrow}</p>
+          <h2 class="h2">{t.proof.title}</h2>
+          <p class="lead">{t.proof.lead}</p>
+          <div class="v-grid v-grid-3">
+            {t.proof.stats.map(([n, l, s]) => (<article class="v-card v-stat"><b>{n}</b><h3>{l}</h3><p>{s}</p></article>))}
+          </div>
+          <div class="v-grid v-grid-3">
+            {t.proof.cases.map(([h, p]) => (<article class="v-card"><h3>{h}</h3><p>{p}</p></article>))}
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <p class="sec-label">{t.stack.eyebrow}</p>
+          <h2 class="h2">{t.stack.title}</h2>
+          <ul class="v-card v-stack">
+            {t.stack.items.map(([h, p]) => (<li><span class="v-tick" aria-hidden="true">✓</span><div><b>{h}</b><p>{p}</p></div></li>))}
+          </ul>
+          <p class="v-note">{t.stack.note}</p>
+          <div class="v-ctarow"><a class="v-cta" href={RESERVAR_URL}>{t.cta}</a></div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <p class="sec-label">{t.compare.eyebrow}</p>
+          <h2 class="h2">{t.compare.title}</h2>
+          <div class="v-card v-tablewrap">
+            <table class="v-table">
+              <thead><tr>{t.compare.cols.map((c) => <th scope="col">{c}</th>)}</tr></thead>
+              <tbody>{t.compare.rows.map((r) => (<tr>{r.map((c, i) => (i === 0 ? <th scope="row">{c}</th> : <td>{c}</td>))}</tr>))}</tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap">
+          <h2 class="h2">{t.fit.title}</h2>
+          <div class="v-grid v-grid-2">
+            <article class="v-card v-after"><h3>{t.fit.yesTitle}</h3><ul>{t.fit.yes.map((x) => <li>{x}</li>)}</ul></article>
+            <article class="v-card v-before"><h3>{t.fit.noTitle}</h3><ul>{t.fit.no.map((x) => <li>{x}</li>)}</ul></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap v-narrow v-center">
+          <div class="v-card v-urg">
+            <h2 class="h2">{t.urgency.title}</h2>
+            <p class="lead">{t.urgency.body}</p>
+            <a class="v-cta" href={RESERVAR_URL}>{t.cta}</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="v-sec">
+        <div class="wrap v-narrow">
+          <h2 class="h2">{t.faq.title}</h2>
+          <div class="v-faq">
+            {t.faq.items.map(([q, a]) => (<details class="v-card"><summary>{q}</summary><p>{a}</p></details>))}
+          </div>
+          <p class="v-center"><a class="v-link" href={WA} target="_blank" rel="noopener">{t.faq.ask}</a></p>
+        </div>
+      </section>
+
+      <section class="v-sec v-final">
+        <div class="wrap v-narrow v-center">
+          <h2 class="h2">{t.final.title}</h2>
+          <p class="lead">{t.final.body}</p>
+          <a class="v-cta" href={RESERVAR_URL}>{t.cta}</a>
+          <p class="v-note">{t.ctaNote.join(" · ")}</p>
+          <p><a class="v-link" href={product}>{t.productLink}</a></p>
+        </div>
+      </section>
+    </main>
+
+    <WebFooter lang={lang} />
+
+    <script is:inline>
+      (() => {
+        const end = new Date("2026-11-30T23:59:59+01:00").getTime();
+        const boxes = document.querySelectorAll("[data-count]");
+        const tick = () => {
+          const d = end - Date.now();
+          if (d <= 0) { boxes.forEach((b) => { b.hidden = true; }); return false; }
+          const v = [Math.floor(d / 864e5), Math.floor(d / 36e5) % 24, Math.floor(d / 6e4) % 60, Math.floor(d / 1e3) % 60];
+          boxes.forEach((b) => b.querySelectorAll("[data-u]").forEach((el) => { el.textContent = String(v[+el.dataset.u]).padStart(2, "0"); }));
+          return true;
+        };
+        if (tick()) setInterval(tick, 1000);
+      })();
+    </script>
+  </body>
+</html>

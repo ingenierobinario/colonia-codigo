@@ -1,5 +1,5 @@
 // Las páginas públicas fuera de la documentación: la portada en español y en inglés.
-export const publicMarketingRoutes = ["/", "/en/"];
+export const publicMarketingRoutes = ["/", "/en/", "/producto/", "/en/product/"];
 
 /** Compare sitemap addresses with the indexable HTML routes produced by the same build. */
 export function sitemapErrors(pages, urls, site, base = "/", requiredRoutes = []) {

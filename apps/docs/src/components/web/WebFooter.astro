@@ -1,5 +1,5 @@
 ---
-import { RESERVAR_URL, sectionRoute } from "../../config/site";
+import { RESERVAR_URL, homeRoute, sectionRoute } from "../../config/site";
 import { sitePath } from "../../doc-routes.mjs";
 import { HOME, type Lang } from "../../i18n/home";
 import Blob from "../Blob.astro";
@@ -20,6 +20,7 @@ const labels = all.nav.sectionsLabel;
 const product: Group = {
   title: t.product,
   links: [
+    [all.nav.product, page()],
     [labels.what, page("what")],
     [labels.new, page("new")],
     [labels.start, page("start")],
@@ -45,7 +46,7 @@ const back = ["orbita", "perla", "caracol", "kiwi"] as const;
   <div class="wrap">
     <div class="web-footer__top">
       <div class="web-footer__intro">
-        <a class="brand" href={page()}><Blob name="menta" size={26} />Colonia</a>
+        <a class="brand" href={href(homeRoute(lang))}><Blob name="menta" size={26} />Colonia</a>
         <p class="web-footer__description">{t.description}</p>
         <p class="web-footer__home"><Blob name="menta" size={20} /><b>Home</b>{t.home}</p>
         <div class="web-footer__legal">
@@ -72,9 +73,10 @@ const back = ["orbita", "perla", "caracol", "kiwi"] as const;
     <div class="web-footer__front">{front.map((name) => <Blob name={name} size="clamp(34px, 5vw, 52px)" />)}</div>
   </div>
 </footer>
+<!-- WHATSAPP-EQUIPO-1: mismo número y patrón que intro-training (equipo de Ingeniero Binario). -->
 <a
   class="wa-bubble"
-  href={`https://wa.me/376665898?text=${encodeURIComponent(all.whatsappText)}`}
+  href={`https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(all.whatsappText)}`}
   target="_blank"
   rel="noopener"
   aria-label={all.whatsappLabel}

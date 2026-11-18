@@ -1,0 +1,71 @@
+---
+title: El parte de la mañana
+description: Un agente lee tu correo y tus chats antes de que llegues, cruza lo que dicen con tus tareas y te deja solo lo que necesita tu decisión.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+**El problema:** empiezas el día con decenas de correos y chats sin leer. Entre ellos hay tres cosas que importan (un
+cliente que acepta, otro que pide factura, uno que dice que no) y tienes que leerlo todo para encontrarlas. Y a veces
+tu lista de seguimiento dice una cosa y el correo enviado, otra.
+
+**Con Colonia:** a la hora que digas, un agente lee lo que ha entrado desde la última revisión, lo compara con tus
+tareas y te deja un parte corto: qué ha cambiado, qué está pendiente y qué necesita tu decisión. No envía nada por su
+cuenta.
+
+## 1 · Conecta lo que tiene que leer
+
+- **Correo**: Gmail en **Recursos › Integraciones**, u otro correo en **Configuración › Canales › Email**. Paso a paso
+  en [Bandeja de correo](/es/cases/email-inbox/).
+- **WhatsApp** u otra app de mensajería, si tus clientes te escriben por ahí: [Atiende desde el
+  móvil](/es/cases/mobile/).
+
+## 2 · Dale el papel a un agente
+
+<Steps>
+
+1. Crea un proyecto para este trabajo (por ejemplo, **Clientes**) o usa uno que ya tengas.
+2. En **Agentes**, añade uno con un papel concreto: «Gestor de clientes. Lees el correo y los chats de clientes,
+   llevas al día las tareas de cada cliente y me avisas de lo que necesita mi decisión».
+3. En **Tareas**, deja una tarea por cliente u oportunidad, con su estado. Es la lista contra la que el agente cruza lo
+   que lee.
+
+</Steps>
+
+## 3 · Programa el parte
+
+<Steps>
+
+1. En el proyecto, entra en **Rutinas** y pulsa **Nueva rutina**.
+2. **Agente**: el gestor que acabas de crear. **Cuándo**: **Con horario**, de lunes a viernes a las **09:00**.
+3. Escribe el encargo:
+
+   > Lee el correo y los chats de clientes desde la última revisión. Compáralo con las tareas: avísame si una tarea
+   > dice «pendiente» y el correo muestra que ya se hizo, o al revés, o si un importe ha cambiado. Dame el parte en
+   > tres bloques: ha cambiado, está pendiente, necesita mi decisión. No envíes nada. Si una fuente falla, dilo.
+
+4. **Guardar**, y pulsa el botón de ejecutar para probarla ya.
+
+</Steps>
+
+## 4 · Decide en minutos
+
+El parte te llega a la app y, si lo eliges en **Configuración › Interrupciones › App de chat para los avisos**, al
+móvil. Contestas ahí mismo: «Prepara el borrador del seguimiento a la marca de hosting con el precio nuevo». El agente
+lo deja como **borrador**; tú lo revisas y lo envías.
+
+<Aside type="tip">
+Lo que el agente aprende de cada cliente se queda en la memoria del proyecto, así que mañana no hace falta volver a
+explicarle nada. Si un día no puede leer una fuente, el parte lo dice en vez de rellenar el hueco.
+</Aside>
+
+<Aside type="caution">
+Para que la rutina se ejecute a su hora, el ordenador tiene que estar encendido con Colonia abierta (o en segundo plano).
+</Aside>
+
+## Siguiente
+
+- Quién puede enviar qué sin preguntarte: [Autonomía](/es/concepts/autonomy/).
+- Todo sobre las [Rutinas](/es/office/routines/) y la [Memoria](/es/concepts/memory/).
