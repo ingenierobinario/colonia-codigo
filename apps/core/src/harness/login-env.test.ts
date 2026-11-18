@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { probeProcess } from "../processes.ts";
 import { RUNS_SCRIPTS, stopped, tempDir, waitFor } from "../testkit/platform.ts";
 import {
   type After,
@@ -305,7 +306,8 @@ const HANGS =
   "const fs = require('node:fs'); const file = process.argv[1]; fs.writeFileSync(file + '.tmp', String(process.pid));" +
   " fs.renameSync(file + '.tmp', file); setInterval(() => {}, 1000);";
 
-const alive = (pid: number) => {
+const alive = async (pid: number) => {
+  if (process.platform === "linux") return (await probeProcess(pid)).state !== "gone";
   try {
     process.kill(pid, 0);
     return true;
@@ -338,7 +340,7 @@ test("a shell that does not answer in time is ended, and the read fails", async 
     const pid = await waitFor(() => pidIn(pidFile), "the shell to start");
     timers.giveUp();
     await assert.rejects(reading, /it did not answer in 600000 ms/);
-    await waitFor(() => !alive(pid), "the shell to end");
+    await waitFor(async () => !(await alive(pid)), "the shell to end");
   } finally {
     timers.giveUp();
   }
@@ -393,11 +395,11 @@ test("a read under way does not keep a core running, and a core that ends takes 
     assert.equal(core.exitCode, 0, stderr);
     const pid = pidIn(pidFile);
     assert.ok(pid, "the shell had started");
-    await waitFor(() => !alive(pid), "the shell to end with the core");
+    await waitFor(async () => !(await alive(pid)), "the shell to end with the core");
   } finally {
     core.kill();
     const left = pidIn(pidFile);
-    if (left && alive(left)) process.kill(left);
+    if (left && (await alive(left))) process.kill(left);
   }
 });
 

@@ -103,10 +103,29 @@ const exists = (pid: number) => {
   }
 };
 
+/** En Linux, un hijo ya terminado puede conservar su PID hasta que su padre recoja el estado de salida. */
+const deadState = (state: string) => /^[ZXx]/.test(state);
+
+function onlyDeadMembers(pid: number): Promise<boolean> {
+  // spawnCommand y los agentes abren una sesión con el PID del líder. Una sesión puede contener varios grupos.
+  return new Promise((resolve) =>
+    execFile("ps", ["-s", String(pid), "-o", "pgid=,stat="], { timeout: 500 }, (err, out) => {
+      if (err) return resolve(false);
+      const group = String(pid);
+      const states = out
+        .trim()
+        .split("\n")
+        .map((row) => row.trim().split(/\s+/))
+        .filter(([id]) => id === group);
+      resolve(states.length > 0 && states.every(([, state]) => state && deadState(state)));
+    }),
+  );
+}
+
 /** Whether `gone()` came true within `ms`. */
-async function until(gone: () => boolean, ms: number): Promise<boolean> {
+async function until(gone: () => boolean | Promise<boolean>, ms: number): Promise<boolean> {
   const end = Date.now() + ms;
-  while (!gone()) {
+  while (!(await gone())) {
     if (Date.now() >= end) return false;
     await new Promise((r) => setTimeout(r, 25).unref());
   }
@@ -129,18 +148,25 @@ export async function stopTree(
     await until(() => !exists(pid), STOP_WAIT_MS);
     return;
   }
-  const group = () => exists(-pid);
+  // El caso habitual termina con kill(0). Solo consultamos estados si el grupo persiste.
+  let inspectAfter = performance.now() + 100;
+  const groupGone = async () => {
+    if (!exists(-pid)) return true;
+    if (process.platform !== "linux" || performance.now() < inspectAfter) return false;
+    inspectAfter = performance.now() + 250;
+    return onlyDeadMembers(pid);
+  };
   const grace = o.graceMs ?? 3000;
   try {
     process.kill(-pid, grace === 0 ? "SIGKILL" : "SIGTERM");
   } catch {}
-  if (grace > 0 && !(await until(() => !group(), grace))) {
+  if (grace > 0 && !(await until(groupGone, grace))) {
     try {
       if (o.alive && !(await o.alive())) return;
       process.kill(-pid, "SIGKILL");
     } catch {}
   }
-  await until(() => !group(), STOP_WAIT_MS);
+  await until(groupGone, STOP_WAIT_MS);
 }
 
 /**
@@ -174,11 +200,17 @@ export function probeProcess(pid: number, timeoutMs = 10_000, run: ProbeRun = sy
             `$p = Get-Process -Id ${pid} -ErrorAction SilentlyContinue; if (-not $p) { exit 3 }; $p.StartTime.ToUniversalTime().ToString('o')`,
           ],
         ]
-      : ["ps", ["-p", String(pid), "-o", "lstart="]];
+      : ["ps", ["-p", String(pid), "-o", process.platform === "linux" ? "stat=,lstart=" : "lstart="]];
   const noSuch = process.platform === "win32" ? 3 : 1;
   return new Promise((resolve) =>
     run(file, args as string[], timeoutMs, (err, out) => {
       const start = out?.trim();
+      if (!err && start && process.platform === "linux") {
+        const [, state, started] = /^(\S+)\s+(.+)$/.exec(start) ?? [];
+        if (!state || !started)
+          return resolve({ state: "unknown", why: "ps devolvió un estado de proceso incompleto" });
+        return resolve(deadState(state) ? { state: "gone" } : { state: "running", start: started });
+      }
       if (!err) resolve(start ? { state: "running", start } : { state: "gone" });
       else if (err.code === noSuch && !err.killed) resolve({ state: "gone" });
       else resolve({ state: "unknown", why: err.killed ? `no answer in ${timeoutMs} ms` : err.message });
