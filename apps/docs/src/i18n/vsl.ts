@@ -13,7 +13,16 @@ export const VSL = {
     h1: "Un equipo de IA que trabaja para ti",
     h1b: "mientras duermes.",
     sub: "Lee tu correo y tu WhatsApp, te deja listo lo importante <b>para las 9:00</b> y no envía nada <b>sin tu «sí»</b>. En tu ordenador y <b>tuyo para siempre</b>.",
-    shotNote: "Así se ve Colonia por dentro, con una oficina de ejemplo.",
+    shotNote:
+      "Así se ve Colonia por dentro, con una oficina de ejemplo: tu asistente te resume el día y cada agente espera tu visto bueno.",
+    insideEyebrow: "Por dentro",
+    insideTitle: "Tu oficina, en una ventana.",
+    offerLine: "Oferta Black Friday · hasta el 30-nov · termina en",
+    promises: [
+      ["A las 9:00,", "lo importante listo en tu móvil"],
+      ["Nada sale", "sin tu «sí»"],
+      ["En tu ordenador", "y tuyo para siempre"],
+    ],
     shotAlt:
       "Colonia abierta en la bandeja de una oficina de ejemplo: Nova resume el día y los agentes esperan tu visto bueno",
     play: "Mira esto antes de nada",
@@ -100,7 +109,16 @@ export const VSL = {
     h1: "An AI team that works for you",
     h1b: "while you sleep.",
     sub: "It reads your email and WhatsApp, has what matters ready for you <b>at 9:00</b> and sends nothing <b>without your “yes”</b>. On your computer, <b>yours forever</b>.",
-    shotNote: "This is Colonia from the inside, with a sample office.",
+    shotNote:
+      "This is Colonia from the inside, with a sample office: your assistant sums up the day and every agent waits for your go-ahead.",
+    insideEyebrow: "Inside",
+    insideTitle: "Your office, in one window.",
+    offerLine: "Black Friday offer · until Nov 30 · ends in",
+    promises: [
+      ["At 9:00,", "what matters is ready on your phone"],
+      ["Nothing goes out", "without your “yes”"],
+      ["On your computer,", "yours forever"],
+    ],
     shotAlt: "Colonia open on the inbox of a sample office: Nova sums up the day and the agents wait for your go-ahead",
     play: "Watch this first",
     playHint: "Tap to play the video",

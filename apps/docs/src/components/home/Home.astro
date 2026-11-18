@@ -119,10 +119,11 @@ const cards = [
       {!section && (<>
       <section class="hero">
         <div class="hero__aura" aria-hidden="true"></div>
+        {vsl && (<div class="hv-deco" aria-hidden="true">{(["menta", "coral", "cobalto", "lila", "pino", "kiwi"] as BlobName[]).map((b, i) => <span class={`hv-deco__b hv-deco__b--${i}`}><Blob name={b} size="100%" /></span>)}</div>)}
         <canvas class="hero__horizon" id="horizon" aria-hidden="true"></canvas>
         {vsl ? (
         <div class="wrap hero__in hv-hero">
-          <h1 class="hero__title hv-h1">{v.h1} <mark class="hv-mark">{v.h1b}</mark></h1>
+          <h1 class="hero__title hv-h1">{v.h1} <span class="hv-ul">{v.h1b}<svg viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9.5 C 80 6.5, 220 6.5, 296 8.5" /></svg></span></h1>
           <p class="hero__sub hv-sub" set:html={v.sub} />
           <div class="hv-video" data-video={VIDEO}>
             <img class="hv-video__cover" src="/vsl/cover.webp" alt="" width="1600" height="900" fetchpriority="high" />
@@ -133,7 +134,7 @@ const cards = [
             <span class="hv-owner" aria-hidden="true"><img src="/vsl/owner.webp" alt="" width="56" height="56" /></span>
           </div>
           <div class="hero__actions hv-actions">
-            <a class="btn hv-cta" href={RESERVAR_URL}>{v.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+            <span class="hv-buy"><a class="btn hv-cta" href={RESERVAR_URL}><span>{v.cta}</span><span class="hv-cta__off">{v.seal[0]}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a><span class="hv-buy__line">{v.offerLine} <span class="hv-clock" data-clock>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span></span>
           </div>
           <p class="hv-trust">{v.trust.map((x) => <span>{x}</span>)}</p>
         </div>
@@ -182,21 +183,27 @@ const cards = [
         )}
       </section>
 
-      <section class="stage">
+      <section class:list={["stage", { "hv-stage": vsl }]}>
         <div class="wrap stage__in">
-          {vsl ? (
+          {vsl ? (<>
+          <ul class="hv-promises" data-reveal>{v.promises.map(([b, x]) => (<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>{b}</b> {x}</span></li>))}</ul>
+          <header class="hv-inside" data-reveal>
+            <p class="hv-inside__eyebrow">{v.insideEyebrow}</p>
+            <h2 class="h2 hv-inside__title">{v.insideTitle}</h2>
+            <p class="hv-inside__lead">{v.shotNote}</p>
+          </header>
           <div class="hv-win" data-reveal>
             <div class="hv-win__bar" aria-hidden="true"><i></i><i></i><i></i><span>Colonia</span></div>
             <Image class="hv-win__img" src={lang === "es" ? shotEs : shotEn} alt={v.shotAlt} widths={[720, 1200, 1600, 2400]} sizes="(max-width: 1200px) 100vw, 1168px" quality={88} loading="lazy" />
           </div>
-          ) : (<>
+          </>) : (<>
           <div class="stage__bubble stage__bubble--l" aria-hidden="true"><Blob name="coral" size={32} /><span class="stage__say">{t.bubbles[0]}</span></div>
           <div class="stage__bubble stage__bubble--r" aria-hidden="true"><span class="stage__say">{t.bubbles[1]}</span><Blob name="cobalto" size={32} /></div>
           <div class="stage__shot" data-reveal data-stage-card>
             <StageDemo demo={t.demo} lang={lang} />
           </div>
           </>)}
-          <p class="stage__note">{vsl ? v.shotNote : t.stageNote}</p>
+          {!vsl && <p class="stage__note">{t.stageNote}</p>}
         </div>
       </section>
       </>)}
@@ -431,7 +438,7 @@ const cards = [
             <span class="hv-offer__tag">Black Friday · {v.seal[0]}</span>
             <h2 class="h2">{v.stackTitle}</h2>
             <ul class="hv-stack">{v.stack.map((x) => (<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>{x}</li>))}</ul>
-            <a class="btn hv-cta" href={RESERVAR_URL}>{v.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+            <span class="hv-buy"><a class="btn hv-cta" href={RESERVAR_URL}><span>{v.cta}</span><span class="hv-cta__off">{v.seal[0]}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a><span class="hv-buy__line">{v.offerLine} <span class="hv-clock" data-clock>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span></span>
             <p class="hv-note">{v.stackNote}</p>
           </div>
         </div>
@@ -562,7 +569,7 @@ const cards = [
           <p class="final__body">{t.final.body}</p>
           <div class="final__actions">
             {vsl ? (
-              <a class="btn hv-cta" href={RESERVAR_URL}>{v.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+              <span class="hv-buy"><a class="btn hv-cta" href={RESERVAR_URL}><span>{v.cta}</span><span class="hv-cta__off">{v.seal[0]}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a><span class="hv-buy__line">{v.offerLine} <span class="hv-clock" data-clock>{v.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span></span>
             ) : (<>
             <a class="btn btn-light" href={RESERVAR_URL}>{t.reserve}</a>
             <a class="btn btn-ghost" href="#what">{t.how}</a>
