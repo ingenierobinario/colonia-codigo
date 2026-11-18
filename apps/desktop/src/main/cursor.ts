@@ -11,6 +11,7 @@ export function createCursor() {
   let display: number | undefined;
   let ready: Promise<void> | undefined;
   let revision = 0;
+  let lastActor: string | undefined;
   /** Where the pointer was last put (screen points), so a note can show there. */
   let at: { x: number; y: number } | undefined;
 
@@ -66,9 +67,13 @@ export function createCursor() {
     if (!point || stamp !== revision) return;
     const blob = actor && (actor.blob ?? BLOB_NAMES[hashSeed(actor.id) % BLOB_NAMES.length]);
     const face = blob && BLOB_NAMES.includes(blob as BlobName) ? blob : undefined;
-    const args = [Math.round(point.lx), Math.round(point.ly), note, actor && { name: actor.name }, face];
+    const jump = !point.w.isVisible() || lastActor !== actor?.id;
+    const args = [Math.round(point.lx), Math.round(point.ly), note, actor && { name: actor.name }, face, jump];
     await point.w.webContents.executeJavaScript(`drawCursor(...${JSON.stringify(args)})`);
-    if (stamp === revision && !point.w.isDestroyed()) point.w.showInactive();
+    if (stamp === revision && !point.w.isDestroyed()) {
+      lastActor = actor?.id;
+      point.w.showInactive();
+    }
   }
 
   return {

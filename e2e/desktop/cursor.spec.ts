@@ -8,6 +8,8 @@ import type { AgentCursor } from "../../apps/desktop/src/main/cursor.ts";
 const root = path.resolve(import.meta.dirname, "../..");
 const desktop = path.join(root, "apps/desktop");
 type Main = typeof globalThis & { cursorDePrueba: Promise<AgentCursor> };
+type PrimerDibujo = { x: number; y: number; animado: boolean };
+type Vista = typeof globalThis & { primerDibujo?: PrimerDibujo };
 
 test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oculta al desconectar", async () => {
   const info = test.info();
@@ -47,10 +49,28 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
     },
   });
   try {
-    for (const [name, blob, edge] of [
-      ["Alba", "menta", false],
-      ["Sol", "coral", true],
+    await instance.context().addInitScript(() => {
+      new MutationObserver((changes) => {
+        const cursor = document.getElementById("c");
+        if (!cursor || !changes.some((m) => m.target === cursor && m.attributeName === "style")) return;
+        const tip = cursor.getBoundingClientRect();
+        (window as Vista).primerDibujo = {
+          x: tip.x + 5,
+          y: tip.y + 4,
+          animado: cursor
+            .getAnimations()
+            .some((a) => a instanceof CSSTransition && a.transitionProperty === "transform"),
+        };
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ["style"] });
+    });
+    for (const [name, blob, edge, recorrido] of [
+      ["Alba", "menta", false, "primero"],
+      ["Alba", "menta", true, "movimiento"],
+      ["Sol", "coral", false, "relevo"],
+      ["Sol", "coral", true, "reaparición"],
     ] as const) {
+      if (recorrido === "reaparición")
+        await instance.evaluate(async () => (await (globalThis as Main).cursorDePrueba).hide());
       const point = await instance.evaluate(
         async ({ BrowserWindow, screen }, { name, blob, edge }) => {
           const cursor = await (globalThis as Main).cursorDePrueba;
@@ -78,10 +98,15 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
       await expect
         .poll(() => view.locator("#face").evaluate((img) => (img as HTMLImageElement).naturalWidth))
         .toBeGreaterThan(0);
-      const size = await view.evaluate(() => {
+      const size = await view.evaluate(async () => {
+        const cursor = document.getElementById("c");
+        if (!cursor) throw new Error("Falta el puntero");
+        // El compositor puede iniciar la transición después de que Electron muestre la ventana.
+        await new Promise(requestAnimationFrame);
+        await Promise.all(cursor.getAnimations().map((animation) => animation.finished));
         const label = document.getElementById("l")?.getBoundingClientRect();
-        const tip = document.getElementById("c")?.getBoundingClientRect();
-        if (!label || !tip) throw new Error("Falta la etiqueta o la punta en la ventana real");
+        const tip = cursor.getBoundingClientRect();
+        if (!label) throw new Error("Falta la etiqueta en la ventana real");
         return {
           x: screenX + tip.x + 5,
           y: screenY + tip.y + 4,
@@ -94,12 +119,21 @@ test("el BrowserWindow real muestra la cara y el nombre junto a la punta y se oc
           width: innerWidth,
           height: innerHeight,
           scroll: document.documentElement.scrollWidth,
+          primerDibujo: (window as Vista).primerDibujo,
+          movimientoReducido: matchMedia("(prefers-reduced-motion: reduce)").matches,
         };
       });
-      await info.attach(`medidas-${blob}`, {
+      await info.attach(`medidas-${recorrido}`, {
         body: JSON.stringify({ ...size, point }),
         contentType: "application/json",
       });
+      const primerDibujo = size.primerDibujo;
+      if (!primerDibujo) throw new Error("Falta la medida del primer fotograma del puntero");
+      expect(primerDibujo.animado).toBe(recorrido === "movimiento" && !size.movimientoReducido);
+      if (recorrido !== "movimiento") {
+        expect(Math.abs(point.content.x + primerDibujo.x - point.x)).toBeLessThanOrEqual(1);
+        expect(Math.abs(point.content.y + primerDibujo.y - point.y)).toBeLessThanOrEqual(1);
+      }
       expect(Math.abs(point.content.x + size.localX - point.x)).toBeLessThanOrEqual(1);
       expect(Math.abs(point.content.y + size.localY - point.y)).toBeLessThanOrEqual(1);
       expect(size.localX).toBeGreaterThanOrEqual(0);
