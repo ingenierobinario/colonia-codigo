@@ -1,6 +1,6 @@
 import type { SyncStatus } from "@colonia/protocol";
 import { Button, Field, Input } from "@colonia/ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import { watchEvents } from "../data/live.ts";
 import { useData } from "../data/state.ts";
@@ -19,6 +19,7 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
   const [working, setWorking] = useState(false);
   const [issue, setIssue] = useState<"read" | "connect" | "update">();
   const [copiedCode, setCopiedCode] = useState("");
+  const folderId = useId();
   const projects = useData((state) => state.projects);
   const [selected, setSelected] = useState<string[]>([]);
   const [continuous, setContinuous] = useState(false);
@@ -98,6 +99,7 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
       if (next.pairing?.initial_source !== "joining_device") setIssue("update");
     });
   const available = projects.filter((p) => p.path && p.present !== false && p.registered !== false && !p.unreadable);
+  const chooseAgain = status?.project_files?.state === "failed" && status.project_files.why === "selection";
   const folders = available.length > 0 && (
     <fieldset className="eq-hosting-folders">
       <legend>{t("equipos.hostingFolders")}</legend>
@@ -105,6 +107,8 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
         <label key={p.id}>
           <input
             type="checkbox"
+            aria-label={p.name}
+            aria-describedby={folderId + p.id}
             checked={selected.includes(p.id)}
             onChange={(e) => {
               const next = e.currentTarget.checked ? [...selected, p.id] : selected.filter((id) => id !== p.id);
@@ -112,7 +116,10 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
               if (!next.length) setContinuous(false);
             }}
           />
-          <span>{p.name}</span>
+          <span>
+            {p.name}
+            <small id={folderId + p.id}>{p.path}</small>
+          </span>
         </label>
       ))}
     </fieldset>
@@ -169,20 +176,24 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
                 <>
                   <p className="eq-muted">
                     {t(
-                      status.project_files.why === "source"
-                        ? "equipos.hostingFileSource"
-                        : status.project_files.why === "unsupported"
-                          ? "equipos.hostingUpdate"
-                          : "equipos.hostingFileDestination",
+                      chooseAgain
+                        ? "equipos.hostingChooseAgainHint"
+                        : status.project_files.why === "source"
+                          ? "equipos.hostingFileSource"
+                          : status.project_files.why === "unsupported"
+                            ? "equipos.hostingUpdate"
+                            : "equipos.hostingFileDestination",
                     )}
                   </p>
-                  <Button
-                    disabled={working || !status.connected}
-                    variant="secondary"
-                    onClick={() => void act(async () => setStatus(await client.call("sync.copy_projects", {})))}
-                  >
-                    {t("equipos.hostingRetry")}
-                  </Button>
+                  {!chooseAgain && (
+                    <Button
+                      disabled={working || !status.connected}
+                      variant="secondary"
+                      onClick={() => void act(async () => setStatus(await client.call("sync.copy_projects", {})))}
+                    >
+                      {t("equipos.hostingRetry")}
+                    </Button>
+                  )}
                 </>
               )}
             </div>
@@ -222,7 +233,7 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
                 disabled={!status.can_copy_projects || status.project_files?.state === "working"}
                 onClick={() => setJoining(true)}
               >
-                {t("equipos.hostingAddFolders")}
+                {t(chooseAgain ? "equipos.hostingChooseAgain" : "equipos.hostingAddFolders")}
               </Button>
             ))}
           <FolderSync status={status} onStatus={setStatus} />

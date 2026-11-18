@@ -57,6 +57,9 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.hostingFilesWorking":
     "Copiando las carpetas elegidas. El servidor ha confirmado {completed} de {total}. Mantén el PC encendido hasta que termine.",
   "equipos.hostingFilesFailed": "La copia se detuvo después de {completed} de {total} carpetas.",
+  "equipos.hostingChooseAgain": "Volver a elegir carpetas",
+  "equipos.hostingChooseAgainHint":
+    "La copia se ha detenido porque Colonia ya no puede confirmar qué carpeta elegiste. En el escritorio, revisa las rutas y selecciona las que quieras enviar.",
   "equipos.hostingFileSource": "Comprueba que puedes abrir la carpeta en este PC.",
   "equipos.hostingFileDestination": "Comprueba el espacio disponible y los permisos del servidor.",
   "equipos.hosting": "Colonia en un servidor",

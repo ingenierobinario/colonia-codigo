@@ -56,6 +56,9 @@ export const enEquipos = {
   "equipos.hostingFilesWorking":
     "Copying the selected folders. The server has confirmed {completed} of {total}. Keep this PC on until the copy finishes.",
   "equipos.hostingFilesFailed": "The copy stopped after {completed} of {total} folders.",
+  "equipos.hostingChooseAgain": "Choose folders again",
+  "equipos.hostingChooseAgainHint":
+    "The copy stopped because Colonia can no longer confirm which folder you chose. On your desktop, check the paths and select the folders you want to send.",
   "equipos.hostingFileSource": "Check that you can open the folder on this PC.",
   "equipos.hostingFileDestination": "Check free space and permissions on the server.",
   "equipos.hosting": "Colonia on a server",

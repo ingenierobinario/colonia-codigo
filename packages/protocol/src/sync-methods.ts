@@ -12,7 +12,7 @@ export const ProjectFilesStatus = z.object({
   completed: z.number().int().nonnegative(),
   files: z.number().int().nonnegative(),
   bytes: z.number().int().nonnegative(),
-  why: z.enum(["source", "destination", "unsupported"]).optional(),
+  why: z.enum(["source", "destination", "unsupported", "selection"]).optional(),
 });
 
 const continuousProjects = z.array(z.string().min(1).max(160)).min(1).max(256);

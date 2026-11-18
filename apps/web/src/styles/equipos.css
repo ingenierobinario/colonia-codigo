@@ -502,6 +502,16 @@
   gap: 0.45rem;
   overflow-wrap: anywhere;
 }
+.eq-hosting-folders label > span {
+  min-width: 0;
+}
+.eq-hosting-folders small {
+  display: block;
+  color: var(--colonia-fg-muted);
+  font-size: var(--colonia-text-sm);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
 .eq-hosting-folders input {
   flex: none;
 }
