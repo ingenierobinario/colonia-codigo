@@ -7,6 +7,7 @@ import { createHash, createHmac } from "node:crypto";
 import fs from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import { AGENT_NAMES } from "@colonia/protocol";
+import { prepareWorkLocations, workLocation } from "./project-work-location.ts";
 
 /** Las tablas que viajan, en orden de dependencia (las que otras referencian, primero). */
 export const TABLES = [
@@ -187,6 +188,7 @@ function shapeOf(db: DatabaseSync, tbl: string): Shape | undefined {
 
 /** Crea las tablas del diario y los disparadores que apuntan cada cambio. Se puede repetir. */
 export function install(db: DatabaseSync): void {
+  prepareWorkLocations(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS sync_dirty (n INTEGER PRIMARY KEY AUTOINCREMENT, tbl TEXT NOT NULL, pk TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS sync_ver (
@@ -335,6 +337,10 @@ export function createJournal(d: JournalDeps) {
     if (!r) return undefined;
     const out: Row = {};
     for (const [k, v] of Object.entries(r)) if (!s.omit.has(k)) out[k] = encode(v);
+    if (tbl === "projects") {
+      const pinned = workLocation(d.db, String(r.id));
+      if (pinned && r.path === pinned.local_path) out.path = pinned.source_path;
+    }
     return out;
   }
 
@@ -401,7 +407,17 @@ export function createJournal(d: JournalDeps) {
     const s = shape(tbl);
     if (!s) throw new Error(`tabla desconocida: ${tbl}`);
     const key = keyOf(pk);
-    if (!row) return void run(`DELETE FROM ${q(tbl)} WHERE ${where(s)}`, ...key);
+    if (!row) {
+      if (tbl === "projects") run("DELETE FROM sync_work_locations WHERE project=?", key[0]);
+      return void run(`DELETE FROM ${q(tbl)} WHERE ${where(s)}`, ...key);
+    }
+    if (tbl === "projects") {
+      const assigned = workLocation(d.db, String(key[0]));
+      if (assigned) {
+        run("UPDATE sync_work_locations SET source_path=? WHERE project=?", row.path ?? null, key[0]);
+        row = { ...row, path: assigned.local_path };
+      }
+    }
     const cols = s.cols.filter((c) => c in row && !s.omit.has(c));
     const values = cols.map((c) => decode(row[c]));
     if (one(`SELECT 1 AS x FROM ${q(tbl)} WHERE ${where(s)}`, ...key))
@@ -623,7 +639,7 @@ export function createJournal(d: JournalDeps) {
   // no tenía ninguna, se queda apuntada la del otro como «falta aquí» para que el dueño elija una.
   const folderHere = d.folderHere ?? ((p: string) => fs.existsSync(p));
   function folder(pk: string, row: Row): Row {
-    if (typeof row.path !== "string" || folderHere(row.path)) return row;
+    if (workLocation(d.db, String(keyOf(pk)[0])) || typeof row.path !== "string" || folderHere(row.path)) return row;
     const local = readRow("projects", pk);
     return local && typeof local.path === "string" ? { ...row, path: local.path } : row;
   }
@@ -673,7 +689,10 @@ export function createJournal(d: JournalDeps) {
       }
       writeRow(tbl, pk, row);
     }
-    if (tbl === "projects" && row) present(pk, row);
+    if (tbl === "projects" && row) {
+      const assigned = workLocation(d.db, String(keyOf(pk)[0]));
+      present(pk, assigned ? { ...row, path: assigned.local_path } : row);
+    }
     // Un mensaje recolocado ya no es igual que el que envió el otro equipo: vuelve a él como cambio de este.
     if (item.origin !== sender)
       setVer(tbl, pk, { hlc: tick(), origin: me, deleted: 0, hash: hashOf(tbl, row as Row), synced: 0 });
