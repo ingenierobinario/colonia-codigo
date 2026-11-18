@@ -12,7 +12,16 @@ import { childEnv } from "./env.ts";
 const run = promisify(execFile);
 
 async function cli(cmd: string, args: string[], env: NodeJS.ProcessEnv = childEnv()): Promise<string | undefined> {
-  return (await answer(cmd, args, env)).out;
+  const reply = await answer(cmd, args, env);
+  return reply.exitCode === 0 ? reply.out : undefined;
+}
+
+/** Solo se muestra el número de versión que reconoce el programa. */
+export async function probeCliVersion(cmd: string): Promise<string | undefined> {
+  const output = await cli(cmd, ["--version"]);
+  return output?.match(
+    /^(?:codex-cli[ \t]+)?v?(\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?)(?:[ \t]+\(Claude Code\))?$/i,
+  )?.[1];
 }
 
 /**
@@ -25,7 +34,7 @@ async function answer(
   args: string[],
   env: NodeJS.ProcessEnv = childEnv(),
   timeout = 15_000,
-): Promise<{ out?: string; failed: boolean }> {
+): Promise<{ out?: string; failed: boolean; exitCode?: number }> {
   // On Windows an npm-installed CLI is a .cmd shim: what it starts is run instead.
   const start = spawnable(cmd, args);
   if (!start) return { failed: true };
@@ -39,13 +48,13 @@ async function answer(
       env,
     });
     const out = stdout.trim() || stderr.trim() || undefined;
-    return out ? { out, failed: false } : { failed: true };
+    return out ? { out, failed: false, exitCode: 0 } : { failed: true };
   } catch (err) {
     const e = err as { killed?: boolean; signal?: string | null; code?: unknown; stdout?: string; stderr?: string };
     const out = (e.stdout ?? "").trim() || (e.stderr ?? "").trim() || undefined;
     // Killed by the timeout or never started: no answer, whatever it printed so far.
     if (e.killed || e.signal || typeof e.code !== "number" || !out) return { failed: true };
-    return { out, failed: false };
+    return { out, failed: false, exitCode: e.code };
   }
 }
 
@@ -148,7 +157,7 @@ export async function detectClaude(): Promise<CliStatus> {
   if (!bin) return { installed: false, logged_in: false };
   const broken = unstartable(bin);
   if (broken) return broken;
-  const [version, auth] = await Promise.all([cli(bin, ["--version"]), patient(bin, ["auth", "status", "--json"])]);
+  const [version, auth] = await Promise.all([probeCliVersion(bin), patient(bin, ["auth", "status", "--json"])]);
   let logged: boolean | undefined;
   let detail: string | undefined;
   try {
@@ -160,7 +169,7 @@ export async function detectClaude(): Promise<CliStatus> {
     installed: true,
     logged_in: logged === true,
     ...(logged === undefined ? { unsure: true } : {}),
-    ...(version ? { version: version.split(" ")[0] } : {}),
+    ...(version ? { version } : {}),
     ...(detail ? { detail } : {}),
   };
 }
@@ -170,14 +179,14 @@ export async function detectCodex(): Promise<CliStatus> {
   if (!bin) return { installed: false, logged_in: false };
   const broken = unstartable(bin);
   if (broken) return broken;
-  const [version, status] = await Promise.all([cli(bin, ["--version"]), patient(bin, ["login", "status"])]);
+  const [version, status] = await Promise.all([probeCliVersion(bin), patient(bin, ["login", "status"])]);
   const login = status.out;
   const logged = codexLogin(login);
   return {
     installed: true,
     logged_in: logged === true,
     ...(logged === undefined ? { unsure: true } : {}),
-    ...(version ? { version: version.replace(/^codex-cli\s*/, "") } : {}),
+    ...(version ? { version } : {}),
     ...(login && logged ? { detail: login.replace(/^Logged in using\s*/i, "") } : {}),
   };
 }

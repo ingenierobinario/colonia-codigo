@@ -3,13 +3,34 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { assertPath, tempDir } from "../testkit/platform.ts";
-import { codexLogin, codexNative, lookup, sdkPath, settleStatus } from "./detect.ts";
+import { codexLogin, codexNative, lookup, probeCliVersion, sdkPath, settleStatus } from "./detect.ts";
 
 const write = (file: string, text = "") => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, text);
   return file;
 };
+
+test("una consulta de versión fallida no lleva los diagnósticos del programa a la interfaz", async () => {
+  await using dir = tempDir("colonia-version-");
+  const script = path.join(dir.path, "cli.cjs");
+  const program =
+    process.platform === "win32"
+      ? write(path.join(dir.path, "cli.cmd"), `@"${process.execPath}" "%~dp0cli.cjs" %*\r\n`)
+      : write(path.join(dir.path, "cli"), `#!/bin/sh\nexec "${process.execPath}" "${script}" "$@"\n`);
+  fs.chmodSync(program, 0o755);
+  const cases: [string, number, string | undefined][] = [
+    ["codex-cli 0.126.0-alpha.2", 0, "0.126.0-alpha.2"],
+    ["2.1.50 (Claude Code)", 0, "2.1.50"],
+    ["Error al cargar el programa\nNode.js v24.19.0", 1, undefined],
+    ["codex-cli 0.126.0", 1, undefined],
+    ["Error al cargar el programa", 0, undefined],
+  ];
+  for (const [output, exitCode, expected] of cases) {
+    write(script, `console.error(${JSON.stringify(output)}); process.exitCode = ${exitCode};`);
+    assert.equal(await probeCliVersion(program), expected);
+  }
+});
 
 test("Codex's native program is found from its npm launcher, in the platform package or the old vendor folder", async () => {
   await using dir = tempDir("colonia-codex-");
