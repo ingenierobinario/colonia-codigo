@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFile, execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { promisify } from "node:util";
 import { tempDir } from "../apps/core/src/testkit/platform.ts";
 import { coreBundleName, platformOf } from "../packages/protocol/src/releases.ts";
 
@@ -219,4 +221,93 @@ test("EQUIPO-ARGS-1: una dirección o una huella con caracteres de consola se re
     run("--equipo", ok, "--huella", "abcd-ef01-2345-6789", "--no-service").stderr,
     /is not an address/,
   );
+});
+
+test("el instalador Bash solo elige la estable de mayor versión, salvo al indicar una versión concreta", async () => {
+  await using dir = tempDir("colonia-feed-bash-");
+  const releases = [
+    {
+      tag_name: "v2.49.3",
+      draft: false,
+      prerelease: false,
+      body: 'Una nota con "tag_name": "v92.0.0", corchetes [] y llaves {}',
+    },
+    { body: "Una previa con etiqueta numérica", prerelease: true, tag_name: "v9.10.0", draft: false },
+    { tag_name: "v8.99.0", prerelease: false, draft: true },
+    {
+      assets: [{ tag_name: "v97.0.0", prerelease: false, draft: false }],
+      prerelease: false,
+      tag_name: "v2.100.0",
+      draft: false,
+    },
+    { tag_name: "v7.0.0-rc.1", draft: false, prerelease: false },
+    { tag_name: "v6.0.0", prerelease: "false", draft: false },
+    { tag_name: "v5.0.0", draft: false },
+    { tag_name: "v1.999.0", draft: false, prerelease: false },
+  ];
+  let feed = JSON.stringify(releases).replace('"tag_name":"v2.100.0"', '"tag_\\u006eame":"v2.100\\u002e0"');
+  const requests: string[] = [];
+  const server = createServer((req, res) => {
+    const url = new URL(req.url ?? "/", "http://127.0.0.1");
+    requests.push(url.pathname);
+    if (url.pathname === "/releases") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(feed);
+    } else {
+      res.writeHead(404);
+      res.end("Fin de la prueba de selección");
+    }
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const api = `http://127.0.0.1:${address.port}`;
+    const gitRoot =
+      process.platform === "win32"
+        ? path.resolve(execFileSync("git", ["--exec-path"], { encoding: "utf8" }).trim(), "../../..")
+        : "";
+    const bash = process.platform === "win32" ? path.join(gitRoot, "bin", "bash.exe") : "bash";
+    const bashEnv = path.join(dir.path, "prueba.bash");
+    fs.writeFileSync(bashEnv, 'uname() { case "$1" in -m) echo x86_64;; *) echo Linux;; esac; }\n');
+    const home = dir.path.replaceAll("\\", "/");
+    const run = async (...args: string[]) => {
+      requests.length = 0;
+      await assert.rejects(
+        promisify(execFile)(bash, [script.replaceAll("\\", "/"), "--feed", api, "--server", "--no-service", ...args], {
+          env: {
+            ...process.env,
+            BASH_ENV: bashEnv.replaceAll("\\", "/"),
+            HOME: home,
+            CURL_HOME: home,
+            NO_PROXY: "127.0.0.1",
+            no_proxy: "127.0.0.1",
+            COLONIA_ROOT: home,
+            COLONIA_APP: `${home}/app`,
+          },
+        }),
+      );
+      return [...requests];
+    };
+    const bundleOf = (v: string) => `/download/v${v}/colonia-core-${v}-linux-x64.tar.gz`;
+    const expandedFeed = feed;
+    feed = JSON.stringify(releases.slice(0, 3), null, 2);
+    assert.deepEqual(await run(), ["/releases", bundleOf("2.49.3")]);
+    feed = expandedFeed;
+    assert.deepEqual(await run(), ["/releases", bundleOf("2.100.0")]);
+    assert.deepEqual(await run("--version", "v9.10.0"), [bundleOf("9.10.0")]);
+    feed = JSON.stringify([{ tag_name: "v10.0.0", draft: false, prerelease: false }, releases[3]]);
+    assert.deepEqual(await run(), ["/releases", bundleOf("10.0.0")]);
+    feed = JSON.stringify([releases[1], releases[2]]);
+    assert.deepEqual(await run(), ["/releases"]);
+    feed = `${JSON.stringify([releases[0]])} texto ajeno`;
+    assert.deepEqual(await run(), ["/releases"]);
+    feed = JSON.stringify([releases[0]]).slice(0, -1);
+    assert.deepEqual(await run(), ["/releases"]);
+    feed = '[{"tag_name":"v7.0.0","draft":false,"prerelease":true,"prerelease":false}]';
+    assert.deepEqual(await run(), ["/releases"]);
+    assert.equal(fs.existsSync(path.join(dir.path, "app")), false);
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+  }
 });

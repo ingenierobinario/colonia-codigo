@@ -143,6 +143,104 @@ sha256() {
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
+# Lee el JSON del feed con awk POSIX, también en una primera instalación sin Node, Python ni jq.
+# Solo interesan las tres propiedades directas de cada publicación. El resto se recorre como datos.
+stable_tags() {
+  LC_ALL=C awk '
+    function invalid() { exit 1 }
+
+    # Un token JSON. Para nombres y etiquetas solo hacen falta caracteres ASCII y el largo máximo de una etiqueta.
+    function token(    c, start, text, h, i, n, digits) {
+      while (1) {
+        if (pos > length(line)) {
+          if ((n = (getline line)) < 0) invalid()
+          if (!n) return ""
+          pos = 1
+        } else if (substr(line, pos, 1) ~ /[ \t\r]/) pos++
+        else break
+      }
+      c = substr(line, pos++, 1)
+      if (index("[]{}:,", c)) return c
+      if (c == "\"") {
+        text = ""
+        while (pos <= length(line)) {
+          c = substr(line, pos++, 1)
+          if (c == "\"") { literal = length(text) <= 255 ? text : ""; return "string" }
+          if (c < " ") invalid()
+          if (c == "\\") {
+            c = substr(line, pos++, 1)
+            if (c == "u") {
+              h = tolower(substr(line, pos, 4))
+              if (length(h) != 4 || h ~ /[^0-9a-f]/) invalid()
+              n = 0
+              for (i = 1; i <= 4; i++) n = n * 16 + index("0123456789abcdef", substr(h, i, 1)) - 1
+              c = n >= 32 && n <= 126 ? sprintf("%c", n) : "?"
+              pos += 4
+            } else if (c ~ /^[bfnrt]$/) c = "?"
+            else if (c != "\"" && c != "\\" && c != "/") invalid()
+          }
+          if (length(text) <= 255) text = text c
+        }
+        invalid()
+      }
+      start = pos - 1
+      if (c ~ /^[-0-9]$/) {
+        while (pos <= length(line) && substr(line, pos, 1) ~ /[-0-9eE.+]/) pos++
+        digits = substr(line, start, pos - start)
+        if (digits !~ /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/) invalid()
+        return "number"
+      }
+      for (i in words) if (substr(line, start, length(i)) == i) { pos = start + length(i); return i }
+      invalid()
+    }
+
+    function value(t, depth,    key, tag, draft, pre, tag_seen, duplicate) {
+      if (depth > 128) invalid()
+      if (t == "[") {
+        t = token()
+        if (t == "]") return
+        while (1) {
+          value(t, depth + 1)
+          t = token()
+          if (t == "]") return
+          if (t != ",") invalid()
+          t = token()
+        }
+      }
+      if (t == "{") {
+        t = token()
+        if (t == "}") return
+        while (1) {
+          if (t != "string") invalid()
+          key = literal
+          if (token() != ":") invalid()
+          t = token()
+          if (depth == 1) {
+            if (key == "tag_name") { if (tag_seen++) duplicate = 1; tag = t == "string" ? literal : "" }
+            if (key == "draft") { if (draft != "") duplicate = 1; draft = t }
+            if (key == "prerelease") { if (pre != "") duplicate = 1; pre = t }
+          }
+          value(t, depth + 1)
+          t = token()
+          if (t == "}") break
+          if (t != ",") invalid()
+          t = token()
+        }
+        if (!duplicate && draft == "false" && pre == "false" &&
+            tag ~ /^v([2-9]|[1-9][0-9]+)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/) print substr(tag, 2)
+      } else if (t != "string" && t != "number" && !(t in words)) invalid()
+    }
+
+    BEGIN {
+      words["true"] = words["false"] = words["null"] = 1
+      pos = 1
+      if (token() != "[") invalid()
+      value("[", 0)
+      if (token() != "") invalid()
+    }
+  ' "$1"
+}
+
 # 1. The bundle: the file given, or this platform's from the newest release (or the one asked for).
 if [ -n "$FILE" ]; then
   [ -f "$FILE" ] || die "no such file: $FILE"
@@ -165,9 +263,10 @@ else
     say "Looking for the newest Colonia in $FEED"
     # The highest plain vX.Y.Z from 2 up (v1's tags and pre-releases are left out), not the newest by date: a fix
     # to an older line can be published after a newer one.
-    VERSION="$(curl -fsSL -H 'accept: application/vnd.github+json' "$API/releases?per_page=100" |
-      grep -o '"tag_name": *"v[2-9][0-9]*\.[0-9]*\.[0-9]*"' | sed 's/.*"v\([^"]*\)"/\1/' |
-      sort -t. -k1,1n -k2,2n -k3,3n | tail -n1)" || true
+    curl -fsSL -H 'accept: application/vnd.github+json' -o "$WORK/releases.json" "$API/releases?per_page=100" ||
+      die "could not read the releases of $FEED"
+    VERSION="$(stable_tags "$WORK/releases.json" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n1)" ||
+      die "invalid release feed from $FEED"
     [ -n "$VERSION" ] || die "no Colonia release found in $FEED"
   fi
   NAME="colonia-core-$VERSION-$OS-$ARCH.tar.gz"
