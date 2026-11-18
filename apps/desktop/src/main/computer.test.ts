@@ -49,6 +49,7 @@ const native = {
     // Cocoa permite situar la ventana oculta sobre el menú. Al mostrarla aplica sus límites.
     getBounds = () => ({ ...display.bounds, y: this.visible && !this.unconstrained ? 25 : display.bounds.y });
     isDestroyed = () => false;
+    isVisible = () => this.visible;
     setIgnoreMouseEvents() {}
     setAlwaysOnTop() {}
     setBounds() {}

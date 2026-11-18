@@ -21,10 +21,17 @@ function placeLabel() {
   label.style.top = Math.max(3, Math.min(innerHeight - 3 - height, top)) - y + 4 + "px";
 }
 
-window.drawCursor = (x, y, message, actor, blob) => {
+window.drawCursor = (x, y, message, actor, blob, jump) => {
   point = { x, y };
+  const direct = jump || cursor.style.opacity !== "1";
+  if (direct) cursor.classList.add("direct");
   cursor.style.transform = "translate(" + (x - 5) + "px," + (y - 4) + "px)";
   cursor.style.opacity = "1";
+  if (direct) {
+    // Aplica el punto de entrada antes de permitir que el siguiente movimiento se anime.
+    cursor.getBoundingClientRect();
+    cursor.classList.remove("direct");
+  }
   clearTimeout(cursorTimer);
   cursorTimer = setTimeout(() => {
     cursor.style.opacity = "0";
