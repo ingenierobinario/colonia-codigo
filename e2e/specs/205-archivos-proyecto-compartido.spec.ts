@@ -24,33 +24,57 @@ async function fits(panel: Locator) {
   });
 }
 
+// Una lista poblada permite comprobar tanto una fila visible como un proyecto dentro de «N más».
+const otherProjects: string[] = [];
+test.beforeAll(async () => {
+  for (let index = 0; index < 5; index++) {
+    const { project } = await rpc<Result<"projects.create">>("projects.create", {
+      name: `Carpeta de muestra ${index + 1}`,
+    });
+    otherProjects.push(project.id);
+  }
+});
+test.afterAll(async () => {
+  for (const project of otherProjects) await rpc("projects.unregister", { project });
+});
+
 for (const lang of ["es", "en"] as const) {
   for (const mode of ["light", "dark"] as const) {
     test(`archivos elegidos antes de guardar, publicar e importar · ${lang} · ${mode}`, async ({ page }) => {
       test.setTimeout(90_000);
       const es = lang === "es";
       await rpc("setup.finish");
-      await page.addInitScript(
-        ({ lang, mode }) => {
-          localStorage.setItem("colonia.prefs", JSON.stringify({ language: lang }));
-          localStorage.setItem("colonia.mode", mode);
-        },
-        { lang, mode },
-      );
-      await page.emulateMedia({ colorScheme: mode });
       const name = `Paquete ${lang} ${mode}`;
       const { project } = await rpc<Result<"projects.create">>("projects.create", { name });
+      const projectOrder = mode === "light" ? [project.id, ...otherProjects] : [...otherProjects, project.id];
+      await page.addInitScript(
+        ({ lang, mode, projectOrder }) => {
+          localStorage.setItem(
+            "colonia.prefs",
+            JSON.stringify({ language: lang, projectOrder, sidebarRows: { projects: 5 } }),
+          );
+          localStorage.setItem("colonia.mode", mode);
+        },
+        { lang, mode, projectOrder },
+      );
+      await page.emulateMedia({ colorScheme: mode });
       const rel = `planos/planificación-${"abc".repeat(22)}.txt`;
       const payload = Buffer.from("Documento de prueba\r\n");
       const root = project.path;
       if (!root) throw new Error("Falta la carpeta temporal del proyecto");
       fs.mkdirSync(path.join(root, "planos"));
-      fs.writeFileSync(path.join(root, rel), payload);
+      // Los sistemas de archivos pueden devolver el acento como un carácter o como dos.
+      const diskPath = mode === "dark" ? rel.normalize("NFD") : rel;
+      fs.writeFileSync(path.join(root, diskPath), payload);
       fs.writeFileSync(path.join(root, "ajeno.txt"), "sin elegir");
       let copy: string | undefined;
       try {
         await open(page, `#project=${project.id}`);
-        await page.getByRole("group", { name, exact: true }).click({ button: "right" });
+        const row = page.getByRole("group", { name, exact: true });
+        if (mode === "dark") {
+          await page.getByRole("button", { name: es ? /^\d+ más$/ : /^\d+ more$/ }).click();
+        }
+        await row.click({ button: "right" });
         await page.getByRole("menuitem", { name: es ? "Compartir proyecto" : "Share project" }).click();
         const dialog = page.getByRole("dialog");
         const picker = dialog.getByTestId("share-work-files");
@@ -62,7 +86,8 @@ for (const lang of ["es", "en"] as const) {
         await picker.getByRole("button", { name: "planos" }).click();
         await picker.getByRole("checkbox").check();
         await expect(title).toContainText("1");
-        await expect(picker.getByRole("listitem")).toContainText(rel);
+        const chosen = picker.getByRole("listitem");
+        await expect.poll(async () => (await chosen.innerText()).normalize("NFC")).toBe(rel);
         await picker.getByRole("checkbox").uncheck();
         await expect(title).toContainText("0");
         await picker.getByRole("checkbox").check();
