@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.52": {
+    en: [
+      "The agent's cursor shows the name and avatar of whoever moves it, even when the agent changes.",
+      "In New chat, choose the project and which ChatGPT, Claude, Claude Code or Cowork histories to import.",
+      "The preview accepts ZIP, JSON, JSONL and selected Cowork notes, keeps branches and avoids duplicates on retry.",
+    ],
+    es: [
+      "El cursor de una acción del agente muestra el nombre y el avatar de quien lo mueve, aunque cambie el agente.",
+      "En Nuevo chat, elige el proyecto y qué historiales de ChatGPT, Claude, Claude Code o Cowork importar.",
+      "Admite ZIP, JSON, JSONL y notas de Cowork, conserva ramas y no duplica al reintentar.",
+    ],
+  },
   "2.36.51": {
     en: [
       "A server can run active routines and Flows with your PC off. Results sync when you reconnect.",
