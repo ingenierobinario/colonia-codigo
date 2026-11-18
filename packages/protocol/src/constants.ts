@@ -2,6 +2,9 @@
 // and never loads the schema registry (the core validates; see client.ts).
 
 export const PROTOCOL_VERSION = 1;
+// El navegador ofrece ambos valores; el servidor solo confirma el nombre público del protocolo.
+export const PANEL_WS_PROTOCOL = "colonia.v1";
+export const PANEL_WS_AUTH_PREFIX = "colonia.auth.";
 
 export const ErrorCode = {
   BadRequest: "bad_request",

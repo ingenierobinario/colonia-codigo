@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
-import type { Server } from "node:http";
+import type { IncomingMessage, Server } from "node:http";
 import {
   ClientFrame,
   FILE_PAYLOAD_BYTES,
   type HelloFrame,
   methodAccess,
   methods,
+  PANEL_WS_AUTH_PREFIX,
+  PANEL_WS_PROTOCOL,
   PROTOCOL_VERSION,
 } from "@colonia/protocol";
 import { type WebSocket, WebSocketServer } from "ws";
@@ -21,6 +23,30 @@ import type { ClientLookup } from "./http.ts";
 const CLIENT_TOKEN = "coloniac_";
 
 const MAX_PAYLOAD = FILE_PAYLOAD_BYTES;
+
+/** null para un socket sin credencial, undefined para una negociación ambigua o mal formada. */
+function socketCredential(req: IncomingMessage): string | null | undefined {
+  const query = new URL(req.url ?? "/", "http://core").searchParams.get("token");
+  const header = req.headers["sec-websocket-protocol"];
+  if (!header) return query;
+  const offered = header.split(",").map((value) => value.trim());
+  const auth = offered.find((p) => p.startsWith(PANEL_WS_AUTH_PREFIX));
+  if (!auth && !offered.includes(PANEL_WS_PROTOCOL)) return query;
+  const credential = auth?.slice(PANEL_WS_AUTH_PREFIX.length);
+  if (
+    offered.length !== 2 ||
+    !offered.includes(PANEL_WS_PROTOCOL) ||
+    !credential ||
+    query !== null ||
+    req.headers.authorization?.startsWith("Bearer ")
+  )
+    return undefined;
+  try {
+    return decodeURIComponent(credential);
+  } catch {
+    return undefined;
+  }
+}
 
 /** What a connection may call, so the client does not have to guess. */
 function methodsFor(hello: HelloFrame): string[] {
@@ -50,15 +76,29 @@ export function attachWs(
   /** An outside app's client token: its client, or a refusal when it is unknown or revoked (as over HTTP). */
   const clientFor = (key: string | null) => (key?.startsWith(CLIENT_TOKEN) ? deps.clientOf?.(key) : undefined);
   const unknownClient = (key: string | null) => Boolean(key?.startsWith(CLIENT_TOKEN)) && !clientFor(key);
+  const accepted = new WeakMap<IncomingMessage, string>();
   const wss = new WebSocketServer({
     noServer: true,
     maxPayload: MAX_PAYLOAD,
+    handleProtocols(offered, req) {
+      if (offered.has(PANEL_WS_PROTOCOL)) return PANEL_WS_PROTOCOL;
+      // Los clientes anteriores podían negociar su propio subprotocolo.
+      const legacy = offered.values().next().value;
+      return legacy && legacy !== accepted.get(req) && req.headers.authorization !== `Bearer ${legacy}`
+        ? legacy
+        : false;
+    },
     verifyClient: ({ req }, done) => {
-      const key = new URL(req.url ?? "/", "http://core").searchParams.get("token");
+      const key = socketCredential(req);
+      if (key === undefined) {
+        done(false, 403, "invalid socket credentials");
+        return;
+      }
       const why = unknownClient(key)
         ? "unknown or revoked client token"
         : refuse(req, gate, key, Boolean(clientFor(key)));
       if (why) log.warn({ origin: req.headers.origin, why }, "socket refused");
+      else if (key) accepted.set(req, key);
       done(!why, 403, why);
     },
   });
@@ -80,7 +120,7 @@ export function attachWs(
 
   wss.on("connection", (ws, req) => {
     const canBeNode = mayBeNode(req);
-    const key = new URL(req.url ?? "/", "http://core").searchParams.get("token");
+    const key = accepted.get(req) ?? null;
     let hello: HelloFrame | undefined;
     const session = randomUUID();
 

@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { ColoniaClient, ColoniaError } from "@colonia/protocol/client";
+import { WebSocket as Peer } from "ws";
 import { testConfig } from "../config.ts";
 import { say, scriptedLlm } from "../engine/testkit.ts";
 import { createCore } from "../server.ts";
@@ -42,6 +43,83 @@ test("with a core token, an outside app's client token is enough; without either
   );
   // The client token stands in for the core's, never for the owner: owner-only calls stay closed.
   await assert.rejects(app.call("clients.list", {}), (e: unknown) => e instanceof ColoniaError);
+});
+
+test("el panel vinculado conserva su identidad y la conexión deja de funcionar al revocarla", async () => {
+  const owner = new ColoniaClient({ url: core.url, token: TOKEN });
+  const { code } = await owner.call("devices.pair_start", {});
+  const { token, device } = await owner.call("devices.pair", { code, name: "Navegador de prueba", platform: "other" });
+  const panel = new ColoniaClient({ url: core.url, token, socketAuth: "subprotocol" });
+  const socket = await panel.connect();
+  try {
+    assert.equal(new URL(socket.url).search.length, 0);
+    assert.equal((await socket.call("devices.set_push", { push: null })).id, device.id);
+    assert.equal((await owner.call("devices.revoke", { id: device.id })).revoked, true);
+    await assert.rejects(socket.call("devices.list", {}));
+    await assert.rejects(panel.connect());
+  } finally {
+    socket.close();
+  }
+});
+
+async function negotiatedProtocol(url: string, protocols: string[]) {
+  const ws = new WebSocket(url, protocols);
+  try {
+    await new Promise<void>((resolve, reject) => {
+      ws.addEventListener("open", () => resolve(), { once: true });
+      ws.addEventListener("error", () => reject(new Error("Conexión rechazada")), { once: true });
+    });
+    return ws.protocol;
+  } finally {
+    ws.close();
+  }
+}
+
+test("solo se negocia el nombre público del protocolo del panel", async () => {
+  const url = `${core.url.replace(/^http/, "ws")}/ws`;
+  assert.equal(await negotiatedProtocol(url, [`colonia.auth.${TOKEN}`, "colonia.v1"]), "colonia.v1");
+});
+
+test("un cliente anterior mantiene su URL y su subprotocolo", async () => {
+  const url = `${core.url.replace(/^http/, "ws")}/ws?token=${encodeURIComponent(TOKEN)}`;
+  assert.equal(await negotiatedProtocol(url, ["cliente.anterior"]), "cliente.anterior");
+});
+
+test("la negociación comprueba el origen y descarta credenciales ambiguas antes de aceptar el socket", async () => {
+  const url = `${core.url.replace(/^http/, "ws")}/ws`;
+  const offer = ["colonia.v1", `colonia.auth.${TOKEN}`];
+  async function status(target: string, protocols: string[], origin: string) {
+    const peer = new Peer(target, protocols, { origin });
+    return new Promise<number>((resolve, reject) => {
+      peer.once("open", () => {
+        resolve(101);
+        peer.close();
+      });
+      peer.once("unexpected-response", (_req, res) => {
+        resolve(res.statusCode ?? 0);
+        res.resume();
+        peer.terminate();
+      });
+      peer.once("error", reject);
+    });
+  }
+  assert.equal(await status(url, offer, "http://localhost:7441"), 101);
+  assert.equal(await status(url, offer, "https://otro.example"), 403);
+  assert.equal(await status(url, ["colonia.v1"], "http://localhost:7441"), 403);
+  assert.equal(await status(url, ["colonia.v1", "colonia.auth.%"], "http://localhost:7441"), 403);
+  assert.equal(await status(`${url}?token=otra-ficticia`, offer, "http://localhost:7441"), 403);
+});
+
+test("el token de un conector conserva sus permisos al negociar el nuevo protocolo", async () => {
+  const owner = new ColoniaClient({ url: core.url, token: TOKEN });
+  const { token } = await owner.call("clients.create", { name: "Conector de prueba", scopes: ["chat"] });
+  const socket = await new ColoniaClient({ url: core.url, token, socketAuth: "subprotocol" }).connect();
+  try {
+    assert.equal(socket.welcome?.auth?.actor, "agent");
+    await assert.rejects(socket.call("clients.list", {}), (error) => error instanceof ColoniaError);
+  } finally {
+    socket.close();
+  }
 });
 
 test("a local core without a token still accepts repeated socket calls", async () => {

@@ -2,7 +2,7 @@
 // fetch/WebSocket so the same file runs in Node 24, browsers, Electron and React Native.
 // It holds no zod: the core validates params and results, so a browser never downloads the schema registry.
 
-import { PROTOCOL_VERSION } from "./constants.ts";
+import { PANEL_WS_AUTH_PREFIX, PANEL_WS_PROTOCOL, PROTOCOL_VERSION } from "./constants.ts";
 import type { Actor, ClientRole, ColoniaErrorShape, EventFrame, ServerFrame, WelcomeFrame } from "./frames.ts";
 import type { MethodName, Params, Result } from "./methods.ts";
 import { secureRequestKey } from "./request-key.ts";
@@ -97,6 +97,8 @@ export type ClientOptions = {
   /** Base URL of the core, e.g. http://127.0.0.1:7440 */
   url: string;
   token?: string;
+  /** El panel del mismo servidor puede autenticarse sin enviar su credencial en la URL de eventos. */
+  socketAuth?: "query" | "subprotocol";
   client?: { name: string; version: string };
   timeoutMs?: number;
   /** Native runtimes inject their secure UUID source instead of a browser crypto global. */
@@ -127,6 +129,7 @@ export class ColoniaClient {
       client: { name: "colonia-client", version: "0.0.0" },
       timeoutMs: 15_000,
       actor: "human",
+      socketAuth: "query",
       requestKey: secureRequestKey,
       ...opts,
       url: opts.url.replace(/\/$/, ""),
@@ -178,20 +181,33 @@ export class ColoniaClient {
   async connect(role: ClientRole = "operator", caps: string[] = []): Promise<ColoniaSocket> {
     const signal = this.#opts.signal;
     signal?.throwIfAborted();
-    const token = this.#opts.token ? `?token=${encodeURIComponent(this.#opts.token)}` : "";
-    const wsUrl = `${this.#opts.url.replace(/^http/, "ws")}/ws${token}`;
+    const key = this.#opts.token;
+    const panelAuth = this.#opts.socketAuth === "subprotocol";
+    const query = key && !panelAuth ? `?token=${encodeURIComponent(key)}` : "";
+    const wsUrl = `${this.#opts.url.replace(/^http/, "ws")}/ws${query}`;
+    // Cada subprotocolo tiene que ser un token HTTP; encodeURIComponent conserva los paréntesis.
+    const protocols =
+      key && panelAuth
+        ? [
+            PANEL_WS_PROTOCOL,
+            PANEL_WS_AUTH_PREFIX + encodeURIComponent(key).replaceAll("(", "%28").replaceAll(")", "%29"),
+          ]
+        : undefined;
     const socket = new ColoniaSocket(wsUrl, this.#opts.timeoutMs, this.#opts.requestKey);
     const abort = () => socket.close();
     signal?.addEventListener("abort", abort, { once: true });
     try {
-      await socket.open({
-        t: "hello",
-        protocol: PROTOCOL_VERSION,
-        client: this.#opts.client,
-        role,
-        caps,
-        actor: this.#opts.actor,
-      });
+      await socket.open(
+        {
+          t: "hello",
+          protocol: PROTOCOL_VERSION,
+          client: this.#opts.client,
+          role,
+          caps,
+          actor: this.#opts.actor,
+        },
+        protocols,
+      );
       signal?.throwIfAborted();
       void socket.closed.then(() => signal?.removeEventListener("abort", abort));
       return socket;
@@ -238,9 +254,9 @@ export class ColoniaSocket {
     this.#requestKey = requestKey;
   }
 
-  open(hello: unknown): Promise<WelcomeFrame> {
+  open(hello: unknown, protocols?: string[]): Promise<WelcomeFrame> {
     return new Promise((resolve, reject) => {
-      const ws = new WebSocket(this.url);
+      const ws = new WebSocket(this.url, protocols);
       this.#ws = ws;
       const timer = setTimeout(() => {
         reject(new Error("welcome timeout"));

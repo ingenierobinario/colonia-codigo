@@ -17,6 +17,7 @@ window.coloniaDesktop?.updateAuth?.(access.token);
 /** One HTTP client for the panel. Same origin: Vite proxies /rpc and /ws in dev, the core serves the build. */
 export const client = new ColoniaClient({
   url: window.location.origin,
+  socketAuth: "subprotocol",
   ...(access.token ? { token: access.token } : {}),
   client: { name: "colonia-web", version: "0.0.0" },
 });

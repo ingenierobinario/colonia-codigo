@@ -297,9 +297,11 @@ class FakeWebSocket extends EventTarget {
   readyState = 1;
   readonly sent: Record<string, unknown>[] = [];
   readonly url: string;
-  constructor(url: string) {
+  readonly protocols: string[] | undefined;
+  constructor(url: string, protocols?: string[]) {
     super();
     this.url = url;
+    this.protocols = protocols;
     FakeWebSocket.latest = this;
     queueMicrotask(() => this.dispatchEvent(new Event("open")));
   }
@@ -362,6 +364,23 @@ test("a socket handshake uses the configured client, encoded token, role and cap
   const socket = await opening;
   assert.equal(socket.welcome?.session, "s1");
   socket.close();
+});
+
+test("el panel abre el socket sin poner su credencial en la URL", async () => {
+  globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
+  const client = new ColoniaClient({ url: "https://panel.example", token: "a+(b)/é", socketAuth: "subprotocol" });
+  const opening = client.connect();
+  const wire = FakeWebSocket.latest;
+  await Promise.resolve();
+  wire.receive({ t: "welcome", session: "s1" });
+  const socket = await opening;
+  try {
+    assert.equal(wire.url, "wss://panel.example/ws");
+    assert.deepEqual(wire.protocols, ["colonia.v1", "colonia.auth.a%2B%28b%29%2F%C3%A9"]);
+    assert.equal(socket.url, wire.url);
+  } finally {
+    socket.close();
+  }
 });
 
 test("client cancellation closes a pending handshake and refuses an already canceled connection", async () => {
