@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 const t = VSL[lang];
 const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(t.wa.text)}`;
 const AVATAR = "https://d1yei2z3i6k35z.cloudfront.net/17169925/6a3d55a034af61.60990299_carla-card.jpg";
-const VIDEO = "https://player.vimeo.com/video/1247943905?autopause=0&player_id=0&app_id=58479&autoplay=1";
+const VIDEO = "https://player.vimeo.com/video/1247932779?autopause=0&player_id=0&app_id=58479&autoplay=1";
 ---
 
 <html lang={lang} data-theme="dark">
@@ -160,7 +160,7 @@ const VIDEO = "https://player.vimeo.com/video/1247943905?autopause=0&player_id=0
         box?.querySelector(".bfv-play")?.addEventListener("click", () => {
           const f = document.createElement("iframe");
           f.src = box.dataset.video;
-          f.title = "BF_VSL_training_final";
+          f.title = "BF_VSL_colonia_final";
           f.allow = "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share";
           f.referrerPolicy = "strict-origin-when-cross-origin";
           f.setAttribute("frameborder", "0");
