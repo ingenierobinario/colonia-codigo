@@ -15,7 +15,7 @@ En cada nueva entrega, `colonia-railway-<versión>.zip` y su `.sha256` acompaña
 
 ## Enlazar la plantilla desde Colonia
 
-Una vez publicada la plantilla, guarda su código público en la variable de GitHub Actions `COLONIA_RAILWAY_TEMPLATE`. Si se usa un código de afiliado, guárdalo en `COLONIA_RAILWAY_REFERRAL`. Configura estas variables antes de construir el panel. El botón Railway aparece al definir el código de plantilla. La guía para usar un servidor propio está disponible en todos los casos.
+Una vez publicada la plantilla, guarda su código público en la variable de GitHub Actions `COLONIA_RAILWAY_TEMPLATE`. El enlace ya incluye el código de invitación público `dBUtql`. Si cambia, configura `COLONIA_RAILWAY_REFERRAL` antes de construir el panel. El botón Railway aparece al definir el código de plantilla. La guía para usar un servidor propio está disponible en todos los casos.
 
 El bundle público 2.36.49 permite verificar la infraestructura y el acceso con el token. Para introducir por primera vez la clave desde el panel gráfico, fija una versión publicada que ya incluya este recorrido.
 
