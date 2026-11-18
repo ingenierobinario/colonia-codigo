@@ -8,6 +8,7 @@ import fs from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import { AGENT_NAMES } from "@colonia/protocol";
 import { secretTravels as portableInBackup } from "../backup/inventory.ts";
+import { mediaStoragePath } from "../services/media-file.ts";
 import { prepareWorkLocations, workLocation } from "./project-work-location.ts";
 
 /** Las tablas que viajan, en orden de dependencia (las que otras referencian, primero). */
@@ -119,6 +120,7 @@ export type SecretsPort = {
 
 export type JournalDeps = {
   db: DatabaseSync;
+  home?: string;
   /** El identificador de este equipo: desempata dos cambios con el mismo sello. */
   me: string;
   now?: () => number;
@@ -369,6 +371,19 @@ export function createJournal(d: JournalDeps) {
     const local = savedTarget(id);
     const permitted = (row: Row) => (row.tbl === SECRET ? validSavedSecret(id, row) : savedAllowed(row));
     return (!local || permitted(local)) && (!incoming || (incoming.id === id && permitted(incoming)));
+  }
+  function mediaAllowed(tbl: string, row: Row | undefined): boolean {
+    if (!d.home || !row) return true;
+    try {
+      if (tbl === "media") mediaStoragePath(d.home, row.path);
+      if (tbl === "sync_perdidas" && row.tbl === "media") {
+        if (typeof row.row !== "string") return false;
+        mediaStoragePath(d.home, JSON.parse(row.row)?.path);
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
   function forgetVersion(tbl: string, pk: string): void {
     run("DELETE FROM sync_ver WHERE tbl=? AND pk=?", tbl, pk);
@@ -722,6 +737,7 @@ export function createJournal(d: JournalDeps) {
     if (!allowed(tbl, pk, item.row)) return;
     observe(item.hlc);
     const moved = item.row ? localize(tbl, item.row) : undefined;
+    if (!mediaAllowed(tbl, moved)) return;
     const row = moved && tbl === "projects" ? folder(pk, moved) : moved;
     const ver = verOf(tbl, pk);
     if (ver && ver.hlc === item.hlc && ver.origin === item.origin) return;
@@ -840,6 +856,10 @@ export function createJournal(d: JournalDeps) {
           }
         }
         const row = v.deleted ? undefined : readRow(v.tbl, v.pk);
+        if (!mediaAllowed(v.tbl, row)) {
+          forgetVersion(v.tbl, v.pk);
+          continue;
+        }
         const item: Item = { tbl: v.tbl, pk: v.pk, hlc: v.hlc, origin: v.origin, del: !row, ...(row ? { row } : {}) };
         bytes += row ? stable(row).length : 0;
         out.push(item);
@@ -913,6 +933,7 @@ export function createJournal(d: JournalDeps) {
         if (!p || !savedAllowed(p) || (p.tbl === SECRET && !travels(LOST_SECRET + id))) return false;
         seal();
         let row = JSON.parse(p.row) as Row;
+        if (!mediaAllowed(p.tbl, row)) return false;
         if (p.tbl === SECRET) {
           const value = d.secrets?.resolve(`secret://${LOST_SECRET}${id}`);
           if (value === undefined) return false;

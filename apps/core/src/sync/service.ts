@@ -49,6 +49,7 @@ import {
   type SecretsPort,
   uninstall,
 } from "./journal.ts";
+import { MediaBlock, MediaRequest, mediaTransfer } from "./media-transfer.ts";
 import {
   type ProjectWork,
   projectWork,
@@ -66,7 +67,7 @@ const WIRE = 2;
 const HANDSHAKE_MS = 15_000;
 const BATCH = 200;
 const BATCH_WAIT_MS = 60_000;
-const FILE_CHUNK = 512 * 1024;
+
 /**
  * SYNC-LATIDO-1 · Un enlace cuya red se fue sin cerrar (cambio de IP, wifi caída) no avisa: sin latido seguía
  * «conectado» y lo cambiado no llegaba hasta que vencía el lote (60 s). Se le da un toque cada PING_MS; si en
@@ -130,21 +131,15 @@ const Msg = z.discriminatedUnion("t", [
     urls: z.array(z.string()),
     accepts_project_files: z.literal(1).optional(),
     folder_sync: z.literal(1).optional(),
+    media_sha256: z.literal(1).optional(),
   }),
   z.object({ t: z.literal("cambios"), id: z.string(), items: z.array(ItemZ) }),
   z.object({ t: z.literal("ok"), id: z.string() }),
   z.object({ t: z.literal("papel"), role: z.enum(["principal", "secundario"]), role_at: z.number() }),
   z.object({ t: z.literal("canales"), info: z.array(z.unknown()) }),
   // Los ficheros van trozo a trozo y a petición: no hay tamaño máximo y uno a medias sigue por donde iba.
-  z.object({ t: z.literal("pide"), id: z.string(), at: z.number().int().min(0) }),
-  z.object({
-    t: z.literal("fichero"),
-    id: z.string(),
-    at: z.number().int().min(0),
-    data: z.string(),
-    last: z.boolean(),
-    missing: z.boolean(),
-  }),
+  MediaRequest,
+  MediaBlock,
   z.object({ t: z.literal("adios") }),
   z.object({ t: z.literal("archivos-proyecto"), data: WorkMessage }),
   z.object({ t: z.literal("carpetas-vivas"), data: FolderMessage }),
@@ -204,6 +199,7 @@ type Link = {
   work: WorkLink;
   folders: FolderLink;
   acceptsProjectFiles: boolean;
+  mediaDigests: boolean;
   hello: boolean;
   /** SYNC-LATIDO-1: cuándo se oyó al otro por última vez y cuándo se le dio el último toque. */
   heard: number;
@@ -289,8 +285,18 @@ export function createSync(d: SyncDeps) {
   /** El código vigente, estirado. */
   let secret: string | undefined;
   let stateDirty = 0;
-  const wanted: string[] = [];
-  let fetching: { id: string; file: string; part: string; at: number } | undefined;
+  const media = mediaTransfer(
+    d.db,
+    d.home,
+    () => state?.peer.id,
+    () => (link?.ready ? link : undefined),
+    () => {
+      try {
+        d.changed?.(new Set(["@fichero"]));
+      } catch {}
+    },
+    (err) => warn("No se pudo sincronizar el adjunto.", err),
+  );
   let beacon: Beacon | undefined;
   /** Direcciones oídas en la red para la pareja: se prueban, y solo se guardan si el apretón de manos sale bien. */
   let found: string[] = [];
@@ -342,6 +348,7 @@ export function createSync(d: SyncDeps) {
     myId = idOf(me);
     journal = createJournal({
       db: d.db,
+      home: d.home,
       me: idOf(me),
       secrets: d.secrets,
       ...(d.secretTravels ? { secretTravels: d.secretTravels } : {}),
@@ -449,6 +456,7 @@ export function createSync(d: SyncDeps) {
       client,
       ready: false,
       acceptsProjectFiles: false,
+      mediaDigests: false,
       work: { send: (data) => l.send({ t: "archivos-proyecto", data }) },
       folders: { send: (data) => l.send({ t: "carpetas-vivas", data }) },
       hello: false,
@@ -471,6 +479,7 @@ export function createSync(d: SyncDeps) {
       work?.detach();
       continuous?.detach();
       link = undefined;
+      media.clear();
       old.ws.close(1000, "sustituida");
     }
     link = l;
@@ -483,7 +492,7 @@ export function createSync(d: SyncDeps) {
       continuous?.detach();
       link = undefined;
       inflight = undefined;
-      fetching = undefined;
+      media.clear();
       tell();
     });
     l.send({
@@ -498,6 +507,7 @@ export function createSync(d: SyncDeps) {
       role_at: state.role_at,
       urls: d.urls(),
       folder_sync: 1,
+      media_sha256: 1,
       ...(state.work === "receive" ? { accepts_project_files: 1 as const } : {}),
     });
     return l;
@@ -507,6 +517,7 @@ export function createSync(d: SyncDeps) {
     if (link !== l || !state || !journal) return;
     if (m.t === "hola") {
       l.acceptsProjectFiles = m.accepts_project_files === 1;
+      l.mediaDigests = m.media_sha256 === 1;
       l.hello = true;
       mismatch = m.v !== WIRE || m.schema !== schema();
       l.ready = !mismatch;
@@ -528,7 +539,7 @@ export function createSync(d: SyncDeps) {
         warn("los dos equipos tienen versiones distintas de Colonia: no se pasan nada hasta actualizar");
       } else {
         continuous?.attach(l.folders, m.folder_sync === 1);
-        setImmediate(missingFiles);
+        setImmediate(media.missing);
       }
       tell();
       pump();
@@ -570,7 +581,7 @@ export function createSync(d: SyncDeps) {
       waiting = r.waiting.slice(-WAITING_MAX);
       l.send({ t: "ok", id: m.id });
       touchSync();
-      for (const i of m.items) if (i.tbl === "media" && !i.del) want(String((JSON.parse(i.pk) as unknown[])[0]));
+      for (const i of m.items) if (i.tbl === "media" && !i.del) media.want(String((JSON.parse(i.pk) as unknown[])[0]));
       try {
         d.changed?.(r.touched);
       } catch (err) {
@@ -594,8 +605,8 @@ export function createSync(d: SyncDeps) {
       tell();
       return;
     }
-    if (m.t === "pide") sendFile(l, m.id, m.at);
-    else if (m.t === "fichero") receiveFile(m);
+    if (m.t === "pide") void media.send(l, m.id, m.at);
+    else if (m.t === "fichero") void media.receive(l, m);
   }
 
   function touchSync(): void {
@@ -633,100 +644,6 @@ export function createSync(d: SyncDeps) {
     } catch (err) {
       warn("los canales no siguieron el cambio de equipo principal", err);
     }
-  }
-
-  // ── Ficheros adjuntos: el otro equipo los pide cuando le llega la ficha y no tiene el fichero ───────────────────────
-
-  const mediaPath = (id: string) =>
-    (d.db.prepare("SELECT path FROM media WHERE id = ?").get(id) as { path: string } | undefined)?.path;
-
-  function want(id: string): void {
-    const p = mediaPath(id);
-    if (!p || !inHome(p) || fs.existsSync(p) || wanted.includes(id) || fetching?.id === id) return;
-    wanted.push(id);
-    nextFile();
-  }
-  function missingFiles(): void {
-    if (!link?.ready) return;
-    try {
-      for (const r of d.db.prepare("SELECT id FROM media").all() as { id: string }[]) want(r.id);
-    } catch (err) {
-      warn("no se pudo mirar qué adjuntos faltan", err);
-    }
-  }
-  function nextFile(): void {
-    if (fetching || !link?.ready) return;
-    for (;;) {
-      const id = wanted.shift();
-      if (!id) return;
-      const p = mediaPath(id);
-      if (!p || !inHome(p) || fs.existsSync(p)) continue;
-      const part = `${p}.sync-part`;
-      // Lo que ya llegó antes de un corte no se vuelve a pedir.
-      let at = 0;
-      try {
-        at = fs.statSync(part).size;
-      } catch {}
-      fetching = { id, file: p, part, at };
-      link.send({ t: "pide", id, at });
-      return;
-    }
-  }
-  /** Un trozo, el que piden. Así un fichero de cualquier tamaño no ocupa memoria ni atasca lo demás. */
-  function sendFile(l: Link, id: string, wantAt: number): void {
-    const none = () => l.send({ t: "fichero", id, at: 0, data: "", last: true, missing: true });
-    const p = mediaPath(id);
-    let fd: number | undefined;
-    try {
-      if (!p || !inHome(p)) {
-        none();
-        return;
-      }
-      const size = fs.statSync(p).size;
-      // Un resto que no cuadra con este fichero: se empieza de nuevo.
-      const at = wantAt > size ? 0 : wantAt;
-      fd = fs.openSync(p, "r");
-      const buf = Buffer.alloc(Math.min(FILE_CHUNK, Math.max(size - at, 0)));
-      const n = buf.length ? fs.readSync(fd, buf, 0, buf.length, at) : 0;
-      l.send({
-        t: "fichero",
-        id,
-        at,
-        data: buf.subarray(0, n).toString("base64"),
-        last: at + n >= size,
-        missing: false,
-      });
-    } catch {
-      none();
-    } finally {
-      if (fd !== undefined) fs.closeSync(fd);
-    }
-  }
-  function receiveFile(m: Extract<Msg, { t: "fichero" }>): void {
-    const f = fetching;
-    if (!f || f.id !== m.id) return;
-    try {
-      if (m.missing) fs.rmSync(f.part, { force: true });
-      else {
-        if (m.at !== f.at && m.at !== 0) return;
-        const data = Buffer.from(m.data, "base64");
-        fs.mkdirSync(path.dirname(f.file), { recursive: true });
-        if (m.at === 0) fs.writeFileSync(f.part, data);
-        else fs.appendFileSync(f.part, data);
-        f.at = m.at + data.length;
-        if (!m.last) return void link?.send({ t: "pide", id: f.id, at: f.at });
-        fs.renameSync(f.part, f.file);
-      }
-    } catch (err) {
-      warn("un adjunto no se pudo guardar", err);
-    }
-    fetching = undefined;
-    if (!m.missing) {
-      try {
-        d.changed?.(new Set(["@fichero"]));
-      } catch {}
-    }
-    nextFile();
   }
 
   // ── Apretón de manos (el de «Mis equipos»): quien marca fija la huella del otro ────────────────────────────────────
@@ -988,7 +905,7 @@ export function createSync(d: SyncDeps) {
     }
     pump();
     continuous?.pump();
-    if (!fetching) nextFile();
+    media.pump();
     dial();
     if (stateDirty && now() - stateDirty > 15_000) saveState();
   }
@@ -1010,6 +927,7 @@ export function createSync(d: SyncDeps) {
     work?.dispose(true);
     work = undefined;
     const was = state?.role;
+    media.forget(state?.peer.id);
     const old = link;
     link = undefined;
     old?.ws.close(1000, "desemparejado");
@@ -1019,8 +937,6 @@ export function createSync(d: SyncDeps) {
     waiting = [];
     remote = undefined;
     mismatch = false;
-    wanted.length = 0;
-    fetching = undefined;
     found = [];
     missing = undefined;
     saveState();
@@ -1059,7 +975,9 @@ export function createSync(d: SyncDeps) {
     if (missing && now() - missing.at < 3000) return missing.list;
     let list: { id: string; name: string }[] = [];
     try {
-      const rows = d.db.prepare("SELECT id, name, path FROM projects WHERE path IS NOT NULL ORDER BY name").all() as {
+      const rows = d.db
+        .prepare("SELECT id, name, path FROM projects WHERE registered=1 AND path IS NOT NULL ORDER BY name")
+        .all() as {
         id: string;
         name: string;
         path: string;
@@ -1116,6 +1034,7 @@ export function createSync(d: SyncDeps) {
     status(): SyncStatus {
       if (shown && Date.parse(shown.expires_at) <= now()) shown = undefined;
       const progress = work?.status();
+      const missingFolders = folders();
       return {
         paired: Boolean(state),
         ...(state?.work === "send"
@@ -1131,7 +1050,7 @@ export function createSync(d: SyncDeps) {
         pending: journal?.pendingCount() ?? 0,
         ...(state?.last_sync_at ? { last_sync_at: state.last_sync_at } : {}),
         saved: lostIn(d.db, 1).total,
-        ...(folders().length ? { folders: folders().slice(0, 20) } : {}),
+        ...(missingFolders.length ? { folders: missingFolders } : {}),
       };
     },
     /** Un código para escribir en el otro equipo: vale diez minutos y una sola vez. */
@@ -1330,7 +1249,13 @@ export function createSync(d: SyncDeps) {
         // Sin pareja: el diario se pone solo para este cambio y se vuelve a quitar; lo guardado se queda.
         install(d.db);
         try {
-          ok = createJournal({ db: d.db, me: pastIds().at(-1) ?? "local", secrets: d.secrets, folderHere }).recover(id);
+          ok = createJournal({
+            db: d.db,
+            home: d.home,
+            me: pastIds().at(-1) ?? "local",
+            secrets: d.secrets,
+            folderHere,
+          }).recover(id);
         } finally {
           uninstall(d.db, d.secrets);
         }

@@ -304,7 +304,7 @@ test("si cambian a la vez las direcciones de los dos, se reencuentran solos", as
   }
 });
 
-test("un fichero grande viaja por trozos, y uno a medias sigue por donde iba", async (t) => {
+test("un adjunto grande llega íntegro aunque exista un parcial heredado sin verificar", async (t) => {
   const { a, b } = await paired(t);
   const put = (id: string, name: string, size: number) => {
     const file = path.join(a.home, "media", name);
@@ -324,7 +324,7 @@ test("un fichero grande viaja por trozos, y uno a medias sigue por donde iba", a
   await waitFor(() => fs.existsSync(big.there), "el fichero grande no llegó", { ms: 120_000 });
   assert.equal(fs.statSync(big.there).size, 70 * 1024 * 1024 + 3);
   assert.ok(fs.readFileSync(big.there).equals(fs.readFileSync(big.file)));
-  // A medias: lo que ya había llegado (marcado aquí con otra letra) no se vuelve a pedir.
+  // Un parcial heredado sin prueba de procedencia nunca cambia los bytes del adjunto ni se borra como si fuera nuestro.
   const there = path.join(b.home, "media", "medias.bin");
   fs.writeFileSync(`${there}.sync-part`, Buffer.alloc(600_000, 9));
   const half = put("medias", "medias.bin", 2_000_000);
@@ -332,9 +332,8 @@ test("un fichero grande viaja por trozos, y uno a medias sigue por donde iba", a
   const got = fs.readFileSync(half.there);
   const sent = fs.readFileSync(half.file);
   assert.equal(got.length, sent.length);
-  assert.equal(got[0], 9);
-  assert.ok(got.subarray(600_000).equals(sent.subarray(600_000)));
-  assert.equal(fs.existsSync(`${there}.sync-part`), false);
+  assert.ok(got.equals(sent));
+  assert.deepEqual(fs.readFileSync(`${there}.sync-part`), Buffer.alloc(600_000, 9));
 });
 
 test("la carpeta de un proyecto que no está en este equipo: se avisa y se elige aquí", async (t) => {
@@ -411,4 +410,19 @@ test("al desemparejar, las versiones guardadas se conservan hasta que el dueño 
   assert.equal(b2.sync.status().saved, 0);
   const left = b2.db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'sync!_%' ESCAPE '!'").all();
   assert.deepEqual(left, []);
+});
+
+test("Mis equipos muestra todas las carpetas registradas que faltan aunque haya más de veinte", async (t) => {
+  const { b } = await paired(t);
+  const space = tempDir("colonia-carpetas-a-elegir-");
+  t.after(() => space.remove());
+  const insert = b.db.prepare("INSERT INTO projects(id,name,path,registered,created_at) VALUES(?,?,?,?,?)");
+  const expected = Array.from({ length: 25 }, (_, i) => `pendiente-${String(i).padStart(2, "0")}`);
+  for (const id of expected) insert.run(id, id, path.join(space.path, id), 1, "2026-01-01");
+  insert.run("desregistrado", "desregistrado", path.join(space.path, "oculto"), 0, "2026-01-01");
+  await until(() => b.sync.status().folders?.some((f) => f.id === "pendiente-00"), "faltan los proyectos registrados");
+  assert.deepEqual(
+    b.sync.status().folders?.map((f) => f.id),
+    expected,
+  );
 });

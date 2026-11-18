@@ -14,6 +14,7 @@ import { toOggOpus } from "./audio.ts";
 import type { CodexImages } from "./codex-images.ts";
 import { EMBED_PROBE, embed } from "./embeddings.ts";
 import { generateImage, IMAGE_PROBE } from "./images.ts";
+import { readMediaFile } from "./media-file.ts";
 import { reach } from "./reach.ts";
 import { SPEECH_PROBE, speak } from "./speech.ts";
 import { TRANSCRIBE_PROBE, transcribe } from "./transcription.ts";
@@ -325,7 +326,7 @@ export function createServices(deps: {
       const m = store.media.get(id);
       if (!m) return undefined;
       try {
-        return { mime: m.mime, data: fs.readFileSync(m.path) };
+        return { mime: m.mime, data: readMediaFile(deps.home, m.path, m.bytes) };
       } catch {
         return undefined;
       }

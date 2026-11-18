@@ -44,7 +44,7 @@ const LOCAL_PREFIX = [
   ".importar-proyecto-",
 ];
 /** Rutas relativas que se regeneran solas. */
-const DERIVED = new Set(["media/posters", "media/open"]);
+const DERIVED = new Set(["media/posters", "media/open", "media/.colonia-adjuntos"]);
 
 export const travelsTop = (name: string) => !(name in LOCAL_ONLY) && !LOCAL_PREFIX.some((p) => name.startsWith(p));
 export const secretTravels = (name: string) => !LOCAL_SECRETS.has(name) && !name.startsWith("sync.");

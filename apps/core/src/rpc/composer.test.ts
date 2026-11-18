@@ -166,7 +166,7 @@ test("an attachment destination symlink cannot write outside the temp folder", a
     await removeDir(outside);
   });
   fs.mkdirSync(path.join(scratchRoot(local.home), "home"), { recursive: true });
-  fs.symlinkSync(outside, path.join(scratchRoot(local.home), "home", "attachments"), "dir");
+  fs.symlinkSync(outside, path.join(scratchRoot(local.home), "home", "attachments"), "junction");
   const { media } = await local.client.call("media.upload", {
     name: "receipt.pdf",
     mime: "application/pdf",

@@ -64,27 +64,27 @@ export function inParent<T>(file: string, operation: (entry: string) => T): T {
   return result;
 }
 
-export function regularFile(file: string) {
+export function regularFile(file: string, maxBytes = fileMax) {
   const s = fs.lstatSync(file, { bigint: true, throwIfNoEntry: false });
-  if (s && (!s.isFile() || s.nlink !== 1n || s.size > BigInt(fileMax) || !sameSpelling(realpath(file), file)))
+  if (s && (!s.isFile() || s.nlink !== 1n || s.size > BigInt(maxBytes) || !sameSpelling(realpath(file), file)))
     throw unavailable();
   return s;
 }
 
-export function openRegular(file: string, flags = fs.constants.O_RDONLY) {
-  const before = regularFile(file);
+export function openRegular(file: string, flags = fs.constants.O_RDONLY, maxBytes = fileMax) {
+  const before = regularFile(file, maxBytes);
   if (!before) throw unavailable();
   const fd = fs.openSync(file, flags | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK);
   try {
-    if (!sameFile(fd, file, before)) throw unavailable();
+    if (!sameFile(fd, file, before, maxBytes)) throw unavailable();
     return { fd, before };
   } catch (error) {
     fs.closeSync(fd);
     throw error;
   }
 }
-export function sameFile(fd: number, file: string, before: fs.BigIntStats) {
-  const current = regularFile(file);
+export function sameFile(fd: number, file: string, before: fs.BigIntStats, maxBytes = fileMax) {
+  const current = regularFile(file, maxBytes);
   return !!current && stamp(current) === stamp(before) && stamp(fs.fstatSync(fd, { bigint: true })) === stamp(before);
 }
 
@@ -97,8 +97,13 @@ export function bytesAt(fd: number, offset: number, length: number) {
   }
   return bytes;
 }
-export async function fingerprint(file: string, rel: string, active: () => void): Promise<FolderRevision> {
-  const { fd, before } = openRegular(file);
+export async function fingerprint(
+  file: string,
+  rel: string,
+  active: () => void,
+  maxBytes = fileMax,
+): Promise<FolderRevision> {
+  const { fd, before } = openRegular(file, fs.constants.O_RDONLY, maxBytes);
   try {
     const size = Number(before.size);
     let revision: FolderRevision;
@@ -122,7 +127,7 @@ export async function fingerprint(file: string, rel: string, active: () => void)
       }
       revision = { bytes: size, sha: hash.digest("hex") };
     }
-    if (!sameFile(fd, file, before)) throw unavailable();
+    if (!sameFile(fd, file, before, maxBytes)) throw unavailable();
     return revision;
   } finally {
     fs.closeSync(fd);
