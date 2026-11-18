@@ -38,10 +38,13 @@ for (const corrupt of [false, true]) {
       downloads.push(url);
       return new Response(url.endsWith(".sha256") ? sum : archive);
     };
-    const run: Runner = async (_cmd, args) => {
+    const run: Runner = async (_cmd, args, _timeout, cwd) => {
       extracts++;
-      const unpacked = args[args.indexOf("-C") + 1];
-      assert.ok(unpacked);
+      assert.ok(cwd);
+      const destination = args[args.indexOf("-C") + 1];
+      assert.ok(destination && args.includes("-C"));
+      const unpacked = path.resolve(cwd, destination);
+      assert.ok(fs.statSync(unpacked).isDirectory());
       fs.mkdirSync(path.join(unpacked, "colonia", "node", "bin"), { recursive: true });
       fs.writeFileSync(path.join(unpacked, "colonia", "node", "bin", "node"), "installed runtime");
       return { code: 0, out: "" };

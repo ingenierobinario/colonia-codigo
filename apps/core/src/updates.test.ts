@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
-import { runningVersion } from "../../../packages/install/src/release.ts";
+import { commandRunner, runningVersion, switchCurrent } from "../../../packages/install/src/release.ts";
 import { createLog } from "./log.ts";
 import { panelEntry } from "./server-wiring.ts";
 import { removeDir, tempDir } from "./testkit/platform.ts";
@@ -106,7 +106,7 @@ async function releaseFeed(o: { corrupt?: boolean } = {}) {
   fs.mkdirSync(path.join(old, "node", "bin"), { recursive: true });
   fs.writeFileSync(path.join(old, "node", "bin", "node"), "old");
   fs.mkdirSync(path.join(app, "versions", "1.9.0"));
-  fs.symlinkSync(path.join("versions", "2.0.3"), path.join(app, "current"));
+  switchCurrent(app, "2.0.3");
 
   const src = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-upd-src-"));
   fs.mkdirSync(path.join(src, "colonia", "node", "bin"), { recursive: true });
@@ -142,13 +142,7 @@ async function releaseFeed(o: { corrupt?: boolean } = {}) {
     if (url.startsWith("https://api.github.com/repos/acme/colonia/releases")) return Response.json(releases);
     return fetch(input, init);
   };
-  const tar: Runner = async (cmd, args) => {
-    try {
-      return { code: 0, out: execFileSync(cmd, args, { encoding: "utf8" }) };
-    } catch (err) {
-      return { code: 1, out: String(err) };
-    }
-  };
+  const tar = commandRunner(src);
   const done = () => {
     server.close();
     fs.rmSync(app, { recursive: true, force: true });
@@ -178,8 +172,9 @@ async function releaseFeed(o: { corrupt?: boolean } = {}) {
   return { app, fakeFetch, tar, done, applyInProcess };
 }
 
-test("a bundle install finds the newer release, installs it beside the running one and restarts", async () => {
+test("a bundle install finds the newer release, installs it beside the running one and restarts", async (t) => {
   const f = await releaseFeed();
+  t.after(f.done);
   let restarted = false;
   const u = createUpdates({
     root: os.tmpdir(),
@@ -212,11 +207,11 @@ test("a bundle install finds the newer release, installs it beside the running o
   );
   await new Promise((resolve) => setTimeout(resolve, 600));
   assert.equal(restarted, true);
-  f.done();
 });
 
-test("a bundle that does not match its .sha256 is refused and what runs stays as it was", async () => {
+test("a bundle that does not match its .sha256 is refused and what runs stays as it was", async (t) => {
   const f = await releaseFeed({ corrupt: true });
+  t.after(f.done);
   const u = createUpdates({
     root: os.tmpdir(),
     log,
@@ -234,7 +229,6 @@ test("a bundle that does not match its .sha256 is refused and what runs stays as
   assert.match(r.log, /does not match its \.sha256/);
   assert.equal(fs.readFileSync(path.join(f.app, "current", "node", "bin", "node"), "utf8"), "old");
   assert.deepEqual(fs.readdirSync(path.join(f.app, "versions")).sort(), ["1.9.0", "2.0.3"]);
-  f.done();
 });
 
 test("a release update runs even when the running bundle's root no longer exists", async () => {
@@ -335,8 +329,9 @@ test("without a bundle install or a checkout, updates belong to the desktop app"
   assert.equal((await u.apply()).ok, false);
 });
 
-test("the core the desktop app carries says a newer release is out, and leaves installing it to the app", async () => {
+test("the core the desktop app carries says a newer release is out, and leaves installing it to the app", async (t) => {
   const f = await releaseFeed();
+  t.after(f.done);
   const u = createUpdates({
     root: os.tmpdir(),
     log,
@@ -358,7 +353,6 @@ test("the core the desktop app carries says a newer release is out, and leaves i
   const r = await u.apply();
   assert.equal(r.ok, false);
   assert.match(r.log, /desktop app/);
-  f.done();
 });
 
 test("releases that say their notes per language are passed on in both, and old ones in neither", async () => {
