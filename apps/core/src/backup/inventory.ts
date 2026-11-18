@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { setImmediate as yieldTurn } from "node:timers/promises";
 import { INSTRUCTION_FILES, NATIVE_AGENT_APPS } from "../apc/read.ts";
 import { sensitiveFile } from "../domain/project-file-name.ts";
 import { APPS } from "../skills/skills.ts";
@@ -57,25 +58,33 @@ export async function walkFiles(
   skip: (rel: string, entry: fs.Dirent) => boolean,
   out: FileEntry[] = [],
   singleLink = false,
+  strictMaxFiles?: number,
 ): Promise<FileEntry[]> {
   let entries: fs.Dirent[];
   try {
     entries = await fs.promises.readdir(dir, { withFileTypes: true });
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    if (strictMaxFiles !== undefined || (err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     return out;
   }
-  for (const e of entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+  // El inventario continuo ordena una vez al final. Cede también al recorrer muchas entradas excluidas.
+  if (strictMaxFiles === undefined) entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  for (const [index, e] of entries.entries()) {
+    if (strictMaxFiles !== undefined && index && index % 256 === 0) await yieldTurn();
     const r = rel ? `${rel}/${e.name}` : e.name;
     if (e.isSymbolicLink() || skip(r, e)) continue;
     const abs = path.join(dir, e.name);
-    if (e.isDirectory()) await walkFiles(abs, r, skip, out, singleLink);
+    if (e.isDirectory()) await walkFiles(abs, r, skip, out, singleLink, strictMaxFiles);
     else if (e.isFile()) {
       try {
         const st = await fs.promises.lstat(abs);
-        if (st.isFile() && (!singleLink || st.nlink === 1)) out.push({ rel: r, abs, size: st.size });
+        if (st.isFile() && (!singleLink || st.nlink === 1)) {
+          if (strictMaxFiles !== undefined && out.length >= strictMaxFiles)
+            throw new Error("La carpeta supera el límite de archivos sincronizados.");
+          out.push({ rel: r, abs, size: st.size });
+        }
       } catch (err) {
-        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+        if (strictMaxFiles !== undefined || (err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
       }
     }
   }

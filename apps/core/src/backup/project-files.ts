@@ -140,11 +140,7 @@ function prepareDefinition(entry: FileEntry): ProjectFileEntry {
 }
 
 /** Excluye la instalación, los proyectos anidados y los enlaces antes de recorrer cada subcarpeta. */
-export async function projectFiles(
-  root: string,
-  home: string,
-  otherProjectRoots: readonly string[],
-): Promise<ProjectFileEntry[]> {
+export function projectFileScope(root: string, home: string, otherProjectRoots: readonly string[]) {
   if (!path.isAbsolute(root) || !fs.lstatSync(root, { throwIfNoEntry: false })?.isDirectory()) {
     throw new Error("No se puede abrir la carpeta de este proyecto.");
   }
@@ -162,14 +158,28 @@ export async function projectFiles(
     if (isInside(base, at))
       reserved.add(path.relative(base, at).split(path.sep).join("/").normalize("NFC").toLowerCase());
   }
+  return { base, reserved };
+}
+
+export async function projectFiles(
+  root: string,
+  home: string,
+  otherProjectRoots: readonly string[],
+  continuous?: { exclude: (rel: string) => boolean; maxFiles: number },
+): Promise<ProjectFileEntry[]> {
+  const { base, reserved } = projectFileScope(root, home, otherProjectRoots);
   const entries = await walkFiles(
     base,
     "",
-    (rel, entry) => reserved.has(rel.normalize("NFC").toLowerCase()) || !allowed(rel, entry.isDirectory()),
+    (rel, entry) =>
+      reserved.has(rel.normalize("NFC").toLowerCase()) ||
+      !allowed(rel, entry.isDirectory()) ||
+      !!continuous?.exclude(rel),
     [],
     true,
+    continuous?.maxFiles,
   );
-  return entries.map(prepareDefinition);
+  return continuous ? entries : entries.map(prepareDefinition);
 }
 
 /** La comprobación usa el descriptor que el escritor leerá, incluso si una carpeta cambia durante el inventario. */
