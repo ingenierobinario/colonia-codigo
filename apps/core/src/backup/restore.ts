@@ -4,10 +4,11 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { BackupSummary, ProjectBackupScope } from "@colonia/protocol";
 import { MIGRATIONS } from "../db/migrations.ts";
 import type { Secrets } from "../secrets.ts";
 import { ArchiveError, type EntrySink, readArchive } from "./archive.ts";
-import { type ChannelRef, type Manifest, SESSION_BOUND, secretTravels } from "./inventory.ts";
+import { type ChannelRef, type Manifest, PRIVATE_PROJECT_FORMAT, SESSION_BOUND, secretTravels } from "./inventory.ts";
 
 export const STAGE_DIR = ".restaurar";
 export const PENDING = "pendiente.json";
@@ -49,7 +50,24 @@ const parseManifest = (bytes: Buffer): Manifest => {
   } catch {
     throw new ArchiveError("broken");
   }
-  if (m?.format !== "colonia-copia-1" || !m.summary || !m.from) throw new ArchiveError("broken");
+  if (!m?.from || !m.summary) throw new ArchiveError("broken");
+  if (m.format === PRIVATE_PROJECT_FORMAT) {
+    if (
+      !ProjectBackupScope.safeParse(m.scope).success ||
+      !BackupSummary.safeParse(m.summary).success ||
+      m.summary.projects !== 1 ||
+      m.secrets !== 0 ||
+      !Array.isArray(m.channels) ||
+      m.channels.length ||
+      !Array.isArray(m.external) ||
+      m.external.length ||
+      !Number.isSafeInteger(m.files) ||
+      m.files < 0 ||
+      !Number.isSafeInteger(m.bytes) ||
+      m.bytes < 0
+    )
+      throw new ArchiveError("broken");
+  } else if (m.format !== "colonia-copia-1" || m.scope !== undefined) throw new ArchiveError("broken");
   if (m.schema_version > MIGRATIONS.length) throw new ArchiveError("newer");
   return m;
 };
@@ -117,7 +135,9 @@ export async function stageRestore(
     await readArchive(file, password, (meta) => {
       if (meta.p === "manifest.json")
         return memory(4 * 1024 * 1024, (bytes) => {
+          if (manifest) throw new ArchiveError("broken");
           manifest = parseManifest(bytes);
+          if (manifest.format !== "colonia-copia-1") throw new ArchiveError("scope");
         });
       if (!manifest) throw new ArchiveError("broken");
       if (meta.p === "secrets.json")

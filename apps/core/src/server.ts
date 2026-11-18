@@ -825,6 +825,10 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       }),
       sync: pair,
       backup: createBackup({
+        projectImported: (id) => {
+          apc.sync(id);
+          bus.emit({ type: "team.updated" });
+        },
         home: config.home,
         db,
         secrets,

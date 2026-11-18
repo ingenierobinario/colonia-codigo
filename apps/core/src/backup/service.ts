@@ -10,7 +10,8 @@ import type { Secrets } from "../secrets.ts";
 import { RESULT_KEY } from "./apply.ts";
 import { ArchiveError } from "./archive.ts";
 import { COPY_EXT, copyName, createCopy } from "./create.ts";
-import { factsOf } from "./inventory.ts";
+import { factsOf, PRIVATE_PROJECT_FORMAT } from "./inventory.ts";
+import { createProjectCopy, restoreProjectCopy } from "./project-copy.ts";
 import { inspectCopy, type RestoreMode, relinkOf, stageRestore, usualFolders } from "./restore.ts";
 
 export type BackupDeps = {
@@ -21,6 +22,7 @@ export type BackupDeps = {
   homeId: string;
   /** Reinicia Colonia; ausente cuando nadie la volvería a arrancar. */
   restart?: (() => void) | undefined;
+  projectImported?: ((id: string) => void) | undefined;
   warn?: (msg: string) => void;
   now?: () => Date;
 };
@@ -131,6 +133,7 @@ export function createBackup(deps: BackupDeps) {
       folder?: string | undefined;
       password: string;
       include_work?: boolean | undefined;
+      project_id?: string | undefined;
     }): BackupStatus {
       const stop = busy();
       if (stop) return stop;
@@ -145,16 +148,14 @@ export function createBackup(deps: BackupDeps) {
         job = { state: "failed", kind: "create", done: 0, total: 0, why: "folder" };
         return status();
       }
-      const file = copyName(folder, "Colonia-copia", now());
+      const file = copyName(folder, params.project_id ? "Colonia-proyecto" : "Colonia-copia", now());
       start({ state: "working", kind: "create", phase: "snapshot", done: 0, total: 0 }, async () => {
-        const manifest = await createCopy(
-          { ...createDeps(), includeWork: params.include_work },
-          file,
-          params.password,
-          (phase, done, total) => {
-            job = { ...job, phase, done, total };
-          },
-        );
+        const progress: import("./create.ts").Progress = (phase, done, total) => {
+          job = { ...job, phase, done, total };
+        };
+        const manifest = params.project_id
+          ? await createProjectCopy(createDeps(), params.project_id, file, params.password, progress)
+          : await createCopy({ ...createDeps(), includeWork: params.include_work }, file, params.password, progress);
         if (params.folder && (!previous || !samePath(previous, folder))) {
           try {
             writeAtomic(preference, JSON.stringify(folder), 0o600);
@@ -166,6 +167,7 @@ export function createBackup(deps: BackupDeps) {
         return {
           file,
           summary: manifest.summary,
+          ...(manifest.scope ? { scope: manifest.scope } : {}),
           bytes: fs.statSync(file).size,
           done: manifest.bytes,
           total: manifest.bytes,
@@ -186,6 +188,7 @@ export function createBackup(deps: BackupDeps) {
           platform: m.from.platform,
           app_version: m.app_version,
           summary: m.summary,
+          ...(m.scope ? { scope: m.scope } : {}),
           keys: m.secrets,
           files: m.files,
           bytes: m.bytes,
@@ -197,7 +200,12 @@ export function createBackup(deps: BackupDeps) {
         return { ok: false, why: whyOf(err) };
       }
     },
-    restore(params: { file: string; password: string; mode: RestoreMode }): BackupStatus {
+    restore(params: {
+      file: string;
+      password: string;
+      mode: RestoreMode;
+      destination?: string | undefined;
+    }): BackupStatus {
       const stop = busy();
       if (stop) return stop;
       const file = params.file.trim();
@@ -207,7 +215,30 @@ export function createBackup(deps: BackupDeps) {
       }
       start({ state: "working", kind: "restore", phase: "reading", done: 0, total: 0 }, async () => {
         // La contraseña se comprueba antes de tocar nada.
-        await inspectCopy(file, params.password);
+        const manifest = await inspectCopy(file, params.password);
+        if (manifest.format === PRIVATE_PROJECT_FORMAT) {
+          if (params.mode !== "merge" || !manifest.scope) throw new ArchiveError("scope");
+          const project = await restoreProjectCopy(
+            deps.db,
+            deps.home,
+            file,
+            params.password,
+            manifest,
+            params.destination,
+            (done, total) => {
+              job = { ...job, done, total };
+            },
+          );
+          deps.projectImported?.(project.id);
+          return {
+            imported_project: project,
+            scope: manifest.scope,
+            summary: manifest.summary,
+            done: manifest.bytes,
+            total: manifest.bytes,
+          };
+        }
+        if (params.destination) throw new ArchiveError("scope");
         let safety: string | undefined;
         if (hasData(local())) {
           job = { ...job, phase: "safety", done: 0, total: 0 };
