@@ -24,7 +24,11 @@ export const enProjectShare = {
   "pshare.export": "Export",
   "pshare.publish": "Publish",
   "pshare.goes": "What is shared",
-  "pshare.stays": "What never leaves your computer",
+  "pshare.stays": "Excluded from the shared resource",
+  "pshare.privateHint":
+    "To move your chats, attachments and project files to another Colonia, save a password-protected copy.",
+  "pshare.privateCreate": "Create private backup",
+  "pshare.privateRestore": "Restore a private .colonia backup",
   "pshare.goes.instructions": "Instructions",
   "pshare.goes.agents": "Agents: {n}",
   "pshare.goes.skills": "Skills: {n}",

@@ -102,6 +102,7 @@ export type NavState = {
   tools: boolean;
   /** Config modal section, or null when closed. */
   config: ConfigSection | null;
+  backupTarget?: { project: string } | "restore" | undefined;
   /** The channel kind shown in Config › Channels (connected or being set up). */
   configChannel: ChannelKind | undefined;
   /** A kind the owner asked one more account of ("Add channel" on a kind that has one); its screen takes it. */
@@ -538,7 +539,10 @@ export const go = {
     nav.set({ resourcesTab: tab });
   },
   config(section: ConfigSection | null = "account") {
-    nav.set({ config: section });
+    nav.set({ config: section, backupTarget: undefined });
+  },
+  backup(target: { project: string } | "restore") {
+    nav.set({ config: "backup", backupTarget: target });
   },
   /** Config › Channels on one kind: its settings, or its setup when it is not connected yet. */
   channelConfig(kind: ChannelKind, another = false) {

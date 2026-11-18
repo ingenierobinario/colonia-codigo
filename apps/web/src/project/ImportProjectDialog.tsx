@@ -180,6 +180,21 @@ export function ImportProjectDialog({ onClose }: { onClose(): void }) {
                 { value: "paste", label: t("pshare.import.paste") },
               ]}
             />
+            {!preview && from === "file" && (
+              <div className="pshare__actions">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  leadingIcon={<Icons.Lock size={14} />}
+                  onClick={() => {
+                    onClose();
+                    go.backup("restore");
+                  }}
+                >
+                  {t("pshare.privateRestore")}
+                </Button>
+              </div>
+            )}
             {from === "file" ? (
               <div className="pshare__actions">
                 <input

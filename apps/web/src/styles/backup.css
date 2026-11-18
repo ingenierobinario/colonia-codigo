@@ -55,6 +55,19 @@
 .bk-card__hint {
   margin-top: 2px;
 }
+.bk-scope.colonia-field,
+.colonia-searchselect__list:has(.bk-scope-option) .colonia-menu__item {
+  height: auto;
+  min-height: 32px;
+  padding-block: 5px;
+}
+.bk-scope .colonia-select__value,
+.colonia-searchselect__list:has(.bk-scope-option) .colonia-menu__text,
+.bk-project-name,
+.bk-review__from {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .bk-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -102,9 +115,7 @@
 .bk-count__label {
   font-size: var(--colonia-text-xs, 12px);
   color: var(--colonia-fg-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .bk-progress {
@@ -231,11 +242,7 @@
   border-radius: 8px;
   background: var(--colonia-fill);
   font-size: var(--colonia-text-xs, 12px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  direction: rtl;
-  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .bk-todo {

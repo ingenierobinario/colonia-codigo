@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { shortWhen } from "../common/format.ts";
 import { client } from "../data/client.ts";
 import { usePack, useT } from "../i18n/index.ts";
-import { go } from "../shell/nav.ts";
+import { go, useNav } from "../shell/nav.ts";
 import { BackupCreate } from "./BackupCreate.tsx";
 import { Counts } from "./BackupParts.tsx";
 import { BackupRestore } from "./BackupRestore.tsx";
@@ -18,6 +18,7 @@ const EVERY_MS = 700;
 export function BackupSection() {
   const ready = usePack("backup");
   const t = useT();
+  const target = useNav((s) => s.backupTarget);
   const [status, setStatus] = useState<BackupStatus>();
   const read = useCallback(async () => {
     // Mientras Colonia se reinicia no contesta: se queda lo último que se supo.
@@ -42,16 +43,25 @@ export function BackupSection() {
     await client.call("backup.dismiss", {}).catch(() => {});
     await read();
   };
+  const restore = (
+    <BackupRestore
+      status={status}
+      onStatus={setStatus}
+      listKey={status.kind === "create" && status.state === "done" ? (status.file ?? "") : ""}
+    />
+  );
   return (
     <>
       <SectionHead title={t("config.backup")} lead={t("backup.lead")} />
       {status.restored && <Restored restored={status.restored} onDismiss={() => void dismiss()} />}
-      <BackupCreate status={status} onStatus={setStatus} />
-      <BackupRestore
+      {target === "restore" && restore}
+      <BackupCreate
+        key={typeof target === "object" ? target.project : "installation"}
         status={status}
         onStatus={setStatus}
-        listKey={status.kind === "create" && status.state === "done" ? (status.file ?? "") : ""}
+        initialProject={typeof target === "object" ? target.project : undefined}
       />
+      {target !== "restore" && restore}
       <details className="bk-what">
         <summary className="bk-what__summary">
           <Icons.ChevronRight />

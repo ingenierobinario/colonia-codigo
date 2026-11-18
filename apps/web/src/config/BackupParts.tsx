@@ -98,11 +98,12 @@ const COUNTS = [
 ] as const satisfies readonly (keyof BackupSummary)[];
 
 /** Cuánto hay de cada cosa: doce casillas, que cuadran a 4, 3 y 2 columnas (640 y 480 px). */
-export function Counts({ summary }: { summary: BackupSummary }) {
+export function Counts({ summary, project = false }: { summary: BackupSummary; project?: boolean }) {
   const t = useT();
+  const counts = project ? (["chats", "messages", "agents", "flows", "routines", "memories"] as const) : COUNTS;
   return (
     <dl className="bk-counts">
-      {COUNTS.map((k) => (
+      {counts.map((k) => (
         <div key={k} className="bk-count" data-count={k}>
           <dd className="bk-count__n">{formatNumber(summary[k])}</dd>
           <dt className="bk-count__label">{t(`backup.n.${k}`)}</dt>

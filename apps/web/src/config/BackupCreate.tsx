@@ -1,15 +1,48 @@
 // COPIA-COMPLETA-1 · Crear una copia: contraseña dos veces, dónde se guarda, y cómo va.
 import type { BackupStatus } from "@colonia/protocol";
 import { Button, Checkbox, Field, IconButton, Icons, Input } from "@colonia/ui";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatBytes } from "../common/format.ts";
+import { SearchSelect } from "../common/pickers/SearchSelect.tsx";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
+import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { BackupCard, Note, PasswordInput, Progress, whyKey } from "./BackupParts.tsx";
 
-export function BackupCreate({ status, onStatus }: { status: BackupStatus; onStatus: (s: BackupStatus) => void }) {
+const INSTALLATION = ":installation";
+
+export function BackupCreate({
+  status,
+  onStatus,
+  initialProject,
+}: {
+  status: BackupStatus;
+  onStatus: (s: BackupStatus) => void;
+  initialProject?: string | undefined;
+}) {
   const t = useT();
+  const projects = useData((s) => s.projects);
+  const [scope, setScope] = useState(initialProject ?? INSTALLATION);
+  const project = projects.find((p) => p.id === scope && p.registered !== false);
+  const single = scope !== INSTALLATION;
+  const options = useMemo(
+    () => [
+      {
+        value: INSTALLATION,
+        label: t("backup.scope.all"),
+        icon: <Icons.Archive className="bk-scope-option" size={16} />,
+      },
+      ...projects
+        .filter((p) => p.registered !== false)
+        .map((p) => ({
+          value: p.id,
+          label: p.name,
+          icon: <Icons.Folder className="bk-scope-option" size={16} />,
+        })),
+    ],
+    [projects, t],
+  );
   const [password, setPassword] = useState("");
   const [again, setAgain] = useState("");
   const [folder, setFolder] = useState<string>();
@@ -20,7 +53,7 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
   const working = status.state === "working";
   const short = password.length > 0 && password.length < 8;
   const mismatch = again.length > 0 && again !== password;
-  const can = password.length >= 8 && again === password && !working && !busy;
+  const can = password.length >= 8 && again === password && !working && !busy && (!single || Boolean(project));
   const where = folder ?? status.folder;
 
   const start = async () => {
@@ -31,7 +64,7 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
       const next = await client.call("backup.create", {
         password,
         ...(dir ? { folder: dir } : {}),
-        ...(includeWork ? { include_work: true } : {}),
+        ...(single ? { project_id: scope } : includeWork ? { include_work: true } : {}),
       });
       if (next.why === "busy") return notify(t("backup.why.busy"));
       onStatus(next);
@@ -51,7 +84,28 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
   };
 
   return (
-    <BackupCard name="create" icon={<Icons.Archive />} title={t("backup.create.title")} hint={t("backup.create.hint")}>
+    <BackupCard
+      name="create"
+      icon={<Icons.Archive />}
+      title={t("backup.create.title")}
+      hint={t("backup.create.choose")}
+    >
+      <Field label={t("backup.scope")}>
+        <SearchSelect
+          label={t("backup.scope")}
+          className="bk-scope"
+          value={scope}
+          options={options}
+          placeholder={t("backup.scope.missing")}
+          emptyLabel={t("pickers.noMatch")}
+          searchPlaceholder={t("pickers.searchProject")}
+          disabled={working || busy}
+          onValueChange={(v) => {
+            if (v) setScope(v);
+          }}
+        />
+      </Field>
+      <p className="bk-hint">{t(single ? "backup.scope.projectHint" : "backup.create.hint")}</p>
       <div className="bk-fields">
         <Field label={t("backup.password")} error={short ? t("backup.short") : undefined}>
           {(id) => (
@@ -103,18 +157,22 @@ export function BackupCreate({ status, onStatus }: { status: BackupStatus; onSta
           />
         )}
       </Field>
-      <Checkbox
-        checked={includeWork}
-        onCheckedChange={setIncludeWork}
-        disabled={working}
-        label={t("backup.includeWork")}
-      />
+      {!single && (
+        <Checkbox
+          checked={includeWork}
+          onCheckedChange={setIncludeWork}
+          disabled={working}
+          label={t("backup.includeWork")}
+        />
+      )}
       {mine && working && <Progress status={status} />}
       {mine && status.state === "failed" && <Note tone="error">{t(whyKey(status.why))}</Note>}
-      {mine && status.state === "done" && status.file && (
+      {mine && status.state === "done" && status.file && (status.scope?.project_id ?? INSTALLATION) === scope && (
         <div className="bk-result" data-bk="created">
           <Note tone="ok">
-            <b>{t("backup.created")}</b>
+            <b className="bk-project-name">
+              {status.scope ? t("backup.projectCreated", { name: status.scope.name }) : t("backup.created")}
+            </b>
             <span className="bk-result__meta">{t("backup.createdHint", { size: formatBytes(status.bytes ?? 0) })}</span>
           </Note>
           <div className="bk-path">

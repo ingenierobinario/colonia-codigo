@@ -1,11 +1,13 @@
 // COPIA-COMPLETA-1 · Restaurar en este equipo: elegir la copia, ver lo que trae y decidir qué pasa con lo que hay.
 import type { BackupFile, BackupInspect, BackupStatus } from "@colonia/protocol";
-import { Button, Field, Icons, Input, SegmentedControl, Select } from "@colonia/ui";
+import { Button, Field, IconButton, Icons, Input, SegmentedControl, Select } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { formatBytes, formatNumber, shortWhen } from "../common/format.ts";
+import { bootstrap } from "../data/actions.ts";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
 import { useT } from "../i18n/index.ts";
+import { go } from "../shell/nav.ts";
 import { BackupCard, Counts, Note, PasswordInput, Progress, type Why, whyKey } from "./BackupParts.tsx";
 
 type Found = Extract<BackupInspect, { ok: true }>;
@@ -27,7 +29,10 @@ export function BackupRestore({
   const [picked, setPicked] = useState<string>();
   const [typed, setTyped] = useState("");
   const [password, setPassword] = useState("");
-  const [found, setFound] = useState<Found>();
+  const [review, setReview] = useState<{ file: string; password: string; details: Found }>();
+  const found = review?.details;
+  const [destination, setDestination] = useState("");
+  const [dismissedProject, setDismissedProject] = useState<string>();
   const [why, setWhy] = useState<Why>();
   const [mode, setMode] = useState<Mode>("replace");
   const [busy, setBusy] = useState(false);
@@ -42,7 +47,8 @@ export function BackupRestore({
 
   const mine = status.kind === "restore";
   const working = status.state === "working";
-  const prepared = mine && status.state === "done";
+  const imported = mine && status.state === "done" ? status.imported_project : undefined;
+  const prepared = mine && status.state === "done" && (!imported || imported.id !== dismissedProject);
   const choice = picked ?? copies?.[0]?.file ?? OTHER;
   const file = choice === OTHER ? typed.trim() : choice;
   const can = Boolean(file) && password.length > 0 && !busy && !working;
@@ -54,7 +60,8 @@ export function BackupRestore({
     try {
       const r = await client.call("backup.inspect", { file, password });
       if (r.ok) {
-        setFound(r);
+        setReview({ file, password, details: r });
+        setDestination("");
         setMode("replace");
       } else setWhy(r.why);
     } catch {
@@ -64,10 +71,16 @@ export function BackupRestore({
     }
   };
   const restore = async () => {
-    if (!found || !can) return;
+    if (!found || !review || busy || working) return;
     setBusy(true);
     try {
-      const next = await client.call("backup.restore", { file, password, mode: found.has_data ? mode : "replace" });
+      const dir = destination.trim();
+      const next = await client.call("backup.restore", {
+        file: review.file,
+        password: review.password,
+        mode: found.scope ? "merge" : found.has_data ? mode : "replace",
+        ...(found.scope && dir ? { destination: dir } : {}),
+      });
       if (next.why === "busy") return notify(t("backup.why.busy"));
       onStatus(next);
     } catch {
@@ -77,8 +90,21 @@ export function BackupRestore({
     }
   };
   const back = () => {
-    setFound(undefined);
+    setReview(undefined);
     setWhy(undefined);
+  };
+  const openImported = async () => {
+    if (!imported || busy) return;
+    setBusy(true);
+    try {
+      await bootstrap();
+      go.config(null);
+      go.project(imported.id);
+    } catch {
+      notify(t("backup.openFailed"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const options = [
@@ -98,28 +124,91 @@ export function BackupRestore({
       title={t("backup.restore.title")}
       hint={t("backup.restore.hint")}
     >
-      {prepared ? (
+      {prepared && imported ? (
+        <div className="bk-result" data-bk="project-restored">
+          <Note tone="ok">
+            <b>{t("backup.projectDone")}</b>
+            <span className="bk-project-name">{imported.name}</span>
+          </Note>
+          <code className="bk-path__text">{imported.path}</code>
+          <div className="bk-actions">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setDismissedProject(imported.id);
+                setPassword("");
+                back();
+              }}
+            >
+              {t("backup.another")}
+            </Button>
+            <Button loading={busy} onClick={() => void openImported()}>
+              {t("backup.openProject")}
+            </Button>
+          </div>
+        </div>
+      ) : prepared ? (
         <Note tone="ok">{t(status.restart === "auto" ? "backup.restart.auto" : "backup.restart.manual")}</Note>
       ) : mine && working ? (
         <Progress status={status} />
       ) : found ? (
         <div className="bk-review" data-bk="review">
           <div className="bk-review__head">
-            <b>{t("backup.brings")}</b>
+            <b>{t(found.scope ? "backup.projectPreview" : "backup.brings")}</b>
+            {found.scope && <strong className="bk-project-name">{found.scope.name}</strong>}
             <span className="bk-review__from">
-              {t("backup.from", {
-                host: found.host,
-                when: shortWhen(found.created_at),
-                keys: formatNumber(found.keys),
-              })}
+              {found.scope
+                ? t("backup.projectFrom", {
+                    host: found.host,
+                    when: shortWhen(found.created_at),
+                    files: formatNumber(found.files),
+                    size: formatBytes(found.bytes),
+                  })
+                : t("backup.from", {
+                    host: found.host,
+                    when: shortWhen(found.created_at),
+                    keys: formatNumber(found.keys),
+                  })}
             </span>
           </div>
-          <Counts summary={found.summary} />
-          {found.relink.length > 0 && (
+          <Counts summary={found.summary} project={Boolean(found.scope)} />
+          {!found.scope && found.relink.length > 0 && (
             <Note tone="warn">{t("backup.relink", { names: found.relink.map((c) => c.name).join(", ") })}</Note>
           )}
-          {found.summary.browsers + found.summary.apps > 0 && <Note tone="warn">{t("backup.relogin")}</Note>}
-          {found.has_data ? (
+          {!found.scope && found.summary.browsers + found.summary.apps > 0 && (
+            <Note tone="warn">{t("backup.relogin")}</Note>
+          )}
+          {found.scope ? (
+            <>
+              <p className="bk-hint">{t("backup.projectRestoreHint")}</p>
+              <Field label={t("backup.projectDestination")}>
+                {(id) => (
+                  <Input
+                    id={id}
+                    name="backup-project-destination"
+                    value={destination}
+                    placeholder={t("backup.defaultDestination")}
+                    disabled={busy}
+                    onChange={(e) => setDestination(e.currentTarget.value)}
+                    trailing={
+                      window.coloniaDesktop?.pickFolder ? (
+                        <IconButton
+                          size="sm"
+                          variant="ghost"
+                          label={t("backup.folderPick")}
+                          icon={<Icons.FolderOpen />}
+                          onClick={async () => {
+                            const dir = await window.coloniaDesktop?.pickFolder?.();
+                            if (dir) setDestination(dir);
+                          }}
+                        />
+                      ) : undefined
+                    }
+                  />
+                )}
+              </Field>
+            </>
+          ) : found.has_data ? (
             <div className="bk-mode">
               <span className="bk-mode__label">{t("backup.mode")}</span>
               <SegmentedControl
@@ -145,7 +234,7 @@ export function BackupRestore({
               {t("backup.restore.back")}
             </Button>
             <Button data-bk="restore-go" loading={busy} onClick={() => void restore()}>
-              {t("backup.restore.go")}
+              {t(found.scope ? "backup.restoreProject" : "backup.restore.go")}
             </Button>
           </div>
         </div>
