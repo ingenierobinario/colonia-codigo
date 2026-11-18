@@ -103,7 +103,7 @@ export function NavegadorScreen() {
           icon={<Icons.Globe />}
           title={t("navegadores.loadError")}
           action={
-            <Button size="sm" onClick={() => void loadNavegadores()}>
+            <Button size="sm" onClick={() => void loadNavegadores(true)}>
               {t("common.retry")}
             </Button>
           }

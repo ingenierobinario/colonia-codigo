@@ -72,7 +72,7 @@ export function WebAppScreen() {
           icon={<Icons.Globe />}
           title={t("webapp.loadError")}
           action={
-            <Button size="sm" onClick={() => void loadWebApps()}>
+            <Button size="sm" onClick={() => void loadWebApps(true)}>
               {t("common.retry")}
             </Button>
           }

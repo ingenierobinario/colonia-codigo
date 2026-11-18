@@ -17,7 +17,8 @@ export function createPinnedCatalog<T extends object>(initial: T, read: () => Pr
     loadedCatalogs.add(refresh);
     if (pending) return pending;
     const state = store.get();
-    if (!force && state.loaded && !state.failed) return Promise.resolve();
+    // Si ya falló la precarga, montar otra vista conserva el error hasta el clic o la reconexión.
+    if (!force && (state.loaded || state.failed)) return Promise.resolve();
     const version = generation;
     const request = read()
       .then((value) => {

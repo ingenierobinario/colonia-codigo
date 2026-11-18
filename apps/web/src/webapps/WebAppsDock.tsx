@@ -50,6 +50,7 @@ function useUnread(): Record<string, number> {
 export function WebAppsDock({ rail }: { rail: boolean }) {
   const t = useT();
   const apps = useWebApps((s) => s.apps);
+  const failed = useWebApps((s) => s.failed);
   const view = useNav((s) => s.view);
   const current = useNav((s) => s.webAppId);
   const unread = useUnread();
@@ -87,6 +88,14 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
           />
         }
       />
+      {failed && !shut && (
+        <NavItem
+          collapsed={rail}
+          icon={<Icons.RotateCcw size={14} />}
+          label={t("webapp.retry")}
+          onClick={() => void loadWebApps(true)}
+        />
+      )}
       {!shut &&
         apps.map((a) => (
           <ContextMenu
