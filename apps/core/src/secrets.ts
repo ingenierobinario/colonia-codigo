@@ -67,18 +67,8 @@ export function createSecrets(
   const store =
     candidate && (wanted === "keychain" || fs.existsSync(index) || candidate.works()) ? candidate : undefined;
   const backend: SecretsBackend = store ? wanted : "file";
-  // A system store was wanted and does not answer: there is no safe place for a value, so none is saved or read from a file.
-  // SECRETS-MIGRAR-1: salvo si ya hay un secrets.json de una versión anterior (2.32.0 y antes lo usaba sin llavero):
-  // ese equipo sigue funcionando como antes, y al sellar de golpe perdería todas sus conexiones al actualizar.
-  const sealed = wanted !== "file" && !store && !fs.existsSync(legacy);
   // The file holds values only for the file backend; with a store it is just the index (names, dates).
   const file = store ? index : legacy;
-  // A file written by hand or restored from a copy may be readable by others: only its owner reads it from here on.
-  if (!store && !sealed && process.platform !== "win32") {
-    try {
-      fs.chmodSync(legacy, 0o600);
-    } catch {}
-  }
   const cache = new Map<string, string | undefined>();
   // SECRETOS-ILEGIBLES-1: a file saved by Notepad starts with a BOM, which JSON.parse refuses; one cut short by a power
   // loss does not parse at all. Either used to read as empty, and the next save wrote that empty list over every value.
@@ -98,6 +88,14 @@ export function createSecrets(
     unreadable = true;
     return {};
   };
+  // Un fichero heredado o restaurado puede tener permisos demasiado amplios. Corrígelos antes de leerlo.
+  if (!store && process.platform !== "win32" && fs.existsSync(legacy)) {
+    try {
+      fs.chmodSync(legacy, 0o600);
+    } catch {}
+  }
+  // Preserva las conexiones de 2.32.0 que solo existen en el fichero heredado. Un fichero vacío no contiene ninguna.
+  const sealed = wanted !== "file" && !store && Object.keys(read()).length === 0;
   const write = (all: Record<string, Entry>) => {
     fs.mkdirSync(home, { recursive: true });
     if (unreadable && fs.existsSync(file)) {
@@ -167,7 +165,10 @@ export function createSecrets(
       }));
     },
     set(name: string, value: string | null): void {
-      if (sealed && value !== null) throw new Error(api.notice);
+      if (sealed) {
+        if (value !== null) throw new Error(api.notice);
+        return;
+      }
       const all = read();
       if (store) {
         store.set(name, value);
@@ -183,7 +184,7 @@ export function createSecrets(
     setMany(values: Record<string, string | null>): { failed: string[] } {
       const names = Object.keys(values);
       if (names.length === 0) return { failed: [] };
-      if (sealed && names.some((n) => values[n] !== null)) return { failed: names };
+      if (sealed) return { failed: names.filter((name) => values[name] !== null) };
       const all = read();
       const saved: string[] = [];
       if (store?.setMany) {

@@ -59,15 +59,25 @@ test("reading waits less than storing, which may need the person to unlock the k
 test("without a keyring nothing is saved in plain text and the owner is told", async () => {
   await using dir = tempDir("colonia-secrets-file-");
   const file = path.join(dir.path, "secrets.json");
-  fs.writeFileSync(file, JSON.stringify({ old: { value: "v", updated_at: "x" } }), { mode: 0o644 });
+
   const none: Run = () => {
     throw new Error("Cannot autolaunch D-Bus without X11 $DISPLAY");
   };
   const s = createSecrets(dir.path, "secret-service", {}, none);
   assert.match(s.notice ?? "", /No system store for secrets answered/);
   assert.throws(() => s.set("token", "super-secret-value"), /plain text/);
-  assert.equal(s.resolve("secret://old"), undefined, "a plain-text file is not read");
-  assert.doesNotMatch(fs.readFileSync(file, "utf8"), /super-secret-value/);
+  assert.equal(s.resolve("secret://old"), undefined);
+  s.set("old", null);
+  assert.equal(fs.existsSync(file), false, "quitar una referencia ausente no crea un almacén heredado");
+  assert.deepEqual(s.setMany({ old: null }), { failed: [] });
+  assert.deepEqual(s.setMany({ old: null, nueva: "fixture" }), { failed: ["nueva"] });
+  assert.equal(fs.existsSync(file), false);
+  assert.ok(createSecrets(dir.path, "secret-service", {}, none).notice);
+  fs.writeFileSync(file, "{}", { mode: 0o600 });
+  const empty = createSecrets(dir.path, "secret-service", {}, none);
+  assert.ok(empty.notice, "un fichero vacío de una versión anterior sigue protegiendo las nuevas conexiones");
+  assert.throws(() => empty.set("nueva", "fixture"), /plain text/);
+  assert.equal(fs.readFileSync(file, "utf8"), "{}");
   assert.equal(fs.existsSync(path.join(dir.path, "secrets.json.tmp")), false);
   assert.equal(createSecrets(dir.path, "file", {}, none).notice, undefined, "a file that was asked for is no news");
 });
