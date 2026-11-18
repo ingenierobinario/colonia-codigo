@@ -1,172 +1,66 @@
-name: verify
-
+name: Diagnóstico de rendimiento de Colonia
 on:
   push:
-    branches: [staging, main, codex/colonia-integracion-local]
-  pull_request:
+    branches: [codex/diagnostico-perf-251]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: verify-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  VITE_COLONIA_RAILWAY_TEMPLATE: ${{ vars.COLONIA_RAILWAY_TEMPLATE }}
-  VITE_COLONIA_RAILWAY_REFERRAL: ${{ vars.COLONIA_RAILWAY_REFERRAL }}
-  COLONIA_SECRETS: file
-
 jobs:
-  preflight:
-    name: Pruebas unitarias y comprobaciones (Linux)
-    runs-on: ubuntu-24.04
-    timeout-minutes: 300
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: ./.github/actions/setup
-        with:
-          browser: linux
-          mobile: "true"
-      - name: Preparar la pantalla virtual y Electron
-        run: |
-          sudo apt-get install --no-install-recommends -y libgtk-3-0t64 openbox xvfb xauth
-          node apps/desktop/node_modules/electron/install.js
-      - name: Comprobar el código y ejecutar las pruebas unitarias
-        run: pnpm preflight
-
-  rendimiento:
-    name: Rendimiento del motor y primera carga del panel (Linux)
+  comparar:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      VITE_COLONIA_RAILWAY_TEMPLATE: ${{ vars.COLONIA_RAILWAY_TEMPLATE }}
+      VITE_COLONIA_RAILWAY_REFERRAL: ${{ vars.COLONIA_RAILWAY_REFERRAL }}
+      COLONIA_SECRETS: file
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      - name: Medir el panel y el motor
-        run: |
-          COLONIA_TEST_COVERAGE=1 pnpm build:web
-          node --no-warnings scripts/perf.ts
-      - name: Guardar el informe de rendimiento
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: informes-linux
-          path: e2e/.out/perf*.json
-          include-hidden-files: true
-          if-no-files-found: ignore
-          retention-days: 7
-
-  coverage:
-    name: Cobertura de ${{ matrix.name }}
-    needs: preflight
-    runs-on: ubuntu-24.04
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { name: unitarias, args: "--part=unit" }
-          - { name: escritorio, args: "--part=desktop" }
-          - { name: panel-1, args: "--part=web --shard=1/6" }
-          - { name: panel-2, args: "--part=web --shard=2/6" }
-          - { name: panel-3, args: "--part=web --shard=3/6" }
-          - { name: panel-4, args: "--part=web --shard=4/6" }
-          - { name: panel-5, args: "--part=web --shard=5/6" }
-          - { name: panel-6, args: "--part=web --shard=6/6" }
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+          ref: e6df75475bb4c754330521247446dcf11ab90900
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
-        with:
-          browser: linux
-          mobile: ${{ matrix.name == 'unitarias' }}
-      - name: Preparar la pantalla virtual y Electron
-        if: matrix.name == 'escritorio'
+      - name: Medir las dos versiones con el mismo equipo y los presupuestos originales
         run: |
-          sudo apt-get install --no-install-recommends -y libgtk-3-0t64 openbox xvfb xauth
-          node apps/desktop/node_modules/electron/install.js
-      - name: Ejecutar la parte con su propia Colonia de prueba
-        run: node scripts/test-coverage.ts --e2e ${{ matrix.args }}
-      - uses: actions/upload-artifact@v4
+          directorio="$RUNNER_TEMP/informes-aislados"
+          mkdir -p "$directorio"
+          lscpu > "$directorio/procesador.txt"
+          nproc >> "$directorio/procesador.txt"
+          df -T "$GITHUB_WORKSPACE" > "$directorio/disco.txt"
+          fallo=0
+          for serie in base candidata; do
+            case "$serie" in
+              base) sha=ddebebff6ea5645fe4558c9e9162c9b66686e1f7 ;;
+              candidata) sha=e6df75475bb4c754330521247446dcf11ab90900 ;;
+            esac
+            git checkout --detach "$sha"
+            pnpm install --frozen-lockfile
+            COLONIA_TEST_COVERAGE=1 pnpm build:web
+            for modo in oficial diagnostico; do
+              case "$modo" in
+                oficial) nivel=0; informe=perf.json ;;
+                diagnostico) nivel=1; informe=perf-diagnostics.json ;;
+              esac
+              prefijo="$directorio/$serie-$modo"
+              cat /proc/loadavg /sys/fs/cgroup/cpu.stat > "$prefijo-antes.txt"
+              if PERF_DIAGNOSTICS="$nivel" node --no-warnings scripts/perf.ts; then
+                echo aprobado > "$prefijo-resultado.txt"
+              else
+                echo fuera-de-presupuesto > "$prefijo-resultado.txt"
+                fallo=1
+              fi
+              cat /proc/loadavg /sys/fs/cgroup/cpu.stat > "$prefijo-despues.txt"
+              mv "e2e/.out/$informe" "$prefijo.json"
+            done
+          done
+          exit "$fallo"
+      - name: Guardar las mediciones aunque un presupuesto falle
         if: always()
-        with:
-          name: cobertura-${{ matrix.name }}
-          path: |
-            coverage/all/parts/*/status.json
-            coverage/all/parts/*/functions.json
-            test-results/
-          if-no-files-found: error
-          overwrite: true
-          retention-days: 7
-
-  macos-actualizacion:
-    uses: ./.github/workflows/humo-actualizacion-macos.yml
-
-  verify:
-    needs: [preflight, rendimiento, coverage, macos-web, macos-actualizacion]
-    runs-on: ubuntu-24.04
-    if: ${{ !cancelled() }}
-    steps:
-      - name: Comprobar el resultado de todas las pruebas
-        env:
-          PREFLIGHT: ${{ needs.preflight.result }}
-          PERF: ${{ needs.rendimiento.result }}
-          COVERAGE: ${{ needs.coverage.result }}
-          MACOS: ${{ needs.macos-web.result }}
-          ACTUALIZACION: ${{ needs.macos-actualizacion.result }}
-        run: test "$PREFLIGHT" = success && test "$PERF" = success && test "$COVERAGE" = success && test "$MACOS" = success && test "$ACTUALIZACION" = success
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: cobertura-*
-          path: coverage/all/parts
-      - name: Reunir las ocho partes de la cobertura
-        run: node scripts/test-coverage.ts --e2e --merge --expect-parts=8
-      - uses: actions/upload-artifact@v4
-        with:
-          name: informe-cobertura
-          path: coverage/all/functions.md
-          retention-days: 7
-
-  macos-web:
-    name: Panel y Chromium (macOS 15, ${{ matrix.part }}/3)
-    runs-on: macos-15
-    timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        part: [1, 2, 3]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-        with:
-          browser: chromium
-      - name: Compilar el panel
-        run: pnpm build:web
-      - name: Ejecutar las pruebas unitarias del panel
-        if: matrix.part == 1
-        working-directory: apps/web
-        run: npm test
-      - name: Probar el panel en Chromium
-        run: pnpm exec playwright test --project chromium --shard=${{ matrix.part }}/3 --reporter=line
-      - name: Guardar los resultados de Chromium si falla
-        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: chromium-macos-${{ matrix.part }}
-          path: test-results/
-          if-no-files-found: ignore
+          name: comparacion-rendimiento
+          path: ${{ runner.temp }}/informes-aislados
           retention-days: 7
+          if-no-files-found: error
