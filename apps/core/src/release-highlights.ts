@@ -8,16 +8,16 @@ export type Highlights = { en: string[]; es: string[] };
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.51": {
     en: [
-      "When you enable a routine or a Flow, you can link a server from the desktop app.",
-      "The server runs your automations while your PC is off. Results sync when you reconnect.",
+      "A server can run active routines and Flows with your PC off. Results sync when you reconnect.",
       "Choose which folders to sync. If you edit a file on both computers, both versions are kept.",
       "You can move a project in an encrypted copy that includes its documents, chats, attachments, roles and agents.",
+      "When you open a browser profile or a pinned app, its data loads along with the screen.",
     ],
     es: [
-      "Al activar una rutina o un Flow, puedes vincular un servidor desde el escritorio.",
-      "El servidor ejecuta tus automatizaciones con el PC apagado. Los resultados se sincronizan al volver.",
+      "Un servidor ejecuta rutinas y Flows activos con el PC apagado. Al volver, ves los resultados.",
       "Elige qué carpetas sincronizar. Si editas un archivo en ambos equipos, se conservan las dos versiones.",
       "Puedes mover un proyecto en una copia cifrada que incluye documentos, chats, adjuntos, roles y agentes.",
+      "Al abrir un perfil de navegador o una app anclada, sus datos se cargan con la pantalla.",
     ],
   },
   "2.36.50": {
