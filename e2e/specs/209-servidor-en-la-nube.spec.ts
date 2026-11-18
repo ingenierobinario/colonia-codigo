@@ -91,16 +91,17 @@ for (const language of ["es", "en"] as const) {
       });
       await expect(card).toBeVisible();
       await fits(card);
-      const deploy = card.getByRole("button", { name: /Railway/ });
-      if (process.env.VITE_COLONIA_RAILWAY_TEMPLATE) {
-        await deploy.click();
-        const link = new URL(await page.evaluate(() => sessionStorage.getItem("enlace") ?? ""));
-        expect(link.origin).toBe("https://railway.com");
-        expect(link.pathname).toBe(`/new/template/${process.env.VITE_COLONIA_RAILWAY_TEMPLATE}`);
-        expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
-        await expect(card).toContainText(/comisión|commission/);
-        await expect(card).not.toContainText(/Railway cobra|Railway charges|coste|cost depends/i);
-      } else await expect(deploy).toHaveCount(0);
+      const template = process.env.VITE_COLONIA_RAILWAY_TEMPLATE;
+      const railway = card.getByRole("button", {
+        name: template ? /Crear mi servidor|Create my server/ : /Abrir Railway|Open Railway/,
+      });
+      await railway.click();
+      const link = new URL(await page.evaluate(() => sessionStorage.getItem("enlace") ?? ""));
+      expect(link.origin).toBe("https://railway.com");
+      expect(link.pathname).toBe(template ? `/new/template/${template}` : "/");
+      expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
+      await expect(card).toContainText(/comisión|commission/);
+      await expect(card).not.toContainText(/Railway cobra|Railway charges|coste|cost depends/i);
       await card.getByRole("button", { name: /propio servidor|my own server/ }).click();
       expect(await page.evaluate(() => sessionStorage.getItem("enlace"))).toBe(
         `https://colonia.ingenierobinario.com/${language === "es" ? "es/" : ""}docs/devices/server/`,

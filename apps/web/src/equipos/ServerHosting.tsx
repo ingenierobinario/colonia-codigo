@@ -16,7 +16,7 @@ export function ServerHosting() {
     section.current.scrollIntoView({ block: "start" });
     nav.set({ focus: undefined });
   }, [focus]);
-  const { deploy, guide, referred } = hostingLinks(
+  const { deploy, signup, guide, referred } = hostingLinks(
     useLanguage(),
     import.meta.env.VITE_COLONIA_RAILWAY_TEMPLATE,
     import.meta.env.VITE_COLONIA_RAILWAY_REFERRAL,
@@ -30,16 +30,16 @@ export function ServerHosting() {
       <h2 className="eq-transfer__title">{t("equipos.hosting")}</h2>
       <p className="eq-muted">{t("equipos.hostingHint")}</p>
       <div className="eq-row">
-        {deploy && (
-          <Button variant="primary" leadingIcon={<Icons.ExternalLink />} onClick={() => open(deploy)}>
-            {t("equipos.hostingRailway")}
-          </Button>
-        )}
+        <Button variant="primary" leadingIcon={<Icons.ExternalLink />} onClick={() => open(deploy ?? signup)}>
+          {t(deploy ? "equipos.hostingRailway" : "equipos.hostingSignup")}
+        </Button>
         <Button variant="secondary" leadingIcon={<Icons.BookOpen />} onClick={() => open(guide)}>
           {t("equipos.hostingGuide")}
         </Button>
       </div>
-      {deploy && <p className="eq-muted">{t(referred ? "equipos.hostingReferral" : "equipos.hostingPlan")}</p>}
+      {!deploy && <p className="eq-muted">{t("equipos.hostingManual")}</p>}
+      {referred && <p className="eq-muted">{t("equipos.hostingReferral")}</p>}
+      {deploy && !referred && <p className="eq-muted">{t("equipos.hostingPlan")}</p>}
       <HostingPair />
     </section>
   );

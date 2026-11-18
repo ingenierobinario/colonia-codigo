@@ -60,6 +60,9 @@ export const enEquipos = {
   "equipos.hostingFileDestination": "Check free space and permissions on the server.",
   "equipos.hosting": "Colonia on a server",
   "equipos.hostingHint": "Your agents can keep working when you turn off this computer.",
+  "equipos.hostingSignup": "Open Railway",
+  "equipos.hostingManual":
+    "You can sign in to Railway or create an account. The guide explains how to install the Colonia package in your account.",
   "equipos.hostingRailway": "Create my server on Railway",
   "equipos.hostingGuide": "Install on my own server",
   "equipos.hostingPlan": "Railway will ask you to sign in and confirm that you want to create the server.",

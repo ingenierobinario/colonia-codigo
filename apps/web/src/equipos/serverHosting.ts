@@ -6,13 +6,13 @@ const railwayId = /^[A-Za-z0-9_-]+$/;
 /** Los identificadores públicos proceden de la plantilla y del enlace de invitación del editor. */
 export function hostingLinks(language: string, template?: string, referral?: string) {
   const guide = new URL(language === "es" ? "es/docs/devices/server/" : "docs/devices/server/", LINKS.docs).href;
-  if (!template || !railwayId.test(template)) return { guide, deploy: undefined, referred: false };
-
-  const deploy = new URL(`https://railway.com/new/template/${template}`);
+  const signup = new URL("https://railway.com/");
   const invitation = referral || RAILWAY_REFERRAL;
   const referred = railwayId.test(invitation);
-  if (referred) deploy.searchParams.set("referralCode", invitation);
-  return { guide, deploy: deploy.href, referred };
+  if (referred) signup.searchParams.set("referralCode", invitation);
+  const deploy = template && railwayId.test(template) ? new URL(signup) : undefined;
+  if (deploy) deploy.pathname = `/new/template/${template}`;
+  return { guide, signup: signup.href, deploy: deploy?.href, referred };
 }
 
 /** Invitación efímera para el escritorio. La dirección y el código viajan separados. */

@@ -21,9 +21,11 @@ test("sin plantilla válida se puede instalar en un servidor siguiendo la guía 
   for (const template of [undefined, "", "../login", "https://example.com", "colonia?plan=otro"]) {
     const links = hostingLinks("es", template, "referencia");
     assert.equal(links.deploy, undefined);
-    assert.equal(links.referred, false);
+    assert.equal(links.signup, "https://railway.com/?referralCode=referencia");
+    assert.equal(links.referred, true);
     assert.equal(links.guide, "https://colonia.ingenierobinario.com/es/docs/devices/server/");
   }
+  assert.equal(hostingLinks("es", undefined, "erróneo&plan=x").signup, "https://railway.com/");
   assert.equal(hostingLinks("en").guide, "https://colonia.ingenierobinario.com/docs/devices/server/");
 });
 
