@@ -97,6 +97,14 @@ test("a change the method would refuse, or a method out of reach, never reaches 
   );
 });
 
+test("sólo la persona puede importar sus conversaciones en un proyecto", async () => {
+  const method = "sessions.import_conversation";
+  assert.equal(methodAccess(method), "human");
+  assert.ok(OWNER_ONLY[method]);
+  const result = await h.ask({ method, params: {} });
+  assert.match(result.answer, /no method "sessions\.import_conversation"/);
+});
+
 test("the card's title names the area, not the method", () => {
   const title = SPANISH_TITLES.colonia_settings;
   assert.equal(title?.({ method: "channels.set", params: {} }), "Cambió un canal");

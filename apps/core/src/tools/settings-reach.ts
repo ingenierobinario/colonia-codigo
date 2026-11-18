@@ -165,6 +165,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   // PROYECTO-COMPARTIR-1
   "projects.share": "the owner decides which of their projects is reachable from the internet, and when it stops",
   "projects.import": "the owner looks at what a shared project brings before it becomes one of theirs",
+  "sessions.import_conversation": "La persona elige los archivos y confirma la importación en su proyecto.",
   "sessions.resume": PANEL,
   "runs.respond": AS_OWNER,
   "channels.send": AS_OWNER,
