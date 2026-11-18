@@ -19,6 +19,7 @@ export const VSL = {
     insideTitle: "Tu oficina, en una ventana.",
     offerLine: "La oferta de Black Friday termina en",
     unitsLong: ["días", "horas", "min", "seg"],
+    typed: ["¿Qué tengo hoy?", "Sí, dile a Lucía que lo miro después de comer."],
     shotAlt:
       "Colonia abierta en la bandeja de una oficina de ejemplo: Nova resume el día y los agentes esperan tu visto bueno",
     play: "Mira esto antes de nada",
@@ -111,6 +112,7 @@ export const VSL = {
     insideTitle: "Your office, in one window.",
     offerLine: "The Black Friday offer ends in",
     unitsLong: ["days", "hours", "min", "sec"],
+    typed: ["What's on my plate today?", "Yes, ping Lucía that I'll look at it after lunch."],
     shotAlt: "Colonia open on the inbox of a sample office: Nova sums up the day and the agents wait for your go-ahead",
     play: "Watch this first",
     playHint: "Tap to play the video",

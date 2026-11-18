@@ -3420,3 +3420,373 @@ a.hero__term {
     margin-top: 26px;
   }
 }
+
+/* VSL-BF-9: la cuenta atrás en una tarjeta, línea de confianza con marcas redondas, subclaim separado
+ * del subrayado y menos hueco muerto entre el hero y la sección siguiente. */
+.hv-sub {
+  margin-top: 34px;
+}
+.hv-count {
+  gap: 12px 20px;
+  padding: 10px 10px 10px 18px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.05),
+    0 22px 44px -26px rgb(15 23 42 / 0.3);
+}
+.hv-count__label {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.hv-count__label b {
+  padding: 6px 11px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.hv-count .hv-clock {
+  gap: 6px;
+}
+.hv-count .hv-clock > span {
+  min-width: 58px;
+  padding: 10px 6px 8px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #262a32, #111317);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+.hv-count .hv-clock b {
+  font-size: 25px;
+  letter-spacing: -0.02em;
+}
+.hv-count .hv-clock i {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: rgb(255 255 255 / 0.6);
+}
+.hv-trust {
+  gap: 10px 28px;
+  margin-top: 24px;
+  font-size: 14.5px;
+}
+.hv-trust span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hv-trust span::before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: hsl(146 60% 90%);
+  color: var(--hv-green);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+.hv-video {
+  width: min(100%, 900px, calc((100svh - 625px) * 16 / 9));
+  min-width: min(100%, 528px);
+}
+.home--vsl .hero {
+  padding-bottom: clamp(36px, 4vw, 56px);
+}
+.hv-stage {
+  padding-top: clamp(48px, 5.5vw, 80px);
+}
+@media (min-width: 561px) and (max-height: 820px) {
+  .hv-sub {
+    margin-top: 26px;
+  }
+  .hv-video {
+    width: min(100%, 900px, calc((100svh - 530px) * 16 / 9));
+    min-width: min(100%, 450px);
+  }
+}
+@media (max-width: 560px) {
+  .hv-sub {
+    margin-top: 26px;
+  }
+  .hv-count {
+    width: 100%;
+    max-width: 360px;
+    padding: 14px 12px 12px;
+    box-sizing: border-box;
+  }
+  .hv-count .hv-clock > span {
+    min-width: 62px;
+  }
+  .hv-video {
+    width: 100%;
+    min-width: 0;
+  }
+  .hv-trust {
+    gap: 8px 18px;
+  }
+  .hv-count__label {
+    text-wrap: balance;
+  }
+}
+
+/* MOCKUP-VIVO-2: la captura real de la app cobra vida, en bucle de 12 s. El texto se escribe en la caja,
+ * sale el mensaje, Nova «escribe» y llega su respuesta; dos veces. Cuatro velos blancos tapan los mensajes y se
+ * retiran en orden. Posiciones en % de la captura, medidas sobre la imagen (es/en comparten maquetación). */
+.hv-win__shot {
+  position: relative;
+  display: block;
+  line-height: 0;
+  container-type: inline-size;
+}
+.hv-win__m {
+  position: absolute;
+  left: 43%;
+  right: 1%;
+  background: #fff;
+  opacity: 1;
+  animation: hv-m1 12s linear infinite;
+}
+.hv-win__m--1 {
+  top: 19.8%;
+  height: 5.8%;
+}
+.hv-win__m--2 {
+  top: 25.6%;
+  height: 21.2%;
+  animation-name: hv-m2;
+}
+.hv-win__m--3 {
+  top: 46.8%;
+  height: 6%;
+  animation-name: hv-m3;
+}
+.hv-win__m--4 {
+  top: 52.8%;
+  height: 8.7%;
+  animation-name: hv-m4;
+}
+.hv-win__m--2::after,
+.hv-win__m--4::after {
+  content: "";
+  position: absolute;
+  left: 3.2%;
+  top: clamp(4px, 1vw, 12px);
+  width: clamp(30px, 4vw, 46px);
+  aspect-ratio: 46 / 26;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 26% 50%, #8a8f98 0 11%, transparent 12%),
+    radial-gradient(circle at 50% 50%, #a3a8b0 0 11%, transparent 12%),
+    radial-gradient(circle at 74% 50%, #bcc0c6 0 11%, transparent 12%), #eef0f2;
+  opacity: 0;
+  animation: hv-t2 12s linear infinite;
+}
+.hv-win__m--4::after {
+  animation-name: hv-t4;
+}
+.hv-win__type {
+  position: absolute;
+  left: 45.4%;
+  top: 87.2%;
+  width: 40%;
+  height: 3.6%;
+  background: #fff;
+  opacity: 0;
+  animation: hv-tyc 12s linear infinite;
+  font-size: 1cqw;
+  line-height: 1;
+  color: #1b1c1f;
+}
+.hv-win__ty {
+  position: absolute;
+  left: 0.3cqw;
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 400;
+  line-height: 1.5;
+  border-right: 1px solid #1b1c1f;
+  opacity: 0;
+  animation: hv-ty1 12s linear infinite;
+}
+.hv-win__ty--2 {
+  animation-name: hv-ty2;
+}
+@keyframes hv-m1 {
+  0%,
+  13% {
+    opacity: 1;
+  }
+  15%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hv-m2 {
+  0%,
+  28% {
+    opacity: 1;
+  }
+  30%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hv-m3 {
+  0%,
+  47% {
+    opacity: 1;
+  }
+  49%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hv-m4 {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  62%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hv-t2 {
+  0%,
+  16% {
+    opacity: 0;
+  }
+  17%,
+  27% {
+    opacity: 1;
+  }
+  28.5%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hv-t4 {
+  0%,
+  50% {
+    opacity: 0;
+  }
+  51%,
+  59% {
+    opacity: 1;
+  }
+  60.5%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hv-tyc {
+  0%,
+  2.9% {
+    opacity: 0;
+  }
+  3%,
+  13% {
+    opacity: 1;
+  }
+  13.5%,
+  33.9% {
+    opacity: 0;
+  }
+  34%,
+  47% {
+    opacity: 1;
+  }
+  47.5%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hv-ty1 {
+  0%,
+  2.9% {
+    opacity: 0;
+    max-width: 0;
+  }
+  3% {
+    opacity: 1;
+    max-width: 0;
+    animation-timing-function: steps(18, end);
+  }
+  11%,
+  13% {
+    opacity: 1;
+    max-width: 26ch;
+  }
+  13.5%,
+  100% {
+    opacity: 0;
+    max-width: 0;
+  }
+}
+@keyframes hv-ty2 {
+  0%,
+  33.9% {
+    opacity: 0;
+    max-width: 0;
+  }
+  34% {
+    opacity: 1;
+    max-width: 0;
+    animation-timing-function: steps(34, end);
+  }
+  45%,
+  47% {
+    opacity: 1;
+    max-width: 52ch;
+  }
+  47.5%,
+  100% {
+    opacity: 0;
+    max-width: 0;
+  }
+}
+
+/* VSL-BF-10: el vídeo, un poco más grande; se compensa cerrando el aire entre vídeo, botón y cuenta atrás. */
+.hv-video {
+  width: min(100%, 900px, calc((100svh - 580px) * 16 / 9));
+  min-width: min(100%, 576px);
+}
+.hv-actions {
+  margin-top: 28px;
+}
+.hv-buy {
+  gap: 18px;
+}
+@media (min-width: 561px) and (max-height: 820px) {
+  .hv-video {
+    width: min(100%, 900px, calc((100svh - 515px) * 16 / 9));
+    min-width: min(100%, 470px);
+  }
+  .hv-actions {
+    margin-top: 22px;
+  }
+}
+@media (max-width: 560px) {
+  .hv-video {
+    width: 100%;
+    min-width: 0;
+  }
+}
