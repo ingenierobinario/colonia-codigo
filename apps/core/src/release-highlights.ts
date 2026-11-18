@@ -6,7 +6,7 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
-  "2.36.47": {
+  "2.36.48": {
     en: [
       "Assign agents to areas and roles and see their responsibilities in the project chart.",
       "Share projects with their skills and agents, including compatible Claude Code and Codex definitions.",
@@ -18,6 +18,18 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
       "Comparte proyectos con sus skills y agentes, incluidos los compatibles de Claude Code y Codex.",
       "Abre la copia de seguridad o sincroniza otra Colonia desde Mis equipos.",
       "Elige el logo de las aplicaciones internas y encuentra más fácilmente los conectores de servicios.",
+    ],
+  },
+  "2.36.47": {
+    en: [
+      "External apps open faster and show their tab as soon as they are ready.",
+      "Search in page and downloads are easy to find in external apps, with full file names.",
+      "Switching language no longer leaves texts untranslated.",
+    ],
+    es: [
+      "Las aplicaciones externas abren antes y muestran su pestaña en cuanto están listas.",
+      "Buscar en la página y las descargas se encuentran fácil en las aplicaciones externas.",
+      "Al cambiar de idioma ya no quedan textos sin traducir.",
     ],
   },
   "2.36.46": {
