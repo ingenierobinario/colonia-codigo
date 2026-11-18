@@ -434,9 +434,14 @@ export function createConnector(opts: {
       openedRemote = false;
       forgetConnection(dataDir);
       conn = undefined;
-      tunnel?.stop();
+      const previousTunnel = tunnel;
       tunnel = undefined;
-      await open();
+      try {
+        // El panel anterior puede intentar recargarse si pierde sus recursos antes de que aparezca el selector.
+        await open();
+      } finally {
+        previousTunnel?.stop();
+      }
     },
     /** Resolves once the core this app runs has stopped (at once when it runs none). */
     async stop(): Promise<void> {

@@ -553,6 +553,15 @@ test("Change connection back to the same SSH server shows its panel", async () =
     await expect(panel.locator("#root > *").first()).toBeVisible();
     await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById("change-connection")?.click());
     const chooser = await question(await windowAt(app, (u) => u.startsWith("colonia-app://")));
+    // El panel local ha sustituido al anterior y ya no se puede acceder a su puerto reenviado.
+    await expect
+      .poll(() =>
+        fetch(`${client.panelUrl}/health`, { signal: AbortSignal.timeout(1000) }).then(
+          () => true,
+          () => false,
+        ),
+      )
+      .toBe(false);
     await chooser.locator("#pick-client").click();
     await chooser.getByRole("radio", { name: "SSH" }).click();
     await chooser.locator("#ssh").fill("ops@box");
@@ -560,6 +569,8 @@ test("Change connection back to the same SSH server shows its panel", async () =
     const again = await windowAt(app, (u) => u.startsWith(client.panelUrl));
     await expect(again.locator("#root > *").first()).toBeVisible();
   } finally {
+    // El cierre de Electron y sus procesos en Windows puede tardar otro medio minuto tras la última aserción.
+    test.setTimeout(test.info().timeout + 60_000);
     await client.close();
   }
 });
