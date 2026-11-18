@@ -21,14 +21,20 @@ export async function prepareProjectWork(
   project: string,
   archiveFile: string,
   password: string,
+  checkSource?: () => void,
 ) {
+  checkSource?.();
   const row = registered(db, project);
   if (!row || typeof row.path !== "string") throw new Error("La carpeta de este proyecto no está registrada.");
   const other = db
     .prepare("SELECT path FROM projects WHERE id<>? AND path IS NOT NULL")
     .all(project)
     .map((r) => String(r.path));
-  const files = await projectFiles(row.path, home, other);
+  if (!fs.lstatSync(row.path, { throwIfNoEntry: false })?.isDirectory())
+    throw new Error("No se puede abrir la carpeta elegida del proyecto.");
+  const root = realpath(row.path);
+  const files = await projectFiles(root, home, other);
+  checkSource?.();
   if (files.length > limit || !distinctWorkPaths(files.map((f) => f.rel))) throw invalid();
   const summary = {
     files: files.length,
@@ -41,8 +47,13 @@ export async function prepareProjectWork(
     const writer = await writeArchive(partial, password, { created_at: new Date().toISOString(), app_version: "1" });
     try {
       await writer.add("manifest.json", Buffer.from(JSON.stringify({ format, project, ...summary })));
-      for (const entry of files) await addProjectFile(writer, `files/${entry.rel.normalize("NFC")}`, row.path, entry);
+      for (const entry of files) {
+        checkSource?.();
+        await addProjectFile(writer, `files/${entry.rel.normalize("NFC")}`, root, entry);
+      }
+      checkSource?.();
       await writer.close();
+      checkSource?.();
       publishArchive(partial, archiveFile);
     } catch (error) {
       writer.abort();

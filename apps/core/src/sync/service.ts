@@ -49,7 +49,14 @@ import {
   type SecretsPort,
   uninstall,
 } from "./journal.ts";
-import { type ProjectWork, projectWork, validateWorkSelection, type WorkLink, WorkMessage } from "./project-work.ts";
+import {
+  type ProjectWork,
+  projectWork,
+  selectedFolderStillHere,
+  validateWorkSelection,
+  type WorkLink,
+  WorkMessage,
+} from "./project-work.ts";
 
 export const SYNC_PATH = "/sincronizar";
 const STATE_FILE = "sincronizar.json";
@@ -1159,7 +1166,7 @@ export function createSync(d: SyncDeps) {
       projects?: string[],
       continuousProjects?: string[],
     ): Promise<{ name: string }> {
-      if (projects) validateWorkSelection(d.db, projects);
+      const selected = projects ? validateWorkSelection(d.db, projects) : undefined;
       if (continuousProjects) {
         const copied = new Set(projects);
         for (const project of continuousProjects) {
@@ -1243,8 +1250,12 @@ export function createSync(d: SyncDeps) {
                     paired_at: new Date(now()).toISOString(),
                   };
                   open(me, m.initial_source ? "first" : "oldest");
-                  if (projects) work?.select(projects);
-                  for (const project of continuousProjects ?? []) continuous?.set(project, true);
+                  if (selected) work?.selectCaptured(selected);
+                  const continuing = new Set(continuousProjects);
+                  for (const choice of selected ?? []) {
+                    if (continuing.has(choice.project) && selectedFolderStillHere(d.db, choice))
+                      continuous?.set(choice.project, true);
+                  }
                   saveState();
                   ws.close();
                   try {

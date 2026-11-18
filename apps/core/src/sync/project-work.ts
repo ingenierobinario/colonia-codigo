@@ -6,6 +6,7 @@ import type { SyncStatus } from "@colonia/protocol";
 import { z } from "zod";
 import { fileTarget, writeAll } from "../backup/project-file-io.ts";
 import { realpath, samePath, writeAtomic } from "../paths.ts";
+import { folderIdentity } from "./continuous-folder-permissions.ts";
 import { hasProjectWork, installProjectWork, prepareProjectWork } from "./project-work-archive.ts";
 
 const CHUNK = 256 * 1024;
@@ -47,12 +48,13 @@ const savedQueue = z.object({
       z.object({
         transfer,
         project: projectId,
+        folder: z.string().optional(),
         archive: descriptor.optional(),
         receipt: z.object({ files: count, bytes: count }).optional(),
       }),
     )
     .max(10000),
-  why: z.enum(["source", "destination", "unsupported"]).optional(),
+  why: z.enum(["source", "destination", "unsupported", "selection"]).optional(),
 });
 type Queue = z.infer<typeof savedQueue>;
 type Link = { send(m: Message): void };
@@ -65,10 +67,18 @@ function removeConfirmed(file: string) {
 }
 export function validateWorkSelection(db: DatabaseSync, projects: string[]) {
   const ids = [...new Set(projects)];
-  const registered = db.prepare("SELECT 1 FROM projects WHERE id=? AND registered=1 AND path IS NOT NULL");
-  if (!ids.length || ids.some((id) => !registered.get(id)))
-    throw new Error("Elige proyectos registrados que tengan una carpeta en este equipo.");
-  return ids;
+  if (!ids.length) throw new Error("Elige proyectos registrados que tengan una carpeta en este equipo.");
+  return ids.map((project) => ({ project, folder: folderIdentity(db, project) }));
+}
+type SelectedFolder = ReturnType<typeof validateWorkSelection>[number];
+type WorkJob = Queue["jobs"][number];
+export function selectedFolderStillHere(db: DatabaseSync, job: { project: string; folder?: string }) {
+  if (!job.folder) return false;
+  try {
+    return job.folder === folderIdentity(db, job.project);
+  } catch {
+    return false;
+  }
 }
 
 function openRegular(file: string, flags: number) {
@@ -144,16 +154,59 @@ export function projectWork(
       ...(queue.why ? { why: queue.why } : {}),
     };
   }
+  const archive = (id: string) => path.join(dir, `${id}.colonia`);
+  function discardSnapshot(job: WorkJob) {
+    // Sólo el contenedor generado que consta en la cola privada, nunca la carpeta de trabajo.
+    if (job.archive) {
+      workspace();
+      removeConfirmed(archive(job.transfer));
+      delete job.archive;
+    }
+  }
+  function revoke(job: WorkJob) {
+    if (!queue || job.receipt) return;
+    delete job.folder;
+    queue.why = "selection";
+    offered = undefined;
+    store();
+    discardSnapshot(job);
+    store();
+  }
+  function selectCaptured(choices: SelectedFolder[]) {
+    if (mode !== "send") throw new Error("Elige los proyectos desde el escritorio vinculado.");
+    queue ??= { jobs: [] };
+    const selected = new Map(choices.map((c) => [c.project, c]));
+    // Una selección nueva retira los permisos caducados que la persona decidió omitir.
+    queue.jobs = queue.jobs.filter((j) => {
+      if (j.receipt || selected.has(j.project) || selectedFolderStillHere(db, j)) return true;
+      discardSnapshot(j);
+      return false;
+    });
+    for (const choice of choices) {
+      const i = queue.jobs.findIndex((j) => j.project === choice.project);
+      const previous = i >= 0 ? queue.jobs[i] : undefined;
+      if (previous && (previous.folder === choice.folder || (previous.receipt && !previous.folder))) continue;
+      if (previous) discardSnapshot(previous);
+      const job = { ...choice, transfer: randomUUID() };
+      if (i < 0) queue.jobs.push(job);
+      else queue.jobs[i] = job;
+    }
+    delete queue.why;
+    const expired = queue.jobs.find((j) => !j.receipt && !selectedFolderStillHere(db, j));
+    if (expired) revoke(expired);
+    else store();
+  }
   function select(projects?: string[]) {
     if (mode !== "send") throw new Error("Elige los proyectos desde el escritorio vinculado.");
     if (!projects && !queue?.jobs.length) throw new Error("Todavía no has elegido proyectos para este servidor.");
-    if (projects) {
-      const ids = validateWorkSelection(db, projects);
-      queue ??= { jobs: [] };
-      const known = new Set(queue.jobs.map((j) => j.project));
-      for (const project of ids) if (!known.has(project)) queue.jobs.push({ project, transfer: randomUUID() });
+    if (projects) return selectCaptured(validateWorkSelection(db, projects));
+    if (!queue) return;
+    const expired = queue.jobs.find((j) => !j.receipt && !selectedFolderStillHere(db, j));
+    if (expired || queue.why === "selection") {
+      if (expired) revoke(expired);
+      throw new Error("Vuelve a elegir las carpetas del proyecto que quieres copiar.");
     }
-    if (queue) delete queue.why;
+    delete queue.why;
     store();
   }
 
@@ -165,13 +218,17 @@ export function projectWork(
   let generation = 0;
   let disposed = false;
   let incoming: Descriptor | undefined;
-  const archive = (id: string) => path.join(dir, `${id}.colonia`);
+
   const partial = (d: Descriptor) => path.join(dir, `${d.transfer}-${d.sha}.part`);
   if (queue?.jobs.some((j) => j.receipt)) {
     workspace();
     for (const j of queue.jobs) if (j.receipt) removeConfirmed(archive(j.transfer));
   }
   const job = () => queue?.jobs.find((j) => !j.receipt);
+  // Al actualizar, un trabajo sin acuse y sin una identidad guardada no es un consentimiento actual.
+  if (queue?.jobs.some((j) => !j.receipt && !j.folder)) {
+    for (const j of queue.jobs) if (!j.receipt && !j.folder) revoke(j);
+  }
   const fail = (why: Why) => {
     if (queue && !disposed) {
       queue.why = why;
@@ -189,41 +246,52 @@ export function projectWork(
     if (disposed || mode !== "send" || !queue || queue.why || preparing) return;
     const j = job();
     if (!j) return;
+    if (!selectedFolderStillHere(db, j)) return revoke(j);
     if (!supported) return fail("unsupported");
     link = channel;
     if (offered === j.transfer && Date.now() - lastReply < 30_000) return;
     preparing = true;
     const attempt = generation;
     const target = archive(j.transfer);
+    const current = () => !disposed && job() === j && selectedFolderStillHere(db, j);
+    const checkSource = () => {
+      if (!current()) throw new Error("La carpeta seleccionada ha cambiado.");
+    };
     try {
       if (!j.archive) {
         workspace();
         const password = randomBytes(32).toString("base64url");
         const draft = `${target}.tmp`;
         fs.rmSync(draft, { force: true });
-        const totals = await prepareProjectWork(db, home, j.project, draft, password);
-        const sha = await sha256(draft);
-        if (disposed) {
-          fs.rmSync(draft, { force: true });
-          return;
+        try {
+          const totals = await prepareProjectWork(db, home, j.project, draft, password, checkSource);
+          const sha = await sha256(draft);
+          checkSource();
+          fs.renameSync(draft, target);
+          j.archive = {
+            ...totals,
+            project: j.project,
+            transfer: j.transfer,
+            password,
+            sha,
+            size: fs.statSync(target).size,
+          };
+          store();
+        } finally {
+          if (fs.lstatSync(dir, { throwIfNoEntry: false })?.isDirectory() && samePath(realpath(dir), dir))
+            removeConfirmed(draft);
         }
-        fs.renameSync(draft, target);
-        j.archive = {
-          ...totals,
-          project: j.project,
-          transfer: j.transfer,
-          password,
-          sha,
-          size: fs.statSync(target).size,
-        };
-        store();
       }
-      if (attempt !== generation || disposed || link !== channel) return;
+      if (attempt !== generation || disposed || link !== channel || job() !== j) return;
+      checkSource();
       offered = j.transfer;
       lastReply = Date.now();
       channel.send({ op: "start", ...j.archive });
     } catch {
-      if (!disposed) fail("source");
+      if (!disposed && job() === j) {
+        if (selectedFolderStillHere(db, j)) fail("source");
+        else revoke(j);
+      }
     } finally {
       preparing = false;
     }
@@ -276,6 +344,7 @@ export function projectWork(
       lastReply = Date.now();
       if (m.op === "failed") return fail("destination");
       if (m.op === "next") {
+        if (!selectedFolderStillHere(db, j)) return revoke(j);
         if (!fs.existsSync(archive(d.transfer))) {
           // El receptor aún no la ha instalado. Después de perder el archivo local hace falta una nueva instantánea.
           j.transfer = randomUUID();
@@ -354,6 +423,7 @@ export function projectWork(
   return {
     status,
     select,
+    selectCaptured,
     pump,
     receive,
     detach,
