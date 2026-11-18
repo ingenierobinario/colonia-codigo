@@ -318,6 +318,18 @@
   }
 }
 
+@container flows (max-width: 420px) {
+  .flowrow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .flowrow__actions {
+    align-self: flex-end;
+    padding: 0 12px 12px;
+  }
+}
+
 /* What a flow will do as the owner, asked before it runs. */
 .fe-outward {
   margin: 12px 0 0;

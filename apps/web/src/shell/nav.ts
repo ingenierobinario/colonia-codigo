@@ -139,15 +139,18 @@ export type NavState = {
 
 const THEME_KEY = "colonia.mode";
 
-function initialMode(): ColoniaMode {
+function savedMode(): ColoniaMode | undefined {
   try {
     const v = localStorage.getItem(THEME_KEY);
     if (v === "light" || v === "dark") return v;
   } catch {
     // Storage blocked: fall through to the system preference.
   }
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return undefined;
 }
+
+const systemTheme = window.matchMedia?.("(prefers-color-scheme: dark)");
+let chosenMode = savedMode();
 
 const PANELS: readonly PanelKind[] = [
   "computer",
@@ -230,7 +233,7 @@ export const nav = createStore<NavState>({
   panelAgent: undefined,
   panelThread: undefined,
   panelParent: undefined,
-  mode: initialMode(),
+  mode: chosenMode ?? (systemTheme?.matches ? "dark" : "light"),
   tools: true,
   config: null,
   configChannel: undefined,
@@ -382,6 +385,12 @@ nav.subscribe(() => {
 
 // A deep link followed in place (a link in a message, the address bar); replaceState above never fires this.
 window.addEventListener("hashchange", () => nav.set({ view: "inbox", panel: null, ...fromHash() }));
+systemTheme?.addEventListener?.("change", ({ matches }) => {
+  if (chosenMode) return;
+  const mode = matches ? "dark" : "light";
+  nav.set({ mode });
+  window.coloniaDesktop?.setTitleBar?.(mode);
+});
 
 /** Inbox, or a project's Chats tab: the list + chat + side panel layout. */
 export function showsChat(s: Pick<NavState, "view" | "projectTab">): boolean {
@@ -605,6 +614,7 @@ export const go = {
     nav.set((s) => ({ tools: !s.tools }));
   },
   setMode(mode: ColoniaMode) {
+    chosenMode = mode;
     nav.set({ mode });
     try {
       localStorage.setItem(THEME_KEY, mode);

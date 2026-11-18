@@ -24,6 +24,20 @@ test("el resumen carga el editor del proyecto la primera vez que se abre", async
   expect(editorRequests).toBe(1);
 });
 
+test("el tema del sistema cambia con el panel abierto y respeta el tema elegido", async ({ page }) => {
+  await rpc("setup.finish");
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/#flows");
+  const panel = page.locator(".colonia[data-colonia-mode]").first();
+  await expect(panel).toHaveAttribute("data-colonia-mode", "light");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(panel).toHaveAttribute("data-colonia-mode", "dark");
+  await page.evaluate(() => localStorage.setItem("colonia.mode", "dark"));
+  await page.reload();
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(panel).toHaveAttribute("data-colonia-mode", "dark");
+});
+
 for (const language of ["es", "en"] as const) {
   test(`desde el proyecto se encuentran sus skills y sus Flows en ${language}`, async ({ page }) => {
     await rpc("setup.finish");
@@ -50,21 +64,26 @@ for (const language of ["es", "en"] as const) {
     await expect(row).toBeVisible();
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme });
+      await expect(page.locator(".colonia[data-colonia-mode]").first()).toHaveAttribute(
+        "data-colonia-mode",
+        colorScheme,
+      );
       for (const width of [390, 768, 960, 1200, 1440]) {
         await page.setViewportSize({ width, height: 900 });
-        const geometry = await row.evaluate((element) => {
-          const title = element.querySelector<HTMLElement>(".flowrow__text strong");
-          const open = element.querySelector<HTMLElement>(".flowrow__open");
-          const actions = element.querySelector<HTMLElement>(".flowrow__actions");
-          if (!title || !open || !actions) throw new Error("Faltan controles en la fila del Flow");
-          return {
-            titleFits: title.scrollWidth <= title.clientWidth + 1,
-            openFits: open.scrollWidth <= open.clientWidth + 1,
-            actionsFit: actions.getBoundingClientRect().right <= element.getBoundingClientRect().right + 1,
-            pageFits: document.documentElement.scrollWidth <= window.innerWidth + 1,
-          };
-        });
-        expect(geometry, `${language} ${colorScheme} ${width}`).toEqual({
+        const geometry = () =>
+          row.evaluate((element) => {
+            const title = element.querySelector<HTMLElement>(".flowrow__text strong");
+            const open = element.querySelector<HTMLElement>(".flowrow__open");
+            const actions = element.querySelector<HTMLElement>(".flowrow__actions");
+            if (!title || !open || !actions) throw new Error("Faltan controles en la fila del Flow");
+            return {
+              titleFits: title.scrollWidth <= title.clientWidth + 1,
+              openFits: open.scrollWidth <= open.clientWidth + 1,
+              actionsFit: actions.getBoundingClientRect().right <= element.getBoundingClientRect().right + 1,
+              pageFits: document.documentElement.scrollWidth <= window.innerWidth + 1,
+            };
+          });
+        await expect.poll(geometry, { message: `${language} ${colorScheme} ${width}` }).toEqual({
           titleFits: true,
           openFits: true,
           actionsFit: true,
@@ -89,6 +108,7 @@ test("los nombres y funciones del equipo se leen completos en el resumen", async
   await expect(pill).toBeVisible();
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme });
+    await expect(page.locator(".colonia[data-colonia-mode]").first()).toHaveAttribute("data-colonia-mode", colorScheme);
     for (const width of [390, 768, 960, 1200, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const geometry = await pill.evaluate((el) => {

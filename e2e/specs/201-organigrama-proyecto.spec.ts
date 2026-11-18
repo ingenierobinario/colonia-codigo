@@ -63,6 +63,10 @@ for (const language of ["es", "en"] as const) {
     await expect(page.locator(".teamcanvas__pill").filter({ hasText: area })).toBeVisible();
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme });
+      await expect(page.locator(".colonia[data-colonia-mode]").first()).toHaveAttribute(
+        "data-colonia-mode",
+        colorScheme,
+      );
       for (const width of [390, 768, 960, 1200, 1440]) {
         await page.setViewportSize({ width, height: 900 });
         // El observador del lienzo recibe el nuevo ancho después de los callbacks de animación.
