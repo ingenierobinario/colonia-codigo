@@ -18,6 +18,17 @@ the rest of Colonia reads easily.
 | **Run** | One agent turn in it, saved with its input and where it came from before it starts. | Lucía answering "Plan the Q4 launch". |
 | **Step** | One tool call inside a run. | Lucía creating a task for Tomás. |
 
+## Import an existing conversation
+
+Open **New chat → Import conversations** in the inbox or in a project. Choose the destination project, select an export, review the conversations and confirm which ones to import. The preview runs on your device. Your connected Colonia receives the selected history when you confirm.
+
+- **ChatGPT.** Request your export in **Settings → Data Controls → Export Data**. Choose the downloaded ZIP in Colonia. It also accepts a conversations JSON file taken from the export. [OpenAI’s export guide](https://help.openai.com/en/articles/7260999-exporting-your-chatgpt-history-and-data)
+- **Claude.** Request an export in **Settings → Privacy → Export data**, then choose the downloaded ZIP or conversations JSON. [Anthropic’s export guide](https://support.claude.com/en/articles/9450526-export-your-claude-data)
+- **Claude Code.** Choose the JSONL transcript for the session. To bring in a local project’s agents and skills as well, use the project import.
+- **Cowork.** Open the task and choose **Download task data**. Choose the archive if it contains a conversation transcript, then mark it as coming from Cowork. If the task provides a written summary, extract the Markdown or text file and select it as a Cowork note. [Cowork task downloads](https://support.claude.com/en/articles/15520349-use-claude-cowork-on-web-desktop-and-mobile)
+
+Structured chats retain the available messages, dates and alternative replies. You can choose which branches to keep. Import the export again to bring in new messages. Images, recordings and other attachments stay in the original archive.
+
 ## One conversation everywhere
 
 Home's chat is special: it is the same conversation wherever you are. Write to Home from the panel, the desktop's
