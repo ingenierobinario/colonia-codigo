@@ -120,15 +120,15 @@ async function measure(page: Page): Promise<Defect[]> {
       const kids = [...p.children].filter(
         (k) => visible(k) && getComputedStyle(k).position !== "absolute" && getComputedStyle(k).position !== "fixed",
       );
-      for (let i = 0; i < kids.length; i++)
-        for (let j = i + 1; j < kids.length; j++) {
-          const a = kids[i].getBoundingClientRect();
-          const b = kids[j].getBoundingClientRect();
+      for (const [index, first] of kids.entries()) {
+        const a = first.getBoundingClientRect();
+        for (const second of kids.slice(index + 1)) {
+          const b = second.getBoundingClientRect();
           const w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
           const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-          if (w > 2 && h > 2)
-            push(`se pisan: ${label(kids[i])} y ${label(kids[j])} (${Math.round(w)}×${Math.round(h)})`);
+          if (w > 2 && h > 2) push(`se pisan: ${label(first)} y ${label(second)} (${Math.round(w)}×${Math.round(h)})`);
         }
+      }
     }
     return out;
   }, ENGLISH.source);
@@ -137,7 +137,7 @@ async function measure(page: Page): Promise<Defect[]> {
 async function sectionNames(page: Page) {
   const nav = page.locator(".config__nav .config__navitem");
   await expect(nav.first()).toBeVisible();
-  return (await nav.allInnerTexts()).map((t) => t.split("\n")[0].trim()).filter(Boolean);
+  return (await nav.allInnerTexts()).map((t) => t.split("\n", 1)[0]?.trim() ?? "").filter(Boolean);
 }
 
 for (const scheme of SCHEMES) {
@@ -180,7 +180,6 @@ for (const scheme of SCHEMES) {
     }
     await page.screenshot({ path: info.outputPath(`ajustes-${scheme}.png`) });
     for (const e of errors) defects.push(`console.error (${scheme}): ${e.slice(0, 200)}`);
-    if (defects.length) console.log(defects.join("\n"));
-    expect(defects).toEqual([]);
+    expect(defects, defects.join("\n")).toEqual([]);
   });
 }
