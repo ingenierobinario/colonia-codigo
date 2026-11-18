@@ -65,6 +65,11 @@ const serviceUrl = `http://127.0.0.1:${(service.address() as AddressInfo).port}`
 
 const hook = path.join(root, "e2e/baileys-hook.ts");
 const desktopTrashRecord = path.join(dir, "desktop-trash.jsonl");
+const windowsRoot = process.env.SystemRoot ?? "C:\\Windows";
+const systemBins =
+  process.platform === "win32"
+    ? [path.dirname(process.execPath), path.join(windowsRoot, "System32")]
+    : ["/usr/bin", "/bin"];
 const core = spawn(
   process.execPath,
   ["--no-warnings", "--import", pathToFileURL(hook).href, path.join(root, "e2e/start-core.ts")],
@@ -74,10 +79,10 @@ const core = spawn(
     stdio: ["ignore", "pipe", "pipe", "ipc"],
     env: {
       // Only the sandbox's own CLIs, node and the system: none of the machine's agents (claude, codex, opencode…).
-      PATH: [fx.bin, "/usr/bin", "/bin"].join(path.delimiter),
-      HOME: process.env.HOME ?? os.homedir(),
-      // Windows also looks in the owner's folders (~/.local/bin…): a home of its own keeps the real codex.exe out.
-      ...(process.platform === "win32" ? { USERPROFILE: fx.home } : {}),
+      PATH: [fx.bin, ...systemBins].join(path.delimiter),
+      HOME: process.platform === "win32" ? fx.home : (process.env.HOME ?? os.homedir()),
+      // Windows busca también en el perfil. El motor solo recibe el hogar de prueba y las herramientas del sistema.
+      ...(process.platform === "win32" ? { USERPROFILE: fx.home, SystemRoot: windowsRoot } : {}),
       ...compileCacheEnv(root),
       COLONIA_HOME: fx.home,
       COLONIA_PORT: String(E2E.port),

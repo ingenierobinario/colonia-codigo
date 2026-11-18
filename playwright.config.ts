@@ -42,7 +42,8 @@ export default defineConfig({
     command: "node --no-warnings e2e/env.ts",
     url: `http://127.0.0.1:${port}/health`,
     reuseExistingServer: false,
-    timeout: 60_000,
+    // La primera compilación del motor de pruebas en Windows puede necesitar varios minutos.
+    timeout: process.platform === "win32" ? 240_000 : 60_000,
     stdout: "pipe",
   },
 });
