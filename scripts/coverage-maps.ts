@@ -4,15 +4,31 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript-parser";
 import type { CoverageSourceMap, V8Script } from "./test-coverage.ts";
 
+function readCoverageFile(file: string): { result: V8Script[]; sourceMaps?: CoverageSourceMap[] } {
+  const delay = new Int32Array(new SharedArrayBuffer(4));
+  for (let attempt = 0; ; attempt++) {
+    const text = fs.readFileSync(file, "utf8");
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      if (attempt === 5) {
+        throw new SyntaxError(`Informe de cobertura inválido en ${file} (${Buffer.byteLength(text)} bytes)`, {
+          cause: error,
+        });
+      }
+      // Los procesos hijos pueden seguir escribiendo su informe al terminar el lote.
+      Atomics.wait(delay, 0, 0, 50 * 2 ** attempt);
+    }
+  }
+}
+
 export function readCoveragePayloads(directory: string): { scripts: V8Script[]; sourceMaps: CoverageSourceMap[] } {
   const scripts: V8Script[] = [];
   const sourceMaps: CoverageSourceMap[] = [];
   for (const entry of fs.readdirSync(directory)) {
     if (!entry.endsWith(".json")) continue;
-    const data = JSON.parse(fs.readFileSync(path.join(directory, entry), "utf8")) as {
-      result: V8Script[];
-      sourceMaps?: CoverageSourceMap[];
-    };
+    const data = readCoverageFile(path.join(directory, entry));
     scripts.push(...data.result);
     sourceMaps.push(...(data.sourceMaps ?? []));
   }
