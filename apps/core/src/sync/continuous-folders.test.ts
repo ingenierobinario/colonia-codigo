@@ -177,3 +177,37 @@ test("un acuse perdido no resucita la versión anterior sobre un cambio más rec
     .reduce((n, v) => n + (v.msg.op === "block" ? Buffer.byteLength(v.msg.data, "base64") : 0), 0);
   assert.equal(bytes, Buffer.byteLength("Primera notaNueva nota en el receptor"));
 });
+
+test("una carpeta bajo un alias conserva su autorización solo mientras el padre resuelva al mismo directorio", async (t) => {
+  const { left, right, until, connect, advance, state, settled } = fixture(t);
+  const parent = path.dirname(left.root),
+    alias = path.join(parent, "alias-padre"),
+    alternate = path.join(parent, "otro-disco");
+  const kind = process.platform === "win32" ? "junction" : "dir";
+  fs.mkdirSync(path.join(alternate, "proyecto"), { recursive: true });
+  fs.writeFileSync(path.join(alternate, "proyecto", "privado.txt"), "otro directorio");
+  fs.symlinkSync(parent, alias, kind);
+  const through = path.join(alias, path.basename(left.root));
+  left.db.prepare("UPDATE projects SET path=? WHERE id='p'").run(through);
+  const initial = fs.realpathSync.native(through);
+  assert.equal(initial, fs.realpathSync.native(left.root));
+  left.sync.set("p", true);
+  right.sync.set("p", true);
+  connect();
+  await until(settled);
+  fs.writeFileSync(path.join(right.root, "entrega.txt"), "resultado");
+  advance();
+  await until(() => fs.existsSync(path.join(initial, "entrega.txt")));
+  fs.unlinkSync(alias);
+  fs.symlinkSync(alternate, alias, kind);
+  assert.notEqual(fs.realpathSync.native(through), initial);
+  advance();
+  await until(() => !state(right)?.remote);
+  assert.equal(state(left)?.local, false);
+  assert.equal(fs.existsSync(path.join(right.root, "privado.txt")), false);
+  assert.equal(fs.existsSync(path.join(through, "entrega.txt")), false);
+  const linkedRoot = path.join(parent, "proyecto-enlazado");
+  fs.symlinkSync(left.root, linkedRoot, kind);
+  left.db.prepare("UPDATE projects SET path=? WHERE id='p'").run(linkedRoot);
+  assert.throws(() => left.sync.set("p", true));
+});

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
-import { realpath, samePath } from "../paths.ts";
+import { realpath } from "../paths.ts";
 
 export const FOLDER_LIMIT = 256;
 type Grant = { project: string; root: string | null; choice: number; remote: number };
@@ -11,9 +11,11 @@ export function folderIdentity(db: DatabaseSync, project: string): string {
     .prepare("SELECT path FROM projects WHERE id=? AND registered=1 AND present=1 AND path IS NOT NULL")
     .get(project) as ProjectPath | undefined;
   if (!row) throw new Error("Elige un proyecto registrado con una carpeta presente en este equipo.");
+  // El padre puede tener un alias del sistema, como /var en macOS. La carpeta elegida debe ser un directorio real.
+  const selected = fs.lstatSync(row.path, { bigint: true });
   const exact = realpath(row.path);
-  const stat = fs.statSync(exact, { bigint: true });
-  if (!stat.isDirectory() || !samePath(row.path, exact))
+  const stat = fs.lstatSync(exact, { bigint: true });
+  if (!selected.isDirectory() || !stat.isDirectory() || selected.dev !== stat.dev || selected.ino !== stat.ino)
     throw new Error("Elige la carpeta del proyecto en este equipo.");
   return JSON.stringify([exact, String(stat.dev), String(stat.ino)]);
 }
