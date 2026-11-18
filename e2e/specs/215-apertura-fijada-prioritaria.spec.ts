@@ -254,3 +254,38 @@ for (const language of ["es", "en"] as const) {
     });
   }
 }
+
+test("los dos reintentos muestran el nombre completo al estrechar la barra y ampliar el espaciado de texto", async ({
+  open,
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const { showScreen, showDocks, showQuota } = await open("navegador", { failure: "both", language: "en" });
+  showScreen();
+  showDocks();
+  showQuota();
+  const sidebar = page.locator(".sidebar");
+  const handle = sidebar.locator(".sidebar__resize");
+  for (let i = 0; i < 3; i++) await handle.press("ArrowLeft");
+  await expect(handle).toHaveAttribute("aria-valuenow", (await handle.getAttribute("aria-valuemin")) ?? "");
+  await page.addStyleTag({
+    content: ".sidebar .colonia-nav__label { letter-spacing: 0.12em; word-spacing: 0.16em }",
+  });
+  const clipped = [];
+  for (const name of Object.values(retryLabels.en)) {
+    const row = sidebar.getByRole("button", { name, exact: true });
+    await expect(row).toBeVisible();
+    const geometry = await measureRetry(row, false);
+    const label = await row.locator(".colonia-nav__label").evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return {
+        lines: new Set(Array.from(range.getClientRects(), (r) => r.top)).size,
+        available: el.clientWidth,
+        content: el.scrollWidth,
+      };
+    });
+    if (label.lines < 2 || Object.values(geometry).includes(false)) clipped.push({ name, label, geometry });
+  }
+  expect(clipped, "Ambas filas deben envolver el texto y conservar sus controles dentro de la barra").toEqual([]);
+});

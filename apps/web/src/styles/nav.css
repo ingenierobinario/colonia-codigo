@@ -961,13 +961,14 @@
 .sidebar-navrow.is-depth-1 {
   margin-left: 14px;
 }
-/* Los nombres personalizados se muestran completos incluso al abrir el menú de la fila. */
-.sidebar-navrow[data-project-id]:not(.is-rail) > .colonia-nav {
+/* La fila crece cuando el nombre del proyecto o la acción de reintento ocupa varias líneas. */
+.sidebar-navrow[data-project-id]:not(.is-rail) > .colonia-nav,
+.sidebar__retry:not(.colonia-nav--collapsed) {
   height: auto;
   min-height: 34px;
   padding-block: 5px;
 }
-.sidebar-navrow[data-project-id]:not(.is-rail) .colonia-nav__label {
+:is(.sidebar-navrow[data-project-id]:not(.is-rail), .sidebar__retry) .colonia-nav__label {
   overflow: visible;
   white-space: normal;
   overflow-wrap: anywhere;

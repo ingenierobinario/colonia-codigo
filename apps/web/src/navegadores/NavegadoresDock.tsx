@@ -184,6 +184,7 @@ export function NavegadoresDock({ rail }: { rail: boolean }) {
       />
       {failed && (!sectionFolded || rail) && (
         <NavItem
+          className="sidebar__retry"
           collapsed={rail}
           icon={<Icons.RotateCcw size={14} />}
           label={t("navegadores.retry")}
