@@ -1,0 +1,70 @@
+name: Escritorio nativo en Windows
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  escritorio:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Preparar Electron y compilar el panel y el escritorio
+        shell: pwsh
+        run: |
+          node apps/desktop/node_modules/electron/install.js
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          pnpm build:web
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          pnpm --filter @colonia/desktop build
+      - name: Probar la aplicación y la conexión con un perfil temporal
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP "escritorio-$([guid]::NewGuid())"
+          $folders = @{}
+          foreach ($name in 'profile','roaming','local','shared','shared/ssh','core','claude','codex','apps','temp') {
+            $folders[$name] = (New-Item -ItemType Directory -Path (Join-Path $root $name) -Force).FullName
+          }
+          $start = [System.Diagnostics.ProcessStartInfo]::new((Get-Command node).Source)
+          $start.UseShellExecute = $false
+          $start.Environment.Clear()
+          foreach ($key in 'Path','SystemRoot','WINDIR','ComSpec','PATHEXT','OS','PROCESSOR_ARCHITECTURE','NUMBER_OF_PROCESSORS','ProgramFiles','ProgramFiles(x86)') {
+            $value = [Environment]::GetEnvironmentVariable($key)
+            if ($value) { $start.Environment[$key] = $value }
+          }
+          $profilePath = $folders.profile
+          $settings = @{
+            HOME = $profilePath; USERPROFILE = $profilePath
+            HOMEDRIVE = [IO.Path]::GetPathRoot($profilePath).TrimEnd('\')
+            HOMEPATH = $profilePath.Substring(2)
+            APPDATA = $folders.roaming; LOCALAPPDATA = $folders.local
+            ProgramData = $folders.shared; ALLUSERSPROFILE = $folders.shared
+            TEMP = $folders.temp; TMP = $folders.temp
+            COLONIA_HOME = $folders.core; COLONIA_APPS_HOME = $folders.apps
+            CODEX_HOME = $folders.codex; CLAUDE_CONFIG_DIR = $folders.claude
+            COLONIA_SECRETS = 'file'; COLONIA_UPDATES = 'off'; COLONIA_TELEMETRY = 'off'
+            GIT_TERMINAL_PROMPT = '0'; GIT_CONFIG_NOSYSTEM = '1'
+            NODE_PATH = (Resolve-Path 'apps/desktop/node_modules').Path
+          }
+          foreach ($entry in $settings.GetEnumerator()) { $start.Environment[$entry.Key] = $entry.Value }
+          foreach ($arg in 'node_modules/@playwright/test/cli.js','test','e2e/desktop/app.spec.ts','e2e/desktop/connect.spec.ts','--project=desktop','--no-deps','--workers=1','--retries=0','--reporter=line') {
+            $start.ArgumentList.Add($arg)
+          }
+          $suite = [Diagnostics.Process]::Start($start)
+          $suite.WaitForExit()
+          exit $suite.ExitCode
+      - name: Conservar las trazas de las pruebas fallidas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: escritorio-windows-resultados
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -2,9 +2,24 @@ name: Instaladores
 
 on:
   workflow_dispatch:
+    inputs:
+      tarea:
+        description: Trabajo que se ejecutará en esta rama
+        type: choice
+        options:
+          - instaladores
+          - escritorio-windows
+        default: instaladores
 
 jobs:
+  escritorio-windows:
+    if: inputs.tarea == 'escritorio-windows'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/escritorio-windows.yml
+
   instalador:
+    if: inputs.tarea != 'escritorio-windows'
     strategy:
       fail-fast: false
       matrix:
