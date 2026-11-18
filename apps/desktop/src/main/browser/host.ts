@@ -43,6 +43,42 @@ type Tab = {
 const MAX_AGENT_TABS = 8;
 const MAX_TABS = 50;
 const NAV_TIMEOUT_MS = 8_000;
+type PageEvent = "dom-ready" | "did-fail-load" | "did-stop-loading";
+const closedTab = (tab: Tab) => new ColoniaError({ code: "bad_request", message: `unknown tab ${tab.id}` });
+
+/** Una carga, un plazo y un cierre comparten la limpieza, incluso si loadURL emite durante la propia llamada. */
+function waitForPage(tab: Tab, events: PageEvent[], ms: number, start?: () => void): Promise<void> {
+  const wc = tab.wc;
+  const emitter: NodeJS.EventEmitter = wc;
+  return new Promise((resolve, reject) => {
+    if (wc.isDestroyed()) {
+      reject(closedTab(tab));
+      return;
+    }
+    const cleanup = () => {
+      clearTimeout(timer);
+      for (const event of events) emitter.off(event, ready);
+      wc.off("destroyed", destroyed);
+    };
+    const ready = () => {
+      cleanup();
+      resolve();
+    };
+    const destroyed = () => {
+      cleanup();
+      reject(closedTab(tab));
+    };
+    const timer = setTimeout(ready, ms);
+    wc.once("destroyed", destroyed);
+    for (const event of events) emitter.on(event, ready);
+    try {
+      start?.();
+    } catch (error) {
+      cleanup();
+      reject(error);
+    }
+  });
+}
 
 /** The honest Chromium UA: no "Electron/x" or app token. Client hints stay untouched (removing them breaks Google login). */
 function cleanUserAgent(): string {
@@ -686,33 +722,20 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     return tab;
   }
 
-  /** Resolves at dom-ready (usable page), not at full load: ads and trackers must not hold the agent hostage. */
+  /** El DOM ya se puede usar aunque sigan cargando imágenes u otros recursos. */
   async #load(tab: Tab, url: string): Promise<void> {
     assertNavigable(url);
-    const wc = tab.wc;
-    const ready = new Promise<void>((resolve) => {
-      const done = () => {
-        wc.off("dom-ready", done);
-        wc.off("did-fail-load", done);
-        resolve();
-      };
-      wc.on("dom-ready", done);
-      wc.on("did-fail-load", done);
+    await waitForPage(tab, ["dom-ready", "did-fail-load"], NAV_TIMEOUT_MS, () => {
+      // Una redirección puede rechazar loadURL con ERR_ABORTED mientras se carga su destino.
+      tab.wc.loadURL(url).catch(() => {});
     });
-    // Redirects reject loadURL with ERR_ABORTED although the page loads: not an error for us.
-    wc.loadURL(url).catch(() => {});
-    await Promise.race([ready, new Promise<void>((resolve) => setTimeout(resolve, NAV_TIMEOUT_MS))]);
   }
 
-  /** After an action that may navigate: give it a beat, then wait for loading to stop (bounded). */
+  /** Da tiempo a que una acción inicie la navegación antes de comprobar si sigue cargando. */
   async #settle(tab: Tab): Promise<void> {
-    await new Promise((r) => setTimeout(r, 250));
-    const wc = tab.wc;
-    if (!wc.isLoading()) return;
-    await Promise.race([
-      new Promise<void>((resolve) => wc.once("did-stop-loading", () => resolve())),
-      new Promise<void>((resolve) => setTimeout(resolve, NAV_TIMEOUT_MS)),
-    ]);
+    await waitForPage(tab, [], 250);
+    if (tab.wc.isDestroyed()) throw closedTab(tab);
+    if (tab.wc.isLoading()) await waitForPage(tab, ["did-stop-loading"], NAV_TIMEOUT_MS);
   }
 
   #configure(ses: Session, notifications = false): void {

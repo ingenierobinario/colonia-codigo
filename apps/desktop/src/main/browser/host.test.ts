@@ -257,3 +257,61 @@ test("la persona abre más de 8 pestañas; el tope de 8 solo frena a los agentes
   for (let i = 29; i < 50; i++) await host.open("https://example.com", "shared", { kind: "idle" });
   await assert.rejects(host.open("https://example.com", "shared", { kind: "idle" }), /tab limit \(50\)/);
 });
+
+test("la navegación libera el plazo al estar lista o fallar y retira las escuchas al vencer o cerrar", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const arm = t.mock.method(globalThis, "setTimeout");
+  const cancel = t.mock.method(globalThis, "clearTimeout");
+  const host = new BrowserHost();
+  const { tab, wc } = await opened(host);
+  const navigationTimers = () => arm.mock.calls.filter((call) => call.arguments[1] === 8000).map((call) => call.result);
+  const wasCleared = (handle: unknown) => cancel.mock.calls.some((call) => call.arguments[0] === handle);
+  assert.equal(navigationTimers().length, 1);
+  assert.ok(navigationTimers().every(wasCleared), "abrir una página lista deja libre el reloj");
+  wc.loadURL = async () => {};
+  const counts = () =>
+    [wc.listenerCount("dom-ready"), wc.listenerCount("did-fail-load"), wc.listenerCount("destroyed")] as const;
+  const base = counts();
+  for (const outcome of ["dom-ready", "did-fail-load", "timeout", "destroyed"] as const) {
+    const operation = host.userNavigate(tab.id, "https://example.com/destino");
+    if (outcome === "timeout") t.mock.timers.tick(8000);
+    else if (outcome === "destroyed") wc.close();
+    else wc.emit(outcome);
+    if (outcome === "destroyed") await assert.rejects(operation, /unknown tab/);
+    else await operation;
+    assert.deepEqual(counts().slice(0, 2), base.slice(0, 2), outcome);
+    assert.ok(counts()[2] <= base[2], outcome);
+    if (outcome !== "timeout") assert.ok(wasCleared(navigationTimers().at(-1)), outcome);
+  }
+});
+
+test("una recarga deja de esperar al detenerse, vencer el plazo o destruirse la pestaña", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const host = new BrowserHost();
+  const { tab, wc } = await opened(host);
+  wc.isLoading = () => true;
+  Object.assign(wc, { navigationHistory: { canGoBack: () => false } });
+  const stops = wc.listenerCount("did-stop-loading");
+  const cancel = t.mock.method(globalThis, "clearTimeout");
+  const arm = t.mock.method(globalThis, "setTimeout");
+  const history = () => host.handle("browser.history", { tab: tab.id, by: "operator", action: "back" });
+  for (const outcome of ["did-stop-loading", "timeout", "destroyed"] as const) {
+    const operation = history();
+    t.mock.timers.tick(250);
+    await Promise.resolve();
+    assert.equal(wc.listenerCount("did-stop-loading"), stops + 1);
+    if (outcome === "timeout") t.mock.timers.tick(8000);
+    else if (outcome === "destroyed") wc.close();
+    else wc.emit(outcome);
+    if (outcome === "destroyed") await assert.rejects(operation, /unknown tab/);
+    else await operation;
+    assert.equal(wc.listenerCount("did-stop-loading"), stops, outcome);
+    if (outcome !== "timeout") {
+      const handle = arm.mock.calls.filter((call) => call.arguments[1] === 8000).at(-1)?.result;
+      assert.ok(
+        cancel.mock.calls.some((call) => call.arguments[0] === handle),
+        outcome,
+      );
+    }
+  }
+});
