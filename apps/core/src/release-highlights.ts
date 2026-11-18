@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.49": {
+    en: [
+      "Exporting a project now takes its skills with it, ready to import elsewhere.",
+      "Agents and skills from Claude Code, Codex, Cursor or Gemini in the folder show up in the project.",
+      "A new agent added to the project folder appears right away, without reopening.",
+      "Routines travel switched off, so nothing runs until you turn it on.",
+    ],
+    es: [
+      "Al exportar un proyecto se llevan también sus skills, listas para importarlo en otro sitio.",
+      "Los agentes y skills de Claude Code, Codex, Cursor o Gemini de la carpeta salen en el proyecto.",
+      "Un agente nuevo en la carpeta del proyecto aparece al momento, sin volver a abrirlo.",
+      "Las rutinas viajan apagadas: nada se ejecuta hasta que tú lo enciendas.",
+    ],
+  },
   "2.36.48": {
     en: [
       "Settings no longer cuts or squeezes names and descriptions, on any screen size.",
