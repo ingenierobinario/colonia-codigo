@@ -6,7 +6,7 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
-  "2.36.49": {
+  "2.36.50": {
     en: [
       "Assign agents to areas and roles and see their responsibilities in the project chart.",
       "Share projects with their skills and agents, including compatible Claude Code and Codex definitions.",
@@ -18,6 +18,20 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
       "Comparte proyectos con sus skills y agentes, incluidos los compatibles de Claude Code y Codex.",
       "Abre la copia de seguridad o sincroniza otra Colonia desde Mis equipos.",
       "Elige el logo de las aplicaciones internas y encuentra más fácilmente los conectores de servicios.",
+    ],
+  },
+  "2.36.49": {
+    en: [
+      "Exporting a project now takes its skills with it, ready to import elsewhere.",
+      "Agents and skills from Claude Code, Codex, Cursor or Gemini in the folder show up in the project.",
+      "A new agent added to the project folder appears right away, without reopening.",
+      "Routines travel switched off, so nothing runs until you turn it on.",
+    ],
+    es: [
+      "Al exportar un proyecto se llevan también sus skills, listas para importarlo en otro sitio.",
+      "Los agentes y skills de Claude Code, Codex, Cursor o Gemini de la carpeta salen en el proyecto.",
+      "Un agente nuevo en la carpeta del proyecto aparece al momento, sin volver a abrirlo.",
+      "Las rutinas viajan apagadas: nada se ejecuta hasta que tú lo enciendas.",
     ],
   },
   "2.36.48": {
