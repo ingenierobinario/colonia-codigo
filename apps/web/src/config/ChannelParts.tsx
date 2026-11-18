@@ -363,8 +363,12 @@ export function Deliveries({ channelId }: { channelId: string }) {
               {t(`tg.out.${o.state}`)}
             </Badge>
             <div className="res__main">
-              <div className="res__desc">{o.text || sentLabel(o, t)}</div>
-              {o.error && o.state !== "sent" && <div className="res__desc tgcard__error">{o.error}</div>}
+              <div className="res__desc res__desc--full" translate={o.text ? "no" : undefined}>
+                {o.text || sentLabel(o, t)}
+              </div>
+              {o.error && o.state !== "sent" && (
+                <div className="res__desc res__desc--full tgcard__error">{o.error}</div>
+              )}
             </div>
           </li>
         ))}

@@ -142,7 +142,11 @@ export function RoomsSection({
     <>
       <SubHead>{t(words.title)}</SubHead>
       <p className="pform__hint">{t(words.lead)}</p>
-      {kind === "telegram" && <p className="pform__hint">{t("rooms.tg.privacy")}</p>}
+      {kind === "telegram" && (
+        <p className="pform__hint">
+          {t("rooms.tg.privacy")} <code translate="no">/mybots › Bot Settings › Group Privacy</code>
+        </p>
+      )}
       <div className="rooms">
         {cur.rooms.map((r) => (
           <div key={r.id} className="rooms__row">
@@ -177,29 +181,30 @@ export function RoomsSection({
         ))}
         {server && (
           <div className="rooms__row rooms__add">
-            <Select
-              label={t(words.pick)}
-              className="rooms__pick"
-              value={null}
-              placeholder={
-                unlisted.length
-                  ? t(words.pick)
-                  : kind !== "discord" && !server.length
-                    ? t(kind === "telegram" ? "rooms.tg.none" : "rooms.any.none")
-                    : t(words.allListed)
-              }
-              disabled={!unlisted.length}
-              onValueChange={(id) => {
-                const r = unlisted.find((x) => x.id === id);
-                if (r) set({ rooms: [...cur.rooms, { id: r.id, name: r.name, mode: "mention" }] });
-              }}
-              options={unlisted.map((r) => ({
-                value: r.id,
-                label: shown(r),
-                ...(r.server ? { group: r.server } : {}),
-                ...(r.writable ? {} : { description: t("rooms.cannotWriteHint") }),
-              }))}
-            />
+            {unlisted.length ? (
+              <Select
+                label={t(words.pick)}
+                className="rooms__pick"
+                value={null}
+                placeholder={t(words.pick)}
+                onValueChange={(id) => {
+                  const r = unlisted.find((x) => x.id === id);
+                  if (r) set({ rooms: [...cur.rooms, { id: r.id, name: r.name, mode: "mention" }] });
+                }}
+                options={unlisted.map((r) => ({
+                  value: r.id,
+                  label: shown(r),
+                  ...(r.server ? { group: r.server } : {}),
+                  ...(r.writable ? {} : { description: t("rooms.cannotWriteHint") }),
+                }))}
+              />
+            ) : (
+              <span className="pform__hint rooms__pick">
+                {kind !== "discord" && !server.length
+                  ? t(kind === "telegram" ? "rooms.tg.none" : "rooms.any.none")
+                  : t(words.allListed)}
+              </span>
+            )}
             {!byId && (
               <Button size="sm" variant="ghost" onClick={() => setById(true)}>
                 {t("rooms.byId")}

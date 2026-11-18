@@ -1,6 +1,6 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
-import type { CSSProperties, ReactElement, ReactNode } from "react";
+import { type CSSProperties, type ReactElement, type ReactNode, useId } from "react";
 import { cx } from "../cx";
 import { useColonia } from "./ColoniaProvider";
 
@@ -45,18 +45,22 @@ export function Dialog({
   style,
 }: DialogProps) {
   const { portalRef } = useColonia();
+  const titleId = useId();
   return (
     <BaseDialog.Root open={open} defaultOpen={defaultOpen} onOpenChange={(o) => onOpenChange?.(o)}>
       {trigger && <BaseDialog.Trigger render={trigger} />}
       <BaseDialog.Portal container={portalRef}>
         <BaseDialog.Backdrop className="colonia-dialog__backdrop" />
         <BaseDialog.Popup
+          aria-labelledby={titleId}
           className={cx("colonia-dialog", `colonia-dialog--${size}`, bare && "colonia-dialog--bare", className)}
           style={style}
         >
           {bare ? (
             <>
-              <BaseDialog.Title className="colonia-sr-only">{title}</BaseDialog.Title>
+              <BaseDialog.Title id={titleId} className="colonia-sr-only">
+                {title}
+              </BaseDialog.Title>
               <BaseDialog.Close className="colonia-dialog__close colonia-dialog__close--float" aria-label={closeLabel}>
                 <X size={18} />
               </BaseDialog.Close>
@@ -65,7 +69,9 @@ export function Dialog({
           ) : (
             <>
               <div className="colonia-dialog__head">
-                <BaseDialog.Title className="colonia-dialog__title">{title}</BaseDialog.Title>
+                <BaseDialog.Title id={titleId} className="colonia-dialog__title">
+                  {title}
+                </BaseDialog.Title>
                 <BaseDialog.Close className="colonia-dialog__close" aria-label={closeLabel}>
                   <X size={16} />
                 </BaseDialog.Close>

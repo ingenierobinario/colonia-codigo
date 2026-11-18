@@ -1948,7 +1948,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "rooms.tg.lead":
     "Los grupos de Telegram donde el bot lee y puede hablar. Un grupo que no está en la lista no existe para Colonia. Ahí contesta en público y sellado: sin memoria y sin nada tuyo, también cuando escribes tú; como mucho busca en la web, según diga “Buscar en la web”.",
   "rooms.tg.privacy":
-    "Para leer todos los mensajes de un grupo, desactiva la privacidad de grupos del bot en @BotFather (/mybots › Bot Settings › Group Privacy) y después saca el bot del grupo y vuelve a añadirlo. Con la privacidad activa, Telegram solo le pasa al bot los mensajes que lo @mencionan o le responden.",
+    "Para que el bot lea todos los mensajes, desactiva la privacidad de grupos en @BotFather. Después, quita el bot del grupo y vuelve a añadirlo. Si mantienes la privacidad activa, el bot solo verá las menciones y respuestas. En @BotFather, sigue esta ruta:",
   "rooms.tg.pick": "Añadir un grupo donde está el bot…",
   "rooms.tg.allListed": "Todos los grupos donde se vio al bot ya están",
   "rooms.tg.none": "Todavía no hay grupos: añade el bot a un grupo o escribe ahí",

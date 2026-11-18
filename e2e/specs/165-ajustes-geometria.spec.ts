@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import type { MethodName, Result } from "../../packages/protocol/src/index.ts";
 import { expect, open, openSettings, rpc, test } from "./kit.ts";
 
 // AJUSTES-GEOMETRIA-1: cada sección de Configuración, en claro y oscuro, a los cinco anchos del owner. Se mide, no se
@@ -14,6 +15,78 @@ const ENGLISH =
   /\b(Settings|Loading|Cancel|Save|Delete|Enabled|Disabled|Failed|not installed|not signed in|no key|could not refresh|Unknown|None|Search|Close|Add|Remove|Connect|Disconnect|Learn more|Show more|Select|Choose|Upload|Download|Password|Username|Untitled|Coming soon|Not connected|Retry)\b/;
 
 type Defect = string;
+
+async function populatedSettings(page: Page) {
+  const iso = "2026-01-01T12:00:00Z";
+  const defaults = await rpc<Result<"services.list">>("services.list", { kind: "image" });
+  await page.route("**/rpc/services.list", (route) => {
+    const { kind } = route.request().postDataJSON();
+    const fixtures = [
+      { kind: "speech", dialect: "openai-speech", label: "Narración del equipo" },
+      { kind: "image", dialect: "sdcpp", label: "Imágenes del estudio" },
+    ] as const;
+    const services: Result<"services.list">["services"] = fixtures
+      .filter((s) => s.kind === kind)
+      .map((s) => ({
+        ...s,
+        id: s.kind,
+        enabled: true,
+        needs_key: false,
+        key_set: false,
+        status: "unreachable",
+        base_url: "http://127.0.0.1:9/v1",
+      }));
+    return route.fulfill({ json: { ok: true, result: { services, image_defaults: defaults.image_defaults } } });
+  });
+  const results = {
+    "services.test": { ok: false, problem: "other", detail: "bad port" },
+    "channels.list": {
+      channels: (["telegram", "whatsapp", "discord", "slack"] as const).map((type) => ({
+        type,
+        id: type,
+        label: type,
+        enabled: true,
+        agent_id: "superagent",
+        strangers: "pair",
+        concurrency: "queue",
+        owner_thread: "own",
+        token_set: true,
+        status: "running",
+      })),
+    },
+    "channels.rooms": { rooms: [] },
+    "pairing.list": {
+      requests: [
+        {
+          code: "123456",
+          channel: "telegram",
+          external_id: "777",
+          name: "Unknown (id 777)",
+          created_at: iso,
+          expires_at: iso,
+        },
+      ],
+    },
+    "channels.outbox": {
+      items: [
+        {
+          id: "entrega",
+          channel: "telegram",
+          conversation: "777",
+          kind: "notice",
+          state: "sent",
+          attempts: 1,
+          text: "Una persona solicita incorporarse al canal de coordinación del equipo de atención. Confirma su solicitud desde Configuración.",
+          created_at: iso,
+          updated_at: iso,
+        },
+      ],
+    },
+  } satisfies Partial<{ [M in MethodName]: Result<M> }>;
+  for (const [method, result] of Object.entries(results)) {
+    await page.route(`**/rpc/${method}`, (route) => route.fulfill({ json: { ok: true, result } }));
+  }
+}
 
 async function measure(page: Page): Promise<Defect[]> {
   return page.evaluate((englishSrc) => {
@@ -31,6 +104,14 @@ async function measure(page: Page): Promise<Defect[]> {
       const r = el.getBoundingClientRect();
       if (r.width < 1 || r.height < 1) return false;
       const s = getComputedStyle(el);
+      // El control nativo auxiliar de Base UI está recortado por completo. Su botón o switch visible se mide aparte.
+      if (
+        r.width === 1 &&
+        r.height === 1 &&
+        el.matches('input[aria-hidden="true"][tabindex="-1"]') &&
+        s.clipPath === "inset(50%)"
+      )
+        return false;
       return s.visibility !== "hidden" && s.display !== "contents" && Number(s.opacity) > 0;
     };
     const label = (el: Element) => {
@@ -144,6 +225,7 @@ for (const scheme of SCHEMES) {
   test(`ajustes: geometría de cada sección en ${scheme}`, async ({ page }, info) => {
     test.setTimeout(300_000);
     await rpc("setup.finish");
+    await populatedSettings(page);
     const errors: string[] = [];
     page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
     page.on("pageerror", (e) => errors.push(String(e)));
@@ -161,6 +243,11 @@ for (const scheme of SCHEMES) {
     for (const name of names) {
       await page.setViewportSize({ width: 1200, height: 900 });
       await settings.locator(".config__nav .config__navitem", { hasText: name }).first().click();
+      if (name === "Voces")
+        await expect(settings.getByText("Narración del equipo", { exact: false }).first()).toBeVisible();
+      if (name === "Imágenes")
+        await expect(settings.getByText("Imágenes del estudio", { exact: false }).first()).toBeVisible();
+      if (name === "Canales") await expect(settings.getByText("Unknown (id 777)", { exact: true })).toBeVisible();
       await page.waitForTimeout(400);
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 900 });

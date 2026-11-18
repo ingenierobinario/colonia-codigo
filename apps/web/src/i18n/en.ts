@@ -1939,7 +1939,7 @@ export const en = {
   "rooms.tg.lead":
     "The Telegram groups where the bot reads and may speak. A group not on the list does not exist for Colonia. There it answers in public and sealed: no memory and nothing of yours, also when you write; at most it searches the web, as “Search the web” says.",
   "rooms.tg.privacy":
-    "To read every message of a group, turn off the bot's Group Privacy in @BotFather (/mybots › Bot Settings › Group Privacy), then remove the bot from the group and add it again. With it on, Telegram only hands the bot messages that @mention it or reply to it.",
+    "To let the bot read every message, turn off group privacy in @BotFather. Then remove the bot from the group and add it again. With privacy on, the bot sees only mentions and replies. In @BotFather, follow this path:",
   "rooms.tg.pick": "Add a group the bot is in…",
   "rooms.tg.allListed": "Every group the bot was seen in is listed",
   "rooms.tg.none": "No groups yet: add the bot to a group or write there",

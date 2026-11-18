@@ -110,9 +110,9 @@ export function ServicesSection({
           {t(`svc.${kind}.empty`)}
         </EmptyState>
       ) : (
-        <ul className="res__list">
+        <ul className="res__list svc__list">
           {services?.map((s, i) => (
-            <li key={s.id} className={s.enabled ? "res__row" : "res__row is-off"}>
+            <li key={s.id} className={s.enabled ? "res__row svc__row" : "res__row svc__row is-off"}>
               <div className="svc__order">
                 <IconButton
                   size="sm"
@@ -133,7 +133,7 @@ export function ServicesSection({
                 <div className="res__name">
                   {s.label} <span className="svc__dialect">{s.dialect}</span>
                 </div>
-                <div className="res__desc res__mono">
+                <div className="res__desc res__desc--full res__mono">
                   {s.dialect === "codex-images" ? t("svc.codexWhere") : s.base_url}
                   {s.model ? ` · ${s.model}` : ""}
                 </div>
@@ -143,29 +143,39 @@ export function ServicesSection({
                   </div>
                 )}
               </div>
-              <Badge tone={s.status === "reachable" ? "brand" : s.status === "unreachable" ? "danger" : "neutral"} dot>
-                {t(`svc.status.${s.status}`)}
-              </Badge>
-              <Switch size="sm" checked={s.enabled} onCheckedChange={(on) => toggle(s, on)} label={t("providers.on")} />
-              <IconButton
-                size="sm"
-                label={t("svc.check")}
-                icon={<Icons.RefreshCw size={14} />}
-                disabled={!s.enabled}
-                onClick={() => void retest(s)}
-              />
-              <IconButton
-                size="sm"
-                label={t("providers.edit")}
-                icon={<Icons.Pencil size={14} />}
-                onClick={() => setEditing(s)}
-              />
-              <IconButton
-                size="sm"
-                label={t("providers.remove")}
-                icon={<Icons.Trash2 size={14} />}
-                onClick={() => void call(() => client.call("services.set", { id: s.id, service: null }))}
-              />
+              <div className="svc__actions">
+                <Badge
+                  tone={s.status === "reachable" ? "brand" : s.status === "unreachable" ? "danger" : "neutral"}
+                  dot
+                >
+                  {t(`svc.status.${s.status}`)}
+                </Badge>
+                <Switch
+                  size="sm"
+                  checked={s.enabled}
+                  onCheckedChange={(on) => toggle(s, on)}
+                  label={t("providers.on")}
+                />
+                <IconButton
+                  size="sm"
+                  label={t("svc.check")}
+                  icon={<Icons.RefreshCw size={14} />}
+                  disabled={!s.enabled}
+                  onClick={() => void retest(s)}
+                />
+                <IconButton
+                  size="sm"
+                  label={t("providers.edit")}
+                  icon={<Icons.Pencil size={14} />}
+                  onClick={() => setEditing(s)}
+                />
+                <IconButton
+                  size="sm"
+                  label={t("providers.remove")}
+                  icon={<Icons.Trash2 size={14} />}
+                  onClick={() => void call(() => client.call("services.set", { id: s.id, service: null }))}
+                />
+              </div>
             </li>
           ))}
         </ul>

@@ -39,7 +39,9 @@ export function PairingRow({ request }: { request: PairingRequest }) {
         <span className="chan__avatar">{initials(request.name)}</span>
         <span className="chan__rowmain">
           <span className="chan__rowtop">
-            <span className="chan__rowname">{request.name}</span>
+            <span className="chan__rowname" translate="no">
+              {request.name}
+            </span>
             {whatsapp && <span className="chan__rowphone">{phoneOf(request.external_id)}</span>}
             <span className="chan__rowtime">{shortWhen(request.created_at)}</span>
           </span>

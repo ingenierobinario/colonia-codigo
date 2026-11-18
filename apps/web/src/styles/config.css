@@ -570,6 +570,7 @@
 .res__desc.res__desc--full {
   white-space: normal;
   overflow: visible;
+  overflow-wrap: anywhere;
 }
 .res__desc.svc__why {
   color: var(--colonia-danger-soft-fg);
@@ -737,42 +738,17 @@
   width: auto;
   min-width: 160px;
 }
-/* PESTANAS-CANALES-1: more channels than the row holds scroll inside it (each tab keeps its width), and the edge
-   that hides some fades out. */
 .channels__tabsrow {
   align-self: flex-start;
   max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  border-radius: var(--colonia-control-radius);
-}
-.channels__tabsrow::-webkit-scrollbar {
-  display: none;
 }
 .channels__tabs {
-  width: max-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  border-radius: var(--colonia-radius-md);
 }
 .channels__tabs .colonia-segmented__item {
   flex: none;
-}
-@supports (animation-timeline: scroll()) {
-  .channels__tabsrow {
-    animation: channels-tabs-edge linear both;
-    animation-timeline: scroll(self inline);
-  }
-}
-@keyframes channels-tabs-edge {
-  0% {
-    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
-  }
-  2%,
-  98% {
-    mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
-  }
-  100% {
-    mask-image: linear-gradient(to right, transparent, #000 36px);
-  }
 }
 .tgquiet {
   display: flex;
@@ -828,12 +804,32 @@
 }
 
 /* ── Image and voice services ───────────────────────────────────────────── */
+.svc__list {
+  container-type: inline-size;
+}
+.res__row.svc__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.svc__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+@container (max-width: 34rem) {
+  .svc__row > .res__main,
+  .svc__actions {
+    grid-column: 2 / -1;
+  }
+}
 .svc__order {
   display: flex;
   flex-direction: column;
 }
 .svc__dialect {
   margin-left: 6px;
+  display: inline-block;
   font-family: var(--colonia-font-mono);
   font-size: var(--colonia-text-2xs, 11px);
   color: var(--colonia-fg-subtle);

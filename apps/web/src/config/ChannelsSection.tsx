@@ -1,5 +1,5 @@
 import { Button, Icons, Menu, SegmentedControl } from "@colonia/ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { addChannelItems, KindIcon } from "../channels/KindIcon.tsx";
 import { CHANNEL_KIND_IDS, CHANNEL_KINDS, type ChannelKind, isChannelKind } from "../channels/kinds.ts";
 import { loadChannels, useChannels } from "../data/channels.ts";
@@ -63,18 +63,6 @@ export function ChannelsSection() {
   };
   // The kind being set up shows as a tab next to the connected ones until it is connected.
   const tabs = current && !connected.includes(current) ? [...connected, current] : connected;
-  // PESTANAS-CANALES-1: the row scrolls when the tabs do not fit; the one in use is brought into view.
-  const tabsRow = useRef<HTMLDivElement>(null);
-  const shown = gallery ? ALL : current;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: runs again when the tab in use or their number changes.
-  useEffect(() => {
-    const row = tabsRow.current;
-    const on = row?.querySelector<HTMLElement>(".is-selected");
-    if (!row || !on) return;
-    const [a, b] = [row.getBoundingClientRect(), on.getBoundingClientRect()];
-    if (b.left < a.left + 36) row.scrollLeft += b.left - a.left - 36;
-    else if (b.right > a.right - 36) row.scrollLeft += b.right - a.right + 36;
-  }, [shown, tabs.length]);
 
   const add = (
     <Menu
@@ -96,7 +84,7 @@ export function ChannelsSection() {
         actions={add}
       />
       {tabs.length > 0 && current && (
-        <div className="channels__tabsrow" ref={tabsRow}>
+        <div className="channels__tabsrow">
           <SegmentedControl
             size="sm"
             className="channels__tabs"
