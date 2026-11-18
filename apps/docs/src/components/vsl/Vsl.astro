@@ -1,192 +1,183 @@
 ---
-// VSL-BF-1: portada de venta de Black Friday (vídeo + página de venta). Sin precio: solo en el checkout.
-import { RESERVAR_URL, sectionRoute } from "../../config/site";
-import { sitePath } from "../../doc-routes.mjs";
+// VSL-BF-2: portada de venta de Black Friday. Sin menú ni pie con enlaces: solo dos salidas, el checkout y WhatsApp.
+import { RESERVAR_URL } from "../../config/site";
 import type { Lang } from "../../i18n/home";
 import { VSL } from "../../i18n/vsl";
 import PageMeta from "../web/PageMeta.astro";
-import WebFooter from "../web/WebFooter.astro";
-import WebHeader from "../web/WebHeader.astro";
 import "./vsl.css";
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = VSL[lang];
-const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(
-  lang === "es" ? "¡Hola! Estoy viendo Colonia y tengo algunas preguntas" : "Hi! I am looking at Colonia and I have some questions",
-)}`;
-const product = sitePath(sectionRoute(lang));
+const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(t.wa.text)}`;
+const AVATAR = "https://d1yei2z3i6k35z.cloudfront.net/17169925/6a3d55a034af61.60990299_carla-card.jpg";
+const VIDEO = "https://player.vimeo.com/video/1247943905?autopause=0&player_id=0&app_id=58479&autoplay=1";
 ---
 
 <html lang={lang} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <PageMeta lang={lang} title={t.title} description={t.description} path="/" esPath="/" enPath="/en/" imageAlt={t.h1.join(" ")} />
+    <meta name="theme-color" content="#050505" />
+    <PageMeta lang={lang} title={t.title} description={t.description} path="/" esPath="/" enPath="/en/" imageAlt={`${t.h1} ${t.h1b}`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..900&family=Geist+Mono:wght@500;700&display=swap" />
   </head>
-  <body class="h vsl">
-    <a class="skip-link" href="#main">{lang === "es" ? "Saltar al contenido" : "Skip to content"}</a>
-    <WebHeader lang={lang} home />
-
-    <main id="main">
-      <section class="v-hero">
-        <div class="wrap v-narrow">
-          <p class="v-badge">{t.badge}</p>
-          <h1 class="v-h1">{t.h1[0]} <span>{t.h1[1]}</span></h1>
-          <p class="v-sub">{t.sub}</p>
-        </div>
-        <div class="wrap">
-          <div class="v-video">
-            <iframe
-              src="https://player.vimeo.com/video/1247943905?autopause=0&player_id=0&app_id=58479"
-              frameborder="0"
-              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              title="BF_VSL_training_final"></iframe>
-          </div>
-          <script is:inline src="https://player.vimeo.com/api/player.js"></script>
-        </div>
-        <div class="wrap v-ctawrap">
-          <a class="v-cta" href={RESERVAR_URL}>{t.cta}</a>
-          <p class="v-note">{t.ctaNote.join(" · ")}</p>
-          <div class="v-count" data-count>
-            <span class="v-count-l">{t.endsLabel}</span>
-            <div class="v-count-n">
-              {t.units.map((u, i) => (<span><b data-u={i}>--</b><small>{u}</small></span>))}
+  <body class="bfv">
+    <div class="bfv-ribbon" role="note" aria-label={t.ribbon}>
+      <div class="bfv-marquee" aria-hidden="true">
+        <div class="bfv-track">
+          {[0, 1].map(() => (
+            <div class="bfv-run">
+              {[0, 1, 2].map(() => (
+                <span class="bfv-item"><b>BLACK FRIDAY</b>{t.ribbon.replace(/^Black Friday · /, "")}<span class="bfv-dot">✦</span>{t.ends}
+                  <span class="bfv-clock" data-clock>{t.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span>
+                  <span class="bfv-dot">✦</span></span>
+              ))}
             </div>
+          ))}
+        </div>
+      </div>
+      <a class="bfv-ribbon-cta" href={RESERVAR_URL}>{t.cta}</a>
+    </div>
+
+    <header class="bfv-top">
+      <span class="bfv-logo" aria-label="Colonia"><i aria-hidden="true"></i>Colonia</span>
+    </header>
+
+    <main>
+      <section class="bfv-hero">
+        <div class="bfv-col">
+          <p class="bfv-eyebrow">{t.eyebrow}</p>
+          <h1 class="bfv-h1">{t.h1} <em>{t.h1b}</em></h1>
+          <p class="bfv-sub">{t.sub}</p>
+        </div>
+        <div class="bfv-videocol">
+          <div class="bfv-video" data-video={VIDEO}>
+            <button class="bfv-play" type="button" aria-label={t.playHint}>
+              <span class="bfv-play-glow" aria-hidden="true"></span>
+              <span class="bfv-play-btn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
+              <span class="bfv-play-t">{t.play}</span>
+              <span class="bfv-play-h">{t.playHint}</span>
+            </button>
+            <span class="bfv-seal bfv-seal--video" aria-hidden="true"><b>{t.seal[0]}</b>{t.seal[1]}</span>
+          </div>
+        </div>
+        <div class="bfv-col bfv-ctabox">
+          <div class="bfv-ctarow">
+            <a class="bfv-cta" href={RESERVAR_URL}>{t.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+            <span class="bfv-seal" aria-hidden="true"><b>{t.seal[0]}</b>{t.seal[1]}</span>
+          </div>
+          <p class="bfv-trust">{t.trust.map((x) => <span>{x}</span>)}</p>
+        </div>
+      </section>
+
+      <section class="bfv-sec bfv-alt">
+        <div class="bfv-col">
+          <h2 class="bfv-h2">{t.proofTitle}</h2>
+          <p class="bfv-lead">{t.proofLead}</p>
+        </div>
+        <div class="bfv-wide bfv-stats">
+          {t.stats.map(([n, l, s]) => (<div class="bfv-stat"><b>{n}</b><span>{l}</span><small>{s}</small></div>))}
+        </div>
+      </section>
+
+      <section class="bfv-sec">
+        <div class="bfv-col">
+          <h2 class="bfv-h2">{t.gainsTitle}</h2>
+          <ol class="bfv-gains">
+            {t.gains.map(([h, p], i) => (<li><span class="bfv-n">{String(i + 1).padStart(2, "0")}</span><div><h3>{h}</h3><p>{p}</p></div></li>))}
+          </ol>
+          <div class="bfv-center"><a class="bfv-cta" href={RESERVAR_URL}>{t.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a></div>
+        </div>
+      </section>
+
+      <section class="bfv-sec bfv-alt">
+        <div class="bfv-col">
+          <div class="bfv-offer">
+            <span class="bfv-offer-tag">Black Friday</span>
+            <h2 class="bfv-h2">{t.stackTitle}</h2>
+            <ul class="bfv-stack">{t.stack.map((x) => (<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>{x}</li>))}</ul>
+            <p class="bfv-deal"><b>{t.seal[0]}</b>{t.stackDeal}</p>
+            <a class="bfv-cta bfv-cta--full" href={RESERVAR_URL}>{t.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+            <p class="bfv-note">{t.stackNote}</p>
           </div>
         </div>
       </section>
 
-      <section class="v-sec">
-        <div class="wrap">
-          <p class="sec-label">{t.pain.eyebrow}</p>
-          <h2 class="h2">{t.pain.title}</h2>
-          <div class="v-grid v-grid-2">
-            {t.pain.items.map(([h, p]) => (<article class="v-card"><h3>{h}</h3><p>{p}</p></article>))}
+      <section class="bfv-sec">
+        <div class="bfv-col">
+          <h2 class="bfv-h2">{t.faqTitle}</h2>
+          <div class="bfv-faq">
+            {t.faq.map(([q, a]) => (<details><summary>{q}<i aria-hidden="true"></i></summary><p>{a}</p></details>))}
           </div>
         </div>
       </section>
 
-      <section class="v-sec">
-        <div class="wrap">
-          <p class="sec-label">{t.shift.eyebrow}</p>
-          <h2 class="h2">{t.shift.title}</h2>
-          <div class="v-grid v-grid-2">
-            <article class="v-card v-before"><h3>{t.shift.before}</h3><ul>{t.shift.beforeItems.map((x) => <li>{x}</li>)}</ul></article>
-            <article class="v-card v-after"><h3>{t.shift.after}</h3><ul>{t.shift.afterItems.map((x) => <li>{x}</li>)}</ul></article>
+      <section class="bfv-sec bfv-final">
+        <div class="bfv-col bfv-center">
+          <h2 class="bfv-h2">{t.finalTitle}</h2>
+          <p class="bfv-lead">{t.finalBody}</p>
+          <div class="bfv-bigclock" data-clock>
+            {t.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}
           </div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap">
-          <p class="sec-label">{t.benefits.eyebrow}</p>
-          <h2 class="h2">{t.benefits.title}</h2>
-          <div class="v-grid v-grid-3">
-            {t.benefits.items.map(([f, b, p]) => (<article class="v-card"><h3>{f} <span class="v-muted">{b}</span></h3><p>{p}</p></article>))}
-          </div>
-          <div class="v-ctarow"><a class="v-cta" href={RESERVAR_URL}>{t.cta}</a></div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap">
-          <p class="sec-label">{t.proof.eyebrow}</p>
-          <h2 class="h2">{t.proof.title}</h2>
-          <p class="lead">{t.proof.lead}</p>
-          <div class="v-grid v-grid-3">
-            {t.proof.stats.map(([n, l, s]) => (<article class="v-card v-stat"><b>{n}</b><h3>{l}</h3><p>{s}</p></article>))}
-          </div>
-          <div class="v-grid v-grid-3">
-            {t.proof.cases.map(([h, p]) => (<article class="v-card"><h3>{h}</h3><p>{p}</p></article>))}
-          </div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap">
-          <p class="sec-label">{t.stack.eyebrow}</p>
-          <h2 class="h2">{t.stack.title}</h2>
-          <ul class="v-card v-stack">
-            {t.stack.items.map(([h, p]) => (<li><span class="v-tick" aria-hidden="true">✓</span><div><b>{h}</b><p>{p}</p></div></li>))}
-          </ul>
-          <p class="v-note">{t.stack.note}</p>
-          <div class="v-ctarow"><a class="v-cta" href={RESERVAR_URL}>{t.cta}</a></div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap">
-          <p class="sec-label">{t.compare.eyebrow}</p>
-          <h2 class="h2">{t.compare.title}</h2>
-          <div class="v-card v-tablewrap">
-            <table class="v-table">
-              <thead><tr>{t.compare.cols.map((c) => <th scope="col">{c}</th>)}</tr></thead>
-              <tbody>{t.compare.rows.map((r) => (<tr>{r.map((c, i) => (i === 0 ? <th scope="row">{c}</th> : <td>{c}</td>))}</tr>))}</tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap">
-          <h2 class="h2">{t.fit.title}</h2>
-          <div class="v-grid v-grid-2">
-            <article class="v-card v-after"><h3>{t.fit.yesTitle}</h3><ul>{t.fit.yes.map((x) => <li>{x}</li>)}</ul></article>
-            <article class="v-card v-before"><h3>{t.fit.noTitle}</h3><ul>{t.fit.no.map((x) => <li>{x}</li>)}</ul></article>
-          </div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap v-narrow v-center">
-          <div class="v-card v-urg">
-            <h2 class="h2">{t.urgency.title}</h2>
-            <p class="lead">{t.urgency.body}</p>
-            <a class="v-cta" href={RESERVAR_URL}>{t.cta}</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="v-sec">
-        <div class="wrap v-narrow">
-          <h2 class="h2">{t.faq.title}</h2>
-          <div class="v-faq">
-            {t.faq.items.map(([q, a]) => (<details class="v-card"><summary>{q}</summary><p>{a}</p></details>))}
-          </div>
-          <p class="v-center"><a class="v-link" href={WA} target="_blank" rel="noopener">{t.faq.ask}</a></p>
-        </div>
-      </section>
-
-      <section class="v-sec v-final">
-        <div class="wrap v-narrow v-center">
-          <h2 class="h2">{t.final.title}</h2>
-          <p class="lead">{t.final.body}</p>
-          <a class="v-cta" href={RESERVAR_URL}>{t.cta}</a>
-          <p class="v-note">{t.ctaNote.join(" · ")}</p>
-          <p><a class="v-link" href={product}>{t.productLink}</a></p>
+          <a class="bfv-cta" href={RESERVAR_URL}>{t.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+          <p class="bfv-trust">{t.trust.map((x) => <span>{x}</span>)}</p>
         </div>
       </section>
     </main>
 
-    <WebFooter lang={lang} />
+    <p class="bfv-foot">© 2026 {t.rights}</p>
+
+    <!-- WHATSAPP-EQUIPO-2: globo con mensaje del equipo tras unos segundos, como intro-training. -->
+    <div class="bfv-tip" id="bfvTip" role="dialog" aria-label={t.wa.role}>
+      <button class="bfv-tip-x" type="button" aria-label={t.wa.close}>&times;</button>
+      <div class="bfv-tip-head"><img src={AVATAR} alt="" width="38" height="38" /><span><b>{t.wa.name}</b>{t.wa.role}</span></div>
+      <p>{t.wa.msg}<small>{t.wa.sub}</small></p>
+      <a class="bfv-tip-btn" href={WA} target="_blank" rel="noopener">{t.wa.btn}</a>
+    </div>
+    <a class="bfv-fab" id="bfvFab" href={WA} target="_blank" rel="noopener" aria-label={t.wa.fab}>
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.6c-2 0-4-.6-5.7-1.6l-.4-.2-3.9 1 1-3.8-.3-.4A10.6 10.6 0 1 1 16 26.6zm5.8-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.6 3.6 0 0 0-1.1 2.7 6.3 6.3 0 0 0 1.3 3.3 14.4 14.4 0 0 0 5.5 4.9c2 .9 2.8.9 3.8.8a3.3 3.3 0 0 0 2.2-1.5 2.7 2.7 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.3z" /></svg>
+    </a>
 
     <script is:inline>
       (() => {
+        // Cuenta atrás hasta el 30-nov (hora de Madrid); al acabar se oculta.
         const end = new Date("2026-11-30T23:59:59+01:00").getTime();
-        const boxes = document.querySelectorAll("[data-count]");
+        const clocks = document.querySelectorAll("[data-clock]");
         const tick = () => {
           const d = end - Date.now();
-          if (d <= 0) { boxes.forEach((b) => { b.hidden = true; }); return false; }
+          if (d <= 0) { clocks.forEach((c) => { c.hidden = true; }); return false; }
           const v = [Math.floor(d / 864e5), Math.floor(d / 36e5) % 24, Math.floor(d / 6e4) % 60, Math.floor(d / 1e3) % 60];
-          boxes.forEach((b) => b.querySelectorAll("[data-u]").forEach((el) => { el.textContent = String(v[+el.dataset.u]).padStart(2, "0"); }));
+          clocks.forEach((c) => c.querySelectorAll("[data-u]").forEach((el) => { el.textContent = String(v[+el.dataset.u]).padStart(2, "0"); }));
           return true;
         };
         if (tick()) setInterval(tick, 1000);
+
+        // Fachada del vídeo: el iframe de Vimeo solo se carga al pulsar (con autoplay).
+        const box = document.querySelector("[data-video]");
+        box?.querySelector(".bfv-play")?.addEventListener("click", () => {
+          const f = document.createElement("iframe");
+          f.src = box.dataset.video;
+          f.title = "BF_VSL_training_final";
+          f.allow = "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share";
+          f.referrerPolicy = "strict-origin-when-cross-origin";
+          f.setAttribute("frameborder", "0");
+          box.replaceChildren(f);
+          box.classList.add("is-playing");
+          const s = document.createElement("script");
+          s.src = "https://player.vimeo.com/api/player.js";
+          document.head.appendChild(s);
+        }, { once: true });
+
+        // Globo de WhatsApp: aparece a los 6 s; la X lo cierra; al pasar por el botón vuelve.
+        const tip = document.getElementById("bfvTip"), fab = document.getElementById("bfvFab");
+        let closed = false;
+        const show = () => { if (!closed) tip.classList.add("on"); };
+        setTimeout(show, 6000);
+        fab.addEventListener("mouseenter", () => { closed = false; show(); });
+        tip.querySelector(".bfv-tip-x").addEventListener("click", () => { closed = true; tip.classList.remove("on"); });
       })();
     </script>
   </body>
