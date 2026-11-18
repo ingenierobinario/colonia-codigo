@@ -21,9 +21,11 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Obtener la última versión pública estable y verificar su ZIP
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=$(curl --fail --silent --show-error --retry 3 https://api.github.com/repos/ingenierobinario/colonia/releases/latest | jq -er '.tag_name')
+          tag=$(gh api repos/ingenierobinario/colonia/releases/latest --jq .tag_name)
           [[ "$tag" =~ ^v(2)\.([0-9]+)\.([0-9]+)$ ]]
           candidata="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))"
           zip="Colonia-${tag#v}-mac-arm64.zip"
