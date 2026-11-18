@@ -5,7 +5,9 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { _electron, type ElectronApplication, expect, type Page, test } from "@playwright/test";
+import { removeDir } from "../../apps/core/src/testkit/platform.ts";
 import { rpc, until, world } from "../specs/kit.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -22,7 +24,7 @@ test.beforeAll(async () => {
   fs.writeFileSync(
     entry,
     `
-    const { Tray } = require("electron");
+    const { Tray, nativeImage } = require("electron");
     const on = Tray.prototype.on;
     Tray.prototype.on = function (...args) {
       globalThis.coloniaTestTray = this;
@@ -30,8 +32,9 @@ test.beforeAll(async () => {
     };
     const setImage = Tray.prototype.setImage;
     Tray.prototype.setImage = function (image) {
-      globalThis.coloniaTestTrayImage = image.toDataURL();
-      globalThis.coloniaTestTrayTemplate = image.isTemplateImage();
+      const captured = typeof image === "string" ? nativeImage.createFromPath(image) : image;
+      globalThis.coloniaTestTrayImage = captured.toDataURL();
+      globalThis.coloniaTestTrayTemplate = process.platform === "darwin" && captured.isTemplateImage();
       return setImage.call(this, image);
     };
     const setToolTip = Tray.prototype.setToolTip;
@@ -39,7 +42,7 @@ test.beforeAll(async () => {
       globalThis.coloniaTestTrayTooltip = text;
       return setToolTip.call(this, text);
     };
-    void import(${JSON.stringify(path.join(root, "apps/desktop/dist/main.js"))});
+    void import(${JSON.stringify(pathToFileURL(path.join(root, "apps/desktop/dist/main.js")).href)});
   `,
   );
   app = await _electron.launch({
@@ -66,7 +69,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await app?.close();
-  fs.rmSync(home, { recursive: true, force: true });
+  if (home) await removeDir(home);
 });
 
 /** The menu-bar icon, which the app makes with the quick chat once it is up (the entry script keeps it for tests). */

@@ -6,7 +6,7 @@ import path from "node:path";
 import { _electron, type ElectronApplication, expect, type Page, test } from "@playwright/test";
 import { testConfig } from "../../apps/core/src/config.ts";
 import { createCore } from "../../apps/core/src/server.ts";
-import { tempDir } from "../../apps/core/src/testkit/platform.ts";
+import { removeDir, tempDir } from "../../apps/core/src/testkit/platform.ts";
 import { saveLocalTarget } from "../../packages/install/src/paths.ts";
 import { installFakeSsh } from "../fake-ssh.ts";
 import { rpc, world } from "../specs/kit.ts";
@@ -16,9 +16,13 @@ const core = `http://127.0.0.1:${process.env.E2E_PORT ?? 7460}`;
 let home: string;
 let coreHome: string;
 
-const launch = (env: Record<string, string> = {}) =>
+const launch = (env: Record<string, string> = {}, language?: "en" | "es") =>
   _electron.launch({
-    args: [path.join(root, "apps/desktop"), ...(process.getuid?.() === 0 ? ["--no-sandbox"] : [])],
+    args: [
+      ...(language ? [`--lang=${language}`] : []),
+      path.join(root, "apps/desktop"),
+      ...(process.getuid?.() === 0 ? ["--no-sandbox"] : []),
+    ],
     env: {
       ...process.env,
       HOME: home,
@@ -86,7 +90,9 @@ test.beforeAll(async () => {
   home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-connect-"));
   fs.mkdirSync(path.join(home, "desktop"), { recursive: true });
 });
-test.afterAll(() => fs.rmSync(home, { recursive: true, force: true }));
+test.afterAll(async () => {
+  if (home) await removeDir(home);
+});
 
 test("desktop installed from the web reopens the same core without another connection setup", async () => {
   const dataDir = path.join(home, "installed-desktop");
@@ -163,7 +169,7 @@ test("the first run asks server or client; a new server opens its installed welc
     const language = await panel.locator("html").getAttribute("lang");
     expect(["en", "es"]).toContain(language);
     await expect(panel.locator(".wiz__pill")).toContainText(
-      language === "es" ? "Colonia está instalado" : "Colonia is installed",
+      language === "es" ? "Colonia está instalada" : "Colonia is installed",
     );
     expect(JSON.parse(fs.readFileSync(path.join(dataDir, "connection.json"), "utf8"))).toEqual({ mode: "local" });
     await first.close();
@@ -172,7 +178,7 @@ test("the first run asks server or client; a new server opens its installed welc
     again = await launch(env);
     const reopened = await windowAt(again, (u) => u.startsWith(fresh.url));
     await expect(reopened.locator(".wiz")).toBeVisible();
-    await expect(reopened.locator(".wiz__pill")).not.toContainText(/Colonia (?:está instalado|is installed)/);
+    await expect(reopened.locator(".wiz__pill")).not.toContainText(/Colonia (?:está instalada|is installed)/);
     expect(again.windows().some((p) => p.url().startsWith("colonia-app://"))).toBe(false);
     expect(again.windows().some((p) => p.url().includes("welcome="))).toBe(false);
   } finally {
@@ -411,28 +417,44 @@ test("COLONIA_URL stays connect-only even with a saved local choice", async () =
   expect((await fetch(`${core}/health`)).ok).toBe(true);
 });
 
-test("a local port belonging to another home is not adopted", async () => {
-  const other = path.join(home, "other-home");
-  fs.mkdirSync(other, { recursive: true });
-  fs.writeFileSync(path.join(other, "home-id"), "another-installation");
-  const app = await launch({ COLONIA_HOME: other, COLONIA_CONNECTION: "local" });
-  try {
-    const page = await windowAt(app, (u) => u.startsWith("data:text/html") && u.endsWith("#colonia-connecting"));
-    await expect(page.getByRole("status")).toContainText(/belongs to another home|pertenece a otra instalación/);
-    await expect(page.getByRole("status")).not.toContainText(/is not answering yet|todavía no responde/);
-    expect(app.windows().some((p) => p.url().startsWith(core))).toBe(false);
-    fs.writeFileSync(path.join(other, "home-id"), "");
-    await expect(page.getByRole("status")).toContainText(/identity is missing|Falta la identidad/);
-    await expect(page.getByRole("status")).not.toContainText(/belongs to another home|pertenece a otra instalación/);
-    expect(app.windows().some((p) => p.url().startsWith(core))).toBe(false);
-    fs.copyFileSync(path.join(coreHome, "home-id"), path.join(other, "home-id"));
-    const panel = await windowAt(app, (u) => u.startsWith(core));
-    await expect(panel.locator("#root > *").first()).toBeVisible();
-  } finally {
-    await app.close();
-  }
-  expect((await fetch(`${core}/health`)).ok).toBe(true);
-});
+for (const lang of ["en", "es"] as const) {
+  test(`a local port belonging to another home is not adopted (${lang})`, async () => {
+    const other = path.join(home, `other-home-${lang}`);
+    fs.mkdirSync(other, { recursive: true });
+    fs.writeFileSync(path.join(other, "home-id"), "another-installation");
+    const app = await launch({ COLONIA_HOME: other, COLONIA_CONNECTION: "local" }, lang);
+    try {
+      expect(await app.evaluate(({ app }) => app.getLocale().split("-")[0])).toBe(lang);
+      const copy =
+        lang === "es"
+          ? {
+              foreign: "Este puerto pertenece a otra instalación de Colonia.",
+              waiting: "Colonia en este equipo todavía no responde.",
+              missing: "Falta la identidad de la instalación local o del core.",
+            }
+          : {
+              foreign: "This port belongs to another Colonia installation.",
+              waiting: "Colonia on this computer is not answering yet.",
+              missing: "The local installation or core identity is missing.",
+            };
+      const page = await windowAt(app, (u) => u.startsWith("data:text/html") && u.endsWith("#colonia-connecting"));
+      const status = page.getByRole("status");
+      await expect(status).toContainText(copy.foreign);
+      await expect(status).not.toContainText(copy.waiting);
+      expect(app.windows().some((p) => p.url().startsWith(core))).toBe(false);
+      fs.writeFileSync(path.join(other, "home-id"), "");
+      await expect(status).toContainText(copy.missing);
+      await expect(status).not.toContainText(copy.foreign);
+      expect(app.windows().some((p) => p.url().startsWith(core))).toBe(false);
+      fs.copyFileSync(path.join(coreHome, "home-id"), path.join(other, "home-id"));
+      const panel = await windowAt(app, (u) => u.startsWith(core));
+      await expect(panel.locator(".shell")).toBeVisible();
+    } finally {
+      await app.close();
+    }
+    expect((await fetch(`${core}/health`)).ok).toBe(true);
+  });
+}
 
 /**
  * A desktop that already chose a server over SSH (the fake ssh, already logged in), and that server's Colonia: its own
