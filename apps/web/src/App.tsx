@@ -1,5 +1,6 @@
 import { ColoniaProvider } from "@colonia/ui";
 import { type CSSProperties, Suspense, useEffect, useLayoutEffect } from "react";
+import { loadThreadWhenReady } from "./data/actions.ts";
 import { startLive } from "./data/live.ts";
 import { checkAccess, useGate } from "./data/pairing.ts";
 import { usePrefs } from "./data/prefs.ts";
@@ -89,7 +90,12 @@ function Main() {
 function Panel() {
   const setup = useSetup((s) => s.open);
   // Las peticiones iniciales de la barra lateral comparten las conexiones HTTP con el chat.
-  useLayoutEffect(() => startLive(), []);
+  useLayoutEffect(() => {
+    // La ventana rápida siempre abre el chat principal, aunque su módulo aún se esté descargando.
+    const stop = QUICK ? loadThreadWhenReady("home") : undefined;
+    startLive();
+    return stop;
+  }, []);
   useEffect(() => {
     if (QUICK || IS_BROWSER_WINDOW || ARTIFACT) return;
     void loadSetup();

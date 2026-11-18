@@ -130,6 +130,24 @@ export async function loadTabs(): Promise<void> {
   }
 }
 
+/** El chat montado pide su historial al recibirse las listas, antes de los sondeos secundarios. */
+export function loadThreadWhenReady(id: string): (() => void) | undefined {
+  const open = () => {
+    if (data.get().threadLoad[id] == null) void loadThread(id);
+  };
+  if (data.get().ready) {
+    open();
+    return;
+  }
+  const stop = data.subscribe(() => {
+    if (data.get().ready) {
+      stop();
+      open();
+    }
+  });
+  return stop;
+}
+
 export async function loadThread(id: string): Promise<void> {
   const load = data.get().threadLoad[id];
   if (load === "loading") return;

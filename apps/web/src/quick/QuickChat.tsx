@@ -1,9 +1,9 @@
 import "../styles/quick.css";
 import { AgentAvatar, IconButton, Icons, Skeleton } from "@colonia/ui";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { ChatComposer } from "../chat/composer/ChatComposer.tsx";
 import { Transcript } from "../chat/Transcript.tsx";
-import { loadThread, markRead } from "../data/actions.ts";
+import { loadThreadWhenReady, markRead } from "../data/actions.ts";
 import { blobOf, threadAgent } from "../data/identity.ts";
 import { isNewChat, newChatId, useNewChat } from "../data/newChat.ts";
 import { useData } from "../data/state.ts";
@@ -15,7 +15,6 @@ import { useT } from "../i18n/index.ts";
  */
 export function QuickChat() {
   const t = useT();
-  const ready = useData((s) => s.ready);
   const [threadId, setThreadId] = useState("home");
   const stored = useData((s) => s.threads[threadId]);
   const fresh = useNewChat(threadId);
@@ -24,9 +23,9 @@ export function QuickChat() {
   const agents = useData((s) => s.agents);
   const agent = thread ? threadAgent(thread, agents) : undefined;
 
-  useEffect(() => {
-    if (ready && load == null && !isNewChat(threadId)) void loadThread(threadId);
-  }, [ready, load, threadId]);
+  useLayoutEffect(() => {
+    if (load == null && !isNewChat(threadId)) return loadThreadWhenReady(threadId);
+  }, [load, threadId]);
   const unread = thread?.unread ?? 0;
   useEffect(() => {
     if (unread > 0 && load === "ready") void markRead(threadId);
