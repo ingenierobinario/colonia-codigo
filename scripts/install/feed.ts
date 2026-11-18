@@ -69,9 +69,11 @@ http
       res.writeHead(404).end("not found\n");
     }
   })
-  .listen(port, "0.0.0.0", () => {
+  .listen(port, process.env.COLONIA_FEED_HOST ?? "0.0.0.0", () => {
     const lan = Object.values(os.networkInterfaces())
       .flat()
       .find((i) => i && i.family === "IPv4" && !i.internal)?.address;
-    console.log(`release feed on http://${lan ?? "127.0.0.1"}:${port} from ${dirs.join(", ")}`);
+    console.log(
+      `release feed on http://${process.env.COLONIA_FEED_HOST ?? lan ?? "127.0.0.1"}:${port} from ${dirs.join(", ")}`,
+    );
   });

@@ -1,0 +1,43 @@
+name: Actualización de escritorio en macOS
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actualizar:
+    runs-on: macos-15
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Obtener la última versión pública estable y verificar su ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=$(curl --fail --silent --show-error --retry 3 https://api.github.com/repos/ingenierobinario/colonia/releases/latest | jq -er '.tag_name')
+          [[ "$tag" =~ ^v(2)\.([0-9]+)\.([0-9]+)$ ]]
+          candidata="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))"
+          zip="Colonia-${tag#v}-mac-arm64.zip"
+          dir="$RUNNER_TEMP/colonia-publica"
+          mkdir "$dir"
+          for archivo in "$zip" "$zip.sha256"; do
+            curl --fail --silent --show-error --location --retry 3 \
+              "https://github.com/ingenierobinario/colonia/releases/download/$tag/$archivo" --output "$dir/$archivo"
+          done
+          (cd "$dir" && shasum -a 256 -c "$zip.sha256")
+          echo "PREVIOUS_VERSION=${tag#v}" >> "$GITHUB_ENV"
+          echo "PREVIOUS_ZIP=$dir/$zip" >> "$GITHUB_ENV"
+          echo "COLONIA_VERSION=$candidata" >> "$GITHUB_ENV"
+      - name: Empaquetar el commit con la siguiente versión en el feed temporal
+        run: |
+          pnpm package:mac --arm64
+          node scripts/release-assets.ts "$COLONIA_VERSION" out --platform mac-arm64
+      - name: Actualizar la aplicación pública y comprobar su nueva ventana
+        run: node scripts/smoke-mac-update.ts
