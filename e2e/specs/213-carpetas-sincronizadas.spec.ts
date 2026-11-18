@@ -54,7 +54,8 @@ for (const language of ["es", "en"] as const)
         enabled = body.enabled;
         return route.fulfill({ json: { ok: true, result: status() } });
       });
-      await page.goto("/#view=equipos");
+      const ready = page.waitForResponse((r) => r.url().endsWith("/rpc/sync.status")).then((r) => r.finished());
+      await Promise.all([page.goto("/#view=equipos"), ready]);
       const settings = page.getByRole("group", { name: /Carpetas sincronizadas|Synced folders/ });
       await expect(settings).toBeVisible();
       await settings.locator("summary").click();

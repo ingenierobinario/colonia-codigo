@@ -44,7 +44,13 @@ test("el enlace de Rutinas muestra el proyecto antes de welcome y recupera los c
         if (subscribed) socket.send(raw);
       });
     });
-    await page.goto(`/#project=${project.id}&tab=routines`, { waitUntil: "domcontentloaded" });
+    const view = page.waitForResponse(/\/assets\/ProjectScreen-[\w-]+\.js$/).then((r) => r.finished());
+    const data = page.waitForResponse((r) => r.url().endsWith("/rpc/projects.list")).then((r) => r.finished());
+    await Promise.all([
+      page.goto(`/#project=${project.id}&tab=routines`, { waitUntil: "domcontentloaded" }),
+      view,
+      data,
+    ]);
     await expect(page.getByRole("region", { name: project.name, exact: true })).toBeVisible();
     expect(subscribed).toBe(false);
     expect(calls).toBe(1);
