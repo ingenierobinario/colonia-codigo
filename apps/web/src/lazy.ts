@@ -81,7 +81,9 @@ export const ComputersScreen = late(() =>
   import("./computers/ComputersScreen.tsx").then((m) => ({ default: m.ComputersScreen })),
 );
 export const EquiposScreen = late(() =>
-  import("./equipos/EquiposScreen.tsx").then((m) => ({ default: m.EquiposScreen })),
+  Promise.all([import("./equipos/EquiposScreen.tsx"), addPack("equipos")]).then(([m]) => ({
+    default: m.EquiposScreen,
+  })),
 );
 export const UsageDialog = late(() => import("./shell/UsagePanels.tsx").then((m) => ({ default: m.UsageDialog })));
 export const UsageSummary = late(() => import("./shell/UsagePanels.tsx").then((m) => ({ default: m.UsageSummary })));
