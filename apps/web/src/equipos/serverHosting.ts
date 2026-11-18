@@ -1,10 +1,11 @@
 import { LINKS } from "../data/links.ts";
+import { releaseBefore } from "../data/release.ts";
 
 export const RAILWAY_REFERRAL = "dBUtql";
 const railwayId = /^[A-Za-z0-9_-]+$/;
 
 /** Los identificadores públicos proceden de la plantilla y del enlace de invitación del editor. */
-export function hostingLinks(language: string, template?: string, referral?: string) {
+export function hostingLinks(language: string, template?: string, referral?: string, version?: string) {
   const guide = new URL(language === "es" ? "es/docs/devices/server/" : "docs/devices/server/", LINKS.docs).href;
   const signup = new URL("https://railway.com/");
   const invitation = referral || RAILWAY_REFERRAL;
@@ -12,7 +13,13 @@ export function hostingLinks(language: string, template?: string, referral?: str
   if (referred) signup.searchParams.set("referralCode", invitation);
   const deploy = template && railwayId.test(template) ? new URL(signup) : undefined;
   if (deploy) deploy.pathname = `/new/template/${template}`;
-  return { guide, signup: signup.href, deploy: deploy?.href, referred };
+  // El ZIP comenzó a distribuirse con la 2.36.51. Las compilaciones de desarrollo consultan el catálogo público.
+  const download = releaseBefore("2.36.50", version ?? "");
+  const files = {
+    download,
+    url: download ? `${LINKS.releases}/download/v${version}/colonia-railway-${version}.zip` : LINKS.releases,
+  };
+  return { guide, signup: signup.href, deploy: deploy?.href, referred, files };
 }
 
 /** Invitación efímera para el escritorio. La dirección y el código viajan separados. */

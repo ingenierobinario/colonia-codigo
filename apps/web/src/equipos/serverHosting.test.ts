@@ -29,6 +29,33 @@ test("sin plantilla válida se puede instalar en un servidor siguiendo la guía 
   assert.equal(hostingLinks("en").guide, "https://colonia.ingenierobinario.com/docs/devices/server/");
 });
 
+test("cada entrega con paquete ofrece el ZIP que pertenece a esa misma versión", () => {
+  for (const version of ["2.36.51", "2.37.0", "3.0.0"]) {
+    assert.deepEqual(hostingLinks("es", undefined, undefined, version).files, {
+      url: `https://github.com/ingenierobinario/colonia/releases/download/v${version}/colonia-railway-${version}.zip`,
+      download: true,
+    });
+  }
+});
+
+test("el desarrollo, las versiones sin ZIP y un valor inválido abren las entregas públicas", () => {
+  for (const version of [
+    undefined,
+    "",
+    "0.0.0",
+    "2.36.49",
+    "2.36.50",
+    "2.36.51-dev.4+123abc",
+    "2.36.51-rc.1",
+    "2.36.51/otro",
+  ]) {
+    assert.deepEqual(hostingLinks("en", undefined, undefined, version).files, {
+      url: "https://github.com/ingenierobinario/colonia/releases",
+      download: false,
+    });
+  }
+});
+
 test("el código temporal queda separado del dominio HTTPS que se sincroniza", () => {
   assert.deepEqual(cloudInvitation(" https://prueba.example/  ABCD-2345 "), {
     address: "https://prueba.example",

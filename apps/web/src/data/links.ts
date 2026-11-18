@@ -1,5 +1,6 @@
 // Where Colonia lives outside the app.
 export const LINKS = {
+  releases: "https://github.com/ingenierobinario/colonia/releases",
   docs: "https://colonia.ingenierobinario.com/",
 } as const;
 

@@ -1,5 +1,17 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { Locator, Page } from "@playwright/test";
+import { releaseBefore } from "../../apps/web/src/data/release.ts";
+import { buildVersion } from "../../scripts/version.ts";
 import { expect, rpc, test } from "./kit.ts";
+
+const build =
+  process.env.COLONIA_VERSION ||
+  buildVersion(
+    JSON.parse(readFileSync(new URL("../../apps/desktop/package.json", import.meta.url), "utf8")).version,
+    fileURLToPath(new URL("../../apps/web/", import.meta.url)),
+  );
+const direct = releaseBefore("2.36.50", build);
 
 function teamScreenLoaded(page: Page) {
   return page.waitForResponse(/\/assets\/EquiposScreen-[\w-]+\.js$/).then((response) => response.finished());
@@ -31,7 +43,7 @@ test("Mis equipos empieza a descargar su traducción mientras llega la pantalla"
 });
 
 async function fits(group: Locator) {
-  const controls = group.locator("button, input");
+  const controls = group.locator("button, input, a[href]");
   for (const width of [390, 768, 960, 1200, 1440]) {
     await group.page().setViewportSize({ width, height: 900 });
     await expect
@@ -102,6 +114,24 @@ for (const language of ["es", "en"] as const) {
       expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
       await expect(card).toContainText(/comisión|commission/);
       await expect(card).not.toContainText(/Railway cobra|Railway charges|coste|cost depends/i);
+      const packageLink = card.getByRole("link", { name: /Railway/ });
+      if (template) {
+        await expect(packageLink).toHaveCount(0);
+      } else {
+        const labels: [string, string] =
+          language === "es"
+            ? [
+                "Buscar el paquete y la guía de Railway en las versiones publicadas",
+                "Descargar el paquete y la guía de Railway",
+              ]
+            : ["Find the Railway package and guide in the public releases", "Download the Railway package and guide"];
+        const releases = "https://github.com/ingenierobinario/colonia/releases";
+        const expected = direct ? `${releases}/download/v${build}/colonia-railway-${build}.zip` : releases;
+        await expect(packageLink).toHaveAccessibleName(labels[direct ? 1 : 0]);
+        await expect(packageLink).toHaveAttribute("href", expected);
+        await packageLink.click();
+        expect(await page.evaluate(() => sessionStorage.getItem("enlace"))).toBe(expected);
+      }
       await card.getByRole("button", { name: /propio servidor|my own server/ }).click();
       expect(await page.evaluate(() => sessionStorage.getItem("enlace"))).toBe(
         `https://colonia.ingenierobinario.com/${language === "es" ? "es/" : ""}docs/devices/server/`,

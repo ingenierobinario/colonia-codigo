@@ -65,8 +65,9 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.hosting": "Colonia en un servidor",
   "equipos.hostingHint": "Tus agentes pueden seguir trabajando cuando apagas este ordenador.",
   "equipos.hostingSignup": "Abrir Railway",
-  "equipos.hostingManual":
-    "Puedes iniciar sesión o crear tu cuenta en Railway. La guía explica cómo instalar el paquete de Colonia en tu cuenta.",
+  "equipos.hostingManual": "Para instalar Colonia en tu cuenta de Railway, sigue la guía incluida en el paquete.",
+  "equipos.hostingDownload": "Descargar el paquete y la guía de Railway",
+  "equipos.hostingReleases": "Buscar el paquete y la guía de Railway en las versiones publicadas",
   "equipos.hostingRailway": "Crear mi servidor en Railway",
   "equipos.hostingGuide": "Instalar en mi propio servidor",
   "equipos.hostingPlan": "Railway te pedirá iniciar sesión y confirmar la creación del servidor.",

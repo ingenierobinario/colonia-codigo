@@ -460,6 +460,21 @@
   overflow-wrap: anywhere;
 }
 
+.eq-hosting-manual {
+  margin: 0;
+  font-size: 13px;
+  color: var(--colonia-fg-muted);
+}
+.eq-hosting-manual a {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 4px;
+  color: var(--colonia-fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
 .eq-hosting-pair {
   display: grid;
   gap: 0.65rem;

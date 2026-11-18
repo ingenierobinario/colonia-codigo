@@ -1,29 +1,33 @@
-# Desplegar Colonia en Railway
+# Instalar Colonia en tu cuenta de Railway
 
-Este archivo contiene la fuente de una plantilla de servidor. El Dockerfile descarga el bundle de la versión indicada en `scripts/docker/railway/estable.txt` desde las versiones públicas de Colonia y comprueba el SHA-256 de la arquitectura antes de instalarlo.
+El ZIP incluye los archivos para crear un servidor que siga funcionando al apagar el PC. Necesitarás una cuenta de Railway y un repositorio de GitHub en el que puedas subir archivos. Puedes hacer la instalación desde el navegador.
 
-1. Descomprime el ZIP en un repositorio que Railway pueda leer. Conserva las rutas y los finales de línea LF.
-2. En el editor de plantillas de Railway, añade un servicio desde ese repositorio. Usa su raíz como directorio de construcción y define `RAILWAY_DOCKERFILE_PATH=/scripts/docker/Dockerfile`. Deja el comando de inicio vacío.
-3. En los ajustes de despliegue desactiva `Serverless` (suspensión por inactividad) para que el servidor funcione las 24 horas. Adjunta un volumen en `/data` y usa una réplica. Define `COLONIA_HOME=/data/colonia` y `RAILWAY_RUN_UID=0`. El arranque prepara el volumen y pasa al usuario del servidor.
-4. Crea la variable de plantilla `COLONIA_TOKEN` con el valor `${{secret(64)}}`. Railway generará una clave al instalar cada instancia y la conservará al redesplegar.
-5. Genera un dominio HTTP público y configura `/health` como ruta de comprobación. El servidor usa el puerto asignado por Railway y admite el origen HTTPS de ese dominio.
-6. Tras desplegar, abre el dominio HTTPS del servicio. La clave para conectarte está en `COLONIA_TOKEN` de las variables privadas de tu instancia.
+1. **Sube el contenido del ZIP a GitHub.** Descomprímelo y sube la carpeta `scripts` y el archivo `README.md` a la raíz de un repositorio tuyo. Al abrir el repositorio debes ver `scripts/docker/Dockerfile`. Conserva la estructura y los finales de línea LF.
+2. **Crea un servicio en Railway.** En tu cuenta, crea un proyecto vacío y añade un servicio vacío. En **Settings → Source → Connect Repo**, selecciona el repositorio anterior. Si Railway te pide acceso a GitHub, concede acceso a ese repositorio. Usa la raíz del repositorio y deja vacío el comando de inicio.
+3. **Reserva espacio para los datos.** En el proyecto, añade un volumen a ese servicio con la ruta de montaje `/data`. En los ajustes del servicio, usa una réplica y desactiva **Serverless** para que el servidor siga activo.
+4. **Configura las variables del servicio.** En **Variables**, añade `RAILWAY_DOCKERFILE_PATH=/scripts/docker/Dockerfile`, `COLONIA_HOME=/data/colonia` y `RAILWAY_RUN_UID=0`. En tu gestor de contraseñas genera una clave aleatoria de al menos 32 caracteres y guárdala como `COLONIA_TOKEN` en las variables privadas del servicio. Conserva la clave en el gestor. Cuando vincules tu navegador, introdúcela únicamente en el campo privado del paso 6.
+5. **Abre el servicio por HTTPS.** En **Settings → Networking → Public Networking**, pulsa **Generate Domain**. En los ajustes de despliegue, indica `/health` como ruta de comprobación. Aplica los cambios y despliega. El servidor usa el puerto asignado por Railway.
+6. **Entra en tu Colonia.** Cuando el despliegue esté listo, abre el dominio HTTPS del servicio. Elige **Este servidor es mío** e introduce la clave en el campo privado. Para enlazar el escritorio, abre **Mis equipos → Generar invitación para el PC** en el servidor y pega la invitación en **Mis equipos** del PC.
 
-Para actualizar, sustituye la fuente por el ZIP de la nueva entrega y vuelve a desplegar conservando el servicio, su clave y el volumen.
+Para actualizar, sube los archivos del nuevo ZIP al mismo repositorio y vuelve a desplegar el servicio conservando su volumen y su clave. El Dockerfile comprueba el SHA-256 del motor de Colonia que corresponde a la versión del ZIP y a la arquitectura del servidor.
 
-[Editor de plantillas de Railway](https://docs.railway.com/templates/create) · [Volúmenes de Railway](https://docs.railway.com/volumes) · [Versiones públicas de Colonia](https://github.com/ingenierobinario/colonia/releases)
+**Si publicas una plantilla para otras personas**, usa el editor de plantillas con los mismos ajustes de servicio y la variable de plantilla `COLONIA_TOKEN=${{secret(64)}}`. Railway generará una clave distinta para cada instalación.
 
-## English
+[Crear un servicio en Railway](https://docs.railway.com/services) · [Volúmenes](https://docs.railway.com/volumes) · [Dominios](https://docs.railway.com/networking/public-networking) · [Versiones de Colonia](https://github.com/ingenierobinario/colonia/releases)
 
-This ZIP contains the source for a Railway service running Colonia. The Dockerfile downloads the selected public Linux release and verifies its SHA-256 checksum for the target architecture.
+## Install Colonia in your Railway account
 
-1. Unzip into a repository that Railway can read. Preserve the directory layout and use LF line endings.
-2. In Railway's template editor, add a service from that repository. Use the repository root as the build directory, set `RAILWAY_DOCKERFILE_PATH=/scripts/docker/Dockerfile`, and leave the start command empty.
-3. Turn off **Serverless** to keep Colonia running while the desktop is off. Use one replica, mount a volume at `/data`, and set `COLONIA_HOME=/data/colonia` and `RAILWAY_RUN_UID=0`. The entrypoint prepares the volume, then starts Colonia as an unprivileged user.
-4. Set the template variable `COLONIA_TOKEN` to `${{secret(64)}}`. Each installation gets its own key, which is preserved across redeployments.
-5. Generate a public HTTP domain and set the health check path to `/health`. Colonia uses Railway's assigned port and accepts the domain's HTTPS origin.
-6. Open the service's HTTPS address. The key for linking your browser is in the private `COLONIA_TOKEN` variable.
+This ZIP contains the files for a server that stays online when your PC is off. You need a Railway account and a GitHub repository where you can upload files. You can complete the setup in your browser.
 
-To update, use the ZIP from the next release and redeploy the same service with its existing key and volume.
+1. **Upload the contents of the ZIP to GitHub.** Extract it and upload the `scripts` folder and `README.md` to the root of your repository. You should see `scripts/docker/Dockerfile` when browsing the repository. Keep the directory structure and LF line endings.
+2. **Create a Railway service.** In your Railway account, create an empty project and add an empty service. Under **Settings → Source → Connect Repo**, choose your repository. If Railway asks for GitHub access, grant it access to that repository. Use the repository root and leave the start command empty.
+3. **Give Colonia persistent storage.** In the project, add a volume to this service and mount it at `/data`. In the service settings, use one replica and turn off **Serverless** to keep the server running.
+4. **Set the service variables.** Under **Variables**, add `RAILWAY_DOCKERFILE_PATH=/scripts/docker/Dockerfile`, `COLONIA_HOME=/data/colonia` and `RAILWAY_RUN_UID=0`. Use a password manager to generate a random key of at least 32 characters and enter it as `COLONIA_TOKEN` in the private service variables. Keep the key in your password manager. When linking your browser, enter the key only in the private field in step 6.
+5. **Enable HTTPS.** Under **Settings → Networking → Public Networking**, select **Generate Domain**. In deployment settings, enter `/health` as the health check path. Apply the changes and deploy. Colonia uses the port Railway assigns.
+6. **Open your Colonia.** When the deployment is ready, open the service’s HTTPS address. Choose **I own this server** and enter the key in the private field. To link your desktop, open **My computers → Create desktop invitation** on the server and paste the invitation into **My computers** on your PC.
 
-[Railway template editor](https://docs.railway.com/templates/create) · [Railway volumes](https://docs.railway.com/volumes) · [Colonia releases](https://github.com/ingenierobinario/colonia/releases)
+To update, upload the new ZIP’s contents to the same repository and redeploy the service with its existing volume and key. The Dockerfile verifies the SHA-256 checksum for the Colonia version in the ZIP and the server’s architecture.
+
+**If you publish a template for others**, use the template editor with the same service settings and set the template variable to `COLONIA_TOKEN=${{secret(64)}}`. Railway generates a separate key for each installation.
+
+[Create a Railway service](https://docs.railway.com/services) · [Volumes](https://docs.railway.com/volumes) · [Domains](https://docs.railway.com/networking/public-networking) · [Colonia releases](https://github.com/ingenierobinario/colonia/releases)

@@ -16,10 +16,11 @@ export function ServerHosting() {
     section.current.scrollIntoView({ block: "start" });
     nav.set({ focus: undefined });
   }, [focus]);
-  const { deploy, signup, guide, referred } = hostingLinks(
+  const { deploy, signup, guide, referred, files } = hostingLinks(
     useLanguage(),
     import.meta.env.VITE_COLONIA_RAILWAY_TEMPLATE,
     import.meta.env.VITE_COLONIA_RAILWAY_REFERRAL,
+    import.meta.env.VITE_COLONIA_VERSION,
   );
   const open = (url: string) => {
     if (window.coloniaDesktop?.openExternal) void window.coloniaDesktop.openExternal(url);
@@ -37,7 +38,24 @@ export function ServerHosting() {
           {t("equipos.hostingGuide")}
         </Button>
       </div>
-      {!deploy && <p className="eq-muted">{t("equipos.hostingManual")}</p>}
+      {!deploy && (
+        <p className="eq-hosting-manual">
+          {t("equipos.hostingManual")}
+          <a
+            href={files.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => {
+              if (window.coloniaDesktop?.openExternal) {
+                event.preventDefault();
+                open(files.url);
+              }
+            }}
+          >
+            {t(files.download ? "equipos.hostingDownload" : "equipos.hostingReleases")}
+          </a>
+        </p>
+      )}
       {referred && <p className="eq-muted">{t("equipos.hostingReferral")}</p>}
       {deploy && !referred && <p className="eq-muted">{t("equipos.hostingPlan")}</p>}
       <HostingPair />
