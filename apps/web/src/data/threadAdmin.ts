@@ -11,10 +11,13 @@ import { data } from "./state.ts";
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export type ThreadDialog =
+  | { kind: "import"; project: string | undefined }
   | { kind: "rename" | "delete"; thread: string }
   | { kind: "markRead"; threads: readonly string[] }
   | undefined;
 const dialogs = createStore<{ open: ThreadDialog }>({ open: undefined });
+export const openConversationImport = (project: string | undefined) =>
+  dialogs.set({ open: { kind: "import", project } });
 export const openThreadDialog = (kind: "rename" | "delete", thread: string) => dialogs.set({ open: { kind, thread } });
 export const openMarkReadDialog = (threads: readonly string[]) => {
   if (threads.length) dialogs.set({ open: { kind: "markRead", threads: [...new Set(threads)] } });

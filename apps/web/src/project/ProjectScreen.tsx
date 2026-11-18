@@ -120,7 +120,11 @@ function ProjectHeader({ project, tab }: { project: ProjectEntry; tab: ProjectTa
         </div>
         <NewChatMenu
           projectId={project.id}
-          trigger={<Button leadingIcon={<Icons.SquarePen size={14} />}>{t("chat.new")}</Button>}
+          trigger={
+            <Button aria-label={t("chat.new")} leadingIcon={<Icons.SquarePen size={14} />}>
+              {t("chat.new")}
+            </Button>
+          }
         />
         <IconButton
           variant="secondary"

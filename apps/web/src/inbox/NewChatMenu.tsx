@@ -5,6 +5,7 @@ import { useAgentOptions } from "../common/pickers/agentOptions.tsx";
 import { inProject, isListed, realProjectId } from "../data/identity.ts";
 import { newChatId } from "../data/newChat.ts";
 import { useData } from "../data/state.ts";
+import { openConversationImport } from "../data/threadAdmin.ts";
 import { useT } from "../i18n/index.ts";
 import { SearchSelect } from "../lazy.ts";
 import { go } from "../shell/nav.ts";
@@ -73,11 +74,13 @@ export function NewChatMenu({ projectId, trigger }: { projectId: string | undefi
             group: t("chat.newCodeWith"),
           }))
         : []),
+      { value: "import", label: t("chatImport.title"), icon: <Icons.Upload size={16} /> },
     ];
   }, [all, threads, projectId, onDisk, t]);
 
   const pick = (value: string | null) => {
     if (!value) return;
+    if (value === "import") return openConversationImport(pid);
     const [kind, id] = value.includes(":") ? value.split(":") : ["", value];
     const agent = agents[id ?? ""];
     if (!agent) return;

@@ -79,6 +79,9 @@ export const CommandPalette = late(() =>
 export const ThreadDialogs = late(() =>
   import("./inbox/ThreadDialogs.tsx").then((m) => ({ default: m.ThreadDialogs })),
 );
+export const ImportConversations = late(() =>
+  import("./inbox/import/ImportConversations.tsx").then((m) => ({ default: m.ImportConversations })),
+);
 export const WidgetChatHost = late(() =>
   import("./surfaces/WidgetChat.tsx").then((m) => ({ default: m.WidgetChatHost })),
 );

@@ -15,6 +15,7 @@ import { memo, type ReactNode, Suspense, useCallback, useEffect, useMemo, useRef
 import { ReactionList } from "../channels/MessageMarks.tsx";
 import { dayLabel, sameDay } from "../common/format.ts";
 import { useEngineLabel } from "../common/useEngineLabel.ts";
+import { conversationSource } from "../data/conversation-origin.ts";
 import { blobOf, isWorking, routineName, threadAgent } from "../data/identity.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
@@ -194,6 +195,8 @@ const Row = memo(function Row({
   const text = textOf(msg);
   const reactions = msg.reactions?.length ? <ReactionList list={msg.reactions} agentName={agentName} /> : undefined;
   const sourceOf = (quote: string) => quoted(msg.id, quote);
+  const part = msg.parts[0];
+  const origin = part?.type === "text" ? part.imported_from : undefined;
   return (
     <div className="transcript__row" data-msg={msg.id}>
       {day && <DayDivider label={day} />}
@@ -202,7 +205,23 @@ const Row = memo(function Row({
           <TaskDescription id={thread.task_id} />
         </Suspense>
       )}
-      {thread.kind === "routine" && msg.author.kind === "user" && first ? (
+      {part?.type === "text" && origin ? (
+        <Message
+          from={origin.role === "user" ? "user" : "agent"}
+          meta={t(`chatImport.author.${origin.role}`, { source: conversationSource[origin.source] })}
+          actions={
+            <MessageActions
+              thread={thread}
+              message={msg}
+              text={part.text}
+              speechKey={msg.id}
+              speak={origin.role === "assistant"}
+            />
+          }
+        >
+          <p className="transcript__usertext">{part.text}</p>
+        </Message>
+      ) : thread.kind === "routine" && msg.author.kind === "user" && first ? (
         <RoutinePrompt name={routineName(thread)} text={text} />
       ) : msg.author.kind === "user" ? (
         <>

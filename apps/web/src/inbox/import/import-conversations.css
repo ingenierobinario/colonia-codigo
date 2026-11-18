@@ -1,0 +1,62 @@
+.import-chats .colonia-dialog__body {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.import-chats .colonia-dialog__body > button {
+  justify-self: start;
+}
+.import-chats .colonia-dialog__desc,
+.import-chats .colonia-dialog__title,
+.import-chats .colonia-select__value,
+.import-chats .colonia-choice__text,
+.import-chats .colonia-btn__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.import-chats .colonia-select__value {
+  text-align: start;
+}
+.import-chats .colonia-select {
+  height: auto;
+  padding-block: 6px;
+}
+.import-chats__file {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  overflow-wrap: anywhere;
+}
+.import-chats__file h3,
+.import-chats__file p,
+.import-chats__status {
+  margin: 0;
+  font-size: var(--colonia-text-sm);
+}
+.import-chats__status:empty {
+  display: none;
+}
+.import-chats__file [role="alert"] {
+  color: var(--colonia-danger);
+}
+.import-chats__row {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--colonia-border);
+}
+.import-chats__excerpt {
+  color: var(--colonia-fg-muted);
+}
+.import-chats__saved,
+.import-chats__pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--colonia-text-sm);
+}
