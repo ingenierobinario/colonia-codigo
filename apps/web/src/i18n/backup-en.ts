@@ -1,7 +1,25 @@
 // COPIA-COMPLETA-1 · Ajustes › Copia y traslado: se carga con su sección (usePack("backup")), no con la primera pantalla.
 export const enBackup = {
-  "backup.lead":
-    "All of your Colonia in one password-protected file, to move it to another computer or keep two of them alike.",
+  "backup.lead": "Move one project or your whole Colonia to another computer using a password-protected file.",
+  "backup.create.choose": "Choose what to save in the encrypted .colonia file.",
+  "backup.scope": "What to back up",
+  "backup.scope.all": "My entire Colonia",
+  "backup.scope.missing": "Choose an available project",
+  "backup.scope.projectHint":
+    "Includes the project’s team, chats, attachments, work files, compatible skills, Flows and routines. Other projects, linked accounts and credentials stored by Colonia stay on this computer.",
+  "backup.projectCreated": "Private backup saved for {name}",
+  "backup.projectPreview": "Private project backup",
+  "backup.projectFrom": "From {host} · {when} · {files} files · {size}",
+  "backup.projectDestination": "Parent folder (optional)",
+  "backup.defaultDestination": "Colonia’s projects folder",
+  "backup.projectRestoreHint":
+    "Colonia will add a new project in its own folder. Existing projects keep their files. You can open the copy as soon as it is ready.",
+  "backup.restoreProject": "Restore as a new project",
+  "backup.projectDone": "Project restored",
+  "backup.openProject": "Open project",
+  "backup.openFailed": "The restored project could not be opened. Try again.",
+  "backup.another": "Restore another backup",
+  "backup.why.scope": "This backup is for a different operation. Select the project or whole Colonia you want to move.",
   "backup.create.title": "Make a backup",
   "backup.create.hint": "Projects, chats, Flows, agents, channels, browsers, apps, AIs and keys.",
   "backup.create.go": "Make backup",
@@ -78,7 +96,7 @@ export const enBackup = {
   "backup.done.relogin": "Sign in again in your browsers and apps",
   "backup.done.safety": "What was here before is saved in {file}",
   "backup.done.ok": "Got it",
-  "backup.what": "What travels and what stays",
+  "backup.what": "What a whole-Colonia backup includes",
   "backup.travels": "Travels",
   "backup.travel.data": "Projects in their order, chats, Flows, tasks, people, routines and knowledge.",
   "backup.travel.ai": "AIs: providers, keys, models, the model chain and your agents.",

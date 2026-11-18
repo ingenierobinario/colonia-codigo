@@ -1,8 +1,26 @@
 import type { BackupKey } from "./backup-en.ts";
 
 export const esBackup: Record<BackupKey, string> = {
-  "backup.lead":
-    "Todo tu Colonia en un solo archivo protegido con contraseña, para llevarlo a otro ordenador o tenerlo igual en dos.",
+  "backup.lead": "Lleva un proyecto o toda tu Colonia a otro ordenador en un archivo protegido con contraseña.",
+  "backup.create.choose": "Elige qué guardar en el archivo .colonia cifrado.",
+  "backup.scope": "Qué quieres copiar",
+  "backup.scope.all": "Toda mi Colonia",
+  "backup.scope.missing": "Elige un proyecto disponible",
+  "backup.scope.projectHint":
+    "Incluye el equipo, los chats, los adjuntos, los archivos de trabajo, las skills compatibles, los Flows y las rutinas del proyecto. Los demás proyectos, las cuentas vinculadas y las credenciales guardadas por Colonia se quedan en este ordenador.",
+  "backup.projectCreated": "Copia privada guardada de {name}",
+  "backup.projectPreview": "Copia privada del proyecto",
+  "backup.projectFrom": "De {host} · {when} · {files} archivos · {size}",
+  "backup.projectDestination": "Carpeta de destino (opcional)",
+  "backup.defaultDestination": "Carpeta de proyectos de Colonia",
+  "backup.projectRestoreHint":
+    "Colonia añadirá un proyecto nuevo en su propia carpeta. Los proyectos existentes conservan sus archivos. Podrás abrir la copia en cuanto esté lista.",
+  "backup.restoreProject": "Restaurar como proyecto nuevo",
+  "backup.projectDone": "Proyecto restaurado",
+  "backup.openProject": "Abrir proyecto",
+  "backup.openFailed": "No se ha podido abrir el proyecto restaurado. Vuelve a intentarlo.",
+  "backup.another": "Restaurar otra copia",
+  "backup.why.scope": "Esta copia corresponde a otra operación. Elige el proyecto o la Colonia que quieres trasladar.",
   "backup.create.title": "Crear una copia",
   "backup.create.hint": "Proyectos, chats, Flows, agentes, canales, navegadores, aplicaciones, IAs y claves.",
   "backup.create.go": "Crear copia",
@@ -78,7 +96,7 @@ export const esBackup: Record<BackupKey, string> = {
   "backup.done.relogin": "Vuelve a iniciar sesión en tus navegadores y aplicaciones",
   "backup.done.safety": "Lo que había antes está guardado en {file}",
   "backup.done.ok": "Entendido",
-  "backup.what": "Qué viaja y qué se queda",
+  "backup.what": "Qué incluye la copia de toda la Colonia",
   "backup.travels": "Viaja",
   "backup.travel.data": "Proyectos con su orden, chats, Flows, tareas, personas, rutinas y conocimiento.",
   "backup.travel.ai": "IAs: proveedores, claves, modelos, la cadena de modelos y tus agentes.",

@@ -26,7 +26,11 @@ export const esProjectShare: Record<keyof typeof enProjectShare, string> = {
   "pshare.export": "Exportar",
   "pshare.publish": "Publicar",
   "pshare.goes": "Qué se comparte",
-  "pshare.stays": "Qué no sale nunca de tu equipo",
+  "pshare.stays": "Queda fuera del recurso compartido",
+  "pshare.privateHint":
+    "Para llevar tus chats, adjuntos y archivos del proyecto a otra Colonia, guarda una copia con contraseña.",
+  "pshare.privateCreate": "Crear copia privada",
+  "pshare.privateRestore": "Restaurar una copia privada .colonia",
   "pshare.goes.instructions": "Instrucciones",
   "pshare.goes.agents": "Agentes: {n}",
   "pshare.goes.skills": "Skills: {n}",

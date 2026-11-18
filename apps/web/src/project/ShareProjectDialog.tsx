@@ -16,6 +16,7 @@ import {
   unpublishProject,
 } from "../data/project-share.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { go } from "../shell/nav.ts";
 import { SharedFlowSummary } from "./SharedFlowSummary.tsx";
 import { ShareWorkFiles, WorkFileList } from "./ShareWorkFiles.tsx";
 import "../styles/screens.css";
@@ -182,6 +183,20 @@ function ProjectPackageDialog({ project, onClose }: { project: ProjectEntry; onC
               <Tag>{t("pshare.stays.memory")}</Tag>
               <Tag>{t("pshare.stays.tasks")}</Tag>
               <Tag>{t("pshare.stays.channels")}</Tag>
+            </div>
+            <p>{t("pshare.privateHint")}</p>
+            <div className="pshare__actions">
+              <Button
+                variant="secondary"
+                size="sm"
+                leadingIcon={<Icons.Lock size={14} />}
+                onClick={() => {
+                  onClose();
+                  go.backup({ project: project.id });
+                }}
+              >
+                {t("pshare.privateCreate")}
+              </Button>
             </div>
           </section>
         </div>
