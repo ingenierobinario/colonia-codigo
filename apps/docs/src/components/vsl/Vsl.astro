@@ -1,5 +1,5 @@
 ---
-// VSL-BF-3: portada de venta de Black Friday. Sin menú ni pie con enlaces: solo dos salidas, el checkout y WhatsApp.
+// VSL-BF-2: portada de venta de Black Friday. Sin menú ni pie con enlaces: solo dos salidas, el checkout y WhatsApp.
 import { RESERVAR_URL } from "../../config/site";
 import type { Lang } from "../../i18n/home";
 import { VSL } from "../../i18n/vsl";
@@ -13,73 +13,63 @@ const { lang } = Astro.props;
 const t = VSL[lang];
 const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(t.wa.text)}`;
 const AVATAR = "https://d1yei2z3i6k35z.cloudfront.net/17169925/6a3d55a034af61.60990299_carla-card.jpg";
-const bold = (x: string) => x.split("**");
 const VIDEO = "https://player.vimeo.com/video/1247932779?autopause=0&player_id=0&app_id=58479&autoplay=1";
 ---
 
-<html lang={lang} data-theme="light">
+<html lang={lang} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0d1b3e" />
+    <meta name="theme-color" content="#050505" />
     <PageMeta lang={lang} title={t.title} description={t.description} path="/" esPath="/" enPath="/en/" imageAlt={`${t.h1} ${t.h1b}`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..900&family=Geist+Mono:wght@500;700&display=swap" />
   </head>
   <body class="bfv">
-    <!-- VSL-BF-3: barra azul como intro-training (logo + oferta con cuenta atrás) y cinta amarilla con el botón al checkout. -->
-    <div class="bfv-bar">
-      <header class="bfv-top">
-        <span class="bfv-logo"><img src="/vsl/ib-logo.png" alt="" width="29" height="30" />Ingeniero Binario</span>
-        <span class="bfv-pill"><b>{t.seal[0]}</b><span class="bfv-pill-t">Black Friday</span>
-          <span class="bfv-clock" data-clock aria-label={t.ends}>{t.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span></span>
-      </header>
-      <div class="bfv-ribbon" role="note" aria-label={t.ribbon}>
-        <div class="bfv-marquee" aria-hidden="true">
-          <div class="bfv-track">
-            {[0, 1].map(() => (
-              <div class="bfv-run">
-                {[0, 1, 2, 3].map(() => (<span class="bfv-item"><b>BLACK FRIDAY</b>{t.ribbon.replace(/^Black Friday · /, "")}<span class="bfv-dot">✦</span></span>))}
-              </div>
-            ))}
-          </div>
+    <div class="bfv-ribbon" role="note" aria-label={t.ribbon}>
+      <div class="bfv-marquee" aria-hidden="true">
+        <div class="bfv-track">
+          {[0, 1].map(() => (
+            <div class="bfv-run">
+              {[0, 1, 2].map(() => (
+                <span class="bfv-item"><b>BLACK FRIDAY</b>{t.ribbon.replace(/^Black Friday · /, "")}<span class="bfv-dot">✦</span>{t.ends}
+                  <span class="bfv-clock" data-clock>{t.units.map((u, i) => (<span><b data-u={i}>00</b>{u}</span>))}</span>
+                  <span class="bfv-dot">✦</span></span>
+              ))}
+            </div>
+          ))}
         </div>
-        <a class="bfv-ribbon-cta" href={RESERVAR_URL}>{t.cta}</a>
       </div>
+      <a class="bfv-ribbon-cta" href={RESERVAR_URL}>{t.cta}</a>
     </div>
+
+    <header class="bfv-top">
+      <span class="bfv-logo" aria-label="Colonia"><i aria-hidden="true"></i>Colonia</span>
+    </header>
 
     <main>
       <section class="bfv-hero">
-        <div class="bfv-deco" aria-hidden="true">
-          <i class="bfv-circ bfv-circ--l"></i><i class="bfv-circ bfv-circ--r"></i>
-          <svg class="bfv-cloud bfv-cloud--l" viewBox="0 0 120 60"><path d="M28 52h66a20 20 0 0 0 0-40 26 26 0 0 0-48-4A22 22 0 0 0 28 52z" /></svg>
-          <svg class="bfv-cloud bfv-cloud--r" viewBox="0 0 120 60"><path d="M28 52h66a20 20 0 0 0 0-40 26 26 0 0 0-48-4A22 22 0 0 0 28 52z" /></svg>
-          <svg class="bfv-spark bfv-spark--a" viewBox="0 0 24 24"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z" /></svg>
-          <svg class="bfv-spark bfv-spark--b" viewBox="0 0 24 24"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z" /></svg>
-          <svg class="bfv-spark bfv-spark--c" viewBox="0 0 24 24"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z" /></svg>
-        </div>
-        <div class="bfv-col bfv-head">
-          <p class="bfv-eyebrow"><i aria-hidden="true"></i>{t.eyebrow}</p>
+        <div class="bfv-col">
+          <p class="bfv-eyebrow">{t.eyebrow}</p>
           <h1 class="bfv-h1">{t.h1} <em>{t.h1b}</em></h1>
-          <p class="bfv-sub">{bold(t.sub).map((x, i) => (i % 2 ? <b>{x}</b> : x))}</p>
-          <p class="bfv-watch"><span aria-hidden="true">▶</span> {t.watch} <span aria-hidden="true">↓</span></p>
+          <p class="bfv-sub">{t.sub}</p>
         </div>
         <div class="bfv-videocol">
-          <div class="bfv-card">
-            <div class="bfv-video" data-video={VIDEO}>
-              <button class="bfv-play" type="button" aria-label={t.playHint}>
-                <img class="bfv-cover" src="/vsl/cover.webp" alt="" width="1600" height="900" fetchpriority="high" />
-                <span class="bfv-play-btn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
-                <span class="bfv-owner" aria-hidden="true"><img src="/vsl/owner.webp" alt="" width="240" height="240" /><span><b>{t.play}</b>{t.playHint}</span></span>
-              </button>
-            </div>
+          <div class="bfv-video" data-video={VIDEO}>
+            <button class="bfv-play" type="button" aria-label={t.playHint}>
+              <span class="bfv-play-glow" aria-hidden="true"></span>
+              <span class="bfv-play-btn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" /></svg></span>
+              <span class="bfv-play-t">{t.play}</span>
+              <span class="bfv-play-h">{t.playHint}</span>
+            </button>
             <span class="bfv-seal bfv-seal--video" aria-hidden="true"><b>{t.seal[0]}</b>{t.seal[1]}</span>
           </div>
         </div>
         <div class="bfv-col bfv-ctabox">
           <div class="bfv-ctarow">
             <a class="bfv-cta" href={RESERVAR_URL}>{t.cta}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg></a>
+            <span class="bfv-seal" aria-hidden="true"><b>{t.seal[0]}</b>{t.seal[1]}</span>
           </div>
           <p class="bfv-trust">{t.trust.map((x) => <span>{x}</span>)}</p>
         </div>
@@ -146,7 +136,7 @@ const VIDEO = "https://player.vimeo.com/video/1247932779?autopause=0&player_id=0
     <div class="bfv-tip" id="bfvTip" role="dialog" aria-label={t.wa.role}>
       <button class="bfv-tip-x" type="button" aria-label={t.wa.close}>&times;</button>
       <div class="bfv-tip-head"><img src={AVATAR} alt="" width="38" height="38" /><span><b>{t.wa.name}</b>{t.wa.role}</span></div>
-      <p>{t.wa.msg}</p><small>{t.wa.sub}</small>
+      <p>{t.wa.msg}<small>{t.wa.sub}</small></p>
       <a class="bfv-tip-btn" href={WA} target="_blank" rel="noopener">{t.wa.btn}</a>
     </div>
     <a class="bfv-fab" id="bfvFab" href={WA} target="_blank" rel="noopener" aria-label={t.wa.fab}>

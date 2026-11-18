@@ -2180,3 +2180,420 @@ a.hero__term {
     display: none;
   }
 }
+
+/* VSL-BF-4: la portada de Black Friday es esta misma landing con otro hero (vídeo centrado) y sin menú. */
+.hv-ribbon {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 14px;
+  padding: 8px var(--colonia-gutter);
+  border-bottom: 1px solid var(--colonia-border);
+  background: color-mix(in srgb, var(--colonia-bg, #0b0d0f) 88%, var(--colonia-brand));
+  backdrop-filter: blur(10px);
+  font-size: 13.5px;
+  color: var(--colonia-fg-muted);
+}
+.hv-ribbon__tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.hv-ribbon__txt {
+  color: var(--colonia-fg);
+}
+.hv-clock {
+  display: inline-flex;
+  gap: 6px;
+  font-family: var(--colonia-font-mono);
+  font-size: 12.5px;
+}
+.hv-clock b {
+  color: var(--colonia-fg);
+  font-weight: 600;
+  margin-right: 1px;
+}
+.hv-ribbon__cta {
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--colonia-brand);
+  color: #04140b;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hv-ribbon__cta:hover {
+  filter: brightness(1.08);
+}
+.hv-top {
+  display: flex;
+  justify-content: center;
+  padding: 18px var(--colonia-gutter) 0;
+}
+.hv-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--colonia-fg);
+}
+
+.home--vsl .hero {
+  margin-top: -62px;
+  padding-top: calc(62px + clamp(20px, 3.4vw, 40px));
+}
+.hv-top {
+  position: relative;
+  z-index: 2;
+}
+.hv-h1 {
+  max-width: 20ch;
+  margin: 0 auto;
+  font-size: clamp(34px, 4.6vw, 64px);
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.hv-h1 .hero__word {
+  display: inline;
+}
+.hv-sub {
+  max-width: 680px;
+  margin-top: 16px;
+  font-size: clamp(16px, 1.6vw, 19px);
+}
+.hv-video {
+  position: relative;
+  width: min(100%, 900px, calc((100svh - 480px) * 16 / 9));
+  min-width: min(100%, 560px);
+  aspect-ratio: 16 / 9;
+  margin: clamp(20px, 2.6vw, 30px) auto 0;
+  overflow: hidden;
+  border: 1px solid var(--colonia-border-strong);
+  border-radius: 18px;
+  background: #000;
+  box-shadow:
+    0 0 0 6px var(--colonia-brand-soft),
+    var(--colonia-shadow-lift);
+}
+.hv-video__cover,
+.hv-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+.hv-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  border: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgb(0 0 0 / 0.28));
+  color: #fff;
+  cursor: pointer;
+}
+.hv-play__btn {
+  display: grid;
+  place-items: center;
+  width: clamp(64px, 8vw, 88px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--colonia-brand);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--colonia-brand) 28%, transparent);
+  transition: transform 0.2s ease;
+}
+.hv-play__btn svg {
+  width: 42%;
+  fill: #04140b;
+  margin-left: 6%;
+}
+.hv-play:hover .hv-play__btn {
+  transform: scale(1.06);
+}
+.hv-play__t {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  font-size: 14px;
+  font-weight: 500;
+}
+.hv-owner {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--colonia-brand);
+  pointer-events: none;
+}
+.hv-owner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hv-actions {
+  margin-top: 22px;
+}
+.hv-cta {
+  height: 56px;
+  padding: 0 30px;
+  background: var(--colonia-brand);
+  color: #04140b;
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 10px 34px -10px color-mix(in srgb, var(--colonia-brand) 70%, transparent);
+}
+.hv-cta svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hv-cta:hover {
+  filter: brightness(1.08);
+}
+.hv-trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  color: var(--colonia-fg-muted);
+}
+.hv-trust span::before {
+  content: "✓ ";
+  color: var(--colonia-brand);
+}
+
+.hv-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+.hv-stat {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 22px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 16px;
+  background: var(--colonia-card, #111315);
+}
+.hv-stat b {
+  font-size: clamp(30px, 3.4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--colonia-brand-soft-fg);
+}
+.hv-stat span {
+  color: var(--colonia-fg);
+  font-weight: 500;
+}
+.hv-stat small {
+  color: var(--colonia-fg-subtle);
+  font-size: 13px;
+}
+.hv-offer {
+  max-width: 720px;
+  margin: clamp(40px, 6vw, 72px) auto 0;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid color-mix(in srgb, var(--colonia-brand) 40%, var(--colonia-border));
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, var(--colonia-brand-soft), transparent 70%), var(--colonia-card, #111315);
+  text-align: center;
+}
+.hv-offer .h2 {
+  margin: 14px 0 0;
+}
+.hv-offer__tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--colonia-brand-soft);
+  color: var(--colonia-brand-soft-fg);
+  font-size: 13px;
+  font-weight: 600;
+}
+.hv-stack {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 26px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.hv-stack li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--colonia-fg);
+}
+.hv-stack svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  fill: none;
+  stroke: var(--colonia-brand);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hv-offer .hv-cta {
+  width: 100%;
+  max-width: 420px;
+}
+.hv-note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--colonia-fg-subtle);
+}
+.hv-foot {
+  margin: 0;
+  padding: 28px var(--colonia-gutter) 96px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--colonia-fg-subtle);
+}
+
+.hv-tip {
+  position: fixed;
+  right: 20px;
+  bottom: 92px;
+  z-index: 80;
+  width: min(320px, calc(100vw - 40px));
+  padding: 16px;
+  border: 1px solid var(--colonia-border-strong);
+  border-radius: 18px;
+  background: var(--colonia-card, #111315);
+  box-shadow: var(--colonia-shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s,
+    visibility 0.3s;
+}
+.hv-tip.on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.hv-tip__x {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: 0;
+  background: none;
+  color: var(--colonia-fg-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.hv-tip__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hv-tip__head img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+.hv-tip__head span {
+  display: grid;
+  font-size: 12.5px;
+  color: var(--colonia-fg-subtle);
+}
+.hv-tip__head b {
+  font-size: 14.5px;
+  color: var(--colonia-fg);
+}
+.hv-tip p {
+  margin: 12px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--colonia-fg);
+}
+.hv-tip small {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--colonia-fg-muted);
+}
+.hv-tip__btn {
+  display: block;
+  padding: 10px;
+  border-radius: 999px;
+  background: #25d366;
+  color: #04140b;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+.hv-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25d366;
+  box-shadow: var(--colonia-shadow-md);
+}
+.hv-fab svg {
+  width: 30px;
+  height: 30px;
+  fill: #fff;
+}
+
+@media (max-width: 640px) {
+  .hv-ribbon {
+    font-size: 12.5px;
+    gap: 4px 10px;
+  }
+  .hv-ribbon__txt {
+    display: none;
+  }
+  .hv-video {
+    width: 100%;
+    min-width: 0;
+    border-radius: 14px;
+  }
+  .hv-owner {
+    width: 42px;
+    height: 42px;
+    left: 10px;
+    bottom: 10px;
+  }
+  .hv-cta {
+    width: 100%;
+  }
+}
