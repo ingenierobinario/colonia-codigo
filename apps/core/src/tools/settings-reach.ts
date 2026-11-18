@@ -52,6 +52,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "sync.recover": AS_OWNER,
   "sync.saved_delete": AS_OWNER,
   "sync.set_folder": MACHINE,
+  "sync.copy_projects": "La persona elige qué archivos de trabajo envía a su otro equipo.",
   "equipos.pair_start": SECRET,
   "equipos.pair_cancel": SECRET,
   "equipos.connect": SECRET,
