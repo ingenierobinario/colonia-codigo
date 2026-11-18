@@ -32,8 +32,21 @@ export async function hostingGeometry(root: Locator) {
                 ) && state.scrollWidth <= state.clientWidth + 1
               );
             });
+            const folderPathsFit = Array.from(el.querySelectorAll(".eq-hosting-folders label")).every((label) => {
+              const path = label.querySelector("small");
+              const input = label.querySelector("input");
+              if (!path || !input) return false;
+              const bounds = label.getBoundingClientRect();
+              const checkbox = input.getBoundingClientRect();
+              const text = document.createRange();
+              text.selectNodeContents(path);
+              return Array.from(text.getClientRects()).every(
+                (r) => r.left >= checkbox.right - 1 && r.right <= bounds.right + 1 && r.bottom <= bounds.bottom + 1,
+              );
+            });
             return (
               textFits &&
+              folderPathsFit &&
               document.documentElement.scrollWidth <= innerWidth + 1 &&
               elements.every((e) => {
                 const box = e.getBoundingClientRect();
