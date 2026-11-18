@@ -19,10 +19,22 @@ export const VSL = {
       eyebrow: "¿Te suena?",
       title: "Tu negocio depende de que tú lo leas, lo recuerdes y lo persigas todo.",
       items: [
-        ["Las 9 de la mañana", "40 correos y 5 chats sin leer. Entre ellos, las tres cosas que importan. Toca leerlo todo para encontrarlas. Cada día."],
-        ["«¿Ya le mandé la oferta?»", "El tablero dice una cosa y el correo otra. Se escapa un seguimiento, o mandas dos veces la misma oferta con un precio viejo."],
-        ["Grabando, y suena el móvil", "Un cliente escribe con prisa. O cortas lo que estás haciendo, o el cliente espera."],
-        ["Tu IA empieza de cero", "Cada chat nuevo hay que volver a explicarle el proyecto, el cliente y lo que se decidió ayer."],
+        [
+          "Las 9 de la mañana",
+          "40 correos y 5 chats sin leer. Entre ellos, las tres cosas que importan. Toca leerlo todo para encontrarlas. Cada día.",
+        ],
+        [
+          "«¿Ya le mandé la oferta?»",
+          "El tablero dice una cosa y el correo otra. Se escapa un seguimiento, o mandas dos veces la misma oferta con un precio viejo.",
+        ],
+        [
+          "Grabando, y suena el móvil",
+          "Un cliente escribe con prisa. O cortas lo que estás haciendo, o el cliente espera.",
+        ],
+        [
+          "Tu IA empieza de cero",
+          "Cada chat nuevo hay que volver a explicarle el proyecto, el cliente y lo que se decidió ayer.",
+        ],
       ],
     },
     shift: {
@@ -47,12 +59,32 @@ export const VSL = {
       eyebrow: "Qué ganas",
       title: "Cada pieza, pensada para devolverte tiempo y tranquilidad.",
       items: [
-        ["Rutinas", "que te devuelven las mañanas", "A las 9:00 tienes el resumen hecho: solo lo que ha cambiado y lo que espera tu decisión."],
-        ["Tareas", "para que nada se quede en el aire", "Tu equipo cruza lo que dice tu tablero con lo que pasó de verdad en el correo y te avisa de cada incoherencia."],
-        ["Aprobaciones", "para dormir tranquilo", "Tú eliges qué hace solo y qué te pregunta antes. Lo importante siempre espera tu «sí»."],
-        ["Canales", "para mandar desde el móvil", "Le hablas por WhatsApp, Telegram, Discord, Slack, iMessage o correo, como a una persona."],
+        [
+          "Rutinas",
+          "que te devuelven las mañanas",
+          "A las 9:00 tienes el resumen hecho: solo lo que ha cambiado y lo que espera tu decisión.",
+        ],
+        [
+          "Tareas",
+          "para que nada se quede en el aire",
+          "Tu equipo cruza lo que dice tu tablero con lo que pasó de verdad en el correo y te avisa de cada incoherencia.",
+        ],
+        [
+          "Aprobaciones",
+          "para dormir tranquilo",
+          "Tú eliges qué hace solo y qué te pregunta antes. Lo importante siempre espera tu «sí».",
+        ],
+        [
+          "Canales",
+          "para mandar desde el móvil",
+          "Le hablas por WhatsApp, Telegram, Discord, Slack, iMessage o correo, como a una persona.",
+        ],
         ["Memoria", "para no repetir nada dos veces", "Recuerda tu negocio, tus clientes y lo que se decidió ayer."],
-        ["En tu ordenador", "porque es tuyo", "Tus datos se quedan contigo. La IA la eliges tú: tu suscripción o modelos locales gratuitos."],
+        [
+          "En tu ordenador",
+          "porque es tuyo",
+          "Tus datos se quedan contigo. La IA la eliges tú: tu suscripción o modelos locales gratuitos.",
+        ],
       ],
     },
     proof: {
@@ -68,19 +100,40 @@ export const VSL = {
         ["6", "mañanas seguidas con el parte a las 9:00", "5 entregadas; una se cortó por un reinicio"],
       ],
       cases: [
-        ["Evitó una oferta duplicada", "Detectó que una oferta ya estaba enviada aunque el tablero decía que no, y que la marca había rebajado su presupuesto: «No reenvíes el borrador antiguo»."],
-        ["Le quitó un susto en treinta segundos", "Ante un aviso de Meta sobre un usuario desconocido, su secretaria comprobó las cuentas y contestó: «No te han hackeado. Puedes archivar la alerta»."],
-        ["Dijo cuándo no pudo", "Un día el correo falló. Lo avisó y guardó dónde se había quedado para no saltarse mensajes, en vez de inventarse el parte."],
+        [
+          "Evitó una oferta duplicada",
+          "Detectó que una oferta ya estaba enviada aunque el tablero decía que no, y que la marca había rebajado su presupuesto: «No reenvíes el borrador antiguo».",
+        ],
+        [
+          "Le quitó un susto en treinta segundos",
+          "Ante un aviso de Meta sobre un usuario desconocido, su secretaria comprobó las cuentas y contestó: «No te han hackeado. Puedes archivar la alerta».",
+        ],
+        [
+          "Dijo cuándo no pudo",
+          "Un día el correo falló. Lo avisó y guardó dónde se había quedado para no saltarse mensajes, en vez de inventarse el parte.",
+        ],
       ],
     },
     stack: {
       eyebrow: "La oferta de Black Friday",
       title: "Todo lo que te llevas hoy.",
       items: [
-        ["La aplicación de escritorio", "Para Windows, Mac y Linux, con un servicio que sigue trabajando en segundo plano."],
-        ["Tu secretaria y los agentes que quieras", "Un equipo por proyecto, cada uno con su papel, que se pasan el trabajo entre ellos."],
-        ["Rutinas, tareas y flujos", "Trabajo que se hace solo a su hora, con responsable y con tu aprobación cuando toca."],
-        ["Canales y bandeja", "WhatsApp (varios números), Telegram, Discord, Slack, iMessage y correo, todo en un sitio."],
+        [
+          "La aplicación de escritorio",
+          "Para Windows, Mac y Linux, con un servicio que sigue trabajando en segundo plano.",
+        ],
+        [
+          "Tu secretaria y los agentes que quieras",
+          "Un equipo por proyecto, cada uno con su papel, que se pasan el trabajo entre ellos.",
+        ],
+        [
+          "Rutinas, tareas y flujos",
+          "Trabajo que se hace solo a su hora, con responsable y con tu aprobación cuando toca.",
+        ],
+        [
+          "Canales y bandeja",
+          "WhatsApp (varios números), Telegram, Discord, Slack, iMessage y correo, todo en un sitio.",
+        ],
         ["Memoria por proyecto", "Tu equipo se acuerda de todo lo que importa."],
         ["Navegador que manejan tus agentes", "Hacen gestiones web por ti. Tus contraseñas y tus pagos no los tocan."],
         ["Todo el código", "Es tuyo, para siempre, y lo puedes adaptar."],
@@ -123,14 +176,29 @@ export const VSL = {
     faq: {
       title: "Preguntas frecuentes",
       items: [
-        ["¿Tengo que saber programar?", "No. Instalas, conectas tu IA y le hablas como a una persona. Son tres pasos y hay guía para cada sistema."],
-        ["¿Y si hace algo sin preguntarme?", "Tú decides qué hace solo y qué te consulta antes. En el uso real de su creador: cero envíos sin aprobación."],
-        ["Ya tengo ChatGPT o Claude. ¿Para qué lo quiero?", "Colonia usa tu IA. La diferencia es que tu chat espera a que le hables; tu colonia trabaja a su hora, recuerda y te avisa."],
+        [
+          "¿Tengo que saber programar?",
+          "No. Instalas, conectas tu IA y le hablas como a una persona. Son tres pasos y hay guía para cada sistema.",
+        ],
+        [
+          "¿Y si hace algo sin preguntarme?",
+          "Tú decides qué hace solo y qué te consulta antes. En el uso real de su creador: cero envíos sin aprobación.",
+        ],
+        [
+          "Ya tengo ChatGPT o Claude. ¿Para qué lo quiero?",
+          "Colonia usa tu IA. La diferencia es que tu chat espera a que le hables; tu colonia trabaja a su hora, recuerda y te avisa.",
+        ],
         ["¿Dónde quedan mis datos?", "En tu ordenador. No pasan por nuestros servidores."],
-        ["¿Es otra suscripción?", "No. Es un pago único y es tuyo. La IA la pagas a tu proveedor, o usas modelos gratuitos. Las condiciones exactas las ves en la página de pago."],
+        [
+          "¿Es otra suscripción?",
+          "No. Es un pago único y es tuyo. La IA la pagas a tu proveedor, o usas modelos gratuitos. Las condiciones exactas las ves en la página de pago.",
+        ],
         ["¿Funciona en mi ordenador?", "Sí: Windows, Mac y Linux."],
         ["¿Tiene que estar el ordenador encendido?", "Sí, para lo que trabaja de noche o a una hora fija."],
-        ["¿Y si se equivoca?", "Te lo dice. Cuando una fuente falla o no está seguro, lo deja como pendiente de tu decisión en vez de inventárselo."],
+        [
+          "¿Y si se equivoca?",
+          "Te lo dice. Cuando una fuente falla o no está seguro, lo deja como pendiente de tu decisión en vez de inventárselo.",
+        ],
         ["¿Me lo puedo adaptar?", "Sí: incluye todo el código."],
       ],
       ask: "¿Te queda alguna duda? Escríbele al equipo por WhatsApp",
@@ -157,10 +225,22 @@ export const VSL = {
       eyebrow: "Sound familiar?",
       title: "Your business depends on you reading, remembering and chasing everything.",
       items: [
-        ["9 in the morning", "40 emails and 5 unread chats. Somewhere in there are the three things that matter. You have to read it all to find them. Every day."],
-        ["“Did I send that offer?”", "The board says one thing and your email says another. A follow-up slips, or you send the same offer twice with an old price."],
-        ["Recording, and the phone rings", "A client writes in a hurry. Either you stop what you are doing, or the client waits."],
-        ["Your AI starts from zero", "Every new chat, you explain the project, the client and yesterday's decisions all over again."],
+        [
+          "9 in the morning",
+          "40 emails and 5 unread chats. Somewhere in there are the three things that matter. You have to read it all to find them. Every day.",
+        ],
+        [
+          "“Did I send that offer?”",
+          "The board says one thing and your email says another. A follow-up slips, or you send the same offer twice with an old price.",
+        ],
+        [
+          "Recording, and the phone rings",
+          "A client writes in a hurry. Either you stop what you are doing, or the client waits.",
+        ],
+        [
+          "Your AI starts from zero",
+          "Every new chat, you explain the project, the client and yesterday's decisions all over again.",
+        ],
       ],
     },
     shift: {
@@ -185,12 +265,36 @@ export const VSL = {
       eyebrow: "What you get",
       title: "Every piece is built to give you back time and peace of mind.",
       items: [
-        ["Routines", "that give you your mornings back", "At 9:00 your summary is ready: only what changed and what is waiting for your decision."],
-        ["Tasks", "so nothing falls through the cracks", "Your team checks your board against what really happened in your email and flags every mismatch."],
-        ["Approvals", "so you sleep well", "You choose what it does alone and what it asks first. Anything important waits for your “yes”."],
-        ["Channels", "to run things from your phone", "Talk to it on WhatsApp, Telegram, Discord, Slack, iMessage or email, like you would to a person."],
-        ["Memory", "so you never repeat yourself", "It remembers your business, your clients and what was decided yesterday."],
-        ["On your computer", "because it is yours", "Your data stays with you. You pick the AI: your own subscription or free local models."],
+        [
+          "Routines",
+          "that give you your mornings back",
+          "At 9:00 your summary is ready: only what changed and what is waiting for your decision.",
+        ],
+        [
+          "Tasks",
+          "so nothing falls through the cracks",
+          "Your team checks your board against what really happened in your email and flags every mismatch.",
+        ],
+        [
+          "Approvals",
+          "so you sleep well",
+          "You choose what it does alone and what it asks first. Anything important waits for your “yes”.",
+        ],
+        [
+          "Channels",
+          "to run things from your phone",
+          "Talk to it on WhatsApp, Telegram, Discord, Slack, iMessage or email, like you would to a person.",
+        ],
+        [
+          "Memory",
+          "so you never repeat yourself",
+          "It remembers your business, your clients and what was decided yesterday.",
+        ],
+        [
+          "On your computer",
+          "because it is yours",
+          "Your data stays with you. You pick the AI: your own subscription or free local models.",
+        ],
       ],
     },
     proof: {
@@ -206,9 +310,18 @@ export const VSL = {
         ["6", "mornings in a row with the 9:00 briefing", "5 delivered; one was cut short by a restart"],
       ],
       cases: [
-        ["It stopped a duplicate offer", "It noticed an offer had already been sent even though the board said it had not, and that the brand had lowered its budget: “Don't resend the old draft.”"],
-        ["It ended a scare in thirty seconds", "Faced with a Meta alert about an unknown user, his assistant checked the accounts and replied: “You weren't hacked. You can archive the alert.”"],
-        ["It said when it couldn't", "One day email failed. It said so and saved where it had stopped so no message was skipped, instead of making up the briefing."],
+        [
+          "It stopped a duplicate offer",
+          "It noticed an offer had already been sent even though the board said it had not, and that the brand had lowered its budget: “Don't resend the old draft.”",
+        ],
+        [
+          "It ended a scare in thirty seconds",
+          "Faced with a Meta alert about an unknown user, his assistant checked the accounts and replied: “You weren't hacked. You can archive the alert.”",
+        ],
+        [
+          "It said when it couldn't",
+          "One day email failed. It said so and saved where it had stopped so no message was skipped, instead of making up the briefing.",
+        ],
       ],
     },
     stack: {
@@ -216,9 +329,18 @@ export const VSL = {
       title: "Everything you get today.",
       items: [
         ["The desktop app", "For Windows, Mac and Linux, with a service that keeps working in the background."],
-        ["Your assistant and as many agents as you want", "One team per project, each with its role, handing work to each other."],
-        ["Routines, tasks and flows", "Work that runs on its own schedule, with an owner and your approval when it matters."],
-        ["Channels and inbox", "WhatsApp (several numbers), Telegram, Discord, Slack, iMessage and email, all in one place."],
+        [
+          "Your assistant and as many agents as you want",
+          "One team per project, each with its role, handing work to each other.",
+        ],
+        [
+          "Routines, tasks and flows",
+          "Work that runs on its own schedule, with an owner and your approval when it matters.",
+        ],
+        [
+          "Channels and inbox",
+          "WhatsApp (several numbers), Telegram, Discord, Slack, iMessage and email, all in one place.",
+        ],
         ["Memory per project", "Your team remembers everything that matters."],
         ["A browser your agents drive", "They handle web chores for you. Your passwords and payments stay off limits."],
         ["The full source code", "It is yours, forever, and you can adapt it."],
@@ -261,14 +383,29 @@ export const VSL = {
     faq: {
       title: "Frequently asked questions",
       items: [
-        ["Do I need to know how to code?", "No. Install it, connect your AI and talk to it like a person. Three steps, with a guide for each system."],
-        ["What if it does something without asking?", "You decide what it does alone and what it checks with you first. In its creator's real use: zero messages sent without approval."],
-        ["I already have ChatGPT or Claude. Why do I need this?", "Colonia uses your AI. The difference: your chat waits for you; your colony works on schedule, remembers and pings you."],
+        [
+          "Do I need to know how to code?",
+          "No. Install it, connect your AI and talk to it like a person. Three steps, with a guide for each system.",
+        ],
+        [
+          "What if it does something without asking?",
+          "You decide what it does alone and what it checks with you first. In its creator's real use: zero messages sent without approval.",
+        ],
+        [
+          "I already have ChatGPT or Claude. Why do I need this?",
+          "Colonia uses your AI. The difference: your chat waits for you; your colony works on schedule, remembers and pings you.",
+        ],
         ["Where does my data live?", "On your computer. It never goes through our servers."],
-        ["Is it another subscription?", "No. It is a one-time payment and it is yours. You pay your AI provider, or use free models. The exact terms are on the checkout page."],
+        [
+          "Is it another subscription?",
+          "No. It is a one-time payment and it is yours. You pay your AI provider, or use free models. The exact terms are on the checkout page.",
+        ],
         ["Will it run on my computer?", "Yes: Windows, Mac and Linux."],
         ["Does the computer need to stay on?", "Yes, for anything that runs overnight or at a set time."],
-        ["What if it gets something wrong?", "It tells you. When a source fails or it is unsure, it leaves the item pending your decision instead of making things up."],
+        [
+          "What if it gets something wrong?",
+          "It tells you. When a source fails or it is unsure, it leaves the item pending your decision instead of making things up.",
+        ],
         ["Can I customize it?", "Yes: the full source code is included."],
       ],
       ask: "Still have questions? Message the team on WhatsApp",

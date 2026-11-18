@@ -9,11 +9,15 @@ import WebFooter from "../web/WebFooter.astro";
 import WebHeader from "../web/WebHeader.astro";
 import "./vsl.css";
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = VSL[lang];
 const WA = `https://api.whatsapp.com/send/?phone=376620903&text=${encodeURIComponent(
-  lang === "es" ? "¡Hola! Estoy viendo Colonia y tengo algunas preguntas" : "Hi! I am looking at Colonia and I have some questions",
+  lang === "es"
+    ? "¡Hola! Estoy viendo Colonia y tengo algunas preguntas"
+    : "Hi! I am looking at Colonia and I have some questions",
 )}`;
 const product = sitePath(sectionRoute(lang));
 ---
