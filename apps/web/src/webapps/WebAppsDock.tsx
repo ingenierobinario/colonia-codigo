@@ -90,6 +90,7 @@ export function WebAppsDock({ rail }: { rail: boolean }) {
       />
       {failed && !shut && (
         <NavItem
+          className="sidebar__retry"
           collapsed={rail}
           icon={<Icons.RotateCcw size={14} />}
           label={t("webapp.retry")}
