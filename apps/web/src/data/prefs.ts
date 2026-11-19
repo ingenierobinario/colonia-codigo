@@ -71,6 +71,7 @@ export type Prefs = {
   /** Which notices make a sound as they arrive. */
   noticeSound: NoticeSound;
   /** PESTANAS-CHAT-1: the chats open in tabs, left to right, and the one on screen (see chat/tabs.ts). */
+  chatTabsClosed: boolean;
   chatTabs: string[];
   chatTab: string;
 };
@@ -126,6 +127,7 @@ const DEFAULTS: Prefs = {
   boards: {},
   audioEndSound: true,
   noticeSound: "all",
+  chatTabsClosed: false,
   chatTabs: [],
   chatTab: "",
 };
@@ -181,6 +183,7 @@ function load(): Prefs {
         raw.noticeSound === "requests" || raw.noticeSound === "messages" || raw.noticeSound === "off"
           ? raw.noticeSound
           : "all",
+      chatTabsClosed: raw.chatTabsClosed === true,
       chatTabs: tabsOf(raw.chatTabs, raw.chatTab).ids,
       chatTab: typeof raw.chatTab === "string" ? raw.chatTab : "",
     };

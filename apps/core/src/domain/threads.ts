@@ -483,6 +483,11 @@ export function threadsRepo({ one, all, run }: Sql, bus: Bus, endSession: (threa
       run(qb.updateTable("surfaces").set({ thread_id: null }).where("thread_id", "in", ids));
       run(qb.updateTable("outbox").set({ thread_id: null }).where("thread_id", "in", ids));
       run(qb.updateTable("nudges").set({ thread_id: null }).where("thread_id", "in", ids));
+      const runs = qb.selectFrom("runs").select("id").where("thread_id", "in", ids);
+      for (const table of ["flow_events", "flow_graph_nodes"] as const) {
+        run(qb.updateTable(table).set({ thread_id: null }).where("thread_id", "in", ids));
+        run(qb.updateTable(table).set({ run_id: null }).where("run_id", "in", runs));
+      }
       // Messages first, so the search index triggers run; runs, steps, the model log and harness sessions cascade.
       run(qb.deleteFrom("messages").where("thread_id", "in", ids));
       run(qb.deleteFrom("threads").where("id", "in", ids));

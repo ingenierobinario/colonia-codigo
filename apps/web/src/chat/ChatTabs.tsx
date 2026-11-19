@@ -3,7 +3,7 @@
 import { IconButton, Icons, Spinner } from "@colonia/ui";
 import { type DragEvent, useEffect, useRef } from "react";
 import { CHANNEL_KINDS } from "../channels/kinds.ts";
-import { isWorking, threadAgent } from "../data/identity.ts";
+import { isWorking, realProjectId, threadAgent } from "../data/identity.ts";
 import { newChatId, useNewChat } from "../data/newChat.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
@@ -11,6 +11,7 @@ import { chatLabel } from "../inbox/InboxViews.tsx";
 import { useChatAgents } from "../inbox/NewChatMenu.tsx";
 import { ThreadAvatar } from "../inbox/ThreadAvatar.tsx";
 import { useThreadChannel } from "../inbox/useThreadChannel.ts";
+import { useNav } from "../shell/nav.ts";
 import type { Tabs } from "./tabs.ts";
 import { closeTab, moveTab, showTab } from "./tabsSync.ts";
 import "./chattabs.css";
@@ -18,7 +19,9 @@ import "./chattabs.css";
 export function ChatTabs({ tabs }: { tabs: Tabs }) {
   const t = useT();
   const dragged = useRef<string | undefined>(undefined);
-  const first = useChatAgents(undefined)[0];
+  const pid = useNav((s) => (s.view === "project" ? s.projectId : undefined));
+  const project = pid ? realProjectId(pid) : undefined;
+  const first = useChatAgents(project)[0];
   const drag = {
     start: (id: string) => {
       dragged.current = id;
@@ -42,7 +45,7 @@ export function ChatTabs({ tabs }: { tabs: Tabs }) {
             size="sm"
             label={t("chat.newTab")}
             icon={<Icons.Plus size={14} />}
-            onClick={() => showTab(newChatId({ agent: first.id }))}
+            onClick={() => showTab(newChatId({ agent: first.id, ...(project ? { project } : {}) }))}
           />
         </div>
       )}

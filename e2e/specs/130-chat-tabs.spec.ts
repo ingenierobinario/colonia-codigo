@@ -10,6 +10,7 @@ const fitsThePage = (page: Page) => page.evaluate(() => document.documentElement
 const selected = (page: Page) => page.getByRole("tab", { selected: true });
 
 test("chats open in tabs, which close, switch, reorder and come back after a reload", async ({ page }, info) => {
+  await rpc("setup.finish", {});
   for (const title of ["Tab uno", "Tab dos", "Tab tres"])
     await rpc("threads.create", { kind: "loose", agent_id: "scout", title });
   await open(page, "#thread=home");
@@ -46,7 +47,7 @@ test("chats open in tabs, which close, switch, reorder and come back after a rel
   for (const scheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme: scheme });
     await page.reload();
-    for (const width of [390, 960, 1200]) {
+    for (const width of [390, 768, 960, 1200, 1440]) {
       await page.setViewportSize({ width, height: 800 });
       await expect(tabs(page)).toHaveCount(4);
       await expect(selected(page)).toBeInViewport();
@@ -115,9 +116,46 @@ test("chats open in tabs, which close, switch, reorder and come back after a rel
   await expect(tabs(page)).toHaveCount(0);
   await expect(page.locator(".chattabs")).toBeVisible();
   await expect(page.getByText("Elige un chat")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Elige un chat")).toBeVisible();
+  await expect(tabs(page)).toHaveCount(0);
   await page.screenshot({ path: info.outputPath("tabs-ninguna.png") });
   await row(page, "Tab dos").click();
   await expect(tabs(page)).toHaveCount(1);
   await expect(selected(page)).toHaveText("Tab dos");
   await expect(page.getByRole("textbox", { name: "Escríbele a Scout…" })).toBeVisible();
+});
+
+test("el proyecto solo muestra sus chats abiertos y cerrar el ultimo persiste", async ({ page }) => {
+  await rpc("setup.finish", {});
+  const { project } = await rpc<{ project: { id: string } }>("projects.create", { name: "Prueba de marcadores" });
+  const make = (title: string, project_id?: string) =>
+    rpc<{ id: string }>("threads.create", {
+      title,
+      kind: "loose",
+      agent_id: "scout",
+      project_id,
+    });
+  const outside = await make("Carlita");
+  const inside = await make("Informe", project.id);
+  await open(page, `#thread=${outside.id}`);
+  await expect(selected(page)).toHaveText("Carlita");
+  await open(page, `#project=${project.id}&tab=chats&thread=${inside.id}`);
+  const bar = page.locator(".chattabs");
+  await expect(bar.getByRole("tab")).toHaveCount(1);
+  await expect(bar.getByRole("tab")).toHaveText("Informe");
+  const count = page.locator(".project__tabs").getByRole("tab", { name: /Chats/ }).locator(".colonia-tabs__count");
+  await expect(count).toHaveText("0");
+  const pending = await make("Pendiente", project.id);
+  await rpc("threads.send", { thread: pending.id, text: "hola" });
+  await expect(count).toHaveText("1");
+  await open(page, `#project=${project.id}&tab=chats&thread=${pending.id}`);
+  await expect(count).toHaveText("0");
+  await bar.locator(".is-active .chattabs__close").click();
+  await expect(bar.getByRole("tab")).toHaveText("Informe");
+  await bar.locator(".chattabs__close").click();
+  await expect(bar.getByRole("tab")).toHaveCount(0);
+  await page.reload();
+  await expect(bar).toBeVisible();
+  await expect(bar.getByRole("tab")).toHaveCount(0);
 });

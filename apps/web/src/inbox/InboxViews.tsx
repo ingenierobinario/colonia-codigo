@@ -62,6 +62,7 @@ export function TreeView({
   const engineLabel = (id: string) => engines.find((e) => e.id === id)?.label ?? id;
   const channels = useChannels((s) => s.channels);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const tabs = usePrefs((s) => s.chatTabs);
   const folded = usePrefs((s) => s.inboxFolded);
   const toggleFold = (key: string) => setPrefs({ inboxFolded: toggleFolded(folded, key) });
   // BANDEJA-1: no "Unread" block repeating chats: inside each branch the unread ones go first, so none hides under
@@ -147,7 +148,7 @@ export function TreeView({
               const key = `${tree.key}:${b.agentId}`;
               const all = open[key] ?? false;
               const shut = folded.includes(key);
-              const unread = b.threads.filter((th) => th.unread > 0).length;
+              const unread = b.threads.filter((th) => th.unread > 0 && !tabs.includes(th.id)).length;
               const ordered = unreadFirst(b.threads, (th) => [th]);
               const shown = all ? ordered : ordered.slice(0, PER_AGENT);
               const hiddenUnread = ordered.slice(PER_AGENT).filter((th) => th.unread > 0).length;
@@ -180,8 +181,8 @@ export function TreeView({
                             : agent?.kind === "secretary"
                               ? "agent.super"
                               : "common.agent",
-                        )}{" "}
-                        · {b.threads.length}
+                        )}
+                        {!shut && unread > 0 && ` · ${unread}`}
                       </span>
                       {shut && unread > 0 && <span className="tree__unread">{unread}</span>}
                     </button>
