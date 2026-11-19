@@ -102,7 +102,8 @@ export function ChannelConversation(props: {
           return;
         void loadThread(id);
       } else {
-        await send(id, words, { attachments });
+        // The agent always gets a sentence (threads.send needs one), as in the chat composer.
+        await send(id, words || t("composer.attachedOnly"), { attachments });
       }
       for (const chip of selected) files.remove(chip.key);
       setText((current) => (current === text ? "" : current));
