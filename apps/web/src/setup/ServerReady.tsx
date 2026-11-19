@@ -67,8 +67,8 @@ export function ServerReady({
                 invalid={failed}
                 onChange={(e) => setPassword(e.currentTarget.value)}
               />
-              <Button id="linger-go" type="submit" variant="secondary" loading={busy} disabled={!password}>
-                {t("connect.lingerGo")}
+              <Button id="linger-go" type="submit" variant="secondary" aria-busy={busy} disabled={busy || !password}>
+                {t(busy ? "connect.connecting" : "connect.lingerGo")}
               </Button>
             </form>
           )}

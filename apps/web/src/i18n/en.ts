@@ -364,6 +364,7 @@ export const en = {
   "nav.aiAccounts": "AI accounts",
   "engine.installHere": "Install on the device running Colonia",
   "engine.installError": "Could not install the tool. Check the connection and try again.",
+  "tasks.closedWait": "Loading completed tasks…",
   "nav.externalSessions": "Sessions on this device",
   "nav.addEngine": "Add or connect another AI",
   "nav.apps": "Applications",

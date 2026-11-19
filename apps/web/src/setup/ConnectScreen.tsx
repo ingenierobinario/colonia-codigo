@@ -1,6 +1,6 @@
 import "../styles/wizard.css";
-import { Button, Icons, Input, SegmentedControl, Spinner } from "@colonia/ui";
-import { type FormEvent, type ReactNode, useEffect, useState } from "react";
+import { Button, Icons, Input, SegmentedControl } from "@colonia/ui";
+import { type FormEvent, type ReactNode, useState } from "react";
 import logo from "../assets/logo.png";
 import type { SshPrompt } from "../colonia-desktop.d.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
@@ -17,8 +17,6 @@ type Answer =
   | { ok: true; ready?: true; linger?: string }
   | { ok: false; reason?: string; error?: string; key?: string };
 
-/** How long the intro holds the hero alone before the question unrolls under it: short, the question is what matters. */
-const INTRO_MS = 1600;
 /** What puts the Colonia daemon on a server that has none (install.sh, attached to every release). */
 const INSTALL = "curl -fsSL https://colonia.ingenierobinario.com/install.sh | bash\ncolonia setup --headless";
 
@@ -43,7 +41,6 @@ const STEPS: Record<string, MessageKey> = {
   install: "connect.step.install",
   connect: "connect.step.connect",
 };
-const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 /** How many lines of ssh's and the server's output the terminal keeps. */
 const TERM_LINES = 400;
 
@@ -74,33 +71,6 @@ export function ConnectScreen() {
   const [key, setKey] = useState<string>();
   // Installed on the server and reachable: said first, then Continue opens its setup.
   const [ready, setReady] = useState<{ linger?: string | undefined }>();
-  // The website's hero first; then, like a blind, it rises and the question unrolls under it (at once with less motion).
-  const [revealed, setRevealed] = useState(reduced);
-  // Closing the window only hides it (Colonia stays in the tray): shown again on the first question, the intro plays again.
-  const [intro, setIntro] = useState(0);
-  useEffect(() => {
-    if (step !== "start") return;
-    const replay = () => {
-      if (document.hidden || reduced()) return;
-      setRevealed(false);
-      setIntro((n) => n + 1);
-    };
-    document.addEventListener("visibilitychange", replay);
-    return () => document.removeEventListener("visibilitychange", replay);
-  }, [step]);
-  useEffect(() => {
-    if (revealed) return;
-    const reveal = () => setRevealed(true);
-    const timer = window.setTimeout(reveal, INTRO_MS);
-    window.addEventListener("keydown", reveal);
-    window.addEventListener("pointerdown", reveal);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("keydown", reveal);
-      window.removeEventListener("pointerdown", reveal);
-    };
-  }, [revealed]);
-
   const push = (line: TermLine) => setLines((l) => [...l, line].slice(-TERM_LINES));
   const answer = async (ask: () => Promise<Answer | undefined> | undefined) => {
     setBusy(true);
@@ -112,12 +82,14 @@ export function ConnectScreen() {
         const text = STEPS[id];
         if (text) push({ kind: "step", text: t(text) });
       }),
-      c?.onProgress((text) => push({ kind: "out", text })),
+      c?.onProgress?.((text) => push({ kind: "out", text })),
       c?.onPrompt?.((p) => setPrompt(p ?? undefined)),
     ];
     let r: Answer | undefined;
     try {
-      r = await ask();
+      r = (await ask()) ?? { ok: false, reason: "notReachable" };
+    } catch {
+      r = { ok: false, reason: "notReachable" };
     } finally {
       for (const stop of stops) stop?.();
       setPrompt(undefined);
@@ -129,7 +101,8 @@ export function ConnectScreen() {
       return;
     }
     // Connected: the window leaves this page; until then the button stays busy.
-    if (!r || r.ok) return;
+    if (r.ok) return;
+    setStarting(undefined);
     setBusy(false);
     // Not an error: the next step is to install it.
     if (r.reason === "sshNoColonia") {
@@ -155,7 +128,7 @@ export function ConnectScreen() {
     setStarting(intent);
     void answer(() =>
       intent === "move" ? window.coloniaConnect?.local("none", "move") : window.coloniaConnect?.local("none"),
-    ).finally(() => setStarting(undefined));
+    );
   };
   const connect = (e: FormEvent) => {
     e.preventDefault();
@@ -208,9 +181,9 @@ export function ConnectScreen() {
       <div className="wiz__scroll">
         <div className="wiz__grid is-single connect">
           {step === "start" && (
-            <div key={intro} className={`connect__stage${revealed ? " is-ready" : ""}`}>
-              <CrewHero compact={revealed} />
-              <div className="connect__blind" inert={!revealed}>
+            <div className="connect__stage is-ready">
+              <CrewHero compact />
+              <div className="connect__blind">
                 <div className="wiz__main connect__ask">
                   <StepHead kicker="connect.kicker" title={t("connect.title")} end={t("connect.titleEnd")} green>
                     {t("connect.body")}
@@ -218,6 +191,7 @@ export function ConnectScreen() {
                   <div className="connect__answers">
                     <Choice
                       id="pick-server"
+                      pending={t("setup.newWait")}
                       primary
                       badge={t("connect.recommended")}
                       busy={starting === "new"}
@@ -230,6 +204,7 @@ export function ConnectScreen() {
                     </Choice>
                     <Choice
                       id="pick-move"
+                      pending={t("setup.moveWait")}
                       busy={starting === "move"}
                       disabled={busy}
                       icon={<Icons.Monitor size={18} />}
@@ -380,7 +355,7 @@ export function ConnectScreen() {
                   {t("setup.back")}
                 </button>
                 <span className="wiz__spacer" />
-                <Button id="client-go" type="submit" size="lg" loading={busy} disabled={!address.trim()}>
+                <Button id="client-go" type="submit" size="lg" aria-busy={busy} disabled={busy || !address.trim()}>
                   {t(busy ? "connect.connecting" : "connect.connect")}
                 </Button>
               </div>
@@ -403,6 +378,7 @@ function Choice(props: {
   busy?: boolean;
   disabled?: boolean;
   children: [string, string];
+  pending: string;
 }) {
   const [title, body] = props.children;
   return (
@@ -414,13 +390,15 @@ function Choice(props: {
       aria-busy={props.busy || undefined}
       onClick={props.onClick}
     >
-      <span className="connect__answericon">{props.busy ? <Spinner size={18} /> : props.icon}</span>
+      <span className="connect__answericon">{props.icon}</span>
       <span className="connect__answertext">
         <span className="connect__answertitle">
           {title}
           {props.badge && <span className="connect__badge">{props.badge}</span>}
         </span>
-        <span className="connect__answerbody">{body}</span>
+        <span className="connect__answerbody" aria-live="polite">
+          {props.busy ? props.pending : body}
+        </span>
       </span>
       <Icons.ChevronRight size={18} className="connect__answergo" />
     </button>

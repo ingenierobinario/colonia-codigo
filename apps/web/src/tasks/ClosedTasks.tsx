@@ -1,6 +1,6 @@
 // The Tasks list's "Closed" group: every done and dropped task, read a page at a time once the group is unfolded.
 import type { Task, TaskKind } from "@colonia/protocol";
-import { SearchField, Spinner } from "@colonia/ui";
+import { SearchField } from "@colonia/ui";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadClosed, useTasks } from "../data/tasks.ts";
 import { useT } from "../i18n/index.ts";
@@ -121,7 +121,7 @@ export function ClosedTasks({ closed, row }: { closed: ClosedState; row(task: Ta
   if (!items)
     return (
       <div className="tasks__closedwait">
-        <Spinner size={14} />
+        <span role="status">{t("tasks.closedWait")}</span>
       </div>
     );
   const left = closed.matches - items.length;

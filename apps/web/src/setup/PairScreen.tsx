@@ -63,8 +63,8 @@ export function PairScreen() {
                   leadingIcon={<Icons.KeyRound size={16} />}
                   onChange={(e) => setCode(e.currentTarget.value)}
                 />
-                <Button type="submit" size="lg" loading={busy} disabled={!code.trim()}>
-                  {t("pair.submit")}
+                <Button type="submit" size="lg" aria-busy={busy} disabled={busy || !code.trim()}>
+                  {t(busy ? "connect.connecting" : "pair.submit")}
                 </Button>
               </div>
               {error && (

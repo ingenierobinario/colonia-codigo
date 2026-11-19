@@ -1,5 +1,5 @@
 import type { LocalEmbedding, ServiceInfo } from "@colonia/protocol";
-import { Badge, Button, Icons, Spinner } from "@colonia/ui";
+import { Badge, Button, Icons } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { ServiceDialog } from "../config/ServiceDialog.tsx";
 import { ServicesSection } from "../config/ServicesSection.tsx";
@@ -86,9 +86,7 @@ export function EmbedderCard() {
         </span>
       </span>
       {!s ? (
-        <span className="wiz__hintline">
-          <Spinner size={12} /> {t("setup.embed.looking")}
-        </span>
+        <span className="wiz__hintline">{t("setup.embed.looking")}</span>
       ) : s.ollama.running ? (
         <>
           <span className="wiz__hintline">
@@ -123,17 +121,18 @@ export function EmbedderCard() {
               </span>
               {pull && !pull.error ? (
                 <span className="wiz__hintline" role="status">
-                  <Spinner size={12} /> {t("setup.embed.pulling", { model: pull.model, pct })}
+                  {t("setup.embed.pulling", { model: pull.model, pct })}
                 </span>
               ) : (
                 <div>
                   <Button
                     size="sm"
-                    loading={asked}
+                    aria-busy={asked}
+                    disabled={asked}
                     leadingIcon={<Icons.Download size={14} />}
                     onClick={() => void install(pick.id)}
                   >
-                    {t("setup.embed.pull", { model: pick.id })}
+                    {asked ? t("setup.choiceWait") : t("setup.embed.pull", { model: pick.id })}
                   </Button>
                 </div>
               )}

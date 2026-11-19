@@ -271,8 +271,10 @@ export function Wizard() {
                     {t("setup.skip")}
                   </Button>
                 )}
-                <Button size="lg" disabled={Boolean(blocked)} loading={busy} onClick={() => void next()}>
-                  {step === "project" ? t("setup.create") : t("setup.next")}
+                <Button size="lg" disabled={Boolean(blocked) || busy} aria-busy={busy} onClick={() => void next()}>
+                  {busy
+                    ? t(step === "project" ? "setup.createWait" : "setup.choiceWait")
+                    : t(step === "project" ? "setup.create" : "setup.next")}
                 </Button>
               </div>
             )}
