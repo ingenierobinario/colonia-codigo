@@ -15,7 +15,7 @@ for (const mode of ["light", "dark"] as const) {
       }, mode);
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/");
-      await page.getByRole("button", { name: /^Cuenta/ }).click();
+      await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
       await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
       const wizard = page.locator(".wiz");
       await wizard.locator("#welcome-start").click();

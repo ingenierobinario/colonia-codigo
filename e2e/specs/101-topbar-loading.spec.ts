@@ -287,7 +287,7 @@ test("barra compacta sin overflow conserva accesos, idioma en submenú y tema ac
   await expect(page.getByRole("menuitem", { name: "Recursos del sistema", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.setViewportSize({ width: 1280, height: 844 });
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Idioma", exact: true }).hover();
   await expect(page.getByRole("menuitem", { name: "English" })).toBeVisible();
   await page.getByRole("menuitem", { name: "English" }).click();

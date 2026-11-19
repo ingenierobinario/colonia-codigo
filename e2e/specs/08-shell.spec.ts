@@ -74,7 +74,7 @@ async function pickLanguage(page: Page, account: RegExp, submenu: RegExp, langua
 
 test("English and Spanish show text, never a raw key", async ({ page }) => {
   await open(page);
-  await pickLanguage(page, /^Cuenta/, /^Idioma/, "English");
+  await pickLanguage(page, /^Cuenta(?!s de IA)/, /^Idioma/, "English");
   await expect(page.getByRole("button", { name: "Tasks" })).toBeVisible();
   const text = await page.locator("body").innerText();
   expect(text).not.toMatch(/\b[a-z]+\.[a-z]+\.[a-zA-Z.]+\b/);

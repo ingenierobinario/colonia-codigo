@@ -165,7 +165,7 @@ test("Computer installs only on enable, shows the chat agent's screen, follows C
     await expect(blocked.getByRole("button", { name: "Control devuelto", exact: true })).toBeDisabled();
     await expect(computer.locator(".computer__locked")).toBeVisible();
     await expect(computer.getByRole("button", { name: "Enviar", exact: true })).toBeDisabled();
-    await page.getByRole("button", { name: /^Cuenta/ }).click();
+    await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
     await page.getByRole("menuitem", { name: "Apariencia", exact: true }).click();
     const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
     await settings.getByRole("switch", { name: "Oscuro", exact: true }).click();

@@ -151,7 +151,7 @@ for (const language of ["en", "es"] as const) {
         await heldLanguage;
         await route.continue();
       });
-      await page.getByRole("button", { name: spanish ? /^Cuenta/ : /^Account/ }).click();
+      await page.getByRole("button", { name: spanish ? /^Cuenta(?!s de IA)/ : /^Account/ }).click();
       await page.getByRole("menuitem", { name: spanish ? "Idioma" : "Language", exact: true }).hover();
       await page.getByRole("menuitem", { name: spanish ? "English" : "Español", exact: true }).click();
       try {

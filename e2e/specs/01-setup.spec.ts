@@ -131,7 +131,7 @@ test("a new install opens the setup and imports Colonia v1", async ({ page }) =>
 test("the setup opens again from the account menu and starts from scratch", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".wiz")).toBeHidden();
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
   await wizard.locator("#welcome-start").click();
@@ -185,7 +185,7 @@ test("the setup opens again from the account menu and starts from scratch", asyn
 
 test("right after the desktop app installs Colonia, the setup's welcome says so, once", async ({ page }) => {
   await page.goto("/?welcome=installed");
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
   await expect(wizard.getByText("Colonia está instalada")).toBeVisible();
@@ -195,7 +195,7 @@ test("right after the desktop app installs Colonia, the setup's welcome says so,
   await expect(wizard.locator("#welcome-bring")).toContainText("Ya la uso en otro ordenador");
   expect(new URL(page.url()).searchParams.has("welcome")).toBe(false);
   await page.reload();
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   await expect(wizard.getByText("se ejecuta en tu máquina")).toBeVisible();
   await expect(wizard.getByText("Colonia está instalada")).toBeHidden();
@@ -203,7 +203,7 @@ test("right after the desktop app installs Colonia, the setup's welcome says so,
 
 test("the setup's header picks the language, kept like the app's own", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
   const wizard = page.locator(".wiz");
   await wizard.getByRole("button", { name: "Idioma: Español" }).click();
@@ -228,7 +228,7 @@ for (const look of ["minimal", "classic"]) {
         { look, mode },
       );
       await page.goto("/");
-      await page.getByRole("button", { name: /^Cuenta/ }).click();
+      await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
       await page.getByRole("menuitem", { name: "Configuración inicial" }).click();
       const wizard = page.locator(".wiz");
       await wizard.locator("#welcome-start").click();

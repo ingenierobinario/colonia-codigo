@@ -11,11 +11,11 @@ test("on Windows the account menu runs the desktop app's About, updates and chan
     });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Acerca de Colonia" }).click();
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Buscar actualizaciones…" }).click();
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Cambiar conexión…" }).click();
   expect(await page.evaluate(() => (window as unknown as { ran: string[] }).ran)).toEqual([
     "about",
@@ -26,7 +26,7 @@ test("on Windows the account menu runs the desktop app's About, updates and chan
 
 test("in a browser the account menu has no desktop app items", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await expect(page.getByRole("menuitem", { name: "Configuración inicial" })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Acerca de Colonia" })).toHaveCount(0);
 });

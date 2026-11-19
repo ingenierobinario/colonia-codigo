@@ -271,13 +271,13 @@ test("Resources sits under Tasks and the account menu offers Settings and Langua
   const top = page.locator(".sidebar__top");
   await expect(top.getByRole("button", { name: "Recursos", exact: true })).toBeVisible();
   await expect(page.locator(".sidebar__foot").getByRole("button", { name: "Config", exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await expect(page.getByRole("menuitem", { name: /^Configuración(?! inicial)/ })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Perfil y cuenta" })).toHaveCount(0);
   await page.getByRole("menuitem", { name: /^Idioma/ }).hover();
   await expect(page.getByRole("menuitem", { name: "English", exact: true })).toBeVisible();
   await page.getByRole("menuitem", { name: "Español", exact: true }).click();
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: /^Configuración(?! inicial)/ }).click();
   await expect(page.getByRole("dialog", { name: "Configuración" })).toBeVisible();
 });

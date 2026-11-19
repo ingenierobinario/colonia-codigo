@@ -41,7 +41,7 @@ test("the topbar gauge opens memory, CPU, disk, the VM and Colonia's top consume
   await dialog.getByRole("button", { name: "Cerrar" }).last().click();
   await expect(dialog).toHaveCount(0);
 
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: "Recursos del sistema" }).click();
   await expect(page.getByRole("dialog", { name: "Recursos del sistema" }).getByTestId("usage-detail")).toBeVisible();
 });

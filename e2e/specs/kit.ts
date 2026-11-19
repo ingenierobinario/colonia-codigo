@@ -184,6 +184,6 @@ export async function open(page: Page, hash = "") {
 
 /** Opens Settings the way the owner does: from the account menu at the bottom of the sidebar. */
 export async function openSettings(page: Page) {
-  await page.getByRole("button", { name: /^Cuenta/ }).click();
+  await page.getByRole("button", { name: /^Cuenta(?!s de IA)/ }).click();
   await page.getByRole("menuitem", { name: /^Configuración(?! inicial)/ }).click();
 }
