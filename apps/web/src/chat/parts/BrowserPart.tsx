@@ -52,7 +52,7 @@ export function BrowserPart({
             : t("browser.finished", { host });
   const reveal = (id: string) => {
     go.browser(id);
-    window.coloniaDesktop?.popOutBrowser?.(true, id);
+    window.coloniaDesktop?.popOutBrowser?.(false);
   };
   const open = () => (guest ? go.panel("computer") : reveal(part.tab));
   // A closed tab opens again on the same page.
