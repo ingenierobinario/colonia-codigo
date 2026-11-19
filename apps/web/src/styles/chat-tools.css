@@ -3,6 +3,36 @@
   background: var(--colonia-brand-soft);
   color: var(--colonia-brand-soft-fg);
 }
+/* "Without asking" (DECISIONS.md#d-193): quiet when off, warning-soft while agents act without asking. */
+.chat__noask {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: var(--colonia-control-h-sm);
+  margin-right: 4px;
+  padding: 0 9px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--colonia-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chat__noask:hover {
+  color: var(--colonia-fg);
+}
+.chat__noask.is-on {
+  border-color: transparent;
+  background: var(--colonia-warning-soft);
+  color: var(--colonia-warning-soft-fg);
+  font-weight: 600;
+}
+.chat__noask:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 .chat__toolsdiv {
   width: 1px;
   height: 20px;

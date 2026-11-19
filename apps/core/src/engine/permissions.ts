@@ -14,7 +14,7 @@ import {
   rootsOf,
   type workDir,
 } from "../tools/folders.ts";
-import { actingAs, reachOf, withProjectAutonomy } from "../tools/policy.ts";
+import { actingAs, inProject, reachOf } from "../tools/policy.ts";
 import { judgeCommand } from "../tools/shell.ts";
 import { ancestors } from "./ancestry.ts";
 
@@ -43,7 +43,7 @@ export function createPermissions(o: { store: Store; home: string }) {
     // (DECISIONS.md#d-172).
     const asIn = (a: AgentRecord, thread: string) => {
       const mode = store.threads.context(thread).flow_step?.autonomy;
-      return mode ? { ...a, autonomy: mode } : withProjectAutonomy(store, a);
+      return mode ? { ...a, autonomy: mode } : inProject(store, a, store.threads.get(thread)?.project_id);
     };
     const callers = ancestors(store, threadId).flatMap((t) => {
       const a = store.agents.get(t.agent_ids[0] ?? "");

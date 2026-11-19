@@ -3629,3 +3629,15 @@ would hand it to every command; the tool there names no path. An older Colonia t
 and no team writes an empty `.apc/organization.json` (replacing a project, it overwrites the one there).
 Colonia has no private or locked
 project today: if one arrives, `knownProjects` is the single place that must honour it.
+
+<a id="d-193"></a>
+## D-193 — 2026-11-19 — "Without asking" is a visible switch in the chat: the project on Total, over its agents' own modes
+The owner approved too often and did not find Total in the project's settings. The chat header carries a switch that
+puts the chat's project (the base one for a chat with none) on Total and back to the mode it had, with a short
+confirmation when turned on and a visible mark while it is on. Turning it on is the owner saying "nothing waits for
+me here", so a project on Total wins over an agent's own mode and over its rules that ask (`totalOver`), and it applies
+to every agent acting in a chat of that project, a global one included (`inProject`), not only to the project's own
+agents. A chat's folder left on its default "ask" no longer makes delegated helpers ask (read-only still holds). What
+stays: plan mode (it refuses, it does not ask), a rule turning a risk off, the cards a call always keeps (D-140, D-143),
+and the hard refusals (read-only folders, Colonia's own folder, git's folder). Claude, ACP agents and the one-shot CLIs
+reach the owner only through the executor's `approve`, which follows the same decision, so they ask nothing either.

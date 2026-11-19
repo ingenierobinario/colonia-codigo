@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
 import { browserTools } from "./browser.ts";
-import { allowedTools, authorize, inherit } from "./policy.ts";
+import { allowedTools, authorize, inherit, inProject, reachOf, withProjectAutonomy } from "./policy.ts";
 import { shellTools } from "./shell.ts";
 import { type Confirm, defineTool, type Effect } from "./types.ts";
 
@@ -230,4 +230,36 @@ test("copying the owner's logins keeps its card in total, a grant counting only 
   assert.equal(authorize(login, { domain: "example.com" }, total("shared"), false).kind, "confirm");
   assert.equal(login.keepsCard({ domain: "example.com" }, total("shared")), "grant");
   assert.equal(login.keepsCard({ domain: "example.com" }, total("isolated")), "card");
+});
+
+test("a project on total wins over its agents' own mode and rules that ask, not plan or off (DECISIONS.md#d-193)", () => {
+  const store = (autonomy?: string) =>
+    ({
+      projects: { get: () => (autonomy ? { autonomy } : {}) },
+      settings: { read: () => ({}) },
+    }) as never;
+  const edit = tool("edit_like", "local", "ask");
+  const careful = agent({ project_id: "p1", autonomy: "manual", rules: { write: "ask", irreversible: "off" } });
+  const on = withProjectAutonomy(store("total"), careful);
+  assert.equal(on.autonomy, "total");
+  assert.deepEqual(on.rules, { irreversible: "off" });
+  assert.equal(authorize(edit, {}, on, true).kind, "allow");
+  assert.equal(reachOf(on), "all");
+  assert.equal(authorize(tool("gone", "local", "always"), {}, on, false).kind, "deny");
+  // Off again, the agent's own choices come back untouched.
+  assert.equal(withProjectAutonomy(store("auto"), careful), careful);
+  assert.equal(authorize(edit, {}, withProjectAutonomy(store(), careful), false).kind, "confirm");
+  const planner = agent({ project_id: "p1", autonomy: "plan" });
+  assert.equal(withProjectAutonomy(store("total"), planner).autonomy, "plan");
+});
+
+test("a global agent in a chat of a project on total acts in total there, and only there (DECISIONS.md#d-193)", () => {
+  const store = {
+    projects: { get: (id: string) => ({ autonomy: id === "on" ? "total" : "manual" }) },
+    settings: { read: () => ({}) },
+  } as never;
+  const roby = agent({ autonomy: "auto" });
+  assert.equal(inProject(store, roby, "on").autonomy, "total");
+  assert.equal(inProject(store, roby, "off").autonomy, "auto");
+  assert.equal(inProject(store, roby, undefined).autonomy, "auto");
 });

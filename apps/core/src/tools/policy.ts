@@ -224,11 +224,33 @@ export function reachOf(agent: AgentRecord): Reach {
 
 /** An agent with no autonomy of its own goes as far as its project says (the base project's, for a global one). */
 export function withProjectAutonomy(store: Store, agent: AgentRecord): AgentRecord {
-  if (agent.autonomy) return agent;
   const of = agent.project_id
     ? store.projects.get(agent.project_id)?.autonomy
     : store.settings.read("base_project").autonomy;
+  if (of === "total") return totalOver(agent);
+  if (agent.autonomy) return agent;
   return of ? { ...agent, autonomy: of } : agent;
+}
+
+/**
+ * The agent as it acts in a chat of `projectId`: its mode as withProjectAutonomy gives it, and Total when the chat's
+ * project is on it, a global agent included (DECISIONS.md#d-193).
+ */
+export function inProject(store: Store, agent: AgentRecord, projectId: string | null | undefined): AgentRecord {
+  const a = withProjectAutonomy(store, agent);
+  return projectId && store.projects.get(projectId)?.autonomy === "total" ? totalOver(a) : a;
+}
+
+/**
+ * A project on Total is the owner's "without asking" switch (DECISIONS.md#d-193): it wins over an agent's own mode
+ * and its rules that ask. Plan mode (an agent that only proposes) and a rule turning a risk off stay: they refuse,
+ * they do not ask.
+ */
+export function totalOver(agent: AgentRecord): AgentRecord {
+  if (agent.autonomy === "plan") return agent;
+  const kept = Object.fromEntries(Object.entries(agent.rules ?? {}).filter(([, v]) => v !== "ask")) as AgentRules;
+  const { rules: _, ...rest } = agent;
+  return { ...rest, autonomy: "total", ...(Object.keys(kept).length ? { rules: kept } : {}) };
 }
 
 /**

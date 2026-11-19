@@ -276,6 +276,13 @@ test("a delegation's write policy is never looser than its caller's", async () =
       "ask",
       "the project's own mode caps it",
     );
+    // The "without asking" switch (DECISIONS.md#d-193): a chat's folder left on its default ask does not make helpers
+    // ask, its read-only does.
+    await env.client.call("projects.update", { project, autonomy: "total" });
+    const inFolder = { ...chat, cwd: root, write: "ask" as const };
+    assert.equal((workspaceOf(store, roby, vera, inFolder, project, asked) as { write: string }).write, "auto");
+    const readOnly = { ...inFolder, write: "read-only" as const };
+    assert.equal((workspaceOf(store, roby, vera, readOnly, project, asked) as { write: string }).write, "read-only");
     await env.client.call("projects.update", { project, autonomy: null });
     assert.equal(workspaceOf(store, roby, vera, chat, project, {}), undefined, "nothing asked: no folder of its own");
     assert.match(

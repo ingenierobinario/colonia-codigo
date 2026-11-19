@@ -122,4 +122,14 @@ export const esChat: Partial<Record<MessageKey, string>> = {
   "connect.connected": "Conectado",
   "connect.done": "Conecté {name}.",
   "connect.more": "Explorar {count} conectores más",
+  "chat.noAsk": "Sin pedir permiso",
+  "chat.noAskOn": "Sin pedir permiso: activado",
+  "chat.noAskHint":
+    "Los agentes de {project} actúan sin preguntarte: cambian archivos, ejecutan comandos y actúan en tu nombre. Pulsa para que vuelvan a preguntar como antes.",
+  "chat.noAskOffHint":
+    "Deja de aprobar cada paso: los agentes de {project} cambian archivos, ejecutan comandos y actúan en tu nombre sin preguntar. Las carpetas de solo lectura y la de Colonia siguen protegidas.",
+  "chat.noAskConfirmTitle": "¿Dejar que los agentes trabajen sin pedir permiso?",
+  "chat.noAskConfirmBody":
+    "En {project}, todos los agentes cambiarán archivos, ejecutarán comandos y actuarán en tu nombre sin esperar tu OK. Las carpetas de solo lectura, la de Colonia y la de git siguen protegidas. Puedes desactivarlo aquí cuando quieras.",
+  "chat.noAskConfirm": "Trabajar sin pedir permiso",
 };

@@ -120,4 +120,14 @@ export const enChat = {
   "connect.connected": "Connected",
   "connect.done": "I connected {name}.",
   "connect.more": "Explore {count} more connectors",
+  "chat.noAsk": "Without asking",
+  "chat.noAskOn": "Without asking: on",
+  "chat.noAskHint":
+    "Agents in {project} act without asking you first: they change files, run commands and act in your name. Click to ask again as before.",
+  "chat.noAskOffHint":
+    "Stop approving every step: agents in {project} change files, run commands and act in your name without asking. Read-only folders and Colonia's own stay protected.",
+  "chat.noAskConfirmTitle": "Let agents work without asking?",
+  "chat.noAskConfirmBody":
+    "In {project}, every agent will change files, run commands and act in your name without waiting for your OK. Read-only folders, Colonia's own folder and git's stay protected. You can turn it off here at any time.",
+  "chat.noAskConfirm": "Work without asking",
 };

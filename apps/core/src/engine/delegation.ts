@@ -8,7 +8,7 @@ import type { Store } from "../domain/store.ts";
 import { previewOf, strictestWrite, type Worker, worksInFolder } from "../domain/threads.ts";
 import { agentReply } from "../tools/agents.ts";
 import { folderInProject } from "../tools/folders.ts";
-import { modeOf, withProjectAutonomy } from "../tools/policy.ts";
+import { inProject, modeOf } from "../tools/policy.ts";
 import { ancestors } from "./ancestry.ts";
 import { agentTripped, heldNotice, tripped } from "./breaker.ts";
 import type { Display } from "./display.ts";
@@ -63,12 +63,16 @@ export function workspaceOf(
     const why = (err as Error).message;
     return `refused: ${why.startsWith("needs") ? `a folder to work in ${why}` : why}`;
   }
-  const own: WritePolicy | undefined = worksInFolder(parent) ? parent.write : undefined;
+  const callerMode = modeOf(inProject(store, caller, parent.project_id));
+  // A chat's folder starts on "ask"; in total (the owner's "without asking" switch, DECISIONS.md#d-193) that default
+  // does not make its helpers ask. Read-only still holds.
+  const held = worksInFolder(parent) ? parent.write : undefined;
+  const own: WritePolicy | undefined = held === "ask" && callerMode === "total" ? undefined : held;
   // Never more than the caller may, the callee may, or the project it works in lets anyone (a super-agent in total
   // mode does not lift a project kept to manual). See DECISIONS.md#d-126
   const ceiling = strictestWrite(
-    own ?? writeOfMode(modeOf(withProjectAutonomy(store, caller))),
-    writeOfMode(modeOf(withProjectAutonomy(store, callee))),
+    own ?? writeOfMode(callerMode),
+    writeOfMode(modeOf(inProject(store, callee, projectId))),
     writeOfMode(store.projects.get(projectId ?? "")?.autonomy ?? DEFAULT_AUTONOMY),
   );
   return { cwd, write: strictestWrite(ceiling, req.write ?? ceiling) };

@@ -17,6 +17,7 @@ import { ChannelFace, NewTask, TaskStatus } from "../lazy.ts";
 import { PanelSwitcher } from "../panel/PanelSwitcher.tsx";
 import { go, useNav } from "../shell/nav.ts";
 import { ClearChatDialog, useClearing } from "./ClearChat.tsx";
+import { NoAskSwitch } from "./NoAskSwitch.tsx";
 
 const POLICIES: WritePolicy[] = ["ask", "auto", "read-only"];
 
@@ -152,6 +153,7 @@ export function ChatHeader({
         </div>
       </div>
       <div className="chat__tools">
+        {!sub && !thread.channel && <NoAskSwitch projectId={thread.project_id} compact={compact} />}
         <IconButton
           size="sm"
           label={tools ? t("chat.hideTools") : t("chat.showTools")}
