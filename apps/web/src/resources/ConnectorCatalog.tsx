@@ -1156,6 +1156,10 @@ export function ConnectorCatalog({
               ))}
               {items.map((c) => {
                 const existing = have.get(c.id);
+                const authorization =
+                  existing?.status === "needs-sign-in" && existing.sign_in_url?.startsWith("https://")
+                    ? existing.sign_in_url
+                    : undefined;
                 const on = existing?.status === "ready";
                 const open = asking === c.id && c.keys;
                 const filled = (c.keys ?? []).every((k) => (values[k.env] ?? "").trim());
@@ -1169,11 +1173,18 @@ export function ConnectorCatalog({
                       <span className="catalog__desc" title={c.keys ? t("res.catalog.keyNeeded") : undefined}>
                         {es ? c.desc[0] : c.desc[1]}
                       </span>
+                      <a href={c.help ?? `https://${c.domain}/`} target="_blank" rel="noopener noreferrer">
+                        {t("res.catalog.openProvider", { name: c.name })}
+                      </a>
                     </span>
                     {on ? (
                       <span className="catalog__on">
                         <Icons.Check size={14} /> {t("res.catalog.connected")}
                       </span>
+                    ) : authorization ? (
+                      <a href={authorization} target="_blank" rel="noopener noreferrer">
+                        {t("res.signIn")}
+                      </a>
                     ) : open ? null : (
                       <Button
                         size="sm"

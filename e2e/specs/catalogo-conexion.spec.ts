@@ -22,6 +22,13 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
     await page.getByRole("radio", { name: /^Conectores/ }).click();
     await page.getByRole("button", { name: "Catálogo", exact: true }).click();
     const card = page.locator(".catalog__card").filter({ has: page.getByText("Meta Ads", { exact: true }) });
+    const provider = page.getByRole("link", { name: "Abrir Meta Ads · Pipeboard", exact: true });
+    await page.context().route("https://pipeboard.co/", (route) => route.fulfill({ body: "Proveedor de prueba" }));
+    const popup = page.waitForEvent("popup");
+    await provider.click();
+    const providerPage = await popup;
+    await expect(providerPage).toHaveURL("https://pipeboard.co/");
+    await providerPage.close();
     await card.getByRole("button", { name: "Conectar" }).click();
     await expect(page.getByRole("link", { name: /sesión/i })).toHaveAttribute(
       "href",
