@@ -138,3 +138,18 @@ tiene contenido de fuera, aunque sea por una tool que dice que solo lee.
 
 Un agente también puede copiar un dibujo o un adjunto a un archivo propio (`file_write` con `media`), para su shell,
 sus skills u otra tool.
+
+## Delegar en un agente A2A
+
+En **Recursos → Conectores → Catálogo → Conectar agente A2A**, introduce un nombre y la URL HTTPS de su tarjeta. Si requiere un token Bearer, guárdalo en **Recursos → Variables** e indica el nombre de esa variable. El agente remoto debe anunciar A2A 1.0 con JSON-RPC en el mismo origen de su tarjeta.
+
+Pide al superagente «Consulta qué puede hacer contabilidad y encárgale revisar este resumen». Puede consultar las capacidades, enviar texto, recuperar los resultados y solicitar la cancelación. La conversación conserva el identificador del encargo para volver a consultarlo. La conexión se abre al usarla.
+
+Para recibir encargos en tu propio servidor Colonia, configura estas dos variables de entorno del motor y reinícialo:
+
+- `COLONIA_A2A_URL=https://tu-servidor.example/a2a` identifica la dirección que sirve tu proxy HTTPS.
+- `COLONIA_A2A_AGENT` contiene el identificador del agente que atenderá los encargos. Utiliza el motor y la cuenta que ya configuraste para ese agente.
+
+Publica en ese origen las rutas `/.well-known/agent-card.json` y `/a2a`. Mantén la autenticación del núcleo habilitada para conexiones mediante proxy. Crea un cliente externo con permiso de chat para cada emisor y comparte su token por un canal privado. La tarjeta y las llamadas requieren ese token. Cada cliente puede consultar sus propias conversaciones. Puedes revocarlo en Colonia.
+
+Esta integración admite texto y consulta de resultados por identificador. Para continuar un intercambio, envía un mensaje nuevo con el mismo `contextId`. Las preguntas de autorización se resuelven dentro de Colonia.

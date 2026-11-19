@@ -177,6 +177,7 @@ Usage:
   colonia setup --headless [--import [--keys] [--skills] [--services]] [--expose tailscale|lan]
                            A server with no desktop: service, optional import, optional exposure, then a pair code
 
+  colonia a2a <agent-card-https-url>   Conector de un agente A2A para Colonia (stdio MCP)
   colonia mcp [--by <agent>]  Stdio MCP server exposing browser_* tools (for Claude Code, Codex…); with
                            COLONIA_CLIENT_TOKEN also colonia_agents / colonia_ask / colonia_read (colonia clients add <name>)
   colonia mcp --run           The tools of one agent run (COLONIA_RUN_TOKEN), for an external harness
@@ -308,6 +309,12 @@ try {
         await updateOffline({ check: values.check || rest[0] === "check" });
       }
       break;
+    case "a2a": {
+      if (rest.length !== 1 || !rest[0]) throw new Error("Indica la URL HTTPS de la tarjeta del agente.");
+      const { serveAgent } = await import("./a2a.ts");
+      await serveAgent(rest[0]);
+      break;
+    }
     case "doctor":
       await doctor({ json: values.json });
       break;

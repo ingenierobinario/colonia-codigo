@@ -115,8 +115,14 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_open",
       description:
-        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
+        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For a service operation prefer an authorized integration or mcp_search; if authorization is missing, offer suggest_connection. Use this browser for an explicitly visual task. For public reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
       args: z.object({
+        purpose: z
+          .enum(["visual", "unsupported"])
+          .optional()
+          .describe(
+            "visual: the user requested the page itself; unsupported: no authorized connector supports this operation. Never use this to bypass denied access.",
+          ),
         url: z.string().optional().describe("http(s) URL; optional with `app`"),
         app: z
           .string()

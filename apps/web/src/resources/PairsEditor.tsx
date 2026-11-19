@@ -87,7 +87,7 @@ export function PairsEditor(props: {
 }
 
 /** "+": the owner's Variables to pick one from, and "New variable…" to store one and use it at once. */
-function VarPicker({ onPick }: { onPick(name: string): void }) {
+export function VarPicker({ onPick }: { onPick(name: string): void }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);

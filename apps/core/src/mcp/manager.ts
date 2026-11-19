@@ -9,6 +9,7 @@ import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { z } from "zod";
 import type { Store } from "../domain/store.ts";
 import { badRequest, conflict, errorMessage, unavailable } from "../errors.ts";
+import { thisRunner } from "../harness/colonia-command.ts";
 import { commandEnv, SECRET_NAME } from "../harness/env.ts";
 import type { Log } from "../log.ts";
 import { onPath } from "../programs.ts";
@@ -178,12 +179,16 @@ export function createMcp(deps: {
       const env = resolve(d.env, d.values_of);
       // Windows starts it through cmd, which hides a missing program as a closed connection: say so first.
       const cmd = d.command ?? "";
-      if (process.platform === "win32" && !/[\\/]/.test(cmd) && !onPath(cmd)) throw new Error(`spawn ${cmd} ENOENT`);
+      const runner = cmd === "colonia" && d.args[0] === "a2a" && d.args.length === 2 ? thisRunner() : undefined;
+      if (!runner && process.platform === "win32" && !/[\\/]/.test(cmd) && !onPath(cmd))
+        throw new Error(`spawn ${cmd} ENOENT`);
       const stdio = new StdioClientTransport({
-        command: d.command ?? "",
-        args: d.args.map((a) => resolveText(a, d.values_of)),
+        command: runner?.exe ?? cmd,
+        args: runner
+          ? [path.join(path.dirname(runner.main), "a2a-stdio.ts"), ...d.args.slice(1)]
+          : d.args.map((a) => resolveText(a, d.values_of)),
         // Only what the definition gives it, on top of an environment without credentials.
-        env: { ...commandEnv(), ...env },
+        env: { ...commandEnv(), ...env, ...(runner?.electron && { ELECTRON_RUN_AS_NODE: "1" }) },
         cwd: d.cwd ?? ownDir(d.name),
         stderr: "pipe",
       });
@@ -434,9 +439,19 @@ export function createMcp(deps: {
       ];
     },
     /** The MCP tools a turn in this thread may use: enabled, approved servers of its project and the owner's. */
-    async toolsFor(thread: Thread): Promise<Tool[]> {
+    async toolsFor(thread: Thread, server?: string): Promise<Tool[]> {
       const defs = defsFor(thread.project_id).filter((d) => d.enabled && config.trusted(d));
-      const live = defs.map((d) => ({ d, c: ensure(d) }));
+      // When namespaces overlap, resolve collisions exactly as in the complete catalog.
+      const prefix = (s: string) => toolName(s, "").slice(0, 57);
+      const overlap =
+        server !== undefined &&
+        defs.some(
+          (d) =>
+            d.name !== server &&
+            (prefix(d.name).startsWith(prefix(server)) || prefix(server).startsWith(prefix(d.name))),
+        );
+      const selected = server === undefined || overlap ? defs : defs.filter((d) => d.name === server);
+      const live = selected.map((d) => ({ d, c: ensure(d) }));
       await Promise.allSettled(live.map(({ c }) => c.ready));
       // Names are unique per turn: a clash after sanitizing gets a short suffix; the owner's servers come first.
       const taken = new Set<string>();

@@ -14,6 +14,7 @@ import { COMPUTER_TOOL } from "../tools/vm.ts";
 import { WEB_TOOLS } from "../tools/web.ts";
 import { callersOf } from "./ancestry.ts";
 import { MAX_DEPTH } from "./limits.ts";
+import { preferServiceTools } from "./service-route.ts";
 import type { Turn, TurnDeps } from "./turn.ts";
 
 /** What only a caller may use: a delegate asks no one (DECISIONS.md#d-074). */
@@ -125,14 +126,17 @@ export async function turnTools(deps: TurnDeps, turn: Turn) {
   const step = deps.store.threads.context(turn.thread.id).flow_step;
   // MCP tools are reached through mcp_search and mcp_call; their servers start only when one is first used.
   const servers = !sealed && !inVm && deps.mcpTools ? (deps.mcpServers?.(turn.thread) ?? []) : [];
-  let loading: Promise<Tool[]> | undefined;
+  const loading = new Map<string | undefined, Promise<Tool[]>>();
   // A contact's turn reaches no MCP tool, not even one it names without being offered it.
-  const mcpLate = () => {
+  const mcpLate = (server?: string) => {
     if (inVm || sealed || step?.bot) return Promise.resolve([]);
-    loading ??= (deps.mcpTools?.(turn.thread) ?? Promise.resolve([]))
+    const cached = loading.get(undefined) ?? loading.get(server);
+    if (cached) return cached;
+    const pending = (deps.mcpTools?.(turn.thread, server) ?? Promise.resolve([]))
       .catch(() => [])
       .then((all) => all.filter((t) => policy.allows(t.name) && (!only || only.has(t.name) || only.has(MCP_CALL))));
-    return loading;
+    loading.set(server, pending);
+    return pending;
   };
   const bridge = servers.length ? mcpBridge(servers, mcpLate) : [];
   // With memory off, the tools that read or write it are not offered; iMessage's only once the owner turned it on; a
@@ -184,5 +188,15 @@ export async function turnTools(deps: TurnDeps, turn: Turn) {
       ((callers.length < MAX_DEPTH && !turn.worker) || !SESSION_TOOLS.has(t.name)) &&
       (!only || only.has(t.name) || (t.name === MCP_SEARCH && only.has(MCP_CALL))),
   );
-  return { policy, tools, mcpLate };
+  const byTool = (tool?: string) => {
+    const matches = tool
+      ? servers.filter((s) => tool.startsWith(("mcp_" + s + "_").replace(/[^a-zA-Z0-9_-]/g, "_")))
+      : [];
+    return mcpLate(matches.length === 1 ? matches[0] : undefined);
+  };
+  return {
+    policy,
+    tools: sealed || inVm ? tools : preferServiceTools(tools, servers, () => deps.store.settings.read("webapps")),
+    mcpLate: byTool,
+  };
 }

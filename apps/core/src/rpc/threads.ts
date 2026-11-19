@@ -270,10 +270,15 @@ export function threadHandlers(store: Store, engine: Engine, upkeep: Pick<Upkeep
           .filter((t) => (!project_id || t.project_id === project_id) && (!engine || t.engine === engine)),
       };
     },
-    "threads.get": ({ thread }, ctx) => {
+    "threads.get": ({ thread, run }, ctx) => {
       const t = store.threads.get(thread);
       if (!t) throw notFound(`thread ${thread}`);
       ownClientThread(thread, ctx);
+      if (run) {
+        const found = store.runs.get(run);
+        if (!found || found.thread_id !== thread) throw notFound("encargo desconocido");
+        return { thread: t, messages: store.messages.list(thread, 200, run), runs: [publicRun(found)] };
+      }
       return { thread: t, messages: store.messages.list(thread), runs: store.runs.list(thread).map(publicRun) };
     },
     "threads.create": (params, ctx) => createThread(store, params, ctx),
@@ -389,7 +394,11 @@ export function threadHandlers(store: Store, engine: Engine, upkeep: Pick<Upkeep
         ...(files.length ? { attachments: attachedFiles(store, thread, files) } : {}),
       });
     },
-    "threads.cancel": ({ thread }) => ({ canceled: engine.cancel(thread) }),
+    "threads.cancel": ({ thread, run }, ctx) => {
+      ownClientThread(thread, ctx);
+      if (ctx.client && !run) throw badRequest("indica el encargo que quieres cancelar");
+      return { canceled: run ? engine.cancelOne(thread, run) : engine.cancel(thread) };
+    },
     "threads.go_on": ({ thread, mode }) => {
       if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
       return { started: goOn(store, engine.admit, engine.release, thread, mode) };

@@ -618,11 +618,12 @@ export function messagesRepo({ one, all, run }: Sql, bus: Bus) {
           .limit(limit),
       ).map(toMessage);
     },
-    list(threadId: string, limit = 200): Message[] {
+    list(threadId: string, limit = 200, runId?: string): Message[] {
       const newest = qb
         .selectFrom("messages")
         .selectAll()
         .where("thread_id", "=", threadId)
+        .$if(runId !== undefined, (q) => q.where("run_id", "=", runId ?? ""))
         .orderBy("seq", "desc")
         .limit(limit);
       return all(qb.selectFrom(newest.as("m")).selectAll().orderBy("seq")).map(toMessage);

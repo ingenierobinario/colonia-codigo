@@ -11,6 +11,7 @@ export type { PublicPages } from "../surface-pages.ts";
 import type { Log } from "../log.ts";
 import { isInside } from "../paths.ts";
 import type { Dispatch } from "../rpc/router.ts";
+import { a2aService } from "./a2a.ts";
 import { type Gate, localRequest, refuse } from "./guard.ts";
 
 const MAX_BODY = 1024 * 1024;
@@ -95,8 +96,42 @@ export function httpHandler(
   clientOf?: ClientLookup,
   deviceOf?: DeviceLookup,
 ) {
+  const a2a =
+    process.env.COLONIA_A2A_URL && process.env.COLONIA_A2A_AGENT
+      ? a2aService(process.env.COLONIA_A2A_URL, process.env.COLONIA_A2A_AGENT)
+      : undefined;
   const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     const url = new URL(req.url ?? "/", "http://core");
+    if (
+      a2a &&
+      ((req.method === "GET" && url.pathname === "/.well-known/agent-card.json") ||
+        (req.method === "POST" && url.pathname === "/a2a"))
+    ) {
+      const auth = header(req, "authorization");
+      const client = auth?.startsWith("Bearer coloniac_") ? clientOf?.(auth.slice(7)) : undefined;
+      if (!client?.scopes.includes("chat") || refuse(req, gate, null, true))
+        return send(res, 401, { error: "unauthorized" });
+      if (req.method === "GET") return send(res, 200, a2a.card);
+      if (header(req, "content-type")?.split(";")[0]?.trim() !== "application/json")
+        return send(res, 415, { error: "application/json required" });
+      let body: unknown;
+      try {
+        body = await readJson(req, MAX_BODY);
+      } catch {
+        return send(res, 400, { jsonrpc: "2.0", id: null, error: { code: -32700, message: "JSON incorrecto." } });
+      }
+      const ac = new AbortController();
+      res.once("close", () => ac.abort());
+      const result = await a2a.handle(
+        body,
+        dispatch,
+        { transport: "http", role: "operator", actor: "agent", session: undefined, client, log },
+        AbortSignal.any([ac.signal, AbortSignal.timeout(120_000)]),
+        () => !!auth && !!clientOf?.(auth.slice(7))?.scopes.includes("chat"),
+      );
+      if (!res.destroyed) send(res, 200, result);
+      return;
+    }
     if (req.method === "GET" && url.pathname === "/health") {
       return send(
         res,

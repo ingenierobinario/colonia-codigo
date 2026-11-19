@@ -13,6 +13,7 @@ const llm = scriptedLlm((req, { said, afterTool }) => {
   if (afterTool) return say(`Result: ${String(req.messages.at(-1)?.content).slice(0, 300)}`);
   if (said.includes("bridge shell"))
     return callTool("x1", "mcp_call", { tool: "shell", args: { command: "echo pwned" } });
+  if (said.includes("find notes only")) return callTool("s1", "mcp_search", { query: "echo", server: "notes" });
   if (said.includes("find echo")) return callTool("s1", "mcp_search", { query: "echo text back" });
   if (said.includes("use echo")) return callTool("e1", "mcp_call", { tool: "mcp_notes_echo", args: { text: "hi" } });
   if (said.includes("use token")) return callTool("e2", "mcp_mine_token", {});
@@ -274,4 +275,13 @@ test("a project's mcps.json saved with a BOM is read, and editing it keeps the f
   const doc = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.deepEqual(doc.mcpServers.notes.env, { MODE: "slow" });
   assert.ok(doc.mcpServers.sneaky, "the rest of the file stays");
+});
+
+test("una búsqueda y una llamada dirigidas mantienen apagados los demás conectores", async () => {
+  await env.client.call("mcp.trust", { project, server: "notes", trusted: true });
+  await env.client.call("mcp.set", { name: "otro", server: { command: process.execPath, args: [SERVER] } });
+  assert.match(await turn("find notes only"), /mcp_notes_echo/);
+  assert.match(await turn("use echo"), /echo: hi/);
+  const servers = (await env.client.call("mcp.list", { project })).servers;
+  assert.equal(servers.find((s) => s.name === "otro")?.status, "off");
 });

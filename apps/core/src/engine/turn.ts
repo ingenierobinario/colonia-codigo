@@ -120,7 +120,7 @@ export type TurnDeps = {
   /** This core's version and commit: agents can tell the owner which Colonia they run on. */
   build?: { version: string; code_sha: string } | undefined;
   hooks?: Hooks | undefined;
-  mcpTools?: ((thread: Thread) => Promise<Tool[]>) | undefined;
+  mcpTools?: ((thread: Thread, server?: string) => Promise<Tool[]>) | undefined;
   /** The MCP servers a thread may reach, by name, without starting them. */
   mcpServers?: ((thread: Thread) => string[]) | undefined;
   /** Whether a connected node lends a capability: tools that need one are offered only then. */

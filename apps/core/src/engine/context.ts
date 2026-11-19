@@ -33,6 +33,7 @@ const SAFETY = [
 ];
 /** How to reach the web; how to drive the browser is in its tools' descriptions. */
 const BROWSING = [
+  "- Service tasks: use an authorized account tool first, or mcp_search for the operation and account. Delegate to a configured A2A agent for its advertised skills. If access is missing, offer suggest_connection; never use a browser session to bypass a refusal. After an uncertain write, check its status before retrying.",
   "- The web: web_search and web_read to look things up; your browser only for pages that need JavaScript, clicks, forms or a login; never another browser.",
   "- The owner's own browsers in Colonia (Navegadores) keep their sign-ins: before asking for a login, browser_tabs lists each one and the sites signed in there; browser_open with that navegador uses that session.",
   "- A login: browser_use_my_login (their own session, with their OK), else browser_handoff. A site that blocks you is a handoff too, not a reason to switch.",
@@ -459,7 +460,7 @@ const CHAT_STYLE = `Plain text on a phone: no Markdown tables, headers or bold; 
 const HANDOFF_NOTE =
   "Here you keep notes, write to people and rooms when asked (message_contact, channel_post) and hand the rest off. Anything that needs other tools (the web, files, commands, tasks, the browser) goes to an agent with delegate: say in one line that it is on its way; its answer reaches the owner here.";
 const ACK_NOTE =
-  "Before your first tool call, write one short natural line in the owner's language saying you are on it (a few words, never the answer); it reaches them at once, the full answer follows. With no tool call, no such line. They are not looking at the app: look things up with web_search and web_read; open the browser only when a page needs it (JavaScript, a login, clicks).";
+  "Before your first tool call, write one short natural line in the owner's language saying you are on it (a few words, never the answer); it reaches them at once, the full answer follows. With no tool call, no such line. They are not looking at the app: use authorized service tools first for account data; look up public information with web_search and web_read; open the browser only when a page needs it (JavaScript, a login, clicks).";
 
 /** The owner's channel and the app share one chat: without saying so, the model treats them as two. */
 const SAME_CHAT = (channel: string) =>

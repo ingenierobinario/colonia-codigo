@@ -134,3 +134,18 @@ outside content in it, even through a tool that says it only reads.
 
 An agent can also copy a drawing or an attachment into a file of its own (`file_write` with `media`), for its shell,
 its skills or another tool.
+
+## Delegate to an A2A agent
+
+Open **Resources → Connectors → Catalog → Connect A2A agent**. Enter a name and its HTTPS agent card URL. If it requires a bearer token, save the token under **Resources → Variables** and enter the variable name. The card must advertise an A2A 1.0 JSON-RPC endpoint on the same origin.
+
+Ask the superagent to check the remote agent's skills and delegate a text task. The connector can send the task, retrieve its result and request cancellation. Keep the returned task ID to check it later. The connection opens on demand.
+
+To accept tasks on your own Colonia server, set these core environment variables and restart the core:
+
+- `COLONIA_A2A_URL=https://your-server.example/a2a` sets the address served by your HTTPS reverse proxy.
+- `COLONIA_A2A_AGENT` selects the agent by ID. It uses the engine and account already configured for it.
+
+Serve `/.well-known/agent-card.json` and `/a2a` on that origin. Keep core authentication enabled for proxied connections. Create a separate external client with chat permission for each caller and share its token privately. Both discovery and task requests require the token. Clients can read their own conversations and can be revoked in Colonia.
+
+This integration supports text and task lookup. To continue a conversation, send another message with the same `contextId`. Approval requests are handled inside Colonia.

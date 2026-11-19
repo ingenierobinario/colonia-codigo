@@ -826,7 +826,7 @@ export const appMethods = {
     effect: false,
   },
   "threads.get": {
-    params: z.object({ thread: Id }).strict(),
+    params: z.object({ thread: Id, run: Id.optional() }).strict(),
     result: z.object({ thread: Thread, messages: z.array(Message), runs: z.array(Run) }),
     effect: false,
   },
@@ -1991,7 +1991,7 @@ export const appMethods = {
     access: "human",
   },
   "threads.cancel": {
-    params: z.object({ thread: Id }).strict(),
+    params: z.object({ thread: Id, run: Id.optional() }).strict(),
     result: z.object({ canceled: z.number().int() }),
     effect: true,
   },

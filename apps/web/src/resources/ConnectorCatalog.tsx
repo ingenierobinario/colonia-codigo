@@ -13,6 +13,7 @@ import { client } from "../data/client.ts";
 import { type McpDraft, setMcp, setSecret } from "../data/resources.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
 import { ConnectForm, type Integration } from "./IntegrationsTab.tsx";
+import { VarPicker } from "./PairsEditor.tsx";
 
 /** Colonia's own social connectors: listed with the social connectors, they connect in the same form as in Integrations. */
 const OWN_SOCIAL = ["youtube", "x", "meta", "linkedin", "tiktok"] as const;
@@ -1059,6 +1060,7 @@ export function ConnectorCatalog({
 }) {
   const t = useT();
   const es = useLanguage() === "es";
+  const [addingAgent, setAddingAgent] = useState(false);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string>();
   const [asking, setAsking] = useState<string>();
@@ -1096,6 +1098,9 @@ export function ConnectorCatalog({
     <div className="catalog">
       <div className="catalog__head">
         <span className="catalog__lead">{t("res.catalog.lead")}</span>
+        <Button size="sm" variant="secondary" onClick={() => setAddingAgent(true)}>
+          {es ? "Conectar agente A2A" : "Connect A2A agent"}
+        </Button>
         <SearchField
           size="sm"
           value={query}
@@ -1155,7 +1160,12 @@ export function ConnectorCatalog({
                         size="sm"
                         variant="secondary"
                         loading={busy === c.id}
-                        onClick={() => (c.keys ? (setValues({}), setAsking(c.id)) : void add(c))}
+                        onClick={() => {
+                          if (c.keys) {
+                            setValues({});
+                            setAsking(c.id);
+                          } else void add(c);
+                        }}
                       >
                         {t("res.catalog.add")}
                       </Button>
@@ -1196,6 +1206,7 @@ export function ConnectorCatalog({
           </section>
         );
       })}
+      {addingAgent && <AgentForm have={have} onClose={() => setAddingAgent(false)} onAdded={onAdded} />}
       {connecting && (
         <ConnectForm
           i={connecting}
@@ -1224,6 +1235,96 @@ export function ConnectorCatalogDialog({
   return (
     <Dialog open size="lg" onOpenChange={(o) => !o && onClose()} title={t("res.catalog.title")}>
       <ConnectorCatalog servers={servers} onAdded={onAdded} />
+    </Dialog>
+  );
+}
+
+function AgentForm({
+  have,
+  onClose,
+  onAdded,
+}: {
+  have: Set<string>;
+  onClose(): void;
+  onAdded(name: string): void | Promise<void>;
+}) {
+  const es = useLanguage() === "es";
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [secret, setSecretName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const key = name.trim();
+  let valid = false;
+  try {
+    const u = new URL(address.trim());
+    valid = u.protocol === "https:" && !u.username && !u.password && !u.hash && !u.search;
+  } catch {}
+  const ok =
+    valid && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,40}$/.test(key) && !have.has(key) && /^[a-zA-Z0-9_.-]*$/.test(secret);
+  const save = async () => {
+    if (!ok || busy) return;
+    setBusy(true);
+    try {
+      if (
+        await setMcp(key, {
+          command: "colonia",
+          args: ["a2a", address.trim()],
+          ...(secret && { env: { A2A_TOKEN: "secret://" + secret } }),
+        })
+      ) {
+        await onAdded(key);
+        onClose();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Dialog
+      open
+      size="sm"
+      title={es ? "Conectar agente A2A" : "Connect A2A agent"}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <div className="catalog__keys">
+        <label htmlFor="a2a-name">
+          {es ? "Nombre único (letras, números, guiones)" : "Unique name (letters, numbers, hyphens)"}
+          <Input
+            id="a2a-name"
+            value={name}
+            onChange={(e) => setName(e.currentTarget.value)}
+            placeholder="contabilidad"
+          />
+        </label>
+        {have.has(key) && (
+          <span role="status">
+            {es ? "Ya existe un conector con ese nombre." : "That connector name is already taken."}
+          </span>
+        )}
+        <label htmlFor="a2a-address">
+          {es ? "URL HTTPS de la tarjeta del agente" : "Agent card HTTPS URL"}
+          <Input
+            id="a2a-address"
+            value={address}
+            onChange={(e) => setAddress(e.currentTarget.value)}
+            placeholder="https://example.org/.well-known/agent-card.json"
+          />
+        </label>
+        <div>
+          <span>{es ? "Credencial del agente (opcional)" : "Agent credential (optional)"}</span>
+          <VarPicker onPick={setSecretName} />
+          {secret && (
+            <Button size="sm" variant="ghost" onClick={() => setSecretName("")}>
+              {secret} ×
+            </Button>
+          )}
+        </div>
+        <Button size="sm" disabled={!ok || busy} loading={busy} onClick={save}>
+          {es ? "Guardar conexión" : "Save connection"}
+        </Button>
+      </div>
     </Dialog>
   );
 }

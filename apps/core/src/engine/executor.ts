@@ -120,7 +120,7 @@ export function createExecutor(o: {
   inputs: Inputs;
   tools: Tool[];
   /** Tools that join on first use (MCP's): mcp_call names one, and grant_tool may grant one. */
-  late?: () => Promise<Tool[]>;
+  late?: (name?: string) => Promise<Tool[]>;
   agent: AgentRecord;
   thread: Thread;
   run: () => RunRecord;
@@ -150,11 +150,9 @@ export function createExecutor(o: {
 }): Executor {
   const { store, display, signal, agent, thread } = o;
   const byName = new Map(o.tools.map((t) => [t.name, t]));
-  let joined = false;
-  const join = async () => {
-    if (joined || !o.late) return;
-    joined = true;
-    for (const t of await o.late()) if (!byName.has(t.name)) byName.set(t.name, t);
+  const join = async (name?: string) => {
+    if (!o.late) return;
+    for (const t of await o.late(name)) if (!byName.has(t.name)) byName.set(t.name, t);
   };
   let untrusted = o.untrusted;
   let toolsRan = 0;
@@ -249,7 +247,8 @@ export function createExecutor(o: {
     if (transfer) return { ok: false, text: transfer, endTurn: true };
     // mcp_call runs the tool it names, through every check below as if the model had called that tool itself.
     const { name, args: raw } = called === MCP_CALL ? unwrapCall(given) : { name: called, args: given };
-    if (called === MCP_CALL || name === "grant_tool" || (name.startsWith("mcp_") && !byName.has(name))) await join();
+    if (name === "grant_tool") await join();
+    else if (name.startsWith("mcp_") && !byName.has(name)) await join(name);
     const bridged = called !== MCP_CALL || (name.startsWith("mcp_") && name !== MCP_CALL && name !== MCP_SEARCH);
     const tool = bridged ? byName.get(name) : undefined;
     const title = tool ? toolTitle(store, tool, raw) : name;

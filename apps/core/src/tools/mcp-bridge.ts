@@ -37,7 +37,7 @@ export function rank(tools: Tool[], query: string): Tool[] {
  * description, so the model knows what exists without loading anything). `load` starts the servers on first use.
  * mcp_call never runs here: the executor turns it into a call of the tool it names, with that tool's own checks.
  */
-export function mcpBridge(servers: string[], load: () => Promise<Tool[]>): Tool[] {
+export function mcpBridge(servers: string[], load: (server?: string) => Promise<Tool[]>): Tool[] {
   return [
     defineTool({
       name: MCP_SEARCH,
@@ -50,7 +50,8 @@ export function mcpBridge(servers: string[], load: () => Promise<Tool[]>): Tool[
       deadlineMs: 45_000,
       title: (a) => `Searched MCP tools${a.query ? `: ${a.query}` : a.server ? ` of ${a.server}` : ""}`,
       async run(a) {
-        const all = await load();
+        if (a.server && !servers.includes(a.server)) return "No such authorized server.";
+        const all = await load(a.server);
         const pool = a.server ? all.filter((t) => serverOf(t) === a.server) : all;
         if (!pool.length)
           return a.server

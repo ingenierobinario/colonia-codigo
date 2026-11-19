@@ -219,7 +219,7 @@ export function createEngine(deps: {
   /** Whether the Mac slept since a moment (engine/awake.ts): a turn it cut short gets one more window. */
   sleptSince?: (since: number) => boolean;
   /** MCP servers' tools for a thread (its project's approved ones and the owner's). */
-  mcpTools?: (thread: Thread) => Promise<Tool[]>;
+  mcpTools?: (thread: Thread, server?: string) => Promise<Tool[]>;
   /** The MCP servers a thread may reach, by name, without starting them. */
   mcpServers?: (thread: Thread) => string[];
   /** Whether a connected node lends this capability now (a phone's location). */
@@ -504,6 +504,19 @@ export function createEngine(deps: {
   return {
     admit,
     cancel,
+    cancelOne(thread: string, id: string): number {
+      const run = store.runs.get(id);
+      if (!run || run.thread_id !== thread) return 0;
+      if (run.state === "queued") {
+        ended(store.runs.setState(run, "canceled", "canceled before it started"));
+        return 1;
+      }
+      const live = active.get(id);
+      if (!live || live.ac.signal.aborted) return 0;
+      live.ac.abort(new Canceled());
+      for (const child of store.runs.children(id)) cancel(child.thread_id);
+      return 1;
+    },
     /** Starts the thread's queued delegations that fit (after the owner lets agents go on); how many it started. */
     release: (threadId: string) => delegations.release(threadId),
     /** Hands owner text to the thread's running turn when its loop can take it mid-turn (ours); else undefined. */
