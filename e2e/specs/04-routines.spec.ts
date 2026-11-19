@@ -4,7 +4,11 @@ import { expect, open, rpc, test, until } from "./kit.ts";
 
 test("a routine that sends a message is created and runs now", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "Default", exact: true }).click();
+  // El proyecto se abre desde la barra lateral: el árbol del Inbox tiene otra cabecera «Default» en cuanto carga.
+  await page
+    .getByRole("complementary", { name: "Navegación" })
+    .getByRole("button", { name: "Default", exact: true })
+    .click();
   await page.getByRole("tab", { name: "Rutinas" }).click();
   await page.getByRole("button", { name: "Nueva rutina" }).click();
   const editor = page.getByRole("dialog");

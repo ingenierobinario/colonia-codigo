@@ -73,7 +73,10 @@ test("global tasks still scroll and open their detail", async ({ page }) => {
   for (let i = 0; i < 30; i++) await rpc("tasks.create", { title: `Global scroll item ${i}` });
   await open(page, "#view=tasks");
   const view = page.getByRole("region", { name: "Tareas", exact: true });
-  for (const more of await view.locator(".tasks__more").all()) await more.click();
+  // Cada «ver más» desaparece al agotar su grupo y los que quedan cambian de posición: se pulsa siempre el primero.
+  const more = view.locator(".tasks__more");
+  await expect(view.locator(".taskrow").first()).toBeVisible();
+  while ((await more.count()) > 0) await more.first().click();
   const last = view.locator(".taskrow").last();
   await last.scrollIntoViewIfNeeded();
   await expect(last).toBeInViewport();

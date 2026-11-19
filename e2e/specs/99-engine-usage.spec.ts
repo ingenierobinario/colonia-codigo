@@ -51,12 +51,16 @@ const report = {
 test("AI usage shows account windows, unavailable engines and a narrow-screen access", async ({ page }) => {
   await rpc("setup.finish");
   let calls = 0;
+  // Las cuotas se piden con la primera pantalla ya puesta, nunca antes: se mira en el instante de cada petición.
+  const beforeFirstScreen: boolean[] = [];
   await page.route("**/rpc/engines.usage", async (route) => {
     calls++;
+    beforeFirstScreen.push(!(await page.getByRole("button", { name: "Inbox" }).isVisible()));
     await route.fulfill({ json: { ok: true, result: report } });
   });
   await open(page);
-  expect(calls).toBe(0);
+  await expect.poll(() => calls).toBeGreaterThan(0);
+  expect(beforeFirstScreen).not.toContain(true);
   const trigger = page.getByTestId("engine-usage-button");
   const bounds = await trigger.evaluate((button) => {
     const label = button.querySelector("span")?.getBoundingClientRect();

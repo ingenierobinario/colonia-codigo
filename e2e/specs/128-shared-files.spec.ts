@@ -66,7 +66,11 @@ test("Archivos lists what was shared, by kind and project, and leads back to the
     });
 
     await page.goto(env.core.url);
-    await page.getByRole("button", { name: "Archivos", exact: true }).click();
+    // La barra lateral, no el conmutador del panel del chat, que también se llama «Archivos» en cuanto el chat carga.
+    await page
+      .getByRole("complementary", { name: "Navegación" })
+      .getByRole("button", { name: "Archivos", exact: true })
+      .click();
     const cards = page.locator(".sharedf__card");
     await expect(cards).toHaveCount(3);
     await expect(cards.nth(0)).toContainText("invoice.pdf");
