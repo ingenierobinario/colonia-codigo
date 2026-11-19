@@ -6,13 +6,15 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
-  "2.36.55": {
+  "2.36.56": {
     en: [
-      "On Windows, installing and updating Colonia takes much less time: files are written only once.",
+      "Colonia carries about half as many files, so installing and updating write less to disk.",
+      "Chats from flows can be deleted, and a project's Chats tab counts the ones waiting for you.",
       "Removing an attachment from a task takes effect right away.",
     ],
     es: [
-      "En Windows, instalar y actualizar Colonia tarda mucho menos: los archivos se escriben una sola vez.",
+      "Colonia lleva cerca de la mitad de archivos, así que instalar y actualizar escriben menos en disco.",
+      "Los chats de los flujos se pueden borrar y la pestaña Chats cuenta los que te esperan.",
       "Al quitar un adjunto de una tarea, desaparece al instante.",
     ],
   },
