@@ -275,3 +275,19 @@ test("a project's mcps.json saved with a BOM is read, and editing it keeps the f
   assert.deepEqual(doc.mcpServers.notes.env, { MODE: "slow" });
   assert.ok(doc.mcpServers.sneaky, "the rest of the file stays");
 });
+
+test("CONECTAR-DESACTIVADO-1: { enabled } alone switches the owner's server and keeps its definition", async () => {
+  await env.client.call("mcp.set", {
+    name: "switched",
+    server: { command: process.execPath, args: [SERVER], env: { NOTES_TOKEN: "x" }, enabled: false },
+  });
+  const find = async () => (await env.client.call("mcp.list", {})).servers.find((s) => s.name === "switched");
+  assert.equal((await find())?.status, "disabled");
+  await env.client.call("mcp.set", { name: "switched", server: { enabled: true } });
+  const on = await find();
+  assert.equal(on?.enabled, true);
+  assert.deepEqual(on?.definition?.args, [SERVER]);
+  assert.deepEqual(on?.definition?.env, { NOTES_TOKEN: "x" });
+  await assert.rejects(env.client.call("mcp.set", { name: "nobody", server: { enabled: true } }), /no global server/);
+  await env.client.call("mcp.set", { name: "switched", server: null });
+});

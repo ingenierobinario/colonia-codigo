@@ -64,3 +64,33 @@ test("Meta Ads heredado aparece una vez en Integraciones del proyecto con el log
     await rpc("mcp.set", { name: "meta-ads", server: null });
   }
 });
+
+test("CONECTAR-DESACTIVADO-1: «Conectar» vuelve a encender un conector desactivado sin cambiar su configuración", async ({
+  page,
+}) => {
+  await rpc("setup.finish");
+  await rpc("mcp.set", {
+    name: "notion",
+    server: { url: "https://example.invalid/propia", headers: { X: "y" }, enabled: false },
+  });
+  try {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
+    await page.getByRole("radio", { name: /^Conectores/ }).click();
+    await page.getByRole("button", { name: "Catálogo", exact: true }).click();
+    const card = page.locator(".catalog__card").filter({ has: page.getByText("Notion", { exact: true }) });
+    await card.getByRole("button", { name: "Conectar" }).click();
+    await expect
+      .poll(async () => {
+        const { servers } = await rpc<{ servers: { name: string; enabled: boolean; target: string }[] }>(
+          "mcp.list",
+          {},
+        );
+        const s = servers.find((x) => x.name === "notion");
+        return s && `${s.enabled} ${s.target}`;
+      })
+      .toBe("true https://example.invalid/propia");
+  } finally {
+    await rpc("mcp.set", { name: "notion", server: null });
+  }
+});

@@ -92,8 +92,12 @@ export function ConnectorCatalog({
         if (!(await setSecret(secretName(c, k), (values[k.env] ?? "").trim()))) return setBusy(undefined);
       }
     }
-    const server =
-      existing ?? (await setMcp(c.id, connectorServer(c)))?.find((s) => s.scope === "global" && s.name === c.id);
+    // CONECTAR-DESACTIVADO-1: one that was turned off is turned back on as it was defined, not left as it was.
+    const server = existing?.enabled
+      ? existing
+      : (await setMcp(c.id, existing ? { enabled: true } : connectorServer(c)))?.find(
+          (s) => s.scope === "global" && s.name === c.id,
+        );
     if (server) {
       if (
         server.enabled &&

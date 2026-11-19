@@ -203,7 +203,10 @@ export function mcpConfig(store: Store) {
     setGlobal(name: string, server: Record<string, unknown> | null): void {
       const all = parse(store.settings.get("mcp_servers"));
       // As in a project's file: what the dialog does not edit (the project it is limited to) stays.
-      if (server) {
+      // CONECTAR-DESACTIVADO-1: only `enabled` switches the stored definition, which stays as it is.
+      if (server && all[name] && !server.command && !server.url)
+        all[name] = { ...all[name], disabled: undefined, ...server } as Raw;
+      else if (server) {
         const {
           command: _c,
           args: _a,

@@ -87,6 +87,8 @@ export function mcpHandlers(mcp: Mcp, store: Store, switchable: (name: string) =
     "mcp.set": ({ name, server, project }) => {
       if (Array.isArray(server?.args) && JSON.stringify(server.args).includes("secret://"))
         throw badRequest(ARGS_SECRET);
+      const onlySwitch = server && !server.command && !server.url;
+      if (onlySwitch && (project || !mcp.find("global", name))) throw badRequest(`no global server ${name}`);
       if (!project) {
         mcp.config.setGlobal(name, server);
         mcp.drop({ scope: "global", name });

@@ -387,7 +387,11 @@ export const resourceMethods = {
             enabled: z.boolean().optional(),
           })
           .strict()
-          .refine((s) => !!s.command !== !!s.url, "give either command or url")
+          // CONECTAR-DESACTIVADO-1: { enabled } alone turns an existing server of the owner on or off as it is defined.
+          .refine(
+            (s) => !!s.command !== !!s.url || (Object.keys(s).length === 1 && s.enabled !== undefined),
+            "give either command or url",
+          )
           .nullable(),
       })
       .strict(),
