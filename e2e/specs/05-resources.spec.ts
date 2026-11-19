@@ -271,7 +271,10 @@ test("other apps' skills show their tag and duplicates; the engines filter narro
   // In Claude only as an unused copy: listed, with Claude's tag dimmed and saying so.
   await expect(page.getByTitle("Copia en Claude: los agentes no la usan")).toBeVisible();
   await expect(page.getByText(/Mostrando las de Claude/)).toBeVisible();
-  await page.getByRole("button", { name: "Claude", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Claude", exact: true })
+    .and(page.locator("[aria-haspopup=menu]"))
+    .click();
   await page.getByRole("menuitem", { name: "Claude" }).click();
   await page.keyboard.press("Escape");
 

@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, stat, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
+import { tempDir } from "../testkit/platform.ts";
 import { createInstaller } from "./install-engine.ts";
 
 test("instala una sola vez y detecta la herramienta sin reiniciar", async (t) => {
-  const dir = await mkdtemp(join(tmpdir(), "colonia-test-"));
-  t.after(() => rm(dir, { recursive: true, force: true }));
+  const tmp = tempDir();
+  t.after(() => tmp.remove());
+  const dir = tmp.path;
   const find = async (bin: string) => (await stat(join(dir, bin)).catch(() => undefined)) && join(dir, bin);
   let calls = 0;
   const install = createInstaller(find, async () => {
