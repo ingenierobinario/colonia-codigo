@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript-parser";
 import type { CoverageSourceMap, V8Script } from "./test-coverage.ts";
 
-function readCoverageFile(file: string): { result: V8Script[]; sourceMaps?: CoverageSourceMap[] } {
+function readCoverageFile(file: string): { result: V8Script[]; sourceMaps?: CoverageSourceMap[] } | undefined {
   const delay = new Int32Array(new SharedArrayBuffer(4));
   for (let attempt = 0; ; attempt++) {
     const text = fs.readFileSync(file, "utf8");
@@ -13,6 +13,12 @@ function readCoverageFile(file: string): { result: V8Script[]; sourceMaps?: Cove
     } catch (error) {
       if (!(error instanceof SyntaxError)) throw error;
       if (attempt === 5) {
+        // Node crea el archivo y luego lo escribe: un hijo que la prueba mata entre ambos pasos lo deja
+        // vacío para siempre. No tiene contadores que perder; uno a medias sí, y ese sigue fallando.
+        if (!text) {
+          console.warn(`Informe de cobertura vacío en ${file}: su proceso terminó antes de escribirlo`);
+          return undefined;
+        }
         throw new SyntaxError(`Informe de cobertura inválido en ${file} (${Buffer.byteLength(text)} bytes)`, {
           cause: error,
         });
@@ -29,6 +35,7 @@ export function readCoveragePayloads(directory: string): { scripts: V8Script[]; 
   for (const entry of fs.readdirSync(directory)) {
     if (!entry.endsWith(".json")) continue;
     const data = readCoverageFile(path.join(directory, entry));
+    if (!data) continue;
     scripts.push(...data.result);
     sourceMaps.push(...(data.sourceMaps ?? []));
   }

@@ -48,6 +48,18 @@ test("recupera el informe de cobertura si el escritor termina durante la lectura
   assert.equal(reads, 2);
 });
 
+test("el informe vacío de un proceso que murió antes de escribirlo no tumba el resto", (t) => {
+  const raw = tempDir("colonia-coverage-vacio-").path;
+  t.after(() => removeDir(raw));
+  fs.writeFileSync(path.join(raw, "muerto.json"), "");
+  fs.writeFileSync(path.join(raw, "vivo.json"), '{"result":[{"url":"prueba","functions":[]}]}');
+  t.mock.method(console, "warn", () => {});
+  assert.deepEqual(
+    readCoveragePayloads(raw).scripts.map((script) => script.url),
+    ["prueba"],
+  );
+});
+
 test("invalid coverage payloads fail instead of silently dropping counters", (t) => {
   const raw = tempDir("colonia-coverage-invalid-").path;
   t.after(() => removeDir(raw));
