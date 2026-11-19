@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { ChatTabs } from "../chat/ChatTabs.tsx";
 import { ChatView } from "../chat/ChatView.tsx";
+import { projectTabs } from "../chat/projectTabs.ts";
 import { tabsOf } from "../chat/tabs.ts";
 import { usePrefs } from "../data/prefs.ts";
+import { useData } from "../data/state.ts";
 import { InboxList } from "../inbox/InboxList.tsx";
 import { SidePanel } from "../panel/SidePanel.tsx";
 import { ListColumn } from "./ListColumn.tsx";
@@ -17,7 +19,10 @@ export function ChatWorkspace({ layout, list = <InboxList /> }: { layout: Layout
   // PESTANAS-CHAT-2 — the tab bar is always above the chat, with one tab too.
   const ids = usePrefs((s) => s.chatTabs);
   const active = usePrefs((s) => s.chatTab);
-  const tabs = tabsOf(ids, active);
+  const pid = useNav((s) => (s.view === "project" ? s.projectId : undefined));
+  const threads = useData((s) => s.threads);
+  const visible = projectTabs(ids, threads, pid);
+  const tabs = tabsOf(visible, threadId ?? active);
   const bar = <ChatTabs tabs={tabs} />;
 
   if (layout.compact) {

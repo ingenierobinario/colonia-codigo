@@ -5,6 +5,7 @@ import type { MouseEvent } from "react";
 import { prefs, setPrefs } from "../data/prefs.ts";
 import { data } from "../data/state.ts";
 import { go, nav, showsChat } from "../shell/nav.ts";
+import { projectTabs } from "./projectTabs.ts";
 import { close, move, numbered, open, prune, renamed, step, type Tabs, tabsOf } from "./tabs.ts";
 
 export function currentTabs(): Tabs {
@@ -12,8 +13,14 @@ export function currentTabs(): Tabs {
   return tabsOf(p.chatTabs, p.chatTab);
 }
 
+function visibleTabs(tabs: Tabs): Tabs {
+  const navState = nav.get();
+  const ids = projectTabs(tabs.ids, data.get().threads, navState.view === "project" ? navState.projectId : undefined);
+  return { ids, active: navState.threadId ?? "" };
+}
+
 function save(next: Tabs, before: Tabs): void {
-  if (next !== before) setPrefs({ chatTabs: next.ids, chatTab: next.active });
+  if (next !== before) setPrefs({ chatTabs: next.ids, chatTab: next.active, chatTabsClosed: !next.ids.length });
 }
 
 /** A chat's row: a click opens it in its tab (a new one, unless it has one already); so does the middle button. */
@@ -41,8 +48,9 @@ export function closeTab(id: string): void {
   const before = currentTabs();
   const next = close(before, id);
   save(next, before);
-  if (before.active !== id) return;
-  if (next.active) showTab(next.active);
+  if (nav.get().threadId !== id) return;
+  const neighbor = close(visibleTabs(before), id).active;
+  if (neighbor) showTab(neighbor);
   else if (nav.get().threadId === id) nav.set({ threadId: undefined });
 }
 
@@ -59,7 +67,7 @@ export function madeTab(newId: string, id: string): void {
 
 /** Ctrl/⌘ with Tab (Shift goes back), W or a number, while chats are on screen and there is a tab to act on. */
 export function tabShortcut(e: KeyboardEvent): boolean {
-  const tabs = currentTabs();
+  const tabs = visibleTabs(currentTabs());
   if (!tabs.ids.length || !showsChat(nav.get()) || e.altKey) return false;
   if (e.key === "Tab") {
     const id = step(tabs, e.shiftKey ? -1 : 1);
@@ -82,11 +90,11 @@ export function watchTabs(): () => void {
   // What was open when the panel closed stays: the chat it starts on joins the tabs.
   const start = nav.get().threadId;
   const stored = currentTabs();
-  if (start) save(open(stored, start), stored);
+  if (start && showsChat(nav.get())) save(open(stored, start), stored);
 
   const stopNav = nav.subscribe(() => {
     const id = nav.get().threadId;
-    if (!id) return;
+    if (!id || !showsChat(nav.get())) return;
     const before = currentTabs();
     save(open(before, id), before);
   });
@@ -100,7 +108,11 @@ export function watchTabs(): () => void {
     if (next === before) return;
     const shown = nav.get().threadId;
     save(next, before);
-    if (shown && !next.ids.includes(shown) && next.active) showTab(next.active);
+    if (shown && before.ids.includes(shown) && !next.ids.includes(shown) && showsChat(nav.get())) {
+      const neighbor = visibleTabs(next).ids.at(-1);
+      if (neighbor) showTab(neighbor);
+      else nav.set({ threadId: undefined });
+    }
   });
 
   return () => {

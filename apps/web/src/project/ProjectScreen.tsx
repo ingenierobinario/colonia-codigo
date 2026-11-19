@@ -2,10 +2,12 @@ import "../styles/screens.css";
 import "../styles/project-mark.css";
 import { Badge, Button, EmptyState, IconButton, Icons, Tabs } from "@colonia/ui";
 import { Suspense, useEffect, useState } from "react";
+import { projectTabs } from "../chat/projectTabs.ts";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { loadProjectThreads } from "../data/actions.ts";
-import { findProject, inProject, isListed, type ProjectEntry, realProjectId } from "../data/identity.ts";
+import { findProject, type ProjectEntry, realProjectId } from "../data/identity.ts";
 import { parseNewChat } from "../data/newChat.ts";
+import { prefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { NewChatMenu } from "../inbox/NewChatMenu.tsx";
@@ -182,20 +184,15 @@ function TabBody({ project, tab, layout }: { project: ProjectEntry; tab: Project
   }
 }
 
-/** Entering Chats: if the open chat belongs elsewhere, show this project's latest one (or none). */
+/** Entering Chats: if the open chat belongs elsewhere, only restore a tab still open in this project. */
 function useKeepThreadInProject(pid: string | undefined, tab: ProjectTab) {
   const threads = useData((s) => s.threads);
   const threadId = useNav((s) => s.threadId);
   useEffect(() => {
-    if (!pid || tab !== "chats") return;
-    const current = threadId ? threads[threadId] : undefined;
-    if (current && (inProject(current, pid) || current.parent_id)) return;
-    // A new chat is not a thread yet: it stays while it is this project's.
-    const draft = parseNewChat(threadId);
-    if (draft && inProject({ project_id: draft.project }, pid)) return;
-    const latest = Object.values(threads)
-      .filter((t) => isListed(t) && inProject(t, pid))
-      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
-    if (latest?.id !== threadId) nav.set({ threadId: latest?.id });
+    if (!pid || tab !== "chats" || !threadId) return;
+    if (!threads[threadId] && !parseNewChat(threadId)) return;
+    if (projectTabs([threadId], threads, pid).length) return;
+    const next = projectTabs(prefs.get().chatTabs, threads, pid).at(-1);
+    nav.set({ threadId: next });
   }, [pid, tab, threadId, threads]);
 }

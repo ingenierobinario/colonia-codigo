@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, before, test } from "node:test";
 import type { CoreEvent } from "@colonia/protocol";
+import { openDb } from "../db/db.ts";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 
 let release: (() => void) | undefined;
@@ -186,4 +187,37 @@ test("a fork copies the chat up to a message, and the agent there sees only that
   const b = await env.client.call("threads.fork", { thread: t.id, message: second.id });
   assert.equal(b.draft, "second question");
   assert.equal((await env.client.call("threads.get", { thread: b.thread.id })).messages.length, 2);
+});
+
+test("borrar un chat de Flow conserva el historial sin enlaces rotos", async () => {
+  const t = await chat("Flow");
+  const { project } = await env.client.call("projects.create", { name: "Flujos" });
+  await env.client.call("threads.send", { thread: t.id, text: "informe" });
+  await env.settle(t.id);
+  const run = env.core.store.runs.list(t.id)[0];
+  assert.ok(run);
+  const db = openDb(env.home);
+  try {
+    db.prepare(
+      "INSERT INTO flows(id,project_id,enabled,predicates,table_key,path) VALUES('hist',?,0,'[]','k','hist')",
+    ).run(project.id);
+    db.prepare(
+      "INSERT INTO flow_events(flow_id,event_id,state,created_at,run_id,thread_id) VALUES('hist','e','done','now',?,?)",
+    ).run(run.id, t.id);
+    db.exec("INSERT INTO flow_graph_revisions(flow_id,revision,graph,created_at) VALUES('hist',1,'{}','now')");
+    db.exec(
+      "INSERT INTO flow_graph_events(flow_id,event_id,revision,payload,deadline_at) VALUES('hist','e',1,'{}','now')",
+    );
+    db.prepare(
+      "INSERT INTO flow_graph_nodes(flow_id,event_id,revision,node_id,state,run_id,thread_id) VALUES('hist','e',1,'node','done',?,?)",
+    ).run(run.id, t.id);
+    await env.client.call("threads.delete", { thread: t.id });
+    for (const table of ["flow_events", "flow_graph_nodes"]) {
+      const row = db.prepare(`SELECT state,thread_id,run_id FROM ${table} WHERE flow_id='hist'`).get();
+      assert.deepEqual({ ...row }, { state: "done", thread_id: null, run_id: null });
+    }
+    assert.deepEqual(db.prepare("PRAGMA foreign_key_check").all(), []);
+  } finally {
+    db.close();
+  }
 });

@@ -212,9 +212,10 @@ function fromHash(): Partial<NavState> {
   };
 }
 
-/** PESTANAS-CHAT-1: with tabs left open, the panel starts on the one that was on screen; else on Home. */
-function startThread(): string {
-  const { chatTabs, chatTab } = prefs.get();
+/** PESTANAS-CHAT-1: restore the selected tab, including an explicitly empty workspace. */
+function startThread(): string | undefined {
+  const { chatTabs, chatTab, chatTabsClosed } = prefs.get();
+  if (chatTabsClosed && !chatTabs.length) return undefined;
   return chatTabs.includes(chatTab) ? chatTab : "home";
 }
 
@@ -426,7 +427,7 @@ export const go = {
     applyPlace(next);
   },
   inbox() {
-    nav.set({ view: "inbox" });
+    nav.set((s) => ({ view: "inbox", threadId: showsChat(s) ? s.threadId : startThread() }));
   },
   /** Open a project. Without `tab`, a project opened from another keeps its tab; `threadId` picks the chat in Chats. */
   project(projectId: string, tab?: ProjectTab, threadId?: string) {
@@ -434,7 +435,7 @@ export const go = {
       view: "project",
       projectId,
       projectTab: tab ?? (s.view === "project" ? s.projectTab : "overview"),
-      threadId: threadId ?? s.threadId,
+      threadId: threadId ?? (showsChat(s) ? s.threadId : startThread()),
       // The task open beside the list belongs to the project it was opened in.
       ...(s.projectId !== projectId ? { taskId: undefined } : {}),
     }));
