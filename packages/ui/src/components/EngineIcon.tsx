@@ -49,7 +49,7 @@ const PROVIDER_WORDS: Array<[string, ProviderBrand]> = [
 /**
  * The brand behind an engine, provider or model id: `claude`, `claude-code` and `anthropic` → claude (people know
  * Claude's spark, not the company's "A" mark; CLAUDE-LOGO-1);
- * `codex`, `chatgpt` (the plan, signed in as Codex) → codex; `gemini`, `google` → gemini; `antigravity`, `agy` → antigravity; `openai`, `gpt-…` → openai;
+ * `codex` → codex; `gemini`, `google` → gemini; `antigravity`, `agy` → antigravity; `chatgpt`, `openai`, `gpt-…` → openai;
  * `ollama`, `groq`, `openrouter`… → their own mark; an ACP agent (`acp:opencode`, `acp:qwen`…) or OpenCode Zen → its
  * mark. Anything else has no mark.
  */
@@ -58,7 +58,8 @@ export function engineBrand(id: string | undefined): EngineBrand | undefined {
   const acp = ACP_IDS[k.replace(/^acp:/, "").split("/")[0] ?? ""];
   if (acp) return acp;
   if (k.includes("anthropic") || k.includes("claude")) return "claude";
-  if (k.includes("codex") || k === "chatgpt") return "codex";
+  if (k === "chatgpt" || k.startsWith("chatgpt/")) return "openai";
+  if (k.includes("codex")) return "codex";
   if (k.includes("gemini") || k === "google") return "gemini";
   if (k.includes("antigravity") || k === "agy") return "antigravity";
   const word = PROVIDER_WORDS.find(([w]) => k.includes(w));

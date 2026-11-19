@@ -18,6 +18,7 @@ test("the ChatGPT plan comes first as Codex, fixed, and connects with its own si
   await expect(settings.getByRole("button", { name: "Usarlo en el router" })).toHaveCount(0);
   const codex = settings.locator(".pgrid > .pcard").first();
   await expect(codex).toContainText("ChatGPT");
+  await expect(codex.locator(".colonia-engine--openai svg")).toBeVisible();
   await expect(codex).toContainText("Con tu cuenta Plus o Pro");
   await expect(codex).toContainText("Sin conectar");
   await expect(codex.getByRole("button", { name: "Quitar" })).toHaveCount(0);
