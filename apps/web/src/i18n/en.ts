@@ -366,6 +366,7 @@ export const en = {
   "engine.installError": "Could not install the tool. Check the connection and try again.",
   "nav.externalSessions": "Sessions on this device",
   "nav.addEngine": "Add or connect another AI",
+  "nav.addAiAccount": "Add an AI account",
   "nav.apps": "Applications",
   "nav.appsInternal": "Internal",
   "nav.appsExternal": "External",

@@ -29,6 +29,7 @@ export type Prefs = {
   /** Sidebar sections retain their folding independently. */
   channelsFolded: boolean;
   externalSessionsFolded: boolean;
+  aiAccountsFolded: boolean;
   equiposFolded: boolean;
   appsFolded: boolean;
   appsInternalFolded: boolean;
@@ -101,6 +102,7 @@ const DEFAULTS: Prefs = {
   projectsFolded: false,
   channelsFolded: false,
   externalSessionsFolded: false,
+  aiAccountsFolded: false,
   equiposFolded: false,
   appsFolded: false,
   appsInternalFolded: false,
@@ -142,6 +144,7 @@ function load(): Prefs {
       projectsFolded: raw.projectsFolded === true,
       channelsFolded: raw.channelsFolded === true,
       externalSessionsFolded: raw.externalSessionsFolded === true,
+      aiAccountsFolded: raw.aiAccountsFolded === true,
       equiposFolded: raw.equiposFolded === true,
       appsFolded: raw.appsFolded === true,
       appsInternalFolded: raw.appsInternalFolded === true,

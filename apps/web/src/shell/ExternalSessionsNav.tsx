@@ -19,6 +19,7 @@ export function ExternalSessionsNav({ rail }: { rail: boolean }) {
   const t = useT();
   const [account, setAccount] = useState<"chatgpt" | "claude">();
   const folded = usePrefs((s) => s.externalSessionsFolded);
+  const accountsFolded = usePrefs((s) => s.aiAccountsFolded);
   const saved = usePrefs((s) => s.engineOrder);
   const engines = useData((s) => s.engines);
   const view = useNav((s) => s.view);
@@ -37,6 +38,8 @@ export function ExternalSessionsNav({ rail }: { rail: boolean }) {
   const cut = shown.length > rows + 1 ? rows : shown.length;
   const rest = shown.slice(cut);
   const hidden = folded && !rail;
+  // CUENTAS-IA-PLEGAR-1: the accounts fold like every other section; the rail has no heading to unfold from.
+  const accountsHidden = accountsFolded && !rail;
   const move = (id: string, index: number) => {
     if (!order.includes(id)) return;
     const ids = order.filter((current) => current !== id);
@@ -70,28 +73,46 @@ export function ExternalSessionsNav({ rail }: { rail: boolean }) {
   );
   return (
     <>
-      <SidebarSection rail={rail} title={t("nav.aiAccounts")} />
-      <NavItem
-        collapsed={rail}
-        icon={<SessionIcon engine="codex" />}
-        label="ChatGPT"
-        onClick={() => setAccount("chatgpt")}
+      <SidebarSection
+        rail={rail}
+        title={t("nav.aiAccounts")}
+        action={
+          <IconButton
+            size="sm"
+            className="sidebar__add"
+            label={t("nav.addAiAccount")}
+            icon={<Icons.Plus size={14} />}
+            onClick={() => go.config("engines")}
+          />
+        }
+        folded={accountsFolded}
+        onToggle={() => setPrefs({ aiAccountsFolded: !accountsFolded })}
       />
-      <NavItem
-        collapsed={rail}
-        icon={<SessionIcon engine="claude" />}
-        label="Claude"
-        onClick={() => setAccount("claude")}
-      />
-      <NavItem
-        collapsed={rail}
-        icon={<Icons.Download />}
-        label={t("chatImport.title")}
-        onClick={async () => {
-          const { openConversationImport } = await import("../data/threadAdmin.ts");
-          openConversationImport(undefined);
-        }}
-      />
+      {!accountsHidden && (
+        <>
+          <NavItem
+            collapsed={rail}
+            icon={<SessionIcon engine="openai" />}
+            label="ChatGPT"
+            onClick={() => setAccount("chatgpt")}
+          />
+          <NavItem
+            collapsed={rail}
+            icon={<SessionIcon engine="claude" />}
+            label="Claude"
+            onClick={() => setAccount("claude")}
+          />
+          <NavItem
+            collapsed={rail}
+            icon={<Icons.Download />}
+            label={t("chatImport.title")}
+            onClick={async () => {
+              const { openConversationImport } = await import("../data/threadAdmin.ts");
+              openConversationImport(undefined);
+            }}
+          />
+        </>
+      )}
       <Suspense fallback={null}>
         {account === "chatgpt" && <ChatGPT onClose={() => setAccount(undefined)} />}
         {account === "claude" && <Claude onClose={() => setAccount(undefined)} />}

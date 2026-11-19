@@ -362,6 +362,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "engine.installError": "No se pudo instalar la herramienta. Comprueba la conexión y vuelve a intentarlo.",
   "nav.externalSessions": "Sesiones de este equipo",
   "nav.addEngine": "Añadir o conectar otra IA",
+  "nav.addAiAccount": "Añadir una cuenta de IA",
   "nav.apps": "Aplicaciones",
   "nav.appsInternal": "Internas",
   "nav.appsExternal": "Externas",
