@@ -44,7 +44,8 @@ test("delegated chats nest under Home in every view, fold, open, and show in the
 
   // In the project it works in, it is listed with where it came from; that link goes back to Home.
   await open(page, `#project=${project.id}&tab=chats`);
-  await expect(page.getByRole("tab", { name: "Chats (1)" })).toBeVisible();
+  // Ya abierto y leído arriba: no queda pendiente, así que la pestaña Chats cuenta 0.
+  await expect(page.getByRole("tab", { name: "Chats (0)" })).toBeVisible();
   for (const view of VIEWS) {
     await page.locator(".inbox__views").getByRole("radio", { name: view }).click();
     await expect(list.getByText(subTitle)).toHaveCount(1);

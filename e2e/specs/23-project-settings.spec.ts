@@ -11,12 +11,21 @@ test("a project's tabs count its agents and chats, and its settings rename it an
   fs.mkdirSync(path.join(repo, ".apc", "agents"), { recursive: true });
   fs.writeFileSync(path.join(repo, ".apc", "agents", "boss.md"), "---\nname: Boss\nrole: Orchestrator\n---\n\nLead.\n");
   const project = (await rpc<{ project: { id: string } }>("projects.register", { path: repo })).project.id;
-  await rpc("threads.create", { kind: "loose", agent_id: "scout", project_id: project, title: "Uno" });
+  const uno = await rpc<{ id: string }>("threads.create", {
+    kind: "loose",
+    agent_id: "scout",
+    project_id: project,
+    title: "Uno",
+  });
 
   await open(page, `#project=${project}&tab=overview`);
   const tabs = page.locator(".project__tabs");
   await expect(tabs.getByRole("tab", { name: /Agentes/ })).toContainText("1");
-  await expect(tabs.getByRole("tab", { name: /Chats/ })).toContainText("1");
+  // Chats cuenta los pendientes (sin leer y sin pestaña abierta), no todos: uno ya leído no suma.
+  const chats = tabs.getByRole("tab", { name: /Chats/ }).locator(".colonia-tabs__count");
+  await expect(chats).toHaveText("0");
+  await rpc("threads.send", { thread: uno.id, text: "hola" });
+  await expect(chats).toHaveText("1");
 
   await page.getByRole("button", { name: "Configuración del proyecto" }).click();
   const dialog = page.getByRole("dialog");
