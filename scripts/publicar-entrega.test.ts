@@ -52,6 +52,7 @@ test("la versión de prueba se renueva o pasa a estable después de subir todos 
       ["view", "upload", "edit"],
     );
     assert.ok(calls.at(-1)?.includes(`--prerelease=${prueba}`));
+    assert.equal(calls.at(-1)?.includes("--latest"), !prueba);
   }
 });
 test("un fallo de consulta o de subida impide cambiar la versión visible", () => {

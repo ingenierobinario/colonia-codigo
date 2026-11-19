@@ -38,7 +38,17 @@ export function publicarEntrega({ tag, repo, files, notes, prueba }: Entrega, gh
   if (state.isDraft !== true && state.isPrerelease !== true)
     throw new Error("Esta versión ya es estable. Usa una nueva versión para distribuir otros instaladores.");
   checked(["release", "upload", ...ref, ...files, "--clobber"]);
-  checked(["release", "edit", ...ref, "--draft=false", `--prerelease=${prueba}`, "--notes-file", notes]);
+  // Al pasar de prueba a estable GitHub no mueve solo la marca de «última»: se pide aquí.
+  checked([
+    "release",
+    "edit",
+    ...ref,
+    "--draft=false",
+    `--prerelease=${prueba}`,
+    ...(prueba ? [] : ["--latest"]),
+    "--notes-file",
+    notes,
+  ]);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
