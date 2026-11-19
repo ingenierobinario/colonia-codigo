@@ -8,11 +8,13 @@ export type Highlights = { en: string[]; es: string[] };
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.56": {
     en: [
+      "A \"Without asking\" switch in the chat header lets the project's agents work without stopping for your OK.",
       "Colonia carries about half as many files, so installing and updating write less to disk.",
       "Chats from flows can be deleted, and a project's Chats tab counts the ones waiting for you.",
       "Removing an attachment from a task takes effect right away.",
     ],
     es: [
+      "Un interruptor «Sin pedir permiso» en la cabecera del chat deja trabajar a los agentes sin esperar tu OK.",
       "Colonia lleva cerca de la mitad de archivos, así que instalar y actualizar escriben menos en disco.",
       "Los chats de los flujos se pueden borrar y la pestaña Chats cuenta los que te esperan.",
       "Al quitar un adjunto de una tarea, desaparece al instante.",
