@@ -145,6 +145,9 @@ export function updateAgentFile(root: string, slug: string, fields: AgentFileFie
   const file = agentFile(root, slug);
   guard(root, file);
   const { front, body } = split(fs.readFileSync(file, "utf8"));
+  // TOOLS-NATIVO-1 · En el fichero de otra app (`.claude/agents`…) la línea `tools:` es de esa app y Colonia la lee como
+  // []: escribirla borraría o sustituiría sus herramientas. Solo se escribe en los de `.apc/agents`.
+  const native = path.dirname(file) !== agentsDir(root);
   const next = setFields(front, {
     name: fields.name,
     role: fields.role,
@@ -156,7 +159,7 @@ export function updateAgentFile(root: string, slug: string, fields: AgentFileFie
     autonomy: fields.autonomy,
     orchestrator: fields.orchestrator,
     rules: fields.rules,
-    tools: fields.tools,
+    tools: native ? undefined : fields.tools,
     skills: fields.skills,
     aliases: fields.aliases,
   });
