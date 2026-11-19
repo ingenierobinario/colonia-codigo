@@ -1,8 +1,9 @@
 import type { McpServerStatus } from "@colonia/protocol";
 import { Button, Dialog, Input, SegmentedControl } from "@colonia/ui";
 import { useState } from "react";
-import { type McpDraft, setMcp } from "../data/resources.ts";
+import { type McpDraft, setMcp, signInMcp } from "../data/resources.ts";
 import { useT } from "../i18n/index.ts";
+import { browserLoginMcp, browserLoginUrl } from "./browserLoginMcp.ts";
 import { type Pair, PairsEditor, pairsToRecord } from "./PairsEditor.tsx";
 
 const NAME = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,40}$/;
@@ -30,9 +31,10 @@ export function McpDialog(props: {
   const t = useT();
   const def = props.server?.definition;
   const [name, setName] = useState(props.server?.name ?? "");
-  const [kind, setKind] = useState(def?.command ? "command" : "url");
+  const loginUrl = browserLoginUrl(def);
+  const [kind, setKind] = useState(loginUrl ? "oauth" : def?.command ? "command" : "url");
   const [command, setCommand] = useState(def?.command ? joinCommand([def.command, ...def.args]) : "");
-  const [url, setUrl] = useState(def?.url ?? "");
+  const [url, setUrl] = useState(loginUrl ?? def?.url ?? "");
   const [headers, setHeaders] = useState<Pair[]>(toPairs(def?.headers));
   const [env, setEnv] = useState<Pair[]>(toPairs(def?.env));
   const pairs = kind === "url" ? headers : env;
@@ -41,7 +43,11 @@ export function McpDialog(props: {
   const parts = splitCommand(command);
   const duplicate = props.existingNames?.includes(name);
   const endpoint = URL.canParse(url) ? new URL(url) : undefined;
-  const validUrl = endpoint && /^https?:$/.test(endpoint.protocol) && !endpoint.username && !endpoint.password;
+  const validUrl =
+    endpoint &&
+    (kind === "oauth" ? endpoint.protocol === "https:" : /^https?:$/.test(endpoint.protocol)) &&
+    !endpoint.username &&
+    !endpoint.password;
   const valid = NAME.test(name) && !duplicate && (kind === "command" ? Boolean(parts[0]) : validUrl);
   const save = async () => {
     setBusy(true);
@@ -49,10 +55,14 @@ export function McpDialog(props: {
     const server: McpDraft =
       kind === "command"
         ? { command: parts[0] ?? "", args: parts.slice(1), env: extra }
-        : { url: url.trim(), headers: extra };
+        : kind === "oauth"
+          ? browserLoginMcp(url.trim())
+          : { url: url.trim(), headers: extra };
     // An edit keeps whether it was turned off.
     if (props.server && !props.server.enabled) server.enabled = false;
     const r = await setMcp(name, server, props.server?.scope === "project" ? props.server.project_id : undefined);
+    const saved = r?.find((entry) => entry.name === name && entry.scope === (props.server?.scope ?? "global"));
+    if (kind === "oauth" && saved?.enabled && saved.trusted) await signInMcp(saved);
     setBusy(false);
     if (r) props.onSaved(name);
   };
@@ -71,7 +81,7 @@ export function McpDialog(props: {
             {t("common.cancel")}
           </Button>
           <Button disabled={!valid} loading={busy} onClick={() => void save()}>
-            {props.server ? t("common.save") : t("res.create")}
+            {kind === "oauth" ? t("res.catalog.add") : props.server ? t("common.save") : t("res.create")}
           </Button>
         </>
       }
@@ -97,6 +107,7 @@ export function McpDialog(props: {
           onValueChange={setKind}
           options={[
             { value: "url", label: t("res.url") },
+            { value: "oauth", label: t("res.mcpBrowserLogin") },
             { value: "command", label: t("res.command") },
           ]}
         />
@@ -121,19 +132,21 @@ export function McpDialog(props: {
               placeholder="https://mcp.example.com/mcp"
               onChange={(e) => setUrl(e.currentTarget.value)}
             />
-            {url && !validUrl && <small>{t("res.mcpUrlHint")}</small>}
+            {url && !validUrl && <small>{t(kind === "oauth" ? "res.mcpLoginUrlHint" : "res.mcpUrlHint")}</small>}
           </div>
         )}
-        <div className="pform__field">
-          <span className="pform__label">{kind === "command" ? t("res.env") : t("res.headers")}</span>
-          <PairsEditor
-            vars={props.server?.scope !== "project"}
-            keys={kind === "command" ? "env" : "headers"}
-            label={kind === "command" ? t("res.env") : t("res.headers")}
-            pairs={pairs}
-            onChange={setPairs}
-          />
-        </div>
+        {kind !== "oauth" && (
+          <div className="pform__field">
+            <span className="pform__label">{kind === "command" ? t("res.env") : t("res.headers")}</span>
+            <PairsEditor
+              vars={props.server?.scope !== "project"}
+              keys={kind === "command" ? "env" : "headers"}
+              label={kind === "command" ? t("res.env") : t("res.headers")}
+              pairs={pairs}
+              onChange={setPairs}
+            />
+          </div>
+        )}
       </div>
     </Dialog>
   );

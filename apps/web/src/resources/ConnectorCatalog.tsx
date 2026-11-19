@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
 import { type McpDraft, setMcp, setSecret, signInMcp } from "../data/resources.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
+import { browserLoginMcp } from "./browserLoginMcp.ts";
 import { ConnectForm, type Integration } from "./IntegrationsTab.tsx";
 
 /** Colonia's own social connectors: listed with the social connectors, they connect in the same form as in Integrations. */
@@ -571,6 +572,15 @@ export const CONNECTORS: readonly Connector[] = [
     "Facebook and Instagram ads. Meta must accept the client requesting access.",
   ),
   r(
+    "metaads-pipeboard",
+    "Meta Ads · Pipeboard",
+    "pipeboard.co",
+    "social",
+    "https://meta-ads.mcp.pipeboard.co/?read_only=true",
+    "Consulta campañas y gasto. Autoriza a Pipeboard para leer tus anuncios.",
+    "Check campaigns and spend. Authorize Pipeboard to read your ads.",
+  ),
+  r(
     "whatsappbusiness",
     "WhatsApp Business",
     "whatsapp.com",
@@ -1028,6 +1038,7 @@ export function connectorServer(c: Connector): McpDraft {
   const ref = (k: Key) => `${k.bearer ? "Bearer " : ""}secret://${secretName(c, k)}`;
   const env = Object.fromEntries((c.keys ?? []).map((k) => [k.env, ref(k)]));
   if ("remote" in c) {
+    if (!c.keys?.length) return browserLoginMcp(c.remote);
     const headers = (c.keys ?? []).flatMap((k) => ["--header", `Authorization:\${${k.env}}`]);
     return { command: "npx", args: ["-y", "mcp-remote", c.remote, ...headers], env };
   }

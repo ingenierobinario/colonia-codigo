@@ -178,6 +178,8 @@ export const enResources = {
   "res.mcpNameHint":
     "Use up to 41 letters without accents, numbers, hyphens or underscores. Start with a letter or number.",
   "res.mcpNameUsed": "A connector already uses this name.",
+  "res.mcpLoginUrlHint": "Enter an HTTPS URL for the MCP server without a username or password.",
+  "res.mcpBrowserLogin": "URL with sign-in",
   "res.mcpUrlHint": "Enter an HTTP or HTTPS address without a username or password.",
   "res.mcpName": "Name",
   "res.mcpKind": "How it connects",

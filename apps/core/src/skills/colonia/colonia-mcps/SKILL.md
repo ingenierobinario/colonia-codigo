@@ -79,6 +79,8 @@ colonia mcps list               # every server and its state
 colonia mcps logs <name> -n 50  # what it printed while starting or failing
 ```
 
+For a custom HTTPS endpoint that advertises OAuth, use the browser sign-in option in the connector editor. A 401 from a plain HTTP request alone does not establish that OAuth is unavailable. If a provider rejects client registration, explain the rejection and keep existing connectors intact. For Meta Ads reporting, the catalog also offers Meta Ads · Pipeboard, a separate read-only provider. Explain who receives access and let the owner choose it before connecting. Never remove another client's configuration as part of troubleshooting.
+
 A server that signs in through the owner's browser (`mcp-remote`) shows `needs-sign-in` once it asked: Colonia does not
 start it again, so tell the owner to run `colonia mcps signin <name>` (or click Sign in in the panel) and finish there.
 
