@@ -1,4 +1,4 @@
-import { Button, Dialog, Icons, Input, Select, Spinner, Switch } from "@colonia/ui";
+import { Button, Dialog, Icons, Input, Select, Switch } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { KindIcon, KindTile } from "../channels/KindIcon.tsx";
 import type { ChannelKind } from "../channels/kinds.ts";
@@ -237,11 +237,11 @@ function TelegramCard() {
             />
             <Button
               size="sm"
-              loading={busy}
-              disabled={!/^\d+:[\w-]{20,}$/.test(token.trim())}
+              aria-busy={busy}
+              disabled={busy || !/^\d+:[\w-]{20,}$/.test(token.trim())}
               onClick={() => void connect()}
             >
-              {t("setup.channels.connect")}
+              {t(busy ? "connect.connecting" : "setup.channels.connect")}
             </Button>
           </div>
           <span className="wiz__cardfoot">
@@ -325,8 +325,14 @@ function WhatsAppCard() {
             <span>{t("ch.selfOwner")}</span>
           </div>
           <div>
-            <Button size="sm" loading={busy} leadingIcon={<Icons.QrCode size={14} />} onClick={() => void link()}>
-              {wa ? t("wa.relink") : t("wa.link")}
+            <Button
+              size="sm"
+              aria-busy={busy}
+              disabled={busy}
+              leadingIcon={<Icons.QrCode size={14} />}
+              onClick={() => void link()}
+            >
+              {t(busy ? "wa.connecting" : wa ? "wa.relink" : "wa.link")}
             </Button>
           </div>
         </>
@@ -342,9 +348,7 @@ function WhatsAppCard() {
             {wa?.qr ? (
               <QrCode value={wa.qr} label={t("wa.scan")} size={220} />
             ) : (
-              <span className="wiz__hintline">
-                <Spinner size={12} /> {t("wa.connecting")}
-              </span>
+              <span className="wiz__hintline">{t("wa.connecting")}</span>
             )}
           </div>
         </Dialog>
@@ -497,8 +501,14 @@ export function DoneStep({ name, onFinish }: { name: string; onFinish: () => voi
           ) : (
             !cli.skip && (
               <span className="wiz__inline">
-                <Button size="sm" variant="secondary" loading={cli.busy} onClick={() => void takeOver()}>
-                  {t("setup.done.takeOverDo")}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  aria-busy={cli.busy}
+                  disabled={cli.busy}
+                  onClick={() => void takeOver()}
+                >
+                  {t(cli.busy ? "setup.choiceWait" : "setup.done.takeOverDo")}
                 </Button>
                 <Button size="sm" variant="ghost" disabled={cli.busy} onClick={() => setCli({ skip: true })}>
                   {t("setup.done.takeOverSkip")}

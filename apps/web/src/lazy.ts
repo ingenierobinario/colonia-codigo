@@ -268,3 +268,6 @@ export const loadOsNotices = () => import("./shell/osNotices.ts");
 export const loadSounds = () => import("./shell/sounds.ts");
 // The icons a project's tile can carry: only a project whose owner chose one asks for them.
 export const loadProjectGlyphs = () => import("@colonia/ui/project-glyphs");
+
+export const loadShell = () => import("./shell/Shell.tsx").then(({ Shell }) => ({ default: Shell }));
+export const Shell = lazy(loadShell);

@@ -100,20 +100,27 @@ export function Wizard() {
     const v1 = status?.v1;
     // Importing brings v1's super-agent: the preview shows its name and face from the first step.
     if (mode === "import" && (v1?.agent_name || v1?.agent_blob))
-      set({ mode, nameSet: true, name: v1.agent_name ?? d.name, blob: v1.agent_blob ?? d.blob });
+      set({
+        mode,
+        nameSet: true,
+        name: v1.agent_name ?? d.name,
+        blob: v1.agent_blob || d.blob || boss?.blob || "ovni",
+      });
     else set({ mode });
     setAt(1);
     if (mode === "import" && !scan) void scanV1().then(setScan);
   };
 
   const blocked: MessageKey | undefined =
-    step === "agent" && !d.blob
-      ? "setup.agent.needBlob"
-      : step === "agent" && !d.name.trim()
-        ? "setup.agent.needName"
-        : step === "engines" && !d.chain.length
-          ? "setup.engines.needOne"
-          : undefined;
+    step === "import" && !scan
+      ? "setup.scanWait"
+      : step === "agent" && !d.blob
+        ? "setup.agent.needBlob"
+        : step === "agent" && !d.name.trim()
+          ? "setup.agent.needName"
+          : step === "engines" && !d.chain.length
+            ? "setup.engines.needOne"
+            : undefined;
 
   /** What leaving a step saves. */
   const save = async (): Promise<boolean> => {
@@ -271,8 +278,10 @@ export function Wizard() {
                     {t("setup.skip")}
                   </Button>
                 )}
-                <Button size="lg" disabled={Boolean(blocked)} loading={busy} onClick={() => void next()}>
-                  {step === "project" ? t("setup.create") : t("setup.next")}
+                <Button size="lg" disabled={Boolean(blocked) || busy} aria-busy={busy} onClick={() => void next()}>
+                  {busy
+                    ? t(step === "project" ? "setup.createWait" : "setup.choiceWait")
+                    : t(step === "project" ? "setup.create" : "setup.next")}
                 </Button>
               </div>
             )}

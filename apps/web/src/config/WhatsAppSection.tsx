@@ -1,6 +1,6 @@
 import type { ChannelInfo } from "@colonia/protocol";
 import { SUPER_AGENT_ID } from "@colonia/protocol/client";
-import { Badge, Button, EmptyState, IconButton, Icons, Select, SettingRow, Spinner, Switch } from "@colonia/ui";
+import { Badge, Button, EmptyState, IconButton, Icons, Select, SettingRow, Switch } from "@colonia/ui";
 import { useEffect, useMemo, useState } from "react";
 import { KindTile } from "../channels/KindIcon.tsx";
 import { PhoneForm, phoneOf } from "../channels/PhoneForm.tsx";
@@ -185,9 +185,7 @@ function Linked({ channel }: { channel: ChannelInfo }) {
               </div>
             </div>
           ) : (
-            <div className="waqr__wait">
-              <Spinner size={14} /> {t("wa.connecting")}
-            </div>
+            <div className="waqr__wait">{t("wa.connecting")}</div>
           ))}
         {channel.status === "error" && (
           <div>

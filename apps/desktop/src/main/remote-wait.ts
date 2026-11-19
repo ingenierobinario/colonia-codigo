@@ -34,6 +34,7 @@ export const SILENT_MS = 30_000;
 /** True once the panel loaded and the connection is still the one asked for. */
 export async function reachRemote(remote: Remote, d: WaitDeps): Promise<boolean> {
   const linked = () => remote.tunnel?.alive() ?? true;
+  let localDelay = 250;
   let shown: string | undefined;
   let silentSince = d.now();
   while (d.current()) {
@@ -54,7 +55,8 @@ export async function reachRemote(remote: Remote, d: WaitDeps): Promise<boolean>
       shown = text;
       await d.show(now);
     }
-    await d.sleep(RETRY_MS);
+    await d.sleep(remote.local && !remote.identityProblem?.() ? localDelay : RETRY_MS);
+    localDelay = Math.min(RETRY_MS, localDelay * 2);
   }
   return false;
 }
@@ -71,8 +73,8 @@ export function waiting(remote: Remote, linked: boolean, es: boolean): Waiting {
     (taken ? portTakenText(taken, es) : undefined) ??
     (remote.local
       ? es
-        ? "Colonia en este equipo todavía no responde. Puede estar arrancando, por ejemplo después de reiniciar."
-        : "Colonia on this computer is not answering yet. It may still be starting, for example after a restart."
+        ? "Estamos conectando con tu equipo. Puedes dejar esta ventana abierta mientras Colonia arranca."
+        : "Connecting to Colonia on this computer. You can leave this window open while it starts."
       : !remote.tunnel
         ? es
           ? "Esperando que el servidor responda."
@@ -127,18 +129,15 @@ body{background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,
 justify-content:center;padding:48px 16px 16px;-webkit-app-region:drag;user-select:none}
 .card{width:min(440px,100%);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 28px 22px;
 text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.08)}
-.spin{width:28px;height:28px;margin:0 auto 16px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);
-animation:r 1s linear infinite}@keyframes r{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
 h1{font-size:17px;font-weight:600;margin:0 0 6px}
-.where{display:inline-block;font:12px ui-monospace,Menlo,monospace;color:var(--muted);border:1px solid var(--line);
+.where{max-width:100%;overflow-wrap:anywhere;display:inline-block;font:12px ui-monospace,Menlo,monospace;color:var(--muted);border:1px solid var(--line);
 border-radius:999px;padding:2px 10px;margin-bottom:14px}
 .status{margin:0 0 12px}
 .detail{margin:0 0 14px;padding:8px 10px;border-radius:8px;background:var(--bg);color:var(--muted);
 font:12px ui-monospace,Menlo,monospace;text-align:left;word-break:break-word;-webkit-app-region:no-drag;user-select:text}
 .detail span{display:block;font:600 11px system-ui,sans-serif;margin-bottom:2px}
 .hint{margin:0;font-size:12px;color:var(--muted)}
-</style></head><body><main class="card" role="status" aria-live="polite"><div class="spin" aria-hidden="true"></div>
+</style></head><body><main class="card" role="status" aria-live="polite">
 <h1>${esc(w.title)}</h1><div class="where">${esc(w.where)}</div><p class="status">${esc(w.status)}</p>${detail}
 <p class="hint">${esc(w.hint)}</p></main></body></html>`;
 }

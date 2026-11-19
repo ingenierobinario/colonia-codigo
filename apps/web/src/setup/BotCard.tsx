@@ -63,8 +63,8 @@ export function BotCard({ kind, line, body }: { kind: "discord" | "slack"; line:
                 onChange={(e) => tokens.set(i, e.currentTarget.value)}
               />
               {i === tokens.specs.length - 1 && (
-                <Button size="sm" loading={busy} disabled={!tokens.ok} onClick={() => void connect()}>
-                  {t("setup.channels.connect")}
+                <Button size="sm" aria-busy={busy} disabled={busy || !tokens.ok} onClick={() => void connect()}>
+                  {t(busy ? "connect.connecting" : "setup.channels.connect")}
                 </Button>
               )}
             </div>

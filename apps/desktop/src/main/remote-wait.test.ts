@@ -103,7 +103,7 @@ test("the core on this computer waits with its own words and what to check", asy
   const local: Remote = { where: "127.0.0.1:7440", url: "http://127.0.0.1:7440", local: "See the log" };
   assert.equal(await reachRemote(local, w.deps), true);
   assert.equal(w.shown.length, 1);
-  assert.match(w.shown[0] ?? "", /on this computer is not answering yet/);
+  assert.match(w.shown[0] ?? "", /Connecting to Colonia on this computer/);
   assert.match(w.shown[0] ?? "", /See the log/);
   assert.deepEqual(w.loaded, ["http://127.0.0.1:7440"]);
 });
@@ -135,7 +135,13 @@ test("a confirmed local identity mismatch is explained without loading it, and a
   assert.equal(await reachRemote(local, w.deps), true);
   assert.equal(w.shown.length, 1);
   assert.ok(w.shown[0]?.includes(mismatch));
-  assert.doesNotMatch(w.shown[0] ?? "", /is not answering yet/);
+  assert.doesNotMatch(w.shown[0] ?? "", /Connecting to Colonia on this computer/);
   assert.deepEqual(w.loaded, [local.url]);
-  assert.match(waitingText(waiting(local, true, false)), /is not answering yet/);
+  assert.match(waitingText(waiting(local, true, false)), /Connecting to Colonia on this computer/);
+});
+
+test("detecta un arranque local breve sin esperar el intervalo de red", async () => {
+  const w = world({ upAt: 180 });
+  await reachRemote({ where: "local", url: "http://127.0.0.1:7440", local: "log" }, w.deps);
+  assert.ok(w.time() <= 300);
 });

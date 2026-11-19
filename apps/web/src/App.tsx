@@ -8,22 +8,23 @@ import { usePrefs } from "./data/prefs.ts";
 import { loadSetup, useSetup } from "./data/setup.ts";
 import { loadTelemetry } from "./data/telemetry.ts";
 import { loadWebApps } from "./data/webapps.ts";
-import { useLanguage } from "./i18n/index.ts";
+import { useLanguage, useT } from "./i18n/index.ts";
 import {
   AboutScreen,
   ArtifactWindow,
   BrowserPanel,
   ConnectScreen,
   HostedWelcome,
+  loadShell,
   OAuthReturn,
   PairScreen,
   preloadPinnedScreen,
   QuickChat,
+  Shell,
   Wizard,
 } from "./lazy.ts";
 import { IS_BROWSER_WINDOW } from "./panel/browserWindow.ts";
 import { nav, useNav } from "./shell/nav.ts";
-import { Shell } from "./shell/Shell.tsx";
 
 /** The page Google, X or LinkedIn sends the browser back to after the owner signs in (the core serves the panel there). */
 const OAUTH_RETURN = ["/oauth/google", "/oauth/social"].includes(window.location.pathname);
@@ -43,11 +44,22 @@ const ARTIFACT = new URLSearchParams(window.location.search).get("artifact") ?? 
 /** The desktop app's About window (?about): the hero with this build's version; no core either. */
 const ABOUT = new URLSearchParams(window.location.search).has("about");
 
+if (!(CONNECT || ABOUT || QUICK || ARTIFACT || IS_BROWSER_WINDOW || OAUTH_RETURN)) void loadShell().catch(() => {});
+
+function Opening() {
+  const t = useT();
+  return (
+    <p role="status" style={{ padding: "1rem", textAlign: "center" }}>
+      {t("desktopInstall.opening")}
+    </p>
+  );
+}
+
 export function App() {
   if (CONNECT || ABOUT)
     return (
       <ColoniaProvider look="minimal" mode="dark" fill>
-        <Suspense fallback={null}>{ABOUT ? <AboutScreen /> : <ConnectScreen />}</Suspense>
+        <Suspense fallback={<Opening />}>{ABOUT ? <AboutScreen /> : <ConnectScreen />}</Suspense>
       </ColoniaProvider>
     );
   return <Main />;
@@ -83,13 +95,14 @@ function Main() {
     >
       {/* Google's return page finishes without pairing: the browser it lands in may be any. */}
       {OAUTH_RETURN && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<Opening />}>
           <OAuthReturn />
         </Suspense>
       )}
+      {!OAUTH_RETURN && gate === "checking" && <Opening />}
       {!OAUTH_RETURN && gate === "open" && <Panel />}
       {!OAUTH_RETURN && gate === "pair" && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<Opening />}>
           <PairScreen />
         </Suspense>
       )}
@@ -121,7 +134,7 @@ function Panel() {
   }, []);
   if (ARTIFACT)
     return (
-      <Suspense fallback={null}>
+      <Suspense fallback={<Opening />}>
         <ArtifactWindow id={ARTIFACT} />
       </Suspense>
     );
@@ -129,7 +142,7 @@ function Panel() {
   if (IS_BROWSER_WINDOW)
     return (
       <div className="browserwin">
-        <Suspense fallback={null}>
+        <Suspense fallback={<Opening />}>
           <BrowserPanel />
         </Suspense>
       </div>
@@ -137,11 +150,13 @@ function Panel() {
   return (
     <>
       {QUICK ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={<Opening />}>
           <QuickChat />
         </Suspense>
       ) : (
-        <Shell />
+        <Suspense fallback={<Opening />}>
+          <Shell />
+        </Suspense>
       )}
       {!QUICK && setup && (
         <Suspense fallback={null}>

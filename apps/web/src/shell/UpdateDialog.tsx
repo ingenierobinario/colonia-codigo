@@ -1,4 +1,4 @@
-import { Button, Dialog, Icons, Spinner } from "@colonia/ui";
+import { Button, Dialog, Icons } from "@colonia/ui";
 import { notify } from "../data/notices.ts";
 import { notesFor } from "../data/update-notes.ts";
 import { packageCommandOf } from "../data/update-target.ts";
@@ -94,7 +94,6 @@ export function UpdateDialog() {
       )}
       {(phase === "updating" || phase === "restarting") && (
         <div className="update__wait">
-          <Spinner size={16} />
           {t(
             phase === "updating"
               ? target === "app"

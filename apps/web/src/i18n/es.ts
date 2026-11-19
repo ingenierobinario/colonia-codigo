@@ -360,6 +360,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "nav.aiAccounts": "Cuentas de IA",
   "engine.installHere": "Instalar donde se ejecuta Colonia",
   "engine.installError": "No se pudo instalar la herramienta. Comprueba la conexión y vuelve a intentarlo.",
+  "tasks.closedWait": "Cargando las tareas completadas…",
   "nav.externalSessions": "Sesiones de este equipo",
   "nav.addEngine": "Añadir o conectar otra IA",
   "nav.addAiAccount": "Añadir una cuenta de IA",
