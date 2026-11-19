@@ -224,7 +224,8 @@ async function smoke() {
         console.error("Limpieza del runner:", err);
       }
     }
-    fs.rmSync(dir, { recursive: true, force: true });
+    // La app recién cerrada aún escribe en su perfil unos instantes: el borrado reintenta en vez de fallar la prueba ya superada.
+    fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
   }
 }
 
