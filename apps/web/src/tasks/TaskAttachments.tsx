@@ -77,11 +77,14 @@ export function TaskAttachments({
     if (busy || disabled) return;
     working(true);
     setError("");
+    // Sale de la lista antes de pedir el borrado: una vista previa que aún se estuviera montando
+    // pediría un archivo que el servidor ya no tiene. Si el borrado falla, vuelve.
+    onChange(value.filter((a) => a.id !== id));
     try {
       if (task) await client.call("tasks.detach", { task: task.id, media_id: id });
       else await discardTaskUpload(id);
-      onChange(value.filter((a) => a.id !== id));
     } catch (e) {
+      onChange(value);
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       working(false);
