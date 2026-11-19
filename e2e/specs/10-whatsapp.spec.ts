@@ -120,9 +120,28 @@ test("a contact's video plays in the chat's own player, and a document of any ty
 });
 
 test("pegar una captura en WhatsApp permite revisarla y enviarla sin texto", async ({ page }) => {
+  const channels = async () =>
+    (await rpc<{ channels: Array<{ id: string; qr?: string; status: string }> }>("channels.list")).channels;
+  if (!(await channels()).some((channel) => channel.id === "whatsapp")) {
+    await rpc("channels.set", {
+      id: "whatsapp",
+      channel: { type: "whatsapp", agent_id: "superagent", self_owner: true },
+    });
+    await until(async () => (await channels()).some((channel) => channel.qr));
+    await world.whatsapp.scan();
+    await until(async () =>
+      (await channels()).some((channel) => channel.id === "whatsapp" && channel.status === "running"),
+    );
+  }
+  const person = await rpc<{ id: string }>("contacts.set", { name: "Prueba de adjuntos" });
+  await rpc("contacts.address", { person: person.id, channel: "whatsapp", address: "+5491100000137" });
+  await rpc("channels.open", { person: person.id, channel: "whatsapp" });
   await open(page);
   await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
-  await page.getByRole("button", { name: /Lucía/ }).first().click();
+  await page
+    .getByRole("button", { name: /Prueba de adjuntos/ })
+    .first()
+    .click();
   const composer = page.locator(".chan__composer");
   await composer.getByText("Escribo yo", { exact: true }).click();
   await composer.locator("textarea").evaluate((input) => {
@@ -135,6 +154,16 @@ test("pegar una captura en WhatsApp permite revisarla y enviarla sin texto", asy
     input.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
   });
   await expect(composer.getByText("captura.png")).toBeVisible();
+  const chooser = page.waitForEvent("filechooser");
+  await composer.getByRole("button", { name: "Adjuntar", exact: true }).click();
+  await (await chooser).setFiles({ name: "nota.txt", mimeType: "text/plain", buffer: Buffer.from("Nota") });
+  await page.locator(".chan__chat").evaluate((chat) => {
+    const data = new DataTransfer();
+    data.items.add(new File(["Informe"], "informe.txt", { type: "text/plain" }));
+    chat.dispatchEvent(new DragEvent("drop", { dataTransfer: data, bubbles: true, cancelable: true }));
+  });
+  await expect(composer.getByText("nota.txt")).toBeVisible();
+  await expect(composer.getByText("informe.txt")).toBeVisible();
   const send = composer.getByRole("button", { name: "Enviar", exact: true });
   await expect(send).toBeEnabled();
   await send.click();

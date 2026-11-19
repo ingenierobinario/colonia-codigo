@@ -58,10 +58,11 @@ export function ChannelConversation(props: {
   const agent = useData((s) => s.agents[channel.agent_id]);
   const [mode, setMode] = useState("agent");
   const [text, setText] = useState("");
-  const composer = useRef<HTMLDivElement>(null);
+  const conversation = useRef<HTMLElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const sending = useRef(false);
   const files = useAttachments(person ? `contact:${channel.id}:${person.id}` : threadId, thread?.id);
-  useFileDrop(composer, (incoming) => files.add(incoming));
+  const dragging = useFileDrop(conversation, (incoming) => files.add(incoming));
   const [busy, setBusy] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const name = person?.name ?? thread?.title ?? "";
@@ -158,7 +159,7 @@ export function ChannelConversation(props: {
   };
 
   return (
-    <section className="chan__chat" aria-label={name}>
+    <section ref={conversation} className="chan__chat" aria-label={name}>
       <header className="chan__chathead">
         <IconButton
           size="sm"
@@ -236,7 +237,7 @@ export function ChannelConversation(props: {
           (messages ?? []).map((m) => <Bubble key={m.id} m={m} agentName={agentName} />)
         )}
       </StickyScroll>
-      <div className="chan__composer" ref={composer}>
+      <div className={`chan__composer${dragging ? " is-dropping" : ""}`}>
         {files.chips.length > 0 && <AttachChips chips={files.chips} onRemove={files.remove} />}
         <Textarea
           aria-label={writeLabel}
@@ -252,6 +253,22 @@ export function ChannelConversation(props: {
           }}
         />
         <div className="chan__composerbar">
+          <input
+            hidden
+            multiple
+            type="file"
+            ref={fileInput}
+            onChange={(event) => {
+              const input = event.currentTarget;
+              if (input.files) files.add(input.files);
+              input.value = "";
+            }}
+          />
+          <IconButton
+            label={t("composer.attach")}
+            icon={<Icons.Paperclip size={16} />}
+            onClick={() => fileInput.current?.click()}
+          />
           <SegmentedControl
             size="sm"
             label={t("ch.who")}
