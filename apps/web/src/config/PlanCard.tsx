@@ -9,7 +9,7 @@ import { EngineUsageSwitch } from "./EngineUsageSwitch.tsx";
 import { PlanLogin } from "./PlanLogin.tsx";
 
 /**
- * The ChatGPT plan as a model API of Colonia's own loop, shown as Codex: first among the APIs, fixed (signed in or out,
+ * The ChatGPT plan as a model API of Colonia's own loop, shown as ChatGPT: first among the APIs, fixed (signed in or out,
  * switched on or off, never removed). Claude's plan has its own card (ClaudePlanCard), signed in through Claude Code.
  */
 export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: boolean }) {
@@ -26,7 +26,7 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
   return (
     <div className={p.enabled ? "pcard pcard--plan" : "pcard pcard--plan is-off"}>
       <div className="pcard__top">
-        <EngineIcon engine="codex" tile size={compact ? 28 : 36} />
+        <EngineIcon engine="chatgpt" tile size={compact ? 28 : 36} />
         <div className="pcard__titles">
           <div className="pcard__name">{t("plans.codex.name")}</div>
           <div className="pcard__plan">{t("plans.codex.kind")}</div>
@@ -54,7 +54,7 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
           onCheckedChange={(on) => void setProviderEnabled(p, on)}
           label={t("providers.on")}
         />
-        {!compact && <EngineUsageSwitch key={String(connected)} engine="codex" />}
+        {!compact && <EngineUsageSwitch key={String(connected)} engine="chatgpt" />}
         <span className="pcard__spacer" />
         <Button size="sm" variant={connected ? "secondary" : "primary"} onClick={() => setLogin(true)}>
           {t(connected ? "plans.manage" : "plans.connect")}

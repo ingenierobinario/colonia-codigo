@@ -9,7 +9,7 @@ import { useT } from "../i18n/index.ts";
 const SECURITY_SETTINGS = "https://chatgpt.com/#settings/Security";
 
 /**
- * Connects the ChatGPT plan to Colonia's own loop, shown as Codex: a code typed at OpenAI's page (the core waits for it),
+ * Connects the ChatGPT plan to Colonia's own loop, shown as ChatGPT: a code typed at OpenAI's page (the core waits for it),
  * or Colonia v1's sign-in taken over. The setting ChatGPT may ask for first is a hint while waiting and the answer to a
  * refusal, never a gate. Codex CLI's own sign-in is never used.
  */
@@ -106,7 +106,7 @@ export function PlanLogin({ onClose }: { onClose(): void }) {
             {s.error && (
               <div className="planlogin__pre">
                 <div className="planlogin__pretitle">
-                  <EngineIcon engine="codex" size={16} />
+                  <EngineIcon engine="chatgpt" size={16} />
                   {t("plan.login.preTitle")}
                 </div>
                 <p>{t("plan.login.preBody")}</p>
