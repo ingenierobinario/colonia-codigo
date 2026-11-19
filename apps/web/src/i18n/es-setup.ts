@@ -6,6 +6,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "setup.back": "Atrás",
   "setup.beta": "Beta",
   "setup.welcome.start": "Empezar",
+  "setup.scanWait": "Buscando lo que puedes traer de tu Colonia anterior…",
   "setup.newWait": "Tu equipo empieza aquí. Estamos abriendo tu nueva Colonia…",
   "setup.moveWait": "Estamos abriendo el asistente para traer tu Colonia. Podrás elegir qué trasladar.",
   "setup.choiceWait": "Preparando tu selección…",

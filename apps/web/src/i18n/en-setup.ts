@@ -4,6 +4,7 @@ export const enSetup = {
   "setup.back": "Back",
   "setup.beta": "Beta",
   "setup.welcome.start": "Start",
+  "setup.scanWait": "Looking for items you can bring from your previous Colonia…",
   "setup.newWait": "Your team starts here. Opening your new Colonia…",
   "setup.moveWait": "Opening the transfer assistant. You can choose what to bring over.",
   "setup.choiceWait": "Preparing your selection…",
