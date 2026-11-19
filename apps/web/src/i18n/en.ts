@@ -1590,6 +1590,7 @@ export const en = {
     "Pick one and connect it: its page opens so you can sign in with your account. A few ask for a key you create in the service.",
   "res.catalog.search": "Search connectors",
   "res.catalog.add": "Connect",
+  "res.catalog.openProvider": "Open {name}",
   "res.catalog.connected": "Connected",
   "res.catalog.added": "Added",
   "res.catalog.own.youtube": "Your videos, comments and replies",
