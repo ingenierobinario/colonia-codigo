@@ -21,7 +21,7 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
     await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
     await page.getByRole("radio", { name: /^Conectores/ }).click();
     await page.getByRole("button", { name: "Catálogo", exact: true }).click();
-    const card = page.locator(".catalog__card").filter({ hasText: "Meta Ads" });
+    const card = page.locator(".catalog__card").filter({ has: page.getByText("Meta Ads", { exact: true }) });
     await card.getByRole("button", { name: "Conectar" }).click();
     await expect(page.getByRole("link", { name: /sesión/i })).toHaveAttribute(
       "href",

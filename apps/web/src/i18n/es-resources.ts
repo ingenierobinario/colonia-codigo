@@ -182,6 +182,8 @@ export const esResources: Partial<Record<MessageKey, string>> = {
   "res.mcpNameHint":
     "Usa hasta 41 letras sin acentos, números, guiones o guiones bajos. Empieza por una letra o un número.",
   "res.mcpNameUsed": "Ya existe un conector con este nombre.",
+  "res.mcpLoginUrlHint": "Introduce una URL HTTPS del servidor MCP sin usuario ni contraseña.",
+  "res.mcpBrowserLogin": "URL con inicio de sesión",
   "res.mcpUrlHint": "Introduce una dirección HTTP o HTTPS sin usuario ni contraseña.",
   "res.mcpName": "Nombre",
   "res.mcpKind": "Cómo se conecta",
