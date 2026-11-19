@@ -567,8 +567,8 @@ export const CONNECTORS: readonly Connector[] = [
     "facebook.com",
     "social",
     "https://mcp.facebook.com/ads",
-    "Campañas y resultados de tus anuncios de Facebook e Instagram",
-    "Campaigns and results of your Facebook and Instagram ads",
+    "Anuncios de Facebook e Instagram. Meta debe admitir el cliente que solicita acceso.",
+    "Facebook and Instagram ads. Meta must accept the client requesting access.",
   ),
   r(
     "whatsappbusiness",

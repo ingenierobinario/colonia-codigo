@@ -152,3 +152,11 @@ test("a sign-in that ends unfinished keeps waiting on the owner, without a page 
   await turn("find echo");
   assert.equal(shop.opened(), 1);
 });
+
+test("el rechazo del registro del cliente se muestra sin ofrecer una autorización inexistente", async () => {
+  await addServer("registro-rechazado", { REJECT_REGISTRATION: "1" });
+  const { server } = await env.client.call("mcp.signIn", { scope: "global", server: "registro-rechazado" });
+  assert.equal(server.status, "error");
+  assert.match(server.error ?? "", /rechazado el registro/);
+  assert.equal(server.sign_in_url, undefined);
+});

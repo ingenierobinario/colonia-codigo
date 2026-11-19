@@ -148,6 +148,7 @@ declare global {
       /** Files opened with Colonia from the system, each with its text or why it has none (taken once). */
       takeOpenedFiles?(): Promise<{ name: string; text?: string; error?: "too-big" | "unreadable" }[]>;
       onFileOpened?(listener: () => void): () => void;
+      onBrowserHandoff?(listener: (tab: string) => void): () => void;
       onOpenThread?(listener: (threadId: string) => void): () => void;
       /** Runs one of the app menu's items: Windows and Linux show no menu bar for them. */
       menuAction?(id: "about" | "update" | "change-connection"): void;

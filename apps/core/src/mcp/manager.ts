@@ -156,6 +156,7 @@ export function createMcp(deps: {
       import("@modelcontextprotocol/sdk/client/stdio.js"),
       import("@modelcontextprotocol/sdk/client/streamableHttp.js"),
     ]);
+    let registrationRejected = false;
     const client = new Client({ name: "colonia", version: "2" });
     let timer: ReturnType<typeof setTimeout> | undefined;
     let fail!: (err: Error) => void;
@@ -199,6 +200,12 @@ export function createMcp(deps: {
           .map((k) => env[k] ?? ""),
       ];
       stderr.follow(keyOf(d), stdio.stderr, hidden);
+      let tail = "";
+      stdio.stderr?.on("data", (chunk) => {
+        const text = tail + chunk.toString();
+        if (/Dynamic registration is not available for this client/i.test(text)) registrationRejected = true;
+        tail = text.slice(-64);
+      });
       watchSignIn(stdio.stderr, (url) => {
         arm(SIGN_IN_MS, `sign-in not finished in ${SIGN_IN_MS / 60_000} min`);
         onSignIn?.(url);
@@ -213,6 +220,10 @@ export function createMcp(deps: {
       return { client, tools: tools as McpTool[] };
     } catch (err) {
       await client.close().catch(() => {});
+      if (registrationRejected)
+        throw new Error(
+          "El proveedor ha rechazado el registro de este cliente MCP. No se ha iniciado la autorización. Usa una integración admitida por el proveedor.",
+        );
       throw err;
     } finally {
       clearTimeout(timer);

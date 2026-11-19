@@ -181,6 +181,7 @@ test("native listeners strip the Electron event, validate payloads and detach th
   const { call, renderer } = await preload(t);
   const cases: [string, string, string, unknown[], unknown[]][] = [
     ["coloniaDesktop", "onBrowserPopout", "browser:popout", [true, "true", false], [true, false, false]],
+    ["coloniaDesktop", "onBrowserHandoff", "nav:browser-handoff", ["t3", null, 123], ["t3"]],
     ["coloniaDesktop", "onOpenThread", "nav:thread", ["thr_1", null, 123, "thr_2"], ["thr_1", "thr_2"]],
     ["coloniaDesktop", "onComputerStopped", "computer:stopped", [true, 1, false], [true, false, false]],
     ["coloniaDesktop", "onComputerActivity", "computer:activity", [{ kind: "click" }, null], [{ kind: "click" }, null]],

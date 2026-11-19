@@ -266,7 +266,12 @@ function useDesktopBridge() {
   useEffect(() => {
     void applyDesktopPrefs();
     window.coloniaDesktop?.setTitleBar?.(nav.get().mode);
-    return window.coloniaDesktop?.onOpenThread?.((id) => go.thread(id));
+    const thread = window.coloniaDesktop?.onOpenThread?.((id) => go.thread(id));
+    const handoff = window.coloniaDesktop?.onBrowserHandoff?.((tab) => go.browser(tab));
+    return () => {
+      thread?.();
+      handoff?.();
+    };
   }, []);
   useColoniaFiles();
 }

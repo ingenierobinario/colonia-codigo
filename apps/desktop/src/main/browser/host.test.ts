@@ -155,7 +155,12 @@ test("close publishes removal before reentrant layout and preserves the selectio
 test("external destruction settles a pending handoff without reading the dead page", async () => {
   const host = new BrowserHost();
   const { tab, wc } = await opened(host);
+  let requestedTab: string | undefined;
+  host.onAttention = (_message, id) => {
+    requestedTab = id;
+  };
   const handoff = host.handle("browser.handoff", { tab: tab.id, by: "test", reason: "continue", timeout_s: 60 });
+  assert.equal(requestedTab, tab.id);
   wc.close();
   assert.deepEqual(await handoff, { resolved: false, url: "", title: "" });
   assert.deepEqual(host.list(), []);

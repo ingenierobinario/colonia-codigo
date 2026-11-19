@@ -86,6 +86,13 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
     ipcRenderer.on("window:fullscreen", on);
     return () => ipcRenderer.removeListener("window:fullscreen", on);
   },
+  onBrowserHandoff: (listener: (tab: string) => void) => {
+    const on = (_e: unknown, id: unknown) => {
+      if (typeof id === "string") listener(id);
+    };
+    ipcRenderer.on("nav:browser-handoff", on);
+    return () => ipcRenderer.removeListener("nav:browser-handoff", on);
+  },
   onOpenThread: (listener: (threadId: string) => void) => {
     const on = (_e: unknown, id: unknown) => {
       if (typeof id === "string") listener(id);
