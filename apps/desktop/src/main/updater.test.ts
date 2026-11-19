@@ -321,10 +321,10 @@ test("a Windows installer deleted from the temporary folder is reported instead 
   assert.equal(w.quits(), 0);
 });
 
-test("Windows quits into the installer once it started, with --updated, and the quit does not start it again", async (t) => {
+test("Windows instala en silencio, vuelve a abrir Colonia y ejecuta el instalador una sola vez", async (t) => {
   const w = await windowsUpdate(t);
   assert.deepEqual(w.updater.restart(), { ok: true });
-  assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated"] }]);
+  assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated", "/S", "--force-run"] }]);
   await waitFor(() => w.quits() === 1, "the quit after the installer started");
   w.updater.quitting();
   assert.equal(w.spawns.length, 1);
