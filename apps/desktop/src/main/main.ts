@@ -420,8 +420,16 @@ app.whenReady().then(() => {
     showInFolder: (file) => shell.showItemInFolder(file),
   });
   host.onDownload = (item) => downloads.take(item);
-  host.onAttention = (message) => {
-    openMain();
+  host.onAttention = (message, tab) => {
+    const browserWindow = popout.window();
+    if (browserWindow && !browserWindow.isDestroyed()) {
+      if (browserWindow.isMinimized()) browserWindow.restore();
+      browserWindow.show();
+      browserWindow.focus();
+    } else {
+      openMain();
+      sendTo(panel.webContents, "nav:browser-handoff", tab);
+    }
     if (Notification.isSupported()) new Notification({ title: "Colonia", body: message }).show();
   };
   win.on("resize", layout);

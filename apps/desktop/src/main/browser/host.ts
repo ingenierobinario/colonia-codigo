@@ -134,7 +134,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     this.emit("changed");
   });
   /** Called when a tab needs the human (handoff): the window should come forward and notify. */
-  onAttention: (message: string) => void = () => {};
+  onAttention: (message: string, tab: string) => void = () => {};
   /** Called whenever the visible tab changes, so the window can lay it out. */
   onShow: (view: WebContentsView | undefined) => void = () => {};
   /** Preload of the web apps (saved passwords); never given to shared, agent or incognito tabs. */
@@ -299,7 +299,7 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         }
         tab.control = { kind: "handoff", by: p.by, reason: p.reason, since: new Date().toISOString() };
         this.select(tab.id);
-        this.onAttention(`${p.by} necesita que ${p.reason}`);
+        this.onAttention(`${p.by} necesita que ${p.reason}`, tab.id);
         this.emit("changed");
         const resolved = await new Promise<boolean>((resolve) => {
           const waiter = (ok: boolean) => {

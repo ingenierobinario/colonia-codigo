@@ -7,6 +7,12 @@ import { z } from "zod";
 
 const signed = () => fs.existsSync(process.env.SIGNED_FILE ?? "");
 fs.writeFileSync(`${process.env.OPENED_LOG}.pid`, String(process.pid));
+if (process.env.REJECT_REGISTRATION) {
+  process.stderr.write("Dynamic registration is not available for this client.\n");
+  process.exitCode = 1;
+  await new Promise((resolve) => process.stderr.write("", resolve));
+  process.exit(1);
+}
 if (!signed()) {
   process.stderr.write("\nPlease authorize this client by visiting:\nhttps://shop.example.com/authorize?state=1\n\n");
   fs.appendFileSync(process.env.OPENED_LOG ?? "", "opened\n");

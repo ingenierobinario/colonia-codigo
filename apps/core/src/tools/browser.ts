@@ -115,7 +115,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_open",
       description:
-        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns the tab id. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
+        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns an internal tab id. A successful navigation does not confirm a visible Chrome window. For login, use browser_handoff. If interrupted, report that the handoff was not confirmed; do not claim the owner saw the page. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
       args: z.object({
         url: z.string().optional().describe("http(s) URL; optional with `app`"),
         app: z
@@ -149,11 +149,11 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         if (reuse) {
           const r = await ctx.call("browser.navigate", { tab: reuse, url, by: ctx.agent.id });
           await card(ctx, reuse, "agent");
-          return `tab ${reuse} · ${r.title} · ${r.url}\nNext: browser_snapshot to see the page.`;
+          return `tab ${reuse} · ${r.title} · ${r.url}\nThis is an internal tab; visibility to the owner is unconfirmed. Next: browser_snapshot to see the page.`;
         }
         const t = await ctx.call("browser.open", { url, profile, by: ctx.agent.id });
         await card(ctx, t.tab, "agent");
-        return `tab ${t.tab} · ${t.title} · ${t.url}\nNext: browser_snapshot to see the page.`;
+        return `tab ${t.tab} · ${t.title} · ${t.url}\nThis is an internal tab; visibility to the owner is unconfirmed. Next: browser_snapshot to see the page.`;
       },
     }),
     defineTool({
