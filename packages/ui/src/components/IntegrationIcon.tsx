@@ -88,6 +88,9 @@ const ALIASES: Record<string, IntegrationBrand> = {
   "circle-ci": "circleci",
   twitter: "x",
   facebook: "meta",
+  metaads: "meta",
+  "meta-ads": "meta",
+  "metaads-pipeboard": "meta",
   instagram: "meta",
 };
 
