@@ -24,7 +24,7 @@ test("guest browser cards, including old messages, stay in the VM; an open panel
             tab: "h1",
             url: "https://example.com/host",
             title: "Host page",
-            profile: "shared",
+            profile: "nav:perfil-prueba",
             control: { kind: "idle" },
           },
           {
@@ -89,11 +89,27 @@ test("guest browser cards, including old messages, stay in the VM; an open panel
     add(other.id, "Ordinary host page", "h1");
     await page.goto(`${env.core.url}/#thread=${other.id}`);
     await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(1);
+    // Simulate a detached desktop window and record the request made by the actual chat card.
+    const windowRequests: boolean[] = [];
+    await page.exposeFunction("recordBrowserWindow", (open: boolean) => windowRequests.push(open));
+    await page.evaluate(() => {
+      const bridge = window as unknown as { recordBrowserWindow: (open: boolean) => void };
+      Object.defineProperty(window, "coloniaDesktop", {
+        configurable: true,
+        value: { setBrowserBounds: () => {}, popOutBrowser: bridge.recordBrowserWindow },
+      });
+    });
     await page.locator(".colonia-livebrowser__preview").click();
+    await expect.poll(() => windowRequests).toEqual([false]);
+    await expect(page).toHaveURL(new RegExp(other.id));
     await expect(page).toHaveURL(/panel=browser/);
     await expect(page.locator(".browser__page")).toBeVisible();
     await expect(page.locator(".colonia-livebrowser__preview")).toHaveCount(0);
     await expect(page.locator(".browserpart__compact")).toContainText("Host page");
+
+    await page.locator(".browserpart__compact").click();
+    await expect.poll(() => windowRequests).toEqual([false, false]);
+    await expect(page.locator(".browser__page")).toBeVisible();
 
     // Another selected tab must not suppress this card's preview.
     await page.getByRole("tab", { name: /Other page/ }).click();

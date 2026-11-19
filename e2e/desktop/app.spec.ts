@@ -242,7 +242,7 @@ test("the app lends its browser to the core, and a tab opened through the core i
   await rpc("browser.close", { tab });
 });
 
-test("abrir en vivo muestra la pestaña del perfil solicitado y cambia de pestaña en la misma ventana", async () => {
+test("la ventana independiente muestra la pestaña del perfil solicitado y cambia de pestaña en la misma ventana", async () => {
   await until(
     async () =>
       (await rpc<{ subsystems: { browser: { detail?: string } } }>("system.health")).subsystems.browser.detail ===
