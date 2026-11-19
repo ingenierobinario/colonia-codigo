@@ -96,7 +96,7 @@ declare global {
       /** Which tab the native browser view shows. */
       showBrowserTab?(tab: string): void;
       /** Moves the browser to a window of its own (true) or back into the side panel (false). */
-      popOutBrowser?(open: boolean): void;
+      popOutBrowser?(open: boolean, tab?: string): void;
       /** Whether the browser is in its own window right now. */
       browserPoppedOut?(): boolean;
       /** The main window hears when the browser window opens or closes. */

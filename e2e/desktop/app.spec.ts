@@ -242,6 +242,45 @@ test("the app lends its browser to the core, and a tab opened through the core i
   await rpc("browser.close", { tab });
 });
 
+test("abrir en vivo muestra la pestaña del perfil solicitado y cambia de pestaña en la misma ventana", async () => {
+  await until(
+    async () =>
+      (await rpc<{ subsystems: { browser: { detail?: string } } }>("system.health")).subsystems.browser.detail ===
+      "colonia-desktop",
+    20000,
+  );
+  const base = `http://127.0.0.1:${process.env.E2E_CONTROL_PORT ?? 7461}/info`;
+  const main = await page("main");
+  for (const marker of ["primera", "segunda"]) {
+    const url = `${base}#${marker}`;
+    const { tab } = await rpc<{ tab: string }>("browser.open", { url, profile: "nav:perfil-prueba", by: "e2e" });
+    await main.evaluate((id) => window.coloniaDesktop?.popOutBrowser?.(true, id), tab);
+    await expect
+      .poll(
+        () =>
+          app.evaluate(
+            ({ BaseWindow }, target) =>
+              BaseWindow.getAllWindows().some((w) => {
+                const children = w.contentView.children.filter(
+                  (v): v is Electron.WebContentsView => "webContents" in v,
+                );
+                return (
+                  w.isVisible() &&
+                  children.some((v) => v.webContents.getURL().includes("browser=1")) &&
+                  children.some(
+                    (v) => v.webContents.getURL() === target && v.getBounds().width > 0 && v.getBounds().height > 0,
+                  )
+                );
+              }),
+            url,
+          ),
+        { timeout: 20000 },
+      )
+      .toBe(true);
+  }
+  await main.evaluate(() => window.coloniaDesktop?.popOutBrowser?.(false));
+});
+
 test("native tab destruction during CDP invalidation removes only that tab and the browser keeps working", async () => {
   await until(async () => {
     const h = await rpc<{ subsystems: Record<string, { status: string; detail?: string }> }>("system.health");

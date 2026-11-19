@@ -15,7 +15,8 @@ contextBridge.exposeInMainWorld("coloniaDesktop", {
   setBrowserBounds: (b: Bounds | null) => ipcRenderer.send("panel:browser-bounds", b),
   showBrowserTab: (tab: string) => ipcRenderer.send("panel:browser-tab", tab),
   /** The browser in a window of its own (true) or back in the side panel (false). */
-  popOutBrowser: (open: boolean) => ipcRenderer.send("browser:popout", open === true),
+  popOutBrowser: (open: boolean, tab?: string) =>
+    ipcRenderer.send("browser:popout", open === true, ...(typeof tab === "string" ? [tab] : [])),
   browserPoppedOut: (): boolean => ipcRenderer.sendSync("browser:popout-state") === true,
   onBrowserPopout: (listener: (open: boolean) => void) => {
     const on = (_e: unknown, open: unknown) => listener(open === true);

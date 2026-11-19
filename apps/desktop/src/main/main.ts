@@ -426,6 +426,7 @@ app.whenReady().then(() => {
       if (browserWindow.isMinimized()) browserWindow.restore();
       browserWindow.show();
       browserWindow.focus();
+      sendTo(popout.panel(), "nav:browser-handoff", tab);
     } else {
       openMain();
       sendTo(panel.webContents, "nav:browser-handoff", tab);
@@ -500,11 +501,15 @@ app.whenReady().then(() => {
   });
 
   // The browser in its own window (with its toolbar), or a page in one of the owner's own browsers.
-  ipcMain.on("browser:popout", (e, open: unknown) => {
+  ipcMain.on("browser:popout", (e, open: unknown, tab: unknown) => {
     if (!ownBrowserPanel(e.sender)) return;
     if (open === false) return popout.close();
     const active = host.active ? host.list().find((t) => t.tab === host.active) : undefined;
-    popout.open(active?.title || "Colonia", active?.tab);
+    const requested = typeof tab === "string" ? host.list().find((t) => t.tab === tab) : active;
+    if (typeof tab === "string" && !requested) return;
+    if (requested) host.select(requested.tab);
+    popout.open(requested?.title || "Colonia", requested?.tab);
+    if (requested) sendTo(popout.panel(), "nav:browser-handoff", requested.tab);
   });
   ipcMain.on("browser:popout-state", (e) => {
     e.returnValue = ownBrowserPanel(e.sender) && popout.window() != null;

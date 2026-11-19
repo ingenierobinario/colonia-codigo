@@ -91,6 +91,7 @@ test("panel actions use fixed IPC channels and normalize browser, attention and 
     ["setBrowserBounds", [bounds], "panel:browser-bounds", [bounds]],
     ["setBrowserBounds", [null], "panel:browser-bounds", [null]],
     ["showBrowserTab", ["tab_1"], "panel:browser-tab", ["tab_1"]],
+    ["popOutBrowser", [true, "t4"], "browser:popout", [true, "t4"]],
     ["popOutBrowser", [true], "browser:popout", [true]],
     ["popOutBrowser", ["true"], "browser:popout", [false]],
     ["openMain", ["thr_1"], "quick:open-main", ["thr_1"]],

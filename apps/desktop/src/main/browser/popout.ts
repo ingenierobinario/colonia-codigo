@@ -26,6 +26,7 @@ export function createPopout(opts: {
     /** Opens it on `tab` (the one the side panel shows), or brings it forward. */
     open(title: string, tab?: string): void {
       if (win) {
+        if (win.isMinimized()) win.restore();
         win.show();
         win.focus();
         return;
