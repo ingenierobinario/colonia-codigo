@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.55": {
+    en: [
+      "On Windows, installing and updating Colonia takes much less time: files are written only once.",
+      "Removing an attachment from a task takes effect right away.",
+    ],
+    es: [
+      "En Windows, instalar y actualizar Colonia tarda mucho menos: los archivos se escriben una sola vez.",
+      "Al quitar un adjunto de una tarea, desaparece al instante.",
+    ],
+  },
   "2.36.54": {
     en: [
       "The AI accounts section folds, has a + to add an account, and ChatGPT shows its own logo.",

@@ -11,6 +11,7 @@ import { nodeOs, targetOf } from "@colonia/protocol";
 import { CLIENT_FILE, clientFromJson, clientFromPair } from "../../core/src/integrations/google-client.ts";
 import { dependents, stageSingleFile } from "./stage-dep.ts";
 import { stageProtocol } from "./stage-protocol.ts";
+import { pruneModules } from "./stage-prune.ts";
 
 const repo = path.resolve(import.meta.dirname, "../../..");
 const target = targetOf(process.env.COLONIA_TARGET, process.platform, process.arch);
@@ -96,6 +97,9 @@ const modules = path.join(out, "node_modules");
 const askers = dependents(modules, "kysely");
 if (askers.length) console.log(`kysely stays as installed: ${askers.join(", ")} ask for it`);
 else await stageSingleFile(path.join(modules, "kysely"));
+// Types and source maps are nearly half the files and the installer moves each one; the core runs none of them.
+const pruned = pruneModules(modules);
+console.log(`pruned ${pruned.files} files (${(pruned.bytes / 1e6).toFixed(1)} MB) from node_modules`);
 
 let sha = process.env.GITHUB_SHA?.slice(0, 12) ?? "";
 if (!sha) {
