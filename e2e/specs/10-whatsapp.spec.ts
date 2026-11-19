@@ -171,6 +171,45 @@ test("pegar una captura en WhatsApp permite revisarla y enviarla sin texto", asy
   await expect(page.locator(".chan__bubble.is-out img").last()).toBeVisible();
 });
 
+test("en modo Agente se envía solo un adjunto, sin texto: el agente recibe «Mira los archivos adjuntos.»", async ({
+  page,
+}) => {
+  const channels = async () =>
+    (await rpc<{ channels: Array<{ id: string; qr?: string; status: string }> }>("channels.list")).channels;
+  if (!(await channels()).some((channel) => channel.id === "whatsapp")) {
+    await rpc("channels.set", {
+      id: "whatsapp",
+      channel: { type: "whatsapp", agent_id: "superagent", self_owner: true },
+    });
+    await until(async () => (await channels()).some((channel) => channel.qr));
+    await world.whatsapp.scan();
+    await until(async () =>
+      (await channels()).some((channel) => channel.id === "whatsapp" && channel.status === "running"),
+    );
+  }
+  const person = await rpc<{ id: string }>("contacts.set", { name: "Adjunto al agente" });
+  await rpc("contacts.address", { person: person.id, channel: "whatsapp", address: "+5491100000138" });
+  await rpc("channels.open", { person: person.id, channel: "whatsapp" });
+  await open(page);
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
+  await page
+    .getByRole("button", { name: /Adjunto al agente/ })
+    .first()
+    .click();
+  const composer = page.locator(".chan__composer");
+  await composer.getByText(/ responde$/).click();
+  const chooser = page.waitForEvent("filechooser");
+  await composer.getByRole("button", { name: "Adjuntar", exact: true }).click();
+  await (await chooser).setFiles({ name: "factura.txt", mimeType: "text/plain", buffer: Buffer.from("Factura") });
+  await expect(composer.getByText("factura.txt")).toBeVisible();
+  const send = composer.getByRole("button", { name: "Enviar", exact: true });
+  await expect(send).toBeEnabled();
+  await send.click();
+  // A failed send keeps the attachment for another attempt; it goes only once the agent took the message.
+  await expect(composer.getByText("factura.txt")).toHaveCount(0);
+  await expect(page.getByText("Mira los archivos adjuntos.").first()).toBeVisible();
+});
+
 test("a video kept only as a placeholder: 'Recover files' asks the phone again and it plays in the chat", async ({
   page,
 }) => {
