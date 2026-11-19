@@ -380,9 +380,9 @@ export function createDesktopUpdater(opts: {
     };
     return {
       version: release.version,
-      // --updated: the installer waits for Colonia to close instead of asking; runAfterFinish opens the new one.
+      // Al reiniciar, NSIS instala en silencio y vuelve a abrir Colonia cuando termina.
       restart: () => {
-        launch(["--updated"]);
+        launch(["--updated", "/S", "--force-run"]);
         swapping = true; // the quit below must not start the installer a second time
         setTimeout(opts.quit, 1000);
       },
