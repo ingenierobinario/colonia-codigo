@@ -3,7 +3,8 @@ import { expect, open, rpc, test } from "./kit.ts";
 for (const width of [1280, 590, 390]) {
   test(`task properties truncate long values without horizontal scrolling at ${width}px`, async ({ page }) => {
     await rpc("setup.finish", {});
-    const name = `Northwind ${"implementation planning ".repeat(2)}`;
+    // Lo bastante largo para no caber a ningún ancho, sea cual sea la fuente de la máquina.
+    const name = `Northwind ${"implementation planning ".repeat(5)}`;
     const { project } = await rpc<{ project: { id: string } }>("projects.create", { name });
     const parent = await rpc<{ id: string }>("tasks.create", {
       title: `Prepare ${"long-parent-title".repeat(10)}`,
