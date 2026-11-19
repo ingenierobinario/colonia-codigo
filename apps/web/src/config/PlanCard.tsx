@@ -54,7 +54,7 @@ export function PlanCard({ p, compact = false }: { p: ProviderInfo; compact?: bo
           onCheckedChange={(on) => void setProviderEnabled(p, on)}
           label={t("providers.on")}
         />
-        {!compact && <EngineUsageSwitch key={String(connected)} engine="chatgpt" />}
+        {!compact && <EngineUsageSwitch key={String(connected)} engine="codex" />}
         <span className="pcard__spacer" />
         <Button size="sm" variant={connected ? "secondary" : "primary"} onClick={() => setLogin(true)}>
           {t(connected ? "plans.manage" : "plans.connect")}

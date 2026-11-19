@@ -8,7 +8,7 @@ export type Highlights = { en: string[]; es: string[] };
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.56": {
     en: [
-      "A \"Without asking\" switch in the chat header lets the project's agents work without stopping for your OK.",
+      'A "Without asking" switch in the chat header lets the project\'s agents work without stopping for your OK.',
       "Colonia carries about half as many files, so installing and updating write less to disk.",
       "Chats from flows can be deleted, and a project's Chats tab counts the ones waiting for you.",
       "Removing an attachment from a task takes effect right away.",
