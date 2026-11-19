@@ -3,6 +3,7 @@ import { type CSSProperties, Suspense, useEffect, useLayoutEffect, useState } fr
 import { loadThreadWhenReady } from "./data/actions.ts";
 import { startLive } from "./data/live.ts";
 import { loadNavegadores } from "./data/navegadores.ts";
+import { isNewChat } from "./data/newChat.ts";
 import { checkAccess, useGate } from "./data/pairing.ts";
 import { usePrefs } from "./data/prefs.ts";
 import { loadSetup, useSetup } from "./data/setup.ts";
@@ -24,7 +25,7 @@ import {
   Wizard,
 } from "./lazy.ts";
 import { IS_BROWSER_WINDOW } from "./panel/browserWindow.ts";
-import { nav, useNav } from "./shell/nav.ts";
+import { nav, showsChat, useNav } from "./shell/nav.ts";
 
 /** The page Google, X or LinkedIn sends the browser back to after the owner signs in (the core serves the panel there). */
 const OAUTH_RETURN = ["/oauth/google", "/oauth/social"].includes(window.location.pathname);
@@ -122,8 +123,13 @@ function Panel() {
   );
   // Las peticiones iniciales de la barra lateral comparten las conexiones HTTP con el chat.
   useLayoutEffect(() => {
-    // La ventana rápida siempre abre el chat principal, aunque su módulo aún se esté descargando.
-    const stop = QUICK ? loadThreadWhenReady("home") : undefined;
+    // ESPERAS-ARRANQUE-CHAT-1: Shell (y con él, ChatView) es un módulo descargado aparte; montarlo ya no es
+    // instantáneo como con el import estático de antes. Si esperásemos a que ChatView pida su historial, el
+    // chunk de Shell podría perder la carrera contra el primer bootstrap y los sondeos secundarios se le
+    // adelantarían. Se pide aquí mismo, igual que ya hacía la ventana rápida con "home" aunque su módulo
+    // aún se esté descargando.
+    const threadId = QUICK ? "home" : showsChat(nav.get()) ? nav.get().threadId : undefined;
+    const stop = threadId && !isNewChat(threadId) ? loadThreadWhenReady(threadId) : undefined;
     startLive();
     return stop;
   }, []);
