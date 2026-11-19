@@ -57,6 +57,8 @@ export function createConnector(opts: {
   const corePort = Number(new URL(opts.coreUrl).port || 7440);
   // Asked once (installed or from a checkout) and kept; COLONIA_CONNECTION=local skips the question (tests, scripts).
   let conn: Connection | undefined = initialConnection(dataDir);
+  // VOLVER-CONEXION-1: what "Change connection" left behind, so a slip of the hand has a way back.
+  let previous: Connection | undefined;
   let core: EmbeddedCore | undefined;
   let tunnel: Tunnel | undefined;
   // The remote panel (an address or SSH) is on screen: losing its server from here on waits for it again.
@@ -85,6 +87,19 @@ export function createConnector(opts: {
 
   ipcMain.on("desktop:core-local", (e) => {
     e.returnValue = conn?.mode === "local" && opts.isOwnWindow(e.sender);
+  });
+
+  ipcMain.handle("connect:previous", (e): boolean => onChooser(e.sender) && previous !== undefined);
+  ipcMain.handle("connect:back", async (e): Promise<Answer> => {
+    if (!onChooser(e.sender)) return { ok: false, error: "not allowed" };
+    const c = previous;
+    if (!c) return { ok: false, error: "no previous connection" };
+    connectionRevision++;
+    previous = undefined;
+    saveConnection(dataDir, c);
+    conn = c;
+    await open();
+    return { ok: true };
   });
 
   ipcMain.handle("connect:local", async (e, access: unknown, intent?: unknown): Promise<Answer> => {
@@ -432,6 +447,7 @@ export function createConnector(opts: {
       connectionRevision++;
       opts.disconnected();
       openedRemote = false;
+      previous = conn ?? previous;
       forgetConnection(dataDir);
       conn = undefined;
       const previousTunnel = tunnel;

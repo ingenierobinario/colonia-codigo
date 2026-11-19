@@ -175,6 +175,9 @@ contextBridge.exposeInMainWorld("coloniaConnect", {
   local: (access: string, intent?: string): Promise<Answer> =>
     ipcRenderer.invoke("connect:local", access, ...(intent === "move" ? [intent] : [])),
   url: (url: string): Promise<Answer> => ipcRenderer.invoke("connect:url", url),
+  // VOLVER-CONEXION-1: whether "Change connection" left a Colonia to return to, and going back to it.
+  previous: (): Promise<boolean> => ipcRenderer.invoke("connect:previous"),
+  back: (): Promise<Answer> => ipcRenderer.invoke("connect:back"),
   ssh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh", target),
   installSsh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh-install", target),
   lingerSsh: (target: string, password: string): Promise<Answer> =>

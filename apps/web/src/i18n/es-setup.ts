@@ -298,6 +298,7 @@ export const esSetup: Partial<Record<MessageKey, string>> = {
   "connect.move": "Ya la uso en otro ordenador",
   "connect.moveBody": "Empezamos aquí y te traes tus cosas: enlazando los dos ordenadores o con una copia.",
   "connect.elsewhere": "Conectarme a una Colonia que ya funciona en otro sitio",
+  "connect.back": "Volver a la Colonia que estaba usando",
   "connect.body.later":
     "¿Te has equivocado? No pasa nada: se cambia cuando quieras desde el menú de tu cuenta › Cambiar conexión.",
   "setup.welcome.question": "¿Por dónde empezamos?",

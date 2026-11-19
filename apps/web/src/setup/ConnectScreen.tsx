@@ -55,6 +55,29 @@ export function ConnectScreen() {
   const t = useT();
   const desktop = useDesktopClass();
   const [step, setStep] = useState<"start" | "client">("start");
+  // VOLVER-CONEXION-1: "Change connection" pressed by mistake leaves a way back to the Colonia in use.
+  const [canBack, setCanBack] = useState(false);
+  const [returning, setReturning] = useState(false);
+  useEffect(() => {
+    // ESQUINA-OSCURA-1: this screen is always dark, whatever theme the panel left on the window controls.
+    window.coloniaDesktop?.setTitleBar?.("dark");
+    let live = true;
+    window.coloniaConnect
+      ?.previous?.()
+      .then((yes) => live && setCanBack(yes === true))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  const goBack = async () => {
+    setReturning(true);
+    try {
+      await window.coloniaConnect?.back?.();
+    } finally {
+      setReturning(false);
+    }
+  };
   // Which of the two "here" answers is starting (its card shows it working).
   const [starting, setStarting] = useState<"new" | "move">();
   const [via, setVia] = useState<Via>("url");
@@ -254,6 +277,18 @@ export function ConnectScreen() {
                     <Icons.Link size={14} />
                     {t("connect.elsewhere")}
                   </button>
+                  {canBack && (
+                    <button
+                      id="connect-back"
+                      type="button"
+                      className="connect__other"
+                      disabled={busy || returning}
+                      onClick={goBack}
+                    >
+                      <Icons.ArrowLeft size={14} />
+                      {t("connect.back")}
+                    </button>
+                  )}
                   <p className="connect__later">{t("connect.body.later")}</p>
                 </div>
               </div>

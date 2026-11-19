@@ -293,6 +293,7 @@ export const enSetup = {
   "connect.move": "I already use it on another computer",
   "connect.moveBody": "We start here and you bring your things: by linking both computers or from a copy.",
   "connect.elsewhere": "Connect to a Colonia already running somewhere else",
+  "connect.back": "Go back to the Colonia I was using",
   "connect.body.later":
     "Picked the wrong one? No problem: change it any time from your account menu › Change connection.",
   "setup.welcome.question": "Where do we start?",

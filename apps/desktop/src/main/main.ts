@@ -19,7 +19,7 @@ import {
   WebContentsView,
 } from "electron";
 import { showAbout } from "./about.ts";
-import { registerAppScheme, serveAppScheme, webDist } from "./app-scheme.ts";
+import { FIRST_RUN_URL, registerAppScheme, serveAppScheme, webDist } from "./app-scheme.ts";
 import { createArtifactWindows } from "./artifact-windows.ts";
 import { runAskpass } from "./askpass.ts";
 import { HIDDEN_ARG, startedAtLogin } from "./autostart.ts";
@@ -872,9 +872,7 @@ app.whenReady().then(() => {
   });
   // The window background follows the panel theme on every OS; the window-control overlay only on Windows/Linux (mac
   // draws its own traffic lights, there is no overlay to recolor).
-  ipcMain.on("desktop:titlebar", (e, mode: unknown) => {
-    if (e.sender !== panel.webContents) return;
-    if (mode !== "light" && mode !== "dark") return;
+  const paintTitleBar = (mode: "light" | "dark") => {
     if (win.isDestroyed()) return;
     win.setBackgroundColor(mode === "light" ? "#f4f3f0" : "#1a1a19");
     if (process.platform === "darwin") return;
@@ -883,6 +881,16 @@ app.whenReady().then(() => {
         ? { color: "#f4f3f0", symbolColor: "#444444", height: 46 }
         : { color: "#1a1a19", symbolColor: "#c8c8c8", height: 46 },
     );
+  };
+  ipcMain.on("desktop:titlebar", (e, mode: unknown) => {
+    if (e.sender !== panel.webContents) return;
+    if (mode !== "light" && mode !== "dark") return;
+    paintTitleBar(mode);
+  });
+  // ESQUINA-OSCURA-1: the connection screen is always dark, whatever theme the panel left behind. Main paints the
+  // corner itself as that page starts loading, so it never depends on the page asking.
+  panel.webContents.on("did-start-navigation", (_e, url, isInPlace, isMainFrame) => {
+    if (isMainFrame && !isInPlace && url.startsWith(FIRST_RUN_URL)) paintTitleBar("dark");
   });
   app.once("will-quit", () => {
     ipcMain.removeAllListeners("desktop:attention");

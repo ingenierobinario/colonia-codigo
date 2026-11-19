@@ -63,6 +63,10 @@ declare global {
       /** `intent` "move": they already use Colonia on another computer, so its setup opens on bringing their things. */
       local(access: "none" | "lan" | "tailscale", intent?: "move"): Promise<ConnectAnswer>;
       url(url: string): Promise<ConnectAnswer>;
+      /** Whether "Change connection" left a Colonia to go back to. Missing in older builds. */
+      previous?(): Promise<boolean>;
+      /** Back to that Colonia, as if "Change connection" had not been pressed. */
+      back?(): Promise<ConnectAnswer>;
       ssh(target: string): Promise<ConnectAnswer>;
       /** Installs Colonia on that server over SSH (this app's version), then connects to it. */
       installSsh(target: string): Promise<ConnectAnswer>;
