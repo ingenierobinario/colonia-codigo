@@ -19,6 +19,7 @@ import { previewOf } from "../domain/threads.ts";
 import type { Nudges } from "../engine/nudges.ts";
 import { badRequest, CallError, errorMessage, notFound } from "../errors.ts";
 import type { Handlers } from "./router.ts";
+import { attachedFiles } from "./threads.ts";
 
 /** How long a send waits for the platform's answer before saying it is still queued (the tools have 15 s). */
 const SETTLE_MS = 8_000;
@@ -62,10 +63,11 @@ export function channelHandlers(store: Store, channels: Channels, nudges: Pick<N
       const config = channel ? { ...channel, label: channel.label || defaultLabel(channel.type) } : null;
       return { channels: await channels.set(id, config, token) };
     },
-    "channels.send": ({ thread, text, omit_signature }) => {
+    "channels.send": ({ thread, text, attachments, omit_signature }) => {
       if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
       try {
-        channels.sendAsOwner(thread, text, { omit_signature });
+        const files = attachedFiles(store, thread, attachments ?? []).map((f) => f.media_id);
+        channels.sendAsOwner(thread, text, { omit_signature, files });
       } catch (err) {
         throw badRequest(errorMessage(err));
       }

@@ -30,7 +30,7 @@ export function createPoster(store: Store, delivery: Pick<ReturnType<typeof crea
   }
 
   /** Kept in the chat (and, `logged`, in what its agent reads), then sent through the outbox; returns its item's id. */
-  function post(
+  function postWithMessage(
     thread: Thread,
     channel: string,
     conversation: string,
@@ -39,12 +39,13 @@ export function createPoster(store: Store, delivery: Pick<ReturnType<typeof crea
       by?: string | undefined;
       files?: string[] | undefined;
       logged: boolean;
+      ownerNote?: string;
       mentions?: Presentation["mentions"];
       omit_signature?: boolean | undefined;
       /** Arrives without sound (the owner's quiet hours). */
       silent?: boolean | undefined;
     },
-  ): string {
+  ) {
     const files = (o.files ?? []).map((id) => {
       const m = store.media.get(id);
       if (!m) throw new Error(`no file ${id}`);
@@ -63,11 +64,12 @@ export function createPoster(store: Store, delivery: Pick<ReturnType<typeof crea
           ),
         ],
       });
+      if (o.ownerNote) store.modelLog.append(thread.id, undefined, [{ role: "user", content: o.ownerNote }]);
       if (o.logged) store.modelLog.append(thread.id, undefined, [{ role: "assistant", content: text }]);
       store.threads.patch(thread.id, { preview: previewOf(text) });
       return m;
     });
-    return delivery.enqueue({
+    const outbox = delivery.enqueue({
       channel,
       conversation,
       thread_id: thread.id,
@@ -90,7 +92,9 @@ export function createPoster(store: Store, delivery: Pick<ReturnType<typeof crea
           : {}),
       },
     });
+    return { outbox, message_id: sent.id };
   }
 
-  return { post, recentOf };
+  const post = (...args: Parameters<typeof postWithMessage>) => postWithMessage(...args).outbox;
+  return { post, postWithMessage, recentOf };
 }

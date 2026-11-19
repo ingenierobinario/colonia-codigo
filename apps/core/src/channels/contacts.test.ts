@@ -509,6 +509,26 @@ test("a file from the folder the agent works in goes with the message, as a docu
   assert.equal(tg.filesTo(MAG.id).length, 1);
 });
 
+test("una imagen sin texto llega al contacto de Telegram y un adjunto de otro chat se rechaza", async () => {
+  const file = {
+    name: "captura.png",
+    mime: "image/png",
+    data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aA8sAAAAASUVORK5CYII=",
+  };
+  const wrong = await env.client.call("media.upload", { ...file, thread: "home" });
+  await assert.rejects(
+    env.client.call("channels.send", { thread, text: "", attachments: [wrong.media.id] }),
+    /no attachment/,
+  );
+  const { media } = await env.client.call("media.upload", { ...file, thread });
+  const previous = tg.filesTo(MAG.id).length;
+  await env.client.call("channels.send", { thread, text: "", attachments: [media.id] });
+  await waitFor(() => tg.filesTo(MAG.id).length > previous, "photo");
+  assert.equal(tg.filesTo(MAG.id).at(-1)?.method, "sendPhoto");
+  const last = (await env.client.call("threads.get", { thread })).messages.at(-1);
+  assert.ok(last?.parts.some((p) => p.type === "image" && p.media_id === media.id));
+});
+
 test("the owner's agent can look up contacts and routines, read only", async () => {
   await env.client.call("threads.send", { thread: "home", text: "who are my contacts?" });
   await env.settle("home");

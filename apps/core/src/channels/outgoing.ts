@@ -4,10 +4,8 @@ import type { ChannelInfo, OutboxItem } from "@colonia/protocol";
 import { quietNow } from "../domain/notices.ts";
 import { HOME_THREAD_ID } from "../domain/seed.ts";
 import type { Store } from "../domain/store.ts";
-import { previewOf } from "../domain/threads.ts";
 import { audienceOf } from "../engine/audience.ts";
 import type { Services } from "../services/registry.ts";
-import type { createDelivery } from "./delivery.ts";
 import type { createPoster, Posted } from "./post.ts";
 import { type createRooms, quietMentions, roomMentions } from "./rooms.ts";
 import type { ChannelAdapter, ChannelConfig, Presence } from "./types.ts";
@@ -20,12 +18,11 @@ export function createOutgoing(deps: {
   configs: () => ChannelConfig[];
   /** A channel's running adapter, when it has one. */
   live: (id: string) => { adapter: ChannelAdapter; status: ChannelInfo["status"] } | undefined;
-  delivery: Pick<ReturnType<typeof createDelivery>, "enqueue">;
   poster: ReturnType<typeof createPoster>;
   rooms: Pick<ReturnType<typeof createRooms>, "thread">;
   services: Pick<Services, "keep">;
 }) {
-  const { store, configs, delivery, rooms } = deps;
+  const { store, configs, rooms } = deps;
   const { post, recentOf } = deps.poster;
 
   /**
@@ -36,40 +33,24 @@ export function createOutgoing(deps: {
   function sendAsOwner(
     threadId: string,
     text: string,
-    options: { omit_signature?: boolean | undefined } = {},
+    options: { omit_signature?: boolean | undefined; files?: string[] } = {},
   ): { outbox: string; message_id: string } | undefined {
     const thread = store.threads.get(threadId);
     const ch = thread?.channel;
     // In a room the owner's words go out as they are, through the bot's account (it is the only one Colonia has there).
     if (thread && ch && store.threads.context(threadId).room) {
       const named = roomMentions(quietMentions(text), store.channels.inbox.people(ch.id, ch.conversation));
-      post(thread, ch.id, ch.conversation, named.text, { logged: false, mentions: named.mentions });
+      post(thread, ch.id, ch.conversation, named.text, { ...options, logged: false, mentions: named.mentions });
       return undefined;
     }
     if (!thread || !ch?.person_id || audienceOf(store, thread).kind !== "contact")
       throw new Error("only a contact's chat on a channel can be written to directly");
     const name = audienceOf(store, thread).kind === "contact" ? (store.persons.get(ch.person_id)?.name ?? "them") : "";
-    const sent = store.tx(() => {
-      const m = store.messages.add({
-        thread_id: threadId,
-        author: { kind: "user", direct: true },
-        parts: [{ type: "text", text }],
-      });
-      store.modelLog.append(threadId, undefined, [
-        { role: "user", content: `[Your owner wrote to ${name} directly in this chat:]\n${text}` },
-      ]);
-      store.threads.patch(threadId, { preview: previewOf(text) });
-      return m;
+    return deps.poster.postWithMessage(thread, ch.id, ch.conversation, text, {
+      ...options,
+      logged: false,
+      ownerNote: `[Your owner wrote to ${name} directly in this chat:]\n${text}`,
     });
-    const outbox = delivery.enqueue({
-      channel: ch.id,
-      conversation: ch.conversation,
-      thread_id: threadId,
-      message_id: sent.id,
-      kind: "reply",
-      body: { text, ...(options.omit_signature !== undefined ? { omit_signature: options.omit_signature } : {}) },
-    });
-    return { outbox, message_id: sent.id };
   }
 
   /**

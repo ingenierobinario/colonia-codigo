@@ -1302,8 +1302,14 @@ export const appMethods = {
    */
   "channels.send": {
     params: z
-      .object({ thread: Id, text: z.string().trim().min(1).max(4000), omit_signature: z.boolean().optional() })
-      .strict(),
+      .object({
+        thread: Id,
+        text: z.string().trim().max(4000),
+        attachments: z.array(Id).min(1).max(8).optional(),
+        omit_signature: z.boolean().optional(),
+      })
+      .strict()
+      .refine((p) => !!p.text || !!p.attachments?.length, "A message needs text or an attachment"),
     result: z.object({ ok: z.literal(true) }),
     effect: true,
     access: "human",

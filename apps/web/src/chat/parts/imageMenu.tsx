@@ -48,7 +48,8 @@ async function save(src: string, name: string): Promise<void> {
  * The clipboard takes PNG everywhere, so other formats are redrawn as PNG first. It gets a promise, written right
  * away, so the click still counts as the user's gesture while the image loads.
  */
-function copyImage(src: string): Promise<void> {
+async function copyImage(src: string): Promise<void> {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw new Error("Clipboard unavailable");
   const png = fetch(src)
     .then((r) => r.blob())
     .then((blob) =>

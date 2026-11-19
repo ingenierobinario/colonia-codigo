@@ -173,7 +173,6 @@ export function createChannels(deps: {
     store,
     configs,
     live: (id) => live.get(id),
-    delivery,
     poster,
     rooms,
     services: deps.services,

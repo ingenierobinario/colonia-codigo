@@ -119,6 +119,29 @@ test("a contact's video plays in the chat's own player, and a document of any ty
   await expect(page.getByText(/cannot read this kind/)).toHaveCount(0);
 });
 
+test("pegar una captura en WhatsApp permite revisarla y enviarla sin texto", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).first().click();
+  await page.getByRole("button", { name: /Lucía/ }).first().click();
+  const composer = page.locator(".chan__composer");
+  await composer.getByText("Escribo yo", { exact: true }).click();
+  await composer.locator("textarea").evaluate((input) => {
+    const data = new DataTransfer();
+    const bytes = Uint8Array.from(
+      atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aA8sAAAAASUVORK5CYII="),
+      (c) => c.charCodeAt(0),
+    );
+    data.items.add(new File([bytes], "captura.png", { type: "image/png" }));
+    input.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  await expect(composer.getByText("captura.png")).toBeVisible();
+  const send = composer.getByRole("button", { name: "Enviar", exact: true });
+  await expect(send).toBeEnabled();
+  await send.click();
+  await expect(composer.getByText("captura.png")).toHaveCount(0);
+  await expect(page.locator(".chan__bubble.is-out img").last()).toBeVisible();
+});
+
 test("a video kept only as a placeholder: 'Recover files' asks the phone again and it plays in the chat", async ({
   page,
 }) => {

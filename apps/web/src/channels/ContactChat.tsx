@@ -20,6 +20,7 @@ export function ContactChat({ thread }: { thread: Thread }) {
   return (
     <section className={`chan chan--single has-chat${card && person ? " has-card" : ""}`} aria-label={channel.label}>
       <ChannelConversation
+        key={thread.id}
         thread={thread}
         person={person}
         presence={undefined}

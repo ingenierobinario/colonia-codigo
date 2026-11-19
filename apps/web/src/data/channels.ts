@@ -261,9 +261,9 @@ export async function saveContact(id: string, draft: ContactDraft): Promise<bool
 }
 
 /** The owner writes to the contact themselves, in that contact's chat. */
-export async function sendDirect(thread: string, text: string): Promise<boolean> {
+export async function sendDirect(thread: string, text: string, attachments: string[] = []): Promise<boolean> {
   try {
-    await client.call("channels.send", { thread, text });
+    await client.call("channels.send", { thread, text, ...(attachments.length ? { attachments } : {}) });
     return true;
   } catch (e) {
     notify(t("error.channels", { error: errText(e) }));
