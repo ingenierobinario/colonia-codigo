@@ -50,8 +50,8 @@ test("exportar→importar con reemplazo sobre el mismo proyecto es idempotente y
     writePackage(root, buildPackage(root, { name: "P" }, new Date()).pkg);
     seen.push(fs.readFileSync(path.join(root, "AGENTS.md"), "utf8"));
   }
-  assert.doesNotMatch(seen[2]!, /REGLA-CLAUDE/);
-  assert.match(seen[2]!, /REGLA-AGENTS/);
+  assert.doesNotMatch((seen[2] ?? ""), /REGLA-CLAUDE/);
+  assert.match((seen[2] ?? ""), /REGLA-AGENTS/);
   assert.equal(seen[0], seen[2]);
   assert.equal(fs.readFileSync(path.join(root, "CLAUDE.md"), "utf8"), "# Claude\nREGLA-CLAUDE\n");
 });
@@ -64,6 +64,6 @@ test("sin AGENTS.md el CLAUDE.md sigue viajando, y el segundo ciclo no lo duplic
     writePackage(root, buildPackage(root, { name: "P" }, new Date()).pkg);
     seen.push(fs.readFileSync(path.join(root, "AGENTS.md"), "utf8"));
   }
-  assert.equal(seen[2]!.split("REGLA-CLAUDE").length - 1, 1);
+  assert.equal((seen[2] ?? "").split("REGLA-CLAUDE").length - 1, 1);
   assert.equal(seen[1], seen[2]);
 });

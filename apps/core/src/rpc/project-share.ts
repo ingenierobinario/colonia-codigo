@@ -186,7 +186,8 @@ export function buildPackage(
   // AGENTES-NATIVOS-1 · Sin AGENTS.md, el CLAUDE.md (y los de otras apps) viaja fundido: quien importa solo recibe AGENTS.md.
   // EXPORTAR-IDEMPOTENTE-1 · Con AGENTS.md viaja solo él: el paquete se vuelca en AGENTS.md, y fundir CLAUDE.md lo
   // duplicaría en cada exportar→importar sobre el mismo proyecto.
-  const ownInstructions = fileText("AGENTS.md");
+  // Un AGENTS.md vacío o en blanco no cuenta: si no, taparía el CLAUDE.md y el paquete viajaría sin instrucciones.
+  const ownInstructions = fileText("AGENTS.md")?.trim() ? fileText("AGENTS.md") : undefined;
   const instructions = clean(
     ownInstructions ??
       projectInstructions((f) => (isLink(path.join(root, path.dirname(f))) ? undefined : fileText(f)), root) ??
