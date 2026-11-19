@@ -9,6 +9,7 @@ import {
   Icons,
   Input,
   IntegrationIcon,
+  integrationBrand,
   MasterDetail,
   PickRow,
   SegmentedControl,
@@ -22,9 +23,12 @@ import { loadMarks } from "../data/models.ts";
 import { notify } from "../data/notices.ts";
 import { signInMcp } from "../data/resources.ts";
 import { useData } from "../data/state.ts";
-import { isKey, useT } from "../i18n/index.ts";
+import { isKey, useLanguage, useT } from "../i18n/index.ts";
 import { CalendarReminders } from "./CalendarReminders.tsx";
+import { ConnectorLogo } from "./ConnectorLogo.tsx";
+import { catalogConnector } from "./connectorDirectory.ts";
 import { GoogleSignInForm } from "./GoogleSignIn.tsx";
+import { STATUS_KEY } from "./labels.ts";
 import { MailCheck } from "./MailCheck.tsx";
 import type { TabProps } from "./ResourcesView.tsx";
 
@@ -52,8 +56,9 @@ function Tile({ i, size = 32 }: { i: Pick<Integration, "id" | "label">; size?: n
  * Integrations: an account connected once (GitHub, Notion, Slack…) that brings its MCP server and the variables it
  * needs. The list holds the connected ones; each says where it is used, project by project.
  */
-export function IntegrationsTab({ projectId, query, scope, adding, setAdding }: TabProps) {
+export function IntegrationsTab({ projectId, query, scope, adding, setAdding, res }: TabProps) {
   const t = useT();
+  const lang = useLanguage();
   const all = useData((s) => s.projects);
   const projects = useMemo(() => all.filter((p) => p.path && p.registered !== false), [all]);
   const [list, setList] = useState<Integration[]>();
@@ -75,7 +80,7 @@ export function IntegrationsTab({ projectId, query, scope, adding, setAdding }: 
   const toggle = async (id: string, project: string, on: boolean) => {
     try {
       await client.call("mcp.toggle", { project, server: id, on });
-      await load();
+      await Promise.all([load(), res.loadServers()]);
     } catch (e) {
       notify(t("error.change", { error: errText(e) }));
     }
@@ -97,11 +102,16 @@ export function IntegrationsTab({ projectId, query, scope, adding, setAdding }: 
       }}
     />
   );
+  const extraServers = (res.data.servers ?? []).filter((s) => {
+    if (s.scope === "global" && !s.only && list?.some((i) => i.connected && i.id === s.name)) return false;
+    const label = catalogConnector(s.name)?.name ?? s.name;
+    return !query || (label + " " + s.name).toLowerCase().includes(query);
+  });
   // Inside a project: its integrations, each on or off here.
   if (projectId)
     return (
       <div className="resvars">
-        {!connected.length ? (
+        {!connected.length && !extraServers.length ? (
           <EmptyState variant="dashed" icon={<Icons.Plug />}>
             {t("int.noneHere")}
           </EmptyState>
@@ -122,6 +132,34 @@ export function IntegrationsTab({ projectId, query, scope, adding, setAdding }: 
                 />
               </div>
             ))}
+            {extraServers.map((s) => {
+              const entry = catalogConnector(s.name);
+              const label = entry?.name ?? s.name;
+              return (
+                <div className="int__row" key={`${s.scope}:${s.name}`}>
+                  {entry && !integrationBrand(entry.id) ? (
+                    <ConnectorLogo domain={entry.domain} size={32} />
+                  ) : (
+                    <IntegrationIcon id={entry?.id ?? s.name} name={label} size={32} />
+                  )}
+                  <span className="int__rowmain">
+                    <b>{label}</b>
+                    <span>
+                      {entry ? entry.desc[lang === "es" ? 0 : 1] + " · " : ""}
+                      {t(STATUS_KEY[s.status])}
+                    </span>
+                  </span>
+                  {s.scope === "global" && !s.only && (
+                    <Switch
+                      size="sm"
+                      aria-label={label}
+                      checked={!s.off_here}
+                      onCheckedChange={(on) => void toggle(s.name, projectId, on)}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
         {dialog}

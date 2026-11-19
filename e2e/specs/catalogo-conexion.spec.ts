@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { expect, rpc, test } from "./kit.ts";
+import { expect, rpc, test, world } from "./kit.ts";
 
 test("el catálogo permite completar una conexión pendiente sin reemplazar su configuración", async ({ page }) => {
   test.setTimeout(60000);
@@ -40,5 +40,27 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
   } finally {
     await rpc("mcp.set", { name: "metaads", server: null });
     await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("Meta Ads heredado aparece una vez en Integraciones del proyecto con el logo de Meta", async ({ page }) => {
+  await rpc("setup.finish");
+  const { repo } = await world.info();
+  const { project } = await rpc<{ project: { id: string } }>("projects.register", { path: repo });
+  await rpc("mcp.set", { name: "meta-ads", server: { url: "https://example.invalid/mcp" } });
+  try {
+    await page.goto(`/#project=${project.id}&tab=resources`);
+    await page.getByRole("radio", { name: /^Integraciones/ }).click();
+    const row = page.locator(".int__row").filter({ has: page.getByText("Meta Ads", { exact: true }) });
+    await expect(row).toHaveCount(1);
+    await expect(row.locator(".colonia-intmark svg path").first()).toBeAttached();
+    const enabled = row.getByRole("switch");
+    await expect(enabled).toBeChecked();
+    await enabled.click();
+    await expect(enabled).not.toBeChecked();
+    await enabled.click();
+    await expect(enabled).toBeChecked();
+  } finally {
+    await rpc("mcp.set", { name: "meta-ads", server: null });
   }
 });
