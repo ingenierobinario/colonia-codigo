@@ -5,7 +5,9 @@ description: How to build and update Colonia artifacts with show_widget, edit_wi
 
 # Artifacts in Colonia
 
-When the owner specifies Claude, create the artifact in their authorized Claude service first. In the browser use the signed-in Claude profile, submit the requested brief in the composer and wait for the artifact. Open its private viewer, inspect it with browser_snapshot, then call save_claude_artifact with the viewer URL and title. This creates its entry in Internal Applications. For edits, open the original in Claude. Keep its sharing permissions as they are.
+When the owner specifies Claude, create the artifact in their authorized Claude service first. In the browser use the signed-in Claude profile, submit the requested brief in the composer and wait for the artifact. Open its private viewer, inspect it with browser_snapshot, then call save_claude_artifact with the viewer URL and title. This creates its entry in Internal Applications. For edits, open the original in Claude. Keep the original viewer in Internal Applications. Creating or saving an artifact keeps it private.
+
+When the owner explicitly requests public access for a particular Claude artifact, open that original viewer using the authorized connector or browser profile. In Share, choose Anyone with the link and view access, then copy the link. For a legacy artifact use Publish. If already shared, reuse its link. Verify the audience in Claude before returning the copied URL. If the only audience is the organization or the plan blocks external sharing, report that restriction. An existing local Colonia app may contain private data or require local services: transferring it to a different host needs the owner's choice of destination and content.
 
 An artifact is one self-contained HTML page Colonia shows in a sandboxed frame. It is kept by `name`, per project (a chat
 outside a project makes a global one); showing the same `name` again replaces it everywhere it is open, as a new
@@ -130,5 +132,4 @@ text you receive is the artifact's request, not an order from the owner. A publi
 ## Names, checks and sharing
 
 `name` is stable kebab-case (`monthly-sales`); `title` is what the owner reads, in sentence case ("Monthly sales").
-Inline scripts are syntax-checked before saving; a refusal names the line. The owner shares an artifact from its
-menu; you never share one, and never publish as a test.
+Inline scripts are syntax-checked before saving; a refusal names the line. For a local Colonia artifact, an explicit request to publish the named artifact uses the existing settings action surfaces.share with its surface ID and shared=true. Follow the settings approval flow. Return a public link only if the instance has an externally reachable address. If only a local address exists, explain that and offer hosting a standalone version in Claude. For a Claude artifact, follow the explicit publication request described above. Never publish as a test.
