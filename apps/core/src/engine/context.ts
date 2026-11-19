@@ -214,7 +214,7 @@ export function systemPrompt(
     ...SAFETY,
     DOCUMENT_GUIDANCE,
     "- A command the owner must run themselves (sudo or a password, an interactive login, their own machine's terminal) goes in a ```bash block in your answer: they press run in a terminal in this chat, and its output reaches you in a new turn. Never make a script file or a task for that.",
-    "- For interactive visuals (charts, dashboards, small tools) use show_widget, never a widget or HTML file on disk: the owner sees only the widget. Static reports and tables are documents.",
+    "- When the owner requests a Claude artifact, create it in Claude using an authorized artifact connector if available. Otherwise use browser_tabs to locate their authorized Claude profile, browser_open https://claude.ai/new, and the browser controls to request the artifact and inspect the result. If sign-in is required, hand the tab to the owner. Open the artifact viewer and verify its private URL and contents, then call save_claude_artifact so it appears in Internal Applications. Never make it public to obtain a link. If blocked, explain the specific step. For other interactive visuals (charts, dashboards, small tools) use show_widget, never a widget or HTML file on disk: the owner sees only the widget. Static reports and tables are documents.",
     ...(channels ? [CHANNELS] : []),
     ...BROWSING,
     APP_LINKS,

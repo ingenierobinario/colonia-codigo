@@ -3,6 +3,8 @@
 import { randomUUID } from "node:crypto";
 import {
   ArtifactOrigin,
+  BrowserProfile,
+  linkedClaudeArtifact,
   SURFACE_STATE_MAX,
   type Surface,
   SurfaceOrigin,
@@ -71,7 +73,12 @@ const inScope = (projectId: string | undefined) => (eb: ExpressionBuilder<Databa
 const named = (projectId: string | undefined, name: string) => (eb: ExpressionBuilder<Database, "surfaces">) =>
   eb.and([inScope(projectId)(eb), eb("name", "=", name)]);
 
-export const summary = ({ html: _html, state: _state, ...rest }: Surface): SurfaceSummary => rest;
+export const summary = ({ html, state: _state, ...rest }: Surface): SurfaceSummary => {
+  const url = linkedClaudeArtifact(html);
+  if (!url) return rest;
+  const profile = BrowserProfile.safeParse(_state?.claude_profile);
+  return { ...rest, claude_artifact_url: url, ...(profile.success ? { claude_artifact_profile: profile.data } : {}) };
+};
 
 export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
   const emit = (s: Surface) => bus.emit({ type: "surface.updated", surface: summary(s) });
@@ -232,6 +239,8 @@ export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
           .set({ state: json === "{}" ? null : json })
           .where("id", "=", cur.id),
       );
+      if (next.claude_profile !== cur.state?.claude_profile && linkedClaudeArtifact(cur.html))
+        emit({ ...cur, state: next });
       bus.emit({ type: "surface.state", surface_id: cur.id, state: next });
       return next;
     },

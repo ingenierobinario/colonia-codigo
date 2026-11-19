@@ -1,6 +1,7 @@
 // show_widget / read_widget / edit_widget: the agent makes a widget, reads it back and changes a piece of it; pinned,
 // it lives on its project's board; it can also be an app. Every change shows live wherever the widget is open.
-import { SurfaceOrigin, type SurfaceSummary } from "@colonia/protocol";
+import { createHash } from "node:crypto";
+import { claudeArtifactPage, claudeArtifactUrl, SurfaceOrigin, type SurfaceSummary } from "@colonia/protocol";
 import { z } from "zod";
 import { memorySummary } from "../domain/artifact-memory.ts";
 import type { Store } from "../domain/store.ts";
@@ -43,6 +44,44 @@ export function card(ctx: ToolContext, surface: SurfaceSummary) {
 export function surfaceTools(store: Store, home: string): Tool[] {
   const find = (ctx: ToolContext, name: string) => store.surfaces.byName(ctx.thread.project_id, slug(name));
   return [
+    defineTool({
+      name: "save_claude_artifact",
+      description:
+        "Save a Claude-hosted artifact in this project's Internal Applications. First create the actual artifact with an authorized Claude connector or in the signed-in Claude web interface and verify its private artifact viewer link. Use the link Claude returned, never invent an ID. This saves the original link without republishing or copying the content.",
+      args: z.object({ url: z.string().max(2048), title: z.string().trim().min(1).max(120) }),
+      effect: "local",
+      deadlineMs: 10000,
+      title: () => "Guardar el artefacto de Claude en aplicaciones internas",
+      async run(a, ctx) {
+        const url = claudeArtifactUrl(a.url);
+        if (!url) throw new Error("Abre el artefacto en Claude y usa su enlace propio.");
+        const seen = store.messages
+          .list(ctx.thread.id, 40)
+          .filter((m) => m.author.kind === "agent")
+          .flatMap((m) => m.parts)
+          .findLast((p) => p.type === "browser" && claudeArtifactUrl(p.url) === url);
+        if (!seen)
+          throw new Error("Abre el enlace en el navegador de este chat y comprueba el artefacto antes de guardarlo.");
+        const html = claudeArtifactPage(url);
+        const name = "claude-" + createHash("sha256").update(url).digest("hex").slice(0, 32);
+        const existing = find(ctx, name);
+        if (existing && existing.html !== html) throw new Error("Otra aplicación ya utiliza este identificador.");
+        const surface =
+          existing?.app && existing.title === a.title
+            ? existing
+            : await ctx.call("surfaces.show", {
+                thread: ctx.thread.id,
+                name,
+                title: a.title,
+                html,
+                app: true,
+              });
+        if (seen.type === "browser" && seen.profile && existing?.state?.claude_profile !== seen.profile)
+          await ctx.call("surfaces.set_state", { surface: surface.id, patch: { claude_profile: seen.profile } });
+        card(ctx, surface);
+        return "Guardado en Aplicaciones internas: " + url;
+      },
+    }),
     defineTool({
       name: "show_widget",
       description:

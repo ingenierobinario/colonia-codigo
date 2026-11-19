@@ -5,6 +5,8 @@ description: How to build and update Colonia artifacts with show_widget, edit_wi
 
 # Artifacts in Colonia
 
+When the owner specifies Claude, create the artifact in their authorized Claude service first. In the browser use the signed-in Claude profile, submit the requested brief in the composer and wait for the artifact. Open its private viewer, inspect it with browser_snapshot, then call save_claude_artifact with the viewer URL and title. This creates its entry in Internal Applications. For edits, open the original in Claude. Keep its sharing permissions as they are.
+
 An artifact is one self-contained HTML page Colonia shows in a sandboxed frame. It is kept by `name`, per project (a chat
 outside a project makes a global one); showing the same `name` again replaces it everywhere it is open, as a new
 version. Two kinds:

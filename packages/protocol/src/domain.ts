@@ -1,5 +1,7 @@
 // Domain shapes every client renders. Run states follow A2A task states so an A2A adapter stays thin.
+
 import { z } from "zod";
+import { BrowserProfile } from "./browser.ts";
 import { NEGATIVE_PROMPT_MAX, PERSON_RELATIONS } from "./constants.ts";
 
 export const Id = z.string().min(1).max(128);
@@ -578,6 +580,7 @@ const KnownPart = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("browser"),
     environment: z.literal("vm").optional(),
+    profile: BrowserProfile.optional(),
     tab: z.string(),
     url: z.string(),
     title: z.string(),
@@ -1625,7 +1628,10 @@ export const Surface = z.object({
   origin: ArtifactOrigin.optional(),
 });
 export type Surface = z.infer<typeof Surface>;
-export const SurfaceSummary = Surface.omit({ html: true, state: true });
+export const SurfaceSummary = Surface.omit({ html: true, state: true }).extend({
+  claude_artifact_url: z.string().optional(),
+  claude_artifact_profile: BrowserProfile.optional(),
+});
 export type SurfaceSummary = z.infer<typeof SurfaceSummary>;
 
 /** Most an artifact's store (Colonia.store) may hold, as JSON bytes of every value together. */

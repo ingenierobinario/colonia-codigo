@@ -1,8 +1,11 @@
+import { type BrowserProfile, claudeArtifactUrl } from "@colonia/protocol";
 import { AgentAvatar, Button, EmptyState, IconButton, Icons, Menu } from "@colonia/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { browserOpen, loadTabs } from "../data/actions.ts";
 import { blobOf, projectName } from "../data/identity.ts";
-import { useData } from "../data/state.ts";
+import { data, useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
+import { BrowserViewport } from "../panel/BrowserViewport.tsx";
 import { nav, useNav } from "../shell/nav.ts";
 import { ArtifactMemoryButton } from "../surfaces/ArtifactMemory.tsx";
 import { ArtifactPropertiesDialog } from "../surfaces/ArtifactProperties.tsx";
@@ -70,14 +73,18 @@ export function AppScreen() {
         >
           {t("widget.chatShort")}
         </Button>
-        <ShareMenu surface={app} />
-        <ArtifactMemoryButton surface={app} />
-        <IconButton
-          size="sm"
-          label={t("artifact.openWindow")}
-          icon={<Icons.ExternalLink size={14} />}
-          onClick={() => popOut(app)}
-        />
+        {!app.claude_artifact_url && (
+          <>
+            <ShareMenu surface={app} />
+            <ArtifactMemoryButton surface={app} />
+            <IconButton
+              size="sm"
+              label={t("artifact.openWindow")}
+              icon={<Icons.ExternalLink size={14} />}
+              onClick={() => popOut(app)}
+            />
+          </>
+        )}
         <Menu
           align="end"
           items={[
@@ -101,8 +108,15 @@ export function AppScreen() {
         )}
       </header>
       {props && <ArtifactPropertiesDialog surface={app} onClose={() => setProps(false)} />}
-      <div className="appscreen__body">
-        {outside ? (
+      <div className={app.claude_artifact_url ? "appscreen__body appscreen__body--claude" : "appscreen__body"}>
+        {app.claude_artifact_url ? (
+          <ClaudeArtifactView
+            key={app.id}
+            url={app.claude_artifact_url}
+            title={app.title}
+            profile={app.claude_artifact_profile}
+          />
+        ) : outside ? (
           <EmptyState
             size="lg"
             icon={<Icons.ExternalLink />}
@@ -121,5 +135,55 @@ export function AppScreen() {
         )}
       </div>
     </section>
+  );
+}
+
+/** Electron draws the private viewer in its browser; the web panel opens it in the owner's browser session. */
+function ClaudeArtifactView({
+  url,
+  title,
+  profile,
+}: {
+  url: string;
+  title: string;
+  profile: BrowserProfile | undefined;
+}) {
+  const t = useT();
+  const [tab, setTab] = useState<string>();
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!window.coloniaDesktop) return;
+    let active = true;
+    void (async () => {
+      await loadTabs();
+      if (!active) return;
+      const existing = data
+        .get()
+        .tabs.find(
+          (item) => !item.error && (!profile || item.profile === profile) && claudeArtifactUrl(item.url) === url,
+        );
+      const id = existing?.tab ?? (await browserOpen(url, profile));
+      if (!active) return;
+      if (id) {
+        window.coloniaDesktop?.showBrowserTab?.(id);
+        setTab(id);
+      } else setFailed(true);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [url, profile]);
+  if (tab) return <BrowserViewport tab={tab} />;
+  if (window.coloniaDesktop && !failed) return <div role="status">{title}</div>;
+  return (
+    <EmptyState
+      icon={<Icons.ExternalLink />}
+      title={title}
+      action={
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          {t("app.openClaudeArtifact")}
+        </a>
+      }
+    />
   );
 }

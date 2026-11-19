@@ -43,7 +43,7 @@ export function toolRisk(tool: Tool): ToolRisk {
 /** Names an agent's `tools:` list may use instead of single tools. */
 const GROUPS: Record<string, (name: string) => boolean> = {
   browser: (n) => n.startsWith("browser_"),
-  widgets: (n) => n.endsWith("_widget"),
+  widgets: (n) => n.endsWith("_widget") || n === "save_claude_artifact",
   agents: (n) => n === "list_agents" || n === "delegate" || n === "grant_tool" || n === "agent_set",
   shell: (n) => n.startsWith("shell"),
   files: (n) => n.startsWith("file_") || n === "send_file" || n === "open_document",

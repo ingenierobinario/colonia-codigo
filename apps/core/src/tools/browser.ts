@@ -1,7 +1,7 @@
 // Browser tools: the agent drives the embedded browser through the desktop node, in its own profile and tabs.
 // Every call goes through the router (browser.* methods), the same door the panel uses.
 import { setTimeout } from "node:timers/promises";
-import { BROWSER_CAP, type TabInfo } from "@colonia/protocol";
+import { BROWSER_CAP, claudeArtifactUrl, type TabInfo } from "@colonia/protocol";
 import { z } from "zod";
 import type { AgentRecord } from "../domain/agents.ts";
 import type { Store } from "../domain/store.ts";
@@ -75,6 +75,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       type: "browser",
       ...(vm?.hasThread(ctx.thread.id) ? { environment: "vm" as const } : {}),
       tab,
+      ...(t && claudeArtifactUrl(t.url) ? { profile: t.profile } : {}),
       url: t?.url ?? "",
       title: t?.title ?? "",
       state,
@@ -172,6 +173,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         const tab = await own(ctx, a.tab);
         if (a.wait_s) await setTimeout(a.wait_s * 1000, undefined, { signal: ctx.signal });
         const r = await ctx.call("browser.snapshot", { tab, max_chars: 12_000 });
+        if (claudeArtifactUrl(r.url)) await card(ctx, tab, "agent");
         await look(ctx, tab);
         return untrusted("web_snapshot", { tab, ...(r.document ? { document: r.document } : {}) }, cap(r.tree));
       },

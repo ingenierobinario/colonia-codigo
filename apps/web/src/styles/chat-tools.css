@@ -92,6 +92,11 @@
   padding: 0;
 }
 
+.appscreen__body--claude {
+  display: flex;
+  flex-direction: column;
+}
+
 /* System notices in a turn (interrupted, fallback engine, no answer): quiet, never styled as the agent's words. */
 .notice {
   font-size: calc(12.5px * var(--colonia-text-scale, 1));

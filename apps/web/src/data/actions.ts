@@ -1,5 +1,5 @@
 // Every write the panel makes. Components call these; they never call the client directly.
-import type { ApprovalScope, Message, Part, SurfaceState, Thread } from "@colonia/protocol";
+import type { ApprovalScope, BrowserProfile, Message, Part, SurfaceState, Thread } from "@colonia/protocol";
 import { ColoniaError, secureRequestKey } from "@colonia/protocol/client";
 import { computersOf, NO_COMPUTERS } from "../computers/summary.ts";
 import { t } from "../i18n/index.ts";
@@ -483,7 +483,7 @@ export async function browserHistory(tab: string, action: "back" | "forward" | "
   }
 }
 
-export async function browserOpen(url: string, profile?: `nav:${string}`): Promise<string | undefined> {
+export async function browserOpen(url: string, profile?: BrowserProfile): Promise<string | undefined> {
   if (isColoniaItself(url)) {
     notify(t("browser.isColonia"));
     return undefined;

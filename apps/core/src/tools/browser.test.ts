@@ -25,12 +25,28 @@ const BROWSE: Array<[string, object[]]> = [
 
 /** The model the scripted calls report: one that reads images unless a test says otherwise. */
 let model = "fake/gpt-4o";
+const fixtureArtifact = "https://claude.ai/artifacts/monitor-12345678";
+let createdArtifact = false;
 const profiles: string[] = [];
 /** What the last browser_tabs call returned to the model. */
 let toolSaid = "";
 let requestedFile: { path: string; sha256: string } | undefined;
 const llm = scriptedLlm((req, { said, afterTool }) => {
   const looks = req.messages.filter((m) => m.role === "tool").length;
+  if (said === "crear el monitor en Claude") {
+    const tab = tabs.find((t) => t.title === "Claude de prueba")?.tab;
+    const steps = [
+      ["browser_open", { url: "https://claude.ai/new", new_tab: true }],
+      ["browser_snapshot", { tab }],
+      ["browser_type", { tab, ref: "e1", text: "Crea un artefacto privado para el monitor", submit: true }],
+      ["browser_snapshot", { tab }],
+      ["browser_click", { tab, ref: "e2" }],
+      ["browser_snapshot", { tab }],
+      ["save_claude_artifact", { title: "Monitor de prueba", url: fixtureArtifact }],
+    ] as const;
+    const step = steps[looks];
+    if (step) return { ...callTool("artifact" + looks, step[0], step[1]), model };
+  }
   if (said.includes("look six times") && looks < 6)
     return { ...callTool(`l${looks}`, "browser_snapshot", { tab: "t1" }), model };
   if (said.includes("list my browsers")) {
@@ -109,6 +125,7 @@ before(async () => {
       opened.push(url);
       profiles.push(profile);
       const t = { tab: `t${tabs.length + 1}`, url, title: "Page", profile, control: { kind: "idle" } };
+      if (url === "https://claude.ai/new") t.title = "Claude de prueba";
       tabs.push(t);
       return t;
     }
@@ -116,6 +133,28 @@ before(async () => {
       const { tab, url } = params as { tab: string; url: string };
       navigated.push({ tab, url });
       return { url, title: "Page" };
+    }
+    const current = tabs.find((t) => t.tab === (params as { tab?: string }).tab && t.title === "Claude de prueba");
+    if (current && method === "browser.snapshot")
+      return {
+        url: current.url,
+        title: current.title,
+        tree: createdArtifact ? 'link "Monitor" [e2]' : 'textbox "Mensaje" [e1]',
+        refs: 1,
+        truncated: false,
+      };
+    if (current && method === "browser.type") {
+      const input = params as { text: string; submit: boolean; ref: string };
+      assert.equal(input.ref, "e1");
+      assert.equal(input.submit, true);
+      assert.match(input.text, /artefacto privado/);
+      createdArtifact = true;
+      return { ok: true, url: current.url };
+    }
+    if (current && method === "browser.click") {
+      assert.ok(createdArtifact);
+      current.url = fixtureArtifact;
+      return { ok: true, url: current.url };
     }
     if (method === "browser.text")
       return {
@@ -402,4 +441,17 @@ test("NAVEGADORES-2: browser_tabs tells the agent where the owner is signed in, 
   assert.match(toolSaid, /navegador chrome-default · chrome · Personal/);
   assert.match(toolSaid, /signed in on: mail\.example\.com, crm\.example\.com/);
   assert.doesNotMatch(toolSaid, /No sign-ins seen/);
+});
+
+test("encarga el artefacto al servicio, abre el visor y lo guarda en aplicaciones internas", async () => {
+  await env.client.call("agents.update", { agent: "superagent", autonomy: "total" });
+  const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
+  await env.client.call("threads.send", { thread: t.id, text: "crear el monitor en Claude" });
+  await env.settle(t.id);
+  assert.equal(createdArtifact, true);
+  const app = (await env.client.call("surfaces.list", {})).surfaces.find((s) => s.title === "Monitor de prueba");
+  assert.equal(app?.claude_artifact_url, fixtureArtifact);
+  assert.equal(app?.claude_artifact_profile, "shared");
+  assert.equal(app?.app, true);
+  assert.equal(app?.share_path, undefined);
 });

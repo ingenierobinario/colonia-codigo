@@ -13,6 +13,10 @@ const widget = (connect?: string[]) => ({
 const KIT_APP =
   '<meta name="colonia-surface" content="app"><script src="/_colonia/kit@1.js"></script><div class="ax-app"><div class="ax-shell"><header class="ax-topbar">Habits</header></div></div>';
 const calls: Record<string, object | [string, object]> = {
+  "guardar en aplicaciones": [
+    "save_claude_artifact",
+    { title: "Monitor", url: "https://claude.ai/code/artifact/artifact-1234" },
+  ],
   "live widget": widget(["https://api.binance.com", "wss://stream.binance.com:9443"]),
   "same widget": widget(),
   "no network": widget([]),
@@ -371,4 +375,25 @@ test("a page pushed from the terminal lands in the project it names, never one i
     env.client.call("surfaces.show", { name: "expenses", title: "E", html: "<p></p>", project: "p_missing" }),
     /project p_missing/,
   );
+});
+
+test("guarda el visor de Claude observado como una sola aplicación privada", async () => {
+  const url = "https://claude.ai/code/artifact/artifact-1234";
+  const t = await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" });
+  await said(t.id, "guardar en aplicaciones");
+  const list = async () =>
+    (await env.client.call("surfaces.list", {})).surfaces.filter((s) => s.claude_artifact_url === url);
+  assert.equal((await list()).length, 0);
+  env.core.store.messages.add({
+    thread_id: t.id,
+    author: { kind: "agent", id: "superagent" },
+    parts: [{ type: "browser", tab: "t1", url, title: "Monitor", state: "agent" }],
+  });
+  await said(t.id, "guardar en aplicaciones");
+  await said(t.id, "guardar en aplicaciones");
+  const apps = await list();
+  assert.equal(apps.length, 1);
+  assert.equal(apps[0]?.app, true);
+  assert.equal(apps[0]?.share_path, undefined);
+  assert.equal(apps[0]?.version, 1);
 });

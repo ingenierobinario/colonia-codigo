@@ -699,6 +699,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "widgets.empty": "Sin widgets en este chat",
   "widgets.emptyBody":
     "Los widgets que arme el agente en este chat aparecen aquí. Fíjalos para tenerlos también en el tablero del proyecto.",
+  "app.openClaudeArtifact": "Abrir artefacto en Claude",
   "app.notFound": "App no encontrada",
   "app.removed": "Puede que la hayan quitado de apps.",
   "widget.sub": "Widget de {project} · hecho por {author} · {name}",

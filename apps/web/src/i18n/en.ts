@@ -698,6 +698,7 @@ export const en = {
   "widgets.empty": "No widgets in this chat",
   "widgets.emptyBody":
     "Widgets the agent builds in this chat show here. Pin one to keep it on the project's board too.",
+  "app.openClaudeArtifact": "Open artifact in Claude",
   "app.notFound": "App not found",
   "app.removed": "It may have been removed from apps.",
   "widget.sub": "Widget of {project} · made by {author} · {name}",
