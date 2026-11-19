@@ -9,8 +9,8 @@ import { useBrowserPoppedOut } from "./browserWindow.ts";
 export function useActiveTab(): { tabs: TabInfo[]; active: TabInfo | undefined } {
   // WEBAPP-1: a web app's tab lives in its own view, not among the browser's tabs.
   const all = useData((s) => s.tabs);
-  const tabs = useMemo(() => all.filter((x) => !isWebAppTab(x)), [all]);
   const wanted = useNav((s) => s.browserTab);
+  const tabs = useMemo(() => all.filter((x) => x.tab === wanted || !isWebAppTab(x)), [all, wanted]);
   const active = tabs.find((t) => t.tab === wanted) ?? tabs[0];
   const activeId = active?.tab;
   const poppedOut = useBrowserPoppedOut();

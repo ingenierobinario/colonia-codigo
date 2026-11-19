@@ -8,6 +8,7 @@ import { nav } from "../shell/nav.ts";
 const query = new URLSearchParams(window.location.search);
 export const IS_BROWSER_WINDOW = query.has("browser");
 // It opens on the tab the side panel was showing.
+if (IS_BROWSER_WINDOW) window.coloniaDesktop?.onBrowserHandoff?.((tab) => nav.set({ browserTab: tab }));
 if (IS_BROWSER_WINDOW && query.get("tab")) nav.set({ browserTab: query.get("tab") ?? undefined });
 
 const desktop = typeof window !== "undefined" ? window.coloniaDesktop : undefined;

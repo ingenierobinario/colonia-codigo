@@ -50,11 +50,15 @@ export function BrowserPart({
           : part.state === "agent"
             ? t("browser.agentBrowsing", { name, host })
             : t("browser.finished", { host });
-  const open = () => (guest ? go.panel("computer") : go.browser(part.tab));
+  const reveal = (id: string) => {
+    go.browser(id);
+    window.coloniaDesktop?.popOutBrowser?.(true, id);
+  };
+  const open = () => (guest ? go.panel("computer") : reveal(part.tab));
   // A closed tab opens again on the same page.
   const reopen = async () => {
     const id = await browserOpen(url);
-    if (id) go.browser(id);
+    if (id) reveal(id);
   };
   if (guest || beside)
     return (
