@@ -10,7 +10,10 @@ import {
   Textarea,
   Tooltip,
 } from "@colonia/ui";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { AttachChips } from "../chat/composer/AttachChips.tsx";
+import { useAttachments } from "../chat/composer/useAttachments.ts";
+import { useFileDrop } from "../chat/composer/useFileDrop.ts";
 import { FilePart } from "../chat/parts/FilePart.tsx";
 import { AudioPart } from "../chat/parts/lazyAudio.tsx";
 import { bubbleFiles, mediaBlocks, withoutFilesNote } from "../chat/parts/mediaGroups.ts";
@@ -55,6 +58,11 @@ export function ChannelConversation(props: {
   const agent = useData((s) => s.agents[channel.agent_id]);
   const [mode, setMode] = useState("agent");
   const [text, setText] = useState("");
+  const conversation = useRef<HTMLElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const sending = useRef(false);
+  const files = useAttachments(person ? `contact:${channel.id}:${person.id}` : threadId, thread?.id);
+  const dragging = useFileDrop(conversation, (incoming) => files.add(incoming));
   const [busy, setBusy] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const name = person?.name ?? thread?.title ?? "";
@@ -71,20 +79,40 @@ export function ChannelConversation(props: {
 
   const submit = async () => {
     const words = text.trim();
-    if (!words) return;
+    if (sending.current || files.uploading || files.chips.some((c) => c.error) || (!words && !files.ready)) return;
+    sending.current = true;
+    const selected = files.chips;
+    const attachments = selected.flatMap((c) => (c.media ? [c.media] : []));
     setBusy(true);
-    let id = thread?.id;
-    // A contact with no chat yet: it is made now, and the list picks it.
-    if (!id && person) {
-      id = (await openContactChat(person.id, channel.id))?.id;
-      if (id) go.channel(channel.id, id);
+    try {
+      let id = thread?.id;
+      // A contact with no chat yet: it is made now, and the list picks it.
+      if (!id && person) {
+        id = (await openContactChat(person.id, channel.id))?.id;
+      }
+      if (!id) return;
+      if (mode === "me") {
+        if (
+          !(await sendDirect(
+            id,
+            words,
+            attachments.map((f) => f.id),
+          ))
+        )
+          return;
+        void loadThread(id);
+      } else {
+        await send(id, words, { attachments });
+      }
+      for (const chip of selected) files.remove(chip.key);
+      setText((current) => (current === text ? "" : current));
+      if (!thread) go.channel(channel.id, id);
+    } catch {
+      // send() reports the error; retain the message and its attachments for another attempt.
+    } finally {
+      sending.current = false;
+      setBusy(false);
     }
-    let ok = Boolean(id);
-    if (id && mode === "me") ok = await sendDirect(id, words);
-    else if (id) await send(id, words);
-    setBusy(false);
-    if (ok) setText("");
-    if (id && mode === "me") void loadThread(id);
   };
   const empty = !thread || (load === "ready" && !count);
   const first = empty && mode === "agent";
@@ -131,7 +159,7 @@ export function ChannelConversation(props: {
   };
 
   return (
-    <section className="chan__chat" aria-label={name}>
+    <section ref={conversation} className="chan__chat" aria-label={name}>
       <header className="chan__chathead">
         <IconButton
           size="sm"
@@ -209,7 +237,8 @@ export function ChannelConversation(props: {
           (messages ?? []).map((m) => <Bubble key={m.id} m={m} agentName={agentName} />)
         )}
       </StickyScroll>
-      <div className="chan__composer">
+      <div className={`chan__composer${dragging ? " is-dropping" : ""}`}>
+        {files.chips.length > 0 && <AttachChips chips={files.chips} onRemove={files.remove} />}
         <Textarea
           aria-label={writeLabel}
           placeholder={writeLabel}
@@ -224,6 +253,22 @@ export function ChannelConversation(props: {
           }}
         />
         <div className="chan__composerbar">
+          <input
+            hidden
+            multiple
+            type="file"
+            ref={fileInput}
+            onChange={(event) => {
+              const input = event.currentTarget;
+              if (input.files) files.add(input.files);
+              input.value = "";
+            }}
+          />
+          <IconButton
+            label={t("composer.attach")}
+            icon={<Icons.Paperclip size={16} />}
+            onClick={() => fileInput.current?.click()}
+          />
           <SegmentedControl
             size="sm"
             label={t("ch.who")}
@@ -240,7 +285,7 @@ export function ChannelConversation(props: {
             shape="circle"
             label={t("tasks.send")}
             icon={<Icons.ArrowUp size={14} />}
-            disabled={!text.trim() || busy}
+            disabled={(!text.trim() && !files.ready) || busy || files.uploading || files.chips.some((c) => c.error)}
             onClick={() => void submit()}
           />
         </div>

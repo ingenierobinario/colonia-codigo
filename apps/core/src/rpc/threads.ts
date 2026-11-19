@@ -81,7 +81,7 @@ function createThread(
 }
 
 /** The owner's attachments as a run keeps them: files uploaded to this chat (or to none) that exist, each once. */
-function attachedFiles(store: Store, thread: string, ids: string[]): Attachment[] {
+export function attachedFiles(store: Store, thread: string, ids: string[]): Attachment[] {
   return [...new Set(ids)].map((id) => {
     const m = store.media.get(id);
     // Not media Colonia made (it has a service) nor another chat's upload.

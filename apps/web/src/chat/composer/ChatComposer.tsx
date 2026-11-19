@@ -99,13 +99,6 @@ export function ChatComposer({
     const attachments = att.take();
     const words = value.trim() || (attachments.length ? t("composer.attachedOnly") : "");
     if (!words) return;
-    if (room && direct) {
-      att.restore(attachments);
-      if (attachments.length) return notify(t("ch.room.noFiles", { agent: agentName }), "info");
-      setText("");
-      void sendDirect(thread.id, words).then((ok) => (ok ? loadThread(thread.id) : setText((cur) => cur || value)));
-      return;
-    }
     setText("");
     // A send that fails gives the words and the files back, so nothing the owner wrote is lost.
     const giveBack = () => {
@@ -113,6 +106,17 @@ export function ChatComposer({
       setText((cur) => (cur ? `${value}\n\n${cur}` : value));
       att.restore(attachments);
     };
+    if (room && direct) {
+      void sendDirect(
+        thread.id,
+        value.trim(),
+        attachments.map((file) => file.id),
+      ).then((sent) => {
+        if (sent) void loadThread(thread.id);
+        else giveBack();
+      });
+      return;
+    }
     const deliver = (said: string) => {
       if (!fresh) return void send(thread.id, said, { attachments, queue }).catch(giveBack);
       making.current = true;

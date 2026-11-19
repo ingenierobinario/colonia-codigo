@@ -502,6 +502,9 @@
   border-radius: 18px;
   background: var(--colonia-surface);
 }
+.chan__composer.is-dropping {
+  outline: 2px dashed var(--colonia-fg);
+}
 .chan__composer textarea {
   border: 0;
   background: transparent;
@@ -509,6 +512,7 @@
 }
 .chan__composerbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
