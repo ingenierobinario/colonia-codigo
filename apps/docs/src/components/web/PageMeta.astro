@@ -35,6 +35,10 @@ function snippet(text: string, max = 160) {
   return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
 }
 const summary = snippet(description);
+
+// PIXEL-BS-1 · píxel de Business Stack (slug colonia-ingenierobinario-com, generado por
+// /admin/api/web/pixel-snippet): visitas, origen, UTM, scroll y tiempo de cada página de la web.
+const PIXEL = String.raw`(function(){try{var n=Math.random().toString(36).slice(2),t0=Date.now(),sent=false,sc=0;var B="https://business-stack.ingenierobinario.com/pv?p=colonia-ingenierobinario-com&l=colonia.ingenierobinario.com"+"&n="+n;function s(x){try{var i=new Image();i.src=B+x;}catch(e){}}var U='';try{var Q=new URLSearchParams(location.search),K=[['utm_source','us'],['utm_medium','um'],['utm_campaign','uc'],['utm_term','ut'],['utm_content','uo']],P=[],i,v;for(i=0;i<K.length;i++){v=Q.get(K[i][0]);if(v)P.push(K[i][1]+'='+encodeURIComponent(v.slice(0,120)));}var C='';['gclid','fbclid','msclkid','ttclid','li_fat_id','twclid'].some(function(k){if(Q.get(k)){C=k;return true;}return false;});if(C)P.push('ci='+C);if(P.length){U='&'+P.join('&');try{sessionStorage.setItem('_lmU',U);}catch(e){}}else{try{U=sessionStorage.getItem('_lmU')||''}catch(e){}}}catch(e){}var rf=document.referrer||'';try{if(rf&&new URL(rf).hostname===location.hostname)rf='';}catch(e){}var tn='';try{tn=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){}s("&r="+encodeURIComponent(rf.slice(0,300))+"&pa="+encodeURIComponent(location.pathname)+"&lg="+encodeURIComponent(navigator.language||"")+"&tz="+(new Date().getTimezoneOffset())+"&tzn="+encodeURIComponent(tn)+U);window.lmTrack=function(e){s("&e="+encodeURIComponent(e)+"&pa="+encodeURIComponent(location.pathname)+U);};function m(){try{var d=document.documentElement,b=document.body,h=Math.max(d.scrollHeight,b?b.scrollHeight:0),y=(window.scrollY||d.scrollTop||0)+window.innerHeight,p=h>0?Math.round(y/h*100):0;if(p>sc)sc=p>100?100:p;}catch(e){}}window.addEventListener('scroll',m,{passive:true});m();function d(){if(sent)return;sent=true;var lt=0;try{var pe=performance.getEntriesByType("navigation")[0];lt=pe&&pe.loadEventEnd?Math.round(pe.loadEventEnd):0;}catch(e){}s("&d="+(Date.now()-t0)+"&sc="+sc+(lt?"&lt="+lt:""));}document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")d();});window.addEventListener("pagehide",d);}catch(e){}})();`;
 ---
 
 <title>{title}</title>
@@ -60,4 +64,5 @@ const summary = snippet(description);
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={summary} />
 <meta name="twitter:image" content={image} />
+<script is:inline set:html={PIXEL} />
 {schema.map((item) => <script type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", ...item })} />)}
