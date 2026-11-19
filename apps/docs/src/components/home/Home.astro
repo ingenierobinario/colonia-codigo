@@ -1,5 +1,4 @@
 ---
-import { Image } from "astro:assets";
 import shotEs from "../../assets/shots/home-hero.es.webp";
 import shotEn from "../../assets/shots/home-hero.webp";
 import { HIDDEN_SECTIONS, RESERVAR_URL, type SectionId, sectionRoute } from "../../config/site";
@@ -193,7 +192,7 @@ const cards = [
           </header>
           <div class="hv-win" data-reveal>
             <div class="hv-win__bar" aria-hidden="true"><i></i><i></i><i></i><span>Colonia</span></div>
-            <div class="hv-win__shot"><Image class="hv-win__img" src={lang === "es" ? shotEs : shotEn} alt={v.shotAlt} widths={[720, 1200, 1600, 2400]} sizes="(max-width: 1200px) 100vw, 1168px" quality={88} loading="lazy" /><i class="hv-win__m hv-win__m--1" aria-hidden="true"></i><i class="hv-win__m hv-win__m--2" aria-hidden="true"></i><i class="hv-win__m hv-win__m--3" aria-hidden="true"></i><i class="hv-win__m hv-win__m--4" aria-hidden="true"></i><span class="hv-win__type" aria-hidden="true"><b class="hv-win__ty">{v.typed[0]}</b><b class="hv-win__ty hv-win__ty--2">{v.typed[1]}</b></span></div>
+            <div class="hv-win__shot"><img class="hv-win__img" src={(lang === "es" ? shotEs : shotEn).src} alt={v.shotAlt} width="2880" height="1800" loading="lazy" decoding="async" /><i class="hv-win__m hv-win__m--1" aria-hidden="true"></i><i class="hv-win__m hv-win__m--2" aria-hidden="true"></i><i class="hv-win__m hv-win__m--3" aria-hidden="true"></i><i class="hv-win__m hv-win__m--4" aria-hidden="true"></i><span class="hv-win__type" aria-hidden="true"><b class="hv-win__ty">{v.typed[0]}</b><b class="hv-win__ty hv-win__ty--2">{v.typed[1]}</b></span></div>
           </div>
           </>) : (<>
           <div class="stage__bubble stage__bubble--l" aria-hidden="true"><Blob name="coral" size={32} /><span class="stage__say">{t.bubbles[0]}</span></div>

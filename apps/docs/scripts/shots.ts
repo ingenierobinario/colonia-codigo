@@ -15,6 +15,7 @@ import os from "node:os";
 import path from "node:path";
 import { chromium, type Page } from "@playwright/test";
 import sharp from "sharp";
+import { fakeSlack } from "../../../apps/core/src/channels/fake-slack.test-support.ts";
 import { fakeTelegram } from "../../../apps/core/src/channels/fake-telegram.test-support.ts";
 import { demoLlm } from "./demo-llm.ts";
 import {
@@ -95,6 +96,25 @@ const bin = path.join(dir, "bin");
 fs.mkdirSync(bin, { recursive: true });
 fs.writeFileSync(path.join(bin, "tailscale"), "#!/bin/sh\necho 'Logged out.' >&2\nexit 1\n", { mode: 0o755 });
 fs.writeFileSync(path.join(bin, "tailscale.cmd"), "@echo Logged out. 1>&2\r\n@exit /b 1\r\n");
+// Claude Code and Codex as an owner who has both signed in would have them, ahead of any real one in PATH: they only
+// answer the version and sign-in checks the core asks (nothing of this machine's own installs or sessions shows).
+fs.writeFileSync(
+  path.join(bin, "fake-cli.mjs"),
+  [
+    "const [cli, ...a] = process.argv.slice(2);",
+    "const q = a.join(' ');",
+    "if (q === '--version') console.log(cli === 'codex' ? 'codex-cli 0.98.0' : '2.3.1 (Claude Code)');",
+    "else if (cli === 'claude' && q === 'auth status --json') console.log(JSON.stringify({ loggedIn: true, authMethod: 'claude.ai', subscriptionType: 'max' }));",
+    "else if (cli === 'codex' && q === 'login status') console.error('Logged in using ChatGPT');",
+    "else process.exit(1);",
+  ].join("\n"),
+);
+for (const cli of ["claude", "codex"]) {
+  fs.writeFileSync(path.join(bin, cli), `#!/bin/sh\nexec node "$(dirname "$0")/fake-cli.mjs" ${cli} "$@"\n`, {
+    mode: 0o755,
+  });
+  fs.writeFileSync(path.join(bin, `${cli}.cmd`), `@node "%~dp0\\fake-cli.mjs" ${cli} %*\r\n`);
+}
 // Windows needs its system variables to run anything (and git from its own PATH); elsewhere the bare minimum.
 const win = process.platform === "win32";
 const winEnv = win
@@ -116,9 +136,16 @@ const pathDirs = win
   : [bin, "/usr/bin", "/bin"];
 const models = ["llama-3.3-70b", "qwen-2.5-coder-32b"];
 // The clips stream the answers a little slower, so the agent is seen writing.
-const llm = await demoLlm(models, lang, process.env.SHOTS_CLIPS ? 70 : 0);
+// Claude and GPT as an owner would add them (Settings → Models), served by the same scripted model.
+const claudeModel = "claude-opus-5-5";
+const gptModel = "gpt-5";
+const llm = await demoLlm([...models, claudeModel, gptModel], lang, process.env.SHOTS_CLIPS ? 70 : 0);
 const tgToken = "123456789:AAShotsFakeTokenForTheEmulatedBot";
 const tg = await fakeTelegram(tgToken);
+// A Slack workspace on localhost (Socket Mode), with the people who write to the shop's app.
+const slackTokens = { bot: "xoxb-shots-fake-bot", app: "xapp-shots-fake-app" };
+const slackPeople = { U0SOFIA: "Sofía Marín", U0DANI: "Dani Ortega" };
+const slack = await fakeSlack(slackTokens, slackPeople);
 
 const child = spawn(process.execPath, ["--no-warnings", path.join(root, "apps/core/src/main.ts")], {
   cwd: root,
@@ -145,11 +172,115 @@ const child = spawn(process.execPath, ["--no-warnings", path.join(root, "apps/co
     COLONIA_LLM_KEY: "demo",
     COLONIA_LLM_MODELS: models.join(","),
     COLONIA_TELEGRAM_API: tg.url,
+    COLONIA_SLACK_API: slack.api,
   },
 });
 const coreLog = fs.createWriteStream(path.join(dir, "core.log"));
 child.stdout.pipe(coreLog);
 child.stderr.pipe(coreLog);
+
+/** More of the office around the shop: Slack (live, on localhost), WhatsApp and Teams set up but switched off (nothing
+ * reaches the real services), and a few more projects with their own picture. */
+async function moreOffice() {
+  const es = lang === "es";
+  const step = async (what: string, fn: () => Promise<unknown>) => {
+    try {
+      await fn();
+    } catch (e) {
+      log(`  ✗ ${what}: ${(e as Error).message}`);
+    }
+  };
+  await step("slack", async () => {
+    await rpc("channels.set", {
+      id: "slack",
+      channel: { type: "slack", agent_id: ids.home, strangers: "answer" },
+      token: `${slackTokens.bot} ${slackTokens.app}`,
+    });
+    await new Promise((r) => setTimeout(r, 1200));
+    slack.message(
+      { id: "U0SOFIA" },
+      es
+        ? "¿Tenéis ya fecha para el taller de torno de diciembre?"
+        : "Do you have a date yet for the December pottery class?",
+    );
+    slack.message(
+      { id: "U0DANI" },
+      es ? "Os paso las fotos del mercadillo para la web." : "Here are the market photos for the website.",
+    );
+  });
+  // The owner gives each Slack person their plain name (Contacts), as one would after the first message.
+  await new Promise((r) => setTimeout(r, 1500));
+  await step("slack names", async () => {
+    const { persons } = await rpc<{ persons: Array<{ id: string; name: string }> }>("contacts.list");
+    for (const p of persons) {
+      const plain = Object.values(slackPeople).find((n) => p.name.startsWith(`${n} (`));
+      if (plain) await rpc("contacts.set", { id: p.id, name: plain });
+    }
+  });
+  await step("apps", async () => {
+    const { surfaces } = await rpc<{ surfaces: Array<{ id: string; name: string }> }>("surfaces.list");
+    const sales = surfaces.find((x) => x.name === "weekly-sales");
+    if (sales) await rpc("surfaces.update", { surface: sales.id, app: true });
+  });
+  await step("web apps", async () => {
+    // .localhost never leaves this machine: the sidebar shows the globe instead of a site's icon.
+    await rpc("webapps.set", {
+      id: "tienda",
+      app: { name: es ? "Tienda online" : "Online shop", url: "http://tienda.brezo.localhost/" },
+    });
+    await rpc("webapps.set", {
+      id: "facturas",
+      app: { name: es ? "Facturación" : "Invoicing", url: "http://facturas.brezo.localhost/" },
+    });
+  });
+  await step("browsers", async () => {
+    await rpc("navegadores.set", {
+      id: "chrome-taller",
+      navegador: { browser: "chrome", name: es ? "Taller" : "Studio" },
+    });
+    await rpc("navegadores.set", { id: "firefox-personal", navegador: { browser: "firefox", name: "Personal" } });
+  });
+  for (const type of ["whatsapp", "teams"] as const)
+    await step(type, () => rpc("channels.set", { id: type, channel: { type, agent_id: ids.home, enabled: false } }));
+  const tile = async (bg: string, fg: string, shape: string) => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bg}"/><stop offset="1" stop-color="${fg}"/></linearGradient></defs><rect width="256" height="256" fill="url(#g)"/>${shape}</svg>`;
+    const png = await sharp(Buffer.from(svg)).png().toBuffer();
+    const { media } = await rpc<{ media: { id: string } }>("media.upload", {
+      name: "tile.png",
+      mime: "image/png",
+      data: png.toString("base64"),
+      task_asset: true,
+    });
+    return media.id;
+  };
+  const W = 'fill="#fff" fill-opacity=".92"';
+  const projects: Array<[string | null, string, string, string, string, string]> = [
+    // [name or null for the shop, description, kind, from, to, shape]
+    [
+      null,
+      "",
+      "company",
+      "#c2410c",
+      "#7c2d12",
+      `<path d="M70 96h116l-10 92a20 20 0 0 1-20 18h-56a20 20 0 0 1-20-18z" ${W}/><rect x="62" y="84" width="132" height="16" rx="8" ${W}/>`,
+    ],
+    [
+      es ? "Escuela de torno" : "Pottery school",
+      es ? "Cursos y talleres de torno" : "Wheel-throwing classes",
+      "company",
+      "#0f766e",
+      "#134e4a",
+      `<circle cx="128" cy="128" r="70" fill="none" stroke="#fff" stroke-width="16" stroke-opacity=".92"/><circle cx="128" cy="128" r="22" ${W}/>`,
+    ],
+  ];
+  for (const [name, description, kind, from, to, shape] of projects)
+    await step(`project ${name ?? "shop"}`, async () => {
+      const project = name
+        ? (await rpc<{ project: { id: string } }>("projects.create", { name, description, kind })).project.id
+        : ids.shop;
+      await rpc("projects.update", { project, mark: { image: await tile(from, to, shape) } });
+    });
+}
 
 let seq = 0;
 async function rpc<T = Record<string, unknown>>(method: string, params: unknown = {}): Promise<T> {
@@ -166,7 +297,7 @@ async function rpc<T = Record<string, unknown>>(method: string, params: unknown 
 
 async function stop(code = 0) {
   child.kill("SIGTERM");
-  await Promise.all([llm.close(), tg.close()]);
+  await Promise.all([llm.close(), tg.close(), slack.close()]);
   // On Windows the core holds its files for a moment after it is killed: retry, and never fail the run over it.
   if (!process.env.SHOTS_KEEP)
     try {
@@ -184,7 +315,16 @@ for (let i = 0; i < 600; i++) {
   } catch {}
   await new Promise((r) => setTimeout(r, 100));
 }
-await rpc("models.set_config", { default: { model: `custom/${models[0]}`, router: false } });
+for (const [id, label, model] of [
+  ["anthropic", "Anthropic", claudeModel],
+  ["openai", "OpenAI", gptModel],
+] as const)
+  await rpc("providers.set", {
+    id,
+    provider: { label, transport: "openai-chat", base_url: llm.url, models: [model] },
+    api_key: "sk-shots-demo-key-0000000000000000",
+  }).catch((e) => log(`  ✗ provider ${id}: ${(e as Error).message}`));
+await rpc("models.set_config", { default: { model: `anthropic/${claudeModel}`, router: false } });
 log("seeding the demo office…");
 const ids = await seed(rpc, world, log, lang);
 try {
@@ -193,7 +333,8 @@ try {
 } catch (e) {
   log(`  ✗ telegram: ${(e as Error).message}`);
 }
-await new Promise((r) => setTimeout(r, 1500));
+await moreOffice();
+await new Promise((r) => setTimeout(r, 2500));
 // SHOTS_SERVE=1 keeps the demo office running for a device to pair with (the phone app's own screenshots).
 if (process.env.SHOTS_SERVE) {
   const { code } = await rpc<{ code: string }>("devices.pair_start");
@@ -432,7 +573,8 @@ async function take(shot: Shot, theme: "light" | "dark", file: string) {
         await page.mouse.move(0, 0);
         const png = await page.screenshot({ animations: "disabled", caret: "hide" });
         await sharp(png)
-          .webp({ quality: 82 })
+          // The home page's hero is the one shot read up close: near-lossless, so its text stays sharp.
+          .webp(shot.name === "home-hero" ? { nearLossless: true, quality: 70, effort: 6 } : { quality: 82 })
           .toFile(path.join(out, `${file}.webp`));
       })(),
     );

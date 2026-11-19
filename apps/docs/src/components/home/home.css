@@ -3550,21 +3550,21 @@ a.hero__term {
   animation: hv-m1 12s linear infinite;
 }
 .hv-win__m--1 {
-  top: 19.8%;
+  top: 24%;
   height: 5.8%;
 }
 .hv-win__m--2 {
-  top: 25.6%;
+  top: 29.8%;
   height: 21.2%;
   animation-name: hv-m2;
 }
 .hv-win__m--3 {
-  top: 46.8%;
+  top: 51%;
   height: 6%;
   animation-name: hv-m3;
 }
 .hv-win__m--4 {
-  top: 52.8%;
+  top: 57%;
   height: 8.7%;
   animation-name: hv-m4;
 }
@@ -3766,8 +3766,8 @@ a.hero__term {
 
 /* VSL-BF-10: el vídeo, un poco más grande; se compensa cerrando el aire entre vídeo, botón y cuenta atrás. */
 .hv-video {
-  width: min(100%, 900px, calc((100svh - 580px) * 16 / 9));
-  min-width: min(100%, 576px);
+  width: min(100%, 900px, calc((100svh - 530px) * 16 / 9));
+  min-width: min(100%, 656px);
 }
 .hv-actions {
   margin-top: 28px;
@@ -3777,8 +3777,8 @@ a.hero__term {
 }
 @media (min-width: 561px) and (max-height: 820px) {
   .hv-video {
-    width: min(100%, 900px, calc((100svh - 515px) * 16 / 9));
-    min-width: min(100%, 470px);
+    width: min(100%, 900px, calc((100svh - 475px) * 16 / 9));
+    min-width: min(100%, 520px);
   }
   .hv-actions {
     margin-top: 22px;
@@ -3789,4 +3789,28 @@ a.hero__term {
     width: 100%;
     min-width: 0;
   }
+}
+
+/* VSL-BF-12 · la foto del autor más grande sobre la portada: toque humano */
+.hv-owner {
+  width: 92px;
+  height: 92px;
+  right: 18px;
+  bottom: 18px;
+  border-width: 3px;
+}
+@media (max-width: 560px) {
+  .hv-owner {
+    width: 58px;
+    height: 58px;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
+/* VSL-BF-13 · La captura de la app se sirve tal cual sale (sin recomprimir) y
+   la ventana se ensancha hasta su tamaño real (1440 px) para que el texto no
+   se reduzca: reducida al 78 % se veía borrosa. */
+.hv-stage .stage__in {
+  max-width: calc(1442px + 2 * var(--colonia-gutter));
 }

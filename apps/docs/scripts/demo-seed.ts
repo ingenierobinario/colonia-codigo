@@ -457,6 +457,12 @@ export async function seed(rpc: Rpc, world: { repo: string; extension: string },
   const tomas = id("Tomás");
   const ines = id("Inés");
 
+  // Nova runs on the default model (Claude); Tomás and Inés on OpenAI's, as an owner mixing providers would.
+  for (const agent of [tomas, ines])
+    await step("agent model", () =>
+      rpc("agents.update", { agent, model_choice: { model: "openai/gpt-5", router: false } }),
+    );
+
   await step("org", () => rpc("org.set", { project: shop, organization: { areas: t.areas, roles: t.roles } }));
 
   const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);

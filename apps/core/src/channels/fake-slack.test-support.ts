@@ -7,7 +7,7 @@ import { WebSocketServer } from "ws";
 
 type Sent = { method: string; body: Record<string, unknown> };
 
-export async function fakeSlack(tokens: { bot: string; app: string }) {
+export async function fakeSlack(tokens: { bot: string; app: string }, names: Record<string, string> = {}) {
   const sent: Sent[] = [];
   const acked: string[] = [];
   /** Answers to force on the next calls of a method, in order. */
@@ -45,7 +45,13 @@ export async function fakeSlack(tokens: { bot: string; app: string }) {
       if (method === "users.info")
         return reply(200, {
           ok: true,
-          user: { name: String(body.user).toLowerCase(), real_name: `User ${body.user}` },
+          user: {
+            name: (names[String(body.user)]?.split(" ")[0] ?? String(body.user))
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[^a-z0-9]/g, ""),
+            real_name: names[String(body.user)] ?? `User ${body.user}`,
+          },
         });
       sent.push({ method, body });
       if (method === "files.getUploadURLExternal")
