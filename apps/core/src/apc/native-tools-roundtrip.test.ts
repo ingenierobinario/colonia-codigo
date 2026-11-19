@@ -50,8 +50,8 @@ test("exportar→importar con reemplazo sobre el mismo proyecto es idempotente y
     writePackage(root, buildPackage(root, { name: "P" }, new Date()).pkg);
     seen.push(fs.readFileSync(path.join(root, "AGENTS.md"), "utf8"));
   }
-  assert.doesNotMatch((seen[2] ?? ""), /REGLA-CLAUDE/);
-  assert.match((seen[2] ?? ""), /REGLA-AGENTS/);
+  assert.doesNotMatch(seen[2] ?? "", /REGLA-CLAUDE/);
+  assert.match(seen[2] ?? "", /REGLA-AGENTS/);
   assert.equal(seen[0], seen[2]);
   assert.equal(fs.readFileSync(path.join(root, "CLAUDE.md"), "utf8"), "# Claude\nREGLA-CLAUDE\n");
 });
