@@ -109,9 +109,7 @@
   "nsis": {
     "oneClick": true,
     "perMachine": false,
-    "runAfterFinish": true,
-    "useZip": true,
-    "differentialPackage": false
+    "runAfterFinish": true
   },
   "linux": {
     "target": ["AppImage", "zip", "deb", "rpm"],
