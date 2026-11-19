@@ -263,3 +263,19 @@ test("a global agent in a chat of a project on total acts in total there, and on
   assert.equal(inProject(store, roby, "off").autonomy, "auto");
   assert.equal(inProject(store, roby, undefined).autonomy, "auto");
 });
+
+test("the base project on total lifts a global agent only in the chats without a project (DECISIONS.md#d-126, d-193)", () => {
+  const store = {
+    projects: { get: (id: string) => ({ autonomy: id === "on" ? "total" : "manual" }) },
+    settings: { read: () => ({ autonomy: "total" }) },
+  } as never;
+  const careful = agent({ autonomy: "manual", rules: { write: "ask" } });
+  assert.equal(withProjectAutonomy(store, careful), careful);
+  assert.equal(inProject(store, careful, "off").autonomy, "manual");
+  assert.equal(
+    authorize(tool("edit_like", "local", "ask"), {}, inProject(store, careful, "off"), false).kind,
+    "confirm",
+  );
+  assert.equal(inProject(store, careful, undefined).autonomy, "total");
+  assert.equal(inProject(store, careful, "on").autonomy, "total");
+});

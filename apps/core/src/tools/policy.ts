@@ -227,7 +227,9 @@ export function withProjectAutonomy(store: Store, agent: AgentRecord): AgentReco
   const of = agent.project_id
     ? store.projects.get(agent.project_id)?.autonomy
     : store.settings.read("base_project").autonomy;
-  if (of === "total") return totalOver(agent);
+  // Only a project of its own puts an agent on Total over its own mode: the base project on Total lifts a global agent
+  // in the chats without a project (inProject), never in a project kept to manual (DECISIONS.md#d-126).
+  if (of === "total" && agent.project_id) return totalOver(agent);
   if (agent.autonomy) return agent;
   return of ? { ...agent, autonomy: of } : agent;
 }
@@ -238,7 +240,8 @@ export function withProjectAutonomy(store: Store, agent: AgentRecord): AgentReco
  */
 export function inProject(store: Store, agent: AgentRecord, projectId: string | null | undefined): AgentRecord {
   const a = withProjectAutonomy(store, agent);
-  return projectId && store.projects.get(projectId)?.autonomy === "total" ? totalOver(a) : a;
+  const on = projectId ? store.projects.get(projectId)?.autonomy : store.settings.read("base_project").autonomy;
+  return on === "total" ? totalOver(a) : a;
 }
 
 /**
