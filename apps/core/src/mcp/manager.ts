@@ -11,7 +11,7 @@ import type { Store } from "../domain/store.ts";
 import { badRequest, conflict, errorMessage, unavailable } from "../errors.ts";
 import { commandEnv, SECRET_NAME } from "../harness/env.ts";
 import type { Log } from "../log.ts";
-import { onPath } from "../programs.ts";
+import { findCommand, onPath, spawnable } from "../programs.ts";
 import { projectSecretName, type Secrets } from "../secrets.ts";
 import { cap, untrusted } from "../tools/result.ts";
 import { type Confirm, type Effect, invalidArguments, type ScopedThread, type Tool } from "../tools/types.ts";
@@ -179,9 +179,13 @@ export function createMcp(deps: {
       // Windows starts it through cmd, which hides a missing program as a closed connection: say so first.
       const cmd = d.command ?? "";
       if (process.platform === "win32" && !/[\\/]/.test(cmd) && !onPath(cmd)) throw new Error(`spawn ${cmd} ENOENT`);
+      const args = d.args.map((a) => resolveText(a, d.values_of));
+      // Electron can find npm in a standard installation directory outside its inherited PATH.
+      const executable = process.platform === "win32" && /^npx(?:\.cmd)?$/i.test(cmd) ? findCommand(cmd) : undefined;
+      const runner = executable ? spawnable(executable, args) : undefined;
       const stdio = new StdioClientTransport({
-        command: d.command ?? "",
-        args: d.args.map((a) => resolveText(a, d.values_of)),
+        command: runner?.file ?? cmd,
+        args: runner?.args ?? args,
         // Only what the definition gives it, on top of an environment without credentials.
         env: { ...commandEnv(), ...env },
         cwd: d.cwd ?? ownDir(d.name),

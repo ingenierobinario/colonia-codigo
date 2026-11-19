@@ -67,10 +67,10 @@ export function McpDetail({
   const waiting = s.status === "needs-sign-in" && Boolean(s.sign_in_url);
   // biome-ignore lint/correctness/useExhaustiveDependencies: polls while waiting, with the latest refresh
   useEffect(() => {
-    if (!waiting) return;
+    if (!waiting && s.status !== "starting") return;
     const id = setInterval(() => void onChanged(), 3_000);
     return () => clearInterval(id);
-  }, [waiting]);
+  }, [waiting, s.status]);
 
   return (
     <article className="resd">
@@ -157,9 +157,15 @@ export function McpDetail({
         <div className="resd__callout resd__callout--line">
           <Icons.LogIn size={16} />
           <strong>{t(waiting ? "res.signInWaiting" : "mcp.status.needsSignIn")}</strong>
-          <Button size="sm" loading={signingIn} onClick={() => void signIn()}>
-            {t("res.signIn")}
-          </Button>
+          {waiting && /^https:\/\//i.test(s.sign_in_url ?? "") ? (
+            <a href={s.sign_in_url} target="_blank" rel="noopener noreferrer">
+              {t("res.signIn")}
+            </a>
+          ) : (
+            <Button size="sm" loading={signingIn} onClick={() => void signIn()}>
+              {t("res.signIn")}
+            </Button>
+          )}
         </div>
       )}
 

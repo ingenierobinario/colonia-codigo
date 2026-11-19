@@ -10,7 +10,7 @@ import type { McpServerStatus } from "@colonia/protocol";
 import { Button, Dialog, Icons, Input, IntegrationIcon, SearchField } from "@colonia/ui";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../data/client.ts";
-import { type McpDraft, setMcp, setSecret } from "../data/resources.ts";
+import { type McpDraft, setMcp, setSecret, signInMcp } from "../data/resources.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
 import { ConnectForm, type Integration } from "./IntegrationsTab.tsx";
 
@@ -1074,23 +1074,35 @@ export function ConnectorCatalog({
     }
   }, []);
   useEffect(() => void loadOwn(), [loadOwn]);
-  const have = new Set((servers ?? []).filter((s) => s.scope === "global").map((s) => s.name));
+  const have = new Map((servers ?? []).filter((s) => s.scope === "global").map((s) => [s.name, s]));
   const q = query.trim().toLowerCase();
   const ownDesc = (i: Integration) => t(`res.catalog.own.${i.id as (typeof OWN_SOCIAL)[number]}`);
   const ownShown = own.filter((i) => !q || `${i.label} ${ownDesc(i)}`.toLowerCase().includes(q));
   const shown = CONNECTORS.filter((c) => !q || `${c.name} ${c.desc.join(" ")}`.toLowerCase().includes(q));
   const add = async (c: Connector) => {
     setBusy(c.id);
-    for (const k of c.keys ?? []) {
-      if (!(await setSecret(secretName(c, k), (values[k.env] ?? "").trim()))) return setBusy(undefined);
+    const existing = have.get(c.id);
+    if (!existing) {
+      for (const k of c.keys ?? []) {
+        if (!(await setSecret(secretName(c, k), (values[k.env] ?? "").trim()))) return setBusy(undefined);
+      }
     }
-    const ok = await setMcp(c.id, connectorServer(c));
-    setBusy(undefined);
-    if (ok) {
+    const server =
+      existing ?? (await setMcp(c.id, connectorServer(c)))?.find((s) => s.scope === "global" && s.name === c.id);
+    if (server) {
+      if (
+        server.enabled &&
+        server.trusted &&
+        server.status !== "ready" &&
+        server.status !== "starting" &&
+        !server.sign_in_url
+      )
+        await signInMcp(server);
       setAsking(undefined);
       setValues({});
       await onAdded(c.id);
     }
+    setBusy(undefined);
   };
   return (
     <div className="catalog">
@@ -1122,7 +1134,7 @@ export function ConnectorCatalog({
                   </span>
                   {i.connected ? (
                     <span className="catalog__on">
-                      <Icons.Check size={14} /> {t("res.catalog.added")}
+                      <Icons.Check size={14} /> {t("res.catalog.connected")}
                     </span>
                   ) : (
                     <Button size="sm" variant="secondary" onClick={() => setConnecting(i)}>
@@ -1132,7 +1144,8 @@ export function ConnectorCatalog({
                 </div>
               ))}
               {items.map((c) => {
-                const on = have.has(c.id);
+                const existing = have.get(c.id);
+                const on = existing?.status === "ready";
                 const open = asking === c.id && c.keys;
                 const filled = (c.keys ?? []).every((k) => (values[k.env] ?? "").trim());
                 return (
@@ -1148,14 +1161,21 @@ export function ConnectorCatalog({
                     </span>
                     {on ? (
                       <span className="catalog__on">
-                        <Icons.Check size={14} /> {t("res.catalog.added")}
+                        <Icons.Check size={14} /> {t("res.catalog.connected")}
                       </span>
                     ) : open ? null : (
                       <Button
                         size="sm"
                         variant="secondary"
                         loading={busy === c.id}
-                        onClick={() => (c.keys ? (setValues({}), setAsking(c.id)) : void add(c))}
+                        disabled={Boolean(busy)}
+                        onClick={() => {
+                          if (c.keys && !existing) {
+                            if (c.help) window.open(c.help, "_blank", "noopener,noreferrer");
+                            setValues({});
+                            setAsking(c.id);
+                          } else void add(c);
+                        }}
                       >
                         {t("res.catalog.add")}
                       </Button>
@@ -1223,7 +1243,13 @@ export function ConnectorCatalogDialog({
   const t = useT();
   return (
     <Dialog open size="lg" onOpenChange={(o) => !o && onClose()} title={t("res.catalog.title")}>
-      <ConnectorCatalog servers={servers} onAdded={onAdded} />
+      <ConnectorCatalog
+        servers={servers}
+        onAdded={async (name) => {
+          await onAdded(name);
+          onClose();
+        }}
+      />
     </Dialog>
   );
 }

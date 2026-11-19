@@ -1589,6 +1589,7 @@ export const es: Partial<Record<MessageKey, string>> = {
     "Elige uno y conéctalo: se abre su página para que inicies sesión con tu cuenta. Unos pocos piden una clave que creas tú en el servicio.",
   "res.catalog.search": "Buscar conectores",
   "res.catalog.add": "Conectar",
+  "res.catalog.connected": "Conectado",
   "res.catalog.added": "Añadido",
   "res.catalog.own.youtube": "Tus vídeos, comentarios y respuestas",
   "res.catalog.own.x": "Publica y responde",
