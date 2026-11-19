@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.54": {
+    en: [
+      "The AI accounts section folds, has a + to add an account, and ChatGPT shows its own logo.",
+      "After Change connection by mistake, one button takes you back to the Colonia you were using.",
+      "The first start opens the assistant without a fixed pause and explains what it is waiting for.",
+      "On Windows, Restart to update installs silently and reopens Colonia.",
+    ],
+    es: [
+      "La sección Cuentas de IA se pliega, tiene un + para añadir una cuenta y ChatGPT lleva su logo.",
+      "Si pulsas Cambiar conexión sin querer, un botón te devuelve a la Colonia que estabas usando.",
+      "El primer arranque abre el asistente sin pausa fija y explica a qué está esperando.",
+      "En Windows, Reiniciar para actualizar instala en silencio y vuelve a abrir Colonia.",
+    ],
+  },
   "2.36.53": {
     en: [
       "The sidebar has an AI accounts section: connect ChatGPT or Claude and import your chats from there.",

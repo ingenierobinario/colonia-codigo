@@ -1,6 +1,6 @@
 import "../styles/wizard.css";
 import { Button, Icons, Input, SegmentedControl } from "@colonia/ui";
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import logo from "../assets/logo.png";
 import type { SshPrompt } from "../colonia-desktop.d.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
