@@ -29,10 +29,9 @@ RUN install -d -o colonia -g colonia -m 0700 /data.startup \
 RUN printf '#!/bin/sh\nexec chromium --no-sandbox "$@"\n' > /usr/local/bin/colonia-chromium \
  && chmod 755 /usr/local/bin/colonia-chromium
 ENV COLONIA_CHROME=/usr/local/bin/colonia-chromium
-USER colonia
+# Arranca como root: iniciar.sh prepara /data y baja a UID 1000 (colonia). Así la plantilla no necesita RAILWAY_RUN_UID.
 WORKDIR /opt/colonia
 ENV COLONIA_HOME=/data COLONIA_HOST=0.0.0.0 COLONIA_PORT=7440 COLONIA_SECRETS=file COLONIA_UPDATES=off COLONIA_RUNTIME_SKILLS=off
-VOLUME /data
 EXPOSE 7440
 HEALTHCHECK --interval=30s --timeout=5s CMD if [ -n "${RAILWAY_SERVICE_ID:-}" ]; then p="$PORT"; else p="${COLONIA_PORT:-7440}"; fi; curl -qfsS "http://127.0.0.1:$p/health" >/dev/null || exit 1
 ENTRYPOINT ["/usr/local/bin/colonia-iniciar"]

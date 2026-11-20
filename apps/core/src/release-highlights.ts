@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.58": {
+    en: ["Open Railway now creates your Colonia server in one click, ready to link with this computer."],
+    es: ["Abrir Railway crea ya tu servidor de Colonia con un clic, listo para vincularlo con este equipo."],
+  },
   "2.36.57": {
     en: [
       "Colonia starts much faster: the core now loads from a single file instead of hundreds.",
