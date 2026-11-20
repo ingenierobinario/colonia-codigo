@@ -71,7 +71,6 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.hostingRailway": "Crear mi servidor en Railway",
   "equipos.hostingGuide": "Instalar en mi propio servidor",
   "equipos.hostingPlan": "Railway te pedirá iniciar sesión y confirmar la creación del servidor.",
-  "equipos.hostingReferral": "Si creas una cuenta con este enlace de invitación, Colonia puede recibir una comisión.",
   "equipos.transfer": "Tus datos en otro equipo",
   "equipos.transferSync": "Enlaza dos Colonias con un código para mantener sus cambios sincronizados.",
   "equipos.transferBackup":

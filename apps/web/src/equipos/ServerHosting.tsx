@@ -75,7 +75,6 @@ export function ServerHosting() {
           </a>
         </p>
       )}
-      {referred && <p className="eq-muted">{t("equipos.hostingReferral")}</p>}
       {deploy && !referred && <p className="eq-muted">{t("equipos.hostingPlan")}</p>}
       <HostingPair
         {...(deploy && pending ? { pending } : {})}

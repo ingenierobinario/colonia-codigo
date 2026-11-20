@@ -70,7 +70,6 @@ export const enEquipos = {
   "equipos.hostingRailway": "Create my server on Railway",
   "equipos.hostingGuide": "Install on my own server",
   "equipos.hostingPlan": "Railway will ask you to sign in and confirm that you want to create the server.",
-  "equipos.hostingReferral": "If you sign up through this referral link, Colonia may earn a commission.",
   "equipos.transfer": "Your data on another computer",
   "equipos.transferSync": "Pair two Colonias with a code to keep changes in sync.",
   "equipos.transferBackup":
