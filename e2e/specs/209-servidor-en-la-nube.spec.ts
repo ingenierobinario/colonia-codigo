@@ -112,7 +112,7 @@ for (const language of ["es", "en"] as const) {
       expect(link.origin).toBe("https://railway.com");
       expect(link.pathname).toBe(template ? `/new/template/${template}` : "/");
       expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
-      await expect(card).toContainText(/comisión|commission/);
+      await expect(card).not.toContainText(/comisión|commission/);
       await expect(card).not.toContainText(/Railway cobra|Railway charges|coste|cost depends/i);
       const packageLink = card.getByRole("link", { name: /Railway/ });
       if (template) {
