@@ -229,6 +229,7 @@ export function createHeadlessBrowser(deps: {
       return;
     }
     if (!tab) return;
+    tab.page.event(String(m.method), m.params);
     if (m.method === "Page.loadEventFired") loads.get(tab.id)?.();
     if (m.method === "Page.navigatedWithinDocument") {
       tab.page.forget();
@@ -418,6 +419,9 @@ export function createHeadlessBrowser(deps: {
     await send("DOM.enable");
     await send("Accessibility.enable");
     await send("Fetch.enable", { patterns: [{ resourceType: "Document" }] });
+    // NAVEGADOR-AGIL-1: requests in flight tell when the page has answered; failures and errors feed browser.console.
+    await send("Network.enable");
+    await send("Log.enable");
     const { userAgent } = await p.send<{ userAgent: string }>("Browser.getVersion");
     await send("Network.setUserAgentOverride", { userAgent: userAgent.replace("HeadlessChrome", "Chrome") });
     const t: Tab = {
@@ -554,7 +558,7 @@ export function createHeadlessBrowser(deps: {
           const p = browserMethods["browser.click"].params.parse(raw);
           const t = drive(p.tab, p.by);
           await t.page.click(p.ref);
-          await Promise.race([settle(t), new Promise((r) => setTimeout(r, 1500))]);
+          await t.page.settle();
           await refresh(t);
           return { ok: true, url: t.url };
         }
@@ -562,9 +566,43 @@ export function createHeadlessBrowser(deps: {
           const p = browserMethods["browser.type"].params.parse(raw);
           const t = drive(p.tab, p.by);
           await t.page.type(p.ref, p.text, p.submit);
-          if (p.submit) await Promise.race([settle(t), new Promise((r) => setTimeout(r, 2000))]);
+          if (p.submit) await t.page.settle();
           await refresh(t);
           return { ok: true, url: t.url };
+        }
+        case "browser.fill": {
+          const p = browserMethods["browser.fill"].params.parse(raw);
+          const t = drive(p.tab, p.by);
+          const problems = await t.page.fill(p.fields);
+          if (p.submit && problems.length === 0) {
+            await t.page.click(p.submit);
+            await t.page.settle();
+          }
+          await refresh(t);
+          return { ok: true, url: t.url, problems };
+        }
+        case "browser.press": {
+          const p = browserMethods["browser.press"].params.parse(raw);
+          const t = drive(p.tab, p.by);
+          await t.page.press(p.key);
+          await t.page.settle();
+          await refresh(t);
+          return { ok: true, url: t.url };
+        }
+        case "browser.wait": {
+          const p = browserMethods["browser.wait"].params.parse(raw);
+          const t = get(p.tab);
+          const found =
+            p.text || p.gone
+              ? await t.page.waitFor({ text: p.text, gone: p.gone }, p.timeout_s * 1000)
+              : await t.page.settle(p.timeout_s * 1000).then(() => true);
+          await refresh(t);
+          return { found, url: t.url };
+        }
+        case "browser.console": {
+          const p = browserMethods["browser.console"].params.parse(raw);
+          const t = get(p.tab);
+          return { url: t.url, entries: t.page.logs(p.clear) };
         }
         case "browser.approval_context": {
           const p = browserMethods["browser.approval_context"].params.parse(raw);
@@ -584,24 +622,7 @@ export function createHeadlessBrowser(deps: {
         case "browser.text": {
           const p = browserMethods["browser.text"].params.parse(raw);
           const t = get(p.tab);
-          const pp = await ready();
-          const tree = await pp.send<{ frameTree: { frame: { id: string } } }>("Page.getFrameTree", {}, t.session);
-          // An isolated world: the page's scripts cannot see or patch this read.
-          const { executionContextId } = await pp.send<{ executionContextId: number }>(
-            "Page.createIsolatedWorld",
-            { frameId: tree.frameTree.frame.id, worldName: "colonia" },
-            t.session,
-          );
-          const r = await pp.send<{ result: { value?: unknown } }>(
-            "Runtime.evaluate",
-            {
-              expression: "document.body ? document.body.innerText : ''",
-              contextId: executionContextId,
-              returnByValue: true,
-            },
-            t.session,
-          );
-          const text = String(r.result.value ?? "").replace(/\n{3,}/g, "\n\n");
+          const text = (await t.page.text()).replace(/\n{3,}/g, "\n\n");
           const slice = text.slice(p.offset, p.offset + p.max_chars);
           return { url: t.url, text: slice, total: text.length, truncated: p.offset + p.max_chars < text.length };
         }

@@ -293,3 +293,103 @@ test("NAVEGADORES-2: headless, an owner's browser profile is refused instead of 
   );
   assert.deepEqual(await browser.handle("browser.signed_in", { profile: "nav:chrome-default" }), { sites: [] });
 });
+
+test("NAVEGADOR-AGIL-1: a whole form in one call, waiting for what loads late, a key, and what failed on the page", async () => {
+  const pages: Record<string, (q: URLSearchParams) => string> = {
+    "/form": () => `<html><head><title>Form</title></head><body><form action="/done">
+      <label>Name <input name="name"></label>
+      <label>Country <select name="country"><option value="">Choose</option><option value="ES">Spain</option><option value="MX">Mexico</option></select></label>
+      <label><input type="radio" name="plan" value="month"> Monthly</label><label><input type="radio" name="plan" value="year"> Yearly</label>
+      <label><input type="checkbox" name="terms"> Terms</label>
+      <input type="password" aria-label="Password"><button>Send</button></form></body></html>`,
+    "/done": (q) =>
+      `<html><head><title>Done</title></head><body><h1>Got ${q.get("name")} ${q.get("country")} ${q.get("plan")} ${q.get("terms")}</h1></body></html>`,
+    "/late":
+      () => `<html><head><title>Late</title></head><body><input aria-label="Box" autofocus><ul id="r"></ul><script>
+      fetch("/missing");
+      document.querySelector("input").addEventListener("keydown", (e) => { if (e.key === "Escape") document.title = "escaped"; });
+      setTimeout(() => { document.getElementById("r").innerHTML = "<li>Result one</li>"; }, 1500);
+    </script></body></html>`,
+  };
+  const own = http.createServer((req, res) => {
+    const u = new URL(req.url ?? "/", "http://x");
+    const page = pages[u.pathname];
+    if (!page) return res.writeHead(404).end();
+    res.writeHead(200, { "content-type": "text/html" }).end(page(u.searchParams));
+  });
+  await new Promise<void>((r) => own.listen(0, "127.0.0.1", r));
+  const at = `http://127.0.0.1:${(own.address() as AddressInfo).port}`;
+  try {
+    const tab = ((await browser.handle("browser.open", { url: `${at}/form`, by: "superagent" })) as TabInfo).tab;
+    const tree = ((await browser.handle("browser.snapshot", { tab })) as { tree: string }).tree;
+    const r = (re: RegExp) => re.exec(tree)?.[1] as string;
+    const name = r(/textbox "Name" \[(e\d+)\]/);
+    const country = r(/combobox "Country" \[(e\d+)\]/);
+    const yearly = r(/radio "Yearly" \[(e\d+)\]/);
+    const terms = r(/checkbox "Terms" \[(e\d+)\]/);
+    const send = r(/button "Send" \[(e\d+)\]/);
+    const password = r(/textbox "Password" \[(e\d+)\]/);
+    assert.ok(name && country && yearly && terms && send && password, tree);
+    // A password is refused inside a form as it is alone.
+    await assert.rejects(
+      browser.handle("browser.fill", { tab, fields: [{ ref: password, value: "x" }], by: "superagent" }),
+      /password/,
+    );
+    // An option that does not exist is reported, and the form is not sent.
+    const wrong = (await browser.handle("browser.fill", {
+      tab,
+      fields: [{ ref: country, value: "Peru" }],
+      submit: send,
+      by: "superagent",
+    })) as { url: string; problems: string[] };
+    assert.match(wrong.problems.join(), /no option "Peru".*Spain, Mexico/);
+    assert.equal(wrong.url, `${at}/form`);
+    const done = (await browser.handle("browser.fill", {
+      tab,
+      fields: [
+        { ref: name, value: "Ana" },
+        { ref: country, value: "Mexico" },
+        { ref: yearly, value: true },
+        { ref: terms, value: true },
+        // Already checked: setting it again must not uncheck it.
+        { ref: terms, value: true },
+      ],
+      submit: send,
+      by: "superagent",
+    })) as { url: string; problems: string[] };
+    assert.deepEqual(done.problems, []);
+    assert.match(done.url, /\/done\?/);
+    const text = (await browser.handle("browser.text", { tab })) as { text: string };
+    assert.match(text.text, /Got Ana MX year on/);
+
+    await browser.handle("browser.navigate", { tab, url: `${at}/late`, by: "superagent" });
+    const t0 = Date.now();
+    const seen = (await browser.handle("browser.wait", { tab, text: "result ONE", timeout_s: 5 })) as {
+      found: boolean;
+    };
+    assert.equal(seen.found, true);
+    assert.ok(Date.now() - t0 < 4_500, "it returns when the text shows, not at the timeout");
+    const never = (await browser.handle("browser.wait", { tab, text: "Nothing like it", timeout_s: 0.5 })) as {
+      found: boolean;
+    };
+    assert.equal(never.found, false);
+    assert.equal(
+      ((await browser.handle("browser.wait", { tab, gone: "Result one", timeout_s: 0.5 })) as { found: boolean }).found,
+      false,
+    );
+    await browser.handle("browser.press", { tab, key: "Escape", by: "superagent" });
+    const info = (await browser.handle("browser.tabs", {})) as { tabs: TabInfo[] };
+    assert.equal(info.tabs.find((x) => x.tab === tab)?.title, "escaped");
+    await assert.rejects(browser.handle("browser.press", { tab, key: "F13", by: "superagent" }), /unknown key/);
+    const logs = (await browser.handle("browser.console", { tab, clear: true })) as { entries: string[] };
+    assert.ok(
+      logs.entries.some((l) => /404 .*\/missing/.test(l)),
+      logs.entries.join("\n"),
+    );
+    assert.deepEqual(((await browser.handle("browser.console", { tab })) as { entries: string[] }).entries, []);
+    await browser.handle("browser.close", { tab });
+  } finally {
+    own.closeAllConnections();
+    own.close();
+  }
+});

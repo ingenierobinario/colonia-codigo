@@ -246,15 +246,46 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         const p = browserMethods["browser.click"].params.parse(raw);
         const tab = this.#drive(p.tab, p.by);
         await tab.cdp.click(p.ref);
-        await this.#settle(tab);
+        await this.#settleAction(tab);
         return { ok: true, url: tab.wc.getURL() };
       }
       case "browser.type": {
         const p = browserMethods["browser.type"].params.parse(raw);
         const tab = this.#drive(p.tab, p.by);
         await tab.cdp.type(p.ref, p.text, p.submit);
-        if (p.submit) await this.#settle(tab);
+        if (p.submit) await this.#settleAction(tab);
         return { ok: true, url: tab.wc.getURL() };
+      }
+      case "browser.fill": {
+        const p = browserMethods["browser.fill"].params.parse(raw);
+        const tab = this.#drive(p.tab, p.by);
+        const problems = await tab.cdp.fill(p.fields);
+        if (p.submit && problems.length === 0) {
+          await tab.cdp.click(p.submit);
+          await this.#settleAction(tab);
+        }
+        return { ok: true, url: tab.wc.getURL(), problems };
+      }
+      case "browser.press": {
+        const p = browserMethods["browser.press"].params.parse(raw);
+        const tab = this.#drive(p.tab, p.by);
+        await tab.cdp.press(p.key);
+        await this.#settleAction(tab);
+        return { ok: true, url: tab.wc.getURL() };
+      }
+      case "browser.wait": {
+        const p = browserMethods["browser.wait"].params.parse(raw);
+        const tab = this.#readable(p.tab);
+        const found =
+          p.text || p.gone
+            ? await tab.cdp.waitFor({ text: p.text, gone: p.gone }, p.timeout_s * 1000)
+            : await tab.cdp.settle(p.timeout_s * 1000).then(() => true);
+        return { found, url: tab.wc.getURL() };
+      }
+      case "browser.console": {
+        const p = browserMethods["browser.console"].params.parse(raw);
+        const tab = this.#readable(p.tab);
+        return { url: tab.wc.getURL(), entries: tab.cdp.logs(p.clear) };
       }
       case "browser.approval_context": {
         const p = browserMethods["browser.approval_context"].params.parse(raw);
@@ -736,6 +767,12 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
     await waitForPage(tab, [], 250);
     if (tab.wc.isDestroyed()) throw closedTab(tab);
     if (tab.wc.isLoading()) await waitForPage(tab, ["did-stop-loading"], NAV_TIMEOUT_MS);
+  }
+
+  /** NAVEGADOR-AGIL-1: after an action, also until what the page fetched for it (results, a message) is in. */
+  async #settleAction(tab: Tab): Promise<void> {
+    await this.#settle(tab);
+    if (!tab.wc.isDestroyed()) await tab.cdp.settle().catch(() => {});
   }
 
   #configure(ses: Session, notifications = false): void {

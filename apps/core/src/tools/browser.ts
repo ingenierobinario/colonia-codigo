@@ -12,6 +12,8 @@ import { defineTool, type Tool, type ToolContext } from "./types.ts";
 import { urlConfirm } from "./web.ts";
 
 const HANDOFF_S = 300;
+/** The page an action left, sent back with it: enough for a form or a results list, short of a full snapshot. */
+const AFTER_CHARS = 8_000;
 const SNAPSHOT_NAME = "browser-snapshot.jpg";
 /** Tab pictures a chat keeps: a model call carries the newest 4 images (providers/llm.ts), older ones are dropped. */
 const SNAPSHOTS_KEPT = 4;
@@ -82,6 +84,16 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
     });
   };
 
+  /**
+   * NAVEGADOR-AGIL-1: what an action left on the page, in the same reply. Before, every click or keystroke was followed
+   * by its own browser_snapshot call: one more round trip to the model for each step of a form.
+   */
+  const after = async (ctx: ToolContext, tab: string, head: string): Promise<string> => {
+    const r = await ctx.call("browser.snapshot", { tab, max_chars: AFTER_CHARS }).catch(() => undefined);
+    if (!r) return `${head}\nTake a browser_snapshot to see the page.`;
+    return `${head}\n${untrusted("web_snapshot", { tab, ...(r.document ? { document: r.document } : {}) }, cap(r.tree))}`;
+  };
+
   /** An agent only touches tabs of its own profile, and not while another agent is driving them. */
   const own = async (ctx: Pick<ToolContext, "agent" | "call">, id: string): Promise<string> => {
     const t = (await ctx.call("browser.tabs", {})).tabs.find((x) => x.tab === id);
@@ -115,7 +127,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
       needsCap: BROWSER_CAP,
       name: "browser_open",
       description:
-        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns an internal tab id. A successful navigation does not confirm a visible Chrome window. For login, use browser_handoff. If interrupted, report that the handoff was not confirmed; do not claim the owner saw the page. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). Then browser_snapshot gives refs for browser_click and browser_type (wait_s waits for the page); browser_text reads it.",
+        "Open a URL in your browser: in the tab this chat already uses (or `tab`), else a new one; `new_tab` for another beside it. The owner's embedded browser when the Colonia app is open (they can watch it), Colonia's own headless one otherwise (nobody sees it, nobody can log in for you). Returns an internal tab id. A successful navigation does not confirm a visible Chrome window. For login, use browser_handoff. If interrupted, report that the handoff was not confirmed; do not claim the owner saw the page. For reading or looking something up, web_read and web_search are faster; use the browser when a page needs JavaScript, clicks or forms, or when they failed. This is your browser for any site: not the owner's screen (screen_ tools, only when they ask for their computer) nor a browser an MCP server brings (another profile, logged out, the owner cannot see it). When a page fails, retry or browser_handoff; never switch. `app` opens one of the owner's web apps (list_apps) with the sign-in it keeps in Colonia: its address unless `url` gives a page of it; `navegador` opens it in one of the owner's browsers (browser_tabs). It returns the page with refs (e12) for browser_click, browser_type and browser_fill; each of those returns the page as it was left, so no snapshot is needed between steps. browser_text reads long content.",
       args: z.object({
         url: z.string().optional().describe("http(s) URL; optional with `app`"),
         app: z
@@ -149,18 +161,26 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         if (reuse) {
           const r = await ctx.call("browser.navigate", { tab: reuse, url, by: ctx.agent.id });
           await card(ctx, reuse, "agent");
-          return `tab ${reuse} · ${r.title} · ${r.url}\nThis is an internal tab; visibility to the owner is unconfirmed. Next: browser_snapshot to see the page.`;
+          return after(
+            ctx,
+            reuse,
+            `tab ${reuse} · ${r.title} · ${r.url}\nThis is an internal tab; visibility to the owner is unconfirmed.`,
+          );
         }
         const t = await ctx.call("browser.open", { url, profile, by: ctx.agent.id });
         await card(ctx, t.tab, "agent");
-        return `tab ${t.tab} · ${t.title} · ${t.url}\nThis is an internal tab; visibility to the owner is unconfirmed. Next: browser_snapshot to see the page.`;
+        return after(
+          ctx,
+          t.tab,
+          `tab ${t.tab} · ${t.title} · ${t.url}\nThis is an internal tab; visibility to the owner is unconfirmed.`,
+        );
       },
     }),
     defineTool({
       needsCap: BROWSER_CAP,
       name: "browser_snapshot",
       description:
-        "Accessibility snapshot of a tab: interactive elements with refs (e12) for click/type, and a picture of the tab. Untrusted web content.",
+        "Accessibility snapshot of a tab: interactive elements with refs (e12) for click/type/fill, and a picture of the tab (images, charts, layout). Actions already return the page: use this to look again or to see it. Untrusted web content.",
       args: z.object({
         tab: tabArg,
         wait_s: z.number().int().min(1).max(10).optional().describe("seconds to wait before reading"),
@@ -241,7 +261,7 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
         const tab = await own(ctx, a.tab);
         const r = await ctx.call("browser.click", { tab, ref: a.ref, by: ctx.agent.id });
         await card(ctx, tab, "agent");
-        return `clicked ${a.ref} · now at ${r.url}. Take a new browser_snapshot to check it did what you meant.`;
+        return after(ctx, tab, `clicked ${a.ref} · now at ${r.url}. The page now (check it did what you meant):`);
       },
     }),
     defineTool({
@@ -269,7 +289,95 @@ export function browserTools(store: Store, home: string, vm?: { hasThread(id: st
           submit: a.submit ?? false,
           by: ctx.agent.id,
         });
-        return `typed into ${a.ref}${a.submit ? " and pressed Enter" : ""} · ${r.url}. Take a new browser_snapshot to check it worked (a message sent, a form gone) before saying it did.`;
+        return after(
+          ctx,
+          tab,
+          `typed into ${a.ref}${a.submit ? " and pressed Enter" : ""} · ${r.url}. The page now (check it worked, a message sent, a form gone, before saying it did):`,
+        );
+      },
+    }),
+    defineTool({
+      needsCap: BROWSER_CAP,
+      name: "browser_fill",
+      description:
+        "Fill a whole form in one call: text fields get their text, a drop-down (combobox) the option whose label or value you give, a checkbox or radio true/false. `submit` clicks that button after, only if every field took its value. Returns what did not take and the page as it was left. Password, 2FA and card fields are refused: use browser_handoff.",
+      args: z.object({
+        tab: tabArg,
+        fields: z
+          .array(z.object({ ref: refArg, value: z.union([z.string().max(10_000), z.boolean()]) }))
+          .min(1)
+          .max(50),
+        submit: refArg.optional().describe("button to click once all fields are set"),
+      }),
+      effect: "external",
+      // Like typing: it hands data to a site, so after reading an untrusted page the owner decides (once per form).
+      confirm: "untrusted",
+      deadlineMs: 60_000,
+      title: (a) => `Filled ${a.fields?.length ?? 0} fields`,
+      async run(a, ctx) {
+        const tab = await own(ctx, a.tab);
+        const r = await ctx.call("browser.fill", { tab, fields: a.fields, submit: a.submit, by: ctx.agent.id });
+        await card(ctx, tab, "agent");
+        const head = r.problems.length
+          ? `filled the form, but these fields did not take their value${a.submit ? " (not submitted)" : ""}:\n${r.problems.map((p) => `- ${p}`).join("\n")}`
+          : `filled ${a.fields.length} fields${a.submit ? ` and clicked ${a.submit}` : ""} · ${r.url}. The page now (check it worked before saying it did):`;
+        return after(ctx, tab, head);
+      },
+    }),
+    defineTool({
+      needsCap: BROWSER_CAP,
+      name: "browser_press",
+      description:
+        "Press a key on what has focus: Enter, Escape, Tab, Backspace, Delete, Space, ArrowUp/Down/Left/Right, PageUp, PageDown, Home, End. Returns the page as it was left.",
+      args: z.object({ tab: tabArg, key: z.string().min(1).max(20) }),
+      effect: "external",
+      deadlineMs: 30_000,
+      title: (a) => `Pressed ${a.key}`,
+      async run(a, ctx) {
+        const tab = await own(ctx, a.tab);
+        const r = await ctx.call("browser.press", { tab, key: a.key, by: ctx.agent.id });
+        return after(ctx, tab, `pressed ${a.key} · ${r.url}. The page now:`);
+      },
+    }),
+    defineTool({
+      needsCap: BROWSER_CAP,
+      name: "browser_wait",
+      description:
+        "Wait until `text` shows on the page or `gone` leaves it (results that load late, a spinner, a confirmation), up to timeout_s; without either, until the page stops loading and changing. Returns the page. Use it instead of waiting a fixed time.",
+      args: z.object({
+        tab: tabArg,
+        text: z.string().min(1).max(500).optional(),
+        gone: z.string().min(1).max(500).optional(),
+        timeout_s: z.number().min(0.5).max(30).optional(),
+      }),
+      effect: "none",
+      deadlineMs: 45_000,
+      title: (a) => (a.text ? `Waited for ${a.text}` : "Waited for the page"),
+      async run(a, ctx) {
+        const tab = await own(ctx, a.tab);
+        const timeout_s = a.timeout_s ?? 10;
+        const r = await ctx.call("browser.wait", { tab, text: a.text, gone: a.gone, timeout_s });
+        return after(
+          ctx,
+          tab,
+          r.found ? `ready · ${r.url}` : `not seen after ${timeout_s} s · ${r.url}. The page as it is:`,
+        );
+      },
+    }),
+    defineTool({
+      needsCap: BROWSER_CAP,
+      name: "browser_console",
+      description:
+        "What went wrong on the page since the tab opened: requests that failed or answered an HTTP error, and the browser's errors and warnings. Use it when a click or a form does nothing. Untrusted web content.",
+      args: z.object({ tab: tabArg, clear: z.boolean().optional().describe("forget them after reading") }),
+      effect: "none",
+      deadlineMs: 15_000,
+      title: () => "Looked at the page's errors",
+      async run(a, ctx) {
+        const tab = await own(ctx, a.tab);
+        const r = await ctx.call("browser.console", { tab, clear: a.clear ?? false });
+        if (!r.entries.length) return `no failed requests or errors on ${r.url}`;
+        return untrusted("web_console", { source: r.url }, r.entries.join("\n"));
       },
     }),
     defineTool({

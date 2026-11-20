@@ -194,6 +194,44 @@ export const browserMethods = {
     effect: true,
     access: "human",
   },
+  // NAVEGADOR-AGIL-1: a form in one call, a key, waiting for what the page shows, and what went wrong on it.
+  "browser.fill": {
+    params: z
+      .object({
+        tab: Tab,
+        fields: z
+          .array(z.object({ ref: Ref, value: z.union([z.string().max(10_000), z.boolean()]) }).strict())
+          .min(1)
+          .max(50),
+        submit: Ref.optional(),
+        by: By,
+      })
+      .strict(),
+    result: z.object({ ok: z.literal(true), url: z.string(), problems: z.array(z.string()) }),
+    effect: true,
+  },
+  "browser.press": {
+    params: z.object({ tab: Tab, key: z.string().min(1).max(20), by: By }).strict(),
+    result: z.object({ ok: z.literal(true), url: z.string() }),
+    effect: true,
+  },
+  "browser.wait": {
+    params: z
+      .object({
+        tab: Tab,
+        text: z.string().min(1).max(500).optional(),
+        gone: z.string().min(1).max(500).optional(),
+        timeout_s: z.number().min(0.5).max(30).default(10),
+      })
+      .strict(),
+    result: z.object({ found: z.boolean(), url: z.string() }),
+    effect: false,
+  },
+  "browser.console": {
+    params: z.object({ tab: Tab, clear: z.boolean().default(false) }).strict(),
+    result: z.object({ url: z.string(), entries: z.array(z.string()) }),
+    effect: false,
+  },
   "browser.close": {
     params: z.object({ tab: Tab }).strict(),
     result: z.object({ ok: z.literal(true) }),

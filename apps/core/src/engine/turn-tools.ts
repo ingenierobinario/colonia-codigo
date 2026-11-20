@@ -79,6 +79,10 @@ const BOT_KEEPS = new Set([
   "browser_text",
   "browser_click",
   "browser_type",
+  "browser_fill",
+  "browser_press",
+  "browser_wait",
+  "browser_console",
   "task_get",
   "task_list",
   // Read-only knowledge of the projects its own knows, or its Flow was given (DECISIONS.md#d-191).
@@ -92,7 +96,17 @@ export function channelKindOf(store: Store, o: Origin, replyChannel?: string | n
   return store.settings.read("channels").find((c) => c.id === channel)?.type ?? channel;
 }
 
-const VM_BROWSER_TOOLS = new Set(["browser_open", "browser_snapshot", "browser_text", "browser_click", "browser_type"]);
+const VM_BROWSER_TOOLS = new Set([
+  "browser_open",
+  "browser_snapshot",
+  "browser_text",
+  "browser_click",
+  "browser_type",
+  "browser_fill",
+  "browser_press",
+  "browser_wait",
+  "browser_console",
+]);
 /**
  * Host tools a chat on the computer keeps: they read nothing of the Mac's files or screen. Colonia's own work (tasks,
  * delegation, memory) and web look-ups run in the core as they do elsewhere (DECISIONS.md#d-154).
