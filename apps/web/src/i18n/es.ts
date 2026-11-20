@@ -708,10 +708,15 @@ export const es: Partial<Record<MessageKey, string>> = {
   "share.copyFailed": "No se pudo copiar el enlace.",
   "share.hint":
     "Privado por defecto. Al publicar, cualquiera con el enlace puede leer el HTML. Las páginas públicas no acceden al estado de Colonia, archivos privados ni acciones.",
-  "share.tunnelHint":
-    "Copiar y abrir requieren una dirección pública (Configuración › Dispositivos). Activarla también expone el HTML ya compartido; revisa su contenido antes.",
-  "share.linkUnavailable":
-    "Enlace público no disponible. Revisa la dirección pública en Configuración › Dispositivos y permite abrir pestañas.",
+  "share.noLinkYet":
+    "Aún no tiene enlace público. Al activarlo, lo que ya has compartido se podrá abrir desde internet.",
+  "share.activateCopy": "Activar enlace público y copiarlo",
+  "share.activateOpen": "Activar enlace público y abrirlo",
+  "share.activating": "Activando el enlace público… La primera vez puede tardar un par de minutos.",
+  "share.activateFailed": "No se pudo conseguir el enlace público. {reason}",
+  "share.popupCopied":
+    "El navegador no dejó abrir otra pestaña, así que hemos copiado el enlace: pégalo en la barra de direcciones.",
+  "share.sharedNoLink": "Compartido. Para tener el enlace, pulsa «Activar enlace público y copiarlo».",
   "share.private": "Privado",
   "share.anyone": "Cualquiera con el enlace",
   "share.copy": "Copiar enlace",

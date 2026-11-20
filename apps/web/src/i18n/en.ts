@@ -707,10 +707,14 @@ export const en = {
   "share.copyFailed": "Could not copy the link.",
   "share.hint":
     "Private by default. Publishing makes the HTML readable by anyone with its link. Public pages cannot access Colonia state, private files or actions.",
-  "share.tunnelHint":
-    "Copy and open require a public address (Settings › Devices). Enabling it also exposes previously shared HTML; review its content first.",
-  "share.linkUnavailable":
-    "Public link unavailable. Check the public address in Settings › Devices and allow new tabs.",
+  "share.noLinkYet":
+    "No public link yet. Once you switch it on, anything you have already shared can be opened from the internet.",
+  "share.activateCopy": "Switch on public link and copy it",
+  "share.activateOpen": "Switch on public link and open it",
+  "share.activating": "Switching on the public link… The first time it can take a couple of minutes.",
+  "share.activateFailed": "The public link could not be set up. {reason}",
+  "share.popupCopied": "The browser did not allow a new tab, so the link was copied: paste it into the address bar.",
+  "share.sharedNoLink": "Shared. To get the link, choose “Switch on public link and copy it”.",
   "share.private": "Private",
   "share.anyone": "Anyone with the link",
   "share.copy": "Copy link",
