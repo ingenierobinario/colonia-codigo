@@ -321,7 +321,7 @@ test("the agent is told a send the owner asked for stays its own, not a hand-off
   const open = llm.calls[0]?.tools.find((t) => t.function.name === "browser_open");
   assert.match(
     String(open?.function.description),
-    /browser_snapshot gives refs for browser_click and browser_type \(wait_s/,
+    /returns the page with refs \(e12\) for browser_click, browser_type and browser_fill/,
   );
 });
 

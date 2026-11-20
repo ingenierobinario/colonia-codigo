@@ -20,6 +20,8 @@ export class CdpTab {
       this.#attached = false;
       this.#invalidate();
     });
+    // NAVEGADOR-AGIL-1: requests in flight and errors, for settle and browser.console.
+    wc.debugger.on("message", (_e, method, params) => this.#page.event(method, params));
     wc.on("did-navigate", () => this.#invalidate());
     wc.on("did-navigate-in-page", () => this.#invalidate());
   }
@@ -33,6 +35,8 @@ export class CdpTab {
     await this.send("Page.enable");
     await this.send("DOM.enable");
     await this.send("Accessibility.enable");
+    await this.send("Network.enable");
+    await this.send("Log.enable");
   }
 
   #invalidate(): void {
@@ -70,6 +74,26 @@ export class CdpTab {
 
   type(ref: string, text: string, submit: boolean) {
     return this.#page.type(ref, text, submit);
+  }
+
+  fill(fields: ReadonlyArray<{ ref: string; value: string | boolean }>) {
+    return this.#page.fill(fields);
+  }
+
+  press(key: string) {
+    return this.#page.press(key);
+  }
+
+  settle(maxMs?: number) {
+    return this.#page.settle(maxMs);
+  }
+
+  waitFor(want: { text?: string; gone?: string }, timeoutMs: number) {
+    return this.#page.waitFor(want, timeoutMs);
+  }
+
+  logs(clear: boolean) {
+    return this.#page.logs(clear);
   }
 
   /** CDP capture, then compositor capture; both bounded. See HISTORY.md#cdp-attach-after-load */
