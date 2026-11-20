@@ -7,12 +7,14 @@ import { moveLegacyHome } from "./home.ts";
 import { createLog } from "./log.ts";
 import { stopWhenParentCloses } from "./processes.ts";
 import { createCore } from "./server.ts";
+import { markStartup } from "./startup-phases.ts";
 import { surviveStrayErrors } from "./stray-errors.ts";
 import { restartAfterClose } from "./updates.ts";
 
 // See HISTORY.md#connection-attempt-timeout.
 setDefaultAutoSelectFamilyAttemptTimeout(Math.max(2000, getDefaultAutoSelectFamilyAttemptTimeout()));
 
+markStartup("modules");
 const config = loadConfig();
 const startupLock = acquireDaemonLock(`${config.home}.startup`);
 const lock = (() => {
@@ -28,6 +30,7 @@ const lock = (() => {
   }
 })();
 process.once("exit", () => lock.release());
+markStartup("lock");
 const core = await createCore(config, {
   // After an update: close, then the supervisor starts the new code.
   restart: () =>

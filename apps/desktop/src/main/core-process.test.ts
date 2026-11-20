@@ -355,3 +355,12 @@ test("applying core.env restarts the service when its core was adopted, or says 
   });
   assert.equal(stops, 1);
 });
+
+test("ARRANQUE-RAPIDO-1: el núcleo instalado arranca desde su único fichero, y un checkout desde las fuentes", async () => {
+  await using dir = tempDir("colonia-core-entry-");
+  const src = path.join(dir.path, "apps", "core", "src", "main.ts");
+  assert.equal(core.coreEntry(dir.path), src);
+  fs.mkdirSync(path.join(dir.path, "apps", "core"), { recursive: true });
+  fs.writeFileSync(path.join(dir.path, "apps", "core", "core.mjs"), "");
+  assert.equal(core.coreEntry(dir.path), path.join(dir.path, "apps", "core", "core.mjs"));
+});

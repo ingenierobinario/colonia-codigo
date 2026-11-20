@@ -137,6 +137,15 @@ async function whoHolds(
   }
 }
 
+/**
+ * ARRANQUE-RAPIDO-1: the installed app carries the core as one JavaScript file (scripts/stage-core.ts); started from
+ * the ~700 TypeScript sources the first start after an update took 30-100 s. A checkout without it runs the sources.
+ */
+export function coreEntry(root: string): string {
+  const bundle = path.join(root, "apps", "core", "core.mjs");
+  return fs.existsSync(bundle) ? bundle : path.join(root, "apps", "core", "src", "main.ts");
+}
+
 /** Supervises only the bundled child at the explicit local home/port, never an endpoint supplied by COLONIA_URL. */
 export function startEmbeddedCore(opts: {
   resources: string;
@@ -203,30 +212,26 @@ export function startEmbeddedCore(opts: {
   const start = () => {
     if (stopped) return;
     const startedAt = Date.now();
-    child = spawn(
-      process.execPath,
-      ["--disable-warning=ExperimentalWarning", path.join(root, "apps", "core", "src", "main.ts")],
-      {
-        cwd: root,
-        // The core stops cleanly when this pipe closes (stopWhenParentCloses): Windows has no TERM to ask it with.
-        stdio: ["pipe", log, log],
-        windowsHide: true,
-        env: {
-          ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("COLONIA_"))),
-          COLONIA_HOST: "127.0.0.1",
-          ELECTRON_RUN_AS_NODE: "1",
-          NODE_COMPILE_CACHE: opts.cacheDir,
-          COLONIA_APP: "",
-          COLONIA_HOME: path.resolve(opts.home),
-          COLONIA_PORT: String(opts.port),
-          COLONIA_WEB_DIST: path.join(root, "apps", "web", "dist"),
-          COLONIA_UPDATES: "app",
-          COLONIA_SUPERVISED: "1",
-          COLONIA_CODE_SHA: build.sha ?? "",
-          COLONIA_STOP_ON_STDIN: "1",
-        },
+    child = spawn(process.execPath, ["--disable-warning=ExperimentalWarning", coreEntry(root)], {
+      cwd: root,
+      // The core stops cleanly when this pipe closes (stopWhenParentCloses): Windows has no TERM to ask it with.
+      stdio: ["pipe", log, log],
+      windowsHide: true,
+      env: {
+        ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("COLONIA_"))),
+        COLONIA_HOST: "127.0.0.1",
+        ELECTRON_RUN_AS_NODE: "1",
+        NODE_COMPILE_CACHE: opts.cacheDir,
+        COLONIA_APP: "",
+        COLONIA_HOME: path.resolve(opts.home),
+        COLONIA_PORT: String(opts.port),
+        COLONIA_WEB_DIST: path.join(root, "apps", "web", "dist"),
+        COLONIA_UPDATES: "app",
+        COLONIA_SUPERVISED: "1",
+        COLONIA_CODE_SHA: build.sha ?? "",
+        COLONIA_STOP_ON_STDIN: "1",
       },
-    );
+    });
     const finished = (code: number | null) => {
       if (stopped) return;
       fs.writeSync(log, `${new Date().toISOString()} core exited (${code})\n`);

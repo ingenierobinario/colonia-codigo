@@ -61,20 +61,39 @@ export function createSecrets(
     dpapi: () => dpapiStore(home, SERVICE, run),
     "secret-service": () => secretServiceStore(SERVICE, run),
   };
-  const candidate = wanted === "file" ? undefined : stores[wanted]();
-  // An index means values already went to the store: it stays chosen even while it does not answer (a keyring still
-  // locked at boot), or the owner's secrets would seem gone. Otherwise a store that does not work falls back to the file.
-  const store =
-    candidate && (wanted === "keychain" || fs.existsSync(index) || candidate.works()) ? candidate : undefined;
-  const backend: SecretsBackend = store ? wanted : "file";
-  // The file holds values only for the file backend; with a store it is just the index (names, dates).
-  const file = store ? index : legacy;
+  let store: ValueStore | undefined;
+  let backend: SecretsBackend = "file";
+  let file = legacy;
+  let sealed = false;
+  let chosen = false;
+  // ARRANQUE-RAPIDO-1: asking a store whether it works runs its program (DPAPI: PowerShell, twice, ~3 s on Windows).
+  // A home with nothing saved yet asks when a secret is first used, not while the core starts.
+  const choose = () => {
+    if (chosen) return;
+    chosen = true;
+    const candidate = wanted === "file" ? undefined : stores[wanted]();
+    // An index means values already went to the store: it stays chosen even while it does not answer (a keyring still
+    // locked at boot), or the owner's secrets would seem gone. Otherwise a store that does not work falls back to the file.
+    store = candidate && (wanted === "keychain" || fs.existsSync(index) || candidate.works()) ? candidate : undefined;
+    backend = store ? wanted : "file";
+    // The file holds values only for the file backend; with a store it is just the index (names, dates).
+    file = store ? index : legacy;
+    // Un fichero heredado o restaurado puede tener permisos demasiado amplios. Corrígelos antes de leerlo.
+    if (!store && process.platform !== "win32" && fs.existsSync(legacy)) {
+      try {
+        fs.chmodSync(legacy, 0o600);
+      } catch {}
+    }
+    // Preserva las conexiones de 2.32.0 que solo existen en el fichero heredado. Un fichero vacío no contiene ninguna.
+    sealed = wanted !== "file" && !store && Object.keys(read()).length === 0;
+  };
   const cache = new Map<string, string | undefined>();
   // SECRETOS-ILEGIBLES-1: a file saved by Notepad starts with a BOM, which JSON.parse refuses; one cut short by a power
   // loss does not parse at all. Either used to read as empty, and the next save wrote that empty list over every value.
   // Now the BOM is skipped, and an unreadable file is set aside (secrets.json.corrupt-<time>) before anything replaces it.
   let unreadable = false;
   const read = (): Record<string, Entry> => {
+    choose();
     let text: string;
     try {
       text = fs.readFileSync(file, "utf8");
@@ -88,14 +107,6 @@ export function createSecrets(
     unreadable = true;
     return {};
   };
-  // Un fichero heredado o restaurado puede tener permisos demasiado amplios. Corrígelos antes de leerlo.
-  if (!store && process.platform !== "win32" && fs.existsSync(legacy)) {
-    try {
-      fs.chmodSync(legacy, 0o600);
-    } catch {}
-  }
-  // Preserva las conexiones de 2.32.0 que solo existen en el fichero heredado. Un fichero vacío no contiene ninguna.
-  const sealed = wanted !== "file" && !store && Object.keys(read()).length === 0;
   const write = (all: Record<string, Entry>) => {
     fs.mkdirSync(home, { recursive: true });
     if (unreadable && fs.existsSync(file)) {
@@ -118,17 +129,24 @@ export function createSecrets(
   };
 
   const api = {
-    backend,
+    get backend(): SecretsBackend {
+      choose();
+      return backend;
+    },
     /** What the owner should know once: the keyring was wanted and is not there, so values sit in a file. */
-    notice: sealed
-      ? `No system store for secrets answered, so Colonia will not save any (it never writes them in plain text). On Linux install a keyring (gnome-keyring and libsecret-tools) and restart Colonia. Values already in ${legacy} are not read.`
-      : undefined,
+    get notice(): string | undefined {
+      choose();
+      return sealed
+        ? `No system store for secrets answered, so Colonia will not save any (it never writes them in plain text). On Linux install a keyring (gnome-keyring and libsecret-tools) and restart Colonia. Values already in ${legacy} are not read.`
+        : undefined;
+    },
     /** Resolves `secret://name` or `env:VAR`; anything else (or a missing value) is undefined. */
     resolve(ref: string | undefined): string | undefined {
       if (!ref) return undefined;
       if (ref.startsWith("env:")) return env[ref.slice(4)] || undefined;
       if (!ref.startsWith("secret://")) return undefined;
       const name = ref.slice(9);
+      choose();
       if (sealed) return undefined;
       if (!store) return read()[name]?.value || undefined;
       if (cache.has(name)) return cache.get(name);
@@ -165,6 +183,7 @@ export function createSecrets(
       }));
     },
     set(name: string, value: string | null): void {
+      choose();
       if (sealed) {
         if (value !== null) throw new Error(api.notice);
         return;
@@ -182,6 +201,7 @@ export function createSecrets(
      * that keeps them apart tries each, so a value it refuses does not lose the others. Returns the names not saved.
      */
     setMany(values: Record<string, string | null>): { failed: string[] } {
+      choose();
       const names = Object.keys(values);
       if (names.length === 0) return { failed: [] };
       if (sealed) return { failed: names.filter((name) => values[name] !== null) };
@@ -208,6 +228,8 @@ export function createSecrets(
     },
   };
 
+  // A home that already keeps secrets chooses now, as before (with an index that asks nothing of the store).
+  if (fs.existsSync(index) || fs.existsSync(legacy)) choose();
   // Values written by the file backend before a store was used move there once, and the file goes away.
   if (store && fs.existsSync(legacy)) {
     try {

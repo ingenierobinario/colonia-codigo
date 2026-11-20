@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { createSecrets, keychainService, projectSecretName, splitSecretName } from "./secrets.ts";
-import { type Run, systemBackend } from "./secrets-stores.ts";
+import { dpapiStore, type Run, systemBackend } from "./secrets-stores.ts";
 import { removeDir, tempDir } from "./testkit/platform.ts";
 
 test("secrets resolve by reference, list names only, and live in a 0600 file with the file backend", async () => {
@@ -219,6 +219,8 @@ test("RESTAURAR-DPAPI-1: cuarenta claves de una copia se sellan con un solo Powe
     const s = createSecrets(home, "dpapi", {}, sys.run);
     const values: Record<string, string> = {};
     for (let i = 0; i < 40; i++) values[`k${i}`] = `valor-${i}`;
+    // Elegir el almacén (la prueba de DPAPI) ya no es parte de guardar: se hace al primer uso.
+    assert.equal(s.backend, "dpapi");
     const before = sys.calls.length;
     assert.deepEqual(s.setMany(values), { failed: [] });
     const protects = sys.calls.slice(before).filter((c) => c.cmd === "powershell.exe");
@@ -258,4 +260,41 @@ test("RESTAURAR-DPAPI-1: en el llavero de Linux una clave rechazada no impide gu
   } finally {
     await removeDir(home);
   }
+});
+
+test("ARRANQUE-RAPIDO-1: una carpeta sin secretos no arranca PowerShell al crear el almacén", async () => {
+  const home = tempHome();
+  try {
+    const sys = fakeSystem({ powershell: true });
+    const s = createSecrets(home, "dpapi", {}, sys.run);
+    // Antes: protect + unprotect (~3 s en Windows) antes de que el núcleo contestara a /health.
+    assert.equal(sys.calls.filter((c) => c.cmd === "powershell.exe").length, 0, "crear no prueba el almacén");
+    assert.equal(s.resolve("env:NADA"), undefined);
+    assert.equal(sys.calls.filter((c) => c.cmd === "powershell.exe").length, 0, "env: no necesita almacén");
+    assert.equal(s.backend, "dpapi");
+    assert.ok(
+      sys.calls.some((c) => c.cmd === "powershell.exe"),
+      "al primer uso sí se elige",
+    );
+    s.set("a", "b");
+    assert.equal(createSecrets(home, "dpapi", {}, sys.run).resolve("secret://a"), "b");
+  } finally {
+    await removeDir(home);
+  }
+});
+
+test("ARRANQUE-RAPIDO-1: un secrets.dpapi que esta cuenta no abre no lanza un PowerShell en cada lectura", async () => {
+  await using dir = tempDir("colonia-dpapi-ajeno-");
+  fs.writeFileSync(path.join(dir.path, "secrets.dpapi"), "sellado-en-otro-equipo");
+  let calls = 0;
+  const run: Run = () => {
+    calls++;
+    throw new Error("Key not valid for use in specified state");
+  };
+  const store = dpapiStore(dir.path, "colonia-test", run);
+  for (let i = 0; i < 10; i++) assert.equal(store.get("openai"), undefined);
+  assert.equal(calls, 1, `PowerShell arrancó ${calls} veces para diez lecturas`);
+  // Guardar sí vuelve a intentarlo (y falla en voz alta: no pisa lo que no pudo leer).
+  assert.throws(() => store.set("openai", "sk"));
+  assert.equal(calls, 2);
 });

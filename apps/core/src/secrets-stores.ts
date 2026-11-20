@@ -145,8 +145,21 @@ export function dpapiStore(home: string, service: string, run: Run = runCommand)
       input: b64,
       env: { COLONIA_DPAPI_OP: op, COLONIA_DPAPI_ENTROPY: service },
     }).trim();
-  const load = (): Record<string, string> => {
+  // ARRANQUE-RAPIDO-1: a file this account cannot open (copied from another folder or computer) is not asked again on
+  // every read: each try is a PowerShell (~0.5 s, blocking), and /health reads a secret. A change still tries again.
+  let failedAt = 0;
+  const RETRY_MS = 60_000;
+  const load = (again = false): Record<string, string> => {
     if (values) return values;
+    if (!again && failedAt && Date.now() - failedAt < RETRY_MS) throw new Error("secrets.dpapi could not be opened");
+    try {
+      return open();
+    } catch (err) {
+      failedAt = Date.now();
+      throw err;
+    }
+  };
+  const open = (): Record<string, string> => {
     const loaded = fs.existsSync(file)
       ? (JSON.parse(
           Buffer.from(crypt("unprotect", fs.readFileSync(file, "utf8").trim()), "base64").toString("utf8"),
@@ -165,7 +178,7 @@ export function dpapiStore(home: string, service: string, run: Run = runCommand)
   };
   // RESTAURAR-DPAPI-1: every change goes through one Protect, however many names it carries.
   const apply = (changes: Record<string, string | null>) => {
-    const next = { ...load() };
+    const next = { ...load(true) };
     for (const [name, value] of Object.entries(changes)) {
       if (value === null) delete next[name];
       else next[name] = value;

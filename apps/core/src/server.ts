@@ -139,6 +139,7 @@ import { createServices } from "./services/registry.ts";
 import { mediaData } from "./services/uploads.ts";
 import { syncRuntimeSkills } from "./skills/runtimes.ts";
 import { skillsFor } from "./skills/skills.ts";
+import { markStartup, startupPhases } from "./startup-phases.ts";
 import { createSync, type Sync } from "./sync/service.ts";
 import { createTelemetry } from "./telemetry.ts";
 import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
@@ -242,15 +243,12 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   applyPendingRestore(config.home, (msg) => log.warn({}, msg));
   const identity = readIdentity(config.home);
   const db = openDb(config.home);
+  markStartup("db");
   const bus = createBus();
   // The engine exists by the time a command ends.
   const terminals = createTerminals({ bus, log, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
   const store = createStore(db, bus);
   const secrets = opts.secrets ?? createSecrets(config.home, config.secrets);
-  if (secrets.notice && !store.settings.get("secrets_file_told")) {
-    log.warn({ backend: secrets.backend }, secrets.notice);
-    store.settings.set("secrets_file_told", "1");
-  }
   seed(store, config.agentName);
   const releases =
     opts.releases ?? (config.whatsNew ? localReleases(path.resolve(import.meta.dirname, "../../..")) : undefined);
@@ -893,6 +891,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   if (cleanup) log.info(cleanup, "captured memory cleanup: retired noisy automatic notes");
   memoryMaintenance.start();
 
+  markStartup("wired");
   const transport = await listen(config, {
     dispatch,
     store,
@@ -905,6 +904,16 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     sync: pair,
   });
   listening = transport.port;
+  markStartup("health");
+  // ARRANQUE-RAPIDO-1: knowing whether the store answers can run its program (DPAPI: PowerShell); /health goes first.
+  setImmediate(() => {
+    try {
+      if (secrets.notice && !store.settings.get("secrets_file_told")) {
+        log.warn({ backend: secrets.backend }, secrets.notice);
+        store.settings.set("secrets_file_told", "1");
+      }
+    } catch {}
+  });
   pair.start();
   if (!opts.equipoOff) equipoAgent.start();
   // Agents' shells and harnesses reach this core with `colonia`, whatever the owner's PATH holds.
@@ -937,6 +946,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   // Not awaited: ngrok may take 15 s, and a channel reads its public address when it needs it (hookBase).
   void webhooks.start();
   await channels.start();
+  markStartup("channels");
   // After the channels: the message goes out on one (it waits in the outbox until that one is up).
   if (config.news)
     void news
@@ -955,7 +965,10 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     // A core that looks after this machine's agent CLIs asks them once now, so a signed-in Codex can draw at once.
     void harnesses.status().catch(() => {});
   }
-  log.info({ url, code_sha: identity.code_sha, home: config.home, llm: llm.label() }, "colonia core listening");
+  log.info(
+    { url, code_sha: identity.code_sha, home: config.home, llm: llm.label(), startup_ms: startupPhases() },
+    "colonia core listening",
+  );
 
   return {
     url,
