@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.60": {
+    en: ["From the very first instant, Colonia shows its penguin while it starts, never a black window."],
+    es: ["Desde el primer instante, Colonia enseña su pingüino mientras arranca, nunca una ventana negra."],
+  },
   "2.36.59": {
     en: [
       "After creating your server on Railway, Colonia links to it by itself: paste its address, no codes.",
