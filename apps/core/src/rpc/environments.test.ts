@@ -120,6 +120,10 @@ test("native VM turns expose guest shell and browser tools and never fall back t
         "browser_text",
         "browser_click",
         "browser_type",
+        "browser_fill",
+        "browser_press",
+        "browser_wait",
+        "browser_console",
         ...KEPT,
       ].sort(),
     );
@@ -354,10 +358,15 @@ test("only the owner shuts the shared computer down; it cancels the turns holdin
       offered.at(-1),
       [
         "browser_click",
+        "browser_console",
+        "browser_fill",
         "browser_open",
+
+        "browser_press",
         "browser_snapshot",
         "browser_text",
         "browser_type",
+        "browser_wait",
         "computer",
         "shell",
         ...KEPT,
