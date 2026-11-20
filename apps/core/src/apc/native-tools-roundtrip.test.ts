@@ -1,14 +1,20 @@
 // TOOLS-NATIVO-1 y EXPORTAR-IDEMPOTENTE-1.
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { after, test } from "node:test";
 import { buildPackage, writePackage } from "../rpc/project-share.ts";
+import { type TempDir, tempDir } from "../testkit/platform.ts";
 import { readAgents } from "./read.ts";
 import { updateAgentFile } from "./write.ts";
 
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "apc-nativo-"));
+const made: TempDir[] = [];
+after(() => Promise.all(made.map((d) => d.remove())));
+const tmp = () => {
+  const d = tempDir("apc-nativo-");
+  made.push(d);
+  return d.path;
+};
 const ORIG = "---\nname: x\ndescription: Revisor\ntools: Read, Grep\n---\n\nHaz cosas.\n";
 const seed = () => {
   const root = tmp();
