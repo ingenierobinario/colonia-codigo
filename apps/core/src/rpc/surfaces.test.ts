@@ -29,6 +29,29 @@ test("el logo se conserva al exportar, importar y cambiar de nombre la aplicaci�
   }
 });
 
+test("APPS-RENOMBRAR-1: surfaces.update cambia el título visible sin tocar el nombre ni el HTML, y valida", async () => {
+  const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
+  try {
+    const s = await env.client.call("surfaces.show", { name: "radar-tech", title: "Radar tech", html: PAGE });
+    const before = await env.client.call("surfaces.get", { surface: s.id });
+    const r = await env.client.call("surfaces.update", { surface: s.id, title: "  Radar de tecnología  " });
+    assert.equal(r.title, "Radar de tecnología");
+    assert.equal(r.name, "radar-tech");
+    const got = await env.client.call("surfaces.get", { surface: s.id });
+    assert.equal(got.title, "Radar de tecnología");
+    assert.equal(got.html, before.html);
+    assert.equal(got.version, before.version);
+    // Otras banderas no lo pisan.
+    assert.equal((await env.client.call("surfaces.update", { surface: s.id, app: true })).title, "Radar de tecnología");
+    await assert.rejects(env.client.call("surfaces.update", { surface: s.id, title: "   " }));
+    await assert.rejects(env.client.call("surfaces.update", { surface: s.id, title: "x".repeat(121) }));
+    assert.equal((await env.client.call("surfaces.get", { surface: s.id })).title, "Radar de tecnología");
+  } finally {
+    await env.core.close();
+    await env.cleanup();
+  }
+});
+
 test("a page names the kit version it loads", () => {
   assert.equal(kitVersionOf(PAGE), "1.2");
   assert.equal(kitVersionOf("<h1>plain</h1>"), undefined);

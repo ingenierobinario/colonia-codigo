@@ -9,6 +9,7 @@ import { useT } from "../i18n/index.ts";
 import { ArtifactLogo } from "../surfaces/ArtifactLogo.tsx";
 import { ArtifactMemoryDialog } from "../surfaces/ArtifactMemory.tsx";
 import { ArtifactPropertiesDialog } from "../surfaces/ArtifactProperties.tsx";
+import { ArtifactRenameDialog } from "../surfaces/ArtifactRename.tsx";
 import { artifactMenu } from "../surfaces/artifactMenu.tsx";
 import { openInstall } from "../surfaces/installRequest.ts";
 import { dropLive, useRunningApps } from "../surfaces/livePool.ts";
@@ -36,6 +37,7 @@ export function AppsDock({ rail }: { rail: boolean }) {
   const internalFolded = usePrefs((s) => s.appsInternalFolded);
   const [memoryOf, setMemoryOf] = useState<string>();
   const [propsOf, setPropsOf] = useState<string>();
+  const [renameOf, setRenameOf] = useState<string>();
   // Newest first: one just installed or changed shows on top.
   const pinned = useMemo(
     () =>
@@ -60,6 +62,7 @@ export function AppsDock({ rail }: { rail: boolean }) {
       items={artifactMenu(a, t, {
         onMemory: () => setMemoryOf(a.id),
         onProperties: () => setPropsOf(a.id),
+        onRename: () => setRenameOf(a.id),
         running: running.has(a.id),
       })}
     >
@@ -78,12 +81,14 @@ export function AppsDock({ rail }: { rail: boolean }) {
         }
         active={view === "app" && appId === a.id}
         onClick={() => go.app(a.id)}
+        onDoubleClick={() => setRenameOf(a.id)}
       />
     </ContextMenu>
   );
 
   const memory = memoryOf ? surfaces[memoryOf] : undefined;
   const props = propsOf ? surfaces[propsOf] : undefined;
+  const renaming = renameOf ? surfaces[renameOf] : undefined;
   return (
     <>
       <SidebarSection
@@ -145,6 +150,7 @@ export function AppsDock({ rail }: { rail: boolean }) {
       )}
       {memory && <ArtifactMemoryDialog surface={memory} onClose={() => setMemoryOf(undefined)} />}
       {props && <ArtifactPropertiesDialog surface={props} onClose={() => setPropsOf(undefined)} />}
+      {renaming && <ArtifactRenameDialog surface={renaming} onClose={() => setRenameOf(undefined)} />}
     </>
   );
 }

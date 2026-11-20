@@ -332,8 +332,8 @@ export function appHandlers(deps: {
         }),
       );
     },
-    "surfaces.update": ({ surface, pinned, app, logo }) => {
-      const s = store.surfaces.patch(surface, { pinned, app, logo });
+    "surfaces.update": ({ surface, pinned, app, logo, title }) => {
+      const s = store.surfaces.patch(surface, { pinned, app, logo, title });
       if (!s) throw notFound(`surface ${surface}`);
       return s;
     },

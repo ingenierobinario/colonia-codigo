@@ -6,8 +6,10 @@ import { useT } from "../i18n/index.ts";
 import { nav, useNav } from "../shell/nav.ts";
 import { ArtifactMemoryButton } from "../surfaces/ArtifactMemory.tsx";
 import { ArtifactPropertiesDialog } from "../surfaces/ArtifactProperties.tsx";
+import { ArtifactRenameDialog } from "../surfaces/ArtifactRename.tsx";
 import { downloadEntry, placeEntries } from "../surfaces/artifactMenu.tsx";
 import { bringBack, popOut, useOutside } from "../surfaces/artifactWindows.ts";
+import { reloadFrame } from "../surfaces/frameReload.ts";
 import { dropLive, useRunningApps } from "../surfaces/livePool.ts";
 import { ShareMenu } from "../surfaces/ShareMenu.tsx";
 import { SurfaceFrame } from "../surfaces/SurfaceFrame.tsx";
@@ -23,6 +25,7 @@ export function AppScreen() {
   const outside = useOutside(appId ?? "");
   const running = useRunningApps().includes(appId ?? "");
   const [props, setProps] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   // Back to whatever chat was open before the app.
   const back = () => nav.set({ view: "inbox" });
 
@@ -74,6 +77,12 @@ export function AppScreen() {
         <ArtifactMemoryButton surface={app} />
         <IconButton
           size="sm"
+          label={t("artifact.refresh")}
+          icon={<Icons.RefreshCw size={14} />}
+          onClick={() => reloadFrame(app.id)}
+        />
+        <IconButton
+          size="sm"
           label={t("artifact.openWindow")}
           icon={<Icons.ExternalLink size={14} />}
           onClick={() => popOut(app)}
@@ -81,6 +90,7 @@ export function AppScreen() {
         <Menu
           align="end"
           items={[
+            { label: `${t("artifact.rename")}…`, icon: <Icons.Pencil size={16} />, onSelect: () => setRenaming(true) },
             { label: `${t("artifact.properties")}…`, icon: <Icons.Info size={16} />, onSelect: () => setProps(true) },
             downloadEntry(app, t),
             { type: "separator" },
@@ -101,6 +111,7 @@ export function AppScreen() {
         )}
       </header>
       {props && <ArtifactPropertiesDialog surface={app} onClose={() => setProps(false)} />}
+      {renaming && <ArtifactRenameDialog surface={app} onClose={() => setRenaming(false)} />}
       <div className="appscreen__body">
         {outside ? (
           <EmptyState

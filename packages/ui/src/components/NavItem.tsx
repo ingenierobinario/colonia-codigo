@@ -23,6 +23,7 @@ export interface NavItemProps {
   disabled?: boolean;
   href?: string;
   onClick?: () => void;
+  onDoubleClick?: () => void;
   className?: string;
 }
 
@@ -40,6 +41,7 @@ export function NavItem({
   disabled = false,
   href,
   onClick,
+  onDoubleClick,
   className,
 }: NavItemProps) {
   const cls = cx(
@@ -71,6 +73,7 @@ export function NavItem({
       aria-label={name}
       aria-description={description}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
       {inner}
     </a>
@@ -83,6 +86,7 @@ export function NavItem({
       aria-description={description}
       disabled={disabled}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
       {inner}
     </button>

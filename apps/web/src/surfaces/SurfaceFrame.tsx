@@ -10,6 +10,7 @@ import { widgetMedia } from "../data/media.ts";
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { LAYOUT } from "../shell/layout.ts";
+import { useFrameTick } from "./frameReload.ts";
 import { attachLive, detachLive, useLiveHeight } from "./livePool.ts";
 import { bridgeCall, buildSrcdoc, themeCss } from "./srcdoc.ts";
 
@@ -82,6 +83,7 @@ export function FrameView({
   const pendingState = useRef<{ patch: SurfaceState; timer: ReturnType<typeof setTimeout> } | null>(null);
   const inFlight = useRef(0);
   const visibleRef = useRef(visible);
+  const tick = useFrameTick(surfaceId);
   visibleRef.current = visible;
 
   const stale = !doc || (summary != null && summary.version > doc.version);
@@ -216,6 +218,7 @@ export function FrameView({
     >
       {srcdoc ? (
         <iframe
+          key={tick}
           ref={frame}
           title={summary?.title ?? t("panel.widget")}
           // The desktop app finds artifact frames by this name to count their memory in Advanced.

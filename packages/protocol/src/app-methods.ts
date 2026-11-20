@@ -2147,6 +2147,8 @@ export const appMethods = {
         pinned: z.boolean().optional(),
         app: z.boolean().optional(),
         logo: SurfaceLogo.nullable().optional(),
+        /** APPS-RENOMBRAR-1: renames what the owner sees; the name (its memory folder) stays. */
+        title: z.string().trim().min(1).max(120).optional(),
       })
       .strict(),
     result: SurfaceSummary,

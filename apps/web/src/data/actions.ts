@@ -354,7 +354,7 @@ export async function loadSurfaceDoc(id: string): Promise<void> {
 
 export async function setSurfaceFlags(
   id: string,
-  flags: { pinned?: boolean; app?: boolean; logo?: string | null },
+  flags: { pinned?: boolean; app?: boolean; logo?: string | null; title?: string },
 ): Promise<void> {
   try {
     const summary = await client.call("surfaces.update", { surface: id, ...flags });

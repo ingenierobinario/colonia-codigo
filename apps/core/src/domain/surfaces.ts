@@ -184,17 +184,25 @@ export function surfacesRepo({ one, all, run }: Sql, bus: Bus) {
     },
     patch(
       id: string,
-      p: { pinned?: boolean | undefined; app?: boolean | undefined; logo?: string | null | undefined },
+      p: {
+        pinned?: boolean | undefined;
+        app?: boolean | undefined;
+        logo?: string | null | undefined;
+        title?: string | undefined;
+      },
     ): SurfaceSummary | undefined {
       const cur = repo.get(id);
       if (!cur) return undefined;
       const next = { ...cur, pinned: p.pinned ?? cur.pinned, app: p.app ?? cur.app, updated_at: now() };
+      // APPS-RENOMBRAR-1: el título visible; el nombre (su carpeta de memoria) no cambia.
+      if (p.title !== undefined) next.title = p.title;
       if (p.logo === null) delete next.logo;
       else if (p.logo !== undefined) next.logo = p.logo;
       run(
         qb
           .updateTable("surfaces")
           .set({
+            title: next.title,
             pinned: Number(next.pinned),
             app: Number(next.app),
             logo: next.logo ?? null,
