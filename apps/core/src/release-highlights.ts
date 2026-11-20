@@ -7,12 +7,8 @@ export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.59": {
-    en: [
-      "After creating your server on Railway, Colonia links to it by itself: paste its address, no codes.",
-    ],
-    es: [
-      "Tras crear tu servidor en Railway, Colonia se vincula sola: solo pegas su dirección, sin códigos.",
-    ],
+    en: ["After creating your server on Railway, Colonia links to it by itself: paste its address, no codes."],
+    es: ["Tras crear tu servidor en Railway, Colonia se vincula sola: solo pegas su dirección, sin códigos."],
   },
   "2.36.58": {
     en: ["Open Railway now creates your Colonia server in one click, ready to link with this computer."],
