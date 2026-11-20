@@ -38,6 +38,11 @@ const DESCRIPTIONS: Record<BrowserMethod, string> = {
   "browser.cookie_sources": "",
   "browser.cookie_domains": "",
   "browser.import_cookies": "",
+  "browser.fill":
+    "Fill a whole form in one call by refs (text, select by label or value, checkbox, radio); submits only if every field applied. Password fields are refused.",
+  "browser.press": "Press a key (Enter, Escape, Tab, arrows…) in a tab; returns the page as it was left.",
+  "browser.wait": "Wait until a text appears or disappears in a tab, instead of guessing with sleeps.",
+  "browser.console": "Failed requests, HTTP errors and browser errors of a tab.",
 };
 
 export async function runMcp(client: ColoniaClient, agent: string, chat = false): Promise<void> {
