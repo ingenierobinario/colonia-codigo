@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  loadingSteps,
   RETRY_MS,
   type Remote,
   reachRemote,
   SILENT_MS,
+  SLOW_MS,
   type WaitDeps,
+  type Waiting,
   waiting,
   waitingHtml,
   waitingText,
@@ -94,8 +97,59 @@ test("the waiting page keeps ssh's words apart and escaped", () => {
     waiting({ where: "ops@box (SSH)", url: "http://127.0.0.1:7440", tunnel: ssh }, false, true),
     true,
   );
-  assert.match(html, /<h1>Conectando con Colonia<\/h1>/);
-  assert.match(html, /class="detail"><span>Detalle<\/span>ssh: &lt;host&gt; refused/);
+  assert.match(html, /<dt>Registro<\/dt><dd>ssh: &lt;host&gt; refused<\/dd>/);
+  assert.doesNotMatch(html, /<host>/);
+});
+
+// CARGA-PINGUINO-1: a loading screen, not a system message.
+const visible = (html: string) =>
+  html
+    .replace(/<style>[\s\S]*?<\/style>/, "")
+    .replace(/<script>[\s\S]*?<\/script>/, "")
+    .replace(/<section class="help"[\s\S]*?<\/section>/, "");
+
+test("la pantalla de carga no enseña dirección, puerto, registro ni jerga hasta que hace falta", () => {
+  for (const es of [true, false]) {
+    const local: Remote = { where: "127.0.0.1:7440", url: "http://127.0.0.1:7440", local: "C:/Users/x/logs/core.log" };
+    const html = waitingHtml(waiting(local, true, es), es);
+    const shown = visible(html);
+    assert.doesNotMatch(shown, /127\.0\.0\.1|7440|core\.log|Detalle|Details|SSH|servidor|server/i);
+    assert.match(shown, /<svg class="peng"/);
+    assert.match(shown, es ? /Despertando a tus agentes…/ : /Waking up your agents…/);
+    assert.match(shown, /class="bar"/);
+    // Lo técnico sigue ahí, plegado bajo «Ver detalles», con la salida a otra conexión.
+    assert.match(html, es ? /<summary>Ver detalles<\/summary>/ : /<summary>See details<\/summary>/);
+    assert.match(html, /core\.log/);
+    assert.match(html, /href="#colonia-change"/);
+  }
+});
+
+test("los mensajes avanzan hasta «Casi listo», respetan el movimiento reducido y se pliegan al minuto", () => {
+  assert.deepEqual(loadingSteps("local", true).at(-1), "Casi listo…");
+  assert.deepEqual(loadingSteps("remote", false)[0], "Finding your Colonia…");
+  const html = waitingHtml(waiting({ where: "x", url: "http://x" }, true, true), true);
+  assert.match(html, /prefers-reduced-motion:reduce/);
+  assert.match(html, /prefers-color-scheme:dark/);
+  assert.equal(SLOW_MS, 60_000);
+  assert.match(html, /"slowMs":60000/);
+});
+
+test("un problema real abre la ayuda amable al momento, y un redibujo conserva el avance", async () => {
+  const ssh = { alive: () => false, problem: () => "refused", restart: () => {} };
+  const w = waiting({ where: "ops@box (SSH)", url: "http://127.0.0.1:7440", tunnel: ssh }, false, true);
+  assert.equal(w.trouble, true);
+  assert.match(waitingHtml(w, true), /"trouble":true/);
+  assert.match(waitingHtml(w, true), /Colonia no consigue arrancar/);
+  assert.equal(waiting({ where: "x", url: "http://x", local: "log" }, true, true).trouble, false);
+  const seen: Waiting[] = [];
+  const wd = world({ upAt: 3 * RETRY_MS });
+  const show = wd.deps.show;
+  wd.deps.show = async (x) => {
+    seen.push(x);
+    return show(x);
+  };
+  await reachRemote({ where: "x", url: "http://127.0.0.1:7440" }, wd.deps);
+  assert.equal(seen[0]?.since, 0);
 });
 
 test("the core on this computer waits with its own words and what to check", async () => {

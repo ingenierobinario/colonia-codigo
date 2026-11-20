@@ -78,6 +78,11 @@ export function createConnector(opts: {
     reconnect();
   });
 
+  // CARGA-PINGUINO-1: «Change connection» folded on the loading screen (a page with no bridge, so it says so by its link).
+  opts.panel.on("did-navigate-in-page", (_e, url) => {
+    if (url.startsWith("data:") && url.endsWith("#colonia-change")) void api.change();
+  });
+
   const onChooser = (sender: WebContents) =>
     sender === opts.panel && sender.getURL().startsWith(`${APP_SCHEME}://app/`);
 
@@ -437,7 +442,7 @@ export function createConnector(opts: {
     }
   }
 
-  return {
+  const api = {
     open,
     /**
      * Back to the first-run choice in the same window. Nothing restarts: a checkout's supervisor (`pnpm app`) takes its
@@ -472,4 +477,5 @@ export function createConnector(opts: {
       return core !== undefined;
     },
   };
+  return api;
 }
