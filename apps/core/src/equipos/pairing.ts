@@ -16,9 +16,10 @@ export function createPairing(opts: { clock?: () => number; makeCode?: () => str
     return current;
   };
   return {
-    start(): { code: string; expiresAt: number } {
-      const code = makeCode();
-      current = { code, expires: clock() + CODE_TTL_MS, misses: 0 };
+    /** `preset`: un código que ya trae el equipo (AUTOVINCULAR-1, la plantilla de Railway), con su propia vigencia. */
+    start(preset?: { code: string; ttlMs: number }): { code: string; expiresAt: number } {
+      const code = preset?.code ?? makeCode();
+      current = { code, expires: clock() + (preset?.ttlMs ?? CODE_TTL_MS), misses: 0 };
       return { code, expiresAt: current.expires };
     },
     cancel(): boolean {

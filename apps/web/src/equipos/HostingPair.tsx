@@ -8,9 +8,21 @@ import { useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
 import { FolderSync } from "./FolderSync.tsx";
 import { isLocalHostingDesktop } from "./hostingOffer.ts";
-import { cloudInvitation } from "./serverHosting.ts";
+import { cloudInvitation, serverAddress } from "./serverHosting.ts";
 
-export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
+/** AUTOVINCULAR-1 · Railway tarda minutos en construir: se reintenta cada pocos segundos durante este tiempo. */
+const WAIT_MS = 20 * 60_000;
+const RETRY_MS = 5000;
+
+export function HostingPair({
+  onPaired,
+  pending,
+  onSettled,
+}: {
+  onPaired?: () => void;
+  pending?: string;
+  onSettled?: () => void;
+} = {}) {
   const t = useT();
   const desktop = isLocalHostingDesktop(window.coloniaDesktop?.coreLocal, location.hostname);
   const [status, setStatus] = useState<SyncStatus>();
@@ -25,6 +37,10 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
   const [continuous, setContinuous] = useState(false);
   const [expired, setExpired] = useState(false);
   const readAgain = useRef<() => void>(() => {});
+  const [address, setAddress] = useState("");
+  const [waiting, setWaiting] = useState(false);
+  const waitRun = useRef(0);
+  useEffect(() => () => void waitRun.current++, []);
   useEffect(() => {
     let active = true;
     let generation = 0;
@@ -50,6 +66,9 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
   useEffect(() => {
     if (status?.paired) onPaired?.();
   }, [status?.paired, onPaired]);
+  useEffect(() => {
+    if (status?.paired && pending) onSettled?.();
+  }, [status?.paired, pending, onSettled]);
   const pairing = status?.pairing;
   const expiresAt = pairing?.expires_at;
   useEffect(() => {
@@ -89,6 +108,34 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
       setSelected([]);
       setJoining(false);
     });
+  const server = serverAddress(address);
+  /** Con el código ya dentro del servidor, solo falta su dirección. Se insiste mientras Railway lo levanta. */
+  const awaitServer = async () => {
+    if (!pending || !server || waiting) return;
+    const run = ++waitRun.current;
+    setIssue(undefined);
+    setWaiting(true);
+    const until = Date.now() + WAIT_MS;
+    try {
+      for (;;) {
+        try {
+          setStatus(await client.call("sync.pair_join", { code: pending, address: server }));
+          onSettled?.();
+          return;
+        } catch {
+          if (run !== waitRun.current) return;
+          if (Date.now() > until) {
+            setIssue("connect");
+            return;
+          }
+          await new Promise((r) => setTimeout(r, RETRY_MS));
+          if (run !== waitRun.current) return;
+        }
+      }
+    } finally {
+      if (run === waitRun.current) setWaiting(false);
+    }
+  };
   const start = () =>
     act(async () => {
       const next = await client.call("sync.pair_start", {
@@ -247,7 +294,49 @@ export function HostingPair({ onPaired }: { onPaired?: () => void } = {}) {
       ) : (
         status &&
         (desktop ? (
-          joining ? (
+          pending ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void awaitServer();
+              }}
+            >
+              <p role="status" aria-live="polite">
+                <strong>{t(waiting ? "equipos.autoWaiting" : "equipos.autoCreated")}</strong>
+              </p>
+              <Field label={t("equipos.autoAddressLabel")} hint={t("equipos.autoAddressHint")}>
+                {(id) => (
+                  <Input
+                    id={id}
+                    value={address}
+                    placeholder="colonia-production.up.railway.app"
+                    autoComplete="off"
+                    spellCheck={false}
+                    disabled={waiting}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                )}
+              </Field>
+              <div className="eq-row">
+                <Button type="submit" disabled={!server || waiting}>
+                  {t("equipos.autoConnect")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    waitRun.current++;
+                    setWaiting(false);
+                    setAddress("");
+                    setIssue(undefined);
+                    onSettled?.();
+                  }}
+                >
+                  {t("equipos.autoForget")}
+                </Button>
+              </div>
+            </form>
+          ) : joining ? (
             <form
               onSubmit={(e) => {
                 e.preventDefault();

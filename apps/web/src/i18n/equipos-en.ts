@@ -206,6 +206,13 @@ export const enEquipos = {
   "equipos.thisOn": "On",
   "equipos.thisSystem": "System",
   "equipos.thisHint": "Colonia runs on this computer: your agents already work here, nothing to connect.",
+  "equipos.autoCreated":
+    "Your server is being created on Railway. Paste its address here and Colonia links itself as soon as it is ready: no code needed.",
+  "equipos.autoWaiting": "Waiting for your server…",
+  "equipos.autoAddressLabel": "Your server's address",
+  "equipos.autoAddressHint": "Copy it from Railway: open the service and click its public address.",
+  "equipos.autoConnect": "Link when it's ready",
+  "equipos.autoForget": "I'll do it later",
 } as const;
 
 export type EquipoKey = keyof typeof enEquipos;

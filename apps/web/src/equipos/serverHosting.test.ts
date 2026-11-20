@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isLocalHostingDesktop } from "./hostingOffer.ts";
-import { cloudInvitation, hostingLinks } from "./serverHosting.ts";
+import {
+  cloudInvitation,
+  forgetPairCode,
+  hostingLinks,
+  newPairCode,
+  pendingPairCode,
+  rememberPairCode,
+  serverAddress,
+  withPairCode,
+} from "./serverHosting.ts";
 
 test("una plantilla publicada abre el despliegue en Railway", () => {
   const links = hostingLinks("es", "prueba-colonia");
@@ -82,4 +91,57 @@ test("el escritorio ofrece llevar al servidor solo el motor local confirmado por
     assert.equal(isLocalHostingDesktop(undefined, host), false);
   }
   assert.equal(isLocalHostingDesktop(true, "colonia.example"), false);
+});
+
+test("AUTOVINCULAR-1: el código va a la plantilla como variable precargada y respeta la invitación", () => {
+  const code = newPairCode();
+  assert.match(code, /^[2-9A-HJ-NP-Z]{8}$/);
+  assert.notEqual(newPairCode(), code);
+  assert.equal(
+    newPairCode(() => new Uint8Array(8).fill(255)),
+    "ZZZZZZZZ",
+  );
+  const deploy = hostingLinks("es", "colonia-plantilla").deploy ?? "";
+  assert.equal(
+    withPairCode(deploy, "ABCD2345"),
+    "https://railway.com/new/template/colonia-plantilla?referralCode=dBUtql&COLONIA_PAIR_CODE=ABCD2345",
+  );
+});
+
+test("AUTOVINCULAR-1: el código pendiente caduca en un día y se olvida al vincular", () => {
+  const bag = new Map<string, string>();
+  const store = {
+    getItem: (k: string) => bag.get(k) ?? null,
+    setItem: (k: string, v: string) => void bag.set(k, v),
+    removeItem: (k: string) => void bag.delete(k),
+  };
+  const t0 = 1_000_000;
+  assert.equal(pendingPairCode(store, t0), undefined);
+  rememberPairCode("ABCD2345", store, t0);
+  assert.equal(pendingPairCode(store, t0 + 60_000), "ABCD2345");
+  assert.equal(pendingPairCode(store, t0 + 25 * 3_600_000), undefined);
+  assert.equal(bag.size, 0, "uno caducado se borra");
+  rememberPairCode("ABCD2345", store, t0);
+  forgetPairCode(store);
+  assert.equal(pendingPairCode(store, t0), undefined);
+  bag.set("colonia.railway-pair", "{roto");
+  assert.equal(pendingPairCode(store, t0), undefined);
+});
+
+test("AUTOVINCULAR-1: la dirección del servidor se acepta tal como se copia de Railway, solo por HTTPS", () => {
+  assert.equal(serverAddress("colonia-production.up.railway.app"), "https://colonia-production.up.railway.app");
+  assert.equal(
+    serverAddress(" https://colonia-production.up.railway.app/ "),
+    "https://colonia-production.up.railway.app",
+  );
+  for (const bad of [
+    "",
+    "http://x.up.railway.app",
+    "localhost",
+    "x.up.railway.app/ruta",
+    "x.app?y=1",
+    "https://u:p@x.app",
+    "a b",
+  ])
+    assert.equal(serverAddress(bad), undefined, bad);
 });

@@ -769,6 +769,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     ...(Number(process.env.COLONIA_SYNC_BEACON_PORT)
       ? { beaconPort: Number(process.env.COLONIA_SYNC_BEACON_PORT) }
       : {}),
+    ...(process.env.COLONIA_PAIR_CODE ? { presetCode: process.env.COLONIA_PAIR_CODE } : {}),
     channels: () => channels.info(),
     changed: (touched) => {
       bus.emit({ type: "sync.updated", data: true });

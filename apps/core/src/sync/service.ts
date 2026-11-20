@@ -94,6 +94,9 @@ const stretch = (code: string) =>
 const tagOf = (what: string) => createHash("sha256").update(`colonia-busca:${what}`).digest("hex").slice(0, 32);
 const trimUrl = (u: string) => u.replace(/\/+$/, "");
 const WAITING_MAX = 5000;
+/** AUTOVINCULAR-1 · Lo que espera un servidor recién creado a que el escritorio llegue (construir tarda minutos). */
+export const PRESET_TTL_MS = 24 * 60 * 60_000;
+const PRESET_FILE = "emparejamiento-plantilla.usado";
 const RETRY_MS = [1000, 2000, 5000, 10_000, 30_000];
 
 export type Role = "principal" | "secundario";
@@ -188,6 +191,11 @@ export type SyncDeps = {
   beaconPort?: number;
   /** Si una carpeta está en el disco de este equipo. */
   folderHere?: (path: string) => boolean;
+  /**
+   * AUTOVINCULAR-1 · El código que el escritorio generó y pasó a la plantilla de Railway (COLONIA_PAIR_CODE). Sin
+   * pareja, el servidor arranca ya enseñándolo; vale una sola vez y no vuelve a abrirse aunque se desempareje.
+   */
+  presetCode?: string;
 };
 
 type Wire = { send(m: object): void; recv(s: string): unknown };
@@ -284,6 +292,8 @@ export function createSync(d: SyncDeps) {
   let shown: SyncStatus["pairing"];
   /** El código vigente, estirado. */
   let secret: string | undefined;
+  /** El código vigente vino de la plantilla: al gastarlo se apunta para no volver a abrirlo. */
+  let presetTag: string | undefined;
   let stateDirty = 0;
   const media = mediaTransfer(
     d.db,
@@ -304,6 +314,28 @@ export function createSync(d: SyncDeps) {
   let seeking: { tag: string; add(urls: string[], host: string): void } | undefined;
   let missing: { at: number; list: { id: string; name: string }[] } | undefined;
 
+  /** AUTOVINCULAR-1 · Arma la invitación de la plantilla si es válida, no hay pareja y no se gastó ya. */
+  function armPreset(): void {
+    const code = d.presetCode ? typed(d.presetCode) : undefined;
+    if (d.presetCode && !code) warn("COLONIA_PAIR_CODE no es un código de emparejamiento válido; se ignora.");
+    if (!code || state) return;
+    const key = stretch(code);
+    const tag = tagOf(`plantilla:${key}`);
+    try {
+      if (fs.readFileSync(path.join(d.home, PRESET_FILE), "utf8").trim() === tag) return;
+    } catch {}
+    identity(true);
+    const { expiresAt } = pairing.start({ code, ttlMs: PRESET_TTL_MS });
+    secret = key;
+    presetTag = tag;
+    shown = {
+      code: pretty(code),
+      expires_at: new Date(expiresAt).toISOString(),
+      initial_source: "joining_device",
+      allow_managed_folder_sync: true,
+    };
+    tune();
+  }
   function readState(): State | undefined {
     try {
       return State.parse(JSON.parse(fs.readFileSync(file, "utf8")));
@@ -775,6 +807,10 @@ export function createSync(d: SyncDeps) {
           };
           shown = undefined;
           secret = undefined;
+          if (presetTag) {
+            fs.writeFileSync(path.join(d.home, PRESET_FILE), presetTag, { mode: 0o600 });
+            presetTag = undefined;
+          }
           open(me, source ? "oldest" : "first");
           saveState();
           // Este equipo también demuestra que conoce el código: el que se une no tiene otra forma de saber quién es.
@@ -1006,6 +1042,7 @@ export function createSync(d: SyncDeps) {
           saveState();
         }
         if (installed(d.db)) uninstall(d.db, d.secrets);
+        armPreset();
       }
       timer = setInterval(tick, d.tickMs ?? 1000);
       timer.unref?.();
@@ -1061,6 +1098,7 @@ export function createSync(d: SyncDeps) {
       identity(true);
       const { code, expiresAt } = pairing.start();
       secret = stretch(code);
+      presetTag = undefined;
       shown = {
         code: pretty(code),
         expires_at: new Date(expiresAt).toISOString(),
@@ -1075,6 +1113,7 @@ export function createSync(d: SyncDeps) {
       pairing.cancel();
       shown = undefined;
       secret = undefined;
+      presetTag = undefined;
       tune();
       tell();
     },

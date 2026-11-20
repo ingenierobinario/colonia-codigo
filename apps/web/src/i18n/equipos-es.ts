@@ -209,4 +209,11 @@ export const esEquipos: Record<EquipoKey, string> = {
   "equipos.thisOn": "Encendido",
   "equipos.thisSystem": "Sistema",
   "equipos.thisHint": "Colonia funciona en este ordenador: tus agentes ya trabajan aquí, sin conectar nada.",
+  "equipos.autoCreated":
+    "Tu servidor se está creando en Railway. Pega aquí su dirección y Colonia se vinculará sola en cuanto esté listo: no hace falta ningún código.",
+  "equipos.autoWaiting": "Esperando a tu servidor…",
+  "equipos.autoAddressLabel": "Dirección de tu servidor",
+  "equipos.autoAddressHint": "Cópiala de Railway: abre el servicio y pulsa en su dirección pública.",
+  "equipos.autoConnect": "Vincular cuando esté listo",
+  "equipos.autoForget": "Lo haré más tarde",
 };
