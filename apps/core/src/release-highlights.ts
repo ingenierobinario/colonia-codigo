@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.57": {
+    en: [
+      "Colonia starts much faster: the core now loads from a single file instead of hundreds.",
+      "While it starts, an animated penguin and progress messages replace the technical notices.",
+      "Internal apps can be renamed, and their panel has a Refresh button.",
+      "A public link can be turned on right from the Share menu, without going to Settings.",
+    ],
+    es: [
+      "Colonia arranca mucho más rápido: el núcleo se carga de un solo archivo en vez de cientos.",
+      "Mientras arranca, un pingüino animado y mensajes de avance sustituyen a los avisos técnicos.",
+      "Las aplicaciones internas se pueden renombrar y su panel tiene un botón Refrescar.",
+      "El enlace público se activa desde el propio menú Compartir, sin ir a Configuración.",
+    ],
+  },
   "2.36.56": {
     en: [
       'A "Without asking" switch in the chat header lets the project\'s agents work without stopping for your OK.',
