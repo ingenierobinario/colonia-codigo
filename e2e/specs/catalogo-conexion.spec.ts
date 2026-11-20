@@ -31,7 +31,7 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
     await expect(providerPage).toHaveURL("https://pipeboard.co/");
     await providerPage.close();
     await card.getByRole("button", { name: "Conectar" }).click();
-    await expect(page.getByRole("link", { name: /sesión/i })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /^Conectar$/ })).toHaveAttribute(
       "href",
       "https://shop.example.com/authorize?state=1",
       { timeout: 30000 },

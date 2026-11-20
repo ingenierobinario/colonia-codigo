@@ -98,7 +98,7 @@ test("a new MCP server takes a variable for its token from the + list, or a new 
   await dialog.getByRole("button", { name: "Crear" }).click();
   await expect(dialog).toBeHidden();
   // Its command is not installed here: the detail says why it has no tools, without a failed call.
-  await expect(page.getByText(/^El servidor no arrancó: .*ENOENT/)).toBeVisible();
+  await expect(page.getByText("Sus herramientas saldrán cuando el conector arranque.")).toBeVisible();
   // The definition names its variables; the value stays in the secret store.
   const servers = (
     await rpc<{
