@@ -652,9 +652,9 @@ export function createMcp(deps: {
       conns.delete(keyOf(d));
       if (old) await closeConn(old);
       setWaitsSignIn(d, false);
-      // A first start may still be downloading: the panel follows it from its state.
+      // A first start may still be downloading, or fail: the panel follows either from its state.
       let wait: ReturnType<typeof setTimeout> | undefined;
-      await Promise.race([ensure(d).ready, new Promise((r) => (wait = setTimeout(r, ANSWER_MS)))]);
+      await Promise.race([ensure(d).ready?.catch(() => {}), new Promise((r) => (wait = setTimeout(r, ANSWER_MS)))]);
       clearTimeout(wait);
     },
     /** The last `n` lines a server printed on stderr while this core ran (started by an agent or a test). */
