@@ -1,9 +1,9 @@
 import type { CatalogEngine, ModelRef } from "@colonia/protocol";
 import { Badge, EngineIcon, Icons, SearchField } from "@colonia/ui";
 import { useMemo, useState } from "react";
-import { baseRef, forAgents, listedName, refLabel, splitRef, useModels, withEffort } from "../../data/models.ts";
+import { baseRef, forAgents, listedName, refLabel, useModels } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
-import { EffortRow } from "./RefSelect.tsx";
+import { EffortAndModes } from "./RefSelect.tsx";
 
 type Group = { engine: CatalogEngine; showDefault: boolean; models: CatalogEngine["models"] };
 
@@ -47,8 +47,8 @@ export function ModelList({
   const [q, setQ] = useState("");
   const groups = useMemo(() => filterCatalog(catalog.filter(only), q, false), [catalog, only, q]);
   const picked = value ? baseRef(value) : undefined;
-  /** Picking the same model again keeps the effort it had. */
-  const sameModel = (ref: ModelRef) => (picked === ref && value ? splitRef(value).effort : undefined);
+  /** Picking the same model again keeps the effort and modes it had. */
+  const again = (ref: ModelRef): ModelRef => (picked === ref && value ? value : ref);
 
   return (
     <div className="mlist">
@@ -87,7 +87,7 @@ export function ModelList({
                   selected={picked === e.id}
                   name={refLabel(e.id, catalog)}
                   sub={e.id}
-                  onPick={() => onPick(withEffort(e.id, sameModel(e.id)))}
+                  onPick={() => onPick(again(e.id))}
                 />
               )}
               {models.map((m) => {
@@ -99,7 +99,7 @@ export function ModelList({
                     selected={picked === ref}
                     name={listedName(m)}
                     sub={ref}
-                    onPick={() => onPick(withEffort(ref, sameModel(ref)))}
+                    onPick={() => onPick(again(ref))}
                   />
                 );
               })}
@@ -107,7 +107,7 @@ export function ModelList({
           ))}
         </div>
       </div>
-      {onEffort && <EffortRow value={effortValue} onChange={onEffort} />}
+      {onEffort && <EffortAndModes value={effortValue} onChange={onEffort} />}
     </div>
   );
 }

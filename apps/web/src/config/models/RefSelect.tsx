@@ -1,14 +1,16 @@
 import type { CatalogEngine, ModelRef } from "@colonia/protocol";
-import { Select, type SelectOption } from "@colonia/ui";
+import { Select, type SelectOption, Switch } from "@colonia/ui";
 import {
   baseRef,
   effortLabel,
   listedName,
+  modeLabel,
   modelName,
   modelOf,
   splitRef,
   useModels,
   withEffort,
+  withMode,
 } from "../../data/models.ts";
 import { useT } from "../../i18n/index.ts";
 
@@ -72,7 +74,35 @@ export function RefSelect({ value, onChange }: { value: ModelRef; onChange(ref: 
           onValueChange={(v) => onChange(withEffort(value, v || undefined))}
         />
       )}
+      <ModeSwitches value={value} onChange={onChange} />
     </span>
+  );
+}
+
+/**
+ * ULTRACODE-1 / VELOCIDAD-1: the engine's own modes the model takes (Claude Code's ultracode, Codex's fast mode), each
+ * an on/off switch. They travel in the ref after the effort ("claude/opus#high+ultracode").
+ */
+export function ModeSwitches({ value, onChange }: { value?: ModelRef | undefined; onChange(ref: ModelRef): void }) {
+  const t = useT();
+  const catalog = useModels((s) => s.catalog);
+  const modes = (value && modelOf(value, catalog)?.modes) || [];
+  if (!value || !modes.length) return null;
+  const on = splitRef(value).modes ?? [];
+  return (
+    <>
+      {modes.map((mode) => (
+        <Switch
+          key={mode}
+          size="sm"
+          className="mlist__mode"
+          label={modeLabel(mode)}
+          description={t(`models.modeHint.${mode}` as "models.modeHint.ultracode")}
+          checked={on.includes(mode)}
+          onCheckedChange={(v) => onChange(withMode(value, mode, v))}
+        />
+      ))}
+    </>
   );
 }
 
@@ -108,5 +138,15 @@ export function EffortRow({ value, onChange }: { value?: ModelRef; onChange(ref:
         onValueChange={(v) => value && onChange(withEffort(value, v || undefined))}
       />
     </div>
+  );
+}
+
+/** Below a model list: the effort, then the modes the chosen model takes. */
+export function EffortAndModes({ value, onChange }: { value?: ModelRef; onChange(ref: ModelRef): void }) {
+  return (
+    <>
+      <EffortRow value={value} onChange={onChange} />
+      <ModeSwitches value={value} onChange={onChange} />
+    </>
   );
 }

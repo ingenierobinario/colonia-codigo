@@ -1450,6 +1450,10 @@ export const en = {
   "models.effort": "Effort",
   "models.effortDefault": "Its default",
   "models.effortDefaultIs": "Default ({effort})",
+  "models.mode.ultracode": "Ultracode",
+  "models.modeHint.ultracode": "Splits the work across several Claude agents working at the same time",
+  "models.mode.fast": "Fast",
+  "models.modeHint.fast": "Answers faster in exchange for using more of your plan",
   "models.engineDefault": "{engine} default",
   "models.err.claudeOff": "Claude with your account is turned off. Turn it on in Settings › Engines and models.",
   "models.err.cliOnly":

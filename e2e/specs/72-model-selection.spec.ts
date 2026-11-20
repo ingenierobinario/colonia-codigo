@@ -220,3 +220,46 @@ test("model choices keep effort visible and stay open while editing", async ({ p
   await page.keyboard.press("Escape");
   await expect(picker).toBeHidden();
 });
+
+test("ULTRACODE-1 / VELOCIDAD-1: an engine mode is a switch under the effort and is kept with it", async ({ page }) => {
+  await rpc("setup.finish");
+  const { agents } = await rpc<{ agents: Agent[] }>("agents.list");
+  const agent = agents.find((a) => a.kind === "secretary");
+  if (!agent) throw new Error("Missing secretary");
+  await page.route("**/rpc/models.list", async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    const engine = body.result.engines.find((e: { id: string }) => e.id === "custom");
+    const model = engine.models.find((m: { id: string }) => m.id === "fake-2");
+    model.efforts = ["low", "high"];
+    model.modes = ["ultracode"];
+    await route.fulfill({ response, json: body });
+  });
+  const thread = await rpc<Thread>("threads.create", { kind: "loose", agent_id: agent.id, title: "Engine mode" });
+  await rpc("threads.model", { thread: thread.id, model_choice: { router: true } });
+  await open(page, `#thread=${thread.id}`);
+  const trigger = page.getByRole("button", { name: "Modelo de este chat", exact: true });
+  await trigger.click();
+  const picker = page.locator(".mchoice");
+  const ultra = picker.getByRole("switch", { name: "Ultracode" });
+  await expect(ultra).toHaveCount(0);
+  await picker.locator('.mlist__opt[title="custom/fake-2"]').click();
+  await expect(ultra).toBeVisible();
+  await expect(ultra).not.toBeChecked();
+  await ultra.click();
+  await expect(trigger).toContainText("Fake 2 · Ultracode");
+  const effort = picker.getByRole("combobox", { name: "Effort", exact: true });
+  await effort.click();
+  await page.getByRole("option", { name: "Alto", exact: true }).click();
+  await expect(trigger).toContainText("Fake 2 · Alto · Ultracode");
+  const saved = await rpc<{ thread: Thread }>("threads.get", { thread: thread.id });
+  expect(saved.thread.model_choice?.model).toBe("custom/fake-2#high+ultracode");
+  await page.reload();
+  await expect(trigger).toContainText("Fake 2 · Alto · Ultracode");
+  await trigger.click();
+  await expect(ultra).toBeChecked();
+  await ultra.click();
+  await expect(trigger).toContainText("Fake 2 · Alto");
+  await expect(trigger).not.toContainText("Ultracode");
+  await page.keyboard.press("Escape");
+});

@@ -5,13 +5,15 @@ import type { CatalogEngine, ModelRef } from "@colonia/protocol";
  * "gemini/gemini-3.6-flash" → engine "gemini", model "gemini-3.6-flash"; "claude" → engine only; "#high" at the end
  * is the reasoning effort asked for.
  */
-export function splitRef(ref: ModelRef): { engine: string; model?: string; effort?: string } {
+export function splitRef(ref: ModelRef): { engine: string; model?: string; effort?: string; modes?: string[] } {
   const hash = ref.lastIndexOf("#");
-  const effort = hash > 0 ? ref.slice(hash + 1) : "";
+  // "#<effort>+<mode>…": the effort may be empty when only a mode is asked ("codex/gpt-6-sol#+fast").
+  const [effort, ...rest] = hash > 0 ? ref.slice(hash + 1).split("+") : [];
+  const modes = rest.filter(Boolean);
   const base = hash > 0 ? ref.slice(0, hash) : ref;
   const i = base.indexOf("/");
   const parts = i < 0 ? { engine: base } : { engine: base.slice(0, i), model: base.slice(i + 1) };
-  return effort ? { ...parts, effort } : parts;
+  return { ...parts, ...(effort ? { effort } : {}), ...(modes.length ? { modes } : {}) };
 }
 
 /** The ref without its effort: the model itself. */

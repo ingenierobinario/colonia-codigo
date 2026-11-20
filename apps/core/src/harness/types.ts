@@ -93,3 +93,6 @@ export type Harness = { id: HarnessId; run(io: TurnIO): Promise<TurnOutcome> };
 export const modelPart = (ref: string | undefined): string | undefined => (ref ? parseRef(ref).model : undefined);
 /** The reasoning effort a ref asks for ("codex/gpt-6-sol#high" → "high"). */
 export const effortPart = (ref: string | undefined): string | undefined => (ref ? parseRef(ref).effort : undefined);
+/** Whether a ref switches on an engine mode ("claude/opus#+ultracode", "codex/gpt-6-sol#high+fast"). */
+export const hasMode = (ref: string | undefined, mode: string): boolean =>
+  Boolean(ref && parseRef(ref).modes?.includes(mode));

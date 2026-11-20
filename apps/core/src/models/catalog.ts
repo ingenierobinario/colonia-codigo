@@ -30,6 +30,8 @@ export type CatalogModel = {
   chat: boolean;
   efforts?: string[];
   default_effort?: string;
+  /** The engine's own modes it takes: "ultracode" (Claude Code), "fast" (Codex). */
+  modes?: string[];
 };
 export type CatalogEngine = {
   /** "claude", "codex", or a provider id ("gemini", "anthropic", …). */
@@ -58,7 +60,7 @@ function detailCode(why: string): NonNullable<CatalogEngine["detail_code"]> {
  * Where an engine's list is kept. The version moves whenever more is read from an engine (efforts were added later),
  * so a list kept by an older Colonia is asked again instead of hiding what is new for a day.
  */
-const cacheKey = (id: string) => `catalog.v2:${id}`;
+const cacheKey = (id: string) => `catalog.v3:${id}`;
 
 /** An engine's last fetched model list, kept per engine; none when unset or unreadable. */
 export function cachedCatalog(store: Store, id: string): CatalogEngine | undefined {
@@ -127,6 +129,8 @@ async function claudeModels(): Promise<CatalogModel[]> {
         : {}),
       chat: true,
       ...(m.supportsEffort && m.supportedEffortLevels?.length ? { efforts: [...m.supportedEffortLevels] } : {}),
+      // ULTRACODE-1: Claude Code's list does not say which models take ultracode; the ones with effort control do.
+      ...(m.supportsEffort ? { modes: ["ultracode"] } : {}),
     }));
   } finally {
     ac.abort();
@@ -142,9 +146,12 @@ type CodexListed = {
   priority?: number;
   supported_reasoning_levels?: Array<{ effort?: string }>;
   default_reasoning_level?: string;
+  /** VELOCIDAD-1: the speeds it offers beyond the standard one ("fast"). */
+  additional_speed_tiers?: string[];
 };
 
-function fromCodexList(models: CodexListed[] | undefined): CatalogModel[] {
+/** `speeds`: only the Codex CLI runs fast mode (its `service_tier`); a plan's models through our own loop do not. */
+export function fromCodexList(models: CodexListed[] | undefined, speeds = false): CatalogModel[] {
   return (models ?? [])
     .filter((m) => m.visibility !== "hide")
     .sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999))
@@ -157,6 +164,7 @@ function fromCodexList(models: CodexListed[] | undefined): CatalogModel[] {
         ? { efforts: m.supported_reasoning_levels.flatMap((l) => (l.effort ? [l.effort] : [])) }
         : {}),
       ...(m.default_reasoning_level ? { default_effort: m.default_reasoning_level } : {}),
+      ...(speeds && m.additional_speed_tiers?.includes("fast") ? { modes: ["fast"] } : {}),
     }));
 }
 
@@ -168,7 +176,7 @@ async function codexModels(): Promise<CatalogModel[]> {
     maxBuffer: 8 * 1024 * 1024,
     windowsHide: true,
   });
-  return fromCodexList((JSON.parse(stdout) as { models?: CodexListed[] }).models);
+  return fromCodexList((JSON.parse(stdout) as { models?: CodexListed[] }).models, true);
 }
 
 /**

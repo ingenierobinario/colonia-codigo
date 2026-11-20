@@ -19,7 +19,7 @@ export type FlowBinding = z.infer<typeof FlowBinding>;
 /** A model as `engine/model#effort` (domain.ts ModelRef): the engine is the harness that runs it. */
 const FlowModelRef = z
   .string()
-  .regex(/^(acp:)?[a-z0-9][a-z0-9._-]*(\/[^#]+)?(#[a-z0-9-]+)?$/i)
+  .regex(/^(acp:)?[a-z0-9][a-z0-9._-]*(\/[^#]+)?(#[a-z0-9-]*(\+[a-z0-9-]+)*)?$/i)
   .max(200);
 /** A table of the Flow's project, by name: lowercase letters, digits, `_` and `-` (DECISIONS.md#d-173). */
 export const FlowTableName = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,39}$/);

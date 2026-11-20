@@ -1447,6 +1447,10 @@ export const es: Partial<Record<MessageKey, string>> = {
   "models.effort": "Effort",
   "models.effortDefault": "El de siempre",
   "models.effortDefaultIs": "Por defecto ({effort})",
+  "models.mode.ultracode": "Ultracode",
+  "models.modeHint.ultracode": "Reparte el trabajo entre varios agentes de Claude que trabajan a la vez",
+  "models.mode.fast": "Rápido",
+  "models.modeHint.fast": "Responde más deprisa a cambio de gastar más de tu plan",
   "models.engineDefault": "{engine} por defecto",
   "models.err.claudeOff": "Claude con tu cuenta está apagado. Enciéndelo en Ajustes › Motores y modelos.",
   "models.err.cliOnly":

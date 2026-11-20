@@ -6,7 +6,7 @@ import { z } from "zod";
 import { errorMessage } from "../errors.ts";
 import type { Usage } from "../providers/types.ts";
 import { harnessEnv } from "./env.ts";
-import { effortPart, type Harness, modelPart, type TurnIO, type TurnOutcome } from "./types.ts";
+import { effortPart, type Harness, hasMode, modelPart, type TurnIO, type TurnOutcome } from "./types.ts";
 
 /**
  * Our tool specs are JSON Schema derived from each tool's zod schema; the Agent SDK wants a zod raw shape. Rebuilt
@@ -195,6 +195,17 @@ function toolOptions(io: TurnIO, counts: Counts) {
   };
 }
 
+/**
+ * The session's flag settings. ULTRACODE-1: `ultracode` is Claude Code's own session switch for its multi-agent
+ * orchestration (Workflow tool) at any effort; it needs a model that supports it, and Claude Code says so when not.
+ */
+export const claudeSettings = (ultracode: boolean) => ({
+  disableClaudeAiConnectors: true,
+  syncClaudeAiSkills: false,
+  syncClaudeAiPlugins: false,
+  ...(ultracode ? { ultracode: true } : {}),
+});
+
 /** Runs one query and reads its stream: text as it comes, its own tools as cards, the result at the end. */
 async function attempt(
   io: TurnIO,
@@ -203,6 +214,7 @@ async function attempt(
     cwd: (io: TurnIO) => string;
     chosen: string | undefined;
     effort: string | undefined;
+    ultracode: boolean;
     counts: Counts;
     tally: Tally;
     resume: string | undefined;
@@ -232,7 +244,7 @@ async function attempt(
         ...toolOptions(io, o.counts),
         settingSources: ["user"],
         strictMcpConfig: true,
-        settings: { disableClaudeAiConnectors: true, syncClaudeAiSkills: false, syncClaudeAiPlugins: false },
+        settings: claudeSettings(o.ultracode),
         mcpServers: { colonia: coloniaServer(sdk, io, o.counts) },
         includePartialMessages: true,
         ...(o.resume ? { resume: o.resume } : {}),
@@ -307,6 +319,7 @@ export function claudeHarness(opts: {
         readImage: opts.readImage,
         chosen: modelPart(io.models[0]),
         effort: effortPart(io.models[0]),
+        ultracode: hasMode(io.models[0], "ultracode"),
       };
       const counts: Counts = { colonia: 0, builtins: 0, permissions: 0 };
       // Across a retry too: the first attempt's calls were spent all the same.

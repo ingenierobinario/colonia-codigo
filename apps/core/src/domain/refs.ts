@@ -1,19 +1,23 @@
 // Model refs: "<engine>/<model>" ("claude/opus", "gemini/gemini-3.6-flash", "acp:opencode/big-pickle"), or an
 // engine alone when it has a default model of its own; "#<effort>" at the end asks for that reasoning effort
-// ("codex/gpt-6-sol#high"). One parser for every place that reads them.
+// ("codex/gpt-6-sol#high"), and "+<mode>" after it switches on an engine's own mode: Claude Code's "ultracode", Codex's
+// "fast" ("claude/opus#high+ultracode", "codex/gpt-6-sol#+fast"). One parser for every place that reads them.
 import type { HarnessId } from "@colonia/protocol";
 
 export function parseRef(ref: string): {
   engine: string;
   model?: string | undefined;
   effort?: string | undefined;
+  modes?: string[] | undefined;
 } {
   const hash = ref.lastIndexOf("#");
-  const effort = hash > 0 ? ref.slice(hash + 1) || undefined : undefined;
+  const [first, ...rest] = hash > 0 ? ref.slice(hash + 1).split("+") : [];
+  const effort = first || undefined;
+  const modes = rest.filter(Boolean);
   const base = hash > 0 ? ref.slice(0, hash) : ref;
   const i = base.indexOf("/");
   const parts = i > 0 ? { engine: base.slice(0, i), model: base.slice(i + 1) || undefined } : { engine: base };
-  return effort ? { ...parts, effort } : parts;
+  return { ...parts, ...(effort ? { effort } : {}), ...(modes.length ? { modes } : {}) };
 }
 
 export const engineOf = (ref: string): string => parseRef(ref).engine;

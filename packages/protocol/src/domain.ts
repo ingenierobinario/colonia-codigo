@@ -200,8 +200,8 @@ export type HarnessId = z.infer<typeof HarnessId>;
  */
 export const ModelRef = z
   .string()
-  // An ACP agent's engine id carries its prefix: "acp:opencode/<model>"; "#high" asks for that reasoning effort.
-  .regex(/^(acp:)?[a-z0-9][a-z0-9._-]*(\/[^#]+)?(#[a-z0-9-]+)?$/i)
+  // An ACP agent's engine id carries its prefix: "acp:opencode/<model>"; "#high" asks for that reasoning effort, "+fast" an engine mode.
+  .regex(/^(acp:)?[a-z0-9][a-z0-9._-]*(\/[^#]+)?(#[a-z0-9-]*(\+[a-z0-9-]+)*)?$/i)
   .max(200);
 export type ModelRef = z.infer<typeof ModelRef>;
 
@@ -251,6 +251,8 @@ export const CatalogEngine = z.object({
       /** The reasoning efforts it takes ("low", "high"…), and the one it uses when none is asked for. */
       efforts: z.array(z.string()).optional(),
       default_effort: z.string().optional(),
+      /** The engine's own modes it takes ("ultracode" in Claude Code, "fast" in Codex), asked as "#<effort>+<mode>". */
+      modes: z.array(z.string()).optional(),
     }),
   ),
   fetched_at: z.string().optional(),

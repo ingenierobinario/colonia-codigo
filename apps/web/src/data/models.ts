@@ -112,8 +112,29 @@ export async function setAgentModelChoice(agent: string, choice: ModelChoice | n
 }
 
 /** The same model with this effort (none: the model's own default). */
+/** The ref asking for `effort` (none: the model's own), keeping the modes it had on. */
 export const withEffort = (ref: ModelRef, effort: string | undefined): ModelRef =>
-  effort ? `${baseRef(ref)}#${effort}` : baseRef(ref);
+  refWith(baseRef(ref), effort, splitRef(ref).modes ?? []);
+
+/** ULTRACODE-1 / VELOCIDAD-1: the ref with an engine mode ("ultracode", "fast") on or off, keeping its effort. */
+export function withMode(ref: ModelRef, mode: string, on: boolean): ModelRef {
+  const { effort, modes = [] } = splitRef(ref);
+  const rest = modes.filter((m) => m !== mode);
+  return refWith(baseRef(ref), effort, on ? [...rest, mode] : rest);
+}
+
+const refWith = (base: ModelRef, effort: string | undefined, modes: readonly string[]): ModelRef =>
+  effort || modes.length ? `${base}#${effort ?? ""}${modes.map((m) => `+${m}`).join("")}` : base;
+
+/** A mode as people read it ("ultracode" → "Ultracode", "fast" → "Rápido"). */
+export function modeLabel(mode: string): string {
+  const key = `models.mode.${mode}`;
+  return isKey(key) ? t(key) : mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
+/** What a ref reads as after its model: its effort and the modes it has on, each after a dot. */
+const suffixLabel = (effort: string | undefined, modes: readonly string[] = []): string =>
+  [...(effort ? [effortLabel(effort)] : []), ...modes.map(modeLabel)].map((s) => ` · ${s}`).join("");
 
 /** Whether the catalog knows a ref (an engine alone, or one of its models). */
 export function inCatalog(ref: ModelRef, catalog: readonly CatalogEngine[]): boolean {
@@ -124,18 +145,18 @@ export function inCatalog(ref: ModelRef, catalog: readonly CatalogEngine[]): boo
 
 /** A ref as people read it: an engine alone is "<Engine> default", a model is its name; its effort after a dot. */
 export function refLabel(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
-  const { engine, model, effort } = splitRef(ref);
+  const { engine, model, effort, modes } = splitRef(ref);
   const label = model
     ? modelLabel(ref, catalog)
     : t("models.engineDefault", { engine: catalog.find((x) => x.id === engine)?.label ?? engine });
-  return effort ? `${label} · ${effortLabel(effort)}` : label;
+  return label + suffixLabel(effort, modes);
 }
 
 /** Short form for chips and summaries: an engine alone is just its label. */
 function shortRef(ref: ModelRef, catalog: readonly CatalogEngine[]): string {
-  const { engine, model, effort } = splitRef(ref);
+  const { engine, model, effort, modes } = splitRef(ref);
   const label = model ? modelName(ref, catalog) : (catalog.find((x) => x.id === engine)?.label ?? engine);
-  return effort ? `${label} · ${effortLabel(effort)}` : label;
+  return label + suffixLabel(effort, modes);
 }
 
 /**

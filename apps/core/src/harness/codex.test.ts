@@ -68,7 +68,7 @@ process.stdin.on("end", () => process.stdout.write(${JSON.stringify(events.map((
 /** One Codex turn in `cwd`, as an auto code thread: the agent's autonomy decides whether it writes. */
 async function turn(
   cwd: string,
-  opts: { autonomy?: string; sessionId?: string; makes?: string[]; shown?: string[] } = {},
+  opts: { autonomy?: string; sessionId?: string; makes?: string[]; shown?: string[]; model?: string } = {},
 ): Promise<string[]> {
   const codex = fakeCodex(opts.makes);
   const harness = codexHarness({
@@ -80,7 +80,7 @@ async function turn(
     thread: { cwd, write: "auto" },
     agent: { autonomy: opts.autonomy ?? "auto" },
     outside: () => false,
-    models: ["codex"],
+    models: [opts.model ?? "codex"],
     input: { role: "user", content: "commit it" },
     sessionId: opts.sessionId,
     signal: AbortSignal.timeout(20_000),
@@ -164,4 +164,12 @@ test("the images Codex made in this turn show in the chat, not earlier ones or o
     if (saved === undefined) delete process.env.CODEX_HOME;
     else process.env.CODEX_HOME = saved;
   }
+});
+
+test("VELOCIDAD-1: a ref with fast mode starts Codex with service_tier fast; without it, nothing is set", async () => {
+  const fast = await turn(fx.root, { model: "codex/gpt-6-sol#high+fast" });
+  assert.ok(values(fast, "--config").includes('service_tier="fast"'), fast.join(" "));
+  assert.ok(values(fast, "--config").includes('model_reasoning_effort="high"'), fast.join(" "));
+  const plain = await turn(fx.root, { model: "codex/gpt-6-sol#high" });
+  assert.ok(!values(plain, "--config").some((v) => v.startsWith("service_tier")), plain.join(" "));
 });

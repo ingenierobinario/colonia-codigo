@@ -6,7 +6,7 @@ import { worksInFolder } from "../domain/threads.ts";
 import { codexImageDir, imagesIn } from "../services/codex-images.ts";
 import { editsInFolder, modeOf, sessionGate } from "../tools/policy.ts";
 import { harnessEnv } from "./env.ts";
-import { effortPart, type Harness, modelPart, type TurnIO, type TurnOutcome } from "./types.ts";
+import { effortPart, type Harness, hasMode, modelPart, type TurnIO, type TurnOutcome } from "./types.ts";
 import { linkedWorktreeWritableDirs } from "./worktree.ts";
 
 const READ_ONLY_NOTE =
@@ -49,7 +49,8 @@ export function codexHarness(opts: {
           codexPathOverride: codexPath,
           // With approval "never" Codex refuses every MCP call unless the server's tools are pre-approved; Colonia's gate
           // asks the owner itself when a tool needs it.
-          config: { mcp_servers: { colonia } },
+          // VELOCIDAD-1: Codex's fast mode is its `service_tier = "fast"` setting (more speed, more of the plan's usage).
+          config: { mcp_servers: { colonia }, ...(hasMode(io.models[0], "fast") ? { service_tier: "fast" } : {}) },
           env,
         });
         const madeBefore = new Set(io.sessionId ? imagesIn(codexImageDir(env, io.sessionId)) : []);

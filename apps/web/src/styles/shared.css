@@ -229,6 +229,11 @@
 .mlist__effort .colonia-select {
   width: 160px;
 }
+/* ULTRACODE-1 / VELOCIDAD-1: an engine mode under the effort, as a switch with its one-line hint. */
+.mlist__mode {
+  padding: 6px 4px 2px;
+  font-size: var(--colonia-text-sm);
+}
 .mlist__engine .colonia-engine {
   flex: none;
 }
