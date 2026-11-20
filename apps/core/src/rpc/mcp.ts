@@ -88,7 +88,9 @@ export function mcpHandlers(mcp: Mcp, store: Store, switchable: (name: string) =
       if (Array.isArray(server?.args) && JSON.stringify(server.args).includes("secret://"))
         throw badRequest(ARGS_SECRET);
       const onlySwitch = server && !server.command && !server.url;
-      if (onlySwitch && (project || !mcp.find("global", name))) throw badRequest(`no global server ${name}`);
+      // Only the owner's own: an extension's server is also "global", and switching it here would leave a bare { enabled }.
+      if (onlySwitch && (project || !mcp.config.global().some((d) => d.own && d.name === name)))
+        throw badRequest(`no global server ${name}`);
       if (!project) {
         mcp.config.setGlobal(name, server);
         mcp.drop({ scope: "global", name });
