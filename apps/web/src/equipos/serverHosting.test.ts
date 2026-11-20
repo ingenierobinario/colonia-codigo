@@ -6,6 +6,8 @@ import {
   forgetPairCode,
   hostingLinks,
   newPairCode,
+  pairKey,
+  pairRefusal,
   pendingPairCode,
   rememberPairCode,
   serverAddress,
@@ -144,4 +146,34 @@ test("AUTOVINCULAR-1: la dirección del servidor se acepta tal como se copia de 
     "a b",
   ])
     assert.equal(serverAddress(bad), undefined, bad);
+});
+
+test("la clave de los registros se acepta como se copie y se rechaza si no es una clave", () => {
+  assert.equal(pairKey("abcd-2345"), "ABCD2345");
+  assert.equal(pairKey("  ABCD 2345 "), "ABCD2345");
+  assert.equal(pairKey("ABCD-2340"), undefined, "sin ceros ni unos, que se confunden");
+  assert.equal(pairKey("ABC"), undefined);
+  assert.equal(pairKey(""), undefined);
+});
+
+test("el motivo del rechazo se lee del error del núcleo y lo desconocido no se inventa", () => {
+  assert.equal(pairRefusal({ detail: { refused: "wrong" } }), "wrong");
+  assert.equal(pairRefusal({ detail: { refused: "locked" } }), "locked");
+  assert.equal(pairRefusal({ detail: { refused: "unreachable" } }), "unreachable");
+  assert.equal(pairRefusal({ detail: { refused: "raro" } }), "other");
+  assert.equal(pairRefusal(new Error("x")), "other");
+  assert.equal(pairRefusal(undefined), "other");
+});
+
+test("la dirección del servidor vale sin https:// y con barra final", () => {
+  assert.equal(
+    serverAddress("colonia-production-a99e7544.up.railway.app"),
+    "https://colonia-production-a99e7544.up.railway.app",
+  );
+  assert.equal(
+    serverAddress("https://colonia-production-a99e7544.up.railway.app/"),
+    "https://colonia-production-a99e7544.up.railway.app",
+  );
+  assert.equal(serverAddress("http://colonia.up.railway.app"), undefined);
+  assert.equal(serverAddress("colonia"), undefined);
 });

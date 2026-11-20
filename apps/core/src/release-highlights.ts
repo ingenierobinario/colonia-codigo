@@ -9,13 +9,15 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.61": {
     en: [
       "Connectors that sign in through your browser now show Connect and list their tools once you finish.",
-      "If a provider does not allow connecting from Colonia, the card says so plainly.",
-      "A connector's first start may take a while to download: it shows Preparing instead of an error.",
+      "If a provider does not allow it, or a first start takes a while, the card says so plainly.",
+      "Linking your Railway server never waits in silence: if it asks for a key, it's in your Deploy Logs.",
+      "The commission notice is gone from the server card.",
     ],
     es: [
       "Los conectores que piden iniciar sesión muestran Conectar y listan sus herramientas al terminar.",
-      "Si un proveedor no permite conectar desde Colonia, la tarjeta lo dice claro.",
-      "El primer arranque de un conector puede tardar en descargarse: sale «Preparando», no un error.",
+      "Si un proveedor no lo permite o el primer arranque tarda, la tarjeta lo dice claro.",
+      "Vincular tu servidor de Railway ya no espera en silencio: si pide clave, está en sus Deploy Logs.",
+      "Se quitó el aviso de comisión de la tarjeta del servidor.",
     ],
   },
   "2.36.60": {

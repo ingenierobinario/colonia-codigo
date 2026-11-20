@@ -107,3 +107,24 @@ export function serverAddress(text: string): string | undefined {
     return undefined;
   }
 }
+
+/** VINCULAR-CLAVE-1 · La clave que el servidor escribe en sus registros, tal como se copie: con guion, espacios o en minúsculas. */
+export function pairKey(text: string): string | undefined {
+  const code = text.toUpperCase().replace(/[^0-9A-Z]/g, "");
+  return /^[2-9A-HJ-NP-Z]{8}$/.test(code) ? code : undefined;
+}
+
+export type PairRefusal = "wrong" | "locked" | "expired" | "none" | "busy" | "unreachable" | "other";
+
+/** Por qué no se pudo vincular, a partir del error del núcleo (su `detail.refused`). */
+export function pairRefusal(err: unknown): PairRefusal {
+  const why = (err as { detail?: { refused?: unknown } } | undefined)?.detail?.refused;
+  return why === "wrong" ||
+    why === "locked" ||
+    why === "expired" ||
+    why === "none" ||
+    why === "busy" ||
+    why === "unreachable"
+    ? why
+    : "other";
+}

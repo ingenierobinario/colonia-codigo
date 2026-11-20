@@ -8,7 +8,7 @@ import { useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
 import { FolderSync } from "./FolderSync.tsx";
 import { isLocalHostingDesktop } from "./hostingOffer.ts";
-import { cloudInvitation, serverAddress } from "./serverHosting.ts";
+import { cloudInvitation, type PairRefusal, pairKey, pairRefusal, serverAddress } from "./serverHosting.ts";
 
 /** AUTOVINCULAR-1 · Railway tarda minutos en construir: se reintenta cada pocos segundos durante este tiempo. */
 const WAIT_MS = 20 * 60_000;
@@ -39,6 +39,10 @@ export function HostingPair({
   const readAgain = useRef<() => void>(() => {});
   const [address, setAddress] = useState("");
   const [waiting, setWaiting] = useState(false);
+  /** VINCULAR-CLAVE-1 · El servidor contestó que no al código de la plantilla: se le pide la clave de sus registros. */
+  const [askKey, setAskKey] = useState(false);
+  const [key, setKey] = useState("");
+  const [autoIssue, setAutoIssue] = useState<PairRefusal | "address" | "key">();
   const waitRun = useRef(0);
   useEffect(() => () => void waitRun.current++, []);
   useEffect(() => {
@@ -109,25 +113,37 @@ export function HostingPair({
       setJoining(false);
     });
   const server = serverAddress(address);
-  /** Con el código ya dentro del servidor, solo falta su dirección. Se insiste mientras Railway lo levanta. */
-  const awaitServer = async () => {
-    if (!pending || !server || waiting) return;
+  /**
+   * Con el código ya dentro del servidor, solo falta su dirección. Se insiste mientras Railway lo levanta; en cuanto
+   * el servidor contesta que no conoce ese código (la plantilla no lo pasó), se deja de esperar y se pide su clave.
+   */
+  const awaitServer = async (withKey?: string) => {
+    if (!pending || waiting) return;
+    if (!server) return setAutoIssue("address");
+    const code = withKey ?? pending;
     const run = ++waitRun.current;
     setIssue(undefined);
+    setAutoIssue(undefined);
     setWaiting(true);
-    const until = Date.now() + WAIT_MS;
+    const until = Date.now() + (withKey ? 0 : WAIT_MS);
     try {
       for (;;) {
         try {
-          setStatus(await client.call("sync.pair_join", { code: pending, address: server }));
+          setStatus(await client.call("sync.pair_join", { code, address: server }));
+          setAskKey(false);
+          setKey("");
           onSettled?.();
           return;
-        } catch {
+        } catch (err) {
           if (run !== waitRun.current) return;
-          if (Date.now() > until) {
-            setIssue("connect");
-            return;
+          const why = pairRefusal(err);
+          if (why === "busy") return setAutoIssue("busy");
+          if (why === "wrong" || why === "none" || why === "expired" || why === "locked") {
+            // Respondió: está encendido. Sin la clave, se pide; con ella, se dice qué pasó.
+            if (!withKey) return setAskKey(true);
+            return setAutoIssue(why === "none" ? "expired" : why);
           }
+          if (Date.now() > until) return setAutoIssue("unreachable");
           await new Promise((r) => setTimeout(r, RETRY_MS));
           if (run !== waitRun.current) return;
         }
@@ -135,6 +151,16 @@ export function HostingPair({
     } finally {
       if (run === waitRun.current) setWaiting(false);
     }
+  };
+  const linkWithKey = () => {
+    const typed = pairKey(key);
+    if (!typed) return setAutoIssue("key");
+    void awaitServer(typed);
+  };
+  const stopWaiting = () => {
+    waitRun.current++;
+    setWaiting(false);
+    setAutoIssue(undefined);
   };
   const start = () =>
     act(async () => {
@@ -295,47 +321,103 @@ export function HostingPair({
         status &&
         (desktop ? (
           pending ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void awaitServer();
-              }}
-            >
-              <p role="status" aria-live="polite">
-                <strong>{t(waiting ? "equipos.autoWaiting" : "equipos.autoCreated")}</strong>
-              </p>
-              <Field label={t("equipos.autoAddressLabel")} hint={t("equipos.autoAddressHint")}>
-                {(id) => (
-                  <Input
-                    id={id}
-                    value={address}
-                    placeholder="colonia-production.up.railway.app"
-                    autoComplete="off"
-                    spellCheck={false}
+            askKey ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  linkWithKey();
+                }}
+              >
+                <p role="status" aria-live="polite">
+                  <strong>{t(waiting ? "equipos.autoKeyWorking" : "equipos.autoKeyTitle")}</strong>
+                </p>
+                <p className="eq-muted">{t("equipos.autoKeySteps")}</p>
+                {server && <p className="eq-hosting-address">{new URL(server).host}</p>}
+                <Field label={t("equipos.autoKeyLabel")}>
+                  {(id) => (
+                    <Input
+                      id={id}
+                      value={key}
+                      placeholder="ABCD-2345"
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={waiting}
+                      onChange={(e) => {
+                        setKey(e.target.value);
+                        setAutoIssue(undefined);
+                      }}
+                    />
+                  )}
+                </Field>
+                <div className="eq-row">
+                  <Button type="submit" disabled={!key.trim() || waiting}>
+                    {t("equipos.autoKeyLink")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
                     disabled={waiting}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                )}
-              </Field>
-              <div className="eq-row">
-                <Button type="submit" disabled={!server || waiting}>
-                  {t("equipos.autoConnect")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    waitRun.current++;
-                    setWaiting(false);
-                    setAddress("");
-                    setIssue(undefined);
-                    onSettled?.();
-                  }}
-                >
-                  {t("equipos.autoForget")}
-                </Button>
-              </div>
-            </form>
+                    onClick={() => {
+                      setAskKey(false);
+                      setKey("");
+                      setAutoIssue(undefined);
+                    }}
+                  >
+                    {t("equipos.autoChangeAddress")}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void awaitServer();
+                }}
+              >
+                <p role="status" aria-live="polite">
+                  <strong>{t(waiting ? "equipos.autoWaiting" : "equipos.autoCreated")}</strong>
+                </p>
+                <Field label={t("equipos.autoAddressLabel")} hint={t("equipos.autoAddressHint")}>
+                  {(id) => (
+                    <Input
+                      id={id}
+                      value={address}
+                      placeholder="colonia-production.up.railway.app"
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={waiting}
+                      onChange={(e) => {
+                        setAddress(e.target.value);
+                        setAutoIssue(undefined);
+                      }}
+                    />
+                  )}
+                </Field>
+                <div className="eq-row">
+                  {waiting ? (
+                    <Button type="button" variant="secondary" onClick={stopWaiting}>
+                      {t("equipos.autoStop")}
+                    </Button>
+                  ) : (
+                    <Button type="submit" disabled={!address.trim()}>
+                      {t(autoIssue === "unreachable" ? "equipos.autoRetry" : "equipos.autoConnect")}
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      stopWaiting();
+                      setAddress("");
+                      setIssue(undefined);
+                      onSettled?.();
+                    }}
+                  >
+                    {t("equipos.autoForget")}
+                  </Button>
+                </div>
+              </form>
+            )
           ) : joining ? (
             <form
               onSubmit={(e) => {
@@ -422,6 +504,25 @@ export function HostingPair({
             )}
           </>
         ))
+      )}
+      {autoIssue && !status?.paired && (
+        <p role="alert">
+          {t(
+            (
+              {
+                address: "equipos.autoAddressBad",
+                key: "equipos.autoKeyInvalid",
+                wrong: "equipos.autoKeyWrong",
+                locked: "equipos.autoKeyLocked",
+                expired: "equipos.autoKeyExpired",
+                none: "equipos.autoKeyExpired",
+                busy: "equipos.autoBusy",
+                unreachable: "equipos.autoUnreachable",
+                other: "equipos.autoUnreachable",
+              } as const
+            )[autoIssue],
+          )}
+        </p>
       )}
       {issue && (
         <p role="alert">

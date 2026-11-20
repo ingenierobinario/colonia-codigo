@@ -770,6 +770,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       ? { beaconPort: Number(process.env.COLONIA_SYNC_BEACON_PORT) }
       : {}),
     ...(process.env.COLONIA_PAIR_CODE ? { presetCode: process.env.COLONIA_PAIR_CODE } : {}),
+    // VINCULAR-CLAVE-1 · En Railway (o pidiéndolo), sin pareja se espera con una clave que solo sale en los registros.
+    ...(process.env.RAILWAY_SERVICE_ID || process.env.COLONIA_PAIR_KEY_LOG === "on" ? { logKey: true } : {}),
     channels: () => channels.info(),
     changed: (touched) => {
       bus.emit({ type: "sync.updated", data: true });

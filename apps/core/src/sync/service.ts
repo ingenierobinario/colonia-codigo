@@ -97,6 +97,12 @@ const WAITING_MAX = 5000;
 /** AUTOVINCULAR-1 · Lo que espera un servidor recién creado a que el escritorio llegue (construir tarda minutos). */
 export const PRESET_TTL_MS = 24 * 60 * 60_000;
 const PRESET_FILE = "emparejamiento-plantilla.usado";
+/**
+ * VINCULAR-CLAVE-1 · Un servidor sin pareja ni código de plantilla se protege con una clave que solo sale en sus
+ * registros de arranque (los ve únicamente quien tiene la cuenta del alojamiento). Nunca viaja por HTTP.
+ */
+export const LOG_KEY_FILE = "clave-de-vinculacion.txt";
+export const LOG_KEY_TTL_MS = 30 * 24 * 60 * 60_000;
 const RETRY_MS = [1000, 2000, 5000, 10_000, 30_000];
 
 export type Role = "principal" | "secundario";
@@ -196,6 +202,8 @@ export type SyncDeps = {
    * pareja, el servidor arranca ya enseñándolo; vale una sola vez y no vuelve a abrirse aunque se desempareje.
    */
   presetCode?: string;
+  /** VINCULAR-CLAVE-1 · Este equipo es un servidor: sin pareja, espera con una clave que solo escribe en sus registros. */
+  logKey?: boolean;
 };
 
 type Wire = { send(m: object): void; recv(s: string): unknown };
@@ -294,6 +302,8 @@ export function createSync(d: SyncDeps) {
   let secret: string | undefined;
   /** El código vigente vino de la plantilla: al gastarlo se apunta para no volver a abrirlo. */
   let presetTag: string | undefined;
+  /** VINCULAR-CLAVE-1 · El código vigente es la clave de los registros: no se enseña en el estado. */
+  let logKeyArmed = false;
   let stateDirty = 0;
   const media = mediaTransfer(
     d.db,
@@ -334,6 +344,49 @@ export function createSync(d: SyncDeps) {
       initial_source: "joining_device",
       allow_managed_folder_sync: true,
     };
+    tune();
+  }
+  /**
+   * VINCULAR-CLAVE-1 · Arma la clave de los registros si es un servidor sin pareja y sin otra invitación vigente.
+   * La misma clave sobrevive a un reinicio (está en el volumen); `fresh` la cambia (caducó o se agotaron los intentos).
+   */
+  function armLogKey(fresh = false): void {
+    if (!d.logKey || stopped || state || pairing.active()) return;
+    const keyFile = path.join(d.home, LOG_KEY_FILE);
+    let code: string | undefined;
+    if (!fresh) {
+      try {
+        code = typed(fs.readFileSync(keyFile, "utf8"));
+      } catch {}
+    }
+    if (!code) {
+      code = shortCode();
+      try {
+        fs.writeFileSync(
+          keyFile,
+          `${code}
+`,
+          { mode: 0o600 },
+        );
+      } catch (err) {
+        warn("no se pudo guardar la clave de vinculación", err);
+      }
+    }
+    identity(true);
+    const { expiresAt } = pairing.start({ code, ttlMs: LOG_KEY_TTL_MS });
+    secret = stretch(code);
+    presetTag = undefined;
+    logKeyArmed = true;
+    shown = {
+      code: pretty(code),
+      expires_at: new Date(expiresAt).toISOString(),
+      initial_source: "joining_device",
+      allow_managed_folder_sync: true,
+    };
+    d.log.warn(
+      { pairing_key: pretty(code) },
+      `==================== CLAVE DE VINCULACIÓN: ${pretty(code)} ==================== Escríbela en Colonia (Equipos › Colonia en un servidor) para vincular tu ordenador. Vale una vez; tras 5 intentos fallidos se cambia y sale aquí otra.`,
+    );
     tune();
   }
   function readState(): State | undefined {
@@ -775,6 +828,14 @@ export function createSync(d: SyncDeps) {
           const result = pairing.attempt(() => !!key && sameProof(p.proof, pairProof(key, t, p.pub)));
           if (result !== "ok") {
             wire.send({ t: "refused", why: result });
+            if (logKeyArmed && !pairing.active()) {
+              warn(
+                result === "locked"
+                  ? "demasiados intentos con la clave de vinculación: se cambia"
+                  : "la clave de vinculación caducó: se cambia",
+              );
+              armLogKey(true);
+            }
             phase = "dead";
             return void setTimeout(() => ws.close(1008, "cerrado"), 50);
           }
@@ -807,6 +868,10 @@ export function createSync(d: SyncDeps) {
           };
           shown = undefined;
           secret = undefined;
+          if (logKeyArmed) {
+            logKeyArmed = false;
+            fs.rmSync(path.join(d.home, LOG_KEY_FILE), { force: true });
+          }
           if (presetTag) {
             fs.writeFileSync(path.join(d.home, PRESET_FILE), presetTag, { mode: 0o600 });
             presetTag = undefined;
@@ -908,6 +973,10 @@ export function createSync(d: SyncDeps) {
   }
 
   function tick(): void {
+    if (!stopped && !state) {
+      if (logKeyArmed && !pairing.active()) armLogKey(true);
+      else armLogKey();
+    }
     tune();
     if (stopped || !state || !journal) return;
     // Sin enlace: se pregunta por la pareja en la red, por si las dos direcciones cambiaron a la vez.
@@ -1043,6 +1112,7 @@ export function createSync(d: SyncDeps) {
         }
         if (installed(d.db)) uninstall(d.db, d.secrets);
         armPreset();
+        armLogKey();
       }
       timer = setInterval(tick, d.tickMs ?? 1000);
       timer.unref?.();
@@ -1080,7 +1150,7 @@ export function createSync(d: SyncDeps) {
         ...(progress ? { project_files: progress } : {}),
         ...(continuous ? { folder_sync: continuous.status() } : {}),
         reachable: d.urls().length > 0,
-        ...(shown && !state ? { pairing: shown } : {}),
+        ...(shown && !state && !logKeyArmed ? { pairing: shown } : {}),
         ...(state ? { peer: { name: state.peer.name }, role: state.role } : {}),
         connected: Boolean(link?.hello),
         mismatch: Boolean(link?.hello) && mismatch,
@@ -1099,6 +1169,7 @@ export function createSync(d: SyncDeps) {
       const { code, expiresAt } = pairing.start();
       secret = stretch(code);
       presetTag = undefined;
+      logKeyArmed = false;
       shown = {
         code: pretty(code),
         expires_at: new Date(expiresAt).toISOString(),
@@ -1114,6 +1185,7 @@ export function createSync(d: SyncDeps) {
       shown = undefined;
       secret = undefined;
       presetTag = undefined;
+      logKeyArmed = false;
       tune();
       tell();
     },
@@ -1144,12 +1216,17 @@ export function createSync(d: SyncDeps) {
         throw new Error(
           "no encuentro ningún equipo que enseñe ese código: revísalo y comprueba que los dos están en la misma red, o escribe la dirección del otro equipo",
         );
+      /** VINCULAR-CLAVE-1 · Por qué dijo que no el otro equipo, para que la tarjeta lo cuente con sus palabras. */
+      let refused: string | undefined;
       const tryAt = (i: number, last: string): Promise<{ name: string }> => {
         const url = urls[i];
         if (!url)
           return Promise.reject(
-            new Error(
-              `no se pudo conectar con el otro equipo (${last}): comprueba que está encendido y en la misma red`,
+            Object.assign(
+              new Error(
+                `no se pudo conectar con el otro equipo (${last}): comprueba que está encendido y en la misma red`,
+              ),
+              { refused: "unreachable" },
             ),
           );
         return new Promise<{ name: string }>((resolve, reject) => {
@@ -1180,6 +1257,7 @@ export function createSync(d: SyncDeps) {
                 try {
                   const m = PairReply.parse(c.recv(String(raw)));
                   if (m.t === "refused") {
+                    refused = m.why;
                     const why: Record<string, string> = {
                       wrong: "el código no es correcto",
                       expired: "el código ha caducado: genera uno nuevo en el otro equipo",
@@ -1228,12 +1306,19 @@ export function createSync(d: SyncDeps) {
                 }
               });
             },
-            (why) =>
-              fail(hard || why === "busy" ? `!${why === "busy" ? "el otro equipo ya está emparejado" : why}` : why),
+            (why) => {
+              if (why === "busy") refused = "busy";
+              // Un equipo sin invitación (ni identidad) contesta «unpaired»: está encendido, pero no conoce el código.
+              if (why === "unpaired") {
+                refused = "none";
+                return fail("!ese equipo no tiene ninguna invitación abierta");
+              }
+              fail(hard || why === "busy" ? `!${why === "busy" ? "el otro equipo ya está emparejado" : why}` : why);
+            },
           );
         }).catch((e: Error) => {
           // Con «!» el otro equipo contestó y dijo que no: probar otra dirección no cambia nada.
-          if (e.message.startsWith("!")) throw new Error(e.message.slice(1));
+          if (e.message.startsWith("!")) throw Object.assign(new Error(e.message.slice(1)), refused ? { refused } : {});
           return tryAt(i + 1, e.message);
         });
       };

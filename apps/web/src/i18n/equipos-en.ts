@@ -41,6 +41,8 @@ export const enEquipos = {
   "equipos.hostingJoinError":
     "Couldn’t link these devices. Check your connection and make sure the invitation is still valid.",
   "equipos.hostingRetry": "Try again",
+  "equipos.autoChangeAddress": "Change the address",
+  "equipos.autoStop": "Stop waiting",
   "equipos.hostingAddFolders": "Add folders to the server",
   "equipos.hostingSendFolders": "Send selected folders",
   "equipos.hostingFolderHint": "New folders are copied once. The server keeps the copies it has already received.",
@@ -212,6 +214,19 @@ export const enEquipos = {
   "equipos.autoAddressHint": "Copy it from Railway: open the service and click its public address.",
   "equipos.autoConnect": "Link when it's ready",
   "equipos.autoForget": "I'll do it later",
+  "equipos.autoKeyTitle": "Your server is ready. To protect it, ask it for a key.",
+  "equipos.autoKeySteps": "In Railway, open your server › Deploy Logs and copy the key shown there.",
+  "equipos.autoKeyLabel": "Server key",
+  "equipos.autoKeyLink": "Link",
+  "equipos.autoKeyWorking": "Linking…",
+  "equipos.autoKeyWrong": "That key isn't right. Check it in Deploy Logs and try again.",
+  "equipos.autoKeyLocked": "Too many tries. Your server made a new key: copy it from Deploy Logs.",
+  "equipos.autoKeyExpired": "That key no longer works. Copy the latest one in Deploy Logs.",
+  "equipos.autoKeyInvalid": "The key has 8 letters and numbers, like ABCD-2345.",
+  "equipos.autoBusy": "That server is already linked to another computer.",
+  "equipos.autoUnreachable": "Your server isn't answering. Check the address and that Railway shows it as active.",
+  "equipos.autoAddressBad": "That address doesn't look right. Copy it exactly from Railway.",
+  "equipos.autoRetry": "Try again",
 } as const;
 
 export type EquipoKey = keyof typeof enEquipos;

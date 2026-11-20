@@ -26,7 +26,8 @@ export function syncHandlers(sync: Sync) {
       try {
         await sync.pairJoin(p.code, p.address, p.projects, p.continuous_projects);
       } catch (err) {
-        throw badRequest((err as Error).message);
+        const refused = (err as { refused?: unknown }).refused;
+        throw badRequest((err as Error).message, typeof refused === "string" ? { refused } : undefined);
       }
       return sync.status();
     },
