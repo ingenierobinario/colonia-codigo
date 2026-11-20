@@ -28,6 +28,8 @@ const windows: Window[] = [];
 class Window extends EventEmitter {
   shown = 0;
   focused = 0;
+  minimized = false;
+  restored = 0;
   title = "";
   bounds = { width: 1100, height: 820 };
   contentView = {
@@ -43,6 +45,13 @@ class Window extends EventEmitter {
   }
   getContentBounds() {
     return this.bounds;
+  }
+  isMinimized() {
+    return this.minimized;
+  }
+  restore() {
+    this.minimized = false;
+    this.restored++;
   }
   show() {
     this.shown++;
@@ -101,6 +110,11 @@ test("popout attaches its panel, encodes the tab, reuses the existing window and
   popout.open("Other");
   assert.equal(win.shown, 1);
   assert.equal(win.focused, 1);
+  assert.equal(win.restored, 0);
+  win.minimized = true;
+  popout.open("Other");
+  assert.equal(win.restored, 1);
+  assert.equal(win.focused, 2);
   assert.equal(win.contentView.children.length, 1);
   win.bounds = { width: 800, height: 600 };
   win.emit("resize");
