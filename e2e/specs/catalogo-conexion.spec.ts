@@ -1,11 +1,12 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
+import { tempDir } from "../../apps/core/src/testkit/platform.ts";
 import { expect, rpc, test, world } from "./kit.ts";
 
 test("el catálogo permite completar una conexión pendiente sin reemplazar su configuración", async ({ page }) => {
   test.setTimeout(60000);
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "catalogo-mcp-"));
+  await using carpeta = tempDir("catalogo-mcp-");
+  const dir = carpeta.path;
   const signed = path.join(dir, "signed");
   await rpc("setup.finish");
   try {
@@ -39,7 +40,6 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
     await expect(page.locator(".resd").getByText("echo", { exact: true }).first()).toBeVisible({ timeout: 15000 });
   } finally {
     await rpc("mcp.set", { name: "metaads", server: null });
-    await fs.rm(dir, { recursive: true, force: true });
   }
 });
 
