@@ -1226,7 +1226,7 @@ export function createSync(d: SyncDeps) {
               new Error(
                 `no se pudo conectar con el otro equipo (${last}): comprueba que está encendido y en la misma red`,
               ),
-              { refused: "unreachable" },
+              { refused: refused ?? "unreachable" },
             ),
           );
         return new Promise<{ name: string }>((resolve, reject) => {
@@ -1309,10 +1309,8 @@ export function createSync(d: SyncDeps) {
             (why) => {
               if (why === "busy") refused = "busy";
               // Un equipo sin invitación (ni identidad) contesta «unpaired»: está encendido, pero no conoce el código.
-              if (why === "unpaired") {
-                refused = "none";
-                return fail("!ese equipo no tiene ninguna invitación abierta");
-              }
+              // Se sigue con la siguiente dirección, pero la tarjeta sabrá que alguien contestó.
+              if (why === "unpaired") refused ??= "none";
               fail(hard || why === "busy" ? `!${why === "busy" ? "el otro equipo ya está emparejado" : why}` : why);
             },
           );
