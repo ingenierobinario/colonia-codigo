@@ -55,6 +55,7 @@ import { createPrograms } from "./programs.ts";
 import { createQuick, type DesktopPrefs } from "./quick.ts";
 import { confirmQuit } from "./quit-confirm.ts";
 import { waitOnQuit } from "./quit-wait.ts";
+import { type Remote, waiting, waitingHtml } from "./remote-wait.ts";
 import { sendTo } from "./safe-send.ts";
 import { createUpdateMenu } from "./update-menu.ts";
 import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
@@ -273,6 +274,15 @@ app.whenReady().then(() => {
   });
   win.contentView.addChildView(panel);
   externalLinks(panel.webContents);
+  // VENTANA-NEGRA-1: desde el primer instante, el pingüino; sin esto la ventana se ve negra hasta que el
+  // conector decide adónde conectar. Lo sustituye la espera del conector o el panel en cuanto lo hay.
+  {
+    const es = app.getLocale().startsWith("es");
+    const first = { ...waiting({ where: "", url: CORE_URL } satisfies Remote, true, es), phase: "local" as const };
+    void panel.webContents
+      .loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(waitingHtml({ ...first, since: Date.now() }, es))}`)
+      .catch(() => {});
+  }
   let shown: WebContentsView | undefined;
   let slot: Bounds | null = null;
   // The quick chat loads from wherever the panel did (the dev server or the core); so does the browser window.
