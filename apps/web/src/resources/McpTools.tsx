@@ -149,7 +149,7 @@ export function McpTools({
           {busy
             ? t("res.toolsLoading")
             : failed
-              ? t("res.toolsFailed", { error: failed })
+              ? t("res.toolsFailed")
               : t(usable ? "res.toolsUnknown" : "res.toolsOff")}
         </p>
       )}

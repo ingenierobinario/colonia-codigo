@@ -127,7 +127,10 @@ test("waiting for a sign-in outlives the connection, and only the owner's Sign i
   assert.ok(server.sign_in_url);
   assert.equal(shop.opened(), 2);
   shop.signIn();
-  await becomes("store", "ready");
+  const ready = await becomes("store", "ready");
+  // Connected from the panel, it lists its tools and has nothing left to explain.
+  assert.deepEqual(ready.tool_names, ["echo"]);
+  assert.equal(ready.problem, undefined);
 });
 
 test("a test that runs into a sign-in hands its copy to agents instead of closing it", async () => {
@@ -158,5 +161,15 @@ test("el rechazo del registro del cliente se muestra sin ofrecer una autorizaciÃ
   const { server } = await env.client.call("mcp.signIn", { scope: "global", server: "registro-rechazado" });
   assert.equal(server.status, "error");
   assert.match(server.error ?? "", /rechazado el registro/);
+  assert.equal(server.problem, "rejected");
   assert.equal(server.sign_in_url, undefined);
+});
+
+test("un puente mcp-remote sale en el estado con su remoto y su proveedor, tal como estÃ¡ definido", async () => {
+  const server = { command: "npx", args: ["-y", "mcp-remote", "https://mcp.facebook.com/ads"], enabled: false };
+  await env.client.call("mcp.set", { name: "metaads", server });
+  const s = await statusOf("metaads");
+  assert.deepEqual(s?.bridge, { url: "https://mcp.facebook.com/ads", provider: "Meta" });
+  assert.equal(s?.target, "npx -y mcp-remote https://mcp.facebook.com/ads");
+  await env.client.call("mcp.set", { name: "metaads", server: null });
 });

@@ -57,3 +57,38 @@ export function mcpDot(s: McpServerStatus): "on" | "idle" | "off" | "error" | "w
   if (s.status === "ready") return "on";
   return s.status === "off" || s.status === "starting" ? "idle" : "off";
 }
+
+/** A failed or slow start in the owner's words; the server's own message stays folded under it. */
+export function mcpProblem(
+  s: McpServerStatus,
+  test?: { ok: boolean; error?: string | undefined; problem?: "rejected" | "slow" | "preparing" | undefined },
+): { kind: "rejected" | "slow" | "preparing" | "other"; text(t: T): string } | undefined {
+  if (test?.ok) return undefined;
+  // A test's own answer wins; its "sign in" answers are the sign-in callout's, not a failure.
+  const k = test
+    ? (test.problem ?? (test.error && !/sign in/i.test(test.error) ? "other" : undefined))
+    : s.status === "error"
+      ? (s.problem ?? "other")
+      : undefined;
+  if (!k) return undefined;
+  const provider = s.bridge?.provider ?? hostName(s.transport === "http" ? s.target : "");
+  return {
+    kind: k,
+    text: (t) =>
+      k === "rejected"
+        ? t("res.problem.rejected", { provider: provider ?? t("res.problem.provider") })
+        : k === "slow"
+          ? t("res.problem.slow")
+          : k === "preparing"
+            ? t("res.preparing")
+            : t("res.problem.other"),
+  };
+}
+
+function hostName(url: string): string | undefined {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "") || undefined;
+  } catch {
+    return undefined;
+  }
+}

@@ -1546,6 +1546,10 @@ export const McpServerStatus = z.object({
   status: z.enum(["off", "needs-approval", "disabled", "starting", "ready", "error", "needs-sign-in"]),
   /** The page it asked the owner to open, while it still waits for them there. */
   sign_in_url: z.string().optional(),
+  /** Why it failed, in a word: rejected (the provider refuses this client), slow (no answer in time). */
+  problem: z.enum(["rejected", "slow"]).optional(),
+  /** A stdio bridge to a remote server (mcp-remote), which signs in through the owner's browser. */
+  bridge: z.object({ url: z.string(), provider: z.string() }).optional(),
   tools: z.number().int(),
   /** Tool names once it has started. */
   tool_names: z.array(z.string()).default([]),

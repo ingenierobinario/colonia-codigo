@@ -555,6 +555,8 @@ export const resourceMethods = {
       ms: z.number().int(),
       tools: z.array(z.string()),
       error: z.string().optional(),
+      /** preparing: still downloading or starting, it goes on in the background. */
+      problem: z.enum(["rejected", "slow", "preparing"]).optional(),
     }),
     effect: false,
     access: "human",

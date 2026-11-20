@@ -6,10 +6,16 @@ import { listMcp, signInMcp, testMcp, toggleMcp, trustMcp } from "../data/resour
 import { useData } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
-import { mcpDot, STATUS_KEY } from "./labels.ts";
+import { mcpDot, mcpProblem, STATUS_KEY } from "./labels.ts";
 import { McpTools } from "./McpTools.tsx";
 
-type TestResult = { ok: boolean; ms: number; tools: string[]; error?: string | undefined };
+type TestResult = {
+  ok: boolean;
+  ms: number;
+  tools: string[];
+  error?: string | undefined;
+  problem?: "rejected" | "slow" | "preparing" | undefined;
+};
 
 /**
  * One MCP server: its state, what it runs, the variables it names (red when missing), its tools, and a test. Inside a
@@ -65,6 +71,11 @@ export function McpDetail({
   };
   // While its sign-in page is open, the state is read again so the end of the sign-in shows by itself.
   const waiting = s.status === "needs-sign-in" && Boolean(s.sign_in_url);
+  const problem = mcpProblem(s, test);
+  // A bridge that signs in (mcp-remote) is connected from here; one its provider refuses offers no Connect.
+  const connectable =
+    s.status === "needs-sign-in" || (Boolean(s.bridge) && s.trusted && s.enabled && s.status === "off" && !test?.error);
+  const detail = test?.error ?? s.error;
   // biome-ignore lint/correctness/useExhaustiveDependencies: polls while waiting, with the latest refresh
   useEffect(() => {
     if (!waiting && s.status !== "starting") return;
@@ -93,10 +104,25 @@ export function McpDetail({
           ? t("res.offHereLong", { name: projectName(projects, projectId) })
           : test?.ok
             ? t("res.connected", { n: test.tools.length, ms: test.ms })
-            : t(s.status === "off" ? "res.idleLong" : STATUS_KEY[s.status])}
+            : problem
+              ? problem.text(t)
+              : s.status === "starting"
+                ? t("res.preparing")
+                : t(
+                    s.status === "off"
+                      ? "res.idleLong"
+                      : s.status === "needs-sign-in"
+                        ? "res.needsConnect"
+                        : STATUS_KEY[s.status],
+                  )}
         {!s.off_here && s.status === "ready" && !test && s.tools > 0 && ` · ${t("mcp.tools", { n: s.tools })}`}
       </p>
-      {(test?.error || s.error) && <pre className="resd__error">{test?.error ?? s.error}</pre>}
+      {detail && !test?.ok && (
+        <details className="resd__detail">
+          <summary>{t("res.problem.detail")}</summary>
+          <pre className="resd__error">{detail}</pre>
+        </details>
+      )}
       <div className="resd__row">
         <Button
           size="sm"
@@ -108,6 +134,11 @@ export function McpDetail({
         >
           {t("res.test")}
         </Button>
+        {connectable && !waiting && s.status !== "needs-sign-in" && (
+          <Button size="sm" leadingIcon={<Icons.LogIn size={14} />} loading={signingIn} onClick={() => void signIn()}>
+            {t("res.connect")}
+          </Button>
+        )}
         {s.trusted && (
           <Button
             size="sm"
@@ -156,14 +187,14 @@ export function McpDetail({
       {s.status === "needs-sign-in" && (
         <div className="resd__callout resd__callout--line">
           <Icons.LogIn size={16} />
-          <strong>{t(waiting ? "res.signInWaiting" : "mcp.status.needsSignIn")}</strong>
+          <strong>{t(waiting ? "res.signInWaiting" : "res.needsConnect")}</strong>
           {waiting && /^https:\/\//i.test(s.sign_in_url ?? "") ? (
             <a href={s.sign_in_url} target="_blank" rel="noopener noreferrer">
-              {t("res.signIn")}
+              {t("res.connect")}
             </a>
           ) : (
             <Button size="sm" loading={signingIn} onClick={() => void signIn()}>
-              {t("res.signIn")}
+              {t("res.connect")}
             </Button>
           )}
         </div>

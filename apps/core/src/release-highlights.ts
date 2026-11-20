@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.61": {
+    en: [
+      "Connectors that sign in through your browser now show Connect and list their tools once you finish.",
+      "If a provider does not allow connecting from Colonia, the card says so plainly.",
+      "A connector's first start may take a while to download: it shows Preparing instead of an error.",
+    ],
+    es: [
+      "Los conectores que piden iniciar sesión muestran Conectar y listan sus herramientas al terminar.",
+      "Si un proveedor no permite conectar desde Colonia, la tarjeta lo dice claro.",
+      "El primer arranque de un conector puede tardar en descargarse: sale «Preparando», no un error.",
+    ],
+  },
   "2.36.60": {
     en: ["From the very first instant, Colonia shows its penguin while it starts, never a black window."],
     es: ["Desde el primer instante, Colonia enseña su pingüino mientras arranca, nunca una ventana negra."],

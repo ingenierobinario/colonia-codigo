@@ -16,12 +16,17 @@ import { projectSecretName, type Secrets } from "../secrets.ts";
 import { cap, untrusted } from "../tools/result.ts";
 import { type Confirm, type Effect, invalidArguments, type ScopedThread, type Tool } from "../tools/types.ts";
 import { type McpTool, mcpApproval, serverApprovalId } from "./approval.ts";
+import { downloads, remoteBridge } from "./bridge.ts";
 import { ARGS_SECRET, type McpDef, mcpConfig } from "./config.ts";
 import { fileRefs, fillFileArgs, hasFileRefs, type OpenFile, refOf } from "./file-args.ts";
 import { createStderrLogs } from "./logs.ts";
 import { watchSignIn } from "./sign-in.ts";
 
 const CONNECT_MS = 20_000;
+/** A start through npx and the like may first download its program: a minute and more on a cold cache. */
+const DOWNLOAD_MS = 150_000;
+/** How long the panel's Test and Connect wait before answering "still preparing" (its client waits 45 s). */
+const ANSWER_MS = 35_000;
 const CALL_MS = 120_000;
 const IDLE_MS = 10 * 60_000;
 /** How long a server that asked the owner to sign in is kept running, so the browser's answer still finds it. */
@@ -34,6 +39,8 @@ type Conn = {
   tools: McpTool[];
   status: "starting" | "ready" | "error" | "needs-sign-in";
   error?: string;
+  /** Why it failed, when the panel can say it in plain words. */
+  problem?: StartProblem | undefined;
   /** The page the server asked the owner to open, while it waits for them. */
   signInUrl?: string;
   /** Ends a start still under way, its process with it (one waiting on a sign-in lives for minutes). */
@@ -52,6 +59,11 @@ const RETRY_MS = 30_000;
 const SIGN_IN_FIRST = "it waits for you to sign in: use Sign in";
 const SIGN_IN_ASKED = "it asked you to sign in: finish on the page it opened in your browser";
 
+/** rejected: the provider refuses this client (no sign-in can work); slow: it did not answer in time. */
+export type StartProblem = "rejected" | "slow";
+const problemOf = (err: unknown): StartProblem | undefined => (err as { problem?: StartProblem } | null)?.problem;
+const failure = (message: string, problem: StartProblem) => Object.assign(new Error(message), { problem });
+
 export type McpStatus = {
   name: string;
   scope: "global" | "project";
@@ -63,6 +75,9 @@ export type McpStatus = {
   trusted: boolean;
   status: "off" | "needs-approval" | "disabled" | "starting" | "ready" | "error" | "needs-sign-in";
   sign_in_url?: string;
+  problem?: StartProblem;
+  /** A stdio bridge to a remote server (mcp-remote): it signs in through the owner's browser. */
+  bridge?: { url: string; provider: string };
   tools: number;
   tool_names: string[];
   tool_permission_mode: "unknown" | "ask" | "all" | "some";
@@ -166,9 +181,9 @@ export function createMcp(deps: {
     // Nobody waits on it once the start is over: a late sign-in line must not become an unhandled rejection.
     deadline.catch(() => {});
     signal?.addEventListener("abort", () => fail(new Error("closed")), { once: true });
-    const arm = (ms: number, why: string) => {
+    const arm = (ms: number, why: string, problem?: StartProblem) => {
       clearTimeout(timer);
-      timer = setTimeout(() => fail(new Error(why)), ms);
+      timer = setTimeout(() => fail(problem ? failure(why, problem) : new Error(why)), ms);
     };
     let transport: InstanceType<typeof StreamableHTTPClientTransport> | InstanceType<typeof StdioClientTransport>;
     if (d.url)
@@ -213,7 +228,8 @@ export function createMcp(deps: {
       transport = stdio;
     }
     try {
-      arm(CONNECT_MS, `no answer in ${CONNECT_MS / 1000}s`);
+      const ms = !d.url && downloads(d.command) ? DOWNLOAD_MS : CONNECT_MS;
+      arm(ms, `no answer in ${ms / 1000}s`, "slow");
       // Our deadline ends the start, not the SDK's own minute: a sign-in may take longer.
       await Promise.race([client.connect(transport, { timeout: SIGN_IN_MS }), deadline]);
       const { tools } = await client.listTools(undefined, { timeout: CONNECT_MS });
@@ -221,8 +237,9 @@ export function createMcp(deps: {
     } catch (err) {
       await client.close().catch(() => {});
       if (registrationRejected)
-        throw new Error(
+        throw failure(
           "El proveedor ha rechazado el registro de este cliente MCP. No se ha iniciado la autorización. Usa una integración admitida por el proveedor.",
+          "rejected",
         );
       throw err;
     } finally {
@@ -276,6 +293,7 @@ export function createMcp(deps: {
           c.client = client;
           c.tools = tools;
           c.status = "ready";
+          c.problem = undefined;
           c.signInUrl = undefined;
           setWaitsSignIn(d, false);
         },
@@ -283,6 +301,7 @@ export function createMcp(deps: {
           if (!mine()) return;
           c.failedAt = Date.now();
           c.error = errorMessage(err);
+          c.problem = problemOf(err);
           // Its page answers nobody now.
           c.signInUrl = undefined;
           // A sign-in left unfinished still waits on the owner, never on a retry.
@@ -425,6 +444,11 @@ export function createMcp(deps: {
   }, 60_000);
   idle.unref();
 
+  const bridgeOf = (d: McpDef) => {
+    const b = d.url ? undefined : remoteBridge(d.command, d.args);
+    return b ? { bridge: { url: b.url, provider: b.provider } } : {};
+  };
+
   const defsFor = (projectId: string | undefined) => {
     const off = projectId ? new Set(config.offIn(projectId)) : new Set<string>();
     return [
@@ -531,6 +555,8 @@ export function createMcp(deps: {
               ? "needs-approval"
               : (live?.status ?? (waitsSignIn(d) ? "needs-sign-in" : "off")),
           ...(live?.signInUrl ? { sign_in_url: live.signInUrl } : {}),
+          ...(live?.problem ? { problem: live.problem } : {}),
+          ...bridgeOf(d),
           tools: live?.tools.length ?? 0,
           tool_names: live?.tools.map((t) => t.name) ?? [],
           tool_permission_mode: !known.length
@@ -564,7 +590,9 @@ export function createMcp(deps: {
      * Starts a separate copy of a server and waits for its tools; the connection agents use is left alone. Only a
      * definition the owner approved runs: a project's file is someone else's command until then.
      */
-    async test(d: McpDef): Promise<{ ok: boolean; ms: number; tools: string[]; error?: string }> {
+    async test(
+      d: McpDef,
+    ): Promise<{ ok: boolean; ms: number; tools: string[]; error?: string; problem?: StartProblem | "preparing" }> {
       if (!config.trusted(d)) return { ok: false, ms: 0, tools: [], error: "approve this server before testing it" };
       const live = conns.get(keyOf(d));
       if ((live?.hash === d.hash && live.status === "needs-sign-in") || waitsSignIn(d))
@@ -577,7 +605,11 @@ export function createMcp(deps: {
       const ac = new AbortController();
       const started = connect(d, (url) => asked(url), ac.signal);
       try {
-        const first = await Promise.race([started, askedFor]);
+        let wait: ReturnType<typeof setTimeout> | undefined;
+        const late = new Promise<"late">((r) => {
+          wait = setTimeout(() => r("late"), ANSWER_MS);
+        });
+        const first = await Promise.race([started, askedFor, late]).finally(() => clearTimeout(wait));
         if (typeof first === "string") {
           // The copy becomes the connection agents use: the sign-in the owner finishes is the one they get.
           const key = keyOf(d);
@@ -589,11 +621,14 @@ export function createMcp(deps: {
             d,
             c,
             (onSignIn) => {
-              onSignIn(first);
+              if (first === "late") void askedFor.then(onSignIn);
+              else onSignIn(first);
               return started;
             },
             () => ac.abort(),
           );
+          // Still downloading or starting: it goes on as the agents' connection and the panel follows its state.
+          if (first === "late") return { ok: false, ms: Date.now() - t0, tools: [], problem: "preparing" };
           return { ok: false, ms: Date.now() - t0, tools: [], error: SIGN_IN_ASKED };
         }
         const { client, tools } = first;
@@ -603,7 +638,8 @@ export function createMcp(deps: {
         if (live?.status === "error") conns.delete(keyOf(d));
         return { ok: true, ms: Date.now() - t0, tools: tools.map((t) => t.name) };
       } catch (err) {
-        return { ok: false, ms: Date.now() - t0, tools: [], error: errorMessage(err) };
+        const problem = problemOf(err);
+        return { ok: false, ms: Date.now() - t0, tools: [], error: errorMessage(err), ...(problem ? { problem } : {}) };
       }
     },
     /**
@@ -616,7 +652,10 @@ export function createMcp(deps: {
       conns.delete(keyOf(d));
       if (old) await closeConn(old);
       setWaitsSignIn(d, false);
-      await ensure(d).ready;
+      // A first start may still be downloading: the panel follows it from its state.
+      let wait: ReturnType<typeof setTimeout> | undefined;
+      await Promise.race([ensure(d).ready, new Promise((r) => (wait = setTimeout(r, ANSWER_MS)))]);
+      clearTimeout(wait);
     },
     /** The last `n` lines a server printed on stderr while this core ran (started by an agent or a test). */
     logs(d: McpDef, n: number) {
