@@ -58,7 +58,10 @@ test("Gmail connection editing is separate from integration preferences", async 
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conexiones/ }).click();
   // Its account heads the list: opening it shows its settings.
-  await page.getByRole("button", { name: /^Gmail/ }).first().click();
+  await page
+    .getByRole("button", { name: /^Gmail/ })
+    .first()
+    .click();
   await expect(page.getByRole("radiogroup", { name: "Dónde se usa" })).toBeVisible();
   await page.getByRole("button", { name: "Configurar integración", exact: true }).click();
   const preferences = page.getByRole("dialog", { name: "Configurar integración", exact: true });

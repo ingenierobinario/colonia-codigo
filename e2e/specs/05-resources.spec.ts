@@ -141,10 +141,7 @@ test("integrations: GitHub is connected with a token, then disconnected", async 
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conexiones/ }).click();
-  await page
-    .getByRole("button", { name: "Conectar", exact: true })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Conectar", exact: true }).first().click();
   // Each app shows its own logo, the ones still coming too.
   await expect(
     page
@@ -190,10 +187,7 @@ test("integrations: the catalog is searched; Home Assistant connects with its ad
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conexiones/ }).click();
-  await page
-    .getByRole("button", { name: "Conectar", exact: true })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Conectar", exact: true }).first().click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("searchbox", { name: "Buscar integraciones" }).fill("home");
   await expect(dialog.getByRole("button", { name: /^GitHub/ })).toBeHidden();

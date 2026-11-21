@@ -40,7 +40,10 @@ test("Gmail's settings turn the mail check on, choose how often, and bring the s
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conexiones/ }).click();
   // Its account heads the list: opening it shows its settings.
-  await page.getByRole("button", { name: /^Gmail/ }).first().click();
+  await page
+    .getByRole("button", { name: /^Gmail/ })
+    .first()
+    .click();
   await page.getByRole("button", { name: "Configurar integración", exact: true }).click();
   const settings = page.getByRole("dialog", { name: "Configurar integración", exact: true });
 

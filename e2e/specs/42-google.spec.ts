@@ -6,10 +6,7 @@ test("Google Calendar connects by signing in with Google, shows the account, and
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conexiones/ }).click();
-  await page
-    .getByRole("button", { name: "Conectar", exact: true })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Conectar", exact: true }).first().click();
   await page
     .getByRole("dialog")
     .getByRole("button", { name: /Google Calendar/ })
@@ -49,10 +46,7 @@ test("one sign-in connects the other Google parts the owner ticks, with the same
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
   await page.getByRole("radio", { name: /^Conexiones/ }).click();
-  await page
-    .getByRole("button", { name: "Conectar", exact: true })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Conectar", exact: true }).first().click();
   await page.getByRole("dialog").getByRole("button", { name: /Gmail/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Client id").fill("123-abc.apps.googleusercontent.com");
