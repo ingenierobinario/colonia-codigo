@@ -104,6 +104,7 @@ test("sin emparejar no hay nada puesto", async (t) => {
     mismatch: false,
     pending: 0,
     saved: 0,
+    every_min: 0,
   });
   assert.equal(a.sync.secondary(), false);
   assert.equal(fs.existsSync(path.join(a.home, "sincronizar.json")), false);
