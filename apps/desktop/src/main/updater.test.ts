@@ -596,9 +596,8 @@ test("Windows: un cambio que no entró deja la descarga y la próxima vez va el 
   assert.match(fs.readFileSync(path.join(w.dir, "update.log"), "utf8"), /2\.1\.0 did not go in/);
 });
 
-test("Windows real: el segundo movimiento se reintenta mientras un antivirus tiene abierto el .exe nuevo", {
-  skip: !realWindows,
-}, async (t) => {
+test("Windows real: el segundo movimiento se reintenta mientras un antivirus tiene abierto el .exe nuevo", async (t) => {
+  if (!realWindows) return;
   const w = await folderUpdate(t);
   assert.equal((await w.updater().install("2.1.0", true)).ok, true);
   const held = await w.hold(path.join(w.ready, "Colonia.exe"), 2500);
@@ -610,9 +609,8 @@ test("Windows real: el segundo movimiento se reintenta mientras un antivirus tie
   assert.match(fs.readFileSync(w.log, "utf8"), /new app in place \(2\.1\.0\)/);
 });
 
-test("Windows real: si el nuevo no entra, el anterior vuelve a su carpeta y la descarga queda marcada", {
-  skip: !realWindows,
-}, async (t) => {
+test("Windows real: si el nuevo no entra, el anterior vuelve a su carpeta y la descarga queda marcada", async (t) => {
+  if (!realWindows) return;
   const w = await folderUpdate(t);
   assert.equal((await w.updater().install("2.1.0", true)).ok, true);
   const held = await w.hold(path.join(w.ready, "Colonia.exe"), 9000);
@@ -625,9 +623,8 @@ test("Windows real: si el nuevo no entra, el anterior vuelve a su carpeta y la d
   assert.match(fs.readFileSync(w.log, "utf8"), /the old one is back/);
 });
 
-test("Windows real: tras un corte entre los dos movimientos, recover.ps1 devuelve Colonia a su carpeta", {
-  skip: !realWindows,
-}, async (t) => {
+test("Windows real: tras un corte entre los dos movimientos, recover.ps1 devuelve Colonia a su carpeta", async (t) => {
+  if (!realWindows) return;
   const w = await folderUpdate(t);
   assert.equal((await w.updater().install("2.1.0", true)).ok, true);
   fs.renameSync(w.installed, path.join(w.stage, "previous"));

@@ -79,6 +79,7 @@ async function smoke() {
   const cleanup: Array<() => unknown> = [];
   const logs = path.join(os.homedir(), "Library", "Logs", "Colonia");
   let observed = "";
+  let pagesSeen = "";
   try {
     cleanup.push(
       linkTemporaryDesktop(
@@ -133,10 +134,20 @@ async function smoke() {
     });
     const browser = await chromium.connectOverCDP(debugUrl, { timeout: 45_000 });
     const panel = await waitFor("el panel de la aplicación pública", async () => {
+      const seen: string[] = [];
       for (const page of browser.contexts().flatMap((ctx) => ctx.pages())) {
-        if (new URL(page.url()).origin !== coreUrl) continue;
-        if (await page.evaluate(() => window.coloniaDesktop?.updateStatus?.()).catch(() => undefined)) return page;
+        const url = page.url();
+        seen.push(url.startsWith("data:") ? `${url.slice(0, 40)}… (${url.length} car.)` : url);
+        if (new URL(url).origin !== coreUrl) continue;
+        const ok = await page
+          .evaluate(() => window.coloniaDesktop?.updateStatus?.())
+          .catch((error: Error) => {
+            seen.push(`  evaluate: ${error.message.split("\n")[0]}`);
+          });
+        if (ok) return page;
       }
+      // Sin el panel, lo que muestra la ventana distingue la pantalla de espera, la de conexión o un fallo de carga.
+      pagesSeen = seen.join("\n");
     });
     const status: DesktopUpdate | undefined = await panel.evaluate(() => window.coloniaDesktop?.updateStatus?.(true));
     assert.equal(status?.current, PREVIOUS_VERSION);
@@ -215,6 +226,7 @@ async function smoke() {
         if (start >= 0) console.error("Hilo principal al esperar el motor:", stack.slice(start, start + 70).join("\n"));
       }
     }
+    if (pagesSeen) console.error(`Páginas de la ventana al agotar el tiempo:\n${pagesSeen}`);
     throw error;
   } finally {
     for (const finish of cleanup.reverse()) {
