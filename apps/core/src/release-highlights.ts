@@ -8,18 +8,16 @@ export type Highlights = { en: string[]; es: string[] };
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.62": {
     en: [
-      "On Windows, updates get ready while you keep working, and restarting into them takes seconds, not minutes.",
-      "My computers lists the synced computer or server: version, status, last sync and what you share.",
-      "Your changes go out every 5 minutes by default; choose right away, every hour or manual only on its card.",
-      "Sync now sends everything pending at once.",
-      "Your agents can update a published widget: its public link shows the new version straight away.",
+      "On Windows, restarting into an update takes seconds, and Colonia always opens again afterwards.",
+      "Updates get ready while you keep working and are checked before Colonia switches to them.",
+      "My computers shows your synced computers; on each card you choose how often your changes go out.",
+      "Your agents can update a published widget, and its same public link shows the new version.",
     ],
     es: [
-      "En Windows, la actualización se prepara mientras sigues trabajando y el reinicio tarda segundos, no minutos.",
-      "Mis equipos muestra el equipo o servidor sincronizado: versión, estado, última sincronización y qué compartís.",
-      "Tus cambios salen cada 5 minutos por defecto; en su ficha eliges al momento, cada hora o solo a mano.",
-      "Sincronizar ahora manda de una vez todo lo pendiente.",
-      "Tus agentes pueden actualizar un widget publicado: su enlace público muestra al momento la versión nueva.",
+      "En Windows, reiniciar para actualizar tarda segundos y Colonia siempre vuelve a abrirse.",
+      "La actualización se prepara mientras trabajas y se comprueba antes de cambiar a ella.",
+      "Mis equipos muestra tus equipos sincronizados; en cada ficha eliges cada cuánto salen tus cambios.",
+      "Tus agentes pueden actualizar un widget publicado y su mismo enlace muestra la versión nueva.",
     ],
   },
   "2.36.61": {
