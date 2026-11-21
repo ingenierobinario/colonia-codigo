@@ -54,6 +54,8 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "sync.set_folder": MACHINE,
   "sync.set_folder_sync": "La persona autoriza o revoca el intercambio continuo de cada carpeta.",
   "sync.copy_projects": "La persona elige qué archivos de trabajo envía a su otro equipo.",
+  "sync.set_every": MACHINE,
+  "sync.now": MACHINE,
   "equipos.pair_start": SECRET,
   "equipos.pair_cancel": SECRET,
   "equipos.connect": SECRET,
