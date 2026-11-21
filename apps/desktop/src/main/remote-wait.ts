@@ -1,6 +1,7 @@
 // A remote Colonia (an address, or one over SSH) the window waits for: the screen says so and it retries until the server
 // answers, then loads the panel. A server restarting after an update, or this app restarting, comes back on its own.
 import { type PortProblem, portProblem } from "./core-process.ts";
+import { PENGUIN_MARK } from "./penguin-mark.ts";
 import type { Tunnel } from "./ssh-tunnel.ts";
 
 export type Remote = {
@@ -154,23 +155,20 @@ export function loadingSteps(phase: Waiting["phase"], es: boolean): string[] {
   ];
 }
 
-/** Colonia's own penguin: round, with a scarf in the app's accent, drawn here (no borrowed mascot). */
-const PENGUIN = `<svg class="peng" viewBox="0 0 120 140" aria-hidden="true">
-<ellipse class="shadow" cx="60" cy="132" rx="30" ry="5"/>
-<g class="waddle">
-<ellipse cx="44" cy="124" rx="11" ry="5" fill="#f2a541"/><ellipse cx="76" cy="124" rx="11" ry="5" fill="#f2a541"/>
-<path class="flip l" d="M24 66 C10 80 12 100 22 108 C26 96 28 82 30 70Z" fill="#2b3240"/>
-<path class="flip r" d="M96 66 C110 80 108 100 98 108 C94 96 92 82 90 70Z" fill="#2b3240"/>
-<ellipse cx="60" cy="78" rx="38" ry="48" fill="#2b3240"/>
-<ellipse cx="60" cy="88" rx="27" ry="36" fill="#fbfaf7"/>
-<ellipse cx="60" cy="52" rx="26" ry="22" fill="#fbfaf7"/>
-<path d="M30 60 Q60 74 90 60 L90 67 Q60 82 30 67Z" fill="var(--accent)"/>
-<path d="M78 64 l8 18 l-9 -2z" fill="var(--accent)"/>
-<g class="eyes"><ellipse cx="50" cy="48" rx="4" ry="5" fill="#1d2129"/><ellipse cx="70" cy="48" rx="4" ry="5" fill="#1d2129"/>
-<circle cx="51.5" cy="46" r="1.4" fill="#fff"/><circle cx="71.5" cy="46" r="1.4" fill="#fff"/></g>
-<path d="M54 55 L66 55 L60 62Z" fill="#f2a541"/>
-<ellipse cx="43" cy="57" rx="4" ry="2.4" fill="#f4a6a0" opacity=".7"/><ellipse cx="77" cy="57" rx="4" ry="2.4" fill="#f4a6a0" opacity=".7"/>
-</g></svg>`;
+/** BARRA-CLARA-1: the panel's own background (--colonia-bg in packages/ui tokens.css), shared by the loading screen, the window
+ * and its Windows/Linux control overlay, so the controls never sit on a box of another color. */
+export const SCREEN_BG = { light: "#faf9f7", dark: "#161615" } as const;
+export const windowColor = (mode: "light" | "dark") => SCREEN_BG[mode];
+export const titleBarColors = (mode: "light" | "dark") => ({
+  color: SCREEN_BG[mode],
+  symbolColor: mode === "light" ? "#444444" : "#c8c8c8",
+  height: 46,
+});
+
+/** PINGUINO-OFICIAL-1: Colonia's own mark (the app icon, from scripts/penguins), not a drawing of its own. */
+const PENGUIN = PENGUIN_MARK.replace("<svg ", '<svg class="peng" aria-hidden="true" ')
+  .replace(' role="img" aria-labelledby="title"', "")
+  .replace(/<title[^>]*>[^<]*<\/title>/, "");
 
 /**
  * The waiting screen (CARGA-PINGUINO-1): a loading screen, not a system message. A penguin, words that move forward and a
@@ -205,23 +203,14 @@ export function waitingHtml(w: Waiting, es: boolean): string {
     "\\u003c",
   );
   return `<!doctype html><html lang="${es ? "es" : "en"}"><head><meta charset="utf-8"><title>Colonia</title><style>
-:root{color-scheme:light dark;--bg:#f6f5f2;--card:#fff;--fg:#1f1e1c;--muted:#6b6963;--line:#e6e3dc;--accent:#d97757;--track:#ebe8e1}
-@media (prefers-color-scheme:dark){:root{--bg:#1a1a19;--card:#232321;--fg:#ecebe7;--muted:#9c9a93;--line:#34332f;--track:#2e2d2a}}
+:root{color-scheme:light dark;--bg:${SCREEN_BG.light};--card:#fff;--fg:#1f1e1c;--muted:#6b6963;--line:#e6e3dc;--accent:#d97757;--track:#ebe8e1}
+@media (prefers-color-scheme:dark){:root{--bg:${SCREEN_BG.dark};--card:#232321;--fg:#ecebe7;--muted:#9c9a93;--line:#34332f;--track:#2e2d2a}}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,sans-serif;display:flex;align-items:center;
 justify-content:center;padding:48px 16px 16px;-webkit-app-region:drag;user-select:none}
 .stage{width:min(420px,100%);text-align:center}
-.peng{width:120px;height:140px;display:block;margin:0 auto 18px;overflow:visible}
-.shadow{fill:#000;opacity:.10;transform-origin:60px 132px;animation:shadow 1.4s ease-in-out infinite}
-.waddle{transform-origin:60px 128px;animation:waddle 1.4s ease-in-out infinite}
-.flip.l{transform-origin:28px 70px;animation:flapl 1.4s ease-in-out infinite}
-.flip.r{transform-origin:92px 70px;animation:flapr 1.4s ease-in-out infinite}
-.eyes{transform-origin:60px 48px;animation:blink 4.2s infinite}
+.peng{width:120px;height:120px;display:block;margin:0 auto 18px;overflow:visible;transform-origin:50% 90%;animation:waddle 1.4s ease-in-out infinite}
 @keyframes waddle{0%,100%{transform:rotate(-5deg) translateY(0)}25%{transform:rotate(0) translateY(-5px)}50%{transform:rotate(5deg) translateY(0)}75%{transform:rotate(0) translateY(-5px)}}
-@keyframes shadow{0%,50%,100%{transform:scaleX(1)}25%,75%{transform:scaleX(.82)}}
-@keyframes flapl{0%,100%{transform:rotate(0)}50%{transform:rotate(12deg)}}
-@keyframes flapr{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(0)}}
-@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
 .brand{font-size:20px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px}
 .step{min-height:21px;margin:0 0 18px;color:var(--muted);transition:opacity .35s ease}
 .step.out{opacity:0}
@@ -241,7 +230,7 @@ summary{cursor:pointer;font-weight:600;color:var(--fg);list-style-position:insid
 .change{display:inline-block;margin-top:12px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
 background:var(--bg);color:var(--fg);text-decoration:none;font-weight:600}
 .change:hover{border-color:var(--accent)}
-@media (prefers-reduced-motion:reduce){.waddle,.shadow,.flip,.eyes{animation:none}.fill,.step{transition:none}}
+@media (prefers-reduced-motion:reduce){.peng{animation:none}.fill,.step{transition:none}}
 </style></head><body><main class="stage" role="status" aria-live="polite">
 ${PENGUIN}
 <p class="brand">Colonia</p>

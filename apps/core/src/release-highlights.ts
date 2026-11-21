@@ -7,8 +7,14 @@ export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.63": {
-    en: ["The new-version notice closes with its X while the update downloads, and Colonia stays usable."],
-    es: ["El aviso de versión nueva se cierra con su X mientras se descarga y Colonia sigue respondiendo."],
+    en: [
+      "The new-version notice closes with its X while the update downloads, and Colonia stays usable.",
+      "The loading screen shows Colonia's penguin, and on Windows the window buttons match its colors in light and dark.",
+    ],
+    es: [
+      "El aviso de versión nueva se cierra con su X mientras se descarga y Colonia sigue respondiendo.",
+      "La pantalla de carga muestra el pingüino de Colonia y, en Windows, los botones de la ventana llevan sus colores en claro y oscuro.",
+    ],
   },
   "2.36.62": {
     en: [

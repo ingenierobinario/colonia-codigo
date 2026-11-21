@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { test } from "node:test";
+import { PENGUIN_MARK } from "./penguin-mark.ts";
 import {
   loadingSteps,
   RETRY_MS,
   type Remote,
   reachRemote,
+  SCREEN_BG,
   SILENT_MS,
   SLOW_MS,
+  titleBarColors,
   type WaitDeps,
   type Waiting,
   waiting,
   waitingHtml,
   waitingText,
+  windowColor,
 } from "./remote-wait.ts";
 
 /** A fake world: the server answers from `upAt` (ms) on; sleeping moves the clock. */
@@ -198,4 +203,22 @@ test("detecta un arranque local breve sin esperar el intervalo de red", async ()
   const w = world({ upAt: 180 });
   await reachRemote({ where: "local", url: "http://127.0.0.1:7440", local: "log" }, w.deps);
   assert.ok(w.time() <= 300);
+});
+
+test("PINGUINO-OFICIAL-1: la pantalla de carga lleva el pingüino oficial de Colonia, no uno dibujado aparte", () => {
+  const official = fs.readFileSync(new URL("../../../web/src/assets/favicon.svg", import.meta.url), "utf8").trimEnd();
+  assert.equal(PENGUIN_MARK, official);
+  const html = waitingHtml(waiting({ where: "", url: "http://127.0.0.1:7440" }, true, true), true);
+  const body = (s: string) => s.slice(s.indexOf("<defs>"), s.lastIndexOf("</svg>"));
+  assert.ok(html.includes(body(official)));
+});
+
+test("BARRA-CLARA-1: los botones de ventana van sobre el mismo fondo que la pantalla de carga", () => {
+  const html = waitingHtml(waiting({ where: "", url: "http://127.0.0.1:7440" }, true, true), true);
+  for (const mode of ["light", "dark"] as const) {
+    assert.equal(titleBarColors(mode).color, windowColor(mode));
+    assert.ok(html.includes(`--bg:${windowColor(mode)}`));
+  }
+  const tokens = fs.readFileSync(new URL("../../../../packages/ui/src/styles/tokens.css", import.meta.url), "utf8");
+  for (const c of Object.values(SCREEN_BG)) assert.ok(tokens.includes(`--colonia-bg: ${c};`));
 });

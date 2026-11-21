@@ -13,6 +13,7 @@ import {
   Menu,
   type MenuItemConstructorOptions,
   Notification,
+  nativeTheme,
   powerMonitor,
   shell,
   type WebContents,
@@ -55,7 +56,7 @@ import { createPrograms } from "./programs.ts";
 import { createQuick, type DesktopPrefs } from "./quick.ts";
 import { confirmQuit } from "./quit-confirm.ts";
 import { waitOnQuit } from "./quit-wait.ts";
-import { type Remote, waiting, waitingHtml } from "./remote-wait.ts";
+import { type Remote, titleBarColors, waiting, waitingHtml, windowColor } from "./remote-wait.ts";
 import { sendTo } from "./safe-send.ts";
 import { createUpdateMenu } from "./update-menu.ts";
 import { createDesktopUpdater, type DesktopUpdate } from "./updater.ts";
@@ -66,6 +67,8 @@ if (process.env.COLONIA_ASKPASS) process.exit(await runAskpass(process.env, proc
 
 const WEB_URL = process.env.COLONIA_WEB_URL ?? "http://127.0.0.1:7441";
 const DIST = import.meta.dirname;
+/** BARRA-CLARA-1: the system theme, which the loading screen follows until the panel says its own. */
+const systemMode = (): "light" | "dark" => (nativeTheme.shouldUseDarkColors ? "dark" : "light");
 
 /** Past this, Colonia tells the owner how much it takes and what takes the most. */
 const MEMORY_LIMIT_MB = 4096;
@@ -146,10 +149,11 @@ app.whenReady().then(() => {
       ? { titleBarStyle: "hiddenInset" as const, trafficLightPosition: { x: 16, y: 14 } }
       : {
           titleBarStyle: "hidden" as const,
-          titleBarOverlay: { color: "#1a1a19", symbolColor: "#c8c8c8", height: 46 },
+          titleBarOverlay: titleBarColors(systemMode()),
         }),
     // Behind the panel, the theme's own color: a pixel the panel does not cover never shows white.
-    backgroundColor: "#1a1a19",
+    // BARRA-CLARA-1: from the first frame, the system's theme, the same the loading screen paints (not always dark).
+    backgroundColor: windowColor(systemMode()),
     show: !background,
   });
   // VENTANA-DESTRUIDA-1: openMain no toca la ventana una vez destruida (la app está saliendo).
@@ -897,13 +901,9 @@ app.whenReady().then(() => {
   // draws its own traffic lights, there is no overlay to recolor).
   const paintTitleBar = (mode: "light" | "dark") => {
     if (win.isDestroyed()) return;
-    win.setBackgroundColor(mode === "light" ? "#f4f3f0" : "#1a1a19");
+    win.setBackgroundColor(windowColor(mode));
     if (process.platform === "darwin") return;
-    win.setTitleBarOverlay(
-      mode === "light"
-        ? { color: "#f4f3f0", symbolColor: "#444444", height: 46 }
-        : { color: "#1a1a19", symbolColor: "#c8c8c8", height: 46 },
-    );
+    win.setTitleBarOverlay(titleBarColors(mode));
   };
   ipcMain.on("desktop:titlebar", (e, mode: unknown) => {
     if (e.sender !== panel.webContents) return;
@@ -914,6 +914,8 @@ app.whenReady().then(() => {
   // corner itself as that page starts loading, so it never depends on the page asking.
   panel.webContents.on("did-start-navigation", (_e, url, isInPlace, isMainFrame) => {
     if (isMainFrame && !isInPlace && url.startsWith(FIRST_RUN_URL)) paintTitleBar("dark");
+    // BARRA-CLARA-1: the loading screen follows the system theme; so does the corner while it shows.
+    else if (isMainFrame && !isInPlace && url.startsWith("data:text/html")) paintTitleBar(systemMode());
   });
   app.once("will-quit", () => {
     ipcMain.removeAllListeners("desktop:attention");
