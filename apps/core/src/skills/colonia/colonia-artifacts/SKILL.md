@@ -117,7 +117,7 @@ it, the page never sees it. Details in [references/kit.md](references/kit.md#mem
   app/pin; only `edit_widget` removes them. Opening fullscreen does not make a widget an app.
 - Moving one to the kit or a new look is a redesign of the whole page, never a `<script>` tag added with
   `edit_widget`: read [references/update.md](references/update.md) first.
-- A published artifact cannot be changed by you: make one with another name (the owner can unpublish).
+- Editing a published artifact updates its public link at once: check that what it shows may be public.
 
 ## Talking back
 

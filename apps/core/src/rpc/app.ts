@@ -18,7 +18,7 @@ import type { EngineIds } from "../domain/refs.ts";
 import type { Store } from "../domain/store.ts";
 import { summary } from "../domain/surfaces.ts";
 import { usagePreferences } from "../engine-usage/preferences.ts";
-import { badRequest, conflict, errorMessage, notFound } from "../errors.ts";
+import { badRequest, errorMessage, notFound } from "../errors.ts";
 import { acpAgents, acpEngine } from "../harness/acp/agents.ts";
 import { claudeLogin } from "../harness/claude-login.ts";
 import { createEngineUsage, detectUsageEngines } from "../harness/engine-usage.ts";
@@ -292,10 +292,8 @@ export function appHandlers(deps: {
         throw badRequest(`thread ${thread.id} is not in project ${p.project}`);
       if (p.project && !store.projects.get(p.project)) throw notFound(`project ${p.project}`);
       const project_id = thread ? thread.project_id : p.project;
-      // A published widget is public: an agent may not change what its link shows; it makes a new one instead.
-      const current = store.surfaces.byName(project_id, p.name);
-      if (current?.share_path && ctx.actor !== "human")
-        throw conflict(`widget "${p.name}" is published; use another name (the owner can unpublish it)`);
+      // A published widget keeps its link: an edit is its new version there at once. The owner sees every edit in the
+      // chat that made it, and stops sharing it from the menu.
       return summary(
         store.surfaces.upsert({
           name: p.name,

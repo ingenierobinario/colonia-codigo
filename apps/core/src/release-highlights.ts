@@ -12,12 +12,14 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
       "My computers lists the synced computer or server: version, status, last sync and what you share.",
       "Your changes go out every 5 minutes by default; choose right away, every hour or manual only on its card.",
       "Sync now sends everything pending at once.",
+      "Your agents can update a published widget: its public link shows the new version straight away.",
     ],
     es: [
       "En Windows, la actualización se prepara mientras sigues trabajando y el reinicio tarda segundos, no minutos.",
       "Mis equipos muestra el equipo o servidor sincronizado: versión, estado, última sincronización y qué compartís.",
       "Tus cambios salen cada 5 minutos por defecto; en su ficha eliges al momento, cada hora o solo a mano.",
       "Sincronizar ahora manda de una vez todo lo pendiente.",
+      "Tus agentes pueden actualizar un widget publicado: su enlace público muestra al momento la versión nueva.",
     ],
   },
   "2.36.61": {

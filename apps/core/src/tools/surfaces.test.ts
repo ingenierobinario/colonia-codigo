@@ -243,11 +243,14 @@ test("an agent converts a published app to a widget without reading or replacing
   assert.match(await said(t.id, "make an app"), /app, not pinned; HTML unchanged/);
   assert.match(await said(t.id, "bad conversion edit"), /nothing changed/);
   assert.equal((await env.client.call("surfaces.get", { surface: original.id })).app, true);
-  assert.match(await said(t.id, "published conversion edit"), /published/);
-  const kept = await env.client.call("surfaces.get", { surface: original.id });
-  assert.equal(kept.app, true);
-  assert.equal(kept.html, before.html);
-  assert.equal(kept.version, before.version);
+  // A published widget takes the edit on the same link, and the public page serves it on its next load.
+  assert.doesNotMatch(await said(t.id, "published conversion edit"), /published/);
+  const edited = await env.client.call("surfaces.get", { surface: original.id });
+  assert.equal(edited.app, false);
+  assert.equal(edited.version, before.version + 1);
+  assert.equal(edited.share_path, before.share_path);
+  const page = await (await fetch(new URL(before.share_path ?? "", env.core.url))).text();
+  assert.match(page, /<p>Updated /);
 
   const { project } = await env.client.call("projects.create", { name: "Northwind conversions" });
   const other = await env.client.call("threads.create", {
@@ -256,7 +259,7 @@ test("an agent converts a published app to a widget without reading or replacing
     project_id: project.id,
   });
   assert.match(await said(other.id, "make a widget"), /no widget named conversion/);
-  assert.equal((await env.client.call("surfaces.get", { surface: original.id })).app, true);
+  assert.equal((await env.client.call("surfaces.get", { surface: original.id })).app, false);
 });
 
 test("a page written with the Colonia Kit is an app by its meta tag and gets the kit inline wherever it is served", async () => {
