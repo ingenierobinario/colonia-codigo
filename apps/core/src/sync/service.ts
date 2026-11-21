@@ -1122,6 +1122,13 @@ export function createSync(d: SyncDeps) {
     } catch (err) {
       warn("no se pudo quitar todo al desemparejar", err);
     }
+    // VINCULAR-CLAVE-2 · Se acaba de borrar la identidad: la clave de los registros armada con ella ya no abría nada
+    // («none») hasta reiniciar. Se desarma y el siguiente tick la vuelve a armar, con la misma clave y identidad nueva.
+    if (logKeyArmed) {
+      pairing.cancel();
+      secret = undefined;
+      logKeyArmed = false;
+    }
     try {
       d.roleChanged?.();
     } catch {}

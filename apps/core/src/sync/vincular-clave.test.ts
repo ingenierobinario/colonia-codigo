@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
-import { tempDir } from "../testkit/platform.ts";
+import { tempDir, waitFor } from "../testkit/platform.ts";
 import { LOG_KEY_FILE } from "./service.ts";
 
 process.env.COLONIA_SYNC_BEACON_PORT = "47612";
@@ -84,6 +84,44 @@ test("la clave sobrevive a un reinicio y un escritorio sin servidor no abre ning
   } finally {
     await desk.core.close();
     await server.core.close();
+    await desk.cleanup();
+    await server.cleanup();
+  }
+});
+
+test("VINCULAR-CLAVE-2 · desvincular dos veces (escritorio y luego servidor) no deja la clave muerta", async () => {
+  const serverHome = tempDir("colonia-clave-doble-servidor-");
+  const deskHome = tempDir("colonia-clave-doble-escritorio-");
+  const otherHome = tempDir("colonia-clave-doble-otro-");
+  const server = await boot(serverHome.path, true);
+  const desk = await boot(deskHome.path);
+  const other = await boot(otherHome.path);
+  try {
+    const address = new URL(server.core.url).origin;
+    assert.equal((await desk.client.call("sync.pair_join", { code: keyIn(serverHome.path), address })).paired, true);
+    await waitFor(async () => (await desk.client.call("sync.status", {})).connected, "enlazados", { ms: 30000 });
+    await desk.client.call("sync.unpair", {});
+    await waitFor(async () => !(await server.client.call("sync.status", {})).paired, "el servidor se entera del adiós");
+    await waitFor(() => fs.existsSync(path.join(serverHome.path, LOG_KEY_FILE)), "clave nueva en los registros");
+    // El dueño pulsa también «Desvincular» en el servidor, que ya estaba solo.
+    await server.client.call("sync.unpair", {});
+    // Se rearma en el siguiente tick (1 s): se reintenta unos segundos, como haría el dueño.
+    let joined: { paired?: boolean } | undefined;
+    await waitFor(
+      async () => {
+        try {
+          joined = await other.client.call("sync.pair_join", { code: keyIn(serverHome.path), address });
+        } catch {}
+        return !!joined?.paired;
+      },
+      "la clave de los registros vuelve a abrir el servidor",
+      { ms: 10000 },
+    );
+  } finally {
+    await other.core.close();
+    await desk.core.close();
+    await server.core.close();
+    await other.cleanup();
     await desk.cleanup();
     await server.cleanup();
   }
