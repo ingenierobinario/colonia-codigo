@@ -1,4 +1,4 @@
-import type { Equipo, EquipoLocal } from "@colonia/protocol";
+import type { Equipo, EquipoLocal, SyncStatus } from "@colonia/protocol";
 import { ContextMenu, Icons, NavItem } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
@@ -6,6 +6,7 @@ import { keepSame, poll } from "../data/poll.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { focusEquipo, useEquipoFocus, useEquiposChanged } from "../equipos/equiposFocus.ts";
 import { equipoEntries, realName } from "../equipos/equiposModel.ts";
+import { SYNCED_EQUIPO_ID } from "../equipos/SyncedEquipoCard.tsx";
 import { useT } from "../i18n/index.ts";
 import { go, useNav } from "./nav.ts";
 import { SidebarSection } from "./SidebarSection.tsx";
@@ -21,6 +22,8 @@ export function EquiposNav({ rail }: { rail: boolean }) {
   const focus = useEquipoFocus();
   const changed = useEquiposChanged();
   const [list, setList] = useState<{ equipos: Equipo[]; local?: EquipoLocal }>();
+  // INVENTARIO-EQUIPOS-1 · El equipo sincronizado con este también sale en la lista.
+  const [sync, setSync] = useState<SyncStatus>();
   const hidden = folded && !rail;
   // PERF-10: la lista solo se pide con la seccion a la vista (ni plegada ni con la ventana oculta), y una lectura
   // igual a la anterior no repinta.
@@ -31,6 +34,8 @@ export function EquiposNav({ rail }: { rail: boolean }) {
     const stop = poll(async () => {
       const r = await client.withSignal(abort.signal).call("equipos.list", {});
       if (!abort.signal.aborted) setList((prev) => keepSame(prev, r));
+      const s = await client.withSignal(abort.signal).call("sync.status", {});
+      if (!abort.signal.aborted) setSync((prev) => keepSame(prev, s));
     }, 10_000);
     return () => {
       abort.abort();
@@ -43,7 +48,9 @@ export function EquiposNav({ rail }: { rail: boolean }) {
     go.view("equipos");
   };
   // Con la pantalla abierta se marca la ficha a la que se fue; si no se eligió ninguna, la primera.
-  const current = entries.some((e) => e.id === focus?.id) ? focus?.id : entries[0]?.id;
+  const peer = sync?.paired ? sync.peer : undefined;
+  const current =
+    entries.some((e) => e.id === focus?.id) || (peer && focus?.id === SYNCED_EQUIPO_ID) ? focus?.id : entries[0]?.id;
   return (
     <>
       <SidebarSection
@@ -80,12 +87,24 @@ export function EquiposNav({ rail }: { rail: boolean }) {
             </ContextMenu>
           );
         })}
+      {!hidden && peer && (
+        <NavItem
+          collapsed={rail}
+          icon={peer.kind === "servidor" ? <Icons.Server /> : <Icons.Monitor />}
+          label={peer.name}
+          trailing={
+            sync?.connected ? <span className="navitem__running" title={t("nav.equipoConnected")} /> : undefined
+          }
+          active={view === "equipos" && current === SYNCED_EQUIPO_ID}
+          onClick={() => open(SYNCED_EQUIPO_ID)}
+        />
+      )}
       {!hidden && (
         <NavItem
           collapsed={rail}
           icon={<Icons.Plus />}
           label={t("nav.equiposAdd")}
-          active={view === "equipos" && entries.length === 0}
+          active={view === "equipos" && entries.length === 0 && !peer}
           onClick={() => go.view("equipos")}
         />
       )}

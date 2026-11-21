@@ -18,6 +18,14 @@ export function syncHandlers(sync: Sync) {
       said(() => sync.pairStart(initial_source, allow_managed_folder_sync));
       return sync.status();
     },
+    "sync.set_every": ({ minutes }) => {
+      said(() => sync.setEvery(minutes));
+      return sync.status();
+    },
+    "sync.now": () => {
+      said(() => sync.syncNow());
+      return sync.status();
+    },
     "sync.pair_cancel": () => {
       sync.pairCancel();
       return sync.status();

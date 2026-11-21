@@ -93,6 +93,8 @@ const core = spawn(
       COLONIA_UPDATES: "off",
       // A sandbox never reports to the Colonia project.
       COLONIA_TELEMETRY: "off",
+      // SYNC-CADA-1: las pruebas sincronizan al momento, como antes.
+      COLONIA_SYNC_EVERY_MIN: "0",
       COLONIA_AGENT_NAME: "Roby",
       COLONIA_V1_HOME: fx.v1,
       COLONIA_V1_URL: "http://127.0.0.1:9",

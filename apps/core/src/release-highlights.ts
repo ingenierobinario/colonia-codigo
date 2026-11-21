@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.63": {
+    en: [
+      "My computers lists the synced computer or server: version, status, last sync and what you share.",
+      "Your changes go out every 5 minutes by default; choose right away, every hour or manual only on its card.",
+      "Sync now sends everything pending at once.",
+    ],
+    es: [
+      "Mis equipos muestra el equipo o servidor sincronizado: versión, estado, última sincronización y qué compartís.",
+      "Tus cambios salen cada 5 minutos por defecto; en su ficha eliges al momento, cada hora o solo a mano.",
+      "Sincronizar ahora manda de una vez todo lo pendiente.",
+    ],
+  },
   "2.36.62": {
     en: [
       "On Windows, updates get ready while you keep working.",

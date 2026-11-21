@@ -42,7 +42,31 @@ export const SyncStatus = z.object({
       allow_managed_folder_sync: z.literal(true).optional(),
     })
     .optional(),
-  peer: z.object({ name: z.string() }).optional(),
+  /** INVENTARIO-EQUIPOS-1 · El otro equipo: lo que contó al saludar y cuándo se le oyó por última vez. */
+  peer: z
+    .object({
+      name: z.string(),
+      version: z.string().optional(),
+      kind: z.enum(["pc", "servidor"]).optional(),
+      platform: z.string().optional(),
+      seen_at: z.string().optional(),
+    })
+    .optional(),
+  /** SYNC-CADA-1 · Cada cuántos minutos manda este equipo sus cambios: 0 = al momento, −1 = solo a mano. */
+  every_min: z.number().int().optional(),
+  /** SYNC-CADA-1 · Cuándo sale la próxima tanda, con un ritmo y la pareja a la vista. */
+  next_sync_at: z.string().optional(),
+  /** INVENTARIO-EQUIPOS-1 · Lo que los dos equipos tienen en común. */
+  shared: z
+    .object({
+      projects: z.number().int().nonnegative(),
+      agents: z.number().int().nonnegative(),
+      routines: z.number().int().nonnegative(),
+      flows: z.number().int().nonnegative(),
+      channels: z.number().int().nonnegative(),
+      apps: z.number().int().nonnegative(),
+    })
+    .optional(),
   /** El principal lleva los canales y las rutinas; el otro los ve y los usa a través de él. */
   role: SyncRole.optional(),
   can_copy_projects: z.boolean().optional(),
@@ -108,6 +132,15 @@ export const syncMethods = {
     replay: false,
   },
   "sync.pair_cancel": { params: none, result: SyncStatus, effect: true, access: "human" },
+  /** SYNC-CADA-1 · Cada cuánto manda este equipo sus cambios (0 = al momento, −1 = solo a mano). */
+  "sync.set_every": {
+    params: z.object({ minutes: z.union([z.literal(0), z.literal(5), z.literal(60), z.literal(-1)]) }).strict(),
+    result: SyncStatus,
+    effect: true,
+    access: "human",
+  },
+  /** SYNC-CADA-1 · Manda ya lo pendiente y, si el otro no está a la vista, lo vuelve a buscar. */
+  "sync.now": { params: none, result: SyncStatus, effect: true, access: "human" },
   /** El código que enseña el otro equipo. Este se une a él. */
   "sync.pair_join": {
     params: z

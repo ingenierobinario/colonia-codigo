@@ -98,6 +98,11 @@ export type CoreConfig = {
   /** The super-agent tells what an update brought, on the first start of a newer release (COLONIA_WHATS_NEW=off: never). */
   whatsNew: boolean;
   /**
+   * SYNC-CADA-1 · Cada cuántos minutos manda este equipo sus cambios a su pareja cuando el dueño no ha elegido otro
+   * ritmo (COLONIA_SYNC_EVERY_MIN): 0 = al momento, -1 = solo a mano. Por defecto, 5.
+   */
+  syncEveryMin: number;
+  /**
    * The super-agent tells release news that applies to the owner, in its words on their channel (COLONIA_NEWS=off: never;
    * test cores start off, COLONIA_NEWS=on turns it on there).
    */
@@ -237,6 +242,7 @@ export function loadConfig(processEnv: NodeJS.ProcessEnv = process.env, readCore
     agentName: env.COLONIA_AGENT_NAME?.trim() || undefined,
     updates: env.COLONIA_UPDATES === "off" ? "off" : env.COLONIA_UPDATES === "app" ? "app" : "on",
     whatsNew: env.COLONIA_WHATS_NEW !== "off",
+    syncEveryMin: syncEvery(env.COLONIA_SYNC_EVERY_MIN),
     news: env.COLONIA_NEWS !== "off",
     supervised: env.COLONIA_SUPERVISED === "1",
     app: env.COLONIA_APP || undefined,
@@ -260,6 +266,12 @@ export function assertSafeBind(config: Pick<CoreConfig, "host" | "token">): void
 }
 
 /** Config for tests and embedders: defaults plus overrides, no environment. */
+/** SYNC-CADA-1 · Un número de minutos válido (−1, 0 o de 1 a 1440); cualquier otra cosa deja los 5 de siempre. */
+export function syncEvery(raw: string | undefined): number {
+  const n = Number(raw);
+  return raw?.trim() && Number.isInteger(n) && n >= -1 && n <= 1440 ? n : 5;
+}
+
 export function testConfig(over: Partial<CoreConfig> & { home: string }): CoreConfig {
   // Never the machine's real v1: a test that wants one passes it.
   const v1 = { url: "http://127.0.0.1:9", home: path.join(over.home, "v1") };
@@ -274,6 +286,7 @@ export function testConfig(over: Partial<CoreConfig> & { home: string }): CoreCo
     runtimeSkills: { homes: { home: over.home, ...native }, auto: false },
     updates: "off",
     whatsNew: false,
+    syncEveryMin: 0,
     news: false,
     app: undefined,
     releases: undefined,

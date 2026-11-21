@@ -61,6 +61,10 @@ import {
 
 export const SYNC_PATH = "/sincronizar";
 const STATE_FILE = "sincronizar.json";
+/** SYNC-CADA-1 · El ritmo que eligió el dueño en este equipo. Aparte del estado: sobrevive a desemparejar. */
+const EVERY_FILE = "sincronizar-cada.json";
+/** SYNC-CADA-1 · Los ritmos que se pueden elegir, en minutos: 0 = al momento, −1 = solo a mano. */
+export const SYNC_EVERY_CHOICES = [0, 5, 60, -1] as const;
 const IDENTITY = "sync.identidad";
 /** Cambia cuando los dos lados dejan de entenderse: con versiones distintas no se pasan nada. */
 const WIRE = 2;
@@ -107,8 +111,22 @@ const RETRY_MS = [1000, 2000, 5000, 10_000, 30_000];
 
 export type Role = "principal" | "secundario";
 
+/** INVENTARIO-EQUIPOS-1 · Lo que cada equipo cuenta de sí mismo al saludar, para la ficha de «Mis equipos». */
+const PeerApp = z.object({
+  version: z.string().max(60),
+  kind: z.enum(["pc", "servidor"]),
+  platform: z.string().max(20),
+});
+
 const State = z.object({
-  peer: z.object({ id: z.string(), name: z.string(), publicKey: z.string(), urls: z.array(z.string()) }),
+  peer: z.object({
+    id: z.string(),
+    name: z.string(),
+    publicKey: z.string(),
+    urls: z.array(z.string()),
+    app: PeerApp.optional(),
+    seen_at: z.string().optional(),
+  }),
   role: z.enum(["principal", "secundario"]),
   role_at: z.number(),
   paired_at: z.string(),
@@ -141,6 +159,7 @@ const Msg = z.discriminatedUnion("t", [
     accepts_project_files: z.literal(1).optional(),
     folder_sync: z.literal(1).optional(),
     media_sha256: z.literal(1).optional(),
+    app: PeerApp.optional(),
   }),
   z.object({ t: z.literal("cambios"), id: z.string(), items: z.array(ItemZ) }),
   z.object({ t: z.literal("ok"), id: z.string() }),
@@ -204,6 +223,11 @@ export type SyncDeps = {
   presetCode?: string;
   /** VINCULAR-CLAVE-1 · Este equipo es un servidor: sin pareja, espera con una clave que solo escribe en sus registros. */
   logKey?: boolean;
+  /** INVENTARIO-EQUIPOS-1 · La versión de Colonia y si este equipo es un ordenador o un servidor. */
+  version?: string;
+  kind?: "pc" | "servidor";
+  /** SYNC-CADA-1 · El ritmo de envío si el dueño no eligió otro: 0 = al momento (lo de siempre), −1 = solo a mano. */
+  everyMin?: number;
 };
 
 type Wire = { send(m: object): void; recv(s: string): unknown };
@@ -298,6 +322,10 @@ export function createSync(d: SyncDeps) {
   let attempt = 0;
   let nextDial = 0;
   let shown: SyncStatus["pairing"];
+  // SYNC-CADA-1 · Con un ritmo, los cambios esperan a su hora (o a «Sincronizar ahora») y salen todos juntos.
+  let every = readEvery();
+  let nextAuto = 0;
+  let flushing = false;
   /** El código vigente, estirado. */
   let secret: string | undefined;
   /** El código vigente vino de la plantilla: al gastarlo se apunta para no volver a abrirlo. */
@@ -396,6 +424,15 @@ export function createSync(d: SyncDeps) {
       return undefined;
     }
   }
+  function readEvery(): number {
+    try {
+      const v = (JSON.parse(fs.readFileSync(path.join(d.home, EVERY_FILE), "utf8")) as { minutes?: unknown }).minutes;
+      if ((SYNC_EVERY_CHOICES as readonly unknown[]).includes(v)) return v as number;
+    } catch {}
+    return d.everyMin ?? 0;
+  }
+  /** Los cambios de este equipo pueden salir ya: al momento, o dentro de una tanda que empezó a su hora o a mano. */
+  const mayPump = () => every === 0 || flushing;
   function saveState(): void {
     stateDirty = 0;
     if (!state) return void fs.rmSync(file, { force: true });
@@ -578,6 +615,8 @@ export function createSync(d: SyncDeps) {
       link = undefined;
       inflight = undefined;
       media.clear();
+      if (state) state.peer.seen_at = new Date(now()).toISOString();
+      stateDirty ||= now();
       tell();
     });
     l.send({
@@ -594,6 +633,11 @@ export function createSync(d: SyncDeps) {
       folder_sync: 1,
       media_sha256: 1,
       ...(state.work === "receive" ? { accepts_project_files: 1 as const } : {}),
+      app: {
+        version: (d.version ?? "").slice(0, 60),
+        kind: d.kind ?? "pc",
+        platform: process.platform === "win32" ? "windows" : process.platform === "darwin" ? "macos" : process.platform,
+      },
     });
     return l;
   }
@@ -607,6 +651,11 @@ export function createSync(d: SyncDeps) {
       mismatch = m.v !== WIRE || m.schema !== schema();
       l.ready = !mismatch;
       state.peer.name = m.name;
+      if (m.app) state.peer.app = m.app;
+      else delete state.peer.app;
+      state.peer.seen_at = new Date(now()).toISOString();
+      // Al volver a verse se ponen al día, salvo que el dueño quiera hacerlo solo a mano.
+      if (every >= 0) flushing = true;
       // El que marcó ya sabe por dónde llegó; el que recibió aprende por dónde devolver la llamada.
       const known = l.client === state.peer.id ? [] : state.peer.urls.slice(0, 1);
       state.peer.urls = [...new Set([...known, ...m.urls])];
@@ -703,7 +752,9 @@ export function createSync(d: SyncDeps) {
   function pump(): void {
     if (!link?.ready || inflight || !journal) return;
     const items = journal.pending(BATCH);
+    if (items.length && !mayPump()) return;
     if (!items.length) {
+      flushing = false;
       if (state?.work === "send" && state.role === "secundario") {
         void work
           ?.pump(link.work, link.acceptsProjectFiles)
@@ -1008,6 +1059,10 @@ export function createSync(d: SyncDeps) {
         link.ws.ping();
       } catch {}
     }
+    if (every > 0 && link?.ready && now() >= nextAuto) {
+      nextAuto = now() + every * 60_000;
+      flushing = true;
+    }
     pump();
     continuous?.pump();
     media.pump();
@@ -1072,6 +1127,38 @@ export function createSync(d: SyncDeps) {
     } catch {}
     tune();
     tell();
+  }
+
+  /** INVENTARIO-EQUIPOS-1 · Qué comparten los dos equipos: lo que viaja por el diario, contado aquí. */
+  let sharedCache: { at: number; v: NonNullable<SyncStatus["shared"]> } | undefined;
+  function shared(): NonNullable<SyncStatus["shared"]> {
+    if (sharedCache && now() - sharedCache.at < 5000) return sharedCache.v;
+    const count = (sql: string) => {
+      try {
+        return Number((d.db.prepare(sql).get() as { n: number } | undefined)?.n ?? 0);
+      } catch {
+        return 0;
+      }
+    };
+    const list = (key: string) => {
+      try {
+        const row = d.db.prepare("SELECT value FROM meta WHERE key = ?").get(key) as { value: string } | undefined;
+        const v = row ? (JSON.parse(row.value) as unknown) : [];
+        return Array.isArray(v) ? v.length : 0;
+      } catch {
+        return 0;
+      }
+    };
+    const v = {
+      projects: count("SELECT COUNT(*) AS n FROM projects WHERE registered = 1"),
+      agents: count("SELECT COUNT(*) AS n FROM agents"),
+      routines: count("SELECT COUNT(*) AS n FROM routines"),
+      flows: count("SELECT COUNT(*) AS n FROM flows"),
+      channels: list("setting:channels"),
+      apps: list("setting:webapps"),
+    };
+    sharedCache = { at: now(), v };
+    return v;
   }
 
   /** Proyectos cuya carpeta no está en este equipo: el dueño tiene que elegir una aquí. */
@@ -1151,7 +1238,19 @@ export function createSync(d: SyncDeps) {
         ...(continuous ? { folder_sync: continuous.status() } : {}),
         reachable: d.urls().length > 0,
         ...(shown && !state && !logKeyArmed ? { pairing: shown } : {}),
-        ...(state ? { peer: { name: state.peer.name }, role: state.role } : {}),
+        ...(state
+          ? {
+              peer: {
+                name: state.peer.name,
+                ...(state.peer.app ?? {}),
+                ...(state.peer.seen_at ? { seen_at: state.peer.seen_at } : {}),
+              },
+              role: state.role,
+            }
+          : {}),
+        every_min: every,
+        ...(state && every > 0 && link?.ready && nextAuto ? { next_sync_at: new Date(nextAuto).toISOString() } : {}),
+        ...(state ? { shared: shared() } : {}),
         connected: Boolean(link?.hello),
         mismatch: Boolean(link?.hello) && mismatch,
         pending: journal?.pendingCount() ?? 0,
@@ -1159,6 +1258,30 @@ export function createSync(d: SyncDeps) {
         saved: lostIn(d.db, 1).total,
         ...(missingFolders.length ? { folders: missingFolders } : {}),
       };
+    },
+    /** SYNC-CADA-1 · El dueño elige cada cuánto manda este equipo sus cambios. */
+    setEvery(minutes: number): void {
+      if (!(SYNC_EVERY_CHOICES as readonly number[]).includes(minutes)) throw new Error("ese ritmo no se puede elegir");
+      const target = path.join(d.home, EVERY_FILE);
+      fs.writeFileSync(`${target}.tmp`, JSON.stringify({ minutes }), { mode: 0o600 });
+      fs.renameSync(`${target}.tmp`, target);
+      every = minutes;
+      nextAuto = every > 0 ? now() + every * 60_000 : 0;
+      pump();
+      tell();
+    },
+    /** SYNC-CADA-1 · «Sincronizar ahora»: sale lo pendiente y, si no hay enlace, se vuelve a buscar al otro ya. */
+    syncNow(): void {
+      if (!state) throw new Error("este equipo no tiene pareja");
+      flushing = true;
+      if (every > 0) nextAuto = now() + every * 60_000;
+      if (!link) {
+        nextDial = 0;
+        attempt = 0;
+        dial();
+      }
+      pump();
+      tell();
     },
     /** Un código para escribir en el otro equipo: vale diez minutos y una sola vez. */
     pairStart(source?: "joining_device", managed?: boolean): NonNullable<SyncStatus["pairing"]> {

@@ -772,6 +772,10 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     ...(process.env.COLONIA_PAIR_CODE ? { presetCode: process.env.COLONIA_PAIR_CODE } : {}),
     // VINCULAR-CLAVE-1 · En Railway (o pidiéndolo), sin pareja se espera con una clave que solo sale en los registros.
     ...(process.env.RAILWAY_SERVICE_ID || process.env.COLONIA_PAIR_KEY_LOG === "on" ? { logKey: true } : {}),
+    // INVENTARIO-EQUIPOS-1 y SYNC-CADA-1 · Lo que este equipo cuenta de sí y el ritmo de envío por defecto.
+    version: identity.version,
+    kind: process.env.RAILWAY_SERVICE_ID ? "servidor" : "pc",
+    everyMin: config.syncEveryMin,
     channels: () => channels.info(),
     changed: (touched) => {
       bus.emit({ type: "sync.updated", data: true });

@@ -534,3 +534,46 @@
   white-space: normal;
   user-select: all;
 }
+/* INVENTARIO-EQUIPOS-1 y SYNC-CADA-1: la ficha del equipo sincronizado con este. */
+.eq-synced__shared {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.eq-synced__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.eq-synced__chip {
+  padding: 3px 10px;
+  border: 1px solid var(--colonia-card-border);
+  border-radius: 999px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.eq-synced__every {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--colonia-card-border);
+}
+.eq-synced__everyText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.eq-synced__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

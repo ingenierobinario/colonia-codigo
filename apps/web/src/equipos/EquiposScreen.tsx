@@ -12,6 +12,7 @@ import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
 import { RemoteFolder } from "./RemoteFolder.tsx";
 import { RemoteTask } from "./RemoteTask.tsx";
 import { ServerHosting } from "./ServerHosting.tsx";
+import { SyncedEquipoCard } from "./SyncedEquipoCard.tsx";
 import { ThisComputerCard } from "./ThisComputerCard.tsx";
 import { TransferActions } from "./TransferActions.tsx";
 
@@ -727,6 +728,9 @@ function Body() {
   const loadLocal = useCallback((signal: AbortSignal) => client.withSignal(signal).call("equipos.local_state", {}), []);
   const [list, refreshList] = usePoll(loadList);
   const [local, refreshLocal] = usePoll(loadLocal);
+  // INVENTARIO-EQUIPOS-1 · El equipo sincronizado con este (otro ordenador o el servidor) tiene su ficha aquí.
+  const loadSync = useCallback((signal: AbortSignal) => client.withSignal(signal).call("sync.status", {}), []);
+  const [sync, refreshSync] = usePoll(loadSync);
   const equipos = list?.equipos ?? [];
   // ESTE-EQUIPO-1: este ordenador va el primero y una sola vez; EQUIPOS-ALIAS-1: la barra lateral lleva a cada ficha.
   const entries = equipoEntries(list);
@@ -772,6 +776,7 @@ function Body() {
                 onSaved={refreshList}
               />
             )}
+        {sync && <SyncedEquipoCard s={sync} onChange={refreshSync} />}
         {rest.map(card)}
         {local && <ThisEquipo s={local} refresh={refreshLocal} />}
         <TransferActions />
