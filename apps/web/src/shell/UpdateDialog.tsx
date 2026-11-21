@@ -14,8 +14,10 @@ export function UpdateDialog() {
   const target = useUpdates((s) => s.target);
   const own = useUpdates((s) => s.phase);
   const log = useUpdates((s) => s.log);
+  // AVISO-X-1 · Closing never waits on the download: it carries on in the background and the pill offers the restart
+  // once it is ready. Only a restart already under way holds the dialog (it ends in "stalled", which closes).
   const close = () => {
-    if (phase === "updating" || phase === "restarting") return;
+    if (phase === "restarting") return;
     closeUpdate();
   };
   // Started from the app menu, the app may already be downloading it, or have it ready.

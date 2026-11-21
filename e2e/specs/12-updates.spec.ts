@@ -181,3 +181,38 @@ test("on macOS without a place it can replace, the new app is downloaded and ope
   await dialog.getByRole("button", { name: "Descargar" }).click();
   await expect(dialog.getByText(/arrástrala a Aplicaciones/)).toBeVisible();
 });
+
+// AVISO-X-1 · The X closes the dialog while the new version downloads, leaves nothing over the app, and the download
+// finishing later does not bring it back: the pill offers the restart.
+test("the X closes the dialog mid-download and the app is usable again", async ({ page }) => {
+  await desktopWithUpdate(page, "auto");
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown> & { coloniaDesktop: Record<string, unknown> };
+    const install = w.coloniaDesktop.installUpdate as () => Promise<unknown>;
+    w.coloniaDesktop.installUpdate = () =>
+      new Promise((resolve) => {
+        w.finishDownload = () => resolve(install());
+      });
+  });
+  await open(page);
+  await page.getByRole("button", { name: "Colonia 9.1.0 · Actualizar" }).click();
+  const dialog = page.getByRole("dialog", { name: "Hay una versión nueva de Colonia" });
+  await dialog.getByRole("button", { name: "Actualizar ahora" }).click();
+  await expect(dialog.getByText("Descargando tu Colonia nueva…")).toBeVisible();
+  await dialog.getByRole("button", { name: "Close" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator(".colonia-dialog__backdrop, [role=dialog]")).toHaveCount(0);
+  expect(await page.evaluate(() => getComputedStyle(document.body).pointerEvents)).not.toBe("none");
+  // The rest of the app answers to the mouse and the keyboard.
+  const pill = page.getByRole("button", { name: "Colonia 9.1.0 · Actualizar" });
+  await pill.focus();
+  await expect(pill).toBeFocused();
+  await page.evaluate(() => (window as unknown as { finishDownload: () => void }).finishDownload());
+  await expect.poll(() => count(page, "installs")).toBe(1);
+  await expect(dialog).toBeHidden();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Colonia 9.1.0 · Reiniciar" })).toBeVisible();
+  await expect(dialog).toBeHidden();
+  await page.getByRole("button", { name: "Colonia 9.1.0 · Reiniciar" }).click();
+  await expect(dialog).toBeVisible();
+});

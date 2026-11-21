@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.63": {
+    en: ["The new-version notice closes with its X while the update downloads, and Colonia stays usable."],
+    es: ["El aviso de versión nueva se cierra con su X mientras se descarga y Colonia sigue respondiendo."],
+  },
   "2.36.62": {
     en: [
       "On Windows, restarting into an update takes seconds, and Colonia always opens again afterwards.",
