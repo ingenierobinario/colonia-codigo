@@ -461,7 +461,7 @@ test("Windows deja la versión nueva descomprimida y el reinicio sólo cambia ca
   assert.equal(spawns.length, 1, "the quit does not swap a second time");
 
   // On a real Windows the script itself runs: the swap is a matter of seconds, not minutes.
-  if (os.platform() === "win32") {
+  if (originalPlatform?.value === "win32") {
     const { spawnSync } = await import("node:child_process");
     const script = args[at + 1] ?? "";
     const real = [
