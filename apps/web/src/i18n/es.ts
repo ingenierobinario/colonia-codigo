@@ -2210,8 +2210,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "res.error": "Recursos: {error}",
   "res.source.extension": "Extensión",
   "res.tab.skills": "Skills",
-  "res.tab.mcp": "Conectores",
-  "res.tab.integrations": "Integraciones",
+  "res.tab.connections": "Conexiones",
   "res.tab.variables": "Variables",
   "res.tab.extensions": "Extensiones",
 };

@@ -8,8 +8,8 @@ test("Resources lists a server's tools, allows all or some for every agent, and 
 }) => {
   await rpc("setup.finish", {});
   await rpc("mcp.set", { name: "permissions", server: { command: process.execPath, args: [server] } });
-  await open(page, "#view=resources&resourcesTab=mcp");
-  await page.getByRole("radio", { name: /^Conectores/ }).click();
+  await open(page, "#view=resources&resourcesTab=connections");
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page.getByRole("button", { name: /^permissions/ }).click();
   const tools = page.locator(".mcptools");
   await tools.getByRole("radio", { name: "Todas permitidas" }).click();
@@ -32,8 +32,8 @@ test("right-click permissions update the list indicator, persist and open the in
   await rpc("mcp.set", { name: "context-permissions", server: { command: process.execPath, args: [server] } });
   await rpc("mcp.set", { name: "context-other", server: { command: process.execPath, args: [server] } });
   try {
-    await open(page, "#view=resources&resourcesTab=mcp");
-    await page.getByRole("radio", { name: /^Conectores/ }).click();
+    await open(page, "#view=resources&resourcesTab=connections");
+    await page.getByRole("radio", { name: /^Conexiones/ }).click();
     const row = page.getByRole("button", { name: /^context-permissions/ });
     await expect(row.getByRole("img", { name: /Sin verificar/ })).toBeVisible();
     await row.click({ button: "right" });
@@ -42,7 +42,7 @@ test("right-click permissions update the list indicator, persist and open the in
     await expect(row.getByRole("img", { name: "Permisos de tools: Todas permitidas" })).toBeVisible();
     await expect(row.locator(".colonia-pickrow__dot.is-on")).toBeVisible();
     await page.reload();
-    await page.getByRole("radio", { name: /^Conectores/ }).click();
+    await page.getByRole("radio", { name: /^Conexiones/ }).click();
     await expect(row.getByRole("img", { name: "Permisos de tools: Todas permitidas" })).toBeVisible();
 
     await row.click({ button: "right" });

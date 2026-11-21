@@ -28,7 +28,10 @@ test("an app link says what it opens, so its button can show the place's icon an
   assert.equal(kindOf("colonia:tasks/task_1/more/edit"), undefined);
   assert.deepEqual(kindOf("colonia:settings/desktop"), { kind: "settings", section: "desktop" });
   assert.deepEqual(kindOf("colonia:config"), { kind: "settings", section: "account" });
-  assert.deepEqual(kindOf("colonia:resources/mcp"), { kind: "resources", tab: "mcp" });
+  assert.deepEqual(kindOf("colonia:resources/connections"), { kind: "resources", tab: "connections" });
+  // CONEXIONES-1: the old Connectors and Integrations links land on Connections.
+  assert.deepEqual(kindOf("colonia:resources/connections"), { kind: "resources", tab: "connections" });
+  assert.deepEqual(kindOf("colonia:resources/connections"), { kind: "resources", tab: "connections" });
   assert.deepEqual(kindOf("colonia:inbox"), { kind: "inbox" });
   assert.deepEqual(kindOf("colonia:chat/thr_1"), { kind: "chat", id: "thr_1" });
   assert.deepEqual(kindOf("colonia:project/prj_1/tasks"), { kind: "project", id: "prj_1" });

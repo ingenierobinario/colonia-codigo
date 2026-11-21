@@ -6,7 +6,7 @@ description: Add, change, test or remove an MCP server for Colonia's agents with
 # MCP servers in Colonia
 
 Colonia keeps its MCP servers in its own store. They go in only two ways: the `colonia mcps` command (run it with `shell`) or
-the app's [Resources › MCP](colonia:resources/mcp). **Never write a JSON file for it.** A server written by hand anywhere
+the app's [Resources › Connections](colonia:resources/connections). **Never write a JSON file for it.** A server written by hand anywhere
 never reaches you:
 
 - not `~/.colonia/mcps.json`, `~/.colonia/vars.json` or anything else directly in `~/.colonia/`: that is the old Colonia (v1), which
@@ -110,7 +110,7 @@ colonia mcps rm <name>
 
 A server that comes with an extension is changed in that extension, not here. A project's `.apc/mcps.json` written
 by someone else needs the owner's approval before it runs: that approval is theirs, in
-[Resources › MCP](colonia:resources/mcp), never yours.
+[Resources › Connections](colonia:resources/connections), never yours.
 
 ## Tell the owner
 

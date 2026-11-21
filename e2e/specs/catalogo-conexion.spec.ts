@@ -20,7 +20,7 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
     });
     await page.goto("/");
     await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-    await page.getByRole("radio", { name: /^Conectores/ }).click();
+    await page.getByRole("radio", { name: /^Conexiones/ }).click();
     await page.getByRole("button", { name: "Catálogo", exact: true }).click();
     const card = page.locator(".catalog__card").filter({ has: page.getByText("Meta Ads", { exact: true }) });
     const provider = page.getByRole("link", { name: "Abrir Meta Ads · Pipeboard", exact: true });
@@ -43,18 +43,19 @@ test("el catálogo permite completar una conexión pendiente sin reemplazar su c
   }
 });
 
-test("Meta Ads heredado aparece una vez en Integraciones del proyecto con el logo de Meta", async ({ page }) => {
+test("Meta Ads heredado aparece una vez en Conexiones del proyecto con el logo de Meta", async ({ page }) => {
   await rpc("setup.finish");
   const { repo } = await world.info();
   const { project } = await rpc<{ project: { id: string } }>("projects.register", { path: repo });
   await rpc("mcp.set", { name: "meta-ads", server: { url: "https://example.invalid/mcp" } });
   try {
     await page.goto(`/#project=${project.id}&tab=resources`);
-    await page.getByRole("radio", { name: /^Integraciones/ }).click();
-    const row = page.locator(".int__row").filter({ has: page.getByText("Meta Ads", { exact: true }) });
+    await page.getByRole("radio", { name: /^Conexiones/ }).click();
+    const row = page.getByRole("button", { name: /^Meta Ads/ });
     await expect(row).toHaveCount(1);
     await expect(row.locator(".colonia-intmark svg path").first()).toBeAttached();
-    const enabled = row.getByRole("switch");
+    await row.click();
+    const enabled = page.getByRole("switch", { name: "Encendido aquí" });
     await expect(enabled).toBeChecked();
     await enabled.click();
     await expect(enabled).not.toBeChecked();
@@ -76,7 +77,7 @@ test("CONECTAR-DESACTIVADO-1: «Conectar» vuelve a encender un conector desacti
   try {
     await page.goto("/");
     await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-    await page.getByRole("radio", { name: /^Conectores/ }).click();
+    await page.getByRole("radio", { name: /^Conexiones/ }).click();
     await page.getByRole("button", { name: "Catálogo", exact: true }).click();
     const card = page.locator(".catalog__card").filter({ has: page.getByText("Notion", { exact: true }) });
     await card.getByRole("button", { name: "Conectar" }).click();

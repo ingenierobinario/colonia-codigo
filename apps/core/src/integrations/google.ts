@@ -187,7 +187,7 @@ export function createGoogle(deps: {
       if (hit && hit.exp - 60_000 > now()) return hit.token;
       const c = creds(kindOf(id));
       const rt = refreshToken(id);
-      if (!c || !rt) throw new Error(`${labelOf(id)} is not connected; connect it in Resources › Integrations`);
+      if (!c || !rt) throw new Error(`${labelOf(id)} is not connected; connect it in Resources › Connections`);
       try {
         const got = await refreshAccess(endpoints, { ...c, refreshToken: rt }, fetchImpl);
         access.set(id, { token: got.accessToken, exp: now() + got.expiresIn * 1000 });

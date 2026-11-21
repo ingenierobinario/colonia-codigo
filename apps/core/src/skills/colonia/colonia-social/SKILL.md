@@ -6,7 +6,7 @@ description: Connecting the owner's own social accounts (YouTube, X, Facebook Pa
 # The owner's social networks in Colonia
 
 Colonia ships no developer app for these networks: **each owner creates their own** on the network's developer site and
-types its credentials in [Resources › Integrations](colonia:resources/integrations). You guide them through it one step
+types its credentials in [Resources › Connections](colonia:resources/connections). You guide them through it one step
 at a time; the steps for each network are in its own file. Load only the one you need:
 
 | Network | Integration to open | Guide | What works once connected |

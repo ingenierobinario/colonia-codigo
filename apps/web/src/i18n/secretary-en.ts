@@ -5,6 +5,6 @@ export const enSecretary = {
   "super.customize": "Customize instructions",
   "super.instructions": "Instructions",
   "super.lastCheck": "Last check",
-  "super.mailInGmail": "Turned on and timed in Gmail's settings, under Resources › Integrations.",
-  "super.openGmail": "Open integrations",
+  "super.mailInGmail": "Turned on and timed in Gmail's settings, under Resources › Connections.",
+  "super.openGmail": "Open connections",
 };

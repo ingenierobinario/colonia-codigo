@@ -1108,6 +1108,16 @@
   margin: 0 0 8px;
 }
 
+/* CONEXIONES-1: the ways to add a connection, side by side; they wrap on a narrow list. */
+.conn__add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.conn__add .catalog__open {
+  margin: 0 0 8px;
+}
+
 /* CATALOGO-CONECTORES-2: the key form of the connectors that need one, inside the card. */
 .catalog__card--open {
   flex-wrap: wrap;

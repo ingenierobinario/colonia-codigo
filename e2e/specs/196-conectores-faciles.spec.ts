@@ -36,8 +36,8 @@ for (const language of ["es", "en"]) {
         localStorage.setItem("colonia.prefs", JSON.stringify({ language, sidebarCollapsed: true }));
       }, language);
       await page.emulateMedia({ colorScheme: theme });
-      await page.goto("/#view=resources&resourcesTab=mcp");
-      await page.getByRole("radio", { name: language === "es" ? /^Conectores/ : /^Connectors/ }).click();
+      await page.goto("/#view=resources&resourcesTab=connections");
+      await page.getByRole("radio", { name: language === "es" ? /^Conexiones/ : /^Connections/ }).click();
       const row = page.getByRole("button", { name: new RegExp(longName) });
       const named = page.getByRole("button", { name: /^notion/i });
       for (const width of [390, 768, 960, 1200, 1440]) {
@@ -57,7 +57,7 @@ for (const language of ["es", "en"]) {
         expect(fits, `ancho ${width}`).toBe(true);
       }
       await page
-        .getByRole("button", { name: language === "es" ? "Añadir conector" : "Add connector", exact: true })
+        .getByRole("button", { name: language === "es" ? "Otro conector" : "Other connector", exact: true })
         .click();
       const dialog = page.getByRole("dialog");
       await dialog.getByRole("textbox", { name: "URL", exact: true }).fill("https://example.test/mcp");

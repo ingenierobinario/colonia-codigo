@@ -38,7 +38,7 @@ export function socialTools(social: Social, g: Google | undefined): Tool[] {
   /** A network the owner has not connected, or turned off here, is refused by name. */
   const need = (network: string, t: Thread) => {
     const key = network === "facebook" || network === "instagram" ? "meta" : (network as keyof typeof on);
-    if (!on[key](t)) throw new Error(`${network} is not connected for this project (Resources › Integrations)`);
+    if (!on[key](t)) throw new Error(`${network} is not connected for this project (Resources › Connections)`);
   };
   const tube = () => {
     if (!youtube) throw new Error("YouTube is not connected");

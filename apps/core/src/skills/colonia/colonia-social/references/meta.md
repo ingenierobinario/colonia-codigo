@@ -24,7 +24,7 @@ Before starting, check with the owner:
 5. Press **Generate access token**. In the Facebook window that opens, **select the Pages and the Instagram accounts**
    to connect (the ones left unticked will not appear in Colonia) and accept. The token shows in the "Access Token"
    box. It lasts about an hour: go straight to the next step.
-6. **In Colonia.** Open [Resources › Integrations](colonia:resources/integrations) › **Facebook and Instagram**, type
+6. **In Colonia.** Open [Resources › Connections](colonia:resources/connections) › **Facebook and Instagram**, type
    the App id, the App secret and the Access token, and press **Connect**. Colonia trades the token for a lasting one
    for each Page and keeps only those: the app secret and the token typed are not stored.
 

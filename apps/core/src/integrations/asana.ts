@@ -19,7 +19,7 @@ export function createAsana(deps: { secrets: Secrets; offIn: (project: string) =
     query?: Record<string, string | number | undefined>,
   ): Promise<Result<"asana.read">> {
     const token = deps.secrets.resolve(`secret://${ASANA_SECRET}`);
-    if (!token) throw new Error("Asana is not connected; connect it in Resources › Integrations");
+    if (!token) throw new Error("Asana is not connected; connect it in Resources › Connections");
     const url = new URL(`https://app.asana.com/api/1.0/${path}`);
     for (const [key, value] of Object.entries(query ?? {}))
       if (value !== undefined) url.searchParams.set(key, String(value));

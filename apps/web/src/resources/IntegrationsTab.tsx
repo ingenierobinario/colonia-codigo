@@ -1,36 +1,15 @@
 import type { McpServerStatus, Result } from "@colonia/protocol";
-import {
-  Badge,
-  Button,
-  ContextMenu,
-  Dialog,
-  EmptyState,
-  Field,
-  Icons,
-  Input,
-  IntegrationIcon,
-  integrationBrand,
-  MasterDetail,
-  PickRow,
-  SegmentedControl,
-  Switch,
-} from "@colonia/ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge, Button, Dialog, Field, Icons, Input, IntegrationIcon, SegmentedControl, Switch } from "@colonia/ui";
+import { useCallback, useEffect, useState } from "react";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
 import { EmailSignatures } from "../config/EmailSignatures.tsx";
 import { client } from "../data/client.ts";
-import { loadMarks } from "../data/models.ts";
 import { notify } from "../data/notices.ts";
 import { signInMcp } from "../data/resources.ts";
-import { useData } from "../data/state.ts";
-import { isKey, useLanguage, useT } from "../i18n/index.ts";
+import { isKey, useT } from "../i18n/index.ts";
 import { CalendarReminders } from "./CalendarReminders.tsx";
-import { ConnectorLogo } from "./ConnectorLogo.tsx";
-import { catalogConnector } from "./connectorDirectory.ts";
 import { GoogleSignInForm } from "./GoogleSignIn.tsx";
-import { STATUS_KEY } from "./labels.ts";
 import { MailCheck } from "./MailCheck.tsx";
-import type { TabProps } from "./ResourcesView.tsx";
 
 export type Integration = Result<"integrations.list">["integrations"][number];
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -48,234 +27,17 @@ const configurable = (i: Integration) =>
 /** Nothing to type: it signs in through the owner's browser (or needs no account at all). */
 const viaBrowser = (i: Integration) => !i.oauth && i.fields.length === 0;
 
-function Tile({ i, size = 32 }: { i: Pick<Integration, "id" | "label">; size?: number }) {
+export function Tile({ i, size = 32 }: { i: Pick<Integration, "id" | "label">; size?: number }) {
   return <IntegrationIcon id={i.id} name={i.label} size={size} />;
 }
 
-/**
- * Integrations: an account connected once (GitHub, Notion, Slack…) that brings its MCP server and the variables it
- * needs. The list holds the connected ones; each says where it is used, project by project.
- */
-export function IntegrationsTab({ projectId, query, scope, adding, setAdding, res }: TabProps) {
-  const t = useT();
-  const lang = useLanguage();
-  const all = useData((s) => s.projects);
-  const projects = useMemo(() => all.filter((p) => p.path && p.registered !== false), [all]);
-  const [list, setList] = useState<Integration[]>();
-  const [picked, setPicked] = useState<string>();
-  /** "Edit" from the list's menu: the detail opens with its form (a new number opens it again). */
-  const [editing, setEditing] = useState(0);
-  const load = useCallback(async () => {
-    try {
-      setList((await client.call("integrations.list", {})).integrations);
-    } catch (e) {
-      notify(t("error.load", { error: errText(e) }));
-    }
-  }, [t]);
-  useEffect(() => {
-    loadMarks();
-    void load();
-  }, [load]);
-
-  const toggle = async (id: string, project: string, on: boolean) => {
-    try {
-      await client.call("mcp.toggle", { project, server: id, on });
-      await Promise.all([load(), res.loadServers()]);
-    } catch (e) {
-      notify(t("error.change", { error: errText(e) }));
-    }
-  };
-
-  const connected = (list ?? [])
-    .filter((i) => i.connected)
-    .filter((i) => !query || `${i.label} ${describe(i, t)}`.toLowerCase().includes(query))
-    .filter((i) => scope === "all" || scope === "global" || !i.off_in.includes(scope));
-
-  const dialog = adding && list && (
-    <ConnectDialog
-      list={list}
-      onClose={() => setAdding(false)}
-      onConnected={async (id) => {
-        setAdding(false);
-        await load();
-        setPicked(id);
-      }}
-    />
-  );
-  const extraServers = (res.data.servers ?? []).filter((s) => {
-    if (s.scope === "global" && !s.only && list?.some((i) => i.connected && i.id === s.name)) return false;
-    const label = catalogConnector(s.name)?.name ?? s.name;
-    return !query || (label + " " + s.name).toLowerCase().includes(query);
-  });
-  // Inside a project: its integrations, each on or off here.
-  if (projectId)
-    return (
-      <div className="resvars">
-        {!connected.length && !extraServers.length ? (
-          <EmptyState variant="dashed" icon={<Icons.Plug />}>
-            {t("int.noneHere")}
-          </EmptyState>
-        ) : (
-          <div className="int__rows">
-            {connected.map((i) => (
-              <div key={i.id} className="int__row">
-                <Tile i={i} />
-                <span className="int__rowmain">
-                  <b>{i.label}</b>
-                  <span>{describe(i, t)}</span>
-                </span>
-                <Switch
-                  size="sm"
-                  aria-label={i.label}
-                  checked={!i.off_in.includes(projectId)}
-                  onCheckedChange={(on) => void toggle(i.id, projectId, on)}
-                />
-              </div>
-            ))}
-            {extraServers.map((s) => {
-              const entry = catalogConnector(s.name);
-              const label = entry?.name ?? s.name;
-              return (
-                <div className="int__row" key={`${s.scope}:${s.name}`}>
-                  {entry && !integrationBrand(entry.id) ? (
-                    <ConnectorLogo domain={entry.domain} size={32} />
-                  ) : (
-                    <IntegrationIcon id={entry?.id ?? s.name} name={label} size={32} />
-                  )}
-                  <span className="int__rowmain">
-                    <b>{label}</b>
-                    <span>
-                      {entry ? entry.desc[lang === "es" ? 0 : 1] + " · " : ""}
-                      {t(STATUS_KEY[s.status])}
-                    </span>
-                  </span>
-                  {s.scope === "global" && !s.only && (
-                    <Switch
-                      size="sm"
-                      aria-label={label}
-                      checked={!s.off_here}
-                      onCheckedChange={(on) => void toggle(s.name, projectId, on)}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {dialog}
-      </div>
-    );
-
-  const current = connected.find((i) => i.id === picked) ?? connected[0];
-  const disconnect = async (id: string) => {
-    try {
-      await client.call("integrations.disconnect", { id });
-      await load();
-    } catch (e) {
-      notify(t("error.change", { error: errText(e) }));
-    }
-  };
-  // Nothing connected yet: the invitation alone, no empty list beside it.
-  if (list && !list.some((i) => i.connected))
-    return (
-      <div className="resvars">
-        <EmptyState
-          variant="dashed"
-          icon={<Icons.Plug />}
-          title={t("int.emptyTitle")}
-          action={
-            <Button size="sm" leadingIcon={<Icons.Plus size={14} />} onClick={() => setAdding(true)}>
-              {t("int.connectNew")}
-            </Button>
-          }
-        >
-          {t("int.emptyBody")}
-        </EmptyState>
-        {dialog}
-      </div>
-    );
-  return (
-    <>
-      <MasterDetail
-        resizeKey="integrations"
-        listLabel={t("res.tab.integrations")}
-        backLabel={t("res.tab.integrations")}
-        onBack={() => setPicked(undefined)}
-        list={
-          <>
-            <div className="int__listhead">{t("int.connected")}</div>
-            {connected.map((i) => (
-              <ContextMenu
-                key={i.id}
-                items={[
-                  { label: t("res.open"), icon: <Icons.PanelRight size={14} />, onSelect: () => setPicked(i.id) },
-                  {
-                    label: t("res.edit"),
-                    icon: <Icons.Pencil size={14} />,
-                    onSelect: () => {
-                      setPicked(i.id);
-                      setEditing(Date.now());
-                    },
-                  },
-                  { type: "separator" },
-                  {
-                    label: t("int.disconnect"),
-                    icon: <Icons.Unplug size={14} />,
-                    danger: true,
-                    onSelect: () => void disconnect(i.id),
-                  },
-                ]}
-              >
-                <PickRow
-                  title={i.label}
-                  description={where(i, projects.length, t)}
-                  leading={<Tile i={i} />}
-                  dot="on"
-                  selected={current?.id === i.id}
-                  onClick={() => setPicked(i.id)}
-                />
-              </ContextMenu>
-            ))}
-            <Button
-              size="sm"
-              variant="secondary"
-              className="int__add"
-              leadingIcon={<Icons.Plus size={14} />}
-              onClick={() => setAdding(true)}
-            >
-              {t("int.connectNew")}
-            </Button>
-          </>
-        }
-        detail={
-          current ? (
-            <IntegrationDetail
-              key={`${current.id}:${editing}`}
-              i={current}
-              projects={projects}
-              onToggle={toggle}
-              onChanged={load}
-              editing={editing > 0}
-            />
-          ) : undefined
-        }
-        empty={
-          <EmptyState variant="dashed" icon={<Icons.Plug />} title={t("int.emptyTitle")}>
-            {t("int.emptyBody")}
-          </EmptyState>
-        }
-      />
-      {dialog}
-    </>
-  );
-}
-
-function where(i: Integration, total: number, t: ReturnType<typeof useT>): string {
+export function where(i: Integration, total: number, t: ReturnType<typeof useT>): string {
   if (!i.off_in.length) return t("int.everywhere");
   return t("int.inSome", { n: total - i.off_in.length, total });
 }
 
-function IntegrationDetail({
+/** CONEXIONES-1: a connected account in Resources › Connections: where it is used, its settings, disconnect. */
+export function IntegrationDetail({
   i,
   projects,
   onToggle,

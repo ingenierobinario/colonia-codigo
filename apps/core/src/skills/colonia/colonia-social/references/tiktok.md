@@ -27,7 +27,7 @@ Drafts are the practical way: Colonia sends the video, the owner presses Post in
    accounts, which is all Colonia needs.
 7. **Keys.** In the app (the Sandbox one, if they use it) open **Credentials** (or **App details**): copy the
    **Client key** and **Client secret**.
-8. **In Colonia.** Open [Resources › Integrations](colonia:resources/integrations) › **TikTok**, type the client key and
+8. **In Colonia.** Open [Resources › Connections](colonia:resources/connections) › **TikTok**, type the client key and
    the client secret, press **Sign in**, and allow in the TikTok page that opens.
 9. **Check.** Call `social_accounts`: TikTok should be listed. Then send a short test video as a draft with
    `tiktok_send` and follow it with `tiktok_status` until it says `SEND_TO_USER_INBOX`.

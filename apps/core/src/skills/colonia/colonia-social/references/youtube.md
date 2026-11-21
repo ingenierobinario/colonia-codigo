@@ -13,7 +13,7 @@ Drive, reuse it: only steps 2 and 5 are new.
 4. **Client.** Open https://console.cloud.google.com/auth/clients/create, application type **Desktop app**, create it,
    and download its JSON. (A **Web application** client also works; then add the Redirect URI the dialog shows as an
    authorized redirect URI.)
-5. **In Colonia.** Open [Resources › Integrations](colonia:resources/integrations) › **YouTube**, upload the JSON (or
+5. **In Colonia.** Open [Resources › Connections](colonia:resources/connections) › **YouTube**, upload the JSON (or
    type the client id and secret), and press **Sign in with Google**. Google warns that the app is not verified:
    **Advanced** › **Go to (app name)** is expected for one's own app. They must pick the Google account (or brand
    account) that owns the channel.

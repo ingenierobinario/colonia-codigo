@@ -18,7 +18,7 @@ profile read. Tell the owner before starting, and that the console shows what wa
    - Website URL: any site of theirs (their X profile address works).
 5. **Keys.** Save. X shows the **OAuth 2.0 Client ID and Client Secret** once: keep that page open. (These are not the
    "API Key and Secret" nor the "Bearer Token": those are another kind of access and will not work.)
-6. **In Colonia.** Open [Resources › Integrations](colonia:resources/integrations) › **X**, type the client id and the
+6. **In Colonia.** Open [Resources › Connections](colonia:resources/connections) › **X**, type the client id and the
    client secret, press **Sign in**, and approve in the X page that opens.
 
 ## What to tell the owner

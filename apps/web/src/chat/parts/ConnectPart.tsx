@@ -37,7 +37,7 @@ export function ConnectPart({ part, threadId, messageId }: { part: Connect; thre
     try {
       setIntegrations((await client.call("integrations.list", {})).integrations);
     } catch {
-      // Without the list its Connect buttons stay off; Resources › Integrations still connects it.
+      // Without the list its Connect buttons stay off; Resources › Connections still connects it.
     }
   }, []);
   useEffect(() => {

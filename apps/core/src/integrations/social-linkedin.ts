@@ -6,7 +6,7 @@ export function linkedinApi(social: Social) {
   return {
     async publish(text: string, link?: string): Promise<{ id: string; url: string | undefined }> {
       const me = social.profile("linkedin");
-      if (!me) throw new Error("LinkedIn is not connected; connect it in Resources › Integrations");
+      if (!me) throw new Error("LinkedIn is not connected; connect it in Resources › Connections");
       const a = await social.call("linkedin", `${LINKEDIN_API}/ugcPosts`, {
         method: "POST",
         headers: { "x-restli-protocol-version": "2.0.0" },

@@ -10,10 +10,14 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
     en: [
       "The new-version notice closes with its X while the update downloads, and Colonia stays usable.",
       "The loading screen shows Colonia's penguin; on Windows the window buttons match light and dark.",
+      "Integrations and Connectors are now one tab, Connections: your accounts first, then the rest.",
+      "Search, connect, set up and disconnect, all from the same list.",
     ],
     es: [
       "El aviso de versión nueva se cierra con su X mientras se descarga y Colonia sigue respondiendo.",
       "La pantalla de carga muestra el pingüino de Colonia; en Windows, los botones siguen el claro y el oscuro.",
+      "Integraciones y Conectores son ahora una pestaña, Conexiones: primero tus cuentas y luego el resto.",
+      "Busca, conecta, configura y desconecta desde la misma lista.",
     ],
   },
   "2.36.62": {

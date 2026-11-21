@@ -22,7 +22,7 @@ test("Google Calendar's settings turn event reminders on and choose how long bef
   });
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^Integraciones/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page.getByRole("button", { name: /^GitHub/ }).click();
   await expect(page.getByRole("radiogroup", { name: "Dónde se usa" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Configurar integración", exact: true })).toHaveCount(0);

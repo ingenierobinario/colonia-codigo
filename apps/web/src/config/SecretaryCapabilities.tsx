@@ -34,7 +34,7 @@ export function SecretaryCapabilities() {
           variant="secondary"
           onClick={() => {
             go.config(null);
-            go.resources("integrations");
+            go.resources("connections");
           }}
         >
           {t("super.openGmail")}

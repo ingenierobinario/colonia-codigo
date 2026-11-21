@@ -134,7 +134,7 @@ export function createSocial(deps: {
   const LINKEDIN_EXP = "social_expires:linkedin";
   const pageSecret = (page: string) => `meta-page_${page}`;
   const redirectUri = () => `${deps.origin().replace(/\/$/, "")}${SOCIAL_OAUTH_PATH}`;
-  const again = (id: SocialId) => `sign in again in Resources › Integrations (${labelOf(id)})`;
+  const again = (id: SocialId) => `sign in again in Resources › Connections (${labelOf(id)})`;
 
   const stored = <T>(id: SocialId): T | undefined => {
     try {
@@ -223,7 +223,7 @@ export function createSocial(deps: {
     const p = (async () => {
       const c = creds(id);
       const rt = secrets.resolve(`secret://${refreshName(id)}`);
-      if (!c || !rt) throw new Error(`${label} is not connected; connect it in Resources › Integrations`);
+      if (!c || !rt) throw new Error(`${label} is not connected; connect it in Resources › Connections`);
       let got: Awaited<ReturnType<typeof tokenRequest>>;
       try {
         got = await tokenRequest(id, c, { grant_type: "refresh_token", refresh_token: rt });
@@ -439,7 +439,7 @@ export function createSocial(deps: {
       const token = async () => {
         if (id === "x" || id === "tiktok") return rotatingToken(id);
         const t = secrets.resolve(`secret://${LINKEDIN_TOKEN}`);
-        if (!t) throw new Error("LinkedIn is not connected; connect it in Resources › Integrations");
+        if (!t) throw new Error("LinkedIn is not connected; connect it in Resources › Connections");
         if (Number(store.settings.get(LINKEDIN_EXP)) < now())
           throw new Error(`LinkedIn's sign-in lasts 60 days and has ended; ${again("linkedin")}`);
         return t;
@@ -474,7 +474,7 @@ export function createSocial(deps: {
     /** A Graph API call with the token of one Page. */
     async graph(page: string, path: string, o: CallOptions = {}): Promise<Answer> {
       const token = secrets.resolve(`secret://${pageSecret(page)}`);
-      if (!token) throw new Error("Facebook and Instagram are not connected; connect them in Resources › Integrations");
+      if (!token) throw new Error("Facebook and Instagram are not connected; connect them in Resources › Connections");
       const a = await send("Meta", `${GRAPH}/${path}`, o, token);
       if (!ok(a)) throw new Error(`Meta: ${reason(a.data, a.status)}`);
       return a;

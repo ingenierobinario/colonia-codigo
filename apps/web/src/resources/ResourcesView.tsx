@@ -3,7 +3,7 @@ import { type ReactNode, Suspense, useState } from "react";
 import { type ProjectEntry, projectName } from "../data/identity.ts";
 import { useData } from "../data/state.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
-import { ExtensionsTab, IntegrationsTab, McpTab, VariablesTab } from "../lazy.ts";
+import { ConnectionsTab, ExtensionsTab, VariablesTab } from "../lazy.ts";
 import { go, type ResourceTab, useNav } from "../shell/nav.ts";
 import { BrowserConsents } from "./BrowserConsents.tsx";
 import { ENGINE_LABEL, SKILL_ENGINES, type SkillEngine } from "./labels.ts";
@@ -12,19 +12,18 @@ import { useResources } from "./useResources.ts";
 
 const TABS: Array<{ id: ResourceTab; label: MessageKey; add?: MessageKey; search?: MessageKey }> = [
   { id: "skills", label: "res.tab.skills", add: "res.add.skill", search: "res.search.skills" },
-  { id: "mcp", label: "res.tab.mcp", add: "res.add.mcp", search: "res.search.mcp" },
-  { id: "integrations", label: "res.tab.integrations", add: "res.add.integration", search: "res.search.integrations" },
+  { id: "connections", label: "res.tab.connections", add: "res.add.integration", search: "res.search.connections" },
   { id: "variables", label: "res.tab.variables", add: "res.add.variable", search: "res.search.variables" },
   { id: "extensions", label: "res.tab.extensions", add: "res.add.extension" },
 ];
 
 /** Tabs where a project has resources of its own: they can show only those. */
-const OWN_TABS: readonly ResourceTab[] = ["skills", "mcp", "variables"];
+const OWN_TABS: readonly ResourceTab[] = ["skills", "connections", "variables"];
 
 /** What "Project" shows on each tab that has a project's own. */
 const OWN_NOTE = {
   skills: "res.show.projectNote",
-  mcp: "res.show.projectNote.mcp",
+  connections: "res.show.projectNote.mcp",
   variables: "res.show.projectNote.variables",
 } as const satisfies Record<string, MessageKey>;
 
@@ -32,7 +31,7 @@ const OWN_NOTE = {
 export type ScopeFilter = string;
 
 /**
- * Resources: skills, MCP servers, integrations, variables and extensions, in full tabs. The same screen globally
+ * Resources: skills, connections (accounts and MCP servers, CONEXIONES-1), variables and extensions, in full tabs. The same screen globally
  * (with scope chips) and inside a project (its own plus the inherited global ones, which it can turn off here).
  */
 export function ResourcesView({ project }: { project?: ProjectEntry }) {
@@ -55,8 +54,7 @@ export function ResourcesView({ project }: { project?: ProjectEntry }) {
   const { skills, servers, secrets, extensions } = res.data;
   const counts: Record<ResourceTab, number | undefined> = {
     skills: skills?.length,
-    mcp: servers?.length,
-    integrations: undefined,
+    connections: servers?.length,
     // The table also lists names a server uses but nobody stored: count those too.
     variables:
       secrets &&
@@ -129,7 +127,7 @@ export function ResourcesView({ project }: { project?: ProjectEntry }) {
   const note = [
     projectId
       ? ownOnly && OWN_TABS.includes(tab)
-        ? t(OWN_NOTE[tab as "skills" | "mcp" | "variables"], { name })
+        ? t(OWN_NOTE[tab as "skills" | "connections" | "variables"], { name })
         : t("res.inherit", { name })
       : inDefault
         ? t("res.defaultGlobal")
@@ -147,8 +145,7 @@ export function ResourcesView({ project }: { project?: ProjectEntry }) {
 
   let body: ReactNode;
   if (tab === "skills") body = <SkillsTab {...ctx} />;
-  else if (tab === "mcp") body = <McpTab {...ctx} />;
-  else if (tab === "integrations") body = <IntegrationsTab {...ctx} />;
+  else if (tab === "connections") body = <ConnectionsTab {...ctx} />;
   else if (tab === "variables") body = <VariablesTab {...ctx} />;
   else body = <ExtensionsTab adding={adding} setAdding={setAdding} onChanged={() => void res.loadExtensions()} />;
 

@@ -59,8 +59,8 @@ test("a new MCP server takes a variable for its token from the + list, or a new 
 }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^Conectores/ }).click();
-  await page.getByRole("button", { name: "Añadir conector", exact: true }).first().click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
+  await page.getByRole("button", { name: "Otro conector", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: "Añadir un conector" });
   await dialog.getByRole("textbox", { name: "Nombre" }).fill("northwind");
   await expect(dialog.getByRole("textbox", { name: "URL" })).toBeVisible();
@@ -140,9 +140,9 @@ test("a new MCP server takes a variable for its token from the + list, or a new 
 test("integrations: GitHub is connected with a token, then disconnected", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^Integraciones/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page
-    .getByRole("button", { name: /Conectar nueva|Integración/ })
+    .getByRole("button", { name: "Conectar", exact: true })
     .first()
     .click();
   // Each app shows its own logo, the ones still coming too.
@@ -178,7 +178,7 @@ test("integrations: Connect opens its dialog inside a project too", async ({ pag
   await open(page);
   await page.getByRole("button", { name: /^Northwind/ }).click();
   await page.getByRole("tab", { name: "Recursos" }).click();
-  await page.getByRole("radio", { name: /^Integraciones/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page.getByRole("button", { name: "Conectar", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("button", { name: /^GitHub/ })).toBeVisible();
@@ -189,9 +189,9 @@ test("integrations: Connect opens its dialog inside a project too", async ({ pag
 test("integrations: the catalog is searched; Home Assistant connects with its address and token", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^Integraciones/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page
-    .getByRole("button", { name: /Conectar nueva|Integración/ })
+    .getByRole("button", { name: "Conectar", exact: true })
     .first()
     .click();
   const dialog = page.getByRole("dialog");
@@ -311,7 +311,7 @@ test("inside a project, Project shows only its own MCP servers and variables", a
   await rpc("mcp.set", { name: "globex-shared", server: { command: "npx", args: ["-y", "@acme/shared"] } });
   await rpc("secrets.set", { name: "ACME_ONLY", value: "acme-only-value", project });
   await open(page, `#project=${project}&tab=resources`);
-  await page.getByRole("radio", { name: /^Conectores/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await expect(page.getByRole("button", { name: /^globex-shared/ })).toBeVisible();
   await page.getByRole("radio", { name: "Proyecto", exact: true }).click();
   await expect(page.getByRole("button", { name: /^acme-own/ })).toBeVisible();

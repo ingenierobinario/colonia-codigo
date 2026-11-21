@@ -33,7 +33,7 @@ const PLAIN: Record<string, string> = {
     "TikTok only lets an app it has not reviewed post on a private account. Make the account private in the TikTok app (Settings › Privacy), or send the video as a draft",
   privacy_level_option_mismatch: "TikTok does not offer private posting on this account right now; send it as a draft",
   spam_risk_too_many_posts: "TikTok says this account has posted too much today; try again tomorrow",
-  scope_not_authorized: "the TikTok sign-in lacks a permission; sign in again in Resources › Integrations (TikTok)",
+  scope_not_authorized: "the TikTok sign-in lacks a permission; sign in again in Resources › Connections (TikTok)",
   url_ownership_unverified: "TikTok only pulls videos from a site verified in the app's settings",
 };
 
@@ -60,7 +60,7 @@ export function chunks(size: number): {
 
 export function tiktokApi(social: Social) {
   const signedIn = () => {
-    if (!social.profile("tiktok")) throw new Error("TikTok is not connected; connect it in Resources › Integrations");
+    if (!social.profile("tiktok")) throw new Error("TikTok is not connected; connect it in Resources › Connections");
   };
   const post = async <T>(path: string, json: unknown, write = false) => {
     const a = await social.call("tiktok", `${TIKTOK_API}${path}`, {

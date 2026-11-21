@@ -7,6 +7,6 @@ export const esSecretary: Record<keyof typeof enSecretary, string> = {
   "super.customize": "Personalizar instrucciones",
   "super.instructions": "Instrucciones",
   "super.lastCheck": "Última revisión",
-  "super.mailInGmail": "Se enciende y se ajusta en la configuración de Gmail, en Recursos › Integraciones.",
-  "super.openGmail": "Abrir integraciones",
+  "super.mailInGmail": "Se enciende y se ajusta en la configuración de Gmail, en Recursos › Conexiones.",
+  "super.openGmail": "Abrir conexiones",
 };

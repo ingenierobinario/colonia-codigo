@@ -70,8 +70,16 @@ export const CONFIG_SECTIONS = [
 ] as const;
 export type ConfigSection = (typeof CONFIG_SECTIONS)[number];
 
-export const RESOURCE_TABS = ["skills", "mcp", "integrations", "variables", "extensions"] as const;
+export const RESOURCE_TABS = ["skills", "connections", "variables", "extensions"] as const;
 export type ResourceTab = (typeof RESOURCE_TABS)[number];
+/** CONEXIONES-1: «Conectores» (mcp) and «Integraciones» became one tab; old links, hashes and names land there. */
+const OLD_RESOURCE_TABS: Readonly<Record<string, ResourceTab>> = { mcp: "connections", integrations: "connections" };
+/** The Resources tab a name means, old names included; undefined when it is none. */
+export function resourceTabOf(name: string | null | undefined): ResourceTab | undefined {
+  if (!name) return undefined;
+  if ((RESOURCE_TABS as readonly string[]).includes(name)) return name as ResourceTab;
+  return OLD_RESOURCE_TABS[name];
+}
 
 export type NavState = {
   view: View;
@@ -178,7 +186,9 @@ function fromHash(): Partial<NavState> {
   const tab = h.get("tab");
   const view = h.get("view");
   const channel = h.get("channel");
+  const resourcesTab = resourceTabOf(h.get("resourcesTab"));
   return {
+    ...(resourcesTab ? { resourcesTab } : {}),
     ...(h.get("thread") ? { threadId: h.get("thread") ?? undefined } : {}),
     ...(h.get("task") ? { taskId: h.get("task") ?? undefined } : {}),
     ...(panel && (PANELS as readonly string[]).includes(panel) ? { panel: panel as PanelKind } : {}),
@@ -533,15 +543,16 @@ export const go = {
     nav.set({ view: "tasks", taskId, peekTaskId: undefined });
   },
   /** A Resources tab: in the open project's Resources tab when a project is open, else the global screen. */
-  resources(tab: ResourceTab, global = false) {
+  resources(name: ResourceTab | "mcp" | "integrations", global = false) {
+    const tab = resourceTabOf(name) ?? "skills";
     nav.set((s) =>
       s.view === "project" && !global
         ? { projectTab: "resources", resourcesTab: tab }
         : { view: "resources", resourcesTab: tab },
     );
   },
-  resourcesTab(tab: ResourceTab) {
-    nav.set({ resourcesTab: tab });
+  resourcesTab(name: ResourceTab | "mcp" | "integrations") {
+    nav.set({ resourcesTab: resourceTabOf(name) ?? "skills" });
   },
   config(section: ConfigSection | null = "account") {
     nav.set({ config: section, backupTarget: undefined });

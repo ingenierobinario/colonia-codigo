@@ -5,7 +5,7 @@ description: Colonia's integrations, accounts the owner connects once (Google, A
 
 # Integrations in Colonia
 
-An integration is an account the owner connects once in [Resources › Integrations](colonia:resources/integrations).
+An integration is an account the owner connects once in [Resources › Connections](colonia:resources/connections).
 Connecting needs the owner's own sign-in or token, so **the owner does it in the app**; you send them the link, say what
 to have at hand, and use the tools once it is connected.
 
@@ -59,8 +59,8 @@ with colonia-mcps. If it only has an HTTP API, a small extension can wrap it (co
 
 1. `colonia mcps list` (for the MCP-based ones): is it there, and in what state?
 2. `colonia mcps check <name>`: the exact error. An authentication error usually means a token expired or was revoked:
-   the owner reconnects it in [Resources › Integrations](colonia:resources/integrations).
-3. For Asana, check its connection and project switch in Resources › Integrations; a rejected token must be replaced there.
+   the owner reconnects it in [Resources › Connections](colonia:resources/connections).
+3. For Asana, check its connection and project switch in Resources › Connections; a rejected token must be replaced there.
 4. For Google, no `calendar_*`, `gmail_*` or `drive_*` tools means that part is not connected (or is off in this
    project). "Sign in again" in its dialog fixes a revoked or expired access.
 

@@ -15,7 +15,7 @@ type List = { data?: Post[]; includes?: { users?: Array<{ id?: string; username?
 export function xApi(social: Social) {
   const me = () => {
     const p = social.profile("x");
-    if (!p) throw new Error("X is not connected; connect it in Resources › Integrations");
+    if (!p) throw new Error("X is not connected; connect it in Resources › Connections");
     return p;
   };
   const link = (post: string) => `https://x.com/${me().username ?? "i"}/status/${post}`;

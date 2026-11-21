@@ -2191,8 +2191,7 @@ export const en = {
   "res.error": "Resources: {error}",
   "res.source.extension": "Extension",
   "res.tab.skills": "Skills",
-  "res.tab.mcp": "Connectors",
-  "res.tab.integrations": "Integrations",
+  "res.tab.connections": "Connections",
   "res.tab.variables": "Variables",
   "res.tab.extensions": "Extensions",
 } as const;

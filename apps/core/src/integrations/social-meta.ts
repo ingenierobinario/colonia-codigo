@@ -22,7 +22,7 @@ export function metaApi(social: Social) {
       throw new Error(
         network === "instagram"
           ? "no Instagram professional account is linked to the connected Facebook Pages"
-          : "Facebook and Instagram are not connected; connect them in Resources › Integrations",
+          : "Facebook and Instagram are not connected; connect them in Resources › Connections",
       );
     const name = (p: MetaPage) => (network === "instagram" ? (p.instagram?.username ?? "") : p.name);
     const want = account?.trim().replace(/^@/, "").toLowerCase();

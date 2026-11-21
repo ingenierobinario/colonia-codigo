@@ -1,6 +1,6 @@
 // Where an app link an agent wrote goes (colonia:settings/desktop, colonia:tasks…): a place of the panel, or nothing for a
 // link it does not know (shown as its label).
-import { CONFIG_SECTIONS, type ConfigSection, go, nav, RESOURCE_TABS, type ResourceTab } from "../shell/nav.ts";
+import { CONFIG_SECTIONS, type ConfigSection, go, nav, type ResourceTab, resourceTabOf } from "../shell/nav.ts";
 
 const isIn = <T extends string>(list: readonly T[], v: string | undefined): v is T =>
   v !== undefined && (list as readonly string[]).includes(v);
@@ -42,7 +42,7 @@ export function appPlace(href: string): AppPlace | undefined {
         open: () => go.flows(a, b, c === "edit"),
       };
     case "resources": {
-      const tab: ResourceTab | undefined = a === undefined ? "skills" : isIn(RESOURCE_TABS, a) ? a : undefined;
+      const tab: ResourceTab | undefined = a === undefined ? "skills" : resourceTabOf(a);
       return tab ? { kind: "resources", tab, open: () => go.resources(tab, true) } : undefined;
     }
     case "inbox":

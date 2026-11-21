@@ -17,7 +17,7 @@ only to reviewed companies: not available here.
 5. **Redirect address.** In the **Auth** tab, under **OAuth 2.0 settings** › **Authorized redirect URLs for your
    app**, add the **Redirect URI the dialog shows** in Colonia, exactly. On the same tab are the **Client ID** and the
    **Primary Client Secret**.
-6. **In Colonia.** Open [Resources › Integrations](colonia:resources/integrations) › **LinkedIn**, type the client id
+6. **In Colonia.** Open [Resources › Connections](colonia:resources/connections) › **LinkedIn**, type the client id
    and the client secret, press **Sign in**, and allow in the LinkedIn page that opens.
 
 ## What to tell the owner

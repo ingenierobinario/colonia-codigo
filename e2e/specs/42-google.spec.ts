@@ -5,9 +5,9 @@ import { expect, open, rpc, test } from "./kit.ts";
 test("Google Calendar connects by signing in with Google, shows the account, and disconnects", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^Integraciones/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page
-    .getByRole("button", { name: /Conectar nueva|Integración/ })
+    .getByRole("button", { name: "Conectar", exact: true })
     .first()
     .click();
   await page
@@ -48,9 +48,9 @@ test("Google Calendar connects by signing in with Google, shows the account, and
 test("one sign-in connects the other Google parts the owner ticks, with the same own client", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Recursos", exact: true }).first().click();
-  await page.getByRole("radio", { name: /^Integraciones/ }).click();
+  await page.getByRole("radio", { name: /^Conexiones/ }).click();
   await page
-    .getByRole("button", { name: /Conectar nueva|Integración/ })
+    .getByRole("button", { name: "Conectar", exact: true })
     .first()
     .click();
   await page.getByRole("dialog").getByRole("button", { name: /Gmail/ }).click();
