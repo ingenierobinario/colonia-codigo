@@ -12,6 +12,7 @@ test("templates read the payload and earlier steps as bindings, and evaluate not
     { text: ", $5" },
   ]);
   // A sentence's full stop is not a field; `${…}` and other shapes stay text.
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: un ${…} literal, no una plantilla
   assert.deepEqual(parseFlowTemplate("Hi $trigger.name. ${x}")[2], { text: ". ${x}" });
   assert.throws(() => parseFlowTemplate("$trigger.__proto__.x"), /not allowed/);
   assert.throws(() => parseFlowTemplate("$steps"), /names no step/);

@@ -424,6 +424,7 @@ test("a command gets what arrived only in its environment and input, never in it
   const env = await core();
   process.env.ACME_API_KEY = "sk-not-for-commands";
   try {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: un ${…} literal, no una plantilla
     const step = cmd("hello", 'printf "%s|" "$NAME"; cat; printf "|%s" "${ACME_API_KEY:-none}"; touch ran', {
       env: [{ name: "NAME", value: "$trigger.name" }],
       stdin: "note: $trigger.note",
@@ -590,6 +591,7 @@ test("review: a command ended by a signal is left to look at; connection strings
     const { flow } = await publish(
       env,
       "signal",
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: un ${…} literal, no una plantilla
       chain(hook, cmd("env", 'printf "%s|%s" "${DATABASE_URL:-none}" "${ACME_DSN:-none}"'), cmd("die", "kill -9 $$")),
     );
     await post(env, flow, "e", { go: 1 });
