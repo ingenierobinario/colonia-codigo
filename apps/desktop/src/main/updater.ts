@@ -133,9 +133,31 @@ if [ "$relaunch" = 1 ]; then open "$old" || say "could not open $old"; fi
 // ARRANQUE-RAPIDO-1 · Windows: la versión nueva se descomprime junto a la instalada MIENTRAS Colonia sigue abierta;
 // al reiniciar sólo se cambian dos carpetas de nombre (segundos). Antes el instalador NSIS borraba 6.400 ficheros,
 // descomprimía 600 MB y los copiaba con Colonia cerrada: 7-8 minutos sin app (21-nov-2026, 2.36.60).
+// SWAP-SIEMPRE-ABRE-1 · Los dos movimientos y la vuelta atrás se reintentan (un antivirus abre los .exe recién
+// descomprimidos); si al final no hay Colonia.exe en su carpeta pero sí la copia anterior, se restaura. Un RunOnce
+// (recover.ps1) cubre un corte de luz entre los dos movimientos. Lo que no entró deja `failed`: la descarga se queda y
+// la próxima vez va el instalador de siempre, en vez de volver a bajar 600 MB en bucle.
 const SWAP_WIN = `
-param([int]$pid0, [string]$old, [string]$new, [string]$stage, [int]$relaunch, [string]$log, [string]$version)
+param([int]$pid0, [string]$old, [string]$new, [string]$stage, [int]$relaunch, [string]$log, [string]$version, [int]$secs = 30)
 function Say($m) { if ($log) { try { Add-Content -LiteralPath $log -Value ("{0} swap: {1}" -f (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), $m) } catch {} } }
+function Has($dir) { return (Test-Path -LiteralPath (Join-Path $dir "Colonia.exe")) }
+function Move-Retry($from, $to, $secs) {
+  $until = (Get-Date).AddSeconds($secs)
+  while ($true) {
+    # A plain rename: Move-Item, when it fails, can leave $to created and the next try moves INTO it.
+    try {
+      if ((Test-Path -LiteralPath $to) -and -not (Get-ChildItem -LiteralPath $to -Force)) { Remove-Item -LiteralPath $to -Force }
+      [System.IO.Directory]::Move($from, $to); return $true
+    } catch {}
+    if ((Get-Date) -ge $until) { return $false }
+    Start-Sleep -Milliseconds 300
+  }
+}
+$runOnce = "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce"
+$recover = Join-Path $stage "recover.ps1"
+if (Test-Path -LiteralPath $recover) {
+  try { New-ItemProperty -Path $runOnce -Name "ColoniaUpdateRecover" -PropertyType String -Force -Value ('powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $recover + '"') | Out-Null } catch {}
+}
 try { Wait-Process -Id $pid0 -Timeout 60 -ErrorAction SilentlyContinue } catch {}
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline) {
@@ -144,28 +166,59 @@ while ((Get-Date) -lt $deadline) {
   Start-Sleep -Milliseconds 200
 }
 $prev = Join-Path $stage "previous"
-$moved = $false
-$deadline = (Get-Date).AddSeconds(30)
-while (-not $moved -and (Get-Date) -lt $deadline) {
-  try { Move-Item -LiteralPath $old -Destination $prev -ErrorAction Stop; $moved = $true } catch { Start-Sleep -Milliseconds 300 }
-}
-if ($moved) {
-  try {
-    Move-Item -LiteralPath $new -Destination $old -ErrorAction Stop
+$applied = $false
+$why = ""
+if (Move-Retry $old $prev $secs) {
+  if (Move-Retry $new $old $secs) {
+    $applied = $true
     Say "new app in place ($version)"
     try {
       Get-ChildItem "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall" -ErrorAction SilentlyContinue | ForEach-Object {
         if ((Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue).DisplayName -eq "Colonia") { Set-ItemProperty $_.PSPath -Name DisplayVersion -Value $version }
       }
     } catch {}
-  } catch {
-    Move-Item -LiteralPath $prev -Destination $old -ErrorAction SilentlyContinue
-    Say "could not move the new app in, the old one is back"
+  } else {
+    $why = "could not move the new app in"
+    if ((Move-Retry $prev $old $secs) -and (Has $old)) { Say "$why, the old one is back" } else { Say "$why, and the old one did not go back yet" }
   }
-} else { Say "a file of the old app stayed open, it stays as it was" }
-if ($relaunch -eq 1) { Start-Process -FilePath (Join-Path $old "Colonia.exe") }
-if ($moved) { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
+} else { $why = "a file of the old app stayed open"; Say "$why, it stays as it was" }
+# The last net: Colonia must be in its folder whatever happened above.
+if (-not (Has $old) -and (Has $prev)) {
+  if (Test-Path -LiteralPath $old) { Move-Retry $old (Join-Path $stage ("broken-" + (Get-Date).Ticks)) 10 | Out-Null }
+  if (Move-Retry $prev $old (2 * $secs)) { Say "the old app is back in its folder" } else { Say "the old app stays in $prev" }
+}
+if (Has $old) { try { Remove-ItemProperty -Path $runOnce -Name "ColoniaUpdateRecover" -ErrorAction SilentlyContinue } catch {} }
+if (-not $applied) {
+  try { Set-Content -LiteralPath (Join-Path $stage "failed") -Value $why } catch {}
+  Say "$version did not go in: the download stays and the installer goes next time"
+}
+if ($relaunch -eq 1) {
+  if (Has $old) { Start-Process -FilePath (Join-Path $old "Colonia.exe") }
+  elseif (Has $prev) { Start-Process -FilePath (Join-Path $prev "Colonia.exe") }
+}
+if ($applied) { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
 `;
+
+/** SWAP-SIEMPRE-ABRE-1 · Corre en el siguiente inicio de sesión si el cambio se cortó: vuelve a poner Colonia en su carpeta. */
+function recoverScript(old: string, prev: string, next: string, stage: string, log: string): string {
+  const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
+  return `
+$old = ${q(old)}; $prev = ${q(prev)}; $new = ${q(next)}; $stage = ${q(stage)}; $log = ${q(log)}
+function Say($m) { if ($log) { try { Add-Content -LiteralPath $log -Value ("{0} recover: {1}" -f (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), $m) } catch {} } }
+if (Test-Path -LiteralPath (Join-Path $old "Colonia.exe")) { exit 0 }
+foreach ($src in @($prev, $new)) {
+  if (Test-Path -LiteralPath (Join-Path $src "Colonia.exe")) {
+    if (Test-Path -LiteralPath $old) { try { [System.IO.Directory]::Move($old, (Join-Path $stage ("broken-" + (Get-Date).Ticks))) } catch {} }
+    try {
+      [System.IO.Directory]::Move($src, $old)
+      Say "Colonia was not in its folder after an interrupted update: put back from $src"
+      try { Set-Content -LiteralPath (Join-Path $stage "failed") -Value "interrupted" } catch {}
+      break
+    } catch { Say "could not put Colonia back from $src" }
+  }
+}
+`;
+}
 
 type Staged = { version: string; restart(): void; onQuit?(): void };
 
@@ -214,6 +267,8 @@ export function createDesktopUpdater(opts: {
   let staged: Staged | undefined;
   let downloading: Promise<InstallAnswer> | undefined;
   let swapping = false;
+  /** SWAP-SIEMPRE-ABRE-1 · Versions whose unpacked folder did not go in: the installer goes instead. */
+  const folderFailed = new Set<string>();
   let generation = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const log = opts.logFile ? updateLog(opts.logFile) : () => {};
@@ -302,7 +357,12 @@ export function createDesktopUpdater(opts: {
       if (bundle && zip) staged = await stageMac(release, zip, bundle);
       else if (appImage) staged = await stageAppImage(release, asset, appImage);
       else if (process.platform === "win32") {
-        const winZip = p ? desktopAssetFor(release.assets, release.version, p, "zip") : undefined;
+        if (folderFailed.has(release.version))
+          log(`unpacked update: ${release.version} did not go in last time, the installer goes instead`);
+        const winZip =
+          p && !folderFailed.has(release.version)
+            ? desktopAssetFor(release.assets, release.version, p, "zip")
+            : undefined;
         const unpacked = winZip
           ? await stageWindowsFolder(release, winZip).catch((err: unknown) => {
               log(
@@ -454,6 +514,10 @@ export function createDesktopUpdater(opts: {
         fs.copyFileSync(path.join(old, n), path.join(inner, n));
     const script = path.join(stage, "swap.ps1");
     fs.writeFileSync(script, SWAP_WIN);
+    fs.writeFileSync(
+      path.join(stage, "recover.ps1"),
+      recoverScript(old, path.join(stage, "previous"), inner, stage, opts.logFile ?? ""),
+    );
     const swap = (relaunch: boolean) => {
       if (!fs.existsSync(inner)) {
         staged = undefined;
@@ -581,11 +645,24 @@ export function createDesktopUpdater(opts: {
       // Running means the last installer is done: it and any before it go.
       if (process.platform === "win32") {
         removeOldInstallers(os.tmpdir());
-        // ARRANQUE-RAPIDO-1 · A folder left from an update that did not go in is downloaded again when needed.
+        // ARRANQUE-RAPIDO-1 · A folder left from an update that was never applied is downloaded again when needed.
+        // SWAP-SIEMPRE-ABRE-1 · One the swap marked failed stays (download and old copy) until that version is in.
         const parent = path.dirname(path.dirname(opts.execPath ?? process.execPath));
         try {
-          for (const f of fs.readdirSync(parent))
-            if (/^\.colonia-.+\.update$/.test(f)) fs.rmSync(path.join(parent, f), { recursive: true, force: true });
+          for (const f of fs.readdirSync(parent)) {
+            const v = /^\.colonia-(.+)\.update$/.exec(f)?.[1];
+            if (!v) continue;
+            const dir = path.join(parent, f);
+            const failed = path.join(dir, "failed");
+            if (v !== app.getVersion() && fs.existsSync(failed)) {
+              folderFailed.add(v);
+              log(
+                `unpacked update ${v} did not go in (${fs.readFileSync(failed, "utf8").trim()}): the installer goes next`,
+              );
+              continue;
+            }
+            fs.rmSync(dir, { recursive: true, force: true });
+          }
         } catch {
           // Nothing to clean, or a file still held: it goes the next time.
         }

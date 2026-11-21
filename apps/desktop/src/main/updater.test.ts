@@ -486,6 +486,157 @@ test("Windows deja la versión nueva descomprimida y el reinicio sólo cambia ca
   }
 });
 
+/** SWAP-SIEMPRE-ABRE-1 · An unpacked 2.1.0 ready beside the installed 2.0.0; `swap(...)` runs the real script. */
+async function folderUpdate(t: import("node:test").TestContext) {
+  const dir = tempDir("colonia-updater-swap-");
+  const saved = { TEMP: process.env.TEMP, TMP: process.env.TMP, TMPDIR: process.env.TMPDIR };
+  process.env.TEMP = process.env.TMP = process.env.TMPDIR = dir.path;
+  Object.defineProperty(process, "platform", { value: "win32" });
+  t.after(async () => {
+    await dir.remove();
+    Object.defineProperty(process, "platform", { value: "linux" });
+    for (const [k, v] of Object.entries(saved)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+  });
+  const programs = path.join(dir.path, "Programs");
+  const installed = path.join(programs, "colonia");
+  fs.mkdirSync(installed, { recursive: true });
+  fs.writeFileSync(path.join(installed, "Colonia.exe"), "old");
+  const exe = `Colonia-2.1.0-win-${process.arch}.exe`;
+  const zip = `Colonia-2.1.0-win-${process.arch}.zip`;
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.includes("/releases?"))
+      return Response.json([
+        { ...release, assets: [asset(exe), asset(`${exe}.sha256`), asset(zip), asset(`${zip}.sha256`)] },
+      ]);
+    return new Response(url.endsWith(".sha256") ? checksum : bytes);
+  });
+  const spawns: { file: string; args: string[] }[] = [];
+  const spawn = ((file: string, args: string[]) => {
+    spawns.push({ file, args });
+    return Object.assign(new EventEmitter(), { pid: 4242, unref() {} });
+  }) as unknown as typeof import("node:child_process").spawn;
+  const unzipped: string[] = [];
+  const updater = () =>
+    createDesktopUpdater({
+      changed: () => {},
+      quit: () => {},
+      spawn,
+      execPath: path.join(installed, "Colonia.exe"),
+      logFile: path.join(dir.path, "update.log"),
+      unzip: async (file, into) => {
+        unzipped.push(path.basename(file));
+        fs.writeFileSync(path.join(into, "Colonia.exe"), "new");
+      },
+    });
+  const stage = path.join(programs, ".colonia-2.1.0.update");
+  const ready = path.join(stage, "app");
+  const log = path.join(dir.path, "u.log");
+  const { spawnSync, spawn: realSpawn } = await import("node:child_process");
+  const ps = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File"];
+  return {
+    dir: dir.path,
+    installed,
+    stage,
+    ready,
+    log,
+    spawns,
+    unzipped,
+    updater,
+    swap: (secs: number) =>
+      spawnSync(
+        "powershell.exe",
+        [...ps, path.join(stage, "swap.ps1"), "999999", installed, ready, stage, "0", log, "2.1.0", String(secs)],
+        { encoding: "utf8", timeout: 90_000 },
+      ),
+    recover: () => spawnSync("powershell.exe", [...ps, path.join(stage, "recover.ps1")], { encoding: "utf8" }),
+    /** Holds a file open with no sharing (as an antivirus scanning a new .exe does) for `ms`. */
+    hold: async (file: string, ms: number) => {
+      const held = path.join(dir.path, `held-${Date.now()}`);
+      const child = realSpawn(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-Command",
+          `$f = [IO.File]::Open('${file}', 'Open', 'Read', 'None'); Set-Content -LiteralPath '${held}' -Value 1; Start-Sleep -Milliseconds ${ms}; $f.Close()`,
+        ],
+        { stdio: "ignore" },
+      );
+      await waitFor(() => fs.existsSync(held), "the file held open", { ms: 20_000 });
+      return { released: new Promise<void>((done) => child.once("exit", () => done())) };
+    },
+  };
+}
+
+const realWindows = originalPlatform?.value === "win32";
+
+test("Windows: un cambio que no entró deja la descarga y la próxima vez va el instalador, sin bajar el zip en bucle", async (t) => {
+  const w = await folderUpdate(t);
+  fs.mkdirSync(w.ready, { recursive: true });
+  fs.writeFileSync(path.join(w.ready, "Colonia.exe"), "new");
+  fs.writeFileSync(path.join(w.stage, "failed"), "could not move the new app in");
+  const abandoned = path.join(path.dirname(w.stage), ".colonia-2.0.5.update");
+  fs.mkdirSync(abandoned);
+  const current = path.join(path.dirname(w.stage), ".colonia-2.0.0.update");
+  fs.mkdirSync(current);
+  fs.writeFileSync(path.join(current, "failed"), "x");
+  const updater = w.updater();
+  updater.start(() => {});
+  updater.stop();
+  assert.ok(fs.existsSync(path.join(w.ready, "Colonia.exe")), "the download that did not go in stays");
+  assert.ok(!fs.existsSync(abandoned), "a download never applied still goes");
+  assert.ok(!fs.existsSync(current), "the version now running needs nothing left");
+  assert.deepEqual(await updater.install("2.1.0", true), { ok: true, ready: true });
+  assert.deepEqual(w.unzipped, [], "the zip is not downloaded again");
+  assert.deepEqual(updater.restart(), { ok: true });
+  assert.deepEqual(w.spawns[0]?.args, ["--updated", "/S", "--force-run"], "the installer of always");
+  assert.match(fs.readFileSync(path.join(w.dir, "update.log"), "utf8"), /2\.1\.0 did not go in/);
+});
+
+test("Windows real: el segundo movimiento se reintenta mientras un antivirus tiene abierto el .exe nuevo", {
+  skip: !realWindows,
+}, async (t) => {
+  const w = await folderUpdate(t);
+  assert.equal((await w.updater().install("2.1.0", true)).ok, true);
+  const held = await w.hold(path.join(w.ready, "Colonia.exe"), 2500);
+  const r = w.swap(20);
+  await held.released;
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(fs.readFileSync(path.join(w.installed, "Colonia.exe"), "utf8"), "new");
+  assert.ok(!fs.existsSync(w.stage), "an update that went in leaves nothing behind");
+  assert.match(fs.readFileSync(w.log, "utf8"), /new app in place \(2\.1\.0\)/);
+});
+
+test("Windows real: si el nuevo no entra, el anterior vuelve a su carpeta y la descarga queda marcada", {
+  skip: !realWindows,
+}, async (t) => {
+  const w = await folderUpdate(t);
+  assert.equal((await w.updater().install("2.1.0", true)).ok, true);
+  const held = await w.hold(path.join(w.ready, "Colonia.exe"), 9000);
+  const r = w.swap(2);
+  await held.released;
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(fs.readFileSync(path.join(w.installed, "Colonia.exe"), "utf8"), "old", "Colonia is in its folder");
+  assert.ok(fs.existsSync(path.join(w.stage, "failed")), "marked: the installer goes next time");
+  assert.ok(fs.existsSync(path.join(w.ready, "Colonia.exe")), "the download stays");
+  assert.match(fs.readFileSync(w.log, "utf8"), /the old one is back/);
+});
+
+test("Windows real: tras un corte entre los dos movimientos, recover.ps1 devuelve Colonia a su carpeta", {
+  skip: !realWindows,
+}, async (t) => {
+  const w = await folderUpdate(t);
+  assert.equal((await w.updater().install("2.1.0", true)).ok, true);
+  fs.renameSync(w.installed, path.join(w.stage, "previous"));
+  const r = w.recover();
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(fs.readFileSync(path.join(w.installed, "Colonia.exe"), "utf8"), "old");
+  assert.ok(fs.existsSync(path.join(w.stage, "failed")));
+});
+
 test("Windows sin zip en la versión sigue con el instalador de siempre", async (t) => {
   const w = await windowsUpdate(t);
   assert.deepEqual(w.updater.restart(), { ok: true });
