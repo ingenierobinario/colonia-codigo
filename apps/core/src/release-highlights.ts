@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.62": {
+    en: [
+      "On Windows, updates get ready while you keep working.",
+      "Restarting into the new version takes seconds, not minutes.",
+    ],
+    es: [
+      "En Windows, la actualización se prepara mientras sigues trabajando.",
+      "El reinicio a la versión nueva tarda segundos, no minutos.",
+    ],
+  },
   "2.36.61": {
     en: [
       "Connectors that sign in through your browser now show Connect and list their tools once you finish.",

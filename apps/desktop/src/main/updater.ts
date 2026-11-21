@@ -130,6 +130,43 @@ else say "could not move the old app aside"; fi
 if [ "$relaunch" = 1 ]; then open "$old" || say "could not open $old"; fi
 `;
 
+// ARRANQUE-RAPIDO-1 · Windows: la versión nueva se descomprime junto a la instalada MIENTRAS Colonia sigue abierta;
+// al reiniciar sólo se cambian dos carpetas de nombre (segundos). Antes el instalador NSIS borraba 6.400 ficheros,
+// descomprimía 600 MB y los copiaba con Colonia cerrada: 7-8 minutos sin app (21-nov-2026, 2.36.60).
+const SWAP_WIN = `
+param([int]$pid0, [string]$old, [string]$new, [string]$stage, [int]$relaunch, [string]$log, [string]$version)
+function Say($m) { if ($log) { try { Add-Content -LiteralPath $log -Value ("{0} swap: {1}" -f (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), $m) } catch {} } }
+try { Wait-Process -Id $pid0 -Timeout 60 -ErrorAction SilentlyContinue } catch {}
+$deadline = (Get-Date).AddSeconds(30)
+while ((Get-Date) -lt $deadline) {
+  $left = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($old + "\\", [StringComparison]::OrdinalIgnoreCase) })
+  if ($left.Count -eq 0) { break }
+  Start-Sleep -Milliseconds 200
+}
+$prev = Join-Path $stage "previous"
+$moved = $false
+$deadline = (Get-Date).AddSeconds(30)
+while (-not $moved -and (Get-Date) -lt $deadline) {
+  try { Move-Item -LiteralPath $old -Destination $prev -ErrorAction Stop; $moved = $true } catch { Start-Sleep -Milliseconds 300 }
+}
+if ($moved) {
+  try {
+    Move-Item -LiteralPath $new -Destination $old -ErrorAction Stop
+    Say "new app in place ($version)"
+    try {
+      Get-ChildItem "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall" -ErrorAction SilentlyContinue | ForEach-Object {
+        if ((Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue).DisplayName -eq "Colonia") { Set-ItemProperty $_.PSPath -Name DisplayVersion -Value $version }
+      }
+    } catch {}
+  } catch {
+    Move-Item -LiteralPath $prev -Destination $old -ErrorAction SilentlyContinue
+    Say "could not move the new app in, the old one is back"
+  }
+} else { Say "a file of the old app stayed open, it stays as it was" }
+if ($relaunch -eq 1) { Start-Process -FilePath (Join-Path $old "Colonia.exe") }
+if ($moved) { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
+`;
+
 type Staged = { version: string; restart(): void; onQuit?(): void };
 
 export function createDesktopUpdater(opts: {
@@ -141,6 +178,10 @@ export function createDesktopUpdater(opts: {
   writable?: (dir: string) => boolean;
   /** How this Linux Colonia was installed (a test passes its own). */
   linuxInstall?: () => Promise<LinuxInstall>;
+  /** The running Colonia.exe (a test passes its own folder). */
+  execPath?: string;
+  /** Unpacks a zip into a folder (a test passes its own). */
+  unzip?: (zip: string, into: string) => Promise<void>;
 }) {
   const start = opts.spawn ?? spawn;
   const canWrite = opts.writable ?? writable;
@@ -260,8 +301,18 @@ export function createDesktopUpdater(opts: {
     try {
       if (bundle && zip) staged = await stageMac(release, zip, bundle);
       else if (appImage) staged = await stageAppImage(release, asset, appImage);
-      else if (process.platform === "win32") staged = await stageWindows(release, asset);
-      else {
+      else if (process.platform === "win32") {
+        const winZip = p ? desktopAssetFor(release.assets, release.version, p, "zip") : undefined;
+        const unpacked = winZip
+          ? await stageWindowsFolder(release, winZip).catch((err: unknown) => {
+              log(
+                `unpacked update failed, the installer goes instead: ${err instanceof Error ? err.message : String(err)}`,
+              );
+              return undefined;
+            })
+          : undefined;
+        staged = unpacked ?? (await stageWindows(release, asset));
+      } else {
         // macOS can keep the app out of Downloads: the installer is as good from the temporary folder.
         const kind = await installKind;
         const file = await saveInFirst([app.getPath("downloads"), app.getPath("temp")], asset.name, (to) =>
@@ -359,6 +410,91 @@ export function createDesktopUpdater(opts: {
     };
   }
 
+  /** ARRANQUE-RAPIDO-1 · Deja la versión nueva descomprimida al lado de la instalada; el reinicio sólo cambia nombres. */
+  async function stageWindowsFolder(release: Release, zip: ReleaseAsset): Promise<Staged | undefined> {
+    const exe = opts.execPath ?? process.execPath;
+    const old = path.dirname(exe);
+    if (path.basename(exe).toLowerCase() !== "colonia.exe" || !canWrite(path.dirname(old))) return undefined;
+    const stage = path.join(path.dirname(old), `.colonia-${release.version}.update`);
+    fs.rmSync(stage, { recursive: true, force: true });
+    fs.mkdirSync(stage, { recursive: true });
+    const file = path.join(stage, zip.name);
+    const unpackTo = path.join(stage, "app");
+    try {
+      await fetchChecked(release, zip, file);
+      const unzip =
+        opts.unzip ??
+        ((z: string, into: string) =>
+          run(path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe"), ["-xf", z, "-C", into], {
+            windowsHide: true,
+            maxBuffer: 1 << 20,
+          }).then(() => undefined));
+      fs.mkdirSync(unpackTo);
+      await unzip(file, unpackTo);
+    } catch (err) {
+      fs.rmSync(stage, { recursive: true, force: true });
+      throw err;
+    } finally {
+      fs.rmSync(file, { force: true });
+    }
+    // The zip may carry the app at its root or inside one folder.
+    const inner = fs.existsSync(path.join(unpackTo, "Colonia.exe"))
+      ? unpackTo
+      : fs
+          .readdirSync(unpackTo)
+          .map((n) => path.join(unpackTo, n))
+          .find((d) => fs.existsSync(path.join(d, "Colonia.exe")));
+    if (!inner) {
+      fs.rmSync(stage, { recursive: true, force: true });
+      throw new Error(`${zip.name} has no Colonia.exe in it`);
+    }
+    // The uninstaller the NSIS install left is not in the zip: it keeps working from the new folder.
+    for (const n of fs.readdirSync(old))
+      if (/^Uninstall .*\.exe$/i.test(n) && !fs.existsSync(path.join(inner, n)))
+        fs.copyFileSync(path.join(old, n), path.join(inner, n));
+    const script = path.join(stage, "swap.ps1");
+    fs.writeFileSync(script, SWAP_WIN);
+    const swap = (relaunch: boolean) => {
+      if (!fs.existsSync(inner)) {
+        staged = undefined;
+        throw new Error("The new version is no longer ready. Check for updates again.");
+      }
+      swapping = true;
+      const args = [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-WindowStyle",
+        "Hidden",
+        "-File",
+        script,
+        String(process.pid),
+        old,
+        inner,
+        stage,
+        relaunch ? "1" : "0",
+        opts.logFile ?? "",
+        release.version,
+      ];
+      const child = start("powershell.exe", args, { detached: true, stdio: "ignore", windowsHide: true });
+      child.once("error", (error) => log(`swap did not start: ${error.message}`));
+      if (child.pid === undefined) {
+        swapping = false;
+        staged = undefined;
+        throw new Error("The update did not start. Check for updates again.");
+      }
+      child.unref();
+    };
+    return {
+      version: release.version,
+      restart: () => {
+        swap(true);
+        opts.quit();
+      },
+      onQuit: () => swap(false),
+    };
+  }
+
   async function stageWindows(release: Release, asset: ReleaseAsset): Promise<Staged> {
     const file = path.join(os.tmpdir(), asset.name);
     removeOldInstallers(os.tmpdir(), asset.name);
@@ -443,7 +579,17 @@ export function createDesktopUpdater(opts: {
     start(found: (s: DesktopUpdate) => void) {
       if (!enabled) return;
       // Running means the last installer is done: it and any before it go.
-      if (process.platform === "win32") removeOldInstallers(os.tmpdir());
+      if (process.platform === "win32") {
+        removeOldInstallers(os.tmpdir());
+        // ARRANQUE-RAPIDO-1 · A folder left from an update that did not go in is downloaded again when needed.
+        const parent = path.dirname(path.dirname(opts.execPath ?? process.execPath));
+        try {
+          for (const f of fs.readdirSync(parent))
+            if (/^\.colonia-.+\.update$/.test(f)) fs.rmSync(path.join(parent, f), { recursive: true, force: true });
+        } catch {
+          // Nothing to clean, or a file still held: it goes the next time.
+        }
+      }
       if (bundle)
         for (const f of fs.readdirSync(path.dirname(bundle)))
           if (/^\.Colonia-.+\.update$/.test(f))
