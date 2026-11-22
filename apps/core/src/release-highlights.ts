@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.66": {
+    en: ["Colonia uses less memory while idle: sync, teams and backups only load when you use them."],
+    es: ["Colonia gasta menos memoria en reposo: sincronización, equipos y copias solo se cargan al usarlos."],
+  },
   "2.36.65": {
     en: [
       "The browser's Back and Forward buttons dim when there is nowhere to go, and Ctrl+W closes the tab.",
