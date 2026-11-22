@@ -19,7 +19,7 @@ test("conexiones: importa los conectores de las otras IAs, pide la clave que fal
     JSON.stringify({
       mcpServers: {
         acme: { url: "https://mcp.acme.example/mcp", headers: { Authorization: "Bearer acme-e2e-guardada" } },
-        northwind: { command: "node", args: ["northwind.js"], env: { NORTHWIND_API_KEY: "" } },
+        globex: { command: "node", args: ["globex.js"], env: { GLOBEX_API_KEY: "" } },
       },
     }),
   );
@@ -52,7 +52,7 @@ test("conexiones: importa los conectores de las otras IAs, pide la clave que fal
     await page.setViewportSize({ width: 1280, height: 800 });
     const confirm = dialog.getByRole("button", { name: "Importar 2" });
     await expect(confirm).toBeDisabled();
-    await dialog.getByLabel("Clave que pide (NORTHWIND_API_KEY)").fill("nw-e2e-dada");
+    await dialog.getByLabel("Clave que pide (GLOBEX_API_KEY)").fill("nw-e2e-dada");
     await confirm.click();
     await expect(dialog).toBeHidden();
     await expect(banner).toBeHidden();
@@ -60,7 +60,7 @@ test("conexiones: importa los conectores de las otras IAs, pide la clave que fal
       .servers;
     // Se llama como en la primera IA donde está (Claude Code), con la clave que solo tenía Cursor.
     const mine = servers.filter((s) => s.scope === "global");
-    expect(mine.map((s) => s.name)).toEqual(expect.arrayContaining(["acme-otra", "northwind"]));
+    expect(mine.map((s) => s.name)).toEqual(expect.arrayContaining(["acme-otra", "globex"]));
     expect(mine.find((s) => s.name === "acme-otra")).toMatchObject({
       vars: [{ name: "mcp-acme-otra-Authorization", set: true }],
     });
@@ -68,6 +68,6 @@ test("conexiones: importa los conectores de las otras IAs, pide la clave que fal
     expect(JSON.stringify(servers)).not.toContain("nw-e2e-dada");
   } finally {
     for (const f of files) fs.rmSync(f, { force: true });
-    for (const name of ["acme-otra", "northwind"]) await rpc("mcp.set", { name, server: null }).catch(() => {});
+    for (const name of ["acme-otra", "globex"]) await rpc("mcp.set", { name, server: null }).catch(() => {});
   }
 });
