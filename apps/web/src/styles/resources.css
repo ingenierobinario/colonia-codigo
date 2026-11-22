@@ -1143,3 +1143,58 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+/* IMPORTAR-CONECTORES-1 · «Tienes N conectores en tus otras IAs · Importar». */
+.conn-import {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  background: var(--colonia-surface);
+  font-size: var(--colonia-text-sm);
+  min-width: 0;
+}
+.conn-import__icon {
+  color: var(--colonia-fg-muted);
+  flex: none;
+}
+.conn-import__text {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+.conn-import__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(60vh, 480px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.conn-import__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--colonia-border);
+  border-radius: var(--colonia-radius-md);
+  min-width: 0;
+}
+.conn-import__name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+.conn-import__key {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 26px;
+  font-size: var(--colonia-text-xs);
+  color: var(--colonia-fg-muted);
+}

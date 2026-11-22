@@ -25,10 +25,13 @@ export type RestoreResult = {
 
 type Move = { fromHome: string; toHome: string; fromUser: string; toUser: string; fromWin: boolean; toWin: boolean };
 
+// RUTA-BARRAS-1 · En Windows «C:/x» y «C:\x» son la misma carpeta (COLONIA_HOME puede venir escrito con «/»): se
+// compara sin distinguir barras ni mayúsculas, o una ruta del otro equipo no se traduce y el proyecto sale duplicado.
+const winKey = (s: string) => s.replaceAll("/", "\\").toLowerCase();
 const startsWithPath = (value: string, prefix: string, win: boolean) => {
   if (!prefix || value.length < prefix.length) return false;
   const head = value.slice(0, prefix.length);
-  if (win ? head.toLowerCase() !== prefix.toLowerCase() : head !== prefix) return false;
+  if (win ? winKey(head) !== winKey(prefix) : head !== prefix) return false;
   const next = value[prefix.length];
   return next === undefined || next === "/" || next === "\\";
 };
@@ -37,7 +40,9 @@ const startsWithPath = (value: string, prefix: string, win: boolean) => {
 export function movePath(value: string, m: Move): string {
   const swap = (prefix: string, to: string) => {
     const rest = value.slice(prefix.length);
-    return to + (m.fromWin === m.toWin ? rest : m.toWin ? rest.replaceAll("/", "\\") : rest.replaceAll("\\", "/"));
+    // Hacia Windows todo sale con «\», también la carpeta de destino, para que coincida con las rutas de aquí.
+    if (m.toWin) return (to + rest).replaceAll("/", "\\");
+    return to + (m.fromWin ? rest.replaceAll("\\", "/") : rest);
   };
   if (startsWithPath(value, m.fromHome, m.fromWin)) return swap(m.fromHome, m.toHome);
   if (m.fromUser !== m.toUser && startsWithPath(value, m.fromUser, m.fromWin)) return swap(m.fromUser, m.toUser);

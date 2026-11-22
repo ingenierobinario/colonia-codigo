@@ -23,6 +23,7 @@ import { useLanguage, useT } from "../i18n/index.ts";
 import { ConnectorCatalog, ConnectorCatalogDialog } from "./ConnectorCatalog.tsx";
 import { ConnectorLogo } from "./ConnectorLogo.tsx";
 import { catalogConnector } from "./connectorDirectory.ts";
+import { ImportConnectors } from "./ImportConnectors.tsx";
 import { ConnectDialog, describe, type Integration, IntegrationDetail, Tile, where } from "./IntegrationsTab.tsx";
 import { mcpDot, STATUS_KEY } from "./labels.ts";
 import { McpDetail } from "./McpDetail.tsx";
@@ -362,6 +363,7 @@ export function ConnectionsTab({ projectId, query, scope, adding, setAdding, res
           >
             {t("conn.empty.body")}
           </EmptyState>
+          <ImportConnectors onImported={() => res.loadServers()} reload={all} />
           <ConnectorCatalog servers={all} onAdded={added} />
         </div>
       </>
@@ -377,6 +379,7 @@ export function ConnectionsTab({ projectId, query, scope, adding, setAdding, res
         list={
           <>
             {!projectId && addButtons}
+            {!projectId && <ImportConnectors onImported={() => res.loadServers()} reload={all} />}
             {connected.length > 0 && (
               <div className="resv__group">
                 <div className="resv__grouptitle">

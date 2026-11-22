@@ -30,7 +30,7 @@ const str = (v: unknown) => (typeof v === "string" ? v : "");
 const strings = (v: unknown) => Object.fromEntries(Object.entries(obj(v)).map(([k, x]) => [k, String(x)]));
 const within = (dir: string, root: string) => path.isAbsolute(dir) && isInside(root, dir);
 
-const readJson = (file: string): unknown => {
+export const readJson = (file: string): unknown => {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
   } catch {
@@ -38,7 +38,7 @@ const readJson = (file: string): unknown => {
   }
 };
 
-const SECRET_KEY = /key|token|secret|pass|pwd|auth|credential|cookie/i;
+export const SECRET_KEY = /key|token|secret|pass|pwd|auth|credential|cookie/i;
 /** Keys whose value is a credential (or a reference to one the owner's shell had): Colonia needs the owner to give it. */
 function secretKeys(s: FoundServer): string[] {
   const env = Object.entries(s.env ?? {}).filter(([k, v]) => v && (SECRET_KEY.test(k) || v.includes("${")));
@@ -62,7 +62,7 @@ function server(v: unknown): FoundServer | undefined {
   };
 }
 
-const mcpsOf = (servers: Record<string, unknown>): FoundMcp[] =>
+export const mcpsOf = (servers: Record<string, unknown>): FoundMcp[] =>
   Object.entries(servers).flatMap(([name, v]) => {
     const s = server(v);
     return s ? [{ name, server: s, secrets: secretKeys(s) }] : [];

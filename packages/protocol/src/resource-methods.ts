@@ -399,6 +399,46 @@ export const resourceMethods = {
     effect: true,
     access: "human",
   },
+  /**
+   * IMPORTAR-CONECTORES-1 · The connectors the owner has in their other AIs (Claude Code, Codex, Claude Desktop,
+   * Cursor) not yet in Colonia: one per server, with the AIs it is in. No credential values: only which keys hold one
+   * (`stored`, kept as variables) and which the owner must give (`needs`). `local`: a command run on this computer.
+   */
+  "mcp.importable": {
+    params: z.object({}).strict(),
+    result: z.object({
+      servers: z.array(
+        z.object({
+          key: z.string(),
+          name: z.string(),
+          sources: z.array(z.enum(["claude-code", "codex", "claude-desktop", "cursor"])),
+          local: z.boolean(),
+          target: z.string(),
+          stored: z.array(z.string()),
+          needs: z.array(z.string()),
+        }),
+      ),
+    }),
+    effect: false,
+    access: "human",
+  },
+  /** Brings the chosen ones (`keys`) as the owner's own servers; `values`: credentials the owner typed, by key. */
+  "mcp.import": {
+    params: z
+      .object({
+        keys: z.array(z.string().max(64)).min(1).max(200),
+        values: z.record(z.string(), z.record(z.string(), z.string().max(16_384))).optional(),
+      })
+      .strict(),
+    result: z.object({
+      added: z.array(z.string()),
+      existing: z.array(z.string()),
+      need_values: z.array(z.object({ name: z.string(), keys: z.array(z.string()) })),
+      failed: z.array(z.object({ name: z.string(), reason: z.string() })),
+    }),
+    effect: true,
+    access: "human",
+  },
   /** Turns one of the owner's global servers off (or back on) inside a project; elsewhere it stays as it is. */
   /**
    * Accounts the owner can connect (GitHub, Notion, Slack…), each with its MCP server and variables: connected or not,

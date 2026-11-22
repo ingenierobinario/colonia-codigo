@@ -58,6 +58,7 @@ import { integrationHandlers } from "./rpc/integrations.ts";
 import type { InternalCall } from "./rpc/internal.ts";
 import { jobHandlers } from "./rpc/jobs.ts";
 import { mcpHandlers } from "./rpc/mcp.ts";
+import { mcpImportHandlers } from "./rpc/mcp-import.ts";
 import { mediaHandlers } from "./rpc/media.ts";
 import { memoryHandlers } from "./rpc/memory.ts";
 import { navegadorHandlers } from "./rpc/navegadores.ts";
@@ -340,6 +341,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
           ? d.social.connected(name)
           : isGoogleId(name) && d.google.connected(name),
     ),
+    ...mcpImportHandlers(d.runtimeHomes, d.internal),
     ...integrationHandlers({
       store: d.store,
       secrets: d.secrets,

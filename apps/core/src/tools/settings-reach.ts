@@ -95,6 +95,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "tools.grant_set": POWER,
   "tools.revoke": POWER,
   "mcp.trust": POWER,
+  "mcp.import": SECRET,
   // A drawing is published and run by hand through colonia_flow's card or in the panel's Flows editor (DECISIONS.md#d-184).
   "flows.draft_discard": "the owner deletes a Flow draft on purpose",
   "flows.cancel_run": "the owner stops a Flow run they are looking at",

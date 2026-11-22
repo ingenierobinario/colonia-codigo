@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.64": {
+    en: [
+      "Connections offers the connectors you already use in Claude Code, Codex, Claude Desktop or Cursor: pick them and import them in one click.",
+      "Their keys are stored protected; if one is missing, Colonia asks you for it right there.",
+      "Renaming a project no longer duplicates it on Windows.",
+    ],
+    es: [
+      "Conexiones te ofrece los conectores que ya usas en Claude Code, Codex, Claude Desktop o Cursor: elígelos e impórtalos con un clic.",
+      "Sus claves se guardan protegidas; si falta alguna, Colonia te la pide ahí mismo.",
+      "Renombrar un proyecto ya no lo duplica en Windows.",
+    ],
+  },
   "2.36.63": {
     en: [
       "The new-version notice closes with its X while the update downloads, and Colonia stays usable.",
