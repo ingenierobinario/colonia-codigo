@@ -280,13 +280,15 @@ app.whenReady().then(() => {
   externalLinks(panel.webContents);
   // VENTANA-NEGRA-1: desde el primer instante, el pingüino; sin esto la ventana se ve negra hasta que el
   // conector decide adónde conectar. Lo sustituye la espera del conector o el panel en cuanto lo hay.
-  {
+  // PANEL-ATERRIZA-2: el conector no navega hasta que esta pantalla termina. Si su carga sigue en vuelo cuando llega la del
+  // panel, en macOS la de la pantalla (la más antigua) quedaba puesta y el panel nunca aterrizaba: sólo el chat rápido.
+  const firstScreen = (() => {
     const es = app.getLocale().startsWith("es");
     const first = { ...waiting({ where: "", url: CORE_URL } satisfies Remote, true, es), phase: "local" as const };
-    void panel.webContents
+    return panel.webContents
       .loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(waitingHtml({ ...first, since: Date.now() }, es))}`)
       .catch(() => {});
-  }
+  })();
   let shown: WebContentsView | undefined;
   let slot: Bounds | null = null;
   // The quick chat loads from wherever the panel did (the dev server or the core); so does the browser window.
@@ -960,7 +962,7 @@ app.whenReady().then(() => {
 
   // A core that never answers would leave a background start invisible: show the waiting page after a while.
   const late = setTimeout(reveal, 45_000);
-  void connector.open();
+  void firstScreen.then(() => connector.open());
 
   // Dev-only: `kill -USR2 <pid>` writes the panel, the visible tab and the slot so a script can compose them.
   const captureDir = process.env.COLONIA_CAPTURE_DIR;

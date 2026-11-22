@@ -34,6 +34,12 @@ export function linkTemporaryDesktop(profile: string, normal: string) {
   };
 }
 
+export function olderThan(version: string, than: string) {
+  const [a, b] = [version, than].map((v) => v.split(".").map(Number));
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] < b[i];
+  return false;
+}
+
 async function waitFor<T>(description: string, read: () => Promise<T | undefined>): Promise<T> {
   const deadline = Date.now() + 120_000;
   while (Date.now() < deadline) {
@@ -133,9 +139,27 @@ async function smoke() {
       port: Number(settings.COLONIA_PORT),
     });
     const browser = await chromium.connectOverCDP(debugUrl, { timeout: 45_000 });
+    const since = Date.now();
+    let landed = false;
     const panel = await waitFor("el panel de la aplicación pública", async () => {
       const seen: string[] = [];
-      for (const page of browser.contexts().flatMap((ctx) => ctx.pages())) {
+      const pages = browser.contexts().flatMap((ctx) => ctx.pages());
+      // PANEL-ATERRIZA-2: hasta la 2.36.63 la primera pantalla de carga podía quedarse puesta aunque el conector ya había
+      // abierto el panel (el chat rápido sólo arranca entonces), y esas versiones no lo recuperan nunca. Se aterriza el
+      // panel a mano UNA vez, como haría quien la cierra y la abre; la versión nueva se comprueba sin esta ayuda.
+      const stuck = pages.find((page) => page.url().startsWith("data:"));
+      if (
+        !landed &&
+        stuck &&
+        olderThan(PREVIOUS_VERSION, "2.36.64") &&
+        Date.now() - since > 20_000 &&
+        pages.some((page) => page.url() === `${coreUrl}/?quick=1`)
+      ) {
+        landed = true;
+        console.log("Versión pública con la primera pantalla atascada (PANEL-ATERRIZA-2): se carga su panel.");
+        await stuck.goto(`${coreUrl}/`).catch((error: Error) => console.log("Carga del panel:", error.message));
+      }
+      for (const page of pages) {
         const url = page.url();
         seen.push(url.startsWith("data:") ? `${url.slice(0, 40)}… (${url.length} car.)` : url);
         if (new URL(url).origin !== coreUrl) continue;

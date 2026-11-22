@@ -439,7 +439,8 @@ export function createConnector(opts: {
       // PANEL-ATERRIZA-1: loadURL resolves on the next did-finish-load of the main frame, and the first loading screen
       // (VENTANA-NEGRA-1, loaded without waiting) can still fire its own while the panel's navigation is in flight: the
       // promise resolved with that screen still on and the panel never showing. Only a panel actually on screen counts.
-      return !opts.panel.getURL().startsWith("data:");
+      // PANEL-ATERRIZA-2: and on the panel's own server, not merely "something other than the loading screen".
+      return URL.parse(opts.panel.getURL())?.origin === page.origin;
     } catch {
       return false;
     }
