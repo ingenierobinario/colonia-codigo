@@ -944,6 +944,7 @@ export const en = {
   "browser.badUrl": "Type an http or https address.",
   "browser.isColonia": "That address is Colonia itself: it cannot open inside a tab.",
   "browser.back": "Back",
+  "browser.forward": "Forward",
   "browser.reload": "Reload",
   "browser.address": "Address",
   "browser.typeUrl": "Search or type an address",

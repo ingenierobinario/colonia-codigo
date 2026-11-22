@@ -16,7 +16,7 @@ export function BrowserToolbar({
   onOpening,
   onCancel,
   profile,
-  forward,
+  forward = true,
 }: {
   tab: TabInfo | undefined;
   onOpened: (tab?: string) => void;
@@ -26,7 +26,7 @@ export function BrowserToolbar({
   onCancel?: () => void;
   /** NAVEGADORES-1: a new tab opens in this browser profile, not the agents' one. */
   profile?: `nav:${string}`;
-  /** PULIDO-236-1: a forward button, between back and reload as in any browser (the Navegadores view has it). */
+  /** PULIDO-236-1 · NAVBTN-1: the forward button, between back and reload as in any browser (on by default). */
   forward?: boolean;
 }) {
   const t = useT();
@@ -71,15 +71,15 @@ export function BrowserToolbar({
         size="sm"
         label={t("browser.back")}
         icon={<Icons.ArrowLeft size={15} />}
-        disabled={!tab}
+        disabled={!tab || tab.can_back === false}
         onClick={() => tab && void browserHistory(tab.tab, "back")}
       />
       {forward && (
         <IconButton
           size="sm"
-          label={t("navegadores.forward")}
+          label={t("browser.forward")}
           icon={<Icons.ArrowRight size={15} />}
-          disabled={!tab}
+          disabled={!tab || tab.can_forward === false}
           onClick={() => tab && void browserHistory(tab.tab, "forward")}
         />
       )}

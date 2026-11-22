@@ -12,7 +12,8 @@ export type TabAction =
   | "stop"
   | "back"
   | "forward"
-  | "devtools";
+  | "devtools"
+  | "close";
 
 export const TAB_ACTIONS: readonly TabAction[] = [
   "find",
@@ -25,6 +26,7 @@ export const TAB_ACTIONS: readonly TabAction[] = [
   "back",
   "forward",
   "devtools",
+  "close",
 ];
 
 type Key = { key: string; control?: boolean; meta?: boolean; alt?: boolean; shift?: boolean };
@@ -53,6 +55,7 @@ export function shortcut(input: Key, mac: boolean): TabAction | undefined {
   if (key === "0") return "zoom-reset";
   if (key === "p") return "print";
   if (key === "r") return "reload";
+  if (key === "w") return "close";
   if (mac && key === "[") return "back";
   if (mac && key === "]") return "forward";
   return undefined;

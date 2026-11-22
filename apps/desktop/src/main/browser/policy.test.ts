@@ -29,6 +29,14 @@ test("back and forward: Alt+arrows outside macOS, Cmd+brackets on it", () => {
   assert.equal(shortcut({ key: "]", meta: true }, true), "forward");
 });
 
+test("NAVBTN-1: Ctrl+W closes the tab, Cmd+W on macOS", () => {
+  assert.equal(shortcut({ key: "w", control: true }, false), "close");
+  assert.equal(shortcut({ key: "W", meta: true }, true), "close");
+  assert.equal(shortcut({ key: "w", control: true }, true), undefined);
+  assert.equal(shortcut({ key: "w", control: true, shift: true }, false), undefined);
+  assert.equal(shortcut({ key: "w" }, false), undefined);
+});
+
 test("AltGr characters and shifted letters are never shortcuts", () => {
   assert.equal(shortcut({ key: "f", control: true, alt: true }, false), undefined);
   assert.equal(shortcut({ key: "0", control: true, alt: true }, false), undefined);
