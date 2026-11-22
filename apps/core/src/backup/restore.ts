@@ -10,7 +10,9 @@ import type { Secrets } from "../secrets.ts";
 import { ArchiveError, type EntrySink, readArchive } from "./archive.ts";
 import { type ChannelRef, type Manifest, PRIVATE_PROJECT_FORMAT, SESSION_BOUND, secretTravels } from "./inventory.ts";
 
-export const STAGE_DIR = ".restaurar";
+import { STAGE_DIR } from "./stage.ts";
+
+export { STAGE_DIR };
 export const PENDING = "pendiente.json";
 
 export type RestoreMode = "replace" | "merge";

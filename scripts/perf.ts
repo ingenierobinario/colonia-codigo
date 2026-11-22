@@ -121,29 +121,34 @@ if (
 
 const home = fs.mkdtempSync(path.join(os.tmpdir(), "colonia-perf-"));
 const llm = await fakeLlm();
-const startCore = (coloniaHome: string) =>
+// stopOnStdin: the core ends in order when its stdin closes (as the desktop app stops it), so Node writes the compile
+// cache on the way out. A kill does not: on Windows it is TerminateProcess, the cache stayed empty and every core this
+// script measured there loaded the TypeScript stripper again (startup 2.9-14.8 s, 8 MB more native memory). PERF-14
+const startCore = (coloniaHome: string, stopOnStdin = false) =>
   spawn(
     process.execPath,
     ["--no-warnings", ...(diagnostics ? ["--trace-gc"] : []), path.join(root, "apps/core/src/main.ts")],
     {
       cwd: root,
-      stdio: ["ignore", diagnostics ? "pipe" : "ignore", "pipe"],
-      env: coreEnv(coloniaHome),
+      stdio: [stopOnStdin ? "pipe" : "ignore", diagnostics ? "pipe" : "ignore", "pipe"],
+      env: { ...coreEnv(coloniaHome), ...(stopOnStdin ? { COLONIA_STOP_ON_STDIN: "1" } : {}) },
     },
   );
 
 // As the owner's core starts (pnpm app, pnpm dev): with the compile cache warm. A first start on a home of its own
 // fills it, so a fresh checkout or a CI run measures the same thing.
-const warm = startCore(path.join(home, "warm"));
+const warm = startCore(path.join(home, "warm"), true);
 warm.stdout?.resume();
+warm.stderr?.resume();
 for (let i = 0; i < 300; i++) {
   try {
     if ((await fetch(`${base}/health`)).ok) break;
   } catch {}
   await sleep(50);
 }
-warm.kill("SIGTERM");
-await new Promise((r) => warm.once("exit", r));
+const warmExit = new Promise((r) => warm.once("exit", r));
+warm.stdin?.end();
+await warmExit;
 
 const coreEpoch = Date.now();
 const t0 = performance.now();

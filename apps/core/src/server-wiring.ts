@@ -49,7 +49,7 @@ import { deviceHandlers } from "./rpc/devices.ts";
 import { emailSignatureHandlers } from "./rpc/email-signatures.ts";
 import { embeddingHandlers } from "./rpc/embeddings.ts";
 import { environmentHandlers } from "./rpc/environments.ts";
-import { type EquiposDeps, equiposHandlers } from "./rpc/equipos.ts";
+import type { EquiposDeps } from "./rpc/equipos.ts";
 import { extensionHandlers } from "./rpc/extensions.ts";
 import { fileHandlers } from "./rpc/files.ts";
 import { flowHandlers } from "./rpc/flows.ts";
@@ -57,6 +57,7 @@ import { gitHandlers } from "./rpc/git.ts";
 import { integrationHandlers } from "./rpc/integrations.ts";
 import type { InternalCall } from "./rpc/internal.ts";
 import { jobHandlers } from "./rpc/jobs.ts";
+import { lazyHandlers, methodsWith } from "./rpc/lazy.ts";
 import { mcpHandlers } from "./rpc/mcp.ts";
 import { mcpImportHandlers } from "./rpc/mcp-import.ts";
 import { mediaHandlers } from "./rpc/media.ts";
@@ -65,7 +66,6 @@ import { navegadorHandlers } from "./rpc/navegadores.ts";
 import { noticeHandlers } from "./rpc/notices.ts";
 import { notificationHandlers } from "./rpc/notifications.ts";
 import { phoneHandlers } from "./rpc/phone.ts";
-import { projectShareHandlers } from "./rpc/project-share.ts";
 import { providerHandlers } from "./rpc/providers.ts";
 import { resourceHandlers } from "./rpc/resources.ts";
 import type { Dispatch } from "./rpc/router.ts";
@@ -264,7 +264,7 @@ type HandlerDeps = {
   /** The addresses a paired device may reach this core on. */
   addresses: () => string[];
   /** Los portátiles emparejados: el lado principal, el lado equipo y su puerta de aprobación. */
-  equipos: EquiposDeps;
+  equipos: () => Promise<EquiposDeps>;
   /** Who may reach this core (this computer, the network, the tailnet). */
   access: Parameters<typeof accessHandlers>[0];
   webhooks: Parameters<typeof webhookHandlers>[0];
@@ -274,12 +274,15 @@ type HandlerDeps = {
   /** The owner's shells in a chat's folder. */
   terminals: Parameters<typeof terminalHandlers>[1];
   /** COPIA-COMPLETA-1: la copia completa de Colonia y su restauración. */
-  backup: Backup;
+  backup: () => Promise<Backup>;
   /** D-192: el otro equipo del dueño, sincronizado con este. */
-  sync: Sync;
+  sync: () => Promise<Sync>;
   /** What the computer has and what Colonia takes of it. */
   usage: Parameters<typeof usageHandlers>[0];
 };
+
+/** LAZY-1: los métodos de rpc/project-share.ts (su prueba comprueba que son estos). */
+export const PROJECT_SHARE_METHODS = ["projects.export", "projects.share", "projects.import"] as const;
 
 /** The handler table the router serves: one entry per protocol method. */
 export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
@@ -322,12 +325,15 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     ...noticeHandlers(d.store, d.nudges),
     ...webAppHandlers(d.store, d.mcp, d.secrets),
     ...navegadorHandlers(d.store),
-    ...backupHandlers(d.backup),
-    ...syncHandlers(d.sync),
+    // LAZY-1: la copia completa y la sincronización se cargan con su primera llamada.
+    ...lazyHandlers(methodsWith("backup."), async () => backupHandlers(await d.backup())),
+    ...lazyHandlers(methodsWith("sync."), async () => syncHandlers(await d.sync())),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),
-    ...equiposHandlers(d.store, d.equipos),
+    ...lazyHandlers(methodsWith("equipos."), async () =>
+      (await import("./rpc/equipos.ts")).equiposHandlers(d.store, await d.equipos()),
+    ),
     ...accessHandlers(d.access),
     ...webhookHandlers(d.webhooks, d.publicCredentials),
     ...phoneHandlers(d.broker, d.store, d.app.home),
@@ -359,12 +365,15 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
       mcp: d.mcp.config,
       runtimeHomes: d.runtimeHomes,
     }),
-    ...projectShareHandlers({
-      store: d.store,
-      home: d.app.home,
-      apc: d.apc,
-      skillRoots: { home: d.app.home, apps: d.runtimeHomes },
-    }),
+    // LAZY-1: compartir e importar proyectos carga lo suyo al primer uso.
+    ...lazyHandlers(PROJECT_SHARE_METHODS, async () =>
+      (await import("./rpc/project-share.ts")).projectShareHandlers({
+        store: d.store,
+        home: d.app.home,
+        apc: d.apc,
+        skillRoots: { home: d.app.home, apps: d.runtimeHomes },
+      }),
+    ),
     ...providerHandlers(d.providers, d.secrets, d.chatgpt),
     ...app,
     "projects.create": (p: Parameters<(typeof app)["projects.create"]>[0], ctx: CallContext) => {
