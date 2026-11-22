@@ -35,8 +35,8 @@ export function linkTemporaryDesktop(profile: string, normal: string) {
 }
 
 export function olderThan(version: string, than: string) {
-  const [a, b] = [version, than].map((v) => v.split(".").map(Number));
-  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] < b[i];
+  const [a = [], b = []] = [version, than].map((v) => v.split(".").map(Number));
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return (a[i] ?? 0) < (b[i] ?? 0);
   return false;
 }
 
