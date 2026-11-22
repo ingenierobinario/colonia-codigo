@@ -85,3 +85,17 @@ export async function pairWith(
   window.location.reload();
   return undefined;
 }
+
+// PRECARGA-PAIR-1 · El código que vino en la dirección se guarda solo en memoria y se entrega una vez a la pantalla
+// de emparejar: rellena el campo, pero vincular sigue siendo un clic del usuario.
+let presetCode: string | undefined;
+
+export function setPresetPairCode(code: string | undefined): void {
+  presetCode = code;
+}
+
+export function takePresetPairCode(): string | undefined {
+  const code = presetCode;
+  presetCode = undefined;
+  return code;
+}

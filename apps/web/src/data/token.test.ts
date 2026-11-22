@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { type KeyStore, needsPairing, osName, pairError, pickToken, TOKEN_KEY } from "./token.ts";
+import { type KeyStore, needsPairing, osName, pairError, pickToken, TOKEN_KEY, takePairCode } from "./token.ts";
 
 const memory = (init: Record<string, string> = {}): KeyStore => {
   const m = new Map(Object.entries(init));
@@ -57,4 +57,21 @@ test("the device's name carries the operating system", () => {
   assert.equal(osName("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"), "Windows");
   assert.equal(osName("Mozilla/5.0 (X11; Linux x86_64)"), "Linux");
   assert.equal(osName("curl/8"), undefined);
+});
+
+test("PRECARGA-PAIR-1: the link's pairing code is read, validated and taken out of the address", () => {
+  assert.deepEqual(takePairCode("https://x.up.railway.app/?COLONIA_PAIR_CODE=abcd2345#view=equipos"), {
+    code: "ABCD2345",
+    clean: "/#view=equipos",
+  });
+  assert.deepEqual(takePairCode("https://x.up.railway.app/p?lang=es&COLONIA_PAIR_CODE=ABCD-2345"), {
+    code: "ABCD-2345",
+    clean: "/p?lang=es",
+  });
+  // Wrong shape (alphabet without 0/1/I/O, length, injected text): it still leaves the address, but fills nothing.
+  for (const bad of ["ABCD0123", "ABC", "ABCD2345X", "<script>", ""])
+    assert.deepEqual(takePairCode(`https://x.up.railway.app/?COLONIA_PAIR_CODE=${encodeURIComponent(bad)}`), {
+      clean: "/",
+    });
+  assert.deepEqual(takePairCode("https://x.up.railway.app/?lang=es"), {});
 });

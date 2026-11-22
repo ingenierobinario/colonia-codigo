@@ -48,3 +48,19 @@ export function osName(ua: string): string | undefined {
   if (/Linux/.test(ua)) return "Linux";
   return undefined;
 }
+
+/** PRECARGA-PAIR-1 · Mismo alfabeto que el núcleo: ocho caracteres, con guion opcional en medio. */
+const PAIR_CODE = /^[2-9A-HJ-NP-Z]{4}-?[2-9A-HJ-NP-Z]{4}$/;
+
+/**
+ * PRECARGA-PAIR-1 · Saca `?COLONIA_PAIR_CODE=…` de la dirección: devuelve el código (solo si tiene el formato) y la
+ * dirección sin el parámetro, para borrarlo del historial. Sin parámetro, `clean` no viene y no hay nada que tocar.
+ */
+export function takePairCode(href: string): { code?: string; clean?: string } {
+  const url = new URL(href);
+  if (!url.searchParams.has("COLONIA_PAIR_CODE")) return {};
+  const raw = (url.searchParams.get("COLONIA_PAIR_CODE") ?? "").trim().toUpperCase();
+  url.searchParams.delete("COLONIA_PAIR_CODE");
+  const clean = url.pathname + url.search + url.hash;
+  return PAIR_CODE.test(raw) ? { code: raw, clean } : { clean };
+}
