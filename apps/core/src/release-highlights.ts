@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.65": {
+    en: [
+      "The browser's Back and Forward buttons dim when there is nowhere to go, and Ctrl+W closes the tab.",
+      "Opening a pairing link fills in the code for you; you still confirm it with one click.",
+    ],
+    es: [
+      "Atrás y Adelante del navegador se apagan cuando no hay adónde ir, y Ctrl+W cierra la pestaña.",
+      "Al abrir un enlace de vinculación el código ya viene escrito; solo falta confirmarlo con un clic.",
+    ],
+  },
   "2.36.64": {
     en: [
       "Connections brings in the connectors you use in Claude Code, Codex, Claude Desktop or Cursor in one click.",
