@@ -29,7 +29,7 @@ RUN install -d -o colonia -g colonia -m 0700 /data.startup \
 RUN printf '#!/bin/sh\nexec chromium --no-sandbox "$@"\n' > /usr/local/bin/colonia-chromium \
  && chmod 755 /usr/local/bin/colonia-chromium
 ENV COLONIA_CHROME=/usr/local/bin/colonia-chromium
-# Arranca como root: iniciar.sh prepara /data y baja a UID 1000 (colonia). Así la plantilla no necesita RAILWAY_RUN_UID.
+# Sin USER: con RAILWAY_RUN_UID=0, iniciar.sh prepara /data como root y baja a UID 1000 (colonia) antes del servidor.
 WORKDIR /opt/colonia
 ENV COLONIA_HOME=/data COLONIA_HOST=0.0.0.0 COLONIA_PORT=7440 COLONIA_SECRETS=file COLONIA_UPDATES=off COLONIA_RUNTIME_SKILLS=off
 EXPOSE 7440
