@@ -34,6 +34,7 @@ import {
 import { createPairing } from "../equipos/pairing.ts";
 import { ClientHello, Plain, Sealed, ServerHello } from "../equipos/wire.ts";
 import type { Log } from "../log.ts";
+import { STATE_FILE, SYNC_PATH } from "./at-start.ts";
 import { type Beacon, type BeaconMsg, createBeacon, ownAddresses } from "./beacon.ts";
 import { folderIdentity } from "./continuous-folder-permissions.ts";
 import { continuousFolders, type FolderLink, FolderMessage } from "./continuous-folders.ts";
@@ -59,8 +60,8 @@ import {
   WorkMessage,
 } from "./project-work.ts";
 
-export const SYNC_PATH = "/sincronizar";
-const STATE_FILE = "sincronizar.json";
+export { SYNC_PATH };
+
 /** SYNC-CADA-1 · El ritmo que eligió el dueño en este equipo. Aparte del estado: sobrevive a desemparejar. */
 const EVERY_FILE = "sincronizar-cada.json";
 /** SYNC-CADA-1 · Los ritmos que se pueden elegir, en minutos: 0 = al momento, −1 = solo a mano. */

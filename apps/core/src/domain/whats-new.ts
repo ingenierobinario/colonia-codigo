@@ -4,10 +4,9 @@
 import { HIGHLIGHTS, highlightsOf } from "../release-highlights.ts";
 import { compareVersions, type Release, type ReleaseNotes, type ReleaseSource } from "../release-notes.ts";
 import { postAgentWords } from "./agent-words.ts";
+import { releaseToTell, SEEN_KEY } from "./release-seen.ts";
 import type { Store } from "./store.ts";
 
-/** The last release this install was told about (or started on). */
-const SEEN_KEY = "release_seen";
 /** The chat the release news goes in. */
 const THREAD_KEY = "whats_new_thread";
 const PER_SECTION = 25;
@@ -87,17 +86,13 @@ const saidSince = (version: string, seen: string | undefined): Release[] =>
  * version untold; an install in use from before release notes existed is told this one.
  */
 export function announceRelease(store: Store, source: ReleaseSource): { thread?: string } {
-  const version = source.version();
-  if (!version) return {};
-  const seen = store.settings.get(SEEN_KEY);
-  if (seen === version) return {};
-  // A downgrade tells nothing and keeps the newest release told, so going back up is not told twice.
-  if (seen && compareVersions(version, seen) <= 0) return {};
+  const due = releaseToTell(store, source);
+  if (!due) return {};
+  const { version, seen } = due;
   const untold = () => {
     store.settings.set(SEEN_KEY, version);
     return {};
   };
-  if (!seen && !store.messages.anyFromOwner()) return untold();
   const boss = store.agents.list().find((a) => a.kind === "secretary");
   const notes = source.notes();
   const carried = notes ? newSince(notes, version, seen) : [];

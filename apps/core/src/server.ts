@@ -3,8 +3,10 @@
 
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
+import type { IncomingMessage } from "node:http";
 import os from "node:os";
 import path from "node:path";
+import type { Duplex } from "node:stream";
 import { BROWSER_CAP, ChannelInfo, type HarnessId, NO_COMPUTER_CAP, TabInfo } from "@colonia/protocol";
 import { z } from "zod";
 import {
@@ -18,8 +20,7 @@ import { createAccess, type TailscaleRun } from "./access.ts";
 import { createProjectReader, type ReadProjectFiles } from "./apc/project-reader.ts";
 import { createApcSync } from "./apc/sync.ts";
 import type { TemplateRoot } from "./apc/templates.ts";
-import { applyPendingRestore } from "./backup/apply.ts";
-import { createBackup } from "./backup/service.ts";
+import { STAGE_DIR } from "./backup/stage.ts";
 import { createBus } from "./bus.ts";
 import { discordAdapter } from "./channels/discord.ts";
 import { emailAdapter } from "./channels/email.ts";
@@ -47,10 +48,10 @@ import { type DesktopOps, systemDesktop } from "./desktop.ts";
 import { signatureFor } from "./domain/email-signature-settings.ts";
 import { cleanUpCapturedNotes } from "./domain/memory-capture-cleanup.ts";
 import { parseRef } from "./domain/refs.ts";
+import { releaseToTell } from "./domain/release-seen.ts";
 import { TERMINAL } from "./domain/runs.ts";
 import { seed } from "./domain/seed.ts";
 import { createStore } from "./domain/store.ts";
-import { announceRelease } from "./domain/whats-new.ts";
 import { createAttention } from "./engine/attention.ts";
 import { keepAwake, sleepWatch } from "./engine/awake.ts";
 import { calendarReminders } from "./engine/calendar-reminders.ts";
@@ -71,15 +72,15 @@ import { createUpkeep } from "./engine/upkeep.ts";
 import { type ComputerConfig, createComputer } from "./environments/computer.ts";
 import { managedVmConfig } from "./environments/managed.ts";
 import { computerWatchdog } from "./environments/watchdog.ts";
-import { createEquipoAgent } from "./equipos/agent.ts";
-import { createApproval } from "./equipos/approval.ts";
-import { discoverEquipos, type FoundEquipo } from "./equipos/discovery.ts";
-import { createKeyStore } from "./equipos/keystore.ts";
-import { type ThisComputer, thisComputer } from "./equipos/local.ts";
-import { type Notify, systemNotify } from "./equipos/notify.ts";
-import { createPrincipal } from "./equipos/principal.ts";
-import { createSshEquipos, type SshEquipos, systemSshExec } from "./equipos/ssh.ts";
-import { systemTray, type Tray } from "./equipos/tray.ts";
+import type { EquipoAgent } from "./equipos/agent.ts";
+import { readState as readEquipoState } from "./equipos/approval.ts";
+import type { FoundEquipo } from "./equipos/discovery.ts";
+import type { ThisComputer } from "./equipos/local.ts";
+import type { Notify } from "./equipos/notify.ts";
+import type { Principal } from "./equipos/principal.ts";
+import type { SshEquipos } from "./equipos/ssh.ts";
+import type { Tray } from "./equipos/tray.ts";
+import { EQUIPO_PATH } from "./equipos/wire.ts";
 import { errorMessage } from "./errors.ts";
 import { flowHttpPolicy } from "./flow-http.ts";
 import { notifyDestination } from "./flow-outward.ts";
@@ -117,7 +118,9 @@ import { nativePublicRoutes, publishedPublicRoutes, sharedProjectRoutes } from "
 import { createPublicTunnel, type NgrokStart } from "./public-tunnel.ts";
 import { localReleases, type ReleaseSource } from "./release-notes.ts";
 import { useLocalEmbedder } from "./rpc/embeddings.ts";
+import type { EquiposDeps } from "./rpc/equipos.ts";
 import { internalCaller } from "./rpc/internal.ts";
+import { once } from "./rpc/lazy.ts";
 import { createRouter, type Dispatch } from "./rpc/router.ts";
 import { useLocalModel } from "./rpc/transcription.ts";
 import { createSecrets, type Secrets } from "./secrets.ts";
@@ -140,7 +143,8 @@ import { mediaData } from "./services/uploads.ts";
 import { syncRuntimeSkills } from "./skills/runtimes.ts";
 import { skillsFor } from "./skills/skills.ts";
 import { markStartup, startupPhases } from "./startup-phases.ts";
-import { createSync, type Sync } from "./sync/service.ts";
+import { SYNC_PATH, syncNeededAtStart } from "./sync/at-start.ts";
+import type { Sync } from "./sync/service.ts";
 import { createTelemetry } from "./telemetry.ts";
 import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
 import { createTerminals } from "./terminal/terminals.ts";
@@ -240,7 +244,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   // Asked first: the owner's shell takes a moment to answer, and the first turn should already have it.
   useOwnerShell(config.supervised, { log });
   // COPIA-COMPLETA-1: una restauración pendiente se cumple antes de que nadie abra la base.
-  applyPendingRestore(config.home, (msg) => log.warn({}, msg));
+  // LAZY-1: backup/apply.ts solo se carga si hay una restauración preparada (su carpeta existe).
+  if (fs.existsSync(path.join(config.home, STAGE_DIR)))
+    (await import("./backup/apply.ts")).applyPendingRestore(config.home, (msg) => log.warn({}, msg));
   const identity = readIdentity(config.home);
   const db = openDb(config.home);
   markStartup("db");
@@ -255,7 +261,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   // The release this install was on before this start: news it already had are not told as new.
   const previousRelease = store.settings.get("release_seen");
   try {
-    if (releases) announceRelease(store, releases);
+    // LAZY-1: whats-new.ts (y los textos de cada versión) solo se cargan si hay algo que contar.
+    if (releases && releaseToTell(store, releases))
+      (await import("./domain/whats-new.ts")).announceRelease(store, releases);
   } catch (err) {
     log.warn({ err: errorMessage(err) }, "release notes not told");
   }
@@ -641,7 +649,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     mcpServers: mcp.serversFor,
     hasCap: (cap) =>
       // EQUIPOS-AGENTE-1: un equipo por terminal remota (SSH) no vive en `principal`; antes dejaba al agente sin herramientas.
-      (cap === EQUIPO_CAP && equipoCapOn(store.team.list(), (id) => principal.connected(id))) ||
+      (cap === EQUIPO_CAP && equipoCapOn(store.team.list(), (id) => equiposNow?.principal.connected(id) ?? false)) ||
       Boolean(broker.withCap(cap)) ||
       (cap === BROWSER_CAP && Boolean(headless?.available())),
     desktopLinked: () => broker.list().some((n) => n.caps.includes(BROWSER_CAP) && !n.caps.includes(NO_COMPUTER_CAP)),
@@ -752,65 +760,93 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       target: () => prepareLocalTarget({ home: config.home, port: listening, home_id: identity.home_id }, config.token),
     } satisfies DesktopInstallOptions);
 
-  const equipoNotify = opts.equipoNotify ?? systemNotify();
-  const principal = createPrincipal({
-    store,
-    secrets,
-    log,
-    addresses: () => reachableAt(config.host, listening, config.publicUrl),
+  // LAZY-1: los equipos emparejados (equipos/*) se cargan con su primer uso: una llamada equipos.*, una conexión en
+  // /equipo, o al arrancar si este ordenador ya es el equipo de otro Colonia (equipo.json) y tiene que llamarle.
+  let equiposNow: (EquiposDeps & { agent: EquipoAgent; principal: Principal }) | undefined;
+  let closing = false;
+  const loadEquipos = once(async () => {
+    const [{ createPrincipal }, a, ap, k, n, sh, di, lo, tr] = await Promise.all([
+      import("./equipos/principal.ts"),
+      import("./equipos/agent.ts"),
+      import("./equipos/approval.ts"),
+      import("./equipos/keystore.ts"),
+      import("./equipos/notify.ts"),
+      import("./equipos/ssh.ts"),
+      import("./equipos/discovery.ts"),
+      import("./equipos/local.ts"),
+      import("./equipos/tray.ts"),
+    ]);
+    const equipoNotify = opts.equipoNotify ?? n.systemNotify();
+    const principal = createPrincipal({
+      store,
+      secrets,
+      log,
+      addresses: () => reachableAt(config.host, listening, config.publicUrl),
+    });
+    const equipoKeys = k.createKeyStore({ home: config.home, secrets });
+    const approval = ap.createApproval({ home: config.home, notify: equipoNotify, keys: equipoKeys });
+    const equipoAgent = a.createEquipoAgent({
+      home: config.home,
+      secrets,
+      log,
+      approval,
+      notify: equipoNotify,
+      keys: equipoKeys,
+      tray: opts.equipoTray ?? tr.systemTray(),
+    });
+
+    equiposNow = {
+      principal,
+      agent: equipoAgent,
+      approval,
+      ssh: opts.equipoSsh ?? sh.createSshEquipos({ secrets, exec: sh.systemSshExec(config.home) }),
+      discover: opts.equipoDiscover ?? (() => di.discoverEquipos()),
+      local: opts.equipoLocal ?? (() => lo.thisComputer()),
+    };
+    return equiposNow;
   });
-  const pair = createSync({
-    home: config.home,
-    db,
-    secrets,
-    log,
-    urls: () => reachableAt(config.host, listening, config.publicUrl),
-    local: () => `http://127.0.0.1:${listening}`,
-    ...(Number(process.env.COLONIA_SYNC_BEACON_PORT)
-      ? { beaconPort: Number(process.env.COLONIA_SYNC_BEACON_PORT) }
-      : {}),
-    ...(process.env.COLONIA_PAIR_CODE ? { presetCode: process.env.COLONIA_PAIR_CODE } : {}),
-    // VINCULAR-CLAVE-1 · En Railway (o pidiéndolo), sin pareja se espera con una clave que solo sale en los registros.
-    ...(process.env.RAILWAY_SERVICE_ID || process.env.COLONIA_PAIR_KEY_LOG === "on" ? { logKey: true } : {}),
-    // INVENTARIO-EQUIPOS-1 y SYNC-CADA-1 · Lo que este equipo cuenta de sí y el ritmo de envío por defecto.
-    version: identity.version,
-    kind: process.env.RAILWAY_SERVICE_ID ? "servidor" : "pc",
-    everyMin: config.syncEveryMin,
-    channels: () => channels.info(),
-    changed: (touched) => {
-      bus.emit({ type: "sync.updated", data: true });
-      if (touched.has("projects") || touched.has("agents")) bus.emit({ type: "team.updated" });
-      if (["@lista:channels", "@clave", "outbox"].some((t) => touched.has(t)))
-        void channels.refresh().catch((err) => log.warn({ err: errorMessage(err, 200) }, "channels did not follow"));
-    },
-    roleChanged: () =>
-      void channels.refresh().catch((err) => log.warn({ err: errorMessage(err, 200) }, "channels did not follow")),
-    told: () => bus.emit({ type: "sync.updated", data: false }),
-  });
-  sync = pair;
-  const equipoKeys = createKeyStore({ home: config.home, secrets });
-  const approval = createApproval({ home: config.home, notify: equipoNotify, keys: equipoKeys });
-  const equipoAgent = createEquipoAgent({
-    home: config.home,
-    secrets,
-    log,
-    approval,
-    notify: equipoNotify,
-    keys: equipoKeys,
-    tray: opts.equipoTray ?? systemTray(),
+  // LAZY-1: sync/service.ts se carga al arrancar solo si hay algo que sincronizar (sync/at-start.ts); si no, con su
+  // primer uso, y arranca entonces como lo habría hecho al principio.
+  let syncStarted = false;
+  const loadSync = once(async () => {
+    const { createSync } = await import("./sync/service.ts");
+    const made = createSync({
+      home: config.home,
+      db,
+      secrets,
+      log,
+      urls: () => reachableAt(config.host, listening, config.publicUrl),
+      local: () => `http://127.0.0.1:${listening}`,
+      ...(Number(process.env.COLONIA_SYNC_BEACON_PORT)
+        ? { beaconPort: Number(process.env.COLONIA_SYNC_BEACON_PORT) }
+        : {}),
+      ...(process.env.COLONIA_PAIR_CODE ? { presetCode: process.env.COLONIA_PAIR_CODE } : {}),
+      // VINCULAR-CLAVE-1 · En Railway (o pidiéndolo), sin pareja se espera con una clave que solo sale en los registros.
+      ...(process.env.RAILWAY_SERVICE_ID || process.env.COLONIA_PAIR_KEY_LOG === "on" ? { logKey: true } : {}),
+      // INVENTARIO-EQUIPOS-1 y SYNC-CADA-1 · Lo que este equipo cuenta de sí y el ritmo de envío por defecto.
+      version: identity.version,
+      kind: process.env.RAILWAY_SERVICE_ID ? "servidor" : "pc",
+      everyMin: config.syncEveryMin,
+      channels: () => channels.info(),
+      changed: (touched) => {
+        bus.emit({ type: "sync.updated", data: true });
+        if (touched.has("projects") || touched.has("agents")) bus.emit({ type: "team.updated" });
+        if (["@lista:channels", "@clave", "outbox"].some((t) => touched.has(t)))
+          void channels.refresh().catch((err) => log.warn({ err: errorMessage(err, 200) }, "channels did not follow"));
+      },
+      roleChanged: () =>
+        void channels.refresh().catch((err) => log.warn({ err: errorMessage(err, 200) }, "channels did not follow")),
+      told: () => bus.emit({ type: "sync.updated", data: false }),
+    });
+    sync = made;
+    if (syncStarted && !closing) made.start();
+    return made;
   });
 
   const dispatch = createRouter(
     coreHandlers({
       vm,
-      equipos: {
-        principal,
-        agent: equipoAgent,
-        approval,
-        ssh: opts.equipoSsh ?? createSshEquipos({ secrets, exec: systemSshExec(config.home) }),
-        discover: opts.equipoDiscover ?? (() => discoverEquipos()),
-        local: opts.equipoLocal ?? (() => thisComputer()),
-      },
+      equipos: loadEquipos,
       internal,
       permissions,
       addresses: () => reachableAt(config.host, listening, config.publicUrl),
@@ -828,20 +864,22 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
         // Only a supervisor brings a stopped core back.
         restart: config.supervised ? opts.restart : undefined,
       }),
-      sync: pair,
-      backup: createBackup({
-        projectImported: (id) => {
-          apc.sync(id);
-          bus.emit({ type: "team.updated" });
-        },
-        home: config.home,
-        db,
-        secrets,
-        version: identity.version,
-        homeId: identity.home_id,
-        restart: config.supervised ? opts.restart : undefined,
-        warn: (msg) => log.warn({}, msg),
-      }),
+      sync: loadSync,
+      backup: once(async () =>
+        (await import("./backup/service.ts")).createBackup({
+          projectImported: (id) => {
+            apc.sync(id);
+            bus.emit({ type: "team.updated" });
+          },
+          home: config.home,
+          db,
+          secrets,
+          version: identity.version,
+          homeId: identity.home_id,
+          restart: config.supervised ? opts.restart : undefined,
+          warn: (msg) => log.warn({}, msg),
+        }),
+      ),
       store,
       log,
       identity,
@@ -907,8 +945,11 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     broker,
     bus,
     vm,
-    equipos: principal,
-    sync: pair,
+    equipos: {
+      path: EQUIPO_PATH,
+      upgrade: (req, socket, head) => void lazyUpgrade(loadEquipos, (e) => e.principal, req, socket, head),
+    },
+    sync: { path: SYNC_PATH, upgrade: (req, socket, head) => void lazyUpgrade(loadSync, (x) => x, req, socket, head) },
   });
   listening = transport.port;
   markStartup("health");
@@ -921,8 +962,17 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       }
     } catch {}
   });
-  pair.start();
-  if (!opts.equipoOff) equipoAgent.start();
+  syncStarted = true;
+  if (
+    syncNeededAtStart({
+      home: config.home,
+      db,
+      ...(process.env.COLONIA_PAIR_CODE ? { presetCode: process.env.COLONIA_PAIR_CODE } : {}),
+      logKey: Boolean(process.env.RAILWAY_SERVICE_ID || process.env.COLONIA_PAIR_KEY_LOG === "on"),
+    })
+  )
+    await loadSync();
+  if (!opts.equipoOff && readEquipoState(config.home)) (await loadEquipos()).agent.start();
   // Agents' shells and harnesses reach this core with `colonia`, whatever the owner's PATH holds.
   try {
     useColoniaCommand(writeColoniaCommand(config.home, listening, thisRunner()));
@@ -993,8 +1043,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     telemetry,
     computer: vm,
     async close() {
-      equipoAgent.stop();
-      principal.close();
+      closing = true;
+      equiposNow?.agent.stop();
+      equiposNow?.principal.close();
       awake.close();
       sleep?.close();
       clearInterval(awakeTick);
@@ -1016,7 +1067,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       attention.stop();
       noticePush.stop();
       plugins.close();
-      pair.stop();
+      sync?.stop();
       await channels.stop();
       webhooks.close();
       await hookListener.close();
@@ -1057,4 +1108,19 @@ function telemetryChannel(config: CoreConfig): "source" | "bundle" | "app" | "ot
   if (config.updates === "app") return "app";
   if (config.app) return "bundle";
   return fs.existsSync(path.resolve(import.meta.dirname, "../../../.git")) ? "source" : "other";
+}
+
+/** LAZY-1: una conexión a un servicio aún sin cargar espera a la carga; si la carga falla, se corta. */
+async function lazyUpgrade<T>(
+  load: () => Promise<T>,
+  pick: (t: T) => { upgrade(req: IncomingMessage, socket: Duplex, head: Buffer): unknown },
+  req: IncomingMessage,
+  socket: Duplex,
+  head: Buffer,
+): Promise<void> {
+  try {
+    pick(await load()).upgrade(req, socket, head);
+  } catch {
+    socket.destroy();
+  }
 }
