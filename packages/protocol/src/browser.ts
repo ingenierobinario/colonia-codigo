@@ -38,6 +38,9 @@ export const TabInfo = z.object({
   audible: z.boolean().optional(),
   /** The last load failed: the network's reason (ERR_CONNECTION_REFUSED…). The url is the one that failed. */
   error: z.string().max(200).optional(),
+  /** NAVBTN-1: the tab has pages behind or ahead of it. Absent = unknown (the core's headless browser): the buttons stay on. */
+  can_back: z.boolean().optional(),
+  can_forward: z.boolean().optional(),
   /** Zoom in percent, when it is not 100. */
   zoom: z.number().optional(),
   /** The tab whose page opened this one (a link in a new tab, a sign-in window). */

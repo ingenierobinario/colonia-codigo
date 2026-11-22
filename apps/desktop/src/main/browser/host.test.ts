@@ -34,6 +34,14 @@ class Contents extends EventEmitter {
   getZoomFactor() {
     return 1;
   }
+  back = false;
+  ahead = false;
+  navigationHistory = {
+    canGoBack: () => this.back,
+    canGoForward: () => this.ahead,
+    goBack: () => {},
+    goForward: () => {},
+  };
   getOSProcessId() {
     assert.equal(this.destroyed, false);
     return 42;
@@ -90,6 +98,22 @@ async function opened(host: InstanceType<typeof BrowserHost>) {
   const view = tab.view as unknown as View;
   return { tab, view, wc: view.contents };
 }
+
+test("NAVBTN-1: la pestaña dice si hay páginas atrás o adelante, y Ctrl+W la cierra", async () => {
+  const host = new BrowserHost();
+  const { tab, wc } = await opened(host);
+  const info = () => host.list().find((t) => t.tab === tab.id);
+  assert.equal(info()?.can_back, false);
+  assert.equal(info()?.can_forward, false);
+  wc.back = true;
+  assert.equal(info()?.can_back, true);
+  wc.ahead = true;
+  assert.equal(info()?.can_forward, true);
+  host.act(tab.id, "close");
+  await new Promise((r) => setImmediate(r));
+  assert.equal(info(), undefined);
+  assert.equal(wc.isDestroyed(), true);
+});
 
 test("CDP invalidation survives a missing view wrapper and retires destroyed contents", async () => {
   const host = new BrowserHost();
@@ -295,7 +319,6 @@ test("una recarga deja de esperar al detenerse, vencer el plazo o destruirse la 
   const host = new BrowserHost();
   const { tab, wc } = await opened(host);
   wc.isLoading = () => true;
-  Object.assign(wc, { navigationHistory: { canGoBack: () => false } });
   const stops = wc.listenerCount("did-stop-loading");
   const cancel = t.mock.method(globalThis, "clearTimeout");
   const arm = t.mock.method(globalThis, "setTimeout");

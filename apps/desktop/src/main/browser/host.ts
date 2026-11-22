@@ -171,6 +171,9 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
       ...(wc.isCurrentlyAudible() ? { audible: true } : {}),
       ...(tab.failed ? { error: tab.failed.error.slice(0, 200) } : {}),
       ...(zoom !== 1 ? { zoom } : {}),
+      // NAVBTN-1: the toolbar's back and forward are off with nothing to go to, as in any browser.
+      can_back: wc.navigationHistory.canGoBack(),
+      can_forward: wc.navigationHistory.canGoForward(),
       ...(tab.opener ? { opener: tab.opener } : {}),
     };
   }
@@ -566,6 +569,12 @@ export class BrowserHost extends EventEmitter<{ changed: [] }> {
         return;
       case "forward":
         if (nav.canGoForward()) nav.goForward();
+        return;
+      case "close":
+        // NAVBTN-1: Ctrl/Cmd+W closes the tab the owner is on, as in any browser.
+        void this.close(id)
+          .then(() => this.emit("changed"))
+          .catch(() => {});
         return;
       case "devtools":
         wc.openDevTools({ mode: "detach" });

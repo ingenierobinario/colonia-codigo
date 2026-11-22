@@ -946,6 +946,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "browser.badUrl": "Escribe una dirección http o https.",
   "browser.isColonia": "Esa dirección es la propia Colonia: no se puede abrir dentro de una pestaña.",
   "browser.back": "Atrás",
+  "browser.forward": "Adelante",
   "browser.reload": "Recargar",
   "browser.address": "Dirección",
   "browser.typeUrl": "Busca o escribe una dirección",
