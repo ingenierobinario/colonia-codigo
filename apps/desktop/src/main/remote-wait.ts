@@ -171,6 +171,8 @@ const PENGUIN = PENGUIN_MARK.replace("<svg ", '<svg class="peng" aria-hidden="tr
   .replace(/<title[^>]*>[^<]*<\/title>/, "");
 
 /**
+ * CARGA-MARCA-1: colors and type are the panel's own tokens (packages/ui/src/styles/tokens.css, minimal look), so the
+ * loading screen and the panel it gives way to look like one app.
  * The waiting screen (CARGA-PINGUINO-1): a loading screen, not a system message. A penguin, words that move forward and a
  * soft progress bar; where it connects, the log and the way to another Colonia stay folded under «See details», shown only
  * when something is in the way or it takes longer than a minute.
@@ -203,10 +205,10 @@ export function waitingHtml(w: Waiting, es: boolean): string {
     "\\u003c",
   );
   return `<!doctype html><html lang="${es ? "es" : "en"}"><head><meta charset="utf-8"><title>Colonia</title><style>
-:root{color-scheme:light dark;--bg:${SCREEN_BG.light};--card:#fff;--fg:#1f1e1c;--muted:#6b6963;--line:#e6e3dc;--accent:#d97757;--track:#ebe8e1}
-@media (prefers-color-scheme:dark){:root{--bg:${SCREEN_BG.dark};--card:#232321;--fg:#ecebe7;--muted:#9c9a93;--line:#34332f;--track:#2e2d2a}}
+:root{color-scheme:light dark;--bg:${SCREEN_BG.light};--card:#ffffff;--fg:#161616;--muted:#5f5e5a;--line:#e7e5e0;--accent:#1a9460;--track:#efeeea}
+@media (prefers-color-scheme:dark){:root{--bg:${SCREEN_BG.dark};--card:#1e1e1d;--fg:#ededeb;--muted:#a6a59f;--line:#2c2c2a;--accent:#3ec98b;--track:#272726}}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,sans-serif;display:flex;align-items:center;
+body{background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;display:flex;align-items:center;
 justify-content:center;padding:48px 16px 16px;-webkit-app-region:drag;user-select:none}
 .stage{width:min(420px,100%);text-align:center}
 .peng{width:120px;height:120px;display:block;margin:0 auto 18px;overflow:visible;transform-origin:50% 90%;animation:waddle 1.4s ease-in-out infinite}

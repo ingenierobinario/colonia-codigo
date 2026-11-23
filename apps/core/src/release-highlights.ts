@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.68": {
+    en: ["The loading screen now uses Colonia's colors, type and penguin, and its window bar matches it."],
+    es: ["La pantalla de carga usa los colores, la letra y el pingüino de Colonia, y su barra de ventana a juego."],
+  },
   "2.36.67": {
     en: [
       "Create my server on Railway now opens in Colonia's own browser.",
