@@ -107,8 +107,16 @@ for (const language of ["es", "en"] as const) {
       const railway = card.getByRole("button", {
         name: template ? /Crear mi servidor|Create my server/ : /Abrir Railway|Open Railway/,
       });
+      // SERVIDOR-NAVEGADOR-1 · En el escritorio Railway se abre en una pestaña del navegador de Colonia. Se intercepta
+      // para no dejar una pestaña real abierta en el core compartido (rompía 26-navigation con dos «Adelante»).
+      let opened = "";
+      await page.route("**/rpc/browser.open", async (route) => {
+        opened = route.request().postDataJSON()?.url as string;
+        await route.fulfill({ json: { ok: true, result: { tab: "t-railway", url: opened, title: "Railway" } } });
+      });
       await railway.click();
-      const link = new URL(await page.evaluate(() => sessionStorage.getItem("enlace") ?? ""));
+      await expect.poll(() => opened).not.toBe("");
+      const link = new URL(opened);
       expect(link.origin).toBe("https://railway.com");
       expect(link.pathname).toBe(template ? `/new/template/${template}` : "/");
       expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
