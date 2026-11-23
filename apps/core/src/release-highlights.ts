@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.67": {
+    en: [
+      "Create my server on Railway now opens in Colonia's own browser.",
+      "If Colonia has no server, it reminds you once a day; you can turn the reminder off.",
+    ],
+    es: [
+      "Crear mi servidor en Railway ahora se abre en el navegador de Colonia.",
+      "Si Colonia no tiene servidor, te lo recuerda una vez al día; puedes desactivar el aviso.",
+    ],
+  },
   "2.36.66": {
     en: ["Colonia uses less memory while idle: sync, teams and backups only load when you use them."],
     es: ["Colonia gasta menos memoria en reposo: sincronización, equipos y copias solo se cargan al usarlos."],

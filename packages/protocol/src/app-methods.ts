@@ -1695,6 +1695,20 @@ export const appMethods = {
     effect: true,
     access: "human",
   },
+  /** RECORDATORIO-SERVIDOR-1 · Si toca recordar (una vez cada 24 h) que Colonia puede vivir en un servidor propio. */
+  "hosting.reminder": {
+    params: z.object({}).strict(),
+    result: z.object({ due: z.boolean() }),
+    effect: false,
+    access: "human",
+  },
+  /** El recordatorio se enseñó (`shown`) o la persona no quiere verlo más (`never`). */
+  "hosting.reminder_set": {
+    params: z.object({ action: z.enum(["shown", "never"]) }).strict(),
+    result: z.object({ due: z.boolean() }),
+    effect: true,
+    access: "human",
+  },
   "contacts.list": {
     params: z.object({}).strict(),
     result: z.object({ persons: z.array(Person) }),

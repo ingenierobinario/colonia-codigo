@@ -54,6 +54,7 @@ import { extensionHandlers } from "./rpc/extensions.ts";
 import { fileHandlers } from "./rpc/files.ts";
 import { flowHandlers } from "./rpc/flows.ts";
 import { gitHandlers } from "./rpc/git.ts";
+import { hostingReminderHandlers } from "./rpc/hosting-reminder.ts";
 import { integrationHandlers } from "./rpc/integrations.ts";
 import type { InternalCall } from "./rpc/internal.ts";
 import { jobHandlers } from "./rpc/jobs.ts";
@@ -328,6 +329,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     // LAZY-1: la copia completa y la sincronización se cargan con su primera llamada.
     ...lazyHandlers(methodsWith("backup."), async () => backupHandlers(await d.backup())),
     ...lazyHandlers(methodsWith("sync."), async () => syncHandlers(await d.sync())),
+    ...hostingReminderHandlers(d.store, async () => (await d.sync()).status().paired),
     ...notificationHandlers(d.store),
     ...clientHandlers(d.store),
     ...deviceHandlers(d.store, { addresses: d.addresses, onRevoke: (id) => d.vm?.revokeDevice(id) }),

@@ -44,6 +44,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "backup.create": SECRET,
   "backup.restore": SECRET,
   "backup.dismiss": "the owner acknowledges a restore they ran themselves",
+  "hosting.reminder_set": "the owner saw or silenced the reminder to keep Colonia on a server of their own",
   "sync.pair_start": SECRET,
   "sync.pair_cancel": SECRET,
   "sync.pair_join": SECRET,

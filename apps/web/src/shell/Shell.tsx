@@ -8,7 +8,8 @@ import { usePrefs } from "../data/prefs.ts";
 import { data } from "../data/state.ts";
 import { useThreadDialog } from "../data/threadAdmin.ts";
 import { useWebApps } from "../data/webapps.ts";
-import { useHostingOffer } from "../equipos/hostingOffer.ts";
+import { checkHostingReminder, useHostingOffer } from "../equipos/hostingOffer.ts";
+import { addPack, t } from "../i18n/index.ts";
 import {
   AppScreen,
   ChannelScreen,
@@ -67,6 +68,19 @@ export function Shell() {
   const config = useNav((s) => s.config != null);
   const palette = useNav((s) => s.palette);
   const hostingOffer = useHostingOffer();
+  // RECORDATORIO-SERVIDOR-1 · Al abrir el panel y cada hora se pregunta al núcleo; él decide si toca (24 h).
+  useEffect(() => {
+    const ask = () =>
+      void addPack("equipos")
+        .then(() => checkHostingReminder({ title: t("equipos.reminderTitle"), body: t("equipos.reminderHint") }))
+        .catch(() => {});
+    const first = setTimeout(ask, 20_000);
+    const every = setInterval(ask, 60 * 60_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(every);
+    };
+  }, []);
   const threadDialog = useThreadDialog() != null;
   const phone = useNav((s) => s.phone);
   const usageDialog = useNav((s) => s.usageDialog);
