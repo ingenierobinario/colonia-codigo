@@ -451,10 +451,11 @@ test("Windows deja la versión nueva descomprimida y el reinicio sólo cambia ca
   assert.equal(spawns.length, 0, "nothing runs before the restart");
   assert.deepEqual(updater.restart(), { ok: true });
   assert.equal(spawns.length, 1);
-  assert.equal(spawns[0]?.file, "powershell.exe");
+  assert.equal(spawns[0]?.file, "wscript.exe", "ACTUALIZA-REABRE-1: PowerShell sin consola no corre el script");
   assert.ok(!spawns.some((s) => s.args.includes("/S")), "no NSIS installer");
   const args = spawns[0]?.args ?? [];
-  const at = args.indexOf("-File");
+  const at = args.findIndex((a) => a.endsWith("launch.vbs"));
+  assert.ok(fs.existsSync(path.join(stage, "restarting")), "the restart is recorded");
   assert.deepEqual(args.slice(at + 2, at + 7), [String(process.pid), installed, ready, stage, "1"]);
   assert.equal(quits, 1);
   updater.quitting();
@@ -465,7 +466,11 @@ test("Windows deja la versión nueva descomprimida y el reinicio sólo cambia ca
     const { spawnSync } = await import("node:child_process");
     const script = args[at + 1] ?? "";
     const real = [
-      ...args.slice(0, at + 2),
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      script,
       "999999",
       installed,
       ready,
@@ -638,4 +643,77 @@ test("Windows sin zip en la versión sigue con el instalador de siempre", async 
   const w = await windowsUpdate(t);
   assert.deepEqual(w.updater.restart(), { ok: true });
   assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated", "/S", "--force-run"] }]);
+});
+
+// ACTUALIZA-REABRE-1 · 21-nov: 2.36.62 quedó descargada; el 23-nov, con 2.36.67 publicada, el reinicio instaló 2.36.62.
+test("una descarga lista más vieja que la publicada no se instala: se descarta y se baja la nueva", async (t) => {
+  const w = await windowsUpdate(t);
+  const exe2 = `Colonia-2.2.0-win-${process.arch}.exe`;
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.includes("/releases?"))
+      return Response.json([
+        { ...release, tag_name: "v2.2.0", assets: [asset(exe2), asset(`${exe2}.sha256`)] },
+        { ...release, assets: [asset(`Colonia-2.1.0-win-${process.arch}.exe`)] },
+      ]);
+    return new Response(url.endsWith(".sha256") ? checksum : bytes);
+  });
+  assert.equal(w.updater.status().ready, "2.1.0");
+  assert.equal((await w.updater.check()).latest, "2.2.0");
+  const answer = w.updater.restart();
+  assert.equal(answer.ok, false, "2.1.0 does not go in");
+  assert.equal(w.spawns.length, 0, "no installer for the stale download");
+  assert.equal(w.quits(), 0, "Colonia keeps running");
+  await waitFor(() => w.updater.status().ready === "2.2.0", "2.2.0 downloaded");
+  assert.deepEqual(w.updater.restart(), { ok: true });
+  assert.equal(w.spawns[0]?.file, path.join(path.dirname(w.file), exe2), "the newest one goes in");
+});
+
+// ACTUALIZA-REABRE-1 · 23-nov: dos «restart: 2.36.67», el cambio no corrió y cada arranque volvía a bajar la 2.36.67.
+test("Windows: si tras reiniciar sigue la versión anterior, se registra y va el instalador, sin bajar el zip en bucle", async (t) => {
+  const w = await folderUpdate(t);
+  const first = w.updater();
+  assert.deepEqual(await first.install("2.1.0", true), { ok: true, ready: true });
+  assert.deepEqual(first.restart(), { ok: true });
+  assert.ok(fs.existsSync(path.join(w.stage, "restarting")));
+  // The swap never ran: the same 2.0.0 opens again.
+  const again = w.updater();
+  again.start(() => {});
+  again.stop();
+  assert.ok(fs.existsSync(path.join(w.stage, "failed")), "marked as not applied");
+  assert.deepEqual(await again.install("2.1.0", true), { ok: true, ready: true });
+  assert.deepEqual(w.unzipped, [`Colonia-2.1.0-win-${process.arch}.zip`], "the zip is not downloaded again");
+  assert.deepEqual(again.restart(), { ok: true });
+  assert.deepEqual(w.spawns.at(-1)?.args, ["--updated", "/S", "--force-run"], "the installer, which reopens Colonia");
+  assert.match(fs.readFileSync(path.join(w.dir, "update.log"), "utf8"), /2\.1\.0 did not go in \(restarted into/);
+});
+
+test("Windows real: el lanzador sobrevive al cierre de Colonia, cambia las carpetas y reabre", async (t) => {
+  if (!realWindows) return;
+  const w = await folderUpdate(t);
+  assert.equal((await w.updater().install("2.1.0", true)).ok, true);
+  const { spawn: realSpawn } = await import("node:child_process");
+  const log = path.join(w.dir, "real.log");
+  // A parent that launches it exactly as Colonia does and exits at once.
+  const parent = realSpawn(process.execPath, [
+    "-e",
+    `const c=require("node:child_process").spawn("wscript.exe",${JSON.stringify([
+      "//B",
+      "//Nologo",
+      path.join(w.stage, "launch.vbs"),
+      path.join(w.stage, "swap.ps1"),
+      "999999",
+      w.installed,
+      w.ready,
+      w.stage,
+      "0",
+      log,
+      "2.1.0",
+    ])},{detached:true,stdio:"ignore",windowsHide:true});c.unref();`,
+  ]);
+  await new Promise((done) => parent.once("exit", done));
+  await waitFor(() => fs.existsSync(log) && /new app in place/.test(fs.readFileSync(log, "utf8")), "the swap", {
+    ms: 60_000,
+  });
+  assert.equal(fs.readFileSync(path.join(w.installed, "Colonia.exe"), "utf8"), "new");
 });

@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.68": {
+    en: ["On Windows, Colonia installs the newest version when it restarts and opens again by itself."],
+    es: ["En Windows, Colonia instala la versión más reciente al reiniciar y vuelve a abrirse sola."],
+  },
   "2.36.67": {
     en: [
       "Create my server on Railway now opens in Colonia's own browser.",

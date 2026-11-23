@@ -13,6 +13,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { promisify } from "node:util";
 import {
+  compareVersions,
   desktopAssetFor,
   fetchReleases,
   type LocalizedNotes,
@@ -197,6 +198,15 @@ if ($relaunch -eq 1) {
   elseif (Has $prev) { Start-Process -FilePath (Join-Path $prev "Colonia.exe") }
 }
 if ($applied) { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
+`;
+
+// ACTUALIZA-REABRE-1 · powershell.exe lanzado con `detached` (DETACHED_PROCESS, sin consola) sale con código 0 SIN
+// ejecutar el script: el cambio de carpetas no corría nunca, no dejaba ni una línea en update.log, Colonia no se
+// reabría y la versión volvía a bajarse (23-nov-2026, 2.36.67). wscript.exe no necesita consola: lanza PowerShell
+// oculto y sobrevive al cierre de Colonia.
+const LAUNCH_VBS = `Dim a, i: a = ""
+For i = 1 To WScript.Arguments.Count - 1: a = a & " """ & WScript.Arguments(i) & """": Next
+CreateObject("WScript.Shell").Run "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & WScript.Arguments(0) & """" & a, 0, False
 `;
 
 /** SWAP-SIEMPRE-ABRE-1 · Corre en el siguiente inicio de sesión si el cambio se cortó: vuelve a poner Colonia en su carpeta. */
@@ -514,6 +524,8 @@ export function createDesktopUpdater(opts: {
         fs.copyFileSync(path.join(old, n), path.join(inner, n));
     const script = path.join(stage, "swap.ps1");
     fs.writeFileSync(script, SWAP_WIN);
+    const launcher = path.join(stage, "launch.vbs");
+    fs.writeFileSync(launcher, LAUNCH_VBS);
     fs.writeFileSync(
       path.join(stage, "recover.ps1"),
       recoverScript(old, path.join(stage, "previous"), inner, stage, opts.logFile ?? ""),
@@ -524,13 +536,12 @@ export function createDesktopUpdater(opts: {
         throw new Error("The new version is no longer ready. Check for updates again.");
       }
       swapping = true;
+      // ACTUALIZA-REABRE-1 · Si al volver a abrir sigue la versión anterior, este marcador dice que el cambio no entró.
+      fs.writeFileSync(path.join(stage, "restarting"), app.getVersion());
       const args = [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-WindowStyle",
-        "Hidden",
-        "-File",
+        "//B",
+        "//Nologo",
+        launcher,
         script,
         String(process.pid),
         old,
@@ -540,7 +551,7 @@ export function createDesktopUpdater(opts: {
         opts.logFile ?? "",
         release.version,
       ];
-      const child = start("powershell.exe", args, { detached: true, stdio: "ignore", windowsHide: true });
+      const child = start("wscript.exe", args, { detached: true, stdio: "ignore", windowsHide: true });
       child.once("error", (error) => log(`swap did not start: ${error.message}`));
       if (child.pid === undefined) {
         swapping = false;
@@ -615,6 +626,14 @@ export function createDesktopUpdater(opts: {
         log("restart: nothing is ready");
         return { ok: false, error: "The new version is no longer ready. Check for updates again." };
       }
+      // ACTUALIZA-REABRE-1 · Nunca instalar una descarga más vieja que la última publicada: se descarta y se baja la nueva.
+      if (status.latest && compareVersions(status.latest, staged.version) > 0) {
+        log(`restart: ${staged.version} is older than ${status.latest}, downloading ${status.latest}`);
+        const latest = status.latest;
+        staged = undefined;
+        void install(latest);
+        return { ok: false, error: `Colonia ${latest} is downloading. Restart when it is ready.` };
+      }
       log(`restart: ${staged.version}`);
       try {
         staged.restart();
@@ -654,6 +673,10 @@ export function createDesktopUpdater(opts: {
             if (!v) continue;
             const dir = path.join(parent, f);
             const failed = path.join(dir, "failed");
+            // ACTUALIZA-REABRE-1 · Se reinició para ponerla y sigue la anterior: el cambio no corrió; va el instalador.
+            if (v !== app.getVersion() && !fs.existsSync(failed) && fs.existsSync(path.join(dir, "restarting")))
+              fs.writeFileSync(failed, `restarted into ${app.getVersion()}, not ${v}`);
+            if (v === app.getVersion() && fs.existsSync(path.join(dir, "restarting"))) log(`installed: ${v}`);
             if (v !== app.getVersion() && fs.existsSync(failed)) {
               folderFailed.add(v);
               log(
@@ -676,7 +699,8 @@ export function createDesktopUpdater(opts: {
           () =>
             void check()
               .then((s) => {
-                if (s.latest && !s.ready && !s.downloading) found(s);
+                // ACTUALIZA-REABRE-1 · Una descarga lista pero más vieja que la publicada no frena la nueva.
+                if (s.latest && s.ready !== s.latest && !s.downloading) found(s);
               })
               .finally(() => tick(RELEASE_CHECK_EVERY_MS)),
           ms,

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { compareVersions } from "@colonia/protocol";
 import { ColoniaClient, PROTOCOL_VERSION } from "@colonia/protocol/client";
 import { app, type BaseWindow, dialog, safeStorage } from "electron";
 import { liveWindow } from "./main-window.ts";
@@ -140,7 +141,9 @@ export function nativeUpdates(
     void coordinator.reconcile();
   }
   async function request() {
-    let target = updater.status().ready ?? updater.status().latest;
+    // ACTUALIZA-REABRE-1 · La descarga lista sólo vale si no hay otra publicada más nueva.
+    const { ready, latest } = updater.status();
+    let target = ready && latest && compareVersions(latest, ready) > 0 ? latest : (ready ?? latest);
     if (!target) target = (await updater.check()).latest;
     return coordinator.install(target);
   }
