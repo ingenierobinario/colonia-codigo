@@ -7,8 +7,14 @@ export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
   "2.36.68": {
-    en: ["On Windows, Colonia installs the newest version when it restarts and opens again by itself."],
-    es: ["En Windows, Colonia instala la versión más reciente al reiniciar y vuelve a abrirse sola."],
+    en: [
+      "On Windows, Colonia installs the newest version when it restarts and opens again by itself.",
+      "The loading screen now uses Colonia's colors, type and penguin, and its window bar matches it.",
+    ],
+    es: [
+      "En Windows, Colonia instala la versión más reciente al reiniciar y vuelve a abrirse sola.",
+      "La pantalla de carga usa los colores, la letra y el pingüino de Colonia, y su barra de ventana a juego.",
+    ],
   },
   "2.36.67": {
     en: [

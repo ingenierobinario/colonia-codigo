@@ -919,6 +919,12 @@ app.whenReady().then(() => {
     // BARRA-CLARA-1: the loading screen follows the system theme; so does the corner while it shows.
     else if (isMainFrame && !isInPlace && url.startsWith("data:text/html")) paintTitleBar(systemMode());
   });
+  // CARGA-MARCA-1: the system theme can change while the loading screen shows; its corner follows it (the panel asks
+  // for its own colors once it loads).
+  nativeTheme.on("updated", () => {
+    if (!panel.webContents.isDestroyed() && panel.webContents.getURL().startsWith("data:text/html"))
+      paintTitleBar(systemMode());
+  });
   app.once("will-quit", () => {
     ipcMain.removeAllListeners("desktop:attention");
     quick.stop();
