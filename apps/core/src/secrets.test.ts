@@ -298,3 +298,23 @@ test("ARRANQUE-RAPIDO-1: un secrets.dpapi que esta cuenta no abre no lanza un Po
   assert.throws(() => store.set("openai", "sk"));
   assert.equal(calls, 2);
 });
+
+test("ARRANQUE-RAPIDO-1: warm() abre secrets.dpapi sin bloquear y la primera lectura ya no lanza PowerShell", async () => {
+  await using dir = tempDir("colonia-dpapi-warm-");
+  fs.writeFileSync(path.join(dir.path, "secrets.dpapi"), "sellado");
+  let blocking = 0;
+  let background = 0;
+  const run: Run = () => {
+    blocking++;
+    throw new Error("no debería ejecutarse");
+  };
+  const runAsync = async () => {
+    background++;
+    return Buffer.from(JSON.stringify({ openai: "sk-1" })).toString("base64");
+  };
+  const store = dpapiStore(dir.path, "colonia-test", run, runAsync);
+  assert.equal(await store.warm?.(), true);
+  assert.equal(store.get("openai"), "sk-1");
+  assert.equal(blocking, 0, "la lectura tras warm() no arrancó PowerShell en primer plano");
+  assert.equal(background, 1);
+});

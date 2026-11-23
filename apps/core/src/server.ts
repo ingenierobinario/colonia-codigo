@@ -255,6 +255,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const terminals = createTerminals({ bus, log, commandEnded: (e) => wakeAfterCommand(store, engine.admit, e) });
   const store = createStore(db, bus);
   const secrets = opts.secrets ?? createSecrets(config.home, config.secrets);
+  // ARRANQUE-RAPIDO-1: the system store opens in the background, not on the first secret read after listen.
+  const secretsWarm = secrets.warm?.() ?? Promise.resolve();
   seed(store, config.agentName);
   const releases =
     opts.releases ?? (config.whatsNew ? localReleases(path.resolve(import.meta.dirname, "../../..")) : undefined);
@@ -954,7 +956,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   listening = transport.port;
   markStartup("health");
   // ARRANQUE-RAPIDO-1: knowing whether the store answers can run its program (DPAPI: PowerShell); /health goes first.
-  setImmediate(() => {
+  void secretsWarm.then(() => {
     try {
       if (secrets.notice && !store.settings.get("secrets_file_told")) {
         log.warn({ backend: secrets.backend }, secrets.notice);
@@ -972,7 +974,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     })
   )
     await loadSync();
+  markStartup("sync");
   if (!opts.equipoOff && readEquipoState(config.home)) (await loadEquipos()).agent.start();
+  markStartup("equipos");
   // Agents' shells and harnesses reach this core with `colonia`, whatever the owner's PATH holds.
   try {
     useColoniaCommand(writeColoniaCommand(config.home, listening, thisRunner()));
@@ -984,6 +988,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   selfUrl = url;
   void apc.load().catch((err) => log.warn({ err: errorMessage(err) }, "projects not read"));
   engine.start();
+  markStartup("engine");
   const nativeRoutes = nativePublicRoutes({ store, deliver: channels.webhook });
   const publishedRoutes = publishedPublicRoutes(store);
   const projectRoutes = sharedProjectRoutes(config.home);
@@ -1000,6 +1005,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     log,
   });
   hooksPort = hookListener.port;
+  markStartup("hooks");
   // Not awaited: ngrok may take 15 s, and a channel reads its public address when it needs it (hookBase).
   void webhooks.start();
   await channels.start();

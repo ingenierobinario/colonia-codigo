@@ -2,7 +2,7 @@
 // only the user's Windows account can decrypt (DPAPI, what Credential Manager itself uses) and the desktop keyring
 // through the Secret Service (Linux, `secret-tool`). Each runs the system's own command; values go on stdin, never on
 // argv. See DECISIONS.md#d-010 and DECISIONS.md#d-133.
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -39,7 +39,34 @@ export type ValueStore = {
   setMany?(values: Record<string, string | null>): void;
   /** Whether the store answers at all (a keyring daemon, PowerShell); tried once, when nothing was kept there yet. */
   works(): boolean;
+  /**
+   * ARRANQUE-RAPIDO-1: opens the store without blocking (its program runs in the background) and answers whether it
+   * works; what it reads stays in memory, so the first secret read after it starts no program.
+   */
+  warm?(): Promise<boolean>;
 };
+
+/** Like runCommand, but without stopping the event loop while the program runs. */
+export const runCommandAsync = (
+  cmd: string,
+  args: string[],
+  o: { input?: string; env?: Record<string, string>; timeoutMs?: number } = {},
+): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const child = execFile(
+      cmd,
+      args,
+      {
+        encoding: "utf8",
+        ...(o.env ? { env: { ...process.env, ...o.env } } : {}),
+        timeout: o.timeoutMs ?? 15_000,
+        windowsHide: true,
+        maxBuffer: 64 * 1024 * 1024,
+      },
+      (err, stdout) => (err ? reject(err) : resolve(stdout)),
+    );
+    child.stdin?.end(o.input ?? "");
+  });
 
 const SECURITY = "/usr/bin/security";
 
@@ -137,7 +164,12 @@ const ENCODED_SCRIPT = Buffer.from(DPAPI_SCRIPT, "utf16le").toString("base64");
  * Values in `<home>/secrets.dpapi`, encrypted for the user's Windows account (DPAPI, CurrentUser): another account,
  * or the disk read elsewhere, cannot decrypt it. Credential Manager is DPAPI too, but caps a value at 2.5 KB.
  */
-export function dpapiStore(home: string, service: string, run: Run = runCommand): ValueStore {
+export function dpapiStore(
+  home: string,
+  service: string,
+  run: Run = runCommand,
+  runAsync: typeof runCommandAsync = runCommandAsync,
+): ValueStore {
   const file = path.join(home, "secrets.dpapi");
   let values: Record<string, string> | undefined;
   const crypt = (op: "protect" | "unprotect", b64: string) =>
@@ -201,6 +233,35 @@ export function dpapiStore(home: string, service: string, run: Run = runCommand)
       try {
         const sample = Buffer.from("ok").toString("base64");
         return Buffer.from(crypt("unprotect", crypt("protect", sample)), "base64").toString("utf8") === "ok";
+      } catch {
+        return false;
+      }
+    },
+    async warm() {
+      const cryptAsync = async (op: "protect" | "unprotect", b64: string) =>
+        (
+          await runAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", ENCODED_SCRIPT], {
+            input: b64,
+            env: { COLONIA_DPAPI_OP: op, COLONIA_DPAPI_ENTROPY: service },
+          })
+        ).trim();
+      try {
+        if (values) return true;
+        if (!fs.existsSync(file)) {
+          const sample = Buffer.from("ok").toString("base64");
+          return (
+            Buffer.from(await cryptAsync("unprotect", await cryptAsync("protect", sample)), "base64").toString(
+              "utf8",
+            ) === "ok"
+          );
+        }
+        const sealed = fs.readFileSync(file, "utf8").trim();
+        const loaded = JSON.parse(
+          Buffer.from(await cryptAsync("unprotect", sealed), "base64").toString("utf8"),
+        ) as Record<string, string>;
+        // A change saved while PowerShell ran already holds the newer values.
+        values ??= loaded;
+        return true;
       } catch {
         return false;
       }

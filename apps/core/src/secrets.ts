@@ -66,6 +66,8 @@ export function createSecrets(
   let file = legacy;
   let sealed = false;
   let chosen = false;
+  // ARRANQUE-RAPIDO-1: what an asynchronous warm() found out, so choose() does not ask the store again (blocking).
+  let probed: boolean | undefined;
   // ARRANQUE-RAPIDO-1: asking a store whether it works runs its program (DPAPI: PowerShell, twice, ~3 s on Windows).
   // A home with nothing saved yet asks when a secret is first used, not while the core starts.
   const choose = () => {
@@ -74,7 +76,10 @@ export function createSecrets(
     const candidate = wanted === "file" ? undefined : stores[wanted]();
     // An index means values already went to the store: it stays chosen even while it does not answer (a keyring still
     // locked at boot), or the owner's secrets would seem gone. Otherwise a store that does not work falls back to the file.
-    store = candidate && (wanted === "keychain" || fs.existsSync(index) || candidate.works()) ? candidate : undefined;
+    store =
+      candidate && (wanted === "keychain" || fs.existsSync(index) || (probed ?? candidate.works()))
+        ? candidate
+        : undefined;
     backend = store ? wanted : "file";
     // The file holds values only for the file backend; with a store it is just the index (names, dates).
     file = store ? index : legacy;
@@ -128,7 +133,30 @@ export function createSecrets(
       };
   };
 
+  let warming: Promise<void> | undefined;
   const api = {
+    /**
+     * ARRANQUE-RAPIDO-1: opens the system store in the background (DPAPI: PowerShell, 0.5-3 s on Windows) while the core
+     * starts, so neither the first secret read nor the first-start check stops the core from answering the panel.
+     */
+    warm(): Promise<void> {
+      warming ??= (async () => {
+        if (chosen || wanted === "file") return;
+        const candidate = stores[wanted]();
+        if (!candidate.warm) return;
+        const ok = await candidate.warm();
+        if (chosen) return;
+        probed = ok;
+        if (fs.existsSync(index) || ok) {
+          // The opened store is the one choose() keeps: its values are already in memory.
+          chosen = true;
+          store = candidate;
+          backend = wanted;
+          file = index;
+        }
+      })().catch(() => {});
+      return warming;
+    },
     get backend(): SecretsBackend {
       choose();
       return backend;
