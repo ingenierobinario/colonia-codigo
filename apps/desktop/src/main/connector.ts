@@ -294,6 +294,25 @@ export function createConnector(opts: {
     return r.status === 0 ? { ok: true } : { ok: false, error: `${r.stdout}${r.stderr}`.trim().slice(-600) };
   }
 
+  // ARRANQUE-RAPIDO-1: el núcleo se lanza en cuanto existe el conector, en paralelo con la ventana y la
+  // pantalla de espera; antes esperaba a que esa pantalla cargase (2-13 s medidos en Windows).
+  let early: Promise<void> | undefined;
+  async function startLocalCore(): Promise<void> {
+    if (core || (await isUp(opts.coreUrl)) || core) return;
+    core = startEmbeddedCore({
+      resources: process.resourcesPath,
+      home: localCoreHome(),
+      port: corePort,
+      logFile: localCoreLogFile(),
+      cacheDir: path.join(dataDir, "compile-cache"),
+    });
+    await waitUp(opts.coreUrl);
+  }
+  /** Arranca ya el núcleo local de una instalación; `open()` espera a este mismo arranque. */
+  function prestart(): void {
+    if (app.isPackaged && conn?.mode === "local" && !core && !early) early = startLocalCore().catch(() => {});
+  }
+
   /** `firstRun`: just chosen on the first-run screen, so the panel's setup opens by saying Colonia is installed. */
   async function open(firstRun = false): Promise<void> {
     const connection = conn;
@@ -306,20 +325,10 @@ export function createConnector(opts: {
     if (connection.mode === "local") {
       opts.updating({ identity: "local", url: opts.coreUrl, local: true, token: localCoreToken() });
       // Installed, Colonia starts its own core unless one already answers; a checkout tries the panel's dev server first.
-      if (app.isPackaged && !core) {
-        const up = await isUp(opts.coreUrl);
+      if (app.isPackaged && (early || !core)) {
+        await (early ?? startLocalCore());
+        early = undefined;
         if (!current()) return;
-        if (!up) {
-          core = startEmbeddedCore({
-            resources: process.resourcesPath,
-            home: localCoreHome(),
-            port: corePort,
-            logFile: localCoreLogFile(),
-            cacheDir: path.join(dataDir, "compile-cache"),
-          });
-          await waitUp(opts.coreUrl);
-          if (!current()) return;
-        }
       }
       // Right after login the core may still be starting: the window waits for it, as it does for a remote one.
       const es = app.getLocale().startsWith("es");
@@ -448,6 +457,7 @@ export function createConnector(opts: {
 
   const api = {
     open,
+    prestart,
     /**
      * Back to the first-run choice in the same window. Nothing restarts: a checkout's supervisor (`pnpm app`) takes its
      * core down with the app.

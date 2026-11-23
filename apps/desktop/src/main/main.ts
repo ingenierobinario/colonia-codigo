@@ -968,6 +968,8 @@ app.whenReady().then(() => {
 
   // A core that never answers would leave a background start invisible: show the waiting page after a while.
   const late = setTimeout(reveal, 45_000);
+  // ARRANQUE-RAPIDO-1: el núcleo arranca ya, sin esperar a que la pantalla de espera termine de cargar.
+  connector.prestart();
   void firstScreen.then(() => connector.open());
 
   // Dev-only: `kill -USR2 <pid>` writes the panel, the visible tab and the slot so a script can compose them.

@@ -6,6 +6,10 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.69": {
+    en: ["Colonia opens sooner: its engine starts while the window is still appearing."],
+    es: ["Colonia abre antes: su motor arranca mientras la ventana aún está apareciendo."],
+  },
   "2.36.68": {
     en: [
       "On Windows, Colonia installs the newest version when it restarts and opens again by itself.",
