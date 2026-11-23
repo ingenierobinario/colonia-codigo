@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { tempDir } from "../apps/core/src/testkit/platform.ts";
-import { linkTemporaryDesktop, updatedCore } from "./smoke-mac-update.ts";
+import { linkTemporaryDesktop, staleView, updatedCore } from "./smoke-mac-update.ts";
 
 const before = {
   name: "colonia-core",
@@ -49,4 +49,16 @@ test("Finder recupera el perfil temporal del primer arranque y respeta un perfil
   }
   assert.equal(fs.existsSync(finder), false);
   assert.equal(fs.readFileSync(path.join(temporary, "prueba"), "utf8"), "prueba");
+});
+
+test("PANEL-ATERRIZA-3: la pantalla de carga apuntada con el panel ya vivo es vista desfasada; viva, es un atasco real", () => {
+  const core = "http://127.0.0.1:17440";
+  const loading = "data:text/html;charset=utf-8,%3C!doctype%20html%3E";
+  // Conectado a mitad del cambio data: → panel: Playwright se quedó con la pantalla de carga, la ventana ya tiene el panel.
+  assert.equal(staleView(loading, `${core}/`, core), true);
+  // La pantalla de carga sigue de verdad (lo que PANEL-ATERRIZA-1/2 arreglaron): no se disimula, la prueba debe fallar.
+  assert.equal(staleView(loading, loading, core), false);
+  assert.equal(staleView(loading, undefined, core), false);
+  assert.equal(staleView(`${core}/`, `${core}/`, core), false);
+  assert.equal(staleView(`${core}/?quick=1`, "http://127.0.0.1:9999/", core), false);
 });

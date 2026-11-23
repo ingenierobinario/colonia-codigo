@@ -40,6 +40,16 @@ export function olderThan(version: string, than: string) {
   return false;
 }
 
+/**
+ * PANEL-ATERRIZA-3: page.url() es lo que Playwright apuntó de los eventos de CDP, no el documento vivo. Si se conecta justo
+ * cuando el panel sustituye a la pantalla de carga (un cambio de proceso, data: → http), puede perderse ese aviso y seguir
+ * viendo la pantalla de carga para siempre, aunque la app ya muestre el panel (getURL() es la URL confirmada: por eso el
+ * chat rápido sí abre). La vista está desfasada cuando el documento vivo ya está en el panel y la apuntada no.
+ */
+export function staleView(cached: string, live: string | undefined, origin: string): boolean {
+  return URL.parse(cached)?.origin !== origin && live !== undefined && URL.parse(live)?.origin === origin;
+}
+
 async function waitFor<T>(description: string, read: () => Promise<T | undefined>): Promise<T> {
   const deadline = Date.now() + 120_000;
   while (Date.now() < deadline) {
@@ -138,7 +148,7 @@ async function smoke() {
       home_id: previous.home_id,
       port: Number(settings.COLONIA_PORT),
     });
-    const browser = await chromium.connectOverCDP(debugUrl, { timeout: 45_000 });
+    let browser = await chromium.connectOverCDP(debugUrl, { timeout: 45_000 });
     const since = Date.now();
     let landed = false;
     const panel = await waitFor("el panel de la aplicación pública", async () => {
@@ -159,10 +169,31 @@ async function smoke() {
         console.log("Versión pública con la primera pantalla atascada (PANEL-ATERRIZA-2): se carga su panel.");
         await stuck.goto(`${coreUrl}/`).catch((error: Error) => console.log("Carga del panel:", error.message));
       }
+      const short = (url: string) => (url.startsWith("data:") ? `${url.slice(0, 40)}… (${url.length} car.)` : url);
       for (const page of pages) {
         const url = page.url();
-        seen.push(url.startsWith("data:") ? `${url.slice(0, 40)}… (${url.length} car.)` : url);
-        if (new URL(url).origin !== coreUrl) continue;
+        seen.push(short(url));
+        if (new URL(url).origin !== coreUrl) {
+          // PANEL-ATERRIZA-3: una sesión de CDP nueva pregunta al documento vivo, no a lo que Playwright apuntó.
+          const live = await page
+            .context()
+            .newCDPSession(page)
+            .then(async (cdp) => {
+              const r = await cdp.send("Runtime.evaluate", { expression: "location.href", returnByValue: true });
+              await cdp.detach().catch(() => {});
+              return typeof r.result.value === "string" ? r.result.value : undefined;
+            })
+            .catch(() => undefined);
+          seen.push(`  documento vivo: ${live ? short(live) : "sin respuesta"}`);
+          if (staleView(url, live, coreUrl)) {
+            console.log(
+              `Vista de CDP desfasada (PANEL-ATERRIZA-3): Playwright ve ${short(url)} y la ventana ya muestra ${live}; se reconecta.`,
+            );
+            browser = await chromium.connectOverCDP(debugUrl, { timeout: 45_000 });
+            return undefined;
+          }
+          continue;
+        }
         const ok = await page
           .evaluate(() => window.coloniaDesktop?.updateStatus?.())
           .catch((error: Error) => {
