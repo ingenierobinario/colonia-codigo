@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.71": {
+    en: [
+      "After an update, Colonia reopens in seconds instead of minutes.",
+      "Create my server on Railway opens in your usual browser, where Google lets you sign in.",
+    ],
+    es: [
+      "Tras actualizarse, Colonia vuelve a abrirse en segundos y no en minutos.",
+      "Crear mi servidor en Railway se abre en tu navegador de siempre, donde Google te deja iniciar sesión.",
+    ],
+  },
+  "2.36.70": {
+    en: ["Colonia starts faster, and an update that stops halfway picks up where it left off."],
+    es: ["Colonia arranca más rápido, y una actualización que se corta a medias sigue donde se quedó."],
+  },
   "2.36.69": {
     en: ["Colonia opens sooner: its engine starts while the window is still appearing."],
     es: ["Colonia abre antes: su motor arranca mientras la ventana aún está apareciendo."],

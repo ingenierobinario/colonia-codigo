@@ -111,12 +111,11 @@ for (const language of ["es", "en"] as const) {
       const railway = card.getByRole("button", {
         name: template ? /Crear mi servidor|Create my server/ : /Abrir Railway|Open Railway/,
       });
-      // SERVIDOR-NAVEGADOR-1 · En el escritorio Railway se abre en una pestaña real del navegador de Colonia; se cierra
-      // al acabar para no dejarla en el core compartido (rompía 26-navigation con dos «Adelante»).
-      const [response] = await Promise.all([page.waitForResponse("**/rpc/browser.open"), railway.click()]);
-      const opened = (response.request().postDataJSON() as { url: string }).url;
-      const tab = ((await response.json()) as { result?: { tab?: string } }).result?.tab;
-      if (tab) await rpc("browser.close", { tab });
+      // RAILWAY-NAVEGADOR-1 · En el escritorio Railway se abre en el navegador del ordenador (Google rechaza el
+      // inicio de sesión dentro del de Colonia): el enlace va a openExternal y no se abre ninguna pestaña propia.
+      await railway.click();
+      await expect.poll(() => page.evaluate(() => sessionStorage.getItem("enlace"))).toMatch(/^https:\/\/railway\.com/);
+      const opened = (await page.evaluate(() => sessionStorage.getItem("enlace"))) ?? "";
       const link = new URL(opened);
       expect(link.origin).toBe("https://railway.com");
       expect(link.pathname).toBe(template ? `/new/template/${template}` : "/");
