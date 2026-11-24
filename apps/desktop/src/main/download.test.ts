@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { tempDir } from "../../../core/src/testkit/platform.ts";
 import { download } from "./download.ts";
 
 const DATA = Buffer.alloc(256 * 1024, 0);
@@ -19,7 +19,7 @@ async function serve(handler: http.RequestListener) {
   return { url, close: () => new Promise<void>((res) => server.close(() => res())) };
 }
 
-const tmp = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), "descarga-")), "colonia.zip");
+const tmp = () => path.join(tempDir("descarga-").path, "colonia.zip");
 
 test("a cut in the middle resumes with Range and the file comes out whole", async () => {
   const ranges: (string | undefined)[] = [];
@@ -67,10 +67,10 @@ test("a server that goes silent is cut after idleMs and the next try finishes", 
   const file = tmp();
   const t0 = Date.now();
   try {
-    await download(s.url, file, { idleMs: 300, backoffMs: 10 });
+    await download(s.url, file, { idleMs: 2_000, backoffMs: 10 });
     const ms = Date.now() - t0;
     assert.equal(calls, 2);
-    assert.ok(ms >= 300 && ms < 5_000, `cut after ${ms} ms`);
+    assert.ok(ms >= 2_000 && ms < 20_000, `cut after ${ms} ms`);
     assert.deepEqual(fs.readFileSync(file), DATA);
   } finally {
     await s.close();
@@ -83,7 +83,7 @@ test("a server that never answers gives up after the tries, with the idle error"
     calls++; // ni cabeceras
   });
   try {
-    await assert.rejects(download(s.url, tmp(), { idleMs: 150, tries: 3, backoffMs: 10 }), /sin datos en/);
+    await assert.rejects(download(s.url, tmp(), { idleMs: 2_000, tries: 3, backoffMs: 10 }), /sin datos en/);
     assert.equal(calls, 3);
   } finally {
     s.close();
