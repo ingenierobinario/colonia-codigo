@@ -39,16 +39,23 @@ test("the fake trash refuses traversal and symlinks outside its temp project bef
   fs.mkdirSync(outside);
   const source = path.join(outside, "secret.txt");
   fs.writeFileSync(source, "keep me");
-  fs.symlinkSync(outside, path.join(root, "escape"));
+  fs.symlinkSync(outside, path.join(root, "escape"), process.platform === "win32" ? "junction" : "dir");
   const trash = fakeDesktopTrash(root, record);
 
   try {
     await assert.rejects(trash(path.join(root, "..", "outside", "secret.txt")), /outside the e2e project/);
     await assert.rejects(trash(path.join(root, "escape", "secret.txt")), /outside the e2e project/);
-    const inside = path.join(root, "inside.txt");
+    const insideDirectory = path.join(root, "inside");
+    fs.mkdirSync(insideDirectory);
+    const inside = path.join(insideDirectory, "inside.txt");
     const outsideLink = path.join(outside, "inward-link");
     fs.writeFileSync(inside, "inside content");
-    fs.symlinkSync(inside, outsideLink);
+    // Junctions exercise the same escape boundary without requiring elevated Windows privileges.
+    fs.symlinkSync(
+      process.platform === "win32" ? insideDirectory : inside,
+      outsideLink,
+      process.platform === "win32" ? "junction" : "file",
+    );
     await assert.rejects(trash(outsideLink), /outside the e2e project/);
     assert.equal(fs.lstatSync(outsideLink).isSymbolicLink(), true);
     assert.equal(fs.readFileSync(inside, "utf8"), "inside content");
