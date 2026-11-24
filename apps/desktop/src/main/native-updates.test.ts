@@ -81,6 +81,7 @@ function rawUpdater() {
       log: () => {},
       start: () => {},
       stop: () => {},
+      resumed: () => {},
     } as ReturnType<typeof createDesktopUpdater>,
     counts: () => ({ installs, restarts, quits, discards }),
   };

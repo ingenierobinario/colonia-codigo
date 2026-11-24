@@ -9,8 +9,6 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { Readable } from "node:stream";
-import { pipeline } from "node:stream/promises";
 import { promisify } from "node:util";
 import {
   compareVersions,
@@ -29,6 +27,7 @@ import {
 } from "@colonia/protocol";
 import { app, shell } from "electron";
 import { bundlePlace, replaceableBundle, saveInFirst } from "./app-bundle.ts";
+import { download } from "./download.ts";
 import { removeOldInstallers } from "./installer-files.ts";
 import { type LinuxInstall, linuxInstall, packageCommand } from "./linux-install.ts";
 import { updateLog } from "./update-log.ts";
@@ -89,12 +88,6 @@ const writable = (dir: string) => {
     return false;
   }
 };
-
-async function download(url: string, file: string): Promise<void> {
-  const r = await fetch(url, { signal: AbortSignal.timeout(20 * 60_000) });
-  if (!r.ok || !r.body) throw new Error(`download ${path.basename(file)}: HTTP ${r.status}`);
-  await pipeline(Readable.fromWeb(r.body as import("node:stream/web").ReadableStream), fs.createWriteStream(file));
-}
 
 const digest = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 
@@ -281,6 +274,7 @@ export function createDesktopUpdater(opts: {
   const folderFailed = new Set<string>();
   let generation = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let wake: (() => void) | undefined;
   const log = opts.logFile ? updateLog(opts.logFile) : () => {};
 
   const current = (): DesktopUpdate => ({
@@ -708,6 +702,15 @@ export function createDesktopUpdater(opts: {
         timer.unref?.();
       };
       tick(FIRST_MS);
+      // DESCARGA-REANUDA-1 · Al despertar el equipo se mira enseguida: una descarga cortada por la suspensión vuelve.
+      wake = () => {
+        if (timer) clearTimeout(timer);
+        tick(10_000);
+      };
+    },
+    /** DESCARGA-REANUDA-1 · The computer woke up: check (and, in auto mode, download) again shortly. */
+    resumed() {
+      wake?.();
     },
     stop() {
       clearTimeout(timer);

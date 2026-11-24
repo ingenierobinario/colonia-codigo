@@ -773,21 +773,20 @@ app.whenReady().then(() => {
   });
 
   // A newer Colonia: the panel and the app menu show it; the app downloads it and it goes in at the next restart.
-  const updater = nativeUpdates(
-    createDesktopUpdater({
-      logFile: path.join(app.getPath("logs"), "update.log"),
-      quit: () => {
-        quitting = true;
-        app.quit();
-      },
-      changed: (s) => {
-        setMenu(s);
-        sendTo(panel.webContents, "desktop:update-changed", s);
-      },
-    }),
-    win,
-    { change: () => connector.change() },
-  );
+  const desktopUpdater = createDesktopUpdater({
+    logFile: path.join(app.getPath("logs"), "update.log"),
+    quit: () => {
+      quitting = true;
+      app.quit();
+    },
+    changed: (s) => {
+      setMenu(s);
+      sendTo(panel.webContents, "desktop:update-changed", s);
+    },
+  });
+  // DESCARGA-REANUDA-1 · Una descarga cortada por la suspensión se retoma al despertar, sin esperar a la hora siguiente.
+  powerMonitor.on("resume", () => desktopUpdater.resumed());
+  const updater = nativeUpdates(desktopUpdater, win, { change: () => connector.change() });
   panel.webContents.on("did-fail-load", (_event, code, _description, _url, mainFrame) => {
     if (mainFrame && code !== -3) updater.panelUnavailable();
   });
