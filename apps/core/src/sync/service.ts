@@ -4,7 +4,7 @@
 // pasan lo que el diario (journal.ts) anota en cada uno. Uno de los dos es el principal: solo él abre las sesiones de
 // los canales y lleva el reloj de las rutinas; el otro ve su estado y envía a través de él. Sin emparejar no hay nada
 // instalado: ni tablas, ni disparadores, ni reloj.
-import { createHash, randomInt, randomUUID, scryptSync } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import type { IncomingMessage } from "node:http";
 import os from "node:os";
@@ -39,6 +39,18 @@ import { type Beacon, type BeaconMsg, createBeacon, ownAddresses } from "./beaco
 import { folderIdentity } from "./continuous-folder-permissions.ts";
 import { continuousFolders, type FolderLink, FolderMessage } from "./continuous-folders.ts";
 import {
+  LOG_KEY_FILE,
+  LOG_KEY_TTL_MS,
+  PRESET_FILE,
+  PRESET_TTL_MS,
+  pretty,
+  shortCode,
+  stretch,
+  typed,
+} from "./invitation-code.ts";
+
+import { invitationStore } from "./invitation-store.ts";
+import {
   type Applied,
   createJournal,
   discard,
@@ -60,6 +72,7 @@ import {
   WorkMessage,
 } from "./project-work.ts";
 
+export { LOG_KEY_FILE, LOG_KEY_TTL_MS, PRESET_TTL_MS } from "./invitation-code.ts";
 export { SYNC_PATH };
 
 /** SYNC-CADA-1 · El ritmo que eligió el dueño en este equipo. Aparte del estado: sobrevive a desemparejar. */
@@ -85,29 +98,9 @@ const PAST_IDS = "sync:ids";
 const SEEK_MS = 5000;
 const FIND_MS = 6000;
 
-// El código que se teclea: 8 letras y números sin los que se confunden (0/O, 1/I). Como es corto, se estira antes de
-// usarlo: quien escuche la red no puede probarlos todos en los diez minutos que vale.
-const ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
-const shortCode = () => Array.from({ length: 8 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
-const pretty = (code: string) => `${code.slice(0, 4)}-${code.slice(4)}`;
-const typed = (text: string) => {
-  const code = text.toUpperCase().replace(/[^0-9A-Z]/g, "");
-  return /^[2-9A-HJ-NP-Z]{8}$/.test(code) ? code : undefined;
-};
-const stretch = (code: string) =>
-  scryptSync(code, "colonia-sincronizar-2", 32, { N: 16384, r: 8, p: 1 }).toString("hex");
 const tagOf = (what: string) => createHash("sha256").update(`colonia-busca:${what}`).digest("hex").slice(0, 32);
 const trimUrl = (u: string) => u.replace(/\/+$/, "");
 const WAITING_MAX = 5000;
-/** AUTOVINCULAR-1 · Lo que espera un servidor recién creado a que el escritorio llegue (construir tarda minutos). */
-export const PRESET_TTL_MS = 24 * 60 * 60_000;
-const PRESET_FILE = "emparejamiento-plantilla.usado";
-/**
- * VINCULAR-CLAVE-1 · Un servidor sin pareja ni código de plantilla se protege con una clave que solo sale en sus
- * registros de arranque (los ve únicamente quien tiene la cuenta del alojamiento). Nunca viaja por HTTP.
- */
-export const LOG_KEY_FILE = "clave-de-vinculacion.txt";
-export const LOG_KEY_TTL_MS = 30 * 24 * 60 * 60_000;
 const RETRY_MS = [1000, 2000, 5000, 10_000, 30_000];
 
 export type Role = "principal" | "secundario";
@@ -281,7 +274,7 @@ const KINDS: Readonly<Record<string, SyncSaved["kind"]>> = {
 export function createSync(d: SyncDeps) {
   const now = d.now ?? Date.now;
   const file = path.join(d.home, STATE_FILE);
-  const pairing = createPairing({ makeCode: shortCode });
+  const pairing = createPairing({ makeCode: shortCode, clock: now });
   const inHome = (p: string) => {
     const rel = path.relative(d.home, p);
     return Boolean(rel) && !rel.startsWith("..") && !path.isAbsolute(rel);
@@ -364,7 +357,8 @@ export function createSync(d: SyncDeps) {
       if (fs.readFileSync(path.join(d.home, PRESET_FILE), "utf8").trim() === tag) return;
     } catch {}
     identity(true);
-    const { expiresAt } = pairing.start({ code, ttlMs: PRESET_TTL_MS });
+    const { expiresAt } = pairing.start({ code, ttlMs: PRESET_TTL_MS, store: invitationStore(d.home, "preset") });
+    if (!pairing.active()) return;
     secret = key;
     presetTag = tag;
     shown = {
@@ -402,7 +396,8 @@ export function createSync(d: SyncDeps) {
       }
     }
     identity(true);
-    const { expiresAt } = pairing.start({ code, ttlMs: LOG_KEY_TTL_MS });
+    const { expiresAt } = pairing.start({ code, ttlMs: LOG_KEY_TTL_MS, store: invitationStore(d.home, "log") });
+    if (!pairing.active()) return void armLogKey(true);
     secret = stretch(code);
     presetTag = undefined;
     logKeyArmed = true;

@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.72": {
+    en: [
+      "Server invitations stay expired or blocked after a restart.",
+      "Railway creation links no longer carry your pairing code.",
+    ],
+    es: [
+      "Las invitaciones caducadas o bloqueadas siguen cerradas tras reiniciar.",
+      "Los enlaces para crear un servidor en Railway ya no llevan tu clave de vinculación.",
+    ],
+  },
   "2.36.71": {
     en: [
       "After an update, Colonia reopens in seconds instead of minutes.",

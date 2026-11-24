@@ -74,3 +74,30 @@ test("un código de plantilla mal formado se ignora y el servidor arranca normal
     await server.cleanup();
   }
 });
+
+test("restarting the server does not reset failed template pairing attempts", async () => {
+  const home = tempDir("colonia-preset-restart-");
+  const otherHome = tempDir("colonia-preset-client-");
+  let server = await bootWith(home.path, "ABCD2345");
+  const other = await bootWith(otherHome.path);
+  const join = (code: string) =>
+    other.client.call("sync.pair_join", { code, address: new URL(server.core.url).origin });
+  try {
+    const initial = (await server.client.call("sync.status", {})).pairing?.expires_at;
+    for (let i = 0; i < 4; i++) await assert.rejects(join("ZZZZ2345"));
+    await server.core.close();
+    server = await bootWith(home.path, "ABCD2345");
+    assert.equal((await server.client.call("sync.status", {})).pairing?.expires_at, initial);
+    await assert.rejects(join("ZZZZ2345"));
+    await server.core.close();
+    server = await bootWith(home.path, "ABCD2345");
+    assert.equal((await server.client.call("sync.status", {})).pairing, undefined);
+    await assert.rejects(join("ABCD2345"));
+    assert.equal((await server.client.call("sync.status", {})).paired, false);
+  } finally {
+    await other.core.close();
+    await server.core.close();
+    await other.cleanup();
+    await server.cleanup();
+  }
+});

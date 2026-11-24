@@ -5,13 +5,10 @@ import {
   cloudInvitation,
   forgetPairCode,
   hostingLinks,
-  newPairCode,
   pairKey,
   pairRefusal,
   pendingPairCode,
-  rememberPairCode,
   serverAddress,
-  withPairCode,
 } from "./serverHosting.ts";
 
 test("una plantilla publicada abre el despliegue en Railway", () => {
@@ -95,21 +92,6 @@ test("el escritorio ofrece llevar al servidor solo el motor local confirmado por
   assert.equal(isLocalHostingDesktop(true, "colonia.example"), false);
 });
 
-test("AUTOVINCULAR-1: el código va a la plantilla como variable precargada y respeta la invitación", () => {
-  const code = newPairCode();
-  assert.match(code, /^[2-9A-HJ-NP-Z]{8}$/);
-  assert.notEqual(newPairCode(), code);
-  assert.equal(
-    newPairCode(() => new Uint8Array(8).fill(255)),
-    "ZZZZZZZZ",
-  );
-  const deploy = hostingLinks("es", "colonia-plantilla").deploy ?? "";
-  assert.equal(
-    withPairCode(deploy, "ABCD2345"),
-    "https://railway.com/new/template/colonia-plantilla?referralCode=dBUtql&COLONIA_PAIR_CODE=ABCD2345",
-  );
-});
-
 test("AUTOVINCULAR-1: el código pendiente caduca en un día y se olvida al vincular", () => {
   const bag = new Map<string, string>();
   const store = {
@@ -119,11 +101,11 @@ test("AUTOVINCULAR-1: el código pendiente caduca en un día y se olvida al vinc
   };
   const t0 = 1_000_000;
   assert.equal(pendingPairCode(store, t0), undefined);
-  rememberPairCode("ABCD2345", store, t0);
+  store.setItem("colonia.railway-pair", JSON.stringify({ code: "ABCD2345", at: t0 }));
   assert.equal(pendingPairCode(store, t0 + 60_000), "ABCD2345");
   assert.equal(pendingPairCode(store, t0 + 25 * 3_600_000), undefined);
   assert.equal(bag.size, 0, "uno caducado se borra");
-  rememberPairCode("ABCD2345", store, t0);
+  store.setItem("colonia.railway-pair", JSON.stringify({ code: "ABCD2345", at: t0 }));
   forgetPairCode(store);
   assert.equal(pendingPairCode(store, t0), undefined);
   bag.set("colonia.railway-pair", "{roto");

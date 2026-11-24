@@ -79,7 +79,7 @@ async function fits(group: Locator) {
 
 for (const language of ["es", "en"] as const) {
   for (const mode of ["light", "dark"] as const) {
-    test(`crear un servidor desde Mis equipos · ${language} · ${mode}`, async ({ page }) => {
+    test(`crear un servidor desde Mis equipos · ${language} · ${mode}`, async ({ page }, testInfo) => {
       await rpc("setup.finish");
       await page.emulateMedia({ colorScheme: mode });
       await page.addInitScript((lang) => {
@@ -118,6 +118,16 @@ for (const language of ["es", "en"] as const) {
       const opened = (await page.evaluate(() => sessionStorage.getItem("enlace"))) ?? "";
       const link = new URL(opened);
       expect(link.origin).toBe("https://railway.com");
+      expect(link.searchParams.has("COLONIA_PAIR_CODE")).toBe(false);
+      expect(await page.evaluate(() => localStorage.getItem("colonia.railway-pair"))).toBeNull();
+      await expect(card.getByRole("button", { name: /Ya tengo servidor|I have a server/ })).toBeVisible();
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        await testInfo.attach(`server-pairing-${width}`, {
+          body: await card.screenshot({ animations: "disabled" }),
+          contentType: "image/png",
+        });
+      }
       expect(link.pathname).toBe(template ? `/new/template/${template}` : "/");
       expect(link.searchParams.get("referralCode")).toBe(process.env.VITE_COLONIA_RAILWAY_REFERRAL || "dBUtql");
       await expect(card).not.toContainText(/comisión|commission/);

@@ -4,14 +4,7 @@ import { openLink } from "../data/links.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
 import { nav, useNav } from "../shell/nav.ts";
 import { HostingPair } from "./HostingPair.tsx";
-import {
-  forgetPairCode,
-  hostingLinks,
-  newPairCode,
-  pendingPairCode,
-  rememberPairCode,
-  withPairCode,
-} from "./serverHosting.ts";
+import { forgetPairCode, hostingLinks, pendingPairCode } from "./serverHosting.ts";
 
 export function ServerHosting() {
   const t = useT();
@@ -34,9 +27,7 @@ export function ServerHosting() {
     if (window.coloniaDesktop?.openExternal) void window.coloniaDesktop.openExternal(url);
     else openLink(url);
   };
-  // RAILWAY-NAVEGADOR-1 · Railway se abre SIEMPRE en el navegador normal del ordenador. En el navegador de Colonia
-  // Google rechaza el inicio de sesión («navegador no seguro», accounts.google.com/v3/signin/rejected). La vinculación
-  // no depende de la pestaña: el servidor nace con el código y el escritorio lo espera (AUTOVINCULAR-1).
+  // Railway sign-in uses the system browser; the owner creates a separate desktop invitation.
   const openRailway = (url: string) => open(url);
   return (
     <section ref={section} tabIndex={-1} className="eq-card eq-card--static" aria-label={t("equipos.hosting")}>
@@ -48,11 +39,7 @@ export function ServerHosting() {
           leadingIcon={<Icons.ExternalLink />}
           onClick={() => {
             if (!deploy) return void openRailway(signup);
-            // AUTOVINCULAR-1 · El servidor nace con este código y el escritorio lo espera.
-            const code = pending ?? newPairCode();
-            rememberPairCode(code);
-            setPending(code);
-            void openRailway(withPairCode(deploy, code));
+            void openRailway(deploy);
           }}
         >
           {t(deploy ? "equipos.hostingRailway" : "equipos.hostingSignup")}
