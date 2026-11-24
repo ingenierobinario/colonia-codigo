@@ -639,6 +639,73 @@ test("Windows real: tras un corte entre los dos movimientos, recover.ps1 devuelv
   assert.ok(fs.existsSync(path.join(w.stage, "failed")));
 });
 
+// SWAP-RAPIDO-1 · 24-nov-2026, 2.36.70: un programa que Colonia arrancó siguió vivo con su carpeta de trabajo dentro de la
+// instalación; su .exe no está en ella, la espera no lo veía y el cambio se rindió a los 30 s (instalador: 3 min).
+test("Windows real: un programa que Colonia arrancó y sigue vivo dentro de la instalación se termina por PID y el cambio entra", async (t) => {
+  if (!realWindows) return;
+  const w = await folderUpdate(t);
+  assert.equal((await w.updater().install("2.1.0", true)).ok, true);
+  const { spawn: realSpawn } = await import("node:child_process");
+  const pidFile = path.join(w.dir, "orphan.pid");
+  // «Colonia»: arranca un programa con la carpeta de trabajo dentro de la instalación y se queda abierta.
+  const colonia = realSpawn(
+    process.execPath,
+    [
+      "-e",
+      `const c=require("node:child_process").spawn(process.execPath,["-e","setInterval(()=>{},1e6)"],{cwd:${JSON.stringify(w.installed)},stdio:"ignore",detached:true});require("node:fs").writeFileSync(${JSON.stringify(pidFile)},String(c.pid));setInterval(()=>{},1e6);`,
+    ],
+    { stdio: "ignore" },
+  );
+  t.after(() => colonia.kill());
+  await waitFor(() => fs.existsSync(pidFile), "the program Colonia started", { ms: 20_000 });
+  const orphan = Number(fs.readFileSync(pidFile, "utf8"));
+  const alive = (pid: number) => {
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  t.after(() => {
+    if (alive(orphan)) process.kill(orphan);
+  });
+  const ps = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File"];
+  const swap = realSpawn(
+    "powershell.exe",
+    [
+      ...ps,
+      path.join(w.stage, "swap.ps1"),
+      String(colonia.pid),
+      w.installed,
+      w.ready,
+      w.stage,
+      "0",
+      w.log,
+      "2.1.0",
+      "5",
+      "2",
+    ],
+    { stdio: "ignore", cwd: w.installed },
+  );
+  const done = new Promise<number | null>((resolve) => swap.once("exit", resolve));
+  await waitFor(
+    () => fs.existsSync(w.log) && /and 1 programs it started/.test(fs.readFileSync(w.log, "utf8")),
+    "the tree noted",
+    {
+      ms: 30_000,
+    },
+  );
+  // Colonia se cierra de golpe: su programa queda huérfano, con la carpeta de trabajo aún dentro.
+  colonia.kill();
+  assert.equal(await done, 0);
+  const said = fs.readFileSync(w.log, "utf8");
+  assert.ok(said.includes(`1 programs Colonia started still ran after 2 s: ended by PID (${orphan})`), said);
+  assert.match(said, /new app in place \(2\.1\.0\)/);
+  assert.equal(fs.readFileSync(path.join(w.installed, "Colonia.exe"), "utf8"), "new");
+  assert.equal(alive(orphan), false, "the orphan was ended");
+});
+
 test("Windows sin zip en la versión sigue con el instalador de siempre", async (t) => {
   const w = await windowsUpdate(t);
   assert.deepEqual(w.updater.restart(), { ok: true });

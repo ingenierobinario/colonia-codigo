@@ -132,7 +132,11 @@ if [ "$relaunch" = 1 ]; then open "$old" || say "could not open $old"; fi
 // (recover.ps1) cubre un corte de luz entre los dos movimientos. Lo que no entró deja `failed`: la descarga se queda y
 // la próxima vez va el instalador de siempre, en vez de volver a bajar 600 MB en bucle.
 const SWAP_WIN = `
-param([int]$pid0, [string]$old, [string]$new, [string]$stage, [int]$relaunch, [string]$log, [string]$version, [int]$secs = 30)
+param([int]$pid0, [string]$old, [string]$new, [string]$stage, [int]$relaunch, [string]$log, [string]$version, [int]$secs = 30, [int]$grace = 10)
+# SWAP-RAPIDO-1 · CAUSA RAÍZ del 24-nov-2026 (2.36.70): el acceso directo abre Colonia con «Iniciar en» = la carpeta de
+# la instalación y este script la heredaba como carpeta de trabajo: el propio cambio impedía renombrarla, reintentaba
+# 30 s, se rendía y entraba el instalador (3 min). Se sale de ella antes de nada (Colonia también lo lanza ya desde fuera).
+try { [System.IO.Directory]::SetCurrentDirectory((Split-Path -Parent $old)); Set-Location -LiteralPath (Split-Path -Parent $old) } catch {}
 function Say($m) { if ($log) { try { Add-Content -LiteralPath $log -Value ("{0} swap: {1}" -f (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), $m) } catch {} } }
 function Has($dir) { return (Test-Path -LiteralPath (Join-Path $dir "Colonia.exe")) }
 function Move-Retry($from, $to, $secs) {
@@ -152,7 +156,55 @@ $recover = Join-Path $stage "recover.ps1"
 if (Test-Path -LiteralPath $recover) {
   try { New-ItemProperty -Path $runOnce -Name "ColoniaUpdateRecover" -PropertyType String -Force -Value ('powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $recover + '"') | Out-Null } catch {}
 }
+# SWAP-RAPIDO-1 · Los programas que Colonia arrancó (el núcleo y lo que él arranca: canales, MCP, codex, la barra de
+# avisos…) heredan su carpeta de trabajo DENTRO de la instalación, y un proceso con la carpeta de trabajo dentro impide
+# renombrarla. Su .exe no está en la instalación (powershell, node, codex), así que la espera por ExecutablePath no los
+# veía: el cambio se rendía a los 30 s y entraba el instalador (24-nov-2026, 2.36.70). Se apunta el árbol de Colonia
+# por PID (y su hora de creación, contra PIDs reutilizados) y lo que siga vivo tras $grace s se termina por PID.
+function Get-Tree($roots, $born) {
+  $all = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
+  $byId = @{}; foreach ($x in $all) { $byId[[int]$x.ProcessId] = $x }
+  # This script and the wscript that started it are Colonia's children too: they are not ended.
+  $skip = @{}; $p = [int]$PID
+  while ($p -and $p -ne $pid0 -and -not $skip.ContainsKey($p) -and $byId.ContainsKey($p)) { $skip[$p] = 1; $p = [int]$byId[$p].ParentProcessId }
+  $set = @{}; foreach ($r in $roots) { $set[[int]$r] = $null }
+  $grew = $true
+  while ($grew) {
+    $grew = $false
+    foreach ($x in $all) {
+      $id = [int]$x.ProcessId
+      if ($set.ContainsKey($id) -or $skip.ContainsKey($id) -or -not $set.ContainsKey([int]$x.ParentProcessId)) { continue }
+      if (-not $x.CreationDate -or $x.CreationDate -lt $born) { continue }
+      $set[$id] = $x.CreationDate; $grew = $true
+    }
+  }
+  $set.Remove([int]$pid0)
+  return $set
+}
+function Get-Alive($known) {
+  $now = @{}; foreach ($x in @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)) { $now[[int]$x.ProcessId] = $x.CreationDate }
+  return @($known.Keys | Where-Object { $now.ContainsKey($_) -and $now[$_] -eq $known[$_] })
+}
+$known = @{}
+$born = $null
+try { $born = (Get-CimInstance Win32_Process -Filter "ProcessId=$pid0" -ErrorAction SilentlyContinue).CreationDate } catch {}
+if ($born) { $known = Get-Tree @($pid0) $born }
+Say ("waiting for Colonia ({0}) and {1} programs it started" -f $pid0, $known.Count)
 try { Wait-Process -Id $pid0 -Timeout 60 -ErrorAction SilentlyContinue } catch {}
+if ($born) {
+  # Orphans keep their parent's PID: what they started while Colonia closed is found the same way.
+  $more = Get-Tree (@($pid0) + @($known.Keys)) $born
+  foreach ($k in $more.Keys) { if (-not $known.ContainsKey($k)) { $known[$k] = $more[$k] } }
+  $until = (Get-Date).AddSeconds($grace)
+  while (((Get-Alive $known).Count -gt 0) -and ((Get-Date) -lt $until)) { Start-Sleep -Milliseconds 200 }
+  $left = Get-Alive $known
+  if ($left.Count -gt 0) {
+    Say ("{0} programs Colonia started still ran after {1} s: ended by PID ({2})" -f $left.Count, $grace, ($left -join ", "))
+    foreach ($id in $left) { try { & taskkill.exe /T /F /PID $id 2>&1 | Out-Null } catch {} }
+    $until = (Get-Date).AddSeconds(10)
+    while (((Get-Alive $known).Count -gt 0) -and ((Get-Date) -lt $until)) { Start-Sleep -Milliseconds 200 }
+  }
+}
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline) {
   $left = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($old + "\\", [StringComparison]::OrdinalIgnoreCase) })
@@ -545,7 +597,13 @@ export function createDesktopUpdater(opts: {
         opts.logFile ?? "",
         release.version,
       ];
-      const child = start("wscript.exe", args, { detached: true, stdio: "ignore", windowsHide: true });
+      // SWAP-RAPIDO-1 · Nunca con la carpeta de trabajo dentro de la instalación (la de Colonia, si la abrió el acceso directo).
+      const child = start("wscript.exe", args, {
+        cwd: path.dirname(old),
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+      });
       child.once("error", (error) => log(`swap did not start: ${error.message}`));
       if (child.pid === undefined) {
         swapping = false;

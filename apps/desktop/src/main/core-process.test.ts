@@ -364,3 +364,27 @@ test("ARRANQUE-RAPIDO-1: el núcleo instalado arranca desde su único fichero, y
   fs.writeFileSync(path.join(dir.path, "apps", "core", "core.mjs"), "");
   assert.equal(core.coreEntry(dir.path), path.join(dir.path, "apps", "core", "core.mjs"));
 });
+
+// SWAP-RAPIDO-1 · En Windows el núcleo se termina con todo lo que arrancó, por PID (nunca por nombre de imagen).
+test("killTree termina el árbol por PID en Windows y sólo el hijo en el resto", () => {
+  const calls: unknown[][] = [];
+  const kills: unknown[] = [];
+  const child = { pid: 4321, kill: (s?: unknown) => kills.push(s) === 0 };
+  const run = ((file: string, args: string[], _o: unknown, cb: (e: Error | null) => void) => {
+    calls.push([file, args]);
+    cb(null);
+  }) as unknown as typeof import("node:child_process").execFile;
+  const real = Object.getOwnPropertyDescriptor(process, "platform");
+  try {
+    Object.defineProperty(process, "platform", { value: "win32" });
+    core.killTree(child, "SIGKILL", run);
+    assert.deepEqual(calls, [["taskkill.exe", ["/T", "/F", "/PID", "4321"]]]);
+    assert.deepEqual(kills, [], "taskkill did it");
+    Object.defineProperty(process, "platform", { value: "linux" });
+    core.killTree(child, "SIGKILL", run);
+    assert.deepEqual(kills, ["SIGKILL"]);
+    assert.equal(calls.length, 1);
+  } finally {
+    if (real) Object.defineProperty(process, "platform", real);
+  }
+});

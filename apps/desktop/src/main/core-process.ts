@@ -262,8 +262,10 @@ export function startEmbeddedCore(opts: {
         if (!child || child.exitCode !== null || child.signalCode !== null || !child.pid) return close();
         const current = child;
         // First ask: closing stdin lets the core close its store and stop its agents' programs.
-        const kill = setTimeout(() => current.kill(), CLEAN_STOP_MS);
-        const force = setTimeout(() => current.kill("SIGKILL"), CLEAN_STOP_MS + 5000);
+        // SWAP-RAPIDO-1 · En Windows kill() sólo termina el núcleo: sus programas (canales, MCP, codex) seguían vivos,
+        // con la carpeta de trabajo dentro de la instalación, y el cambio de versión no podía moverla. Árbol por PID.
+        const kill = setTimeout(() => killTree(current), CLEAN_STOP_MS);
+        const force = setTimeout(() => killTree(current, "SIGKILL"), CLEAN_STOP_MS + 5000);
         current.once("exit", () => {
           clearTimeout(kill);
           clearTimeout(force);
@@ -274,6 +276,21 @@ export function startEmbeddedCore(opts: {
       return stopping;
     },
   };
+}
+
+/** SWAP-RAPIDO-1 · Ends a child and, on Windows, every program it started (by its PID, never by image name). */
+export function killTree(
+  child: Pick<ChildProcess, "pid" | "kill">,
+  signal: NodeJS.Signals = "SIGTERM",
+  run: typeof execFile = execFile,
+): void {
+  if (process.platform === "win32" && child.pid) {
+    run("taskkill.exe", ["/T", "/F", "/PID", String(child.pid)], { windowsHide: true }, (err) => {
+      if (err) child.kill(signal);
+    });
+    return;
+  }
+  child.kill(signal);
 }
 
 /** Waits until the core answers, or gives up. */
