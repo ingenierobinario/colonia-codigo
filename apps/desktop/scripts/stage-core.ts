@@ -14,7 +14,11 @@ export const CORE_BUNDLE = path.join("apps", "core", "core.mjs");
  */
 export const INLINE_PACKAGES = ["zod", "ws", "smol-toml", "kysely", "@colonia/protocol"];
 
-const packageOf = (spec: string) => spec.split("/").slice(0, spec.startsWith("@") ? 2 : 1).join("/");
+const packageOf = (spec: string) =>
+  spec
+    .split("/")
+    .slice(0, spec.startsWith("@") ? 2 : 1)
+    .join("/");
 
 /**
  * ARRANQUE-RAPIDO-1: the core as ONE JavaScript file. Started as TypeScript it is ~700 modules that Node reads, strips
