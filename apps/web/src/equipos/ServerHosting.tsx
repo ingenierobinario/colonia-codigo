@@ -1,9 +1,8 @@
 import { Button, Icons } from "@colonia/ui";
 import { useEffect, useRef, useState } from "react";
-import { browserOpen } from "../data/actions.ts";
 import { openLink } from "../data/links.ts";
 import { useLanguage, useT } from "../i18n/index.ts";
-import { go, nav, useNav } from "../shell/nav.ts";
+import { nav, useNav } from "../shell/nav.ts";
 import { HostingPair } from "./HostingPair.tsx";
 import {
   forgetPairCode,
@@ -35,19 +34,10 @@ export function ServerHosting() {
     if (window.coloniaDesktop?.openExternal) void window.coloniaDesktop.openExternal(url);
     else openLink(url);
   };
-  // SERVIDOR-NAVEGADOR-1 · En el escritorio, Railway se abre en el navegador de Colonia: su inicio de sesión con
-  // GitHub o Google abre una ventana emergente que el navegador integrado convierte en pestaña con su `opener`
-  // (host.ts, CHROME-1: las pestañas del dueño permiten ventanas emergentes; solo las de un agente las cargan en sitio).
-  // Si no hay escritorio o no se pudo abrir la pestaña, se abre fuera como antes.
-  const openRailway = async (url: string) => {
-    if (!window.coloniaDesktop) return openLink(url);
-    const tab = await browserOpen(url);
-    if (!tab) return open(url);
-    nav.set({ browserTab: tab });
-    // Mis equipos no tiene panel lateral: la pestaña se ve en la ventana propia del navegador de Colonia.
-    if (window.coloniaDesktop.popOutBrowser) window.coloniaDesktop.popOutBrowser(true, tab);
-    else go.panel("browser");
-  };
+  // RAILWAY-NAVEGADOR-1 · Railway se abre SIEMPRE en el navegador normal del ordenador. En el navegador de Colonia
+  // Google rechaza el inicio de sesión («navegador no seguro», accounts.google.com/v3/signin/rejected). La vinculación
+  // no depende de la pestaña: el servidor nace con el código y el escritorio lo espera (AUTOVINCULAR-1).
+  const openRailway = (url: string) => open(url);
   return (
     <section ref={section} tabIndex={-1} className="eq-card eq-card--static" aria-label={t("equipos.hosting")}>
       <h2 className="eq-transfer__title">{t("equipos.hosting")}</h2>
