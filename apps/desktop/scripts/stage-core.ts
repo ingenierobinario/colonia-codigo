@@ -6,6 +6,17 @@ import { build, type Plugin } from "esbuild";
 export const CORE_BUNDLE = path.join("apps", "core", "core.mjs");
 
 /**
+ * NUCLEO-BUNDLE-1: the pure-JavaScript packages the core imports statically at every start go inside the bundle too.
+ * Left in node_modules they were ~145 files opened before /health (zod alone 95); on Windows each first open after an
+ * update goes past the antivirus, and that alone took the "modules" phase from ~0.6 s to 4-25 s. Native packages, and
+ * what is only loaded on demand (`import()`: agent SDKs, WhatsApp, sharp, the pty), stay where they are. A dynamic
+ * import of an inlined name stays external on purpose: harness/claude.ts loads the SDK's own zod that way.
+ */
+export const INLINE_PACKAGES = ["zod", "ws", "smol-toml", "kysely", "@colonia/protocol"];
+
+const packageOf = (spec: string) => spec.split("/").slice(0, spec.startsWith("@") ? 2 : 1).join("/");
+
+/**
  * ARRANQUE-RAPIDO-1: the core as ONE JavaScript file. Started as TypeScript it is ~700 modules that Node reads, strips
  * and compiles one by one; on Windows each file also goes past the antivirus, and the first start after an update
  * (compile cache cold) took 30-100 s before /health answered. Third-party packages stay in node_modules (imported by
@@ -45,12 +56,14 @@ export async function stageCore(root: string, outfile = path.join(root, CORE_BUN
       {
         name: "colonia-inline",
         setup(b) {
-          // Installed packages load from node_modules as before; @colonia/* (workspace sources) go in.
-          b.onResolve({ filter: /^[^./]/ }, (args) =>
-            args.path.startsWith("@colonia/") || /^[A-Za-z]:/.test(args.path)
-              ? undefined
-              : { path: args.path, external: true },
-          );
+          // Installed packages load from node_modules as before, except the start-up ones (NUCLEO-BUNDLE-1);
+          // @colonia/* (workspace sources) go in.
+          b.onResolve({ filter: /^[^./]/ }, (args) => {
+            if (/^[A-Za-z]:/.test(args.path) || args.pluginData === "inline") return undefined;
+            if (args.kind === "dynamic-import") return { path: args.path, external: true };
+            if (args.path.startsWith("@colonia/")) return undefined;
+            return INLINE_PACKAGES.includes(packageOf(args.path)) ? undefined : { path: args.path, external: true };
+          });
           b.onResolve({ filter: /^@colonia\// }, async (args) => {
             if (args.pluginData === "inline") return undefined;
             const r = await b.resolve(args.path, {
@@ -59,8 +72,8 @@ export async function stageCore(root: string, outfile = path.join(root, CORE_BUN
               importer: args.importer,
               pluginData: "inline",
             });
-            // Staged, @colonia/protocol is already JavaScript in node_modules: it stays a package import.
-            return r.path.endsWith(".ts") ? r : { path: args.path, external: true };
+            // Staged, @colonia/protocol is already JavaScript in node_modules: it goes in as that (NUCLEO-BUNDLE-1).
+            return r;
           });
         },
       },
