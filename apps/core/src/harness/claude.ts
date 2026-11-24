@@ -13,9 +13,9 @@ import { effortPart, type Harness, hasMode, modelPart, type TurnIO, type TurnOut
  * from the same schema (arrays, enums, limits included): a looser copy made Claude send arguments our check refuses.
  * See HISTORY.md#claude-tool-schema
  */
-export function zodShape(params: object): z.ZodRawShape {
-  const s = z.fromJSONSchema(params as Parameters<typeof z.fromJSONSchema>[0]);
-  return s instanceof z.ZodObject ? s.shape : {};
+export function zodShape(params: object, zod: typeof z = z): z.ZodRawShape {
+  const s = zod.fromJSONSchema(params as Parameters<typeof z.fromJSONSchema>[0]);
+  return s instanceof zod.ZodObject ? s.shape : {};
 }
 
 // Claude Code's own web, file and shell tools, each asked through our policy.
@@ -118,7 +118,9 @@ export function claudeUsage(report: (soFar: Usage) => void) {
 }
 type Tally = ReturnType<typeof claudeUsage>;
 
-type Sdk = typeof import("@anthropic-ai/claude-agent-sdk");
+// NUCLEO-BUNDLE-1: the installed core carries its own zod inside core.mjs; the shape handed to the SDK is built with the
+// zod the SDK itself imports (node_modules), loaded with it, so both sides see one zod.
+type Sdk = typeof import("@anthropic-ai/claude-agent-sdk") & { zod: typeof z };
 type ImageReader = (id: string) => { mime: string; data: string } | undefined;
 
 async function* imagePrompt(io: TurnIO, readImage: ImageReader) {
@@ -150,17 +152,20 @@ async function* imagePrompt(io: TurnIO, readImage: ImageReader) {
 // The SDK is a large module: loaded on the first Claude turn, so a core that never runs one never pays for it.
 let sdkLoad: Promise<Sdk> | undefined;
 const loadSdk = () => {
-  sdkLoad ??= import("@anthropic-ai/claude-agent-sdk");
+  sdkLoad ??= Promise.all([import("@anthropic-ai/claude-agent-sdk"), import("zod")]).then(([sdk, zod]) => ({
+    ...sdk,
+    zod: zod.z,
+  }));
   return sdkLoad;
 };
 
 /** Colonia's tools as an in-process MCP server: every call comes back through io.execute (cards, policy, steps). */
-function coloniaServer({ createSdkMcpServer, tool }: Sdk, io: TurnIO, counts: Counts) {
+function coloniaServer({ createSdkMcpServer, tool, zod }: Sdk, io: TurnIO, counts: Counts) {
   return createSdkMcpServer({
     name: "colonia",
     version: "0.1.0",
     tools: io.tools.map((spec) =>
-      tool(spec.function.name, spec.function.description, zodShape(spec.function.parameters), async (args) => {
+      tool(spec.function.name, spec.function.description, zodShape(spec.function.parameters, zod), async (args) => {
         counts.colonia++;
         const r = await io.execute(
           `${io.run.id}-c${counts.colonia}`,
