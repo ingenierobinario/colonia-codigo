@@ -87,7 +87,8 @@ for (const language of ["es", "en"] as const) {
       ]);
       const sidebar = page.locator(".sidebar");
       const row = sidebar.locator('[data-project-id="~default"]');
-      const nav = row.getByRole("button", { name, exact: true });
+      const nav = row.locator("button.colonia-nav");
+      const accessibleName = new RegExp(`^${name}(?: ${language === "es" ? "Sin leer" : "Unread"})?$`);
       const treeButton = sidebar.locator(".sidebar__tree");
       const fold = page.getByRole("button", {
         name: language === "es" ? "Plegar la barra" : "Fold the sidebar",
@@ -102,6 +103,7 @@ for (const language of ["es", "en"] as const) {
         for (const width of [390, 768, 960, 1200, 1440]) {
           await page.setViewportSize({ width, height: 990 });
           await expect(nav).toBeVisible();
+          await expect(nav).toHaveAccessibleName(accessibleName);
           await expect(nav).toHaveAttribute("aria-description", role);
           await expect(row.locator(".colonia-tile")).toHaveText("🧭");
           await expect(sidebar.locator(`[data-project-id="${parent.id}"] .sidebar-navrow__global-role`)).toHaveCount(0);
