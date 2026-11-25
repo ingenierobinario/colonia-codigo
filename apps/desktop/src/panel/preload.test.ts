@@ -5,6 +5,38 @@ import { type TestContext, test } from "node:test";
 
 let sequence = 0;
 
+test("a business page gets authentication without the main Colonia's browser or connection controls", async (t) => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "location");
+  Object.defineProperty(globalThis, "location", {
+    configurable: true,
+    value: { pathname: `/workspaces/w_${"a".repeat(32)}/` },
+  });
+  t.after(() => {
+    if (previous) Object.defineProperty(globalThis, "location", previous);
+    else Reflect.deleteProperty(globalThis, "location");
+  });
+  const { worlds, calls, renderer, call } = await preload(t, { "desktop:core-token": "owner-test-key" });
+  assert.deepEqual(Object.keys(worlds), ["coloniaWorkspaceAuth"]);
+  assert.equal(worlds.coloniaWorkspaceAuth?.token, "owner-test-key");
+  assert.equal(worlds.coloniaWorkspaceAuth?.platform, process.platform);
+  assert.deepEqual(Object.keys(worlds.coloniaWorkspaceAuth ?? {}).sort(), [
+    "isFullScreen",
+    "onFullScreen",
+    "platform",
+    "token",
+  ]);
+  const seen: unknown[] = [];
+  const off = call("coloniaWorkspaceAuth", "onFullScreen", (full: unknown) => seen.push(full)) as () => void;
+  renderer.emit("window:fullscreen", { sender: "private-event" }, true);
+  renderer.emit("window:fullscreen", { sender: "private-event" }, "false");
+  assert.equal(call("coloniaWorkspaceAuth", "isFullScreen"), true);
+  assert.deepEqual(seen, [true]);
+  off();
+  renderer.emit("window:fullscreen", {}, false);
+  assert.deepEqual(seen, [true]);
+  assert.deepEqual(calls, [["sync", "desktop:core-token"]]);
+});
+
 /** Replace Electron's native boundary; execute the actual preload module. */
 async function preload(t: TestContext, sync: Record<string, unknown> = {}) {
   const calls: [string, string, ...unknown[]][] = [];

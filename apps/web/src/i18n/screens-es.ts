@@ -5,9 +5,11 @@ import { esSetup } from "./es-setup.ts";
 import { esTeam } from "./es-team.ts";
 import { esTelemetry } from "./es-telemetry.ts";
 import type { enScreens } from "./screens-en.ts";
+import { esVirtualOffice } from "./virtual-office-es.ts";
 
 // Spanish of screens-en.ts.
 export const esScreens: Partial<Record<keyof typeof enScreens, string>> = {
+  ...esVirtualOffice,
   ...esHelper,
   ...esSetup,
   ...esTeam,

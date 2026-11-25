@@ -36,6 +36,8 @@ const AS_OWNER = "the owner's own word: their answer, their send, their read";
 
 /** Owner methods no agent calls, by reason. */
 export const OWNER_ONLY: Readonly<Record<string, string>> = {
+  "workspaces.create": "the owner creates a separate business with its own accounts and credentials",
+  "workspaces.update": "the owner names the businesses they switch between; an agent belongs to one business",
   "email.signature_import": "it only fills the owner's signature editor with Gmail's; saving it is theirs",
   "engines.set_usage": "the owner chooses whether Colonia queries and displays their external account limits",
   "secrets.set": SECRET,

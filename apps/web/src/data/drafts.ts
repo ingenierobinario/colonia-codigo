@@ -1,7 +1,9 @@
 // The owner's unsent words per chat (and per new chat not made yet), kept in this browser: moving to another chat,
 // screen or window and back, or reloading, finds them where they were left.
 
-const KEY = "colonia.drafts";
+import { workspaceStorageKey } from "./workspaceContext.ts";
+
+const KEY = workspaceStorageKey("colonia.drafts");
 /** The oldest drafts go first past this many chats, and any after a month untouched. */
 const MAX = 200;
 const MAX_AGE = 30 * 24 * 60 * 60_000;

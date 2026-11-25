@@ -60,6 +60,7 @@ export const LISTS = new Set([
 
 /** Ajustes que hablan de ESTE equipo y no viajan. */
 const LOCAL_SETTINGS = [
+  "workspaces",
   "desktop",
   "computer",
   "vm_",

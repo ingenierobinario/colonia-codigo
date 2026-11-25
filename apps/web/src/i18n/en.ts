@@ -21,6 +21,7 @@ import type { enThreadDialogs } from "./thread-dialogs-en.ts";
 
 // UI strings, English: the source of truth. Every key lives here; `{name}` placeholders are filled by t().
 export const en = {
+  "nav.office": "Office",
   "panel.computer": "Computer",
   "panel.computer.hint": "See the agent's Linux computer",
   "computer.screen": "Live VM desktop",

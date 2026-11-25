@@ -2,6 +2,7 @@ import "../styles/screens.css";
 import { Button, EmptyState, Icons, Spinner } from "@colonia/ui";
 import { useEffect, useState } from "react";
 import { client } from "../data/client.ts";
+import { workspacePath } from "../data/workspaceContext.ts";
 import { useT } from "../i18n/index.ts";
 
 const NAMES: Record<string, string> = {
@@ -47,7 +48,7 @@ export function OAuthReturn() {
     );
   }, []);
   const open = (
-    <Button size="sm" onClick={() => window.location.replace("/")}>
+    <Button size="sm" onClick={() => window.location.replace(`${workspacePath}/`)}>
       {t("oauth.open")}
     </Button>
   );

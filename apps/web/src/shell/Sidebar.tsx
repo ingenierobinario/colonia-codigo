@@ -5,6 +5,7 @@ import { loadChannels } from "../data/channels.ts";
 import { inInbox } from "../data/identity.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
+import { workspacePath } from "../data/workspaceContext.ts";
 import { useT } from "../i18n/index.ts";
 import { unreadListed } from "../inbox/groupThreads.ts";
 import { AppsDock, CornerCards, DesktopInstallNotice, NavegadoresDock, WebAppsDock } from "../lazy.ts";
@@ -72,6 +73,13 @@ export function Sidebar({ rail, width }: { rail: boolean; width: number }) {
             onClick={() => go.inbox()}
           />
         </ContextMenu>
+        <NavItem
+          collapsed={rail}
+          icon={<Icons.Building2 />}
+          label={t("nav.office")}
+          active={view === "office"}
+          onClick={() => (workspacePath ? location.assign("/#view=office") : go.view("office"))}
+        />
         <NavItem
           collapsed={rail}
           icon={<Icons.ListChecks />}

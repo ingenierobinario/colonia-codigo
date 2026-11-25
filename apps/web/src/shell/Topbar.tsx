@@ -7,6 +7,7 @@ import { BROWSER_NAMES, useNavegadores } from "../data/navegadores.ts";
 import { setPrefs, usePrefs } from "../data/prefs.ts";
 import { useData } from "../data/state.ts";
 import { useWebApps } from "../data/webapps.ts";
+import { useWorkspaceName } from "../data/workspaces.ts";
 import { useT } from "../i18n/index.ts";
 import { EngineUsageButton, RunningIndicator, UsageButton } from "../lazy.ts";
 import { AttentionTray } from "./AttentionTray.tsx";
@@ -42,6 +43,7 @@ function useCrumbs(): string[] {
   if (view === "app") return [t("nav.apps"), app?.title ?? t("common.app")];
   if (view === "webapp") return [t("webapp.title"), webApp ?? t("common.app")];
   if (view === "tasks") return [t("nav.tasks")];
+  if (view === "office") return [t("nav.office")];
   if (view === "flows") return [t("nav.flows")];
   if (view === "resources") return [t("nav.resources")];
   if (view === "files") return [t("nav.files")];
@@ -64,7 +66,9 @@ export function Topbar({ deferQuota }: { deferQuota: boolean }) {
   const t = useT();
   const desktop = useDesktopClass();
   const rightRef = useTopbarFit();
-  const crumbs = useCrumbs();
+  const locationCrumbs = useCrumbs();
+  const business = useWorkspaceName();
+  const crumbs = business ? [business, ...locationCrumbs] : locationCrumbs;
   const canBack = useNavHistory((s) => s.canBack);
   const canForward = useNavHistory((s) => s.canForward);
   const agents = useData((s) => s.agents);

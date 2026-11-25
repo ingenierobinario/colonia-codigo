@@ -35,3 +35,4 @@ export * from "./terminal-methods.ts";
 export * from "./thread-methods.ts";
 export * from "./update-coordination.ts";
 export * from "./usage-methods.ts";
+export * from "./workspace-methods.ts";

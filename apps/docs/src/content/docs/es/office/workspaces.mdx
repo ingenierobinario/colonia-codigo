@@ -1,0 +1,51 @@
+---
+title: Oficina y espacios de trabajo
+description: Mira cómo trabajan tus equipos y mantén las cuentas de cada negocio junto a sus proyectos.
+sidebar:
+  order: 1
+---
+
+Abre **Oficina** en la barra lateral para ver proyectos y departamentos como habitaciones. Cada agente tiene un
+escritorio, un resumen de actividad y un estado: disponible, trabajando, en cola, esperando tu respuesta o sin
+conexión. Sin conexión significa que Colonia no puede confirmar su actividad actual, no que el agente haya parado.
+Selecciona un agente o su burbuja para abrir la conversación en un lateral. La lista del equipo permite abrir
+las mismas conversaciones sin recorrer el plano.
+
+Usa **Organizar equipo** en una habitación para organizar sus agentes. Los departamentos proceden de la configuración
+del equipo del proyecto. La búsqueda, el filtro de proyectos y el zoom ayudan con equipos grandes. La oficina
+respeta la preferencia de reducir animaciones.
+
+## Separa tus negocios
+
+Pulsa **Nuevo espacio**, escribe el nombre del negocio y usa **Abrir espacio** para configurar sus modelos y servicios.
+Tu instalación actual sigue en **Mi Colonia**. Los espacios nuevos empiezan con su equipo inicial y sin copiar
+conexiones. Sus proyectos, conversaciones, credenciales de modelos, cuentas de servicios, perfiles del navegador y
+borradores están separados. Cada negocio activo utiliza otro proceso de Colonia y necesita memoria y CPU.
+Los negocios vuelven a arrancar cuando se reinicia la Colonia principal.
+
+Gestiona el acceso al equipo desde **Mi Colonia**: Tailscale pertenece al equipo y no se configura por separado
+para cada negocio. Cada negocio puede configurar su propia dirección pública para recibir eventos de servicios.
+
+Esta separación evita compartir cuentas y datos a través del uso habitual de Colonia. No equivale a un aislamiento
+del sistema operativo ni a un acceso independiente para otra persona: el propietario de la instalación puede abrir
+todos los espacios y un agente con acceso ilimitado a archivos o comandos sigue ejecutándose con el mismo usuario
+del sistema. Para clientes que no confían entre sí, usa equipos o usuarios del sistema separados.
+
+## Sincronización y copias
+
+Abre el espacio que quieras sincronizar antes de vincularlo con otro equipo. Crea o abre el negocio correspondiente
+en ese equipo y utiliza el código y la dirección del primer espacio. La dirección incluye `/workspaces/…`.
+Conocer la dirección no basta: hace falta un código de vinculación válido. Vincularlos comparte expresamente
+los datos y credenciales de ese negocio con su pareja.
+
+Sincronizar **Mi Colonia** no sincroniza todos los negocios. Crea también las copias desde dentro de cada espacio:
+una copia contiene el negocio seleccionado, no todos los espacios. Las sesiones del navegador y de programas de
+línea de comandos vinculadas al equipo necesitan volver a conectarse tras un traslado. Conserva una copia por
+cada negocio que quieras trasladar o recuperar.
+
+## Cambia un avatar
+
+Abre el chat de un agente desde la oficina, pulsa **Editar agente y avatar** y elige **Pingüinos**, **Personas** o
+**Animales**. Guarda el agente para cambiar su avatar en toda Colonia. El pingüino sigue siendo la opción por defecto.
+Los avatares humanos incluidos utilizan [DiceBear Pixel Art](https://www.dicebear.com/styles/pixel-art/) (CC0).
+Las imágenes vienen con Colonia: no se envían nombres de agentes ni datos de cuentas a un servicio de avatares.

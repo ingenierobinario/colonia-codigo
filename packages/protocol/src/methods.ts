@@ -20,6 +20,7 @@ import { terminalMethods } from "./terminal-methods.ts";
 import { threadMethods } from "./thread-methods.ts";
 import { updateCoordinationMethods } from "./update-coordination.ts";
 import { usageMethods } from "./usage-methods.ts";
+import { workspaceMethods } from "./workspace-methods.ts";
 
 export const SubsystemStatus = z.object({
   status: z.enum(["ok", "degraded", "down", "off"]),
@@ -116,6 +117,7 @@ export const methods = {
   ...terminalMethods,
   ...telemetryMethods,
   ...usageMethods,
+  ...workspaceMethods,
   ...engineUsageMethods,
   ...emailSignatureMethods,
   ...updateCoordinationMethods,

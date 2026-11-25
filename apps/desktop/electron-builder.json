@@ -24,7 +24,7 @@
     }
   ],
   "npmRebuild": false,
-  "electronVersion": "44.5.1",
+  "electronVersion": "44.11.5",
   "publish": null,
   "fileAssociations": [
     {

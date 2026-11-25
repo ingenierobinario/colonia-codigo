@@ -1,0 +1,48 @@
+---
+title: Office and workspaces
+description: See your teams at work and keep separate businesses' accounts together with their projects.
+sidebar:
+  order: 1
+---
+
+Open **Office** in the sidebar to see projects and departments as rooms. Each agent has a desk, an activity summary
+and a status: available, working, queued, waiting for your reply, or disconnected. Disconnected means Colonia cannot
+confirm current activity; it does not mean the agent stopped. Select an agent or its bubble to open its conversation
+in a side panel. The team list provides the same conversations without the floor plan.
+
+Use **Manage team** on a room to organize its agents. Departments come from the project's team settings. Search,
+project filtering and zoom help with larger teams. The office respects reduced-motion preferences.
+
+## Keep businesses separate
+
+Choose **New workspace**, give the business a name, then **Open workspace** to configure its models and services.
+The existing installation remains **My Colonia**. New workspaces start with their own default team and no copied
+connections. Their projects, conversations, provider credentials, integration accounts, browser profiles and drafts
+are separate. Running a business uses another core process, so each active business also needs memory and CPU.
+Businesses resume when the main Colonia restarts.
+
+Manage access to the computer through **My Colonia**: Tailscale belongs to the computer and is not configured
+separately for each business. Each business can configure its own public address for incoming service events.
+
+Workspace separation prevents ordinary account and data sharing through Colonia. It is not an operating-system
+sandbox or a separate login for another person: the installation owner can access every workspace, and an agent
+with unrestricted filesystem or command access still runs under the same operating-system user. Use separate
+machines or operating-system accounts when mutually untrusted clients need that stronger boundary.
+
+## Synchronization and copies
+
+Open the intended workspace before pairing it with another computer. Create or open the matching business on that
+computer, then use the pairing code and the first workspace's address. The address includes `/workspaces/…`.
+Knowing that address is not enough: a valid pairing code is required. Pairing explicitly shares that business's
+data and credentials with its counterpart.
+
+Syncing **My Colonia** does not sync every business. Create backups from inside each workspace, too: a copy contains
+the selected business, not all workspaces. Browser and command-line sign-ins tied to the computer need reconnecting
+after a move. Keep a backup for each business you want to move or recover.
+
+## Change an avatar
+
+Open an agent's chat from the office, choose **Edit agent and avatar**, and select **Penguins**, **People** or
+**Animals**. Save the agent to update its avatar throughout Colonia. Penguins remain the default.
+The included human avatars use [DiceBear Pixel Art](https://www.dicebear.com/styles/pixel-art/) (CC0); images ship
+with Colonia and do not send agent names or account information to an avatar service.

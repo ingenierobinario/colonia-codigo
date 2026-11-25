@@ -1,6 +1,6 @@
 // Starts the staged core (apps/desktop/.stage/colonia) on an empty home and waits for /health: a bundle whose core cannot
 // start never ships. See HISTORY.md#protocol-subpaths.
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
@@ -51,11 +51,33 @@ const ptyShell =
   process.platform === "win32"
     ? [process.env.COMSPEC ?? "cmd.exe", "/c", "echo colonia-pty"]
     : ["/bin/sh", "-c", "echo colonia-pty"];
-const pty = spawnSync(process.execPath, ["apps/core/src/terminal/pty-host.ts", "24", "80", ...ptyShell], {
+const pty = spawn(process.execPath, ["apps/core/src/terminal/pty-host.ts", "24", "80", ...ptyShell], {
   cwd: stage,
-  encoding: "utf8",
-  timeout: 10_000,
+  // Match the real terminal: keep its input open and provide the resize pipe on fd 3.
+  stdio: ["pipe", "pipe", "pipe", "pipe"],
   windowsHide: true,
+});
+let ptyOutput = "";
+let ptyError = "";
+let ptyTimedOut = false;
+pty.stdout.on("data", (chunk: Buffer) => (ptyOutput = (ptyOutput + chunk).slice(-8000)));
+pty.stderr.on("data", (chunk: Buffer) => (ptyError = (ptyError + chunk).slice(-8000)));
+const ptyStatus = await new Promise<number | null>((resolve) => {
+  const deadline = setTimeout(() => {
+    ptyTimedOut = true;
+    ptyError += "native pty command exceeded 10000 ms";
+    pty.kill();
+    for (const stream of pty.stdio) stream?.destroy();
+    pty.unref();
+    resolve(null);
+  }, 10_000);
+  pty.on("error", (error: Error) => {
+    ptyError += error.message;
+  });
+  pty.on("close", (code) => {
+    clearTimeout(deadline);
+    resolve(code);
+  });
 });
 if (!gone) core.kill();
 await exited;
@@ -67,8 +89,8 @@ if (!healthy) {
   );
 }
 console.log("staged core answered /health");
-if (!pty.stdout?.includes("colonia-pty")) {
-  console.error(pty.stdout, pty.stderr, pty.error?.message);
+if (ptyTimedOut || ptyStatus !== 0 || !ptyOutput.includes("colonia-pty")) {
+  console.error(ptyOutput, ptyError, ptyStatus);
   throw new Error("the staged terminal's native pty did not run a command");
 }
 console.log("staged terminal ran a command on its native pty");

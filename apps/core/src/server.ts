@@ -158,12 +158,15 @@ import type { Tool } from "./tools/types.ts";
 import { listenHooks } from "./transport/hooks.ts";
 import { createUpdates, type Runner } from "./updates.ts";
 import { createUsage, type UsageOptions } from "./usage.ts";
+import { createWorkspaces } from "./workspaces/manager.ts";
 
 /** `colonia mcp --run` (token in COLONIA_RUN_TOKEN): how an external harness (Codex) reaches the tools of its run. */
 const TERMINAL_MAIN = path.resolve(import.meta.dirname, "../../terminal/src/main.ts");
 
 /** What tests swap: the model, harnesses, extra tools, channel adapters and the scheduler's clock. */
 export type CoreOptions = {
+  /** A supervised business has its own home and cannot create nested workers. */
+  workspaceWorker?: boolean;
   computer?: ComputerConfig;
   /** Asana transport; tests record REST requests without contacting an account. */
   asanaFetch?: typeof fetch;
@@ -355,7 +358,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     store,
     secrets,
     endpoints: config.googleApi ? googleAt(config.googleApi) : GOOGLE,
-    origin: () => `http://127.0.0.1:${listening}`,
+    origin: () => (opts.workspaceWorker ? config.publicUrl : undefined) ?? `http://127.0.0.1:${listening}`,
     // An integration is off where the owner turned it off, and in a project that takes none of their globals.
     offIn: (project, id) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes(id),
     // A stand-in Google never takes Colonia's real client.
@@ -370,7 +373,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     store,
     secrets,
     fetch: opts.socialFetch,
-    origin: () => `http://127.0.0.1:${listening}`,
+    origin: () => (opts.workspaceWorker ? config.publicUrl : undefined) ?? `http://127.0.0.1:${listening}`,
     offIn: (project, id) => !integrationsOff.takesGlobals(project) || integrationsOff.offIn(project).includes(id),
   });
   const vm = createComputer(
@@ -481,6 +484,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   const noticePush = createNoticePush({ store, bus, push });
   let hooksPort = config.hooksPort;
   const webhooks = createPublicTunnel({
+    ...(opts.workspaceWorker ? { workspace: true } : {}),
     store,
     port: () => hooksPort,
     log,
@@ -845,8 +849,18 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     return made;
   });
 
+  const workspaces = opts.workspaceWorker
+    ? undefined
+    : createWorkspaces({
+        home: config.home,
+        log,
+        env: process.env,
+        fileSecrets: config.secrets === "file",
+        origin: () => config.publicUrl?.replace(/\/$/, "") ?? `http://127.0.0.1:${listening}`,
+      });
   const dispatch = createRouter(
     coreHandlers({
+      ...(workspaces ? { workspaces } : {}),
       vm,
       equipos: loadEquipos,
       internal,
@@ -859,6 +873,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       flowModel,
       integrationFetch: opts.integrationFetch,
       access: createAccess({
+        ...(opts.workspaceWorker ? { workspace: true } : {}),
         home: config.home,
         running: { host: config.host, publicUrl: config.publicUrl, token: config.token },
         port: () => listening,
@@ -878,7 +893,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
           secrets,
           version: identity.version,
           homeId: identity.home_id,
-          restart: config.supervised ? opts.restart : undefined,
+          restart: config.supervised || opts.workspaceWorker ? opts.restart : undefined,
           warn: (msg) => log.warn({}, msg),
         }),
       ),
@@ -940,6 +955,8 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
 
   markStartup("wired");
   const transport = await listen(config, {
+    ...(opts.workspaceWorker ? { workspaceWorker: true } : {}),
+    ...(workspaces ? { workspaces } : {}),
     dispatch,
     store,
     log,
@@ -954,6 +971,9 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     sync: { path: SYNC_PATH, upgrade: (req, socket, head) => void lazyUpgrade(loadSync, (x) => x, req, socket, head) },
   });
   listening = transport.port;
+  void workspaces
+    ?.resume()
+    .catch((err) => log.warn({ err: errorMessage(err) }, "workspace directory could not resume"));
   markStartup("health");
   // ARRANQUE-RAPIDO-1: knowing whether the store answers can run its program (DPAPI: PowerShell); /health goes first.
   void secretsWarm.then(() => {
@@ -1050,6 +1070,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
     computer: vm,
     async close() {
       closing = true;
+      await workspaces?.close();
       equiposNow?.agent.stop();
       equiposNow?.principal.close();
       awake.close();

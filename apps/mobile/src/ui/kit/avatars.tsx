@@ -1,5 +1,7 @@
 import { Image, Text, View } from "react-native";
+import { SvgXml } from "react-native-svg";
 import { blobEyes } from "../blobEyes";
+import { extraAvatars } from "../extraAvatars";
 import { makeStyles, useTheme } from "../theme";
 
 const BLOBS: Record<string, number> = {
@@ -76,7 +78,9 @@ export function AgentAvatar({
   const colors = INITIALS_BG[t.scheme];
   return (
     <View style={{ width: size, height: size, flexShrink: 0 }}>
-      {blobName && BLOBS[blobName] ? (
+      {blobName && extraAvatars[blobName] ? (
+        <SvgXml xml={extraAvatars[blobName]} width={size} height={size} />
+      ) : blobName && BLOBS[blobName] ? (
         <Image source={BLOBS[blobName]} resizeMode="contain" style={{ width: size, height: size }} />
       ) : (
         <View style={[s.avatar, { width: size, height: size, borderRadius: size / 2, backgroundColor: colors[hue] }]}>

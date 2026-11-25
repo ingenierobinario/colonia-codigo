@@ -25,7 +25,7 @@ const CLIENT_TOKEN = "coloniac_";
 const MAX_PAYLOAD = FILE_PAYLOAD_BYTES;
 
 /** null para un socket sin credencial, undefined para una negociación ambigua o mal formada. */
-function socketCredential(req: IncomingMessage): string | null | undefined {
+export function socketCredential(req: IncomingMessage): string | null | undefined {
   const query = new URL(req.url ?? "/", "http://core").searchParams.get("token");
   const header = req.headers["sec-websocket-protocol"];
   if (!header) return query;
@@ -66,9 +66,11 @@ export function attachWs(
     bus: Bus;
     gate: Gate;
     deviceOf?: (token: string) => { id: string; name: string } | undefined;
+    forwardedDevice?: ((req: IncomingMessage) => { id: string; name: string } | undefined) | undefined;
     streamPath?: string | undefined;
     /** Otras rutas de enganche que atienden otros módulos (los equipos emparejados, el equipo sincronizado). */
     extraPaths?: readonly string[] | undefined;
+    extraPath?: ((pathname: string) => boolean) | undefined;
     clientOf?: ClientLookup;
   },
 ) {
@@ -77,6 +79,7 @@ export function attachWs(
   const clientFor = (key: string | null) => (key?.startsWith(CLIENT_TOKEN) ? deps.clientOf?.(key) : undefined);
   const unknownClient = (key: string | null) => Boolean(key?.startsWith(CLIENT_TOKEN)) && !clientFor(key);
   const accepted = new WeakMap<IncomingMessage, string>();
+  const forwarded = new WeakMap<IncomingMessage, { id: string; name: string }>();
   const wss = new WebSocketServer({
     noServer: true,
     maxPayload: MAX_PAYLOAD,
@@ -89,6 +92,13 @@ export function attachWs(
         : false;
     },
     verifyClient: ({ req }, done) => {
+      try {
+        const device = deps.forwardedDevice?.(req);
+        if (device) forwarded.set(req, device);
+      } catch {
+        done(false, 403, "invalid workspace device");
+        return;
+      }
       const key = socketCredential(req);
       if (key === undefined) {
         done(false, 403, "invalid socket credentials");
@@ -105,7 +115,8 @@ export function attachWs(
   server.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://core").pathname;
     if (pathname !== "/ws") {
-      if (pathname !== deps.streamPath && !deps.extraPaths?.includes(pathname)) socket.destroy();
+      if (pathname !== deps.streamPath && !deps.extraPaths?.includes(pathname) && !deps.extraPath?.(pathname))
+        socket.destroy();
       return;
     }
     wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
@@ -201,7 +212,7 @@ export function attachWs(
         else broker.event(session, frame);
         return;
       }
-      const device = key?.startsWith("coloniad_") ? deps.deviceOf?.(key) : undefined;
+      const device = forwarded.get(req) ?? (key?.startsWith("coloniad_") ? deps.deviceOf?.(key) : undefined);
       const client = clientFor(key);
       const out = await dispatch(
         frame.method,

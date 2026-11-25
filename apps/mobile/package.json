@@ -38,6 +38,12 @@
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1"
   },
+  "overrides": {
+    "@expo/cli": "57.0.33",
+    "@expo/fingerprint": {
+      "minimatch": "11.0.9"
+    }
+  },
   "devDependencies": {
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "29.5.14",

@@ -1,5 +1,6 @@
 import type { SurfaceSummary } from "@colonia/protocol";
 import { useSyncExternalStore } from "react";
+import { workspacePath } from "../data/workspaceContext.ts";
 import { dropLive } from "./livePool.ts";
 
 // Which artifacts show in a window of their own: one copy runs at a time, so the panel shows a note where it was.
@@ -39,8 +40,8 @@ export function popOut(s: SurfaceSummary): void {
     return;
   }
   const w = window.open(
-    `${window.location.origin}/?artifact=${encodeURIComponent(s.id)}`,
-    `colonia-artifact-${s.id}`,
+    `${window.location.origin}${workspacePath}/?artifact=${encodeURIComponent(s.id)}`,
+    `colonia-artifact-${workspacePath}-${s.id}`,
     "popup,width=1200,height=820",
   );
   if (!w) return;

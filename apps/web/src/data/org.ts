@@ -6,6 +6,7 @@ import { client } from "./client.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import { realProjectId } from "./identity.ts";
 import { notify } from "./notices.ts";
+import { useData } from "./state.ts";
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const store = createStore<{ orgs: Record<string, Organization> }>({ orgs: {} });
@@ -40,4 +41,15 @@ export function useOrg(pid: string): Organization | undefined {
     if (!store.get().orgs[pid]) void loadOrg(pid);
   }, [pid]);
   return org;
+}
+
+/** The office reads the same organization cache as the project editor. */
+export function useOrgs(projects: readonly string[]): Record<string, Organization> {
+  const orgs = useSlice(store, (s) => s.orgs);
+  const team = useData((s) => s.agents);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: team.updated refreshes agents and can also rename or add departments.
+  useEffect(() => {
+    for (const id of projects) void loadOrg(id);
+  }, [projects, team]);
+  return orgs;
 }

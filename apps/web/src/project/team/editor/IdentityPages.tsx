@@ -1,19 +1,7 @@
 // The agent editor's general pages: identity (with area and role picked from the project or created on the spot),
 // prompt, and model and team.
 import type { Agent, Organization } from "@colonia/protocol";
-import {
-  AgentAvatar,
-  BLOB_NAMES,
-  Button,
-  Dialog,
-  Field,
-  Icons,
-  Input,
-  Select,
-  SettingRow,
-  Switch,
-  Textarea,
-} from "@colonia/ui";
+import { Button, Dialog, Field, Icons, Input, Select, SettingRow, Switch, Textarea } from "@colonia/ui";
 import { useState } from "react";
 import { slugOf } from "../../../common/slug.ts";
 import { AgentModelPicker } from "../../../config/models/AgentModelPicker.tsx";
@@ -21,6 +9,7 @@ import { DEFAULT_PID } from "../../../data/identity.ts";
 import { saveOrg, useOrg } from "../../../data/org.ts";
 import { useData } from "../../../data/state.ts";
 import { useT } from "../../../i18n/index.ts";
+import { AvatarPicker } from "./AvatarPicker.tsx";
 import type { Draft } from "./draft.ts";
 
 const NONE = "~none";
@@ -158,20 +147,7 @@ export function IdentityPage({
         />
       </SettingRow>
       <SettingRow stacked title={t("agentedit.avatar")}>
-        <div className="agentedit__blobs">
-          {BLOB_NAMES.map((b) => (
-            <button
-              key={b}
-              type="button"
-              aria-pressed={d.blob === b}
-              aria-label={b}
-              className={`agentedit__blob${d.blob === b ? " is-on" : ""}`}
-              onClick={() => edit({ blob: b })}
-            >
-              <AgentAvatar name={d.name} blob={b} size={32} animated={false} />
-            </button>
-          ))}
-        </div>
+        <AvatarPicker name={d.name} value={d.blob} onChange={(blob) => edit({ blob })} />
       </SettingRow>
       {creating && (
         <OrgQuickCreate

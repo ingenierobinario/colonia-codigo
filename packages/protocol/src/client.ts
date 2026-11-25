@@ -46,6 +46,8 @@ export class ColoniaError extends Error {
 
 /** Methods whose server deadline exceeds the default: the client must wait longer than the server (rule 9). */
 function clientDeadline(method: string, params: unknown, fallback: number): number {
+  // Starting an isolated business has a bounded 60-second worker boot deadline.
+  if (method === "workspaces.snapshot") return 75_000;
   if (method === "environments.control") return 20_000;
   if (method === "environments.command") return 60_000;
   if (method === "engines.usage") return 35_000;

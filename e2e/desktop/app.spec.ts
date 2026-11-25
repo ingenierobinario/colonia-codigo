@@ -94,6 +94,51 @@ test("the window shows the panel the core serves", async () => {
   await expect(main.getByRole("textbox", { name: /^Escríbele a|^Message/ }).or(main.getByRole("dialog"))).toBeVisible();
 });
 
+test("a business opens in the desktop with its own context and a restricted native bridge", async () => {
+  const main = await page("main");
+  const requests: string[] = [];
+  main.on("response", (response) => requests.push(`${response.status()} ${new URL(response.url()).pathname}`));
+  main.on("pageerror", (error) => requests.push(`pageerror: ${error.message}`));
+  main.on("requestfailed", (request) =>
+    requests.push(`failed: ${new URL(request.url()).pathname} ${request.failure()?.errorText}`),
+  );
+  const { workspace } = await rpc<{ workspace: { id: string } }>("workspaces.create", { name: "Desktop business" });
+  const snapshot = await rpc<{ agents: Array<{ id: string; name: string }> }>("workspaces.snapshot", {
+    workspace: workspace.id,
+  });
+  const prefix = `${core}/workspaces/${workspace.id}`;
+  const response = await fetch(`${prefix}/rpc/setup.finish`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "idempotency-key": "desktop-business-setup" },
+    body: "{}",
+  });
+  expect((await response.json()).ok).toBe(true);
+  await main.goto(`${prefix}/`);
+  try {
+    await expect(main.locator(".topbar.is-desktop")).toContainText("Desktop business");
+  } finally {
+    await test.info().attach("business-navigation", { body: requests.join("\n"), contentType: "text/plain" });
+  }
+  expect(
+    await main.evaluate(() => ({
+      business: Boolean(window.coloniaWorkspaceAuth),
+      desktop: Boolean(window.coloniaDesktop),
+      connect: Boolean(window.coloniaConnect),
+    })),
+  ).toEqual({ business: true, desktop: false, connect: false });
+  await main.getByRole("button", { name: /^(Oficina|Office)$/ }).click();
+  await expect(main).toHaveURL(`${core}/#view=office`);
+  await main.getByRole("button", { name: "Desktop business", exact: true }).click();
+  const agent = snapshot.agents[0];
+  if (!agent) throw new Error("the business has no default team");
+  await main.getByRole("button", { name: new RegExp(`^(Hablar con|Chat with) ${agent.name}$`) }).click();
+  await expect(main.locator(".office-drawer iframe")).toBeVisible();
+  const chat = main.frameLocator(".office-drawer iframe");
+  await expect(chat.getByRole("textbox", { name: /^Escríbele a|^Message/ })).toBeVisible();
+  await main.screenshot({ path: test.info().outputPath("business-office-chat.png") });
+  await main.goto(core);
+});
+
 test("the desktop header shares the native title bar and keeps its search centered", async () => {
   const main = await page("main");
   await expect(main.locator(".topbar.is-desktop")).toBeVisible();

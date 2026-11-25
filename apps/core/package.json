@@ -20,13 +20,13 @@
     "@openai/codex-sdk": "0.159.3",
     "@whiskeysockets/baileys": "7.0.0-rc14",
     "kysely": "0.29.6",
-    "smol-toml": "1.6.0",
+    "smol-toml": "1.9.1",
     "ws": "^8.22.0",
     "zod": "^4.6.6"
   },
   "devDependencies": {
     "@colonia/config": "workspace:*",
-    "@modelcontextprotocol/sdk": "1.31.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@types/ws": "^8.18.1"
   }
 }

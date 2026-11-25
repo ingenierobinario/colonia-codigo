@@ -7,6 +7,8 @@ import { addPack } from "./i18n/index.ts";
 
 /** A late piece waits for the late screens' strings (i18n "screens" pack) with its own code, so it never shows a bare key. */
 const late: typeof lazy = (load) => lazy(() => Promise.all([load(), addPack("screens")]).then(([m]) => m));
+export const OfficeScreen = late(() => import("./office/OfficeScreen.tsx").then((m) => ({ default: m.OfficeScreen })));
+export const OfficeChat = late(() => import("./office/OfficeChat.tsx").then((m) => ({ default: m.OfficeChat })));
 
 // Windows of their own and the setup screens: the main window never loads them.
 export const QuickChat = late(() => import("./quick/QuickChat.tsx").then((m) => ({ default: m.QuickChat })));

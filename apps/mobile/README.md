@@ -18,6 +18,12 @@ npx expo start                       # Expo Go or a dev build; the core must lis
 It reads the protocol's client from `packages/protocol/src` (no zod reaches the phone: the core validates).
 The native adapter injects `expo-crypto` UUIDs: Hermes does not provide the browser's global Web Crypto API.
 
+The lockfile and scoped overrides keep the SDK 57 build tools on patched Expo CLI and fingerprint matcher versions.
+They address the [Zod collection validation advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5),
+[glob cancellation advisory](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4), and
+[minimatch amplification advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249) without upgrading the Expo SDK.
+After changing these pins, run `npm ci`, `npm test`, `npm run typecheck` and an Android export.
+
 While paired it also:
 - **Lends the phone to the core as a node** (`location`, `camera`): agents get `phone_location` and `phone_photo`
   only while it is connected. A picture is always taken by the owner (the app shows why it is asked); location asks
@@ -52,6 +58,10 @@ segmented control, spinner, headers, bottom sheet, tab bar), so a style changes 
 goes through `src/i18n` (English, Spanish).
 
 Metro watches files only outside CI mode: start it without `CI=1`, or saved changes never reach the phone.
+
+Agent avatars selected in the panel also render here: the design sync copies the local human and animal SVGs and
+their attribution beside the penguin assets. No avatar service is contacted. Jest discovers native UI tests from
+the `test` directory without embedding an absolute Windows worktree path into its glob.
 
 ## Native notifications
 

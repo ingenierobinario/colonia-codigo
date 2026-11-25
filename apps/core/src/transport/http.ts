@@ -94,6 +94,7 @@ export function httpHandler(
   pages?: PublicPages,
   clientOf?: ClientLookup,
   deviceOf?: DeviceLookup,
+  forwardedDevice?: (req: IncomingMessage) => { id: string; name: string } | undefined,
 ) {
   const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     const url = new URL(req.url ?? "/", "http://core");
@@ -128,7 +129,8 @@ export function httpHandler(
       }
       const idem = header(req, "idempotency-key");
       const auth = header(req, "authorization");
-      const device = auth?.startsWith("Bearer coloniad_") ? deviceOf?.(auth.slice(7)) : undefined;
+      const device =
+        forwardedDevice?.(req) ?? (auth?.startsWith("Bearer coloniad_") ? deviceOf?.(auth.slice(7)) : undefined);
       if (clientToken && !client)
         return send(res, 401, {
           ok: false,

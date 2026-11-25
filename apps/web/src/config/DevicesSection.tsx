@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { QrCode } from "../common/QrCode.tsx";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
+import { workspacePath } from "../data/workspaceContext.ts";
 import { useT } from "../i18n/index.ts";
 import { go } from "../shell/nav.ts";
 import { AccessBlock } from "./AccessBlock.tsx";
@@ -19,6 +20,21 @@ type Pairing = { code: string; expires_at: string; urls: string[] };
  * with a token of its own; remove one and only that one stops.
  */
 export function DevicesSection() {
+  const t = useT();
+  if (!workspacePath) return <DeviceSettings />;
+  return (
+    <>
+      <SectionHead title={t("config.devices")} lead={t("office.sharedAccess")} />
+      <Button variant="secondary" onClick={() => location.assign("/")}>
+        {t("office.openMain")}
+      </Button>
+      <PublicAddress />
+      <PublicEndpoints />
+    </>
+  );
+}
+
+function DeviceSettings() {
   const t = useT();
   const [devices, setDevices] = useState<Device[]>();
   const [pairing, setPairing] = useState<Pairing>();

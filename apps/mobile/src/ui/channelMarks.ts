@@ -2,7 +2,9 @@
 // Official marks of the chat apps Colonia connects to, used only to say which app a channel is (never altered).
 // Path data from simple-icons 16.35.0 (CC0; Slack from an earlier release, which no longer carries it); Microsoft
 // Teams' 2025 icon and Google Chat's 2026 icon are drawn whole (gradients) from thesvg.org; the marks belong to their owners. `color` null draws in the text colour (a black mark would vanish on the
-// dark theme). Flat paths where possible: these ship in the first load.
+// dark theme). Flat paths where possible: these ship in the first load. Mail has no brand of its own: `email` is an
+// envelope drawn here in the same flat style, and `outlook` Outlook's (a tile with its O over an envelope), for a
+// mailbox that is one (MARCA-CORREO-1).
 
 export type ChannelMark = { paths: ReadonlyArray<{ d: string; color: string | null }> };
 /** One element of a mark drawn whole: its tag, attributes (`{id}` stands for the icon's own prefix) and children. */
@@ -405,6 +407,30 @@ export const CHANNEL_MARKS = {
       {
         d: "M12.597 13.693v2.156h6.205v-2.156ZM5.183 6.549v2.363l3.591 1.901.023.01-.023.009-3.591 1.901v2.35l.386-.211 5.456-2.969V9.729ZM3.659 2.037C1.915 2.037.42 3.41.42 5.154v.002L.438 18.73 0 21.963l5.956-1.583h14.806c1.744 0 3.238-1.374 3.238-3.118V5.154c0-1.744-1.493-3.116-3.237-3.117h-.001zm0 2.2h17.104c.613.001 1.037.447 1.037.917v12.108c0 .47-.424.916-1.038.916H5.633l-3.026.915.031-.179-.017-13.76c0-.47.424-.917 1.038-.917z",
         color: "#317F6F",
+      },
+    ],
+  },
+  email: {
+    paths: [
+      {
+        d: "M3.5 4h17A2.5 2.5 0 0 1 23 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-17A2.5 2.5 0 0 1 1 17.5v-11A2.5 2.5 0 0 1 3.5 4z",
+        color: "#2F80ED",
+      },
+      { d: "M4.55 7.2 12 12.45l7.45-5.25 1.05 1.5L12 14.7 3.5 8.7z", color: "#FFFFFF" },
+    ],
+  },
+  outlook: {
+    paths: [
+      { d: "M9 5h12.5A1.5 1.5 0 0 1 23 6.5v11a1.5 1.5 0 0 1-1.5 1.5H9z", color: "#0364B8" },
+      { d: "M9 5h12.5c.62 0 1.15.38 1.38.91L15.6 11.2 9 8.1z", color: "#28A8EA" },
+      { d: "M23 8.6v8.9a1.5 1.5 0 0 1-1.5 1.5H9v-6.4l6.6 3.1z", color: "#14447D" },
+      {
+        d: "M2.5 6.5h9A1.5 1.5 0 0 1 13 8v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 1 16V8a1.5 1.5 0 0 1 1.5-1.5z",
+        color: "#0078D4",
+      },
+      {
+        d: "M7 8.5a3.2 3.5 0 1 0 0 7 3.2 3.5 0 1 0 0-7zm0 1.5a1.7 2 0 1 1 0 4 1.7 2 0 1 1 0-4z",
+        color: "#FFFFFF",
       },
     ],
   },

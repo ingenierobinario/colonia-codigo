@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
@@ -106,6 +106,18 @@ writeFileSync(
 );
 writeFileSync(resolve(target, "icons.LICENSE"), readFileSync(resolve(shared, "node_modules/lucide-react/LICENSE")));
 const source = readFileSync(resolve(shared, "src/blobs/catalog.ts"), "utf8");
+const avatars = resolve(shared, "src/blobs/avatars");
+const extraAvatars = Object.fromEntries(
+  readdirSync(avatars)
+    .filter((file) => file.endsWith(".svg"))
+    .sort()
+    .map((file) => [file.slice(0, -4), readFileSync(resolve(avatars, file), "utf8")]),
+);
+writeFileSync(
+  resolve(target, "extraAvatars.ts"),
+  `// Generated from the shared avatar catalog by scripts/sync-design-assets.mjs.\nexport const extraAvatars: Record<string, string> = ${JSON.stringify(extraAvatars, null, 2)};\n`,
+);
+writeFileSync(resolve(target, "extraAvatars.NOTICE"), readFileSync(resolve(avatars, "NOTICE.txt")));
 const eyes = {};
 for (const match of source.matchAll(/ {2}(\w+): \{\s*label:.*?eyeColor: "([^"]+)",\s*eyes: \[([\s\S]*?)\],/gs)) {
   eyes[match[1]] = {
@@ -140,7 +152,7 @@ const nativeTokens = (vars) => {
   const tokens = {};
   for (const [name, value] of Object.entries(vars)) {
     // Colors and sizes only: the rest are web-only choices (fonts, text transforms, shadows).
-    if (!/^(#|rgb|\d+px$)/.test(value)) continue;
+    if (!/^(#|rgb|transparent$|\d+px$)/.test(value)) continue;
     const key = name.replace(/-(\w)/g, (_, c) => c.toUpperCase());
     tokens[key] = /^\d+px$/.test(value) ? Number.parseInt(value, 10) : native(value);
   }
@@ -159,6 +171,11 @@ mkdirSync(resolve(mobile, "assets"), { recursive: true });
 writeFileSync(resolve(mobile, "assets/logo.png"), readFileSync(resolve(mobile, "../web/src/assets/logo.png")));
 
 // The panel's routine activation slots and weekly-cron reading, so both apps draw the same bars.
+mkdirSync(resolve(mobile, "src/common"), { recursive: true });
+writeFileSync(
+  resolve(mobile, "src/common/week.ts"),
+  `// Synced from apps/web/src/common/week.ts by scripts/sync-design-assets.mjs.\n${readFileSync(resolve(mobile, "../web/src/common/week.ts"), "utf8")}`,
+);
 mkdirSync(resolve(mobile, "src/routines"), { recursive: true });
 for (const file of ["slots.ts", "cron.ts"]) {
   const code = readFileSync(resolve(mobile, "../web/src/routines", file), "utf8").replace(

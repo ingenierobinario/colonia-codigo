@@ -93,7 +93,31 @@ async function answers(what: string, cmd: string, args: string[], env: NodeJS.Pr
       const ok = await fetch(`http://127.0.0.1:${port}/health`)
         .then((r) => r.ok)
         .catch(() => false);
-      if (ok) return console.log(`${what} answered /health`);
+      if (ok) {
+        const call = async (method: string, params: unknown) => {
+          const response = await fetch(`http://127.0.0.1:${port}/rpc/${method}`, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "idempotency-key": `smoke-${method}`,
+              ...(env.COLONIA_TOKEN ? { authorization: `Bearer ${env.COLONIA_TOKEN}` } : {}),
+            },
+            body: JSON.stringify(params),
+            signal: AbortSignal.timeout(Math.max(1, until - Date.now())),
+          });
+          const body = (await response.json()) as {
+            ok: boolean;
+            result: { workspace: { id: string; state: string }; agents?: unknown[] };
+          };
+          if (!body.ok) throw new Error(`${what}: ${method} failed`);
+          return body.result;
+        };
+        const created = await call("workspaces.create", { name: "Packaged business" });
+        const snapshot = await call("workspaces.snapshot", { workspace: created.workspace.id });
+        if (snapshot.workspace.state !== "ready" || !snapshot.agents?.length)
+          throw new Error(`${what}: business did not start`);
+        return console.log(`${what} answered /health and started an isolated business`);
+      }
       await new Promise((r) => setTimeout(r, 500));
     }
     console.error(output);

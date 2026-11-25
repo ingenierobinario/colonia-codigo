@@ -2,174 +2,184 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 type Bounds = { x: number; y: number; width: number; height: number };
-
+const workspace = typeof location !== "undefined" && /^\/workspaces\/w_[a-f0-9]{32}(?:\/|$)/.test(location.pathname);
 // Kept from the window's own reports (sent at load and on every change), so a late reader gets it too.
 let fullScreen = false;
 ipcRenderer.on("window:fullscreen", (_e, full: unknown) => {
   if (typeof full === "boolean") fullScreen = full;
 });
-
-contextBridge.exposeInMainWorld("coloniaDesktop", {
-  /** darwin | win32 | linux — panel pads the unified title bar for traffic lights / overlay. */
+const windowChrome = {
   platform: process.platform,
-  setBrowserBounds: (b: Bounds | null) => ipcRenderer.send("panel:browser-bounds", b),
-  showBrowserTab: (tab: string) => ipcRenderer.send("panel:browser-tab", tab),
-  /** The browser in a window of its own (true) or back in the side panel (false). */
-  popOutBrowser: (open: boolean, tab?: string) =>
-    ipcRenderer.send("browser:popout", open === true, ...(typeof tab === "string" ? [tab] : [])),
-  browserPoppedOut: (): boolean => ipcRenderer.sendSync("browser:popout-state") === true,
-  onBrowserPopout: (listener: (open: boolean) => void) => {
-    const on = (_e: unknown, open: unknown) => listener(open === true);
-    ipcRenderer.on("browser:popout", on);
-    return () => ipcRenderer.removeListener("browser:popout", on);
-  },
-  /** CHROME-1: search in the page, the browser's own actions on a tab, and downloads. */
-  findInPage: (tab: string, text: string, forward = true, next = false) =>
-    ipcRenderer.send("browser:find", String(tab), String(text), forward !== false, next === true),
-  stopFind: (tab: string) => ipcRenderer.send("browser:find-stop", String(tab)),
-  onFindOpen: (listener: (tab: string) => void) => {
-    const on = (_e: unknown, tab: unknown) => typeof tab === "string" && listener(tab);
-    ipcRenderer.on("browser:find-open", on);
-    return () => ipcRenderer.removeListener("browser:find-open", on);
-  },
-  onFound: (listener: (tab: string, active: number, total: number) => void) => {
-    const on = (_e: unknown, tab: unknown, active: unknown, total: unknown) =>
-      typeof tab === "string" && listener(tab, Number(active) || 0, Number(total) || 0);
-    ipcRenderer.on("browser:found", on);
-    return () => ipcRenderer.removeListener("browser:found", on);
-  },
-  tabAction: (tab: string, action: string) => ipcRenderer.send("browser:act", String(tab), String(action)),
-  onDownload: (listener: (notice: unknown) => void) => {
-    const on = (_e: unknown, notice: unknown) => listener(notice);
-    ipcRenderer.on("browser:download", on);
-    return () => ipcRenderer.removeListener("browser:download", on);
-  },
-  openDownload: (id: string) => ipcRenderer.send("browser:download-open", String(id)),
-  showDownload: (id: string) => ipcRenderer.send("browser:download-show", String(id)),
-  installedBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installed"),
-  /** INSTALAR-NAV-1: the browsers this computer lacks, installing one by its id, and how that is going. */
-  installableBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installable"),
-  installBrowser: (id: string): Promise<unknown> => ipcRenderer.invoke("browser:install", String(id)),
-  cancelBrowserInstall: () => ipcRenderer.send("browser:install-cancel"),
-  onBrowserInstall: (listener: (progress: unknown) => void) => {
-    const on = (_e: unknown, progress: unknown) => listener(progress);
-    ipcRenderer.on("browser:install-progress", on);
-    return () => ipcRenderer.removeListener("browser:install-progress", on);
-  },
-  /** `browser` undefined = the system's default browser. */
-  openExternal: (url: string, browser?: string): Promise<unknown> =>
-    ipcRenderer.invoke("browser:open-external", String(url), typeof browser === "string" ? browser : undefined),
-  /** An artifact in a window of its own. */
-  openArtifactWindow: (id: string, title: string) =>
-    ipcRenderer.send("artifact:open-window", String(id), String(title)),
-  closeArtifactWindow: (id: string) => ipcRenderer.send("artifact:close-window", String(id)),
-  onArtifactWindow: (listener: (id: string, open: boolean) => void) => {
-    const on = (_e: unknown, id: unknown, open: unknown) => {
-      if (typeof id === "string") listener(id, open === true);
-    };
-    ipcRenderer.on("artifact:window", on);
-    return () => ipcRenderer.removeListener("artifact:window", on);
-  },
-  openMain: (threadId?: string) =>
-    ipcRenderer.send("quick:open-main", typeof threadId === "string" ? threadId : undefined),
-  /** Files the owner opened with Colonia, each with its text or why it has none; taken once. */
-  takeOpenedFiles: (): Promise<unknown> => ipcRenderer.invoke("artifact:take-opened"),
-  onFileOpened: (listener: () => void) => {
-    const on = () => listener();
-    ipcRenderer.on("artifact:file-opened", on);
-    return () => ipcRenderer.removeListener("artifact:file-opened", on);
-  },
   isFullScreen: () => fullScreen,
   onFullScreen: (listener: (full: boolean) => void) => {
-    const on = (_e: unknown, full: unknown) => {
+    const on = (_event: unknown, full: unknown) => {
       if (typeof full === "boolean") listener(full);
     };
     ipcRenderer.on("window:fullscreen", on);
     return () => ipcRenderer.removeListener("window:fullscreen", on);
   },
-  onBrowserHandoff: (listener: (tab: string) => void) => {
-    const on = (_e: unknown, id: unknown) => {
-      if (typeof id === "string") listener(id);
-    };
-    ipcRenderer.on("nav:browser-handoff", on);
-    return () => ipcRenderer.removeListener("nav:browser-handoff", on);
-  },
-  onOpenThread: (listener: (threadId: string) => void) => {
-    const on = (_e: unknown, id: unknown) => {
-      if (typeof id === "string") listener(id);
-    };
-    ipcRenderer.on("nav:thread", on);
-    return () => ipcRenderer.removeListener("nav:thread", on);
-  },
-  applyDesktopPrefs: (prefs: { shortcut: string; launchAtLogin: boolean; computerUse?: boolean }) =>
-    ipcRenderer.send("desktop:prefs", prefs),
-  /** Computer use: what macOS allows Colonia, where the owner allows it, and the live view of what an agent works on. */
-  computerPermissions: (): Promise<unknown> => ipcRenderer.invoke("computer:permissions"),
-  openPrivacy: (kind: "screen" | "accessibility") => ipcRenderer.invoke("computer:open-privacy", kind),
-  computerFrame: (): Promise<unknown> => ipcRenderer.invoke("computer:frame"),
-  /** The emergency stop (also ⌘⇧Esc from any app): ends the turns using the computer, this time only. */
-  stopComputer: () => ipcRenderer.invoke("computer:stop"),
-  onComputerStopped: (listener: (stopped: boolean) => void) => {
-    const on = (_e: unknown, stopped: unknown) => listener(stopped === true);
-    ipcRenderer.on("computer:stopped", on);
-    return () => ipcRenderer.removeListener("computer:stopped", on);
-  },
-  onComputerActivity: (listener: (a: unknown) => void) => {
-    const on = (_e: unknown, a: unknown) => listener(a);
-    ipcRenderer.on("computer:activity", on);
-    return () => ipcRenderer.removeListener("computer:activity", on);
-  },
-  setAttention: (unread: number) => ipcRenderer.send("desktop:attention", Number(unread) || 0),
-  setTitleBar: (mode: "light" | "dark") => ipcRenderer.send("desktop:titlebar", mode),
-  setLanguage: (language: string) => ipcRenderer.send("desktop:language", String(language)),
-  /** Runs an app menu item (about, update, change-connection): Windows and Linux have no menu bar to show it. */
-  menuAction: (id: string) => ipcRenderer.send("desktop:menu-action", String(id)),
-  pickFolder: (): Promise<string | undefined> => ipcRenderer.invoke("panel:pick-folder"),
-  /** PROGRAMAS-1: the owner's desktop programs (picked with the system dialog, launched by id). */
-  programs: (): Promise<unknown> => ipcRenderer.invoke("programs:list"),
-  addProgram: (): Promise<unknown> => ipcRenderer.invoke("programs:add"),
-  renameProgram: (id: string, name: string): Promise<unknown> =>
-    ipcRenderer.invoke("programs:rename", String(id), String(name)),
-  removeProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:remove", String(id)),
-  launchProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:launch", String(id)),
-  /** Importar del navegador habitual: solo marcadores y webs más visitadas, y solo cuando se pide. */
-  importSources: (): Promise<unknown> => ipcRenderer.invoke("import:sources"),
-  openOriginalProfile: (id: string): Promise<boolean> => ipcRenderer.invoke("import:open-profile", id),
-  importRead: (id: string): Promise<unknown> => ipcRenderer.invoke("import:read", String(id)),
-  /** NAVEGADORES-2: la barra de marcadores de un perfil del navegador real (solo lectura). */
-  bookmarkBar: (id: string): Promise<unknown> => ipcRenderer.invoke("import:bar", String(id)),
-  /** Contraseñas de las aplicaciones web: la lista nunca lleva la contraseña; verla pide confirmación del sistema. */
-  loginsAvailable: (): Promise<unknown> => ipcRenderer.invoke("logins:available"),
-  loginsList: (): Promise<unknown> => ipcRenderer.invoke("logins:list"),
-  loginsReveal: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:reveal", String(id)),
-  loginsRemoveApp: (app: string): Promise<unknown> => ipcRenderer.invoke("logins:remove-app", String(app)),
-  loginsRemove: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:remove", String(id)),
-  answerLoginOffer: (id: string, answer: "guardar" | "nunca" | "ahora-no"): Promise<unknown> =>
-    ipcRenderer.invoke("logins:answer", String(id), answer),
-  onLoginOffer: (listener: (offer: unknown) => void) => {
-    const on = (_e: unknown, offer: unknown) => listener(offer);
-    ipcRenderer.on("logins:offer", on);
-    return () => ipcRenderer.removeListener("logins:offer", on);
-  },
-  memory: (): Promise<unknown> => ipcRenderer.invoke("desktop:memory"),
-  /** Whether a newer Colonia app is out (check: ask the release feed now). */
-  updateAuth: (token?: string) => ipcRenderer.send("desktop:update-auth", token),
-  updateStatus: (check?: boolean): Promise<unknown> => ipcRenderer.invoke("desktop:update-status", check === true),
-  /** Downloads the newer app and leaves it ready for the next restart (or opens it for the owner to drag in). */
-  installUpdate: (): Promise<unknown> => ipcRenderer.invoke("desktop:update-install"),
-  /** Quits and opens the newer app that is ready; an answer that comes back says why it could not. */
-  restartToUpdate: (): Promise<unknown> => ipcRenderer.invoke("desktop:update-restart"),
-  /** The app's update changed (found, downloading, ready), wherever it was started (the panel or the app menu). */
-  onUpdateStatus: (listener: (status: unknown) => void) => {
-    const on = (_e: unknown, s: unknown) => listener(s);
-    ipcRenderer.on("desktop:update-changed", on);
-    return () => ipcRenderer.removeListener("desktop:update-changed", on);
-  },
-  // The local core's token when it asks for one (it listens beyond this computer); asked once, at load.
-  coreToken: (ipcRenderer.sendSync("desktop:core-token") as string | undefined) || undefined,
-  // Whether the core runs on this computer (not one at an address or over SSH): Finder can show its files.
-  coreLocal: ipcRenderer.sendSync("desktop:core-local") === true,
-});
+};
+// Window geometry is shared; the owner's browser and native accounts belong only to the main Colonia.
+if (workspace)
+  contextBridge.exposeInMainWorld("coloniaWorkspaceAuth", {
+    token: (ipcRenderer.sendSync("desktop:core-token") as string | undefined) || undefined,
+    ...windowChrome,
+  });
+
+if (!workspace)
+  contextBridge.exposeInMainWorld("coloniaDesktop", {
+    /** darwin | win32 | linux — panel pads the unified title bar for traffic lights / overlay. */
+    ...windowChrome,
+    setBrowserBounds: (b: Bounds | null) => ipcRenderer.send("panel:browser-bounds", b),
+    showBrowserTab: (tab: string) => ipcRenderer.send("panel:browser-tab", tab),
+    /** The browser in a window of its own (true) or back in the side panel (false). */
+    popOutBrowser: (open: boolean, tab?: string) =>
+      ipcRenderer.send("browser:popout", open === true, ...(typeof tab === "string" ? [tab] : [])),
+    browserPoppedOut: (): boolean => ipcRenderer.sendSync("browser:popout-state") === true,
+    onBrowserPopout: (listener: (open: boolean) => void) => {
+      const on = (_e: unknown, open: unknown) => listener(open === true);
+      ipcRenderer.on("browser:popout", on);
+      return () => ipcRenderer.removeListener("browser:popout", on);
+    },
+    /** CHROME-1: search in the page, the browser's own actions on a tab, and downloads. */
+    findInPage: (tab: string, text: string, forward = true, next = false) =>
+      ipcRenderer.send("browser:find", String(tab), String(text), forward !== false, next === true),
+    stopFind: (tab: string) => ipcRenderer.send("browser:find-stop", String(tab)),
+    onFindOpen: (listener: (tab: string) => void) => {
+      const on = (_e: unknown, tab: unknown) => typeof tab === "string" && listener(tab);
+      ipcRenderer.on("browser:find-open", on);
+      return () => ipcRenderer.removeListener("browser:find-open", on);
+    },
+    onFound: (listener: (tab: string, active: number, total: number) => void) => {
+      const on = (_e: unknown, tab: unknown, active: unknown, total: unknown) =>
+        typeof tab === "string" && listener(tab, Number(active) || 0, Number(total) || 0);
+      ipcRenderer.on("browser:found", on);
+      return () => ipcRenderer.removeListener("browser:found", on);
+    },
+    tabAction: (tab: string, action: string) => ipcRenderer.send("browser:act", String(tab), String(action)),
+    onDownload: (listener: (notice: unknown) => void) => {
+      const on = (_e: unknown, notice: unknown) => listener(notice);
+      ipcRenderer.on("browser:download", on);
+      return () => ipcRenderer.removeListener("browser:download", on);
+    },
+    openDownload: (id: string) => ipcRenderer.send("browser:download-open", String(id)),
+    showDownload: (id: string) => ipcRenderer.send("browser:download-show", String(id)),
+    installedBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installed"),
+    /** INSTALAR-NAV-1: the browsers this computer lacks, installing one by its id, and how that is going. */
+    installableBrowsers: (): Promise<unknown> => ipcRenderer.invoke("browser:installable"),
+    installBrowser: (id: string): Promise<unknown> => ipcRenderer.invoke("browser:install", String(id)),
+    cancelBrowserInstall: () => ipcRenderer.send("browser:install-cancel"),
+    onBrowserInstall: (listener: (progress: unknown) => void) => {
+      const on = (_e: unknown, progress: unknown) => listener(progress);
+      ipcRenderer.on("browser:install-progress", on);
+      return () => ipcRenderer.removeListener("browser:install-progress", on);
+    },
+    /** `browser` undefined = the system's default browser. */
+    openExternal: (url: string, browser?: string): Promise<unknown> =>
+      ipcRenderer.invoke("browser:open-external", String(url), typeof browser === "string" ? browser : undefined),
+    /** An artifact in a window of its own. */
+    openArtifactWindow: (id: string, title: string) =>
+      ipcRenderer.send("artifact:open-window", String(id), String(title)),
+    closeArtifactWindow: (id: string) => ipcRenderer.send("artifact:close-window", String(id)),
+    onArtifactWindow: (listener: (id: string, open: boolean) => void) => {
+      const on = (_e: unknown, id: unknown, open: unknown) => {
+        if (typeof id === "string") listener(id, open === true);
+      };
+      ipcRenderer.on("artifact:window", on);
+      return () => ipcRenderer.removeListener("artifact:window", on);
+    },
+    openMain: (threadId?: string) =>
+      ipcRenderer.send("quick:open-main", typeof threadId === "string" ? threadId : undefined),
+    /** Files the owner opened with Colonia, each with its text or why it has none; taken once. */
+    takeOpenedFiles: (): Promise<unknown> => ipcRenderer.invoke("artifact:take-opened"),
+    onFileOpened: (listener: () => void) => {
+      const on = () => listener();
+      ipcRenderer.on("artifact:file-opened", on);
+      return () => ipcRenderer.removeListener("artifact:file-opened", on);
+    },
+    onBrowserHandoff: (listener: (tab: string) => void) => {
+      const on = (_e: unknown, id: unknown) => {
+        if (typeof id === "string") listener(id);
+      };
+      ipcRenderer.on("nav:browser-handoff", on);
+      return () => ipcRenderer.removeListener("nav:browser-handoff", on);
+    },
+    onOpenThread: (listener: (threadId: string) => void) => {
+      const on = (_e: unknown, id: unknown) => {
+        if (typeof id === "string") listener(id);
+      };
+      ipcRenderer.on("nav:thread", on);
+      return () => ipcRenderer.removeListener("nav:thread", on);
+    },
+    applyDesktopPrefs: (prefs: { shortcut: string; launchAtLogin: boolean; computerUse?: boolean }) =>
+      ipcRenderer.send("desktop:prefs", prefs),
+    /** Computer use: what macOS allows Colonia, where the owner allows it, and the live view of what an agent works on. */
+    computerPermissions: (): Promise<unknown> => ipcRenderer.invoke("computer:permissions"),
+    openPrivacy: (kind: "screen" | "accessibility") => ipcRenderer.invoke("computer:open-privacy", kind),
+    computerFrame: (): Promise<unknown> => ipcRenderer.invoke("computer:frame"),
+    /** The emergency stop (also ⌘⇧Esc from any app): ends the turns using the computer, this time only. */
+    stopComputer: () => ipcRenderer.invoke("computer:stop"),
+    onComputerStopped: (listener: (stopped: boolean) => void) => {
+      const on = (_e: unknown, stopped: unknown) => listener(stopped === true);
+      ipcRenderer.on("computer:stopped", on);
+      return () => ipcRenderer.removeListener("computer:stopped", on);
+    },
+    onComputerActivity: (listener: (a: unknown) => void) => {
+      const on = (_e: unknown, a: unknown) => listener(a);
+      ipcRenderer.on("computer:activity", on);
+      return () => ipcRenderer.removeListener("computer:activity", on);
+    },
+    setAttention: (unread: number) => ipcRenderer.send("desktop:attention", Number(unread) || 0),
+    setTitleBar: (mode: "light" | "dark") => ipcRenderer.send("desktop:titlebar", mode),
+    setLanguage: (language: string) => ipcRenderer.send("desktop:language", String(language)),
+    /** Runs an app menu item (about, update, change-connection): Windows and Linux have no menu bar to show it. */
+    menuAction: (id: string) => ipcRenderer.send("desktop:menu-action", String(id)),
+    pickFolder: (): Promise<string | undefined> => ipcRenderer.invoke("panel:pick-folder"),
+    /** PROGRAMAS-1: the owner's desktop programs (picked with the system dialog, launched by id). */
+    programs: (): Promise<unknown> => ipcRenderer.invoke("programs:list"),
+    addProgram: (): Promise<unknown> => ipcRenderer.invoke("programs:add"),
+    renameProgram: (id: string, name: string): Promise<unknown> =>
+      ipcRenderer.invoke("programs:rename", String(id), String(name)),
+    removeProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:remove", String(id)),
+    launchProgram: (id: string): Promise<unknown> => ipcRenderer.invoke("programs:launch", String(id)),
+    /** Importar del navegador habitual: solo marcadores y webs más visitadas, y solo cuando se pide. */
+    importSources: (): Promise<unknown> => ipcRenderer.invoke("import:sources"),
+    openOriginalProfile: (id: string): Promise<boolean> => ipcRenderer.invoke("import:open-profile", id),
+    importRead: (id: string): Promise<unknown> => ipcRenderer.invoke("import:read", String(id)),
+    /** NAVEGADORES-2: la barra de marcadores de un perfil del navegador real (solo lectura). */
+    bookmarkBar: (id: string): Promise<unknown> => ipcRenderer.invoke("import:bar", String(id)),
+    /** Contraseñas de las aplicaciones web: la lista nunca lleva la contraseña; verla pide confirmación del sistema. */
+    loginsAvailable: (): Promise<unknown> => ipcRenderer.invoke("logins:available"),
+    loginsList: (): Promise<unknown> => ipcRenderer.invoke("logins:list"),
+    loginsReveal: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:reveal", String(id)),
+    loginsRemoveApp: (app: string): Promise<unknown> => ipcRenderer.invoke("logins:remove-app", String(app)),
+    loginsRemove: (id: string): Promise<unknown> => ipcRenderer.invoke("logins:remove", String(id)),
+    answerLoginOffer: (id: string, answer: "guardar" | "nunca" | "ahora-no"): Promise<unknown> =>
+      ipcRenderer.invoke("logins:answer", String(id), answer),
+    onLoginOffer: (listener: (offer: unknown) => void) => {
+      const on = (_e: unknown, offer: unknown) => listener(offer);
+      ipcRenderer.on("logins:offer", on);
+      return () => ipcRenderer.removeListener("logins:offer", on);
+    },
+    memory: (): Promise<unknown> => ipcRenderer.invoke("desktop:memory"),
+    /** Whether a newer Colonia app is out (check: ask the release feed now). */
+    updateAuth: (token?: string) => ipcRenderer.send("desktop:update-auth", token),
+    updateStatus: (check?: boolean): Promise<unknown> => ipcRenderer.invoke("desktop:update-status", check === true),
+    /** Downloads the newer app and leaves it ready for the next restart (or opens it for the owner to drag in). */
+    installUpdate: (): Promise<unknown> => ipcRenderer.invoke("desktop:update-install"),
+    /** Quits and opens the newer app that is ready; an answer that comes back says why it could not. */
+    restartToUpdate: (): Promise<unknown> => ipcRenderer.invoke("desktop:update-restart"),
+    /** The app's update changed (found, downloading, ready), wherever it was started (the panel or the app menu). */
+    onUpdateStatus: (listener: (status: unknown) => void) => {
+      const on = (_e: unknown, s: unknown) => listener(s);
+      ipcRenderer.on("desktop:update-changed", on);
+      return () => ipcRenderer.removeListener("desktop:update-changed", on);
+    },
+    // The local core's token when it asks for one (it listens beyond this computer); asked once, at load.
+    coreToken: (ipcRenderer.sendSync("desktop:core-token") as string | undefined) || undefined,
+    // Whether the core runs on this computer (not one at an address or over SSH): Finder can show its files.
+    coreLocal: ipcRenderer.sendSync("desktop:core-local") === true,
+  });
 
 // ready: installed on a server and reachable, but not opened yet (the screen says so first); linger names the user
 // whose services stop at logout until they linger. key: this app's public key, for the owner to add by hand.
@@ -178,37 +188,38 @@ type Answer =
   | { ok: false; reason?: string; error?: string; key?: string };
 type SshPrompt = { id: string; text: string; secret: boolean };
 // The first-run screen (colonia-app://app/?connect): the main process only answers it while the window shows that page.
-contextBridge.exposeInMainWorld("coloniaConnect", {
-  // MUDANZA-1: "move" (they already use Colonia on another computer) opens the setup on bringing their things.
-  local: (access: string, intent?: string): Promise<Answer> =>
-    ipcRenderer.invoke("connect:local", access, ...(intent === "move" ? [intent] : [])),
-  url: (url: string): Promise<Answer> => ipcRenderer.invoke("connect:url", url),
-  // VOLVER-CONEXION-1: whether "Change connection" left a Colonia to return to, and going back to it.
-  previous: (): Promise<boolean> => ipcRenderer.invoke("connect:previous"),
-  back: (): Promise<Answer> => ipcRenderer.invoke("connect:back"),
-  ssh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh", target),
-  installSsh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh-install", target),
-  lingerSsh: (target: string, password: string): Promise<Answer> =>
-    ipcRenderer.invoke("connect:ssh-linger", target, password),
-  // Which step the main process is on (ssh, probe, install, connect); returns a function that stops listening.
-  onStep: (listener: (step: string) => void): (() => void) => {
-    const on = (_e: unknown, step: string) => listener(step);
-    ipcRenderer.on("connect:step", on);
-    return () => ipcRenderer.off("connect:step", on);
-  },
-  // One line of the server install's output at a time; returns a function that stops listening.
-  onProgress: (listener: (line: string) => void): (() => void) => {
-    const on = (_e: unknown, line: string) => listener(line);
-    ipcRenderer.on("connect:progress", on);
-    return () => ipcRenderer.off("connect:progress", on);
-  },
-  // ssh asks something (password, passphrase, host key); null = no question is waiting any more.
-  onPrompt: (listener: (prompt: SshPrompt | null) => void): (() => void) => {
-    const on = (_e: unknown, prompt: SshPrompt | null) => listener(prompt);
-    ipcRenderer.on("connect:prompt", on);
-    return () => ipcRenderer.off("connect:prompt", on);
-  },
-  // The owner's answer to that question; undefined cancels it.
-  answer: (id: string, answer: string | undefined) =>
-    ipcRenderer.send("connect:answer", String(id), typeof answer === "string" ? answer : undefined),
-});
+if (!workspace)
+  contextBridge.exposeInMainWorld("coloniaConnect", {
+    // MUDANZA-1: "move" (they already use Colonia on another computer) opens the setup on bringing their things.
+    local: (access: string, intent?: string): Promise<Answer> =>
+      ipcRenderer.invoke("connect:local", access, ...(intent === "move" ? [intent] : [])),
+    url: (url: string): Promise<Answer> => ipcRenderer.invoke("connect:url", url),
+    // VOLVER-CONEXION-1: whether "Change connection" left a Colonia to return to, and going back to it.
+    previous: (): Promise<boolean> => ipcRenderer.invoke("connect:previous"),
+    back: (): Promise<Answer> => ipcRenderer.invoke("connect:back"),
+    ssh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh", target),
+    installSsh: (target: string): Promise<Answer> => ipcRenderer.invoke("connect:ssh-install", target),
+    lingerSsh: (target: string, password: string): Promise<Answer> =>
+      ipcRenderer.invoke("connect:ssh-linger", target, password),
+    // Which step the main process is on (ssh, probe, install, connect); returns a function that stops listening.
+    onStep: (listener: (step: string) => void): (() => void) => {
+      const on = (_e: unknown, step: string) => listener(step);
+      ipcRenderer.on("connect:step", on);
+      return () => ipcRenderer.off("connect:step", on);
+    },
+    // One line of the server install's output at a time; returns a function that stops listening.
+    onProgress: (listener: (line: string) => void): (() => void) => {
+      const on = (_e: unknown, line: string) => listener(line);
+      ipcRenderer.on("connect:progress", on);
+      return () => ipcRenderer.off("connect:progress", on);
+    },
+    // ssh asks something (password, passphrase, host key); null = no question is waiting any more.
+    onPrompt: (listener: (prompt: SshPrompt | null) => void): (() => void) => {
+      const on = (_e: unknown, prompt: SshPrompt | null) => listener(prompt);
+      ipcRenderer.on("connect:prompt", on);
+      return () => ipcRenderer.off("connect:prompt", on);
+    },
+    // The owner's answer to that question; undefined cancels it.
+    answer: (id: string, answer: string | undefined) =>
+      ipcRenderer.send("connect:answer", String(id), typeof answer === "string" ? answer : undefined),
+  });

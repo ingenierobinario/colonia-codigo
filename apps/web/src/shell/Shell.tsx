@@ -26,6 +26,7 @@ import {
   InstallArtifactDialog,
   LiveLayer,
   NavegadorScreen,
+  OfficeScreen,
   PhoneDialog,
   ProjectScreen,
   ResourcesScreen,
@@ -105,7 +106,9 @@ export function Shell() {
         <main className="shell__main">
           <ShellLayout.Provider value={layout}>
             <Suspense fallback={<ScreenLoading />}>
-              {view === "app" ? (
+              {view === "office" ? (
+                <OfficeScreen />
+              ) : view === "app" ? (
                 <AppScreen />
               ) : view === "webapp" ? (
                 <WebAppScreen />

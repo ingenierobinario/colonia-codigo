@@ -3,10 +3,11 @@ import { createThread } from "../data/actions.ts";
 import { client } from "../data/client.ts";
 import { notify } from "../data/notices.ts";
 import { data } from "../data/state.ts";
+import { workspaceStorageKey } from "../data/workspaceContext.ts";
 import { t as tr } from "../i18n/index.ts";
 
 /** The last chat used for each Flow, remembered on this device so the next "Ask" continues it. */
-const CHATS_KEY = "colonia.flowChats";
+const CHATS_KEY = workspaceStorageKey("colonia.flowChats");
 function chatsMade(): Record<string, string> {
   try {
     const raw = JSON.parse(localStorage.getItem(CHATS_KEY) ?? "{}") as unknown;

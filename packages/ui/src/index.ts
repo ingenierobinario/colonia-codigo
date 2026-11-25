@@ -1,5 +1,6 @@
 // @colonia/ui — Colonia design system. Import the stylesheet once: import "@colonia/ui/styles.css".
 
+export { AVATAR_NAMES, EXTRA_AVATARS } from "./blobs/avatars";
 export { BLOB_NAMES, BLOBS, type BlobName } from "./blobs/catalog";
 export { ActionGroup, type ActionGroupProps, type ActionItem } from "./components/ActionGroup";
 export { ActivityPill, type ActivityPillProps } from "./components/ActivityPill";

@@ -176,6 +176,8 @@
                       "**/ComputerPanel.tsx",
                       "**/ComputerProgress.tsx",
                       "**/ComputersScreen.tsx",
+                      "**/OfficeScreen.tsx",
+                      "**/OfficeChat.tsx",
                       "**/ConfigModal.tsx",
                       "**/ConnectPart.tsx",
                       "**/ConnectScreen.tsx",

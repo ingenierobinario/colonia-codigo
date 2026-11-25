@@ -8,14 +8,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -27,14 +27,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -46,14 +46,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -65,14 +65,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -84,14 +84,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -103,14 +103,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -122,14 +122,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -141,14 +141,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -160,14 +160,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -179,14 +179,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -198,14 +198,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -217,14 +217,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -236,14 +236,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -255,14 +255,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -274,14 +274,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -293,14 +293,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -312,14 +312,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -331,14 +331,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -350,14 +350,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -369,14 +369,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -388,14 +388,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -407,14 +407,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -426,14 +426,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -445,14 +445,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -464,14 +464,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -483,14 +483,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -502,14 +502,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -521,14 +521,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -540,14 +540,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -559,14 +559,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -578,14 +578,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -597,14 +597,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -616,14 +616,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -635,14 +635,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
@@ -654,14 +654,14 @@ export const blobEyes: Record<
     eyes: [
       {
         x: 99,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,
       },
       {
         x: 140,
-        y: 80,
+        y: 96,
         w: 17,
         h: 30,
         rx: 7.5,

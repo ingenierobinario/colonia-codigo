@@ -2,7 +2,8 @@ module.exports = {
   preset: "jest-expo",
   // Shared protocol sources live outside this independently installed Expo project.
   modulePaths: ["<rootDir>/node_modules"],
-  testMatch: ["<rootDir>/test/**/*.test.tsx"],
+  roots: ["<rootDir>/test"],
+  testMatch: ["**/*.test.tsx"],
   setupFilesAfterEnv: ["<rootDir>/test/native.test-support.ts"],
   clearMocks: true,
   restoreMocks: true,

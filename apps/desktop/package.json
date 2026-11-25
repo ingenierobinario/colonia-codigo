@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@colonia/config": "workspace:*",
-    "electron": "^44.5.1",
+    "electron": "44.11.5",
     "esbuild": "^0.25.12"
   }
 }

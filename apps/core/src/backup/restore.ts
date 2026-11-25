@@ -152,6 +152,7 @@ export async function stageRestore(
         });
       const rel = meta.p === "colonia.db" ? "db/colonia.db" : meta.p;
       if (!safeRel(rel) || !/^(db|home|external)\//.test(rel)) throw new ArchiveError("broken");
+      if (/^home\/(workspaces|account|tmp)(\/|$)/.test(rel)) throw new ArchiveError("broken");
       const target = path.join(dir, ...rel.split("/"));
       fs.mkdirSync(path.dirname(target), { recursive: true });
       const fd = fs.openSync(target, "w", 0o600);

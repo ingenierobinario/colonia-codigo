@@ -32,6 +32,7 @@ const turn = {
 } as unknown as Message;
 
 test("an agent's turn shows its skills, the picture forming, the page and the changes", async () => {
+  const nativeErrors = jest.spyOn(console, "error");
   const ui = await render(
     <ChatMessage
       message={turn}
@@ -47,6 +48,7 @@ test("an agent's turn shows its skills, the picture forming, the page and the ch
   expect(ui.getByText(t("changesEdited", { n: 3 }))).toBeTruthy();
   expect(ui.getByText(t("changesMore", { n: 2 }))).toBeTruthy();
   expect(ui.getByLabelText(t("deliveryRead"))).toBeTruthy();
+  expect(nativeErrors.mock.calls.flat().join(" ")).not.toContain("is not supported by native animated module");
 });
 
 test("computer use reads as one thing while the agent works on it", async () => {

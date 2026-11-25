@@ -61,6 +61,7 @@ export const tailscaleRunner =
     });
 
 export function createAccess(deps: {
+  workspace?: boolean;
   home: string;
   /** How this core was started (its host and public URL, from the config it loaded). */
   running: { host: string; publicUrl: string | undefined; token: string | undefined };
@@ -80,6 +81,7 @@ export function createAccess(deps: {
     }
   };
   const tailscaleRun = (): TailscaleRun | undefined => {
+    if (deps.workspace) return undefined;
     if (deps.tailscale) return deps.tailscale;
     const bin = findTailscale();
     return bin ? tailscaleRunner(bin) : undefined;
@@ -109,6 +111,8 @@ export function createAccess(deps: {
     state,
     /** Saves the choice and, when the running core differs, restarts it if a supervisor will bring it back. */
     async set(mode: AccessMode): Promise<AccessState & { restarting: boolean }> {
+      if (deps.workspace)
+        throw new CallError({ code: "bad_request", message: "Open My Colonia to change network access" });
       const current = read();
       const run = tailscaleRun();
       let tailscaleUrl: string | undefined;

@@ -73,7 +73,7 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: process.env.COLONIA_TEST_COVERAGE === "1",
       // Agent avatars stay files: fetched and cached as images, never inlined as base64 into the first script.
-      assetsInlineLimit: (file) => (file.endsWith(".webp") ? false : undefined),
+      assetsInlineLimit: (file) => (file.endsWith(".webp") || /[/\\]avatars[/\\]/.test(file) ? false : undefined),
       // What the first page imports is one chunk: otherwise each module a lazy screen also uses becomes a small chunk
       // of its own, fetched and compressed apart (the perf budget's initial bundle). The rest of the data layer is one
       // chunk too, not a dozen tiny ones the screens fetch one by one.
@@ -96,6 +96,7 @@ export default defineConfig(({ mode }) => {
           ? undefined
           : {
               "/rpc": core,
+              "^/workspaces/w_[a-f0-9]{32}/(rpc/|ws)": { target: core, ws: true },
               "/health": core,
               // Published surfaces (surfaces.share → /a/<token>).
               "/a/": core,

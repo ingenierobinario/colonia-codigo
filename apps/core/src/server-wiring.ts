@@ -2,6 +2,7 @@
 // Still wiring only: no logic beyond passing dependencies along.
 
 import fs from "node:fs";
+import type { IncomingMessage } from "node:http";
 import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -85,6 +86,7 @@ import { threadHandlers } from "./rpc/threads.ts";
 import { transcriptionHandlers } from "./rpc/transcription.ts";
 import { webAppHandlers } from "./rpc/webapps.ts";
 import { webhookHandlers } from "./rpc/webhooks.ts";
+import { workspaceHandlers } from "./rpc/workspaces.ts";
 import type { Secrets } from "./secrets.ts";
 import { saveUpload } from "./services/uploads.ts";
 import type { RuntimeHomes } from "./skills/runtimes.ts";
@@ -125,6 +127,9 @@ import { httpHandler } from "./transport/http.ts";
 import { attachVmDisplay } from "./transport/vm-display.ts";
 import { attachWs } from "./transport/ws.ts";
 import type { Updates } from "./updates.ts";
+import { workspaceBridge, workspaceRoute } from "./workspaces/bridge.ts";
+import { workspaceDevice } from "./workspaces/device.ts";
+import type { Workspaces } from "./workspaces/manager.ts";
 
 // Not `import http from "node:http"`: that loads Node's fetch client (undici), which an idle core never uses.
 // See HISTORY.md#esm-node-http.
@@ -208,6 +213,7 @@ export function builtinTools(
 }
 
 type HandlerDeps = {
+  workspaces?: Workspaces;
   store: Store;
   /** How agents act and how far their files reach (engine/permissions.ts). */
   permissions: Permissions;
@@ -294,6 +300,7 @@ export function coreHandlers(d: HandlerDeps & { vm?: Computer | undefined }) {
     if (ctx.actor === "human" && !ctx.agent) tellAdded(d.store, d.engine.admit, a);
   };
   return {
+    ...workspaceHandlers(d.workspaces),
     ...environmentHandlers(d.store, d.vm, d.engine.cancel),
     ...desktopInstallHandlers(d.desktopInstaller),
     ...updateHandlers(d.updates),
@@ -506,6 +513,8 @@ export const KEEP_ALIVE_MS = 65_000;
 export async function listen(
   config: CoreConfig,
   d: {
+    workspaceWorker?: boolean;
+    workspaces?: Workspaces;
     dispatch: Dispatch;
     store: Store;
     log: Log;
@@ -525,17 +534,24 @@ export async function listen(
     token: config.token,
     device: (token) => Boolean(d.store.devices.byToken(token)),
   };
-  const server = http.createServer(
-    httpHandler(
-      d.dispatch,
-      d.log,
-      gate,
-      servedPanel(config),
-      storedPublicPages(d.store),
-      (token) => d.store.clients.byToken(token),
-      (token) => d.store.devices.byToken(token),
-    ),
+  const bridge = d.workspaces
+    ? workspaceBridge(d.workspaces, gate, (token) => d.store.devices.byToken(token))
+    : undefined;
+  const forwardedDevice = d.workspaceWorker ? (req: IncomingMessage) => workspaceDevice(req, config.token) : undefined;
+  const handle = httpHandler(
+    d.dispatch,
+    d.log,
+    gate,
+    servedPanel(config),
+    storedPublicPages(d.store),
+    (token) => d.store.clients.byToken(token),
+    (token) => d.store.devices.byToken(token),
+    forwardedDevice,
   );
+  const server = http.createServer((req, res) => {
+    if (bridge && workspaceRoute(req.url)) void bridge.request(req, res);
+    else handle(req, res);
+  });
   // Idle connections stay open far longer than a client reuses one (fetch: about 4 s), so a client never reuses a
   // connection the core is closing; Node's 5 s default reset calls after a stall. See HISTORY.md#loopback-keep-alive.
   server.keepAliveTimeout = KEEP_ALIVE_MS;
@@ -544,6 +560,7 @@ export async function listen(
   const wss = attachWs(server, {
     streamPath: d.vm ? "/vm-display" : undefined,
     extraPaths: [d.equipos, d.sync].flatMap((m) => (m ? [m.path] : [])),
+    ...(bridge ? { extraPath: (pathname: string) => Boolean(workspaceRoute(pathname)) } : {}),
     dispatch: d.dispatch,
     identity: d.identity,
     log: d.log,
@@ -551,6 +568,7 @@ export async function listen(
     bus: d.bus,
     gate,
     deviceOf: (token) => d.store.devices.byToken(token),
+    forwardedDevice,
     clientOf: (token) => d.store.clients.byToken(token),
   });
   for (const other of [d.equipos, d.sync])
@@ -558,6 +576,10 @@ export async function listen(
       server.on("upgrade", (req, socket, head) => {
         if (new URL(req.url ?? "/", "http://core").pathname === other.path) other.upgrade(req, socket, head);
       });
+  if (bridge)
+    server.on("upgrade", (req, socket, head) => {
+      if (workspaceRoute(req.url)) void bridge.upgrade(req, socket, head);
+    });
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(config.port, config.host, resolve);
@@ -570,6 +592,7 @@ export async function listen(
     port,
     url: `http://${config.host}:${port}`,
     async close() {
+      bridge?.close();
       display?.close();
       for (const client of wss.clients) client.terminate();
       await new Promise<void>((resolve) => wss.close(() => resolve()));

@@ -2,6 +2,7 @@ import { ColoniaError } from "@colonia/protocol/client";
 import RFB from "@novnc/novnc";
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
+import { workspacePath } from "../data/workspaceContext.ts";
 import { useT } from "../i18n/index.ts";
 
 /** A viewer that drops is opened again this many times in a row, a little later each time. */
@@ -47,7 +48,7 @@ export function useVmDisplay(screenNumber: number | undefined, ready: boolean, m
     void (async () => {
       const { ticket } = await client.withSignal(abort.signal).call("environments.display", { screen: screenNumber });
       if (abort.signal.aborted) return;
-      const url = new URL("/vm-display", window.location.href);
+      const url = new URL(`${workspacePath}/vm-display`, window.location.href);
       url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
       url.searchParams.set("ticket", ticket);
       url.searchParams.set("attempt", String(epoch));

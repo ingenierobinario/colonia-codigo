@@ -41,6 +41,7 @@ await build({
 
 // Blob bodies are named by `new URL("./bodies/…", import.meta.url)`: the same path from src/blobs and from dist.
 cpSync("src/blobs/bodies", "dist/bodies", { recursive: true });
+cpSync("src/blobs/avatars", "dist/avatars", { recursive: true });
 
 // tsc through node: node_modules/.bin/tsc is a shell script, which Windows cannot run directly.
 const tsc = createRequire(import.meta.url).resolve("typescript/bin/tsc");

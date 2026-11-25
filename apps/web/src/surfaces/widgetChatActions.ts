@@ -6,6 +6,7 @@ import { secretary } from "../data/identity.ts";
 import { notify } from "../data/notices.ts";
 import { data } from "../data/state.ts";
 import { deleteThread } from "../data/threadAdmin.ts";
+import { workspaceStorageKey } from "../data/workspaceContext.ts";
 import { t as tr } from "../i18n/index.ts";
 import { widgetChatOpen as open } from "./widgetChatOpen.ts";
 
@@ -13,7 +14,7 @@ import { widgetChatOpen as open } from "./widgetChatOpen.ts";
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /** The last chat used for each widget, remembered on this device so the next click continues it. */
-const CHATS_KEY = "colonia.widgetChats";
+const CHATS_KEY = workspaceStorageKey("colonia.widgetChats");
 function chatsMade(): Record<string, string> {
   try {
     const raw = JSON.parse(localStorage.getItem(CHATS_KEY) ?? "{}") as unknown;

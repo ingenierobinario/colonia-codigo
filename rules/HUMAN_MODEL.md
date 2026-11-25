@@ -307,6 +307,21 @@ jobs are closed, and queued runs are picked up.
 - Trust boundaries to remember: web page content (embedded browser), channel messages, outside apps' agents,
   tool output → all untrusted data. The owner's own agents speak for the owner (DECISIONS.md#d-071).
 
+### Business workspaces
+
+Business workspaces (`workspaces/`) run one core process per persistent home beneath the supervisor's home. The
+supervisor owns `workspaces/registry.json`; this local directory is excluded from the primary database, sync and
+backup. Every business uses its own normal backup and pairing service. Workers have independent secret stores,
+account directories, environment allowlists, browser profiles and VM distribution names. They resume after a
+supervisor restart; closing the supervisor also closes its workers.
+
+The exact `/workspaces/<id>/rpc/*` and `/ws` bridge authenticates the owner at the supervisor, then forwards through
+the worker's normal dispatcher with a private random token. App tokens cannot cross it; paired-device identity and
+agent actor restrictions survive forwarding. OAuth completion is the existing open, signed-state method. Sync and
+VM display retain their own pairing proof and single-use ticket checks. Desktop workspace pages receive owner
+authentication without the primary Electron browser bridge. UI stores and chat frames are scoped by workspace.
+This is account separation for one owner, not an OS sandbox against unrestricted command/file access.
+
 ## 6. External integrations
 
 - LLM: `providers/` speaks OpenAI-compatible chat, Anthropic Messages and the ChatGPT plan's responses API; keys are `secret://` references.

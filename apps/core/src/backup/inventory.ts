@@ -15,6 +15,9 @@ export const SESSION_BOUND = new Set(["whatsapp", "imessage", "signal"]);
 
 /** Lo que nunca viaja, con el motivo. Nombres de primer nivel dentro de la carpeta de Colonia. */
 const LOCAL_ONLY: Readonly<Record<string, string>> = {
+  workspaces: "each business owns a separate database and must create its own consistent backup",
+  account: "machine-bound CLI accounts and caches; reconnect in the destination business",
+  tmp: "temporary files belonging to this business",
   "core.env": "cómo se accede a ESTE equipo (puerto, dirección, llave de acceso)",
   "home-id": "la identidad de esta instalación; cada equipo tiene la suya",
   "telemetry-id": "identificador anónimo de esta instalación",

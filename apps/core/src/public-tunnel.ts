@@ -153,6 +153,7 @@ async function saveChoice(store: Store, tailscale: () => TailscaleRun | undefine
 }
 
 export function createPublicTunnel(deps: {
+  workspace?: boolean;
   store: Store;
   /** The webhook listener's port, once it listens. */
   port: () => number;
@@ -167,6 +168,7 @@ export function createPublicTunnel(deps: {
   retryMs?: ((attempt: number) => number) | undefined;
 }) {
   const tailscaleRun = (): TailscaleRun | undefined => {
+    if (deps.workspace) return undefined;
     if (deps.tailscale) return deps.tailscale;
     const bin = findTailscale();
     return bin ? tailscaleRunner(bin) : undefined;
@@ -390,6 +392,11 @@ export function createPublicTunnel(deps: {
     set(choice: TunnelChoice): Promise<WebhooksState> {
       return change(async () => {
         if (closed) throw new CallError({ code: "unavailable", message: "public tunnel is closed" });
+        if (deps.workspace && choice.mode === "tailscale")
+          throw new CallError({
+            code: "bad_request",
+            message: "Choose a public address for this business; Tailscale is managed in My Colonia",
+          });
         await saveChoice(deps.store, tailscaleRun, choice);
         await apply();
         return state();

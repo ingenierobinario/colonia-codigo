@@ -4,10 +4,12 @@ import { enResources } from "./en-resources.ts";
 import { enSetup } from "./en-setup.ts";
 import { enTeam } from "./en-team.ts";
 import { enTelemetry } from "./en-telemetry.ts";
+import { enVirtualOffice } from "./virtual-office-en.ts";
 
 // Strings of the screens opened after the first one (setup, team, resources, helper, usage sharing): one late
 // chunk, fetched once the first screen is up and awaited by every late screen (lazy.ts), never by the first paint.
 export const enScreens = {
+  ...enVirtualOffice,
   ...enHelper,
   ...enSetup,
   ...enTeam,

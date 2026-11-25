@@ -56,6 +56,24 @@ export type NewsEntry = {
 
 export const NEWS: readonly NewsEntry[] = [
   {
+    id: "office-and-businesses",
+    since: "2.36.74",
+    title: { en: "Your teams have an office", es: "Tus equipos tienen oficina" },
+    about: {
+      en: "See who is working, open a chat beside the office and keep each business's accounts in its own workspace.",
+      es: "Mira quién está trabajando, abre su chat junto a la oficina y guarda las cuentas de cada negocio en su propio espacio.",
+    },
+    applies: () => true,
+    text: "The sidebar now has Office: rooms represent projects and departments, live bubbles show agent activity, and selecting an agent opens its chat alongside the office. Agent settings offer penguins, people and animals. The owner can create business workspaces from Office; each starts with separate models, accounts, secrets, chats and browser profiles. They must connect services and pair or back up each business separately. Workspace administration is owner-only; explain the screen instead of claiming to create a business yourself. This separates accounts, not unrestricted OS command access.",
+    actions: [
+      {
+        label: { en: "Organize my office", es: "Organizar mi oficina" },
+        prompt:
+          "Help me organize my projects, departments and agents so they make sense in the Office view. Explain how to keep different businesses in separate workspaces.",
+      },
+    ],
+  },
+  {
     id: "conversation-import-and-agent-pointer",
     since: "2.36.52",
     title: {

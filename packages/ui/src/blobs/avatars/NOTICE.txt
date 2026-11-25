@@ -1,0 +1,11 @@
+person-1.svg through person-8.svg:
+DiceBear Pixel Art, by DiceBear, CC0 1.0 Universal.
+https://www.dicebear.com/styles/pixel-art/
+https://creativecommons.org/publicdomain/zero/1.0/
+Generated 2026-11-25 from https://api.dicebear.com/10.x/pixel-art/svg
+with seed=Colonia-person-N and backgroundColor=00000000.
+Files are vendored: Colonia never sends agent identities to DiceBear.
+
+fox.svg, cat.svg, dog.svg, rabbit.svg, bear.svg, frog.svg:
+Original Colonia artwork, distributed under the repository MIT license.
+Source: scripts/penguins/animals.mjs.

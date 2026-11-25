@@ -9,6 +9,7 @@ import { usePrefs } from "./data/prefs.ts";
 import { loadSetup, useSetup } from "./data/setup.ts";
 import { loadTelemetry } from "./data/telemetry.ts";
 import { loadWebApps } from "./data/webapps.ts";
+import { workspacePath } from "./data/workspaceContext.ts";
 import { useLanguage, useT } from "./i18n/index.ts";
 import {
   AboutScreen,
@@ -18,6 +19,7 @@ import {
   HostedWelcome,
   loadShell,
   OAuthReturn,
+  OfficeChat,
   PairScreen,
   preloadPinnedScreen,
   QuickChat,
@@ -28,10 +30,11 @@ import { IS_BROWSER_WINDOW } from "./panel/browserWindow.ts";
 import { nav, showsChat, useNav } from "./shell/nav.ts";
 
 /** The page Google, X or LinkedIn sends the browser back to after the owner signs in (the core serves the panel there). */
-const OAUTH_RETURN = ["/oauth/google", "/oauth/social"].includes(window.location.pathname);
+const OAUTH_RETURN = ["/oauth/google", "/oauth/social"].includes(window.location.pathname.slice(workspacePath.length));
 
 /** The desktop app's menu-bar window loads the panel with ?quick: only the quick chat. */
 const QUICK = new URLSearchParams(window.location.search).has("quick");
+const OFFICE_CHAT = new URLSearchParams(window.location.search).has("officeChat");
 
 // Settings › Appearance › Font: swapping the sans token reaches every component, overlays included.
 const MONO = { "--colonia-font-sans": "var(--colonia-font-mono)" } as CSSProperties;
@@ -45,7 +48,8 @@ const ARTIFACT = new URLSearchParams(window.location.search).get("artifact") ?? 
 /** The desktop app's About window (?about): the hero with this build's version; no core either. */
 const ABOUT = new URLSearchParams(window.location.search).has("about");
 
-if (!(CONNECT || ABOUT || QUICK || ARTIFACT || IS_BROWSER_WINDOW || OAUTH_RETURN)) void loadShell().catch(() => {});
+if (!(CONNECT || ABOUT || QUICK || ARTIFACT || IS_BROWSER_WINDOW || OAUTH_RETURN || OFFICE_CHAT))
+  void loadShell().catch(() => {});
 
 function Opening() {
   const t = useT();
@@ -134,10 +138,16 @@ function Panel() {
     return stop;
   }, []);
   useEffect(() => {
-    if (QUICK || IS_BROWSER_WINDOW || ARTIFACT) return;
+    if (QUICK || IS_BROWSER_WINDOW || ARTIFACT || OFFICE_CHAT) return;
     void loadSetup();
     void loadTelemetry();
   }, []);
+  if (OFFICE_CHAT)
+    return (
+      <Suspense fallback={<Opening />}>
+        <OfficeChat />
+      </Suspense>
+    );
   if (ARTIFACT)
     return (
       <Suspense fallback={<Opening />}>

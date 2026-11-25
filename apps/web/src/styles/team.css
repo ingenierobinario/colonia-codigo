@@ -612,6 +612,27 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+.agentedit__avatar-groups {
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.agentedit__avatar-groups button {
+  border: 1px solid var(--colonia-border);
+  border-radius: 8px;
+  background: var(--colonia-bg);
+  color: var(--colonia-fg-muted);
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+.agentedit__avatar-groups button[aria-pressed="true"] {
+  color: var(--colonia-fg);
+  background: var(--colonia-fill);
+}
 .agentedit__blob {
   display: inline-grid;
   place-items: center;

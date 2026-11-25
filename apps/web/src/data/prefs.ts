@@ -4,6 +4,7 @@ import { tabsOf } from "../chat/tabs.ts";
 import { defaultLanguage, isLanguage, type Language } from "../i18n/messages.ts";
 import { createStore, useSlice } from "./createStore.ts";
 import type { NoticeSound } from "./noticeSound.ts";
+import { workspaceStorageKey } from "./workspaceContext.ts";
 
 export type TranscriptWidth = "narrow" | "medium" | "wide";
 export const TEXT_SIZES = [85, 100, 115, 130] as const;
@@ -91,7 +92,7 @@ export const SIDEBAR_MIN_ROWS: SidebarRows = { channels: 3, projects: 5, engines
 
 export type InboxView = "tree" | "activity" | "chats";
 
-const KEY = "colonia.prefs";
+const KEY = workspaceStorageKey("colonia.prefs");
 
 const DEFAULTS: Prefs = {
   displayName: "",

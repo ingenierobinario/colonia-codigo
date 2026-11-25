@@ -69,6 +69,9 @@ options. Environment and headers are edited in the panel.
 
 Servers don't run all the time: a server is **Ready** and starts only when an agent first uses it.
 
+For a URL connection, redirects to a different host, port, or protocol are refused so credentials stay at their
+intended server. If a provider moves its endpoint, check its official documentation and update the connection URL.
+
 A server that signs in through your browser (one run with `mcp-remote`, for example) opens its sign-in page the
 first time it starts. If you don't finish, it shows **Needs you to sign in** and Colonia doesn't start it again by
 itself, so your browser doesn't keep opening. Click **Sign in** on the server (or run `colonia mcp signin <server>`) when

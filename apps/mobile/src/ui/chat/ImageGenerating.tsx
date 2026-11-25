@@ -10,6 +10,29 @@ const DELAYS = [
 ];
 const LOOP_S = 3.3;
 const STEPS = [0, 0.08, 0.22, 0.58, 0.78, 1];
+const ease = Easing.bezier(0.18, 0.75, 0.23, 1);
+
+// Native interpolation accepts numeric keyframes, not an easing callback.
+function keyframes(values: number[]) {
+  const inputRange: number[] = [];
+  const outputRange: number[] = [];
+  for (const [index, start] of STEPS.entries()) {
+    const end = STEPS[index + 1];
+    const from = values[index];
+    const to = values[index + 1];
+    if (end === undefined || from === undefined || to === undefined) continue;
+    for (let sample = 0; sample < 8; sample++) {
+      const progress = sample / 8;
+      inputRange.push(start + (end - start) * progress);
+      outputRange.push(from + (to - from) * ease(progress));
+    }
+  }
+  inputRange.push(1);
+  outputRange.push(values.at(-1) ?? 0);
+  return { inputRange, outputRange };
+}
+const opacityFrames = keyframes([0, 0, 0.84, 0.84, 0, 0]);
+const scaleFrames = keyframes([0.36, 0.36, 1, 1, 0.92, 0.92]);
 
 /** Where a picture is being made: a 5×5 grid of tiles that form and fade in turns. */
 export function ImageGenerating() {
@@ -32,7 +55,6 @@ export function ImageGenerating() {
     loop.start();
     return () => loop.stop();
   }, [clock, still]);
-  const ease = Easing.bezier(0.18, 0.75, 0.23, 1);
   return (
     <View style={s.box} accessibilityRole="progressbar" accessibilityLabel={t("imageGenerating")}>
       <View style={s.grid}>
@@ -43,14 +65,10 @@ export function ImageGenerating() {
           const style = still
             ? { opacity: 0.55 }
             : {
-                opacity: phase.interpolate({ inputRange: STEPS, outputRange: [0, 0, 0.84, 0.84, 0, 0], easing: ease }),
+                opacity: phase.interpolate(opacityFrames),
                 transform: [
                   {
-                    scale: phase.interpolate({
-                      inputRange: STEPS,
-                      outputRange: [0.36, 0.36, 1, 1, 0.92, 0.92],
-                      easing: ease,
-                    }),
+                    scale: phase.interpolate(scaleFrames),
                   },
                 ],
               };

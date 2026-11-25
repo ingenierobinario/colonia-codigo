@@ -70,7 +70,8 @@ export async function pairWith(
 ): Promise<PairFailure | undefined> {
   let token: string;
   try {
-    ({ token } = await client.call("devices.pair", { code: code.trim(), ...device }));
+    const pairing = new ColoniaClient({ url: window.location.origin });
+    ({ token } = await pairing.call("devices.pair", { code: code.trim(), ...device }));
   } catch (e) {
     return { why: pairError(e), detail: e instanceof Error ? e.message : String(e) };
   }

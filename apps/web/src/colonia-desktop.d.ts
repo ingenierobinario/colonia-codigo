@@ -80,6 +80,12 @@ declare global {
       /** The owner's answer to that question, never kept; undefined cancels it. */
       answer?(id: string, answer: string | undefined): void;
     };
+    coloniaWorkspaceAuth?: {
+      token?: string;
+      platform: string;
+      isFullScreen: () => boolean;
+      onFullScreen: (listener: (full: boolean) => void) => () => void;
+    };
     coloniaDesktop?: {
       /** Host OS of the desktop shell (`darwin` | `win32` | `linux`). */
       platform?: string;

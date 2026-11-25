@@ -6,6 +6,20 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.74": {
+    en: [
+      "See projects, departments and live agent activity together in your virtual office.",
+      "Open an agent's chat beside the office and choose penguin, human or animal avatars.",
+      "Create separate business workspaces with their own connections, credentials and conversations.",
+      "MCP connections no longer send credentials to another server through redirects.",
+    ],
+    es: [
+      "Mira proyectos, departamentos y la actividad de tus agentes en la oficina virtual.",
+      "Abre el chat de un agente junto a la oficina y elige avatares de pingüinos, personas o animales.",
+      "Crea espacios para distintos negocios con sus propias conexiones, credenciales y conversaciones.",
+      "Las conexiones MCP ya no envían credenciales a otro servidor mediante redirecciones.",
+    ],
+  },
   "2.36.73": {
     en: [
       "Chat controls stay within reach in narrow or short windows.",

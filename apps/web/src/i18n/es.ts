@@ -9,6 +9,7 @@ import { esFiles } from "./es-files.ts";
 import { esOffice } from "./es-office.ts";
 
 export const es: Partial<Record<MessageKey, string>> = {
+  "nav.office": "Oficina",
   "panel.computer": "Ordenador",
   "panel.computer.hint": "Ver ordenador Linux del agente",
   "computer.screen": "Escritorio VM en vivo",

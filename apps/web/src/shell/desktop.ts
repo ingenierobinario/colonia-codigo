@@ -3,13 +3,13 @@ import { useSyncExternalStore } from "react";
 // The window says when it is in native fullscreen; older desktop builds don't, so their size is the guess: a
 // full-screen window covers the whole display, a zoomed one still leaves the menu bar (macOS) or taskbar out.
 function fullscreen(): boolean {
-  const told = window.coloniaDesktop?.isFullScreen;
+  const told = (window.coloniaDesktop ?? window.coloniaWorkspaceAuth)?.isFullScreen;
   if (told) return told();
   return window.outerWidth >= window.screen.width && window.outerHeight >= window.screen.height;
 }
 
 function onResize(listener: () => void): () => void {
-  const off = window.coloniaDesktop?.onFullScreen?.(listener);
+  const off = (window.coloniaDesktop ?? window.coloniaWorkspaceAuth)?.onFullScreen?.(listener);
   window.addEventListener("resize", listener);
   return () => {
     off?.();
@@ -23,8 +23,10 @@ function onResize(listener: () => void): () => void {
  */
 export function useDesktopClass(): string {
   const full = useSyncExternalStore(onResize, fullscreen, () => false);
-  if (typeof window === "undefined" || !window.coloniaDesktop) return "";
-  const platform = window.coloniaDesktop.platform;
+  if (typeof window === "undefined") return "";
+  const desktop = window.coloniaDesktop ?? window.coloniaWorkspaceAuth;
+  if (!desktop) return "";
+  const platform = desktop.platform;
   const os =
     platform === "darwin" ? " is-mac" : platform === "win32" ? " is-win" : platform === "linux" ? " is-linux" : "";
   return ` is-desktop${os}${full ? " is-fullscreen" : ""}`;

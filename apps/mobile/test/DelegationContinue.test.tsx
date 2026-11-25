@@ -1,6 +1,6 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import { t } from "../src/i18n";
-import type { Message } from "../src/protocol";
+import { lang, t } from "../src/i18n";
+import { type Message, noticeText } from "../src/protocol";
 import { ChatMessage } from "../src/ui/ChatMessage";
 
 // The message's media code plays and saves files on the phone; nothing here shows media.
@@ -71,10 +71,20 @@ test("Continue follows the session as it stands now: only a stopped one offers i
       />,
     );
   const working = await shown("working");
-  await waitFor(() => expect(working.getByText("Still working")).toBeVisible());
+  await waitFor(() =>
+    expect(
+      working.getByText(noticeText({ code: "delegation.limit", text: "working", vars: { variant: "working" } }, lang)),
+    ).toBeVisible(),
+  );
   expect(working.queryByText(t("delegationContinue"))).toBeNull();
   const finished = await shown("completed");
-  await waitFor(() => expect(finished.getByText("Finished")).toBeVisible());
+  await waitFor(() =>
+    expect(
+      finished.getByText(
+        noticeText({ code: "delegation.limit", text: "completed", vars: { variant: "completed" } }, lang),
+      ),
+    ).toBeVisible(),
+  );
   expect(finished.queryByText(t("delegationContinue"))).toBeNull();
   const stopped = await shown("stopped");
   await waitFor(() => expect(stopped.getByText(t("delegationContinue"))).toBeVisible());
