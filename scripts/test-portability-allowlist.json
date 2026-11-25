@@ -23,8 +23,7 @@
     "apps/core/src/tools/browser.test.ts": 1,
     "apps/core/src/tools/owner-setting.test.ts": 1,
     "apps/core/src/tools/routines.test.ts": 1,
-    "apps/core/src/tools/shell.test.ts": 3,
-    "e2e/specs/20-pairing.spec.ts": 1
+    "apps/core/src/tools/shell.test.ts": 3
   },
   "local-wait": {
     "apps/desktop/src/main/core-process.test.ts": 1,
