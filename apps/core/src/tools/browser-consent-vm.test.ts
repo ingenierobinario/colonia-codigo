@@ -75,6 +75,7 @@ if (RUNS_SCRIPTS && fs.existsSync(chromium.executablePath())) {
         });
         const desktop = await new ColoniaClient({ url: env.core.url }).connect("node", ["browser"]);
         desktop.onRequest(async () => ({ tabs: [] }));
+        const errors: unknown[] = [];
         try {
           await env.client.call("environments.permit", { agent: "superagent", on: true });
           thread = (await env.client.call("threads.create", { kind: "loose", agent_id: "superagent" })).id;
@@ -136,18 +137,47 @@ if (RUNS_SCRIPTS && fs.existsSync(chromium.executablePath())) {
             0,
             "VM consent ends with the run",
           );
+        } catch (error) {
+          errors.push(error);
         } finally {
-          held?.end("Stop");
-          finish();
-          desktop.close();
-          await desktop.closed;
-          await env.core.close();
-          await driver.closed();
-          await env.cleanup();
-          server.closeAllConnections();
-          await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
-          await dir.remove();
+          let driverStopped = false;
+          for (const release of [
+            () => {
+              held?.end("Stop");
+              finish();
+            },
+            async () => {
+              desktop.close();
+              await desktop.closed;
+            },
+            () => env.core.close(),
+            async () => {
+              try {
+                await driver.closed();
+              } catch (error) {
+                errors.push(error);
+                driver.forceClose();
+                await driver.closed();
+              }
+              driverStopped = true;
+            },
+            () => env.cleanup(),
+            async () => {
+              server.closeAllConnections();
+              await new Promise<void>((resolve, reject) =>
+                server.close((error) => (error ? reject(error) : resolve())),
+              );
+            },
+            () => (driverStopped ? dir.remove() : undefined),
+          ]) {
+            try {
+              await release();
+            } catch (error) {
+              errors.push(error);
+            }
+          }
         }
+        if (errors.length) throw new AggregateError(errors, "VM browser consent or cleanup failed");
       });
     }
   }

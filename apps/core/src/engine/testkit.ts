@@ -98,6 +98,7 @@ export async function startCore(opts: {
   channelAdapters?: Record<string, AdapterFactory>;
   secrets?: Secrets;
   channelRetryMs?: readonly number[];
+  channelRetryTimers?: RunTimers;
   roomBurstMs?: number;
   followUpTimers?: RunTimers;
   suggestBurstMs?: number;
@@ -177,6 +178,7 @@ export async function startCore(opts: {
       ...(opts.channelAdapters ? { channelAdapters: opts.channelAdapters } : {}),
       ...(opts.secrets ? { secrets: opts.secrets } : {}),
       ...(opts.channelRetryMs ? { channelRetryMs: opts.channelRetryMs } : {}),
+      ...(opts.channelRetryTimers ? { channelRetryTimers: opts.channelRetryTimers } : {}),
       ...(opts.roomBurstMs !== undefined ? { roomBurstMs: opts.roomBurstMs } : {}),
       ...(opts.followUpTimers ? { followUpTimers: opts.followUpTimers } : {}),
       ...(opts.suggestBurstMs !== undefined ? { suggestBurstMs: opts.suggestBurstMs } : {}),

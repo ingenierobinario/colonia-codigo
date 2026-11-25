@@ -200,6 +200,7 @@ export type CoreOptions = {
   cloudflared?: NgrokStart;
   /** Waits before a channel that failed to start tries again; tests shorten them. */
   channelRetryMs?: readonly number[];
+  channelRetryTimers?: RunTimers;
   /** How long a room waits for one person's quick messages to settle (tests shorten it). */
   roomBurstMs?: number;
   /** When a question waiting in the app follows the owner to their channel (tests move it). */
@@ -609,6 +610,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       teams: (c, secret) => teamsAdapter(c, secret, { dir: path.join(config.home, "channels", c.id) }),
     },
     ...(opts.channelRetryMs ? { retryMs: opts.channelRetryMs } : {}),
+    ...(opts.channelRetryTimers ? { retryTimers: opts.channelRetryTimers } : {}),
     call: internal,
     services,
     attention: attention.add,

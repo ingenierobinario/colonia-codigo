@@ -8,23 +8,26 @@ test("Resources lists a server's tools, allows all or some for every agent, and 
 }) => {
   await rpc("setup.finish", {});
   await rpc("mcp.set", { name: "permissions", server: { command: process.execPath, args: [server] } });
-  await open(page, "#view=resources&resourcesTab=connections");
-  await page.getByRole("radio", { name: /^Conexiones/ }).click();
-  await page.getByRole("button", { name: /^permissions/ }).click();
-  const tools = page.locator(".mcptools");
-  await tools.getByRole("radio", { name: "Todas permitidas" }).click();
-  await expect(tools.getByRole("button", { name: "echo" })).toHaveAttribute("aria-pressed", "true");
-  await expect(tools.getByRole("button", { name: "token" })).toHaveAttribute("aria-pressed", "true");
-  await tools.getByRole("button", { name: "token" }).click();
-  await expect(tools.getByRole("button", { name: "token" })).toHaveAttribute("aria-pressed", "false");
-  await expect(tools.getByRole("radio", { name: "Algunas" })).toHaveAttribute("aria-checked", "true");
-  await tools.getByRole("radio", { name: "Preguntar" }).click();
-  await expect(tools.getByRole("button", { name: "echo" })).toHaveAttribute("aria-pressed", "false");
-  await page.locator(".resd__row").getByRole("button", { name: "Quitar aprobación" }).click();
-  await expect(page.locator(".resd__callout")).toBeVisible();
-  await page.locator(".resd__callout").getByRole("button", { name: "Aprobar" }).click();
-  await expect(page.locator(".resd__callout")).toBeHidden();
-  await rpc("mcp.set", { name: "permissions", server: null });
+  try {
+    await open(page, "#view=resources&resourcesTab=connections");
+    await page.getByRole("radio", { name: /^Conexiones/ }).click();
+    await page.getByRole("button", { name: /^permissions/ }).click();
+    const tools = page.locator(".mcptools");
+    await tools.getByRole("radio", { name: "Todas permitidas" }).click();
+    await expect(tools.getByRole("button", { name: "echo" })).toHaveAttribute("aria-pressed", "true");
+    await expect(tools.getByRole("button", { name: "token" })).toHaveAttribute("aria-pressed", "true");
+    await tools.getByRole("button", { name: "token" }).click();
+    await expect(tools.getByRole("button", { name: "token" })).toHaveAttribute("aria-pressed", "false");
+    await expect(tools.getByRole("radio", { name: "Algunas" })).toHaveAttribute("aria-checked", "true");
+    await tools.getByRole("radio", { name: "Preguntar" }).click();
+    await expect(tools.getByRole("button", { name: "echo" })).toHaveAttribute("aria-pressed", "false");
+    await page.locator(".resd__row").getByRole("button", { name: "Quitar aprobación" }).click();
+    await expect(page.locator(".resd__callout")).toBeVisible();
+    await page.locator(".resd__callout").getByRole("button", { name: "Aprobar" }).click();
+    await expect(page.locator(".resd__callout")).toBeHidden();
+  } finally {
+    await rpc("mcp.set", { name: "permissions", server: null });
+  }
 });
 
 test("right-click permissions update the list indicator, persist and open the individual picker", async ({ page }) => {

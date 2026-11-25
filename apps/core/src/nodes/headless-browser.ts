@@ -293,8 +293,8 @@ export function createHeadlessBrowser(deps: {
       deps.remote?.check,
     );
     child.on("exit", () => {
-      if (proc !== child) return;
       p.failAll("the headless browser stopped");
+      if (proc !== child) return;
       proc = undefined;
       pipe = undefined;
       tabs.clear();
@@ -321,6 +321,10 @@ export function createHeadlessBrowser(deps: {
     } finally {
       clearTimeout(timer);
     }
+    if (proc !== child) {
+      p.failAll("the headless browser stopped");
+      throw new ColoniaError({ code: "unavailable", message: "the headless browser stopped" });
+    }
     pipe = p;
     return p;
   }
@@ -335,6 +339,7 @@ export function createHeadlessBrowser(deps: {
   };
 
   function stop() {
+    pipe?.failAll("the headless browser stopped");
     proc?.kill();
     proc = undefined;
     pipe = undefined;

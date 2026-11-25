@@ -57,7 +57,7 @@ type Live = {
   adapter: ChannelAdapter;
   ac: AbortController;
   /** The next start after a failure that may pass (the network); cleared when the channel stops. */
-  retry?: ReturnType<typeof setTimeout>;
+  retry?: () => void;
   status: ChannelInfo["status"];
   error?: string | undefined;
   account?: string | undefined;
@@ -86,6 +86,7 @@ export function createChannels(deps: {
   attention: (n: NewNotification) => void;
   /** Waits before starting again a channel that failed to start; the last one repeats. */
   retryMs?: readonly number[];
+  retryTimers?: RunTimers;
   /** A cheap model's one-shot answer: whether an uncalled message in a "useful" room deserves an answer. */
   judge?: (system: string, user: string, about: AuxAbout) => Promise<string | undefined>;
   /** A model that reads images naming what a picture shows (a sticker's meaning); none: stickers stay unnamed. */
@@ -120,7 +121,7 @@ export function createChannels(deps: {
   const acked = new Map<string, string>();
   const announced = new Set<string>();
   const escalations = new Map<string, () => void>();
-  const followUpTimers: RunTimers = deps.followUpTimers ?? {
+  const defaultTimers: RunTimers = {
     now: () => Date.now(),
     after(ms, callback) {
       const timer = setTimeout(callback, ms);
@@ -128,6 +129,8 @@ export function createChannels(deps: {
       return () => clearTimeout(timer);
     },
   };
+  const followUpTimers = deps.followUpTimers ?? defaultTimers;
+  const retryTimers = deps.retryTimers ?? defaultTimers;
   let unsubscribe: () => void = () => {};
   /** Settings changes of one channel apply one after another (two quick saves never leave two pollers). */
   const changing = new Map<string, Promise<unknown>>();
@@ -594,22 +597,21 @@ export function createChannels(deps: {
       if (err instanceof ChannelRefused || ac.signal.aborted || stopped) return;
       // Most likely the network: try again, waiting longer each time.
       const wait = retryMs[Math.min(attempt, retryMs.length - 1)] ?? 300_000;
-      l.retry = setTimeout(() => {
+      l.retry = retryTimers.after(wait, () => {
         if (live.get(config.id) !== l || stopped) return;
         void serially(config.id, async () => {
           if (live.get(config.id) !== l) return;
           await stopOne(config.id);
           await startOne(config, attempt + 1);
         });
-      }, wait);
-      l.retry.unref?.();
+      });
     }
   }
 
   async function stopOne(id: string): Promise<void> {
     const l = live.get(id);
     if (!l) return;
-    clearTimeout(l.retry);
+    l.retry?.();
     l.ac.abort();
     await l.adapter.stop().catch(() => {});
     if (live.get(id) === l) live.delete(id);

@@ -4,6 +4,8 @@ import { expect, open, rpc, test } from "./kit.ts";
 
 type Owner = { language: string; timezone: string };
 
+test.use({ timezoneId: "Europe/Madrid" });
+
 test("time zone and language are picked by searching, Advanced names each part of the core, and an API token is made in its own page", async ({
   page,
 }) => {
@@ -18,7 +20,7 @@ test("time zone and language are picked by searching, Advanced names each part o
 
   await dialog.getByRole("combobox", { name: "Zona horaria" }).click();
   await page.getByPlaceholder("Busca una ciudad o país").fill("madrid");
-  await page.getByRole("option", { name: /Madrid/ }).click();
+  await page.getByRole("option", { name: /^Madrid\b/ }).click();
   await expect.poll(async () => (await rpc<Owner>("owner.get")).timezone).toBe("Europe/Madrid");
 
   await dialog.getByRole("combobox", { name: "Idioma de tus agentes" }).click();

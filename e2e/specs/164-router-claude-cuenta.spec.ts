@@ -44,23 +44,32 @@ test("el router, un agente y el superagente aceptan Claude con la cuenta; apagad
 
 test("si el núcleo se niega, el router lo dice en español y sin jerga", async ({ page }) => {
   await rpc("setup.finish");
-  await open(page);
-  await page.route("**/rpc/models.set_config", (route) =>
-    route.fulfill({
-      json: {
-        ok: false,
-        error: { code: "invalid_params", message: "claude runs only in its own sessions; pick a model API" },
-      },
-    }),
-  );
-  await openSettings(page);
-  const settings = page.getByRole("dialog", { name: "Configuración" });
-  await settings.getByRole("button", { name: "Router" }).click();
-  await settings.getByRole("button", { name: "Añadir un modelo" }).click();
-  await page.getByRole("listbox", { name: "Modelos" }).locator('.mlist__opt[title="custom/fake-1"]').click();
-  await settings.getByRole("button", { name: "Guardar router" }).click();
-  const notice = page.getByText(/Claude Code solo funciona en sus propias conversaciones/);
-  await expect(notice).toBeVisible();
-  await expect(notice).not.toContainText("runs only");
-  await expect(notice).not.toContainText("sessions");
+  const saved = await rpc<{ default: ModelChoice; router: RouterConfig }>("models.config");
+  try {
+    await rpc("models.set_config", {
+      default: { router: true },
+      router: { chain: ["custom/fake-2"], rules: [] },
+    });
+    await open(page);
+    await page.route("**/rpc/models.set_config", (route) =>
+      route.fulfill({
+        json: {
+          ok: false,
+          error: { code: "invalid_params", message: "claude runs only in its own sessions; pick a model API" },
+        },
+      }),
+    );
+    await openSettings(page);
+    const settings = page.getByRole("dialog", { name: "Configuración" });
+    await settings.getByRole("button", { name: "Router" }).click();
+    await settings.getByRole("button", { name: "Añadir un modelo" }).click();
+    await page.getByRole("listbox", { name: "Modelos" }).locator('.mlist__opt[title="custom/fake-1"]').click();
+    await settings.getByRole("button", { name: "Guardar router" }).click();
+    const notice = page.getByText(/Claude Code solo funciona en sus propias conversaciones/);
+    await expect(notice).toBeVisible();
+    await expect(notice).not.toContainText("runs only");
+    await expect(notice).not.toContainText("sessions");
+  } finally {
+    await rpc("models.set_config", saved);
+  }
 });

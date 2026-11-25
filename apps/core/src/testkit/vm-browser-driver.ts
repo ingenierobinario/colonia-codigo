@@ -5,6 +5,7 @@ import { waitFor } from "./platform.ts";
 /** A local CDP pipe stands in for the guest transport; its first successful expression can be held in transit. */
 export function vmBrowserDriver(dir: string, chrome: string, gate: string) {
   const pids = path.join(dir, "browser-pids");
+  const forceClose = path.join(dir, "force-close");
   const binary = path.join(dir, "guest-driver.mjs");
   fs.writeFileSync(
     binary,
@@ -41,7 +42,12 @@ if (process.argv.includes('/usr/local/bin/colonia-browser')) {
     } else process.stdout.write(raw);
   });
   process.on('SIGTERM', () => child.kill());
-  child.on('close', () => { process.stdin.destroy(); process.stdout.end(); });
+  const forceStop = () => {
+    if (fs.existsSync(${JSON.stringify(forceClose)})) child.kill('SIGKILL');
+  };
+  const rescue = fs.watch(${JSON.stringify(dir)}, forceStop);
+  forceStop();
+  child.on('close', () => { rescue.close(); process.stdin.destroy(); process.stdout.end(); });
   child.stdio[3].on('error', () => {});
 }
 `,
@@ -49,6 +55,9 @@ if (process.argv.includes('/usr/local/bin/colonia-browser')) {
   );
   return {
     binary,
+    forceClose() {
+      fs.writeFileSync(forceClose, "stop");
+    },
     async closed() {
       if (!fs.existsSync(pids)) return;
       const ids = fs.readFileSync(pids, "utf8").split("\n").map(Number);

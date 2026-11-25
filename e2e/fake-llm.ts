@@ -360,6 +360,8 @@ export async function fakeLlm() {
         res.end("data: [DONE]\n\n");
       };
       const keepGoing = KEEP_GOING.test(said) && body.messages?.at(-1)?.role === "tool";
+      // The stop-confirmation fixture stays pending until its caller cancels the request.
+      if (keepGoing && /until stopped$/i.test(said)) return;
       const long = system.startsWith("Take your time");
       if (slow || keepGoing || long) {
         const timer = setTimeout(answer, long ? LONG_MS : slow ? SLOW_MS : KEEP_GOING_MS);
