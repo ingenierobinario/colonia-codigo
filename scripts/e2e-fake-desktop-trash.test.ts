@@ -10,7 +10,8 @@ test("the fake trash moves top-level files but refuses the project root", async 
   const root = path.join(temp, "project");
   const record = path.join(temp, "trash.jsonl");
   fs.mkdirSync(root);
-  const source = path.join(root, "top-level.txt");
+  // The core resolves Windows short paths before passing a file to the desktop.
+  const source = path.join(fs.realpathSync.native(root), "top-level.txt");
   const trash = fakeDesktopTrash(root, record);
   try {
     await assert.rejects(trash(root), /outside the e2e project/);

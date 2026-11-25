@@ -5,11 +5,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { say, scriptedLlm, startCore } from "../../apps/core/src/engine/testkit.ts";
 import { createVmLifecycle } from "../../apps/core/src/environments/lifecycle.ts";
+import { fakeProgram } from "../../apps/core/src/harness/fake-program.test-support.ts";
 import { removeDir, tempDir } from "../../apps/core/src/testkit/platform.ts";
 import { expect, test } from "./kit.ts";
 
 /** A desktop on stdin/stdout: version, security "none", then the server's init; the first one ends after a moment. */
-const DESKTOP = `#!/usr/bin/env node
+const DESKTOP = `
 const fs = require("node:fs");
 const count = process.env.COLONIA_VIEWER_COUNT;
 const n = Number(fs.existsSync(count) ? fs.readFileSync(count, "utf8") : "0") + 1;
@@ -38,10 +39,8 @@ process.stdin.on("end", () => process.exit(0));
 
 test("a viewer that drops reconnects by itself and shows the agent's screen, never the error", async ({ page }) => {
   const dir = tempDir("colonia-viewer-").path;
-  const desktop = path.join(dir, "desktop.cjs");
+  const desktop = fakeProgram(dir, "desktop", DESKTOP);
   const count = path.join(dir, "count");
-  fs.writeFileSync(desktop, DESKTOP, { mode: 0o755 });
-  process.env.COLONIA_VIEWER_COUNT = count;
   const lifecycle = createVmLifecycle({
     supported: true,
     installed: () => true,
@@ -56,8 +55,8 @@ test("a viewer that drops reconnects by itself and shows the agent's screen, nev
       limaHome: "/unused",
       instance: "missing",
       lifecycle,
-      executable: () => desktop,
-      env: { ...process.env, COLONIA_VIEWER_COUNT: count },
+      executable: () => desktop.bin,
+      env: { ...process.env, ...desktop.env, COLONIA_VIEWER_COUNT: count },
     },
   });
   const viewers = () => Number(fs.existsSync(count) ? fs.readFileSync(count, "utf8") : "0");
@@ -78,7 +77,7 @@ test("a viewer that drops reconnects by itself and shows the agent's screen, nev
   } finally {
     await page.goto("about:blank");
     await env.core.close();
-    env.cleanup();
+    await env.cleanup();
     await removeDir(dir);
   }
 });

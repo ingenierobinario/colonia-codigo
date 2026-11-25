@@ -185,6 +185,14 @@ pnpm e2e:desktop                   # the Electron app (e2e/desktop) against the 
 The desktop specs launch the real app with a temp `HOME` and `COLONIA_DESKTOP_DATA` (its data folder, sessions and
 single-instance lock never touch the owner's running Colonia; macOS ignores `HOME` for that folder), the panel
 served by the sandbox's core, and check the window, the browser it lends to the core as a node, and the quick chat.
+On Windows, install Git for Windows and put `git.exe` on `PATH` before running browser tests. The sandbox adds
+that Git directory so diffs and Git Bash commands work, and uses Windows' `cmd.exe` for interactive terminals.
+Its profile and agent CLIs remain isolated in the temporary fixture.
+
+En Windows, instala Git for Windows y deja `git.exe` en `PATH` antes de ejecutar las pruebas de navegador. El
+entorno de prueba añade esa carpeta para los diffs y comandos de Git Bash, y usa `cmd.exe` para las terminales
+interactivas. Su perfil y los programas de agentes siguen aislados en la carpeta temporal.
+
 `e2e/env.ts` is a whole Colonia apart from the owner's: a temp home and port, `COLONIA_SECRETS=file`, a fake
 OpenAI-compatible model (`e2e/fake-llm.ts`, answers "Got it: <what you wrote>"), an emulated Telegram Bot API
 (`COLONIA_TELEGRAM_API`), an Colonia v1 and Claude Code / Codex sessions to import (`e2e/fixtures.ts`). Specs act as the

@@ -3,7 +3,7 @@
 // without calling anyone, an emulated Telegram, an Colonia v1 and Claude Code sessions to import, and a project folder.
 // Nothing here touches ~/.colonia, the Keychain or a real service. Playwright starts it (webServer); `node e2e/env.ts`
 // runs it by hand. A small control API lets tests act as the outside world (a Telegram user writing).
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
@@ -66,9 +66,21 @@ const serviceUrl = `http://127.0.0.1:${(service.address() as AddressInfo).port}`
 const hook = path.join(root, "e2e/baileys-hook.ts");
 const desktopTrashRecord = path.join(dir, "desktop-trash.jsonl");
 const windowsRoot = process.env.SystemRoot ?? "C:\\Windows";
+// Windows keeps Git outside System32. Include its installation, not the owner's entire PATH.
+const gitBin =
+  process.platform === "win32"
+    ? path.dirname(
+        execFileSync(path.join(windowsRoot, "System32", "where.exe"), ["git.exe"], {
+          encoding: "utf8",
+          windowsHide: true,
+        })
+          .trim()
+          .split(/\r?\n/)[0] ?? "",
+      )
+    : undefined;
 const systemBins =
   process.platform === "win32"
-    ? [path.dirname(process.execPath), path.join(windowsRoot, "System32")]
+    ? [path.dirname(process.execPath), path.join(windowsRoot, "System32"), ...(gitBin ? [gitBin] : [])]
     : ["/usr/bin", "/bin"];
 const core = spawn(
   process.execPath,
@@ -82,7 +94,9 @@ const core = spawn(
       PATH: [fx.bin, ...systemBins].join(path.delimiter),
       HOME: process.platform === "win32" ? fx.home : (process.env.HOME ?? os.homedir()),
       // Windows busca también en el perfil. El motor solo recibe el hogar de prueba y las herramientas del sistema.
-      ...(process.platform === "win32" ? { USERPROFILE: fx.home, SystemRoot: windowsRoot } : {}),
+      ...(process.platform === "win32"
+        ? { USERPROFILE: fx.home, SystemRoot: windowsRoot, COMSPEC: path.join(windowsRoot, "System32", "cmd.exe") }
+        : {}),
       ...compileCacheEnv(root),
       COLONIA_HOME: fx.home,
       COLONIA_PORT: String(E2E.port),

@@ -4,7 +4,7 @@ import { formatBytes } from "../../common/format.ts";
 import { coreOnThisComputer, downloadFile, type FileWhere, revealFile } from "../../data/files.ts";
 import { useT } from "../../i18n/index.ts";
 
-/** The file's path and size, with "Show in Finder" and whatever the view adds. */
+/** The file's path and size, with "Show in folder" and whatever the view adds. */
 export function FileHead({
   where,
   path,

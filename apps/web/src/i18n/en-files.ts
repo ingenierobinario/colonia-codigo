@@ -176,7 +176,7 @@ export const enFiles = {
   "files.binary": "Not a text file",
   "files.binaryBody": "Download it to open it with the app it belongs to.",
   "files.truncated": "Only the first 256 KB are shown.",
-  "files.reveal": "Show in Finder",
+  "files.reveal": "Show in folder",
   "files.copyPath": "Copy path",
   "files.copyRelative": "Copy relative path",
   "files.rename": "Rename",

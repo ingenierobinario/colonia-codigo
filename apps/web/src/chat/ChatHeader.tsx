@@ -102,12 +102,16 @@ export function ChatHeader({
           {engine && <Tag kind="role">{t("engine.direct")}</Tag>}
           <ChatProcesses thread={thread.id} onOpen={go.processes} />
           {!sub && !engine && !thread.channel && agent && (agent.kind === "secretary" || agent.role) && (
-            <Tag kind="role">{agent.kind === "secretary" ? t("agent.super") : agent.role}</Tag>
+            <Tag kind="role" className="chat__role" title={agent.kind === "secretary" ? t("agent.super") : agent.role}>
+              <span>{agent.kind === "secretary" ? t("agent.super") : agent.role}</span>
+            </Tag>
           )}
         </div>
         <div className="chat__crumb">
           <ProjectAvatar id={project?.id} size={12} />
-          <span>{projectName(projects, thread.project_id)}</span>
+          <span className="chat__crumbproject" title={projectName(projects, thread.project_id)}>
+            {projectName(projects, thread.project_id)}
+          </span>
           {!sub && (
             <>
               <span className="chat__crumbsep">/</span>

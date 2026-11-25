@@ -384,8 +384,10 @@ textarea.inputcard__detail {
   white-space: nowrap;
 }
 .chat__header--compact .chat__crumb {
-  flex-wrap: wrap;
   gap: 2px 4px;
+}
+.chat__header--compact:has(.task-status) .chat__crumb {
+  flex-wrap: wrap;
 }
 .chat__header--compact:has(.task-status) {
   height: auto;

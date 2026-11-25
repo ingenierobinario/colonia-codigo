@@ -1,8 +1,8 @@
 // A read outside the project's folder: the agent's card asks the owner. The folder holding the project is only lent
 // for that call: kept, it would read to the agent as if its own folder could not change.
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
+import { tempDir } from "../../apps/core/src/testkit/platform.ts";
 import { expect, open, rpc, test } from "./kit.ts";
 
 type Thread = {
@@ -14,7 +14,8 @@ test("an agent reading its project's parent folder asks with a card; it is lent 
   page,
 }) => {
   await rpc("setup.finish", {});
-  const northwind = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "colonia-e2e-northwind-")));
+  await using folder = tempDir("colonia-e2e-northwind-");
+  const northwind = folder.path;
   const repo = path.join(northwind, "app");
   fs.mkdirSync(path.join(northwind, "docs"), { recursive: true });
   fs.mkdirSync(repo);
@@ -55,6 +56,5 @@ test("an agent reading its project's parent folder asks with a card; it is lent 
     expect(await listed()).toBeUndefined();
   } finally {
     await rpc("projects.unregister", { project });
-    fs.rmSync(northwind, { recursive: true, force: true });
   }
 });

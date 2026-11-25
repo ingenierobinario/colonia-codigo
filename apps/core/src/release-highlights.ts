@@ -11,11 +11,13 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
       "Chat controls stay within reach in narrow or short windows.",
       "Search and file filters no longer show results from a previous request.",
       "Screens show a loading indicator while their content arrives.",
+      "Long agent roles and project names no longer cover chat controls.",
     ],
     es: [
       "Los controles del chat quedan al alcance en ventanas estrechas o de poca altura.",
       "La búsqueda y los filtros de archivos ya no muestran resultados de una petición anterior.",
       "Las pantallas muestran un indicador mientras llega su contenido.",
+      "Los roles y nombres de proyecto largos ya no tapan los controles del chat.",
     ],
   },
   "2.36.72": {

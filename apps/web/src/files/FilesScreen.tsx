@@ -160,6 +160,7 @@ export function FilesScreen() {
   useEffect(() => {
     setOpen(undefined);
     setItems([]);
+    setCounts(undefined);
     setMore(false);
     setError("");
     void load(0);

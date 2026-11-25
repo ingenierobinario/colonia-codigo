@@ -18,7 +18,7 @@ test("a document names its file and offers its folder, open apart and download w
   const card = transcript.locator(".documentpart__wrap");
   await expect(card).toContainText("notes/report.md");
   await card.hover();
-  for (const name of ["Mostrar en Finder", "Abrir en su app", "Descargar"])
+  for (const name of ["Mostrar en la carpeta", "Abrir en su app", "Descargar"])
     await expect(card.getByRole("button", { name })).toBeVisible();
   const download = page.waitForEvent("download");
   await card.getByRole("button", { name: "Descargar" }).click();
@@ -28,7 +28,7 @@ test("a document names its file and offers its folder, open apart and download w
   const panel = page.locator(".documentpanel");
   await expect(panel.getByRole("heading", { name: "Quarter report" })).toBeVisible();
   await expect(panel.locator(".documentpanel__filename")).toHaveText("notes/report.md");
-  for (const name of ["Mostrar en Finder", "Abrir en su app", "Descargar"])
+  for (const name of ["Mostrar en la carpeta", "Abrir en su app", "Descargar"])
     await expect(panel.getByRole("button", { name })).toBeVisible();
 
   const desktopOffer = page.locator(".desktop-install");

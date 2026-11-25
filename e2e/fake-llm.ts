@@ -239,7 +239,10 @@ function toolCall(messages: Message[], said: string): { name: string; arguments:
     return { name: "shell", arguments: JSON.stringify({ command: "pwd; ls .." }) };
   // A write in a folder of the owner's own choosing, outside every folder of the chat.
   const outside = /^write a note at (\S+)/i.exec(said);
-  if (outside) return { name: "shell", arguments: JSON.stringify({ command: `echo note > ${outside[1]}` }) };
+  if (outside) {
+    const file = outside[1]?.replaceAll("\\", "/").replaceAll("'", "'\\''");
+    return { name: "shell", arguments: JSON.stringify({ command: `printf 'note\\n' > '${file}'` }) };
+  }
   // A command that writes: the owner is asked first.
   if (/^make a note file/i.test(said))
     return { name: "shell", arguments: JSON.stringify({ command: "touch e2e-note.txt" }) };

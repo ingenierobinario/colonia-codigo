@@ -178,7 +178,7 @@ export const esFiles: Partial<Record<MessageKey, string>> = {
   "files.binary": "No es un archivo de texto",
   "files.binaryBody": "Descárgalo para abrirlo con su aplicación.",
   "files.truncated": "Se muestran solo los primeros 256 KB.",
-  "files.reveal": "Mostrar en Finder",
+  "files.reveal": "Mostrar en la carpeta",
   "files.copyPath": "Copiar ruta",
   "files.copyRelative": "Copiar ruta relativa",
   "files.rename": "Renombrar",

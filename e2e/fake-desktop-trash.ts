@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { realpath } from "../apps/core/src/paths.ts";
 
 function contained(root: string, target: string): boolean {
   const rel = path.relative(root, target);
@@ -9,9 +10,9 @@ function contained(root: string, target: string): boolean {
 /** A sandboxed stand-in for system trash used only by the e2e core. */
 export function fakeDesktopTrash(rootPath: string, record: string) {
   return async (abs: string): Promise<void> => {
-    const root = fs.realpathSync(rootPath);
-    const entry = path.join(fs.realpathSync(path.dirname(abs)), path.basename(abs));
-    const target = fs.realpathSync(abs);
+    const root = realpath(rootPath);
+    const entry = path.join(realpath(path.dirname(abs)), path.basename(abs));
+    const target = realpath(abs);
     if (!contained(root, entry) || !contained(root, target)) {
       throw new Error("refusing to trash a path outside the e2e project");
     }

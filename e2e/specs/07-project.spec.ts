@@ -129,7 +129,7 @@ test("a project file can be renamed and moved to trash from its context menu", a
     await expect(page.getByRole("button", { name: "remove-me.txt" })).toHaveCount(0);
     expect(fs.existsSync(trashed)).toBe(false);
     const { paths } = await world.desktopTrash();
-    expect(paths).toContain(path.join(fs.realpathSync(repo), "remove-me.txt"));
+    expect(paths).toContain(path.join(fs.realpathSync.native(repo), "remove-me.txt"));
   } finally {
     fs.rmSync(source, { force: true });
     fs.rmSync(path.join(repo, "renamed.txt"), { force: true });
