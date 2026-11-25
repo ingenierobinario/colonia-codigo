@@ -92,20 +92,24 @@ test("chat offers once, session and always; session lets later calls proceed wit
     project_id: project,
     title: "Permisos MCP",
   });
-  await open(page, `#thread=${chat.id}`);
-  await page.getByRole("textbox", { name: /Escríbele/ }).fill("read MCP twice");
-  await page.keyboard.press("Enter");
-  const card = page.locator(".inputcard.is-pending");
-  await expect(card.getByRole("button", { name: "Aceptar una vez" })).toBeVisible();
-  await expect(card.getByRole("button", { name: "Aceptar siempre para este agente" })).toBeVisible();
-  await card.getByRole("button", { name: "Aceptar durante esta sesión" }).click();
-  await expect(card).toBeHidden();
-  await expect(page.locator(".inputline")).toContainText("Esta sesión");
-  await page.getByRole("textbox", { name: /Escríbele/ }).fill("read MCP twice again");
-  await page.keyboard.press("Enter");
-  await expect(page.locator(".transcript").getByText("Got it: read MCP twice again", { exact: true })).toBeVisible();
-  await expect(card).toBeHidden();
-  await rpc("mcp.set", { project, name: "notes", server: null });
+  try {
+    await open(page, `#thread=${chat.id}`);
+    await page.getByRole("textbox", { name: /Escríbele/ }).fill("read MCP twice");
+    await page.keyboard.press("Enter");
+    const card = page.locator(".inputcard.is-pending");
+    await expect(card.getByRole("button", { name: "Aceptar una vez" })).toBeVisible();
+    await expect(card.getByRole("button", { name: "Aceptar siempre para este agente" })).toBeVisible();
+    await card.getByRole("button", { name: "Aceptar durante esta sesión" }).click();
+    await expect(card).toBeHidden();
+    await expect(page.locator(".inputline")).toContainText("Esta sesión");
+    await page.getByRole("textbox", { name: /Escríbele/ }).fill("read MCP twice again");
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".transcript").getByText("Got it: read MCP twice again", { exact: true })).toBeVisible();
+    await expect(card).toBeHidden();
+  } finally {
+    await rpc("threads.cancel", { thread: chat.id });
+    await rpc("mcp.set", { project, name: "notes", server: null });
+  }
 });
 
 test("a file edit waiting for the owner shows its patch across the chat's width", async ({ page }) => {

@@ -4,7 +4,8 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import path from "node:path";
 import { test as base, expect } from "@playwright/test";
-import { stopped, type TempDir, tempDir } from "../../apps/core/src/testkit/platform.ts";
+import { stopped, type TempDir, tempDir, waitFor } from "../../apps/core/src/testkit/platform.ts";
+import { compileCacheEnv } from "../../scripts/compile-cache.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const port = Number(process.env.E2E_PAIR_PORT ?? 7466);
@@ -24,6 +25,7 @@ base.beforeAll(async () => {
     env: {
       // Nothing of this machine's: no agent CLIs, no v1, no Keychain, no updates, no Messages.
       PATH: ["/usr/bin", "/bin"].join(path.delimiter),
+      ...compileCacheEnv(root),
       HOME: dir,
       COLONIA_HOME: home,
       COLONIA_PORT: String(port),
@@ -37,13 +39,17 @@ base.beforeAll(async () => {
       CODEX_HOME: path.join(dir, "codex"),
     },
   });
-  for (let i = 0; i < 150; i++) {
-    try {
-      if ((await fetch(`${core}/health`)).ok) return;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  throw new Error("the token-protected core did not start");
+  await waitFor(
+    async () => {
+      try {
+        return (await fetch(`${core}/health`)).ok;
+      } catch {
+        return false;
+      }
+    },
+    "the token-protected core to start",
+    { ms: 15_000 },
+  );
 });
 
 base.afterAll(async () => {
