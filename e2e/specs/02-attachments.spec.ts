@@ -78,7 +78,7 @@ test("arrastrar MP4 5,3 MB y PDF grande permite enviar; rechazo muestra motivo c
       .click();
     const downloaded = await (await download).path();
     expect(downloaded).toBeTruthy();
-    expect(fs.readFileSync(downloaded ?? "")).toEqual(video);
+    expect(fs.readFileSync(downloaded ?? "").equals(video)).toBe(true);
     await expect(page.getByRole("button", { name: /^report.pdf/ })).toBeVisible();
   } finally {
     await page.goto("about:blank");

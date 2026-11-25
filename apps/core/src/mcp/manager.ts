@@ -165,6 +165,10 @@ export function createMcp(deps: {
     signal?: AbortSignal,
   ): Promise<{ client: Client; tools: McpTool[] }> {
     if (d.args.some((a) => a.includes("secret://"))) throw new Error(ARGS_SECRET);
+    const cmd = d.command ?? "";
+    // Windows starts it through cmd, which hides a missing program as a closed connection: say so first.
+    if (!d.url && process.platform === "win32" && !/[\\/]/.test(cmd) && !onPath(cmd))
+      throw new Error(`spawn ${cmd} ENOENT`);
     // Loaded with the first server: a core with none never loads the MCP client.
     const [{ Client }, { StdioClientTransport }, { StreamableHTTPClientTransport }] = await Promise.all([
       import("@modelcontextprotocol/sdk/client/index.js"),
@@ -192,9 +196,6 @@ export function createMcp(deps: {
       });
     else {
       const env = resolve(d.env, d.values_of);
-      // Windows starts it through cmd, which hides a missing program as a closed connection: say so first.
-      const cmd = d.command ?? "";
-      if (process.platform === "win32" && !/[\\/]/.test(cmd) && !onPath(cmd)) throw new Error(`spawn ${cmd} ENOENT`);
       const args = d.args.map((a) => resolveText(a, d.values_of));
       // Electron can find npm in a standard installation directory outside its inherited PATH.
       const executable = process.platform === "win32" && /^npx(?:\.cmd)?$/i.test(cmd) ? findCommand(cmd) : undefined;
