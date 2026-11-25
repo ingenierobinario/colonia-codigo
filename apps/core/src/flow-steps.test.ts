@@ -307,11 +307,17 @@ function crm(folder: string) {
   db.exec("CREATE TABLE leads (email TEXT PRIMARY KEY, name TEXT); INSERT INTO leads VALUES ('a@example.com', 'Alex')");
   db.close();
 }
-const leads = (folder: string) =>
-  new DatabaseSync(path.join(folder, "data", "crm.db"), { readOnly: true })
-    .prepare("SELECT * FROM leads ORDER BY email")
-    .all()
-    .map((r) => ({ ...r }));
+function leads(folder: string) {
+  const db = new DatabaseSync(path.join(folder, "data", "crm.db"), { readOnly: true });
+  try {
+    return db
+      .prepare("SELECT * FROM leads ORDER BY email")
+      .all()
+      .map((r) => ({ ...r }));
+  } finally {
+    db.close();
+  }
+}
 
 test("SQL reads and writes the project's database with bound values; a write is allowed by publishing", async () => {
   const env = await core();
