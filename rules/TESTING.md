@@ -217,7 +217,12 @@ A core on a temp home with the fake model: startup, idle memory and CPU, protoco
 once quiet again, and the panel's first load (gzip). Each number has a budget in `scripts/perf-budget.json`;
 going over fails. Raising a budget is a regression: it needs a reason in the commit body.
 
-The memory numbers are `ps` RSS. On macOS the memory compressor takes a varying part of the core's malloc pages
+Memory is resident RSS: `/proc` on Linux, `ps` on macOS and `WorkingSet64` on Windows. CPU samples use kernel
+ticks on Linux (whole-second `ps` output is too coarse for the idle budget), fractional `ps` time on macOS and
+`TotalProcessorTime` on Windows. The CPU percentage uses the elapsed interval between samples, including any
+sampling overhead. A missing process or invalid sample fails measurement instead of reporting zero use.
+
+On macOS the memory compressor takes a varying part of the core's malloc pages
 out of it, so the same commit reads anywhere from ~90 to ~145 MB idle (and `rss_after_turns_mb` swings the same
 way) depending on how loaded the machine is. A difference between two commits measured once each on a Mac says
 nothing. Compare them where nothing is compressed: CI's Linux job, or a `node:24` container (within ~1 MB from
@@ -244,6 +249,8 @@ El flujo `.github/workflows/verify.yml` comprueba los cambios de `staging`, `mai
 | Rendimiento | Compilación web con mapas y `scripts/perf.ts` con presupuesto de arranque, memoria, latencia y tamaño | Ubuntu 24.04 dedicado |
 | Cobertura | Tras `preflight`, unitarias, escritorio y seis grupos de Playwright | Ocho máquinas Ubuntu |
 | Panel | Compilación web, unitarias del panel y Chromium repartido en tres grupos | Tres máquinas macOS 15 |
+| Panel Windows | Chromium completo repartido en tres grupos; unitarias del motor, panel, escritorio y medición de procesos | Tres máquinas Windows 2025 |
+| Escritorio Windows | Electron real con perfil temporal: arranque, conexión, cursor e importación | Windows 2025 |
 | Actualización nativa | Actualización desde el último ZIP público a la candidata temporal y comprobación de la ventana, el commit y el perfil | macOS 15 Apple Silicon |
 | Resultado | Comprueba todos los trabajos y reúne las ocho partes de cobertura | Ubuntu 24.04 |
 

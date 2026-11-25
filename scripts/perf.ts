@@ -11,6 +11,7 @@ import { enScreens } from "../apps/web/src/i18n/screens-en.ts";
 import { fakeLlm } from "../e2e/fake-llm.ts";
 import { bootFiles, bootProblems, bootReport, sumKb } from "./bundle.ts";
 import { compileCacheEnv } from "./compile-cache.ts";
+import { cpuPercent, processUsage as usage } from "./process-usage.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const budget = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "perf-budget.json"), "utf8")) as Record<
@@ -56,36 +57,6 @@ function rpc<T>(method: string, params: unknown = {}): Promise<T> {
     req.on("error", reject);
     req.end(JSON.stringify(params));
   });
-}
-
-const run = (command: string, args: string[]) =>
-  new Promise<string>((resolve) => {
-    const child = spawn(command, args, { windowsHide: true });
-    let s = "";
-    child.stdout.on("data", (d) => {
-      s += d;
-    });
-    child.on("error", () => resolve(""));
-    child.on("close", () => resolve(s.trim()));
-  });
-
-/** RSS in MB and CPU seconds of a process: from ps on macOS and Linux, from PowerShell on Windows (PERF-1: it has no ps). */
-async function usage(pid: number): Promise<{ rss: number; cpu: number }> {
-  if (process.platform === "win32") {
-    const out = await run("powershell.exe", [
-      "-NoProfile",
-      "-NonInteractive",
-      "-Command",
-      `$p = Get-Process -Id ${pid}; [Console]::Out.Write(('{0} {1}' -f $p.WorkingSet64, $p.TotalProcessorTime.TotalMilliseconds.ToString([cultureinfo]::InvariantCulture)))`,
-    ]);
-    const [bytes = "0", ms = "0"] = out.split(/\s+/);
-    return { rss: Number(bytes) / 1024 / 1024, cpu: Number(ms) / 1000 };
-  }
-  const out = await run("ps", ["-o", "rss=,time=", "-p", String(pid)]);
-  const [rss = "0", time = "0:0"] = out.split(/\s+/);
-  const parts = time.split(":").map(Number);
-  const cpu = parts.reduce((acc, n) => acc * 60 + n, 0);
-  return { rss: Number(rss) / 1024, cpu };
 }
 
 const pct = (xs: number[], p: number) =>
@@ -224,7 +195,7 @@ try {
   await sleep(5000);
   const idle1 = await usage(pid);
   results.idle_rss_mb = idle1.rss;
-  results.idle_cpu_pct = ((idle1.cpu - idle0.cpu) / 5) * 100;
+  results.idle_cpu_pct = cpuPercent(idle0, idle1);
 
   // Protocol latency: a read the panel makes all the time.
   const lat: number[] = [];

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { tabShortcut, watchTabs } from "../chat/tabsSync.ts";
+import { ScreenLoading } from "../common/ScreenLoading.tsx";
 import { applyDesktopPrefs } from "../config/desktopPrefs.ts";
 import { useSlice } from "../data/createStore.ts";
 import { useNavegadores } from "../data/navegadores.ts";
@@ -103,7 +104,7 @@ export function Shell() {
         <Sidebar rail={layout.rail} width={layout.sidebarW} />
         <main className="shell__main">
           <ShellLayout.Provider value={layout}>
-            <Suspense fallback={null}>
+            <Suspense fallback={<ScreenLoading />}>
               {view === "app" ? (
                 <AppScreen />
               ) : view === "webapp" ? (

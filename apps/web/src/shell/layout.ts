@@ -43,7 +43,7 @@ export const BREAKPOINTS = {
   /** Chat column width from which the header shows the panel switcher as inline icons (else a dropdown). */
   chatHeaderWide: 720,
   /** Below this width the chat workspace shows one column at a time: the list, the chat or the side panel. */
-  compact: 640,
+  compact: LAYOUT.sidebarRailW + LAYOUT.chatMinW + LAYOUT.panelWNarrow,
 } as const;
 
 export type Layout = {
@@ -86,7 +86,7 @@ export function computeLayout(
       : LAYOUT.sidebarW;
   const panelMaxW = Math.max(LAYOUT.panelMinW, width - sidebarW - LAYOUT.chatMinW);
   // Wide: half of what the list leaves (it hides), never under the usual width. A dragged width wins over both.
-  const panelW = compact
+  const requestedPanelW = compact
     ? width - sidebarW
     : own.panelWide
       ? Math.max(LAYOUT.panelW, Math.min(Math.round((width - sidebarW) / 2), width - sidebarW - LAYOUT.chatMinW))
@@ -95,11 +95,13 @@ export function computeLayout(
         : narrow
           ? LAYOUT.panelWNarrow
           : LAYOUT.panelW;
-  const ownListW = own.listW ? clamp(own.listW, LAYOUT.listMinW, LAYOUT.listMaxW) : 0;
+  const panelW = compact ? requestedPanelW : clamp(requestedPanelW, LAYOUT.panelMinW, panelMaxW);
+  const listMaxW = Math.max(LAYOUT.listMinW, Math.min(LAYOUT.listMaxW, width - sidebarW - LAYOUT.chatMinW));
+  const ownListW = own.listW ? clamp(own.listW, LAYOUT.listMinW, listMaxW) : 0;
   const defaultListW = width >= BREAKPOINTS.listWide ? LAYOUT.listW : LAYOUT.listWNarrow;
   // A panel dragged wide enough to squeeze the chat under its minimum folds the list away, like the wide toggle.
   const crowded = width - sidebarW - panelW - (ownListW || defaultListW) < LAYOUT.chatMinW;
-  const hideList = (narrow || Boolean(own.panelWide) || (Boolean(own.panelW) && crowded)) && panelOpen && chatShown;
+  const hideList = (narrow || Boolean(own.panelWide) || crowded) && panelOpen && chatShown;
   const listW = compact
     ? width - sidebarW
     : hideList

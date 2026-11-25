@@ -57,6 +57,7 @@ export const en = {
   "common.cancel": "Cancel",
   "common.save": "Save",
   "common.close": "Close",
+  "common.loading": "Loading…",
   "common.comingSoon": "{name}: coming soon",
   "common.done": "Done",
   "common.refresh": "Refresh",

@@ -43,29 +43,34 @@ export function CommandPalette() {
   const [query, setQuery] = useState("");
   const [at, setAt] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [hits, setHits] = useState<Hit[]>([]);
+  const [searchResult, setSearchResult] = useState<{ query: string; hits: Hit[] }>({ query: "", hits: [] });
+  const hits = searchResult.query === query.trim() ? searchResult.hits : [];
   const list = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    let live = true;
     setQuery("");
     setAt(0);
     void client
       .call("tasks.list", { limit: 200 })
-      .then((r) => setTasks(r.tasks))
-      .catch(() => setTasks([]));
+      .then((r) => live && setTasks(r.tasks))
+      .catch(() => live && setTasks([]));
+    return () => {
+      live = false;
+    };
   }, [open]);
 
   // What the messages say: asked once typing pauses; an older answer arriving late is dropped.
   useEffect(() => {
     const q = query.trim();
-    if (!open || q.length < SEARCH_MIN) return setHits([]);
+    if (!open || q.length < SEARCH_MIN) return setSearchResult({ query: q, hits: [] });
     let live = true;
     const timer = setTimeout(() => {
       void client
         .call("threads.search", { query: q, limit: MAX_PER_GROUP * 2 })
-        .then((r) => live && setHits(r.hits))
-        .catch(() => live && setHits([]));
+        .then((r) => live && setSearchResult({ query: q, hits: r.hits }))
+        .catch(() => live && setSearchResult({ query: q, hits: [] }));
     }, SEARCH_WAIT_MS);
     return () => {
       live = false;
@@ -172,6 +177,8 @@ export function CommandPalette() {
     ];
   }, [query, threads, projects, agents, tasks, hits, t]);
 
+  const selected = Math.min(at, Math.max(0, items.length - 1));
+
   useEffect(() => {
     list.current?.querySelector(".palette__item.is-on")?.scrollIntoView({ block: "nearest" });
   });
@@ -180,10 +187,10 @@ export function CommandPalette() {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       const step = e.key === "ArrowDown" ? 1 : -1;
-      setAt((i) => (items.length ? (i + step + items.length) % items.length : 0));
+      setAt(items.length ? (selected + step + items.length) % items.length : 0);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      items[at]?.run();
+      items[selected]?.run();
     }
   };
 
@@ -204,7 +211,7 @@ export function CommandPalette() {
           className="palette__input"
           aria-label={t("palette.title")}
           aria-controls="palette-list"
-          aria-activedescendant={items[at] ? `palette-${items[at].key}` : undefined}
+          aria-activedescendant={items[selected] ? `palette-${items[selected].key}` : undefined}
           placeholder={t("topbar.search")}
           value={query}
           onChange={(e) => {
@@ -224,8 +231,8 @@ export function CommandPalette() {
               id={`palette-${item.key}`}
               role="option"
               tabIndex={-1}
-              aria-selected={i === at}
-              className={`palette__item${i === at ? " is-on" : ""}`}
+              aria-selected={i === selected}
+              className={`palette__item${i === selected ? " is-on" : ""}`}
               onMouseMove={() => i !== at && setAt(i)}
               onClick={item.run}
               onKeyDown={(e) => e.key === "Enter" && item.run()}

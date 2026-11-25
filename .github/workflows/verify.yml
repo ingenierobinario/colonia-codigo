@@ -116,8 +116,45 @@ jobs:
   macos-actualizacion:
     uses: ./.github/workflows/humo-actualizacion-macos.yml
 
+  windows-desktop:
+    uses: ./.github/workflows/escritorio-windows.yml
+
+  windows-web:
+    name: Panel y Chromium (Windows, ${{ matrix.part }}/3)
+    runs-on: windows-2025
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          browser: chromium
+      - name: Compilar el panel
+        run: pnpm build:web
+      - name: Probar el motor, panel, escritorio y medición de procesos
+        if: matrix.part == 1
+        shell: pwsh
+        run: |
+          node --test --test-concurrency=1 "apps/core/src/**/*.test.ts" "apps/web/src/**/*.test.ts" "apps/desktop/src/**/*.test.ts" scripts/process-usage.test.ts
+          exit $LASTEXITCODE
+      - name: Probar el panel en Chromium
+        run: pnpm exec playwright test --project chromium --shard=${{ matrix.part }}/3 --reporter=line
+      - name: Guardar los resultados si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromium-windows-${{ matrix.part }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   verify:
-    needs: [preflight, rendimiento, coverage, macos-web, macos-actualizacion]
+    needs: [preflight, rendimiento, coverage, macos-web, macos-actualizacion, windows-web, windows-desktop]
     runs-on: ubuntu-24.04
     if: ${{ !cancelled() }}
     steps:
@@ -128,7 +165,9 @@ jobs:
           COVERAGE: ${{ needs.coverage.result }}
           MACOS: ${{ needs.macos-web.result }}
           ACTUALIZACION: ${{ needs.macos-actualizacion.result }}
-        run: test "$PREFLIGHT" = success && test "$PERF" = success && test "$COVERAGE" = success && test "$MACOS" = success && test "$ACTUALIZACION" = success
+          WINDOWS: ${{ needs.windows-web.result }}
+          ESCRITORIO_WINDOWS: ${{ needs.windows-desktop.result }}
+        run: test "$PREFLIGHT" = success && test "$PERF" = success && test "$COVERAGE" = success && test "$MACOS" = success && test "$ACTUALIZACION" = success && test "$WINDOWS" = success && test "$ESCRITORIO_WINDOWS" = success
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -166,6 +205,9 @@ jobs:
         if: matrix.part == 1
         working-directory: apps/web
         run: npm test
+      - name: Probar la medición nativa de procesos
+        if: matrix.part == 1
+        run: node --test scripts/process-usage.test.ts
       - name: Probar el panel en Chromium
         run: pnpm exec playwright test --project chromium --shard=${{ matrix.part }}/3 --reporter=line
       - name: Medir la ventana del cursor en Electron

@@ -5,6 +5,7 @@ import { Button, EmptyState, Icons, SearchField, SegmentedControl, Select } from
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMediaUrl } from "../chat/parts/useMediaUrl.ts";
 import { ProjectAvatar } from "../common/ProjectAvatar.tsx";
+import { ScreenLoading } from "../common/ScreenLoading.tsx";
 import { client } from "../data/client.ts";
 import { DEFAULT_PID, projectEntries, projectName } from "../data/identity.ts";
 import { posterUrl } from "../data/media.ts";
@@ -124,6 +125,7 @@ export function FilesScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<number>();
+  const request = useRef(0);
 
   useEffect(() => {
     const wait = setTimeout(() => setQuery(typed.trim()), SEARCH_WAIT_MS);
@@ -131,6 +133,7 @@ export function FilesScreen() {
   }, [typed]);
 
   const load = async (offset: number) => {
+    const current = ++request.current;
     setLoading(true);
     try {
       const r = await client.call("media.shared", {
@@ -141,20 +144,28 @@ export function FilesScreen() {
         offset,
         limit: PAGE,
       });
+      if (current !== request.current) return;
       setItems((prev) => (offset ? [...prev, ...r.items] : r.items));
       setCounts(r.counts);
       setMore(r.more);
       setError("");
     } catch (e) {
+      if (current !== request.current) return;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setLoading(false);
+      if (current === request.current) setLoading(false);
     }
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new filter starts over from the first page
   useEffect(() => {
     setOpen(undefined);
+    setItems([]);
+    setMore(false);
+    setError("");
     void load(0);
+    return () => {
+      request.current++;
+    };
   }, [kind, project, query, order]);
 
   const back = useCallback(() => setOpen(undefined), []);
@@ -222,7 +233,9 @@ export function FilesScreen() {
           </div>
         </header>
         <div className="sharedf__body">
-          {error ? (
+          {loading && !items.length ? (
+            <ScreenLoading />
+          ) : error ? (
             <EmptyState icon={<Icons.TriangleAlert />} title={t("shared.error", { error })} />
           ) : !items.length && !loading ? (
             <EmptyState

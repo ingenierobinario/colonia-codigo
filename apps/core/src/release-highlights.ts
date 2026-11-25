@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.73": {
+    en: [
+      "Chat controls stay within reach in narrow or short windows.",
+      "Search and file filters no longer show results from a previous request.",
+      "Screens show a loading indicator while their content arrives.",
+    ],
+    es: [
+      "Los controles del chat quedan al alcance en ventanas estrechas o de poca altura.",
+      "La búsqueda y los filtros de archivos ya no muestran resultados de una petición anterior.",
+      "Las pantallas muestran un indicador mientras llega su contenido.",
+    ],
+  },
   "2.36.72": {
     en: [
       "Server invitations stay expired or blocked after a restart.",

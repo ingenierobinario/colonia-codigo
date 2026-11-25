@@ -286,6 +286,7 @@ test("native tab destruction during CDP invalidation removes only that tab and t
     const h = await rpc<{ subsystems: Record<string, { status: string; detail?: string }> }>("system.health");
     return h.subsystems.browser?.status === "ok" && h.subsystems.browser.detail === "colonia-desktop";
   }, 20_000);
+  const existing = (await rpc<{ tabs: Array<{ tab: string }> }>("browser.tabs")).tabs.map((t) => t.tab);
   const url = `http://127.0.0.1:${process.env.E2E_CONTROL_PORT ?? 7461}/info`;
   const first = await rpc<{ tab: string }>("browser.open", { url: `${url}#survivor`, by: "e2e" });
   const second = await rpc<{ tab: string }>("browser.open", {
@@ -311,11 +312,14 @@ test("native tab destruction during CDP invalidation removes only that tab and t
     expect(cookies).toEqual([]);
     await expect
       .poll(async () => (await rpc<{ tabs: Array<{ tab: string }> }>("browser.tabs")).tabs.map((t) => t.tab))
-      .toEqual([first.tab]);
+      .toEqual([...existing, first.tab]);
     await rpc("browser.navigate", { tab: first.tab, by: "e2e", url: `${url}#still-working` });
     await expect(rpc("browser.snapshot", { tab: second.tab })).rejects.toThrow(/unknown tab/);
     const tabs = await rpc<{ tabs: Array<{ tab: string; url: string }> }>("browser.tabs");
-    expect(tabs.tabs).toMatchObject([{ tab: first.tab, url: `${url}#still-working` }]);
+    expect(tabs.tabs.find((tab) => tab.tab === first.tab)).toMatchObject({
+      tab: first.tab,
+      url: `${url}#still-working`,
+    });
   } finally {
     await rpc("browser.close", { tab: first.tab });
   }

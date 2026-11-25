@@ -6,8 +6,7 @@ body,
   height: 100%;
   margin: 0;
 }
-/* The shell has a min-height, so a short window must clip it: a scrollable page would let focus or scrollIntoView
- * (e.g. a list bringing its selected item into view) shift the whole app and show a band of background. */
+/* Only the app's content panes scroll; focus must not shift the whole page. */
 html {
   overflow: hidden;
 }
@@ -46,8 +45,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  min-height: 620px;
+  height: 100dvh;
+  min-height: 0;
   overflow: hidden;
   background: var(--colonia-bg);
   color: var(--colonia-fg);
@@ -65,6 +64,16 @@ body {
   min-width: 0;
   display: flex;
   background: var(--colonia-bg);
+}
+
+.screen-loading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--colonia-fg-muted);
 }
 
 /* ── Offline banner / toasts ───────────────────────────────────────────────── */

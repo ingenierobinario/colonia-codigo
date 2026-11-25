@@ -46,6 +46,7 @@ export const es: Partial<Record<MessageKey, string>> = {
   "common.cancel": "Cancelar",
   "common.save": "Guardar",
   "common.close": "Cerrar",
+  "common.loading": "Cargando…",
   "common.comingSoon": "{name} llega pronto",
   "common.done": "Listo",
   "common.refresh": "Actualizar",
