@@ -184,7 +184,7 @@ for (const platform of ["web", "mac", "win", "linux"])
     }
   });
 
-test("Sesiones externas: plegado independiente, persistente y accesible desde barra compacta", async ({ page }) => {
+test("Chats con otras apps: plegado independiente, persistente y accesible desde barra compacta", async ({ page }) => {
   await page.setViewportSize({ width: 1480, height: 800 });
   await page.route("**/rpc/engines.status", async (route) => {
     await route.fulfill({
@@ -198,7 +198,7 @@ test("Sesiones externas: plegado independiente, persistente y accesible desde ba
   });
   await open(page);
   const sidebar = page.locator(".sidebar");
-  const fold = sidebar.getByRole("button", { name: "Sesiones de este equipo", exact: true }); // nav.externalSessions
+  const fold = sidebar.getByRole("button", { name: "Chats con otras apps", exact: true }); // nav.externalSessions
   const engine = sidebar.getByRole("button", { name: /^Codex/ });
   const projects = sidebar.getByRole("button", { name: "Proyectos", exact: true });
   const channels = sidebar.getByRole("button", { name: "Canales", exact: true });

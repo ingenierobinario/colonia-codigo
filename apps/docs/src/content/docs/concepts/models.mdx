@@ -19,22 +19,44 @@ on your machine. Colonia picks the right one for each turn and falls back when o
 | **Provider** | A model API that Colonia's own loop calls. Your agents think with these. | Gemini, Anthropic, OpenAI, OpenRouter, a local Ollama, your ChatGPT plan |
 | **Harness** | What runs a turn's loop. `native` is Colonia's own; the others are coding CLIs that run their own loop. | `native`, `claude` (Claude Code), `codex` (Codex), `acp` (OpenCode, Qwen Code, Gemini CLI, goose…) |
 
-In **Settings › Engines and models**, connect your ChatGPT account, Claude Pro or Max, or a provider key. Once
+In **Settings › Models for your agents**, connect your ChatGPT account, Claude Pro or Max, or a provider key. Once
 connected, a model from your Claude plan can be an agent’s model, the default model or a choice in the router.
-Colonia runs those turns through Claude Code. **External sessions** lets you open or resume a coding conversation
+Colonia runs those turns through Claude Code. **Chats with other apps** lets you open or resume a coding conversation
 in a folder. You can reuse the same Claude account there.
 
 ## Add a provider
 
-Open **Settings › Engines and models**. Under **Model APIs (Colonia's own loop)**, click **Add provider** and pick its
+Open **Settings › Models for your agents**. Click **Add provider** below the service groups and pick its
 kind; the address fills in. Paste the key (Colonia stores it in the secret store and never shows it again) and the
 model list is asked to the provider itself.
 
 Presets: **OpenCode Zen**, **Gemini**, **Anthropic**, **OpenAI**, **OpenRouter**, **Groq**, **Cerebras**,
 **DeepSeek**, **Mistral**, **Ollama**, **LM Studio**, and **OpenAI-compatible** for anything else that speaks that
-API. Ollama and LM Studio run on your machine and need no key.
+API. Local Ollama and LM Studio servers do not require a provider key by default.
 
-<Shot name="settings-engines" alt="Settings, Engines and models: the ChatGPT plan card and a list of model APIs with their status" caption="Settings › Engines and models" />
+### Free and local models
+
+**Options with a free allowance** groups services that offer free models or plans: Gemini, Groq and OpenRouter.
+A key identifies your account; it does not mean you must buy a subscription. Limits and eligibility depend on the
+provider, account and model. These services also offer paid options.
+
+For OpenRouter, choose **Set up**, enter your key and press **Use free models**. This fills the model list with
+`openrouter/free`; press **Create** or **Save** to apply it. It replaces a previous fixed list only when saved.
+The button appears only for the official OpenRouter address. Its
+[free selector](https://openrouter.ai/docs/guides/routing/routers/free-router) chooses an available free model that
+supports the request. Check [Groq's limits](https://console.groq.com/docs/rate-limits) and
+[Gemini's pricing](https://ai.google.dev/gemini-api/docs/pricing) before choosing their models.
+
+Under **Local models**, configure Ollama or LM Studio after installing a model and starting its server. Downloaded
+models use the host computer's resources without a per-request provider fee. Colonia must be able to reach that
+server: when Colonia runs on Railway, `localhost` refers to Railway, not your laptop. Enter an address reachable
+from Colonia; pairing two Colonias does not automatically forward a local model server.
+
+After connecting, select the model for your agent or chat. Connecting a free model does not change existing
+defaults or router fallbacks. If you want that chat to use only the chosen free model, select it with routing off;
+if you use the router, review every model in its rules and fallback chain.
+
+<Shot name="settings-engines" alt="Settings, Models for your agents: the ChatGPT plan card and a list of model APIs with their status" caption="Settings › Models for your agents" />
 
 On a server with no panel, three environment variables add one OpenAI-compatible provider: `COLONIA_LLM_BASE_URL`,
 `COLONIA_LLM_KEY_REF` (a secret's name) and `COLONIA_LLM_MODELS`. See [Configuration](/reference/configuration/).
@@ -47,7 +69,7 @@ Your ChatGPT plan can be a provider too, shown as **Codex**. Its models then run
 
 1. In ChatGPT, open Settings › Security and turn on **Device code authorization for Codex**. Without it the sign-in
    can't finish.
-2. In **Settings › Engines and models**, click **Connect** on the ChatGPT plan card, then **Sign in with ChatGPT**.
+2. In **Settings › Models for your agents**, click **Connect** on the ChatGPT plan card, then **Sign in with ChatGPT**.
 3. Open the page Colonia shows and type the code there. Colonia waits until you finish in the browser.
 
 </Steps>

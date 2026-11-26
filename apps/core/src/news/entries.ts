@@ -56,6 +56,24 @@ export type NewsEntry = {
 
 export const NEWS: readonly NewsEntry[] = [
   {
+    id: "free-and-local-model-options",
+    since: "2.36.75",
+    title: { en: "Choose free or local models", es: "Elige modelos gratuitos o locales" },
+    about: {
+      en: "Find free allowances, local models and your accounts in Models for your agents. Chats with other apps keeps independent app conversations separate.",
+      es: "Encuentra opciones gratuitas, modelos locales y tus cuentas en Modelos para tus agentes. Chats con otras apps reúne las conversaciones independientes de cada aplicación.",
+    },
+    applies: () => true,
+    text: "Settings groups model connections by free allowances, local models and other services. On the official OpenRouter connection, Use free models fills the draft model list with openrouter/free; the owner must save. Free allowances have limits and do not make every model in an account free. Local downloaded models need a server reachable from Colonia; Railway localhost is not the owner's laptop. Existing model choices and router fallbacks do not change. Explain how to select a free model with routing off or review the whole fallback chain. Never request a secret in chat or connect a paid service without the owner's choice.",
+    actions: [
+      {
+        label: { en: "Help me choose a free model", es: "Ayúdame a elegir un modelo gratuito" },
+        prompt:
+          "Explain the free and local model options, their limits, and how to choose one for my agents without changing my existing accounts automatically.",
+      },
+    ],
+  },
+  {
     id: "office-and-businesses",
     since: "2.36.74",
     title: { en: "Your teams have an office", es: "Tus equipos tienen oficina" },

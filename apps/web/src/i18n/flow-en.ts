@@ -247,7 +247,7 @@ export const enFlow = {
   "flow.log.checked": "{step} → {result}",
   "flow.why.missing_value": "A value it needs wasn't there.",
   "flow.why.table_full": "The table is full.",
-  "flow.why.model_unavailable": "The model isn't available. Check it in Settings › Engines and models.",
+  "flow.why.model_unavailable": "The model isn't available. Check it in Settings › Models for your agents.",
   "flow.why.model_refused": "The model refused the request.",
   "flow.why.model_cut": "The model's answer came back cut or empty.",
   "flow.why.model_uncertain": "No answer arrived in time. The model may have done it anyway, so it isn't sent again.",

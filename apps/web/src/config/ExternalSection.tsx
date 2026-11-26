@@ -140,7 +140,7 @@ function EngineCard({ engine: e }: { engine: EngineStatus }) {
         ? t(look.login)
         : undefined;
   const kind = t(look.kind);
-  const detail = e.detail_code ? t(`engine.detail.${e.detail_code}`) : e.detail;
+  const detail = e.detail_code ? t(`engine.detail.${e.detail_code}`) : undefined;
   const copy = (command: string) =>
     void navigator.clipboard.writeText(command).then(
       () => notify(t("engines.copied", { command }), "info"),

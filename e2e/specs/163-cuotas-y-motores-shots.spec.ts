@@ -63,7 +63,7 @@ for (const mode of ["light", "dark"] as const) {
       await save(page, `${mode[0]}${width}-cuotas.png`);
     });
 
-    test(`motores y modelos › dos grupos llanos (${mode} ${width})`, async ({ page }) => {
+    test(`modelos para tus agentes › dos grupos llanos (${mode} ${width})`, async ({ page }) => {
       await rpc("setup.finish");
       await page.addInitScript((m) => {
         localStorage.setItem("colonia.prefs", JSON.stringify({ language: "es" }));
@@ -74,10 +74,10 @@ for (const mode of ["light", "dark"] as const) {
       // Por el buscador, que lleva a la sección igual en el móvil (donde las secciones van en un desplegable).
       await page.keyboard.press("ControlOrMeta+k");
       const box = page.getByRole("combobox", { name: "Buscar" }).or(page.getByRole("textbox", { name: "Buscar" }));
-      await box.fill("motores y modelos");
-      await page.getByRole("option", { name: /Motores y modelos/ }).click();
+      await box.fill("modelos para tus agentes");
+      await page.getByRole("option", { name: /Modelos para tus agentes/ }).click();
       const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
-      await expect(settings.getByText("Con tu cuenta (recomendado)")).toBeVisible();
+      await expect(settings.getByRole("heading", { name: "Con tu cuenta", exact: true })).toBeVisible();
       const plans = settings.locator(".pcard--plan");
       await expect(plans).toHaveCount(2);
       for (const plan of [plans.nth(0), plans.nth(1)]) {
@@ -91,8 +91,8 @@ for (const mode of ["light", "dark"] as const) {
       }
       await save(page, `${mode[0]}${width}-motores.png`);
       const keys = settings.getByTestId("engines-keys");
-      if ((await keys.getAttribute("open")) === null) await keys.getByText("Con clave (avanzado)").click();
-      await expect(keys).toHaveAttribute("open");
+      await expect(keys.getByText("Opciones con cuota gratuita", { exact: true })).toBeVisible();
+      await expect(keys.getByText("Modelos locales", { exact: true }).first()).toBeVisible();
       const unset = keys.locator(".pcard").filter({ hasText: "Sin clave" });
       for (const card of await unset.all()) {
         await expect(card.getByRole("switch")).toHaveCount(0);

@@ -19,22 +19,45 @@ máquina. Colonia elige el indicado para cada turno y pasa al siguiente cuando u
 | **Proveedor** | Una API de modelos que llama el loop propio de Colonia. Con esto piensan tus agentes. | Gemini, Anthropic, OpenAI, OpenRouter, un Ollama local, tu plan de ChatGPT |
 | **Harness** | Lo que corre el loop de un turno. `native` es el de Colonia; los otros son CLIs de código que corren su propio loop. | `native`, `claude` (Claude Code), `codex` (Codex), `acp` (OpenCode, Qwen Code, Gemini CLI, goose…) |
 
-En **Configuración › Motores y modelos** puedes conectar tu cuenta de ChatGPT, Claude Pro o Max o una clave de proveedor.
+En **Configuración › Modelos para tus agentes** puedes conectar tu cuenta de ChatGPT, Claude Pro o Max o una clave de proveedor.
 Una vez conectada, puedes elegir un modelo de tu plan de Claude para un agente, para toda la instalación o como opción
-del router. Colonia ejecuta esos turnos a través de Claude Code. En **Sesiones externas** puedes abrir o retomar una
+del router. Colonia ejecuta esos turnos a través de Claude Code. En **Chats con otras apps** puedes abrir o retomar una
 conversación de programación en una carpeta con esa misma cuenta.
 
 ## Sumar un proveedor
 
-Abre **Configuración › Motores y modelos**. En **APIs de modelos (loop propio de Colonia)**, toca **Agregar proveedor** y
+Abre **Configuración › Modelos para tus agentes**. Pulsa **Añadir proveedor** debajo de los grupos de servicios y
 elige su tipo; la dirección se completa sola. Pega la key (Colonia la guarda en el almacén de secretos y no la vuelve a
 mostrar) y la lista de modelos se le pide al proveedor mismo.
 
 Presets: **OpenCode Zen**, **Gemini**, **Anthropic**, **OpenAI**, **OpenRouter**, **Groq**, **Cerebras**,
 **DeepSeek**, **Mistral**, **Ollama**, **LM Studio**, y **OpenAI-compatible** para cualquier otra cosa que hable esa
-API. Ollama y LM Studio corren en tu máquina y no necesitan key.
+API. Los servidores locales de Ollama y LM Studio no requieren una clave de proveedor por defecto.
 
-<Shot name="settings-engines" alt="Configuración, Engines and models: la tarjeta del plan de ChatGPT y una lista de APIs de modelos con su estado" caption="Configuración › Motores y modelos" />
+### Modelos gratuitos y locales
+
+**Opciones con cuota gratuita** agrupa servicios con modelos o planes gratuitos: Gemini, Groq y OpenRouter.
+La clave identifica tu cuenta; no significa que debas comprar una suscripción. Los límites y requisitos dependen
+del proveedor, la cuenta y el modelo. Estos servicios también ofrecen opciones de pago.
+
+En OpenRouter, pulsa **Configurar**, introduce tu clave y elige **Usar modelos gratuitos**. Esto rellena la lista
+con `openrouter/free`; pulsa **Crear** o **Guardar** para aplicarlo. Solo sustituye una lista fija anterior al guardar.
+El botón aparece únicamente con la dirección oficial de OpenRouter. Su
+[selector gratuito](https://openrouter.ai/docs/guides/routing/routers/free-router) elige un modelo gratuito disponible
+que admita la petición. Consulta los [límites de Groq](https://console.groq.com/docs/rate-limits) y los
+[precios de Gemini](https://ai.google.dev/gemini-api/docs/pricing) antes de elegir sus modelos.
+
+En **Modelos locales**, configura Ollama o LM Studio después de instalar un modelo y arrancar su servidor.
+Los modelos descargados usan los recursos del equipo sin pagar al proveedor por consulta. Colonia debe poder
+conectarse a ese servidor: si Colonia funciona en Railway, `localhost` se refiere a Railway, no a tu portátil.
+Introduce una dirección accesible desde Colonia; vincular dos Colonias no reenvía automáticamente un servidor
+local de modelos.
+
+Después de conectar, elige el modelo para tu agente o chat. Conectar un modelo gratuito no cambia los valores
+predeterminados ni los respaldos del router. Para que ese chat use solo el modelo gratuito elegido, selecciónalo
+con el router desactivado; si utilizas el router, revisa todos los modelos de sus reglas y su cadena de respaldo.
+
+<Shot name="settings-engines" alt="Configuración, Modelos para tus agentes: la tarjeta del plan de ChatGPT y una lista de APIs de modelos con su estado" caption="Configuración › Modelos para tus agentes" />
 
 En un servidor sin panel, tres variables de entorno suman un proveedor OpenAI-compatible: `COLONIA_LLM_BASE_URL`,
 `COLONIA_LLM_KEY_REF` (el nombre de un secreto) y `COLONIA_LLM_MODELS`. Mira [Configuración](/es/reference/configuration/).
@@ -48,7 +71,7 @@ de Colonia, con las herramientas de Colonia.
 
 1. En ChatGPT, abre Settings › Security y activa **Device code authorization for Codex**. Sin eso, el inicio de
    sesión no puede terminar.
-2. En **Configuración › Motores y modelos**, toca **Conectar** en la tarjeta del plan de ChatGPT y después
+2. En **Configuración › Modelos para tus agentes**, toca **Conectar** en la tarjeta del plan de ChatGPT y después
    **Iniciar sesión con ChatGPT**.
 3. Abre la página que te muestra Colonia y escribe ahí el código. Colonia espera hasta que termines en el navegador.
 

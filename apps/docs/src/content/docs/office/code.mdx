@@ -88,11 +88,11 @@ the history.
 If you use Claude Code or Codex, Colonia can host their sessions. You talk to the engine itself, with your own login and
 plan, and Colonia gives it its chat, panels, approvals and history.
 
-**External sessions** in the sidebar lists each coding CLI installed on this computer. Pick one:
+**Chats with other apps** in the sidebar lists each coding CLI installed on this computer. Pick one:
 
 <Steps>
 
-1. Make sure it is signed in. **Settings › External sessions** shows each CLI's state (for Claude Code, open it in a
+1. Make sure it is signed in. **Settings › Chats with other apps** shows each CLI's state (for Claude Code, open it in a
    terminal and sign in; for Codex, run `codex login`).
 2. **New session** asks for a project with a folder: the session works there.
 3. Write as you would in the CLI. Its tool calls, edits and commands show in the chat and the side panels like any
@@ -100,7 +100,7 @@ plan, and Colonia gives it its chat, panels, approvals and history.
 
 </Steps>
 
-<Shot name="external-sessions" alt="External sessions, Claude Code: sessions started in Colonia at the top and, under On this computer, sessions found on disk with their folders" caption="External sessions" />
+<Shot name="external-sessions" alt="Chats with other apps, Claude Code: sessions started in Colonia at the top and, under On this computer, sessions found on disk with their folders" caption="Chats with other apps" />
 
 ### Resuming your own sessions
 
@@ -120,18 +120,18 @@ picks up its own session, history included, and from then on it lives in Colonia
 </Aside>
 
 Other coding CLIs that speak the Agent Client Protocol (OpenCode, Qwen Code, Gemini CLI and others) show up in
-External sessions as well. That support is partial.
+Chats with other apps as well. That support is partial.
 
 <Aside type="tip">
 Use an external session to work in a folder with a coding assistant. To use your Claude plan for an agent or the
-router, connect the account in **Settings › Engines and models**. See [Models](/concepts/models/).
+router, connect the account in **Settings › Models for your agents**. See [Models](/concepts/models/).
 </Aside>
 
 ## Aider and Antigravity
 
 Colonia also supports **Aider** (`aider`) and headless **Antigravity** (`agy`) as one-shot CLI harnesses, not ACP
 agents. Install the CLI on the core's machine and configure its own credentials first. Refresh **Settings →
-External engines**, then open its entry under **External sessions** and start a chat in a project folder.
+External engines**, then open its entry under **Chats with other apps** and start a chat in a project folder.
 A GUI-only Antigravity installation is not runnable: Colonia does not launch the editor and pretend it returned an answer.
 
 The catalog offers **CLI default**; the CLI's configuration chooses the model. A session model reference such as

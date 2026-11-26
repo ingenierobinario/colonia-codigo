@@ -1,10 +1,10 @@
-// UI strings, English: Settings › Engines and models (plans, model APIs) and External sessions (the CLIs).
+// UI strings, English: Settings › Models for your agents (plans, model APIs) and Chats with other apps (the CLIs).
 export const enEngines = {
-  "config.external": "External sessions",
+  "config.external": "Chats with other apps",
   "engines.leadModels":
-    "What your agents think and work with. The simplest is to connect the ChatGPT or Claude account you already pay for.",
-  "engines.groupAccount": "With your account (recommended)",
-  "engines.groupAccountLead": "Uses the subscription you already have. Nothing else needed.",
+    "Choose what your Colonia agents use: free options, local models or an account you already have.",
+  "engines.groupAccount": "With your account",
+  "engines.groupAccountLead": "Connect an account you already use. Available models and limits depend on your plan.",
   "providers.addKey": "Add key",
   "providers.hide": "Take {name} off the list",
   "providers.modelsAuto": "Set by the service",
@@ -13,7 +13,7 @@ export const enEngines = {
   "providers.brand.anthropic": "Claude",
   "providers.brand.openai": "ChatGPT",
   "providers.withKey": "With a key",
-  "providers.withoutKey": "On your computer",
+  "providers.withoutKey": "No key required",
   "providers.keySaved": "Key saved",
   "setup.engines.chainFold": "Choose which model goes first",
   "plans.claude.name": "Claude",
@@ -65,11 +65,11 @@ export const enEngines = {
   "providers.unset": "Not set up",
   "providers.setUp": "Set up",
   "providers.unsetKey": "Paste a key to use its models.",
-  "providers.unsetLocal": "Runs on your machine; no key needed.",
+  "providers.unsetLocal": "Connect to the computer running the model; no provider key needed.",
   "external.lead":
-    "A session is a chat with a tool such as Claude Code or Codex. If your provider supports it, connect the account your agents use in Engines and models.",
+    "Open or continue chats with apps such as Claude Code or Codex. Each app manages its own conversations. To choose what your Colonia agents use, go to Models for your agents.",
   "external.models": "Their models",
-  "external.modelsLead": "What each CLI offers in its own sessions, as it reports it.",
+  "external.modelsLead": "The models each app offers for its own chats.",
   "models.effortLevel.none": "None",
   "models.effortLevel.minimal": "Minimal",
   "models.effortLevel.low": "Low",
@@ -78,4 +78,18 @@ export const enEngines = {
   "models.effortLevel.xhigh": "Extra high",
   "models.effortLevel.max": "Max",
   "models.effortLevel.ultra": "Ultra",
+  "providers.group.free": "Options with a free allowance",
+  "providers.group.freeLead":
+    "These services offer free models or plans with usage limits. They also offer paid options: check the model and plan you choose. An API key is not necessarily a paid plan.",
+  "providers.group.local": "Local models",
+  "providers.group.localLead":
+    "Run downloaded models without a per-request provider fee, using your computer's resources. Colonia must be able to reach the computer running Ollama or LM Studio.",
+  "providers.group.other": "Other services",
+  "providers.group.otherLead": "Connect another provider or model server. Conditions depend on the service you choose.",
+  "providers.useFree": "Use free models",
+  "providers.useFreeHint":
+    "Replaces this model list with openrouter/free when you save. OpenRouter picks an available free model; a key is required and usage limits apply. Your existing router choices stay as they are.",
+  "providers.freeDetails": "See availability and limits",
+  "providers.localAddressHint":
+    "If Colonia runs on Railway or another server, localhost means that server. Use an address Colonia can reach for your model.",
 } as const;

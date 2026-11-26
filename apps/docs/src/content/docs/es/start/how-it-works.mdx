@@ -70,14 +70,14 @@ escritorio conectada, usa un Chrome sin ventana, sin tus sesiones iniciadas y si
 Dos palabras explican cómo se llega a los modelos:
 
 - Un **proveedor** es una API de modelos: Gemini, Anthropic, OpenAI, tu plan de ChatGPT, OpenRouter, Groq, Ollama,
-  LM Studio o cualquier endpoint compatible con OpenAI. En la app aparecen como motores en Config › Motores y modelos.
+  LM Studio o cualquier endpoint compatible con OpenAI. En la app aparecen como motores en Config › Modelos para tus agentes.
 - Un **harness** es lo que corre el ciclo de un turno. **native** es el ciclo propio de Colonia, y todos los agentes
   corren ahí con el modelo de un proveedor. **claude** corre Claude Code con tu propia sesión, **codex** corre Codex,
   y **acp** (parcial) corre otras CLIs de agentes como OpenCode o Gemini CLI.
 
 Tus agentes, el router y el modelo por defecto siempre usan proveedores a través del ciclo propio de Colonia, así tienen
 las herramientas, la memoria y las reglas de seguridad de Colonia. Las CLIs de código corren en sus propias sesiones: los
-hilos de código y las sesiones de Claude Code y Codex que Colonia encuentra en tu disco, en **Sesiones externas**.
+hilos de código y las sesiones de Claude Code y Codex que Colonia encuentra en tu disco, en **Chats con otras apps**.
 
 Un modelo se nombra `motor/modelo`, con un esfuerzo opcional después de un `#`, y el router elige uno en cada turno
 según tus reglas y la cadena de respaldo. Mira [Modelos](/es/concepts/models/).

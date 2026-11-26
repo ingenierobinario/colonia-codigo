@@ -1,12 +1,13 @@
 import type { enEngines } from "./en-engines.ts";
 
-// UI strings, Spanish: Configuración › Motores y modelos (planes, APIs de modelos) y Sesiones externas (las CLIs).
+// UI strings, Spanish: Configuración › Modelos para tus agentes (planes, APIs de modelos) y Chats con otras apps (las CLIs).
 export const esEngines: Record<keyof typeof enEngines, string> = {
-  "config.external": "Sesiones externas",
+  "config.external": "Chats con otras apps",
   "engines.leadModels":
-    "Con qué piensan y trabajan tus agentes. Lo más sencillo es conectar la cuenta de ChatGPT o de Claude que ya pagas.",
-  "engines.groupAccount": "Con tu cuenta (recomendado)",
-  "engines.groupAccountLead": "Usa la suscripción que ya tienes. No hace falta nada más.",
+    "Elige qué usan tus agentes de Colonia: opciones gratuitas, modelos locales o una cuenta que ya tengas.",
+  "engines.groupAccount": "Con tu cuenta",
+  "engines.groupAccountLead":
+    "Conecta una cuenta que ya uses. Los modelos disponibles y sus límites dependen de tu plan.",
   "providers.addKey": "Añadir clave",
   "providers.hide": "Quitar {name} de la lista",
   "providers.modelsAuto": "Según el servicio",
@@ -15,7 +16,7 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "providers.brand.anthropic": "Claude",
   "providers.brand.openai": "ChatGPT",
   "providers.withKey": "Con clave",
-  "providers.withoutKey": "En tu ordenador",
+  "providers.withoutKey": "No necesita clave",
   "providers.keySaved": "Clave guardada",
   "setup.engines.chainFold": "Elegir qué modelo va primero",
   "plans.claude.name": "Claude",
@@ -68,11 +69,11 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "providers.unset": "Sin configurar",
   "providers.setUp": "Configurar",
   "providers.unsetKey": "Pega una clave para usar sus modelos.",
-  "providers.unsetLocal": "Se ejecuta en tu máquina; no necesita clave.",
+  "providers.unsetLocal": "Conecta con el equipo que ejecuta el modelo; no necesita clave de un proveedor.",
   "external.lead":
-    "Una sesión es un chat con una herramienta como Claude Code o Codex. Si tu proveedor lo permite, conecta la cuenta de tus agentes en Motores y modelos.",
+    "Abre o continúa chats con aplicaciones como Claude Code o Codex. Cada app gestiona sus propias conversaciones. Para elegir qué usan tus agentes de Colonia, ve a Modelos para tus agentes.",
   "external.models": "Sus modelos",
-  "external.modelsLead": "Lo que ofrece cada CLI en sus propias sesiones, según lo que informa.",
+  "external.modelsLead": "Los modelos que ofrece cada aplicación para sus propios chats.",
   "models.effortLevel.none": "Ninguno",
   "models.effortLevel.minimal": "Mínimo",
   "models.effortLevel.low": "Bajo",
@@ -81,4 +82,19 @@ export const esEngines: Record<keyof typeof enEngines, string> = {
   "models.effortLevel.xhigh": "Muy alto",
   "models.effortLevel.max": "Máximo",
   "models.effortLevel.ultra": "Ultra",
+  "providers.group.free": "Opciones con cuota gratuita",
+  "providers.group.freeLead":
+    "Estos servicios ofrecen modelos o planes gratuitos con límites de uso. También tienen opciones de pago: comprueba el modelo y el plan que elijas. Tener una clave no implica pagar.",
+  "providers.group.local": "Modelos locales",
+  "providers.group.localLead":
+    "Usa modelos descargados sin pagar al proveedor por consulta, con los recursos de tu equipo. Colonia debe poder conectarse al equipo que ejecuta Ollama o LM Studio.",
+  "providers.group.other": "Otros servicios",
+  "providers.group.otherLead":
+    "Conecta otro proveedor o servidor de modelos. Las condiciones dependen del servicio que elijas.",
+  "providers.useFree": "Usar modelos gratuitos",
+  "providers.useFreeHint":
+    "Al guardar, sustituye esta lista por openrouter/free. OpenRouter elige un modelo gratuito disponible; requiere una clave y tiene límites de uso. Las opciones actuales de tu router se mantienen.",
+  "providers.freeDetails": "Ver disponibilidad y límites",
+  "providers.localAddressHint":
+    "Si Colonia funciona en Railway u otro servidor, localhost se refiere a ese servidor. Usa una dirección del modelo accesible desde Colonia.",
 };

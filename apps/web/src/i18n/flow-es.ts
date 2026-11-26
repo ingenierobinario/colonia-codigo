@@ -249,7 +249,7 @@ export const esFlow: Record<keyof typeof enFlow, string> = {
   "flow.log.checked": "{step} → {result}",
   "flow.why.missing_value": "Faltaba un valor que necesita.",
   "flow.why.table_full": "La tabla está llena.",
-  "flow.why.model_unavailable": "El modelo no está disponible. Revísalo en Configuración › Motores y modelos.",
+  "flow.why.model_unavailable": "El modelo no está disponible. Revísalo en Configuración › Modelos para tus agentes.",
   "flow.why.model_refused": "El modelo rechazó la petición.",
   "flow.why.model_cut": "La respuesta del modelo llegó cortada o vacía.",
   "flow.why.model_uncertain":

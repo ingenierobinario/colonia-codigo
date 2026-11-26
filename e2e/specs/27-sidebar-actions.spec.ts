@@ -201,7 +201,7 @@ test("Proyectos: último acceso, arrastre, menús v1, copia y confirmación ante
   await expect(page.locator(".colonia-tooltip")).toContainText("Nuevo proyecto");
 });
 
-test("Sesiones externas: orden por acceso y arrastre, mismas opciones en ambos menús", async ({ page }) => {
+test("Chats con otras apps: orden por acceso y arrastre, mismas opciones en ambos menús", async ({ page }) => {
   await page.setViewportSize({ width: 1480, height: 900 });
   await page.route("**/rpc/engines.status", async (route) =>
     route.fulfill({

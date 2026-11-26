@@ -68,14 +68,14 @@ connected, it falls back to a headless Chrome, without your logins or a way to t
 Two words cover how models are reached:
 
 - A **provider** is a model API: Gemini, Anthropic, OpenAI, your ChatGPT plan, OpenRouter, Groq, Ollama, LM Studio, or
-  any OpenAI-compatible endpoint. In the app these show up as engines in Settings › Engines and models.
+  any OpenAI-compatible endpoint. In the app these show up as engines in Settings › Models for your agents.
 - A **harness** is what runs a turn's loop. **native** is Colonia's own loop, and every agent runs on it with a provider's
   model. **claude** runs Claude Code with your own login, **codex** runs Codex, and **acp** (partial) runs other agent
   CLIs such as OpenCode or Gemini CLI.
 
 Your agents, the router and the default model always use providers through Colonia's own loop, so they get Colonia's tools,
 memory and safety rules. The coding CLIs run in their own sessions: code threads, and the Claude Code and Codex
-sessions Colonia finds on your disk under **External sessions**.
+sessions Colonia finds on your disk under **Chats with other apps**.
 
 A model is named `engine/model`, with an optional effort after a `#`, and the router picks one per turn from your
 rules and fallback chain. See [Models](/concepts/models/).

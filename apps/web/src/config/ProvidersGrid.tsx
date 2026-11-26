@@ -11,7 +11,7 @@ import {
   ProjectTile,
   Switch,
 } from "@colonia/ui";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { createStore, useSlice } from "../data/createStore.ts";
 import { useModels } from "../data/models.ts";
 import {
@@ -24,8 +24,9 @@ import {
 } from "../data/providers.ts";
 import { type T, useT } from "../i18n/index.ts";
 import { ClaudePlanCard } from "./ClaudePlanCard.tsx";
-import { PROVIDER_PRESETS, presetOf } from "./models/providerPresets.ts";
+import { PROVIDER_GROUPS, PROVIDER_PRESETS, presetOf, providerGroup } from "./models/providerPresets.ts";
 import { PlanCard } from "./PlanCard.tsx";
+import { SubHead } from "./SectionHead.tsx";
 
 /** Which provider dialog is open: an existing provider, a new one of a kind (preset), or none. */
 const editor = createStore<{ open: { id?: string; preset?: string } | undefined }>({ open: undefined });
@@ -87,7 +88,7 @@ export function ProvidersGrid({
   part = "all",
 }: {
   compact?: boolean;
-  /** MOTORES-LLANO-1: Settings splits the page into the plans (with your account) and the keys (advanced). */
+  /** Settings separates account sign-in from API and local connections. */
   part?: "all" | "plans" | "keys";
 }) {
   const t = useT();
@@ -107,42 +108,61 @@ export function ProvidersGrid({
       !hiddenIds.includes(k.id) &&
       (!compact || ["gemini", "anthropic", "openai"].includes(k.id)),
   );
+  const groups = part === "keys" ? PROVIDER_GROUPS : [undefined];
   const close = () => editor.set({ open: undefined });
   const editing = open?.id ? list.find((p) => p.id === open.id) : undefined;
   return (
     <>
-      <div className={compact ? "pgrid pgrid--compact" : "pgrid"}>
+      <div
+        className={compact ? "pgrid pgrid--compact" : "pgrid"}
+        data-testid={part === "keys" ? "engines-keys" : undefined}
+      >
         {part !== "keys" && plan && <PlanCard p={plan} compact={compact} />}
         {part !== "keys" && <ClaudePlanCard compact={compact} />}
         {part !== "plans" &&
-          apis.map((p) => (
-            <ProviderCard key={p.id} p={p} compact={compact} onEdit={() => editor.set({ open: { id: p.id } })} />
-          ))}
-        {part !== "plans" &&
-          unset.map((k) => (
-            <div key={k.id} className="pcard is-unset">
-              <div className="pcard__top">
-                <ProviderMark id={k.id} label={k.label} size={36} />
-                <div className="pcard__titles">
-                  <div className="pcard__name">{providerName(t, k.id, k.label)}</div>
-                  <div className="pcard__plan">{t(k.needs_key ? "providers.withKey" : "providers.withoutKey")}</div>
+          groups.map((group) => (
+            <Fragment key={group ?? "all"}>
+              {group && (
+                <div className="pgrid__group">
+                  <SubHead>{t(`providers.group.${group}`)}</SubHead>
+                  <p className="config__hint">{t(`providers.group.${group}Lead`)}</p>
                 </div>
-                <Badge tone="neutral">{t("providers.unset")}</Badge>
-              </div>
-              <p className="pcard__hint">{t(k.needs_key ? "providers.unsetKey" : "providers.unsetLocal")}</p>
-              <div className="pcard__actions">
-                <Button size="sm" variant="secondary" onClick={() => editor.set({ open: { preset: k.id } })}>
-                  {t("providers.setUp")}
-                </Button>
-                <span className="pcard__spacer" />
-                <IconButton
-                  size="sm"
-                  label={t("providers.hide", { name: providerName(t, k.id, k.label) })}
-                  icon={<Icons.Trash2 size={14} />}
-                  onClick={() => hideSuggestion(k.id)}
-                />
-              </div>
-            </div>
+              )}
+              {apis
+                .filter((p) => !group || providerGroup(kindOf(p), p.base_url) === group)
+                .map((p) => (
+                  <ProviderCard key={p.id} p={p} compact={compact} onEdit={() => editor.set({ open: { id: p.id } })} />
+                ))}
+              {unset
+                .filter((k) => !group || providerGroup(k.id) === group)
+                .map((k) => (
+                  <div key={k.id} className="pcard is-unset">
+                    <div className="pcard__top">
+                      <ProviderMark id={k.id} label={k.label} size={36} />
+                      <div className="pcard__titles">
+                        <div className="pcard__name">{providerName(t, k.id, k.label)}</div>
+                        <div className="pcard__plan">
+                          {t(k.needs_key ? "providers.withKey" : "providers.withoutKey")}
+                        </div>
+                      </div>
+                      <Badge tone="neutral">{t("providers.unset")}</Badge>
+                    </div>
+                    <p className="pcard__hint">{t(k.needs_key ? "providers.unsetKey" : "providers.unsetLocal")}</p>
+                    <div className="pcard__actions">
+                      <Button size="sm" variant="secondary" onClick={() => editor.set({ open: { preset: k.id } })}>
+                        {t("providers.setUp")}
+                      </Button>
+                      <span className="pcard__spacer" />
+                      <IconButton
+                        size="sm"
+                        label={t("providers.hide", { name: providerName(t, k.id, k.label) })}
+                        icon={<Icons.Trash2 size={14} />}
+                        onClick={() => hideSuggestion(k.id)}
+                      />
+                    </div>
+                  </div>
+                ))}
+            </Fragment>
           ))}
         {part !== "plans" && (
           <button type="button" className="pcard pcard--add" onClick={() => editor.set({ open: { preset: "custom" } })}>
@@ -362,6 +382,9 @@ function ProviderDialog({
             placeholder="https://…/v1"
             onChange={(e) => setDraft({ ...draft, base_url: e.currentTarget.value })}
           />
+          {providerGroup(draft.preset) === "local" && (
+            <span className="pform__hint">{t("providers.localAddressHint")}</span>
+          )}
         </div>
         {draft.needs_key && (
           <div className="pform__field">
@@ -388,6 +411,7 @@ function ProviderDialog({
             onChange={(e) => setModels(e.currentTarget.value)}
           />
           <span className="pform__hint">{t("providers.fixedModelsHint")}</span>
+          <FreeModelChoice draft={draft} onChoose={() => setModels("openrouter/free")} />
         </div>
         <Switch
           checked={draft.enabled}
@@ -397,5 +421,28 @@ function ProviderDialog({
         />
       </div>
     </Dialog>
+  );
+}
+
+function FreeModelChoice({
+  draft,
+  onChoose,
+}: {
+  draft: Pick<ProviderDraft, "preset" | "base_url">;
+  onChoose: () => void;
+}) {
+  const t = useT();
+  if (draft.preset !== "openrouter" || draft.base_url.replace(/\/+$/, "") !== presetOf("openrouter")?.base_url)
+    return null;
+  return (
+    <div className="pform__free">
+      <Button size="sm" variant="secondary" onClick={onChoose}>
+        {t("providers.useFree")}
+      </Button>
+      <span className="pform__hint">{t("providers.useFreeHint")}</span>
+      <a href="https://openrouter.ai/docs/guides/routing/routers/free-router" target="_blank" rel="noreferrer">
+        {t("providers.freeDetails")}
+      </a>
+    </div>
   );
 }

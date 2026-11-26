@@ -31,7 +31,7 @@ test("Claude con cuenta se ofrece a agentes y router salvo apagado; Codex no", (
 });
 
 const core = {
-  off: "Claude with your account is switched off: turn it on in Settings › Engines and models",
+  off: "Claude with your account is switched off: turn it on in Settings › Models for your agents",
   cli: "codex works only in its own chats (Sessions › codex), not in agents or the router",
   legacy: "claude runs only in its own sessions; pick a model API",
   session: "this chat is a codex session: pick a codex model",

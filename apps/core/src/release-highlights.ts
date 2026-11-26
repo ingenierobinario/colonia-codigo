@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.75": {
+    en: [
+      "Find free allowances and local models alongside the accounts your agents use.",
+      "Choose OpenRouter's free model selector directly when setting up its connection.",
+      "Settings clearly separates your agents' models from chats with other apps.",
+    ],
+    es: [
+      "Encuentra opciones gratuitas y modelos locales junto a las cuentas de tus agentes.",
+      "Elige el selector de modelos gratuitos de OpenRouter al configurar su conexión.",
+      "La configuración distingue los modelos de tus agentes de los chats con otras apps.",
+    ],
+  },
   "2.36.74": {
     en: [
       "See projects, departments and live agent activity together in your virtual office.",

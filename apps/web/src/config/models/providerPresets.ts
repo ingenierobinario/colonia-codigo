@@ -111,3 +111,11 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
 
 export const presetOf = (id: string | undefined) =>
   PROVIDER_PRESETS.find((p) => p.id === id) ?? PROVIDER_PRESETS.find((p) => p.id === "custom");
+
+export const PROVIDER_GROUPS = ["free", "local", "other"] as const;
+export function providerGroup(kind: string, baseUrl?: string): (typeof PROVIDER_GROUPS)[number] {
+  if (baseUrl !== undefined && baseUrl.replace(/\/+$/, "") !== presetOf(kind)?.base_url) return "other";
+  if (["gemini", "groq", "openrouter"].includes(kind)) return "free";
+  if (["ollama", "lmstudio"].includes(kind)) return "local";
+  return "other";
+}

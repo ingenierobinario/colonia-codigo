@@ -10,27 +10,27 @@ for (const engine of [
       route.fulfill({ json: { ok: true, result: { engines: [] } } }),
     );
     await page.goto(`/#engine=${engine.id}`);
-    await expect(page.getByRole("button", { name: "Configurar chats externos", exact: true }).last()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Configurar estas apps", exact: true }).last()).toBeVisible();
     await page.getByRole("button", { name: `Usar ${engine.plan} con mis agentes` }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByText("Con tu cuenta (recomendado)", { exact: true })).toBeVisible();
+    await expect(page.getByText("Con tu cuenta", { exact: true })).toBeVisible();
   });
 }
 
 for (const copy of [
   {
     language: "es",
-    settings: "Configurar chats externos",
-    heading: "Sesiones externas",
-    session: "Una sesión es un chat",
-    accounts: "Motores y modelos",
+    settings: "Configurar estas apps",
+    heading: "Chats con otras apps",
+    session: "Cada app gestiona sus propias conversaciones",
+    accounts: "Modelos para tus agentes",
   },
   {
     language: "en",
-    settings: "Set up external chats",
-    heading: "External sessions",
-    session: "A session is a chat",
-    accounts: "Engines and models",
+    settings: "Set up these apps",
+    heading: "Chats with other apps",
+    session: "Each app manages its own conversations",
+    accounts: "Models for your agents",
   },
 ]) {
   for (const mode of ["light", "dark"] as const) {

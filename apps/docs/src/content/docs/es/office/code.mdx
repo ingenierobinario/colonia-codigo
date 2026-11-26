@@ -90,11 +90,11 @@ cambios aparte (stash), deshacer el último commit, cambiar de rama y leer el hi
 Si usas Claude Code o Codex, Colonia puede alojar sus sesiones. Hablas con el motor en persona, con tu propio login y tu
 plan, y Colonia le da su chat, sus paneles, sus aprobaciones y su historial.
 
-**Sesiones externas** en la barra lateral lista cada CLI de código instalada en este ordenador. Elige una:
+**Chats con otras apps** en la barra lateral lista cada CLI de código instalada en este ordenador. Elige una:
 
 <Steps>
 
-1. Fíjate en que tenga la sesión iniciada. **Configuración › Sesiones externas** muestra el estado de cada CLI (para
+1. Fíjate en que tenga la sesión iniciada. **Configuración › Chats con otras apps** muestra el estado de cada CLI (para
    Claude Code, ábrelo en una terminal e inicia sesión; para Codex, corre `codex login`).
 2. **Nueva sesión** te pide un proyecto con carpeta: la sesión trabaja ahí.
 3. Escribe como lo harías en la CLI. Sus herramientas, ediciones y comandos aparecen en el chat y en los paneles
@@ -102,7 +102,7 @@ plan, y Colonia le da su chat, sus paneles, sus aprobaciones y su historial.
 
 </Steps>
 
-<Shot name="external-sessions" alt="Sesiones externas, Claude Code: arriba las sesiones empezadas en Colonia y, bajo En este ordenador, las sesiones encontradas en disco con sus carpetas" caption="Sesiones externas" />
+<Shot name="external-sessions" alt="Chats con otras apps, Claude Code: arriba las sesiones empezadas en Colonia y, bajo En este ordenador, las sesiones encontradas en disco con sus carpetas" caption="Chats con otras apps" />
 
 ### Retomar tus propias sesiones
 
@@ -124,18 +124,18 @@ su propia sesión, con historial y todo, y desde ahí vive también en Colonia.
 </Aside>
 
 Otras CLIs de código que hablan el Agent Client Protocol (OpenCode, Qwen Code, Gemini CLI y otras) también aparecen
-en Sesiones externas. Ese soporte es parcial.
+en Chats con otras apps. Ese soporte es parcial.
 
 <Aside type="tip">
 Abre una sesión externa para trabajar en una carpeta con un asistente de programación. Para usar tu plan de Claude con
-un agente o en el router, conecta tu cuenta en **Configuración › Motores y modelos**. Mira [Modelos](/es/concepts/models/).
+un agente o en el router, conecta tu cuenta en **Configuración › Modelos para tus agentes**. Mira [Modelos](/es/concepts/models/).
 </Aside>
 
 ## Aider y Antigravity
 
 Colonia también admite **Aider** (`aider`) y **Antigravity headless** (`agy`) como harnesses de ejecución única,
 no como agentes ACP. Instala el CLI en la máquina del core y configura sus credenciales primero. Actualiza
-**Configuración → Motores externos**, abre su entrada en **Sesiones externas** e inicia un chat en la carpeta
+**Configuración → Motores externos**, abre su entrada en **Chats con otras apps** e inicia un chat en la carpeta
 de un proyecto. Una instalación de Antigravity que solo tiene interfaz gráfica no sirve para estas sesiones:
 Colonia no abre el editor como reemplazo de una respuesta.
 

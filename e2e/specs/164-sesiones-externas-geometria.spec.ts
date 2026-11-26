@@ -8,7 +8,7 @@ for (const width of [768, 960, 1200, 1440]) {
     await open(page);
     await openSettings(page);
     const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
-    await settings.getByRole("button", { name: "Sesiones externas", exact: true }).click();
+    await settings.getByRole("button", { name: "Chats con otras apps", exact: true }).click();
     await page.setViewportSize({ width, height: 900 });
     const cards = settings.locator(".engine");
     await expect(cards.first()).toBeVisible();

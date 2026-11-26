@@ -8,7 +8,7 @@ test("usage switches persist independently of model power and preserve the choic
   await open(page);
   await openSettings(page);
   const settings = page.getByRole("dialog", { name: "Configuración", exact: true });
-  await settings.getByRole("button", { name: "Motores y modelos", exact: true }).click();
+  await settings.getByRole("button", { name: "Modelos para tus agentes", exact: true }).click();
   const plan = settings.locator(".pcard--plan:not(.pcard--claude)");
   const quota = plan.getByRole("switch", { name: "Ver cuánto me queda", exact: true });
   const power = plan.getByRole("switch", { name: "Activo", exact: true });
@@ -25,7 +25,7 @@ test("usage switches persist independently of model power and preserve the choic
 
   await page.reload();
   await openSettings(page);
-  await settings.getByRole("button", { name: "Motores y modelos", exact: true }).click();
+  await settings.getByRole("button", { name: "Modelos para tus agentes", exact: true }).click();
   await expect(quota).toBeChecked();
   await page.route("**/rpc/engines.set_usage", (route) =>
     route.fulfill({ json: { ok: false, error: { code: "unavailable", message: "Not available" } } }),
@@ -41,7 +41,7 @@ test("usage switches persist independently of model power and preserve the choic
   await expect(quota).not.toBeChecked();
   await expect(power).toBeChecked({ checked: powered });
 
-  await settings.getByRole("button", { name: "Sesiones externas", exact: true }).click();
+  await settings.getByRole("button", { name: "Chats con otras apps", exact: true }).click();
   const claude = settings.locator(".engine", { hasText: "Claude Code" });
   await expect(claude.getByRole("switch", { name: "Ver cuánto me queda", exact: true })).not.toBeChecked();
   await claude.getByRole("switch", { name: "Ver cuánto me queda", exact: true }).hover();
