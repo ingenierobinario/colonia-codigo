@@ -21,6 +21,26 @@ async function serve(handler: http.RequestListener) {
 
 const tmp = () => path.join(tempDir("descarga-").path, "colonia.zip");
 
+test("oversized responses are cancelled without retrying or keeping partial files", async () => {
+  for (const declared of [true, false]) {
+    let requests = 0;
+    const s = await serve((_req, res) => {
+      requests++;
+      if (declared) res.setHeader("Content-Length", DATA.length);
+      res.write(DATA.subarray(0, HALF));
+      res.end(DATA.subarray(HALF));
+    });
+    const file = tmp();
+    try {
+      await assert.rejects(download(s.url, file, { maxBytes: 1024, backoffMs: 1 }), /size limit/);
+      assert.equal(requests, 1);
+      assert.equal(fs.existsSync(file), false);
+    } finally {
+      await s.close();
+    }
+  }
+});
+
 test("a cut in the middle resumes with Range and the file comes out whole", async () => {
   const ranges: (string | undefined)[] = [];
   const s = await serve((req, res) => {
@@ -61,7 +81,10 @@ test("a server that goes silent is cut after idleMs and the next try finishes", 
       return;
     }
     const from = Number(/^bytes=(\d+)-$/.exec(req.headers.range ?? "")?.[1] ?? 0);
-    res.writeHead(206, { "Content-Length": DATA.length - from });
+    res.writeHead(206, {
+      "Content-Length": DATA.length - from,
+      "Content-Range": `bytes ${from}-${DATA.length - 1}/${DATA.length}`,
+    });
     res.end(DATA.subarray(from));
   });
   const file = tmp();
@@ -101,6 +124,38 @@ test("a 404 is not retried", async () => {
     assert.equal(calls, 1);
   } finally {
     await s.close();
+  }
+});
+
+test("resuming with the wrong range or a changed object restarts the download without mixing bytes", async () => {
+  for (const changed of [true, false]) {
+    let calls = 0;
+    const s = await serve((req, res) => {
+      calls++;
+      if (calls === 1) {
+        res.writeHead(200, { "Content-Length": DATA.length, ETag: '"original"' });
+        res.write(DATA.subarray(0, HALF), () => res.destroy());
+      } else if (calls === 2) {
+        assert.equal(req.headers["if-range"], '"original"');
+        const from = changed ? Number(/^bytes=(\d+)-$/.exec(req.headers.range ?? "")?.[1]) : 0;
+        res.writeHead(206, {
+          "Content-Range": `bytes ${from}-${DATA.length - 1}/${DATA.length}`,
+          ETag: changed ? '"replacement"' : '"original"',
+        });
+        res.end(DATA.subarray(from));
+      } else {
+        assert.equal(req.headers.range, undefined);
+        res.end(DATA);
+      }
+    });
+    const file = tmp();
+    try {
+      await download(s.url, file, { backoffMs: 1 });
+      assert.equal(calls, 3);
+      assert.deepEqual(fs.readFileSync(file), DATA);
+    } finally {
+      await s.close();
+    }
   }
 });
 

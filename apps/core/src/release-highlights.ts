@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.77": {
+    en: [
+      "Update verification and old-version cleanup now run in chunks and in the background.",
+      "Downloads reject oversized files and safely restart when resumed content changes.",
+      "On Mac, the new app opens before cleanup and the previous copy stays if reopening fails.",
+    ],
+    es: [
+      "La verificación y la limpieza de actualizaciones se realizan por partes y en segundo plano.",
+      "Las descargas rechazan archivos excesivos y empiezan de nuevo si cambia el contenido al reanudarlas.",
+      "En Mac, la app abre antes de limpiar y conserva la copia anterior si falla la reapertura.",
+    ],
+  },
   "2.36.76": {
     en: [
       "Rename your synchronized server from My computers or the sidebar.",

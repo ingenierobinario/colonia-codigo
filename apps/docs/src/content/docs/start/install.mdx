@@ -96,11 +96,16 @@ adds `AGENTS.md` and `.apc/` to them. Keys go to your system's keychain when the
 
 ## Updates
 
-Colonia looks for new versions every few hours and, when there is one, shows an **Update** notice in the top bar. Your
-data is kept. On Windows the new version installs itself, and on Linux too when Colonia can write next to its AppImage (otherwise it
-shows you the new file); on macOS the new disk image opens for you to drag the
-app. On a server, `colonia upgrade --check` tells you whether there is a new version and `colonia upgrade` installs it.
-`COLONIA_UPDATES=off` turns the checks off.
+The desktop app checks for new versions every hour. You can also choose **Check for updates…** from the Colonia menu.
+Keep using Colonia while it downloads, verifies and prepares the update. Restart when it is ready; your data stays.
+
+On Windows and a writable macOS installation, Colonia prepares the replacement beside the running app so the restart
+only swaps folders. On Linux, a writable AppImage is replaced at restart. If automatic replacement is unavailable,
+Colonia offers the installer or system package instead. That fallback can take longer. Restart time also depends on
+your disk, antivirus and the time needed to finish running work; a fixed two- or three-second restart is not guaranteed.
+
+On a server, `colonia upgrade --check` checks for a release and `colonia upgrade` installs it. `COLONIA_RELEASES=off`
+disables release checks; `COLONIA_UPDATES=off` disables the core's own checks.
 
 ## Uninstall
 

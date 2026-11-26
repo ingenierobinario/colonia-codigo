@@ -269,6 +269,7 @@ test("a release without its checksum cannot be staged", async (t) => {
 async function windowsUpdate(t: import("node:test").TestContext, started = true) {
   const dir = tempDir("colonia-updater-win-");
   const temp = dir.path;
+  t.mock.method(native.app, "getPath", () => temp);
   const saved = { TEMP: process.env.TEMP, TMP: process.env.TMP, TMPDIR: process.env.TMPDIR };
   process.env.TEMP = process.env.TMP = process.env.TMPDIR = temp;
   Object.defineProperty(process, "platform", { value: "win32" });
@@ -295,7 +296,10 @@ async function windowsUpdate(t: import("node:test").TestContext, started = true)
   }) as unknown as typeof import("node:child_process").spawn;
   const updater = createDesktopUpdater({ changed: () => {}, quit: () => quits++, spawn });
   assert.equal((await updater.install("2.1.0", true)).ok, true);
-  return { updater, spawns, quits: () => quits, file: path.join(temp, exe) };
+  const root = path.join(temp, "update-installers");
+  const download = fs.readdirSync(root)[0];
+  assert.ok(download);
+  return { updater, spawns, quits: () => quits, file: path.join(root, download, exe) };
 }
 
 test("a Windows installer that does not start leaves Colonia open, and is not reused", async (t) => {
@@ -319,6 +323,39 @@ test("a Windows installer deleted from the temporary folder is reported instead 
   w.updater.quitting();
   assert.deepEqual(w.spawns, []);
   assert.equal(w.quits(), 0);
+});
+
+test("two prepared Windows installers cannot replace each other's verified bytes", async (t) => {
+  const w = await windowsUpdate(t);
+  const next = createDesktopUpdater({ changed: () => {}, quit: () => {} });
+  assert.equal((await next.install("2.1.0", true)).ok, true);
+  const root = path.dirname(path.dirname(w.file));
+  const downloads = fs.readdirSync(root);
+  assert.equal(downloads.length, 2);
+  const other = downloads.find((entry) => entry !== path.basename(path.dirname(w.file)));
+  assert.ok(other);
+  fs.writeFileSync(path.join(root, other, path.basename(w.file)), "different download");
+  assert.equal(fs.readFileSync(w.file, "utf8"), bytes);
+  w.updater.quitting();
+  assert.deepEqual(w.spawns, [{ file: w.file, args: ["--updated", "/S"] }]);
+});
+
+test("an oversized checksum is rejected before downloading or opening the installer", async (t) => {
+  const requests: string[] = [];
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    requests.push(url);
+    if (url.includes("/releases?")) return Response.json([release]);
+    return new Response("a".repeat(4097));
+  });
+  const h = harness();
+  const answer = await h.updater.install();
+  assert.equal(answer.ok, false);
+  assert.match("error" in answer ? answer.error : "", /size limit/);
+  assert.equal(requests.filter((url) => url.endsWith(".AppImage")).length, 0);
+  assert.equal(fs.existsSync(path.join(directory, `${name}.sha256`)), false);
+  assert.equal(h.updater.status().ready, undefined);
+  assert.equal(h.quits(), 0);
 });
 
 test("Windows instala en silencio, vuelve a abrir Colonia y ejecuta el instalador una sola vez", async (t) => {
@@ -398,6 +435,7 @@ test("the app asks for a newer Colonia at least every hour and logs every check,
 // ARRANQUE-RAPIDO-1 · La versión nueva se descomprime con Colonia abierta; reiniciar sólo cambia dos carpetas de nombre.
 test("Windows deja la versión nueva descomprimida y el reinicio sólo cambia carpetas, sin instalador", async (t) => {
   const dir = tempDir("colonia-updater-swap-");
+  t.mock.method(native.app, "getPath", () => dir.path);
   const saved = { TEMP: process.env.TEMP, TMP: process.env.TMP, TMPDIR: process.env.TMPDIR };
   process.env.TEMP = process.env.TMP = process.env.TMPDIR = dir.path;
   Object.defineProperty(process, "platform", { value: "win32" });
@@ -578,6 +616,36 @@ async function folderUpdate(t: import("node:test").TestContext) {
 
 const realWindows = originalPlatform?.value === "win32";
 
+test("startup returns while old updates are cleaned and staging waits for that cleanup", async (t) => {
+  const w = await folderUpdate(t);
+  const abandoned = path.join(path.dirname(w.stage), ".colonia-2.0.5.update");
+  fs.mkdirSync(abandoned);
+  let releaseCleanup = () => {};
+  const gate = new Promise<void>((resolve) => {
+    releaseCleanup = resolve;
+  });
+  const remove = fs.promises.rm.bind(fs.promises);
+  t.mock.method(fs.promises, "rm", async (...args: Parameters<typeof remove>) => {
+    if (args[0] === abandoned) await gate;
+    return remove(...args);
+  });
+  const updater = w.updater();
+  try {
+    updater.start(() => {});
+    assert.equal(fs.existsSync(abandoned), true, "startup did not wait for the disk cleanup");
+    const install = updater.install("2.1.0", true);
+    await Promise.resolve();
+    assert.deepEqual(w.unzipped, [], "staging cannot race with startup cleanup");
+    releaseCleanup();
+    assert.deepEqual(await install, { ok: true, ready: true });
+    assert.equal(fs.existsSync(abandoned), false);
+    assert.equal(w.unzipped.length, 1);
+  } finally {
+    releaseCleanup();
+    updater.stop();
+  }
+});
+
 test("Windows: un cambio que no entró deja la descarga y la próxima vez va el instalador, sin bajar el zip en bucle", async (t) => {
   const w = await folderUpdate(t);
   fs.mkdirSync(w.ready, { recursive: true });
@@ -592,6 +660,7 @@ test("Windows: un cambio que no entró deja la descarga y la próxima vez va el 
   updater.start(() => {});
   updater.stop();
   assert.ok(fs.existsSync(path.join(w.ready, "Colonia.exe")), "the download that did not go in stays");
+  await waitFor(() => !fs.existsSync(abandoned) && !fs.existsSync(current), "unused updates cleaned in background");
   assert.ok(!fs.existsSync(abandoned), "a download never applied still goes");
   assert.ok(!fs.existsSync(current), "the version now running needs nothing left");
   assert.deepEqual(await updater.install("2.1.0", true), { ok: true, ready: true });
@@ -733,7 +802,8 @@ test("una descarga lista más vieja que la publicada no se instala: se descarta 
   assert.equal(w.quits(), 0, "Colonia keeps running");
   await waitFor(() => w.updater.status().ready === "2.2.0", "2.2.0 downloaded");
   assert.deepEqual(w.updater.restart(), { ok: true });
-  assert.equal(w.spawns[0]?.file, path.join(path.dirname(w.file), exe2), "the newest one goes in");
+  assert.equal(path.basename(w.spawns[0]?.file ?? ""), exe2, "the newest one goes in");
+  assert.equal(fs.readFileSync(w.spawns[0]?.file ?? "", "utf8"), bytes);
 });
 
 // ACTUALIZA-REABRE-1 · 23-nov: dos «restart: 2.36.67», el cambio no corrió y cada arranque volvía a bajar la 2.36.67.

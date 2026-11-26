@@ -98,11 +98,18 @@ sólo les añade `AGENTS.md` y `.apc/`. Las claves van al llavero de tu sistema 
 
 ## Actualizaciones
 
-Colonia busca versiones nuevas cada pocas horas y, cuando hay una, muestra un aviso **Actualización** en la barra de
-arriba. Tus datos se conservan. En Windows la versión nueva se instala sola, y en Linux también cuando Colonia puede escribir junto a su AppImage (si no,
-te muestra el fichero nuevo); en macOS se abre el disco nuevo para
-que arrastres la aplicación. En un servidor, `colonia upgrade --check` te dice si hay versión nueva y `colonia upgrade` la
-instala. Con `COLONIA_UPDATES=off` se apagan las comprobaciones.
+La aplicación de escritorio busca versiones nuevas cada hora. También puedes elegir **Buscar actualizaciones…** en el
+menú de Colonia. Puedes seguir usándola mientras descarga, comprueba y prepara la actualización. Reinicia cuando esté
+lista; tus datos se conservan.
+
+En Windows y en una instalación de macOS con permiso de escritura, Colonia prepara la nueva versión junto a la que
+estás usando, para que el reinicio solo cambie las carpetas. En Linux sustituye la AppImage al reiniciar si puede
+escribir en ella. Si no puede hacer el cambio automático, ofrece el instalador o el paquete del sistema. Esa alternativa
+puede tardar más. El reinicio también depende del disco, del antivirus y de terminar el trabajo en curso; no se garantiza
+un tiempo fijo de dos o tres segundos.
+
+En un servidor, `colonia upgrade --check` busca una versión y `colonia upgrade` la instala. `COLONIA_RELEASES=off`
+desactiva la búsqueda de versiones; `COLONIA_UPDATES=off` desactiva las comprobaciones propias del núcleo.
 
 ## Desinstalar
 

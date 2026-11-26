@@ -5,7 +5,6 @@
 // the owner gets the installer to put in by hand; a Colonia installed from the .deb or .rpm gets the newer package and
 // the one command that installs it. See DECISIONS.md#d-058.
 import { execFile, spawn } from "node:child_process";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -17,7 +16,6 @@ import {
   type LocalizedNotes,
   localizedChanges,
   newerReleases,
-  parseSha256,
   platformOf,
   RELEASE_CHECK_EVERY_MS,
   RELEASE_FEED,
@@ -27,10 +25,11 @@ import {
 } from "@colonia/protocol";
 import { app, shell } from "electron";
 import { bundlePlace, replaceableBundle, saveInFirst } from "./app-bundle.ts";
-import { download } from "./download.ts";
+import { fetchChecked } from "./checked-download.ts";
 import { removeOldInstallers } from "./installer-files.ts";
 import { type LinuxInstall, linuxInstall, packageCommand } from "./linux-install.ts";
 import { updateLog } from "./update-log.ts";
+import { SWAP_MAC } from "./update-swap-mac.ts";
 
 export type DesktopUpdate = {
   current: string;
@@ -88,41 +87,6 @@ const writable = (dir: string) => {
     return false;
   }
 };
-
-const digest = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
-
-/** Downloads an asset and, when the release carries its .sha256, checks it; a bad file is removed. */
-async function fetchChecked(release: Release, asset: ReleaseAsset, file: string): Promise<void> {
-  const sum = release.assets.find((a) => a.name === `${asset.name}.sha256`);
-  try {
-    if (!sum) throw new Error(`${asset.name} has no .sha256`);
-    await download(asset.url, file);
-    if (sum) {
-      const sumFile = `${file}.sha256`;
-      await download(sum.url, sumFile);
-      const want = parseSha256(fs.readFileSync(sumFile, "utf8"));
-      fs.rmSync(sumFile, { force: true });
-      if (!want || want !== digest(file)) throw new Error(`${asset.name} does not match its .sha256`);
-    }
-  } catch (err) {
-    fs.rmSync(file, { force: true });
-    throw err;
-  }
-}
-
-// Swaps Colonia.app once Colonia (and the core it runs from inside the bundle) has quit; puts the old one back if that fails.
-const SWAP = `
-pid="$1"; old="$2"; new="$3"; stage="$4"; relaunch="$5"; log="$6"
-say() { [ -n "$log" ] && echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) swap: $*" >> "$log"; }
-i=0; while kill -0 "$pid" 2>/dev/null && [ $i -lt 600 ]; do sleep 0.1; i=$((i+1)); done
-kill -0 "$pid" 2>/dev/null && say "Colonia was still running after 60 s"
-i=0; while pgrep -f "$old/Contents/" >/dev/null 2>&1 && [ $i -lt 100 ]; do sleep 0.1; i=$((i+1)); done
-pgrep -f "$old/Contents/" >/dev/null 2>&1 && say "a process still ran from the old app after 10 s"
-if mv "$old" "$stage/previous.app"; then
-  if mv "$new" "$old"; then rm -rf "$stage"; say "new app in place"; else mv "$stage/previous.app" "$old"; say "could not move the new app in, the old one is back"; fi
-else say "could not move the old app aside"; fi
-if [ "$relaunch" = 1 ]; then open "$old" || say "could not open $old"; fi
-`;
 
 // ARRANQUE-RAPIDO-1 · Windows: la versión nueva se descomprime junto a la instalada MIENTRAS Colonia sigue abierta;
 // al reiniciar sólo se cambian dos carpetas de nombre (segundos). Antes el instalador NSIS borraba 6.400 ficheros,
@@ -327,6 +291,7 @@ export function createDesktopUpdater(opts: {
   let generation = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let wake: (() => void) | undefined;
+  let cleanup: Promise<void> = Promise.resolve();
   const log = opts.logFile ? updateLog(opts.logFile) : () => {};
 
   const current = (): DesktopUpdate => ({
@@ -394,6 +359,7 @@ export function createDesktopUpdater(opts: {
   }
 
   async function prepare(target?: string, deferOpen = false): Promise<InstallAnswer> {
+    await cleanup;
     if (target && feed) {
       const release = newerReleases(await fetchReleases(feed), "0.0.0").find((r) => r.version === target);
       const platform = platformOf(process.platform, process.arch);
@@ -466,21 +432,21 @@ export function createDesktopUpdater(opts: {
   async function stageMac(release: Release, zip: ReleaseAsset, old: string): Promise<Staged> {
     // Beside the running app, so the swap is a rename on the same disk.
     const stage = path.join(path.dirname(old), `.Colonia-${release.version}.update`);
-    fs.rmSync(stage, { recursive: true, force: true });
-    fs.mkdirSync(stage);
-    const file = path.join(os.tmpdir(), zip.name);
+    await fs.promises.rm(stage, { recursive: true, force: true });
+    await fs.promises.mkdir(stage, { mode: 0o700 });
+    const file = path.join(stage, zip.name);
     try {
       await fetchChecked(release, zip, file);
       await run("/usr/bin/ditto", ["-x", "-k", file, stage], { windowsHide: true });
     } catch (err) {
-      fs.rmSync(stage, { recursive: true, force: true });
+      await fs.promises.rm(stage, { recursive: true, force: true });
       throw err;
     } finally {
       fs.rmSync(file, { force: true });
     }
     const name = fs.readdirSync(stage).find((f) => f.endsWith(".app"));
     if (!name) {
-      fs.rmSync(stage, { recursive: true, force: true });
+      await fs.promises.rm(stage, { recursive: true, force: true });
       throw new Error(`${zip.name} has no app in it`);
     }
     const next = path.join(stage, name);
@@ -488,7 +454,7 @@ export function createDesktopUpdater(opts: {
     const swap = (relaunch: boolean) => {
       swapping = true;
       const args = [String(process.pid), old, next, stage, relaunch ? "1" : "0", opts.logFile ?? ""];
-      spawn("/bin/sh", ["-c", SWAP, "colonia-update", ...args], {
+      spawn("/bin/sh", ["-c", SWAP_MAC, "colonia-update", ...args], {
         detached: true,
         stdio: "ignore",
         windowsHide: true,
@@ -532,8 +498,8 @@ export function createDesktopUpdater(opts: {
     const old = path.dirname(exe);
     if (path.basename(exe).toLowerCase() !== "colonia.exe" || !canWrite(path.dirname(old))) return undefined;
     const stage = path.join(path.dirname(old), `.colonia-${release.version}.update`);
-    fs.rmSync(stage, { recursive: true, force: true });
-    fs.mkdirSync(stage, { recursive: true });
+    await fs.promises.rm(stage, { recursive: true, force: true });
+    await fs.promises.mkdir(stage, { recursive: true, mode: 0o700 });
     const file = path.join(stage, zip.name);
     const unpackTo = path.join(stage, "app");
     try {
@@ -548,7 +514,7 @@ export function createDesktopUpdater(opts: {
       fs.mkdirSync(unpackTo);
       await unzip(file, unpackTo);
     } catch (err) {
-      fs.rmSync(stage, { recursive: true, force: true });
+      await fs.promises.rm(stage, { recursive: true, force: true });
       throw err;
     } finally {
       fs.rmSync(file, { force: true });
@@ -561,7 +527,7 @@ export function createDesktopUpdater(opts: {
           .map((n) => path.join(unpackTo, n))
           .find((d) => fs.existsSync(path.join(d, "Colonia.exe")));
     if (!inner) {
-      fs.rmSync(stage, { recursive: true, force: true });
+      await fs.promises.rm(stage, { recursive: true, force: true });
       throw new Error(`${zip.name} has no Colonia.exe in it`);
     }
     // The uninstaller the NSIS install left is not in the zip: it keeps working from the new folder.
@@ -623,9 +589,16 @@ export function createDesktopUpdater(opts: {
   }
 
   async function stageWindows(release: Release, asset: ReleaseAsset): Promise<Staged> {
-    const file = path.join(os.tmpdir(), asset.name);
-    removeOldInstallers(os.tmpdir(), asset.name);
-    await fetchChecked(release, asset, file);
+    const root = path.join(app.getPath("userData"), "update-installers");
+    await fs.promises.mkdir(root, { recursive: true, mode: 0o700 });
+    const directory = await fs.promises.mkdtemp(path.join(root, "download-"));
+    const file = path.join(directory, asset.name);
+    try {
+      await fetchChecked(release, asset, file);
+    } catch (error) {
+      await fs.promises.rm(directory, { recursive: true, force: true });
+      throw error;
+    }
     const launch = (args: string[]) => {
       // A cleaned temporary folder is the common way to lose it: say so instead of quitting into nothing.
       if (!fs.existsSync(file)) {
@@ -713,9 +686,18 @@ export function createDesktopUpdater(opts: {
     /** `found(status)`: a background check found a newer Colonia (auto mode then downloads it on its own). */
     start(found: (s: DesktopUpdate) => void) {
       if (!enabled) return;
+      const removals: Promise<void>[] = [];
+      const remove = (dir: string) => {
+        removals.push(
+          fs.promises.rm(dir, { recursive: true, force: true }).catch((error: unknown) => {
+            log(`update cleanup postponed: ${error instanceof Error ? error.message : String(error)}`);
+          }),
+        );
+      };
       // Running means the last installer is done: it and any before it go.
       if (process.platform === "win32") {
         removeOldInstallers(os.tmpdir());
+        remove(path.join(app.getPath("userData"), "update-installers"));
         // ARRANQUE-RAPIDO-1 · A folder left from an update that was never applied is downloaded again when needed.
         // SWAP-SIEMPRE-ABRE-1 · One the swap marked failed stays (download and old copy) until that version is in.
         const parent = path.dirname(path.dirname(opts.execPath ?? process.execPath));
@@ -736,16 +718,21 @@ export function createDesktopUpdater(opts: {
               );
               continue;
             }
-            fs.rmSync(dir, { recursive: true, force: true });
+            remove(dir);
           }
         } catch {
           // Nothing to clean, or a file still held: it goes the next time.
         }
       }
-      if (bundle)
-        for (const f of fs.readdirSync(path.dirname(bundle)))
-          if (/^\.Colonia-.+\.update$/.test(f))
-            fs.rmSync(path.join(path.dirname(bundle), f), { recursive: true, force: true });
+      if (bundle) {
+        try {
+          for (const f of fs.readdirSync(path.dirname(bundle)))
+            if (/^\.Colonia-.+\.update$/.test(f)) remove(path.join(path.dirname(bundle), f));
+        } catch (error) {
+          log(`update cleanup postponed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+      cleanup = Promise.all(removals).then(() => undefined);
       const tick = (ms: number) => {
         timer = setTimeout(
           () =>
