@@ -1,6 +1,8 @@
 import { loadConfig } from "../apps/core/src/config.ts";
 import { createCore } from "../apps/core/src/server.ts";
+import { controlWhatsApp } from "./fake-baileys.ts";
 import { fakeDesktopTrash } from "./fake-desktop-trash.ts";
+import { serveSandbox } from "./sandbox-control.ts";
 
 const record = process.env.E2E_DESKTOP_TRASH_RECORD;
 const projectRoot = process.env.E2E_PROJECT_ROOT;
@@ -8,9 +10,10 @@ if (!record || !projectRoot) throw new Error("E2E_DESKTOP_TRASH_RECORD and E2E_P
 const config = loadConfig();
 // A spec may stop the core's clock at a moment (e2e/env.ts's /clock), so what it shows about time is the same any day.
 let stoppedAt: number | undefined;
-process.on("message", (m: { clock: string | null }) => {
-  stoppedAt = m.clock ? Date.parse(m.clock) : undefined;
-  process.send?.({ clock: m.clock });
+serveSandbox(process, (command) => {
+  if (command.type === "whatsapp") return controlWhatsApp(command.path, command.body);
+  stoppedAt = command.at ? Date.parse(command.at) : undefined;
+  return { ok: true };
 });
 process.channel?.unref();
 const core = await createCore(config, {

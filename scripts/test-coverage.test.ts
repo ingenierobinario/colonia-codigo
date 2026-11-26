@@ -37,13 +37,12 @@ test("la cobertura reparte cada paquete sin omitir archivos y ejecuta los script
 
 test("coverage sandboxes use distinct available loopback ports and honor explicit overrides", async () => {
   const ports = await sandboxPorts({});
-  assert.deepEqual(Object.keys(ports), ["E2E_PORT", "E2E_CONTROL_PORT", "E2E_WA_PORT"]);
-  assert.equal(new Set(Object.values(ports)).size, 3);
+  assert.deepEqual(Object.keys(ports), ["E2E_PORT", "E2E_CONTROL_PORT"]);
+  assert.equal(new Set(Object.values(ports)).size, 2);
   assert.ok(Object.values(ports).every((port) => Number(port) > 0 && Number(port) < 65536));
-  assert.deepEqual(await sandboxPorts({ E2E_PORT: "17460", E2E_CONTROL_PORT: "17461", E2E_WA_PORT: "17462" }), {
+  assert.deepEqual(await sandboxPorts({ E2E_PORT: "17460", E2E_CONTROL_PORT: "17461" }), {
     E2E_PORT: "17460",
     E2E_CONTROL_PORT: "17461",
-    E2E_WA_PORT: "17462",
   });
 });
 

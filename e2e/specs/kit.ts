@@ -5,8 +5,12 @@ import { startPageCoverage } from "../coverage.ts";
 
 const core = `http://127.0.0.1:${process.env.E2E_PORT ?? 7460}`;
 const control = `http://127.0.0.1:${process.env.E2E_CONTROL_PORT ?? 7461}`;
-const phone = `http://127.0.0.1:${process.env.E2E_WA_PORT ?? 7462}`;
-const post = (url: string, body: unknown = {}) => fetch(url, { method: "POST", body: JSON.stringify(body) });
+const phone = `${control}/whatsapp`;
+const post = async (url: string, body: unknown = {}) => {
+  const response = await fetch(url, { method: "POST", body: JSON.stringify(body) });
+  if (!response.ok) throw new Error(`Sandbox control failed (${response.status}): ${await response.text()}`);
+  return response;
+};
 let seq = 0;
 
 /** A protocol call, as the owner. */

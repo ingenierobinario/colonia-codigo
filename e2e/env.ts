@@ -17,13 +17,12 @@ import { fakeGoogle } from "../apps/core/src/integrations/fake-google.test-suppo
 import { compileCacheEnv } from "../scripts/compile-cache.ts";
 import { fakeLlm } from "./fake-llm.ts";
 import { writeFixtures } from "./fixtures.ts";
+import { callSandbox } from "./sandbox-control.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 export const E2E = {
   port: Number(process.env.E2E_PORT ?? 7460),
   control: Number(process.env.E2E_CONTROL_PORT ?? 7461),
-  /** The emulated phone for WhatsApp (e2e/fake-baileys.ts), inside the core's process. */
-  whatsapp: Number(process.env.E2E_WA_PORT ?? 7462),
   telegramToken: "123456789:AAE2eFakeTokenForTheEmulatedBot0",
   discordToken: "MTIzNDU2Nzg5MDEyMzQ1Njc4.GfAkE1.e2eFakeTokenForTheEmulatedDiscordBot",
   slackTokens: { bot: "xoxb-1234-e2e-fake-bot", app: "xapp-1-e2e-fake-app" },
@@ -87,7 +86,7 @@ const core = spawn(
   ["--no-warnings", "--import", pathToFileURL(hook).href, path.join(root, "e2e/start-core.ts")],
   {
     cwd: root,
-    // The channel carries /clock to the core (e2e/start-core.ts).
+    // The channel carries clock and simulated-phone controls to the core.
     stdio: ["ignore", "pipe", "pipe", "ipc"],
     env: {
       // Only the sandbox's own CLIs, node and the system: none of the machine's agents (claude, codex, opencode…).
@@ -129,7 +128,6 @@ const core = spawn(
       COLONIA_IMESSAGE: "off",
       // Never the machine's own Ollama: memory's local embedding models are looked for where nothing answers.
       COLONIA_OLLAMA_URL: "http://127.0.0.1:9",
-      E2E_WA_PORT: String(E2E.whatsapp),
       E2E_DESKTOP_TRASH_RECORD: desktopTrashRecord,
       E2E_PROJECT_ROOT: fx.repo,
     },
@@ -151,6 +149,12 @@ const control = http.createServer((req, res) => {
       res.end(JSON.stringify(body));
     };
     const body = (raw ? JSON.parse(raw) : {}) as Record<string, unknown>;
+    if (req.url?.startsWith("/whatsapp/")) {
+      void callSandbox(core, { type: "whatsapp", path: req.url.slice("/whatsapp".length), body: raw })
+        .then((result) => json(200, result))
+        .catch((error: Error) => json(503, { error: error.message }));
+      return;
+    }
     if (req.url === "/info")
       return json(200, {
         dir,
@@ -166,8 +170,9 @@ const control = http.createServer((req, res) => {
     if (req.url === "/service/calls") return json(200, { calls });
     // The core's clock stopped at `at`, or running again (null); answered once the core has it.
     if (req.url === "/clock" && req.method === "POST") {
-      core.once("message", () => json(200, { ok: true }));
-      core.send({ clock: typeof body.at === "string" ? body.at : null });
+      void callSandbox(core, { type: "clock", at: typeof body.at === "string" ? body.at : null })
+        .then((result) => json(200, result))
+        .catch((error: Error) => json(503, { error: error.message }));
       return;
     }
     if (req.url === "/tg/message" && req.method === "POST") {

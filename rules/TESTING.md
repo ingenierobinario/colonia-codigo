@@ -140,8 +140,9 @@ The headless browser test disables Chromium's sandbox only when the test process
 container; production browser launches retain it. On macOS, desktop coverage uses `caffeinate` for the test
 process so the display does not sleep. Start native window tests in an unlocked graphical session with an
 awake display; a sleeping or locked display cannot supply reliable native focus events.
-The coverage sandbox picks separate loopback ports so parallel checkouts do not collide; `E2E_PORT`,
-`E2E_CONTROL_PORT` and `E2E_WA_PORT` override them when debugging.
+The coverage sandbox picks separate loopback ports so parallel checkouts do not collide; `E2E_PORT` and
+`E2E_CONTROL_PORT` override them when debugging. The simulated WhatsApp phone uses the existing control
+server and correlated IPC requests to its core, rather than reserving a port that another fixture could claim.
 Reports identify each unexecuted function by file and line. An executed function still needs meaningful assertions;
 unit coverage does not replace Playwright or a real phone. The default coverage command fails on suite failures;
 the separate strict command additionally requires every inventoried function to execute. CI runs all suites with
