@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.76": {
+    en: [
+      "Rename your synchronized server from My computers or the sidebar.",
+      "Your chosen name stays in place when the server reconnects or restarts.",
+    ],
+    es: [
+      "Cambia el nombre de tu servidor sincronizado desde Mis equipos o la barra lateral.",
+      "El nombre elegido se conserva cuando el servidor se reconecta o reinicia.",
+    ],
+  },
   "2.36.75": {
     en: [
       "Find free allowances and local models alongside the accounts your agents use.",

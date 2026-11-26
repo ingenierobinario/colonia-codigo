@@ -12,7 +12,7 @@ import { type EquipoEntry, equipoEntries } from "./equiposModel.ts";
 import { RemoteFolder } from "./RemoteFolder.tsx";
 import { RemoteTask } from "./RemoteTask.tsx";
 import { ServerHosting } from "./ServerHosting.tsx";
-import { SyncedEquipoCard } from "./SyncedEquipoCard.tsx";
+import { SYNCED_EQUIPO_ID, SyncedEquipoCard } from "./SyncedEquipoCard.tsx";
 import { ThisComputerCard } from "./ThisComputerCard.tsx";
 import { TransferActions } from "./TransferActions.tsx";
 
@@ -776,7 +776,7 @@ function Body() {
                 onSaved={refreshList}
               />
             )}
-        {sync && <SyncedEquipoCard s={sync} onChange={refreshSync} />}
+        {sync && <SyncedEquipoCard s={sync} onChange={refreshSync} all={entries} edit={editOf(SYNCED_EQUIPO_ID)} />}
         {rest.map(card)}
         {local && <ThisEquipo s={local} refresh={refreshLocal} />}
         <TransferActions />

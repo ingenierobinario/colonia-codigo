@@ -11,6 +11,7 @@ export function EquipoName({
   all,
   edit = 0,
   onSaved,
+  onRename,
 }: {
   e: EquipoEntry;
   /** Todos los equipos, para no repetir un nombre. */
@@ -18,6 +19,7 @@ export function EquipoName({
   /** Distinto de cero cuando se pide abrirlo ya para escribir (clic derecho en la barra lateral). */
   edit?: number;
   onSaved: () => void;
+  onRename?: (alias: string) => Promise<unknown>;
 }) {
   const t = useT();
   const [editing, setEditing] = useState(false);
@@ -44,7 +46,8 @@ export function EquipoName({
     if (aliasTaken(alias, e.id, all)) return setError(t("equipos.renameTaken"));
     setBusy(true);
     try {
-      await client.call("equipos.rename", { id: e.id, alias });
+      if (onRename) await onRename(alias);
+      else await client.call("equipos.rename", { id: e.id, alias });
       onSaved();
       equiposChanged();
       close();

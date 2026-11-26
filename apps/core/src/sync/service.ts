@@ -48,7 +48,6 @@ import {
   stretch,
   typed,
 } from "./invitation-code.ts";
-
 import { invitationStore } from "./invitation-store.ts";
 import {
   type Applied,
@@ -63,6 +62,7 @@ import {
   uninstall,
 } from "./journal.ts";
 import { MediaBlock, MediaRequest, mediaTransfer } from "./media-transfer.ts";
+import { peerName, renamePeer } from "./peer-name.ts";
 import {
   type ProjectWork,
   projectWork,
@@ -116,6 +116,7 @@ const State = z.object({
   peer: z.object({
     id: z.string(),
     name: z.string(),
+    alias: z.string().max(60).optional(),
     publicKey: z.string(),
     urls: z.array(z.string()),
     app: PeerApp.optional(),
@@ -1228,6 +1229,7 @@ export function createSync(d: SyncDeps) {
     /** Este equipo no lleva los canales ni el reloj: los lleva su pareja. */
     secondary: () => state?.role === "secundario",
     remoteChannels: () => remote,
+    renamePeer: (id: string, alias: string) => renamePeer(state?.peer, id, alias, saveState),
     status(): SyncStatus {
       if (shown && Date.parse(shown.expires_at) <= now()) shown = undefined;
       const progress = work?.status();
@@ -1244,7 +1246,7 @@ export function createSync(d: SyncDeps) {
         ...(state
           ? {
               peer: {
-                name: state.peer.name,
+                ...peerName(state.peer),
                 ...(state.peer.app ?? {}),
                 ...(state.peer.seen_at ? { seen_at: state.peer.seen_at } : {}),
               },

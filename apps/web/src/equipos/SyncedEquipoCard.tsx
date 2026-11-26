@@ -7,6 +7,8 @@ import { useState } from "react";
 import { formatNumber, shortWhen } from "../common/format.ts";
 import { client } from "../data/client.ts";
 import { type MessageKey, useT } from "../i18n/index.ts";
+import { EquipoName } from "./EquipoName.tsx";
+import type { EquipoEntry } from "./equiposModel.ts";
 
 /** El id con el que la barra lateral lleva a esta ficha. */
 export const SYNCED_EQUIPO_ID = "equipo-sincronizado";
@@ -27,7 +29,17 @@ const SHARED: { k: keyof NonNullable<SyncStatus["shared"]>; key: MessageKey }[] 
   { k: "apps", key: "equipos.shared.apps" },
 ];
 
-export function SyncedEquipoCard({ s, onChange }: { s: SyncStatus; onChange: () => void }) {
+export function SyncedEquipoCard({
+  s,
+  onChange,
+  all = [],
+  edit = 0,
+}: {
+  s: SyncStatus;
+  onChange: () => void;
+  all?: EquipoEntry[];
+  edit?: number;
+}) {
   const t = useT();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -65,7 +77,25 @@ export function SyncedEquipoCard({ s, onChange }: { s: SyncStatus; onChange: () 
         <span className="eq-name">
           <span className={`eq-dot${s.connected && !s.mismatch ? " eq-dot--on" : ""}`} />
           {server ? <Icons.Server /> : <Icons.Monitor />}
-          <strong>{peer.name}</strong>
+          {peer.id ? (
+            <EquipoName
+              key={peer.id}
+              e={{
+                id: peer.id,
+                name: peer.name,
+                hostname: peer.hostname ?? peer.name,
+                alias: peer.alias,
+                self: false,
+                connected: Boolean(s.connected),
+              }}
+              all={all}
+              edit={edit}
+              onRename={(alias) => client.call("sync.rename_peer", { id: peer.id ?? "", alias })}
+              onSaved={onChange}
+            />
+          ) : (
+            <strong>{peer.name}</strong>
+          )}
         </span>
         <Badge tone={s.mismatch ? "warning" : "neutral"}>
           {t(server ? "equipos.synced.server" : "equipos.synced.pc")}

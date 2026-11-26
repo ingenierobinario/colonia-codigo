@@ -572,8 +572,15 @@
   min-width: 0;
 }
 .eq-synced__actions {
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.eq-synced__actions .colonia-segmented {
+  flex-wrap: wrap;
+  max-width: 100%;
 }

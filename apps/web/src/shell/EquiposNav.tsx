@@ -88,16 +88,24 @@ export function EquiposNav({ rail }: { rail: boolean }) {
           );
         })}
       {!hidden && peer && (
-        <NavItem
-          collapsed={rail}
-          icon={peer.kind === "servidor" ? <Icons.Server /> : <Icons.Monitor />}
-          label={peer.name}
-          trailing={
-            sync?.connected ? <span className="navitem__running" title={t("nav.equipoConnected")} /> : undefined
+        <ContextMenu
+          items={
+            peer.id
+              ? [{ label: t("nav.equipoRename"), icon: <Icons.Pencil />, onSelect: () => open(SYNCED_EQUIPO_ID, true) }]
+              : []
           }
-          active={view === "equipos" && current === SYNCED_EQUIPO_ID}
-          onClick={() => open(SYNCED_EQUIPO_ID)}
-        />
+        >
+          <NavItem
+            collapsed={rail}
+            icon={peer.kind === "servidor" ? <Icons.Server /> : <Icons.Monitor />}
+            label={peer.name}
+            trailing={
+              sync?.connected ? <span className="navitem__running" title={t("nav.equipoConnected")} /> : undefined
+            }
+            active={view === "equipos" && current === SYNCED_EQUIPO_ID}
+            onClick={() => open(SYNCED_EQUIPO_ID)}
+          />
+        </ContextMenu>
       )}
       {!hidden && (
         <NavItem

@@ -45,7 +45,10 @@ export const SyncStatus = z.object({
   /** INVENTARIO-EQUIPOS-1 · El otro equipo: lo que contó al saludar y cuándo se le oyó por última vez. */
   peer: z
     .object({
+      id: z.string().optional(),
       name: z.string(),
+      hostname: z.string().optional(),
+      alias: z.string().optional(),
       version: z.string().optional(),
       kind: z.enum(["pc", "servidor"]).optional(),
       platform: z.string().optional(),
@@ -118,6 +121,13 @@ const none = z.object({}).strict();
 
 export const syncMethods = {
   "sync.status": { params: none, result: SyncStatus, effect: false, access: "human" },
+  /** A display name for the paired computer, kept here across its reconnects and hostname changes. */
+  "sync.rename_peer": {
+    params: z.object({ id: z.string().min(1).max(200), alias: z.string().max(200) }).strict(),
+    result: SyncStatus,
+    effect: true,
+    access: "human",
+  },
   /** Un código para escribir en el otro equipo. Este queda como principal. */
   "sync.pair_start": {
     params: z

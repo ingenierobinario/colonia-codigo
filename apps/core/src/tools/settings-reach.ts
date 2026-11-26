@@ -59,6 +59,7 @@ export const OWNER_ONLY: Readonly<Record<string, string>> = {
   "sync.copy_projects": "La persona elige qué archivos de trabajo envía a su otro equipo.",
   "sync.set_every": MACHINE,
   "sync.now": MACHINE,
+  "sync.rename_peer": "the owner chooses the display name of their paired computer",
   "equipos.pair_start": SECRET,
   "equipos.pair_cancel": SECRET,
   "equipos.connect": SECRET,

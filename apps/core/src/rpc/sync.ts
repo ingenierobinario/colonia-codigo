@@ -14,6 +14,10 @@ export function syncHandlers(sync: Sync) {
   };
   return {
     "sync.status": () => sync.status(),
+    "sync.rename_peer": ({ id, alias }) => {
+      said(() => sync.renamePeer(id, alias));
+      return sync.status();
+    },
     "sync.pair_start": ({ initial_source, allow_managed_folder_sync }) => {
       said(() => sync.pairStart(initial_source, allow_managed_folder_sync));
       return sync.status();

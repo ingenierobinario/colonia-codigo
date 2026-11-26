@@ -427,3 +427,47 @@ test("Mis equipos muestra todas las carpetas registradas que faltan aunque haya 
     expected,
   );
 });
+
+test("a paired server alias survives both restarts and a new server hostname", async (t) => {
+  const { a, b } = await paired(t);
+  const peer = b.sync.status().peer;
+  assert.ok(peer?.id);
+  b.sync.renamePeer(peer.id, "Acme server");
+  assert.equal(b.sync.status().peer?.name, "Acme server");
+  assert.equal(b.sync.status().role, "secundario");
+  assert.throws(() => b.sync.renamePeer("another-peer", "Wrong"), /changed/);
+  a.sync.stop();
+  b.sync.stop();
+  const again = async (m: M, name: string) => {
+    const { box, url } = await listen(undefined, t);
+    const sync = createSync({
+      home: m.home,
+      db: m.db,
+      secrets: m.secrets,
+      log: quiet,
+      urls: () => [],
+      local: () => url,
+      name: () => name,
+      tickMs: 30,
+      beaconPort: BEACON,
+    });
+    box.sync = sync;
+    sync.start();
+    return sync;
+  };
+  const a2 = await again(a, "new-container-host");
+  const b2 = await again(b, "Laptop");
+  try {
+    await until(() => a2.status().connected && b2.status().connected, "renamed peers did not reconnect");
+    await until(() => b2.status().peer?.hostname === "new-container-host", "new hostname did not arrive");
+    assert.equal(b2.status().peer?.name, "Acme server");
+    assert.equal(b2.status().peer?.id, peer.id);
+    assert.equal(a2.status().peer?.name, "Laptop");
+    assert.equal(b2.status().role, "secundario");
+    b2.renamePeer(peer.id, "");
+    assert.equal(b2.status().peer?.name, "new-container-host");
+  } finally {
+    a2.stop();
+    b2.stop();
+  }
+});
