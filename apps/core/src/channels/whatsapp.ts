@@ -41,7 +41,7 @@ export type WaSocket = {
   sendMessage(jid: string, content: Record<string, unknown>): Promise<{ key?: { id?: string | null } } | undefined>;
   sendPresenceUpdate(type: "composing" | "paused", jid?: string): Promise<void>;
   logout(): Promise<void>;
-  end(err?: Error): void;
+  end(err?: Error): void | Promise<void>;
   /** Where someone's profile picture is (none when they hide it). */
   profilePictureUrl?(jid: string, type: "image" | "preview"): Promise<string | undefined>;
   /** Asks to hear when someone comes online or leaves (until the connection closes). */
@@ -881,7 +881,7 @@ export function whatsappAdapter(opts: {
     sock = undefined;
     me = undefined;
     try {
-      s?.end(undefined);
+      await s?.end(undefined);
     } catch {}
     // Auth initialization and queued saves must finish before a caller removes the session folder.
     await connecting.catch(() => {});
