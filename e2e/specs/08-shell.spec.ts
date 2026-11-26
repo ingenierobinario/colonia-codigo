@@ -46,7 +46,7 @@ test("a chain entry picks one of the model APIs' models; the CLIs are not offere
 test("an agent picks its own model from the list, and one button leaves it on the router alone", async ({ page }) => {
   await open(page);
   await openSettings(page);
-  await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes" }).click();
+  await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes", exact: true }).click();
   await page
     .getByRole("button", { name: /^Modelo de / })
     .first()

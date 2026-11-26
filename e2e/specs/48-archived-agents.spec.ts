@@ -14,7 +14,7 @@ test("Config › Agentes: un agente archivado se restaura o se borra para siempr
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page);
   await openSettings(page);
-  await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes" }).click();
+  await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes", exact: true }).click();
   const archived = page.getByRole("region", { name: "Archivados" });
   await archived.getByRole("button", { name: /^Archivados/ }).click();
   const row = (name: string) => archived.locator(".archived__row").filter({ hasText: name });

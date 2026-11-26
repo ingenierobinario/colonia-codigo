@@ -29,7 +29,11 @@ test("agents and chats distinguish inheritance, primary models and explicit rout
     await page.keyboard.press("Escape");
 
     await openSettings(page);
-    await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes" }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("navigation")
+      .getByRole("button", { name: "Agentes", exact: true })
+      .click();
     const agentButton = page.getByRole("dialog", { name: "Configuración", exact: true }).getByRole("button", {
       name: `Modelo de ${agent.name}`,
       exact: true,
@@ -79,7 +83,11 @@ test("agents and chats distinguish inheritance, primary models and explicit rout
     await page.reload();
     await expect(chat).toHaveText("Fake 2");
     await openSettings(page);
-    await page.getByRole("dialog").getByRole("navigation").getByRole("button", { name: "Agentes" }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("navigation")
+      .getByRole("button", { name: "Agentes", exact: true })
+      .click();
     await agentButton.click();
     await picker.getByRole("option", { selected: true }).click();
     await expect.poll(choiceOf).toEqual({ model: "custom/fake-2", router: false });
