@@ -87,3 +87,11 @@ For remote cores, diagnose the server hosting the core, not just your local desk
 ## Name your synchronized server
 
 In **My computers**, use the pencil beside your synchronized server’s name, or right-click it in the sidebar and choose **Rename**. Enter saves and Escape cancels. The name is kept on this Colonia and appears in its sidebar and synchronization settings. It stays attached to the paired server even when Railway restarts with a different hostname. Clear the field to show the server’s hostname again.
+
+## WhatsApp while your computer is off
+
+The principal Colonia keeps receiving WhatsApp while the other computer is off. Use your always-on server as the principal; conversations received there synchronize when your computer reconnects.
+
+After both Colonias are updated, an existing linked session can move automatically over their encrypted pairing connection. Colonia transfers the credentials and message keys together, and prevents the source from reopening the transferred session. A repeated transfer after a connection loss never replaces the destination's newer keys.
+
+For safety, a session already opened during the current app run waits until that Colonia next starts before moving. Keep both apps open until the server shows the line as connected, then you can close the local app. If WhatsApp has revoked the linked device, it still needs a new QR; moving its files cannot restore a revoked session. Separate business workspaces keep separate sessions.

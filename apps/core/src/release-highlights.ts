@@ -10,10 +10,12 @@ export const HIGHLIGHTS: Record<string, Highlights> = {
     en: [
       "Rename your synchronized server from My computers or the sidebar.",
       "Your chosen name stays in place when the server reconnects or restarts.",
+      "After restarting, linked WhatsApp sessions can move securely to your server to receive while your PC is off.",
     ],
     es: [
       "Cambia el nombre de tu servidor sincronizado desde Mis equipos o la barra lateral.",
       "El nombre elegido se conserva cuando el servidor se reconecta o reinicia.",
+      "Tras reiniciar, WhatsApp puede trasladarse al servidor para recibir mensajes con tu ordenador apagado.",
     ],
   },
   "2.36.75": {

@@ -72,6 +72,8 @@ import {
   WorkMessage,
 } from "./project-work.ts";
 
+import { type WhatsAppHandoff, WhatsAppHandoffMessage } from "./whatsapp-handoff.ts";
+
 export { LOG_KEY_FILE, LOG_KEY_TTL_MS, PRESET_TTL_MS } from "./invitation-code.ts";
 export { SYNC_PATH };
 
@@ -154,12 +156,14 @@ const Msg = z.discriminatedUnion("t", [
     accepts_project_files: z.literal(1).optional(),
     folder_sync: z.literal(1).optional(),
     media_sha256: z.literal(1).optional(),
+    whatsapp_handoff: z.literal(1).optional(),
     app: PeerApp.optional(),
   }),
   z.object({ t: z.literal("cambios"), id: z.string(), items: z.array(ItemZ) }),
   z.object({ t: z.literal("ok"), id: z.string() }),
   z.object({ t: z.literal("papel"), role: z.enum(["principal", "secundario"]), role_at: z.number() }),
   z.object({ t: z.literal("canales"), info: z.array(z.unknown()) }),
+  z.object({ t: z.literal("whatsapp-session"), data: WhatsAppHandoffMessage }),
   // Los ficheros van trozo a trozo y a petición: no hay tamaño máximo y uno a medias sigue por donde iba.
   MediaRequest,
   MediaBlock,
@@ -205,6 +209,7 @@ export type SyncDeps = {
   told?(): void;
   /** El estado de los canales de este equipo, para que el otro lo vea. */
   channels?(): unknown[];
+  whatsapp?: WhatsAppHandoff;
   tickMs?: number;
   now?: () => number;
   /** El puerto por el que los equipos se buscan en la red local. */
@@ -598,6 +603,7 @@ export function createSync(d: SyncDeps) {
       work?.detach();
       continuous?.detach();
       link = undefined;
+      d.whatsapp?.attach(undefined);
       media.clear();
       old.ws.close(1000, "sustituida");
     }
@@ -610,6 +616,7 @@ export function createSync(d: SyncDeps) {
       work?.detach();
       continuous?.detach();
       link = undefined;
+      d.whatsapp?.attach(undefined);
       inflight = undefined;
       media.clear();
       if (state) state.peer.seen_at = new Date(now()).toISOString();
@@ -629,6 +636,7 @@ export function createSync(d: SyncDeps) {
       urls: d.urls(),
       folder_sync: 1,
       media_sha256: 1,
+      ...(d.whatsapp ? { whatsapp_handoff: 1 as const } : {}),
       ...(state.work === "receive" ? { accepts_project_files: 1 as const } : {}),
       app: {
         version: (d.version ?? "").slice(0, 60),
@@ -647,6 +655,12 @@ export function createSync(d: SyncDeps) {
       l.hello = true;
       mismatch = m.v !== WIRE || m.schema !== schema();
       l.ready = !mismatch;
+      d.whatsapp?.attach(
+        l.ready && m.whatsapp_handoff === 1
+          ? { local: myId, peer: state.peer.id, send: (data) => l.send({ t: "whatsapp-session", data }) }
+          : undefined,
+        m.whatsapp_handoff === 1,
+      );
       state.peer.name = m.name;
       if (m.app) state.peer.app = m.app;
       else delete state.peer.app;
@@ -687,6 +701,10 @@ export function createSync(d: SyncDeps) {
       return;
     }
     if (!l.ready) return;
+    if (m.t === "whatsapp-session") {
+      void d.whatsapp?.receive(state.peer.id, m.data).catch(() => warn("WhatsApp session handoff could not complete"));
+      return;
+    }
     if (m.t === "carpetas-vivas") {
       void continuous?.receive(l.folders, m.data).catch((err) => warn("no se pudo sincronizar la carpeta", err));
       return;
@@ -1039,6 +1057,9 @@ export function createSync(d: SyncDeps) {
     } catch (err) {
       warn("no se pudo anotar lo que cambió", err);
     }
+    if (link?.ready) {
+      void d.whatsapp?.tick().catch(() => warn("WhatsApp session handoff is waiting"));
+    }
     if (link?.ready && state.role === "principal" && d.channels) {
       const info = d.channels();
       const s = JSON.stringify(info);
@@ -1087,6 +1108,7 @@ export function createSync(d: SyncDeps) {
     media.forget(state?.peer.id);
     const old = link;
     link = undefined;
+    d.whatsapp?.attach(undefined);
     old?.ws.close(1000, "desemparejado");
     state = undefined;
     journal = undefined;
@@ -1222,6 +1244,7 @@ export function createSync(d: SyncDeps) {
       }
       link?.ws.close(1001, "cerrando");
       link = undefined;
+      d.whatsapp?.attach(undefined);
       for (const c of wss.clients) c.terminate();
       wss.close();
       tune();

@@ -145,6 +145,7 @@ import { skillsFor } from "./skills/skills.ts";
 import { markStartup, startupPhases } from "./startup-phases.ts";
 import { SYNC_PATH, syncNeededAtStart } from "./sync/at-start.ts";
 import type { Sync } from "./sync/service.ts";
+import { whatsappHandoff } from "./sync/whatsapp-handoff.ts";
 import { createTelemetry } from "./telemetry.ts";
 import { type TelemetrySink, telemetrySink } from "./telemetry-sink.ts";
 import { createTerminals } from "./terminal/terminals.ts";
@@ -562,7 +563,16 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
   // D-192: con dos equipos sincronizados, solo el principal abre los canales y lleva el reloj. Se crea más abajo.
   let sync: Sync | undefined;
   const elsewhere = () => sync?.secondary() ?? false;
+  const whatsappSessions = whatsappHandoff({
+    home: config.home,
+    secrets,
+    channels: () => store.settings.read("channels"),
+    primary: () => !elsewhere(),
+    paired: () => sync?.status().paired ?? false,
+    changed: () => void channels.refresh().catch(() => log.warn({}, "WhatsApp sessions did not refresh")),
+  });
   const channels = createChannels({
+    sessionOwnership: whatsappSessions,
     store,
     elsewhere: {
       active: elsewhere,
@@ -836,6 +846,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       kind: process.env.RAILWAY_SERVICE_ID ? "servidor" : "pc",
       everyMin: config.syncEveryMin,
       channels: () => channels.info(),
+      whatsapp: whatsappSessions,
       changed: (touched) => {
         bus.emit({ type: "sync.updated", data: true });
         if (touched.has("projects") || touched.has("agents")) bus.emit({ type: "team.updated" });
@@ -1097,6 +1108,7 @@ export async function createCore(config: CoreConfig, opts: CoreOptions = {}) {
       noticePush.stop();
       plugins.close();
       sync?.stop();
+      await whatsappSessions.close();
       await channels.stop();
       webhooks.close();
       await hookListener.close();

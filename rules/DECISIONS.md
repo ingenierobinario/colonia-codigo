@@ -3641,3 +3641,15 @@ agents. A chat's folder left on its default "ask" no longer makes delegated help
 stays: plan mode (it refuses, it does not ask), a rule turning a risk off, the cards a call always keeps (D-140, D-143),
 and the hard refusals (read-only folders, Colonia's own folder, git's folder). Claude, ACP agents and the one-shot CLIs
 reach the owner only through the executor's `approve`, which follows the same decision, so they ask nothing either.
+
+
+<a id="d-194"></a>
+## D-194 — 2026-11-26 — WhatsApp ownership moves over the authenticated synchronization connection
+
+Channel configuration synchronization alone cannot move WhatsApp's device session. The principal must receive the complete auth state before the owner can rely on it with the desktop off. A negotiated capability on the existing signed, encrypted pairing connection transfers bounded, validated JSON files; no public upload endpoint or generic folder synchronization carries them.
+
+A per-home durable ledger binds each transfer to the paired identity, channel, transaction and linked session identity. The receiver prepares first. The sender encrypts an escrow with a device-local vault key, persists its release, removes its original auth directory, then sends. The receiver stages and flushes files before promotion and ownership. Receipts make retries idempotent: an already owned session is never overwritten, even after its ratchets change. The ledger and escrow are excluded from backups; the vault key uses the existing local-only sync namespace. POSIX directory fsync protects promotion ordering; Windows provides process-crash recovery but this implementation does not claim directory durability against sudden power loss.
+
+The boundary is deliberately cold: initialization marks a session as warm for the remainder of the process. Baileys end() does not drain every internal auth producer, so stopping it is not permission to export. Existing secondary sessions transfer after an ordinary app restart; a session opened during that run remains pending until the next startup. No role timestamp, timeout, disconnect, unpair, or new pairing unlocks a released session. A reverse transfer uses the current owner's keys. Legacy peers retain manual linking without session transfer. Reads, writes and removal are bounded asynchronous operations so large sessions do not block synchronization heartbeats. Closing the core waits for handoff file operations.
+
+Validation proves shape and boundedness, not that WhatsApp still accepts the session. A revoked device still needs relinking. Tests exercise lost receipts, changed keys, restart and interrupted promotion, role changes, directory junctions, malformed destinations, and two real cores receiving while the desktop is closed and catching up on return.

@@ -110,12 +110,14 @@ export function createChannels(deps: {
    * session opens here (a second WhatsApp or bot connection would break the first); what shows is the other's state.
    */
   elsewhere?: { active(): boolean; info(): ChannelInfo[] | undefined };
+  sessionOwnership?: { canStart(id: string): boolean; starting(id: string): void };
 }) {
   const away = () => deps.elsewhere?.active() ?? false;
   const retryMs = deps.retryMs ?? RETRY_MS;
   const clock = deps.now ?? (() => new Date());
   const { store, secrets, log } = deps;
   const live = new Map<string, Live>();
+  const waitingSession = new Set<string>();
   const typing = new Map<string, ReturnType<typeof setInterval>>();
   /** Runs whose "on it" line already went out: the words written before their first tool call. */
   const acked = new Map<string, string>();
@@ -534,6 +536,12 @@ export function createChannels(deps: {
   async function startOne(config: ChannelConfig, attempt = 0): Promise<void> {
     const factory = deps.factories[config.type];
     if (!factory || !config.enabled || stopped || away()) return;
+    if (config.type === "whatsapp") {
+      waitingSession.add(config.id);
+      if (deps.sessionOwnership && !deps.sessionOwnership.canStart(config.id)) return;
+      waitingSession.delete(config.id);
+      deps.sessionOwnership?.starting(config.id);
+    }
     const ac = new AbortController();
     const name = tokenName(config.id);
     const token = secrets.resolve(`secret://${name}`);
@@ -644,7 +652,7 @@ export function createChannels(deps: {
         token_set: token !== undefined,
         // A mailbox's password, a Google key (JSON, cut anywhere) and a Teams secret show none of their characters.
         ...(token ? { token_hint: MASKED.has(c.type) ? "••••••••" : hintOf(token) } : {}),
-        status: l?.status ?? "off",
+        status: l?.status ?? (c.enabled && waitingSession.has(c.id) ? "starting" : "off"),
         ...(l?.error ? { error: l.error } : {}),
         ...(l?.account ? { account: l.account } : {}),
         ...(l?.qr ? { qr: l.qr } : {}),
@@ -765,7 +773,12 @@ export function createChannels(deps: {
           serially(id, async () => {
             const want = configs().find((c) => c.id === id);
             const l = live.get(id);
-            if (!want?.enabled || away()) return stopOne(id);
+            if (
+              !want?.enabled ||
+              away() ||
+              (want.type === "whatsapp" && deps.sessionOwnership && !deps.sessionOwnership.canStart(id))
+            )
+              return stopOne(id);
             const token = secrets.resolve(`secret://${tokenName(id)}`);
             if (l && l.status !== "error" && l.token === token && !restartsFor(l.config, want)) {
               l.config = want;
