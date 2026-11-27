@@ -17,14 +17,19 @@ test("a large multi-project office bounds draw submissions while retaining every
   const world = createOfficeWorld(rooms, canvas as unknown as HTMLCanvasElement);
   try {
     let submissions = 0;
+    let triangles = 0;
     world.scene.traverse((object) => {
-      if (object instanceof THREE.Mesh)
+      if (object instanceof THREE.Mesh) {
         submissions += Array.isArray(object.material) ? object.geometry.groups.length : 1;
+        triangles += (object.geometry.index?.count ?? object.geometry.getAttribute("position").count) / 3;
+      }
     });
     assert.equal(world.characters.length, 48);
     assert.equal(world.roomLabels.length, 32);
     t.diagnostic(`draw submissions: ${submissions}`);
     assert.ok(submissions <= 160, `large office requires ${submissions} draw submissions`);
+    t.diagnostic(`triangles: ${triangles}`);
+    assert.ok(triangles <= 150_000, `large office requires ${triangles} triangles`);
     for (const person of world.characters) {
       assert.equal(person.model.arms.length, 2);
       assert.ok(new THREE.Box3().setFromObject(person.model.group).getSize(new THREE.Vector3()).length() > 1);

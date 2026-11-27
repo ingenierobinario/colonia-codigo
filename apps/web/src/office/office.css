@@ -36,11 +36,20 @@
   letter-spacing: 2px;
   font-weight: 600;
 }
-.office-businesses {
+.office-workspaces {
   display: flex;
   gap: 10px;
   padding: 0 24px 12px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.office-businesses {
+  display: flex;
+  gap: 10px;
   overflow-x: auto;
+  min-width: 0;
+}
+.office-rename {
   flex-shrink: 0;
 }
 .office-businesses > button {
@@ -527,7 +536,7 @@
   .virtual-office__heading p:not(.virtual-office__eyebrow) {
     display: none;
   }
-  .office-businesses {
+  .office-workspaces {
     padding: 0 16px 14px;
   }
   .office-businesses > button {
@@ -728,10 +737,11 @@
   .office-3d {
     min-height: 360px;
   }
-  .office-businesses {
-    flex-wrap: wrap;
-    max-height: 110px;
-    overflow: auto;
+  .office-workspaces {
+    flex-direction: column;
+  }
+  .office-rename {
+    align-self: flex-start;
   }
   .office-businesses > button {
     padding: 8px 10px;

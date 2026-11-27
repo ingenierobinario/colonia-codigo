@@ -1,26 +1,38 @@
 import { expect, open, rpc, test } from "./kit.ts";
 
-let colleague = "";
+const colleague = "Scale colleague 0";
 
 test.beforeAll(async () => {
-  const info = test.info();
-  colleague = `Scale colleague ${info.workerIndex} 0`;
   await rpc("setup.finish", {});
+  const [projects, agents] = await Promise.all([
+    rpc<{ projects: { name: string }[] }>("projects.list"),
+    rpc<{ agents: { id: string }[] }>("agents.list"),
+  ]);
+  const names = new Set(projects.projects.map((project) => project.name));
+  const ids = new Set(agents.agents.map((agent) => agent.id));
+  // Retries restart the worker, not the shared core. Reuse this fixture instead of enlarging it on each retry.
   for (let batch = 0; batch < 4; batch++) {
     await Promise.all(
-      Array.from({ length: 8 }, (_, i) => rpc("projects.create", { name: `Office scale ${batch * 8 + i}` })),
+      Array.from({ length: 8 }, (_, i) => `Office scale ${batch * 8 + i}`)
+        .filter((name) => !names.has(name))
+        .map((name) => rpc("projects.create", { name })),
     );
     await Promise.all(
-      Array.from({ length: 12 }, (_, i) =>
-        rpc("agents.create", {
-          name: `Scale colleague ${info.workerIndex} ${batch * 12 + i}`,
-          slug: `scale-colleague-${info.workerIndex}-${batch * 12 + i}`,
-          role: "Office scale fixture",
-          blob: "menta",
-        }),
-      ),
+      Array.from({ length: 12 }, (_, i) => batch * 12 + i)
+        .filter((i) => !ids.has(`scale-colleague-${i}`))
+        .map((i) =>
+          rpc("agents.create", {
+            name: `Scale colleague ${i}`,
+            slug: `scale-colleague-${i}`,
+            role: "Office scale fixture",
+            blob: "menta",
+          }),
+        ),
     );
   }
+  const prepared = await rpc<{ agents: { id: string }[] }>("agents.list");
+  expect(prepared.agents.filter((agent) => agent.id.startsWith("scale-colleague-"))).toHaveLength(48);
+  await rpc("agents.update", { agent: "scale-colleague-0", blob: "menta" });
 });
 
 test("a many-project office keeps workspace editing responsive", async ({ page }, info) => {
@@ -47,7 +59,7 @@ test("a many-project office keeps workspace editing responsive", async ({ page }
           ),
       ),
     };
-  }, `scale-colleague-${info.workerIndex}-`);
+  }, "scale-colleague-");
   expect(labels.colleagues).toBe(48);
   expect(labels.overlaps).toBe(false);
   const zoomCovered = await page.locator(".office-zoom").evaluate((zoom) => {

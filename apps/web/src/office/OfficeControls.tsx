@@ -39,25 +39,27 @@ export function WorkspaceTabs({
 }) {
   const t = useT();
   return (
-    <nav className="office-businesses" aria-label={t("office.workspace")}>
-      {[{ id: "", name: rootName || t("office.default") }, ...workspaces].map((workspace) => (
-        <button
-          type="button"
-          key={workspace.id}
-          aria-pressed={selected === workspace.id}
-          className={selected === workspace.id ? "is-selected" : ""}
-          onClick={() => onSelect(workspace.id)}
-        >
-          <Icons.Building2 size={19} />
-          <span>{workspace.name}</span>
-          {selected === workspace.id && <span className={`office-dot is-${online ? "working" : "offline"}`} />}
-        </button>
-      ))}
-      <Button variant="ghost" onClick={onRename}>
+    <div className="office-workspaces">
+      <nav className="office-businesses" aria-label={t("office.workspace")}>
+        {[{ id: "", name: rootName || t("office.default") }, ...workspaces].map((workspace) => (
+          <button
+            type="button"
+            key={workspace.id}
+            aria-pressed={selected === workspace.id}
+            className={selected === workspace.id ? "is-selected" : ""}
+            onClick={() => onSelect(workspace.id)}
+          >
+            <Icons.Building2 size={19} />
+            <span>{workspace.name}</span>
+            {selected === workspace.id && <span className={`office-dot is-${online ? "working" : "offline"}`} />}
+          </button>
+        ))}
+      </nav>
+      <Button className="office-rename" variant="ghost" onClick={onRename}>
         <Icons.Pencil size={15} />
         {t("office.rename")}
       </Button>
-    </nav>
+    </div>
   );
 }
 

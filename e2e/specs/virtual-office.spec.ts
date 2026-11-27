@@ -169,6 +169,16 @@ test("the English office stays usable in dark mode and on a narrow screen", asyn
   });
   await page.screenshot({ path: info.outputPath("office-desktop-en-dark.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("button", { name: "Rename workspace", exact: true })).toBeInViewport({ ratio: 1 });
+  const rename = page.getByRole("button", { name: "Rename workspace", exact: true });
+  await rename.focus();
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Rename workspace" });
+  const name = "Acme international research and development headquarters";
+  await dialog.getByRole("textbox").fill(name);
+  await dialog.getByRole("button", { name: "Save name" }).click();
+  await expect(page.getByRole("button", { name, exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(rename).toBeInViewport({ ratio: 1 });
   await page.screenshot({ path: info.outputPath("office-phone-en-dark.png"), fullPage: true });
   await page.getByRole("textbox", { name: "Find a teammate" }).fill("Nobody has this name");
   await expect(page.getByRole("status")).toHaveText("No teammates match your search.");

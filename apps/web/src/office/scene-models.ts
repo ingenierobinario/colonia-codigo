@@ -19,8 +19,9 @@ export function box(
 }
 
 function ball(parent: THREE.Object3D, size: [number, number, number], at: [number, number, number], color: number) {
+  const small = Math.max(size[0], size[2]) < 0.25;
   const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 16, 12),
+    new THREE.SphereGeometry(1, small ? 8 : 16, small ? 6 : 12),
     new THREE.MeshStandardMaterial({ color, roughness: 0.7 }),
   );
   mesh.scale.set(...size);
