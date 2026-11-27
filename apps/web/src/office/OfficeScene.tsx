@@ -66,7 +66,13 @@ export function OfficeScene({
             {room.agents.filter(matches).map((agent) => {
               const state = activity.get(agent.id) ?? { presence: "offline", summary: "", active: 0 };
               return (
-                <button type="button" key={agent.id} className="office-roster__person" onClick={() => onAgent(agent)}>
+                <button
+                  type="button"
+                  key={agent.id}
+                  className="office-roster__person"
+                  aria-label={t("office.chat", { name: agent.name })}
+                  onClick={() => onAgent(agent)}
+                >
                   <AgentAvatar name={agent.name} blob={blobOf(agent)} size={44} animated={false} />
                   <span>
                     <strong>{agent.name}</strong>

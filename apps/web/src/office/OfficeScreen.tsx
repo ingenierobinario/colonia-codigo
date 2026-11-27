@@ -25,6 +25,7 @@ export function OfficeScreen() {
   const [project, setProject] = useState("");
   const [query, setQuery] = useState("");
   const [list, setList] = useState(false);
+  const [sceneUnavailable, setSceneUnavailable] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [creating, setCreating] = useState(false);
   const businessName = useWorkspaceName();
@@ -102,7 +103,10 @@ export function OfficeScreen() {
         list={list}
         onProject={setProject}
         onQuery={setQuery}
-        onList={setList}
+        onList={(value) => {
+          setList(value);
+          setSceneUnavailable(false);
+        }}
       />
       <OfficeStatus
         online={online}
@@ -117,6 +121,11 @@ export function OfficeScreen() {
           <Button onClick={() => setRetry((n) => n + 1)}>{t("office.retry")}</Button>
         </div>
       ) : null}
+      {sceneUnavailable && (
+        <p className="office-feedback" role="status">
+          {t("office.no3d")}
+        </p>
+      )}
       {loading ? (
         <div className="office-feedback" role="status">
           {t("office.loading")}
@@ -154,6 +163,10 @@ export function OfficeScreen() {
                 zoom={zoom}
                 onAgent={openAgent}
                 onTeam={openTeam}
+                onUnavailable={() => {
+                  setSceneUnavailable(true);
+                  setList(true);
+                }}
               />
             </Suspense>
           )}

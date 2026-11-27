@@ -18,7 +18,7 @@ export const esVirtualOffice: Record<keyof typeof enVirtualOffice, string> = {
   "office.saveName": "Guardar nombre",
   "office.renameHint": "Cambia el nombre de este negocio. Sus proyectos y cuentas siguen juntos.",
   "office.no3d":
-    "La oficina 3D no está disponible en este dispositivo. Abre Lista del equipo para ver a tus agentes y hablar con ellos.",
+    "El 3D no está disponible ahora. Mostramos tu equipo en una lista para que puedas seguir hablando con él.",
   "office.cameraHint": "Arrastra para girar · Botón derecho para desplazar · Rueda para acercar",
   "office.pauseMotion": "Pausar movimiento",
   "office.resumeMotion": "Reanudar movimiento",

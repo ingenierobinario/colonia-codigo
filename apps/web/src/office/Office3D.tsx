@@ -16,6 +16,7 @@ type Props = {
   zoom: number;
   onAgent: (agent: Agent) => void;
   onTeam: (project: string) => void;
+  onUnavailable: () => void;
 };
 
 function useOfficeScene(props: Props) {
@@ -46,7 +47,13 @@ function useOfficeScene(props: Props) {
     if (!element) return;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("webgl2", { antialias: true, alpha: true });
+      if (!context) {
+        setFailed(true);
+        return;
+      }
+      renderer = new THREE.WebGLRenderer({ canvas, context, antialias: true, alpha: true });
     } catch {
       setFailed(true);
       return;
@@ -156,6 +163,9 @@ function useOfficeScene(props: Props) {
 export function Office3D(props: Props) {
   const t = useT();
   const { host, labels, failed, paused, setPaused } = useOfficeScene(props);
+  useEffect(() => {
+    if (failed) props.onUnavailable();
+  }, [failed, props.onUnavailable]);
   const compact = !props.query && props.rooms.reduce((count, room) => count + room.agents.length, 0) > 12;
   return (
     <div className={`office-3d${compact ? " is-compact" : ""}`} ref={host}>

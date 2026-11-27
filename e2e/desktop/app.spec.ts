@@ -95,6 +95,7 @@ test("the window shows the panel the core serves", async () => {
 });
 
 test("a business opens in the desktop with its own context and a restricted native bridge", async () => {
+  const businessName = `Desktop business ${test.info().retry}`;
   const main = await page("main");
   const requests: string[] = [];
   main.on("response", (response) => requests.push(`${response.status()} ${new URL(response.url()).pathname}`));
@@ -102,7 +103,7 @@ test("a business opens in the desktop with its own context and a restricted nati
   main.on("requestfailed", (request) =>
     requests.push(`failed: ${new URL(request.url()).pathname} ${request.failure()?.errorText}`),
   );
-  const { workspace } = await rpc<{ workspace: { id: string } }>("workspaces.create", { name: "Desktop business" });
+  const { workspace } = await rpc<{ workspace: { id: string } }>("workspaces.create", { name: businessName });
   const snapshot = await rpc<{ agents: Array<{ id: string; name: string }> }>("workspaces.snapshot", {
     workspace: workspace.id,
   });
@@ -115,7 +116,7 @@ test("a business opens in the desktop with its own context and a restricted nati
   expect((await response.json()).ok).toBe(true);
   await main.goto(`${prefix}/`);
   try {
-    await expect(main.locator(".topbar.is-desktop")).toContainText("Desktop business");
+    await expect(main.locator(".topbar.is-desktop")).toContainText(businessName);
   } finally {
     await test.info().attach("business-navigation", { body: requests.join("\n"), contentType: "text/plain" });
   }
@@ -128,7 +129,7 @@ test("a business opens in the desktop with its own context and a restricted nati
   ).toEqual({ business: true, desktop: false, connect: false });
   await main.getByRole("button", { name: /^(Oficina|Office)$/ }).click();
   await expect(main).toHaveURL(`${core}/#view=office`);
-  await main.getByRole("button", { name: "Desktop business", exact: true }).click();
+  await main.getByRole("button", { name: businessName, exact: true }).click();
   const agent = snapshot.agents[0];
   if (!agent) throw new Error("the business has no default team");
   await main.getByRole("button", { name: new RegExp(`^(Hablar con|Chat with) ${agent.name}$`) }).click();

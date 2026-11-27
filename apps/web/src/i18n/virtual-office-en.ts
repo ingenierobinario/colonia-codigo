@@ -16,7 +16,7 @@ export const enVirtualOffice = {
   "office.manageWorkspaces": "Manage workspaces",
   "office.saveName": "Save name",
   "office.renameHint": "Change the name shown for this business. Its projects and accounts stay together.",
-  "office.no3d": "The 3D office is unavailable on this device. Open Team list to see and chat with your agents.",
+  "office.no3d": "3D is unavailable right now. Your team is shown as a list so you can keep chatting.",
   "office.cameraHint": "Drag to rotate · Right-drag to move · Scroll to zoom",
   "office.pauseMotion": "Pause movement",
   "office.resumeMotion": "Resume movement",

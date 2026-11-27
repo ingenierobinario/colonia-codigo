@@ -4,10 +4,11 @@ import { expect, open, rpc, test } from "./kit.ts";
 test("the office shows real departments and opens a working chat without leaving the office", async ({
   page,
 }, info) => {
+  const guideName = `Office Guide ${info.retry}`;
   await rpc("setup.finish", {});
   await rpc<Agent>("agents.create", {
-    slug: "office-guide",
-    name: "Office Guide",
+    slug: `office-guide-${info.retry}`,
+    name: guideName,
     role: "Helps in the office",
     area: "design",
     blob: "menta",
@@ -19,7 +20,7 @@ test("the office shows real departments and opens a working chat without leaving
     page
       .locator(".office-room-labels")
       .filter({ hasText: "Diseño" })
-      .getByRole("button", { name: "Hablar con Office Guide" }),
+      .getByRole("button", { name: `Hablar con ${guideName}` }),
   ).toBeVisible();
   await expect(page.locator(".office-3d canvas")).toBeVisible();
   await page.getByRole("button", { name: "Pausar movimiento" }).click();
@@ -28,65 +29,77 @@ test("the office shows real departments and opens a working chat without leaving
     await Promise.all(images.map((image) => (image as HTMLImageElement).decode()));
   });
   await page.screenshot({ path: info.outputPath("office-desktop-es.png"), fullPage: true });
-  await page.getByRole("button", { name: "Hablar con Office Guide" }).click();
-  const chat = page.frameLocator('iframe[title="Hablar con Office Guide"]');
+  await page.getByRole("button", { name: `Hablar con ${guideName}` }).click();
+  const chat = page.frameLocator(`iframe[title="Hablar con ${guideName}"]`);
   const input = chat.getByRole("textbox", { name: /^Escríbele a/ });
   await input.fill("Office chat works");
   await input.press("Enter");
   await expect(chat.locator(".transcript").getByText("Got it: Office chat works")).toBeVisible();
   expect(page.url()).toContain("#view=office");
-  await chat.getByRole("button", { name: "Editar agente y avatar" }).click();
-  await chat.getByRole("button", { name: "Personas", exact: true }).click();
-  await chat.getByRole("button", { name: "Persona 1", exact: true }).click();
-  await chat.getByRole("button", { name: "Guardar y cerrar" }).click();
-  await expect(page.getByRole("button", { name: "Hablar con Office Guide" }).locator("img")).toHaveAttribute(
-    "src",
-    /person-1/,
-  );
-  await chat.getByRole("button", { name: "Editar agente y avatar" }).click();
-  await chat.getByRole("button", { name: "Animales", exact: true }).click();
-  await chat.getByRole("button", { name: "Zorro", exact: true }).click();
-  await chat.getByRole("button", { name: "Guardar y cerrar" }).click();
   await page
-    .getByRole("complementary", { name: "Hablar con Office Guide" })
+    .getByRole("complementary", { name: `Hablar con ${guideName}` })
     .getByRole("button", { name: "Cerrar", exact: true })
     .click();
-  const person = page.getByRole("button", { name: "Hablar con Office Guide" });
-  await expect(person.locator("img")).toHaveAttribute("src", /fox/);
+  const person = page.getByRole("button", { name: `Hablar con ${guideName}` });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(person).toBeVisible();
   await page.screenshot({ path: info.outputPath("office-phone-es.png"), fullPage: true });
   await page.getByRole("button", { name: "Lista del equipo", exact: true }).click();
-  await expect(page.locator(".office-roster__person").filter({ hasText: "Office Guide" })).toBeVisible();
+  await expect(page.locator(".office-roster__person").filter({ hasText: guideName })).toBeVisible();
 });
 
-test("a new business has its own office and opens its own application context", async ({ page }) => {
+for (const avatar of [
+  { slug: "person", category: "Personas", label: "Persona 1", image: /person-1/ },
+  { slug: "animal", category: "Animales", label: "Zorro", image: /fox/ },
+]) {
+  test(`an agent's ${avatar.slug} avatar updates from the office chat`, async ({ page }, info) => {
+    await rpc("setup.finish", {});
+    const name = `Avatar ${avatar.slug} ${info.retry}`;
+    await rpc("agents.create", {
+      slug: `office-avatar-${avatar.slug}-${info.retry}`,
+      name,
+      role: "Office avatar fixture",
+      blob: "menta",
+    });
+    await open(page, "#view=office");
+    await page.getByRole("button", { name: "Pausar movimiento" }).click();
+    await page.getByRole("textbox", { name: "Buscar un compañero" }).fill(name);
+    await page.getByRole("button", { name: `Hablar con ${name}`, exact: true }).click();
+    const chat = page.frameLocator(`iframe[title="Hablar con ${name}"]`);
+    await chat.getByRole("button", { name: "Editar agente y avatar" }).click();
+    await chat.getByRole("button", { name: avatar.category, exact: true }).click();
+    await chat.getByRole("button", { name: avatar.label, exact: true }).click();
+    await chat.getByRole("button", { name: "Guardar y cerrar" }).click();
+    await expect(page.getByRole("button", { name: `Hablar con ${name}`, exact: true }).locator("img")).toHaveAttribute(
+      "src",
+      avatar.image,
+    );
+  });
+}
+
+test("a new business has its own office and opens its own application context", async ({ page }, info) => {
+  const name = `Second business ${info.retry}`;
+  const renamed = `Renamed business ${info.retry}`;
   await rpc("setup.finish", {});
   await open(page, "#view=office");
   await page.getByRole("button", { name: "Nuevo espacio", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo espacio" });
-  await dialog.getByRole("textbox").fill("Second business");
+  await dialog.getByRole("textbox").fill(name);
   const ready = page.waitForResponse(
     (response) => response.url().endsWith("/rpc/workspaces.snapshot") && response.request().method() === "POST",
   );
   await dialog.getByRole("button", { name: "Crear espacio", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Second business", exact: true })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(page.getByRole("button", { name, exact: true })).toHaveAttribute("aria-pressed", "true");
   expect((await (await ready).json()).ok).toBe(true);
   await page.getByRole("button", { name: "Renombrar espacio", exact: true }).click();
   const rename = page.getByRole("dialog", { name: "Renombrar espacio" });
-  await rename.getByRole("textbox").fill("Renamed business");
+  await rename.getByRole("textbox").fill(renamed);
   await rename.getByRole("button", { name: "Guardar nombre" }).click();
-  await expect(page.getByRole("button", { name: "Renamed business", exact: true })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(page.getByRole("button", { name: renamed, exact: true })).toHaveAttribute("aria-pressed", "true");
   // A fresh core seeds its secretary, Scout and Vera; it must not inherit the root's custom agent.
   await expect(page.locator(".office-statusbar")).toContainText("3 compañeros");
   await expect(page.locator(".office-person")).toHaveCount(3);
-  await expect(page.getByRole("button", { name: "Hablar con Office Guide" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Hablar con Office Guide/ })).toHaveCount(0);
   await page.getByRole("button", { name: "Abrir espacio", exact: true }).click();
   await expect(page).toHaveURL(/\/workspaces\/w_[a-f0-9]{32}\//);
   const result = await page.evaluate(async () => {
@@ -99,19 +112,19 @@ test("a new business has its own office and opens its own application context", 
     return res.json();
   });
   expect(result.result.workspaces).toEqual([]);
-  await page.evaluate(async () => {
-    const prefix = location.pathname.replace(/\/$/, "");
-    const response = await fetch(`${prefix}/rpc/setup.finish`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "idempotency-key": "office-child-setup" },
-      body: "{}",
-    });
-    const body = await response.json();
-    if (!body.ok) throw new Error("Could not finish the business fixture setup");
+});
+
+test("a business can rename itself and open its own office chat", async ({ page }, info) => {
+  const { workspace } = await rpc<{ workspace: { id: string } }>("workspaces.create", {
+    name: `Own context ${info.retry}`,
   });
-  await page.reload();
-  await expect(page).toHaveURL(/\/workspaces\/w_[a-f0-9]{32}\//);
-  await page.goto(`${page.url().split("#")[0]}#view=office`);
+  const prefix = `/workspaces/${workspace.id}`;
+  const response = await page.request.post(`${prefix}/rpc/setup.finish`, {
+    headers: { "idempotency-key": `office-child-setup-${workspace.id}` },
+    data: {},
+  });
+  expect((await response.json()).ok).toBe(true);
+  await open(page, `workspaces/${workspace.id}/#view=office`);
   await expect(page).toHaveURL(/\/workspaces\/w_[a-f0-9]{32}\//);
   await page.getByRole("button", { name: "Renombrar espacio", exact: true }).click();
   const childRename = page.getByRole("dialog", { name: "Renombrar espacio" });
@@ -130,6 +143,7 @@ test("a new business has its own office and opens its own application context", 
 });
 
 test("the main workspace name persists without renaming its base project", async ({ page }) => {
+  await rpc("setup.finish", {});
   const before = await rpc("projects.list");
   await open(page, "#view=office");
   await page.getByRole("button", { name: "Renombrar espacio", exact: true }).click();
