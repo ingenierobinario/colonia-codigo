@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { batchStationaryParts } from "./scene-batch.ts";
 import { sceneLayout } from "./scene-layout.ts";
 import { box, character, desk, plant } from "./scene-models.ts";
 
@@ -7,6 +8,8 @@ export type SceneRoom = { id: string; agents: { id: string; blob: string }[] };
 
 export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement) {
   const scene = new THREE.Scene();
+  const furniture = new THREE.Group();
+  scene.add(furniture);
   scene.add(new THREE.HemisphereLight(0xfff7e6, 0x708b83, 2.5));
   const sunlight = new THREE.DirectionalLight(0xfff2d5, 3);
   sunlight.position.set(12, 25, 10);
@@ -26,7 +29,7 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
   const center = new THREE.Vector3(width / 2, 0, depth / 2);
   controls.target.copy(center);
   camera.position.copy(center).add(new THREE.Vector3(1, 1.2, 1.4).multiplyScalar(Math.max(width, depth) * 0.8));
-  box(scene, [width + 2, 0.3, depth + 2], [width / 2, -0.35, depth / 2], 0x789489);
+  box(furniture, [width + 2, 0.3, depth + 2], [width / 2, -0.35, depth / 2], 0x789489);
   const characters: { id: string; model: ReturnType<typeof character>; x: number; z: number; phase: number }[] = [];
   const roomLabels: { id: string; point: THREE.Vector3 }[] = [];
   for (const [index, layout] of layouts.entries()) {
@@ -34,7 +37,7 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
     if (!room) continue;
     const group = new THREE.Group();
     group.position.set(layout.x, 0, layout.z);
-    scene.add(group);
+    furniture.add(group);
     box(
       group,
       [layout.width, 0.15, layout.depth],
@@ -62,5 +65,6 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
       characters.push({ id: agent.id, model, x, z, phase: i * 2.3 + index });
     }
   }
+  batchStationaryParts(furniture);
   return { scene, camera, controls, characters, roomLabels };
 }

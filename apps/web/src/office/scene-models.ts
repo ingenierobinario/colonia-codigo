@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { batchStationaryParts } from "./scene-batch.ts";
 
 export function box(
   parent: THREE.Object3D,
@@ -81,6 +82,7 @@ export function character(avatar: string) {
       ball(group, [0.11, avatar === "rabbit" ? 0.33 : 0.17, 0.1], [x * 1.8, 1.32, 0], color);
   }
   if (!human) ball(group, [0.09, 0.06, 0.12], [0, 0.94, 0.3], animal ? 0x493b37 : 0xe4ad56);
+  batchStationaryParts(group);
   const arms = [-1, 1].map((side) => {
     const arm = ball(group, [0.1, 0.3, 0.13], [side * 0.34, 0.7, 0], color);
     arm.rotation.z = side * 0.25;

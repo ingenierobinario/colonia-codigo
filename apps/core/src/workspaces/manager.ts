@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
+import { flushCompileCache } from "node:module";
 import path from "node:path";
 import type { Workspace, WorkspaceSnapshot } from "@colonia/protocol";
 import { ColoniaClient } from "@colonia/protocol/client";
@@ -39,6 +40,8 @@ export function createWorkspaces(deps: {
     for (const directory of [home, path.join(home, "account"), path.join(home, "tmp")])
       fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
     const token = randomBytes(32).toString("hex");
+    // Publish the supervisor's compiled application modules before the worker loads the same code.
+    if (deps.env.NODE_COMPILE_CACHE && path.isAbsolute(deps.env.NODE_COMPILE_CACHE)) flushCompileCache();
     const child = spawn(
       process.execPath,
       ["--disable-warning=ExperimentalWarning", path.join(import.meta.dirname, "worker.ts")],

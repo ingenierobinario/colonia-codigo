@@ -42,6 +42,9 @@ export function workspaceEnvironment(
   const account = path.join(home, "account");
   return {
     ...env,
+    ...(source.NODE_COMPILE_CACHE && path.isAbsolute(source.NODE_COMPILE_CACHE)
+      ? { NODE_COMPILE_CACHE: source.NODE_COMPILE_CACHE }
+      : {}),
     HOME: account,
     USERPROFILE: account,
     APPDATA: path.join(account, "AppData", "Roaming"),

@@ -45,6 +45,25 @@ test("Electron workers explicitly run as Node without inheriting Electron settin
   assert.equal(env.ELECTRON_ENABLE_LOGGING, undefined);
 });
 
+test("workers reuse only an explicit absolute application compile cache, without execution options", () => {
+  const cache = path.resolve("application-cache");
+  const env = workspaceEnvironment(
+    { NODE_COMPILE_CACHE: cache, NODE_OPTIONS: "--require injected.cjs", OPENAI_API_KEY: "other-business" },
+    path.resolve("business"),
+    "key",
+    "https://example.com",
+    false,
+  );
+  assert.equal(env.NODE_COMPILE_CACHE, cache);
+  assert.equal(env.NODE_OPTIONS, undefined);
+  assert.equal(env.OPENAI_API_KEY, undefined);
+  assert.equal(
+    workspaceEnvironment({ NODE_COMPILE_CACHE: "relative-cache" }, "business", "key", "https://example.com", false)
+      .NODE_COMPILE_CACHE,
+    undefined,
+  );
+});
+
 test("business VMs have stable distinct OS distribution names, not the main computer's name", () => {
   const a = workspaceComputer(path.resolve("business-a"));
   const b = workspaceComputer(path.resolve("business-b"));

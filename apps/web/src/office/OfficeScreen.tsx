@@ -161,6 +161,7 @@ export function OfficeScreen() {
                 activity={activity}
                 query={query}
                 zoom={zoom}
+                suspended={creating || Boolean(renaming) || Boolean(chat)}
                 onAgent={openAgent}
                 onTeam={openTeam}
                 onUnavailable={() => {

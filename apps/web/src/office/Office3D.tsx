@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { blobOf } from "../data/identity.ts";
 import { useT } from "../i18n/index.ts";
 import type { OfficeActivity } from "./activity.ts";
+import { officeFrameBudget } from "./frame-budget.ts";
 import type { OfficeRoom } from "./OfficeScene.tsx";
 import { pickOfficeAgent } from "./scene-picking.ts";
 import { createOfficeWorld } from "./scene-world.ts";
@@ -14,6 +15,7 @@ type Props = {
   activity: Map<string, OfficeActivity>;
   query: string;
   zoom: number;
+  suspended: boolean;
   onAgent: (agent: Agent) => void;
   onTeam: (project: string) => void;
   onUnavailable: () => void;
@@ -61,7 +63,7 @@ function useOfficeScene(props: Props) {
     setFailed(false);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.shadowMap.autoUpdate = false;
     renderer.shadowMap.needsUpdate = true;
     renderer.setClearColor(0xe4e9e4, 1);
@@ -78,22 +80,26 @@ function useOfficeScene(props: Props) {
     });
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     const point = new THREE.Vector3();
-    let previous = 0;
+    let width = element.clientWidth;
+    let height = element.clientHeight;
+    const budget = officeFrameBudget();
     let contextLost = false;
     const place = (node: HTMLElement | null, position: THREE.Vector3) => {
       if (!node) return;
       point.copy(position).project(camera);
       const visible = point.z < 1 && point.z > -1 && Math.abs(point.x) < 0.9 && point.y > -0.9 && point.y < 0.85;
-      node.style.visibility = visible ? "visible" : "hidden";
-      node.inert = !visible;
-      node.style.transform = `translate(-50%, -100%) translate(${((point.x + 1) * element.clientWidth) / 2}px, ${((1 - point.y) * element.clientHeight) / 2}px)`;
+      const visibility = visible ? "visible" : "hidden";
+      if (node.style.visibility !== visibility) node.style.visibility = visibility;
+      if (node.inert === visible) node.inert = !visible;
+      const transform = `translate(-50%, -100%) translate(${((point.x + 1) * width) / 2}px, ${((1 - point.y) * height) / 2}px)`;
+      if (node.style.transform !== transform) node.style.transform = transform;
     };
     const draw = (time: number) => {
-      if (time - previous < 32) return;
-      previous = time;
-      const animate = motion.current && !reduced.matches;
+      if (!budget.ready(time, invalidated.current)) return;
+      const animate = motion.current && !reduced.matches && !latest.current.suspended;
       const changed = controls.update();
       if (!animate && !changed && !invalidated.current) return;
+      const started = performance.now();
       invalidated.current = false;
       camera.zoom = latest.current.zoom;
       camera.updateProjectionMatrix();
@@ -117,15 +123,17 @@ function useOfficeScene(props: Props) {
       for (const room of roomLabels)
         place(labels.current?.querySelector<HTMLElement>(`[data-room="${CSS.escape(room.id)}"]`) ?? null, room.point);
       renderer.render(scene, camera);
+      budget.rendered(started, performance.now());
     };
     const resize = new ResizeObserver(() => {
-      renderer.setSize(element.clientWidth, element.clientHeight, false);
-      camera.aspect = element.clientWidth / Math.max(1, element.clientHeight);
+      width = element.clientWidth;
+      height = element.clientHeight;
+      renderer.setSize(width, height, false);
+      camera.aspect = width / Math.max(1, height);
       camera.position
         .copy(controls.target)
         .add(initialOffset.clone().multiplyScalar(Math.max(1, 1.35 / camera.aspect)));
       camera.updateProjectionMatrix();
-      previous = 0;
       invalidated.current = true;
     });
     resize.observe(element);
@@ -154,6 +162,7 @@ function useOfficeScene(props: Props) {
         }
       });
       renderer.dispose();
+      renderer.forceContextLoss();
       renderer.domElement.remove();
     };
   }, [sceneKey]);
