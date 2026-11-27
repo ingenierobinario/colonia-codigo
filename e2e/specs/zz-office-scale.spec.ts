@@ -33,7 +33,51 @@ test("a many-project office keeps workspace editing responsive", async ({ page }
   await dialog.getByRole("button", { name: "Guardar nombre" }).click();
   await expect(page.getByRole("button", { name, exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Pausar movimiento" }).click();
+  const labels = await page.locator(".office-3d__person").evaluateAll((nodes, prefix) => {
+    const visible = nodes.filter((node) => getComputedStyle(node).visibility === "visible");
+    const boxes = visible.map((node) => node.getBoundingClientRect());
+    return {
+      colleagues: visible.filter((node) => node.getAttribute("data-person")?.startsWith(prefix)).length,
+      overlaps: boxes.some((box, i) =>
+        boxes
+          .slice(i + 1)
+          .some(
+            (other) =>
+              box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top,
+          ),
+      ),
+    };
+  }, `scale-colleague-${info.workerIndex}-`);
+  expect(labels.colleagues).toBe(48);
+  expect(labels.overlaps).toBe(false);
+  const zoomCovered = await page.locator(".office-zoom").evaluate((zoom) => {
+    const control = zoom.getBoundingClientRect();
+    return [...document.querySelectorAll(".office-3d__person, .office-3d__room")].some((node) => {
+      if (getComputedStyle(node).visibility !== "visible") return false;
+      const box = node.getBoundingClientRect();
+      return (
+        box.left < control.right && box.right > control.left && box.top < control.bottom && box.bottom > control.top
+      );
+    });
+  });
+  expect(zoomCovered).toBe(false);
   await page.screenshot({ path: info.outputPath("office-many-projects.png"), fullPage: true });
+});
+
+test("a moving colleague remains clickable without pausing the office", async ({ page }) => {
+  await open(page, "#view=office");
+  await page.getByRole("textbox", { name: "Buscar un compañero" }).fill(colleague);
+  const person = page.getByRole("button", { name: `Hablar con ${colleague}`, exact: true });
+  await expect(person).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pausar movimiento" })).toHaveAttribute("aria-pressed", "true");
+  const rect = await person.boundingBox();
+  expect(rect).not.toBeNull();
+  if (!rect) throw new Error("Visible colleague has no bounds");
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  await person.click();
+  await expect(
+    page.frameLocator(`iframe[title="Hablar con ${colleague}"]`).getByRole("textbox", { name: /^Escríbele a/ }),
+  ).toBeVisible();
 });
 
 test("a many-project office can edit an avatar through its chat", async ({ page }) => {

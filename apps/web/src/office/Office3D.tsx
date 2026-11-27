@@ -7,6 +7,7 @@ import { useT } from "../i18n/index.ts";
 import type { OfficeActivity } from "./activity.ts";
 import { officeFrameBudget } from "./frame-budget.ts";
 import type { OfficeRoom } from "./OfficeScene.tsx";
+import { officeLabels } from "./scene-labels.ts";
 import { pickOfficeAgent } from "./scene-picking.ts";
 import { createOfficeWorld } from "./scene-world.ts";
 
@@ -79,21 +80,11 @@ function useOfficeScene(props: Props) {
         latest.current.onAgent(agent);
     });
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-    const point = new THREE.Vector3();
+    const labelLayer = officeLabels(camera, element);
     let width = element.clientWidth;
     let height = element.clientHeight;
     const budget = officeFrameBudget();
     let contextLost = false;
-    const place = (node: HTMLElement | null, position: THREE.Vector3) => {
-      if (!node) return;
-      point.copy(position).project(camera);
-      const visible = point.z < 1 && point.z > -1 && Math.abs(point.x) < 0.9 && point.y > -0.9 && point.y < 0.85;
-      const visibility = visible ? "visible" : "hidden";
-      if (node.style.visibility !== visibility) node.style.visibility = visibility;
-      if (node.inert === visible) node.inert = !visible;
-      const transform = `translate(-50%, -100%) translate(${((point.x + 1) * width) / 2}px, ${((1 - point.y) * height) / 2}px)`;
-      if (node.style.transform !== transform) node.style.transform = transform;
-    };
     const draw = (time: number) => {
       if (!budget.ready(time, invalidated.current)) return;
       const animate = motion.current && !reduced.matches && !latest.current.suspended;
@@ -103,6 +94,7 @@ function useOfficeScene(props: Props) {
       invalidated.current = false;
       camera.zoom = latest.current.zoom;
       camera.updateProjectionMatrix();
+      labelLayer.begin(width, height);
       for (const person of characters) {
         const state = latest.current.activity.get(person.id)?.presence ?? "offline";
         const idle = state === "idle";
@@ -118,10 +110,14 @@ function useOfficeScene(props: Props) {
           arm.rotation.x = moving ? Math.sin(phase * (idle ? 2 : 7) + i) * 0.3 : 0;
         });
         const node = labels.current?.querySelector<HTMLElement>(`[data-person="${CSS.escape(person.id)}"]`) ?? null;
-        place(node, person.model.group.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
+        labelLayer.place(node, person.model.group.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
       }
       for (const room of roomLabels)
-        place(labels.current?.querySelector<HTMLElement>(`[data-room="${CSS.escape(room.id)}"]`) ?? null, room.point);
+        labelLayer.place(
+          labels.current?.querySelector<HTMLElement>(`[data-room="${CSS.escape(room.id)}"]`) ?? null,
+          room.point,
+        );
+      labelLayer.paint();
       renderer.render(scene, camera);
       budget.rendered(started, performance.now());
     };
@@ -137,6 +133,11 @@ function useOfficeScene(props: Props) {
       invalidated.current = true;
     });
     resize.observe(element);
+    const invalidate = () => {
+      invalidated.current = true;
+    };
+    for (const event of ["pointerover", "pointerout", "focusin", "focusout"])
+      element.addEventListener(event, invalidate);
     const visibility = () => renderer.setAnimationLoop(document.hidden || contextLost ? null : draw);
     document.addEventListener("visibilitychange", visibility);
     visibility();
@@ -152,6 +153,8 @@ function useOfficeScene(props: Props) {
       document.removeEventListener("visibilitychange", visibility);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       resize.disconnect();
+      for (const event of ["pointerover", "pointerout", "focusin", "focusout"])
+        element.removeEventListener(event, invalidate);
       controls.dispose();
       stopPicking();
       scene.traverse((object) => {
