@@ -74,6 +74,23 @@ export const NEWS: readonly NewsEntry[] = [
     ],
   },
   {
+    id: "office-3d-workspace-names",
+    since: "2.36.78",
+    title: { en: "Explore your office in 3D", es: "Explora tu oficina en 3D" },
+    about: {
+      en: "Rotate the office, talk to your agents and rename each business from its workspace tabs.",
+      es: "Gira la oficina, habla con tus agentes y renombra cada negocio desde las pestañas de espacios.",
+    },
+    applies: () => true,
+    text: "Office now has a rotatable 3D scene. Select an agent or its name to open the side chat. Ambient movement is decorative; actual jobs and conversations determine the activity status. Pause movement or use Team list when preferred. The owner can use New workspace and Rename workspace, including for the main workspace; renaming does not change the base project's name or share credentials. These administration controls remain owner-only. Explain where they are instead of claiming to rename a workspace yourself.",
+    actions: [
+      {
+        label: { en: "Show me around", es: "Enséñame la oficina" },
+        prompt: "Explain how to use the 3D office, rename my workspace and create a separate business.",
+      },
+    ],
+  },
+  {
     id: "office-and-businesses",
     since: "2.36.74",
     title: { en: "Your teams have an office", es: "Tus equipos tienen oficina" },

@@ -13,6 +13,15 @@ export const esVirtualOffice: Record<keyof typeof enVirtualOffice, string> = {
   "office.title": "Tu colonia, en un mismo lugar",
   "office.subtitle": "Un espacio para cada equipo. Una ventana a lo que está pasando.",
   "office.workspace": "Espacio de trabajo",
+  "office.rename": "Renombrar espacio",
+  "office.manageWorkspaces": "Administrar espacios",
+  "office.saveName": "Guardar nombre",
+  "office.renameHint": "Cambia el nombre de este negocio. Sus proyectos y cuentas siguen juntos.",
+  "office.no3d":
+    "La oficina 3D no está disponible en este dispositivo. Abre Lista del equipo para ver a tus agentes y hablar con ellos.",
+  "office.cameraHint": "Arrastra para girar · Botón derecho para desplazar · Rueda para acercar",
+  "office.pauseMotion": "Pausar movimiento",
+  "office.resumeMotion": "Reanudar movimiento",
   "office.newWorkspace": "Nuevo espacio",
   "office.workspaceName": "Nombre del negocio o espacio",
   "office.workspaceHint":

@@ -3,7 +3,7 @@ import { Button, IconButton, Icons, Input, Select } from "@colonia/ui";
 import { DEFAULT_PID } from "../data/identity.ts";
 import { useT } from "../i18n/index.ts";
 
-export function OfficeHeading({ onCreate }: { onCreate: () => void }) {
+export function OfficeHeading({ onCreate, manage = false }: { onCreate: () => void; manage?: boolean }) {
   const t = useT();
   return (
     <header className="virtual-office__heading">
@@ -16,7 +16,7 @@ export function OfficeHeading({ onCreate }: { onCreate: () => void }) {
       </div>
       <Button variant="secondary" onClick={onCreate}>
         <Icons.Plus size={15} />
-        {t("office.newWorkspace")}
+        {t(manage ? "office.manageWorkspaces" : "office.newWorkspace")}
       </Button>
     </header>
   );
@@ -27,16 +27,20 @@ export function WorkspaceTabs({
   selected,
   online,
   onSelect,
+  rootName,
+  onRename,
 }: {
   workspaces: Workspace[];
   selected: string;
   online: boolean;
   onSelect: (id: string) => void;
+  rootName: string;
+  onRename: () => void;
 }) {
   const t = useT();
   return (
     <nav className="office-businesses" aria-label={t("office.workspace")}>
-      {[{ id: "", name: t("office.default") }, ...workspaces].map((workspace) => (
+      {[{ id: "", name: rootName || t("office.default") }, ...workspaces].map((workspace) => (
         <button
           type="button"
           key={workspace.id}
@@ -49,6 +53,10 @@ export function WorkspaceTabs({
           {selected === workspace.id && <span className={`office-dot is-${online ? "working" : "offline"}`} />}
         </button>
       ))}
+      <Button variant="ghost" onClick={onRename}>
+        <Icons.Pencil size={15} />
+        {t("office.rename")}
+      </Button>
     </nav>
   );
 }

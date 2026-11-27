@@ -4,6 +4,30 @@ import { ColoniaClient } from "@colonia/protocol/client";
 import { say, scriptedLlm, startCore } from "../engine/testkit.ts";
 import { waitFor } from "../testkit/platform.ts";
 
+test("the root workspace name persists independently of projects and child businesses", async () => {
+  let env = await startCore({ llm: scriptedLlm(() => say("ok")) });
+  try {
+    const before = await env.client.call("projects.list", {});
+    const child = (await env.client.call("workspaces.create", { name: "Workshop" })).workspace;
+    const identity = (await env.client.call("system.health", {})).home_id;
+    await env.client.call("workspaces.rename_root", { name: " Acme office " });
+    assert.equal((await env.client.call("workspaces.list", {})).root_name, "Acme office");
+    assert.deepEqual(await env.client.call("projects.list", {}), before);
+    assert.deepEqual((await env.client.call("workspaces.list", {})).workspaces, [child]);
+    await env.core.close();
+    env = await startCore({ home: env.home, llm: scriptedLlm(() => say("ok")) });
+    assert.equal((await env.client.call("workspaces.list", {})).root_name, "Acme office");
+    assert.equal((await env.client.call("system.health", {})).home_id, identity);
+    const business = new ColoniaClient({ url: `${env.core.url}/workspaces/${child.id}` });
+    await assert.rejects(business.call("workspaces.rename_root", { name: "Other" }), /main Colonia/);
+    assert.equal((await env.client.call("workspaces.list", {})).root_name, "Acme office");
+    await assert.rejects(env.client.call("workspaces.rename_root", { name: " " }));
+  } finally {
+    await env.core.close();
+    await env.cleanup();
+  }
+});
+
 test("creating a business preserves the current core and starts a separate persistent home", async () => {
   const env = await startCore({ llm: scriptedLlm(() => say("ok")) });
   try {

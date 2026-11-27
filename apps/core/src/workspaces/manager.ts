@@ -117,6 +117,8 @@ export function createWorkspaces(deps: {
       }
     },
     list: () => registry.list().map(shown),
+    rootName: () => registry.rootName(),
+    renameRoot: (name: string) => registry.renameRoot(name),
     create: (name: string) => shown(registry.create(name)),
     rename: (id: string, name: string) => shown(registry.rename(id, name)),
     target: start,

@@ -10,9 +10,18 @@ const Directory = z.array(Workspace.omit({ state: true })).max(32);
 
 export function workspaceRegistry(home: string) {
   const file = path.join(home, "workspaces", "registry.json");
+  const rootFile = path.join(home, "workspaces", "root.json");
+  const Root = z.object({ name: z.string().trim().min(1).max(80) }).strict();
   const write = (entries: Omit<Workspace, "state">[]) =>
     writeAtomic(file, JSON.stringify(Directory.parse(entries)), 0o600);
   return {
+    rootName: () =>
+      fs.existsSync(rootFile) ? Root.parse(JSON.parse(fs.readFileSync(rootFile, "utf8"))).name : undefined,
+    renameRoot(name: string) {
+      const metadata = Root.parse({ name });
+      writeAtomic(rootFile, JSON.stringify(metadata), 0o600);
+      return metadata;
+    },
     list: () => (fs.existsSync(file) ? Directory.parse(JSON.parse(fs.readFileSync(file, "utf8"))) : []),
     get(id: string) {
       const found = this.list().find((entry) => entry.id === id);

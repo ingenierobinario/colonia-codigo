@@ -1,4 +1,6 @@
 .virtual-office {
+  width: 100%;
+  min-width: 0;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -593,5 +595,172 @@
 @media (prefers-reduced-motion: reduce) {
   .office-station {
     transition: none;
+  }
+}
+
+.office-viewport.is-3d {
+  padding: 0;
+  overflow: hidden;
+  min-height: 300px;
+}
+.office-3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 440px;
+  isolation: isolate;
+}
+.office-3d > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.office-3d > .office-feedback {
+  position: relative;
+  z-index: 3;
+  background: var(--colonia-bg);
+}
+.office-3d__labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.office-3d__room,
+.office-3d .office-3d__person {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  width: max-content;
+  max-width: 150px;
+  margin: 0;
+  border: 1px solid #ffffffa0;
+  border-radius: 9px;
+  background: #fffdf3ee;
+  color: #29473e;
+  box-shadow: 0 3px 12px #2847391f;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+.office-3d__room {
+  display: grid;
+  text-align: left;
+  gap: 2px;
+}
+.office-3d__room small {
+  font-size: 9px;
+  letter-spacing: 0.6px;
+}
+.office-3d__room strong {
+  font-size: 12px;
+}
+.office-3d .office-3d__person {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 1px 5px;
+  text-align: left;
+}
+.office-3d__person > .colonia-blob {
+  grid-row: span 2;
+}
+.office-3d .office-3d__person strong {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 11px;
+}
+.office-3d .office-3d__person > span:last-child {
+  font-size: 9px;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.office-3d__person.is-working {
+  border-color: #4d9c78;
+}
+.office-3d__person.is-waiting {
+  border-color: #c5933d;
+}
+.office-3d.is-compact .office-3d__person:not(:hover):not(:focus):not(.is-working):not(.is-waiting) {
+  padding: 2px;
+  border-radius: 50%;
+  grid-template-columns: 22px;
+}
+.office-3d.is-compact .office-3d__person:not(:hover):not(:focus):not(.is-working):not(.is-waiting) > strong,
+.office-3d.is-compact .office-3d__person:not(:hover):not(:focus):not(.is-working):not(.is-waiting) > span:last-child {
+  display: none;
+}
+.office-3d__person:hover,
+.office-3d__person:focus {
+  z-index: 3;
+}
+.office-3d__hint,
+.office-motion {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #fffdf3e6;
+  color: #385247;
+  font-size: 11px;
+}
+.office-3d__hint {
+  left: 16px;
+  pointer-events: none;
+}
+.office-motion {
+  right: 16px;
+  border: 1px solid #829b8540;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .office-3d__hint {
+    top: auto;
+    bottom: 64px;
+    max-width: calc(100% - 32px);
+    font-size: 9px;
+  }
+  .office-3d {
+    min-height: 360px;
+  }
+  .office-businesses {
+    flex-wrap: wrap;
+    max-height: 110px;
+    overflow: auto;
+  }
+  .office-businesses > button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .office-3d__room {
+    max-width: 105px;
+    padding: 4px 6px;
+  }
+  .office-3d__room strong {
+    font-size: 10px;
+  }
+  .office-3d .office-3d__person {
+    padding: 4px;
+    max-width: 100px;
+    gap: 2px;
+  }
+  .office-3d .office-3d__person strong {
+    font-size: 10px;
+  }
+  .office-3d__person:not(:focus):not(:hover):not(.is-working):not(.is-waiting) > span:last-child {
+    display: none;
+  }
+  .office-3d .office-3d__person:not(:focus):not(:hover):not(.is-working):not(.is-waiting) {
+    padding: 2px;
+    border-radius: 50%;
+    grid-template-columns: 22px;
+  }
+  .office-3d .office-3d__person:not(:focus):not(:hover):not(.is-working):not(.is-waiting) > strong {
+    display: none;
   }
 }

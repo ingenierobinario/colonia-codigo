@@ -5,6 +5,13 @@ import { workspacePath } from "./workspaceContext.ts";
 
 export const listWorkspaces = () => client.call("workspaces.list", {});
 export const createWorkspace = (name: string, key: string) => client.call("workspaces.create", { name }, key);
+export const renameWorkspace = (workspace: string, name: string, key: string) =>
+  workspace
+    ? (workspacePath
+        ? new ColoniaClient({ url: location.origin, ...(access.token ? { token: access.token } : {}) })
+        : client
+      ).call("workspaces.update", { workspace, name }, key)
+    : client.call("workspaces.rename_root", { name }, key);
 
 export function useWorkspaceName() {
   const [name, setName] = useState("");

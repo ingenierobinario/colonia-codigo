@@ -23,6 +23,14 @@ test("workspace transport rejects anonymous and app access and preserves device 
     await assert.rejects(anonymous.connect());
     assert.equal((await root.call("workspaces.list", {})).workspaces[0]?.state, "stopped");
     const app = await root.call("clients.create", { name: "Outside app", scopes: ["chat"] });
+    await assert.rejects(
+      new ColoniaClient({ url: core.url }).call("workspaces.rename_root", { name: "Forged" }),
+      unauthorized,
+    );
+    await assert.rejects(
+      new ColoniaClient({ url: core.url, clientToken: app.token }).call("workspaces.rename_root", { name: "Forged" }),
+    );
+    assert.equal((await root.call("workspaces.list", {})).root_name, undefined);
     await assert.rejects(new ColoniaClient({ url, clientToken: app.token }).call("agents.list", {}), unauthorized);
     await assert.rejects(new ColoniaClient({ url, token: app.token }).connect());
     await assert.rejects(

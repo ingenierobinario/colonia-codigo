@@ -6,6 +6,18 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.78": {
+    en: [
+      "Explore your office in 3D, rotate the camera and open an agent's chat from the scene.",
+      "Create separate business workspaces and rename them directly from the office.",
+      "Pause ambient movement while keeping real activity and conversations visible.",
+    ],
+    es: [
+      "Explora tu oficina en 3D, gira la cámara y abre el chat de un agente desde la escena.",
+      "Crea espacios para distintos negocios y cambia sus nombres desde la oficina.",
+      "Pausa el movimiento ambiental sin perder de vista la actividad real y las conversaciones.",
+    ],
+  },
   "2.36.77": {
     en: [
       "Update verification and old-version cleanup now run in chunks and in the background.",

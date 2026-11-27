@@ -23,13 +23,19 @@ export type WorkspaceSnapshot = z.infer<typeof WorkspaceSnapshot>;
 export const workspaceMethods = {
   "workspaces.list": {
     params: z.object({}).strict(),
-    result: z.object({ workspaces: z.array(Workspace) }),
+    result: z.object({ workspaces: z.array(Workspace), root_name: z.string().optional() }),
     effect: false,
     access: "human",
   },
   "workspaces.create": {
     params: z.object({ name: z.string().trim().min(1).max(80) }).strict(),
     result: z.object({ workspace: Workspace }),
+    effect: true,
+    access: "human",
+  },
+  "workspaces.rename_root": {
+    params: z.object({ name: z.string().trim().min(1).max(80) }).strict(),
+    result: z.object({ name: z.string() }),
     effect: true,
     access: "human",
   },
