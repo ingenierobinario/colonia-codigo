@@ -201,9 +201,10 @@ test("a large office keeps agents searchable and opens their chat", async ({ pag
 });
 
 for (const operation of ["rename", "create"] as const) {
-  test(`a delayed directory read cannot undo a confirmed ${operation}`, async ({ page }) => {
+  test(`a delayed directory read cannot undo a confirmed ${operation}`, async ({ page }, info) => {
     await rpc("setup.finish", {});
-    const existing = `Existing ${operation} business`;
+    const suffix = `${info.repeatEachIndex}-${info.retry}`;
+    const existing = `Existing ${operation} business ${suffix}`;
     await rpc("workspaces.create", { name: existing });
     const held = Promise.withResolvers<void>();
     const ready = Promise.withResolvers<void>();
@@ -223,12 +224,13 @@ for (const operation of ["rename", "create"] as const) {
       { times: 1 },
     );
     try {
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await open(page, "#view=office");
       await ready.promise;
       const title = operation === "rename" ? "Renombrar espacio" : "Nuevo espacio";
       await page.getByRole("button", { name: title, exact: true }).click();
       const dialog = page.getByRole("dialog", { name: title });
-      const name = operation === "rename" ? "Current workspace" : "Current business";
+      const name = `${operation === "rename" ? "Current workspace" : "Current business"} ${suffix}`;
       await dialog.getByRole("textbox").fill(name);
       await dialog
         .getByRole("button", { name: operation === "rename" ? "Guardar nombre" : "Crear espacio", exact: true })
