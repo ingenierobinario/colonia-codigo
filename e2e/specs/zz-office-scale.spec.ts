@@ -89,8 +89,11 @@ test("a many-project office can edit an avatar through its chat", async ({ page 
   await chat.getByRole("button", { name: "Editar agente y avatar" }).click();
   await chat.getByRole("button", { name: "Animales", exact: true }).click();
   await chat.getByRole("button", { name: "Zorro", exact: true }).click();
+  const canvas = await page.locator(".office-3d canvas").elementHandle();
+  expect(canvas).not.toBeNull();
   await chat.getByRole("button", { name: "Guardar y cerrar" }).click();
   await expect(
     page.getByRole("button", { name: `Hablar con ${colleague}`, exact: true }).locator("img"),
   ).toHaveAttribute("src", /fox/);
+  expect(await canvas?.evaluate((node) => node.isConnected)).toBe(true);
 });

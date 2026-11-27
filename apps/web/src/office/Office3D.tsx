@@ -7,6 +7,7 @@ import { useT } from "../i18n/index.ts";
 import type { OfficeActivity } from "./activity.ts";
 import { officeFrameBudget } from "./frame-budget.ts";
 import type { OfficeRoom } from "./OfficeScene.tsx";
+import { disposeOfficeModels, updateOfficeAvatars } from "./scene-avatars.ts";
 import { officeLabels } from "./scene-labels.ts";
 import { pickOfficeAgent } from "./scene-picking.ts";
 import { createOfficeWorld } from "./scene-world.ts";
@@ -22,6 +23,20 @@ type Props = {
   onUnavailable: () => void;
 };
 
+function createOfficeRenderer() {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("webgl2", { antialias: true, alpha: true });
+  if (!context) throw new Error("WebGL2 is unavailable");
+  const renderer = new THREE.WebGLRenderer({ canvas, context, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
+  renderer.setClearColor(0xe4e9e4, 1);
+  return renderer;
+}
+
 function useOfficeScene(props: Props) {
   const host = useRef<HTMLDivElement>(null);
   const labels = useRef<HTMLDivElement>(null);
@@ -33,7 +48,7 @@ function useOfficeScene(props: Props) {
   const sceneKey = JSON.stringify(
     props.rooms.map((room) => ({
       id: room.id,
-      agents: room.agents.map((agent) => ({ id: agent.id, blob: blobOf(agent) ?? "menta" })),
+      agents: room.agents.map((agent) => agent.id),
     })),
   );
   useEffect(() => {
@@ -46,28 +61,22 @@ function useOfficeScene(props: Props) {
   }, [paused]);
   useEffect(() => {
     const element = host.current;
-    const rooms: { id: string; agents: { id: string; blob: string }[] }[] = JSON.parse(sceneKey);
+    let roster = latest.current.rooms;
+    const shapes: { id: string; agents: string[] }[] = JSON.parse(sceneKey);
+    const avatars = new Map(roster.flatMap((room) => room.agents.map((a) => [a.id, blobOf(a) ?? "menta"])));
+    const rooms = shapes.map((room) => ({
+      id: room.id,
+      agents: room.agents.map((id) => ({ id, blob: avatars.get(id) ?? "menta" })),
+    }));
     if (!element) return;
     let renderer: THREE.WebGLRenderer;
     try {
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("webgl2", { antialias: true, alpha: true });
-      if (!context) {
-        setFailed(true);
-        return;
-      }
-      renderer = new THREE.WebGLRenderer({ canvas, context, antialias: true, alpha: true });
+      renderer = createOfficeRenderer();
     } catch {
       setFailed(true);
       return;
     }
     setFailed(false);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
-    renderer.shadowMap.autoUpdate = false;
-    renderer.shadowMap.needsUpdate = true;
-    renderer.setClearColor(0xe4e9e4, 1);
     element.prepend(renderer.domElement);
     const { scene, camera, controls, characters, roomLabels } = createOfficeWorld(rooms, renderer.domElement);
     const initialOffset = camera.position.clone().sub(controls.target);
@@ -92,6 +101,16 @@ function useOfficeScene(props: Props) {
       if (!animate && !changed && !invalidated.current) return;
       const started = performance.now();
       invalidated.current = false;
+      if (roster !== latest.current.rooms) {
+        roster = latest.current.rooms;
+        if (
+          updateOfficeAvatars(
+            characters,
+            new Map(roster.flatMap((room) => room.agents.map((a) => [a.id, blobOf(a) ?? "menta"]))),
+          )
+        )
+          renderer.shadowMap.needsUpdate = true;
+      }
       camera.zoom = latest.current.zoom;
       camera.updateProjectionMatrix();
       labelLayer.begin(width, height);
@@ -157,13 +176,7 @@ function useOfficeScene(props: Props) {
         element.removeEventListener(event, invalidate);
       controls.dispose();
       stopPicking();
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          const materials = Array.isArray(object.material) ? object.material : [object.material];
-          for (const material of materials) material.dispose();
-        }
-      });
+      disposeOfficeModels(scene);
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import type { SceneCharacter } from "./scene-avatars.ts";
 import { batchStationaryParts } from "./scene-batch.ts";
 import { sceneLayout } from "./scene-layout.ts";
 import { box, character, desk, plant } from "./scene-models.ts";
@@ -30,7 +31,7 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
   controls.target.copy(center);
   camera.position.copy(center).add(new THREE.Vector3(1, 1.2, 1.4).multiplyScalar(Math.max(width, depth) * 0.8));
   box(furniture, [width + 2, 0.3, depth + 2], [width / 2, -0.35, depth / 2], 0x789489);
-  const characters: { id: string; model: ReturnType<typeof character>; x: number; z: number; phase: number }[] = [];
+  const characters: SceneCharacter[] = [];
   const roomLabels: { id: string; point: THREE.Vector3 }[] = [];
   for (const [index, layout] of layouts.entries()) {
     const room = rooms[index];
@@ -62,7 +63,7 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
       const z = layout.z + station.z + 1;
       model.group.position.set(x, 0.25, z);
       scene.add(model.group);
-      characters.push({ id: agent.id, model, x, z, phase: i * 2.3 + index });
+      characters.push({ id: agent.id, blob: agent.blob, model, x, z, phase: i * 2.3 + index });
     }
   }
   batchStationaryParts(furniture);
