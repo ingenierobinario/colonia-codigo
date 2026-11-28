@@ -114,6 +114,8 @@ for (const language of ["es", "en"] as const) {
           }
           await expect(sidebar).toHaveClass(/is-rail/);
           await geometry(row, true);
+          // Geometry also hovers the row; exercise a new entry into the tooltip trigger.
+          await page.mouse.move(width - 1, 0);
           await nav.hover();
           const tip = page.locator(".colonia-tooltip[data-open]");
           await expect(tip).toHaveText(`${name} · ${role}`);
