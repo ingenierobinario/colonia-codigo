@@ -4,6 +4,7 @@ import { client } from "../data/client.ts";
 import { changesDelegatedInputs, type DelegatedState, delegatedFeed } from "../data/delegated-feed.ts";
 import { blobOf } from "../data/identity.ts";
 import { watchEvents, watchRefresh } from "../data/live.ts";
+import { isNewChat } from "../data/newChat.ts";
 import { useData, useShownAgents } from "../data/state.ts";
 import { useT } from "../i18n/index.ts";
 import { InputPart } from "../lazy.ts";
@@ -16,7 +17,7 @@ export function DelegatedInputs({ thread }: { thread: string }) {
   const [state, setState] = useState<DelegatedState & { thread: string }>({ thread, inputs: [], failed: false });
   const refresh = useRef(() => {});
   useEffect(() => {
-    if (connection !== "online") {
+    if (connection !== "online" || isNewChat(thread)) {
       setState({ thread, inputs: [], failed: false });
       return;
     }

@@ -59,7 +59,11 @@ test("a delegated question is answered in the initiating chat and stays resolved
   await expect(requests.getByRole("button", { name: "Enviar", exact: true })).toBeInViewport({ ratio: 1 });
   await page.screenshot({ path: info.outputPath("delegated-input-desktop.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
-  await requests.scrollIntoViewIfNeeded();
+  // The phone layout remounts the conversation; wait for its pending input to load again.
+  await expect(async () => {
+    await expect(requests).toContainText("Which days work");
+    await requests.scrollIntoViewIfNeeded({ timeout: 7_000 });
+  }).toPass({ timeout: 7_000 });
   await expect(requests.getByRole("button", { name: "Abrir conversación" })).toBeInViewport({ ratio: 1 });
   await page.screenshot({ path: info.outputPath("delegated-input-phone.png"), fullPage: true });
   await requests.getByRole("button", { name: "Monday", exact: true }).click();

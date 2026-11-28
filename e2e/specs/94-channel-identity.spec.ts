@@ -160,6 +160,11 @@ for (const width of [412, 1280]) {
       return route.fulfill({ json: { ok: true, result: { ok: true } } });
     });
     await page.route("**/rpc/threads.list", (route) => route.fulfill({ json: { ok: true, result: { threads } } }));
+    await page.route("**/rpc/runs.delegated_pending", (route) => {
+      const { thread: id } = route.request().postDataJSON() as { thread: string };
+      if (!threads.some((thread) => thread.id === id)) return route.continue();
+      return route.fulfill({ json: { ok: true, result: { inputs: [] } } });
+    });
     await page.route("**/rpc/threads.get", (route) => {
       const { thread: id } = route.request().postDataJSON() as { thread: string };
       const thread = threads.find((item) => item.id === id);
