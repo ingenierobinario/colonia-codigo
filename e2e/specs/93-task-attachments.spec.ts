@@ -10,6 +10,96 @@ const image = {
 };
 type Detail = { task: { id: string }; attachments: Array<{ media_id: string; name: string }> };
 
+test("removing an image waits for its pending preview before deleting the file", async ({ page }) => {
+  await rpc("setup.finish", {});
+  const uploaded = await rpc<{ media: { id: string } }>("media.upload", {
+    name: image.name,
+    mime: image.mimeType,
+    data: image.buffer.toString("base64"),
+  });
+  const task = await rpc<{ id: string }>("tasks.create", {
+    title: "Northwind pending preview",
+    attachments: [uploaded.media.id],
+  });
+  const detail = await rpc<Detail>("tasks.get", { task: task.id });
+  const id = detail.attachments[0]?.media_id;
+  expect(id).toBeDefined();
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let previewStarted = false;
+  let previewFinished = false;
+  const deleteAfterPreview: boolean[] = [];
+  await page.route("**/rpc/media.get", async (route) => {
+    if (route.request().postDataJSON().id !== id) return route.continue();
+    previewStarted = true;
+    await held;
+    const response = await route.fetch();
+    expect(response.status()).toBe(200);
+    previewFinished = true;
+    await route.fulfill({ response });
+  });
+  await page.route("**/rpc/tasks.detach", async (route) => {
+    if (route.request().postDataJSON().media_id === id) deleteAfterPreview.push(previewFinished);
+    await route.continue();
+  });
+  await open(page);
+  await page.getByRole("button", { name: "Tareas", exact: true }).first().click();
+  await page.getByText("Northwind pending preview", { exact: true }).click();
+  const assets = page
+    .getByRole("complementary", { name: "Northwind pending preview" })
+    .getByRole("region", { name: "Adjuntos", exact: true });
+  await expect.poll(() => previewStarted).toBe(true);
+  try {
+    await assets.getByRole("button", { name: "Quitar adjunto brief.png", exact: true }).click();
+    await expect(assets.getByRole("img", { name: "brief.png", exact: true })).toBeHidden();
+  } finally {
+    release();
+  }
+  await expect.poll(() => deleteAfterPreview).toEqual([true]);
+  await expect.poll(async () => (await rpc<Detail>("tasks.get", { task: task.id })).attachments).toEqual([]);
+});
+
+test("a refused detach restores the file and removing it never starts an unused download", async ({ page }) => {
+  await rpc("setup.finish", {});
+  const uploaded = await rpc<{ media: { id: string } }>("media.upload", {
+    name: "retained.txt",
+    mime: "text/plain",
+    data: Buffer.from("Keep on refusal").toString("base64"),
+  });
+  const task = await rpc<{ id: string }>("tasks.create", {
+    title: "Northwind refused detach",
+    attachments: [uploaded.media.id],
+  });
+  const before = await rpc<Detail>("tasks.get", { task: task.id });
+  const reads: string[] = [];
+  await page.route("**/rpc/media.get", async (route) => {
+    reads.push(route.request().postDataJSON().id);
+    await route.continue();
+  });
+  await page.route("**/rpc/tasks.detach", (route) =>
+    route.fulfill({
+      json: { ok: false, error: { code: "unavailable", message: "Detach refused" } },
+    }),
+  );
+  await open(page);
+  await page.getByRole("button", { name: "Tareas", exact: true }).first().click();
+  await page.getByText("Northwind refused detach", { exact: true }).click();
+  const assets = page
+    .getByRole("complementary", { name: "Northwind refused detach" })
+    .getByRole("region", { name: "Adjuntos", exact: true });
+  const remove = assets.getByRole("button", { name: "Quitar adjunto retained.txt", exact: true });
+  await remove.click();
+  await expect(assets.getByRole("alert")).toHaveText("Detach refused");
+  await expect(assets.getByRole("button", { name: /^retained\.txt / })).toBeVisible();
+  expect((await rpc<Detail>("tasks.get", { task: task.id })).attachments).toEqual(before.attachments);
+  await page.unroute("**/rpc/tasks.detach");
+  await remove.click();
+  await expect.poll(async () => (await rpc<Detail>("tasks.get", { task: task.id })).attachments).toEqual([]);
+  expect(reads).not.toContain(before.attachments[0]?.media_id);
+});
+
 test("task attachments persist across creation and reload, preview, download, and detach independently of comments", async ({
   page,
 }) => {

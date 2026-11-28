@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { client } from "../data/client.ts";
 import type { Attached } from "../data/composer.ts";
+import { waitForMediaRead } from "../data/media.ts";
 import { notify } from "../data/notices.ts";
 
 export async function discardTaskUpload(id: string): Promise<void> {
+  await waitForMediaRead(id);
   await client.call("media.discard", { id });
 }
 

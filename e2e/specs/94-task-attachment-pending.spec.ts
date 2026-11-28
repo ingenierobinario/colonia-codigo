@@ -13,6 +13,64 @@ async function expectDiscarded(id: string) {
     .toContain("media unavailable");
 }
 
+for (const action of ["remove", "cancel"] as const) {
+  test(`a draft ${action} finishes its pending preview before discarding the source`, async ({ page }) => {
+    await rpc("setup.finish", {});
+    let source = "";
+    let previewStarted = false;
+    let previewFinished = false;
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const discardedAfterPreview: boolean[] = [];
+    await page.route("**/rpc/media.upload", async (route) => {
+      const response = await route.fetch();
+      source = (await response.json()).result.media.id;
+      await route.fulfill({ response });
+    });
+    await page.route("**/rpc/media.get", async (route) => {
+      if (route.request().postDataJSON().id !== source) return route.continue();
+      previewStarted = true;
+      await held;
+      const response = await route.fetch();
+      expect(response.status()).toBe(200);
+      previewFinished = true;
+      await route.fulfill({ response });
+    });
+    await page.route("**/rpc/media.discard", async (route) => {
+      if (route.request().postDataJSON().id === source) discardedAfterPreview.push(previewFinished);
+      await route.continue();
+    });
+    await open(page);
+    await page.getByRole("button", { name: "Tareas", exact: true }).first().click();
+    await page.getByRole("button", { name: "Nueva tarea", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Adjuntar archivos", { exact: true }).setInputFiles({
+      name: "preview.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aD1sAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+    await expect.poll(() => previewStarted).toBe(true);
+    try {
+      await dialog
+        .getByRole("button", {
+          name: action === "remove" ? "Quitar adjunto preview.png" : "Cancelar",
+          exact: true,
+        })
+        .click();
+      await expect(dialog.getByRole("img", { name: "preview.png", exact: true })).toBeHidden();
+    } finally {
+      release();
+    }
+    await expect.poll(() => discardedAfterPreview).toEqual([true]);
+    await expectDiscarded(source);
+  });
+}
+
 test("task creation waits for uploads and keeps selected assets after a failed save", async ({ page }) => {
   await rpc("setup.finish", {});
   await open(page);

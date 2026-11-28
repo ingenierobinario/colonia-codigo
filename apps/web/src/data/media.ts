@@ -3,6 +3,11 @@ import { client } from "./client.ts";
 
 const cache = new Map<string, Promise<string>>();
 
+/** Finish an existing preview read before removing its source; never start a download. */
+export async function waitForMediaRead(id: string): Promise<void> {
+  await cache.get(id)?.catch(() => {});
+}
+
 /** An object URL for a media file; the same promise for every part that shows it. */
 export function mediaUrl(id: string): Promise<string> {
   let p = cache.get(id);

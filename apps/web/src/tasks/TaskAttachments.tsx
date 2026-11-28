@@ -1,9 +1,11 @@
 import type { Task } from "@colonia/protocol";
 import { Button, IconButton, Icons } from "@colonia/ui";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { FilePart } from "../chat/parts/FilePart.tsx";
 import { client } from "../data/client.ts";
 import { type Attached, upload } from "../data/composer.ts";
+import { waitForMediaRead } from "../data/media.ts";
 import { useT } from "../i18n/index.ts";
 import { MediaGroup } from "../lazy.ts";
 import { cleanupTaskUpload, discardTaskUpload } from "./draftAttachments.ts";
@@ -77,10 +79,10 @@ export function TaskAttachments({
     if (busy || disabled) return;
     working(true);
     setError("");
-    // Sale de la lista antes de pedir el borrado: una vista previa que aún se estuviera montando
-    // pediría un archivo que el servidor ya no tiene. Si el borrado falla, vuelve.
-    onChange(value.filter((a) => a.id !== id));
+    // Commit the unmount before deletion so a pending preview effect cannot start another read.
+    flushSync(() => onChange(value.filter((a) => a.id !== id)));
     try {
+      await waitForMediaRead(id);
       if (task) await client.call("tasks.detach", { task: task.id, media_id: id });
       else await discardTaskUpload(id);
     } catch (e) {
