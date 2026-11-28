@@ -140,6 +140,17 @@ function toolCall(messages: Message[], said: string): { name: string; arguments:
     return sinceOwner.filter((m) => m.role === "tool").length < 2 ? delegate : undefined;
   }
   if (messages.at(-1)?.role === "tool") return undefined;
+  if (/^delegate a command review/i.test(said))
+    return { name: "delegate", arguments: JSON.stringify({ agent: "scout", task: "make a note file", wait_s: 0 }) };
+  if (/^delegate a review question/i.test(said))
+    return {
+      name: "delegate",
+      arguments: JSON.stringify({
+        worker: { name: "Reviewer", instructions: "Ask the owner which days work." },
+        task: "ask me which days",
+        wait_s: 0,
+      }),
+    };
   if (KEEP_GOING.test(said))
     return {
       name: "delegate",
@@ -244,10 +255,20 @@ function toolCall(messages: Message[], said: string): { name: string; arguments:
     return { name: "shell", arguments: JSON.stringify({ command: `printf 'note\\n' > '${file}'` }) };
   }
   // A command that writes: the owner is asked first.
-  if (/^make a note file/i.test(said))
+  if (
+    /^make a note file/i.test(said) ||
+    /<agent_message[^>]*>\s*make a note file\s*<\/agent_message>/.test(
+      textOf(messages.findLast((message) => message.role === "user")),
+    )
+  )
     return { name: "shell", arguments: JSON.stringify({ command: "touch e2e-note.txt" }) };
   // A question with several answers to tick.
-  if (/^ask me which days/i.test(said))
+  if (
+    /^ask me which days/i.test(said) ||
+    /<agent_message[^>]*>\s*ask me which days\s*<\/agent_message>/.test(
+      textOf(messages.findLast((message) => message.role === "user")),
+    )
+  )
     return {
       name: "ask_owner",
       arguments: JSON.stringify({

@@ -523,6 +523,34 @@ export type ConnectOffer = z.infer<typeof ConnectOffer>;
 export const DocumentSource = z.object({ path: z.string().max(1000), scratch: z.boolean().optional() });
 export type DocumentSource = z.infer<typeof DocumentSource>;
 
+/** The complete owner-facing request, shared by the original chat and its initiating conversation. */
+export const InputPart = z.object({
+  type: z.literal("input"),
+  input_id: Id,
+  kind: InputKind,
+  prompt: z.string(),
+  tool: z.string().optional(),
+  detail: z.string().optional(),
+  browser: z
+    .object({
+      origin: z.string(),
+      title: z.string().max(200).optional(),
+      tab_number: z.number().int().positive().optional(),
+      document: z.string(),
+      path: z.string().optional(),
+      sha256: z.string().optional(),
+    })
+    .optional(),
+  change: FileChange.optional(),
+  options: z.array(z.string()).optional(),
+  multi: z.boolean().optional(),
+  folders: z.array(z.string()).optional(),
+  approval_scopes: z.array(ApprovalScope).optional(),
+  approval_scope: ApprovalScope.optional(),
+  state: InputState,
+  answer: z.string().optional(),
+});
+
 /** What the UI shows. The model's own transcript is stored separately (two projections of one log). */
 const KnownPart = z.discriminatedUnion("type", [
   z.object({
@@ -626,35 +654,7 @@ const KnownPart = z.discriminatedUnion("type", [
     more: z.number().int().optional(),
   }),
   /** The agent waits for the owner: a yes/no on an action, or an answer to a question. Answered with runs.respond. */
-  z.object({
-    type: z.literal("input"),
-    input_id: Id,
-    kind: InputKind,
-    prompt: z.string(),
-    /** For a confirmation: the tool and a readable summary of its arguments. */
-    tool: z.string().optional(),
-    detail: z.string().optional(),
-    browser: z
-      .object({
-        origin: z.string(),
-        title: z.string().max(200).optional(),
-        tab_number: z.number().int().positive().optional(),
-        document: z.string(),
-        path: z.string().optional(),
-        sha256: z.string().optional(),
-      })
-      .optional(),
-    change: FileChange.optional(),
-    options: z.array(z.string()).optional(),
-    /** A question whose options may be picked several at once. */
-    multi: z.boolean().optional(),
-    /** A read outside the agent's folders: the folders it would read (approval_scopes says if they may be kept). */
-    folders: z.array(z.string()).optional(),
-    approval_scopes: z.array(ApprovalScope).optional(),
-    approval_scope: ApprovalScope.optional(),
-    state: InputState,
-    answer: z.string().optional(),
-  }),
+  InputPart,
   /**
    * The skills of this turn: given whole (`loaded`: one named with "/name"), named for the agent to load (`strong`
    * when very close, else `hinted`), and the closest ones weighed (`scored`, with their raw similarity), so the chat

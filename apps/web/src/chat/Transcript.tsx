@@ -23,6 +23,7 @@ import { AgentEvent, MediaGroup, TaskDescription } from "../lazy.ts";
 import { nav, useNav } from "../shell/nav.ts";
 import { AgentTurn } from "./AgentTurn.tsx";
 import { isAgentEvent, isIndividualChat } from "./agentEvent.ts";
+import { DelegatedInputs } from "./DelegatedInputs.tsx";
 import { MessageActions } from "./MessageActions.tsx";
 import { FilePart } from "./parts/FilePart.tsx";
 import { AudioPart } from "./parts/lazyAudio.tsx";
@@ -137,6 +138,7 @@ export function Transcript({ thread, comments = false, via }: { thread: Thread; 
           quoted={quoted}
         />
       ))}
+      {!via && <DelegatedInputs key={thread.id} thread={thread.id} />}
       {working && (
         <div className="transcript__activity">
           <ActivityPill

@@ -27,6 +27,7 @@ import {
   EngineStatus,
   Id,
   ImageDefaults,
+  InputPart,
   Job,
   LocalEmbedding,
   LocalTranscription,
@@ -886,6 +887,24 @@ export const appMethods = {
     params: z.object({ thread: Id.optional() }).strict(),
     result: z.object({ inputs: z.array(PendingInput) }),
     effect: false,
+  },
+  /** Complete requests from this conversation's delegated descendants, answered through their original input. */
+  "runs.delegated_pending": {
+    params: z.object({ thread: Id }).strict(),
+    result: z.object({
+      inputs: z.array(
+        z.object({
+          thread_id: Id,
+          thread_title: z.string(),
+          agent_id: Id,
+          agent_name: z.string(),
+          expires_at: z.string(),
+          part: InputPart,
+        }),
+      ),
+    }),
+    effect: false,
+    access: "human",
   },
   /**
    * The owner's answer to a pending input: approve/deny for a confirmation, text (or one of its options) for a

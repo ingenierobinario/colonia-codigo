@@ -7,6 +7,7 @@ import { useT } from "../i18n/index.ts";
 import type { OfficeActivity } from "./activity.ts";
 import { officeFrameBudget } from "./frame-budget.ts";
 import type { OfficeRoom } from "./OfficeScene.tsx";
+import { animateOfficeCharacters } from "./scene-animation.ts";
 import { disposeOfficeModels, updateOfficeAvatars } from "./scene-avatars.ts";
 import { officeLabels } from "./scene-labels.ts";
 import { pickOfficeAgent } from "./scene-picking.ts";
@@ -78,7 +79,14 @@ function useOfficeScene(props: Props) {
     }
     setFailed(false);
     element.prepend(renderer.domElement);
-    const { scene, camera, controls, characters, roomLabels } = createOfficeWorld(rooms, renderer.domElement);
+    const {
+      scene,
+      camera,
+      controls,
+      characters,
+      roomLabels,
+      motion: walking,
+    } = createOfficeWorld(rooms, renderer.domElement);
     const initialOffset = camera.position.clone().sub(controls.target);
     const stopPicking = pickOfficeAgent(renderer.domElement, camera, characters, (id) => {
       const agent = latest.current.rooms.flatMap((room) => room.agents).find((person) => person.id === id);
@@ -97,6 +105,7 @@ function useOfficeScene(props: Props) {
     const draw = (time: number) => {
       if (!budget.ready(time, invalidated.current)) return;
       const animate = motion.current && !reduced.matches && !latest.current.suspended;
+      walking.update(time, animate, latest.current.activity);
       const changed = controls.update();
       if (!animate && !changed && !invalidated.current) return;
       const started = performance.now();
@@ -114,20 +123,8 @@ function useOfficeScene(props: Props) {
       camera.zoom = latest.current.zoom;
       camera.updateProjectionMatrix();
       labelLayer.begin(width, height);
+      animateOfficeCharacters(characters, walking, latest.current.activity, animate);
       for (const person of characters) {
-        const state = latest.current.activity.get(person.id)?.presence ?? "offline";
-        const idle = state === "idle";
-        const moving = animate && state !== "offline";
-        const phase = time / 1000 + person.phase;
-        person.model.group.position.set(
-          person.x + (moving && idle ? Math.sin(phase * 0.3) * 0.38 : 0),
-          0.25 + (moving ? Math.sin(phase * 3) * 0.035 : 0),
-          person.z + (moving && idle ? (1 + Math.cos(phase * 0.3)) * 0.25 : 0),
-        );
-        person.model.group.rotation.y = state === "working" ? Math.PI : moving ? Math.sin(phase * 0.5) * 0.35 : 0;
-        person.model.arms.forEach((arm, i) => {
-          arm.rotation.x = moving ? Math.sin(phase * (idle ? 2 : 7) + i) * 0.3 : 0;
-        });
         const node = labels.current?.querySelector<HTMLElement>(`[data-person="${CSS.escape(person.id)}"]`) ?? null;
         labelLayer.place(node, person.model.group.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
       }
@@ -157,7 +154,10 @@ function useOfficeScene(props: Props) {
     };
     for (const event of ["pointerover", "pointerout", "focusin", "focusout"])
       element.addEventListener(event, invalidate);
-    const visibility = () => renderer.setAnimationLoop(document.hidden || contextLost ? null : draw);
+    const visibility = () => {
+      walking.resetClock();
+      renderer.setAnimationLoop(document.hidden || contextLost ? null : draw);
+    };
     document.addEventListener("visibilitychange", visibility);
     visibility();
     const lost = (event: Event) => {

@@ -4,6 +4,7 @@ import { publicRun } from "../domain/runs.ts";
 import { HOME_THREAD_ID } from "../domain/seed.ts";
 import type { Store } from "../domain/store.ts";
 import type { Engine } from "../engine/engine.ts";
+import { inputPartOf } from "../engine/inputs.ts";
 import { notFound } from "../errors.ts";
 import type { Handlers } from "./router.ts";
 
@@ -11,6 +12,30 @@ import type { Handlers } from "./router.ts";
 export function runHandlers(store: Store, engine: Engine) {
   return {
     "runs.pending": ({ thread }) => ({ inputs: engine.pending(thread) }),
+    "runs.delegated_pending": ({ thread }) => {
+      if (!store.threads.get(thread)) throw notFound(`thread ${thread}`);
+      const descendants = new Map(store.threads.descendants(thread, true).map((child) => [child.id, child]));
+      return {
+        inputs: store.inputs.pending().flatMap((input) => {
+          const child = descendants.get(input.thread_id);
+          return child
+            ? [
+                {
+                  thread_id: child.id,
+                  thread_title: child.title,
+                  agent_id: input.agent_id,
+                  agent_name:
+                    store.threads.context(child.id).worker?.name ??
+                    store.agents.get(input.agent_id)?.name ??
+                    child.title,
+                  expires_at: input.expires_at,
+                  part: inputPartOf(input),
+                },
+              ]
+            : [];
+        }),
+      };
+    },
     // A channel's answer carries the channel the owner wrote on (set by the channel manager, never by a request).
     "runs.respond": ({ input, decision, text, scope }, ctx) =>
       publicInput(engine.respond(input, { decision, text, scope }, Boolean(ctx.channel))),

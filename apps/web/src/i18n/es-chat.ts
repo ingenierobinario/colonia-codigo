@@ -2,6 +2,9 @@
 import type { MessageKey } from "./en.ts";
 
 export const esChat: Partial<Record<MessageKey, string>> = {
+  "input.delegated": "Tu equipo necesita tu respuesta",
+  "input.delegatedFailed": "No se han podido cargar las solicitudes de tu equipo.",
+  "input.openSource": "Abrir conversación",
   "chat.agentProgress": "Avance de {name}",
   "chat.agentResponse": "Respuesta de {name}",
   "chat.agentMessage": "Mensaje de {name}",

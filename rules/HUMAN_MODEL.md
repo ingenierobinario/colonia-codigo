@@ -234,7 +234,10 @@ notice when there is no text. Tools that touch core state call protocol methods 
   snapshots record dependencies so edits invalidate old context and derived replies. See D-111–D-114.
 - **Waiting for the owner** (`engine/inputs.ts`): confirmations and `ask_owner` questions are `pending_inputs`
   rows, answered with `runs.respond` (owner only). The run's clock stops while it waits; an answer after a restart
-  wakes the agent with a new run.
+  wakes the agent with a new run. The owner-only `runs.delegated_pending` projection returns full pending input
+  cards from the initiating thread's descendants in its own workspace. The panel subscribes to input changes
+  and refreshes after reconnect; it answers the original input through `runs.respond`, preserving expiry,
+  browser document binding and approval scope without granting access to agent callers.
 - **Conversation retrieval** (`tools/chats.ts`): global specialists can search the owner's global chats;
   project agents keep their project/participation scope. External-client chats remain private to their client.
   Other agents' channel chats, rooms and subthreads are not shared with global specialists. Search applies

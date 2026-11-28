@@ -89,5 +89,9 @@ export function character(avatar: string) {
     arm.rotation.z = side * 0.25;
     return arm;
   });
+  // Furniture shadows are cached; moving colleagues must not leave a shadow behind at their desk.
+  group.traverse((object) => {
+    if (object instanceof THREE.Mesh) object.castShadow = false;
+  });
   return { group, arms };
 }

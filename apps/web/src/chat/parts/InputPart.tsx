@@ -32,18 +32,18 @@ const DONE_ICON = {
 } as const;
 
 /** An agent waiting for the owner: approve or decline an action, or answer a question. Once settled, one line. */
-export function InputPart({ part }: { part: InputPartData }) {
+export function InputPart({ part, onRespond }: { part: InputPartData; onRespond?: () => void }) {
   return (
     <ApprovalText preserve>
-      <InputBody part={part} />
+      <InputBody part={part} onRespond={onRespond} />
     </ApprovalText>
   );
 }
 
-function InputBody({ part }: { part: InputPartData }) {
+function InputBody({ part, onRespond }: { part: InputPartData; onRespond?: (() => void) | undefined }) {
   const { state } = part;
   if (state !== "pending") return <SettledInput part={part} state={state} />;
-  return <PendingInput part={part} />;
+  return <PendingInput part={part} onRespond={onRespond} />;
 }
 
 /** What was asked and how it ended, in the actions' design: a line that opens to show what it was. */
@@ -145,7 +145,7 @@ function ProposedChange({ change }: { change: FileChange }) {
   );
 }
 
-function PendingInput({ part }: { part: InputPartData }) {
+function PendingInput({ part, onRespond }: { part: InputPartData; onRespond?: (() => void) | undefined }) {
   const t = useT();
   const [text, setText] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
@@ -157,6 +157,7 @@ function PendingInput({ part }: { part: InputPartData }) {
   const send = async (a: { decision?: "approve" | "deny"; text?: string; scope?: ApprovalScope }) => {
     setBusy(true);
     await respond(part.input_id, a);
+    onRespond?.();
     setBusy(false);
   };
   return (

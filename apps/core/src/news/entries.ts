@@ -74,6 +74,24 @@ export const NEWS: readonly NewsEntry[] = [
     ],
   },
   {
+    id: "delegated-replies-and-office-motion",
+    since: "2.36.79",
+    title: { en: "Your team's requests in one conversation", es: "Las solicitudes de tu equipo en una conversación" },
+    about: {
+      en: "Answer delegated questions and permissions from the original chat. Available colleagues can visit the office coffee area.",
+      es: "Responde preguntas y permisos delegados desde el chat original. Los compañeros disponibles pueden visitar el café de la oficina.",
+    },
+    applies: () => true,
+    text: "The initiating conversation shows pending input cards from delegated descendants in the same workspace, including nested helpers. The owner can answer there or open the original conversation. Both views use the same request and preserve its original approval scope, expiry and browser document details. Never treat visibility as consent. Office coffee walks are decorative and pause with reduced motion or Pause movement; actual job status remains authoritative.",
+    actions: [
+      {
+        label: { en: "Explain team requests", es: "Explícame las solicitudes del equipo" },
+        prompt:
+          "Explain how to review delegated permission requests from our conversation and open the original agent chat.",
+      },
+    ],
+  },
+  {
     id: "office-3d-workspace-names",
     since: "2.36.78",
     title: { en: "Explore your office in 3D", es: "Explora tu oficina en 3D" },

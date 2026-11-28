@@ -90,6 +90,7 @@ async function connect(): Promise<void> {
     await bootstrap(confirmed);
     if (gen !== generation) return;
     await refetchLoaded();
+    for (const refresh of refreshWatchers) refresh();
     void loadNotifications();
     void loadUpdates({ panelChecked: true });
     if (tasksLoaded()) void loadTasks();
@@ -121,6 +122,11 @@ function schedule(): void {
 
 /** Views that follow a stream of their own (a terminal's output, a chat's commands) without going through the store. */
 const watchers = new Set<(ev: CoreEvent) => void>();
+const refreshWatchers = new Set<() => void>();
+export function watchRefresh(listener: () => void): () => void {
+  refreshWatchers.add(listener);
+  return () => refreshWatchers.delete(listener);
+}
 export function watchEvents(listener: (ev: CoreEvent) => void): () => void {
   watchers.add(listener);
   return () => watchers.delete(listener);
@@ -145,6 +151,9 @@ function scheduleRefetch(): void {
     refetchTimer = undefined;
     void bootstrap()
       .then(refetchLoaded)
+      .then(() => {
+        for (const refresh of refreshWatchers) refresh();
+      })
       .catch(() => {});
   }, 300);
 }

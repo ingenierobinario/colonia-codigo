@@ -1,5 +1,8 @@
 // UI strings, English: the chat's composer and its Usage panel.
 export const enChat = {
+  "input.delegated": "Your team needs your reply",
+  "input.delegatedFailed": "Requests from your team could not be loaded.",
+  "input.openSource": "Open conversation",
   "chat.agentProgress": "Progress from {name}",
   "chat.agentResponse": "Response from {name}",
   "chat.agentMessage": "Message from {name}",

@@ -6,6 +6,16 @@
 export type Highlights = { en: string[]; es: string[] };
 
 export const HIGHLIGHTS: Record<string, Highlights> = {
+  "2.36.79": {
+    en: [
+      "Answer a delegated agent's questions and permission requests in the conversation where you started the work.",
+      "Available colleagues walk through the 3D office to the coffee area and return when work arrives.",
+    ],
+    es: [
+      "Responde preguntas y permisos de agentes delegados desde la conversación donde encargaste el trabajo.",
+      "Los compañeros disponibles recorren la oficina 3D, van al café y regresan cuando reciben trabajo.",
+    ],
+  },
   "2.36.78": {
     en: [
       "Explore your office in 3D, rotate the camera and open an agent's chat from the scene.",

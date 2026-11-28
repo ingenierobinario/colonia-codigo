@@ -1,6 +1,19 @@
 import type { Agent } from "../../packages/protocol/src/domain.ts";
 import { expect, open, rpc, test } from "./kit.ts";
 
+test("the office fills the available width on a wide display", async ({ page }, info) => {
+  await rpc("setup.finish", {});
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await open(page, "#view=office");
+  const canvas = page.locator(".office-3d canvas");
+  await expect(canvas).toBeVisible();
+  const bounds = await canvas.boundingBox();
+  expect(bounds).not.toBeNull();
+  if (!bounds) throw new Error("The office has no visible canvas");
+  expect(Math.abs(bounds.x + bounds.width - 1920)).toBeLessThanOrEqual(2);
+  await page.screenshot({ path: info.outputPath("office-wide.png"), fullPage: true });
+});
+
 test("the office shows real departments and opens a working chat without leaving the office", async ({
   page,
 }, info) => {

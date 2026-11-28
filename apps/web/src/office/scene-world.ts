@@ -3,7 +3,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import type { SceneCharacter } from "./scene-avatars.ts";
 import { batchStationaryParts } from "./scene-batch.ts";
 import { sceneLayout } from "./scene-layout.ts";
+import { lounge } from "./scene-lounge.ts";
 import { box, character, desk, plant } from "./scene-models.ts";
+import { officeExtent, officeMotion } from "./scene-motion.ts";
 
 export type SceneRoom = { id: string; agents: { id: string; blob: string }[] };
 
@@ -25,8 +27,9 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
   controls.enableDamping = true;
   controls.dampingFactor = 0.12;
   const layouts = sceneLayout(rooms);
-  const width = Math.max(10, ...layouts.map((room) => room.x + room.width));
-  const depth = Math.max(8, ...layouts.map((room) => room.z + room.depth));
+  const { width, depth: roomDepth } = officeExtent(layouts);
+  const depth = roomDepth + 6;
+  const motion = officeMotion(layouts);
   const center = new THREE.Vector3(width / 2, 0, depth / 2);
   controls.target.copy(center);
   camera.position.copy(center).add(new THREE.Vector3(1, 1.2, 1.4).multiplyScalar(Math.max(width, depth) * 0.8));
@@ -66,6 +69,7 @@ export function createOfficeWorld(rooms: SceneRoom[], canvas: HTMLCanvasElement)
       characters.push({ id: agent.id, blob: agent.blob, model, x, z, phase: i * 2.3 + index });
     }
   }
+  lounge(furniture, width, roomDepth);
   batchStationaryParts(furniture);
-  return { scene, camera, controls, characters, roomLabels };
+  return { scene, camera, controls, characters, roomLabels, motion };
 }

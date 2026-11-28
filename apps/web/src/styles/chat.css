@@ -88,6 +88,39 @@
   flex-direction: column;
   gap: 10px;
 }
+.delegated-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--colonia-border);
+  border-radius: 14px;
+  background: var(--colonia-bg);
+}
+.delegated-inputs h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+.delegated-inputs__origin {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.delegated-inputs__origin > span {
+  flex: 1;
+  min-width: 100px;
+  overflow-wrap: anywhere;
+}
+.delegated-inputs__origin small {
+  display: block;
+  color: var(--colonia-fg-muted);
+  font-size: 11px;
+}
 .transcript__row > .colonia-msg {
   margin-top: 0;
 }
