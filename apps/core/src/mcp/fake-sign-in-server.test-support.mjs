@@ -14,8 +14,9 @@ if (process.env.REJECT_REGISTRATION) {
   process.exit(1);
 }
 if (!signed()) {
-  process.stderr.write("\nPlease authorize this client by visiting:\nhttps://shop.example.com/authorize?state=1\n\n");
+  // The parent can inspect the count as soon as it receives the sign-in URL.
   fs.appendFileSync(process.env.OPENED_LOG ?? "", "opened\n");
+  process.stderr.write("\nPlease authorize this client by visiting:\nhttps://shop.example.com/authorize?state=1\n\n");
   // Like a sign-in that ran out of time: the page it opened answers nobody now.
   if (process.env.GIVE_UP) process.exit(1);
   while (!signed()) await new Promise((r) => setTimeout(r, 50));
