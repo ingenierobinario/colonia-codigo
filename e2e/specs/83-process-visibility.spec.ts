@@ -102,6 +102,12 @@ test("background details keep another project's executor across chats and expose
   await full.focus();
   await page.keyboard.press(process.platform === "darwin" ? "Meta+ArrowDown" : "Control+End");
   await expect.poll(() => full.evaluate((el) => el.scrollTop + el.clientHeight >= el.scrollHeight - 1)).toBe(true);
+  await expect(full).toBeFocused();
+  await page.keyboard.press(process.platform === "darwin" ? "Meta+ArrowUp" : "Control+Home");
+  await expect.poll(() => full.evaluate((el) => el.scrollTop)).toBe(0);
+  const contents = await full.inputValue();
+  await page.keyboard.insertText("must remain read only");
+  await expect(full).toHaveValue(contents);
   const modalBounds = await dialog.boundingBox();
   expect(modalBounds?.y).toBeGreaterThanOrEqual(0);
   expect((modalBounds?.y ?? 0) + (modalBounds?.height ?? 0)).toBeLessThanOrEqual(844);

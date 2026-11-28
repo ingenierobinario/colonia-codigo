@@ -1,6 +1,6 @@
 import type { Job } from "@colonia/protocol";
 import { Dialog, Icons, Spinner, Tooltip } from "@colonia/ui";
-import { useEffect, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { elapsed, formatNumber } from "../common/format.ts";
 import { cancelJob } from "../data/actions.ts";
 import { client } from "../data/client.ts";
@@ -166,11 +166,30 @@ function JobCard({ job: j, now, onOpen }: { job: Job; now: number; onOpen: (job:
         size="sm"
         closeLabel={t("common.close")}
       >
-        <textarea className="job__full-details" readOnly aria-label={t("job.details")} value={details} />
+        <textarea
+          className="job__full-details"
+          readOnly
+          aria-label={t("job.details")}
+          value={details}
+          onKeyDown={moveDetailsBoundary}
+        />
       </Dialog>
       {showOutput && <JobOutput job={j.id} live={live} />}
     </div>
   );
+}
+
+// Chromium does not consistently navigate readonly text controls with document-boundary shortcuts.
+function moveDetailsBoundary(event: KeyboardEvent<HTMLTextAreaElement>) {
+  if (event.altKey || event.shiftKey) return;
+  const end = (event.ctrlKey && event.key === "End") || (event.metaKey && event.key === "ArrowDown");
+  const start = (event.ctrlKey && event.key === "Home") || (event.metaKey && event.key === "ArrowUp");
+  if (!end && !start) return;
+  event.preventDefault();
+  const field = event.currentTarget;
+  const offset = end ? field.value.length : 0;
+  field.setSelectionRange(offset, offset);
+  field.scrollTop = end ? field.scrollHeight : 0;
 }
 
 /** The end of a terminal job's output, refreshed every second while it runs. */
